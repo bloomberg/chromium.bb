@@ -100,9 +100,13 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
         if (instrumentPresence == HAVE_INSTRUMENTS) {
             assertEquals("Test Pay", getPaymentInstrumentLabel(i++));
         }
-        // \u00A0\u22EF is a non-breaking space followed by a midline ellipsis.
-        assertEquals("Visa\u00A0\u22EF1111\nJon Doe", getPaymentInstrumentLabel(i++));
-        assertEquals("MasterCard\u00A0\u22EF5454\nJon Doe\nBilling address required",
+        // \u0020\...\u2006 is four dots ellipsis.
+        assertEquals(
+                "Visa\u0020\u0020\u2022\u2006\u2022\u2006\u2022\u2006\u2022\u20061111\nJon Doe",
+                getPaymentInstrumentLabel(i++));
+        assertEquals(
+                "MasterCard\u0020\u0020\u2022\u2006\u2022\u2006\u2022\u2006\u2022\u20065454\n"
+                + "Jon Doe\nBilling address required",
                 getPaymentInstrumentLabel(i++));
 
         // Check the output of the selected instrument.

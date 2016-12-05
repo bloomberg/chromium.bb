@@ -61,6 +61,13 @@ namespace {
 
 enum UserMode { USER_MODE_NORMAL, USER_MODE_INCOGNITO };
 
+const std::string kUTF8MidlineEllipsis =
+    "  "
+    "\xE2\x80\xA2\xE2\x80\x86"
+    "\xE2\x80\xA2\xE2\x80\x86"
+    "\xE2\x80\xA2\xE2\x80\x86"
+    "\xE2\x80\xA2\xE2\x80\x86";
+
 ACTION(QuitMainMessageLoop) {
   base::MessageLoop::current()->QuitWhenIdle();
 }
@@ -3697,8 +3704,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
           AutofillType(CREDIT_CARD_NUMBER),
           /* field_contents= */ base::string16());
   ASSERT_EQ(1U, suggestions.size());
-  EXPECT_EQ(UTF8ToUTF16("Amex\xC2\xA0\xE2\x8B\xAF"
-                        "8555"),
+  EXPECT_EQ(UTF8ToUTF16("Amex" + kUTF8MidlineEllipsis + "8555"),
             suggestions[0].value);
   EXPECT_EQ(ASCIIToUTF16("04/99"), suggestions[0].label);
 }
@@ -3761,17 +3767,13 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   suggestions = personal_data_->GetCreditCardSuggestions(
       AutofillType(CREDIT_CARD_NUMBER), /* field_contents= */ base::string16());
   ASSERT_EQ(4U, suggestions.size());
-  EXPECT_EQ(UTF8ToUTF16("Visa\xC2\xA0\xE2\x8B\xAF"
-                        "9012"),
+  EXPECT_EQ(UTF8ToUTF16("Visa" + kUTF8MidlineEllipsis + "9012"),
             suggestions[0].value);
-  EXPECT_EQ(UTF8ToUTF16("Amex\xC2\xA0\xE2\x8B\xAF"
-                        "8555"),
+  EXPECT_EQ(UTF8ToUTF16("Amex" + kUTF8MidlineEllipsis + "8555"),
             suggestions[1].value);
-  EXPECT_EQ(UTF8ToUTF16("MasterCard\xC2\xA0\xE2\x8B\xAF"
-                        "2109"),
+  EXPECT_EQ(UTF8ToUTF16("MasterCard" + kUTF8MidlineEllipsis + "2109"),
             suggestions[2].value);
-  EXPECT_EQ(UTF8ToUTF16("Visa\xC2\xA0\xE2\x8B\xAF"
-                        "2109"),
+  EXPECT_EQ(UTF8ToUTF16("Visa" + kUTF8MidlineEllipsis + "2109"),
             suggestions[3].value);
 }
 

@@ -59,6 +59,13 @@ const char* const kInvalidNumbers[] = {
   "3056 9309 0259 04aa", /* non-digit characters */
 };
 
+const std::string kUTF8MidlineEllipsis =
+    "  "
+    "\xE2\x80\xA2\xE2\x80\x86"
+    "\xE2\x80\xA2\xE2\x80\x86"
+    "\xE2\x80\xA2\xE2\x80\x86"
+    "\xE2\x80\xA2\xE2\x80\x86";
+
 }  // namespace
 
 // Tests credit card summary string generation.  This test simulates a variety
@@ -93,14 +100,10 @@ TEST(CreditCardTest, PreviewSummaryAndTypeAndLastFourDigitsStrings) {
   test::SetCreditCardInfo(
       &credit_card2, "John Dillinger", "5105 1051 0510 5100", "", "2010");
   base::string16 summary2 = credit_card2.Label();
-  EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard\xC2\xA0\xE2\x8B\xAF"
-                "5100"),
+  EXPECT_EQ(UTF8ToUTF16("MasterCard" + kUTF8MidlineEllipsis + "5100"),
             summary2);
   base::string16 obfuscated2 = credit_card2.TypeAndLastFourDigits();
-  EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard\xC2\xA0\xE2\x8B\xAF"
-                "5100"),
+  EXPECT_EQ(UTF8ToUTF16("MasterCard" + kUTF8MidlineEllipsis + "5100"),
             obfuscated2);
 
   // Case 3: No year.
@@ -108,14 +111,10 @@ TEST(CreditCardTest, PreviewSummaryAndTypeAndLastFourDigitsStrings) {
   test::SetCreditCardInfo(
       &credit_card3, "John Dillinger", "5105 1051 0510 5100", "01", "");
   base::string16 summary3 = credit_card3.Label();
-  EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard\xC2\xA0\xE2\x8B\xAF"
-                "5100"),
+  EXPECT_EQ(UTF8ToUTF16("MasterCard" + kUTF8MidlineEllipsis + "5100"),
             summary3);
   base::string16 obfuscated3 = credit_card3.TypeAndLastFourDigits();
-  EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard\xC2\xA0\xE2\x8B\xAF"
-                "5100"),
+  EXPECT_EQ(UTF8ToUTF16("MasterCard" + kUTF8MidlineEllipsis + "5100"),
             obfuscated3);
 
   // Case 4: Have everything.
@@ -123,14 +122,10 @@ TEST(CreditCardTest, PreviewSummaryAndTypeAndLastFourDigitsStrings) {
   test::SetCreditCardInfo(
       &credit_card4, "John Dillinger", "5105 1051 0510 5100", "01", "2010");
   base::string16 summary4 = credit_card4.Label();
-  EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard\xC2\xA0\xE2\x8B\xAF"
-                "5100, 01/2010"),
+  EXPECT_EQ(UTF8ToUTF16("MasterCard" + kUTF8MidlineEllipsis + "5100, 01/2010"),
             summary4);
   base::string16 obfuscated4 = credit_card4.TypeAndLastFourDigits();
-  EXPECT_EQ(UTF8ToUTF16(
-                "MasterCard\xC2\xA0\xE2\x8B\xAF"
-                "5100"),
+  EXPECT_EQ(UTF8ToUTF16("MasterCard" + kUTF8MidlineEllipsis + "5100"),
             obfuscated4);
 
   // Case 5: Very long credit card
@@ -140,14 +135,10 @@ TEST(CreditCardTest, PreviewSummaryAndTypeAndLastFourDigitsStrings) {
       "John Dillinger",
       "0123456789 0123456789 0123456789 5105 1051 0510 5100", "01", "2010");
   base::string16 summary5 = credit_card5.Label();
-  EXPECT_EQ(UTF8ToUTF16(
-                "Card\xC2\xA0\xE2\x8B\xAF"
-                "5100, 01/2010"),
+  EXPECT_EQ(UTF8ToUTF16("Card" + kUTF8MidlineEllipsis + "5100, 01/2010"),
             summary5);
   base::string16 obfuscated5 = credit_card5.TypeAndLastFourDigits();
-  EXPECT_EQ(UTF8ToUTF16(
-                "Card\xC2\xA0\xE2\x8B\xAF"
-                "5100"),
+  EXPECT_EQ(UTF8ToUTF16("Card" + kUTF8MidlineEllipsis + "5100"),
             obfuscated5);
 }
 

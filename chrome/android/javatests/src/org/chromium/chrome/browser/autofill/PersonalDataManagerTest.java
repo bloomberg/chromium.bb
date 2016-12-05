@@ -151,7 +151,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
         assertEquals("Visa", storedCard.getName());
         assertEquals("10", storedCard.getMonth());
         assertEquals("4012888888881881", storedCard.getNumber());
-        assertEquals("Visa\u00a0\u22ef1881", storedCard.getObfuscatedNumber());
+        assertEquals("Visa\u0020\u0020\u2022\u2006\u2022\u2006\u2022\u2006\u2022\u20061881",
+                storedCard.getObfuscatedNumber());
         assertNotNull(mHelper.getCreditCard(cardTwoGUID));
     }
 

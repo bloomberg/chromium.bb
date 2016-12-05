@@ -39,12 +39,15 @@ using base::ASCIIToUTF16;
 
 namespace autofill {
 
-const base::char16 kMidlineEllipsis[] = { 0x22ef, 0 };
+const base::char16 kMidlineEllipsis[] = { 0x0020, 0x0020,
+                                          0x2022, 0x2006,
+                                          0x2022, 0x2006,
+                                          0x2022, 0x2006,
+                                          0x2022, 0x2006, 0 };
 
 namespace {
 
 const base::char16 kCreditCardObfuscationSymbol = '*';
-const base::char16 kNonBreakingSpace[] = { 0x00a0, 0 };
 
 bool ConvertYear(const base::string16& year, int* num) {
   // If the |year| is empty, clear the stored value.
@@ -499,8 +502,7 @@ base::string16 CreditCard::TypeAndLastFourDigits() const {
     return type;
 
   // TODO(estade): i18n?
-  return type + base::string16(kNonBreakingSpace) +
-         base::string16(kMidlineEllipsis) + digits;
+  return type + base::string16(kMidlineEllipsis) + digits;
 }
 
 base::string16 CreditCard::AbbreviatedExpirationDateForDisplay() const {
