@@ -69,9 +69,9 @@ class ProfileSyncComponentsFactoryImpl
           debug_info_listener,
       const syncer::DataTypeController::TypeMap* controllers,
       const syncer::DataTypeEncryptionHandler* encryption_handler,
-      syncer::SyncBackendHost* backend,
+      syncer::SyncEngine* engine,
       syncer::DataTypeManagerObserver* observer) override;
-  syncer::SyncBackendHost* CreateSyncBackendHost(
+  syncer::SyncEngine* CreateSyncEngine(
       const std::string& name,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,

@@ -14,9 +14,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/data_type_histogram.h"
-#include "components/sync/driver/backend_data_type_configurer.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/activation_context.h"
+#include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/model/data_type_error_handler_impl.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_debug_info.h"
@@ -159,8 +159,7 @@ void ModelTypeController::OnProcessorStarted(
   LoadModelsDone(result, error);
 }
 
-void ModelTypeController::RegisterWithBackend(
-    BackendDataTypeConfigurer* configurer) {
+void ModelTypeController::RegisterWithBackend(ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   if (activated_)
     return;
@@ -185,8 +184,7 @@ void ModelTypeController::StartAssociating(
   start_callback.Run(OK, merge_result, merge_result);
 }
 
-void ModelTypeController::ActivateDataType(
-    BackendDataTypeConfigurer* configurer) {
+void ModelTypeController::ActivateDataType(ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   DCHECK(configurer);
   DCHECK_EQ(RUNNING, state_);
@@ -196,8 +194,7 @@ void ModelTypeController::ActivateDataType(
   DCHECK(!activation_context_);
 }
 
-void ModelTypeController::DeactivateDataType(
-    BackendDataTypeConfigurer* configurer) {
+void ModelTypeController::DeactivateDataType(ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   DCHECK(configurer);
   if (activated_) {

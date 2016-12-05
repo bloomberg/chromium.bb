@@ -18,7 +18,7 @@
 namespace syncer {
 
 // These are coupled to the implementation of StartupController's
-// GetBackendInitializationStateString which is used by about:sync. We use it
+// GetEngineInitializationStateString which is used by about:sync. We use it
 // as a convenient way to verify internal state and that the class is
 // outputting the correct values for the debug string.
 static const char kStateStringStarted[] = "Started";
@@ -54,7 +54,7 @@ class StartupControllerTest : public testing::Test {
   void ExpectStarted() {
     EXPECT_TRUE(started());
     EXPECT_EQ(kStateStringStarted,
-              controller()->GetBackendInitializationStateString());
+              controller()->GetEngineInitializationStateString());
   }
 
   void ExpectStartDeferred() {
@@ -63,13 +63,13 @@ class StartupControllerTest : public testing::Test {
             switches::kSyncDisableDeferredStartup);
     EXPECT_EQ(!deferred_start, started());
     EXPECT_EQ(deferred_start ? kStateStringDeferred : kStateStringStarted,
-              controller()->GetBackendInitializationStateString());
+              controller()->GetEngineInitializationStateString());
   }
 
   void ExpectNotStarted() {
     EXPECT_FALSE(started());
     EXPECT_EQ(kStateStringNotStarted,
-              controller()->GetBackendInitializationStateString());
+              controller()->GetEngineInitializationStateString());
   }
 
   bool started() const { return started_; }

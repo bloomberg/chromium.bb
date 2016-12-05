@@ -200,9 +200,7 @@ class SyncService : public DataTypeEncryptionHandler {
   virtual const GoogleServiceAuthError& GetAuthError() const = 0;
   virtual bool HasUnrecoverableError() const = 0;
 
-  // Returns true if the SyncBackendHost has told us it's ready to accept
-  // changes. This should only be used for sync's internal configuration logic
-  // (such as deciding when to prompt for an encryption passphrase).
+  // Returns true if the SyncEngine has told us it's ready to accept changes.
   virtual bool IsBackendInitialized() const = 0;
 
   // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or

@@ -31,15 +31,15 @@ namespace browser_sync {
 
 namespace {
 
-class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
+class SyncEngineForProfileSyncTest : public SyncBackendHostImpl {
  public:
-  SyncBackendHostForProfileSyncTest(
+  SyncEngineForProfileSyncTest(
       const base::FilePath& temp_dir,
       syncer::SyncClient* sync_client,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
       const base::Closure& callback);
-  ~SyncBackendHostForProfileSyncTest() override;
+  ~SyncEngineForProfileSyncTest() override;
 
   void RequestConfigureSyncer(
       syncer::ConfigureReason reason,
@@ -58,14 +58,14 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
 
  private:
   // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
-  // Allows extra initialization work to be performed before the backend comes
+  // Allows extra initialization work to be performed before the engine comes
   // up.
   base::Closure callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncBackendHostForProfileSyncTest);
+  DISALLOW_COPY_AND_ASSIGN(SyncEngineForProfileSyncTest);
 };
 
-SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
+SyncEngineForProfileSyncTest::SyncEngineForProfileSyncTest(
     const base::FilePath& temp_dir,
     syncer::SyncClient* sync_client,
     invalidation::InvalidationService* invalidator,
@@ -79,9 +79,9 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
           temp_dir.Append(base::FilePath(FILE_PATH_LITERAL("test")))),
       callback_(callback) {}
 
-SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
+SyncEngineForProfileSyncTest::~SyncEngineForProfileSyncTest() {}
 
-void SyncBackendHostForProfileSyncTest::InitCore(
+void SyncEngineForProfileSyncTest::InitCore(
     std::unique_ptr<syncer::DoInitializeOptions> options) {
   options->http_bridge_factory = base::MakeUnique<TestHttpBridgeFactory>();
   options->sync_manager_factory =
@@ -92,8 +92,8 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   options->restored_key_for_bootstrapping.clear();
 
   // It'd be nice if we avoided creating the EngineComponentsFactory in the
-  // first place, but SyncBackendHost will have created one by now so we must
-  // free it. Grab the switches to pass on first.
+  // first place, but SyncEngine will have created one by now so we must free
+  // it. Grab the switches to pass on first.
   syncer::EngineComponentsFactory::Switches factory_switches =
       options->engine_components_factory->GetSwitches();
   options->engine_components_factory =
@@ -104,7 +104,7 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   SyncBackendHostImpl::InitCore(std::move(options));
 }
 
-void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
+void SyncEngineForProfileSyncTest::RequestConfigureSyncer(
     syncer::ConfigureReason reason,
     syncer::ModelTypeSet to_download,
     syncer::ModelTypeSet to_purge,
@@ -124,12 +124,12 @@ void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
   // Posted to avoid re-entrancy issues.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&SyncBackendHostForProfileSyncTest::
-                     FinishConfigureDataTypesOnFrontendLoop,
-                 base::Unretained(this),
-                 syncer::Difference(to_download, failed_configuration_types),
-                 syncer::Difference(to_download, failed_configuration_types),
-                 failed_configuration_types, ready_task));
+      base::Bind(
+          &SyncEngineForProfileSyncTest::FinishConfigureDataTypesOnFrontendLoop,
+          base::Unretained(this),
+          syncer::Difference(to_download, failed_configuration_types),
+          syncer::Difference(to_download, failed_configuration_types),
+          failed_configuration_types, ready_task));
 }
 
 // Helper function for return-type-upcasting of the callback.
@@ -191,8 +191,8 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
 
   syncer::SyncApiComponentFactoryMock* components =
       profile_sync_service_bundle_.component_factory();
-  EXPECT_CALL(*components, CreateSyncBackendHost(_, _, _, _))
-      .WillOnce(Return(new SyncBackendHostForProfileSyncTest(
+  EXPECT_CALL(*components, CreateSyncEngine(_, _, _, _))
+      .WillOnce(Return(new SyncEngineForProfileSyncTest(
           temp_dir_.GetPath(), sync_service_->GetSyncClient(),
           profile_sync_service_bundle_.fake_invalidation_service(),
           sync_service_->sync_prefs()->AsWeakPtr(),

@@ -143,7 +143,7 @@ TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
       GlobalErrorServiceFactory::GetForProfile(profile()), login_ui_service,
       &error, &service);
 
-  syncer::SyncBackendHost::Status status;
+  syncer::SyncEngine::Status status;
   EXPECT_CALL(service, QueryDetailedSyncStatus(_))
               .WillRepeatedly(Return(false));
 

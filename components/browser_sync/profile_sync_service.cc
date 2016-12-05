@@ -108,7 +108,7 @@ using syncer::ModelTypeChangeProcessor;
 using syncer::ModelTypeSet;
 using syncer::ModelTypeStore;
 using syncer::ProtocolEventObserver;
-using syncer::SyncBackendHost;
+using syncer::SyncEngine;
 using syncer::SyncCredentials;
 using syncer::SyncProtocolError;
 using syncer::WeakHandle;
@@ -542,11 +542,10 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       local_sync_backend_folder.Append(kLoopbackServerBackendFilename);
 #endif  // defined(OS_WIN)
 
-  SyncBackendHost::HttpPostProviderFactoryGetter
-      http_post_provider_factory_getter =
-          base::Bind(&syncer::NetworkResources::GetHttpPostProviderFactory,
-                     base::Unretained(network_resources_.get()),
-                     url_request_context_, network_time_update_callback_);
+  SyncEngine::HttpPostProviderFactoryGetter http_post_provider_factory_getter =
+      base::Bind(&syncer::NetworkResources::GetHttpPostProviderFactory,
+                 base::Unretained(network_resources_.get()),
+                 url_request_context_, network_time_update_callback_);
 
   backend_->Initialize(
       this, sync_thread_->task_runner(), GetJsEventHandler(), sync_service_url_,
@@ -632,14 +631,12 @@ void ProfileSyncService::StartUpSlowBackendComponents() {
   invalidation::InvalidationService* invalidator =
       sync_client_->GetInvalidationService();
 
-  backend_.reset(
-      sync_client_->GetSyncApiComponentFactory()->CreateSyncBackendHost(
-          debug_identifier_, invalidator, sync_prefs_.AsWeakPtr(),
-          directory_path_));
+  backend_.reset(sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
+      debug_identifier_, invalidator, sync_prefs_.AsWeakPtr(),
+      directory_path_));
 
-  // Initialize the backend.  Every time we start up a new SyncBackendHost,
-  // we'll want to start from a fresh SyncDB, so delete any old one that might
-  // be there.
+  // Initialize the backend. Every time we start up a new SyncEngine, we'll want
+  // to start from a fresh SyncDB, so delete any old one that might be there.
   InitializeBackend(ShouldDeleteSyncFolder());
 
   UpdateFirstSyncTimePref();
@@ -805,6 +802,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
 
   backend_->Shutdown(reason);
   backend_.reset();
+
   base::TimeDelta shutdown_time = base::Time::Now() - shutdown_start_time;
   UMA_HISTOGRAM_TIMES("Sync.Shutdown.BackendDestroyedTime", shutdown_time);
 
@@ -844,7 +842,7 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
   switch (data_fate) {
     case KEEP_DATA:
       // TODO(maxbogue): Investigate whether this logic can/should be moved
-      // into ShutdownImpl or SyncBackendHost itself.
+      // into ShutdownImpl or the sync engine itself.
       if (HasSyncingBackend()) {
         backend_->UnregisterInvalidationIds();
       }
@@ -959,7 +957,7 @@ void ProfileSyncService::UpdateBackendInitUMA(bool success) {
 
   base::Time on_backend_initialized_time = base::Time::Now();
   base::TimeDelta delta =
-      on_backend_initialized_time - startup_controller_->start_backend_time();
+      on_backend_initialized_time - startup_controller_->start_engine_time();
   if (is_first_time_sync_configure_) {
     UMA_HISTOGRAM_LONG_TIMES("Sync.BackendInitializeFirstTime", delta);
   } else {
@@ -1503,7 +1501,7 @@ std::string ProfileSyncService::QuerySyncStatusSummaryString() {
 
 std::string ProfileSyncService::GetBackendInitializationStateString() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return startup_controller_->GetBackendInitializationStateString();
+  return startup_controller_->GetEngineInitializationStateString();
 }
 
 bool ProfileSyncService::IsSetupInProgress() const {
@@ -1511,14 +1509,13 @@ bool ProfileSyncService::IsSetupInProgress() const {
   return startup_controller_->IsSetupInProgress();
 }
 
-bool ProfileSyncService::QueryDetailedSyncStatus(
-    SyncBackendHost::Status* result) {
+bool ProfileSyncService::QueryDetailedSyncStatus(SyncEngine::Status* result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (backend_.get() && backend_initialized_) {
     *result = backend_->GetDetailedStatus();
     return true;
   } else {
-    SyncBackendHost::Status status;
+    SyncEngine::Status status;
     status.sync_protocol_error = last_actionable_error_;
     *result = status;
     return false;
@@ -1929,7 +1926,7 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
     }
   }
 
-  SyncBackendHost::Status detailed_status = backend_->GetDetailedStatus();
+  SyncEngine::Status detailed_status = backend_->GetDetailedStatus();
   ModelTypeSet& throttled_types(detailed_status.throttled_types);
   ModelTypeSet& backed_off_types(detailed_status.backed_off_types);
   ModelTypeSet registered = GetRegisteredDataTypes();

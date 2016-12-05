@@ -24,13 +24,13 @@ class ProxyDataTypeController : public DataTypeController {
   // DataTypeController interface.
   bool ShouldLoadModelBeforeConfigure() const override;
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
-  void RegisterWithBackend(BackendDataTypeConfigurer* configurer) override;
+  void RegisterWithBackend(ModelTypeConfigurer* configurer) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
   std::string name() const override;
   State state() const override;
-  void ActivateDataType(BackendDataTypeConfigurer* configurer) override;
-  void DeactivateDataType(BackendDataTypeConfigurer* configurer) override;
+  void ActivateDataType(ModelTypeConfigurer* configurer) override;
+  void DeactivateDataType(ModelTypeConfigurer* configurer) override;
   void GetAllNodes(const AllNodesCallback& callback) override;
   void GetStatusCounters(const StatusCountersCallback& callback) override;
 

@@ -40,10 +40,10 @@ class ModelTypeController : public DataTypeController {
   // Registers non-blocking data type with sync backend. In the process the
   // activation context is passed to ModelTypeRegistry, where ModelTypeWorker
   // gets created and connected with ModelTypeProcessor.
-  void RegisterWithBackend(BackendDataTypeConfigurer* configurer) override;
+  void RegisterWithBackend(ModelTypeConfigurer* configurer) override;
   void StartAssociating(const StartCallback& start_callback) override;
-  void ActivateDataType(BackendDataTypeConfigurer* configurer) override;
-  void DeactivateDataType(BackendDataTypeConfigurer* configurer) override;
+  void ActivateDataType(ModelTypeConfigurer* configurer) override;
+  void DeactivateDataType(ModelTypeConfigurer* configurer) override;
   void Stop() override;
   std::string name() const override;
   State state() const override;

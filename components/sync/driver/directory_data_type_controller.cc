@@ -9,8 +9,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/driver/backend_data_type_configurer.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync/syncable/user_share.h"
 
@@ -58,10 +58,10 @@ void DirectoryDataTypeController::GetStatusCounters(
 }
 
 void DirectoryDataTypeController::RegisterWithBackend(
-    BackendDataTypeConfigurer* configurer) {}
+    ModelTypeConfigurer* configurer) {}
 
 void DirectoryDataTypeController::ActivateDataType(
-    BackendDataTypeConfigurer* configurer) {
+    ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   // Tell the backend about the change processor for this type so it can
   // begin routing changes to it.
@@ -70,7 +70,7 @@ void DirectoryDataTypeController::ActivateDataType(
 }
 
 void DirectoryDataTypeController::DeactivateDataType(
-    BackendDataTypeConfigurer* configurer) {
+    ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   configurer->DeactivateDirectoryDataType(type());
 }

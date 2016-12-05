@@ -29,7 +29,7 @@ class DataTypeController;
 class ModelAssociationManagerDelegate {
  public:
   // Called when all desired types are ready to be configured with
-  // BackendDataTypeConfigurer. Data type is ready when its progress marker is
+  // ModelTypeConfigurer. Data type is ready when its progress marker is
   // available to configurer. Directory data types are always ready, their
   // progress markers are read from directory. USS data type controllers need to
   // load model and read data type context first.

@@ -18,11 +18,11 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/driver/backend_data_type_configurer.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/engine/activation_context.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/fake_model_type_processor.h"
+#include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/stub_model_type_sync_bridge.h"
@@ -70,11 +70,11 @@ class TestModelTypeProcessor : public FakeModelTypeChangeProcessor,
   DISALLOW_COPY_AND_ASSIGN(TestModelTypeProcessor);
 };
 
-// A BackendDataTypeConfigurer that just connects USS types.
-class TestBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
+// A ModelTypeConfigurer that just connects USS types.
+class TestModelTypeConfigurer : public ModelTypeConfigurer {
  public:
-  TestBackendDataTypeConfigurer() {}
-  ~TestBackendDataTypeConfigurer() override {}
+  TestModelTypeConfigurer() {}
+  ~TestModelTypeConfigurer() override {}
 
   ModelTypeSet ConfigureDataTypes(
       ConfigureReason reason,
@@ -251,7 +251,7 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
   base::MessageLoop message_loop_;
   base::Thread model_thread_;
   SyncPrefs sync_prefs_;
-  TestBackendDataTypeConfigurer configurer_;
+  TestModelTypeConfigurer configurer_;
   std::unique_ptr<StubModelTypeSyncBridge> bridge_;
   std::unique_ptr<ModelTypeController> controller_;
   TestModelTypeProcessor* processor_;

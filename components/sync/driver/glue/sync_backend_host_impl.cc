@@ -23,12 +23,12 @@
 #include "components/sync/driver/glue/sync_backend_registrar.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/driver/sync_frontend.h"
 #include "components/sync/engine/activation_context.h"
 #include "components/sync/engine/engine_components_factory.h"
 #include "components/sync/engine/engine_components_factory_impl.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/engine/net/http_bridge.h"
+#include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/syncable/base_transaction.h"
@@ -50,24 +50,20 @@ SyncBackendHostImpl::SyncBackendHostImpl(
     const base::FilePath& sync_folder)
     : sync_client_(sync_client),
       name_(name),
-      initialized_(false),
       sync_prefs_(sync_prefs),
-      frontend_(nullptr),
-      cached_passphrase_type_(PassphraseType::IMPLICIT_PASSPHRASE),
       invalidator_(invalidator),
-      invalidation_handler_registered_(false),
       weak_ptr_factory_(this) {
   core_ = new SyncBackendHostCore(name_, sync_folder,
                                   weak_ptr_factory_.GetWeakPtr());
 }
 
 SyncBackendHostImpl::~SyncBackendHostImpl() {
-  DCHECK(!core_.get() && !frontend_) << "Must call Shutdown before destructor.";
+  DCHECK(!core_.get() && !host_) << "Must call Shutdown before destructor.";
   DCHECK(!registrar_.get());
 }
 
 void SyncBackendHostImpl::Initialize(
-    SyncFrontend* frontend,
+    SyncEngineHost* host,
     scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
     const WeakHandle<JsEventHandler>& event_handler,
     const GURL& sync_service_url,
@@ -88,8 +84,8 @@ void SyncBackendHostImpl::Initialize(
       name_, base::Bind(&SyncClient::CreateModelWorkerForGroup,
                         base::Unretained(sync_client_)));
 
-  DCHECK(frontend);
-  frontend_ = frontend;
+  DCHECK(host);
+  host_ = host;
 
   std::vector<scoped_refptr<ModelSafeWorker>> workers;
   registrar_->GetWorkers(&workers);
@@ -159,6 +155,8 @@ void SyncBackendHostImpl::StartSyncingWithServer() {
 
 void SyncBackendHostImpl::SetEncryptionPassphrase(const std::string& passphrase,
                                                   bool is_explicit) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!IsNigoriEnabled()) {
     NOTREACHED() << "SetEncryptionPassphrase must never be called when nigori"
                     " is disabled.";
@@ -167,9 +165,6 @@ void SyncBackendHostImpl::SetEncryptionPassphrase(const std::string& passphrase,
 
   // We should never be called with an empty passphrase.
   DCHECK(!passphrase.empty());
-
-  // This should only be called by the frontend.
-  DCHECK(thread_checker_.CalledOnValidThread());
 
   // SetEncryptionPassphrase should never be called if we are currently
   // encrypted with an explicit passphrase.
@@ -184,6 +179,8 @@ void SyncBackendHostImpl::SetEncryptionPassphrase(const std::string& passphrase,
 
 bool SyncBackendHostImpl::SetDecryptionPassphrase(
     const std::string& passphrase) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!IsNigoriEnabled()) {
     NOTREACHED() << "SetDecryptionPassphrase must never be called when nigori"
                     " is disabled.";
@@ -192,9 +189,6 @@ bool SyncBackendHostImpl::SetDecryptionPassphrase(
 
   // We should never be called with an empty passphrase.
   DCHECK(!passphrase.empty());
-
-  // This should only be called by the frontend.
-  DCHECK(thread_checker_.CalledOnValidThread());
 
   // This should only be called when we have cached pending keys.
   DCHECK(cached_pending_keys_.has_blob());
@@ -228,8 +222,8 @@ void SyncBackendHostImpl::StopSyncingForShutdown() {
 
   // Stop getting messages from the sync thread.
   weak_ptr_factory_.InvalidateWeakPtrs();
-  // Immediately stop sending messages to the frontend.
-  frontend_ = nullptr;
+  // Immediately stop sending messages to the host.
+  host_ = nullptr;
 
   registrar_->RequestWorkerStopOnUIThread();
 
@@ -237,9 +231,9 @@ void SyncBackendHostImpl::StopSyncingForShutdown() {
 }
 
 void SyncBackendHostImpl::Shutdown(ShutdownReason reason) {
-  // StopSyncingForShutdown() (which nulls out |frontend_|) should be
+  // StopSyncingForShutdown() (which nulls out |host_|) should be
   // called first.
-  DCHECK(!frontend_);
+  DCHECK(!host_);
 
   if (invalidation_handler_registered_) {
     if (reason == DISABLE_SYNC) {
@@ -541,7 +535,7 @@ void SyncBackendHostImpl::AddExperimentalTypes() {
   CHECK(initialized());
   Experiments experiments;
   if (core_->sync_manager()->ReceivedExperiment(&experiments))
-    frontend_->OnExperimentsChanged(experiments);
+    host_->OnExperimentsChanged(experiments);
 }
 
 void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
@@ -566,17 +560,17 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
 
   // Now that we've downloaded the control types, we can see if there are any
   // experimental types to enable. This should be done before we inform
-  // the frontend to ensure they're visible in the customize screen.
+  // the host to ensure they're visible in the customize screen.
   AddExperimentalTypes();
-  frontend_->OnBackendInitialized(js_backend, debug_info_listener, cache_guid,
-                                  true);
+  host_->OnBackendInitialized(js_backend, debug_info_listener, cache_guid,
+                              true);
 }
 
 void SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  frontend_->OnBackendInitialized(WeakHandle<JsBackend>(),
-                                  WeakHandle<DataTypeDebugInfoListener>(), "",
-                                  false);
+  host_->OnBackendInitialized(WeakHandle<JsBackend>(),
+                              WeakHandle<DataTypeDebugInfoListener>(), "",
+                              false);
 }
 
 void SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop(
@@ -596,7 +590,7 @@ void SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop(
     AddExperimentalTypes();
 
   if (initialized())
-    frontend_->OnSyncCycleCompleted();
+    host_->OnSyncCycleCompleted();
 }
 
 void SyncBackendHostImpl::RetryConfigurationOnFrontendLoop(
@@ -618,13 +612,13 @@ void SyncBackendHostImpl::PersistEncryptionBootstrapToken(
 void SyncBackendHostImpl::HandleActionableErrorEventOnFrontendLoop(
     const SyncProtocolError& sync_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  frontend_->OnActionableError(sync_error);
+  host_->OnActionableError(sync_error);
 }
 
 void SyncBackendHostImpl::HandleMigrationRequestedOnFrontendLoop(
     ModelTypeSet types) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  frontend_->OnMigrationNeededForTypes(types);
+  host_->OnMigrationNeededForTypes(types);
 }
 
 void SyncBackendHostImpl::OnInvalidatorStateChange(InvalidatorState state) {
@@ -664,26 +658,26 @@ void SyncBackendHostImpl::NotifyPassphraseRequired(
   // Update our cache of the cryptographer's pending keys.
   cached_pending_keys_ = pending_keys;
 
-  frontend_->OnPassphraseRequired(reason, pending_keys);
+  host_->OnPassphraseRequired(reason, pending_keys);
 }
 
 void SyncBackendHostImpl::NotifyPassphraseAccepted() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Clear our cache of the cryptographer's pending keys.
   cached_pending_keys_.clear_blob();
-  frontend_->OnPassphraseAccepted();
+  host_->OnPassphraseAccepted();
 }
 
 void SyncBackendHostImpl::NotifyEncryptedTypesChanged(
     ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  frontend_->OnEncryptedTypesChanged(encrypted_types, encrypt_everything);
+  host_->OnEncryptedTypesChanged(encrypted_types, encrypt_everything);
 }
 
 void SyncBackendHostImpl::NotifyEncryptionComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  frontend_->OnEncryptionComplete();
+  host_->OnEncryptionComplete();
 }
 
 void SyncBackendHostImpl::HandlePassphraseTypeChangedOnFrontendLoop(
@@ -698,42 +692,46 @@ void SyncBackendHostImpl::HandlePassphraseTypeChangedOnFrontendLoop(
 void SyncBackendHostImpl::HandleLocalSetPassphraseEncryptionOnFrontendLoop(
     const SyncEncryptionHandler::NigoriState& nigori_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  frontend_->OnLocalSetPassphraseEncryption(nigori_state);
+  host_->OnLocalSetPassphraseEncryption(nigori_state);
 }
 
 void SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop(
     ConnectionStatus status) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   DVLOG(1) << "Connection status changed: " << ConnectionStatusToString(status);
-  frontend_->OnConnectionStatusChange(status);
+  host_->OnConnectionStatusChange(status);
 }
 
 void SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop(
     std::unique_ptr<ProtocolEvent> event) {
-  frontend_->OnProtocolEvent(*event);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  host_->OnProtocolEvent(*event);
 }
 
 void SyncBackendHostImpl::HandleDirectoryCommitCountersUpdatedOnFrontendLoop(
     ModelType type,
     const CommitCounters& counters) {
-  frontend_->OnDirectoryTypeCommitCounterUpdated(type, counters);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  host_->OnDirectoryTypeCommitCounterUpdated(type, counters);
 }
 
 void SyncBackendHostImpl::HandleDirectoryUpdateCountersUpdatedOnFrontendLoop(
     ModelType type,
     const UpdateCounters& counters) {
-  frontend_->OnDirectoryTypeUpdateCounterUpdated(type, counters);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  host_->OnDirectoryTypeUpdateCounterUpdated(type, counters);
 }
 
 void SyncBackendHostImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop(
     ModelType type,
     const StatusCounters& counters) {
-  frontend_->OnDatatypeStatusCounterUpdated(type, counters);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  host_->OnDatatypeStatusCounterUpdated(type, counters);
 }
 
 void SyncBackendHostImpl::UpdateInvalidationVersions(
     const std::map<ModelType, int64_t>& invalidation_versions) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   sync_prefs_->UpdateInvalidationVersions(invalidation_versions);
 }
 

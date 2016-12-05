@@ -68,7 +68,7 @@ class TestUserShare {
   UserShare* user_share();
 
   // Sync's encryption handler. Used by tests to invoke the sync encryption
-  // methods normally handled via the SyncBackendHost
+  // methods normally handled via the SyncEngine.
   SyncEncryptionHandler* encryption_handler();
 
   // Returns the directory's transaction observer.  This transaction observer

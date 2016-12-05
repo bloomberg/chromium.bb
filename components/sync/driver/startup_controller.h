@@ -17,18 +17,17 @@ namespace syncer {
 class SyncPrefs;
 
 // This class is used by ProfileSyncService to manage all logic and state
-// pertaining to initialization of the SyncBackendHost (colloquially referred
-// to as "the backend").
+// pertaining to initialization of the SyncEngine.
 class StartupController {
  public:
   StartupController(const SyncPrefs* sync_prefs,
                     base::Callback<bool()> can_start,
-                    base::Closure start_backend);
+                    base::Closure start_engine);
   ~StartupController();
 
   // Starts up sync if it is requested by the user and preconditions are met.
   // Returns true if these preconditions are met, although does not imply
-  // the backend was started.
+  // the engine was started.
   bool TryStart();
 
   // Same as TryStart() above, but bypasses deferred startup and the first setup
@@ -54,14 +53,14 @@ class StartupController {
   void SetSetupInProgress(bool setup_in_progress);
 
   bool IsSetupInProgress() const { return setup_in_progress_; }
-  base::Time start_backend_time() const { return start_backend_time_; }
-  std::string GetBackendInitializationStateString() const;
+  base::Time start_engine_time() const { return start_engine_time_; }
+  std::string GetEngineInitializationStateString() const;
 
   void OverrideFallbackTimeoutForTest(const base::TimeDelta& timeout);
 
  private:
-  enum StartUpDeferredOption { STARTUP_BACKEND_DEFERRED, STARTUP_IMMEDIATE };
-  // Returns true if all conditions to start the backend are met.
+  enum StartUpDeferredOption { STARTUP_DEFERRED, STARTUP_IMMEDIATE };
+  // Returns true if all conditions to start the engine are met.
   bool StartUp(StartUpDeferredOption deferred_option);
   void OnFallbackStartupTimerExpired();
 
@@ -78,7 +77,7 @@ class StartupController {
 
   // The time that StartUp() is called. This is used to calculate time spent
   // in the deferred state; that is, after StartUp and before invoking the
-  // start_backend_ callback.
+  // start_engine_ callback.
   base::Time start_up_time_;
 
   // If |true|, there is setup UI visible so we should not start downloading
@@ -91,15 +90,15 @@ class StartupController {
   const SyncPrefs* sync_prefs_;
 
   // A function that can be invoked repeatedly to determine whether sync can be
-  // started. |start_backend_| should not be invoked unless this returns true.
+  // started. |start_engine_| should not be invoked unless this returns true.
   base::Callback<bool()> can_start_;
 
   // The callback we invoke when it's time to call expensive
-  // startup routines for the sync backend.
-  base::Closure start_backend_;
+  // startup routines for the sync engine.
+  base::Closure start_engine_;
 
-  // The time at which we invoked the start_backend_ callback.
-  base::Time start_backend_time_;
+  // The time at which we invoked the start_engine_ callback.
+  base::Time start_engine_time_;
 
   base::TimeDelta fallback_timeout_;
 

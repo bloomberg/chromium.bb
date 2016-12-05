@@ -20,7 +20,7 @@
 
 namespace syncer {
 
-class BackendDataTypeConfigurer;
+class ModelTypeConfigurer;
 class SyncError;
 class SyncMergeResult;
 
@@ -102,7 +102,7 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // DataTypeManager before downloading initial data. Non-blocking types need to
   // pass activation context containing progress marker to sync backend before
   // initial download starts.
-  virtual void RegisterWithBackend(BackendDataTypeConfigurer* configurer) = 0;
+  virtual void RegisterWithBackend(ModelTypeConfigurer* configurer) = 0;
 
   // Will start a potentially asynchronous operation to perform the
   // model association. Once the model association is done the callback will
@@ -113,11 +113,11 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // one of the implementation specific methods provided by the |configurer|.
   // This is called (on UI thread) after the data type configuration has
   // completed successfully.
-  virtual void ActivateDataType(BackendDataTypeConfigurer* configurer) = 0;
+  virtual void ActivateDataType(ModelTypeConfigurer* configurer) = 0;
 
   // Called by DataTypeManager to deactivate the controlled data type.
   // See comments for ModelAssociationManager::OnSingleDataTypeWillStop.
-  virtual void DeactivateDataType(BackendDataTypeConfigurer* configurer) = 0;
+  virtual void DeactivateDataType(ModelTypeConfigurer* configurer) = 0;
 
   // Synchronously stops the data type. If StartAssociating has already been
   // called but is not done yet it will be aborted. Similarly if LoadModels

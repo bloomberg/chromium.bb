@@ -83,7 +83,7 @@ struct DoInitializeOptions {
 };
 
 // Helper struct to handle currying params to
-// SyncBackendHost::Core::DoConfigureSyncer.
+// SyncBackendHostCore::DoConfigureSyncer.
 struct DoConfigureSyncerTypes {
   DoConfigureSyncerTypes();
   DoConfigureSyncerTypes(const DoConfigureSyncerTypes& other);
@@ -156,17 +156,16 @@ class SyncBackendHostCore
 
   // Note:
   //
-  // The Do* methods are the various entry points from our
-  // SyncBackendHost.  They are all called on the sync thread to
-  // actually perform synchronous (and potentially blocking) syncapi
-  // operations.
+  // The Do* methods are the various entry points from our SyncBackendHostImpl.
+  // They are all called on the sync thread to actually perform synchronous (and
+  // potentially blocking) syncapi operations.
   //
   // Called to perform initialization of the syncapi on behalf of
-  // SyncBackendHost::Initialize.
+  // SyncEngine::Initialize.
   void DoInitialize(std::unique_ptr<DoInitializeOptions> options);
 
   // Called to perform credential update on behalf of
-  // SyncBackendHost::UpdateCredentials.
+  // SyncEngine::UpdateCredentials.
   void DoUpdateCredentials(const SyncCredentials& credentials);
 
   // Called to tell the syncapi to start syncing (generally after
@@ -189,7 +188,7 @@ class SyncBackendHostCore
   void DoRefreshTypes(ModelTypeSet types);
 
   // Invoked if we failed to download the necessary control types at startup.
-  // Invokes SyncBackendHost::HandleControlTypesDownloadRetry.
+  // Invokes SyncEngine::HandleControlTypesDownloadRetry.
   void OnControlTypesDownloadRetry();
 
   // Called to perform tasks which require the control data to be downloaded.
@@ -227,8 +226,8 @@ class SyncBackendHostCore
   void DisableProtocolEventForwarding();
 
   // Enables the forwarding of directory type debug counters to the
-  // SyncBackendHost.  Also requests that updates to all counters be
-  // emitted right away to initialize any new listeners' states.
+  // SyncEngineHost. Also requests that updates to all counters be emitted right
+  // away to initialize any new listeners' states.
   void EnableDirectoryTypeDebugInfoForwarding();
 
   // Disables forwarding of directory type debug counters.
@@ -275,7 +274,7 @@ class SyncBackendHostCore
   // Path of the folder that stores the sync data files.
   const base::FilePath sync_data_folder_path_;
 
-  // Our parent SyncBackendHost.
+  // Our parent SyncBackendHostImpl.
   WeakHandle<SyncBackendHostImpl> host_;
 
   // Our parent's registrar (not owned).  Non-null only between

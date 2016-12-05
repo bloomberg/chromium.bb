@@ -60,12 +60,12 @@ DataTypeStatusTable BuildStatusTable(ModelTypeSet crypto_errors,
   return status_table;
 }
 
-// Fake BackendDataTypeConfigurer implementation that simply stores away the
+// Fake ModelTypeConfigurer implementation that simply stores away the
 // callback passed into ConfigureDataTypes.
-class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
+class FakeModelTypeConfigurer : public ModelTypeConfigurer {
  public:
-  FakeBackendDataTypeConfigurer() : configure_call_count_(0) {}
-  ~FakeBackendDataTypeConfigurer() override {}
+  FakeModelTypeConfigurer() : configure_call_count_(0) {}
+  ~FakeModelTypeConfigurer() override {}
 
   ModelTypeSet ConfigureDataTypes(
       ConfigureReason reason,
@@ -218,7 +218,7 @@ class TestDataTypeManager : public DataTypeManagerImpl {
  public:
   TestDataTypeManager(
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      BackendDataTypeConfigurer* configurer,
+      ModelTypeConfigurer* configurer,
       const DataTypeController::TypeMap* controllers,
       const DataTypeEncryptionHandler* encryption_handler,
       DataTypeManagerObserver* observer)
@@ -331,7 +331,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
 
   base::MessageLoopForUI ui_loop_;
   DataTypeController::TypeMap controllers_;
-  FakeBackendDataTypeConfigurer configurer_;
+  FakeModelTypeConfigurer configurer_;
   FakeDataTypeManagerObserver observer_;
   std::unique_ptr<TestDataTypeManager> dtm_;
   FakeDataTypeEncryptionHandler encryption_handler_;
@@ -962,14 +962,14 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfiguration) {
 
   // Initially only PREFERENCES is configured.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
+      ModelTypeConfigurer::CONFIGURE_ACTIVE,
       AddControlTypesTo(ModelTypeSet(PREFERENCES)));
   Configure(dtm_.get(), ModelTypeSet(BOOKMARKS, PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // BOOKMARKS is configured after download of PREFERENCES finishes.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
+      ModelTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
@@ -994,13 +994,13 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationReconfigure) {
 
   // Reconfigure while associating PREFERENCES and downloading BOOKMARKS.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
+      ModelTypeConfigurer::CONFIGURE_ACTIVE,
       AddControlTypesTo(ModelTypeSet(PREFERENCES)));
   Configure(dtm_.get(), ModelTypeSet(BOOKMARKS, PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
+      ModelTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
@@ -1011,15 +1011,14 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationReconfigure) {
   // Reconfiguration starts after downloading and association of previous
   // types finish.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
+      ModelTypeConfigurer::CONFIGURE_ACTIVE,
       AddControlTypesTo(ModelTypeSet(PREFERENCES)));
   FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
-      ModelTypeSet(BOOKMARKS, APPS));
+      ModelTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS, APPS));
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
@@ -1045,14 +1044,14 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationStop) {
 
   // Initially only PREFERENCES is configured.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
+      ModelTypeConfigurer::CONFIGURE_ACTIVE,
       AddControlTypesTo(ModelTypeSet(PREFERENCES)));
   Configure(dtm_.get(), ModelTypeSet(BOOKMARKS, PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // BOOKMARKS is configured after download of PREFERENCES finishes.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
+      ModelTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
@@ -1085,14 +1084,14 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationDownloadError) {
 
   // Initially only PREFERENCES is configured.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
+      ModelTypeConfigurer::CONFIGURE_ACTIVE,
       AddControlTypesTo(ModelTypeSet(PREFERENCES)));
   Configure(dtm_.get(), ModelTypeSet(BOOKMARKS, PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // BOOKMARKS is configured after download of PREFERENCES finishes.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
+      ModelTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
@@ -1111,7 +1110,7 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationDownloadError) {
   // Finish association of PREFERENCES. This will trigger a reconfiguration to
   // disable bookmarks.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
+      ModelTypeConfigurer::CONFIGURE_ACTIVE,
       AddControlTypesTo(ModelTypeSet(PREFERENCES)));
   GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
@@ -1135,14 +1134,14 @@ TEST_F(SyncDataTypeManagerImplTest, HighPriorityAssociationFailure) {
 
   // Initially only PREFERENCES is configured.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
+      ModelTypeConfigurer::CONFIGURE_ACTIVE,
       AddControlTypesTo(ModelTypeSet(PREFERENCES)));
   Configure(dtm_.get(), ModelTypeSet(BOOKMARKS, PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // BOOKMARKS is configured after download of PREFERENCES finishes.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
+      ModelTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
@@ -1160,10 +1159,10 @@ TEST_F(SyncDataTypeManagerImplTest, HighPriorityAssociationFailure) {
   // Reconfigure without PREFERENCES after the BOOKMARKS download completes,
   // then reconfigure with BOOKMARKS.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, ControlTypes());
+      ModelTypeConfigurer::CONFIGURE_ACTIVE, ControlTypes());
   FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
+      ModelTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
   FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
 
   // Reconfigure with BOOKMARKS.
@@ -1192,14 +1191,14 @@ TEST_F(SyncDataTypeManagerImplTest, LowPriorityAssociationFailure) {
 
   // Initially only PREFERENCES is configured.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
+      ModelTypeConfigurer::CONFIGURE_ACTIVE,
       AddControlTypesTo(ModelTypeSet(PREFERENCES)));
   Configure(dtm_.get(), ModelTypeSet(BOOKMARKS, PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // BOOKMARKS is configured after download of PREFERENCES finishes.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
+      ModelTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet(BOOKMARKS));
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
@@ -1217,7 +1216,7 @@ TEST_F(SyncDataTypeManagerImplTest, LowPriorityAssociationFailure) {
   // Make BOOKMARKS association fail, which triggers reconfigure with only
   // PREFERENCES.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
+      ModelTypeConfigurer::CONFIGURE_ACTIVE,
       AddControlTypesTo(ModelTypeSet(PREFERENCES)));
   GetController(BOOKMARKS)->FinishStart(DataTypeController::ASSOCIATION_FAILED);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
@@ -1225,7 +1224,7 @@ TEST_F(SyncDataTypeManagerImplTest, LowPriorityAssociationFailure) {
 
   // Finish configuration with only PREFERENCES.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet());
+      ModelTypeConfigurer::CONFIGURE_ACTIVE, ModelTypeSet());
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
@@ -1245,7 +1244,7 @@ TEST_F(SyncDataTypeManagerImplTest, FilterDesiredTypes) {
   expected_types.Put(BOOKMARKS);
   // APPS is filtered out because there's no controller for it.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, expected_types);
+      ModelTypeConfigurer::CONFIGURE_ACTIVE, expected_types);
   Configure(dtm_.get(), types);
   FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
@@ -1461,8 +1460,8 @@ TEST_F(SyncDataTypeManagerImplTest, AllLowPriorityTypesReady) {
             GetController(BOOKMARKS)->state());
 
   // Because Bookmarks are a ready type, once Preference finishes, Bookmarks
-  // can start associating immediately (even before the
-  // BackendDataTypeConfigurer calls back).
+  // can start associating immediately (even before the ModelTypeConfigurer
+  // calls back).
   GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeController::ASSOCIATING, GetController(BOOKMARKS)->state());
 
@@ -1590,7 +1589,7 @@ TEST_F(SyncDataTypeManagerImplTest, CatchUpTypeAddedToConfigureClean) {
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_CLEAN,
+      ModelTypeConfigurer::CONFIGURE_CLEAN,
       AddControlTypesTo(ModelTypeSet(BOOKMARKS, PASSWORDS)));
 
   dtm_->Configure(ModelTypeSet(BOOKMARKS, PASSWORDS),
@@ -1625,7 +1624,7 @@ TEST_F(SyncDataTypeManagerImplTest, CatchUpMultipleConfigureCalls) {
 
   // Configure (catch up) with one type.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_CLEAN,
+      ModelTypeConfigurer::CONFIGURE_CLEAN,
       AddControlTypesTo(ModelTypeSet(BOOKMARKS)));
   dtm_->Configure(ModelTypeSet(BOOKMARKS), CONFIGURE_REASON_CATCH_UP);
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
@@ -1633,7 +1632,7 @@ TEST_F(SyncDataTypeManagerImplTest, CatchUpMultipleConfigureCalls) {
   // Configure with both types before the first one completes. Both types should
   // end up in CONFIGURE_CLEAN.
   configurer_.set_expected_configure_types(
-      BackendDataTypeConfigurer::CONFIGURE_CLEAN,
+      ModelTypeConfigurer::CONFIGURE_CLEAN,
       AddControlTypesTo(ModelTypeSet(BOOKMARKS, PASSWORDS)));
   dtm_->Configure(ModelTypeSet(BOOKMARKS, PASSWORDS),
                   CONFIGURE_REASON_RECONFIGURATION);

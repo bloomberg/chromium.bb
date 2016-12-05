@@ -30,7 +30,7 @@ class FakeDataTypeController : public DirectoryDataTypeController {
   // DirectoryDataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
-  void RegisterWithBackend(BackendDataTypeConfigurer* configurer) override;
+  void RegisterWithBackend(ModelTypeConfigurer* configurer) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
   std::string name() const override;

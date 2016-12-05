@@ -37,16 +37,16 @@
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
-#include "components/sync/driver/glue/sync_backend_host.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_client.h"
-#include "components/sync/driver/sync_frontend.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_stopped_reporter.h"
 #include "components/sync/engine/events/protocol_event_observer.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/net/network_time_update_callback.h"
 #include "components/sync/engine/shutdown_reason.h"
+#include "components/sync/engine/sync_engine.h"
+#include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/js/sync_js_controller.h"
 #include "components/sync/syncable/user_share.h"
@@ -172,7 +172,7 @@ namespace browser_sync {
 //   setup-in-progress handles, CanConfigureDataTypes() will return true and
 //   datatype configuration can begin.
 class ProfileSyncService : public syncer::SyncService,
-                           public syncer::SyncFrontend,
+                           public syncer::SyncEngineHost,
                            public syncer::SyncPrefObserver,
                            public syncer::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
@@ -182,7 +182,7 @@ class ProfileSyncService : public syncer::SyncService,
                            public SigninManagerBase::Observer,
                            public GaiaCookieManagerService::Observer {
  public:
-  typedef syncer::SyncBackendHost::Status Status;
+  typedef syncer::SyncEngine::Status Status;
   typedef base::Callback<bool(void)> PlatformSyncAllowedProvider;
 
   enum SyncEventCodes {
@@ -358,7 +358,7 @@ class ProfileSyncService : public syncer::SyncService,
   // Called when asynchronous session restore has completed.
   void OnSessionRestoreComplete();
 
-  // SyncFrontend implementation.
+  // SyncEngineHost implementation.
   void OnBackendInitialized(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
@@ -642,7 +642,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Helper for OnUnrecoverableError.
   // TODO(tim): Use an enum for |delete_sync_database| here, in ShutdownImpl,
-  // and in SyncBackendHost::Shutdown.
+  // and in SyncEngine::Shutdown.
   void OnUnrecoverableErrorImpl(const tracked_objects::Location& from_here,
                                 const std::string& message,
                                 bool delete_sync_database);
@@ -775,7 +775,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Our asynchronous backend to communicate with sync components living on
   // other threads.
-  std::unique_ptr<syncer::SyncBackendHost> backend_;
+  std::unique_ptr<syncer::SyncEngine> backend_;
 
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for encryption, decryption with a cached passphrase, or
@@ -829,7 +829,7 @@ class ProfileSyncService : public syncer::SyncService,
   // List of available data type controllers.
   syncer::DataTypeController::TypeMap data_type_controllers_;
 
-  // Whether the SyncBackendHost has been initialized.
+  // Whether the SyncEngine has been initialized.
   bool backend_initialized_;
 
   // Set when sync receives DISABLED_BY_ADMIN error from server. Prevents

@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/invalidation/impl/invalidator_storage.h"
@@ -26,7 +27,6 @@
 #include "components/sync/base/test_unrecoverable_error_handler.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/driver/fake_sync_client.h"
-#include "components/sync/driver/sync_frontend.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/update_counters.h"
@@ -35,6 +35,7 @@
 #include "components/sync/engine/net/http_bridge_network_resources.h"
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync/engine/passive_model_worker.h"
+#include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/test/callback_counter.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -70,9 +71,9 @@ void QuitMessageLoop() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-class MockSyncFrontend : public SyncFrontend {
+class MockSyncEngineHost : public SyncEngineHost {
  public:
-  virtual ~MockSyncFrontend() {}
+  virtual ~MockSyncEngineHost() {}
 
   MOCK_METHOD4(OnBackendInitialized,
                void(const WeakHandle<JsBackend>&,
@@ -152,12 +153,12 @@ class BackendSyncClient : public FakeSyncClient {
   }
 };
 
-class SyncBackendHostTest : public testing::Test {
+class SyncEngineTest : public testing::Test {
  protected:
-  SyncBackendHostTest()
+  SyncEngineTest()
       : sync_thread_("SyncThreadForTest"), fake_manager_(nullptr) {}
 
-  ~SyncBackendHostTest() override {}
+  ~SyncEngineTest() override {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -204,18 +205,17 @@ class SyncBackendHostTest : public testing::Test {
 
   // Synchronously initializes the backend.
   void InitializeBackend(bool expect_success) {
-    EXPECT_CALL(mock_frontend_, OnBackendInitialized(_, _, _, expect_success))
+    EXPECT_CALL(mock_host_, OnBackendInitialized(_, _, _, expect_success))
         .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
-    SyncBackendHost::HttpPostProviderFactoryGetter
+    SyncEngine::HttpPostProviderFactoryGetter
         http_post_provider_factory_getter =
             base::Bind(&NetworkResources::GetHttpPostProviderFactory,
                        base::Unretained(network_resources_.get()), nullptr,
                        base::Bind(&EmptyNetworkTimeUpdate));
     backend_->Initialize(
-        &mock_frontend_, sync_thread_.task_runner(),
-        WeakHandle<JsEventHandler>(), GURL(std::string()), std::string(),
-        credentials_, true, false, base::FilePath(),
-        std::move(fake_manager_factory_),
+        &mock_host_, sync_thread_.task_runner(), WeakHandle<JsEventHandler>(),
+        GURL(std::string()), std::string(), credentials_, true, false,
+        base::FilePath(), std::move(fake_manager_factory_),
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
         base::Closure(), http_post_provider_factory_getter,
         std::move(saved_nigori_state_));
@@ -233,23 +233,19 @@ class SyncBackendHostTest : public testing::Test {
   ModelTypeSet ConfigureDataTypes(ModelTypeSet types_to_add,
                                   ModelTypeSet types_to_remove,
                                   ModelTypeSet types_to_unapply) {
-    BackendDataTypeConfigurer::DataTypeConfigStateMap config_state_map;
-    BackendDataTypeConfigurer::SetDataTypesState(
-        BackendDataTypeConfigurer::CONFIGURE_ACTIVE, types_to_add,
-        &config_state_map);
-    BackendDataTypeConfigurer::SetDataTypesState(
-        BackendDataTypeConfigurer::DISABLED, types_to_remove,
-        &config_state_map);
-    BackendDataTypeConfigurer::SetDataTypesState(
-        BackendDataTypeConfigurer::UNREADY, types_to_unapply,
-        &config_state_map);
+    ModelTypeConfigurer::DataTypeConfigStateMap config_state_map;
+    ModelTypeConfigurer::SetDataTypesState(
+        ModelTypeConfigurer::CONFIGURE_ACTIVE, types_to_add, &config_state_map);
+    ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::DISABLED,
+                                           types_to_remove, &config_state_map);
+    ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::UNREADY,
+                                           types_to_unapply, &config_state_map);
 
     types_to_add.PutAll(ControlTypes());
     ModelTypeSet ready_types = backend_->ConfigureDataTypes(
         CONFIGURE_REASON_RECONFIGURATION, config_state_map,
-        base::Bind(&SyncBackendHostTest::DownloadReady, base::Unretained(this)),
-        base::Bind(&SyncBackendHostTest::OnDownloadRetry,
-                   base::Unretained(this)));
+        base::Bind(&SyncEngineTest::DownloadReady, base::Unretained(this)),
+        base::Bind(&SyncEngineTest::OnDownloadRetry, base::Unretained(this)));
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
@@ -268,7 +264,7 @@ class SyncBackendHostTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   base::Thread sync_thread_;
-  StrictMock<MockSyncFrontend> mock_frontend_;
+  StrictMock<MockSyncEngineHost> mock_host_;
   SyncCredentials credentials_;
   BackendSyncClient sync_client_;
   TestUnrecoverableErrorHandler test_unrecoverable_error_handler_;
@@ -283,7 +279,7 @@ class SyncBackendHostTest : public testing::Test {
 
 // Test basic initialization with no initial types (first time initialization).
 // Only the nigori should be configured.
-TEST_F(SyncBackendHostTest, InitShutdown) {
+TEST_F(SyncEngineTest, InitShutdown) {
   InitializeBackend(true);
   EXPECT_EQ(ControlTypes(), fake_manager_->GetAndResetDownloadedTypes());
   EXPECT_EQ(ControlTypes(), fake_manager_->InitialSyncEndedTypes());
@@ -294,7 +290,7 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
 
 // Test first time sync scenario. All types should be properly configured.
 
-TEST_F(SyncBackendHostTest, FirstTimeSync) {
+TEST_F(SyncEngineTest, FirstTimeSync) {
   InitializeBackend(true);
   EXPECT_EQ(ControlTypes(), fake_manager_->GetAndResetDownloadedTypes());
   EXPECT_EQ(ControlTypes(), fake_manager_->InitialSyncEndedTypes());
@@ -318,7 +314,7 @@ TEST_F(SyncBackendHostTest, FirstTimeSync) {
 
 // Test the restart after setting up sync scenario. No enabled types should be
 // downloaded or cleaned.
-TEST_F(SyncBackendHostTest, Restart) {
+TEST_F(SyncEngineTest, Restart) {
   sync_prefs_->SetFirstSetupComplete();
   ModelTypeSet all_but_nigori = enabled_types_;
   fake_manager_factory_->set_progress_marker_types(enabled_types_);
@@ -350,7 +346,7 @@ TEST_F(SyncBackendHostTest, Restart) {
 
 // Test a sync restart scenario where some types had never finished configuring.
 // The partial types should be purged, then reconfigured properly.
-TEST_F(SyncBackendHostTest, PartialTypes) {
+TEST_F(SyncEngineTest, PartialTypes) {
   sync_prefs_->SetFirstSetupComplete();
   // Set sync manager behavior before passing it down. All types have progress
   // markers, but nigori and bookmarks are missing initial sync ended.
@@ -388,7 +384,7 @@ TEST_F(SyncBackendHostTest, PartialTypes) {
 
 // Test the behavior when we lose the sync db. Although we already have types
 // enabled, we should re-download all of them because we lost their data.
-TEST_F(SyncBackendHostTest, LostDB) {
+TEST_F(SyncEngineTest, LostDB) {
   sync_prefs_->SetFirstSetupComplete();
   // Initialization should fetch the Nigori node.  Everything else should be
   // left untouched.
@@ -423,7 +419,7 @@ TEST_F(SyncBackendHostTest, LostDB) {
           .Empty());
 }
 
-TEST_F(SyncBackendHostTest, DisableTypes) {
+TEST_F(SyncEngineTest, DisableTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetCleanedTypes();
@@ -462,7 +458,7 @@ TEST_F(SyncBackendHostTest, DisableTypes) {
           .Empty());
 }
 
-TEST_F(SyncBackendHostTest, AddTypes) {
+TEST_F(SyncEngineTest, AddTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetCleanedTypes();
@@ -503,7 +499,7 @@ TEST_F(SyncBackendHostTest, AddTypes) {
 }
 
 // And and disable in the same configuration.
-TEST_F(SyncBackendHostTest, AddDisableTypes) {
+TEST_F(SyncEngineTest, AddDisableTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetCleanedTypes();
@@ -546,7 +542,7 @@ TEST_F(SyncBackendHostTest, AddDisableTypes) {
 
 // Test restarting the browser to newly supported datatypes. The new datatypes
 // should be downloaded on the configuration after backend initialization.
-TEST_F(SyncBackendHostTest, NewlySupportedTypes) {
+TEST_F(SyncEngineTest, NewlySupportedTypes) {
   sync_prefs_->SetFirstSetupComplete();
   // Set sync manager behavior before passing it down. All types have progress
   // markers and initial sync ended except the new types.
@@ -586,7 +582,7 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypes) {
 // Test the newly supported types scenario, but with the presence of partial
 // types as well. Both partial and newly supported types should be downloaded
 // the configuration.
-TEST_F(SyncBackendHostTest, NewlySupportedTypesWithPartialTypes) {
+TEST_F(SyncEngineTest, NewlySupportedTypesWithPartialTypes) {
   sync_prefs_->SetFirstSetupComplete();
   // Set sync manager behavior before passing it down. All types have progress
   // markers and initial sync ended except the new types.
@@ -629,7 +625,7 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypesWithPartialTypes) {
 
 // Verify that downloading control types only downloads those types that do
 // not have initial sync ended set.
-TEST_F(SyncBackendHostTest, DownloadControlTypes) {
+TEST_F(SyncEngineTest, DownloadControlTypes) {
   sync_prefs_->SetFirstSetupComplete();
   // Set sync manager behavior before passing it down. Experiments and device
   // info are new types without progress markers or initial sync ended, while
@@ -658,13 +654,13 @@ TEST_F(SyncBackendHostTest, DownloadControlTypes) {
 // The failure is "silent" in the sense that the GetUpdates request appears to
 // be successful, but it returned no results.  This means that the usual
 // download retry logic will not be invoked.
-TEST_F(SyncBackendHostTest, SilentlyFailToDownloadControlTypes) {
+TEST_F(SyncEngineTest, SilentlyFailToDownloadControlTypes) {
   fake_manager_factory_->set_configure_fail_types(ModelTypeSet::All());
   InitializeBackend(false);
 }
 
 // Test that local refresh requests are delivered to sync.
-TEST_F(SyncBackendHostTest, ForwardLocalRefreshRequest) {
+TEST_F(SyncEngineTest, ForwardLocalRefreshRequest) {
   InitializeBackend(true);
 
   ModelTypeSet set1 = ModelTypeSet::All();
@@ -679,14 +675,14 @@ TEST_F(SyncBackendHostTest, ForwardLocalRefreshRequest) {
 }
 
 // Test that configuration on signin sends the proper GU source.
-TEST_F(SyncBackendHostTest, DownloadControlTypesNewClient) {
+TEST_F(SyncEngineTest, DownloadControlTypesNewClient) {
   InitializeBackend(true);
   EXPECT_EQ(CONFIGURE_REASON_NEW_CLIENT,
             fake_manager_->GetAndResetConfigureReason());
 }
 
 // Test that configuration on restart sends the proper GU source.
-TEST_F(SyncBackendHostTest, DownloadControlTypesRestart) {
+TEST_F(SyncEngineTest, DownloadControlTypesRestart) {
   sync_prefs_->SetFirstSetupComplete();
   fake_manager_factory_->set_progress_marker_types(enabled_types_);
   fake_manager_factory_->set_initial_sync_ended_types(enabled_types_);
@@ -697,7 +693,7 @@ TEST_F(SyncBackendHostTest, DownloadControlTypesRestart) {
 
 // It is SyncBackendHostCore responsibility to cleanup Sync Data folder if sync
 // setup hasn't been completed. This test ensures that cleanup happens.
-TEST_F(SyncBackendHostTest, TestStartupWithOldSyncData) {
+TEST_F(SyncEngineTest, TestStartupWithOldSyncData) {
   const char* nonsense = "slon";
   base::FilePath temp_directory =
       temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir));
@@ -712,9 +708,9 @@ TEST_F(SyncBackendHostTest, TestStartupWithOldSyncData) {
 
 // If bookmarks encounter an error that results in disabling without purging
 // (such as when the type is unready), and then is explicitly disabled, the
-// SyncBackendHost needs to tell the manager to purge the type, even though
+// SyncEngine needs to tell the manager to purge the type, even though
 // it's already disabled (crbug.com/386778).
-TEST_F(SyncBackendHostTest, DisableThenPurgeType) {
+TEST_F(SyncEngineTest, DisableThenPurgeType) {
   ModelTypeSet error_types(BOOKMARKS);
 
   InitializeBackend(true);
@@ -747,7 +743,7 @@ TEST_F(SyncBackendHostTest, DisableThenPurgeType) {
 
 // Test that a call to ClearServerData is forwarded to the underlying
 // SyncManager.
-TEST_F(SyncBackendHostTest, ClearServerDataCallsAreForwarded) {
+TEST_F(SyncEngineTest, ClearServerDataCallsAreForwarded) {
   InitializeBackend(true);
   CallbackCounter callback_counter;
   backend_->ClearServerData(base::Bind(&CallbackCounter::Callback,
@@ -758,7 +754,7 @@ TEST_F(SyncBackendHostTest, ClearServerDataCallsAreForwarded) {
 
 // Ensure that redundant invalidations are ignored and that the most recent
 // set of invalidation version is persisted across restarts.
-TEST_F(SyncBackendHostTest, IgnoreOldInvalidations) {
+TEST_F(SyncEngineTest, IgnoreOldInvalidations) {
   // Set up some old persisted invalidations.
   std::map<ModelType, int64_t> invalidation_versions;
   invalidation_versions[BOOKMARKS] = 20;
@@ -819,7 +815,7 @@ TEST_F(SyncBackendHostTest, IgnoreOldInvalidations) {
 // Tests that SyncBackendHostImpl retains ModelTypeConnector after call to
 // StopSyncingForShutdown. This is needed for datatype deactivation during
 // DataTypeManager shutdown.
-TEST_F(SyncBackendHostTest, ModelTypeConnectorValidDuringShutdown) {
+TEST_F(SyncEngineTest, ModelTypeConnectorValidDuringShutdown) {
   InitializeBackend(true);
   backend_->StopSyncingForShutdown();
   // Verify that call to DeactivateNonBlockingDataType doesn't assert.

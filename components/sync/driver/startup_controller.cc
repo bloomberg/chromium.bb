@@ -22,7 +22,7 @@ namespace {
 const int kDeferredInitFallbackSeconds = 10;
 
 // Enum (for UMA, primarily) defining different events that cause us to
-// exit the "deferred" state of initialization and invoke start_backend.
+// exit the "deferred" state of initialization and invoke start_engine.
 enum DeferredInitTrigger {
   // We have received a signal from a SyncableService requesting that sync
   // starts as soon as possible.
@@ -36,13 +36,13 @@ enum DeferredInitTrigger {
 
 StartupController::StartupController(const SyncPrefs* sync_prefs,
                                      base::Callback<bool()> can_start,
-                                     base::Closure start_backend)
+                                     base::Closure start_engine)
     : bypass_setup_complete_(false),
       received_start_request_(false),
       setup_in_progress_(false),
       sync_prefs_(sync_prefs),
       can_start_(can_start),
-      start_backend_(start_backend),
+      start_engine_(start_engine),
       fallback_timeout_(
           base::TimeDelta::FromSeconds(kDeferredInitFallbackSeconds)),
       weak_factory_(this) {
@@ -67,7 +67,7 @@ void StartupController::Reset(const ModelTypeSet registered_types) {
   received_start_request_ = false;
   bypass_setup_complete_ = false;
   start_up_time_ = base::Time();
-  start_backend_time_ = base::Time();
+  start_engine_time_ = base::Time();
   // Don't let previous timers affect us post-reset.
   weak_factory_.InvalidateWeakPtrs();
   registered_types_ = registered_types;
@@ -85,7 +85,7 @@ bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
   if (first_start)
     start_up_time_ = base::Time::Now();
 
-  if (deferred_option == STARTUP_BACKEND_DEFERRED &&
+  if (deferred_option == STARTUP_DEFERRED &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncDisableDeferredStartup) &&
       sync_prefs_->GetPreferredDataTypes(registered_types_).Has(SESSIONS)) {
@@ -99,9 +99,9 @@ bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
     return false;
   }
 
-  if (start_backend_time_.is_null()) {
-    start_backend_time_ = base::Time::Now();
-    start_backend_.Run();
+  if (start_engine_time_.is_null()) {
+    start_engine_time_ = base::Time::Now();
+    start_engine_.Run();
   }
 
   return true;
@@ -119,15 +119,15 @@ bool StartupController::TryStart() {
   // For performance reasons, defer the heavy lifting for sync init unless:
   //
   // - a datatype has requested an immediate start of sync, or
-  // - sync needs to start up the backend immediately to provide control state
+  // - sync needs to start up the engine immediately to provide control state
   //   and encryption information to the UI.
-  // Do not start up the sync backend if setup has not completed and isn't
+  // Do not start up the sync engine if setup has not completed and isn't
   // in progress, unless told to otherwise.
   if (setup_in_progress_) {
     return StartUp(STARTUP_IMMEDIATE);
   } else if (sync_prefs_->IsFirstSetupComplete() || bypass_setup_complete_) {
     return StartUp(received_start_request_ ? STARTUP_IMMEDIATE
-                                           : STARTUP_BACKEND_DEFERRED);
+                                           : STARTUP_DEFERRED);
   } else {
     return false;
   }
@@ -151,10 +151,10 @@ void StartupController::OnFallbackStartupTimerExpired() {
   DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSyncDisableDeferredStartup));
 
-  if (!start_backend_time_.is_null())
+  if (!start_engine_time_.is_null())
     return;
 
-  DVLOG(2) << "Sync deferred init fallback timer expired, starting backend.";
+  DVLOG(2) << "Sync deferred init fallback timer expired, starting engine.";
   RecordTimeDeferred();
   UMA_HISTOGRAM_ENUMERATION("Sync.Startup.DeferredInitTrigger",
                             TRIGGER_FALLBACK_TIMER, MAX_TRIGGER_VALUE);
@@ -162,8 +162,8 @@ void StartupController::OnFallbackStartupTimerExpired() {
   TryStart();
 }
 
-std::string StartupController::GetBackendInitializationStateString() const {
-  if (!start_backend_time_.is_null())
+std::string StartupController::GetEngineInitializationStateString() const {
+  if (!start_engine_time_.is_null())
     return "Started";
   else if (!start_up_time_.is_null())
     return "Deferred";
@@ -179,7 +179,7 @@ void StartupController::OnDataTypeRequestsSyncStartup(ModelType type) {
     return;
   }
 
-  if (!start_backend_time_.is_null())
+  if (!start_engine_time_.is_null())
     return;
 
   DVLOG(2) << "Data type requesting sync startup: " << ModelTypeToString(type);

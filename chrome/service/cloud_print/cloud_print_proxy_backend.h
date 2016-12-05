@@ -47,7 +47,7 @@ class CloudPrintProxyFrontend {
   virtual void OnXmppPingUpdated(int ping_timeout) = 0;
 
  protected:
-  // Don't delete through SyncFrontend interface.
+  // Don't delete through CloudPrintProxyFrontend interface.
   virtual ~CloudPrintProxyFrontend() {}
 
  private:
@@ -79,7 +79,8 @@ class CloudPrintProxyBackend {
   bool PostCoreTask(const tracked_objects::Location& from_here,
                     const base::Closure& task);
 
-  // The real guts of SyncBackendHost, to keep the public client API clean.
+  // The real guts of CloudPrintProxyBackend, to keep the public client API
+  // clean.
   class Core;
 
   // A thread dedicated for use to perform initialization and authentication.
@@ -90,7 +91,7 @@ class CloudPrintProxyBackend {
   scoped_refptr<Core> core_;
 
   // A reference to the TaskRunner used to construct |this|, so we know how to
-  // safely talk back to the SyncFrontend.
+  // safely talk back to the CloudPrintProxyFrontend.
   const scoped_refptr<base::SingleThreadTaskRunner> frontend_task_runner_;
 
   // The frontend which is responsible for displaying UI and updating Prefs.

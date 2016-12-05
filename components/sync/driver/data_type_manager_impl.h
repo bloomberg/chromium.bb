@@ -17,8 +17,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/sync/base/weak_handle.h"
-#include "components/sync/driver/backend_data_type_configurer.h"
 #include "components/sync/driver/model_association_manager.h"
+#include "components/sync/engine/model_type_configurer.h"
 
 namespace syncer {
 
@@ -39,7 +39,7 @@ class DataTypeManagerImpl : public DataTypeManager,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const DataTypeController::TypeMap* controllers,
       const DataTypeEncryptionHandler* encryption_handler,
-      BackendDataTypeConfigurer* configurer,
+      ModelTypeConfigurer* configurer,
       DataTypeManagerObserver* observer);
   ~DataTypeManagerImpl() override;
 
@@ -122,7 +122,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Calls data type controllers of requested types to register with backend.
   void RegisterTypesWithBackend();
 
-  BackendDataTypeConfigurer::DataTypeConfigStateMap BuildDataTypeConfigStateMap(
+  ModelTypeConfigurer::DataTypeConfigStateMap BuildDataTypeConfigStateMap(
       const ModelTypeSet& types_being_configured) const;
 
   // Start download of next set of types in |download_types_queue_| (if
@@ -141,7 +141,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Returns the currently enabled types.
   ModelTypeSet GetEnabledTypes() const;
 
-  BackendDataTypeConfigurer* configurer_;
+  ModelTypeConfigurer* configurer_;
   // Map of all data type controllers that are available for sync.
   // This list is determined at startup by various command line flags.
   const DataTypeController::TypeMap* controllers_;

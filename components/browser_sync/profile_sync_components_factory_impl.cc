@@ -30,7 +30,6 @@
 #include "components/sync/device_info/device_info_data_type_controller.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/data_type_manager_impl.h"
-#include "components/sync/driver/glue/sync_backend_host.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/non_ui_data_type_controller.h"
@@ -39,6 +38,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/attachments/attachment_downloader.h"
 #include "components/sync/engine/attachments/attachment_uploader.h"
+#include "components/sync/engine/sync_engine.h"
 #include "components/sync/model/attachments/attachment_service.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
@@ -301,14 +301,13 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
         debug_info_listener,
     const DataTypeController::TypeMap* controllers,
     const syncer::DataTypeEncryptionHandler* encryption_handler,
-    syncer::SyncBackendHost* backend,
+    syncer::SyncEngine* engine,
     DataTypeManagerObserver* observer) {
   return new DataTypeManagerImpl(debug_info_listener, controllers,
-                                 encryption_handler, backend, observer);
+                                 encryption_handler, engine, observer);
 }
 
-syncer::SyncBackendHost*
-ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
+syncer::SyncEngine* ProfileSyncComponentsFactoryImpl::CreateSyncEngine(
     const std::string& name,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,

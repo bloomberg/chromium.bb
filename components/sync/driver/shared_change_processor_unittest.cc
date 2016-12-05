@@ -47,15 +47,14 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const DataTypeController::TypeMap* controllers,
       const DataTypeEncryptionHandler* encryption_handler,
-      SyncBackendHost* backend,
+      SyncEngine* engine,
       DataTypeManagerObserver* observer) override {
     return nullptr;
   }
-  SyncBackendHost* CreateSyncBackendHost(
-      const std::string& name,
-      invalidation::InvalidationService* invalidator,
-      const base::WeakPtr<SyncPrefs>& sync_prefs,
-      const base::FilePath& sync_folder) override {
+  SyncEngine* CreateSyncEngine(const std::string& name,
+                               invalidation::InvalidationService* invalidator,
+                               const base::WeakPtr<SyncPrefs>& sync_prefs,
+                               const base::FilePath& sync_folder) override {
     return nullptr;
   }
   std::unique_ptr<LocalDeviceInfoProvider> CreateLocalDeviceInfoProvider()
@@ -82,7 +81,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
  public:
   SyncSharedChangeProcessorTest()
       : FakeSyncClient(&factory_),
-        backend_thread_("dbthread"),
+        model_thread_("dbthread"),
         did_connect_(false),
         has_attachment_service_(false) {}
 
@@ -100,15 +99,15 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   void SetUp() override {
     test_user_share_.SetUp();
     shared_change_processor_ = new SharedChangeProcessor(AUTOFILL);
-    ASSERT_TRUE(backend_thread_.Start());
-    ASSERT_TRUE(backend_thread_.task_runner()->PostTask(
+    ASSERT_TRUE(model_thread_.Start());
+    ASSERT_TRUE(model_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::SetUpDBSyncableService,
                    base::Unretained(this))));
   }
 
   void TearDown() override {
-    EXPECT_TRUE(backend_thread_.task_runner()->PostTask(
+    EXPECT_TRUE(model_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::TearDownDBSyncableService,
                    base::Unretained(this))));
@@ -119,26 +118,26 @@ class SyncSharedChangeProcessorTest : public testing::Test,
     // TODO(akalin): Write deterministic tests for the destruction of
     // |shared_change_processor_| on the UI and DB threads.
     shared_change_processor_ = nullptr;
-    backend_thread_.Stop();
+    model_thread_.Stop();
 
     // Note: Stop() joins the threads, and that barrier prevents this read
     // from being moved (e.g by compiler optimization) in such a way that it
     // would race with the write in ConnectOnDBThread (because by this time,
-    // everything that could have run on |backend_thread_| has done so).
+    // everything that could have run on |model_thread_| has done so).
     ASSERT_TRUE(did_connect_);
     test_user_share_.TearDown();
   }
 
   // Connect |shared_change_processor_| on the DB thread.
   void Connect() {
-    EXPECT_TRUE(backend_thread_.task_runner()->PostTask(
+    EXPECT_TRUE(model_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::ConnectOnDBThread,
                    base::Unretained(this), shared_change_processor_)));
   }
 
   void SetAttachmentStore() {
-    EXPECT_TRUE(backend_thread_.task_runner()->PostTask(
+    EXPECT_TRUE(model_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::SetAttachmentStoreOnDBThread,
                    base::Unretained(this))));
@@ -147,7 +146,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   bool HasAttachmentService() {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
-    EXPECT_TRUE(backend_thread_.task_runner()->PostTask(
+    EXPECT_TRUE(model_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(
             &SyncSharedChangeProcessorTest::CheckAttachmentServiceOnDBThread,
@@ -159,20 +158,20 @@ class SyncSharedChangeProcessorTest : public testing::Test,
  private:
   // Used by SetUp().
   void SetUpDBSyncableService() {
-    DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
+    DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(!db_syncable_service_.get());
     db_syncable_service_ = base::MakeUnique<FakeSyncableService>();
   }
 
   // Used by TearDown().
   void TearDownDBSyncableService() {
-    DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
+    DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(db_syncable_service_.get());
     db_syncable_service_.reset();
   }
 
   void SetAttachmentStoreOnDBThread() {
-    DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
+    DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(db_syncable_service_.get());
     db_syncable_service_->set_attachment_store(
         AttachmentStore::CreateInMemoryStore());
@@ -183,7 +182,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   // (in TearDown()).
   void ConnectOnDBThread(
       const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
-    DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
+    DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
     EXPECT_TRUE(shared_change_processor->Connect(
         this, &processor_factory_, test_user_share_.user_share(),
         base::MakeUnique<DataTypeErrorHandlerMock>(),
@@ -192,14 +191,14 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   }
 
   void CheckAttachmentServiceOnDBThread(base::WaitableEvent* event) {
-    DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
+    DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(db_syncable_service_.get());
     has_attachment_service_ = !!db_syncable_service_->attachment_service();
     event->Signal();
   }
 
   base::MessageLoop frontend_loop_;
-  base::Thread backend_thread_;
+  base::Thread model_thread_;
   TestUserShare test_user_share_;
   TestSyncApiComponentFactory factory_;
 

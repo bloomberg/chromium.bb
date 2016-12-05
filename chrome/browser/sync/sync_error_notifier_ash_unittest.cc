@@ -192,7 +192,7 @@ TEST_F(SyncErrorNotifierTest, MAYBE_PassphraseNotification) {
   ASSERT_FALSE(notification_ui_manager_->FindById(
       kNotificationId, NotificationUIManager::GetProfileID(profile_)));
 
-  syncer::SyncBackendHost::Status status;
+  syncer::SyncEngine::Status status;
   EXPECT_CALL(*service_, QueryDetailedSyncStatus(_))
               .WillRepeatedly(Return(false));
 

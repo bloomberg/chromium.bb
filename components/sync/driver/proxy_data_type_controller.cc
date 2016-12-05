@@ -29,7 +29,7 @@ void ProxyDataTypeController::LoadModels(
 }
 
 void ProxyDataTypeController::RegisterWithBackend(
-    BackendDataTypeConfigurer* configurer) {}
+    ModelTypeConfigurer* configurer) {}
 
 void ProxyDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
@@ -55,10 +55,10 @@ DataTypeController::State ProxyDataTypeController::state() const {
 }
 
 void ProxyDataTypeController::ActivateDataType(
-    BackendDataTypeConfigurer* configurer) {}
+    ModelTypeConfigurer* configurer) {}
 
 void ProxyDataTypeController::DeactivateDataType(
-    BackendDataTypeConfigurer* configurer) {}
+    ModelTypeConfigurer* configurer) {}
 
 void ProxyDataTypeController::GetAllNodes(const AllNodesCallback& callback) {
   callback.Run(type(), base::MakeUnique<base::ListValue>());

@@ -47,7 +47,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
     const DataTypeController::TypeMap* controllers,
     const DataTypeEncryptionHandler* encryption_handler,
-    BackendDataTypeConfigurer* configurer,
+    ModelTypeConfigurer* configurer,
     DataTypeManagerObserver* observer)
     : configurer_(configurer),
       controllers_(controllers),
@@ -164,7 +164,7 @@ void DataTypeManagerImpl::RegisterTypesWithBackend() {
   }
 }
 
-BackendDataTypeConfigurer::DataTypeConfigStateMap
+ModelTypeConfigurer::DataTypeConfigStateMap
 DataTypeManagerImpl::BuildDataTypeConfigStateMap(
     const ModelTypeSet& types_being_configured) const {
   // 1. Get the failed types (due to fatal, crypto, and unready errors).
@@ -201,24 +201,22 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
   DVLOG(1) << "Configuring: " << ModelTypeSetToString(to_configure);
   DVLOG(1) << "Disabling: " << ModelTypeSetToString(disabled_types);
 
-  BackendDataTypeConfigurer::DataTypeConfigStateMap config_state_map;
-  BackendDataTypeConfigurer::SetDataTypesState(
-      BackendDataTypeConfigurer::CONFIGURE_INACTIVE, enabled_types,
+  ModelTypeConfigurer::DataTypeConfigStateMap config_state_map;
+  ModelTypeConfigurer::SetDataTypesState(
+      ModelTypeConfigurer::CONFIGURE_INACTIVE, enabled_types,
       &config_state_map);
-  BackendDataTypeConfigurer::SetDataTypesState(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, to_configure,
-      &config_state_map);
-  BackendDataTypeConfigurer::SetDataTypesState(
-      BackendDataTypeConfigurer::CONFIGURE_CLEAN, clean_types,
-      &config_state_map);
-  BackendDataTypeConfigurer::SetDataTypesState(
-      BackendDataTypeConfigurer::DISABLED, disabled_types, &config_state_map);
-  BackendDataTypeConfigurer::SetDataTypesState(BackendDataTypeConfigurer::FATAL,
-                                               fatal_types, &config_state_map);
-  BackendDataTypeConfigurer::SetDataTypesState(
-      BackendDataTypeConfigurer::CRYPTO, crypto_types, &config_state_map);
-  BackendDataTypeConfigurer::SetDataTypesState(
-      BackendDataTypeConfigurer::UNREADY, unready_types, &config_state_map);
+  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::CONFIGURE_ACTIVE,
+                                         to_configure, &config_state_map);
+  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::CONFIGURE_CLEAN,
+                                         clean_types, &config_state_map);
+  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::DISABLED,
+                                         disabled_types, &config_state_map);
+  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::FATAL,
+                                         fatal_types, &config_state_map);
+  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::CRYPTO,
+                                         crypto_types, &config_state_map);
+  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::UNREADY,
+                                         unready_types, &config_state_map);
   return config_state_map;
 }
 

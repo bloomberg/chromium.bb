@@ -17,17 +17,16 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
-#include "components/sync/driver/backend_data_type_configurer.h"
-#include "components/sync/driver/glue/sync_backend_host.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
+#include "components/sync/engine/model_type_configurer.h"
+#include "components/sync/engine/sync_engine.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/protocol/encryption.pb.h"
 #include "components/sync/protocol/sync_protocol_error.h"
@@ -49,16 +48,12 @@ class SyncPrefs;
 class UnrecoverableErrorHandler;
 struct DoInitializeOptions;
 
-// The only real implementation of the SyncBackendHost.  See that interface's
+// The only real implementation of the SyncEngine. See that interface's
 // definition for documentation of public methods.
-class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
+class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
  public:
   typedef SyncStatus Status;
 
-  // Create a SyncBackendHost with a reference to the |frontend| that
-  // it serves and communicates to via the SyncFrontend interface (on
-  // the same thread it used to call the constructor).  Must outlive
-  // |sync_prefs|.
   SyncBackendHostImpl(
       const std::string& name,
       SyncClient* sync_client,
@@ -67,9 +62,9 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
       const base::FilePath& sync_folder);
   ~SyncBackendHostImpl() override;
 
-  // SyncBackendHost implementation.
+  // SyncEngine implementation.
   void Initialize(
-      SyncFrontend* frontend,
+      SyncEngineHost* host,
       scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
       const WeakHandle<JsEventHandler>& event_handler,
       const GURL& service_url,
@@ -170,9 +165,9 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
       std::unique_ptr<ModelTypeConnector> model_type_connector,
       const std::string& cache_guid);
 
-  // Forwards a ProtocolEvent to the frontend.  Will not be called unless a
-  // call to SetForwardProtocolEvents() explicitly requested that we start
-  // forwarding these events.
+  // Forwards a ProtocolEvent to the host. Will not be called unless a call to
+  // SetForwardProtocolEvents() explicitly requested that we start forwarding
+  // these events.
   void HandleProtocolEventOnFrontendLoop(std::unique_ptr<ProtocolEvent> event);
 
   // Forwards a directory commit counter update to the frontend loop.  Will not
@@ -201,7 +196,7 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
   void UpdateInvalidationVersions(
       const std::map<ModelType, int64_t>& invalidation_versions);
 
-  SyncFrontend* frontend() { return frontend_; }
+  SyncEngineHost* host() { return host_; }
 
  private:
   friend class SyncBackendHostCore;
@@ -304,14 +299,15 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
   // object is owned because in production code it is a proxy object.
   std::unique_ptr<ModelTypeConnector> model_type_connector_;
 
-  bool initialized_;
+  bool initialized_ = false;
 
   const base::WeakPtr<SyncPrefs> sync_prefs_;
 
   std::unique_ptr<SyncBackendRegistrar> registrar_;
 
-  // The frontend which we serve (and are owned by).
-  SyncFrontend* frontend_;
+  // The host which we serve (and are owned by). Set in Initialize() and nulled
+  // out in StopSyncingForShutdown().
+  SyncEngineHost* host_ = nullptr;
 
   // We cache the cryptographer's pending keys whenever NotifyPassphraseRequired
   // is called. This way, before the UI calls SetDecryptionPassphrase on the
@@ -327,7 +323,7 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
   // in the nigori node. Updated whenever a new nigori node arrives or the user
   // manually changes their passphrase state. Cached so we can synchronously
   // check it from the UI thread.
-  PassphraseType cached_passphrase_type_;
+  PassphraseType cached_passphrase_type_ = PassphraseType::IMPLICIT_PASSPHRASE;
 
   // If an explicit passphrase is in use, the time at which the passphrase was
   // first set (if available).
@@ -337,7 +333,7 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
   SyncCycleSnapshot last_snapshot_;
 
   invalidation::InvalidationService* invalidator_;
-  bool invalidation_handler_registered_;
+  bool invalidation_handler_registered_ = false;
 
   // Checks that we're on the same thread this was constructed on (UI thread).
   base::ThreadChecker thread_checker_;

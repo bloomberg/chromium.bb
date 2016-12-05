@@ -33,13 +33,13 @@ class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
                DataTypeManager*(const WeakHandle<DataTypeDebugInfoListener>&,
                                 const DataTypeController::TypeMap*,
                                 const DataTypeEncryptionHandler*,
-                                SyncBackendHost*,
+                                SyncEngine*,
                                 DataTypeManagerObserver* observer));
-  MOCK_METHOD4(CreateSyncBackendHost,
-               SyncBackendHost*(const std::string& name,
-                                invalidation::InvalidationService* invalidator,
-                                const base::WeakPtr<SyncPrefs>& sync_prefs,
-                                const base::FilePath& sync_folder));
+  MOCK_METHOD4(CreateSyncEngine,
+               SyncEngine*(const std::string& name,
+                           invalidation::InvalidationService* invalidator,
+                           const base::WeakPtr<SyncPrefs>& sync_prefs,
+                           const base::FilePath& sync_folder));
 
   std::unique_ptr<LocalDeviceInfoProvider> CreateLocalDeviceInfoProvider()
       override;
