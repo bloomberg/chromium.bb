@@ -226,7 +226,7 @@ const char* TaskQueueThrottler::TimeBudgetPool::Name() const {
 void TaskQueueThrottler::TimeBudgetPool::AsValueInto(
     base::trace_event::TracedValue* state,
     base::TimeTicks now) const {
-  state->BeginDictionary();
+  state->BeginDictionary(name_);
 
   state->SetString("name", name_);
   state->SetDouble("time_budget", cpu_percentage_);
