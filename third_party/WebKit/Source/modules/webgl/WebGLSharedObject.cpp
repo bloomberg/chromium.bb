@@ -47,7 +47,7 @@ uint32_t WebGLSharedObject::currentNumberOfContextLosses() const {
 }
 
 gpu::gles2::GLES2Interface* WebGLSharedObject::getAGLInterface() const {
-  return m_contextGroup ? m_contextGroup->getAGLInterface() : nullptr;
+  return m_contextGroup->getAGLInterface();
 }
 
 DEFINE_TRACE(WebGLSharedObject) {

@@ -91,7 +91,6 @@ class WebGLObject : public GarbageCollectedFinalized<WebGLObject>,
   // refer back to their owning context in their destructor to delete their
   // resources if they are GC'd before the context is.
   EAGERLY_FINALIZE();
-  DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

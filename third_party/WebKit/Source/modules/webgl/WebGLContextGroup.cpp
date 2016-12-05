@@ -47,6 +47,7 @@ gpu::gles2::GLES2Interface* WebGLContextGroup::getAGLInterface() {
 
 void WebGLContextGroup::addContext(WebGLRenderingContextBase* context) {
   m_contexts.add(context);
+  ScriptWrappableVisitor::writeBarrier(this, context);
 }
 
 void WebGLContextGroup::loseContextGroup(
