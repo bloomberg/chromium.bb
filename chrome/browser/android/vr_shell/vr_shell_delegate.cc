@@ -94,7 +94,7 @@ void VrShellDelegate::RequestWebVRPresent(
 
   // If/When VRShell is ready for use it will call SetPresentResult.
   JNIEnv* env = AttachCurrentThread();
-  Java_VrShellDelegate_presentRequested(env, j_vr_shell_delegate_.obj(), true);
+  Java_VrShellDelegate_presentRequested(env, j_vr_shell_delegate_.obj());
 }
 
 void VrShellDelegate::ExitWebVRPresent() {

@@ -47,8 +47,9 @@ public class VrShellDelegate {
     public static final int ENTER_VR_NOT_NECESSARY = 0;
     public static final int ENTER_VR_CANCELLED = 1;
     public static final int ENTER_VR_REQUESTED = 2;
+    public static final int ENTER_VR_SUCCEEDED = 3;
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ENTER_VR_NOT_NECESSARY, ENTER_VR_CANCELLED, ENTER_VR_REQUESTED})
+    @IntDef({ENTER_VR_NOT_NECESSARY, ENTER_VR_CANCELLED, ENTER_VR_REQUESTED, ENTER_VR_SUCCEEDED })
     public @interface EnterVRResult {}
 
     // TODO(bshe): These should be replaced by string provided by NDK. Currently, it only available
@@ -229,19 +230,15 @@ public class VrShellDelegate {
         if (MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity)) {
             return false;
         }
-        // crbug.com/667908
-        if (!mVrDaydreamApi.isDaydreamCurrentViewer()) {
-            return false;
-        }
         return true;
     }
 
     @CalledByNative
-    private void presentRequested(boolean inWebVR) {
+    private void presentRequested() {
         // TODO(mthiesse): There's a GVR bug where they're not calling us back with the intent we
         // ask them to when we call DaydreamApi#launchInVr. As a temporary hack, remember locally
         // that we want to enter webVR.
-        mRequestedWebVR = inWebVR;
+        mRequestedWebVR = true;
         switch (enterVRIfNecessary()) {
             case ENTER_VR_NOT_NECESSARY:
                 mVrShell.setWebVrModeEnabled(true);
@@ -254,6 +251,12 @@ public class VrShellDelegate {
                 break;
             case ENTER_VR_REQUESTED:
                 break;
+            case ENTER_VR_SUCCEEDED:
+                nativeSetPresentResult(mNativeVrShellDelegate, true);
+                mRequestedWebVR = false;
+                break;
+            default:
+                Log.e(TAG, "Unexpected enum.");
         }
     }
 
@@ -266,7 +269,13 @@ public class VrShellDelegate {
         if (mInVr) return ENTER_VR_NOT_NECESSARY;
         if (!canEnterVR(mActivity.getActivityTab())) return ENTER_VR_CANCELLED;
 
-        if (!mVrDaydreamApi.launchInVr(getPendingEnterVRIntent())) return ENTER_VR_CANCELLED;
+        if (!mVrDaydreamApi.isDaydreamCurrentViewer()) {
+            // Avoid using launchInVr which would trigger DON flow regardless current viewer type
+            // due to the lack of support for unexported activities.
+            return enterVR() ? ENTER_VR_SUCCEEDED : ENTER_VR_CANCELLED;
+        } else {
+            if (!mVrDaydreamApi.launchInVr(getPendingEnterVRIntent())) return ENTER_VR_CANCELLED;
+        }
         return ENTER_VR_REQUESTED;
     }
 
