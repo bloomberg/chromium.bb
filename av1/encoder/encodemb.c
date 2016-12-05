@@ -514,7 +514,8 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   QUANT_PARAM qparam;
   const int16_t *src_diff;
 
-  src_diff = &p->src_diff[4 * (blk_row * diff_stride + blk_col)];
+  src_diff =
+      &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
   qparam.log_scale = get_tx_scale(tx_size);
 #if CONFIG_NEW_QUANT
   qparam.tx_size = tx_size;
@@ -543,10 +544,11 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
     assert(block < MAX_PVQ_BLOCKS_IN_SB);
     pvq_info = &x->pvq[block][plane];
   }
-  dst = &pd->dst.buf[4 * (blk_row * dst_stride + blk_col)];
-  src = &p->src.buf[4 * (blk_row * src_stride + blk_col)];
-  src_int16 = &p->src_int16[4 * (blk_row * diff_stride + blk_col)];
-  pred = &pd->pred[4 * (blk_row * diff_stride + blk_col)];
+  dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+  src = &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
+  src_int16 =
+      &p->src_int16[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
+  pred = &pd->pred[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
 
   // transform block size in pixels
   tx_blk_size = tx_size_wide[tx_size];
@@ -641,7 +643,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   int i;
   const int bwl = b_width_log2_lookup[plane_bsize];
 #endif
-  dst = &pd->dst.buf[4 * blk_row * pd->dst.stride + 4 * blk_col];
+  dst = &pd->dst
+             .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
   a = &args->ta[blk_col];
   l = &args->tl[blk_row];
 #if CONFIG_VAR_TX
@@ -786,7 +789,8 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   uint8_t *dst;
   int ctx = 0;
-  dst = &pd->dst.buf[4 * blk_row * pd->dst.stride + 4 * blk_col];
+  dst = &pd->dst
+             .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
 
 #if CONFIG_NEW_QUANT
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
@@ -952,9 +956,10 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
   assert(tx1d_width == tx1d_height);
 
-  dst = &pd->dst.buf[4 * (blk_row * dst_stride + blk_col)];
-  src = &p->src.buf[4 * (blk_row * src_stride + blk_col)];
-  src_diff = &p->src_diff[4 * (blk_row * diff_stride + blk_col)];
+  dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+  src = &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
+  src_diff =
+      &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
   mode = plane == 0 ? get_y_mode(xd->mi[0], block) : mbmi->uv_mode;
   av1_predict_intra_block(xd, pd->width, pd->height, tx_size, mode, dst,
                           dst_stride, dst, dst_stride, blk_col, blk_row, plane);

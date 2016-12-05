@@ -1208,9 +1208,13 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
       const int dst_stride = pd->dst.stride;
       const int diff_stride = block_size_wide[plane_bsize];
 
-      const uint8_t *src = &p->src.buf[4 * (blk_row * src_stride + blk_col)];
-      const uint8_t *dst = &pd->dst.buf[4 * (blk_row * dst_stride + blk_col)];
-      const int16_t *diff = &p->src_diff[4 * (blk_row * diff_stride + blk_col)];
+      const uint8_t *src =
+          &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
+      const uint8_t *dst =
+          &pd->dst
+               .buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+      const int16_t *diff = &p->src_diff[(blk_row * diff_stride + blk_col)
+                                         << tx_size_wide_log2[0]];
 
       unsigned int tmp;
       this_rd_stats.sse = sum_squares_2d(diff, diff_stride, tx_size);
