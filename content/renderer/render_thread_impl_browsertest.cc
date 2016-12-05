@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/output/buffer_to_texture_target_map.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
@@ -441,6 +442,9 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   EXPECT_FALSE(memory->Lock());
 }
 
+// Disable the test for the Android asan build.
+// See http://crbug.com/667837 for detail.
+#if !(defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
                        DiscardableMemoryAddressSpace) {
   const size_t kLargeSize = 4 * 1024 * 1024;   // 4MiB.
@@ -458,6 +462,7 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
     instances.push_back(std::move(memory));
   }
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
                        ReleaseFreeDiscardableMemory) {
