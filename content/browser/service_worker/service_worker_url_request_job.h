@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -93,6 +94,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
       RequestContextFrameType frame_type,
       scoped_refptr<ResourceRequestBodyImpl> body,
       ServiceWorkerFetchType fetch_type,
+      const base::Optional<base::TimeDelta>& timeout,
       Delegate* delegate);
 
   ~ServiceWorkerURLRequestJob() override;
@@ -269,6 +271,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   scoped_refptr<ResourceRequestBodyImpl> body_;
   std::unique_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
   ServiceWorkerFetchType fetch_type_;
+  base::Optional<base::TimeDelta> timeout_;
 
   ResponseBodyType response_body_type_ = UNKNOWN;
   bool did_record_result_ = false;

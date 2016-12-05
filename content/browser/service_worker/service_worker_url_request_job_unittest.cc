@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -83,6 +84,9 @@ class MockHttpProtocolHandler
   ~MockHttpProtocolHandler() override {}
 
   void set_resource_type(ResourceType type) { resource_type_ = type; }
+  void set_custom_timeout(base::Optional<base::TimeDelta> timeout) {
+    custom_timeout_ = timeout;
+  }
 
   net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
@@ -101,7 +105,7 @@ class MockHttpProtocolHandler
         resource_type_, REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
         scoped_refptr<ResourceRequestBodyImpl>(), ServiceWorkerFetchType::FETCH,
-        delegate_);
+        custom_timeout_, delegate_);
     job_->ForwardToServiceWorker();
     return job_;
   }
@@ -114,6 +118,7 @@ class MockHttpProtocolHandler
   mutable ServiceWorkerURLRequestJob* job_;
   ServiceWorkerURLRequestJob::Delegate* delegate_;
   ResourceType resource_type_;
+  base::Optional<base::TimeDelta> custom_timeout_;
 };
 
 // Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
@@ -357,6 +362,19 @@ TEST_P(ServiceWorkerURLRequestJobTestP, Simple) {
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
   EXPECT_FALSE(info->response_is_in_cache_storage());
   EXPECT_EQ(std::string(), info->response_cache_storage_cache_name());
+}
+
+TEST_P(ServiceWorkerURLRequestJobTestP, CustomTimeout) {
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+
+  // Set mock clock on version_ to check timeout behavior.
+  base::SimpleTestTickClock* tick_clock = new base::SimpleTestTickClock();
+  tick_clock->SetNowTicks(base::TimeTicks::Now());
+  version_->SetTickClockForTesting(base::WrapUnique(tick_clock));
+
+  http_protocol_handler_->set_custom_timeout(base::TimeDelta::FromSeconds(5));
+  TestRequest(200, "OK", std::string(), true /* expect_valid_ssl */);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(5), version_->remaining_timeout());
 }
 
 class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {

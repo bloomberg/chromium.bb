@@ -6,18 +6,24 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_trial_policy.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/test_content_browser_client.h"
 #include "net/http/http_response_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/url_request/url_request_context.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -39,6 +45,12 @@ const uint8_t kTestPublicKey[] = {
     0x64, 0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0,
 };
 
+int kMockProviderId = 1;
+
+const char* kValidUrl = "https://valid.example.com/foo/bar";
+
+void EmptyCallback() {}
+
 }  // namespace
 
 class ForeignFetchRequestHandlerTest : public testing::Test {
@@ -46,6 +58,7 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
   ForeignFetchRequestHandlerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     SetContentClient(&test_content_client_);
+    SetBrowserClientForTesting(&test_content_browser_client_);
   }
   ~ForeignFetchRequestHandlerTest() override {}
 
@@ -59,6 +72,35 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
                                                   context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), kResource1,
                                         kVersionId, context()->AsWeakPtr());
+
+    version_->set_foreign_fetch_scopes({kScope});
+
+    // An empty host.
+    std::unique_ptr<ServiceWorkerProviderHost> host(
+        new ServiceWorkerProviderHost(
+            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
+            kMockProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
+            context()->AsWeakPtr(), nullptr));
+    host->SetDocumentUrl(GURL("https://host/scope/"));
+    provider_host_ = host->AsWeakPtr();
+    context()->AddProviderHost(std::move(host));
+
+    context()->storage()->LazyInitialize(base::Bind(&EmptyCallback));
+    base::RunLoop().RunUntilIdle();
+
+    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    records.push_back(
+        ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));
+    version_->script_cache_map()->SetResources(records);
+    version_->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+    version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+    registration_->SetActiveVersion(version_);
+    context()->storage()->StoreRegistration(
+        registration_.get(), version_.get(),
+        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
@@ -70,9 +112,20 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
 
  protected:
   ServiceWorkerContextCore* context() const { return helper_->context(); }
+  ServiceWorkerContextWrapper* context_wrapper() const {
+    return helper_->context_wrapper();
+  }
+  ServiceWorkerProviderHost* provider_host() const {
+    return provider_host_.get();
+  }
 
   bool CheckOriginTrialToken(const ServiceWorkerVersion* const version) const {
     return ForeignFetchRequestHandler::CheckOriginTrialToken(version);
+  }
+
+  base::Optional<base::TimeDelta> timeout_for_request(
+      ForeignFetchRequestHandler* handler) {
+    return handler->timeout_;
   }
 
   ServiceWorkerVersion* version() const { return version_.get(); }
@@ -88,6 +141,59 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
     http_info->ssl_info.connection_status = 0x300039;
     http_info->headers = make_scoped_refptr(new net::HttpResponseHeaders(""));
     return http_info;
+  }
+
+  ForeignFetchRequestHandler* InitializeHandler(const std::string& url,
+                                                ResourceType resource_type,
+                                                const char* initiator) {
+    request_ = url_request_context_.CreateRequest(
+        GURL(url), net::DEFAULT_PRIORITY, &url_request_delegate_);
+    if (initiator)
+      request_->set_initiator(url::Origin(GURL(initiator)));
+    ForeignFetchRequestHandler::InitializeHandler(
+        request_.get(), context_wrapper(), &blob_storage_context_,
+        helper_->mock_render_process_id(), kMockProviderId,
+        SkipServiceWorker::NONE, FETCH_REQUEST_MODE_CORS,
+        FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
+        resource_type, REQUEST_CONTEXT_TYPE_FETCH,
+        REQUEST_CONTEXT_FRAME_TYPE_NONE, nullptr,
+        true /* initiated_in_secure_context */);
+
+    return ForeignFetchRequestHandler::GetHandler(request_.get());
+  }
+
+  void CreateServiceWorkerTypeProviderHost() {
+    std::unique_ptr<ServiceWorkerProviderHost> host(
+        new ServiceWorkerProviderHost(
+            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
+            kMockProviderId, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
+            ServiceWorkerProviderHost::FrameSecurityLevel::UNINITIALIZED,
+            context()->AsWeakPtr(), nullptr));
+    provider_host_ = host->AsWeakPtr();
+    context()->RemoveProviderHost(host->process_id(), host->provider_id());
+    context()->AddProviderHost(std::move(host));
+
+    scoped_refptr<ServiceWorkerRegistration> registration =
+        new ServiceWorkerRegistration(GURL("https://host/scope"), 1L,
+                                      context()->AsWeakPtr());
+    scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
+        registration.get(), GURL("https://host/script.js"), 1L,
+        context()->AsWeakPtr());
+
+    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    records.push_back(
+        ServiceWorkerDatabase::ResourceRecord(10, version->script_url(), 100));
+    version->script_cache_map()->SetResources(records);
+    version->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+    version->SetStatus(ServiceWorkerVersion::ACTIVATED);
+    registration->SetActiveVersion(version);
+    context()->storage()->StoreRegistration(
+        registration.get(), version.get(),
+        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+    base::RunLoop().RunUntilIdle();
+
+    provider_host_->running_hosted_version_ = version;
   }
 
  private:
@@ -116,8 +222,15 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   TestContentClient test_content_client_;
+  TestContentBrowserClient test_content_browser_client_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   TestBrowserThreadBundle browser_thread_bundle_;
+
+  net::URLRequestContext url_request_context_;
+  MockURLRequestDelegate url_request_delegate_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  storage::BlobStorageContext blob_storage_context_;
+  std::unique_ptr<net::URLRequest> request_;
 
   DISALLOW_COPY_AND_ASSIGN(ForeignFetchRequestHandlerTest);
 };
@@ -183,6 +296,71 @@ TEST_F(ForeignFetchRequestHandlerTest, CheckOriginTrialToken_ExpiredToken) {
   http_info->headers->AddHeader(kOriginTrial + kFeatureToken);
   version()->SetMainScriptHttpResponseInfo(*http_info);
   EXPECT_FALSE(CheckOriginTrialToken(version()));
+}
+
+TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_Success) {
+  EXPECT_TRUE(InitializeHandler(kValidUrl, RESOURCE_TYPE_IMAGE,
+                                nullptr /* initiator */));
+}
+
+TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_WrongResourceType) {
+  EXPECT_FALSE(InitializeHandler(kValidUrl, RESOURCE_TYPE_MAIN_FRAME,
+                                 nullptr /* initiator */));
+  EXPECT_FALSE(InitializeHandler(kValidUrl, RESOURCE_TYPE_SUB_FRAME,
+                                 nullptr /* initiator */));
+  EXPECT_FALSE(InitializeHandler(kValidUrl, RESOURCE_TYPE_WORKER,
+                                 nullptr /* initiator */));
+  EXPECT_FALSE(InitializeHandler(kValidUrl, RESOURCE_TYPE_SHARED_WORKER,
+                                 nullptr /* initiator */));
+  EXPECT_FALSE(InitializeHandler(kValidUrl, RESOURCE_TYPE_SERVICE_WORKER,
+                                 nullptr /* initiator */));
+}
+
+TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_SameOriginRequest) {
+  EXPECT_FALSE(InitializeHandler(kValidUrl, RESOURCE_TYPE_IMAGE,
+                                 kValidUrl /* initiator */));
+}
+
+TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_NoRegisteredHandlers) {
+  EXPECT_FALSE(InitializeHandler("https://invalid.example.com/foo",
+                                 RESOURCE_TYPE_IMAGE, nullptr /* initiator */));
+}
+
+TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_TimeoutBehavior) {
+  ForeignFetchRequestHandler* handler =
+      InitializeHandler("https://valid.example.com/foo", RESOURCE_TYPE_IMAGE,
+                        nullptr /* initiator */);
+  ASSERT_TRUE(handler);
+
+  EXPECT_EQ(base::nullopt, timeout_for_request(handler));
+
+  CreateServiceWorkerTypeProviderHost();
+  ServiceWorkerVersion* version = provider_host()->running_hosted_version();
+
+  // Set mock clock on version to check timeout behavior.
+  base::SimpleTestTickClock* tick_clock = new base::SimpleTestTickClock();
+  tick_clock->SetNowTicks(base::TimeTicks::Now());
+  version->SetTickClockForTesting(base::WrapUnique(tick_clock));
+
+  // Make sure worker has a non-zero timeout.
+  version->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  base::RunLoop().RunUntilIdle();
+  version->StartRequestWithCustomTimeout(
+      ServiceWorkerMetrics::EventType::ACTIVATE,
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback),
+      base::TimeDelta::FromSeconds(10), ServiceWorkerVersion::KILL_ON_TIMEOUT);
+
+  // Advance clock by a couple seconds.
+  tick_clock->Advance(base::TimeDelta::FromSeconds(4));
+  base::TimeDelta remaining_time = version->remaining_timeout();
+  EXPECT_EQ(base::TimeDelta::FromSeconds(6), remaining_time);
+
+  // Make sure new request only gets remaining timeout.
+  handler = InitializeHandler("https://valid.example.com/foo",
+                              RESOURCE_TYPE_IMAGE, nullptr /* initiator */);
+  ASSERT_TRUE(handler);
+  EXPECT_EQ(remaining_time, timeout_for_request(handler));
 }
 
 }  // namespace content

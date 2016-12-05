@@ -791,7 +791,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
         std::move(request), version_.get(), RESOURCE_TYPE_MAIN_FRAME,
-        net::NetLogWithSource(), CreatePrepareReceiver(prepare_result),
+        base::nullopt, net::NetLogWithSource(),
+        CreatePrepareReceiver(prepare_result),
         CreateResponseReceiver(done, blob_context_.get(), result)));
     fetch_dispatcher_->Run();
   }

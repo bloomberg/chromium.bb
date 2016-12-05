@@ -91,12 +91,28 @@ void ForeignFetchRequestHandler::InitializeHandler(
   if (!initiated_in_secure_context)
     return;
 
-  if (ServiceWorkerUtils::IsMainResourceType(resource_type))
+  // ServiceWorkerUtils::IsMainResource doesn't consider all worker types to
+  // be main resources. This code shouldn't handle any main resource requests
+  // though, so explicitly exclude the extra worker types.
+  if (ServiceWorkerUtils::IsMainResourceType(resource_type) ||
+      resource_type == RESOURCE_TYPE_WORKER ||
+      resource_type == RESOURCE_TYPE_SERVICE_WORKER)
     return;
 
   if (request->initiator().has_value() &&
       request->initiator()->IsSameOriginWith(url::Origin(request->url()))) {
     return;
+  }
+
+  ServiceWorkerProviderHost* provider_host =
+      context_wrapper->context()->GetProviderHost(process_id, provider_id);
+  if (!provider_host || !provider_host->IsContextAlive())
+    return;
+
+  base::Optional<base::TimeDelta> timeout;
+  if (provider_host->IsHostToRunningServiceWorker()) {
+    timeout = base::make_optional(
+        provider_host->running_hosted_version()->remaining_timeout());
   }
 
   if (!context_wrapper->OriginHasForeignFetchRegistrations(
@@ -110,7 +126,7 @@ void ForeignFetchRequestHandler::InitializeHandler(
       new ForeignFetchRequestHandler(
           context_wrapper, blob_storage_context->AsWeakPtr(), request_mode,
           credentials_mode, redirect_mode, resource_type, request_context_type,
-          frame_type, body));
+          frame_type, body, timeout));
   request->SetUserData(&kUserDataKey, handler.release());
 }
 
@@ -163,7 +179,7 @@ net::URLRequestJob* ForeignFetchRequestHandler::MaybeCreateJob(
       request, network_delegate, std::string(), blob_storage_context_,
       resource_context, request_mode_, credentials_mode_, redirect_mode_,
       resource_type_, request_context_type_, frame_type_, body_,
-      ServiceWorkerFetchType::FOREIGN_FETCH, this);
+      ServiceWorkerFetchType::FOREIGN_FETCH, timeout_, this);
   job_ = job->GetWeakPtr();
   resource_context_ = resource_context;
 
@@ -184,7 +200,8 @@ ForeignFetchRequestHandler::ForeignFetchRequestHandler(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBodyImpl> body)
+    scoped_refptr<ResourceRequestBodyImpl> body,
+    const base::Optional<base::TimeDelta>& timeout)
     : context_(context),
       blob_storage_context_(blob_storage_context),
       resource_type_(resource_type),
@@ -194,6 +211,7 @@ ForeignFetchRequestHandler::ForeignFetchRequestHandler(
       request_context_type_(request_context_type),
       frame_type_(frame_type),
       body_(body),
+      timeout_(timeout),
       weak_factory_(this) {}
 
 void ForeignFetchRequestHandler::DidFindRegistration(

@@ -126,7 +126,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
           blob_storage_context_, resource_context, request_mode_,
           credentials_mode_, redirect_mode_, resource_type_,
           request_context_type_, frame_type_, body_,
-          ServiceWorkerFetchType::FETCH, this));
+          ServiceWorkerFetchType::FETCH, base::nullopt, this));
   job_ = job->GetWeakPtr();
 
   resource_context_ = resource_context;

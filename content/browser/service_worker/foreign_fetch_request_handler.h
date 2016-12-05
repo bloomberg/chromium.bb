@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
@@ -94,7 +95,8 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBodyImpl> body);
+      scoped_refptr<ResourceRequestBodyImpl> body,
+      const base::Optional<base::TimeDelta>& timeout);
 
   // Called when a ServiceWorkerRegistration has (or hasn't) been found for the
   // request being handled.
@@ -128,6 +130,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
   RequestContextFrameType frame_type_;
   scoped_refptr<ResourceRequestBodyImpl> body_;
   ResourceContext* resource_context_;
+  base::Optional<base::TimeDelta> timeout_;
 
   base::WeakPtr<ServiceWorkerURLRequestJob> job_;
   scoped_refptr<ServiceWorkerVersion> target_worker_;

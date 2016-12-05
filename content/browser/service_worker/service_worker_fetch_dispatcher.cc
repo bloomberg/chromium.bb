@@ -210,6 +210,7 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     std::unique_ptr<ServiceWorkerFetchRequest> request,
     ServiceWorkerVersion* version,
     ResourceType resource_type,
+    const base::Optional<base::TimeDelta>& timeout,
     const net::NetLogWithSource& net_log,
     const base::Closure& prepare_callback,
     const FetchCallback& fetch_callback)
@@ -219,6 +220,7 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
       fetch_callback_(fetch_callback),
       request_(std::move(request)),
       resource_type_(resource_type),
+      timeout_(timeout),
       did_complete_(false),
       weak_factory_(this) {
   net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
@@ -297,13 +299,27 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   prepare_callback.Run();
 
   net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
-  int fetch_event_id = version_->StartRequest(
-      GetEventType(),
-      base::Bind(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
-                 weak_factory_.GetWeakPtr()));
-  int event_finish_id = version_->StartRequest(
-      FetchTypeToWaitUntilEventType(request_->fetch_type),
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  int fetch_event_id;
+  int event_finish_id;
+  if (timeout_) {
+    fetch_event_id = version_->StartRequestWithCustomTimeout(
+        GetEventType(),
+        base::Bind(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
+                   weak_factory_.GetWeakPtr()),
+        *timeout_, ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
+    event_finish_id = version_->StartRequestWithCustomTimeout(
+        FetchTypeToWaitUntilEventType(request_->fetch_type),
+        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), *timeout_,
+        ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
+  } else {
+    fetch_event_id = version_->StartRequest(
+        GetEventType(),
+        base::Bind(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
+                   weak_factory_.GetWeakPtr()));
+    event_finish_id = version_->StartRequest(
+        FetchTypeToWaitUntilEventType(request_->fetch_type),
+        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  }
 
   ResponseCallback* response_callback =
       new ResponseCallback(weak_factory_.GetWeakPtr(), version_.get());
