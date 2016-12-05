@@ -310,7 +310,7 @@ source_set("unit_tests") {
     "//gin:gin_test",
 
     # TODO(brettw) these tests should not be including headers from browser.
-    "//extensions/browser/mojo",
+    "//extensions/browser",
     "//extensions/common",
     "//gin",
     "//mojo/edk/js",
