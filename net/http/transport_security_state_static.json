@@ -60,7 +60,8 @@
       "static_spki_hashes": [
         "GoogleBackup2048",
         "GoogleG2",
-        "GeoTrustGlobal"
+        "GeoTrustGlobal",
+        "GlobalSignRootCA_R2"
       ],
       "report_uri": "http://clients3.google.com/cert_upload_json"
     },

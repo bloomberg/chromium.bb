@@ -604,6 +604,7 @@ static const char* const kGoogleAcceptableCerts[] = {
     kSPKIHash_GoogleBackup2048,
     kSPKIHash_GoogleG2,
     kSPKIHash_GeoTrustGlobal,
+    kSPKIHash_GlobalSignRootCA_R2,
     NULL,
 };
 static const char kGoogleReportURI[] = "http://clients3.google.com/cert_upload_json";
