@@ -423,7 +423,7 @@ column-width interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-perspective-origin-x interpolable, converter=convertLength
 -webkit-perspective-origin-y interpolable, converter=convertLength
 -webkit-print-color-adjust inherited, type_name=PrintColorAdjust
--webkit-rtl-ordering inherited, type_name=Order, setter=setRTLOrdering, initial=initialRTLOrdering
+-webkit-rtl-ordering inherited, type_name=EOrder, setter=setRTLOrdering, initial=initialRTLOrdering
 -webkit-ruby-position inherited, type_name=RubyPosition
 -webkit-tap-highlight-color inherited, converter=convertColor
 -webkit-text-combine inherited, type_name=TextCombine, name_for_methods=TextCombine

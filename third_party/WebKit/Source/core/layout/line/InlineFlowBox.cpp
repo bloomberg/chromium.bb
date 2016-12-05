@@ -1572,7 +1572,7 @@ void InlineFlowBox::collectLeafBoxesInLogicalOrder(
     leafBoxesInLogicalOrder.append(leaf);
   }
 
-  if (getLineLayoutItem().style()->rtlOrdering() == VisualOrder)
+  if (getLineLayoutItem().style()->rtlOrdering() == EOrder::Visual)
     return;
 
   // Reverse of reordering of the line (L2 according to Bidi spec):

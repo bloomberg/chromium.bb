@@ -152,7 +152,8 @@ static inline WTF::Unicode::CharDirection embedCharFromDirection(
 }
 
 static inline bool treatAsIsolated(const ComputedStyle& style) {
-  return isIsolated(style.unicodeBidi()) && style.rtlOrdering() == LogicalOrder;
+  return isIsolated(style.unicodeBidi()) &&
+         style.rtlOrdering() == EOrder::Logical;
 }
 
 template <class Observer>

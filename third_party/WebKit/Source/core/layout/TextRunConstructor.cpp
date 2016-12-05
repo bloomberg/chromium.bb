@@ -45,7 +45,7 @@ static inline TextRun constructTextRunInternal(const Font& font,
                                                TextDirection direction) {
   TextRun::ExpansionBehavior expansion =
       TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion;
-  bool directionalOverride = style.rtlOrdering() == VisualOrder;
+  bool directionalOverride = style.rtlOrdering() == EOrder::Visual;
   TextRun run(characters, length, 0, 0, expansion, direction,
               directionalOverride);
   return run;
@@ -59,7 +59,7 @@ static inline TextRun constructTextRunInternal(const Font& font,
                                                TextDirection direction,
                                                TextRunFlags flags) {
   TextDirection textDirection = direction;
-  bool directionalOverride = style.rtlOrdering() == VisualOrder;
+  bool directionalOverride = style.rtlOrdering() == EOrder::Visual;
   if (flags != DefaultTextRunFlags) {
     if (flags & RespectDirection)
       textDirection = style.direction();

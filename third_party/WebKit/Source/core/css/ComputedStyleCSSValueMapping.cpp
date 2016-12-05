@@ -3052,8 +3052,9 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return list;
     }
     case CSSPropertyWebkitRtlOrdering:
-      return CSSIdentifierValue::create(style.rtlOrdering() ? CSSValueVisual
-                                                            : CSSValueLogical);
+      return CSSIdentifierValue::create(style.rtlOrdering() == EOrder::Visual
+                                            ? CSSValueVisual
+                                            : CSSValueLogical);
     case CSSPropertyWebkitTapHighlightColor:
       return currentColorOrValidColor(style, style.tapHighlightColor());
     case CSSPropertyWebkitUserDrag:

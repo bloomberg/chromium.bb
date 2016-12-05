@@ -566,7 +566,7 @@ enum EImageRendering {
   ImageRenderingPixelated
 };
 
-enum Order { LogicalOrder = 0, VisualOrder };
+enum class EOrder : unsigned { Logical, Visual };
 
 enum RubyPosition { RubyPositionBefore, RubyPositionAfter };
 

@@ -190,7 +190,7 @@ TextRun SVGInlineTextBox::constructTextRun(
       0,  // padding, only relevant for justified text, not relevant for SVG
       TextRun::AllowTrailingExpansion, direction(),
       dirOverride() ||
-          style.rtlOrdering() == VisualOrder /* directionalOverride */);
+          style.rtlOrdering() == EOrder::Visual /* directionalOverride */);
 
   if (fragment.length) {
     if (text.is8Bit())

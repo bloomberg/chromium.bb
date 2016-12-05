@@ -3546,28 +3546,28 @@ inline CSSIdentifierValue::CSSIdentifierValue(ESpeak e)
 }
 
 template <>
-inline Order CSSIdentifierValue::convertTo() const {
+inline EOrder CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueLogical:
-      return LogicalOrder;
+      return EOrder::Logical;
     case CSSValueVisual:
-      return VisualOrder;
+      return EOrder::Visual;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return LogicalOrder;
+  return EOrder::Logical;
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(Order e)
+inline CSSIdentifierValue::CSSIdentifierValue(EOrder e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case LogicalOrder:
+    case EOrder::Logical:
       m_valueID = CSSValueLogical;
       break;
-    case VisualOrder:
+    case EOrder::Visual:
       m_valueID = CSSValueVisual;
       break;
   }

@@ -241,7 +241,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // 32 bits
 
     // non CSS2 inherited
-    unsigned m_rtlOrdering : 1;  // Order
+    unsigned m_rtlOrdering : 1;       // EOrder
     unsigned m_printColorAdjust : 1;  // PrintColorAdjust
     unsigned m_pointerEvents : 4;  // EPointerEvents
     unsigned m_insideLink : 2;     // EInsideLink
@@ -367,7 +367,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_whiteSpace = static_cast<unsigned>(initialWhiteSpace());
     m_inheritedData.m_borderCollapse =
         static_cast<unsigned>(initialBorderCollapse());
-    m_inheritedData.m_rtlOrdering = initialRTLOrdering();
+    m_inheritedData.m_rtlOrdering = static_cast<unsigned>(initialRTLOrdering());
     m_inheritedData.m_boxDirection =
         static_cast<unsigned>(initialBoxDirection());
     m_inheritedData.m_printColorAdjust =
@@ -2406,11 +2406,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // -webkit-rtl-ordering
-  static Order initialRTLOrdering() { return LogicalOrder; }
-  Order rtlOrdering() const {
-    return static_cast<Order>(m_inheritedData.m_rtlOrdering);
+  static EOrder initialRTLOrdering() { return EOrder::Logical; }
+  EOrder rtlOrdering() const {
+    return static_cast<EOrder>(m_inheritedData.m_rtlOrdering);
   }
-  void setRTLOrdering(Order o) { m_inheritedData.m_rtlOrdering = o; }
+  void setRTLOrdering(EOrder o) {
+    m_inheritedData.m_rtlOrdering = static_cast<unsigned>(o);
+  }
 
   // -webkit-ruby-position
   static RubyPosition initialRubyPosition() { return RubyPositionBefore; }
