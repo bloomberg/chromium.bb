@@ -46,6 +46,7 @@
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/Referrer.h"
 #include "public/platform/WebEffectiveConnectionType.h"
+#include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "wtf/Forward.h"
@@ -275,7 +276,8 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
 
   virtual void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) {}
 
-  virtual void didSetFeaturePolicyHeader(const String& headerValue) {}
+  virtual void didSetFeaturePolicyHeader(
+      const WebParsedFeaturePolicy& parsedHeader) {}
 
   // Called when a new Content Security Policy is added to the frame's document.
   // This can be triggered by handling of HTTP headers, handling of <meta>

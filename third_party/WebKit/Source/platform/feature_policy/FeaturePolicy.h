@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebFeaturePolicy.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -73,6 +74,9 @@ class PLATFORM_EXPORT FeaturePolicy final {
   // will always return true.
   class Whitelist final {
    public:
+    static std::unique_ptr<Whitelist> from(
+        const WebFeaturePolicy::ParsedWhitelist&);
+
     Whitelist();
 
     // Adds a single origin to the whitelist.
@@ -123,14 +127,22 @@ class PLATFORM_EXPORT FeaturePolicy final {
 
   using FeatureList = const Vector<const FeaturePolicy::Feature*>;
 
+  // Converts a JSON feature policy string into a vector of whitelists, one for
+  // each feature specified. Unrecognized features are parsed and included
+  // but will be filtered out when the policy is constructed. If |messages| is
+  // not null, then any errors in the input will cause an error message to be
+  // appended to it.
+  static WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
+                                                   RefPtr<SecurityOrigin>,
+                                                   Vector<String>* messages);
+
   static std::unique_ptr<FeaturePolicy> createFromParentPolicy(
       const FeaturePolicy* parent,
       RefPtr<SecurityOrigin>);
 
-  // Sets the declared policy from the Feature-Policy HTTP header. If the header
-  // cannot be parsed, errors will be appended to the |messages| vector, if not
-  // null.
-  void setHeaderPolicy(const String&, Vector<String>* messages);
+  // Sets the declared policy from the parsed Feature-Policy HTTP header.
+  // Unrecognized features will be ignored.
+  void setHeaderPolicy(const WebParsedFeaturePolicy&);
 
   // Returns whether or not the given feature is enabled by this policy.
   bool isFeatureEnabledForOrigin(const Feature&, const SecurityOrigin&) const;

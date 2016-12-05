@@ -29,6 +29,7 @@
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
+#include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
@@ -46,6 +47,22 @@ static base::LazyInstance<RoutingIDProxyMap> g_routing_id_proxy_map =
 // Facilitates lookup of RenderFrameProxy by WebFrame.
 typedef std::map<blink::WebFrame*, RenderFrameProxy*> FrameMap;
 base::LazyInstance<FrameMap> g_frame_map = LAZY_INSTANCE_INITIALIZER;
+
+blink::WebParsedFeaturePolicy ToWebParsedFeaturePolicy(
+    const ParsedFeaturePolicy& parsed_whitelists) {
+  std::vector<blink::WebFeaturePolicy::ParsedWhitelist> result;
+  for (const FeaturePolicyParsedWhitelist& whitelist : parsed_whitelists) {
+    blink::WebFeaturePolicy::ParsedWhitelist web_whitelist;
+    web_whitelist.featureName =
+        blink::WebString::fromUTF8(whitelist.feature_name);
+    web_whitelist.matchesAllOrigins = whitelist.matches_all_origins;
+    std::vector<blink::WebSecurityOrigin> web_origins;
+    for (const url::Origin& origin : whitelist.origins)
+      web_origins.push_back(origin);
+    result.push_back(web_whitelist);
+  }
+  return result;
+}
 
 }  // namespace
 
@@ -224,7 +241,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   web_frame_->setReplicatedPotentiallyTrustworthyUniqueOrigin(
       state.has_potentially_trustworthy_unique_origin);
   web_frame_->setReplicatedFeaturePolicyHeader(
-      blink::WebString::fromUTF8(state.feature_policy_header));
+      ToWebParsedFeaturePolicy(state.feature_policy_header));
 
   web_frame_->resetReplicatedContentSecurityPolicy();
   for (const auto& header : state.accumulated_csp_headers)

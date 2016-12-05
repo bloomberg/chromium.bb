@@ -20,6 +20,21 @@ enum class WebSandboxFlags;
 
 namespace content {
 
+// This struct holds feature policy whitelist data that needs to be replicated
+// between a RenderFrame and any of its associated RenderFrameProxies. A list of
+// these form part of the FrameReplicationState below (one entry per feature).
+struct CONTENT_EXPORT FeaturePolicyParsedWhitelist {
+  FeaturePolicyParsedWhitelist();
+  FeaturePolicyParsedWhitelist(const FeaturePolicyParsedWhitelist& fppw);
+  ~FeaturePolicyParsedWhitelist();
+
+  std::string feature_name;
+  bool matches_all_origins;
+  std::vector<url::Origin> origins;
+};
+
+using ParsedFeaturePolicy = std::vector<FeaturePolicyParsedWhitelist>;
+
 // This structure holds information that needs to be replicated between a
 // RenderFrame and any of its associated RenderFrameProxies.
 struct CONTENT_EXPORT FrameReplicationState {
@@ -84,9 +99,9 @@ struct CONTENT_EXPORT FrameReplicationState {
   // scratch.
   std::string unique_name;
 
-  // Feature policy header. May be empty if no header was sent with the
+  // Parsed feature policy header. May be empty if no header was sent with the
   // document.
-  std::string feature_policy_header;
+  ParsedFeaturePolicy feature_policy_header;
 
   // Accumulated CSP headers - gathered from http headers, <meta> elements,
   // parent frames (in case of about:blank frames).

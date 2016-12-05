@@ -872,9 +872,9 @@ void FrameLoaderClientImpl::didChangeSandboxFlags(Frame* childFrame,
 }
 
 void FrameLoaderClientImpl::didSetFeaturePolicyHeader(
-    const String& headerValue) {
+    const WebParsedFeaturePolicy& parsedHeader) {
   if (m_webFrame->client())
-    m_webFrame->client()->didSetFeaturePolicyHeader(headerValue);
+    m_webFrame->client()->didSetFeaturePolicyHeader(parsedHeader);
 }
 
 void FrameLoaderClientImpl::didAddContentSecurityPolicy(

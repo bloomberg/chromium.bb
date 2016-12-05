@@ -50,6 +50,7 @@
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebEffectiveConnectionType.h"
+#include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
@@ -229,7 +230,8 @@ class BLINK_EXPORT WebFrameClient {
 
   // Called when a Feature-Policy HTTP header is encountered while loading the
   // frame's document.
-  virtual void didSetFeaturePolicyHeader(const WebString& headerValue) {}
+  virtual void didSetFeaturePolicyHeader(
+      const WebParsedFeaturePolicy& parsedHeader) {}
 
   // Called when a new Content Security Policy is added to the frame's
   // document.  This can be triggered by handling of HTTP headers, handling

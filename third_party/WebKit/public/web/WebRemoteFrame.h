@@ -5,6 +5,7 @@
 #ifndef WebRemoteFrame_h
 #define WebRemoteFrame_h
 
+#include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebContentSecurityPolicy.h"
 #include "public/web/WebFrame.h"
@@ -59,7 +60,7 @@ class WebRemoteFrame : public WebFrame {
                                  const WebString& uniqueName) const = 0;
 
   virtual void setReplicatedFeaturePolicyHeader(
-      const WebString& headerValue) const = 0;
+      const WebParsedFeaturePolicy& parsedHeader) const = 0;
 
   // Adds |header| to the set of replicated CSP headers.
   virtual void addReplicatedContentSecurityPolicyHeader(

@@ -100,13 +100,12 @@ void SecurityContext::enforceSuborigin(const Suborigin& suborigin) {
 }
 
 void SecurityContext::setFeaturePolicyFromHeader(
-    const String& headerValue,
-    FeaturePolicy* parentFeaturePolicy,
-    Vector<String>* messages) {
+    const WebParsedFeaturePolicy& parsedHeader,
+    FeaturePolicy* parentFeaturePolicy) {
   DCHECK(!m_featurePolicy);
   m_featurePolicy = FeaturePolicy::createFromParentPolicy(parentFeaturePolicy,
                                                           m_securityOrigin);
-  m_featurePolicy->setHeaderPolicy(headerValue, messages);
+  m_featurePolicy->setHeaderPolicy(parsedHeader);
 }
 
 }  // namespace blink

@@ -97,6 +97,7 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/WebCachePolicy.h"
+#include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/AutoReset.h"
 #include "wtf/text/CString.h"
@@ -584,15 +585,19 @@ void FrameLoader::didBeginDocument() {
           m_documentLoader->response().httpHeaderField(
               HTTPNames::Feature_Policy);
       Vector<String> messages;
+      const WebParsedFeaturePolicy& parsedHeader =
+          FeaturePolicy::parseFeaturePolicy(
+              featurePolicyHeader,
+              m_frame->securityContext()->getSecurityOrigin(), &messages);
       m_frame->securityContext()->setFeaturePolicyFromHeader(
-          featurePolicyHeader, parentFeaturePolicy, &messages);
+          parsedHeader, parentFeaturePolicy);
       for (auto& message : messages) {
         m_frame->document()->addConsoleMessage(ConsoleMessage::create(
             OtherMessageSource, ErrorMessageLevel,
             "Error with Feature-Policy header: " + message));
       }
-      if (!featurePolicyHeader.isEmpty())
-        client()->didSetFeaturePolicyHeader(featurePolicyHeader);
+      if (!parsedHeader.isEmpty())
+        client()->didSetFeaturePolicyHeader(parsedHeader);
     }
   }
 

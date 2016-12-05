@@ -255,8 +255,9 @@ void FrameTreeNode::SetFrameName(const std::string& name,
   replication_state_.unique_name = unique_name;
 }
 
-void FrameTreeNode::SetFeaturePolicyHeader(const std::string& header) {
-  replication_state_.feature_policy_header = header;
+void FrameTreeNode::SetFeaturePolicyHeader(
+    const ParsedFeaturePolicy& parsed_header) {
+  replication_state_.feature_policy_header = parsed_header;
 }
 
 void FrameTreeNode::ResetFeaturePolicy() {

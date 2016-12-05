@@ -51,6 +51,7 @@
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
+#include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
@@ -487,7 +488,8 @@ class CONTENT_EXPORT RenderFrameImpl
       bool is_potentially_trustworthy_unique_origin) override;
   void didChangeSandboxFlags(blink::WebFrame* child_frame,
                              blink::WebSandboxFlags flags) override;
-  void didSetFeaturePolicyHeader(const blink::WebString& header_value) override;
+  void didSetFeaturePolicyHeader(
+      const blink::WebParsedFeaturePolicy& parsed_header) override;
   void didAddContentSecurityPolicy(
       const blink::WebString& header_value,
       blink::WebContentSecurityPolicyType type,

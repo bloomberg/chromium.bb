@@ -87,9 +87,7 @@ TEST_F(FeaturePolicyTest, ParseValidPolicy) {
   Vector<String> messages;
   for (const char* policyString : kValidPolicies) {
     messages.clear();
-    std::unique_ptr<FeaturePolicy> policy =
-        createFromParentPolicy(nullptr, m_originA);
-    policy->setHeaderPolicy(policyString, &messages);
+    FeaturePolicy::parseFeaturePolicy(policyString, m_originA.get(), &messages);
     EXPECT_EQ(0UL, messages.size());
   }
 }
@@ -98,11 +96,59 @@ TEST_F(FeaturePolicyTest, ParseInvalidPolicy) {
   Vector<String> messages;
   for (const char* policyString : kInvalidPolicies) {
     messages.clear();
-    std::unique_ptr<FeaturePolicy> policy =
-        createFromParentPolicy(nullptr, m_originA);
-    policy->setHeaderPolicy(policyString, &messages);
+    FeaturePolicy::parseFeaturePolicy(policyString, m_originA.get(), &messages);
     EXPECT_NE(0UL, messages.size());
   }
+}
+
+TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
+  Vector<String> messages;
+
+  // Empty policy.
+  WebParsedFeaturePolicy parsedPolicy =
+      FeaturePolicy::parseFeaturePolicy("{}", m_originA.get(), &messages);
+  EXPECT_EQ(0UL, parsedPolicy.size());
+
+  // Simple policy with "self".
+  parsedPolicy = FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"self\"]}", m_originA.get(), &messages);
+  EXPECT_EQ(1UL, parsedPolicy.size());
+  EXPECT_EQ("default-self", parsedPolicy[0].featureName);
+  EXPECT_FALSE(parsedPolicy[0].matchesAllOrigins);
+  EXPECT_EQ(1UL, parsedPolicy[0].origins.size());
+  EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(
+      parsedPolicy[0].origins[0].get()));
+
+  // Simple policy with *.
+  parsedPolicy = FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"*\"]}", m_originA.get(), &messages);
+  EXPECT_EQ(1UL, parsedPolicy.size());
+  EXPECT_EQ("default-self", parsedPolicy[0].featureName);
+  EXPECT_TRUE(parsedPolicy[0].matchesAllOrigins);
+  EXPECT_EQ(0UL, parsedPolicy[0].origins.size());
+
+  // Complicated policy.
+  parsedPolicy = FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"*\"], "
+      "\"default-on\": [\"https://example.net\", \"https://example.org\"], "
+      "\"default-off\": [\"self\"]}",
+      m_originA.get(), &messages);
+  EXPECT_EQ(3UL, parsedPolicy.size());
+  EXPECT_EQ("default-self", parsedPolicy[0].featureName);
+  EXPECT_TRUE(parsedPolicy[0].matchesAllOrigins);
+  EXPECT_EQ(0UL, parsedPolicy[0].origins.size());
+  EXPECT_EQ("default-on", parsedPolicy[1].featureName);
+  EXPECT_FALSE(parsedPolicy[1].matchesAllOrigins);
+  EXPECT_EQ(2UL, parsedPolicy[1].origins.size());
+  EXPECT_TRUE(m_originB->isSameSchemeHostPortAndSuborigin(
+      parsedPolicy[1].origins[0].get()));
+  EXPECT_TRUE(m_originC->isSameSchemeHostPortAndSuborigin(
+      parsedPolicy[1].origins[1].get()));
+  EXPECT_EQ("default-off", parsedPolicy[2].featureName);
+  EXPECT_FALSE(parsedPolicy[2].matchesAllOrigins);
+  EXPECT_EQ(1UL, parsedPolicy[2].origins.size());
+  EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(
+      parsedPolicy[2].origins[0].get()));
 }
 
 TEST_F(FeaturePolicyTest, TestInitialPolicy) {
@@ -175,7 +221,8 @@ TEST_F(FeaturePolicyTest, TestCrossOriginChildCannotEnableFeature) {
       createFromParentPolicy(nullptr, m_originA);
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
-  policy2->setHeaderPolicy("{\"default-self\": [\"self\"]}", &messages);
+  policy2->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"self\"]}", m_originB.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   EXPECT_FALSE(policy2->isFeatureEnabled(kDefaultSelfFeature));
 }
@@ -199,7 +246,8 @@ TEST_F(FeaturePolicyTest, TestFrameSelfInheritance) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-self\": [\"self\"]}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"self\"]}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originA);
@@ -233,7 +281,8 @@ TEST_F(FeaturePolicyTest, TestReflexiveFrameSelfInheritance) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-self\": [\"self\"]}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"self\"]}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
@@ -262,7 +311,8 @@ TEST_F(FeaturePolicyTest, TestSelectiveFrameInheritance) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-self\": [\"" ORIGIN_B "\"]}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"" ORIGIN_B "\"]}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
@@ -284,7 +334,8 @@ TEST_F(FeaturePolicyTest, TestPolicyCanBlockSelf) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-on\": []}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-on\": []}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   EXPECT_FALSE(policy1->isFeatureEnabled(kDefaultOnFeature));
 }
@@ -302,7 +353,8 @@ TEST_F(FeaturePolicyTest, TestParentPolicyBlocksSameOriginChildPolicy) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-on\": []}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-on\": []}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originA);
@@ -324,7 +376,8 @@ TEST_F(FeaturePolicyTest, TestChildPolicyCanBlockSelf) {
       createFromParentPolicy(nullptr, m_originA);
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
-  policy2->setHeaderPolicy("{\"default-on\": []}", &messages);
+  policy2->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-on\": []}", m_originB.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   EXPECT_FALSE(policy2->isFeatureEnabled(kDefaultOnFeature));
 }
@@ -349,7 +402,8 @@ TEST_F(FeaturePolicyTest, TestChildPolicyCanBlockChildren) {
       createFromParentPolicy(nullptr, m_originA);
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
-  policy2->setHeaderPolicy("{\"default-on\": [\"self\"]}", &messages);
+  policy2->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-on\": [\"self\"]}", m_originB.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy3 =
       createFromParentPolicy(policy2.get(), m_originC);
@@ -370,7 +424,8 @@ TEST_F(FeaturePolicyTest, TestParentPolicyBlocksCrossOriginChildPolicy) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-on\": []}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-on\": []}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
@@ -394,7 +449,8 @@ TEST_F(FeaturePolicyTest, TestEnableForAllOrigins) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-self\": [\"*\"]}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"*\"]}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
@@ -422,7 +478,8 @@ TEST_F(FeaturePolicyTest, TestDefaultOnEnablesForAllAncestors) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-on\": [\"" ORIGIN_B "\"]}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-on\": [\"" ORIGIN_B "\"]}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
@@ -453,7 +510,8 @@ TEST_F(FeaturePolicyTest, TestDefaultSelfRespectsSameOriginEmbedding) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-self\": [\"" ORIGIN_B "\"]}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"" ORIGIN_B "\"]}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
@@ -484,16 +542,19 @@ TEST_F(FeaturePolicyTest, TestDefaultOffMustBeDelegatedToAllCrossOriginFrames) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-off\": [\"" ORIGIN_B "\"]}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-off\": [\"" ORIGIN_B "\"]}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
-  policy2->setHeaderPolicy("{\"default-off\": [\"self\"]}", &messages);
+  policy2->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-off\": [\"self\"]}", m_originB.get(), &messages));
   std::unique_ptr<FeaturePolicy> policy3 =
       createFromParentPolicy(policy2.get(), m_originB);
   std::unique_ptr<FeaturePolicy> policy4 =
       createFromParentPolicy(policy2.get(), m_originC);
-  policy4->setHeaderPolicy("{\"default-off\": [\"self\"]}", &messages);
+  policy4->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-off\": [\"self\"]}", m_originC.get(), &messages));
   EXPECT_FALSE(policy1->isFeatureEnabled(kDefaultOffFeature));
   EXPECT_TRUE(policy2->isFeatureEnabled(kDefaultOffFeature));
   EXPECT_FALSE(policy3->isFeatureEnabled(kDefaultOffFeature));
@@ -517,11 +578,13 @@ TEST_F(FeaturePolicyTest, TestReenableForAllOrigins) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-self\": [\"*\"]}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"*\"]}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
-  policy2->setHeaderPolicy("{\"default-self\": [\"*\"]}", &messages);
+  policy2->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"*\"]}", m_originB.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy3 =
       createFromParentPolicy(policy2.get(), m_originA);
@@ -547,11 +610,13 @@ TEST_F(FeaturePolicyTest, TestBlockedFrameCannotReenable) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-self\": [\"self\"]}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"self\"]}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
-  policy2->setHeaderPolicy("{\"default-self\": [\"*\"]}", &messages);
+  policy2->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"*\"]}", m_originB.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy3 =
       createFromParentPolicy(policy2.get(), m_originA);
@@ -580,13 +645,15 @@ TEST_F(FeaturePolicyTest, TestEnabledFrameCanDelegate) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-self\": [\"self\", \"" ORIGIN_B "\"]}",
-                           &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"self\", \"" ORIGIN_B "\"]}", m_originA.get(),
+      &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
-  policy2->setHeaderPolicy("{\"default-self\": [\"self\", \"" ORIGIN_C "\"]}",
-                           &messages);
+  policy2->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"self\", \"" ORIGIN_C "\"]}", m_originB.get(),
+      &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy3 =
       createFromParentPolicy(policy2.get(), m_originC);
@@ -612,8 +679,9 @@ TEST_F(FeaturePolicyTest, TestEnabledFrameCanDelegateByDefault) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-on\": [\"self\", \"" ORIGIN_B "\"]}",
-                           &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-on\": [\"self\", \"" ORIGIN_B "\"]}", m_originA.get(),
+      &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
@@ -645,8 +713,9 @@ TEST_F(FeaturePolicyTest, TestNonNestedFeaturesDontDelegateByDefault) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-self\": [\"self\", \"" ORIGIN_B "\"]}",
-                           &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"self\", \"" ORIGIN_B "\"]}", m_originA.get(),
+      &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
@@ -680,14 +749,16 @@ TEST_F(FeaturePolicyTest, TestFeaturesAreIndependent) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-self\": [\"self\", \"" ORIGIN_B
-                           "\"], \"default-on\": [\"self\"]}",
-                           &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"self\", \"" ORIGIN_B
+      "\"], \"default-on\": [\"self\"]}",
+      m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy2 =
       createFromParentPolicy(policy1.get(), m_originB);
-  policy2->setHeaderPolicy(
-      "{\"default-self\": [\"*\"], \"default-on\": [\"*\"]}", &messages);
+  policy2->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-self\": [\"*\"], \"default-on\": [\"*\"]}", m_originB.get(),
+      &messages));
   EXPECT_EQ(0UL, messages.size());
   std::unique_ptr<FeaturePolicy> policy3 =
       createFromParentPolicy(policy2.get(), m_originC);
@@ -709,8 +780,9 @@ TEST_F(FeaturePolicyTest, TestFeatureEnabledForOrigin) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-off\": [\"self\", \"" ORIGIN_B "\"]}",
-                           &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-off\": [\"self\", \"" ORIGIN_B "\"]}", m_originA.get(),
+      &messages));
   EXPECT_EQ(0UL, messages.size());
   EXPECT_TRUE(
       policy1->isFeatureEnabledForOrigin(kDefaultOffFeature, *m_originA));

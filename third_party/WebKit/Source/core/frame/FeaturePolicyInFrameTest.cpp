@@ -98,8 +98,9 @@ TEST_F(FeaturePolicyInFrameTest, TestFeatureOverriddenInFrame) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-off\": [\"self\"], \"default-on\": []}",
-                           &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-off\": [\"self\"], \"default-on\": []}", m_originA.get(),
+      &messages));
   EXPECT_EQ(0UL, messages.size());
   document().setFeaturePolicyForTesting(std::move(policy1));
   EXPECT_TRUE(isFeatureEnabledInFrame(kDefaultOffFeature, frame()));
@@ -122,7 +123,8 @@ TEST_F(FeaturePolicyInFrameTest, TestPolicyInactiveWhenFPDisabled) {
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
       createFromParentPolicy(nullptr, m_originA);
-  policy1->setHeaderPolicy("{\"default-on\": []}", &messages);
+  policy1->setHeaderPolicy(FeaturePolicy::parseFeaturePolicy(
+      "{\"default-on\": []}", m_originA.get(), &messages));
   EXPECT_EQ(0UL, messages.size());
   document().setFeaturePolicyForTesting(std::move(policy1));
   EXPECT_TRUE(isFeatureEnabledInFrame(kDefaultOnFeature, frame()));

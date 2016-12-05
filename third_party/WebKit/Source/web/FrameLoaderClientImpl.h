@@ -186,7 +186,8 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
   void didEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) override;
   void didUpdateToUniqueOrigin() override;
   void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;
-  void didSetFeaturePolicyHeader(const String& headerValue) override;
+  void didSetFeaturePolicyHeader(
+      const WebParsedFeaturePolicy& parsedHeader) override;
   void didAddContentSecurityPolicy(const String& headerValue,
                                    ContentSecurityPolicyHeaderType,
                                    ContentSecurityPolicyHeaderSource) override;

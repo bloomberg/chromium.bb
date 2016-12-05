@@ -881,6 +881,21 @@ double ConvertToBlinkTime(const base::TimeTicks& time_ticks) {
   return (time_ticks - base::TimeTicks()).InSecondsF();
 }
 
+ParsedFeaturePolicy ToParsedFeaturePolicy(
+    const blink::WebParsedFeaturePolicy& web_parsed_whitelists) {
+  ParsedFeaturePolicy result;
+  for (const blink::WebFeaturePolicy::ParsedWhitelist& web_whitelist :
+       web_parsed_whitelists) {
+    FeaturePolicyParsedWhitelist whitelist;
+    whitelist.feature_name = web_whitelist.featureName.utf8();
+    whitelist.matches_all_origins = web_whitelist.matchesAllOrigins;
+    for (const blink::WebSecurityOrigin& web_origin : web_whitelist.origins)
+      whitelist.origins.push_back(web_origin);
+    result.push_back(whitelist);
+  }
+  return result;
+}
+
 }  // namespace
 
 struct RenderFrameImpl::PendingFileChooser {
@@ -3135,9 +3150,9 @@ void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,
 }
 
 void RenderFrameImpl::didSetFeaturePolicyHeader(
-    const blink::WebString& header_value) {
-  Send(new FrameHostMsg_DidSetFeaturePolicyHeader(routing_id_,
-                                                  header_value.utf8()));
+    const blink::WebParsedFeaturePolicy& parsed_header) {
+  Send(new FrameHostMsg_DidSetFeaturePolicyHeader(
+      routing_id_, ToParsedFeaturePolicy(parsed_header)));
 }
 
 void RenderFrameImpl::didAddContentSecurityPolicy(

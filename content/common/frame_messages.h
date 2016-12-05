@@ -392,6 +392,12 @@ IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
 #endif
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::FeaturePolicyParsedWhitelist)
+  IPC_STRUCT_TRAITS_MEMBER(feature_name)
+  IPC_STRUCT_TRAITS_MEMBER(matches_all_origins)
+  IPC_STRUCT_TRAITS_MEMBER(origins)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
   IPC_STRUCT_TRAITS_MEMBER(origin)
   IPC_STRUCT_TRAITS_MEMBER(sandbox_flags)
@@ -980,8 +986,10 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeName,
                     std::string /* unique_name */)
 
 // Notifies the browser process that a non-empty Feature-Policy HTTP header was
-// delivered with the document being loaded into the frame.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidSetFeaturePolicyHeader, std::string)
+// delivered with the document being loaded into the frame. |parsed_header| is
+// a list of an origin whitelist for each feature in the policy.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidSetFeaturePolicyHeader,
+                    content::ParsedFeaturePolicy /* parsed_header */)
 
 // Notifies the browser process about a new Content Security Policy that needs
 // to be applies to the frame.  This message is sent when a frame commits

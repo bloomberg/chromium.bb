@@ -3,10 +3,19 @@
 // found in the LICENSE file.
 
 #include "content/common/frame_replication_state.h"
+
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 
 namespace content {
+
+FeaturePolicyParsedWhitelist::FeaturePolicyParsedWhitelist()
+    : matches_all_origins(false) {}
+
+FeaturePolicyParsedWhitelist::FeaturePolicyParsedWhitelist(
+    const FeaturePolicyParsedWhitelist& fppw) = default;
+
+FeaturePolicyParsedWhitelist::~FeaturePolicyParsedWhitelist() {}
 
 FrameReplicationState::FrameReplicationState()
     : sandbox_flags(blink::WebSandboxFlags::None),
