@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN('#include "base/feature_list.h"');
+GEN('#include "chrome/common/chrome_features.h"');
+
 /**
  * Test fixture for print preview WebUI testing.
  * @constructor
@@ -53,6 +56,19 @@ PrintPreviewWebUITest.prototype = {
 
   /** @override */
   isAsync: true,
+
+  /**
+   * @override
+   */
+  testGenPreamble: function() {
+    // Enable print scaling for tests.
+    GEN('  base::FeatureList::ClearInstanceForTesting();');
+    GEN('  std::unique_ptr<base::FeatureList>');
+    GEN('      feature_list(new base::FeatureList);');
+    GEN('  feature_list->InitializeFromCommandLine(');
+    GEN('      features::kPrintScaling.name, std::string());');
+    GEN('  base::FeatureList::SetInstance(std::move(feature_list));');
+  },
 
   /**
    * Stub out low-level functionality like the NativeLayer and
@@ -504,8 +520,7 @@ TEST_F('PrintPreviewWebUITest', 'PrintToPDFSelectedCapabilities', function() {
 
   checkSectionVisible($('other-options-settings'), false);
   checkSectionVisible($('media-size-settings'), false);
-  if (loadTimeData.getBoolean('scalingEnabled'))
-    checkSectionVisible($('scaling-settings'), false);
+  checkSectionVisible($('scaling-settings'), false);
 
   testDone();
 });
@@ -527,15 +542,13 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLCapabilities', function() {
   checkSectionVisible(otherOptions, true);
   checkElementDisplayed(fitToPage, false);
   checkSectionVisible(mediaSize, false);
-  if (loadTimeData.getBoolean('scalingEnabled'))
-    checkSectionVisible(scalingSettings, false);
+  checkSectionVisible(scalingSettings, false);
 
   this.expandMoreSettings();
 
   checkElementDisplayed(fitToPage, false);
   checkSectionVisible(mediaSize, true);
-  if (loadTimeData.getBoolean('scalingEnabled'))
-    checkSectionVisible(scalingSettings, true);
+  checkSectionVisible(scalingSettings, true);
 
   this.waitForAnimationToEnd('more-settings');
 });
@@ -556,27 +569,16 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
       otherOptions.querySelector('.fit-to-page-container'), true);
   expectTrue(
       otherOptions.querySelector('.fit-to-page-checkbox').checked);
-  if (loadTimeData.getBoolean('scalingEnabled'))
-    this.expandMoreSettings();
+  this.expandMoreSettings();
   checkSectionVisible($('media-size-settings'), true);
-  if (loadTimeData.getBoolean('scalingEnabled'))
-    checkSectionVisible(scalingSettings, true);
+  checkSectionVisible(scalingSettings, true);
 
   this.waitForAnimationToEnd('other-options-collapsible');
 });
 
 // When the source is "PDF", depending on the selected destination printer, we
 // show/hide the fit to page option and hide media size selection.
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
-GEN('# define MAYBE_ScalingUnchecksFitToPage \\');
-GEN('     DISABLED_ScalingUnchecksFitToPage');
-GEN('#else');
-GEN('# define MAYBE_ScalingUnchecksFitToPage \\');
-GEN('     ScalingUnchecksFitToPage');
-GEN('#endif');
-
-TEST_F('PrintPreviewWebUITest',
-       'MAYBE_ScalingUnchecksFitToPage', function() {
+TEST_F('PrintPreviewWebUITest', 'ScalingUnchecksFitToPage', function() {
   this.initialSettings_.isDocumentModifiable_ = false;
   this.setInitialSettings();
   this.setLocalDestinations();
