@@ -153,6 +153,8 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		return ret;
 	}
 
+	bo->width = width;
+	bo->height = height;
 	bo->handles[0].u32 = create_dumb.handle;
 	bo->offsets[0] = 0;
 	bo->total_size = bo->sizes[0] = create_dumb.size;
