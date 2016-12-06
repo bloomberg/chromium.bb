@@ -306,7 +306,7 @@ with the following exceptions.
   constructs that target old browsers.
 * Per the JavaScript guide, new tests should also follow any per-project
   style guide, such as the
-  [ServiceWorker Tests Style guide](http://www.chromium.org/blink/serviceworker/testing).
+  [ServiceWorker Tests Style guide](https://www.chromium.org/blink/serviceworker/testing).
 
 ## JavaScript Tests
 

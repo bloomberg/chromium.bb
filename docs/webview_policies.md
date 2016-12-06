@@ -17,6 +17,6 @@ App Restrictions.
 Please see the [Policy List on chromium.org][2] for more information and the
 list of supported policies.
 
-[3]: http://developer.android.com/training/enterprise/work-policy-ctrl.html#apply_restrictions
-[1]: http://developer.android.com/training/enterprise/app-restrictions.html
+[3]: https://developer.android.com/training/enterprise/work-policy-ctrl.html#apply_restrictions
+[1]: https://developer.android.com/training/enterprise/app-restrictions.html
 [2]: https://www.chromium.org/administrators/policy-list-3

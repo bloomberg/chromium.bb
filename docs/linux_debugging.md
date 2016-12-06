@@ -80,7 +80,7 @@ which is rather annoying.
 
 You can also use `--renderer-startup-dialog` and attach to the process in order
 to debug the renderer code. Go to
-http://www.chromium.org/blink/getting-started-with-blink-debugging for more
+https://www.chromium.org/blink/getting-started-with-blink-debugging for more
 information on how this can be done.
 
 #### Choosing which renderers to debug
@@ -196,7 +196,7 @@ just run gdb on the main process.
 
 Currently, the `--disable-gpu` flag is also required, as there are known crashes
 that occur under TextureImageTransportSurface without it. The crash described in
-http://crbug.com/361689 can also sometimes occur, but that crash can be
+https://crbug.com/361689 can also sometimes occur, but that crash can be
 continued from without harm.
 
 Note that for technical reasons plugins cannot be in-process, so
@@ -394,7 +394,7 @@ Default log level hides `LOG(INFO)`. Run with `--log-level=0` and
 `--enable-logging=stderr` flags.
 
 Newer versions of Chromium with VLOG may need --v=1 too. For more VLOG tips, see
-[the chromium-dev thread](http://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/dcd0cd7752b35de6?pli=1).
+[the chromium-dev thread](https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/dcd0cd7752b35de6?pli=1).
 
 ### Seeing IPC debug messages
 
@@ -485,7 +485,7 @@ this, run via `Xephyr`. Instructions for how to use `Xephyr` are on the
 ### Isolating Regressions
 
 Old builds are archived here:
-http://build.chromium.org/buildbot/snapshots/chromium-rel-linux/
+https://build.chromium.org/buildbot/snapshots/chromium-rel-linux/
 (TODO: does not exist).
 
 `tools/bisect-builds.py` in the tree automates bisecting through the archived

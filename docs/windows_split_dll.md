@@ -46,13 +46,13 @@ import/export, however it cannot work for data export.
 
 There are relatively few instances where data exports are required across the
 DLL boundary. The waterfall builder
-http://build.chromium.org/p/chromium/waterfall?show=Win%20Split will detect when
+https://build.chromium.org/p/chromium/waterfall?show=Win%20Split will detect when
 new data exports are added, and these will need to be repaired. For constants,
 the data can be duplicated to both DLLs, but for writeable data, a wrapping
 set/get function will need to be added.
 
-http://build.chromium.org/p/chromium/waterfall?show=Win%20Split does not exist.
+https://build.chromium.org/p/chromium/waterfall?show=Win%20Split does not exist.
 
 Some more details can be found on the initial commit of the split_link script
-http://src.chromium.org/viewvc/chrome?revision=200049&view=revision and the
-associated bugs: http://crbug.com/237249 http://crbug.com/237267.
+https://src.chromium.org/viewvc/chrome?revision=200049&view=revision and the
+associated bugs: https://crbug.com/237249 https://crbug.com/237267.

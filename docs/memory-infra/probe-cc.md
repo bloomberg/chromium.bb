@@ -122,4 +122,4 @@ The following areas have insufficient memory instrumentation.
 
 1.  DisplayLists - DisplayLists can be quite large and are currently
     un-instrumented. These use malloc memory and currently contribute to
-    malloc/allocated_objects/<unspecified>. [BUG](http://crbug.com/567465)
+    malloc/allocated_objects/<unspecified>. [BUG](https://crbug.com/567465)

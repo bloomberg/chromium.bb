@@ -9,7 +9,7 @@ If you're new to Chromium development, read the
 [getting started guides](https://www.chromium.org/developers/how-tos/get-the-code).
 
 There is some additional documentation on
-[setting GYP build parameters](http://dev.chromium.org/developers/gyp-environment-variables).
+[setting GYP build parameters](https://dev.chromium.org/developers/gyp-environment-variables).
 
 [TOC]
 
@@ -21,7 +21,7 @@ A non-standard build configuration is to use dynamic linking instead of static
 linking for the various modules in the Chromium codebase. This results in
 significantly faster link times, but is a divergence from what is shipped and
 primarily tested. To enable the
-[component build](http://www.chromium.org/developers/how-tos/component-build):
+[component build](https://www.chromium.org/developers/how-tos/component-build):
 
     $ GYP_DEFINES="component=shared_library" gclient runhooks
 

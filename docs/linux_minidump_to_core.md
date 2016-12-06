@@ -103,6 +103,6 @@ Then use gdb as normal.
 ## Other resources
 
 For more discussion on this process see
-[Debugging a Minidump](http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/crash-reporting/debugging-a-minidump).
+[Debugging a Minidump](https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/crash-reporting/debugging-a-minidump).
 This page discusses the same process in the context of ChromeOS and many of the
 concepts and techniques overlap.

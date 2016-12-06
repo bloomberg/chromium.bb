@@ -76,7 +76,7 @@ dynamic bottom view) in two different and distinct ways.
 
 For the cases where there is a dynamic view at the bottom of the browser view, a
 new view class (named `BrowserResizerView`) inheriting from
-[views::View](http://src.chromium.org/svn/trunk/src/chrome/views/view.h) is used
+[views::View](https://src.chromium.org/svn/trunk/src/chrome/views/view.h) is used
 to display the resize widget. It is set as a child of the dynamic view laid at
 the bottom of the browser view. The Browser view takes care of properly setting
 the bounds of the resize widget view, based on the language direction.
@@ -111,7 +111,7 @@ resize widget area.
 ## Implementation
 
 You can find the changes made to make this work in patch
-[16488](http://codereview.chromium.org/16488).
+[16488](https://codereview.chromium.org/16488).
 
 ## Alternatives Considered
 

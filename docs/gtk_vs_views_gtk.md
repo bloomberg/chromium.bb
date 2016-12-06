@@ -23,9 +23,9 @@
     *   Native feel layout
     *   Font size changes (e.g., changing the system font size will apply to our
         dialogs)
-    *   Better RTL (e.g., http://crbug.com/2822 http://crbug.com/5729
-        http://crbug.com/6082 http://crbug.com/6103 http://crbug.com/6125
-        http://crbug.com/8686 http://crbug.com/8649)
+    *   Better RTL (e.g., https://crbug.com/2822 https://crbug.com/5729
+        https://crbug.com/6082 https://crbug.com/6103 https://crbug.com/6125
+        https://crbug.com/8686 https://crbug.com/8649)
 *   Being able to obey the user's system theme
 *   Accessibility for buttons and dialogs (but not for tabstrip and bookmarks)
 *   A better change at good remote X performance?

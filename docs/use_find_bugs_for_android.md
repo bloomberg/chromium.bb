@@ -43,7 +43,7 @@ to enforce chromium specific Java rules. It currently detects:
 
 [FindBugs](http://findbugs.sourceforge.net) is configured to run on:
 
-*   [android_clang_dbg_recipe](http://build.chromium.org/p/tryserver.chromium.linux/builders/android_clang_dbg_recipe)
+*   [android_clang_dbg_recipe](https://build.chromium.org/p/tryserver.chromium.linux/builders/android_clang_dbg_recipe)
     on the commit queue
-*   [Android Clang Builder (dbg)](http://build.chromium.org/p/chromium.linux/builders/Android%20Clang%20Builder%20\(dbg\))
+*   [Android Clang Builder (dbg)](https://build.chromium.org/p/chromium.linux/builders/Android%20Clang%20Builder%20\(dbg\))
     on the main waterfall

@@ -170,10 +170,10 @@ You can find out more about GoogleTest at its
 ## Debugging
 
 Good debugging tips can be found
-[here](http://dev.chromium.org/developers/how-tos/debugging-on-os-x). If you
+[here](https://dev.chromium.org/developers/how-tos/debugging-on-os-x). If you
 would like to debug in a graphical environment, rather than using `lldb` at the
 command line, that is possible without building in Xcode (see
-[Debugging in Xcode](http://www.chromium.org/developers/how-tos/debugging-on-os-x/building-with-ninja-debugging-with-xcode)).
+[Debugging in Xcode](https://www.chromium.org/developers/how-tos/debugging-on-os-x/building-with-ninja-debugging-with-xcode)).
 
 ## Update your checkout
 
@@ -226,7 +226,7 @@ gets interpreted as a URL to open.
 
 If you have problems building, join us in `#chromium` on `irc.freenode.net` and
 ask there. Be sure that the
-[waterfall](http://build.chromium.org/buildbot/waterfall/) is green and the
+[waterfall](https://build.chromium.org/buildbot/waterfall/) is green and the
 tree is open before checking out. This will increase your chances of success.
 
 ### Improving performance of `git status`

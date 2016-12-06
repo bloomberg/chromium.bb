@@ -241,7 +241,7 @@ Date:   Mon Jul 19 19:09:41 2010 +0000
 
     BUG=38992
 
-    Review URL: http://codereview.chromium.org/3036004
+    Review URL: https://codereview.chromium.org/3036004
 
     git-svn-id: svn://svn.chromium.org/chrome/trunk/src@52935 0039d316-1c4b-4281-b951-d872f2087c98
 ```
@@ -268,7 +268,7 @@ from that one then adjust it to point it at the real upstream one.
 
 1.  Clone a nearby copy of the code you want: `git clone coworker-machine:/path/to/repo`
 1.  Change the URL your copy fetches from to point at the real git repo:
-    `git set-url origin http://src.chromium.org/git/chromium.git`
+    `git set-url origin https://src.chromium.org/git/chromium.git`
 1.  Update your copy: `git fetch`
 1.  Delete any extra branches that you picked up in the initial clone:
     `git prune origin`

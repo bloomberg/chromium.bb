@@ -36,12 +36,12 @@ false`.
 
 ## Mailing List
 
-http://groups.google.com/a/chromium.org/group/clang/topics
+https://groups.google.com/a/chromium.org/group/clang/topics
 
 ## Using plugins
 
 The
-[chromium style plugin](http://dev.chromium.org/developers/coding-style/chromium-style-checker-errors)
+[chromium style plugin](https://dev.chromium.org/developers/coding-style/chromium-style-checker-errors)
 is used by default when clang is used.
 
 If you're working on the plugin, you can build it locally like so:
@@ -68,7 +68,7 @@ SDK, so you still need to have Visual Studio installed.
 
 Things should compile, and all tests should pass. You can check these bots for
 how things are currently looking:
-http://build.chromium.org/p/chromium.fyi/console?category=win%20clang
+https://build.chromium.org/p/chromium.fyi/console?category=win%20clang
 
 ```shell
 python tools\clang\scripts\update.py

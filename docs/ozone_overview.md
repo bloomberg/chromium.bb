@@ -118,7 +118,7 @@ through creating a new ozone platform called `foo`.
 
 ## Building with Ozone
 
-### ChromeOS - ([waterfall](http://build.chromium.org/p/chromium.chromiumos/waterfall?builder=Linux+ChromiumOS+Ozone+Builder&builder=Linux+ChromiumOS+Ozone+Tests+%281%29&builder=Linux+ChromiumOS+Ozone+Tests+%282%29&reload=none))
+### ChromeOS - ([waterfall](https://build.chromium.org/p/chromium.chromiumos/waterfall?builder=Linux+ChromiumOS+Ozone+Builder&builder=Linux+ChromiumOS+Ozone+Tests+%281%29&builder=Linux+ChromiumOS+Ozone+Tests+%282%29&reload=none))
 
 To build `chrome`, do this from the `src` directory:
 
@@ -160,7 +160,7 @@ Then to run for example the headless platform:
 ```
 
 ### Linux Desktop - ([waterfall](https://build.chromium.org/p/chromium.fyi/builders/Ozone%20Linux/))
-Support for Linux Desktop is currently [in-progress](http://crbug.com/295089).
+Support for Linux Desktop is currently [in-progress](https://crbug.com/295089).
 
 The following targets are currently working:
 
@@ -234,7 +234,7 @@ content_shell --ozone-platform=headless \
 
 This is Linux direct rending with acceleration via mesa GBM & linux DRM/KMS
 (EGL/GLES2 accelerated rendering & modesetting in GPU process) and is in
-production use on [ChromeOS](http://www.chromium.org/chromium-os).
+production use on [ChromeOS](https://www.chromium.org/chromium-os).
 
 Note that all ChromeOS builds of Chrome will compile and attempt to use this.
 See [Building Chromium for Chromium OS](https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/building-chromium-browser) for build instructions.

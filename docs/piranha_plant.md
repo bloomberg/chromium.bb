@@ -46,7 +46,7 @@ architecture should look like now that the spec is relatively stable.
 ## Deliverables
 
 1.  Project code name: Piranha Plant.
-1.  A [design document](http://www.chromium.org/developers/design-documents/idealized-mediastream-design)
+1.  A [design document](https://www.chromium.org/developers/design-documents/idealized-mediastream-design)
     for the idealized future design (work in progress).
 1.  A document laying out a plan for incremental steps to achieve as much of the
     idealized design as is pragmatic. See below for current draft.

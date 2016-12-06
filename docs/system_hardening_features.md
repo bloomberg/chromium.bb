@@ -57,7 +57,7 @@ This is a list of current and planned Chrome OS security features. Each feature 
 ## Chrome OS specific features
 
   * We use `minijail` for sandboxing:
-    * [Design doc](http://www.chromium.org/chromium-os/chromiumos-design-docs/system-hardening#Detailed_Design_73859539098644_6227793370126997)
+    * [Design doc](https://www.chromium.org/chromium-os/chromiumos-design-docs/system-hardening#Detailed_Design_73859539098644_6227793370126997)
     * Issue 380 (on Google Code)
   * Current sandboxing status:
 

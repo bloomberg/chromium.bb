@@ -223,7 +223,7 @@ The app will appear on the device as "Chromium".
 ### Build Content shell
 
 Wraps the content module (but not the /chrome embedder). See
-[http://www.chromium.org/developers/content-module](http://www.chromium.org/developers/content-module)
+[https://www.chromium.org/developers/content-module](https://www.chromium.org/developers/content-module)
 for details on the content module and content shell.
 
 ```shell
@@ -244,9 +244,9 @@ export CHROMIUM_OUT_DIR=out_android
 
 ### Build WebView shell
 
-[Android WebView](http://developer.android.com/reference/android/webkit/WebView.html)
+[Android WebView](https://developer.android.com/reference/android/webkit/WebView.html)
 is a system framework component. Since Android KitKat, it is implemented using
-Chromium code (based off the [content module](http://dev.chromium.org/developers/content-module)).
+Chromium code (based off the [content module](https://dev.chromium.org/developers/content-module)).
 It is possible to test modifications to WebView using a simple test shell. The
 WebView shell is a view with a URL bar at the top (see [code](https://code.google.com/p/chromium/codesearch#chromium/src/android_webview/test/shell/src/org/chromium/android_webview/test/AwTestContainerView.java))
 and is **independent** of the WebView **implementation in the Android system** (
@@ -258,7 +258,7 @@ ninja -C out/Release android_webview_apk
 build/android/adb_install_apk.py out/Release/apks/AndroidWebView.apk
 ```
 
-If, instead, you want to build the complete Android WebView framework component and test the effect of your chromium changes in other Android app using the WebView, you should follow the [Android AOSP + chromium WebView instructions](http://www.chromium.org/developers/how-tos/build-instructions-android-webview)
+If, instead, you want to build the complete Android WebView framework component and test the effect of your chromium changes in other Android app using the WebView, you should follow the [Android AOSP + chromium WebView instructions](https://www.chromium.org/developers/how-tos/build-instructions-android-webview)
 
 ### Running
 
@@ -286,7 +286,7 @@ build/android/adb_run_android_webview_shell http://example.com
 
 Logging is often the easiest way to understand code flow. In C++ you can print
 log statements using the LOG macro or printf(). In Java, you can print log
-statements using [android.util.Log](http://developer.android.com/reference/android/util/Log.html):
+statements using [android.util.Log](https://developer.android.com/reference/android/util/Log.html):
 
 `Log.d("sometag", "Reticulating splines progress = " + progress);`
 

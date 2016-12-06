@@ -6,7 +6,7 @@
 ## Overview
 
 Logging used to be done using Android's [android.util.Log]
-(http://developer.android.com/reference/android/util/Log.html).
+(https://developer.android.com/reference/android/util/Log.html).
 
 A wrapper on that is now available: org.chromium.base.Log. It is designed to
 write logs as belonging to logical groups going beyond single classes, and to
@@ -205,7 +205,7 @@ for all tags. Please use `grep` or a similar tool to refine your filters
 further.
 
 For more, see the [related page on developer.android.com]
-(http://developer.android.com/tools/debugging/debugging-log.html#filteringOutput)
+(https://developer.android.com/tools/debugging/debugging-log.html#filteringOutput)
 
 ## Logs in JUnit tests
 

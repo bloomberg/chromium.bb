@@ -141,7 +141,7 @@ Note that tests are sharded across all attached devices unless explicitly told
 to do otherwise by `-d/--device`.
 
 The commands used by the buildbots are printed in the logs. Look at
-http://build.chromium.org/ to duplicate the same test command as a particular
+https://build.chromium.org/ to duplicate the same test command as a particular
 builder.
 
 ### INSTALL\_FAILED\_CONTAINER\_ERROR or INSTALL\_FAILED\_INSUFFICIENT\_STORAGE
@@ -304,6 +304,6 @@ See [Layout Tests](testing/layout_tests.md).
 
 (e.g. the "Android Debug (Nexus 7)" bot on the chromium.gpu waterfall)
 
-See http://www.chromium.org/developers/testing/gpu-testing for details. Use
+See https://www.chromium.org/developers/testing/gpu-testing for details. Use
 `--browser=android-content-shell`. Examine the stdio from the test invocation on
 the bots to see arguments to pass to `src/content/test/gpu/run_gpu_test.py`.

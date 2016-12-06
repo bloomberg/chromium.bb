@@ -4,7 +4,7 @@ Several times a day the Chromium code base is built with Microsoft VC++'s
 `/analyze` compile option. This does static code analysis which has found
 numerous bugs (see https://crbug.com/427616). While it is possible to visit the
 `/analyze` builder page and look at the raw results
-(http://build.chromium.org/p/chromium.fyi/builders/Chromium%20Windows%20Analyze)
+(https://build.chromium.org/p/chromium.fyi/builders/Chromium%20Windows%20Analyze)
 this works very poorly.
 
 As of this writing there are 2,702 unique warnings. Some of these are in header

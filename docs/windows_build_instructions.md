@@ -147,7 +147,7 @@ $ gn gen out/Default
 
 If you want to use the Visual Studio IDE, use the `--ide` command line
 argument to `gn gen` when you generate your output directory (as described on
-the [get the code](http://dev.chromium.org/developers/how-tos/get-the-code)
+the [get the code](https://dev.chromium.org/developers/how-tos/get-the-code)
 page):
 
 ```shell

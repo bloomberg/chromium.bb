@@ -142,7 +142,7 @@ hooks as needed.
 
 If you have problems building, join us in `#chromium` on `irc.freenode.net` and
 ask there. As mentioned above, be sure that the
-[waterfall](http://build.chromium.org/buildbot/waterfall/) is green and the tree
+[waterfall](https://build.chromium.org/buildbot/waterfall/) is green and the tree
 is open before checking out. This will increase your chances of success.
 
 ### Improving performance of `git status`

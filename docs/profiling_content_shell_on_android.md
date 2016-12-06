@@ -94,7 +94,7 @@ You can run any Telemetry benchmark with `--profiler=perf`, and it will:
 4.  Setup symlinks to work with the `--symfs` parameter
 
 You can also run "manual" tests with Telemetry, more information here:
-http://www.chromium.org/developers/telemetry/profiling#TOC-Manual-Profiling---Android
+https://www.chromium.org/developers/telemetry/profiling#TOC-Manual-Profiling---Android
 
 The following steps describe building `perf`, which is no longer necessary if
 you use Telemetry.

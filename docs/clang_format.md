@@ -3,7 +3,7 @@
 ## Easiest usage, from the command line
 
 To automatically format a pending patch according to
-[Chromium style](http://www.chromium.org/developers/coding-style), from
+[Chromium style](https://www.chromium.org/developers/coding-style), from
 the command line, simply run: ``` git cl format ``` This should work on all
 platforms _(yes, even Windows)_ without any set up or configuration: the tool
 comes with your checkout. Like other `git-cl` commands, this operates on a diff
@@ -33,7 +33,7 @@ work.
 
 For further guidance on editor integration, see these specific pages:
 
-*   [Sublime Text](http://www.chromium.org/developers/sublime-text#TOC-Format-selection-or-area-around-cursor-using-clang-format)
+*   [Sublime Text](https://www.chromium.org/developers/sublime-text#TOC-Format-selection-or-area-around-cursor-using-clang-format)
 *   [llvm's guidelines for vim, emacs, and bbedit](http://clang.llvm.org/docs/ClangFormat.html)
 *   For vim, `:so tools/vim/clang-format.vim` and then hit cmd-shift-i (mac)
     ctrl-shift-i (elsewhere) to indent the current line or current selection.

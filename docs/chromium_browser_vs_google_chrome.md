@@ -47,4 +47,4 @@ builds **on Linux**.
         http://googlechromereleases.blogspot.com/, http://omahaproxy.appspot.com/
         and http://gsdview.appspot.com/chromium-browser-official/
 *   Google API keys depend on the distribution
-    *   See http://www.chromium.org/developers/how-tos/api-keys
+    *   See https://www.chromium.org/developers/how-tos/api-keys

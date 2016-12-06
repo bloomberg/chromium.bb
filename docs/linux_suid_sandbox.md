@@ -131,4 +131,4 @@ Chromium binary somewhere else you need to modify this string.
 *   [LinuxSUIDSandboxDevelopment](linux_suid_sandbox_development.md)
 *   [LinuxSandboxing](linux_sandboxing.md)
 *   General information on Chromium sandboxing:
-    http://dev.chromium.org/developers/design-documents/sandbox
+    https://dev.chromium.org/developers/design-documents/sandbox

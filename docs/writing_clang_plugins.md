@@ -17,7 +17,7 @@ Valid reasons for writing a plugin are for example:
 *   You want to write an automatic code rewriter.
 
 In both cases, please inform
-[clang@chromium.org](http://groups.google.com/a/chromium.org/group/clang/topics)
+[clang@chromium.org](https://groups.google.com/a/chromium.org/group/clang/topics)
 of your plans before you pursue them.
 
 # Having said that
