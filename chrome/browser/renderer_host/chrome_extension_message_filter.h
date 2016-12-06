@@ -23,6 +23,7 @@ namespace extensions {
 class ActivityLog;
 class InfoMap;
 struct Message;
+struct PortId;
 }
 
 // This class filters out incoming Chrome-specific IPC messages from the
@@ -52,41 +53,21 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
                                 const ExtensionMsg_ExternalConnectionInfo& info,
                                 const std::string& channel_name,
                                 bool include_tls_channel_id,
-                                int request_id);
-  void OnOpenChannelToExtensionSync(
-      int routing_id,
-      const ExtensionMsg_ExternalConnectionInfo& info,
-      const std::string& channel_name,
-      bool include_tls_channel_id,
-      int* port_id);
-  void OpenChannelToExtensionOnUIThread(
-      int source_process_id,
-      int source_routing_id,
-      int receiver_port_id,
-      const ExtensionMsg_ExternalConnectionInfo& info,
-      const std::string& channel_name,
-      bool include_tls_channel_id);
+                                const extensions::PortId& port_id);
   void OnOpenChannelToNativeApp(int routing_id,
                                 const std::string& native_app_name,
-                                int request_id);
-  void OpenChannelToNativeAppOnUIThread(int source_routing_id,
-                                        int receiver_port_id,
-                                        const std::string& native_app_name);
+                                const extensions::PortId& port_id);
   void OnOpenChannelToTab(int routing_id,
                           const ExtensionMsg_TabTargetConnectionInfo& info,
                           const std::string& extension_id,
                           const std::string& channel_name,
-                          int request_id);
-  void OpenChannelToTabOnUIThread(
-      int source_process_id,
-      int source_routing_id,
-      int receiver_port_id,
-      const ExtensionMsg_TabTargetConnectionInfo& info,
-      const std::string& extension_id,
-      const std::string& channel_name);
-  void OnOpenMessagePort(int routing_id, int port_id);
-  void OnCloseMessagePort(int routing_id, int port_id, bool force_close);
-  void OnPostMessage(int port_id, const extensions::Message& message);
+                          const extensions::PortId& port_id);
+  void OnOpenMessagePort(int routing_id, const extensions::PortId& port_id);
+  void OnCloseMessagePort(int routing_id,
+                          const extensions::PortId& port_id,
+                          bool force_close);
+  void OnPostMessage(const extensions::PortId& port_id,
+                     const extensions::Message& message);
   void OnGetExtMessageBundle(const std::string& extension_id,
                              IPC::Message* reply_msg);
   void OnGetExtMessageBundleOnBlockingPool(

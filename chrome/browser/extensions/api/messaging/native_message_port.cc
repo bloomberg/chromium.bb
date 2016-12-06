@@ -86,7 +86,7 @@ void NativeMessagePort::Core::CloseChannel(const std::string& error_message) {
 
 NativeMessagePort::NativeMessagePort(
     base::WeakPtr<MessageService> message_service,
-    int port_id,
+    const PortId& port_id,
     std::unique_ptr<NativeMessageHost> native_message_host)
     : weak_message_service_(message_service),
       host_task_runner_(native_message_host->task_runner()),

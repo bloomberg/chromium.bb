@@ -42,4 +42,58 @@ chrome.test.runTests([
     chrome.runtime.connect({ name: 'The Last Port'}).onDisconnect.addListener(
         chrome.test.callbackFail(kPortErrorMessage));
   },
+
+  // Regression test for crbug.com/597698
+  function sendMessageNoCallback() {
+    var f = document.createElement('iframe');
+    var onMessageInFrame = chrome.test.callbackPass(function(msg) {
+      f.remove();
+      chrome.test.assertEq('sendMessage without callback', msg);
+    });
+    f.onload = function() {
+      f.contentWindow.chrome.runtime.onMessage.addListener(onMessageInFrame);
+      chrome.runtime.sendMessage('sendMessage without callback');
+    };
+
+    // The exact file is not important, as long as it is an extension page, so
+    // that the extension APIs become available (about:blank would not work).
+    f.src = 'manifest.json';
+    document.body.appendChild(f);
+  },
+
+  // Regression test for crbug.com/597698
+  function connectAndDisconnect() {
+    var gotMessage = chrome.test.callbackAdded();
+    var gotDisconnect = chrome.test.callbackAdded();
+
+    var senderPort;
+    var f = document.createElement('iframe');
+    f.onload = function() {
+      f.contentWindow.chrome.runtime.onConnect.addListener(function(port) {
+        chrome.test.assertEq('port with active frame', port.name);
+        chrome.test.assertEq(null, senderPort, 'onConnect should be async');
+        var didCallOnMessage = false;
+        port.onMessage.addListener(function(msg) {
+          chrome.test.assertEq(false, didCallOnMessage);
+          didCallOnMessage = true;
+          chrome.test.assertEq('fire and forget', msg);
+          gotMessage();
+        });
+        port.onDisconnect.addListener(function() {
+          f.remove();
+          gotDisconnect();
+        });
+      });
+
+      senderPort = chrome.runtime.connect({ name: 'port with active frame' });
+      senderPort.postMessage('fire and forget');
+      senderPort.disconnect();
+      senderPort = null;
+    };
+
+    // The exact file is not important, as long as it is an extension page, so
+    // that the extension APIs become available (about:blank would not work).
+    f.src = 'manifest.json';
+    document.body.appendChild(f);
+  },
 ]);

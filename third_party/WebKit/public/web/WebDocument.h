@@ -128,12 +128,6 @@ class WebDocument : public WebNode {
   // Each call to this method overrides any previous calls.
   BLINK_EXPORT void watchCSSSelectors(const WebVector<WebString>& selectors);
 
-  // These methods are exposed only as a temporary fix for a stable-blocker
-  // regression (crbug.com/660706), and should be removed pronto.
-  // TODO(devlin): Make it happen!
-  BLINK_EXPORT bool unloadStartedDoNotUse() const;
-  BLINK_EXPORT bool processingBeforeUnloadDoNotUse() const;
-
   BLINK_EXPORT WebVector<WebDraggableRegion> draggableRegions() const;
 
   BLINK_EXPORT v8::Local<v8::Value> registerEmbedderCustomElement(

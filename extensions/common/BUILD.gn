@@ -43,6 +43,8 @@ if (enable_extensions) {
       "api/declarative/declarative_manifest_handler.cc",
       "api/declarative/declarative_manifest_handler.h",
       "api/messaging/message.h",
+      "api/messaging/port_id.cc",
+      "api/messaging/port_id.h",
       "api/printer_provider/usb_printer_manifest_data.cc",
       "api/printer_provider/usb_printer_manifest_data.h",
       "api/printer_provider/usb_printer_manifest_handler.cc",

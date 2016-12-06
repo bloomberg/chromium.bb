@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
+#include "extensions/common/api/messaging/port_id.h"
 
 class GURL;
 
@@ -29,14 +30,14 @@ class ExtensionMessagePort : public MessageService::MessagePort {
  public:
   // Create a port that is tied to frame(s) in a single tab.
   ExtensionMessagePort(base::WeakPtr<MessageService> message_service,
-                       int port_id,
+                       const PortId& port_id,
                        const std::string& extension_id,
                        content::RenderFrameHost* rfh,
                        bool include_child_frames);
   // Create a port that is tied to all frames of an extension, possibly spanning
   // multiple tabs, including the invisible background page, popups, etc.
   ExtensionMessagePort(base::WeakPtr<MessageService> message_service,
-                       int port_id,
+                       const PortId& port_id,
                        const std::string& extension_id,
                        content::RenderProcessHost* extension_process);
   ~ExtensionMessagePort() override;
@@ -85,7 +86,7 @@ class ExtensionMessagePort : public MessageService::MessagePort {
 
   base::WeakPtr<MessageService> weak_message_service_;
 
-  int port_id_;
+  const PortId port_id_;
   std::string extension_id_;
   content::BrowserContext* browser_context_;
   // Only for receivers in an extension process.

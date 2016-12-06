@@ -19,6 +19,7 @@
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_id.h"
 
 class GURL;
@@ -122,10 +123,6 @@ class MessageService : public BrowserContextKeyedAPI {
       const PrefService* pref_service,
       const std::string& native_host_name);
 
-  // Allocates a pair of port ids.
-  // NOTE: this can be called from any thread.
-  static void AllocatePortIdPair(int* port1, int* port2);
-
   explicit MessageService(content::BrowserContext* context);
   ~MessageService() override;
 
@@ -138,46 +135,49 @@ class MessageService : public BrowserContextKeyedAPI {
   // Given an extension's ID, opens a channel between the given renderer "port"
   // and every listening context owned by that extension. |channel_name| is
   // an optional identifier for use by extension developers.
-  void OpenChannelToExtension(
-      int source_process_id, int source_routing_id, int receiver_port_id,
-      const std::string& source_extension_id,
-      const std::string& target_extension_id,
-      const GURL& source_url,
-      const std::string& channel_name,
-      bool include_tls_channel_id);
+  void OpenChannelToExtension(int source_process_id,
+                              int source_routing_id,
+                              const PortId& source_port_id,
+                              const std::string& source_extension_id,
+                              const std::string& target_extension_id,
+                              const GURL& source_url,
+                              const std::string& channel_name,
+                              bool include_tls_channel_id);
 
   // Same as above, but opens a channel to the tab with the given ID.  Messages
   // are restricted to that tab, so if there are multiple tabs in that process,
   // only the targeted tab will receive messages.
   void OpenChannelToTab(int source_process_id,
                         int source_routing_id,
-                        int receiver_port_id,
+                        const PortId& source_port_id,
                         int tab_id,
                         int frame_id,
                         const std::string& extension_id,
                         const std::string& channel_name);
 
-  void OpenChannelToNativeApp(
-      int source_process_id,
-      int source_routing_id,
-      int receiver_port_id,
-      const std::string& native_app_name);
+  void OpenChannelToNativeApp(int source_process_id,
+                              int source_routing_id,
+                              const PortId& source_port_id,
+                              const std::string& native_app_name);
 
   // Mark the given port as opened by the frame identified by
   // (process_id, routing_id).
-  void OpenPort(int port_id, int process_id, int routing_id);
+  void OpenPort(const PortId& port_id, int process_id, int routing_id);
 
   // Closes the given port in the given frame. If this was the last frame or if
   // |force_close| is true, then the other side is closed as well.
-  void ClosePort(int port_id, int process_id, int routing_id, bool force_close);
+  void ClosePort(const PortId& port_id,
+                 int process_id,
+                 int routing_id,
+                 bool force_close);
 
   // Closes the message channel associated with the given port, and notifies
   // the other side.
-  void CloseChannel(int port_id, const std::string& error_message);
+  void CloseChannel(const PortId& port_id, const std::string& error_message);
 
   // Enqueues a message on a pending channel, or sends a message to the given
   // port if the channel isn't pending.
-  void PostMessage(int port_id, const Message& message);
+  void PostMessage(const PortId& port_id, const Message& message);
 
  private:
   friend class MockMessageService;
@@ -185,20 +185,21 @@ class MessageService : public BrowserContextKeyedAPI {
   struct OpenChannelParams;
 
   // A map of channel ID to its channel object.
-  using MessageChannelMap = std::map<int, std::unique_ptr<MessageChannel>>;
+  using MessageChannelMap =
+      std::map<ChannelId, std::unique_ptr<MessageChannel>>;
 
-  using PendingMessage = std::pair<int, Message>;
+  using PendingMessage = std::pair<PortId, Message>;
   using PendingMessagesQueue = std::vector<PendingMessage>;
   // A set of channel IDs waiting to complete opening, and any pending messages
   // queued to be sent on those channels.
-  using PendingChannelMap = std::map<int, PendingMessagesQueue>;
+  using PendingChannelMap = std::map<ChannelId, PendingMessagesQueue>;
 
   // A map of channel ID to information about the extension that is waiting
   // for that channel to open. Used for lazy background pages.
   using PendingLazyBackgroundPageChannel =
       std::pair<content::BrowserContext*, ExtensionId>;
   using PendingLazyBackgroundPageChannelMap =
-      std::map<int, PendingLazyBackgroundPageChannel>;
+      std::map<ChannelId, PendingLazyBackgroundPageChannel>;
 
   // Common implementation for opening a channel configured by |params|.
   //
@@ -212,21 +213,21 @@ class MessageService : public BrowserContextKeyedAPI {
                        const Extension* target_extension,
                        bool did_enqueue);
 
-  void ClosePortImpl(int port_id,
+  void ClosePortImpl(const PortId& port_id,
                      int process_id,
                      int routing_id,
                      bool force_close,
                      const std::string& error_message);
 
   void CloseChannelImpl(MessageChannelMap::iterator channel_iter,
-                        int port_id,
+                        const PortId& port_id,
                         const std::string& error_message,
                         bool notify_other_port);
 
   // Have MessageService take ownership of |channel|, and remove any pending
   // channels with the same id.
   void AddChannel(std::unique_ptr<MessageChannel> channel,
-                  int receiver_port_id);
+                  const PortId& receiver_port_id);
 
   // If the channel is being opened from an incognito tab the user must allow
   // the connection.
@@ -236,16 +237,18 @@ class MessageService : public BrowserContextKeyedAPI {
                     const std::string& tls_channel_id);
 
   // Enqueues a message on a pending channel.
-  void EnqueuePendingMessage(int port_id, int channel_id,
+  void EnqueuePendingMessage(const PortId& port_id,
+                             const ChannelId& channel_id,
                              const Message& message);
 
   // Enqueues a message on a channel pending on a lazy background page load.
-  void EnqueuePendingMessageForLazyBackgroundLoad(int port_id,
-                                                  int channel_id,
+  void EnqueuePendingMessageForLazyBackgroundLoad(const PortId& port_id,
+                                                  const ChannelId& channel_id,
                                                   const Message& message);
 
   // Immediately sends a message to the given port.
-  void DispatchMessage(int port_id, MessageChannel* channel,
+  void DispatchMessage(const PortId& port_id,
+                       MessageChannel* channel,
                        const Message& message);
 
   // Potentially registers a pending task with the LazyBackgroundTaskQueue
@@ -264,7 +267,7 @@ class MessageService : public BrowserContextKeyedAPI {
       std::unique_ptr<OpenChannelParams> params,
       int source_process_id,
       extensions::ExtensionHost* host);
-  void PendingLazyBackgroundPageClosePort(int port_id,
+  void PendingLazyBackgroundPageClosePort(const PortId& port_id,
                                           int process_id,
                                           int routing_id,
                                           bool force_close,
@@ -274,7 +277,7 @@ class MessageService : public BrowserContextKeyedAPI {
       ClosePortImpl(port_id, process_id, routing_id, force_close,
                     error_message);
   }
-  void PendingLazyBackgroundPagePostMessage(int port_id,
+  void PendingLazyBackgroundPagePostMessage(const PortId& port_id,
                                             const Message& message,
                                             extensions::ExtensionHost* host) {
     if (host)
@@ -284,11 +287,11 @@ class MessageService : public BrowserContextKeyedAPI {
   // Immediate dispatches a disconnect to |source| for |port_id|. Sets source's
   // runtime.lastMessage to |error_message|, if any.
   void DispatchOnDisconnect(content::RenderFrameHost* source,
-                            int port_id,
+                            const PortId& port_id,
                             const std::string& error_message);
 
   void DispatchPendingMessages(const PendingMessagesQueue& queue,
-                               int channel_id);
+                               const ChannelId& channel_id);
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {

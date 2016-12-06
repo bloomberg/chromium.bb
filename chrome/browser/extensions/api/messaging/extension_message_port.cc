@@ -91,7 +91,7 @@ class ExtensionMessagePort::FrameTracker : public content::WebContentsObserver,
 
 ExtensionMessagePort::ExtensionMessagePort(
     base::WeakPtr<MessageService> message_service,
-    int port_id,
+    const PortId& port_id,
     const std::string& extension_id,
     content::RenderProcessHost* extension_process)
     : weak_message_service_(message_service),
@@ -112,7 +112,7 @@ ExtensionMessagePort::ExtensionMessagePort(
 
 ExtensionMessagePort::ExtensionMessagePort(
     base::WeakPtr<MessageService> message_service,
-    int port_id,
+    const PortId& port_id,
     const std::string& extension_id,
     content::RenderFrameHost* rfh,
     bool include_child_frames)

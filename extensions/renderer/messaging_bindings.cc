@@ -22,6 +22,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/renderer/extension_frame_helper.h"
@@ -55,7 +56,7 @@ namespace {
 base::LazyInstance<std::map<ScriptContext*, MessagingBindings*>>
     g_messaging_map = LAZY_INSTANCE_INITIALIZER;
 
-void HasMessagePort(int global_port_id,
+void HasMessagePort(const PortId& port_id,
                     bool* has_port,
                     ScriptContext* script_context) {
   if (*has_port)
@@ -63,12 +64,12 @@ void HasMessagePort(int global_port_id,
 
   MessagingBindings* bindings = g_messaging_map.Get()[script_context];
   DCHECK(bindings);
-  if (bindings->GetPortWithGlobalId(global_port_id))
-    *has_port = true;
+  // No need for |=; we know this is false right now from above.
+  *has_port = bindings->GetPortWithId(port_id) != nullptr;
 }
 
 void DispatchOnConnectToScriptContext(
-    int global_target_port_id,
+    const PortId& target_port_id,
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo* source,
     const ExtensionMsg_ExternalConnectionInfo& info,
@@ -78,17 +79,17 @@ void DispatchOnConnectToScriptContext(
   MessagingBindings* bindings = g_messaging_map.Get()[script_context];
   DCHECK(bindings);
 
-  int opposite_port_id = global_target_port_id ^ 1;
-  if (bindings->GetPortWithGlobalId(opposite_port_id))
-    return;  // The channel was opened by this same context; ignore it.
+  // If the channel was opened by this same context, ignore it. This should only
+  // happen when messages are sent to an entire process (rather than a single
+  // frame) as an optimization; otherwise the browser process filters this out.
+  if (bindings->context_id() == target_port_id.context_id)
+    return;
 
-  ExtensionPort* port =
-      bindings->CreateNewPortWithGlobalId(global_target_port_id);
-  int local_port_id = port->local_id();
+  ExtensionPort* port = bindings->CreateNewPortWithId(target_port_id);
   // Remove the port.
   base::ScopedClosureRunner remove_port(
-      base::Bind(&MessagingBindings::RemovePortWithLocalId,
-                 bindings->GetWeakPtr(), local_port_id));
+      base::Bind(&MessagingBindings::RemovePortWithJsId, bindings->GetWeakPtr(),
+                 port->js_id()));
 
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
@@ -141,7 +142,7 @@ void DispatchOnConnectToScriptContext(
 
   v8::Local<v8::Value> arguments[] = {
       // portId
-      v8::Integer::New(isolate, local_port_id),
+      v8::Integer::New(isolate, port->js_id()),
       // channelName
       v8_channel_name,
       // sourceTab
@@ -178,11 +179,11 @@ void DispatchOnConnectToScriptContext(
 }
 
 void DeliverMessageToScriptContext(const Message& message,
-                                   int global_target_port_id,
+                                   const PortId& target_port_id,
                                    ScriptContext* script_context) {
   MessagingBindings* bindings = g_messaging_map.Get()[script_context];
   DCHECK(bindings);
-  ExtensionPort* port = bindings->GetPortWithGlobalId(global_target_port_id);
+  ExtensionPort* port = bindings->GetPortWithId(target_port_id);
   if (!port)
     return;
 
@@ -190,7 +191,7 @@ void DeliverMessageToScriptContext(const Message& message,
   v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Value> port_id_handle =
-      v8::Integer::New(isolate, port->local_id());
+      v8::Integer::New(isolate, port->js_id());
 
   v8::Local<v8::String> v8_data;
   if (!ToV8String(isolate, message.data.c_str(), &v8_data))
@@ -217,12 +218,12 @@ void DeliverMessageToScriptContext(const Message& message,
       "messaging", "dispatchOnMessage", &arguments);
 }
 
-void DispatchOnDisconnectToScriptContext(int global_port_id,
+void DispatchOnDisconnectToScriptContext(const PortId& port_id,
                                          const std::string& error_message,
                                          ScriptContext* script_context) {
   MessagingBindings* bindings = g_messaging_map.Get()[script_context];
   DCHECK(bindings);
-  ExtensionPort* port = bindings->GetPortWithGlobalId(global_port_id);
+  ExtensionPort* port = bindings->GetPortWithId(port_id);
   if (!port)
     return;
 
@@ -230,7 +231,7 @@ void DispatchOnDisconnectToScriptContext(int global_port_id,
   v8::HandleScope handle_scope(isolate);
 
   std::vector<v8::Local<v8::Value>> arguments;
-  arguments.push_back(v8::Integer::New(isolate, port->local_id()));
+  arguments.push_back(v8::Integer::New(isolate, port->js_id()));
   v8::Local<v8::String> v8_error_message;
   if (!error_message.empty())
     ToV8String(isolate, error_message.c_str(), &v8_error_message);
@@ -247,7 +248,9 @@ void DispatchOnDisconnectToScriptContext(int global_port_id,
 }  // namespace
 
 MessagingBindings::MessagingBindings(ScriptContext* context)
-    : ObjectBackedNativeHandler(context), weak_ptr_factory_(this) {
+    : ObjectBackedNativeHandler(context),
+      context_id_(base::UnguessableToken::Create()),
+      weak_ptr_factory_(this) {
   g_messaging_map.Get()[context] = this;
   RouteFunction("CloseChannel", base::Bind(&MessagingBindings::CloseChannel,
                                            base::Unretained(this)));
@@ -269,49 +272,41 @@ MessagingBindings::MessagingBindings(ScriptContext* context)
 
 MessagingBindings::~MessagingBindings() {
   g_messaging_map.Get().erase(context());
-  if (ports_created_normal_ > 0 || ports_created_in_before_unload_ > 0 ||
-      ports_created_in_unload_ > 0) {
+  if (num_extension_ports_ > 0) {
     UMA_HISTOGRAM_COUNTS_1000(
-        "Extensions.Messaging.ExtensionPortsCreated.InBeforeUnload",
-        ports_created_in_before_unload_);
-    UMA_HISTOGRAM_COUNTS_1000(
-        "Extensions.Messaging.ExtensionPortsCreated.InUnload",
-        ports_created_in_unload_);
-    UMA_HISTOGRAM_COUNTS_1000(
-        "Extensions.Messaging.ExtensionPortsCreated.Normal",
-        ports_created_normal_);
+        "Extensions.Messaging.ExtensionPortsCreated.Total", next_js_id_);
   }
 }
 
 // static
 void MessagingBindings::ValidateMessagePort(
     const ScriptContextSet& context_set,
-    int global_port_id,
+    const PortId& port_id,
     content::RenderFrame* render_frame) {
   int routing_id = render_frame->GetRoutingID();
 
   bool has_port = false;
   context_set.ForEach(render_frame,
-                      base::Bind(&HasMessagePort, global_port_id, &has_port));
+                      base::Bind(&HasMessagePort, port_id, &has_port));
 
   // A reply is only sent if the port is missing, because the port is assumed to
   // exist unless stated otherwise.
   if (!has_port) {
     content::RenderThread::Get()->Send(
-        new ExtensionHostMsg_CloseMessagePort(routing_id,
-                                              global_port_id, false));
+        new ExtensionHostMsg_CloseMessagePort(routing_id, port_id, false));
   }
 }
 
 // static
 void MessagingBindings::DispatchOnConnect(
     const ScriptContextSet& context_set,
-    int target_port_id,
+    const PortId& target_port_id,
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo& source,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id,
     content::RenderFrame* restrict_to_render_frame) {
+  DCHECK(!target_port_id.is_opener);
   int routing_id = restrict_to_render_frame
                        ? restrict_to_render_frame->GetRoutingID()
                        : MSG_ROUTING_NONE;
@@ -334,7 +329,7 @@ void MessagingBindings::DispatchOnConnect(
 // static
 void MessagingBindings::DeliverMessage(
     const ScriptContextSet& context_set,
-    int target_port_id,
+    const PortId& target_port_id,
     const Message& message,
     content::RenderFrame* restrict_to_render_frame) {
   context_set.ForEach(
@@ -345,7 +340,7 @@ void MessagingBindings::DeliverMessage(
 // static
 void MessagingBindings::DispatchOnDisconnect(
     const ScriptContextSet& context_set,
-    int port_id,
+    const PortId& port_id,
     const std::string& error_message,
     content::RenderFrame* restrict_to_render_frame) {
   context_set.ForEach(
@@ -353,27 +348,23 @@ void MessagingBindings::DispatchOnDisconnect(
       base::Bind(&DispatchOnDisconnectToScriptContext, port_id, error_message));
 }
 
-ExtensionPort* MessagingBindings::GetPortWithGlobalId(int id) {
+ExtensionPort* MessagingBindings::GetPortWithId(const PortId& id) {
   for (const auto& key_value : ports_) {
-    if (key_value.second->global_id() == id)
+    if (key_value.second->id() == id)
       return key_value.second.get();
   }
   return nullptr;
 }
 
-ExtensionPort* MessagingBindings::CreateNewPortWithGlobalId(int global_id) {
-  int local_id = GetNextLocalId();
-  ExtensionPort* port =
-      ports_
-          .insert(std::make_pair(
-              local_id, base::MakeUnique<ExtensionPort>(context(), local_id)))
-          .first->second.get();
-  port->SetGlobalId(global_id);
-  return port;
+ExtensionPort* MessagingBindings::CreateNewPortWithId(const PortId& id) {
+  int js_id = GetNextJsId();
+  auto port = base::MakeUnique<ExtensionPort>(context(), id, js_id);
+  return ports_.insert(std::make_pair(js_id, std::move(port)))
+      .first->second.get();
 }
 
-void MessagingBindings::RemovePortWithLocalId(int local_id) {
-  ports_.erase(local_id);
+void MessagingBindings::RemovePortWithJsId(int js_id) {
+  ports_.erase(js_id);
 }
 
 base::WeakPtr<MessagingBindings> MessagingBindings::GetWeakPtr() {
@@ -387,8 +378,8 @@ void MessagingBindings::PostMessage(
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsString());
 
-  int port_id = args[0].As<v8::Int32>()->Value();
-  auto iter = ports_.find(port_id);
+  int js_port_id = args[0].As<v8::Int32>()->Value();
+  auto iter = ports_.find(js_port_id);
   if (iter != ports_.end()) {
     iter->second->PostExtensionMessage(base::MakeUnique<Message>(
         *v8::String::Utf8Value(args[1]),
@@ -403,9 +394,9 @@ void MessagingBindings::CloseChannel(
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsBoolean());
 
-  int port_id = args[0].As<v8::Int32>()->Value();
+  int js_port_id = args[0].As<v8::Int32>()->Value();
   bool force_close = args[1].As<v8::Boolean>()->Value();
-  ClosePort(port_id, force_close);
+  ClosePort(js_port_id, force_close);
 }
 
 void MessagingBindings::BindToGC(
@@ -414,16 +405,16 @@ void MessagingBindings::BindToGC(
   CHECK(args[0]->IsObject());
   CHECK(args[1]->IsFunction());
   CHECK(args[2]->IsInt32());
-  int local_port_id = args[2].As<v8::Int32>()->Value();
+  int js_port_id = args[2].As<v8::Int32>()->Value();
   base::Closure fallback = base::Bind(&base::DoNothing);
-  if (local_port_id >= 0) {
+  if (js_port_id >= 0) {
     // TODO(robwu): Falling back to closing the port shouldn't be needed. If
     // the script context is destroyed, then the frame has navigated. But that
     // is already detected by the browser, so this logic is redundant. Remove
     // this fallback (and move BindToGC out of messaging because it is also
     // used in other places that have nothing to do with messaging...).
     fallback = base::Bind(&MessagingBindings::ClosePort,
-                          weak_ptr_factory_.GetWeakPtr(), local_port_id,
+                          weak_ptr_factory_.GetWeakPtr(), js_port_id,
                           false /* force_close */);
   }
   // Destroys itself when the object is GC'd or context is invalidated.
@@ -443,8 +434,9 @@ void MessagingBindings::OpenChannelToExtension(
   CHECK(args[1]->IsString());
   CHECK(args[2]->IsBoolean());
 
-  int local_id = GetNextLocalId();
-  ports_[local_id] = base::MakeUnique<ExtensionPort>(context(), local_id);
+  int js_id = GetNextJsId();
+  PortId port_id(context_id_, js_id, true);
+  ports_[js_id] = base::MakeUnique<ExtensionPort>(context(), port_id, js_id);
 
   ExtensionMsg_ExternalConnectionInfo info;
   // For messaging APIs, hosted apps should be considered a web page so hide
@@ -460,34 +452,16 @@ void MessagingBindings::OpenChannelToExtension(
   bool include_tls_channel_id =
       args.Length() > 2 ? args[2]->BooleanValue() : false;
 
-  ExtensionFrameHelper* frame_helper = ExtensionFrameHelper::Get(render_frame);
-  DCHECK(frame_helper);
-
-  blink::WebLocalFrame* web_frame = render_frame->GetWebFrame();
-  // If the frame is unloading, we need to assign the port id synchronously to
-  // avoid dropping the message on the floor; see crbug.com/660706.
-  // TODO(devlin): Investigate whether we need to continue supporting this long-
-  // term, and, if so, find an alternative that doesn't require synchronous
-  // IPCs.
-  if (!web_frame->document().isNull() &&
-      (web_frame->document().unloadStartedDoNotUse() ||
-       web_frame->document().processingBeforeUnloadDoNotUse())) {
-    ports_created_in_before_unload_ +=
-        web_frame->document().processingBeforeUnloadDoNotUse() ? 1 : 0;
-    ports_created_in_unload_ +=
-        web_frame->document().unloadStartedDoNotUse() ? 1 : 0;
-    int global_id = frame_helper->RequestSyncPortId(info, channel_name,
-                                                    include_tls_channel_id);
-    ports_[local_id]->SetGlobalId(global_id);
-  } else {
-    ++ports_created_normal_;
-    frame_helper->RequestPortId(
-        info, channel_name, include_tls_channel_id,
-        base::Bind(&MessagingBindings::SetGlobalPortId,
-                   weak_ptr_factory_.GetWeakPtr(), local_id));
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Extensions.Messaging.SetPortIdTime.Extension");
+    render_frame->Send(new ExtensionHostMsg_OpenChannelToExtension(
+        render_frame->GetRoutingID(), info, channel_name,
+        include_tls_channel_id, port_id));
   }
 
-  args.GetReturnValue().Set(static_cast<int32_t>(local_id));
+  ++num_extension_ports_;
+  args.GetReturnValue().Set(static_cast<int32_t>(js_id));
 }
 
 void MessagingBindings::OpenChannelToNativeApp(
@@ -504,16 +478,18 @@ void MessagingBindings::OpenChannelToNativeApp(
 
   std::string native_app_name = *v8::String::Utf8Value(args[0]);
 
-  int local_id = GetNextLocalId();
-  ports_[local_id] = base::MakeUnique<ExtensionPort>(context(), local_id);
+  int js_id = GetNextJsId();
+  PortId port_id(context_id_, js_id, true);
+  ports_[js_id] = base::MakeUnique<ExtensionPort>(context(), port_id, js_id);
 
-  ExtensionFrameHelper* frame_helper = ExtensionFrameHelper::Get(render_frame);
-  DCHECK(frame_helper);
-  frame_helper->RequestNativeAppPortId(
-      native_app_name,
-      base::Bind(&MessagingBindings::SetGlobalPortId,
-                 weak_ptr_factory_.GetWeakPtr(), local_id));
-  args.GetReturnValue().Set(static_cast<int32_t>(local_id));
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Extensions.Messaging.SetPortIdTime.NativeApp");
+    render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
+        render_frame->GetRoutingID(), native_app_name, port_id));
+  }
+
+  args.GetReturnValue().Set(static_cast<int32_t>(js_id));
 }
 
 void MessagingBindings::OpenChannelToTab(
@@ -535,8 +511,9 @@ void MessagingBindings::OpenChannelToTab(
   CHECK(args[2]->IsString());
   CHECK(args[3]->IsString());
 
-  int local_id = GetNextLocalId();
-  ports_[local_id] = base::MakeUnique<ExtensionPort>(context(), local_id);
+  int js_id = GetNextJsId();
+  PortId port_id(context_id_, js_id, true);
+  ports_[js_id] = base::MakeUnique<ExtensionPort>(context(), port_id, js_id);
 
   ExtensionMsg_TabTargetConnectionInfo info;
   info.tab_id = args[0]->Int32Value();
@@ -547,48 +524,30 @@ void MessagingBindings::OpenChannelToTab(
 
   ExtensionFrameHelper* frame_helper = ExtensionFrameHelper::Get(render_frame);
   DCHECK(frame_helper);
-  frame_helper->RequestTabPortId(
-      info, extension_id, channel_name,
-      base::Bind(&MessagingBindings::SetGlobalPortId,
-                 weak_ptr_factory_.GetWeakPtr(), local_id));
 
-  args.GetReturnValue().Set(static_cast<int32_t>(local_id));
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("Extensions.Messaging.SetPortIdTime.Tab");
+    render_frame->Send(new ExtensionHostMsg_OpenChannelToTab(
+        render_frame->GetRoutingID(), info, extension_id, channel_name,
+        port_id));
+  }
+
+  args.GetReturnValue().Set(static_cast<int32_t>(js_id));
 }
 
-void MessagingBindings::ClosePort(int local_port_id, bool force_close) {
+void MessagingBindings::ClosePort(int js_port_id, bool force_close) {
   // TODO(robwu): Merge this logic with CloseChannel once the TODO in BindToGC
   // has been addressed.
-  auto iter = ports_.find(local_port_id);
+  auto iter = ports_.find(js_port_id);
   if (iter != ports_.end()) {
     std::unique_ptr<ExtensionPort> port = std::move(iter->second);
     ports_.erase(iter);
     port->Close(force_close);
-    // If the port hasn't been initialized, we can't delete it just yet, because
-    // we need to wait for it to send any pending messages. This is important
-    // to support the flow:
-    //  var port = chrome.runtime.connect();
-    //  port.postMessage({message});
-    //  port.disconnect();
-    if (!port->initialized())
-      disconnected_ports_[port->local_id()] = std::move(port);
   }
 }
 
-void MessagingBindings::SetGlobalPortId(int local_id, int global_id) {
-  auto iter = ports_.find(local_id);
-  if (iter != ports_.end()) {
-    iter->second->SetGlobalId(global_id);
-    return;
-  }
-
-  iter = disconnected_ports_.find(local_id);
-  DCHECK(iter != disconnected_ports_.end());
-  iter->second->SetGlobalId(global_id);
-  // Setting the global id dispatches pending messages, so we can delete the
-  // port now.
-  disconnected_ports_.erase(iter);
+int MessagingBindings::GetNextJsId() {
+  return next_js_id_++;
 }
-
-int MessagingBindings::GetNextLocalId() { return next_local_id_++; }
 
 }  // namespace extensions

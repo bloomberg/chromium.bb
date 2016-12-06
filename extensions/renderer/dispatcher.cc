@@ -999,7 +999,7 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
                 base::DictionaryValue());
 }
 
-void Dispatcher::OnDeliverMessage(int target_port_id,
+void Dispatcher::OnDeliverMessage(const PortId& target_port_id,
                                   const Message& message) {
   MessagingBindings::DeliverMessage(*script_context_set_, target_port_id,
                                     message,
@@ -1007,12 +1007,12 @@ void Dispatcher::OnDeliverMessage(int target_port_id,
 }
 
 void Dispatcher::OnDispatchOnConnect(
-    int target_port_id,
+    const PortId& target_port_id,
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo& source,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id) {
-  DCHECK_EQ(1, target_port_id % 2);  // target renderer ports have odd IDs.
+  DCHECK(!target_port_id.is_opener);
 
   MessagingBindings::DispatchOnConnect(*script_context_set_, target_port_id,
                                        channel_name, source, info,
@@ -1020,7 +1020,7 @@ void Dispatcher::OnDispatchOnConnect(
                                        NULL);  // All render frames.
 }
 
-void Dispatcher::OnDispatchOnDisconnect(int port_id,
+void Dispatcher::OnDispatchOnDisconnect(const PortId& port_id,
                                         const std::string& error_message) {
   MessagingBindings::DispatchOnDisconnect(*script_context_set_, port_id,
                                           error_message,

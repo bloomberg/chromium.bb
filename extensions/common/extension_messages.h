@@ -16,6 +16,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/draggable_region.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
@@ -258,6 +259,12 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(extensions::Message)
   IPC_STRUCT_TRAITS_MEMBER(data)
   IPC_STRUCT_TRAITS_MEMBER(user_gesture)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(extensions::PortId)
+  IPC_STRUCT_TRAITS_MEMBER(context_id)
+  IPC_STRUCT_TRAITS_MEMBER(port_number)
+  IPC_STRUCT_TRAITS_MEMBER(is_opener)
 IPC_STRUCT_TRAITS_END()
 
 // Singly-included section for custom IPC traits.
@@ -589,11 +596,11 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_GetAppInstallStateResponse,
 // Check whether the Port for extension messaging exists in the frame. If the
 // port ID is unknown, the frame replies with ExtensionHostMsg_CloseMessagePort.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_ValidateMessagePort,
-                    int /* port_id */)
+                    extensions::PortId /* port_id */)
 
 // Dispatch the Port.onConnect event for message channels.
 IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
-                    int /* target_port_id */,
+                    extensions::PortId /* target_port_id */,
                     std::string /* channel_name */,
                     ExtensionMsg_TabConnectionInfo /* source */,
                     ExtensionMsg_ExternalConnectionInfo,
@@ -601,12 +608,12 @@ IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
 
 // Deliver a message sent with ExtensionHostMsg_PostMessage.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
-                    int /* target_port_id */,
+                    extensions::PortId /* target_port_id */,
                     extensions::Message)
 
 // Dispatch the Port.onDisconnect event for message channels.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
-                    int /* port_id */,
+                    extensions::PortId /* port_id */,
                     std::string /* error_message */)
 
 // Informs the renderer what channel (dev, beta, stable, etc) and user session
@@ -702,27 +709,12 @@ IPC_MESSAGE_CONTROL5(ExtensionHostMsg_OpenChannelToExtension,
                      ExtensionMsg_ExternalConnectionInfo,
                      std::string /* channel_name */,
                      bool /* include_tls_channel_id */,
-                     int /* request_id */)
-
-// Same as ExtensionHostMsg_OpenChannelToExtension, but assigns the port id
-// synchronously.
-IPC_SYNC_MESSAGE_CONTROL4_1(ExtensionHostMsg_OpenChannelToExtensionSync,
-                            int /* frame_routing_id */,
-                            ExtensionMsg_ExternalConnectionInfo,
-                            std::string /* channel_name */,
-                            bool /* include_tls_channel_id */,
-                            int /* port_id */)
-
-// The response to a request to open an extension message port, including the
-// global port id and the request id.
-IPC_MESSAGE_ROUTED2(ExtensionMsg_AssignPortId,
-                    int /*port_id */,
-                    int /* request_id */)
+                     extensions::PortId /* port_id */)
 
 IPC_MESSAGE_CONTROL3(ExtensionHostMsg_OpenChannelToNativeApp,
                      int /* frame_routing_id */,
                      std::string /* native_app_name */,
-                     int /* request_id */)
+                     extensions::PortId /* port_id */)
 
 // Get a port handle to the given tab.  The handle can be used for sending
 // messages to the extension.
@@ -731,25 +723,25 @@ IPC_MESSAGE_CONTROL5(ExtensionHostMsg_OpenChannelToTab,
                      ExtensionMsg_TabTargetConnectionInfo,
                      std::string /* extension_id */,
                      std::string /* channel_name */,
-                     int /* request_id */)
+                     extensions::PortId /* port_id */)
 
 // Sent in response to ExtensionMsg_DispatchOnConnect when the port is accepted.
 // The handle is the value returned by ExtensionHostMsg_OpenChannelTo*.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_OpenMessagePort,
                      int /* frame_routing_id */,
-                     int /* port_id */)
+                     extensions::PortId /* port_id */)
 
 // Sent in response to ExtensionMsg_DispatchOnConnect and whenever the port is
 // closed. The handle is the value returned by ExtensionHostMsg_OpenChannelTo*.
 IPC_MESSAGE_CONTROL3(ExtensionHostMsg_CloseMessagePort,
                      int /* frame_routing_id */,
-                     int /* port_id */,
+                     extensions::PortId /* port_id */,
                      bool /* force_close */)
 
 // Send a message to an extension process.  The handle is the value returned
 // by ExtensionHostMsg_OpenChannelTo*.
 IPC_MESSAGE_ROUTED2(ExtensionHostMsg_PostMessage,
-                    int /* port_id */,
+                    extensions::PortId /* port_id */,
                     extensions::Message)
 
 // Used to get the extension message bundle.

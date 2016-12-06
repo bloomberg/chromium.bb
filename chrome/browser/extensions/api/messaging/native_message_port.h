@@ -7,6 +7,7 @@
 
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
+#include "extensions/common/api/messaging/port_id.h"
 
 namespace extensions {
 
@@ -15,7 +16,7 @@ namespace extensions {
 class NativeMessagePort : public MessageService::MessagePort {
  public:
   NativeMessagePort(base::WeakPtr<MessageService> message_service,
-                    int port_id,
+                    const PortId& port_id,
                     std::unique_ptr<NativeMessageHost> native_message_host);
   ~NativeMessagePort() override;
 
@@ -31,7 +32,7 @@ class NativeMessagePort : public MessageService::MessagePort {
   base::ThreadChecker thread_checker_;
   base::WeakPtr<MessageService> weak_message_service_;
   scoped_refptr<base::SingleThreadTaskRunner> host_task_runner_;
-  int port_id_;
+  const PortId port_id_;
   std::unique_ptr<Core> core_;
 
   base::WeakPtrFactory<NativeMessagePort> weak_factory_;

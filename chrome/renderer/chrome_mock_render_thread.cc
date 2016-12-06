@@ -5,12 +5,7 @@
 #include "chrome/renderer/chrome_mock_render_thread.h"
 
 #include "base/single_thread_task_runner.h"
-#include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/extension_messages.h"
-#endif
 
 ChromeMockRenderThread::ChromeMockRenderThread() {
 }
@@ -27,32 +22,3 @@ void ChromeMockRenderThread::set_io_task_runner(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   io_task_runner_ = task_runner;
 }
-
-bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
-  if (content::MockRenderThread::OnMessageReceived(msg))
-    return true;
-
-  // Some messages we do special handling.
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ChromeMockRenderThread, msg)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
-                        OnOpenChannelToExtension)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-#else
-  return false;
-#endif
-}
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-void ChromeMockRenderThread::OnOpenChannelToExtension(
-    int routing_id,
-    const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& channel_name,
-    bool include_tls_channel_id,
-    int request_id) {
-  Send(new ExtensionMsg_AssignPortId(routing_id, 0, request_id));
-}
-#endif

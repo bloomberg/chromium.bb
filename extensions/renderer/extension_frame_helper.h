@@ -16,7 +16,6 @@
 
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_TabConnectionInfo;
-struct ExtensionMsg_TabTargetConnectionInfo;
 
 namespace base {
 class ListValue;
@@ -26,6 +25,7 @@ namespace extensions {
 
 class Dispatcher;
 struct Message;
+struct PortId;
 class ScriptContext;
 
 // RenderFrame-level plumbing for extension features.
@@ -82,25 +82,7 @@ class ExtensionFrameHelper
   // Schedule a callback, to be run at the next RunScriptsAtDocumentEnd call.
   void ScheduleAtDocumentEnd(const base::Closure& callback);
 
-  // Sends a message to the browser requesting a port id. |callback| will be
-  // invoked with the global port id when the browser responds.
-  void RequestPortId(const ExtensionMsg_ExternalConnectionInfo& info,
-                     const std::string& channel_name,
-                     bool include_tls_channel_id,
-                     const base::Callback<void(int)>& callback);
-  void RequestTabPortId(const ExtensionMsg_TabTargetConnectionInfo& info,
-                        const std::string& extension_id,
-                        const std::string& channel_name,
-                        const base::Callback<void(int)>& callback);
-  void RequestNativeAppPortId(const std::string& native_app_name,
-                              const base::Callback<void(int)>& callback);
-  int RequestSyncPortId(const ExtensionMsg_ExternalConnectionInfo& info,
-                        const std::string& channel_name,
-                        bool include_tls_channel_id);
-
  private:
-  struct PendingPortRequest;
-
   // RenderFrameObserver implementation.
   void DidCreateDocumentElement() override;
   void DidCreateNewDocument() override;
@@ -117,16 +99,16 @@ class ExtensionFrameHelper
   void OnDestruct() override;
 
   // IPC handlers.
-  void OnExtensionValidateMessagePort(int port_id);
+  void OnExtensionValidateMessagePort(const PortId& id);
   void OnExtensionDispatchOnConnect(
-      int target_port_id,
+      const PortId& target_port_id,
       const std::string& channel_name,
       const ExtensionMsg_TabConnectionInfo& source,
       const ExtensionMsg_ExternalConnectionInfo& info,
       const std::string& tls_channel_id);
-  void OnExtensionDeliverMessage(int target_port_id,
+  void OnExtensionDeliverMessage(const PortId& target_port_id,
                                  const Message& message);
-  void OnExtensionDispatchOnDisconnect(int port_id,
+  void OnExtensionDispatchOnDisconnect(const PortId& id,
                                        const std::string& error_message);
   void OnExtensionSetTabId(int tab_id);
   void OnUpdateBrowserWindowId(int browser_window_id);
@@ -139,7 +121,6 @@ class ExtensionFrameHelper
                                 const std::string& module_name,
                                 const std::string& function_name,
                                 const base::ListValue& args);
-  void OnAssignPortId(int port_id, int request_id);
 
   // Type of view associated with the RenderFrame.
   ViewType view_type_;
@@ -160,12 +141,6 @@ class ExtensionFrameHelper
 
   // Callbacks to be run at the next RunScriptsAtDocumentEnd notification.
   std::vector<base::Closure> document_load_finished_callbacks_;
-
-  // Counter for port requests.
-  int next_port_request_id_;
-
-  // Map of port requests to callbacks.
-  std::map<int, std::unique_ptr<PendingPortRequest>> pending_port_requests_;
 
   bool delayed_main_world_script_initialization_ = false;
 
