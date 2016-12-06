@@ -23,23 +23,48 @@ namespace predictors {
 
 namespace {
 
-static const char kImagePath[] = "/predictors/image.png";
-static const char kStylePath[] = "/predictors/style.css";
-static const char kScriptPath[] = "/predictors/script.js";
-static const char kFontPath[] = "/predictors/font.ttf";
-static const char kHtmlSubresourcesPath[] =
-    "/predictors/html_subresources.html";
-static const char kRedirectPath[] = "/predictors/redirect.html";
-static const char kRedirectPath2[] = "/predictors/redirect2.html";
-static const char kRedirectPath3[] = "/predictors/redirect3.html";
+const char kImageMime[] = "image/png";
+const char kStyleMime[] = "text/css";
+const char kJavascriptMime[] = "application/javascript";
+
+// Paths to resources handled by a custom request handler. They return empty
+// responses with controllable response headers.
+const char kImagePath[] = "/handled-by-test/image.png";
+const char kImagePath2[] = "/handled-by-test/image2.png";
+const char kStylePath[] = "/handled-by-test/style.css";
+const char kStylePath2[] = "/handled-by-test/style2.css";
+const char kScriptPath[] = "/handled-by-test/script.js";
+const char kScriptPath2[] = "/handled-by-test/script2.js";
+const char kFontPath[] = "/handled-by-test/font.ttf";
+const char kRedirectPath[] = "/handled-by-test/redirect.html";
+const char kRedirectPath2[] = "/handled-by-test/redirect2.html";
+const char kRedirectPath3[] = "/handled-by-test/redirect3.html";
+
+// These are loaded from a file by the test server.
+const char kHtmlSubresourcesPath[] = "/predictors/html_subresources.html";
+const char kHtmlDocumentWritePath[] = "/predictors/document_write.html";
+const char kScriptDocumentWritePath[] = "/predictors/document_write.js";
+const char kHtmlAppendChildPath[] = "/predictors/append_child.html";
+const char kScriptAppendChildPath[] = "/predictors/append_child.js";
+const char kHtmlInnerHtmlPath[] = "/predictors/inner_html.html";
+const char kScriptInnerHtmlPath[] = "/predictors/inner_html.js";
+const char kHtmlXHRPath[] = "/predictors/xhr.html";
+const char kScriptXHRPath[] = "/predictors/xhr.js";
+const char kHtmlIframePath[] = "/predictors/html_iframe.html";
 
 struct ResourceSummary {
-  ResourceSummary() : is_no_store(false), version(0) {}
+  ResourceSummary()
+      : is_no_store(false),
+        version(0),
+        is_external(false),
+        should_be_recorded(true) {}
 
   ResourcePrefetchPredictor::URLRequestSummary request;
   std::string content;
   bool is_no_store;
   size_t version;
+  bool is_external;
+  bool should_be_recorded;
 };
 
 struct RedirectEdge {
@@ -152,7 +177,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     GURL endpoint_url = GetRedirectEndpoint(main_frame_url);
     std::vector<URLRequestSummary> url_request_summaries;
     for (const auto& kv : resources_) {
-      if (kv.second.is_no_store)
+      if (kv.second.is_no_store || !kv.second.should_be_recorded)
         continue;
       url_request_summaries.push_back(
           GetURLRequestSummaryForResource(endpoint_url, kv.second));
@@ -178,6 +203,23 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     resource->request.priority = priority;
     resource->request.has_validators = true;
     return resource;
+  }
+
+  ResourceSummary* AddExternalResource(const GURL& resource_url,
+                                       content::ResourceType resource_type,
+                                       net::RequestPriority priority) {
+    auto resource = AddResource(resource_url, resource_type, priority);
+    resource->is_external = true;
+    return resource;
+  }
+
+  void AddUnrecordedResources(const std::vector<GURL>& resource_urls) {
+    for (const GURL& resource_url : resource_urls) {
+      auto resource =
+          AddResource(resource_url, content::RESOURCE_TYPE_SUB_RESOURCE,
+                      net::DEFAULT_PRIORITY);
+      resource->should_be_recorded = false;
+    }
   }
 
   void AddRedirectChain(const GURL& initial_url,
@@ -267,6 +309,9 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
       return nullptr;
 
     const ResourceSummary& summary = resource_it->second;
+    if (summary.is_external)
+      return nullptr;
+
     auto http_response =
         base::MakeUnique<net::test_server::BasicHttpResponse>();
     http_response->set_code(net::HTTP_OK);
@@ -368,6 +413,80 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   AddResource(https_server()->GetURL(kFontPath),
               content::RESOURCE_TYPE_FONT_RESOURCE, net::HIGHEST);
   NavigateToURLAndCheckSubresources(GetURL(kRedirectPath));
+}
+
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
+                       LearningJavascriptDocumentWrite) {
+  auto externalScript =
+      AddExternalResource(GetURL(kScriptDocumentWritePath),
+                          content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
+  externalScript->request.mime_type = kJavascriptMime;
+  AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
+  AddResource(GetURL(kStylePath), content::RESOURCE_TYPE_STYLESHEET,
+              net::HIGHEST);
+  AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
+  NavigateToURLAndCheckSubresources(GetURL(kHtmlDocumentWritePath));
+}
+
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
+                       LearningJavascriptAppendChild) {
+  auto externalScript =
+      AddExternalResource(GetURL(kScriptAppendChildPath),
+                          content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
+  externalScript->request.mime_type = kJavascriptMime;
+  AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
+  AddResource(GetURL(kStylePath), content::RESOURCE_TYPE_STYLESHEET,
+              net::HIGHEST);
+  // This script has net::LOWEST priority because it's executed asynchronously.
+  AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::LOWEST);
+  NavigateToURLAndCheckSubresources(GetURL(kHtmlAppendChildPath));
+}
+
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
+                       LearningJavascriptInnerHtml) {
+  auto externalScript = AddExternalResource(
+      GetURL(kScriptInnerHtmlPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
+  externalScript->request.mime_type = kJavascriptMime;
+  AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
+  AddResource(GetURL(kStylePath), content::RESOURCE_TYPE_STYLESHEET,
+              net::HIGHEST);
+  // https://www.w3.org/TR/2014/REC-html5-20141028/scripting-1.html#the-script-element
+  // Script elements don't execute when inserted using innerHTML attribute.
+  AddUnrecordedResources({GetURL(kScriptPath)});
+  NavigateToURLAndCheckSubresources(GetURL(kHtmlInnerHtmlPath));
+}
+
+// Requests originated by XMLHttpRequest have content::RESOURCE_TYPE_XHR.
+// Actual resource type is inferred from the mime-type.
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
+                       LearningJavascriptXHR) {
+  auto externalScript = AddExternalResource(
+      GetURL(kScriptXHRPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
+  externalScript->request.mime_type = kJavascriptMime;
+  auto image = AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE,
+                           net::HIGHEST);
+  image->request.mime_type = kImageMime;
+  auto style = AddResource(GetURL(kStylePath),
+                           content::RESOURCE_TYPE_STYLESHEET, net::HIGHEST);
+  style->request.mime_type = kStyleMime;
+  auto script = AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT,
+                            net::HIGHEST);
+  script->request.mime_type = kJavascriptMime;
+  NavigateToURLAndCheckSubresources(GetURL(kHtmlXHRPath));
+}
+
+// ResourcePrefetchPredictor ignores all resources requested from subframes.
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
+                       LearningWithIframe) {
+  // Included from html_iframe.html.
+  AddResource(GetURL(kImagePath2), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
+  AddResource(GetURL(kStylePath2), content::RESOURCE_TYPE_STYLESHEET,
+              net::HIGHEST);
+  AddResource(GetURL(kScriptPath2), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
+  // Included from <iframe src="html_subresources.html"> and not recored.
+  AddUnrecordedResources({GetURL(kImagePath), GetURL(kStylePath),
+                          GetURL(kScriptPath), GetURL(kFontPath)});
+  NavigateToURLAndCheckSubresources(GetURL(kHtmlIframePath));
 }
 
 }  // namespace predictors
