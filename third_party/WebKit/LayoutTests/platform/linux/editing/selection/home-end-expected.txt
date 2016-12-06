@@ -96,17 +96,17 @@ Test 16, RTL:
   Moving forward: "᪜car DEF ABC.᪝"[0, 14]
   Moving backward:  "᪜car DEF ABC.᪝"[14, 0]
 Test 17, LTR:
-  Moving forward: "he said "᪜car DEF ABC᪝.""[0, 24]
-  Moving backward:  "he said "᪜car DEF ABC᪝.""[24, 0]
+  Moving forward: "they said "᪜car DEF ABC᪝.""[0, 26]
+  Moving backward:  "they said "᪜car DEF ABC᪝.""[26, 0]
 Test 17, RTL:
-  Moving forward: "he said "᪜car DEF ABC᪝.""[0, 24]
-  Moving backward:  "he said "᪜car DEF ABC᪝.""[24, 0]
+  Moving forward: "they said "᪜car DEF ABC᪝.""[0, 26]
+  Moving backward:  "they said "᪜car DEF ABC᪝.""[26, 0]
 Test 18, LTR:
-  Moving forward: "GHI JKL MNO '᪛he said "᪜car DEF ABC᪝"᪝'?"[0, 40]
-  Moving backward:  "GHI JKL MNO '᪛he said "᪜car DEF ABC᪝"᪝'?"[40, 0]
+  Moving forward: "GHI JKL MNO '᪛they said "᪜car DEF ABC᪝"᪝'?"[0, 42]
+  Moving backward:  "GHI JKL MNO '᪛they said "᪜car DEF ABC᪝"᪝'?"[42, 0]
 Test 18, RTL:
-  Moving forward: "GHI JKL MNO '᪛he said "᪜car DEF ABC᪝"᪝'?"[0, 40]
-  Moving backward:  "GHI JKL MNO '᪛he said "᪜car DEF ABC᪝"᪝'?"[40, 0]
+  Moving forward: "GHI JKL MNO '᪛they said "᪜car DEF ABC᪝"᪝'?"[0, 42]
+  Moving backward:  "GHI JKL MNO '᪛they said "᪜car DEF ABC᪝"᪝'?"[42, 0]
 Test 19, LTR:
   Moving forward: "ABC abc DEF"[0, 11]
   Moving backward:  "ABC abc DEF"[11, 0]
@@ -223,17 +223,17 @@ Test 16, RTL:
   Moving left: "᪜car DEF ABC.᪝"[0, 14]
   Moving right:  "᪜car DEF ABC.᪝"[14, 0]
 Test 17, LTR:
-  Moving right: "he said "᪜car DEF ABC᪝.""[0, 24]
-  Moving left:  "he said "᪜car DEF ABC᪝.""[24, 0]
+  Moving right: "they said "᪜car DEF ABC᪝.""[0, 26]
+  Moving left:  "they said "᪜car DEF ABC᪝.""[26, 0]
 Test 17, RTL:
-  Moving left: "he said "᪜car DEF ABC᪝.""[0, 24]
-  Moving right:  "he said "᪜car DEF ABC᪝.""[24, 0]
+  Moving left: "they said "᪜car DEF ABC᪝.""[0, 26]
+  Moving right:  "they said "᪜car DEF ABC᪝.""[26, 0]
 Test 18, LTR:
-  Moving right: "GHI JKL MNO '᪛he said "᪜car DEF ABC᪝"᪝'?"[0, 40]
-  Moving left:  "GHI JKL MNO '᪛he said "᪜car DEF ABC᪝"᪝'?"[40, 0]
+  Moving right: "GHI JKL MNO '᪛they said "᪜car DEF ABC᪝"᪝'?"[0, 42]
+  Moving left:  "GHI JKL MNO '᪛they said "᪜car DEF ABC᪝"᪝'?"[42, 0]
 Test 18, RTL:
-  Moving left: "GHI JKL MNO '᪛he said "᪜car DEF ABC᪝"᪝'?"[0, 40]
-  Moving right:  "GHI JKL MNO '᪛he said "᪜car DEF ABC᪝"᪝'?"[40, 0]
+  Moving left: "GHI JKL MNO '᪛they said "᪜car DEF ABC᪝"᪝'?"[0, 42]
+  Moving right:  "GHI JKL MNO '᪛they said "᪜car DEF ABC᪝"᪝'?"[42, 0]
 Test 19, LTR:
   Moving right: "ABC abc DEF"[0, 11]
   Moving left:  "ABC abc DEF"[11, 0]
