@@ -52,6 +52,11 @@ class RemoteSuggestionsStatusService {
   void OnSignInStateChanged();
 
  private:
+  // TODO(jkrcal): Rewrite the tests using the public API - observing status
+  // changes instead of calling private GetStatusFromDeps() directly.
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceTest,
+                           SigninNeededIfSpecifiedByParam);
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceTest, NoSigninNeeded);
   FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceTest, DisabledViaPref);
 
   // Callback for the PrefChangeRegistrar.
