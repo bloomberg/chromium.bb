@@ -43,6 +43,15 @@ class OzonePlatformCast : public OzonePlatform {
 
   // OzonePlatform implementation:
   SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
+    if (!surface_factory_) {
+      // The browser process is trying to create a surface (only the GPU
+      // process should try to do that) for falling back on software
+      // rendering because it failed to create a channel to the GPU process.
+      // Returning a null pointer will crash via a null-pointer dereference,
+      // so instead perform a controlled crash.
+      LOG(FATAL) << "Unable to create a GPU graphics context, and Cast doesn't "
+                    "support software compositing.";
+    }
     return surface_factory_.get();
   }
   OverlayManagerOzone* GetOverlayManager() override {
