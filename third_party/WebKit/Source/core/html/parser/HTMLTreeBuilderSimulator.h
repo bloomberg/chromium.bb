@@ -26,6 +26,7 @@
 #ifndef HTMLTreeBuilderSimulator_h
 #define HTMLTreeBuilderSimulator_h
 
+#include "core/CoreExport.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "wtf/Vector.h"
 
@@ -35,7 +36,7 @@ class CompactHTMLToken;
 class HTMLTokenizer;
 class HTMLTreeBuilder;
 
-class HTMLTreeBuilderSimulator {
+class CORE_EXPORT HTMLTreeBuilderSimulator {
   USING_FAST_MALLOC(HTMLTreeBuilderSimulator);
 
  private:
@@ -56,8 +57,6 @@ class HTMLTreeBuilderSimulator {
   SimulatedToken simulate(const CompactHTMLToken&, HTMLTokenizer*);
 
  private:
-  explicit HTMLTreeBuilderSimulator(HTMLTreeBuilder*);
-
   bool inForeignContent() const { return m_namespaceStack.back() != HTML; }
 
   HTMLParserOptions m_options;
