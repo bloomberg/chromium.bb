@@ -5,17 +5,14 @@
 #ifndef CONTENT_BROWSER_LOADER_TEST_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_LOADER_TEST_RESOURCE_HANDLER_H_
 
-#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/run_loop.h"
 #include "content/browser/loader/resource_handler.h"
 #include "net/base/io_buffer.h"
-#include "net/base/net_errors.h"
-#include "net/url_request/url_request_status.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace net {
 class URLRequestStatus;
@@ -23,7 +20,6 @@ class URLRequestStatus;
 
 namespace content {
 
-class ResourceController;
 class ResourceHandler;
 struct ResourceResponse;
 
@@ -56,11 +52,6 @@ class TestResourceHandler : public ResourceHandler {
                            bool* defer) override;
   void OnDataDownloaded(int bytes_downloaded) override;
 
-  // Invoke the corresponding methods on the ResourceHandler's
-  // ResourceController.
-  void Resume();
-  void CancelWithError(net::Error net_error);
-
   // Sets the size of the read buffer returned by OnWillRead. Releases reference
   // to previous read buffer. Default size is 2048 bytes.
   void SetBufferSize(int buffer_size);
@@ -71,9 +62,6 @@ class TestResourceHandler : public ResourceHandler {
   void set_on_will_start_result(bool on_will_start_result) {
     on_will_start_result_ = on_will_start_result;
   }
-  void set_on_request_redirected_result(bool on_request_redirected_result) {
-    on_request_redirected_result_ = on_request_redirected_result;
-  }
   void set_on_response_started_result(bool on_response_started_result) {
     on_response_started_result_ = on_response_started_result;
   }
@@ -83,18 +71,12 @@ class TestResourceHandler : public ResourceHandler {
   void set_on_read_completed_result(bool on_read_completed_result) {
     on_read_completed_result_ = on_read_completed_result;
   }
-  void set_on_on_read_eof_result(bool on_on_read_eof_result) {
-    on_on_read_eof_result_ = on_on_read_eof_result;
-  }
 
   // Cause |defer| to be set to true when the specified method is invoked. The
   // test itself is responsible for resuming the request after deferral.
 
   void set_defer_on_will_start(bool defer_on_will_start) {
     defer_on_will_start_ = defer_on_will_start;
-  }
-  void set_defer_on_request_redirected(bool defer_on_request_redirected) {
-    defer_on_request_redirected_ = defer_on_request_redirected;
   }
   void set_defer_on_response_started(bool defer_on_response_started) {
     defer_on_response_started_ = defer_on_response_started;
@@ -103,104 +85,43 @@ class TestResourceHandler : public ResourceHandler {
   void set_defer_on_read_completed(bool defer_on_read_completed) {
     defer_on_read_completed_ = defer_on_read_completed;
   }
-  // The final-byte read will set |defer| to true.
-  void set_defer_on_read_eof(bool defer_on_read_eof) {
-    defer_on_read_eof_ = defer_on_read_eof;
-  }
   void set_defer_on_response_completed(bool defer_on_response_completed) {
     defer_on_response_completed_ = defer_on_response_completed;
-  }
-
-  // Set if OnDataDownloaded calls are expected instead of
-  // OnWillRead/OnReadCompleted.
-  void set_expect_on_data_downloaded(bool expect_on_data_downloaded) {
-    expect_on_data_downloaded_ = expect_on_data_downloaded;
-  }
-
-  // Sets whether to expect a final 0-byte read on success. Defaults to true.
-  void set_expect_eof_read(bool expect_eof_read) {
-    expect_eof_read_ = expect_eof_read;
   }
 
   // Return the number of times the corresponding method was invoked.
 
   int on_will_start_called() const { return on_will_start_called_; }
-  int on_request_redirected_called() const {
-    return on_request_redirected_called_;
-  }
+  // Redirection currently not supported.
+  int on_request_redirected_called() const { return 0; }
   int on_response_started_called() const { return on_response_started_called_; }
   int on_will_read_called() const { return on_will_read_called_; }
   int on_read_completed_called() const { return on_read_completed_called_; }
-  int on_read_eof() const { return on_read_eof_; }
   int on_response_completed_called() const {
     return on_response_completed_called_;
   }
 
-  // URL passed to OnResponseStarted, if it was called.
-  const GURL& start_url() const { return start_url_; }
-
-  ResourceResponse* resource_response() { return resource_response_.get(); };
-
-  int total_bytes_downloaded() const { return total_bytes_downloaded_; }
-
-  const std::string& body() const { return body_; }
-  net::URLRequestStatus final_status() const { return final_status_; }
-
-  // Spins the message loop until the request is deferred.  Using this is
-  // optional, but if used, must use it exclusively to wait for the request. If
-  // the request was deferred and then resumed/canceled without calling this
-  // method, behavior is undefined.
-  void WaitUntilDeferred();
-
-  void WaitUntilResponseComplete();
-
  private:
-  // TODO(mmenke):  Remove these, in favor of final_status_ and body_.
-  net::URLRequestStatus* request_status_ptr_;
-  std::string* body_ptr_;
-
+  net::URLRequestStatus* request_status_;
+  std::string* body_;
   scoped_refptr<net::IOBuffer> buffer_;
   size_t buffer_size_;
 
-  ResourceController* controller_;
-
   bool on_will_start_result_ = true;
-  bool on_request_redirected_result_ = true;
   bool on_response_started_result_ = true;
   bool on_will_read_result_ = true;
   bool on_read_completed_result_ = true;
-  bool on_on_read_eof_result_ = true;
 
   bool defer_on_will_start_ = false;
-  bool defer_on_request_redirected_ = false;
   bool defer_on_response_started_ = false;
   bool defer_on_read_completed_ = false;
-  bool defer_on_read_eof_ = false;
   bool defer_on_response_completed_ = false;
 
-  bool expect_on_data_downloaded_ = false;
-
-  bool expect_eof_read_ = true;
-
   int on_will_start_called_ = 0;
-  int on_request_redirected_called_ = 0;
   int on_response_started_called_ = 0;
   int on_will_read_called_ = 0;
   int on_read_completed_called_ = 0;
-  int on_read_eof_ = 0;
   int on_response_completed_called_ = 0;
-
-  GURL start_url_;
-  scoped_refptr<ResourceResponse> resource_response_;
-  int total_bytes_downloaded_ = 0;
-  std::string body_;
-  net::URLRequestStatus final_status_ =
-      net::URLRequestStatus::FromError(net::ERR_UNEXPECTED);
-  bool canceled_ = false;
-
-  std::unique_ptr<base::RunLoop> deferred_run_loop_;
-
-  base::RunLoop response_complete_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestResourceHandler);
 };

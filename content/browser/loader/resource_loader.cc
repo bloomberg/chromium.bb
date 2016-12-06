@@ -350,13 +350,13 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
 
   CompleteResponseStarted();
 
-  // If the handler deferred the request, it will resume the request later. If
-  // the request was cancelled, the request will call back into |this| with a
-  // bogus read completed error.
-  if (is_deferred() || !request_->status().is_success())
+  if (is_deferred())
     return;
 
-  StartReading(false);  // Read the first chunk.
+  if (request_->status().is_success())
+    StartReading(false);  // Read the first chunk.
+  else
+    ResponseCompleted();
 }
 
 void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
@@ -375,9 +375,12 @@ void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
   CompleteRead(bytes_read);
 
   // If the handler cancelled or deferred the request, do not continue
-  // processing the read. If canceled, either the request will call into |this|
-  // with a bogus read error, or, if the request was completed, a task posted
-  // from ResourceLoader::CancelREquestInternal will run OnResponseCompleted.
+  // processing the read. If cancelled, the URLRequest has already been
+  // cancelled and will schedule an erroring OnReadCompleted later. If deferred,
+  // do nothing until resumed.
+  //
+  // Note: if bytes_read is 0 (EOF) and the handler defers, resumption will call
+  // ResponseCompleted().
   if (is_deferred() || !request_->status().is_success())
     return;
 
@@ -559,8 +562,7 @@ void ResourceLoader::StartReading(bool is_continuation) {
   ReadMore(&bytes_read);
 
   // If IO is pending, wait for the URLRequest to call OnReadCompleted.
-  // On error or cancellation, wait for notification of failure.
-  if (request_->status().is_io_pending() || !request_->status().is_success())
+  if (request_->status().is_io_pending())
     return;
 
   if (!is_continuation || bytes_read <= 0) {
