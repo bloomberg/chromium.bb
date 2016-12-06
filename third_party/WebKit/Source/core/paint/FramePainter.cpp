@@ -166,7 +166,7 @@ void FramePainter::paintContents(GraphicsContext& context,
 
   PaintLayer* rootLayer = layoutView->layer();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   layoutView->assertSubtreeIsLaidOut();
   LayoutObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(
       *rootLayer->layoutObject());
