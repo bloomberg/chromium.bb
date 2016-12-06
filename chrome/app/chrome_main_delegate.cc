@@ -387,10 +387,12 @@ void InitializeUserDataDir(base::CommandLine* command_line) {
     // In tests, just respect the flag if given.
     base::FilePath user_data_dir =
         command_line->GetSwitchValuePath(switches::kUserDataDir);
-    if (user_data_dir.EndsWithSeparator())
-      user_data_dir = user_data_dir.StripTrailingSeparators();
-    CHECK(PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
-                                                 user_data_dir, false, true));
+    if (!user_data_dir.empty()) {
+      if (user_data_dir.EndsWithSeparator())
+        user_data_dir = user_data_dir.StripTrailingSeparators();
+      CHECK(PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
+                                                   user_data_dir, false, true));
+    }
   }
 #else  // OS_WIN
   base::FilePath user_data_dir =
