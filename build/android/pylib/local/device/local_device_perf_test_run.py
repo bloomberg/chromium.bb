@@ -323,7 +323,7 @@ class HostTestShard(TestShard):
 
 class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
 
-  _DEFAULT_TIMEOUT = 3 * 60 * 60  # 3 hours.
+  _DEFAULT_TIMEOUT = 5 * 60 * 60  # 5 hours.
   _CONFIG_VERSION = 1
 
   def __init__(self, env, test_instance):
