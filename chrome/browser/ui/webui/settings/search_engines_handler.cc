@@ -28,6 +28,8 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -215,9 +217,9 @@ SearchEnginesHandler::CreateDictionaryForEngine(int index, bool is_default) {
   dict->SetString(
       "keyword",
       table_model->GetText(index, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN));
-  dict->SetString("url",
-                  template_url->url_ref().DisplayURL(
-                      UIThreadSearchTermsData(Profile::FromWebUI(web_ui()))));
+  Profile* profile = Profile::FromWebUI(web_ui());
+  dict->SetString("url", template_url->url_ref().DisplayURL(
+                             UIThreadSearchTermsData(profile)));
   dict->SetBoolean("urlLocked", template_url->prepopulate_id() > 0);
   GURL icon_url = template_url->favicon_url();
   if (icon_url.is_valid())
@@ -235,12 +237,17 @@ SearchEnginesHandler::CreateDictionaryForEngine(int index, bool is_default) {
   if (type == TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION ||
       type == TemplateURL::OMNIBOX_API_EXTENSION) {
     const extensions::Extension* extension =
-        extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
-            ->GetExtensionById(template_url->GetExtensionId(),
-                               extensions::ExtensionRegistry::EVERYTHING);
+        extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+            template_url->GetExtensionId(),
+            extensions::ExtensionRegistry::EVERYTHING);
     if (extension) {
-      dict->Set("extension",
-                extensions::util::GetExtensionInfo(extension).release());
+      std::unique_ptr<base::DictionaryValue> ext_info =
+          extensions::util::GetExtensionInfo(extension);
+      ext_info->SetBoolean("canBeDisabled",
+                           !extensions::ExtensionSystem::Get(profile)
+                                ->management_policy()
+                                ->MustRemainEnabled(extension, nullptr));
+      dict->Set("extension", ext_info.release());
     }
   }
   return dict;

@@ -256,6 +256,16 @@ cr.define('settings_search_engines_page', function() {
       test('Edit_Disabled', function() {
         testButtonDisabled(createSampleSearchEngine(true, false, true), 'edit');
       });
+
+      test('All_Disabled', function() {
+        entry.engine = createSampleSearchEngine(true, false, false);
+        Polymer.dom.flush();
+        assertTrue(entry.hasAttribute('show-dots_'));
+
+        entry.engine = createSampleSearchEngine(false, false, false);
+        Polymer.dom.flush();
+        assertFalse(entry.hasAttribute('show-dots_'));
+      });
     });
   }
 
