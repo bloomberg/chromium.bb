@@ -93,6 +93,7 @@ const char* const kKnownSettings[] = {
     kSystemLogUploadEnabled,
     kSystemTimezonePolicy,
     kSystemUse24HourClock,
+    kTargetVersionPrefix,
     kUpdateDisabled,
     kVariationsRestrictParameter,
 };
@@ -330,6 +331,12 @@ void DecodeAutoUpdatePolicies(
       new_values_cache->SetBoolean(kUpdateDisabled,
                                    au_settings_proto.update_disabled());
     }
+
+    if (au_settings_proto.has_target_version_prefix()) {
+      new_values_cache->SetString(kTargetVersionPrefix,
+                                  au_settings_proto.target_version_prefix());
+    }
+
     const RepeatedField<int>& allowed_connection_types =
         au_settings_proto.allowed_connection_types();
     std::unique_ptr<base::ListValue> list(new base::ListValue());

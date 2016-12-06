@@ -56,6 +56,9 @@ const char kSignedDataRoamingEnabled[] = "cros.signed.data_roaming_enabled";
 // True if auto-update was disabled by the system administrator.
 const char kUpdateDisabled[] = "cros.system.updateDisabled";
 
+// True if a target version prefix is set by the system administrator.
+const char kTargetVersionPrefix[] = "cros.system.targetVersionPrefix";
+
 // A list of strings which specifies allowed connection types for
 // update.
 const char kAllowedConnectionTypesForUpdate[] =

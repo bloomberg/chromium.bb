@@ -45,6 +45,7 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -100,6 +101,46 @@ void ImageLoaderRegistration(const std::string& version,
   } else {
     LOG(ERROR) << "Failed to get ImageLoaderClient object.";
   }
+}
+
+// Determine whether or not to skip registering flash component updates.
+bool SkipFlashRegistration(ComponentUpdateService* cus) {
+   const base::Feature kCrosCompUpdates {
+     "CrosCompUpdates", base::FEATURE_DISABLED_BY_DEFAULT
+   };
+   if (!base::FeatureList::IsEnabled(kCrosCompUpdates))
+     return true;
+
+   // If the version of Chrome is pinned on the device (probably via enterprise
+   // policy), do not component update Flash player.
+   chromeos::CrosSettingsProvider::TrustedStatus status =
+       chromeos::CrosSettings::Get()->PrepareTrustedValues(
+           base::Bind(&RegisterPepperFlashComponent, cus));
+
+   // Only if the settings are trusted, read the update settings and allow them
+   // to disable Flash component updates. If the settings are untrusted, then we
+   // fail-safe and allow the security updates.
+   std::string version_prefix;
+   bool update_disabled = false;
+   switch (status) {
+     case chromeos::CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
+       // Return and allow flash registration to occur once the settings are
+       // trusted.
+       return true;
+     case chromeos::CrosSettingsProvider::TRUSTED:
+       chromeos::CrosSettings::Get()->GetBoolean(chromeos::kUpdateDisabled,
+                                                 &update_disabled);
+       chromeos::CrosSettings::Get()->GetString(chromeos::kTargetVersionPrefix,
+                                                &version_prefix);
+
+       return update_disabled || !version_prefix.empty();
+     case chromeos::CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
+       return false;
+   }
+
+   // Default to not skipping component flash registration since updates are
+   // security critical.
+   return false;
 }
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(GOOGLE_CHROME_BUILD)
@@ -316,8 +357,8 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
     return;
 
 #if defined(OS_CHROMEOS)
-   if (!base::FeatureList::IsEnabled(features::kCrosCompUpdates))
-     return;
+  if (SkipFlashRegistration(cus))
+    return;
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<ComponentInstallerTraits> traits(
