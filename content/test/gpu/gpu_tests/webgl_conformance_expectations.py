@@ -153,7 +153,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # new AMD (the whole test suite is flaky on the old config).
     # Mark as Fail since it often flakes in all 3 retries
     self.Fail('conformance/extensions/oes-texture-half-float.html',
-              ['win', ('amd', 0x6613)], bug=653533)
+              ['win', 'no_passthrough', ('amd', 0x6613)], bug=653533)
 
     # Win / AMD D3D9 failures
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
@@ -217,8 +217,35 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win / Passthrough command decoder
     self.Fail('conformance/attribs/gl-vertexattribpointer.html',
         ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
-    self.Fail('conformance/extensions/*', ['win', 'passthrough', 'd3d11'],
-        bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/angle-instanced-arrays.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/' +
+        'angle-instanced-arrays-out-of-bounds.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/ext-disjoint-timer-query.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/ext-frag-depth.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/ext-shader-texture-lod.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/oes-standard-derivatives.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-float.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-float-linear.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-half-float.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-half-float-linear.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/webgl-compressed-texture-s3tc.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/webgl-debug-shaders.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/webgl-depth-texture.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
     self.Fail('conformance/canvas/framebuffer-bindings-unaffected-on-' +
         'resize.html', ['win', 'passthrough', 'd3d11'], bug=665521)
     self.Fail('conformance/glsl/bugs/essl3-shaders-with-webgl1.html',
