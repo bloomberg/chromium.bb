@@ -24,6 +24,9 @@
  */
 
 // See https://webaudio.github.io/web-audio-api/#the-audioprocessingevent-interface---deprecated
+[
+    Constructor(DOMString type, AudioProcessingEventInit eventInitDict)
+]
 interface AudioProcessingEvent : Event {
     readonly attribute double playbackTime;
     readonly attribute AudioBuffer inputBuffer;

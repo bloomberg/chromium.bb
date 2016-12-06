@@ -24,6 +24,9 @@
  */
 
 // See https://webaudio.github.io/web-audio-api/#OfflineAudioCompletionEvent 
+[
+    Constructor(DOMString type, OfflineAudioCompletionEventInit eventInitDict)
+]
 interface OfflineAudioCompletionEvent : Event {
     readonly attribute AudioBuffer renderedBuffer;
 };

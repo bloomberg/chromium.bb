@@ -36,12 +36,25 @@ OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::create(
   return new OfflineAudioCompletionEvent(renderedBuffer);
 }
 
+OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::create(
+    const AtomicString& eventType,
+    const OfflineAudioCompletionEventInit& eventInit) {
+  return new OfflineAudioCompletionEvent(eventType, eventInit);
+}
+
 OfflineAudioCompletionEvent::OfflineAudioCompletionEvent() {}
 
 OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(
     AudioBuffer* renderedBuffer)
     : Event(EventTypeNames::complete, true, false),
       m_renderedBuffer(renderedBuffer) {}
+
+OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(
+    const AtomicString& eventType,
+    const OfflineAudioCompletionEventInit& eventInit)
+    : Event(eventType, eventInit) {
+  m_renderedBuffer = eventInit.renderedBuffer();
+}
 
 OfflineAudioCompletionEvent::~OfflineAudioCompletionEvent() {}
 

@@ -28,12 +28,14 @@
 
 #include "modules/EventModules.h"
 #include "modules/webaudio/AudioBuffer.h"
+#include "modules/webaudio/AudioProcessingEventInit.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class AudioBuffer;
+class AudioProcessingEventInit;
 
 class AudioProcessingEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
@@ -43,6 +45,9 @@ class AudioProcessingEvent final : public Event {
   static AudioProcessingEvent* create(AudioBuffer* inputBuffer,
                                       AudioBuffer* outputBuffer,
                                       double playbackTime);
+
+  static AudioProcessingEvent* create(const AtomicString& type,
+                                      const AudioProcessingEventInit&);
 
   ~AudioProcessingEvent() override;
 
@@ -59,6 +64,8 @@ class AudioProcessingEvent final : public Event {
   AudioProcessingEvent(AudioBuffer* inputBuffer,
                        AudioBuffer* outputBuffer,
                        double playbackTime);
+  AudioProcessingEvent(const AtomicString& type,
+                       const AudioProcessingEventInit&);
 
   Member<AudioBuffer> m_inputBuffer;
   Member<AudioBuffer> m_outputBuffer;

@@ -24,6 +24,7 @@
  */
 
 #include "modules/webaudio/AudioProcessingEvent.h"
+#include "modules/webaudio/AudioProcessingEventInit.h"
 
 namespace blink {
 
@@ -37,6 +38,12 @@ AudioProcessingEvent* AudioProcessingEvent::create(AudioBuffer* inputBuffer,
   return new AudioProcessingEvent(inputBuffer, outputBuffer, playbackTime);
 }
 
+AudioProcessingEvent* AudioProcessingEvent::create(
+    const AtomicString& type,
+    const AudioProcessingEventInit& initializer) {
+  return new AudioProcessingEvent(type, initializer);
+}
+
 AudioProcessingEvent::AudioProcessingEvent() {}
 
 AudioProcessingEvent::AudioProcessingEvent(AudioBuffer* inputBuffer,
@@ -46,6 +53,15 @@ AudioProcessingEvent::AudioProcessingEvent(AudioBuffer* inputBuffer,
       m_inputBuffer(inputBuffer),
       m_outputBuffer(outputBuffer),
       m_playbackTime(playbackTime) {}
+
+AudioProcessingEvent::AudioProcessingEvent(
+    const AtomicString& type,
+    const AudioProcessingEventInit& initializer)
+    : Event(type, initializer) {
+  m_inputBuffer = initializer.inputBuffer();
+  m_outputBuffer = initializer.outputBuffer();
+  m_playbackTime = initializer.playbackTime();
+}
 
 AudioProcessingEvent::~AudioProcessingEvent() {}
 

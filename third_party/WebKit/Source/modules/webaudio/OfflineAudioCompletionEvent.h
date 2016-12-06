@@ -28,12 +28,14 @@
 
 #include "modules/EventModules.h"
 #include "modules/webaudio/AudioBuffer.h"
+#include "modules/webaudio/OfflineAudioCompletionEventInit.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class AudioBuffer;
+class OfflineAudioCompletionEventInit;
 
 class OfflineAudioCompletionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
@@ -41,6 +43,9 @@ class OfflineAudioCompletionEvent final : public Event {
  public:
   static OfflineAudioCompletionEvent* create();
   static OfflineAudioCompletionEvent* create(AudioBuffer* renderedBuffer);
+  static OfflineAudioCompletionEvent* create(
+      const AtomicString& type,
+      const OfflineAudioCompletionEventInit&);
 
   ~OfflineAudioCompletionEvent() override;
 
@@ -53,6 +58,8 @@ class OfflineAudioCompletionEvent final : public Event {
  private:
   OfflineAudioCompletionEvent();
   explicit OfflineAudioCompletionEvent(AudioBuffer* renderedBuffer);
+  explicit OfflineAudioCompletionEvent(const AtomicString& type,
+                                       const OfflineAudioCompletionEventInit&);
 
   Member<AudioBuffer> m_renderedBuffer;
 };

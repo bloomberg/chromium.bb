@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Event Constructors</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("offline-constructor", function (taskDone) {
+        var success = true;
+
+        success = Should("new OfflineAudioCompletionEvent()", function () {
+          new OfflineAudioCompletionEvent();
+        }).throw("TypeError") && success;
+
+        success = Should('new OfflineAudioCompletionEvent("complete")',
+          function () {
+            new OfflineAudioCompletionEvent("complete");
+          }).throw("TypeError") && success;
+
+        success = Should('new OfflineAudioCompletionEvent("complete", {})',
+          function () {
+            new OfflineAudioCompletionEvent("complete", {});
+          }).throw("TypeError") && success;
+
+        success = Should(
+          'new OfflineAudioCompletionEvent("complete", {foo: 42})',
+          function () {
+            new OfflineAudioCompletionEvent("complete", {
+              foo: 42
+            });
+          }).throw("TypeError") && success;
+
+        var context = new OfflineAudioContext(1, 100, 48000);
+        var buffer = new AudioBuffer(context, {
+          length: 42
+        });
+
+        success = Should(
+          'new OfflineAudioCompletionEvent("complete", {renderedBuffer: buffer})',
+          function () {
+            new OfflineAudioCompletionEvent("complete", {
+              renderedBuffer: buffer
+            });
+          }).notThrow() && success;
+
+        Should("OfflineAudioCompletionEvent construction handled", success)
+          .summarize("correctly", "incorrectly");
+
+        taskDone();
+      });
+
+      audit.defineTask("offline-event", function (taskDone) {
+        // Only need the context for constructing the AudioBuffers for the
+        // tests.
+        var context = new OfflineAudioContext(1, 100, 48000);
+
+        var success = true;
+
+        // Just an arbitrary AudioBuffer.
+        var buffer = new AudioBuffer(context, {
+          length: 10
+        });
+
+        var event;
+        success = Should("new OfflineAudioCompletionEvent()", function () {
+          event = new OfflineAudioCompletionEvent("foo", {
+            renderedBuffer: buffer
+          });
+        }).notThrow() && success;
+
+        success = Should("event.renderedBuffer == buffer", event.renderedBuffer ==
+            buffer)
+          .beEqualTo(true) && success;
+
+        Should("OfflineAudioCompletionEvent constructed", success)
+          .summarize("correctly",
+            "incorrectly");
+
+        taskDone();
+      });
+
+      audit.defineTask("audio-processing", function (taskDone) {
+        // Only need the context for constructing the AudioBuffers for the
+        // tests.
+        var context = new OfflineAudioContext(1, 100, 48000);
+
+        // Fairly arbitrary buffers and time
+        var input = new AudioBuffer(context, {
+          length: 10
+        });
+        var output = new AudioBuffer(context, {
+          length: 20
+        });
+        var time = Math.PI;
+
+        var success = true;
+
+        // Verify required arguments.
+        success = Should("new AudioProcessingEvent()", function () {
+          new AudioProcessingEvent();
+        }).throw("TypeError") && success;
+
+        success = Should('new AudioProcessingEvent("proc")', function () {
+          new AudioProcessingEvent("proc");
+        }).throw("TypeError") && success;
+
+        success = Should('new AudioProcessingEvent("proc", {foo: 99})',
+          function () {
+            new AudioProcessingEvent("proc", {
+              foo: 99
+            });
+          }).throw("TypeError") && success;
+
+        success = Should(
+          'new AudioProcessingEvent("proc", {inputBuffer: input, outputBuffer: output})',
+          function () {
+            new AudioProcessingEvent("proc", {
+              inputBuffer: input,
+              outputBuffer: output
+            });
+          }).throw("TypeError") && success;
+
+        success = Should(
+          'new AudioProcessingEvent("proc", {inputBuffer: input, playbackTime: time})',
+          function () {
+            new AudioProcessingEvent("proc", {
+              inputBuffer: input,
+              playbackTime: time
+            });
+          }).throw("TypeError") && success;
+
+        success = Should(
+          'new AudioProcessingEvent("proc", {outputBuffer: output, playbackTime: time})',
+          function () {
+            new AudioProcessingEvent("proc", {
+              outputBuffer: output,
+              playbackTime: time
+            });
+          }).throw("TypeError") && success;
+
+
+        // Finally test valid call
+        var event;
+        success = Should(
+          'new AudioProcessingEvent("proc", {inputBuffer: input, outputBuffer: output, playbackTime: time})',
+          function () {
+            event = new AudioProcessingEvent("proc", {
+              inputBuffer: input,
+              outputBuffer: output,
+              playbackTime: time
+            });
+          }).notThrow() && success;
+
+        success = Should("event.playbackTime", event.playbackTime)
+          .beEqualTo(time) && success;
+
+        success = Should("event.inputBuffer == input", event.inputBuffer ==
+            input)
+          .beEqualTo(true) && success;
+
+        success = Should("event.outputBuffer == output", event.outputBuffer ==
+            output)
+          .beEqualTo(true) && success;
+
+        Should("AudioProcessingEvent construction handled", success)
+          .summarize("correctly", "incorrectly");
+
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>
