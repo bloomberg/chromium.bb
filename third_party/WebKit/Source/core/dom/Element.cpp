@@ -568,7 +568,7 @@ void Element::nativeApplyScroll(ScrollState& scrollState) {
 
   LayoutBox* boxToScroll = nullptr;
 
-  if (document().rootScrollerController()->scrollsViewport(*this))
+  if (document().rootScrollerController().scrollsViewport(*this))
     boxToScroll = document().layoutView();
   else if (layoutObject())
     boxToScroll = toLayoutBox(layoutObject());

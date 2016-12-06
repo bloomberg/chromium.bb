@@ -1286,8 +1286,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Element* rootScroller() const;
   void setRootScroller(Element*, ExceptionState&);
-  RootScrollerController* rootScrollerController() const {
-    return m_rootScrollerController.get();
+  RootScrollerController& rootScrollerController() const {
+    DCHECK(m_rootScrollerController);
+    return *m_rootScrollerController;
   }
 
   bool isInMainFrame() const;

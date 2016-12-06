@@ -163,9 +163,8 @@ void PaintLayerScrollableArea::dispose() {
       frameView->removeResizerArea(box());
   }
 
-  if (RootScrollerController* controller =
-          box().document().rootScrollerController())
-    controller->didDisposePaintLayerScrollableArea(*this);
+  box().document().rootScrollerController().didDisposePaintLayerScrollableArea(
+      *this);
 
   m_scrollbarManager.dispose();
 

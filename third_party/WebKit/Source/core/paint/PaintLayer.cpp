@@ -698,7 +698,7 @@ void PaintLayer::updateDescendantDependentFlags() {
                                         child->layoutObject()
                                             ->document()
                                             .rootScrollerController()
-                                            ->rootScrollerPaintLayer());
+                                            .rootScrollerPaintLayer());
     }
 
     m_needsDescendantDependentFlagsUpdate = false;

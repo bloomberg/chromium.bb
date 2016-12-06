@@ -64,11 +64,9 @@ Element* TopDocumentRootScrollerController::findGlobalRootScrollerElement() {
   if (!topDocument())
     return nullptr;
 
-  DCHECK(topDocument()->rootScrollerController());
   Node* effectiveRootScroller =
-      topDocument()->rootScrollerController()->effectiveRootScroller();
+      &topDocument()->rootScrollerController().effectiveRootScroller();
 
-  DCHECK(effectiveRootScroller);
   if (effectiveRootScroller->isDocumentNode())
     return topDocument()->documentElement();
 
@@ -83,10 +81,8 @@ Element* TopDocumentRootScrollerController::findGlobalRootScrollerElement() {
     if (!iframeDocument)
       return element;
 
-    DCHECK(iframeDocument->rootScrollerController());
     effectiveRootScroller =
-        iframeDocument->rootScrollerController()->effectiveRootScroller();
-    DCHECK(effectiveRootScroller);
+        &iframeDocument->rootScrollerController().effectiveRootScroller();
     if (effectiveRootScroller->isDocumentNode())
       return iframeDocument->documentElement();
 
@@ -167,7 +163,7 @@ void TopDocumentRootScrollerController::
 
   PaintLayer* layer = m_globalRootScroller->document()
                           .rootScrollerController()
-                          ->rootScrollerPaintLayer();
+                          .rootScrollerPaintLayer();
 
   if (layer)
     layer->setNeedsCompositingInputsUpdate();

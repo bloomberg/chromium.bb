@@ -59,8 +59,7 @@ class CORE_EXPORT RootScrollerController
   // This returns the Element that's actually being used to control viewport
   // actions right now. This is different from get() if a root scroller hasn't
   // been set, or if the set root scroller isn't currently a valid scroller.
-  // TODO(bokan): Make this a ref.
-  Node* effectiveRootScroller() const;
+  Node& effectiveRootScroller() const;
 
   // This class needs to be informed of changes in layout so that it can
   // determine if the current root scroller is still valid or if it must be
@@ -104,7 +103,8 @@ class CORE_EXPORT RootScrollerController
 
   // The Node currently being used as the root scroller in this Document.
   // If the m_rootScroller is valid this will point to it. Otherwise, it'll
-  // use the document Node.
+  // use the document Node. It'll never be nullptr since the Document owns the
+  // RootScrollerController.
   Member<Node> m_effectiveRootScroller;
 
   bool m_documentHasDocumentElement;

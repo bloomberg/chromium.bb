@@ -73,8 +73,9 @@ Element* RootScrollerController::get() const {
   return m_rootScroller;
 }
 
-Node* RootScrollerController::effectiveRootScroller() const {
-  return m_effectiveRootScroller;
+Node& RootScrollerController::effectiveRootScroller() const {
+  DCHECK(m_effectiveRootScroller);
+  return *m_effectiveRootScroller;
 }
 
 void RootScrollerController::didUpdateLayout() {
@@ -86,7 +87,7 @@ void RootScrollerController::didDisposePaintLayerScrollableArea(
   // If the document is being torn down we'll skip a bunch of notifications
   // so recomputing the effective root scroller could touch dead objects.
   // (e.g. ScrollAnchor keeps a pointer to dead LayoutObjects).
-  if (!m_effectiveRootScroller || area.box().documentBeingDestroyed())
+  if (area.box().documentBeingDestroyed())
     return;
 
   if (&area.box() == m_effectiveRootScroller->layoutObject())
@@ -155,7 +156,6 @@ PaintLayer* RootScrollerController::rootScrollerPaintLayer() const {
 }
 
 bool RootScrollerController::scrollsViewport(const Element& element) const {
-  DCHECK(m_effectiveRootScroller);
   if (m_effectiveRootScroller->isDocumentNode())
     return element.isSameNode(m_document->documentElement());
 

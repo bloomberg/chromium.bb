@@ -128,7 +128,7 @@ class RootScrollerTest : public ::testing::Test {
   }
 
   Node* effectiveRootScroller(Document* doc) const {
-    return doc->rootScrollerController()->effectiveRootScroller();
+    return &doc->rootScrollerController().effectiveRootScroller();
   }
 
   WebGestureEvent generateTouchGestureEvent(WebInputEvent::Type type,
@@ -173,7 +173,7 @@ class RootScrollerTest : public ::testing::Test {
 TEST_F(RootScrollerTest, TestDefaultRootScroller) {
   initialize("overflow-scrolling.html");
 
-  RootScrollerController* controller =
+  RootScrollerController& controller =
       mainFrame()->document()->rootScrollerController();
 
   ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
@@ -182,7 +182,7 @@ TEST_F(RootScrollerTest, TestDefaultRootScroller) {
             effectiveRootScroller(mainFrame()->document()));
 
   Element* htmlElement = mainFrame()->document()->documentElement();
-  EXPECT_TRUE(controller->scrollsViewport(*htmlElement));
+  EXPECT_TRUE(controller.scrollsViewport(*htmlElement));
 }
 
 // Make sure that replacing the documentElement doesn't change the effective
@@ -738,9 +738,9 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
       mainFrame()->document()->getElementById("iframe"));
   Element* container = iframe->contentDocument()->getElementById("container");
 
-  RootScrollerController* mainController =
+  RootScrollerController& mainController =
       mainFrame()->document()->rootScrollerController();
-  RootScrollerController* childController =
+  RootScrollerController& childController =
       iframe->contentDocument()->rootScrollerController();
   TopDocumentRootScrollerController& globalController =
       frameHost().globalRootScrollerController();
@@ -779,8 +779,8 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
     mainFrame()->document()->setRootScroller(iframe, nonThrow);
     mainFrameView()->updateAllLifecyclePhases();
 
-    ASSERT_EQ(iframe, mainController->effectiveRootScroller());
-    ASSERT_EQ(container, childController->effectiveRootScroller());
+    ASSERT_EQ(iframe, &mainController.effectiveRootScroller());
+    ASSERT_EQ(container, &childController.effectiveRootScroller());
 
     EXPECT_FALSE(
         mainCompositor->rootContentLayer()->platformLayer()->masksToBounds());
@@ -804,9 +804,9 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
     iframe->contentDocument()->setRootScroller(nullptr, nonThrow);
     mainFrameView()->updateAllLifecyclePhases();
 
-    ASSERT_EQ(iframe, mainController->effectiveRootScroller());
+    ASSERT_EQ(iframe, &mainController.effectiveRootScroller());
     ASSERT_EQ(iframe->contentDocument(),
-              childController->effectiveRootScroller());
+              &childController.effectiveRootScroller());
     ASSERT_EQ(iframe->contentDocument()->documentElement(),
               globalController.globalRootScroller());
 
@@ -835,9 +835,9 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
     mainFrame()->document()->setRootScroller(nullptr, nonThrow);
     mainFrameView()->updateAllLifecyclePhases();
 
-    ASSERT_EQ(mainFrame()->document(), mainController->effectiveRootScroller());
+    ASSERT_EQ(mainFrame()->document(), &mainController.effectiveRootScroller());
     ASSERT_EQ(iframe->contentDocument(),
-              childController->effectiveRootScroller());
+              &childController.effectiveRootScroller());
     ASSERT_EQ(mainFrame()->document()->documentElement(),
               globalController.globalRootScroller());
 
@@ -864,9 +864,9 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
     mainFrame()->document()->setRootScroller(iframe, nonThrow);
     mainFrameView()->updateAllLifecyclePhases();
 
-    ASSERT_EQ(iframe, mainController->effectiveRootScroller());
+    ASSERT_EQ(iframe, &mainController.effectiveRootScroller());
     ASSERT_EQ(iframe->contentDocument(),
-              childController->effectiveRootScroller());
+              &childController.effectiveRootScroller());
     ASSERT_EQ(iframe->contentDocument()->documentElement(),
               globalController.globalRootScroller());
 
@@ -892,8 +892,8 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
     iframe->contentDocument()->setRootScroller(container, nonThrow);
     mainFrameView()->updateAllLifecyclePhases();
 
-    ASSERT_EQ(mainFrame()->document(), mainController->effectiveRootScroller());
-    ASSERT_EQ(container, childController->effectiveRootScroller());
+    ASSERT_EQ(mainFrame()->document(), &mainController.effectiveRootScroller());
+    ASSERT_EQ(container, &childController.effectiveRootScroller());
 
     EXPECT_TRUE(
         mainCompositor->rootContentLayer()->platformLayer()->masksToBounds());
@@ -1224,11 +1224,11 @@ TEST_F(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
   document->setRootScroller(iframe, exceptionState);
   mainFrameView()->updateAllLifecyclePhases();
 
-  RootScrollerController* mainController =
+  RootScrollerController& mainController =
       mainFrame()->document()->rootScrollerController();
 
   LocalFrame* iframeLocalFrame = toLocalFrame(iframe->contentFrame());
-  EXPECT_EQ(iframe, mainController->effectiveRootScroller());
+  EXPECT_EQ(iframe, &mainController.effectiveRootScroller());
   EXPECT_EQ(iframeLocalFrame->view()->layoutViewportScrollableArea(),
             &mainFrameView()->getRootFrameViewport()->layoutViewport());
 

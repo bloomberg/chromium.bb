@@ -374,8 +374,7 @@ bool ScrollManager::isViewportScrollingElement(const Element& element) const {
   if (!m_frame->document())
     return false;
 
-  return m_frame->document()->rootScrollerController()->scrollsViewport(
-      element);
+  return m_frame->document()->rootScrollerController().scrollsViewport(element);
 }
 
 WebInputEventResult ScrollManager::handleGestureScrollEvent(
