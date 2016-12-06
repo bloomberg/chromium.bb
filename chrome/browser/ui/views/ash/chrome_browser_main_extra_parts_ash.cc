@@ -26,6 +26,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/volume_controller.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
@@ -47,6 +48,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #if defined(OS_CHROMEOS)
   // Must be available at login screen, so initialize before profile.
   system_tray_client_ = base::MakeUnique<SystemTrayClient>();
+
+  volume_controller_ = base::MakeUnique<VolumeController>();
 
   vpn_list_forwarder_ = base::MakeUnique<VpnListForwarder>();
 
@@ -85,6 +88,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 #if defined(OS_CHROMEOS)
   vpn_list_forwarder_.reset();
+  volume_controller_.reset();
   system_tray_client_.reset();
   cast_config_client_media_router_.reset();
 #endif

@@ -8,8 +8,22 @@
 #include "ash/common/wm_shell.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/ash/ash_init.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "ui/aura/window_event_dispatcher.h"
+
+namespace ash_util {
+
+const char* GetAshServiceName() {
+  // Under mash the ash process provides the service.
+  if (chrome::IsRunningInMash())
+    return "ash";
+
+  // Under classic ash the browser process provides the service.
+  return content::mojom::kBrowserServiceName;
+}
+
+}  // namespace ash_util
 
 namespace chrome {
 

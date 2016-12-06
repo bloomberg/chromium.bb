@@ -9,6 +9,15 @@ namespace ui {
 class Accelerator;
 }  // namespace ui
 
+namespace ash_util {
+
+// Returns the name of the ash service depending on whether the browser is
+// running in classic ash or mash.
+const char* GetAshServiceName();
+
+}  // namespace ash_util
+
+// TODO(jamescook): Change this namespace to ash_util.
 namespace chrome {
 
 // Returns true if Ash should be run at startup.

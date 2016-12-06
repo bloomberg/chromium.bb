@@ -6,7 +6,10 @@ module ash.mojom;
 
 // Implemented by Chrome and used by ash to request audio volume changes.
 // Implemented by Chrome because it's currently the only client of audio dbus
-// interfaces (via CrasAudioHandler); this may be simplified if that changes.
+// interfaces (via CrasAudioHandler).
+// TODO(crbug.com/644336): Flip this pattern, ash should implement the volume
+// control interface or both ash and chrome should directly access the
+// CrasAudioHandler volume control functions.
 interface VolumeController {
   // Mute the audio volume.
   VolumeMute();

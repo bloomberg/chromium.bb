@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/cast_config_controller.h"
 #include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/shutdown_controller.h"
@@ -24,6 +25,11 @@
 namespace ash {
 
 namespace {
+
+void BindAcceleratorControllerRequestOnMainThread(
+    mojom::AcceleratorControllerRequest request) {
+  WmShell::Get()->accelerator_controller()->BindRequest(std::move(request));
+}
 
 void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
   WmShell::Get()->cast_config()->BindRequest(std::move(request));
@@ -70,6 +76,9 @@ namespace mojo_interface_factory {
 void RegisterInterfaces(
     service_manager::InterfaceRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+  registry->AddInterface(
+      base::Bind(&BindAcceleratorControllerRequestOnMainThread),
+      main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindCastConfigOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(

@@ -4,7 +4,10 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
+        // Modifications here should correspond with changes to
+        // chrome_content_browser_manifest_overlay.json.
         "ash": [
+          "ash::mojom::AcceleratorController",
           "ash::mojom::CastConfig",
           "ash::mojom::LocaleNotificationController",
           "ash::mojom::ShelfController",

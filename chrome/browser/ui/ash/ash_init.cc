@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
-#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/chromeos_switches.h"

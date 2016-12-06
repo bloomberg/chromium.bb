@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
+#include "chrome/browser/ui/ash/volume_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -24,9 +24,8 @@ namespace {
 class SoundsManagerTestImpl : public media::SoundsManager {
  public:
   SoundsManagerTestImpl()
-    : is_sound_initialized_(chromeos::SOUND_COUNT),
-      num_play_requests_(chromeos::SOUND_COUNT) {
-  }
+      : is_sound_initialized_(chromeos::SOUND_COUNT),
+        num_play_requests_(chromeos::SOUND_COUNT) {}
 
   ~SoundsManagerTestImpl() override {}
 
@@ -40,9 +39,7 @@ class SoundsManagerTestImpl : public media::SoundsManager {
     return true;
   }
 
-  bool Stop(SoundKey key) override {
-    return true;
-  }
+  bool Stop(SoundKey key) override { return true; }
 
   base::TimeDelta GetDuration(SoundKey /* key */) override {
     return base::TimeDelta();
@@ -52,9 +49,7 @@ class SoundsManagerTestImpl : public media::SoundsManager {
     return is_sound_initialized_[key];
   }
 
-  int num_play_requests(SoundKey key) const {
-    return num_play_requests_[key];
-  }
+  int num_play_requests(SoundKey key) const { return num_play_requests_[key]; }
 
  private:
   std::vector<bool> is_sound_initialized_;
@@ -239,8 +234,7 @@ class VolumeControllerSoundsDisabledTest : public VolumeControllerSoundsTest {
   DISALLOW_COPY_AND_ASSIGN(VolumeControllerSoundsDisabledTest);
 };
 
-IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsDisabledTest,
-                       VolumeAdjustSounds) {
+IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsDisabledTest, VolumeAdjustSounds) {
   EXPECT_FALSE(is_sound_initialized());
 
   // Check that sound isn't played on volume up and volume down.

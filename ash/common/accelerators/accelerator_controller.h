@@ -14,10 +14,11 @@
 #include "ash/ash_export.h"
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/accelerators/exit_warning_handler.h"
-#include "ash/public/interfaces/volume.mojom.h"
+#include "ash/public/interfaces/accelerator_controller.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_history.h"
 
@@ -36,7 +37,9 @@ class ImeControlDelegate;
 // AcceleratorController provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
 // also implements several handlers as an accelerator target.
-class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
+class ASH_EXPORT AcceleratorController
+    : public ui::AcceleratorTarget,
+      NON_EXPORTED_BASE(public mojom::AcceleratorController) {
  public:
   AcceleratorController(AcceleratorControllerDelegate* delegate,
                         ui::AcceleratorManagerDelegate* manager_delegate);
@@ -121,6 +124,12 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool CanHandleAccelerators() const override;
 
+  // Binds the mojom::AcceleratorController interface to this object.
+  void BindRequest(mojom::AcceleratorControllerRequest request);
+
+  // mojom::AcceleratorController:
+  void SetVolumeController(mojom::VolumeControllerPtr controller) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest, GlobalAccelerators);
   FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest,
@@ -156,10 +165,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   AcceleratorProcessingRestriction GetAcceleratorProcessingRestriction(
       int action);
 
-  // Returns the volume controller interface raw pointer, may be null in tests.
-  mojom::VolumeController* GetVolumeController();
-  void OnVolumeControllerConnectionError();
-
   AcceleratorControllerDelegate* delegate_;
 
   std::unique_ptr<ui::AcceleratorManager> accelerator_manager_;
@@ -181,7 +186,11 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
       actions_with_deprecations_;
   std::set<ui::Accelerator> deprecated_accelerators_;
 
-  // The cached volume controller interface pointer.
+  // Bindings for the mojom::AcceleratorController interface.
+  mojo::BindingSet<mojom::AcceleratorController> bindings_;
+
+  // Volume controller interface in chrome browser. May be null in tests. Exists
+  // because chrome owns the CrasAudioHandler dbus communication.
   mojom::VolumeControllerPtr volume_controller_;
 
   // Actions allowed when the user is not signed in.

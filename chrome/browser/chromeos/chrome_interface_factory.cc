@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/keyboard_ui_service.h"
-#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "content/public/common/service_manager_connection.h"
@@ -128,12 +127,6 @@ class FactoryImpl {
     WallpaperManager::Get()->BindRequest(std::move(request));
   }
 
-  void BindRequest(ash::mojom::VolumeControllerRequest request) {
-    if (!volume_controller_)
-      volume_controller_ = base::MakeUnique<VolumeController>();
-    volume_controller_->BindRequest(std::move(request));
-  }
-
   void BindRequest(app_list::mojom::AppListPresenterRequest request) {
     if (!app_list_presenter_service_)
       app_list_presenter_service_ = base::MakeUnique<AppListPresenterService>();
@@ -148,7 +141,6 @@ class FactoryImpl {
   std::unique_ptr<ChromeLaunchable> launchable_;
   std::unique_ptr<ChromeNewWindowClient> new_window_client_;
   mojo::BindingSet<ash::mojom::NewWindowClient> new_window_client_bindings_;
-  std::unique_ptr<VolumeController> volume_controller_;
   std::unique_ptr<AppListPresenterService> app_list_presenter_service_;
   mojo::BindingSet<app_list::mojom::AppListPresenter>
       app_list_presenter_bindings_;
@@ -178,8 +170,6 @@ bool ChromeInterfaceFactory::OnConnect(
   FactoryImpl::AddFactory<mash::mojom::Launchable>(registry,
                                                    main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::NewWindowClient>(
-      registry, main_thread_task_runner_);
-  FactoryImpl::AddFactory<ash::mojom::VolumeController>(
       registry, main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::WallpaperManager>(
       registry, main_thread_task_runner_);

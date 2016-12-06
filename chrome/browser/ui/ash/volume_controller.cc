@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
+#include "chrome/browser/ui/ash/volume_controller.h"
 
+#include "ash/public/interfaces/accelerator_controller.mojom.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
+#include "content/public/common/service_manager_connection.h"
 #include "media/audio/sounds/sounds_manager.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -33,9 +37,20 @@ void PlayVolumeAdjustSound() {
 
 }  // namespace
 
-VolumeController::VolumeController() {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+VolumeController::VolumeController() : binding_(this) {
+  // Connect to the accelerator controller interface in the ash service.
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  ash::mojom::AcceleratorControllerPtr accelerator_controller_ptr;
+  connector->ConnectToInterface(ash_util::GetAshServiceName(),
+                                &accelerator_controller_ptr);
+
+  // Register this object as the volume controller.
+  accelerator_controller_ptr->SetVolumeController(
+      binding_.CreateInterfacePtrAndBind());
+
   if (VolumeAdjustSoundEnabled()) {
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     media::SoundsManager::Get()->Initialize(
         chromeos::SOUND_VOLUME_ADJUST,
         bundle.GetRawDataResource(IDR_SOUND_VOLUME_ADJUST_WAV));
@@ -43,11 +58,6 @@ VolumeController::VolumeController() {
 }
 
 VolumeController::~VolumeController() {}
-
-void VolumeController::BindRequest(
-    ash::mojom::VolumeControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
 
 void VolumeController::VolumeMute() {
   chromeos::CrasAudioHandler::Get()->SetOutputMute(true);

@@ -4,6 +4,8 @@
 
 #include "ash/common/accelerators/accelerator_controller.h"
 
+#include <utility>
+
 #include "ash/common/accelerators/accelerator_commands.h"
 #include "ash/common/accelerators/accelerator_controller_delegate.h"
 #include "ash/common/accelerators/debug_commands.h"
@@ -35,8 +37,6 @@
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "content/public/common/service_names.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -684,6 +684,16 @@ bool AcceleratorController::CanHandleAccelerators() const {
   return true;
 }
 
+void AcceleratorController::BindRequest(
+    mojom::AcceleratorControllerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void AcceleratorController::SetVolumeController(
+    mojom::VolumeControllerPtr controller) {
+  volume_controller_ = std::move(controller);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, private:
 
@@ -1095,13 +1105,13 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       WmShell::Get()->system_tray_notifier()->NotifyRequestToggleWifi();
       break;
     case VOLUME_DOWN:
-      HandleVolumeDown(GetVolumeController(), accelerator);
+      HandleVolumeDown(volume_controller_.get(), accelerator);
       break;
     case VOLUME_MUTE:
-      HandleVolumeMute(GetVolumeController(), accelerator);
+      HandleVolumeMute(volume_controller_.get(), accelerator);
       break;
     case VOLUME_UP:
-      HandleVolumeUp(GetVolumeController(), accelerator);
+      HandleVolumeUp(volume_controller_.get(), accelerator);
       break;
 #else
     case DUMMY_FOR_RESERVED:
@@ -1162,21 +1172,6 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
   return RESTRICTION_NONE;
-}
-
-mojom::VolumeController* AcceleratorController::GetVolumeController() {
-  if (!volume_controller_ && WmShell::Get()->delegate()->GetShellConnector()) {
-    WmShell::Get()->delegate()->GetShellConnector()->ConnectToInterface(
-        content::mojom::kBrowserServiceName, &volume_controller_);
-    volume_controller_.set_connection_error_handler(
-        base::Bind(&AcceleratorController::OnVolumeControllerConnectionError,
-                   base::Unretained(this)));
-  }
-  return volume_controller_.get();
-}
-
-void AcceleratorController::OnVolumeControllerConnectionError() {
-  volume_controller_.reset();
 }
 
 }  // namespace ash
