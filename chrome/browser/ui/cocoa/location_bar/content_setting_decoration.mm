@@ -309,11 +309,19 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
         [web_contents->GetTopLevelNativeWindow() contentView],
         model, web_contents, origin);
   } else {
-    [ContentSettingBubbleController showForModel:model
-                                     webContents:web_contents
-                                    parentWindow:[field window]
-                                      decoration:this
-                                      anchoredAt:anchor];
+    // If the bubble is already opened, close it. Otherwise, open a new bubble.
+    if (bubbleWindow_ && [bubbleWindow_ isVisible]) {
+      [bubbleWindow_ close];
+      bubbleWindow_.reset();
+    } else {
+      ContentSettingBubbleController* bubbleController =
+          [ContentSettingBubbleController showForModel:model
+                                           webContents:web_contents
+                                          parentWindow:[field window]
+                                            decoration:this
+                                            anchoredAt:anchor];
+      bubbleWindow_.reset([[bubbleController window] retain]);
+    }
   }
 
   return true;

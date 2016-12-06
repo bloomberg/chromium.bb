@@ -16,6 +16,7 @@
 // of view when a page attempts to show a popup and the popup blocker is on.
 
 @class ContentSettingAnimationState;
+@class ContentSettingBubbleController;
 class ContentSettingImageModel;
 class LocationBarViewMac;
 class Profile;
@@ -69,6 +70,9 @@ class ContentSettingDecoration : public ImageDecoration {
   base::scoped_nsobject<ContentSettingAnimationState> animation_;
   CGFloat text_width_;
   base::scoped_nsobject<NSAttributedString> animated_text_;
+
+  // The window of the content setting bubble.
+  base::scoped_nsobject<NSWindow> bubbleWindow_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingDecoration);
 };
