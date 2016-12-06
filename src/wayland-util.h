@@ -261,7 +261,9 @@ struct wl_interface {
  * \sa http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/include/linux/list.h
  */
 struct wl_list {
+	/** Previous list element */
 	struct wl_list *prev;
+	/** Next list element */
 	struct wl_list *next;
 };
 
@@ -490,8 +492,11 @@ wl_list_insert_list(struct wl_list *list, struct wl_list *other);
  *
  */
 struct wl_array {
+	/** Array size */
 	size_t size;
+	/** Allocated space */
 	size_t alloc;
+	/** Array data */
 	void *data;
 };
 
