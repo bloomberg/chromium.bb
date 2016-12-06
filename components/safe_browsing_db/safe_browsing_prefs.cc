@@ -35,13 +35,13 @@ enum ScoutTransitionReason {
   // Group
   CAN_SHOW_SCOUT_OPT_IN_SAW_FIRST_INTERSTITIAL = 5,
   // User in Control group
-  CONTROL = 5,
+  CONTROL = 6,
   // Rollback: SBER2 on on implies SBER1 can turn on
-  ROLLBACK_SBER2_IMPLIES_SBER1 = 6,
+  ROLLBACK_SBER2_IMPLIES_SBER1 = 7,
   // Rollback: SBER2 off so SBER1 must be turned off
-  ROLLBACK_NO_SBER2_SET_SBER1_FALSE = 7,
+  ROLLBACK_NO_SBER2_SET_SBER1_FALSE = 8,
   // Rollback: SBER2 absent so SBER1 must be cleared
-  ROLLBACK_NO_SBER2_CLEAR_SBER1 = 8,
+  ROLLBACK_NO_SBER2_CLEAR_SBER1 = 9,
   // New reasons must be added BEFORE MAX_REASONS
   MAX_REASONS
 };
