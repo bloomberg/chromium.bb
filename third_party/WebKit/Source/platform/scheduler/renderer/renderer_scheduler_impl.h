@@ -6,6 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_RENDERER_SCHEDULER_IMPL_H_
 
 #include "base/atomicops.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_log.h"
@@ -201,6 +202,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   friend class RendererSchedulerImplTest;
   friend class RendererSchedulerImplForTest;
   friend class RenderWidgetSchedulingState;
+  FRIEND_TEST_ALL_PREFIXES(RendererSchedulerImplTest, Tracing);
 
   enum class ExpensiveTaskPolicy { RUN, BLOCK, THROTTLE };
 

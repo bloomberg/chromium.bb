@@ -13,10 +13,12 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
+#include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -3516,6 +3518,39 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
   EXPECT_EQ(scheduler_->NewUnthrottledTaskRunner(TaskQueue::QueueType::TEST)
                 ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
+}
+
+TEST_F(RendererSchedulerImplTest, Tracing) {
+  // This test sets renderer scheduler to some non-trivial state
+  // (by posting tasks, creating child schedulers, etc) and converts it into a
+  // traced value. This test checks that no internal checks fire during this.
+
+  std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler1 = base::WrapUnique(
+      new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
+  scheduler_->AddWebViewScheduler(web_view_scheduler1.get());
+
+  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
+      web_view_scheduler1->createWebFrameSchedulerImpl(nullptr);
+
+  std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler2 = base::WrapUnique(
+      new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
+  scheduler_->AddWebViewScheduler(web_view_scheduler2.get());
+
+  TaskQueueThrottler::TimeBudgetPool* time_budget_pool =
+      scheduler_->task_queue_throttler()->CreateTimeBudgetPool(
+          "test", base::nullopt, base::nullopt);
+
+  time_budget_pool->AddQueue(base::TimeTicks(),
+                             scheduler_->TimerTaskRunner().get());
+
+  scheduler_->TimerTaskRunner()->PostTask(FROM_HERE, base::Bind(NullTask));
+
+  web_frame_scheduler->loadingTaskRunner()->postDelayedTask(
+      FROM_HERE, base::Bind(NullTask), 10);
+
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> value =
+      scheduler_->AsValue(base::TimeTicks());
+  EXPECT_TRUE(value);
 }
 
 }  // namespace scheduler
