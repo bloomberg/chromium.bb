@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -379,11 +380,28 @@ void SpdyStream::OnHeadersReceived(const SpdyHeaderBlock& response_headers,
       // No header block has been received yet.
       DCHECK(response_headers_.empty());
 
-      if (response_headers.find(":status") == response_headers.end()) {
-        const std::string error("Response headers do not include :status.");
-        LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-        session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR, error);
-        return;
+      {
+        SpdyHeaderBlock::const_iterator it = response_headers.find(":status");
+        if (it == response_headers.end()) {
+          const std::string error("Response headers do not include :status.");
+          LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
+          session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR, error);
+          return;
+        }
+
+        int status;
+        if (!StringToInt(it->second, &status)) {
+          const std::string error("Cannot parse :status.");
+          LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
+          session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR, error);
+          return;
+        }
+
+        // Ignore informational headers.
+        // TODO(bnc): Add support for 103 Early Hints, https://crbug.com/671310.
+        if (status / 100 == 1) {
+          return;
+        }
       }
 
       response_state_ = READY_FOR_DATA_OR_TRAILERS;
@@ -440,7 +458,7 @@ void SpdyStream::OnHeadersReceived(const SpdyHeaderBlock& response_headers,
       const std::string error("Header block received after trailers.");
       LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
       session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR, error);
-      return;
+      break;
   }
 }
 
