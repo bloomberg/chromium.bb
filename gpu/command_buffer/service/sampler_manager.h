@@ -37,9 +37,12 @@ struct SamplerState {
 
 class GPU_EXPORT Sampler : public base::RefCounted<Sampler> {
  public:
-  Sampler(SamplerManager* manager, GLuint service_id);
+  Sampler(SamplerManager* manager, GLuint client_id, GLuint service_id);
 
-  // The service side OpenGL id of the texture.
+  GLuint client_id() const {
+    return client_id_;
+  }
+
   GLuint service_id() const {
     return service_id_;
   }
@@ -114,7 +117,7 @@ class GPU_EXPORT Sampler : public base::RefCounted<Sampler> {
   // The manager that owns this Sampler.
   SamplerManager* manager_;
 
-    // The id of the texure
+  GLuint client_id_;
   GLuint service_id_;
 
   // Sampler parameters.

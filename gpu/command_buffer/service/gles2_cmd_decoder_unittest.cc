@@ -1534,6 +1534,56 @@ TEST_P(GLES3DecoderTest, GetInteger64i_vValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES3DecoderTest, GetSamplerBinding) {
+  const GLuint kClientID = 12;
+  const GLuint kServiceID = 1012;
+  const GLuint kUnit = 0;
+  DoCreateSampler(kClientID, kServiceID);
+  DoBindSampler(kUnit, kClientID, kServiceID);
+
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+
+  typedef cmds::GetIntegerv::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  cmds::GetIntegerv cmd;
+  cmd.Init(GL_SAMPLER_BINDING, shared_memory_id_, shared_memory_offset_);
+  result->size = 0;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(1, result->GetNumResults());
+  EXPECT_EQ(kClientID, static_cast<GLuint>(result->GetData()[0]));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES3DecoderTest, GetTransformFeedbackBinding) {
+  const GLuint kClientID = 12;
+  const GLuint kServiceID = 1012;
+  const GLenum kTarget = GL_TRANSFORM_FEEDBACK;
+  DoCreateTransformFeedback(kClientID, kServiceID);
+  DoBindTransformFeedback(kTarget, kClientID, kServiceID);
+
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+
+  typedef cmds::GetIntegerv::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  cmds::GetIntegerv cmd;
+  cmd.Init(
+      GL_TRANSFORM_FEEDBACK_BINDING, shared_memory_id_, shared_memory_offset_);
+  result->size = 0;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(1, result->GetNumResults());
+  EXPECT_EQ(kClientID, static_cast<GLuint>(result->GetData()[0]));
+
+  DoBindTransformFeedback(kTarget, 0, kServiceDefaultTransformFeedbackId);
+  DoDeleteTransformFeedback(kClientID, kServiceID);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 // Test that processing with 0 entries does nothing.
 TEST_P(GLES2DecoderDoCommandsTest, DoCommandsOneOfZero) {
   int num_processed = -1;

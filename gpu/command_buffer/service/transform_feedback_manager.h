@@ -22,7 +22,8 @@ class TransformFeedbackManager;
 // Info about TransformFeedbacks currently in the system.
 class GPU_EXPORT TransformFeedback : public IndexedBufferBindingHost {
  public:
-  TransformFeedback(TransformFeedbackManager* manager, GLuint service_id);
+  TransformFeedback(
+      TransformFeedbackManager* manager, GLuint client_id, GLuint service_id);
 
   // All the following functions do state update and call the underlying GL
   // function.  All validations have been done already and the GL function is
@@ -32,6 +33,10 @@ class GPU_EXPORT TransformFeedback : public IndexedBufferBindingHost {
   void DoEndTransformFeedback();
   void DoPauseTransformFeedback();
   void DoResumeTransformFeedback();
+
+  GLuint client_id() const {
+    return client_id_;
+  }
 
   GLuint service_id() const {
     return service_id_;
@@ -59,6 +64,7 @@ class GPU_EXPORT TransformFeedback : public IndexedBufferBindingHost {
   // The manager that owns this Buffer.
   TransformFeedbackManager* manager_;
 
+  GLuint client_id_;
   GLuint service_id_;
 
   bool has_been_bound_;

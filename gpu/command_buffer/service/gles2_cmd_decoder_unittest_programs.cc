@@ -1868,9 +1868,6 @@ TEST_P(GLES2DecoderTest, BindAttribLocationBucket) {
   const uint32_t kBucketId = 123;
   const GLint kLocation = 2;
   const char* kName = "testing";
-  EXPECT_CALL(*gl_,
-              BindAttribLocation(kServiceProgramId, kLocation, StrEq(kName)))
-      .Times(1);
   SetBucketAsCString(kBucketId, kName);
   BindAttribLocationBucket cmd;
   cmd.Init(client_program_id_, kLocation, kBucketId);

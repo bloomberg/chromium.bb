@@ -11,16 +11,19 @@ namespace gpu {
 namespace gles2 {
 
 TransformFeedback::TransformFeedback(TransformFeedbackManager* manager,
+                                     GLuint client_id,
                                      GLuint service_id)
     : IndexedBufferBindingHost(
           manager->max_transform_feedback_separate_attribs(),
           manager->needs_emulation()),
       manager_(manager),
+      client_id_(client_id),
       service_id_(service_id),
       has_been_bound_(false),
       active_(false),
       paused_(false),
       primitive_mode_(GL_NONE) {
+  DCHECK_LE(0u, client_id);
   DCHECK_LT(0u, service_id);
 }
 
@@ -95,7 +98,7 @@ void TransformFeedbackManager::Destroy() {
 TransformFeedback* TransformFeedbackManager::CreateTransformFeedback(
     GLuint client_id, GLuint service_id) {
   scoped_refptr<TransformFeedback> transform_feedback(
-      new TransformFeedback(this, service_id));
+      new TransformFeedback(this, client_id, service_id));
   auto result = transform_feedbacks_.insert(
       std::make_pair(client_id, transform_feedback));
   DCHECK(result.second);

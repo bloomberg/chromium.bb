@@ -30,8 +30,9 @@ SamplerState::SamplerState()
       min_lod(-1000.0f) {
 }
 
-Sampler::Sampler(SamplerManager* manager, GLuint service_id)
+Sampler::Sampler(SamplerManager* manager, GLuint client_id, GLuint service_id)
     : manager_(manager),
+      client_id_(client_id),
       service_id_(service_id),
       deleted_(false) {
   DCHECK(manager);
@@ -147,7 +148,7 @@ void SamplerManager::Destroy(bool have_context) {
 Sampler* SamplerManager::CreateSampler(GLuint client_id, GLuint service_id) {
   DCHECK_NE(0u, service_id);
   auto result = samplers_.insert(std::make_pair(client_id,
-      scoped_refptr<Sampler>(new Sampler(this, service_id))));
+      scoped_refptr<Sampler>(new Sampler(this, client_id, service_id))));
   DCHECK(result.second);
   return result.first->second.get();
 }

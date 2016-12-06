@@ -168,6 +168,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void DoCreateProgram(GLuint client_id, GLuint service_id);
   void DoCreateShader(GLenum shader_type, GLuint client_id, GLuint service_id);
   void DoFenceSync(GLuint client_id, GLuint service_id);
+  void DoCreateSampler(GLuint client_id, GLuint service_id);
+  void DoCreateTransformFeedback(GLuint client_id, GLuint service_id);
 
   void SetBucketData(uint32_t bucket_id, const void* data, uint32_t data_size);
   void SetBucketAsCString(uint32_t bucket_id, const char* str);
@@ -269,6 +271,9 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void EnsureRenderbufferBound(bool expect_bind);
   void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindVertexArrayOES(GLuint client_id, GLuint service_id);
+  void DoBindSampler(GLuint unit, GLuint client_id, GLuint service_id);
+  void DoBindTransformFeedback(
+      GLenum target, GLuint client_id, GLuint service_id);
 
   bool DoIsBuffer(GLuint client_id);
   bool DoIsFramebuffer(GLuint client_id);
@@ -286,6 +291,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void DoDeleteRenderbuffer(GLuint client_id, GLuint service_id);
   void DoDeleteShader(GLuint client_id, GLuint service_id);
   void DoDeleteTexture(GLuint client_id, GLuint service_id);
+  void DoDeleteSampler(GLuint client_id, GLuint service_id);
+  void DoDeleteTransformFeedback(GLuint client_id, GLuint service_id);
 
   void DoCompressedTexImage2D(GLenum target,
                               GLint level,

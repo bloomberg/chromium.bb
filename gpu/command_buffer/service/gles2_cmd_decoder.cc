@@ -6734,17 +6734,16 @@ bool GLES2DecoderImpl::GetHelper(
     case GL_SAMPLER_BINDING:
       *num_written = 1;
       if (params) {
-        // TODO(vmiura): Need to implement this for ES3 clients.  WebGL 2 tracks
-        // this on the client side.
-        *params = 0;
+        DCHECK_LT(state_.active_texture_unit, state_.sampler_units.size());
+        Sampler* sampler =
+            state_.sampler_units[state_.active_texture_unit].get();
+        *params = sampler ? sampler->client_id() : 0;
       }
       return true;
     case GL_TRANSFORM_FEEDBACK_BINDING:
       *num_written = 1;
       if (params) {
-        // TODO(vmiura): Need to implement this for ES3 clients.  WebGL 2 tracks
-        // this on the client side.
-        *params = 0;
+        *params = state_.bound_transform_feedback->client_id();
       }
       return true;
     case GL_NUM_PROGRAM_BINARY_FORMATS:
@@ -7016,11 +7015,9 @@ void GLES2DecoderImpl::DoBindAttribLocation(GLuint program_id,
   // At this point, the program's shaders may not be translated yet,
   // therefore, we may not find the hashed attribute name.
   // glBindAttribLocation call with original name is useless.
-  // So instead, we should simply cache the binding, and then call
+  // So instead, we simply cache the binding, and then call
   // Program::ExecuteBindAttribLocationCalls() right before link.
   program->SetAttribLocationBinding(name, static_cast<GLint>(index));
-  // TODO(zmo): Get rid of the following glBindAttribLocation call.
-  glBindAttribLocation(program->service_id(), index, name.c_str());
 }
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
