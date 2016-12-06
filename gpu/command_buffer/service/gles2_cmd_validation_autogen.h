@@ -344,6 +344,12 @@ TextureMinFilterModeValidator texture_min_filter_mode;
 ValueValidator<GLenum> texture_parameter;
 ValueValidator<GLenum> texture_sized_color_renderable_internal_format;
 ValueValidator<GLenum> texture_sized_texture_filterable_internal_format;
+class TextureSrgbDecodeExtValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+TextureSrgbDecodeExtValidator texture_srgb_decode_ext;
+
 ValueValidator<GLenum> texture_stencil_renderable_internal_format;
 class TextureSwizzleValidator {
  public:

@@ -619,6 +619,12 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
+  // The extension GL_EXT_texture_sRGB_decode is the same on desktop and GLES.
+  if (extensions.Contains("GL_EXT_texture_sRGB_decode") && !IsWebGLContext()) {
+    AddExtensionString("GL_EXT_texture_sRGB_decode");
+    validators_.texture_parameter.AddValue(GL_TEXTURE_SRGB_DECODE_EXT);
+  }
+
   // On desktop, GL_EXT_texture_sRGB is required regardless of GL version,
   // since the sRGB formats in OpenGL 3.0 Core do not support S3TC.
   // TODO(kainino): Support GL_EXT_texture_compression_s3tc_srgb once ratified.
