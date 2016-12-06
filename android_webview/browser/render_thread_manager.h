@@ -100,6 +100,9 @@ class RenderThreadManager : public CompositorFrameConsumer {
   CompositorFrameProducer* compositor_frame_producer_;
   base::WeakPtr<RenderThreadManager> ui_thread_weak_ptr_;
   base::CancelableClosure request_draw_gl_cancelable_closure_;
+  // Whether any frame has been received on the UI thread by
+  // RenderThreadManager.
+  bool has_received_frame_;
 
   // Accessed by RT thread.
   std::unique_ptr<HardwareRenderer> hardware_renderer_;
@@ -109,7 +112,6 @@ class RenderThreadManager : public CompositorFrameConsumer {
 
   // Accessed by both UI and RT thread.
   mutable base::Lock lock_;
-  bool hardware_renderer_has_frame_;
   gfx::Vector2d scroll_offset_;
   ChildFrameQueue child_frames_;
   const bool sync_on_draw_hardware_;

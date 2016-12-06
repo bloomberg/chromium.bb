@@ -204,7 +204,11 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool offscreen_pre_raster_;
 
   // Must do a synchronous draw first to ensure GL bindings are initialized.
-  // TODO(boliu): Wait on render thread and remove this.
+  // TODO(boliu): Wait on render thread and remove this. When the
+  // first synchronous draw requirement is removed,
+  // RenderThreadManager::DeleteHardwareRendererOnUI will need to
+  // change, because it will no longer be true that having received a
+  // frame means that GL bindings have been initialized.
   bool allow_async_draw_;
 
   gfx::Vector2d last_on_draw_scroll_offset_;

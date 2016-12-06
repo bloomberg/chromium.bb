@@ -98,8 +98,8 @@ RenderThreadManager::RenderThreadManager(
     : ui_loop_(ui_loop),
       client_(client),
       compositor_frame_producer_(nullptr),
+      has_received_frame_(false),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()),
-      hardware_renderer_has_frame_(false),
       sync_on_draw_hardware_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncOnDrawHardware)),
       inside_hardware_release_(false),
@@ -183,6 +183,9 @@ std::unique_ptr<ChildFrame> RenderThreadManager::SetFrameOnUI(
     std::unique_ptr<ChildFrame> new_frame) {
   DCHECK(new_frame);
   base::AutoLock lock(lock_);
+
+  has_received_frame_ = true;
+
   if (child_frames_.empty()) {
     child_frames_.emplace_back(std::move(new_frame));
     return nullptr;
@@ -212,8 +215,6 @@ std::unique_ptr<ChildFrame> RenderThreadManager::SetFrameOnUI(
 
 ChildFrameQueue RenderThreadManager::PassFramesOnRT() {
   base::AutoLock lock(lock_);
-  hardware_renderer_has_frame_ =
-      hardware_renderer_has_frame_ || !child_frames_.empty();
   ChildFrameQueue returned_frames;
   returned_frames.swap(child_frames_);
   return returned_frames;
@@ -334,7 +335,6 @@ void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
   }
 
   if (IsInsideHardwareRelease()) {
-    hardware_renderer_has_frame_ = false;
     hardware_renderer_.reset();
     // Flush the idle queue in tear down.
     DeferredGpuCommandService::GetInstance()->PerformAllIdleWork();
@@ -358,14 +358,16 @@ void RenderThreadManager::DeleteHardwareRendererOnUI() {
 
   InsideHardwareReleaseReset auto_inside_hardware_release_reset(this);
 
+  client_->DetachFunctorFromView();
+
   // If the WebView gets onTrimMemory >= MODERATE twice in a row, the 2nd
   // onTrimMemory will result in an unnecessary Render Thread InvokeGL call.
-  bool hardware_initialized = HasFrameOnUI();
-  if (hardware_initialized) {
-    // The functor has only been attached to the view hierarchy if a compositor
-    // frame has been generated. Thus, it should only be detached in this case.
-    client_->DetachFunctorFromView();
-
+  // TODO(boliu): removing the requirement that the first frame be
+  // synchronous will require changing the following test.
+  if (has_received_frame_) {
+    // Receiving at least one frame is a precondition for
+    // initialization (such as looing up GL bindings and constructing
+    // hardware_renderer_).
     bool draw_functor_succeeded = client_->RequestInvokeGL(true);
     if (!draw_functor_succeeded) {
       LOG(ERROR) << "Unable to free GL resources. Has the Window leaked?";
@@ -386,10 +388,12 @@ void RenderThreadManager::DeleteHardwareRendererOnUI() {
     }
   }
 
-  if (hardware_initialized) {
+  if (has_received_frame_) {
     // Flush any invoke functors that's caused by ReleaseHardware.
     client_->RequestInvokeGL(true);
   }
+
+  has_received_frame_ = false;
 }
 
 void RenderThreadManager::SetCompositorFrameProducer(
@@ -402,7 +406,7 @@ void RenderThreadManager::SetCompositorFrameProducer(
 
 bool RenderThreadManager::HasFrameOnUI() const {
   base::AutoLock lock(lock_);
-  return hardware_renderer_has_frame_ || !child_frames_.empty();
+  return has_received_frame_;
 }
 
 bool RenderThreadManager::HasFrameForHardwareRendererOnRT() const {
