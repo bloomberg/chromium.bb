@@ -21,6 +21,7 @@ namespace prefs {
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
 extern const char kArcApps[];
 extern const char kArcBackupRestoreEnabled[];
+extern const char kArcDataRemoveRequested[];
 extern const char kArcEnabled[];
 extern const char kArcPolicyCompliant[];
 extern const char kArcTermsAccepted[];

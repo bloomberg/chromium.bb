@@ -96,6 +96,37 @@ class ArcSessionManagerShutdownObserver : public ArcSessionManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerShutdownObserver);
 };
 
+// Observer of ARC data has been removed.
+class ArcSessionManagerDataRemovedObserver
+    : public ArcSessionManager::Observer {
+ public:
+  ArcSessionManagerDataRemovedObserver() {
+    ArcSessionManager::Get()->AddObserver(this);
+  }
+
+  ~ArcSessionManagerDataRemovedObserver() override {
+    ArcSessionManager::Get()->RemoveObserver(this);
+  }
+
+  void Wait() {
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+  // ArcSessionManager::Observer:
+  void OnArcDataRemoved() override {
+    if (!run_loop_)
+      return;
+    run_loop_->Quit();
+  }
+
+ private:
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerDataRemovedObserver);
+};
+
 class ArcSessionManagerTest : public InProcessBrowserTest {
  protected:
   ArcSessionManagerTest() {}
@@ -177,6 +208,12 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
         user_manager::UserManager::Get());
   }
 
+  void EnableArc() {
+    PrefService* const prefs = profile()->GetPrefs();
+    prefs->SetBoolean(prefs::kArcEnabled, true);
+    base::RunLoop().RunUntilIdle();
+  }
+
   void set_profile_name(const std::string& username) {
     profile_->set_profile_name(username);
   }
@@ -196,8 +233,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ConsumerAccount) {
-  PrefService* const prefs = profile()->GetPrefs();
-  prefs->SetBoolean(prefs::kArcEnabled, true);
+  EnableArc();
   token_service()->IssueTokenForAllPendingRequests(kUnmanagedAuthToken,
                                                    base::Time::Max());
   ASSERT_EQ(ArcSessionManager::State::ACTIVE,
@@ -206,9 +242,7 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ConsumerAccount) {
 
 IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, WellKnownConsumerAccount) {
   set_profile_name(kWellKnownConsumerName);
-  PrefService* const prefs = profile()->GetPrefs();
-
-  prefs->SetBoolean(prefs::kArcEnabled, true);
+  EnableArc();
   ASSERT_EQ(ArcSessionManager::State::ACTIVE,
             ArcSessionManager::Get()->state());
 }
@@ -218,21 +252,19 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedChromeAccount) {
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile());
   connector->OverrideIsManagedForTesting(true);
 
-  PrefService* const pref = profile()->GetPrefs();
-
-  pref->SetBoolean(prefs::kArcEnabled, true);
+  EnableArc();
   ASSERT_EQ(ArcSessionManager::State::ACTIVE,
             ArcSessionManager::Get()->state());
 }
 
 IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedAndroidAccount) {
-  PrefService* const prefs = profile()->GetPrefs();
-
-  prefs->SetBoolean(prefs::kArcEnabled, true);
+  EnableArc();
   token_service()->IssueTokenForAllPendingRequests(kManagedAuthToken,
                                                    base::Time::Max());
-  ArcSessionManagerShutdownObserver observer;
-  observer.Wait();
+  ArcSessionManagerShutdownObserver().Wait();
+  ASSERT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
+            ArcSessionManager::Get()->state());
+  ArcSessionManagerDataRemovedObserver().Wait();
   ASSERT_EQ(ArcSessionManager::State::STOPPED,
             ArcSessionManager::Get()->state());
 }

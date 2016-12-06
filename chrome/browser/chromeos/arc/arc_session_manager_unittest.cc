@@ -27,6 +27,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
@@ -53,6 +54,9 @@ class ArcSessionManagerTest : public testing::Test {
   ~ArcSessionManagerTest() override = default;
 
   void SetUp() override {
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        base::MakeUnique<chromeos::FakeSessionManagerClient>());
+
     chromeos::DBusThreadManager::Initialize();
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -98,6 +102,18 @@ class ArcSessionManagerTest : public testing::Test {
     return arc_session_manager_.get();
   }
 
+  bool WaitForDataRemoved(ArcSessionManager::State expected_state) {
+    if (arc_session_manager()->state() !=
+        ArcSessionManager::State::REMOVING_DATA_DIR)
+      return false;
+
+    base::RunLoop().RunUntilIdle();
+    if (arc_session_manager()->state() != expected_state)
+      return false;
+
+    return true;
+  }
+
  private:
   void StartPreferenceSyncing() const {
     PrefServiceSyncableFromProfile(profile_.get())
@@ -127,14 +143,17 @@ TEST_F(ArcSessionManagerTest, PrefChangeTriggersService) {
   ASSERT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
 
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
 
   pref->SetBoolean(prefs::kArcEnabled, true);
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
 
   pref->SetBoolean(prefs::kArcEnabled, false);
-  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
 
   // Correctly stop service.
   arc_session_manager()->Shutdown();
@@ -193,9 +212,10 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
 
   // By default ARC is not enabled.
-  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+  ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
 
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  base::RunLoop().RunUntilIdle();
 
   // Setting profile and pref initiates a code fetching process.
   ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
@@ -236,11 +256,16 @@ TEST_F(ArcSessionManagerTest, CancelFetchingDisablesArc) {
 
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
   pref->SetBoolean(prefs::kArcEnabled, true);
+  base::RunLoop().RunUntilIdle();
+
   ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
 
   arc_session_manager()->CancelAuthCode();
-  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  // Wait until data is removed.
+  ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
+
   ASSERT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
 
   // Correctly stop service.
@@ -252,6 +277,7 @@ TEST_F(ArcSessionManagerTest, CloseUIKeepsArcEnabled) {
 
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
   pref->SetBoolean(prefs::kArcEnabled, true);
+  base::RunLoop().RunUntilIdle();
 
   arc_session_manager()->StartArc();
 
@@ -374,6 +400,58 @@ TEST_F(ArcSessionManagerTest, DisabledForNonPrimaryProfile) {
   EXPECT_FALSE(chromeos::ProfileHelper::IsPrimaryProfile(second_profile.get()));
   EXPECT_FALSE(ArcAppListPrefs::Get(second_profile.get()));
 
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, RemoveDataFolder) {
+  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
+  // Starting session manager with prefs::kArcEnabled off automatically removes
+  // Android's data folder.
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+  EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
+            arc_session_manager()->state());
+  // Enable ARC. Data is removed asyncronously. At this moment session manager
+  // should be in REMOVING_DATA_DIR state.
+  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+  EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
+            arc_session_manager()->state());
+  // Wait until data is removed.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+  EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  arc_session_manager()->StartArc();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  // Now request to remove data and stop session manager.
+  arc_session_manager()->RemoveArcData();
+  ASSERT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  arc_session_manager()->Shutdown();
+  base::RunLoop().RunUntilIdle();
+  // Request should persist.
+  ASSERT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+
+  // Emulate next sign-in. Data should be removed first and ARC started after.
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+
+  ASSERT_TRUE(
+      WaitForDataRemoved(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE));
+
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+
+  arc_session_manager()->StartArc();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   arc_session_manager()->Shutdown();
 }
 

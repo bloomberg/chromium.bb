@@ -94,6 +94,7 @@ class ArcSessionManager : public ArcService,
     STOPPED,
     SHOWING_TERMS_OF_SERVICE,
     CHECKING_ANDROID_MANAGEMENT,
+    REMOVING_DATA_DIR,
     ACTIVE,
   };
 
@@ -109,6 +110,10 @@ class ArcSessionManager : public ArcService,
 
     // Called to notify that ARC has been initialized successfully.
     virtual void OnInitialStart() {}
+
+    // Called to notify that Android data has been removed. Used in
+    // browser_tests
+    virtual void OnArcDataRemoved() {}
   };
 
   explicit ArcSessionManager(ArcBridgeService* bridge_service);
@@ -216,6 +221,7 @@ class ArcSessionManager : public ArcService,
   void PrepareContextForAuthCodeRequest();
 
   void StartArcAndroidManagementCheck();
+  void MaybeReenableArc();
 
   // Called when the Android management check is done in opt-in flow or
   // re-auth flow.
@@ -236,7 +242,6 @@ class ArcSessionManager : public ArcService,
   State state_ = State::NOT_INITIALIZED;
   base::ObserverList<Observer> observer_list_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
-  bool clear_required_ = false;
   bool reenable_arc_ = false;
   base::OneShotTimer arc_sign_in_timer_;
 

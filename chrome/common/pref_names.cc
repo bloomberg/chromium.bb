@@ -22,6 +22,8 @@ namespace prefs {
 const char kArcApps[] = "arc.apps";
 // A preference to store backup and restore state for Android apps.
 const char kArcBackupRestoreEnabled[] = "arc.backup_restore.enabled";
+// A preference to indicate that Android's data directory should be removed.
+const char kArcDataRemoveRequested[] = "arc.data.remove_requested";
 // A preference to keep Android apps enabled state.
 const char kArcEnabled[] = "arc.enabled";
 // A preference that indicated whether Android reported that it's compliant
