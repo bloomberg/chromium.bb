@@ -135,9 +135,6 @@ class InProcessWorkerMessagingProxyForTest
     return static_cast<DedicatedWorkerThreadForTest*>(m_workerThread.get());
   }
 
-  bool workerGlobalScopeMayHavePendingActivity() const {
-    return m_workerGlobalScopeMayHavePendingActivity;
-  }
   unsigned unconfirmedMessageCount() const { return m_unconfirmedMessageCount; }
 
  private:
@@ -218,8 +215,7 @@ TEST_P(DedicatedWorkerTest, PendingActivity_NoActivity) {
   startWithSourceCode(sourceCode);
 
   // Worker initialization should be counted as a pending activity.
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // There should be no pending activities after the initialization.
   workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
@@ -232,8 +228,7 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeout) {
   startWithSourceCode(sourceCode);
 
   // Worker initialization should be counted as a pending activity.
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // The timer is fired soon and there should be no pending activities after
   // that.
@@ -251,23 +246,19 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetInterval) {
   startWithSourceCode(sourceCode);
 
   // Worker initialization should be counted as a pending activity.
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // Stop the timer.
   dispatchMessageEvent();
   EXPECT_EQ(1u, workerMessagingProxy()->unconfirmedMessageCount());
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
   workerMessagingProxy()->waitUntil(WaitUntilMode::MessageConfirmed);
   EXPECT_EQ(0u, workerMessagingProxy()->unconfirmedMessageCount());
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // There should be no pending activities after the timer is stopped.
   workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
-  EXPECT_FALSE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 }
 
 TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeoutOnMessageEvent) {
@@ -279,27 +270,22 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeoutOnMessageEvent) {
   startWithSourceCode(sourceCode);
 
   // Worker initialization should be counted as a pending activity.
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
   workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
-  EXPECT_FALSE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 
   // A message starts the oneshot timer that is counted as a pending activity.
   dispatchMessageEvent();
   EXPECT_EQ(1u, workerMessagingProxy()->unconfirmedMessageCount());
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
   workerMessagingProxy()->waitUntil(WaitUntilMode::MessageConfirmed);
   EXPECT_EQ(0u, workerMessagingProxy()->unconfirmedMessageCount());
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // The timer is fired soon and there should be no pending activities after
   // that.
   workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
-  EXPECT_FALSE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 }
 
 TEST_P(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
@@ -319,22 +305,18 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
   startWithSourceCode(sourceCode);
 
   // Worker initialization should be counted as a pending activity.
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
   workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
-  EXPECT_FALSE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 
   // The first message event sets the active timer that is counted as a
   // pending activity.
   dispatchMessageEvent();
   EXPECT_EQ(1u, workerMessagingProxy()->unconfirmedMessageCount());
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
   workerMessagingProxy()->waitUntil(WaitUntilMode::MessageConfirmed);
   EXPECT_EQ(0u, workerMessagingProxy()->unconfirmedMessageCount());
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // Run the message loop for a while to make sure the timer is counted as a
   // pending activity until it's stopped. The delay is equal to the max
@@ -342,23 +324,19 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
   // to run before the next expectation check.
   const double kDelayInMs = kMaxIntervalInSec * 1000;
   testing::runDelayedTasks(kDelayInMs);
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // Stop the timer.
   dispatchMessageEvent();
   EXPECT_EQ(1u, workerMessagingProxy()->unconfirmedMessageCount());
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
   workerMessagingProxy()->waitUntil(WaitUntilMode::MessageConfirmed);
   EXPECT_EQ(0u, workerMessagingProxy()->unconfirmedMessageCount());
-  EXPECT_TRUE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // There should be no pending activities after the timer is stopped.
   workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
-  EXPECT_FALSE(
-      workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
+  EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 }
 
 }  // namespace blink

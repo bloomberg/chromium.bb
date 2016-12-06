@@ -45,9 +45,6 @@ class InProcessWorkerObjectProxy;
 class SerializedScriptValue;
 class WorkerClients;
 
-// TODO(nhiroki): "MessagingProxy" is not well-defined term among worker
-// components. Probably we should rename this to something more suitable.
-// (http://crbug.com/603785)
 class CORE_EXPORT InProcessWorkerMessagingProxy
     : public ThreadedMessagingProxyBase {
   WTF_MAKE_NONCOPYABLE(InProcessWorkerMessagingProxy);
@@ -77,6 +74,9 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
 
   // 'virtual' for testing.
   virtual void confirmMessageFromWorkerObject();
+
+  // Called from InProcessWorkerObjectProxy when all pending activities on the
+  // worker context are finished. See InProcessWorkerObjectProxy.h for details.
   virtual void pendingActivityFinished();
 
  protected:
@@ -101,9 +101,13 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
   Vector<std::unique_ptr<ExecutionContextTask>> m_queuedEarlyTasks;
 
   // Unconfirmed messages from the parent context thread to the worker thread.
-  unsigned m_unconfirmedMessageCount;
+  // When this is greater than 0, |m_workerGlobalScopeHasPendingActivity| should
+  // be true.
+  unsigned m_unconfirmedMessageCount = 0;
 
-  bool m_workerGlobalScopeMayHavePendingActivity;
+  // Indicates whether there are pending activities (e.g, MessageEvent,
+  // setTimeout) on the worker context.
+  bool m_workerGlobalScopeHasPendingActivity = false;
 
   WeakPtrFactory<InProcessWorkerMessagingProxy> m_weakPtrFactory;
 };

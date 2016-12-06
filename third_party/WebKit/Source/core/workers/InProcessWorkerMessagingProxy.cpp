@@ -89,8 +89,6 @@ InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(
     : ThreadedMessagingProxyBase(executionContext),
       m_workerObject(workerObject),
       m_workerClients(workerClients),
-      m_unconfirmedMessageCount(0),
-      m_workerGlobalScopeMayHavePendingActivity(false),
       m_weakPtrFactory(this) {
   m_workerObjectProxy =
       InProcessWorkerObjectProxy::create(m_weakPtrFactory.createWeakPtr());
@@ -163,7 +161,7 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(
       passed(std::move(channels)), crossThreadUnretained(&workerObjectProxy()));
   if (workerThread()) {
     // A message event is an activity and may initiate another activity.
-    m_workerGlobalScopeMayHavePendingActivity = true;
+    m_workerGlobalScopeHasPendingActivity = true;
     ++m_unconfirmedMessageCount;
     workerThread()->postTask(BLINK_FROM_HERE, std::move(task));
   } else {
@@ -195,16 +193,14 @@ void InProcessWorkerMessagingProxy::dispatchErrorEvent(
 }
 
 void InProcessWorkerMessagingProxy::workerThreadCreated() {
+  DCHECK(isParentContextThread());
   ThreadedMessagingProxyBase::workerThreadCreated();
 
-  DCHECK(isParentContextThread());
-
-  DCHECK(!m_unconfirmedMessageCount);
-  m_unconfirmedMessageCount = m_queuedEarlyTasks.size();
-
   // Worker initialization means a pending activity.
-  m_workerGlobalScopeMayHavePendingActivity = true;
+  m_workerGlobalScopeHasPendingActivity = true;
 
+  DCHECK_EQ(0u, m_unconfirmedMessageCount);
+  m_unconfirmedMessageCount = m_queuedEarlyTasks.size();
   for (auto& earlyTask : m_queuedEarlyTasks)
     workerThread()->postTask(BLINK_FROM_HERE, std::move(earlyTask));
   m_queuedEarlyTasks.clear();
@@ -225,26 +221,27 @@ void InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject() {
   DCHECK(isParentContextThread());
   if (askedToTerminate())
     return;
-  DCHECK(m_unconfirmedMessageCount);
+  DCHECK(m_workerGlobalScopeHasPendingActivity);
+  DCHECK_GT(m_unconfirmedMessageCount, 0u);
   --m_unconfirmedMessageCount;
 }
 
 void InProcessWorkerMessagingProxy::pendingActivityFinished() {
   DCHECK(isParentContextThread());
-  DCHECK(m_workerGlobalScopeMayHavePendingActivity);
+  DCHECK(m_workerGlobalScopeHasPendingActivity);
   if (m_unconfirmedMessageCount > 0) {
     // Ignore the report because an inflight message event may initiate a
     // new activity.
     return;
   }
-  m_workerGlobalScopeMayHavePendingActivity = false;
+  m_workerGlobalScopeHasPendingActivity = false;
 }
 
 bool InProcessWorkerMessagingProxy::hasPendingActivity() const {
   DCHECK(isParentContextThread());
   if (askedToTerminate())
     return false;
-  return m_unconfirmedMessageCount || m_workerGlobalScopeMayHavePendingActivity;
+  return m_workerGlobalScopeHasPendingActivity;
 }
 
 }  // namespace blink
