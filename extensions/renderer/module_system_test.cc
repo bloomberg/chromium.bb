@@ -23,6 +23,7 @@
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/safe_builtins.h"
+#include "extensions/renderer/source_map.h"
 #include "extensions/renderer/utils_native_handler.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -100,17 +101,16 @@ class ModuleSystemTestEnvironment::AssertNatives
 };
 
 // Source map that operates on std::strings.
-class ModuleSystemTestEnvironment::StringSourceMap
-    : public ModuleSystem::SourceMap {
+class ModuleSystemTestEnvironment::StringSourceMap : public SourceMap {
  public:
   StringSourceMap() {}
   ~StringSourceMap() override {}
 
-  v8::Local<v8::Value> GetSource(v8::Isolate* isolate,
+  v8::Local<v8::String> GetSource(v8::Isolate* isolate,
                                  const std::string& name) const override {
     const auto& source_map_iter = source_map_.find(name);
     if (source_map_iter == source_map_.end())
-      return v8::Undefined(isolate);
+      return v8::Local<v8::String>();
     return v8::String::NewFromUtf8(isolate, source_map_iter->second.c_str());
   }
 

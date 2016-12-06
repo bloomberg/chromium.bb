@@ -21,6 +21,7 @@
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
+#include "extensions/renderer/source_map.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/modules/module_registry.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -545,14 +546,6 @@ v8::Local<v8::Value> ModuleSystem::RunString(v8::Local<v8::String> code,
                              base::Unretained(exception_handler_.get())));
 }
 
-v8::Local<v8::Value> ModuleSystem::GetSource(const std::string& module_name) {
-  v8::EscapableHandleScope handle_scope(GetIsolate());
-  if (!source_map_->Contains(module_name))
-    return v8::Undefined(GetIsolate());
-  return handle_scope.Escape(
-      v8::Local<v8::Value>(source_map_->GetSource(GetIsolate(), module_name)));
-}
-
 void ModuleSystem::RequireNative(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
@@ -668,13 +661,13 @@ v8::Local<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
   v8::Local<v8::Context> v8_context = context()->v8_context();
   v8::Context::Scope context_scope(v8_context);
 
-  v8::Local<v8::Value> source(GetSource(module_name));
-  if (source.IsEmpty() || source->IsUndefined()) {
+  v8::Local<v8::String> source =
+      source_map_->GetSource(GetIsolate(), module_name);
+  if (source.IsEmpty()) {
     Fatal(context_, "No source for require(" + module_name + ")");
     return v8::Undefined(GetIsolate());
   }
-  v8::Local<v8::String> wrapped_source(
-      WrapSource(v8::Local<v8::String>::Cast(source)));
+  v8::Local<v8::String> wrapped_source(WrapSource(source));
   v8::Local<v8::String> v8_module_name;
   if (!ToV8String(GetIsolate(), module_name.c_str(), &v8_module_name)) {
     NOTREACHED() << "module_name is too long";

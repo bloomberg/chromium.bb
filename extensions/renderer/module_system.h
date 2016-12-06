@@ -22,6 +22,7 @@
 namespace extensions {
 
 class ScriptContext;
+class SourceMap;
 
 // A module system for JS similar to node.js' require() function.
 // Each module has three variables in the global scope:
@@ -42,14 +43,6 @@ class ScriptContext;
 class ModuleSystem : public ObjectBackedNativeHandler,
                      public gin::ModuleRegistryObserver {
  public:
-  class SourceMap {
-   public:
-    virtual ~SourceMap() {}
-    virtual v8::Local<v8::Value> GetSource(v8::Isolate* isolate,
-                                           const std::string& name) const = 0;
-    virtual bool Contains(const std::string& name) const = 0;
-  };
-
   class ExceptionHandler {
    public:
     explicit ExceptionHandler(ScriptContext* context) : context_(context) {}

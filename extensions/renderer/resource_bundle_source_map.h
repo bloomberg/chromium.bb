@@ -8,8 +8,8 @@
 #include <map>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "extensions/renderer/module_system.h"
+#include "base/macros.h"
+#include "extensions/renderer/source_map.h"
 #include "v8/include/v8.h"
 
 namespace ui {
@@ -18,13 +18,13 @@ class ResourceBundle;
 
 namespace extensions {
 
-class ResourceBundleSourceMap : public extensions::ModuleSystem::SourceMap {
+class ResourceBundleSourceMap : public SourceMap {
  public:
   explicit ResourceBundleSourceMap(const ui::ResourceBundle* resource_bundle);
   ~ResourceBundleSourceMap() override;
 
-  v8::Local<v8::Value> GetSource(v8::Isolate* isolate,
-                                 const std::string& name) const override;
+  v8::Local<v8::String> GetSource(v8::Isolate* isolate,
+                                  const std::string& name) const override;
   bool Contains(const std::string& name) const override;
 
   void RegisterSource(const std::string& name, int resource_id);

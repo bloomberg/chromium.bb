@@ -177,6 +177,7 @@ source_set("renderer") {
     "service_worker_request_sender.h",
     "set_icon_natives.cc",
     "set_icon_natives.h",
+    "source_map.h",
     "static_v8_external_one_byte_string_resource.cc",
     "static_v8_external_one_byte_string_resource.h",
     "test_features_native_handler.cc",
