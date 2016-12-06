@@ -287,6 +287,10 @@ DomainReliabilityMonitor::RequestInfo::~RequestInfo() {}
 // static
 bool DomainReliabilityMonitor::RequestInfo::ShouldReportRequest(
     const DomainReliabilityMonitor::RequestInfo& request) {
+  // Always report upload requests, even though they have DO_NOT_SEND_COOKIES.
+  if (request.upload_depth > 0)
+    return true;
+
   // Don't report requests that weren't supposed to send cookies.
   if (request.load_flags & net::LOAD_DO_NOT_SEND_COOKIES)
     return false;

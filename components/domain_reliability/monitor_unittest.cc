@@ -255,6 +255,22 @@ TEST_F(DomainReliabilityMonitorTest, AtLeastOneBakedInConfig) {
   DCHECK(kBakedInJsonConfigs[0] != nullptr);
 }
 
+// Make sure the monitor does log uploads, even though they have
+// LOAD_DO_NOT_SEND_COOKIES.
+TEST_F(DomainReliabilityMonitorTest, Upload) {
+  DomainReliabilityContext* context = CreateAndAddContext();
+
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/");
+  request.load_flags =
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
+  request.upload_depth = 1;
+  OnRequestLegComplete(request);
+
+  EXPECT_EQ(1u, CountQueuedBeacons(context));
+}
+
 // Will fail when baked-in configs expire, as a reminder to update them.
 // (Contact juliatuttle@chromium.org if this starts failing.)
 TEST_F(DomainReliabilityMonitorTest, AddBakedInConfigs) {
