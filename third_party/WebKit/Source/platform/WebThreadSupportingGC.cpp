@@ -29,8 +29,8 @@ WebThreadSupportingGC::WebThreadSupportingGC(
     WebThread* thread,
     BlinkGC::ThreadHeapMode threadHeapMode)
     : m_thread(thread), m_threadHeapMode(threadHeapMode) {
-#if ENABLE(ASSERT)
-  ASSERT(!name || !thread);
+  DCHECK(!name || !thread);
+#if DCHECK_IS_ON()
   // We call this regardless of whether an existing thread is given or not,
   // as it means that blink is going to run with more than one thread.
   WTF::willCreateThread();

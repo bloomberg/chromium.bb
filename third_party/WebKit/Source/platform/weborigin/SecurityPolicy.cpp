@@ -193,8 +193,10 @@ Referrer SecurityPolicy::generateReferrer(ReferrerPolicy referrerPolicy,
 
 void SecurityPolicy::addOriginTrustworthyWhiteList(
     PassRefPtr<SecurityOrigin> origin) {
+#if DCHECK_IS_ON()
   // Must be called before we start other threads.
-  ASSERT(WTF::isBeforeThreadCreated());
+  DCHECK(WTF::isBeforeThreadCreated());
+#endif
   if (origin->isUnique())
     return;
   trustworthyOriginSet().add(origin->toRawString());
