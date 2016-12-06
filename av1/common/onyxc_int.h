@@ -865,8 +865,13 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
 
 static INLINE void set_sb_size(AV1_COMMON *const cm, const BLOCK_SIZE sb_size) {
   cm->sb_size = sb_size;
+#if CONFIG_CB4X4
+  cm->mib_size = num_4x4_blocks_wide_lookup[cm->sb_size];
+  cm->mib_size_log2 = b_width_log2_lookup[cm->sb_size];
+#else
   cm->mib_size = num_8x8_blocks_wide_lookup[cm->sb_size];
   cm->mib_size_log2 = mi_width_log2_lookup[cm->sb_size];
+#endif
 }
 
 #ifdef __cplusplus
