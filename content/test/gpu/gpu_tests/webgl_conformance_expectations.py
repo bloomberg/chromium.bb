@@ -289,6 +289,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance/renderbuffers/framebuffer-test.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/renderbuffers/renderbuffer-initialization.html',
+        ['win', 'passthrough', 'd3d11'], bug=1635) # angle bug ID
     self.Fail('conformance/rendering/draw-arrays-out-of-bounds.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/rendering/draw-elements-out-of-bounds.html',
