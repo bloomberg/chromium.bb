@@ -23,7 +23,11 @@
 #ifndef HTMLMarqueeElement_h
 #define HTMLMarqueeElement_h
 
+#include "core/animation/Animation.h"
+#include "core/animation/KeyframeEffectModel.h"
+#include "core/dom/FrameRequestCallback.h"
 #include "core/html/HTMLElement.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -31,6 +35,8 @@ class HTMLMarqueeElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  DECLARE_VIRTUAL_TRACE();
+
   static HTMLMarqueeElement* create(Document&);
 
   void attributeChanged(const QualifiedName&,
@@ -42,8 +48,102 @@ class HTMLMarqueeElement final : public HTMLElement {
 
   bool isHorizontal() const;
 
+  int scrollAmount() const;
+  void setScrollAmount(int, ExceptionState&);
+
+  int scrollDelay() const;
+  void setScrollDelay(int, ExceptionState&);
+
+  int loop() const;
+  void setLoop(int, ExceptionState&);
+
+  void start();
+  void stop();
+
  private:
   explicit HTMLMarqueeElement(Document&);
+
+  class RequestAnimationFrameCallback final : public FrameRequestCallback {
+    WTF_MAKE_NONCOPYABLE(RequestAnimationFrameCallback);
+
+   public:
+    explicit RequestAnimationFrameCallback(HTMLMarqueeElement* marquee)
+        : m_marquee(marquee) {}
+    void handleEvent(double) override;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() {
+      visitor->trace(m_marquee);
+      FrameRequestCallback::trace(visitor);
+    }
+
+   private:
+    Member<HTMLMarqueeElement> m_marquee;
+  };
+
+  class AnimationFinished final : public EventListener {
+    WTF_MAKE_NONCOPYABLE(AnimationFinished);
+
+   public:
+    explicit AnimationFinished(HTMLMarqueeElement* marquee)
+        : EventListener(CPPEventListenerType), m_marquee(marquee) {}
+
+    bool operator==(const EventListener& that) const override {
+      return this == &that;
+    }
+
+    void handleEvent(ExecutionContext*, Event*) override;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() {
+      visitor->trace(m_marquee);
+      EventListener::trace(visitor);
+    }
+
+   private:
+    Member<HTMLMarqueeElement> m_marquee;
+  };
+
+  struct AnimationParameters {
+    String transformBegin;
+    String transformEnd;
+    double distance;
+  };
+
+  struct Metrics {
+    double contentWidth;
+    double contentHeight;
+    double marqueeWidth;
+    double marqueeHeight;
+  };
+
+  void attributeChangedCallback(const QualifiedName& attr,
+                                const String& newValue);
+
+  StringKeyframeEffectModel* createEffectModel(AnimationParameters&);
+
+  void continueAnimation();
+  bool shouldContinue();
+
+  enum Behavior { Scroll, Slide, Alternate };
+  Behavior behavior() const;
+
+  enum Direction { Left, Right, Up, Down };
+  Direction direction() const;
+
+  bool trueSpeed() const;
+
+  Metrics getMetrics();
+  AnimationParameters getAnimationParameters();
+  AtomicString createTransform(double value) const;
+
+  static const int kDefaultScrollAmount = 6;
+  static const int kDefaultScrollDelayMS = 85;
+  static const int kMinimumScrollDelayMS = 60;
+  static const int kDefaultLoopLimit = -1;
+
+  int m_continueCallbackRequestId = 0;
+  int m_loopCount = 0;
+  Member<Element> m_mover;
+  Member<Animation> m_player;
 };
 
 }  // namespace blink

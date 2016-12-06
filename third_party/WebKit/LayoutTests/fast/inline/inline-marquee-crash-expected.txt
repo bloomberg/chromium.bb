@@ -1,2 +1,1 @@
-CONSOLE WARNING: line 361: Invalid keyframe value for property transform: translateX(NaNpx)
 No crash means PASS

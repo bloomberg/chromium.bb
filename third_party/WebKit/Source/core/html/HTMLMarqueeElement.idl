@@ -20,18 +20,18 @@
 // https://html.spec.whatwg.org/#htmlmarqueeelement
 
 interface HTMLMarqueeElement : HTMLElement {
-    [ImplementedInPrivateScript, Reflect] attribute DOMString behavior;
-    [ImplementedInPrivateScript, Reflect] attribute DOMString bgColor;
-    [ImplementedInPrivateScript, Reflect] attribute DOMString direction;
-    [ImplementedInPrivateScript, Reflect] attribute DOMString height;
-    [ImplementedInPrivateScript, Reflect] attribute unsigned long hspace;
-    [ImplementedInPrivateScript] attribute long loop;
+    [Reflect] attribute DOMString behavior;
+    [Reflect] attribute DOMString bgColor;
+    [Reflect] attribute DOMString direction;
+    [Reflect] attribute DOMString height;
+    [Reflect] attribute unsigned long hspace;
+    [RaisesException=Setter] attribute long loop;
     // FIXME: scrollAmount and scrollDelay should be unsigned long.
-    [ImplementedInPrivateScript] attribute long scrollAmount;
-    [ImplementedInPrivateScript] attribute long scrollDelay;
-    [ImplementedInPrivateScript, Reflect] attribute boolean trueSpeed;
-    [ImplementedInPrivateScript, Reflect] attribute unsigned long vspace;
-    [ImplementedInPrivateScript, Reflect] attribute DOMString width;
+    [RaisesException=Setter] attribute long scrollAmount;
+    [RaisesException=Setter] attribute long scrollDelay;
+    [Reflect] attribute boolean trueSpeed;
+    [Reflect] attribute unsigned long vspace;
+    [Reflect] attribute DOMString width;
 
     // FIXME: Implement the following event handler attributes
     // https://bugs.webkit.org/show_bug.cgi?id=49788
@@ -39,12 +39,6 @@ interface HTMLMarqueeElement : HTMLElement {
     // attribute EventHandler onfinish;
     // attribute EventHandler onstart;
 
-    [ImplementedInPrivateScript] void start();
-    [ImplementedInPrivateScript] void stop();
-
-    // Private script APIs
-    [ImplementedInPrivateScript, OnlyExposedToPrivateScript] void createdCallback();
-    [ImplementedInPrivateScript, OnlyExposedToPrivateScript] void attachedCallback();
-    [ImplementedInPrivateScript, OnlyExposedToPrivateScript] void detachedCallback();
-    [ImplementedInPrivateScript, OnlyExposedToPrivateScript] void attributeChangedCallback(DOMString name, DOMString oldValue, DOMString newValue);
+    void start();
+    void stop();
 };
