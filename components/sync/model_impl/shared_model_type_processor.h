@@ -166,7 +166,7 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // entities may not always contain model type data/specifics.
   EntityMap entities_;
 
-  // The bridge wants to communicate entirly via storage keys that is free to
+  // The bridge wants to communicate entirely via storage keys that is free to
   // define and can understand more easily. All of the sync machinery wants to
   // use client tag hash. This mapping allows us to convert from storage key to
   // client tag hash. The other direction can use |entities_|.

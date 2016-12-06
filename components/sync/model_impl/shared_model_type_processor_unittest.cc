@@ -859,6 +859,14 @@ TEST_F(SharedModelTypeProcessorTest, LocalDeleteItem) {
   worker()->AckOnePendingCommit();
   EXPECT_EQ(0U, db().metadata_count());
   EXPECT_EQ(0U, ProcessorEntityCount());
+
+  // Create item again.
+  WriteItemAndAck(kKey1, kValue1);
+  const EntityMetadata metadata_v3 = db().GetMetadata(kKey1);
+  EXPECT_FALSE(metadata_v3.is_deleted());
+  EXPECT_EQ(1, metadata_v3.sequence_number());
+  EXPECT_EQ(1, metadata_v3.acked_sequence_number());
+  EXPECT_EQ(3, metadata_v3.server_version());
 }
 
 // Tests creating and deleting an item locally before receiving a commit
@@ -927,6 +935,14 @@ TEST_F(SharedModelTypeProcessorTest, ServerDeleteItem) {
   EXPECT_EQ(0U, db().metadata_count());
   EXPECT_EQ(0U, ProcessorEntityCount());
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
+
+  // Create item again.
+  WriteItemAndAck(kKey1, kValue1);
+  const EntityMetadata metadata = db().GetMetadata(kKey1);
+  EXPECT_FALSE(metadata.is_deleted());
+  EXPECT_EQ(1, metadata.sequence_number());
+  EXPECT_EQ(1, metadata.acked_sequence_number());
+  EXPECT_EQ(3, metadata.server_version());
 }
 
 // Deletes an item we've never seen before.

@@ -288,6 +288,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
 
     if (entity->CanClearMetadata()) {
       change_list->ClearMetadata(entity->storage_key());
+      storage_key_to_tag_hash_.erase(entity->storage_key());
       entities_.erase(entity->metadata().client_tag_hash());
     } else {
       change_list->UpdateMetadata(entity->storage_key(), entity->metadata());
@@ -334,6 +335,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
 
     if (entity->CanClearMetadata()) {
       metadata_changes->ClearMetadata(entity->storage_key());
+      storage_key_to_tag_hash_.erase(entity->storage_key());
       entities_.erase(entity->metadata().client_tag_hash());
     } else {
       metadata_changes->UpdateMetadata(entity->storage_key(),
