@@ -48,7 +48,7 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target,
 
   m_clip.clearInvalidationMask();
 
-  if (visualRect.isEmpty() || m_clip.hasCycle())
+  if (m_clip.hasCycle())
     return false;
 
   SVGClipExpansionCycleHelper inClipExpansionChange(m_clip);
