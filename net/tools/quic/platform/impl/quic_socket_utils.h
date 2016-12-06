@@ -4,8 +4,8 @@
 //
 // Some socket related helper methods for quic.
 
-#ifndef NET_TOOLS_QUIC_QUIC_SOCKET_UTILS_H_
-#define NET_TOOLS_QUIC_QUIC_SOCKET_UTILS_H_
+#ifndef NET_TOOLS_QUIC_PLATFORM_IMPL_QUIC_SOCKET_UTILS_H_
+#define NET_TOOLS_QUIC_PLATFORM_IMPL_QUIC_SOCKET_UTILS_H_
 
 #include <netinet/in.h>
 #include <stddef.h>
@@ -129,4 +129,4 @@ class QuicSocketUtils {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_QUIC_SOCKET_UTILS_H_
+#endif  // NET_TOOLS_QUIC_PLATFORM_IMPL_QUIC_SOCKET_UTILS_H_

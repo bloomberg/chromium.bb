@@ -1013,6 +1013,8 @@ if (is_linux) {
     sources = [
       "tools/quic/platform/impl/quic_epoll_clock.cc",
       "tools/quic/platform/impl/quic_epoll_clock.h",
+      "tools/quic/platform/impl/quic_socket_utils.cc",
+      "tools/quic/platform/impl/quic_socket_utils.h",
       "tools/quic/quic_client.cc",
       "tools/quic/quic_client.h",
       "tools/quic/quic_default_packet_writer.cc",
@@ -1027,8 +1029,6 @@ if (is_linux) {
       "tools/quic/quic_packet_writer_wrapper.h",
       "tools/quic/quic_server.cc",
       "tools/quic/quic_server.h",
-      "tools/quic/quic_socket_utils.cc",
-      "tools/quic/quic_socket_utils.h",
     ]
     deps = [
       ":epoll_server",

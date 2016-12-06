@@ -21,6 +21,7 @@
 #include "net/quic/core/quic_data_reader.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/tools/quic/platform/impl/quic_epoll_clock.h"
+#include "net/tools/quic/platform/impl/quic_socket_utils.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_epoll_alarm_factory.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
@@ -28,7 +29,6 @@
 #include "net/tools/quic/quic_packet_reader.h"
 #include "net/tools/quic/quic_simple_crypto_server_stream_helper.h"
 #include "net/tools/quic/quic_simple_dispatcher.h"
-#include "net/tools/quic/quic_socket_utils.h"
 
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
