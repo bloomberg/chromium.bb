@@ -1555,6 +1555,9 @@ specialize qw/aom_get4x4sse_cs neon msa/;
 #
 # Variance / Subpixel Variance / Subpixel Avg Variance
 #
+  add_proto qw/unsigned int/, "aom_variance2x2", "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse";
+  specialize qw/aom_variance2x2/;
+
 foreach (@block_sizes) {
   ($w, $h) = @$_;
   add_proto qw/unsigned int/, "aom_variance${w}x${h}", "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse";
