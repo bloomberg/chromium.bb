@@ -187,7 +187,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if sync_stages.MasterSlaveLKGMSyncStage.external_manager:
         manager = sync_stages.MasterSlaveLKGMSyncStage.external_manager
       slave_statuses.update(manager.GetBuildersStatus(
-          self._run.attrs.metadata.GetValue('build_id'),
+          build_id,
+          db,
           builder_names,
           timeout=timeout))
     return slave_statuses
