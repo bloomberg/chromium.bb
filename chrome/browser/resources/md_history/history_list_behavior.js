@@ -46,6 +46,15 @@ var HistoryListBehavior = {
   },
 
   /**
+   * @param {!Array<!HistoryEntry>} results
+   * @param {boolean} incremental True if the results are from an incremental
+   *     query.
+   * @param {boolean} finished True if this is the end of available results.
+   * @abstract
+   */
+  addNewResults: function(results, incremental, finished) {},
+
+  /**
    * @param {number} historyDataLength
    * @return {boolean}
    * @private

@@ -31,6 +31,7 @@ function replaceApp() {
   // Disable querying for tests by default.
   app.queryState_.queryingDisabled = true;
   replaceBody(app);
+  Polymer.dom.flush();
   return app;
 }
 

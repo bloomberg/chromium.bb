@@ -50,15 +50,8 @@ Polymer({
       });
     }
 
-    if (this.selectedPage_ == 'grouped-list') {
-      this.$$('#grouped-list').historyData = results;
-      return;
-    }
-
-    var list = /** @type {HistoryListElement} */(this.$['infinite-list']);
-    list.addNewResults(results, this.queryState.incremental);
-    if (info.finished)
-      list.disableResultLoading();
+    var list = /** @type {HistoryListBehavior} */ this.getSelectedList_();
+    list.addNewResults(results, this.queryState.incremental, info.finished);
   },
 
   /**

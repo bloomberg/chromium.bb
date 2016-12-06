@@ -52,6 +52,15 @@ Polymer({
   ],
 
   /**
+   * @param {!Array<!HistoryEntry>} results
+   * @param {boolean} incremental
+   * @param {boolean} finished
+   */
+  addNewResults: function(results, incremental, finished) {
+    this.historyData = results;
+  },
+
+  /**
    * Make a list of domains from visits.
    * @param {!Array<!HistoryEntry>} visits
    * @return {!Array<!HistoryDomain>}

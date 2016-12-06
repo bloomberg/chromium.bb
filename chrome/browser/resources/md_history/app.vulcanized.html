@@ -3274,8 +3274,9 @@ dialog .body {
 }
 
 </style>
-    <iron-pages id="content" attr-for-selected="id" selected="[[selectedPage_]]">
-      <history-list id="infinite-list" querying="[[queryState.querying]]" searched-term="[[queryResult.info.term]]"></history-list>
+    <iron-pages id="content" attr-for-selected="id" selected="[[selectedPage_]]" fallback-selection="infinite-list">
+      <history-list id="infinite-list" querying="[[queryState.querying]]" searched-term="[[queryResult.info.term]]">
+      </history-list>
       <template is="dom-if" if="[[grouped]]">
         <history-grouped-list id="grouped-list" range="[[groupedRange]]" query-start-time="[[queryResult.info.queryStartTime]]" query-end-time="[[queryResult.info.queryEndTime]]" searched-term="[[queryResult.info.term]]">
         </history-grouped-list>

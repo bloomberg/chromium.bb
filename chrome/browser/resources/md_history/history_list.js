@@ -60,20 +60,15 @@ Polymer({
   },
 
   /**
-   * Disables history result loading when there are no more history results.
-   */
-  disableResultLoading: function() {
-    this.resultLoadingDisabled_ = true;
-  },
-
-  /**
    * Adds the newly updated history results into historyData_. Adds new fields
    * for each result.
    * @param {!Array<!HistoryEntry>} historyResults The new history results.
    * @param {boolean} incremental Whether the result is from loading more
    * history, or a new search/list reload.
+   * @param {boolean} finished True if there are no more results available and
+   * result loading should be disabled.
    */
-  addNewResults: function(historyResults, incremental) {
+  addNewResults: function(historyResults, incremental, finished) {
     var results = historyResults.slice();
     /** @type {IronScrollThresholdElement} */(this.$['scroll-threshold'])
         .clearTriggers();
@@ -95,6 +90,8 @@ Polymer({
       // initialized correctly.
       this.set('historyData_', results);
     }
+
+    this.resultLoadingDisabled_ = finished;
   },
 
   /**
