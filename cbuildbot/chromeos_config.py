@@ -705,7 +705,6 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
-        'reef-paladin',
         'gale-paladin',
         'lakitu_next-paladin',
 
@@ -2076,6 +2075,7 @@ def CqBuilders(site_config, board_configs, hw_test_list):
       'parrot',
       'peach_pit',
       'peppy',
+      'reef',
       'samus',
       'smaug',
       'storm',
