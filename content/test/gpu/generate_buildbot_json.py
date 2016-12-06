@@ -163,7 +163,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2012ServerR2-SP0'
+          'os': 'Windows-10-10586'
         },
       ],
       'build_config': 'Release',
@@ -174,7 +174,29 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2012ServerR2-SP0'
+          'os': 'Windows-10-10586'
+        },
+      ],
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'win',
+    },
+    'Win10 Release (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-10-10586'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+    },
+    'Win10 Debug (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-10-10586'
         },
       ],
       'build_config': 'Debug',
