@@ -4,6 +4,7 @@
 
 #include "platform/text/Character.h"
 
+#include "platform/text/ICUError.h"
 #include <unicode/uvernum.h>
 
 #if defined(USING_SYSTEM_ICU) || (U_ICU_VERSION_MAJOR_NUM <= 57)
@@ -184,7 +185,7 @@ static const char kEmojiModifierBasePattern[] =
 
 static void applyPatternAndFreeze(icu::UnicodeSet* unicodeSet,
                                   const char* pattern) {
-  UErrorCode err = U_ZERO_ERROR;
+  ICUError err;
   // Use ICU's invariant-character initialization method.
   unicodeSet->applyPattern(icu::UnicodeString(pattern, -1, US_INV), err);
   unicodeSet->freeze();

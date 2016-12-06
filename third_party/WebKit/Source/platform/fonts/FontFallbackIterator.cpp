@@ -9,6 +9,7 @@
 #include "platform/fonts/FontFallbackList.h"
 #include "platform/fonts/SegmentedFontData.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/text/ICUError.h"
 
 namespace blink {
 
@@ -205,7 +206,7 @@ static inline unsigned chooseHintIndex(const Vector<UChar32>& hintList) {
   if (hintList.size() <= 1)
     return 0;
 
-  UErrorCode err = U_ZERO_ERROR;
+  ICUError err;
   UScriptCode hintCharScript = uscript_getScript(hintList[0], &err);
   if (!U_SUCCESS(err) || hintCharScript > USCRIPT_INHERITED)
     return 0;

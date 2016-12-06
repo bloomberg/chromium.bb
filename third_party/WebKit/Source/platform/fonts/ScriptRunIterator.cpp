@@ -4,6 +4,7 @@
 
 #include "ScriptRunIterator.h"
 
+#include "platform/text/ICUError.h"
 #include "wtf/Threading.h"
 #include <algorithm>
 
@@ -16,7 +17,7 @@ const int ScriptData::kMaxScriptCount = 20;
 ScriptData::~ScriptData() {}
 
 void ICUScriptData::getScripts(UChar32 ch, Vector<UScriptCode>& dst) const {
-  UErrorCode status = U_ZERO_ERROR;
+  ICUError status;
   // Leave room to insert primary script. It's not strictly necessary but
   // it ensures that the result won't ever be greater than kMaxScriptCount,
   // which some client someday might expect.

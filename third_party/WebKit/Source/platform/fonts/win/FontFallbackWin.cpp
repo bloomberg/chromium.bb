@@ -31,9 +31,10 @@
 
 #include "platform/fonts/win/FontFallbackWin.h"
 
-#include "platform/fonts/FontCache.h"
 #include "SkFontMgr.h"
 #include "SkTypeface.h"
+#include "platform/fonts/FontCache.h"
+#include "platform/text/ICUError.h"
 #include "wtf/HashMap.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/StringHash.h"
@@ -352,7 +353,7 @@ UScriptCode getScriptBasedOnUnicodeBlock(int ucs4) {
 }
 
 UScriptCode getScript(int ucs4) {
-  UErrorCode err = U_ZERO_ERROR;
+  ICUError err;
   UScriptCode script = uscript_getScript(ucs4, &err);
   // If script is invalid, common or inherited or there's an error,
   // infer a script based on the unicode block of a character.

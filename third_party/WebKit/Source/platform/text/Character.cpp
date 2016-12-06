@@ -30,6 +30,7 @@
 
 #include "platform/text/Character.h"
 
+#include "platform/text/ICUError.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
@@ -79,7 +80,7 @@ extern uint8_t serializedCharacterData[];
 
 static UTrie2* createTrie() {
   // Create a Trie from the value array.
-  UErrorCode error = U_ZERO_ERROR;
+  ICUError error;
   UTrie2* trie = utrie2_openFromSerialized(
       UTrie2ValueBits::UTRIE2_16_VALUE_BITS, serializedCharacterData,
       serializedCharacterDataSize, nullptr, &error);
@@ -253,7 +254,7 @@ String Character::normalizeSpaces(const UChar* characters, unsigned length) {
 }
 
 bool Character::isCommonOrInheritedScript(UChar32 character) {
-  UErrorCode status = U_ZERO_ERROR;
+  ICUError status;
   UScriptCode script = uscript_getScript(character, &status);
   return U_SUCCESS(status) &&
          (script == USCRIPT_COMMON || script == USCRIPT_INHERITED);

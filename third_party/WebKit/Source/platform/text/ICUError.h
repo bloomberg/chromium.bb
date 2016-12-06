@@ -22,6 +22,8 @@ class PLATFORM_EXPORT ICUError {
   UErrorCode* operator&() { return &m_error; }
   operator UErrorCode() const { return m_error; }
 
+  void operator=(UErrorCode error) { m_error = error; }
+
   // Crash the renderer in the appropriate way if critical failure occurred.
   void crashIfCritical();
 
