@@ -6,6 +6,7 @@
 #define NGPhysicalTextFragment_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_physical_fragment_base.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
@@ -15,8 +16,16 @@ namespace blink {
 
 class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragmentBase {
  public:
-  NGPhysicalTextFragment(NGPhysicalSize size, NGPhysicalSize overflow)
-      : NGPhysicalFragmentBase(size, overflow, kFragmentText) {}
+  NGPhysicalTextFragment(
+      NGPhysicalSize size,
+      NGPhysicalSize overflow,
+      HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
+      Vector<NGStaticPosition> out_of_flow_positions)
+      : NGPhysicalFragmentBase(size,
+                               overflow,
+                               kFragmentText,
+                               out_of_flow_descendants,
+                               out_of_flow_positions) {}
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
     NGPhysicalFragmentBase::traceAfterDispatch(visitor);

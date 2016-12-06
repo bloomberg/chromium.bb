@@ -50,22 +50,15 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(NGFragmentBase* child,
   children_.append(child->PhysicalFragment());
   offsets_.append(child_offset);
   // Collect child's out of flow descendants.
-  // TODO(atotic) All fragments can carry oof descendants.
-  // Therefore, oof descendants should move from NGPhysicalFragment to
-  // NGPhysicalFragmentBase
-  if (child->PhysicalFragment()->Type() ==
-      NGPhysicalFragmentBase::kFragmentBox) {
-    const NGPhysicalFragment* physical_child =
-        static_cast<const NGPhysicalFragment*>(&*child->PhysicalFragment());
-    const Vector<NGStaticPosition>& oof_positions =
-        physical_child->OutOfFlowPositions();
-    size_t oof_index = 0;
-    for (auto& oof_node : physical_child->OutOfFlowDescendants()) {
-      NGStaticPosition oof_position = oof_positions[oof_index++];
-      out_of_flow_descendant_candidates_.add(oof_node);
-      out_of_flow_candidate_placements_.append(
-          OutOfFlowPlacement{child_offset, oof_position});
-    }
+  const NGPhysicalFragmentBase* physical_fragment = child->PhysicalFragment();
+  const Vector<NGStaticPosition>& oof_positions =
+      physical_fragment->OutOfFlowPositions();
+  size_t oof_index = 0;
+  for (auto& oof_node : physical_fragment->OutOfFlowDescendants()) {
+    NGStaticPosition oof_position = oof_positions[oof_index++];
+    out_of_flow_descendant_candidates_.add(oof_node);
+    out_of_flow_candidate_placements_.append(
+        OutOfFlowPlacement{child_offset, oof_position});
   }
   return *this;
 }

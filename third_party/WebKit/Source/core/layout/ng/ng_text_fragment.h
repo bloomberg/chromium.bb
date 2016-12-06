@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_fragment_base.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"

@@ -15,6 +15,8 @@
 
 namespace blink {
 
+class NGBlockNode;
+
 // The NGPhysicalFragmentBase contains the output information from layout. The
 // fragment stores all of its information in the physical coordinate system for
 // use by paint, hit-testing etc.
@@ -60,26 +62,35 @@ class CORE_EXPORT NGPhysicalFragmentBase
     has_been_placed_ = true;
   }
 
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() { visitor->trace(break_token_); }
+  const HeapLinkedHashSet<WeakMember<NGBlockNode>>& OutOfFlowDescendants()
+      const {
+    return out_of_flow_descendants_;
+  }
+
+  const Vector<NGStaticPosition>& OutOfFlowPositions() const {
+    return out_of_flow_positions_;
+  }
+
+  DECLARE_TRACE_AFTER_DISPATCH();
   DECLARE_TRACE();
 
   void finalizeGarbageCollectedObject();
 
  protected:
-  NGPhysicalFragmentBase(NGPhysicalSize size,
-                         NGPhysicalSize overflow,
-                         NGFragmentType type,
-                         NGBreakToken* break_token = nullptr)
-      : size_(size),
-        overflow_(overflow),
-        break_token_(break_token),
-        type_(type),
-        has_been_placed_(false) {}
+  NGPhysicalFragmentBase(
+      NGPhysicalSize size,
+      NGPhysicalSize overflow,
+      NGFragmentType type,
+      HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
+      Vector<NGStaticPosition> out_of_flow_positions,
+      NGBreakToken* break_token = nullptr);
 
   NGPhysicalSize size_;
   NGPhysicalSize overflow_;
   NGPhysicalOffset offset_;
   Member<NGBreakToken> break_token_;
+  HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_descendants_;
+  Vector<NGStaticPosition> out_of_flow_positions_;
 
   unsigned type_ : 1;
   unsigned has_been_placed_ : 1;

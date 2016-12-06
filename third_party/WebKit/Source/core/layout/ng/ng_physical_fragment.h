@@ -29,23 +29,12 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
     return children_;
   }
 
-  const HeapLinkedHashSet<WeakMember<NGBlockNode>>& OutOfFlowDescendants()
-      const {
-    return out_of_flow_descendants_;
-  }
-
-  const Vector<NGStaticPosition>& OutOfFlowPositions() const {
-    return out_of_flow_positions_;
-  }
-
   NGMarginStrut MarginStrut() const { return margin_strut_; }
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
   HeapVector<Member<const NGPhysicalFragmentBase>> children_;
-  HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_descendants_;
-  Vector<NGStaticPosition> out_of_flow_positions_;
   NGMarginStrut margin_strut_;
 };
 

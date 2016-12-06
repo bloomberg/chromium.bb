@@ -16,16 +16,17 @@ NGPhysicalFragment::NGPhysicalFragment(
     HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
     Vector<NGStaticPosition>& out_of_flow_positions,
     NGMarginStrut margin_strut)
-    : NGPhysicalFragmentBase(size, overflow, kFragmentBox),
+    : NGPhysicalFragmentBase(size,
+                             overflow,
+                             kFragmentBox,
+                             out_of_flow_descendants,
+                             out_of_flow_positions),
       margin_strut_(margin_strut) {
   children_.swap(children);
-  out_of_flow_descendants_.swap(out_of_flow_descendants);
-  out_of_flow_positions_.swap(out_of_flow_positions);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(NGPhysicalFragment) {
   visitor->trace(children_);
-  visitor->trace(out_of_flow_descendants_);
   NGPhysicalFragmentBase::traceAfterDispatch(visitor);
 }
 
