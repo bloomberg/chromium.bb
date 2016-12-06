@@ -292,8 +292,8 @@ function createHomeEndNodes()
         createNode('\n Just\n <span>testing what</span>\n ever\n'),
         createNode('car means &#1488;&#1489;&#1490;.'),
         createNode('&#x202B;car &#1491;&#1492;&#1493; &#1488;&#1489;&#1490;.&#x202c;'),
-        createNode('he said "&#x202B;car &#1491;&#1492;&#1493; &#1488;&#1489;&#1490;&#x202c;."'),
-        createNode('&#1494;&#1495;&#1496; &#1497;&#1498;&#1499; &#1500;&#1501;&#1502; \'&#x202a;he said ' +
+        createNode('they said "&#x202B;car &#1491;&#1492;&#1493; &#1488;&#1489;&#1490;&#x202c;."'),
+        createNode('&#1494;&#1495;&#1496; &#1497;&#1498;&#1499; &#1500;&#1501;&#1502; \'&#x202a;they said ' +
                    '"&#x202B;car &#1491;&#1492;&#1493; &#1488;&#1489;&#1490;&#x202c;"&#x202c;\'?'),
         createNode('&#1488;&#1489;&#1490; abc &#1491;&#1492;&#1493;<br />edf &#1494;&#1495;&#1496; abrebg'),
         createNode('abcdefg abcdefg abcdefg a abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg ',
