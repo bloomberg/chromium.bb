@@ -134,14 +134,12 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
 // Tests that cookies are partitioned between web views created with a
 // non-OTR BrowserState and an OTR BrowserState.
 TEST_F(BrowserStateWebViewPartitionTest, Cookies) {
-  base::scoped_nsobject<WKWebView> web_view_1(
-      web::CreateWKWebView(CGRectZero, GetBrowserState()));
+  WKWebView* web_view_1 = web::BuildWKWebView(CGRectZero, GetBrowserState());
   LoadTestWebPage(web_view_1);
   SetCookie(@"someCookieName1", @"someCookieValue1", web_view_1);
   EXPECT_NSEQ(@"someCookieName1=someCookieValue1", GetCookies(web_view_1));
 
-  base::scoped_nsobject<WKWebView> web_view_2(
-      web::CreateWKWebView(CGRectZero, GetOtrBrowserState()));
+  WKWebView* web_view_2 = web::BuildWKWebView(CGRectZero, GetOtrBrowserState());
   LoadTestWebPage(web_view_2);
 
   // Test that the cookie has not leaked over to |web_view_2|.
@@ -158,14 +156,12 @@ TEST_F(BrowserStateWebViewPartitionTest, Cookies) {
 // Tests that localStorage is partitioned between web views created with a
 // non-OTR BrowserState and an OTR BrowserState.
 TEST_F(BrowserStateWebViewPartitionTest, LocalStorage) {
-  base::scoped_nsobject<WKWebView> web_view_1(
-      web::CreateWKWebView(CGRectZero, GetBrowserState()));
+  WKWebView* web_view_1 = web::BuildWKWebView(CGRectZero, GetBrowserState());
   LoadTestWebPage(web_view_1);
   SetLocalStorageItem(@"someKey1", @"someValue1", web_view_1);
   EXPECT_NSEQ(@"someValue1", GetLocalStorageItem(@"someKey1", web_view_1));
 
-  base::scoped_nsobject<WKWebView> web_view_2(
-      web::CreateWKWebView(CGRectZero, GetOtrBrowserState()));
+  WKWebView* web_view_2 = web::BuildWKWebView(CGRectZero, GetOtrBrowserState());
   LoadTestWebPage(web_view_2);
 
   // Test that LocalStorage has not leaked over to |web_view_2|.

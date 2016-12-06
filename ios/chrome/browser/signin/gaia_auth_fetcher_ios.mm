@@ -281,7 +281,7 @@ WKWebView* GaiaAuthFetcherIOSBridge::GetWKWebView() {
     return nil;
   }
   if (!web_view_) {
-    web_view_.reset(CreateWKWebView());
+    web_view_.reset([BuildWKWebView() retain]);
     navigation_delegate_.reset(
         [[GaiaAuthFetcherNavigationDelegate alloc] initWithBridge:this]);
     [web_view_ setNavigationDelegate:navigation_delegate_];
@@ -296,8 +296,8 @@ void GaiaAuthFetcherIOSBridge::ResetWKWebView() {
   navigation_delegate_.reset();
 }
 
-WKWebView* GaiaAuthFetcherIOSBridge::CreateWKWebView() {
-  return web::CreateWKWebView(CGRectZero, browser_state_);
+WKWebView* GaiaAuthFetcherIOSBridge::BuildWKWebView() {
+  return web::BuildWKWebView(CGRectZero, browser_state_);
 }
 
 void GaiaAuthFetcherIOSBridge::OnActive() {

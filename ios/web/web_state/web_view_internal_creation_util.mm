@@ -29,10 +29,10 @@ void VerifyWKWebViewCreationPreConditions(
 
 }  // namespace
 
-WKWebView* CreateWKWebView(CGRect frame,
-                           WKWebViewConfiguration* configuration,
-                           BrowserState* browser_state,
-                           BOOL use_desktop_user_agent) {
+WKWebView* BuildWKWebView(CGRect frame,
+                          WKWebViewConfiguration* configuration,
+                          BrowserState* browser_state,
+                          BOOL use_desktop_user_agent) {
   VerifyWKWebViewCreationPreConditions(browser_state, configuration);
 
   GetWebClient()->PreWebViewCreation();
@@ -53,15 +53,15 @@ WKWebView* CreateWKWebView(CGRect frame,
   // created.
   web_view.allowsLinkPreview = NO;
 
-  return web_view;
+  return [web_view autorelease];
 }
 
-WKWebView* CreateWKWebView(CGRect frame,
-                           WKWebViewConfiguration* configuration,
-                           BrowserState* browser_state) {
+WKWebView* BuildWKWebView(CGRect frame,
+                          WKWebViewConfiguration* configuration,
+                          BrowserState* browser_state) {
   BOOL use_desktop_user_agent = NO;
-  return CreateWKWebView(frame, configuration, browser_state,
-                         use_desktop_user_agent);
+  return BuildWKWebView(frame, configuration, browser_state,
+                        use_desktop_user_agent);
 }
 
 }  // namespace web

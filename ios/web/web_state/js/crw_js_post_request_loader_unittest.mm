@@ -44,10 +44,9 @@ TEST_F(CRWJSPOSTRequestLoaderTest, MAYBE_LoadsCorrectHTML) {
   // Set up necessary objects.
   scoped_nsobject<CRWJSPOSTRequestLoader> loader(
       [[CRWJSPOSTRequestLoader alloc] init]);
-  scoped_nsobject<WKWebView> web_view(
-      web::CreateWKWebView(CGRectZero, GetBrowserState()));
+  WKWebView* web_view = web::BuildWKWebView(CGRectZero, GetBrowserState());
   WKUserContentController* contentController =
-      web_view.get().configuration.userContentController;
+      web_view.configuration.userContentController;
   scoped_nsobject<CRWWKScriptMessageRouter> messageRouter(
       [[CRWWKScriptMessageRouter alloc]
           initWithUserContentController:contentController]);

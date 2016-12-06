@@ -29,13 +29,14 @@ class FakeGaiaAuthFetcherIOSBridge : public GaiaAuthFetcherIOSBridge {
       : GaiaAuthFetcherIOSBridge(fetcher, browser_state), mock_web_view_(nil) {}
 
  private:
-  WKWebView* CreateWKWebView() override {
+  WKWebView* BuildWKWebView() override {
     if (!mock_web_view_) {
-      mock_web_view_ = [OCMockObject niceMockForClass:[WKWebView class]];
+      mock_web_view_.reset(
+          [[OCMockObject niceMockForClass:[WKWebView class]] retain]);
     }
-    return [mock_web_view_ retain];
+    return mock_web_view_;
   }
-  id mock_web_view_;  // strong
+  scoped_nsobject<id> mock_web_view_;
 };
 
 class MockGaiaConsumer : public GaiaAuthConsumer {

@@ -390,7 +390,7 @@ WKWebView* AccountConsistencyService::GetWKWebView() {
     return nil;
   }
   if (!web_view_) {
-    web_view_.reset(CreateWKWebView());
+    web_view_.reset([BuildWKWebView() retain]);
     navigation_delegate_.reset([[AccountConsistencyNavigationDelegate alloc]
         initWithCallback:base::Bind(&AccountConsistencyService::
                                         FinishedApplyingCookieRequest,
@@ -400,8 +400,8 @@ WKWebView* AccountConsistencyService::GetWKWebView() {
   return web_view_.get();
 }
 
-WKWebView* AccountConsistencyService::CreateWKWebView() {
-  return web::CreateWKWebView(CGRectZero, browser_state_);
+WKWebView* AccountConsistencyService::BuildWKWebView() {
+  return web::BuildWKWebView(CGRectZero, browser_state_);
 }
 
 void AccountConsistencyService::ResetWKWebView() {

@@ -116,7 +116,7 @@ class AccountConsistencyService : public KeyedService,
   // Can return nil if the browser state is not active.
   WKWebView* GetWKWebView();
   // Actually creates a WKWebView. Virtual for testing.
-  virtual WKWebView* CreateWKWebView() NS_RETURNS_RETAINED;
+  virtual WKWebView* BuildWKWebView();
   // Stops any page loading in the WKWebView currently in use and releases it.
   void ResetWKWebView();
 

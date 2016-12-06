@@ -112,8 +112,8 @@ void HtmlWebInterstitialImpl::PrepareForDisplay() {
   if (!content_view_) {
     web_view_delegate_.reset([[CRWWebInterstitialImplWKWebViewDelegate alloc]
         initWithInterstitial:this]);
-    web_view_.reset(
-        web::CreateWKWebView(CGRectZero, GetWebStateImpl()->GetBrowserState()));
+    web_view_ =
+        web::BuildWKWebView(CGRectZero, GetWebStateImpl()->GetBrowserState());
     [web_view_ setNavigationDelegate:web_view_delegate_];
     [web_view_ setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                                     UIViewAutoresizingFlexibleHeight)];

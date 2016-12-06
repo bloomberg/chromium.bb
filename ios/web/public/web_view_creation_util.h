@@ -21,9 +21,7 @@ class BrowserState;
 // 1) |browser_state| is not null.
 // 2) web::BrowsingDataPartition is synchronized.
 //
-// Note: Callers are responsible for releasing the returned WKWebView.
-WKWebView* CreateWKWebView(CGRect frame,
-                           BrowserState* browser_state) NS_RETURNS_RETAINED;
+WKWebView* BuildWKWebView(CGRect frame, BrowserState* browser_state);
 
 }  // web
 

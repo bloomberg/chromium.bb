@@ -58,17 +58,17 @@ class FakeAccountConsistencyService : public AccountConsistencyService {
                                   cookie_settings,
                                   gaia_cookie_manager_service,
                                   signin_client,
-                                  signin_manager),
-        mock_web_view_(nil) {}
+                                  signin_manager) {}
 
  private:
-  WKWebView* CreateWKWebView() override {
+  WKWebView* BuildWKWebView() override {
     if (!mock_web_view_) {
-      mock_web_view_ = [OCMockObject niceMockForClass:[WKWebView class]];
+      mock_web_view_.reset(
+          [[OCMockObject niceMockForClass:[WKWebView class]] retain]);
     }
-    return [mock_web_view_ retain];
+    return mock_web_view_;
   }
-  id mock_web_view_;
+  base::scoped_nsobject<id> mock_web_view_;
 };
 
 // Mock AccountReconcilor to catch call to OnReceivedManageAccountsResponse.

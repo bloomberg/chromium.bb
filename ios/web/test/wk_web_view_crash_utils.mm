@@ -18,17 +18,16 @@ namespace {
 
 // Returns an OCMocked WKWebView whose |evaluateJavaScript:completionHandler:|
 // method has been mocked to execute |block| instead. |block| cannot be nil.
-WKWebView* CreateMockWKWebViewWithStubbedJSEvalFunction(
+WKWebView* BuildMockWKWebViewWithStubbedJSEvalFunction(
     void (^block)(NSInvocation*)) {
   DCHECK(block);
   web::TestBrowserState browser_state;
-  base::scoped_nsobject<WKWebView> webView(
-      web::CreateWKWebView(CGRectZero, &browser_state));
+  WKWebView* webView = web::BuildWKWebView(CGRectZero, &browser_state);
   id mockWebView = [OCMockObject partialMockForObject:webView];
   [[[mockWebView stub] andDo:^void(NSInvocation* invocation) {
       block(invocation);
   }] evaluateJavaScript:OCMOCK_ANY completionHandler:OCMOCK_ANY];
-  return [mockWebView retain];
+  return mockWebView;
 }
 
 }  // namespace
@@ -43,7 +42,7 @@ void SimulateWKWebViewCrash(WKWebView* webView) {
   [webView performSelector:@selector(_processDidExit)];
 }
 
-WKWebView* CreateTerminatedWKWebView() {
+WKWebView* BuildTerminatedWKWebView() {
   id fail = ^void(NSInvocation* invocation) {
       // Always fails with WKErrorWebContentProcessTerminated error.
       NSError* error =
@@ -55,17 +54,17 @@ WKWebView* CreateTerminatedWKWebView() {
           [invocation getArgumentAtIndexAsObject:3];
       completionHandler(nil, error);
   };
-  return CreateMockWKWebViewWithStubbedJSEvalFunction(fail);
+  return BuildMockWKWebViewWithStubbedJSEvalFunction(fail);
 }
 
-WKWebView* CreateHealthyWKWebView() {
+WKWebView* BuildHealthyWKWebView() {
   id succeed = ^void(NSInvocation* invocation) {
       void (^completionHandler)(id, NSError*) =
           [invocation getArgumentAtIndexAsObject:3];
       // Always succceeds with nil result.
       completionHandler(nil, nil);
   };
-  return CreateMockWKWebViewWithStubbedJSEvalFunction(succeed);
+  return BuildMockWKWebViewWithStubbedJSEvalFunction(succeed);
 }
 
 }  // namespace web

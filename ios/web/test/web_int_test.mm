@@ -53,13 +53,13 @@ void WebIntTest::RemoveWKWebViewCreatedData(WKWebsiteDataStore* data_store,
     // TODO(crbug.com/554225): This approach of creating a WKWebView and
     // executing JS to clear cookies is a workaround for
     // https://bugs.webkit.org/show_bug.cgi?id=149078.
-    // Remove this, when that bug is fixed. The |markerWKWebView| will be
+    // Remove this, when that bug is fixed. The |marker_web_view| will be
     // released when cookies have been cleared.
     WKWebView* marker_web_view =
-        web::CreateWKWebView(CGRectZero, GetBrowserState());
+        web::BuildWKWebView(CGRectZero, GetBrowserState());
     [marker_web_view evaluateJavaScript:@""
                       completionHandler:^(id, NSError*) {
-                        [marker_web_view release];
+                        [marker_web_view self];
                         remove_data();
                       }];
   } else {

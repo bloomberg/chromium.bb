@@ -1055,7 +1055,7 @@ class CRWWebControllerWebProcessTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
     web::WebTestWithWebController::SetUp();
-    webView_.reset(web::CreateTerminatedWKWebView());
+    webView_.reset([web::BuildTerminatedWKWebView() retain]);
     base::scoped_nsobject<TestWebViewContentView> webViewContentView(
         [[TestWebViewContentView alloc]
             initWithMockWebView:webView_

@@ -14,11 +14,11 @@ void SimulateWKWebViewCrash(WKWebView* webView);
 
 // Returns a specialized WKWebView mock object with overridden JavaScript
 // evaluation method that fails with WKErrorWebContentProcessTerminated error.
-WKWebView* CreateTerminatedWKWebView() NS_RETURNS_RETAINED;
+WKWebView* BuildTerminatedWKWebView();
 
 // Returns a specialized WKWebView mock object with overridden JavaScript
 // evaluation method that always succeeds with nil result.
-WKWebView* CreateHealthyWKWebView() NS_RETURNS_RETAINED;
+WKWebView* BuildHealthyWKWebView();
 }  // web
 
 #endif // IOS_WEB_TEST_WK_WEB_VIEW_CRASH_UTILS_H_

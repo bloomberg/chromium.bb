@@ -14,13 +14,13 @@
 
 namespace web {
 
-WKWebView* CreateWKWebView(CGRect frame, BrowserState* browser_state) {
+WKWebView* BuildWKWebView(CGRect frame, BrowserState* browser_state) {
   DCHECK(browser_state);
 
   WKWebViewConfigurationProvider& config_provider =
       WKWebViewConfigurationProvider::FromBrowserState(browser_state);
-  return CreateWKWebView(frame, config_provider.GetWebViewConfiguration(),
-                         browser_state);
+  return BuildWKWebView(frame, config_provider.GetWebViewConfiguration(),
+                        browser_state);
 }
 
 }  // namespace web

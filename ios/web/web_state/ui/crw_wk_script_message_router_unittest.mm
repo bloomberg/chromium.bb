@@ -54,9 +54,9 @@ class CRWWKScriptMessageRouterTest : public web::WebTest {
     name1_.reset([@"name1" copy]);
     name2_.reset([@"name2" copy]);
     name3_.reset([@"name3" copy]);
-    web_view1_.reset(web::CreateWKWebView(CGRectZero, &browser_state_));
-    web_view2_.reset(web::CreateWKWebView(CGRectZero, &browser_state_));
-    web_view3_.reset(web::CreateWKWebView(CGRectZero, &browser_state_));
+    web_view1_.reset([web::BuildWKWebView(CGRectZero, &browser_state_) retain]);
+    web_view2_.reset([web::BuildWKWebView(CGRectZero, &browser_state_) retain]);
+    web_view3_.reset([web::BuildWKWebView(CGRectZero, &browser_state_) retain]);
   }
   void TearDown() override {
     EXPECT_OCMOCK_VERIFY(controller_mock_);

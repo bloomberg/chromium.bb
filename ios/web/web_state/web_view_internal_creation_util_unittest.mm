@@ -48,14 +48,13 @@ class WebViewCreationUtilsTest : public WebTest {
   web::ScopedTestingWebClient web_client_;
 };
 
-// Tests web::CreateWKWebView function that it correctly returns a WKWebView
+// Tests web::BuildWKWebView function that it correctly returns a WKWebView
 // with the correct frame, WKProcessPool and calls WebClient::PreWebViewCreation
 // method.
 TEST_F(WebViewCreationUtilsTest, WKWebViewCreationWithBrowserState) {
   EXPECT_CALL(*creation_utils_web_client(), PreWebViewCreation()).Times(1);
 
-  base::scoped_nsobject<WKWebView> web_view(
-      CreateWKWebView(kTestFrame, GetBrowserState()));
+  WKWebView* web_view = BuildWKWebView(kTestFrame, GetBrowserState());
 
   EXPECT_TRUE([web_view isKindOfClass:[WKWebView class]]);
   EXPECT_TRUE(CGRectEqualToRect(kTestFrame, [web_view frame]));
@@ -69,14 +68,12 @@ TEST_F(WebViewCreationUtilsTest, WKWebViewCreationWithBrowserState) {
             [[web_view configuration] processPool]);
 }
 
-// Tests that web::CreateWKWebView always returns a web view with the same
+// Tests that web::BuildWKWebView always returns a web view with the same
 // processPool.
 TEST_F(WebViewCreationUtilsTest, WKWebViewsShareProcessPool) {
-  base::scoped_nsobject<WKWebView> web_view(
-      CreateWKWebView(kTestFrame, GetBrowserState()));
+  WKWebView* web_view = BuildWKWebView(kTestFrame, GetBrowserState());
   ASSERT_TRUE(web_view);
-  base::scoped_nsobject<WKWebView> web_view2(
-      CreateWKWebView(kTestFrame, GetBrowserState()));
+  WKWebView* web_view2 = BuildWKWebView(kTestFrame, GetBrowserState());
   ASSERT_TRUE(web_view2);
 
   // Make sure that web views share the same non-nil process pool. Otherwise

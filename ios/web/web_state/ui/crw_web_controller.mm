@@ -577,7 +577,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Creates a web view with given |config|. No-op if web view is already created.
 - (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config;
 // Returns a new autoreleased web view created with given configuration.
-- (WKWebView*)createWebViewWithConfiguration:(WKWebViewConfiguration*)config;
+- (WKWebView*)webViewWithConfiguration:(WKWebViewConfiguration*)config;
 // Sets the value of the webView property, and performs its basic setup.
 - (void)setWebView:(WKWebView*)webView;
 // Removes webView, optionally tracking the URL of the evicted
@@ -4674,7 +4674,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config {
   if (!_webView) {
-    [self setWebView:[self createWebViewWithConfiguration:config]];
+    [self setWebView:[self webViewWithConfiguration:config]];
     // The following is not called in -setWebView: as the latter used in unit
     // tests with fake web view, which cannot be added to view hierarchy.
     CHECK(_webUsageEnabled) << "Tried to create a web view while suspended!";
@@ -4752,10 +4752,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (WKWebView*)createWebViewWithConfiguration:(WKWebViewConfiguration*)config {
-  return [web::CreateWKWebView(CGRectZero, config,
-                               self.webStateImpl->GetBrowserState(),
-                               [self useDesktopUserAgent]) autorelease];
+- (WKWebView*)webViewWithConfiguration:(WKWebViewConfiguration*)config {
+  return web::BuildWKWebView(CGRectZero, config,
+                             self.webStateImpl->GetBrowserState(),
+                             [self useDesktopUserAgent]);
 }
 
 - (void)setWebView:(WKWebView*)webView {
