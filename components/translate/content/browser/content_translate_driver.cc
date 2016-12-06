@@ -189,6 +189,13 @@ void ContentTranslateDriver::NavigationEntryCommitted(
     return;
   }
 
+  if (entry->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK) {
+    // Workaround for http://crbug.com/653051: back navigation sometimes have
+    // the reload core type. Once http://crbug.com/669008 got resolved, we
+    // could revisit here for a thorough solution.
+    return;
+  }
+
   if (!translate_manager_->GetLanguageState().page_needs_translation())
     return;
 
