@@ -8,15 +8,13 @@ function test()
     InspectorTest.recordNetwork();
 
     var totalResourceCount = 4;
-    function fetchRequests() {
-        InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
-        InspectorTest.makeFetch("resources/abe.png", {}, () => {
-            // Ensures result is cached.
-            InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
-            ensureAllResources();
-        });
-        InspectorTest.makeFetch("missing/foo.bar", {}, ensureAllResources);
-    }
+    InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
+    InspectorTest.makeFetch("resources/abe.png", {}, () => {
+        // Ensures result is cached.
+        InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+        ensureAllResources();
+    });
+    InspectorTest.makeFetch("missing/foo.bar", {}, ensureAllResources);
 
     var resourceCount = 0;
     function ensureAllResources()
@@ -38,7 +36,11 @@ function test()
 
         dataGrid.markColumnAsSortedBy('name', UI.DataGrid.Order.Ascending);
         columnsView.sortByCurrentColumn();
+        dataGrid.markColumnAsSortedBy('status', UI.DataGrid.Order.Ascending);
+        columnsView.sortByCurrentColumn();
         dataGrid.markColumnAsSortedBy('name', UI.DataGrid.Order.Descending);
+        columnsView.sortByCurrentColumn();
+        dataGrid.markColumnAsSortedBy('type', UI.DataGrid.Order.Ascending);
         columnsView.sortByCurrentColumn();
     }
 
@@ -50,7 +52,6 @@ function test()
             InspectorTest.addResult("    " + node.request().name());
         InspectorTest.addResult("");
     }
-    fetchRequests();
 }
 </script>
 </head>
