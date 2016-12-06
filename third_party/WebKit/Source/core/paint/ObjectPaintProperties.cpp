@@ -10,15 +10,9 @@ ObjectPaintProperties::PropertyTreeStateWithOffset
 ObjectPaintProperties::contentsProperties() const {
   ObjectPaintProperties::PropertyTreeStateWithOffset propertiesWithOffset =
       *localBorderBoxProperties();
-  if (svgLocalToBorderBoxTransform()) {
-    propertiesWithOffset.propertyTreeState.setTransform(
-        svgLocalToBorderBoxTransform());
-    // There's no paint offset for the contents because
-    // svgLocalToBorderBoxTransform bakes in the paint offset.
-    propertiesWithOffset.paintOffset = LayoutPoint();
-  } else if (scrollTranslation()) {
+
+  if (scrollTranslation())
     propertiesWithOffset.propertyTreeState.setTransform(scrollTranslation());
-  }
 
   if (overflowClip())
     propertiesWithOffset.propertyTreeState.setClip(overflowClip());

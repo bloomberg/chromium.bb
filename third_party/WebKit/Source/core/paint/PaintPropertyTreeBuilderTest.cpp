@@ -2285,8 +2285,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
                 ->propertyTreeState.transform());
 
   auto contentsProperties = svgWithViewBoxProperties->contentsProperties();
-  EXPECT_EQ(LayoutPoint(), contentsProperties.paintOffset);
-  EXPECT_EQ(svgWithViewBoxProperties->svgLocalToBorderBoxTransform(),
+  EXPECT_EQ(LayoutPoint(30, 20), contentsProperties.paintOffset);
+  EXPECT_EQ(framePreTranslation(),
             contentsProperties.propertyTreeState.transform());
 }
 
