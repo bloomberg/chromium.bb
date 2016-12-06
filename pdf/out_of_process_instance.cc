@@ -428,7 +428,13 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
       return;
     }
 
-    if (pinch_phase == PINCH_UPDATE_ZOOM_IN) {
+    // When zooming in, we set a layer transform to avoid unneeded rerasters.
+    // Also, if we're zooming out and the last time we rerastered was when
+    // we were even further zoomed out (i.e. we pinch zoomed in and are now
+    // pinch zooming back out in the same gesture), we update the layer
+    // transform instead of rerastering.
+    if (pinch_phase == PINCH_UPDATE_ZOOM_IN ||
+        (pinch_phase == PINCH_UPDATE_ZOOM_OUT && zoom_ratio > 1.0)) {
       if (!(dict.Get(pp::Var(kJSPinchX)).is_number() &&
             dict.Get(pp::Var(kJSPinchY)).is_number() &&
             dict.Get(pp::Var(kJSPinchVectorX)).is_number() &&
