@@ -249,10 +249,12 @@ void RemoteFontFaceSource::beginLoadIfNeeded() {
       // for painting the text.
       m_font->didChangePriority(ResourceLoadPriorityVeryLow, 0);
     }
-    m_fontSelector->document()->fetcher()->startLoad(m_font);
-    if (!m_font->isLoaded())
-      m_font->startLoadLimitTimers();
-    m_histograms.loadStarted();
+    if (m_fontSelector->document()->fetcher()->startLoad(m_font)) {
+      // Start timers only when load is actually started asynchronously.
+      if (!m_font->isLoaded())
+        m_font->startLoadLimitTimers();
+      m_histograms.loadStarted();
+    }
   }
 
   if (m_face)
