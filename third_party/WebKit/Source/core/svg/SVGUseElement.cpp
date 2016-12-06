@@ -501,13 +501,6 @@ SVGGraphicsElement* SVGUseElement::visibleTargetGraphicsElementForClipping()
   if (!element.isSVGGraphicsElement())
     return nullptr;
 
-  if (!element.layoutObject())
-    return nullptr;
-
-  const ComputedStyle* style = element.layoutObject()->style();
-  if (!style || style->visibility() != EVisibility::Visible)
-    return nullptr;
-
   // Spec: "If a <use> element is a child of a clipPath element, it must
   // directly reference <path>, <text> or basic shapes elements. Indirect
   // references are an error and the clipPath element must be ignored."
