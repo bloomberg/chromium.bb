@@ -1545,7 +1545,6 @@ config("afdo") {
 # Full symbols.
 config("symbols") {
   if (is_win) {
-    import("//build/toolchain/goma.gni")
     cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
 
     if (is_win_fastlink) {
