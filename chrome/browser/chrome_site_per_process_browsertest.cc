@@ -362,3 +362,39 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
   observer.Wait();
   EXPECT_EQ(0U, test_guest_view_manager()->GetNumGuestsActive());
 }
+
+// Verify that a popup can be opened after navigating a remote frame.  This has
+// to be a chrome/ test to ensure that the popup blocker doesn't block the
+// popup.  See https://crbug.com/670770.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       NavigateRemoteFrameAndOpenPopup) {
+  // Start on a page with an <iframe>.
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Navigate the iframe cross-site.
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", frame_url));
+
+  // Run a script in the parent frame to (1) navigate iframe to another URL,
+  // and (2) open a popup.  Note that ExecuteScript will run this with a user
+  // gesture, so both steps should succeed.
+  frame_url = embedded_test_server()->GetURL("c.com", "/title1.html");
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  bool popup_handle_is_valid = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents,
+      "document.querySelector('iframe').src = '" + frame_url.spec() + "';\n"
+      "var w = window.open('about:blank');\n"
+      "window.domAutomationController.send(!!w);\n",
+      &popup_handle_is_valid));
+  popup_observer.Wait();
+
+  // The popup shouldn't be blocked.
+  EXPECT_TRUE(popup_handle_is_valid);
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+}

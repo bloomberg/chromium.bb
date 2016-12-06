@@ -475,9 +475,7 @@ void RenderFrameProxy::navigate(const blink::WebURLRequest& request,
       request.getReferrerPolicy());
   params.disposition = WindowOpenDisposition::CURRENT_TAB;
   params.should_replace_current_entry = should_replace_current_entry;
-  params.user_gesture =
-      blink::WebUserGestureIndicator::isProcessingUserGesture();
-  blink::WebUserGestureIndicator::consumeUserGesture();
+  params.user_gesture = request.hasUserGesture();
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }
 
