@@ -46,12 +46,6 @@ using ntp_snippets::ContentSuggestion;
 
 namespace {
 
-// TODO(treib): Move this into the Time class itself.
-base::Time TimeFromJavaTime(jlong timestamp_ms) {
-  return base::Time::UnixEpoch() +
-         base::TimeDelta::FromMilliseconds(timestamp_ms);
-}
-
 // Converts a vector of ContentSuggestions to its Java equivalent.
 ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
     JNIEnv* env,
@@ -358,7 +352,7 @@ void NTPSnippetsBridge::OnSuggestionShown(JNIEnv* env,
                                           jfloat score) {
   ntp_snippets::metrics::OnSuggestionShown(
       global_position, CategoryFromIDValue(j_category_id), category_position,
-      TimeFromJavaTime(publish_timestamp_ms), score);
+      base::Time::FromJavaTime(publish_timestamp_ms), score);
   if (global_position == 0) {
     content_suggestions_service_->user_classifier()->OnEvent(
         ntp_snippets::UserClassifier::Metric::SUGGESTIONS_SHOWN);
@@ -375,7 +369,7 @@ void NTPSnippetsBridge::OnSuggestionOpened(JNIEnv* env,
                                            int windowOpenDisposition) {
   ntp_snippets::metrics::OnSuggestionOpened(
       global_position, CategoryFromIDValue(j_category_id), category_position,
-      TimeFromJavaTime(publish_timestamp_ms), score,
+      base::Time::FromJavaTime(publish_timestamp_ms), score,
       static_cast<WindowOpenDisposition>(windowOpenDisposition));
   content_suggestions_service_->user_classifier()->OnEvent(
       ntp_snippets::UserClassifier::Metric::SUGGESTIONS_USED);
@@ -390,7 +384,7 @@ void NTPSnippetsBridge::OnSuggestionMenuOpened(JNIEnv* env,
                                                jfloat score) {
   ntp_snippets::metrics::OnSuggestionMenuOpened(
       global_position, CategoryFromIDValue(j_category_id), category_position,
-      TimeFromJavaTime(publish_timestamp_ms), score);
+      base::Time::FromJavaTime(publish_timestamp_ms), score);
 }
 
 void NTPSnippetsBridge::OnMoreButtonShown(JNIEnv* env,

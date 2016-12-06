@@ -203,6 +203,11 @@ double Time::ToJsTime() const {
           kMicrosecondsPerMillisecond);
 }
 
+Time Time::FromJavaTime(int64_t ms_since_epoch) {
+  return base::Time::UnixEpoch() +
+         base::TimeDelta::FromMilliseconds(ms_since_epoch);
+}
+
 int64_t Time::ToJavaTime() const {
   if (is_null()) {
     // Preserve 0 so the invalid result doesn't depend on the platform.
