@@ -12,7 +12,7 @@
         "ash": [
           "app_list::mojom::AppListPresenter"
         ],
-        "ime:ime_driver": [ "ui::mojom::IMEDriver" ]
+        "ime:ime_driver": []
       },
       "requires": {
         "accessibility_autoclick": [ "ash:autoclick" ],
