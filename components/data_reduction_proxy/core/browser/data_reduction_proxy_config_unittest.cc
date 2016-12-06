@@ -36,6 +36,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_change_notifier.h"
 #include "net/http/http_status_code.h"
 #include "net/log/test_net_log.h"
 #include "net/nqe/effective_connection_type.h"
@@ -79,6 +80,9 @@ class DataReductionProxyConfigTest : public testing::Test {
   ~DataReductionProxyConfigTest() override {}
 
   void SetUp() override {
+    net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
+    network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
+
     test_context_ = DataReductionProxyTestContext::Builder()
                         .WithMockConfig()
                         .WithMockDataReductionProxyService()
@@ -140,7 +144,7 @@ class DataReductionProxyConfigTest : public testing::Test {
         .Times(1)
         .WillRepeatedly(testing::WithArgs<1>(
             testing::Invoke(&responder, &TestResponder::ExecuteCallback)));
-    config()->OnIPAddressChanged();
+    net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     test_context_->RunUntilIdle();
     EXPECT_EQ(expected_proxies_for_http, GetConfiguredProxiesForHttp());
 
@@ -190,38 +194,14 @@ class DataReductionProxyConfigTest : public testing::Test {
   }
 
  private:
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+
   base::MessageLoopForIO message_loop_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<TestDataReductionProxyParams> expected_params_;
 };
 
-TEST_F(DataReductionProxyConfigTest, TestUpdateConfigurator) {
-  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
-      "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
-  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
-      "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
-  SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
-
-  ResetSettings(true, true, true, false);
-
-  // Expect both secure and insecure proxies to be available when the DRP is
-  // enabled and secure proxies are allowed.
-  config()->UpdateConfigurator(true, true);
-  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
-            GetConfiguredProxiesForHttp());
-
-  // Expect only insecure proxies to be available when the DRP is enabled and
-  // secure proxies are not allowed.
-  config()->UpdateConfigurator(true, false);
-  EXPECT_EQ(std::vector<net::ProxyServer>(1, kHttpProxy),
-            GetConfiguredProxiesForHttp());
-
-  // Expect no proxies to be available when the DRP is disabled.
-  config()->UpdateConfigurator(false, false);
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
-}
-
-TEST_F(DataReductionProxyConfigTest, TestUpdateConfiguratorHoldback) {
+TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -230,7 +210,8 @@ TEST_F(DataReductionProxyConfigTest, TestUpdateConfiguratorHoldback) {
 
   ResetSettings(true, true, true, true);
 
-  config()->UpdateConfigurator(true, false);
+  config()->UpdateConfigForTesting(true, false);
+  config()->ReloadConfig();
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 }
 
@@ -245,9 +226,8 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   ResetSettings(true, true, true, false);
 
   // The proxy is enabled initially.
-  config()->enabled_by_user_ = true;
-  config()->secure_proxy_allowed_ = true;
-  config()->UpdateConfigurator(true, true);
+  config()->UpdateConfigForTesting(true, true);
+  config()->ReloadConfig();
 
   // IP address change triggers a secure proxy check that succeeds. Proxy
   // remains unrestricted.

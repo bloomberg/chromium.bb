@@ -211,16 +211,12 @@ class DataReductionProxyConfig
 
   virtual base::TimeTicks GetTicksNow() const;
 
+  // Updates the Data Reduction Proxy configurator with the current config.
+  void UpdateConfigForTesting(bool enabled, bool restricted);
+
  private:
-  friend class DataReductionProxyConfigTest;
   friend class MockDataReductionProxyConfig;
   friend class TestDataReductionProxyConfig;
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
-                           TestGetDataReductionProxies);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
-                           TestOnIPAddressChanged);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
-                           TestOnIPAddressChanged_SecureProxyDisabledByDefault);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestSetProxyConfigsHoldback);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
@@ -245,9 +241,6 @@ class DataReductionProxyConfig
 
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;
-
-  // Updates the Data Reduction Proxy configurator with the current config.
-  virtual void UpdateConfigurator(bool enabled, bool restricted);
 
   // Populates the parameters for the Lo-Fi field trial if the session is part
   // of either Lo-Fi enabled or Lo-Fi control field trial group.

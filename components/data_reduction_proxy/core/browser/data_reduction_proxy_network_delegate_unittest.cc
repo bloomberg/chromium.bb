@@ -619,7 +619,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       data_reduction_proxy_info.UseDirect();
     else
       data_reduction_proxy_info.UseNamedProxy("some.other.proxy");
-    config()->SetStateForTest(test.data_reduction_proxy_enabled, true);
+    config()->UpdateConfigForTesting(test.data_reduction_proxy_enabled, true);
     std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
         GURL("http://www.google.com/"), net::RequestPriority::IDLE, nullptr);
     request->set_method("GET");

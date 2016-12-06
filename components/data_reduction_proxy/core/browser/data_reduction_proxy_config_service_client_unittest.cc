@@ -224,7 +224,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   }
 
   void SetDataReductionProxyEnabled(bool enabled, bool secure_proxy_allowed) {
-    test_context_->config()->SetStateForTest(enabled, secure_proxy_allowed);
+    test_context_->config()->UpdateConfigForTesting(enabled,
+                                                    secure_proxy_allowed);
   }
 
   void ResetBackoffEntryReleaseTime() {

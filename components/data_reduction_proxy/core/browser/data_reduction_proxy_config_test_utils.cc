@@ -89,13 +89,6 @@ DataReductionProxyConfigValues* TestDataReductionProxyConfig::config_values() {
   return config_values_.get();
 }
 
-void TestDataReductionProxyConfig::SetStateForTest(
-    bool enabled_by_user,
-    bool secure_proxy_allowed) {
-  enabled_by_user_ = enabled_by_user;
-  secure_proxy_allowed_ = secure_proxy_allowed;
-}
-
 void TestDataReductionProxyConfig::ResetLoFiStatusForTest() {
   lofi_off_ = false;
 }
@@ -170,12 +163,6 @@ MockDataReductionProxyConfig::MockDataReductionProxyConfig(
                                    event_creator) {}
 
 MockDataReductionProxyConfig::~MockDataReductionProxyConfig() {
-}
-
-void MockDataReductionProxyConfig::UpdateConfigurator(
-    bool enabled,
-    bool secure_proxy_allowed) {
-  DataReductionProxyConfig::UpdateConfigurator(enabled, secure_proxy_allowed);
 }
 
 void MockDataReductionProxyConfig::ResetLoFiStatusForTest() {

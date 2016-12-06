@@ -340,7 +340,16 @@ void DataReductionProxyConfig::InitializeOnIOThread(const scoped_refptr<
 
 void DataReductionProxyConfig::ReloadConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  UpdateConfigurator(enabled_by_user_, secure_proxy_allowed_);
+  DCHECK(configurator_);
+
+  const std::vector<net::ProxyServer>& proxies_for_http =
+      config_values_->proxies_for_http();
+  if (enabled_by_user_ && !config_values_->holdback() &&
+      !proxies_for_http.empty()) {
+    configurator_->Enable(!secure_proxy_allowed_, proxies_for_http);
+  } else {
+    configurator_->Disable();
+  }
 }
 
 bool DataReductionProxyConfig::WasDataReductionProxyUsed(
@@ -628,7 +637,7 @@ bool DataReductionProxyConfig::promo_allowed() const {
 void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
   DCHECK(thread_checker_.CalledOnValidThread());
   enabled_by_user_ = enabled;
-  UpdateConfigurator(enabled_by_user_, secure_proxy_allowed_);
+  ReloadConfig();
 
   // Check if the proxy has been restricted explicitly by the carrier.
   if (enabled) {
@@ -642,16 +651,11 @@ void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
   }
 }
 
-void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
-                                                  bool secure_proxy_allowed) {
-  DCHECK(configurator_);
-  const std::vector<net::ProxyServer>& proxies_for_http =
-      config_values_->proxies_for_http();
-  if (enabled && !config_values_->holdback() && !proxies_for_http.empty()) {
-    configurator_->Enable(!secure_proxy_allowed, proxies_for_http);
-  } else {
-    configurator_->Disable();
-  }
+void DataReductionProxyConfig::UpdateConfigForTesting(
+    bool enabled,
+    bool secure_proxy_allowed) {
+  enabled_by_user_ = enabled;
+  secure_proxy_allowed_ = secure_proxy_allowed;
 }
 
 void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
@@ -706,13 +710,6 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
     // Reset |network_quality_at_last_query_| to prevent recording of network
     // quality prediction accuracy if there was a change in the IP address.
     network_quality_at_last_query_ = NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN;
-
-    bool should_use_secure_proxy = true;
-    if (!should_use_secure_proxy && secure_proxy_allowed_) {
-      secure_proxy_allowed_ = false;
-      RecordSecureProxyCheckFetchResult(PROXY_DISABLED_BEFORE_CHECK);
-      ReloadConfig();
-    }
 
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives

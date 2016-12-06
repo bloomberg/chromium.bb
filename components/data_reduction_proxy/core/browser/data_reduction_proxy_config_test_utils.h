@@ -74,10 +74,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // TODO(jeremyim): Rationalize with test_params().
   DataReductionProxyConfigValues* config_values();
 
-  // Allows tests to set the internal state.
-  void SetStateForTest(bool enabled_by_user,
-                       bool secure_proxy_enabled);
-
   // Resets the Lo-Fi status to default state.
   void ResetLoFiStatusForTest();
 
@@ -117,6 +113,8 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   // Resets the behavior of WasDataReductionProxyUsed() calls.
   void ResetWasDataReductionProxyUsed();
+
+  using DataReductionProxyConfig::UpdateConfigForTesting;
 
  private:
   base::TickClock* tick_clock_;
@@ -172,7 +170,7 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
       IsNetworkQualityProhibitivelySlow,
       bool(const net::NetworkQualityEstimator* network_quality_estimator));
 
-  void UpdateConfigurator(bool enabled, bool restricted) override;
+  using DataReductionProxyConfig::UpdateConfigForTesting;
 
   // Resets the Lo-Fi status to default state.
   void ResetLoFiStatusForTest();
