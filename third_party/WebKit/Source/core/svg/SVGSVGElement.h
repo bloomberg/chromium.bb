@@ -38,7 +38,6 @@ class SVGMatrixTearOff;
 class SVGNumberTearOff;
 class SVGPointTearOff;
 class SVGTransformTearOff;
-class SVGViewElement;
 class SVGViewSpec;
 
 class SVGSVGElement final : public SVGGraphicsElement,
@@ -111,6 +110,9 @@ class SVGSVGElement final : public SVGGraphicsElement,
 
   DECLARE_VIRTUAL_TRACE();
 
+  SVGViewSpec* viewSpec() const { return m_viewSpec; }
+  void setViewSpec(SVGViewSpec*);
+
  private:
   explicit SVGSVGElement(Document&);
   ~SVGSVGElement() override;
@@ -136,8 +138,6 @@ class SVGSVGElement final : public SVGGraphicsElement,
 
   bool selfHasRelativeLengths() const override;
 
-  void inheritViewAttributes(SVGViewElement*);
-
   bool shouldSynthesizeViewBox() const;
   void updateUserTransform();
 
@@ -161,7 +161,6 @@ class SVGSVGElement final : public SVGGraphicsElement,
   AffineTransform localCoordinateSpaceTransform(
       SVGElement::CTMScope) const override;
 
-  bool m_useCurrentView;
   Member<SMILTimeContainer> m_timeContainer;
   Member<SVGPoint> m_translation;
   Member<SVGViewSpec> m_viewSpec;

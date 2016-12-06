@@ -22,6 +22,7 @@
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGRect.h"
+#include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGTransformList.h"
 #include "wtf/text/ParsingUtilities.h"
 
@@ -36,6 +37,16 @@ DEFINE_TRACE(SVGViewSpec) {
   visitor->trace(m_viewBox);
   visitor->trace(m_preserveAspectRatio);
   visitor->trace(m_transform);
+}
+
+SVGViewSpec* SVGViewSpec::createForElement(SVGSVGElement& rootElement) {
+  SVGViewSpec* viewSpec = rootElement.viewSpec();
+  if (!viewSpec)
+    viewSpec = new SVGViewSpec();
+  else
+    viewSpec->reset();
+  viewSpec->inheritViewAttributesFromElement(rootElement);
+  return viewSpec;
 }
 
 bool SVGViewSpec::parseViewSpec(const String& spec) {
