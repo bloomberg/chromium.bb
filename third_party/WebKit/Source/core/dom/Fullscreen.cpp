@@ -29,6 +29,7 @@
 
 #include "core/dom/Fullscreen.h"
 
+#include "bindings/core/v8/ConditionalFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
@@ -99,10 +100,43 @@ bool allowedToRequestFullscreen(Document& document) {
 }
 
 // https://fullscreen.spec.whatwg.org/#fullscreen-is-supported
-bool fullscreenIsSupported(const Document& document) {
+// TODO(lunalu): update the placement of the feature policy code once it is in
+// https://fullscreen.spec.whatwg.org/.
+bool fullscreenIsSupported(Document& document) {
+  LocalFrame* frame = document.frame();
+  if (!frame)
+    return false;
+
   // Fullscreen is supported if there is no previously-established user
   // preference, security risk, or platform limitation.
-  return !document.settings() || document.settings()->fullscreenSupported();
+  bool fullscreenSupported =
+      !document.settings() || document.settings()->fullscreenSupported();
+
+  if (!RuntimeEnabledFeatures::featurePolicyEnabled()) {
+    return fullscreenSupported;
+  }
+
+  // TODO(lunalu): clean all of this up once iframe attributes are supported
+  // for feature policy.
+  if (Frame* parent = frame->tree().parent()) {
+    // If FeaturePolicy is enabled, check the fullscreen is not disabled by
+    // policy in the parent frame.
+    if (fullscreenSupported &&
+        parent->securityContext()->getFeaturePolicy()->isFeatureEnabled(
+            kFullscreenFeature)) {
+      return true;
+    }
+  }
+  // Even if the iframe allowfullscreen attribute is not present, allow
+  // fullscreen to be enabled by feature policy.
+  else if (isFeatureEnabledInFrame(kFullscreenFeature, frame)) {
+    return true;
+  }
+
+  document.addConsoleMessage(ConsoleMessage::create(
+      JSMessageSource, WarningMessageLevel,
+      "Fullscreen API is disabled by feature policy for this frame"));
+  return false;
 }
 
 // https://fullscreen.spec.whatwg.org/#fullscreen-element-ready-check

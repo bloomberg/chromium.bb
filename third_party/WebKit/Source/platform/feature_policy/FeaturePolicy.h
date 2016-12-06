@@ -191,6 +191,7 @@ extern const PLATFORM_EXPORT FeaturePolicy::Feature kDocumentCookie;
 extern const PLATFORM_EXPORT FeaturePolicy::Feature kDocumentDomain;
 extern const PLATFORM_EXPORT FeaturePolicy::Feature kDocumentWrite;
 extern const PLATFORM_EXPORT FeaturePolicy::Feature kGeolocationFeature;
+extern const PLATFORM_EXPORT FeaturePolicy::Feature kFullscreenFeature;
 extern const PLATFORM_EXPORT FeaturePolicy::Feature kMidiFeature;
 extern const PLATFORM_EXPORT FeaturePolicy::Feature kNotificationsFeature;
 extern const PLATFORM_EXPORT FeaturePolicy::Feature kPaymentFeature;

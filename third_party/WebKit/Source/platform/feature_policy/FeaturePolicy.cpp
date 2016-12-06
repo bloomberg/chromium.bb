@@ -36,6 +36,8 @@ const FeaturePolicy::Feature kDocumentDomain{
     "domain", FeaturePolicy::FeatureDefault::EnableForAll};
 const FeaturePolicy::Feature kDocumentWrite{
     "docwrite", FeaturePolicy::FeatureDefault::EnableForAll};
+const FeaturePolicy::Feature kFullscreenFeature{
+    "fullscreen", FeaturePolicy::FeatureDefault::EnableForSelf};
 const FeaturePolicy::Feature kGeolocationFeature{
     "geolocation", FeaturePolicy::FeatureDefault::EnableForSelf};
 const FeaturePolicy::Feature kMidiFeature{
@@ -112,9 +114,9 @@ const FeaturePolicy::FeatureList& FeaturePolicy::getDefaultFeatureList() {
   DEFINE_STATIC_LOCAL(
       Vector<const FeaturePolicy::Feature*>, defaultFeatureList,
       ({&kDocumentCookie, &kDocumentDomain, &kDocumentWrite,
-        &kGeolocationFeature, &kMidiFeature, &kNotificationsFeature,
-        &kPaymentFeature, &kPushFeature, &kSyncScript, &kSyncXHR, &kUsermedia,
-        &kVibrateFeature, &kWebRTC}));
+        &kGeolocationFeature, &kFullscreenFeature, &kMidiFeature,
+        &kNotificationsFeature, &kPaymentFeature, &kPushFeature, &kSyncScript,
+        &kSyncXHR, &kUsermedia, &kVibrateFeature, &kWebRTC}));
   return defaultFeatureList;
 }
 
