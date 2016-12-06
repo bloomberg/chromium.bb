@@ -1227,6 +1227,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   LayoutRect m_previousPaintDirtyRect;
 
   std::unique_ptr<PaintLayerRareData> m_rareData;
+
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerTest,
+                           DescendantDependentFlagsStopsAtThrottledFrames);
 };
 
 }  // namespace blink

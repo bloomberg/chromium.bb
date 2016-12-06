@@ -305,9 +305,6 @@ PaintResult PaintLayerPainter::paintLayerContents(
       (isPaintingCompositedDecoration || !isPaintingScrollingContent) &&
       m_paintLayer.layoutObject()->styleRef().hasOutline();
 
-  bool shouldPaintContent = m_paintLayer.hasVisibleContent() &&
-                            isSelfPaintingLayer && !isPaintingOverlayScrollbars;
-
   PaintResult result = FullyPainted;
 
   if (paintFlags & PaintLayerPaintingRootBackgroundOnly &&
@@ -418,6 +415,9 @@ PaintResult PaintLayerPainter::paintLayerContents(
 
   PaintLayerPaintingInfo localPaintingInfo(paintingInfo);
   localPaintingInfo.subPixelAccumulation = subpixelAccumulation;
+
+  bool shouldPaintContent = m_paintLayer.hasVisibleContent() &&
+                            isSelfPaintingLayer && !isPaintingOverlayScrollbars;
 
   PaintLayerFragments layerFragments;
   if (shouldPaintContent || shouldPaintSelfOutline ||

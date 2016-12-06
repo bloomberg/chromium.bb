@@ -4,13 +4,18 @@
 
 #include "core/paint/PaintLayer.h"
 
+#include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
+#include "platform/testing/UnitTestHelpers.h"
 
 namespace blink {
 
-using PaintLayerTest = RenderingTest;
+class PaintLayerTest : public RenderingTest {
+ public:
+  PaintLayerTest() : RenderingTest(SingleChildFrameLoaderClient::create()) {}
+};
 
 TEST_F(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
   setBodyInnerHTML(
@@ -175,6 +180,61 @@ TEST_F(PaintLayerTest, HasVisibleDescendant) {
 
   EXPECT_FALSE(invisible->hasNonIsolatedDescendantWithBlendMode());
   EXPECT_FALSE(invisible->hasDescendantWithClipPath());
+}
+
+TEST_F(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<style>body { margin: 0; }</style>"
+      "<div id='transform' style='transform: translate3d(4px, 5px, 6px);'>"
+      "</div>"
+      "<iframe id='iframe' sandbox></iframe>");
+  setChildFrameHTML(
+      "<style>body { margin: 0; }</style>"
+      "<div id='iframeTransform'"
+      "  style='transform: translate3d(4px, 5px, 6px);'/>");
+
+  // Move the child frame offscreen so it becomes available for throttling.
+  auto* iframe = toHTMLIFrameElement(document().getElementById("iframe"));
+  iframe->setAttribute(HTMLNames::styleAttr, "transform: translateY(5555px)");
+  document().view()->updateAllLifecyclePhases();
+  // Ensure intersection observer notifications get delivered.
+  testing::runPendingTasks();
+  EXPECT_FALSE(document().view()->isHiddenForThrottling());
+  EXPECT_TRUE(childDocument().view()->isHiddenForThrottling());
+
+  {
+    DocumentLifecycle::AllowThrottlingScope throttlingScope(
+        document().lifecycle());
+    EXPECT_FALSE(document().view()->shouldThrottleRendering());
+    EXPECT_TRUE(childDocument().view()->shouldThrottleRendering());
+
+    childDocument().view()->layoutView()->layer()->dirtyVisibleContentStatus();
+
+    EXPECT_TRUE(childDocument()
+                    .view()
+                    ->layoutView()
+                    ->layer()
+                    ->m_needsDescendantDependentFlagsUpdate);
+
+    // Also check that the rest of the lifecycle succeeds without crashing due
+    // to a stale m_needsDescendantDependentFlagsUpdate.
+    document().view()->updateAllLifecyclePhases();
+
+    // Still dirty, because the frame was throttled.
+    EXPECT_TRUE(childDocument()
+                    .view()
+                    ->layoutView()
+                    ->layer()
+                    ->m_needsDescendantDependentFlagsUpdate);
+  }
+
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_FALSE(childDocument()
+                   .view()
+                   ->layoutView()
+                   ->layer()
+                   ->m_needsDescendantDependentFlagsUpdate);
 }
 
 }  // namespace blink
