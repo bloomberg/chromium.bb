@@ -81,7 +81,8 @@ TEST_F(PerformanceTest, SanitizedLongTaskName) {
   EXPECT_EQ("unknown", sanitizedAttribution(nullptr, false, frame()));
 
   // Attribute for same context (and same origin).
-  EXPECT_EQ("same-origin", sanitizedAttribution(document(), false, frame()));
+  EXPECT_EQ("same-origin-self",
+            sanitizedAttribution(document(), false, frame()));
 
   // Unable to attribute, when multiple script execution contents are involved.
   EXPECT_EQ("multiple-contexts",

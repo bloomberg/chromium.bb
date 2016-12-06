@@ -48,8 +48,12 @@ static const double kLongTaskThreshold = 0.05;
 static const char kUnknownAttribution[] = "unknown";
 static const char kAmbiguousAttribution[] = "multiple-contexts";
 static const char kSameOriginAttribution[] = "same-origin";
-static const char kAncestorAttribution[] = "cross-origin-ancestor";
-static const char kDescendantAttribution[] = "cross-origin-descendant";
+static const char kSameOriginSelfAttribution[] = "same-origin-self";
+static const char kSameOriginAncestorAttribution[] = "same-origin-ancestor";
+static const char kSameOriginDescendantAttribution[] = "same-origin-descendant";
+static const char kCrossOriginAncestorAttribution[] = "cross-origin-ancestor";
+static const char kCrossOriginDescendantAttribution[] =
+    "cross-origin-descendant";
 static const char kCrossOriginAttribution[] = "cross-origin-unreachable";
 
 namespace blink {
@@ -66,6 +70,16 @@ String getFrameAttribute(HTMLFrameOwnerElement* frameOwner,
       attrValue = attrValue.substring(0, 100);  // Truncate to 100 chars
   }
   return attrValue;
+}
+
+const char* sameOriginAttribution(Frame* observerFrame, Frame* culpritFrame) {
+  if (observerFrame == culpritFrame)
+    return kSameOriginSelfAttribution;
+  if (observerFrame->tree().isDescendantOf(culpritFrame))
+    return kSameOriginAncestorAttribution;
+  if (culpritFrame->tree().isDescendantOf(observerFrame))
+    return kSameOriginDescendantAttribution;
+  return kSameOriginAttribution;
 }
 
 }  // namespace
@@ -185,7 +199,8 @@ std::pair<String, DOMWindow*> Performance::sanitizedAttribution(
   DCHECK(culpritFrame);
   if (canAccessOrigin(observerFrame, culpritFrame)) {
     // From accessible frames or same origin, return culprit location URL.
-    return std::make_pair(kSameOriginAttribution, culpritFrame->domWindow());
+    return std::make_pair(sameOriginAttribution(observerFrame, culpritFrame),
+                          culpritFrame->domWindow());
   }
   // For cross-origin, if the culprit is the descendant or ancestor of
   // observer then indicate the *closest* cross-origin frame between
@@ -202,11 +217,11 @@ std::pair<String, DOMWindow*> Performance::sanitizedAttribution(
         lastCrossOriginFrame = frame;
       }
     }
-    return std::make_pair(kDescendantAttribution,
+    return std::make_pair(kCrossOriginDescendantAttribution,
                           lastCrossOriginFrame->domWindow());
   }
   if (observerFrame->tree().isDescendantOf(culpritFrame)) {
-    return std::make_pair(kAncestorAttribution, nullptr);
+    return std::make_pair(kCrossOriginAncestorAttribution, nullptr);
   }
   return std::make_pair(kCrossOriginAttribution, nullptr);
 }

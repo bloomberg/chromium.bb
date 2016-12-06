@@ -11,8 +11,8 @@ async_test(function (t) {
             for (var i = 0; i < entries.length; i++) {
                 assert_equals(entries[i].entryType, "longtask",
                     "entryType expected to be: longtask");
-                assert_equals(entries[i].name, "same-origin",
-                    "name expected to be: same-origin");
+                assert_equals(entries[i].name, "same-origin-self",
+                    "name expected to be: same-origin-self");
                 assert_greater_than(entries[i].duration, 50000,
                     "duration expected to be greater than 50ms threshold");
             }
