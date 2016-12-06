@@ -42,7 +42,6 @@
       'Android Cronet x86 Builder (dbg)': 'android_cronet_debug_static_bot_x86',
       'Android MIPS Builder (dbg)': 'android_debug_static_minimal_symbols_mipsel',
       'Android N5X Swarm Builder': 'android_release_bot_minimal_symbols_arm64',
-      'Android Swarm Builder': 'android_release_bot_minimal_symbols',
       'Android arm Builder (dbg)': 'android_debug_static_bot',
       'Android arm64 Builder (dbg)': 'android_debug_static_bot_arm64',
       'Android x64 Builder (dbg)': 'android_debug_static_bot_x64',
