@@ -65,26 +65,29 @@ String convertHTMLLengthToCSSLength(const String& htmlLength) {
 inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     : HTMLElement(HTMLNames::marqueeTag, document) {
   UseCounter::count(document, UseCounter::HTMLMarqueeElement);
-  ShadowRoot* shadow =
-      createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-  Element* style = HTMLStyleElement::create(document, false);
+}
+
+HTMLMarqueeElement* HTMLMarqueeElement::create(Document& document) {
+  HTMLMarqueeElement* marqueeElement = new HTMLMarqueeElement(document);
+  marqueeElement->ensureUserAgentShadowRoot();
+  return marqueeElement;
+}
+
+void HTMLMarqueeElement::didAddUserAgentShadowRoot(ShadowRoot& shadowRoot) {
+  Element* style = HTMLStyleElement::create(document(), false);
   style->setTextContent(
       ":host { display: inline-block; width: -webkit-fill-available; overflow: "
       "hidden; text-align: initial; white-space: nowrap; }"
       ":host([direction=\"up\"]), :host([direction=\"down\"]) { overflow: "
       "initial; overflow-y: hidden; white-space: initial; }"
       ":host > div { will-change: transform; }");
-  shadow->appendChild(style);
+  shadowRoot.appendChild(style);
 
-  Element* mover = HTMLDivElement::create(document);
-  shadow->appendChild(mover);
+  Element* mover = HTMLDivElement::create(document());
+  shadowRoot.appendChild(mover);
 
-  mover->appendChild(HTMLContentElement::create(document));
+  mover->appendChild(HTMLContentElement::create(document()));
   m_mover = mover;
-}
-
-HTMLMarqueeElement* HTMLMarqueeElement::create(Document& document) {
-  return new HTMLMarqueeElement(document);
 }
 
 void HTMLMarqueeElement::attributeChanged(const QualifiedName& name,

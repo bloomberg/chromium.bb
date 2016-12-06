@@ -62,6 +62,7 @@ class HTMLMarqueeElement final : public HTMLElement {
 
  private:
   explicit HTMLMarqueeElement(Document&);
+  void didAddUserAgentShadowRoot(ShadowRoot&) override;
 
   class RequestAnimationFrameCallback final : public FrameRequestCallback {
     WTF_MAKE_NONCOPYABLE(RequestAnimationFrameCallback);
