@@ -80,50 +80,53 @@ class InProcessWorkerMessagingProxyForTest
   }
 
   ~InProcessWorkerMessagingProxyForTest() override {
-    EXPECT_EQ(WaitUntilMode::DontWait, m_waitUntilMode);
+    EXPECT_FALSE(m_blocking);
     m_workerThread->workerLoaderProxy()->detachProvider(
         m_mockWorkerLoaderProxyProvider.get());
   }
 
-  enum class WaitUntilMode {
-    DontWait,
+  enum class Notification {
     MessageConfirmed,
     PendingActivityReported,
     ThreadTerminated,
   };
 
-  // Blocks the main thread until a specified event happens.
-  void waitUntil(WaitUntilMode mode) {
+  // Blocks the main thread until some event is notified.
+  Notification waitForNotification() {
     EXPECT_TRUE(isMainThread());
-    EXPECT_EQ(WaitUntilMode::DontWait, m_waitUntilMode);
-    m_waitUntilMode = mode;
-    testing::enterRunLoop();
+    DCHECK(!m_blocking);
+    if (m_events.isEmpty()) {
+      m_blocking = true;
+      testing::enterRunLoop();
+      DCHECK(!m_blocking);
+    }
+    return m_events.takeFirst();
   }
 
   void confirmMessageFromWorkerObject() override {
     EXPECT_TRUE(isMainThread());
     InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject();
-    if (m_waitUntilMode != WaitUntilMode::MessageConfirmed)
-      return;
-    m_waitUntilMode = WaitUntilMode::DontWait;
-    testing::exitRunLoop();
+    m_events.append(Notification::MessageConfirmed);
+    if (m_blocking)
+      testing::exitRunLoop();
+    m_blocking = false;
   }
 
   void pendingActivityFinished() override {
     EXPECT_TRUE(isMainThread());
     InProcessWorkerMessagingProxy::pendingActivityFinished();
-    if (m_waitUntilMode != WaitUntilMode::PendingActivityReported)
-      return;
-    m_waitUntilMode = WaitUntilMode::DontWait;
-    testing::exitRunLoop();
+    m_events.append(Notification::PendingActivityReported);
+    if (m_blocking)
+      testing::exitRunLoop();
+    m_blocking = false;
   }
 
   void workerThreadTerminated() override {
     EXPECT_TRUE(isMainThread());
-    if (m_waitUntilMode != WaitUntilMode::ThreadTerminated)
-      return;
-    m_waitUntilMode = WaitUntilMode::DontWait;
-    testing::exitRunLoop();
+    m_events.append(Notification::ThreadTerminated);
+    if (m_blocking)
+      testing::exitRunLoop();
+    m_blocking = false;
   }
 
   std::unique_ptr<WorkerThread> createWorkerThread(double originTime) override {
@@ -143,10 +146,11 @@ class InProcessWorkerMessagingProxyForTest
   Persistent<MockWorkerThreadLifecycleObserver>
       m_mockWorkerThreadLifecycleObserver;
 
-  WaitUntilMode m_waitUntilMode = WaitUntilMode::DontWait;
+  WTF::Deque<Notification> m_events;
+  bool m_blocking = false;
 };
 
-using WaitUntilMode = InProcessWorkerMessagingProxyForTest::WaitUntilMode;
+using Notification = InProcessWorkerMessagingProxyForTest::Notification;
 
 class DedicatedWorkerTest
     : public ::testing::TestWithParam<BlinkGC::ThreadHeapMode> {
@@ -164,7 +168,8 @@ class DedicatedWorkerTest
 
   void TearDown() override {
     workerThread()->terminate();
-    workerMessagingProxy()->waitUntil(WaitUntilMode::ThreadTerminated);
+    EXPECT_EQ(Notification::ThreadTerminated,
+              workerMessagingProxy()->waitForNotification());
   }
 
   void startWithSourceCode(const String& source) {
@@ -218,7 +223,8 @@ TEST_P(DedicatedWorkerTest, PendingActivity_NoActivity) {
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // There should be no pending activities after the initialization.
-  workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
+  EXPECT_EQ(Notification::PendingActivityReported,
+            workerMessagingProxy()->waitForNotification());
   EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 }
 
@@ -232,7 +238,8 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeout) {
 
   // The timer is fired soon and there should be no pending activities after
   // that.
-  workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
+  EXPECT_EQ(Notification::PendingActivityReported,
+            workerMessagingProxy()->waitForNotification());
   EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 }
 
@@ -252,12 +259,14 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetInterval) {
   dispatchMessageEvent();
   EXPECT_EQ(1u, workerMessagingProxy()->unconfirmedMessageCount());
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
-  workerMessagingProxy()->waitUntil(WaitUntilMode::MessageConfirmed);
+  EXPECT_EQ(Notification::MessageConfirmed,
+            workerMessagingProxy()->waitForNotification());
   EXPECT_EQ(0u, workerMessagingProxy()->unconfirmedMessageCount());
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // There should be no pending activities after the timer is stopped.
-  workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
+  EXPECT_EQ(Notification::PendingActivityReported,
+            workerMessagingProxy()->waitForNotification());
   EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 }
 
@@ -271,20 +280,23 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeoutOnMessageEvent) {
 
   // Worker initialization should be counted as a pending activity.
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
-  workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
+  EXPECT_EQ(Notification::PendingActivityReported,
+            workerMessagingProxy()->waitForNotification());
   EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 
   // A message starts the oneshot timer that is counted as a pending activity.
   dispatchMessageEvent();
   EXPECT_EQ(1u, workerMessagingProxy()->unconfirmedMessageCount());
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
-  workerMessagingProxy()->waitUntil(WaitUntilMode::MessageConfirmed);
+  EXPECT_EQ(Notification::MessageConfirmed,
+            workerMessagingProxy()->waitForNotification());
   EXPECT_EQ(0u, workerMessagingProxy()->unconfirmedMessageCount());
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // The timer is fired soon and there should be no pending activities after
   // that.
-  workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
+  EXPECT_EQ(Notification::PendingActivityReported,
+            workerMessagingProxy()->waitForNotification());
   EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 }
 
@@ -306,7 +318,8 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
 
   // Worker initialization should be counted as a pending activity.
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
-  workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
+  EXPECT_EQ(Notification::PendingActivityReported,
+            workerMessagingProxy()->waitForNotification());
   EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 
   // The first message event sets the active timer that is counted as a
@@ -314,7 +327,8 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
   dispatchMessageEvent();
   EXPECT_EQ(1u, workerMessagingProxy()->unconfirmedMessageCount());
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
-  workerMessagingProxy()->waitUntil(WaitUntilMode::MessageConfirmed);
+  EXPECT_EQ(Notification::MessageConfirmed,
+            workerMessagingProxy()->waitForNotification());
   EXPECT_EQ(0u, workerMessagingProxy()->unconfirmedMessageCount());
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
@@ -330,12 +344,13 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
   dispatchMessageEvent();
   EXPECT_EQ(1u, workerMessagingProxy()->unconfirmedMessageCount());
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
-  workerMessagingProxy()->waitUntil(WaitUntilMode::MessageConfirmed);
+  EXPECT_EQ(Notification::MessageConfirmed,
+            workerMessagingProxy()->waitForNotification());
   EXPECT_EQ(0u, workerMessagingProxy()->unconfirmedMessageCount());
-  EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
 
   // There should be no pending activities after the timer is stopped.
-  workerMessagingProxy()->waitUntil(WaitUntilMode::PendingActivityReported);
+  EXPECT_EQ(Notification::PendingActivityReported,
+            workerMessagingProxy()->waitForNotification());
   EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 }
 
