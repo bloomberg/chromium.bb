@@ -55,6 +55,11 @@ Polymer({
       value: function() { return []; },
     },
 
+    /** @override */
+    subpageRoute: {
+      type: Object,
+      value: settings.Route.MANAGE_PASSWORDS,
+    },
 
     /**
      * The model for any password related action menus or dialogs.
