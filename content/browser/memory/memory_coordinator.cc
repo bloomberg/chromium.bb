@@ -88,14 +88,14 @@ bool MemoryCoordinator::SetChildMemoryState(int render_process_id,
   if (!iter->second.handle->child().is_bound())
     return false;
 
+  // We don't suspend foreground renderers. Throttle them instead.
+  if (memory_state == mojom::MemoryState::SUSPENDED &&
+      iter->second.is_visible)
+    memory_state = mojom::MemoryState::THROTTLED;
+
   // A nop doesn't need to be sent, but is considered successful.
   if (iter->second.memory_state == memory_state)
     return true;
-
-  // Can't throttle the given renderer.
-  if (memory_state == mojom::MemoryState::THROTTLED &&
-      !CanThrottleRenderer(render_process_id))
-    return false;
 
   // Can't suspend the given renderer.
   if (memory_state == mojom::MemoryState::SUSPENDED &&
@@ -163,17 +163,6 @@ void MemoryCoordinator::OnConnectionError(int render_process_id) {
   children_.erase(render_process_id);
 }
 
-bool MemoryCoordinator::CanThrottleRenderer(int render_process_id) {
-  // If there is no delegate (i.e. unittests), renderers are always
-  // throttleable.
-  // TODO(bashi): We check |delegate_| to avoid calling FromID() on a
-  // wrong thread in tests. Figure out a better way to handle tests.
-  if (!delegate_)
-    return true;
-  auto* render_process_host = RenderProcessHost::FromID(render_process_id);
-  return render_process_host && render_process_host->IsProcessBackgrounded();
-}
-
 bool MemoryCoordinator::CanSuspendRenderer(int render_process_id) {
   // If there is no delegate (i.e. unittests), renderers are always suspendable.
   if (!delegate_)
@@ -199,6 +188,7 @@ void MemoryCoordinator::CreateChildInfoMapEntry(
   // corresponding renderer process is ready to communicate. Renderer processes
   // call AddChild() when they are ready.
   child_info.memory_state = mojom::MemoryState::NORMAL;
+  child_info.is_visible = true;
   child_info.handle = std::move(handle);
 }
 

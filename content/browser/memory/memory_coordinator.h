@@ -80,9 +80,6 @@ class CONTENT_EXPORT MemoryCoordinator {
   // for testing.
   void OnConnectionError(int render_process_id);
 
-  // Returns true when a given renderer can be throttled.
-  bool CanThrottleRenderer(int render_process_id);
-
   // Returns true when a given renderer can be suspended.
   bool CanSuspendRenderer(int render_process_id);
 
@@ -94,6 +91,7 @@ class CONTENT_EXPORT MemoryCoordinator {
     ~ChildInfo();
 
     mojom::MemoryState memory_state;
+    bool is_visible = false;
     std::unique_ptr<MemoryCoordinatorHandleImpl> handle;
   };
 

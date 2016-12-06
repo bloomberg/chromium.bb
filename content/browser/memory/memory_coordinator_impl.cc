@@ -185,7 +185,8 @@ void MemoryCoordinatorImpl::Start() {
 
 void MemoryCoordinatorImpl::OnChildAdded(int render_process_id) {
   // Populate the global state as an initial state of a newly created process.
-  SetChildMemoryState(render_process_id, ToMojomMemoryState(current_state_));
+  auto new_state = ToMojomMemoryState(GetGlobalMemoryState());
+  SetChildMemoryState(render_process_id, new_state);
 }
 
 base::MemoryState MemoryCoordinatorImpl::GetGlobalMemoryState() const {
@@ -224,10 +225,8 @@ void MemoryCoordinatorImpl::Observe(int type,
   auto iter = children().find(process->GetID());
   if (iter == children().end())
     return;
-  bool is_visible = *Details<bool>(details).ptr();
-  // We don't throttle/suspend a visible renderer for now.
-  auto new_state = is_visible ? mojom::MemoryState::NORMAL
-                              : ToMojomMemoryState(current_state_);
+  iter->second.is_visible = *Details<bool>(details).ptr();
+  auto new_state = ToMojomMemoryState(GetGlobalMemoryState());
   SetChildMemoryState(iter->first, new_state);
 }
 

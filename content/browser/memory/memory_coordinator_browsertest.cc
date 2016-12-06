@@ -62,18 +62,6 @@ IN_PROC_BROWSER_TEST_F(MemoryCoordinatorTest, CanSuspendRenderer) {
   EXPECT_FALSE(memory_coordinator->CanSuspendRenderer(render_process_id));
 }
 
-IN_PROC_BROWSER_TEST_F(MemoryCoordinatorTest, CanThrottleRenderer) {
-  GURL url = GetTestUrl("", "simple_page.html");
-  NavigateToURL(shell(), url);
-  auto* memory_coordinator = MemoryCoordinator::GetInstance();
-  memory_coordinator->SetDelegateForTesting(
-      base::MakeUnique<TestMemoryCoordinatorDelegate>());
-  EXPECT_EQ(1u, memory_coordinator->children().size());
-  int render_process_id = memory_coordinator->children().begin()->first;
-  // Foreground tab cannot be throttled.
-  EXPECT_FALSE(memory_coordinator->CanThrottleRenderer(render_process_id));
-}
-
 #endif  // !defined(OS_MACOSX)
 
 }  // namespace content

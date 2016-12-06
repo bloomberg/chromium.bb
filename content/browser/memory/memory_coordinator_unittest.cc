@@ -133,7 +133,9 @@ TEST_F(MemoryCoordinatorTest, SetMemoryStateDelivered) {
 
   EXPECT_TRUE(mc.SetChildMemoryState(2, mojom::MemoryState::SUSPENDED));
   EXPECT_EQ(1, cmc2->on_state_change_calls());
-  EXPECT_EQ(mojom::MemoryState::SUSPENDED, cmc2->state());
+  // Child processes are considered as visible (foreground) by default,
+  // and visible ones won't be suspended but throttled.
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc2->state());
 }
 
 }  // namespace content
