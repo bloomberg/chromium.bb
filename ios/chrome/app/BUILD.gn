@@ -32,3 +32,20 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+source_set("tests_hook") {
+  # This target is intentionally not test-only, as the main app depends on it.
+  sources = [
+    "tests_hook.h",
+  ]
+}
+
+source_set("tests_fake_hook") {
+  # This target is intentionally not test-only, as the main app depends on it.
+  sources = [
+    "tests_fake_hook.mm",
+  ]
+  deps = [
+    ":tests_hook",
+  ]
+}
