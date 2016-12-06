@@ -379,6 +379,7 @@ TEST(HttpUtilTest, LocateEndOfAdditionalHeaders) {
   }
 }
 TEST(HttpUtilTest, AssembleRawHeaders) {
+  // clang-format off
   struct {
     const char* const input;  // with '|' representing '\0'
     const char* const expected_result;  // with '\0' changed to '|'
@@ -680,7 +681,19 @@ TEST(HttpUtilTest, AssembleRawHeaders) {
       "HTTP/1.0 200 OK\nFoo: 1|Foo2: 3\nBar: 2\n\n",
       "HTTP/1.0 200 OK|Foo: 1Foo2: 3|Bar: 2||"
     },
+
+    // The embedded NUL at the start of the line (before "Blah:") should not be
+    // interpreted as LWS (as that would mistake it for a header line
+    // continuation).
+    {
+      "HTTP/1.0 200 OK\n"
+      "Foo: 1\n"
+      "|Blah: 3\n"
+      "Bar: 2\n\n",
+      "HTTP/1.0 200 OK|Foo: 1|Blah: 3|Bar: 2||"
+    },
   };
+  // clang-format on
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string input = tests[i].input;
     std::replace(input.begin(), input.end(), '|', '\0');
@@ -1471,6 +1484,19 @@ TEST(HttpUtilTest, IsToken) {
   EXPECT_FALSE(HttpUtil::IsToken("\x7F"));
   EXPECT_FALSE(HttpUtil::IsToken("\x80"));
   EXPECT_FALSE(HttpUtil::IsToken("\xff"));
+}
+
+TEST(HttpUtilTest, IsLWS) {
+  EXPECT_FALSE(HttpUtil::IsLWS('\v'));
+  EXPECT_FALSE(HttpUtil::IsLWS('\0'));
+  EXPECT_FALSE(HttpUtil::IsLWS('1'));
+  EXPECT_FALSE(HttpUtil::IsLWS('a'));
+  EXPECT_FALSE(HttpUtil::IsLWS('.'));
+  EXPECT_FALSE(HttpUtil::IsLWS('\n'));
+  EXPECT_FALSE(HttpUtil::IsLWS('\r'));
+
+  EXPECT_TRUE(HttpUtil::IsLWS('\t'));
+  EXPECT_TRUE(HttpUtil::IsLWS(' '));
 }
 
 }  // namespace net

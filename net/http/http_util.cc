@@ -499,7 +499,8 @@ bool HttpUtil::IsNonCoalescingHeader(std::string::const_iterator name_begin,
 }
 
 bool HttpUtil::IsLWS(char c) {
-  return strchr(HTTP_LWS, c) != NULL;
+  const base::StringPiece kWhiteSpaceCharacters(HTTP_LWS);
+  return kWhiteSpaceCharacters.find(c) != base::StringPiece::npos;
 }
 
 // static
