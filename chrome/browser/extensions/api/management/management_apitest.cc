@@ -201,8 +201,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
                                   "prohibited.html"));
 }
 
-// Disabled. See http://crbug.com/176023
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, DISABLED_LaunchPanelApp) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
 
