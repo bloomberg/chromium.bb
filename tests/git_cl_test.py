@@ -1066,9 +1066,17 @@ class TestGitCl(TestCase):
     git_cl.main(['land'])
 
   def test_land_rietveld_git_numberer(self):
-    self._land_rietveld_common()
+    self._land_rietveld_common(debug_stdout=False)
     self.mock(git_cl, 'ShouldGenerateGitNumberFooters',
               lambda *a: self._mocked_call(['ShouldGenerateGitNumberFooters']))
+
+    # Special mocks to check validity of timestamp.
+    original_git_amend_head = git_cl._git_amend_head
+    def _git_amend_head_mock(msg, tstamp):
+      self._mocked_call(['git_amend_head committer timestamp', tstamp])
+      return original_git_amend_head(msg, tstamp)
+    self.mock(git_cl, '_git_amend_head', _git_amend_head_mock)
+
     self.calls += [
       ((['git', 'config', 'rietveld.pending-ref-prefix'],), CERR1),
       ((['ShouldGenerateGitNumberFooters'],), True),
@@ -1078,7 +1086,12 @@ class TestGitCl(TestCase):
        '\n'
        'Cr-Commit-Position: refs/heads/master@{#543}\n'
        'Cr-Branched-From: refs/svn/2014@{#2208}'),
+      ((['git', 'show', '-s', '--format=%ct', 'fake_ancestor_sha'],),
+       '1480022355'),  # Committer's unix timestamp.
+      ((['git', 'show', '-s', '--format=%ct', 'HEAD'],),
+       '1480024000'),
 
+      ((['git_amend_head committer timestamp', 1480024000],), None),
       ((['git', 'commit', '--amend', '-m',
         'Issue: 123\n\nR=john@chromium.org\n'
         '\n'

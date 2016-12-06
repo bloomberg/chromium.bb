@@ -228,6 +228,26 @@ def _git_set_branch_config_value(key, value, branch=None, **kwargs):
   RunGit(args, **kwargs)
 
 
+def _get_committer_timestamp(commit):
+  """Returns unix timestamp as integer of a committer in a commit.
+
+  Commit can be whatever git show would recognize, such as HEAD, sha1 or ref.
+  """
+  # Git also stores timezone offset, but it only affects visual display,
+  # actual point in time is defined by this timestamp only.
+  return int(RunGit(['show', '-s', '--format=%ct', commit]).strip())
+
+
+def _git_amend_head(message, committer_timestamp):
+  """Amends commit with new message and desired committer_timestamp.
+
+  Sets committer timezone to UTC.
+  """
+  env = os.environ.copy()
+  env['GIT_COMMITTER_DATE'] = '%d+0000' % committer_timestamp
+  return RunGit(['commit', '--amend', '-m', message], env=env)
+
+
 def add_git_similarity(parser):
   parser.add_option(
       '--similarity', metavar='SIM', type=int, action='store',
@@ -4501,8 +4521,10 @@ def SendUpstream(parser, args, cmd):
         parent_msg = RunGit(['show', '-s', '--format=%B', merge_base]).strip()
         commit_desc.update_with_git_number_footers(merge_base, parent_msg,
                                                    branch)
-        # TODO(tandrii): timestamp handling is missing here.
-        RunGitSilent(['commit', '--amend', '-m', commit_desc.description])
+        # Ensure timestamps are monotonically increasing.
+        timestamp = max(1 + _get_committer_timestamp(merge_base),
+                        _get_committer_timestamp('HEAD'))
+        _git_amend_head(commit_desc.description, timestamp)
         change_desc = ChangeDescription(commit_desc.description)
         # If gnumbd is sitll ON and we ultimately push to branch with
         # pending_prefix, gnumbd will modify footers we've just inserted with
