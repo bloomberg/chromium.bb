@@ -220,7 +220,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
              (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
              (m_cursorStyle == other.m_cursorStyle) &&
              (m_direction == other.m_direction) &&
-             (m_borderCollapse == other.m_borderCollapse) &&
              (m_boxDirection == other.m_boxDirection) &&
              (m_rtlOrdering == other.m_rtlOrdering) &&
              (m_printColorAdjust == other.m_printColorAdjust) &&
@@ -235,7 +234,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_cursorStyle : 6;     // ECursor
     unsigned m_direction : 1;       // TextDirection
     unsigned m_whiteSpace : 3;      // EWhiteSpace
-    unsigned m_borderCollapse : 1;  // EBorderCollapse
     unsigned m_boxDirection : 1;  // EBoxDirection (CSS3 box_direction property,
                                   // flexible box layout module)
     // 32 bits
@@ -365,8 +363,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();
     m_inheritedData.m_whiteSpace = static_cast<unsigned>(initialWhiteSpace());
-    m_inheritedData.m_borderCollapse =
-        static_cast<unsigned>(initialBorderCollapse());
     m_inheritedData.m_rtlOrdering = static_cast<unsigned>(initialRTLOrdering());
     m_inheritedData.m_boxDirection =
         static_cast<unsigned>(initialBoxDirection());
@@ -2051,17 +2047,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Inherited properties.
-
-  // border-collapse
-  static EBorderCollapse initialBorderCollapse() {
-    return EBorderCollapse::Separate;
-  }
-  EBorderCollapse borderCollapse() const {
-    return static_cast<EBorderCollapse>(m_inheritedData.m_borderCollapse);
-  }
-  void setBorderCollapse(EBorderCollapse collapse) {
-    m_inheritedData.m_borderCollapse = static_cast<unsigned>(collapse);
-  }
 
   // Border-spacing properties.
   // -webkit-border-horizontal-spacing

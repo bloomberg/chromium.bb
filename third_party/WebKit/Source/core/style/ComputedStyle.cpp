@@ -842,8 +842,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
     return true;
 
   if (isDisplayTableType(display())) {
-    if (m_inheritedData.m_borderCollapse !=
-            other.m_inheritedData.m_borderCollapse ||
+    if (borderCollapse() != other.borderCollapse() ||
         emptyCells() != other.emptyCells() ||
         captionSide() != other.captionSide() ||
         m_nonInheritedData.m_tableLayout !=
@@ -852,7 +851,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
 
     // In the collapsing border model, 'hidden' suppresses other borders, while
     // 'none' does not, so these style differences can be width differences.
-    if (m_inheritedData.m_borderCollapse &&
+    if ((borderCollapse() == EBorderCollapse::Collapse) &&
         ((borderTopStyle() == BorderStyleHidden &&
           other.borderTopStyle() == BorderStyleNone) ||
          (borderTopStyle() == BorderStyleNone &&

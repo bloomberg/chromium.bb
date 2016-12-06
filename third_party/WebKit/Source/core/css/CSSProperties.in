@@ -183,7 +183,7 @@ border-bottom-left-radius interpolable, initial=initialBorderRadius, converter=c
 border-bottom-right-radius interpolable, initial=initialBorderRadius, converter=convertRadius
 border-bottom-style type_name=EBorderStyle, initial=initialBorderStyle
 border-bottom-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
-border-collapse inherited
+border-collapse inherited, keyword_only, keywords=[separate|collapse], initial_keyword=separate
 border-image-outset interpolable, custom_all
 border-image-repeat custom_all
 border-image-slice interpolable, custom_all
