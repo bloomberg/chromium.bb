@@ -60,21 +60,16 @@ class DisplayCompositor : public cc::SurfaceObserver,
       cc::mojom::DisplayCompositorClientPtr client);
   ~DisplayCompositor() override;
 
-  // cc::mojom::DisplayCompositor implementation:
-  void CreateCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
-      gpu::SurfaceHandle surface_handle,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
-  void AddRootSurfaceReference(const cc::SurfaceId& child_id) override;
-  void AddSurfaceReference(const cc::SurfaceId& parent_id,
-                           const cc::SurfaceId& child_id) override;
-  void RemoveRootSurfaceReference(const cc::SurfaceId& child_id) override;
-  void RemoveSurfaceReference(const cc::SurfaceId& parent_id,
-                              const cc::SurfaceId& child_id) override;
-
   cc::SurfaceManager* manager() { return &manager_; }
+
+  // Adds surface references. For each reference added, this will remove the
+  // temporary reference to the child surface if one exists.
+  void AddSurfaceReferences(
+      const std::vector<cc::SurfaceReference>& references);
+
+  // Removes surface references.
+  void RemoveSurfaceReferences(
+      const std::vector<cc::SurfaceReference>& references);
 
   // We must avoid destroying a GpuCompositorFrameSink until both the display
   // compositor host and the client drop their connection to avoid getting into
@@ -86,8 +81,19 @@ class DisplayCompositor : public cc::SurfaceObserver,
       const cc::FrameSinkId& frame_sink_id,
       bool destroy_compositor_frame_sink);
 
+  // cc::mojom::DisplayCompositor implementation:
+  void CreateCompositorFrameSink(
+      const cc::FrameSinkId& frame_sink_id,
+      gpu::SurfaceHandle surface_handle,
+      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
+
  private:
   friend class test::DisplayCompositorTest;
+
+  void AddSurfaceReference(const cc::SurfaceReference& ref);
+  void RemoveSurfaceReference(const cc::SurfaceReference& ref);
 
   std::unique_ptr<cc::Display> CreateDisplay(
       const cc::FrameSinkId& frame_sink_id,

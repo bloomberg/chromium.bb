@@ -525,6 +525,11 @@ cc::mojom::DisplayCompositor* WindowServer::GetDisplayCompositor() {
   return display_compositor_.get();
 }
 
+const cc::SurfaceId& WindowServer::GetRootSurfaceId() const {
+  DCHECK(root_surface_id_.local_frame_id().is_valid());
+  return root_surface_id_;
+}
+
 bool WindowServer::GetFrameDecorationsForUser(
     const UserId& user_id,
     mojom::FrameDecorationValuesPtr* values) {
@@ -802,6 +807,11 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceId& surface_id,
     window_tree->ProcessWindowSurfaceChanged(window, surface_id, frame_size,
                                              device_scale_factor);
   }
+}
+
+void WindowServer::OnDisplayCompositorCreated(
+    const cc::SurfaceId& root_surface_id) {
+  root_surface_id_ = root_surface_id;
 }
 
 void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,

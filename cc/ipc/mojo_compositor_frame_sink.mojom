@@ -8,6 +8,7 @@ import "cc/ipc/begin_frame_args.mojom";
 import "cc/ipc/compositor_frame.mojom";
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_frame_id.mojom";
+import "cc/ipc/surface_reference.mojom";
 import "cc/ipc/returned_resource.mojom";
 
 // A MojoCompositorFrameSink is an interface for receiving CompositorFrame
@@ -30,6 +31,12 @@ interface MojoCompositorFrameSink {
   // processed in order to unthrottle the next frame.
   SubmitCompositorFrame(cc.mojom.LocalFrameId local_frame_id,
                         cc.mojom.CompositorFrame frame);
+
+  // Adds surface references.
+  AddSurfaceReferences(array<SurfaceReference> references);
+
+  // Removes surface references.
+  RemoveSurfaceReferences(array<SurfaceReference> references);
 
   // Notify that the surface is no longer in use (and is okay to be evicted) so
   // that its resources gets returned in time.

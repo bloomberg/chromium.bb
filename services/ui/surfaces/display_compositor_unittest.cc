@@ -16,6 +16,7 @@
 #include "cc/ipc/display_compositor.mojom.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_observer.h"
+#include "cc/surfaces/surface_reference.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/ui/common/task_runner_test_base.h"
@@ -65,15 +66,22 @@ class TestDisplayCompositorClient : public cc::mojom::DisplayCompositorClient {
   }
 
   // cc::mojom::DisplayCompositorClient:
+  void OnDisplayCompositorCreated(
+      const cc::SurfaceId& root_surface_id) override {
+    got_root_surface_id_ = true;
+  }
+
   void OnSurfaceCreated(const cc::SurfaceId& surface_id,
                         const gfx::Size& frame_size,
                         float device_scale_factor) override {
+    EXPECT_TRUE(got_root_surface_id_);
     AddEvent(base::StringPrintf("OnSurfaceCreated(%s)",
                                 SurfaceIdString(surface_id).c_str()));
   }
 
   mojo::Binding<cc::mojom::DisplayCompositorClient> binding_;
   std::string events_;
+  bool got_root_surface_id_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestDisplayCompositorClient);
 };
@@ -139,6 +147,16 @@ class DisplayCompositorTest : public TaskRunnerTestBase {
 
   cc::SurfaceObserver* surface_observer() { return display_compositor_.get(); }
 
+  const cc::SurfaceId& GetRootSurfaceId() const {
+    return reference_manager_.GetRootSurfaceId();
+  }
+
+  void AddSurfaceReference(const cc::SurfaceId& parent_id,
+                           const cc::SurfaceId& child_id) {
+    display_compositor_->AddSurfaceReferences(std::vector<cc::SurfaceReference>{
+        cc::SurfaceReference(parent_id, child_id)});
+  }
+
   // Returns the total number of temporary references held by DisplayCompositor.
   size_t CountTempReferences() {
     size_t size = 0;
@@ -182,7 +200,7 @@ TEST_F(DisplayCompositorTest, AddSurfaceThenReference) {
   EXPECT_EQ("Add(0:0:0-2:1:1)", reference_manager_.events());
   EXPECT_EQ(1u, CountTempReferences());
 
-  display_compositor_->AddSurfaceReference(parent_id, surface_id);
+  AddSurfaceReference(parent_id, surface_id);
   RunUntilIdle();
 
   // Real reference is added then temporary reference removed.
@@ -200,7 +218,7 @@ TEST_F(DisplayCompositorTest, AddSurfaceThenRootReference) {
   EXPECT_EQ("Add(0:0:0-1:1:1)", reference_manager_.events());
   EXPECT_EQ(1u, CountTempReferences());
 
-  display_compositor_->AddRootSurfaceReference(surface_id);
+  AddSurfaceReference(GetRootSurfaceId(), surface_id);
   RunUntilIdle();
 
   // Adding real reference doesn't need to change anything in
@@ -223,7 +241,7 @@ TEST_F(DisplayCompositorTest, AddTwoSurfacesThenOneReference) {
   EXPECT_EQ("Add(0:0:0-2:1:1);Add(0:0:0-3:1:1)", reference_manager_.events());
   EXPECT_EQ(2u, CountTempReferences());
 
-  display_compositor_->AddSurfaceReference(parent_id, surface_id1);
+  AddSurfaceReference(parent_id, surface_id1);
   RunUntilIdle();
 
   // Real reference is added then temporary reference removed for 2:1:1. There
@@ -252,7 +270,7 @@ TEST_F(DisplayCompositorTest, AddSurfacesSkipReference) {
   EXPECT_EQ(2u, CountTempReferences());
 
   // Add a reference to the surface with the later LocalFrameId.
-  display_compositor_->AddSurfaceReference(parent_id, surface_id2);
+  AddSurfaceReference(parent_id, surface_id2);
   RunUntilIdle();
 
   // The real reference should be added for 2:1:2 and both temporary references

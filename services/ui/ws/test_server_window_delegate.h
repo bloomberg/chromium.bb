@@ -6,6 +6,7 @@
 #define SERVICES_UI_WS_TEST_SERVER_WINDOW_DELEGATE_H_
 
 #include "base/macros.h"
+#include "cc/surfaces/surface_id.h"
 #include "services/ui/ws/server_window_delegate.h"
 
 namespace cc {
@@ -15,7 +16,6 @@ class DisplayCompositor;
 }
 
 namespace ui {
-
 namespace ws {
 
 class TestServerWindowDelegate : public ServerWindowDelegate {
@@ -28,15 +28,16 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
  private:
   // ServerWindowDelegate:
   cc::mojom::DisplayCompositor* GetDisplayCompositor() override;
+  const cc::SurfaceId& GetRootSurfaceId() const override;
   ServerWindow* GetRootWindow(const ServerWindow* window) override;
 
-  ServerWindow* root_window_;
+  cc::SurfaceId root_surface_id_;
+  ServerWindow* root_window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestServerWindowDelegate);
 };
 
 }  // namespace ws
-
 }  // namespace ui
 
 #endif  // SERVICES_UI_WS_TEST_SERVER_WINDOW_DELEGATE_H_

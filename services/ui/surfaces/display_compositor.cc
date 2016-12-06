@@ -39,6 +39,57 @@ DisplayCompositor::DisplayCompositor(
       client_(std::move(client)),
       binding_(this, std::move(request)) {
   manager_.AddObserver(this);
+  if (client_)
+    client_->OnDisplayCompositorCreated(GetRootSurfaceId());
+}
+
+void DisplayCompositor::AddSurfaceReferences(
+    const std::vector<cc::SurfaceReference>& references) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  for (auto& reference : references)
+    AddSurfaceReference(reference);
+}
+
+void DisplayCompositor::RemoveSurfaceReferences(
+    const std::vector<cc::SurfaceReference>& references) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(kylechar): Each remove reference can trigger GC, it would be better if
+  // we GC only once if removing multiple references.
+  for (auto& reference : references)
+    RemoveSurfaceReference(reference);
+}
+
+DisplayCompositor::~DisplayCompositor() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Remove all temporary references on shutdown.
+  for (auto& map_entry : temp_references_) {
+    const cc::FrameSinkId& frame_sink_id = map_entry.first;
+    for (auto& local_frame_id : map_entry.second) {
+      reference_manager_->RemoveSurfaceReference(
+          GetRootSurfaceId(), cc::SurfaceId(frame_sink_id, local_frame_id));
+    }
+  }
+  manager_.RemoveObserver(this);
+}
+
+void DisplayCompositor::OnCompositorFrameSinkClientConnectionLost(
+    const cc::FrameSinkId& frame_sink_id,
+    bool destroy_compositor_frame_sink) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (destroy_compositor_frame_sink)
+    compositor_frame_sinks_.erase(frame_sink_id);
+  // TODO(fsamuel): Tell the display compositor host that the client connection
+  // has been lost so that it can drop its private connection and allow a new
+  // client instance to create a new CompositorFrameSink.
+}
+
+void DisplayCompositor::OnCompositorFrameSinkPrivateConnectionLost(
+    const cc::FrameSinkId& frame_sink_id,
+    bool destroy_compositor_frame_sink) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (destroy_compositor_frame_sink)
+    compositor_frame_sinks_.erase(frame_sink_id);
 }
 
 void DisplayCompositor::CreateCompositorFrameSink(
@@ -62,14 +113,10 @@ void DisplayCompositor::CreateCompositorFrameSink(
           std::move(private_request), std::move(client));
 }
 
-void DisplayCompositor::AddRootSurfaceReference(const cc::SurfaceId& child_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  AddSurfaceReference(GetRootSurfaceId(), child_id);
-}
+void DisplayCompositor::AddSurfaceReference(const cc::SurfaceReference& ref) {
+  const cc::SurfaceId& parent_id = ref.parent_id();
+  const cc::SurfaceId& child_id = ref.child_id();
 
-void DisplayCompositor::AddSurfaceReference(const cc::SurfaceId& parent_id,
-                                            const cc::SurfaceId& child_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   auto vector_iter = temp_references_.find(child_id.frame_sink_id());
 
   // If there are no temporary references for the FrameSinkId then we can just
@@ -118,50 +165,9 @@ void DisplayCompositor::AddSurfaceReference(const cc::SurfaceId& parent_id,
     refs.erase(refs.begin(), ++temp_ref_iter);
 }
 
-void DisplayCompositor::RemoveRootSurfaceReference(
-    const cc::SurfaceId& child_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  RemoveSurfaceReference(GetRootSurfaceId(), child_id);
-}
-
-void DisplayCompositor::RemoveSurfaceReference(const cc::SurfaceId& parent_id,
-                                               const cc::SurfaceId& child_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(kylechar): Each remove reference can trigger GC, it would be better if
-  // we GC only once if removing multiple references.
-  reference_manager_->RemoveSurfaceReference(parent_id, child_id);
-}
-
-DisplayCompositor::~DisplayCompositor() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Remove all temporary references on shutdown.
-  for (auto& map_entry : temp_references_) {
-    const cc::FrameSinkId& frame_sink_id = map_entry.first;
-    for (auto& local_frame_id : map_entry.second) {
-      reference_manager_->RemoveSurfaceReference(
-          GetRootSurfaceId(), cc::SurfaceId(frame_sink_id, local_frame_id));
-    }
-  }
-  manager_.RemoveObserver(this);
-}
-
-void DisplayCompositor::OnCompositorFrameSinkClientConnectionLost(
-    const cc::FrameSinkId& frame_sink_id,
-    bool destroy_compositor_frame_sink) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (destroy_compositor_frame_sink)
-    compositor_frame_sinks_.erase(frame_sink_id);
-  // TODO(fsamuel): Tell the display compositor host that the client connection
-  // has been lost so that it can drop its private connection and allow a new
-  // client instance to create a new CompositorFrameSink.
-}
-
-void DisplayCompositor::OnCompositorFrameSinkPrivateConnectionLost(
-    const cc::FrameSinkId& frame_sink_id,
-    bool destroy_compositor_frame_sink) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (destroy_compositor_frame_sink)
-    compositor_frame_sinks_.erase(frame_sink_id);
+void DisplayCompositor::RemoveSurfaceReference(
+    const cc::SurfaceReference& ref) {
+  reference_manager_->RemoveSurfaceReference(ref.parent_id(), ref.child_id());
 }
 
 std::unique_ptr<cc::Display> DisplayCompositor::CreateDisplay(

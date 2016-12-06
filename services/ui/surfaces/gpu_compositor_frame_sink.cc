@@ -47,6 +47,16 @@ void GpuCompositorFrameSink::SubmitCompositorFrame(
   support_.SubmitCompositorFrame(local_frame_id, std::move(frame));
 }
 
+void GpuCompositorFrameSink::AddSurfaceReferences(
+    const std::vector<cc::SurfaceReference>& references) {
+  display_compositor_->AddSurfaceReferences(references);
+}
+
+void GpuCompositorFrameSink::RemoveSurfaceReferences(
+    const std::vector<cc::SurfaceReference>& references) {
+  display_compositor_->RemoveSurfaceReferences(references);
+}
+
 void GpuCompositorFrameSink::DidReceiveCompositorFrameAck() {
   client_->DidReceiveCompositorFrameAck();
 }

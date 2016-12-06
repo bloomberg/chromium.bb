@@ -5,6 +5,9 @@
 #ifndef SERVICES_UI_SURFACES_GPU_COMPOSITOR_FRAME_SINK_H_
 #define SERVICES_UI_SURFACES_GPU_COMPOSITOR_FRAME_SINK_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
@@ -41,6 +44,10 @@ class GpuCompositorFrameSink
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const cc::LocalFrameId& local_frame_id,
                              cc::CompositorFrame frame) override;
+  void AddSurfaceReferences(
+      const std::vector<cc::SurfaceReference>& references) override;
+  void RemoveSurfaceReferences(
+      const std::vector<cc::SurfaceReference>& references) override;
 
   // cc::mojom::MojoCompositorFrameSinkPrivate:
   void AddChildFrameSink(const cc::FrameSinkId& child_frame_sink_id) override;

@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/server_window.h"
 #include "services/ui/ws/test_server_window_delegate.h"
 
-namespace ui {
+#include "services/ui/ws/server_window.h"
 
+namespace ui {
 namespace ws {
 
-TestServerWindowDelegate::TestServerWindowDelegate()
-    : root_window_(nullptr) {}
+TestServerWindowDelegate::TestServerWindowDelegate() {}
 
 TestServerWindowDelegate::~TestServerWindowDelegate() {}
 
 cc::mojom::DisplayCompositor* TestServerWindowDelegate::GetDisplayCompositor() {
   return nullptr;
+}
+
+const cc::SurfaceId& TestServerWindowDelegate::GetRootSurfaceId() const {
+  return root_surface_id_;
 }
 
 ServerWindow* TestServerWindowDelegate::GetRootWindow(
@@ -24,5 +27,4 @@ ServerWindow* TestServerWindowDelegate::GetRootWindow(
 }
 
 }  // namespace ws
-
 }  // namespace ui

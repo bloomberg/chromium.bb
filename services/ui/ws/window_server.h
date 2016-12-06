@@ -228,6 +228,7 @@ class WindowServer : public ServerWindowDelegate,
 
   // ServerWindowDelegate:
   cc::mojom::DisplayCompositor* GetDisplayCompositor() override;
+  const cc::SurfaceId& GetRootSurfaceId() const override;
 
   // UserDisplayManagerDelegate:
   bool GetFrameDecorationsForUser(
@@ -330,6 +331,8 @@ class WindowServer : public ServerWindowDelegate,
   void OnSurfaceCreated(const cc::SurfaceId& surface_id,
                         const gfx::Size& frame_size,
                         float device_scale_factor) override;
+  void OnDisplayCompositorCreated(
+      const cc::SurfaceId& root_surface_id) override;
 
   // UserIdTrackerObserver:
   void OnActiveUserIdChanged(const UserId& previously_active_id,
@@ -372,6 +375,8 @@ class WindowServer : public ServerWindowDelegate,
   UserActivityMonitorMap activity_monitor_map_;
 
   WindowManagerWindowTreeFactorySet window_manager_window_tree_factory_set_;
+
+  cc::SurfaceId root_surface_id_;
 
   mojo::Binding<cc::mojom::DisplayCompositorClient>
       display_compositor_client_binding_;

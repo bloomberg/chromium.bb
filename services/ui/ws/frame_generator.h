@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -14,6 +15,7 @@
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/surface_reference.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window_delegate.h"
@@ -22,15 +24,11 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace cc {
-class CompositorFrame;
 class RenderPass;
 class SurfaceId;
 }
 
 namespace ui {
-
-class DisplayCompositor;
-
 namespace ws {
 
 namespace test {
@@ -101,10 +99,13 @@ class FrameGenerator : public ServerWindowTracker,
   void AddNewParentReferences(const cc::SurfaceId& old_surface_id,
                               const cc::SurfaceId& new_surface_id);
 
-  // Removes all references to surfaces in |dead_references_|.
-  void RemoveDeadSurfaceReferences();
+  // Sends IPC to add references in |references_to_add_|.
+  void PerformAddSurfaceReferences();
 
-  // Removes any retained references for the provided FrameSink.
+  // Sends IPC to remove all references in |references_to_remove_|.
+  void PerformRemoveSurfaceReferences();
+
+  // Removes any retained references for |frame_sink_id_|.
   void RemoveFrameSinkReference(const cc::FrameSinkId& frame_sink_id);
 
   // Removes all retained references to surfaces.
@@ -123,24 +124,18 @@ class FrameGenerator : public ServerWindowTracker,
   cc::SurfaceIdAllocator id_allocator_;
   cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
 
-  // Represents the top level root surface id that should reference the display
-  // root surface. We don't know the actual value, because it's generated in
-  // another process, this is used internally as a placeholder.
-  const cc::SurfaceId top_level_root_surface_id_;
-
-  struct SurfaceReference {
-    cc::SurfaceId parent_id;
-    cc::SurfaceId child_id;
-  };
-
   // Active references held by this client to surfaces that could be embedded in
   // a CompositorFrame submitted from FrameGenerator.
-  std::unordered_map<cc::FrameSinkId, SurfaceReference, cc::FrameSinkIdHash>
+  std::unordered_map<cc::FrameSinkId, cc::SurfaceReference, cc::FrameSinkIdHash>
       active_references_;
 
   // References to surfaces that should be removed after a CompositorFrame has
   // been submitted and the surfaces are not being used.
-  std::vector<SurfaceReference> dead_references_;
+  std::vector<cc::SurfaceReference> references_to_remove_;
+
+  // References that should be added before the next CompositorFrame is
+  // submitted.
+  std::vector<cc::SurfaceReference> references_to_add_;
 
   // If a CompositorFrame for a child surface is submitted before the first
   // display root CompositorFrame, we can't add a reference from the unknown

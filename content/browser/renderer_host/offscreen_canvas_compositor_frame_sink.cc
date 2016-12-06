@@ -59,6 +59,16 @@ void OffscreenCanvasCompositorFrameSink::SetNeedsBeginFrame(
   NOTIMPLEMENTED();
 }
 
+void OffscreenCanvasCompositorFrameSink::AddSurfaceReferences(
+    const std::vector<cc::SurfaceReference>& references) {
+  NOTIMPLEMENTED();
+}
+
+void OffscreenCanvasCompositorFrameSink::RemoveSurfaceReferences(
+    const std::vector<cc::SurfaceReference>& references) {
+  NOTIMPLEMENTED();
+}
+
 void OffscreenCanvasCompositorFrameSink::EvictFrame() {
   // TODO(fsamuel, staraz): Implement this
   NOTIMPLEMENTED();
