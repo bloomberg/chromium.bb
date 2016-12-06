@@ -41,11 +41,11 @@ namespace blink {
 void FileWriterSync::write(Blob* data, ExceptionState& exceptionState) {
   ASSERT(data);
   ASSERT(writer());
-  ASSERT(m_complete);
+  DCHECK(m_complete);
 
   prepareForWrite();
   writer()->write(position(), data->uuid());
-  ASSERT(m_complete);
+  DCHECK(m_complete);
   if (m_error) {
     FileError::throwDOMException(exceptionState, m_error);
     return;
@@ -57,14 +57,14 @@ void FileWriterSync::write(Blob* data, ExceptionState& exceptionState) {
 
 void FileWriterSync::seek(long long position, ExceptionState& exceptionState) {
   ASSERT(writer());
-  ASSERT(m_complete);
+  DCHECK(m_complete);
   seekInternal(position);
 }
 
 void FileWriterSync::truncate(long long offset,
                               ExceptionState& exceptionState) {
   ASSERT(writer());
-  ASSERT(m_complete);
+  DCHECK(m_complete);
   if (offset < 0) {
     exceptionState.throwDOMException(InvalidStateError,
                                      FileError::invalidStateErrorMessage);
@@ -72,7 +72,7 @@ void FileWriterSync::truncate(long long offset,
   }
   prepareForWrite();
   writer()->truncate(offset);
-  ASSERT(m_complete);
+  DCHECK(m_complete);
   if (m_error) {
     FileError::throwDOMException(exceptionState, m_error);
     return;
@@ -84,46 +84,29 @@ void FileWriterSync::truncate(long long offset,
 
 void FileWriterSync::didWrite(long long bytes, bool complete) {
   DCHECK_EQ(FileError::kOK, m_error);
-#if DCHECK_IS_ON()
   DCHECK(!m_complete);
   m_complete = complete;
-#endif
 }
 
 void FileWriterSync::didTruncate() {
   DCHECK_EQ(FileError::kOK, m_error);
-#if DCHECK_IS_ON()
   DCHECK(!m_complete);
   m_complete = true;
-#endif
 }
 
 void FileWriterSync::didFail(WebFileError error) {
   DCHECK_EQ(FileError::kOK, m_error);
   m_error = static_cast<FileError::ErrorCode>(error);
-#if DCHECK_IS_ON()
   DCHECK(!m_complete);
   m_complete = true;
-#endif
 }
 
-FileWriterSync::FileWriterSync()
-    : m_error(FileError::kOK)
-#if DCHECK_IS_ON()
-      ,
-      m_complete(true)
-#endif
-{
-}
+FileWriterSync::FileWriterSync() : m_error(FileError::kOK), m_complete(true) {}
 
 void FileWriterSync::prepareForWrite() {
-#if DCHECK_IS_ON()
   DCHECK(m_complete);
-#endif
   m_error = FileError::kOK;
-#if DCHECK_IS_ON()
   m_complete = false;
-#endif
 }
 
 FileWriterSync::~FileWriterSync() {}

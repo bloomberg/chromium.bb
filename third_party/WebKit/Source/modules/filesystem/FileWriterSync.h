@@ -69,9 +69,7 @@ class FileWriterSync final : public GarbageCollectedFinalized<FileWriterSync>,
   void prepareForWrite();
 
   FileError::ErrorCode m_error;
-#if DCHECK_IS_ON()
   bool m_complete;
-#endif
 };
 
 }  // namespace blink
