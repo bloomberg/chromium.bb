@@ -53,7 +53,7 @@ bool MediaCapabilitiesShlib::IsSupportedVideoConfig(VideoCodec codec,
                                                     VideoProfile profile,
                                                     int level) {
   // TODO(sanfin): implement this.
-  LOG(INFO) << "sanfin: IsSupportedVideoConfig not supported, returning true";
+  LOG(INFO) << "IsSupportedVideoConfig not supported, returning true";
   return true;
 }
 
