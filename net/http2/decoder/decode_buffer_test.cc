@@ -327,7 +327,7 @@ TEST_F(DecodeBufferTest, DecodeBufferSubsetAdvancesCursor) {
 
 // Make sure that DecodeBuffer ctor complains about bad args.
 #if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
-TEST(DecodeBufferDeathTest, DISABLED_NonNullBufferRequired) {
+TEST(DecodeBufferDeathTest, NonNullBufferRequired) {
   EXPECT_DEBUG_DEATH({ DecodeBuffer b(nullptr, 3); }, "nullptr");
 }
 

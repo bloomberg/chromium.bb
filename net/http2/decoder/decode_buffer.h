@@ -31,7 +31,7 @@ class NET_EXPORT_PRIVATE DecodeBuffer {
  public:
   DecodeBuffer(const char* buffer, size_t len)
       : buffer_(buffer), cursor_(buffer), beyond_(buffer + len) {
-    DCHECK_NE(buffer, nullptr);
+    DCHECK(buffer != nullptr);
     DCHECK_LE(len, MaxDecodeBufferLength());
   }
   explicit DecodeBuffer(base::StringPiece s)
