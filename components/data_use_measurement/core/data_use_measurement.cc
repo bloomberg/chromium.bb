@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
+#include "components/domain_reliability/uploader.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
@@ -89,8 +90,18 @@ void DataUseMeasurement::OnBeforeURLRequest(net::URLRequest* request) {
   DataUseUserData* data_use_user_data = reinterpret_cast<DataUseUserData*>(
       request->GetUserData(DataUseUserData::kUserDataKey));
   if (!data_use_user_data) {
-    data_use_user_data = new DataUseUserData(
-        DataUseUserData::ServiceName::NOT_TAGGED, CurrentAppState());
+    DataUseUserData::ServiceName service_name =
+        DataUseUserData::ServiceName::NOT_TAGGED;
+    if (!url_request_classifier_->IsUserRequest(*request) &&
+        domain_reliability::DomainReliabilityUploader::
+            OriginatedFromDomainReliability(*request)) {
+      // Detect if the request originated from DomainReliability.
+      // DataUseUserData::AttachToFetcher() cannot be called from domain
+      // reliability, since it sets userdata on URLFetcher for its purposes.
+      service_name = DataUseUserData::ServiceName::NOT_TAGGED;
+    }
+
+    data_use_user_data = new DataUseUserData(service_name, CurrentAppState());
     request->SetUserData(DataUseUserData::kUserDataKey, data_use_user_data);
   }
 }

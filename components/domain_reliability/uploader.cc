@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/domain_reliability/util.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -83,8 +82,6 @@ class DomainReliabilityUploaderImpl
     std::unique_ptr<net::URLFetcher> owned_fetcher =
         net::URLFetcher::Create(0, upload_url, net::URLFetcher::POST, this);
     net::URLFetcher* fetcher = owned_fetcher.get();
-    data_use_measurement::DataUseUserData::AttachToFetcher(
-        fetcher, data_use_measurement::DataUseUserData::DOMAIN_RELIABILITY);
     fetcher->SetRequestContext(url_request_context_getter_.get());
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES);
@@ -175,6 +172,12 @@ std::unique_ptr<DomainReliabilityUploader> DomainReliabilityUploader::Create(
         url_request_context_getter) {
   return std::unique_ptr<DomainReliabilityUploader>(
       new DomainReliabilityUploaderImpl(time, url_request_context_getter));
+}
+
+// static
+bool DomainReliabilityUploader::OriginatedFromDomainReliability(
+    const net::URLRequest& request) {
+  return request.GetUserData(UploadUserData::kUserDataKey) != nullptr;
 }
 
 // static

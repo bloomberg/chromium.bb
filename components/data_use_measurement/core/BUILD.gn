@@ -32,6 +32,10 @@ static_library("ascriber") {
     "//components/metrics",
     "//net",
   ]
+
+  if (!is_ios) {
+    deps += [ "//components/domain_reliability" ]
+  }
 }
 
 source_set("unit_tests") {
