@@ -907,11 +907,6 @@ bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
   return enable_metrics_.GetValue();
 }
 
-bool ProfileIOData::IsDataReductionProxyEnabled() const {
-  return data_reduction_proxy_io_data() &&
-      data_reduction_proxy_io_data()->IsEnabled();
-}
-
 chrome_browser_net::Predictor* ProfileIOData::GetPredictor() {
   return nullptr;
 }

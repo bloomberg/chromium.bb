@@ -247,8 +247,6 @@ class ProfileIOData {
     client_cert_store_factory_ = factory;
   }
 
-  bool IsDataReductionProxyEnabled() const;
-
   data_reduction_proxy::DataReductionProxyIOData*
   data_reduction_proxy_io_data() const {
     return data_reduction_proxy_io_data_.get();
