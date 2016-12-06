@@ -230,6 +230,14 @@ const base::Feature kQuickUnlockPin{"QuickUnlockPin",
 // Enables or disables emoji, handwriting and voice input on opt-in IME menu.
 const base::Feature kEHVInputOnImeMenu{"EmojiHandwritingVoiceInput",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables flash component updates on Chrome OS.
+const base::Feature kCrosCompUpdates{"CrosCompUpdates",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable or disable using only the component flash plugin on Chrome OS.
+const base::Feature kComponentFlashOnly{"ComponentFlashOnly",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace features

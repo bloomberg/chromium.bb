@@ -2109,6 +2109,14 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_VIDEO_FULLSCREEN_ORIENTATION_LOCK_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(media::kVideoFullscreenOrientationLock)},
 #endif
+#if defined(OS_CHROMEOS)
+    {"cros-comp-updates", IDS_FLAGS_CROS_COMP_UPDATES_NAME,
+     IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCrosCompUpdates)},
+    {"component-flash-only", IDS_FLAGS_COMPONENT_FLASH_ONLY_NAME,
+     IDS_FLAGS_COMPONENT_FLASH_ONLY_DESCRIPTION, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kComponentFlashOnly)},
+#endif
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

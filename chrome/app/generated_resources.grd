@@ -15723,6 +15723,20 @@ read aloud to screenreader users to announce that a completion is available.">
     <message name="IDS_FLAGS_MEDIA_REMOTING_ENCRYPTED_DESCRIPTION" desc="Desciption for the flag to enable Media Remoting of encrypted content" translateable="false">
       When Media Remoting is enabled, this flag must be enabled to allow the remoting of encrypted content. When disabled, only non-encrypted content can be remoted.
     </message>
+
+    <!-- Chrome OS component updates chrome://flags strings -->
+    <message name="IDS_FLAGS_CROS_COMP_UPDATES_NAME" desc="Name for the flag to enable Chrome OS component flash updates" translateable="false">
+      Chrome OS Flash Component Updates
+    </message>
+    <message name="IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION" desc="Description for the flag to enable Chrome OS component flash updates" translateable="false">
+      Enable Flash component updates for Chrome OS.
+    </message>
+    <message name="IDS_FLAGS_COMPONENT_FLASH_ONLY_NAME" desc="Name for the flag to use component flash only" translateable="false">
+      Component Flash Only
+    </message>
+    <message name="IDS_FLAGS_COMPONENT_FLASH_ONLY_DESCRIPTION" desc="Description for the flag to use component flash only" translateable="false">
+      This flag should be used only for testing Flash component updates.
+    </message>
   </messages>
  </release>
 </grit>

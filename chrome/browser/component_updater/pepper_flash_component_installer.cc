@@ -45,7 +45,7 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/feature_list.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
@@ -316,10 +316,7 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
     return;
 
 #if defined(OS_CHROMEOS)
-   const base::Feature kCrosCompUpdates {
-     "CrosCompUpdates", base::FEATURE_DISABLED_BY_DEFAULT
-   };
-   if (!base::FeatureList::IsEnabled(kCrosCompUpdates))
+   if (!base::FeatureList::IsEnabled(features::kCrosCompUpdates))
      return;
 #endif  // defined(OS_CHROMEOS)
 

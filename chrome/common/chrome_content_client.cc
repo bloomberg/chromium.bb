@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -272,6 +273,13 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
 }
 
 bool GetCommandLinePepperFlash(content::PepperPluginInfo* plugin) {
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, we cannot test component flash updates reliably unless we
+  // guarantee that the component updated flash plugin will be used.
+  if (base::FeatureList::IsEnabled(features::kComponentFlashOnly))
+    return false;
+#endif  // defined(OS_CHROMEOS)
+
   const base::CommandLine::StringType flash_path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kPpapiFlashPath);
