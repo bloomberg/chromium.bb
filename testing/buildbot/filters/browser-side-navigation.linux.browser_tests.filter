@@ -8,8 +8,6 @@
 # TabManagerTest.TabManagerBasics crashes sometimes
 -TabManagerTest.TabManagerBasics
 -ThreatDOMDetailsTest.Everything
--WebNavigationApiTest.RequestOpenTab
--WebNavigationApiTest.UserAction
 
 # https://crbug.com/652767: NavigationHandle::GetResponseHeaders sometimes
 # returns null for browser-side navigations

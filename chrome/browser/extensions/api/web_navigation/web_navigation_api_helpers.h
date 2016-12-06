@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_NAVIGATION_WEB_NAVIGATION_API_HELPERS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEB_NAVIGATION_WEB_NAVIGATION_API_HELPERS_H_
 
+#include <memory>
 #include <string>
 
 #include "extensions/browser/extension_event_histogram_value.h"
@@ -21,6 +22,8 @@ class GURL;
 
 namespace extensions {
 
+struct Event;
+
 namespace web_navigation_api_helpers {
 
 // Returns the frame ID as it will be passed to the extension:
@@ -29,7 +32,8 @@ namespace web_navigation_api_helpers {
 int GetFrameId(content::RenderFrameHost* frame_host);
 
 // Create and dispatch the various events of the webNavigation API.
-void DispatchOnBeforeNavigate(content::NavigationHandle* navigation_handle);
+std::unique_ptr<Event> CreateOnBeforeNavigateEvent(
+    content::NavigationHandle* navigation_handle);
 
 void DispatchOnCommitted(events::HistogramValue histogram_value,
                          const std::string& event_name,

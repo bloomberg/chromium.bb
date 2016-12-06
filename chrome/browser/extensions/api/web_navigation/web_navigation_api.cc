@@ -271,11 +271,34 @@ void WebNavigationTabObserver::DidStartNavigation(
     return;
   }
 
-  helpers::DispatchOnBeforeNavigate(navigation_handle);
+  pending_on_before_navigate_event_ =
+      helpers::CreateOnBeforeNavigateEvent(navigation_handle);
+
+  // Only dispatch the onBeforeNavigate event if the associated WebContents
+  // is already added to the tab strip. Otherwise the event should be delayed
+  // and sent after the addition, to preserve the ordering of events.
+  //
+  // TODO(nasko|devlin): This check is necessary because chrome::Navigate()
+  // begins the navigation before the sending the TAB_ADDED notification, and it
+  // is used an indication of that. It would be best if instead it was known
+  // when the tab was created and immediately sent the created event instead of
+  // waiting for the later TAB_ADDED notification, but this appears to work for
+  // now.
+  if (ExtensionTabUtil::GetTabById(ExtensionTabUtil::GetTabId(web_contents()),
+                                   web_contents()->GetBrowserContext(), false,
+                                   nullptr, nullptr, nullptr, nullptr)) {
+    DispatchCachedOnBeforeNavigate();
+  }
 }
 
 void WebNavigationTabObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  // If there has been a DidStartNavigation call before the tab was ready to
+  // dispatch events, ensure that it is sent before processing the
+  // DidFinishNavigation.
+  // Note: This is exercised by WebNavigationApiTest.TargetBlankIncognito.
+  DispatchCachedOnBeforeNavigate();
+
   if (navigation_handle->HasCommitted() && !navigation_handle->IsErrorPage()) {
     HandleCommit(navigation_handle);
     return;
@@ -389,6 +412,17 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
 void WebNavigationTabObserver::WebContentsDestroyed() {
   g_tab_observer.Get().erase(web_contents());
   registrar_.RemoveAll();
+}
+
+void WebNavigationTabObserver::DispatchCachedOnBeforeNavigate() {
+  if (!pending_on_before_navigate_event_)
+    return;
+
+  // EventRouter can be null in unit tests.
+  EventRouter* event_router =
+      EventRouter::Get(web_contents()->GetBrowserContext());
+  if (event_router)
+    event_router->BroadcastEvent(std::move(pending_on_before_navigate_event_));
 }
 
 void WebNavigationTabObserver::HandleCommit(

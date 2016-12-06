@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -61,8 +62,9 @@ void DispatchEvent(content::BrowserContext* browser_context,
 
 }  // namespace
 
-// Constructs and dispatches an onBeforeNavigate event.
-void DispatchOnBeforeNavigate(content::NavigationHandle* navigation_handle) {
+// Constructs an onBeforeNavigate event.
+std::unique_ptr<Event> CreateOnBeforeNavigateEvent(
+    content::NavigationHandle* navigation_handle) {
   GURL url(navigation_handle->GetURL());
   if (navigation_handle->IsSrcdoc())
     url = GURL(content::kAboutSrcDocURL);
@@ -81,8 +83,15 @@ void DispatchOnBeforeNavigate(content::NavigationHandle* navigation_handle) {
       new Event(events::WEB_NAVIGATION_ON_BEFORE_NAVIGATE,
                 web_navigation::OnBeforeNavigate::kEventName,
                 web_navigation::OnBeforeNavigate::Create(details)));
-  DispatchEvent(navigation_handle->GetWebContents()->GetBrowserContext(),
-                std::move(event), url);
+
+  EventFilteringInfo info;
+  info.SetURL(navigation_handle->GetURL());
+
+  event->restrict_to_browser_context =
+      navigation_handle->GetWebContents()->GetBrowserContext();
+  event->filter_info = info;
+
+  return event;
 }
 
 // Constructs and dispatches an onCommitted or onReferenceFragmentUpdated
@@ -203,6 +212,12 @@ void DispatchOnCreatedNavigationTarget(
                 web_navigation::OnCreatedNavigationTarget::kEventName,
                 web_navigation::OnCreatedNavigationTarget::Create(details)));
   DispatchEvent(browser_context, std::move(event), target_url);
+
+  // If the target WebContents already received the onBeforeNavigate event,
+  // send it immediately after the onCreatedNavigationTarget above.
+  WebNavigationTabObserver* target_observer =
+      WebNavigationTabObserver::Get(target_web_contents);
+  target_observer->DispatchCachedOnBeforeNavigate();
 }
 
 // Constructs and dispatches an onErrorOccurred event.
