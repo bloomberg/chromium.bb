@@ -29,6 +29,12 @@ class CORE_EXPORT ScreenOrientationController : public Supplement<LocalFrame> {
                     std::unique_ptr<WebLockOrientationCallback>) = 0;
   virtual void unlock() = 0;
 
+  // Returns whether a lock() call was made without an unlock() call. Others
+  // frames might have changed the lock state so this should only be used to
+  // know whether the current frame made an attempt to lock without explicitly
+  // unlocking.
+  virtual bool maybeHasActiveLock() const = 0;
+
   DECLARE_VIRTUAL_TRACE();
 
  protected:

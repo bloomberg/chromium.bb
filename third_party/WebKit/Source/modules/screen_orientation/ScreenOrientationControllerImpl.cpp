@@ -169,6 +169,7 @@ void ScreenOrientationControllerImpl::lock(
   if (!m_client)
     return;
   m_client->lockOrientation(orientation, std::move(callback));
+  m_activeLock = true;
 }
 
 void ScreenOrientationControllerImpl::unlock() {
@@ -176,6 +177,11 @@ void ScreenOrientationControllerImpl::unlock() {
   if (!m_client)
     return;
   m_client->unlockOrientation();
+  m_activeLock = false;
+}
+
+bool ScreenOrientationControllerImpl::maybeHasActiveLock() const {
+  return m_activeLock;
 }
 
 void ScreenOrientationControllerImpl::dispatchEventTimerFired(TimerBase*) {
@@ -205,6 +211,7 @@ bool ScreenOrientationControllerImpl::hasLastData() {
 void ScreenOrientationControllerImpl::frameDestroyed() {
   m_client = nullptr;
   DOMWindowProperty::frameDestroyed();
+  m_activeLock = false;
 }
 
 void ScreenOrientationControllerImpl::notifyDispatcher() {

@@ -38,6 +38,7 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   void lock(WebScreenOrientationLockType,
             std::unique_ptr<WebLockOrientationCallback>) override;
   void unlock() override;
+  bool maybeHasActiveLock() const override;
 
   static void provideTo(LocalFrame&, WebScreenOrientationClient*);
   static ScreenOrientationControllerImpl* from(LocalFrame&);
@@ -70,6 +71,7 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   Member<ScreenOrientation> m_orientation;
   WebScreenOrientationClient* m_client;
   Timer<ScreenOrientationControllerImpl> m_dispatchEventTimer;
+  bool m_activeLock = false;
 };
 
 }  // namespace blink
