@@ -124,6 +124,10 @@ void ConnectionFactoryImpl::Connect() {
   ConnectWithBackoff();
 }
 
+ConnectionEventTracker* ConnectionFactoryImpl::GetEventTrackerForTesting() {
+  return &event_tracker_;
+}
+
 void ConnectionFactoryImpl::ConnectWithBackoff() {
   // If a canary managed to connect while a backoff expiration was pending,
   // just cleanup the internal state.
@@ -204,6 +208,10 @@ void ConnectionFactoryImpl::SignalConnectionReset(
     // |last_login_time_| will be reset below, before attempting the new
     // connection.
   }
+
+  if (logging_in_)
+    event_tracker_.ConnectionLoginFailed();
+  event_tracker_.EndConnectionAttempt();
 
   CloseSocket();
   DCHECK(!IsEndpointReachable());
@@ -296,6 +304,11 @@ net::IPEndPoint ConnectionFactoryImpl::GetPeerIP() {
 }
 
 void ConnectionFactoryImpl::ConnectImpl() {
+  event_tracker_.StartConnectionAttempt();
+  StartConnection();
+}
+
+void ConnectionFactoryImpl::StartConnection() {
   DCHECK(!IsEndpointReachable());
   // TODO(zea): Make this a dcheck again. crbug.com/462319
   CHECK(!socket_handle_.socket());
@@ -326,6 +339,7 @@ void ConnectionFactoryImpl::InitHandler() {
   if (!request_builder_.is_null()) {
     request_builder_.Run(&login_request);
     DCHECK(login_request.IsInitialized());
+    event_tracker_.WriteToLoginRequest(&login_request);
   }
 
   connection_handler_->Init(login_request, socket_handle_.socket());
@@ -370,6 +384,9 @@ void ConnectionFactoryImpl::OnConnectDone(int result) {
     CloseSocket();
     backoff_entry_->InformOfRequest(false);
     UMA_HISTOGRAM_SPARSE_SLOWLY("GCM.ConnectionFailureErrorCode", result);
+
+    event_tracker_.ConnectionAttemptFailed(result);
+    event_tracker_.EndConnectionAttempt();
 
     // If there are other endpoints available, use the next endpoint on the
     // subsequent retry.
@@ -418,6 +435,8 @@ void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
   previous_backoff_.swap(backoff_entry_);
   backoff_entry_->Reset();
   logging_in_ = false;
+
+  event_tracker_.ConnectionAttemptSucceeded();
 
   if (listener_)
     listener_->OnConnected(GetCurrentEndpoint(), GetPeerIP());

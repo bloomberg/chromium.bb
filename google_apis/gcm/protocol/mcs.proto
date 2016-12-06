@@ -69,6 +69,41 @@ message HeartbeatConfig {
   optional int32 interval_ms = 3;
 }
 
+// ClientEvents are used to inform the server of failed and successful
+// connections.
+message ClientEvent {
+  enum Type {
+    UNKNOWN = 0;
+    // Count of discarded events if the buffer filled up and was trimmed.
+    DISCARDED_EVENTS = 1;
+    // Failed connection event: the connection failed to be established or we
+    // had a login error.
+    FAILED_CONNECTION = 2;
+    // Successful connection event: information about the last successful
+    // connection, including the time at which it was established.
+    SUCCESSFUL_CONNECTION = 3;
+  }
+
+  // Common fields [1-99]
+  optional Type type = 1;
+
+  // Fields for DISCARDED_EVENTS messages [100-199]
+  optional uint32 number_discarded_events = 100;
+
+  // Fields for FAILED_CONNECTION and SUCCESSFUL_CONNECTION messages [200-299]
+  // Network type is a value in net::NetworkChangeNotifier::ConnectionType.
+  optional int32 network_type = 200;
+  // Reserved for network_port.
+  reserved 201;
+  optional uint64 time_connection_started_ms = 202;
+  optional uint64 time_connection_ended_ms = 203;
+  // Error code should be a net::Error value.
+  optional int32 error_code = 204;
+
+  // Fields for SUCCESSFUL_CONNECTION messages [300-399]
+  optional uint64 time_connection_established_ms = 300;
+}
+
 /**
   TAG: 2
   */
@@ -113,6 +148,12 @@ message LoginRequest {
 
   optional int32 network_type = 17;
   optional int64 status = 18;
+
+  // 19, 20, and 21 are not currently populated by Chrome.
+  reserved 19, 20, 21;
+
+  // Events recorded on the client after the last successful connection.
+  repeated ClientEvent client_event = 22;
 }
 
 /**
