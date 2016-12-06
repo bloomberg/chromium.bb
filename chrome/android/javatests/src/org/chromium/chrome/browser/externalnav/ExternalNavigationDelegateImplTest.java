@@ -9,7 +9,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
@@ -31,7 +30,6 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
-    @RetryOnFailure
     public void testIsPackageSpecializedHandler_NoResolveInfo() {
         String packageName = "";
         List<ResolveInfo> resolveInfos = new ArrayList<ResolveInfo>();
@@ -40,7 +38,6 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
-    @RetryOnFailure
     public void testIsPackageSpecializedHandler_NoPathOrAuthority() {
         String packageName = "";
         ResolveInfo info = new ResolveInfo();
@@ -51,7 +48,6 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
-    @RetryOnFailure
     public void testIsPackageSpecializedHandler_WithPath() {
         String packageName = "";
         ResolveInfo info = new ResolveInfo();
@@ -63,7 +59,6 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
-    @RetryOnFailure
     public void testIsPackageSpecializedHandler_WithAuthority() {
         String packageName = "";
         ResolveInfo info = new ResolveInfo();
@@ -75,7 +70,6 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
-    @RetryOnFailure
     public void testIsPackageSpecializedHandler_WithTargetPackage_Matching() {
         String packageName = "com.android.chrome";
         ResolveInfo info = new ResolveInfo();
@@ -89,7 +83,6 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
-    @RetryOnFailure
     public void testIsPackageSpecializedHandler_WithTargetPackage_NotMatching() {
         String packageName = "com.android.chrome";
         ResolveInfo info = new ResolveInfo();
@@ -103,7 +96,21 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
-    @RetryOnFailure
+    public void testIsPackageSpecializeHandler_withEphemeralResolver() {
+        String packageName = "";
+        ResolveInfo info = new ResolveInfo();
+        info.filter = new IntentFilter();
+        info.filter.addDataPath("somepath", 2);
+        info.activityInfo = new ActivityInfo();
+        info.activityInfo.name = ExternalNavigationDelegateImpl.EPHEMERAL_INSTALLER_CLASS;
+        info.activityInfo.packageName = "com.google.android.gms";
+        List<ResolveInfo> resolveInfos = makeResolveInfos(info);
+        // Ephemeral resolver is not counted as a specialized handler.
+        assertEquals(0, ExternalNavigationDelegateImpl.getSpecializedHandlersWithFilter(
+                resolveInfos, packageName).size());
+    }
+
+    @SmallTest
     public void testIsDownload_noSystemDownloadManager() throws Exception {
         ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
                 getActivity().getActivityTab());
