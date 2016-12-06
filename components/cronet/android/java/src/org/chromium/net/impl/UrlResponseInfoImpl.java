@@ -28,7 +28,7 @@ public final class UrlResponseInfoImpl extends UrlResponseInfo {
     private final boolean mWasCached;
     private final String mNegotiatedProtocol;
     private final String mProxyServer;
-    private final AtomicLong mReceivedBytesCount;
+    private final AtomicLong mReceivedByteCount;
     private final HeaderBlockImpl mHeaders;
 
     /**
@@ -90,7 +90,7 @@ public final class UrlResponseInfoImpl extends UrlResponseInfo {
         mWasCached = wasCached;
         mNegotiatedProtocol = negotiatedProtocol;
         mProxyServer = proxyServer;
-        mReceivedBytesCount = new AtomicLong();
+        mReceivedByteCount = new AtomicLong();
     }
 
     @Override
@@ -139,26 +139,26 @@ public final class UrlResponseInfoImpl extends UrlResponseInfo {
     }
 
     @Override
-    public long getReceivedBytesCount() {
-        return mReceivedBytesCount.get();
+    public long getReceivedByteCount() {
+        return mReceivedByteCount.get();
     }
 
     @Override
     public String toString() {
         return String.format(Locale.ROOT, "UrlResponseInfo@[%s][%s]: urlChain = %s, "
                         + "httpStatus = %d %s, headers = %s, wasCached = %b, "
-                        + "negotiatedProtocol = %s, proxyServer= %s, receivedBytesCount = %d",
+                        + "negotiatedProtocol = %s, proxyServer= %s, receivedByteCount = %d",
                 // Prevent asserting on the contents of this string
                 Integer.toHexString(System.identityHashCode(this)), getUrl(),
                 getUrlChain().toString(), getHttpStatusCode(), getHttpStatusText(),
                 getAllHeadersAsList().toString(), wasCached(), getNegotiatedProtocol(),
-                getProxyServer(), getReceivedBytesCount());
+                getProxyServer(), getReceivedByteCount());
     }
 
     /**
-     * Sets mReceivedBytesCount. Must not be called after request completion or cancellation.
+     * Sets mReceivedByteCount. Must not be called after request completion or cancellation.
      */
-    public void setReceivedBytesCount(long currentReceivedBytesCount) {
-        mReceivedBytesCount.set(currentReceivedBytesCount);
+    public void setReceivedByteCount(long currentReceivedByteCount) {
+        mReceivedByteCount.set(currentReceivedByteCount);
     }
 }

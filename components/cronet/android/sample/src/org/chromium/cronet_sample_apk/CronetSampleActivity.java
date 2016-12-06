@@ -77,7 +77,7 @@ public class CronetSampleActivity extends Activity {
         @Override
         public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
             Log.i(TAG, "****** Request Completed, status code is %d, total received bytes is %d",
-                    info.getHttpStatusCode(), info.getReceivedBytesCount());
+                    info.getHttpStatusCode(), info.getReceivedByteCount());
 
             final String receivedData = mBytesReceived.toString();
             final String url = info.getUrl();

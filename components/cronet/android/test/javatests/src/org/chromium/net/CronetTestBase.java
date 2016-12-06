@@ -161,7 +161,7 @@ public class CronetTestBase extends AndroidTestCase {
         assertEquals(expected.getUrl(), actual.getUrl());
         // Transferred bytes and proxy server are not supported in pure java
         if (!(mCronetTestFramework.mCronetEngine instanceof JavaCronetEngine)) {
-            assertEquals(expected.getReceivedBytesCount(), actual.getReceivedBytesCount());
+            assertEquals(expected.getReceivedByteCount(), actual.getReceivedByteCount());
             assertEquals(expected.getProxyServer(), actual.getProxyServer());
             // This is a place where behavior intentionally differs between native and java
             assertEquals(expected.getNegotiatedProtocol(), actual.getNegotiatedProtocol());

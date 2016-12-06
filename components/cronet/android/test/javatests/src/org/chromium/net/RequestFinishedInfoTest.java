@@ -227,8 +227,8 @@ public class RequestFinishedInfoTest extends CronetTestBase {
                 metrics.getRequestEnd().before(endTime) || metrics.getRequestEnd().equals(endTime));
         // Entire request should take more than 0 ms
         assertTrue(metrics.getRequestEnd().getTime() - metrics.getRequestStart().getTime() > 0);
-        assertTrue(metrics.getSentBytesCount() == 0);
-        assertTrue(metrics.getReceivedBytesCount() == 0);
+        assertTrue(metrics.getSentByteCount() == 0);
+        assertTrue(metrics.getReceivedByteCount() == 0);
         mTestFramework.mCronetEngine.shutdown();
     }
 
@@ -309,13 +309,12 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         long responseStart = 12;
         long requestEnd = 13;
         boolean socketReused = true;
-        long sentBytesCount = 14;
-        long receivedBytesCount = 15;
+        long sentByteCount = 14;
+        long receivedByteCount = 15;
         // Make sure nothing gets reordered inside the Metrics class
         RequestFinishedInfo.Metrics metrics = new CronetMetrics(requestStart, dnsStart, dnsEnd,
                 connectStart, connectEnd, sslStart, sslEnd, sendingStart, sendingEnd, pushStart,
-                pushEnd, responseStart, requestEnd, socketReused, sentBytesCount,
-                receivedBytesCount);
+                pushEnd, responseStart, requestEnd, socketReused, sentByteCount, receivedByteCount);
         assertEquals(new Date(requestStart), metrics.getRequestStart());
         // -1 timestamp should translate to null
         assertNull(metrics.getDnsEnd());
@@ -329,7 +328,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertEquals(new Date(responseStart), metrics.getResponseStart());
         assertEquals(new Date(requestEnd), metrics.getRequestEnd());
         assertEquals(socketReused, metrics.getSocketReused());
-        assertEquals(sentBytesCount, (long) metrics.getSentBytesCount());
-        assertEquals(receivedBytesCount, (long) metrics.getReceivedBytesCount());
+        assertEquals(sentByteCount, (long) metrics.getSentByteCount());
+        assertEquals(receivedByteCount, (long) metrics.getReceivedByteCount());
     }
 }

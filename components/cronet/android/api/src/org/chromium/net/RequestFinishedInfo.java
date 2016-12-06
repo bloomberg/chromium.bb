@@ -232,14 +232,14 @@ public abstract class RequestFinishedInfo {
          * collected.
          */
         @Nullable
-        public abstract Long getSentBytesCount();
+        public abstract Long getSentByteCount();
 
         /**
          * Returns total bytes received over the network transport layer, or {@code null} if not
          * collected. Number of bytes does not include any previous redirects.
          */
         @Nullable
-        public abstract Long getReceivedBytesCount();
+        public abstract Long getReceivedByteCount();
     }
 
     /**

@@ -148,7 +148,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         }
         UrlResponseInfoImpl unknown = new UrlResponseInfoImpl(
                 Arrays.asList(urls), statusCode, message, headersList, false, "unknown", ":0");
-        unknown.setReceivedBytesCount(receivedBytes);
+        unknown.setReceivedByteCount(receivedBytes);
         return unknown;
     }
 
@@ -636,7 +636,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
                 startAndWaitForComplete(MockUrlRequestJobFactory.getMockUrlWithFailure(
                         FailurePhase.READ_SYNC, arbitraryNetError));
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals(15, callback.mResponseInfo.getReceivedBytesCount());
+        assertEquals(15, callback.mResponseInfo.getReceivedByteCount());
         assertNotNull(callback.mError);
         assertEquals(arbitraryNetError,
                 ((NetworkException) callback.mError).getCronetInternalErrorCode());
@@ -654,7 +654,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
                 startAndWaitForComplete(MockUrlRequestJobFactory.getMockUrlWithFailure(
                         FailurePhase.READ_ASYNC, arbitraryNetError));
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals(15, callback.mResponseInfo.getReceivedBytesCount());
+        assertEquals(15, callback.mResponseInfo.getReceivedByteCount());
         assertNotNull(callback.mError);
         assertEquals(arbitraryNetError,
                 ((NetworkException) callback.mError).getCronetInternalErrorCode());

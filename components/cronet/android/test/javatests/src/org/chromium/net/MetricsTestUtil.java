@@ -172,7 +172,7 @@ public class MetricsTestUtil {
         assertNull(metrics.getPushStart());
         assertNull(metrics.getPushEnd());
         // Check data use metrics
-        assertTrue(metrics.getSentBytesCount() > 0);
-        assertTrue(metrics.getReceivedBytesCount() > 0);
+        assertTrue(metrics.getSentByteCount() > 0);
+        assertTrue(metrics.getReceivedByteCount() > 0);
     }
 }

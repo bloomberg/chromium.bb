@@ -95,7 +95,7 @@ public class QuicTest extends CronetTestBase {
         assertIsQuic(callback.mResponseInfo);
         // The total received bytes should be larger than the content length, to account for
         // headers.
-        assertTrue(callback.mResponseInfo.getReceivedBytesCount() > expectedContent.length());
+        assertTrue(callback.mResponseInfo.getReceivedByteCount() > expectedContent.length());
         // This test takes a long time, since the update will only be scheduled
         // after kUpdatePrefsDelayMs in http_server_properties_manager.cc.
         while (true) {
@@ -138,7 +138,7 @@ public class QuicTest extends CronetTestBase {
         assertIsQuic(callback.mResponseInfo);
         // The total received bytes should be larger than the content length, to account for
         // headers.
-        assertTrue(callback2.mResponseInfo.getReceivedBytesCount() > expectedContent.length());
+        assertTrue(callback2.mResponseInfo.getReceivedByteCount() > expectedContent.length());
     }
 
     // Returns whether a file contains a particular string.

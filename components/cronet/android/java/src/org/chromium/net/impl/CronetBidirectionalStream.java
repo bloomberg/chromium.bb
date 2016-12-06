@@ -491,10 +491,10 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
     @SuppressWarnings("unused")
     @CalledByNative
     private void onResponseHeadersReceived(int httpStatusCode, String negotiatedProtocol,
-            String[] headers, long receivedBytesCount) {
+            String[] headers, long receivedByteCount) {
         try {
             mResponseInfo = prepareResponseInfoOnNetworkThread(
-                    httpStatusCode, negotiatedProtocol, headers, receivedBytesCount);
+                    httpStatusCode, negotiatedProtocol, headers, receivedByteCount);
         } catch (Exception e) {
             failWithException(new CronetExceptionImpl("Cannot prepare ResponseInfo", null));
             return;
@@ -521,8 +521,8 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
     @SuppressWarnings("unused")
     @CalledByNative
     private void onReadCompleted(final ByteBuffer byteBuffer, int bytesRead, int initialPosition,
-            int initialLimit, long receivedBytesCount) {
-        mResponseInfo.setReceivedBytesCount(receivedBytesCount);
+            int initialLimit, long receivedByteCount) {
+        mResponseInfo.setReceivedByteCount(receivedByteCount);
         if (byteBuffer.position() != initialPosition || byteBuffer.limit() != initialLimit) {
             failWithException(
                     new CronetExceptionImpl("ByteBuffer modified externally during read", null));
@@ -592,9 +592,9 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
     @SuppressWarnings("unused")
     @CalledByNative
     private void onError(int errorCode, int nativeError, int nativeQuicError, String errorString,
-            long receivedBytesCount) {
+            long receivedByteCount) {
         if (mResponseInfo != null) {
-            mResponseInfo.setReceivedBytesCount(receivedBytesCount);
+            mResponseInfo.setReceivedByteCount(receivedByteCount);
         }
         if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED) {
             failWithException(
@@ -631,16 +631,16 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
     private void onMetricsCollected(long requestStartMs, long dnsStartMs, long dnsEndMs,
             long connectStartMs, long connectEndMs, long sslStartMs, long sslEndMs,
             long sendingStartMs, long sendingEndMs, long pushStartMs, long pushEndMs,
-            long responseStartMs, long requestEndMs, boolean socketReused, long sentBytesCount,
-            long receivedBytesCount) {
+            long responseStartMs, long requestEndMs, boolean socketReused, long sentByteCount,
+            long receivedByteCount) {
         synchronized (mNativeStreamLock) {
             if (mMetrics != null) {
                 throw new IllegalStateException("Metrics collection should only happen once.");
             }
             mMetrics = new CronetMetrics(requestStartMs, dnsStartMs, dnsEndMs, connectStartMs,
                     connectEndMs, sslStartMs, sslEndMs, sendingStartMs, sendingEndMs, pushStartMs,
-                    pushEndMs, responseStartMs, requestEndMs, socketReused, sentBytesCount,
-                    receivedBytesCount);
+                    pushEndMs, responseStartMs, requestEndMs, socketReused, sentByteCount,
+                    receivedByteCount);
             assert mReadState == mWriteState;
             assert (mReadState == State.SUCCESS) || (mReadState == State.ERROR)
                     || (mReadState == State.CANCELED);
@@ -722,11 +722,11 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
     }
 
     private UrlResponseInfoImpl prepareResponseInfoOnNetworkThread(int httpStatusCode,
-            String negotiatedProtocol, String[] headers, long receivedBytesCount) {
+            String negotiatedProtocol, String[] headers, long receivedByteCount) {
         UrlResponseInfoImpl responseInfo =
                 new UrlResponseInfoImpl(Arrays.asList(mInitialUrl), httpStatusCode, "",
                         headersListFromStrings(headers), false, negotiatedProtocol, null);
-        responseInfo.setReceivedBytesCount(receivedBytesCount);
+        responseInfo.setReceivedByteCount(receivedByteCount);
         return responseInfo;
     }
 

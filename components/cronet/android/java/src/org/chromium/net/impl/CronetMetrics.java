@@ -38,9 +38,9 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
     @Nullable
     private final Long mTotalTimeMs;
     @Nullable
-    private final Long mSentBytesCount;
+    private final Long mSentByteCount;
     @Nullable
-    private final Long mReceivedBytesCount;
+    private final Long mReceivedByteCount;
 
     @Nullable
     private static Date toDate(long timestamp) {
@@ -61,11 +61,11 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
      * TODO(mgersh): Delete after the switch to the new API http://crbug.com/629194
      */
     public CronetMetrics(@Nullable Long ttfbMs, @Nullable Long totalTimeMs,
-            @Nullable Long sentBytesCount, @Nullable Long receivedBytesCount) {
+            @Nullable Long sentByteCount, @Nullable Long receivedByteCount) {
         mTtfbMs = ttfbMs;
         mTotalTimeMs = totalTimeMs;
-        mSentBytesCount = sentBytesCount;
-        mReceivedBytesCount = receivedBytesCount;
+        mSentByteCount = sentByteCount;
+        mReceivedByteCount = receivedByteCount;
 
         // Everything else is -1 (translates to null) for now
         mRequestStartMs = -1;
@@ -90,7 +90,7 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
     public CronetMetrics(long requestStartMs, long dnsStartMs, long dnsEndMs, long connectStartMs,
             long connectEndMs, long sslStartMs, long sslEndMs, long sendingStartMs,
             long sendingEndMs, long pushStartMs, long pushEndMs, long responseStartMs,
-            long requestEndMs, boolean socketReused, long sentBytesCount, long receivedBytesCount) {
+            long requestEndMs, boolean socketReused, long sentByteCount, long receivedByteCount) {
         // Check that no end times are before corresponding start times,
         // or exist when start time doesn't.
         assert checkOrder(dnsStartMs, dnsEndMs);
@@ -119,8 +119,8 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
         mResponseStartMs = responseStartMs;
         mRequestEndMs = requestEndMs;
         mSocketReused = socketReused;
-        mSentBytesCount = sentBytesCount;
-        mReceivedBytesCount = receivedBytesCount;
+        mSentByteCount = sentByteCount;
+        mReceivedByteCount = receivedByteCount;
 
         // TODO(mgersh): delete these after embedders stop using them http://crbug.com/629194
         if (requestStartMs != -1 && responseStartMs != -1) {
@@ -216,12 +216,12 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
     }
 
     @Nullable
-    public Long getSentBytesCount() {
-        return mSentBytesCount;
+    public Long getSentByteCount() {
+        return mSentByteCount;
     }
 
     @Nullable
-    public Long getReceivedBytesCount() {
-        return mReceivedBytesCount;
+    public Long getReceivedByteCount() {
+        return mReceivedByteCount;
     }
 }

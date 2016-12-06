@@ -73,7 +73,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
      * mCallback.onRedirectReceived is called.
      */
     private final List<String> mUrlChain = new ArrayList<String>();
-    private long mReceivedBytesCountFromRedirects;
+    private long mReceivedByteCountFromRedirects;
 
     private final VersionSafeCallbacks.UrlRequestCallback mCallback;
     private final String mInitialUrl;
@@ -486,7 +486,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
      *
      * @param newLocation Location where request is redirected.
      * @param httpStatusCode from redirect response
-     * @param receivedBytesCount count of bytes received for redirect response
+     * @param receivedByteCount count of bytes received for redirect response
      * @param headers an array of response headers with keys at the even indices
      *         followed by the corresponding values at the odd indices.
      */
@@ -494,11 +494,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
     @CalledByNative
     private void onRedirectReceived(final String newLocation, int httpStatusCode,
             String httpStatusText, String[] headers, boolean wasCached, String negotiatedProtocol,
-            String proxyServer, long receivedBytesCount) {
+            String proxyServer, long receivedByteCount) {
         final UrlResponseInfoImpl responseInfo = prepareResponseInfoOnNetworkThread(httpStatusCode,
                 httpStatusText, headers, wasCached, negotiatedProtocol, proxyServer);
-        mReceivedBytesCountFromRedirects += receivedBytesCount;
-        responseInfo.setReceivedBytesCount(mReceivedBytesCountFromRedirects);
+        mReceivedByteCountFromRedirects += receivedByteCount;
+        responseInfo.setReceivedByteCount(mReceivedByteCountFromRedirects);
 
         // Have to do this after creating responseInfo.
         mUrlChain.add(newLocation);
@@ -571,13 +571,13 @@ public final class CronetUrlRequest extends UrlRequestBase {
      * @param initialLimit Original limit of byteBuffer when passed to
      *        read(). Used as a minimal check that the buffer hasn't been
      *        modified while reading from the network.
-     * @param receivedBytesCount number of bytes received.
+     * @param receivedByteCount number of bytes received.
      */
     @SuppressWarnings("unused")
     @CalledByNative
     private void onReadCompleted(final ByteBuffer byteBuffer, int bytesRead, int initialPosition,
-            int initialLimit, long receivedBytesCount) {
-        mResponseInfo.setReceivedBytesCount(mReceivedBytesCountFromRedirects + receivedBytesCount);
+            int initialLimit, long receivedByteCount) {
+        mResponseInfo.setReceivedByteCount(mReceivedByteCountFromRedirects + receivedByteCount);
         if (byteBuffer.position() != initialPosition || byteBuffer.limit() != initialLimit) {
             failWithException(
                     new CronetExceptionImpl("ByteBuffer modified externally during read", null));
@@ -595,13 +595,13 @@ public final class CronetUrlRequest extends UrlRequestBase {
      * Called when request is completed successfully, no callbacks will be
      * called afterwards.
      *
-     * @param receivedBytesCount number of bytes received.
+     * @param receivedByteCount number of bytes received.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onSucceeded(long receivedBytesCount) {
+    private void onSucceeded(long receivedByteCount) {
         mFinishedReason = RequestFinishedInfo.SUCCEEDED;
-        mResponseInfo.setReceivedBytesCount(mReceivedBytesCountFromRedirects + receivedBytesCount);
+        mResponseInfo.setReceivedByteCount(mReceivedByteCountFromRedirects + receivedByteCount);
         Runnable task = new Runnable() {
             @Override
             public void run() {
@@ -631,16 +631,15 @@ public final class CronetUrlRequest extends UrlRequestBase {
      *                  NetworkException.ERROR_*}.
      * @param nativeError native net error code.
      * @param errorString textual representation of the error code.
-     * @param receivedBytesCount number of bytes received.
+     * @param receivedByteCount number of bytes received.
      */
     @SuppressWarnings("unused")
     @CalledByNative
     private void onError(int errorCode, int nativeError, int nativeQuicError, String errorString,
-            long receivedBytesCount) {
+            long receivedByteCount) {
         mFinishedReason = RequestFinishedInfo.FAILED;
         if (mResponseInfo != null) {
-            mResponseInfo.setReceivedBytesCount(
-                    mReceivedBytesCountFromRedirects + receivedBytesCount);
+            mResponseInfo.setReceivedByteCount(mReceivedByteCountFromRedirects + receivedByteCount);
         }
         if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED) {
             failWithException(new QuicExceptionImpl(
@@ -697,16 +696,16 @@ public final class CronetUrlRequest extends UrlRequestBase {
     private void onMetricsCollected(long requestStartMs, long dnsStartMs, long dnsEndMs,
             long connectStartMs, long connectEndMs, long sslStartMs, long sslEndMs,
             long sendingStartMs, long sendingEndMs, long pushStartMs, long pushEndMs,
-            long responseStartMs, long requestEndMs, boolean socketReused, long sentBytesCount,
-            long receivedBytesCount) {
+            long responseStartMs, long requestEndMs, boolean socketReused, long sentByteCount,
+            long receivedByteCount) {
         synchronized (mUrlRequestAdapterLock) {
             if (mMetrics != null) {
                 throw new IllegalStateException("Metrics collection should only happen once.");
             }
             mMetrics = new CronetMetrics(requestStartMs, dnsStartMs, dnsEndMs, connectStartMs,
                     connectEndMs, sslStartMs, sslEndMs, sendingStartMs, sendingEndMs, pushStartMs,
-                    pushEndMs, responseStartMs, requestEndMs, socketReused, sentBytesCount,
-                    receivedBytesCount);
+                    pushEndMs, responseStartMs, requestEndMs, socketReused, sentByteCount,
+                    receivedByteCount);
         }
         mRequestContext.reportFinished(getRequestFinishedInfo());
     }

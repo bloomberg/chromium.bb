@@ -116,5 +116,5 @@ public abstract class UrlResponseInfo {
      * {@link UrlRequest.Callback#onCanceled onCanceled()} is called.
      * @return a minimum count of bytes received from the network to process this request.
      */
-    public abstract long getReceivedBytesCount();
+    public abstract long getReceivedByteCount();
 }
