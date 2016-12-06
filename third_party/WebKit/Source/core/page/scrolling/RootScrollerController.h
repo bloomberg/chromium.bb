@@ -24,18 +24,17 @@ class PaintLayerScrollableArea;
 // m_effectiveRootScroller. The former is the Element that was set as the root
 // scroller using document.setRootScroller. If the page didn't set a root
 // scroller this will be nullptr. The "effective" root scroller is the current
-// element we're using internally to apply viewport scrolling actions.  The
-// effective root scroller will only be null during document initialization.
-// Both these elements come from this controller's associated Document. The
-// final "global" root scroller, the one whose scrolling hides browser controls,
-// may be in a different frame.
+// Node we're using internally to apply viewport scrolling actions.  Both these
+// elements come from this controller's associated Document. The final "global"
+// root scroller, the one whose scrolling hides browser controls, may be in a
+// different frame.
 //
 // If the currently set m_rootScroller is a valid element to become the root
 // scroller, it will be promoted to the effective root scroller. If it is not
-// valid, the effective root scroller will fall back to a default Element (see
-// defaultEffectiveRootScroller()). The rules for what makes an element a valid
-// root scroller are set in isValidRootScroller(). The validity of the current
-// root scroller is re-checked after each layout.
+// valid, the effective root scroller will fall back to the document Node. The
+// rules for what makes an element a valid root scroller are set in
+// isValidRootScroller(). The validity of the current root scroller is
+// re-checked after each layout.
 class CORE_EXPORT RootScrollerController
     : public GarbageCollected<RootScrollerController> {
  public:
@@ -54,14 +53,14 @@ class CORE_EXPORT RootScrollerController
   // differs from the effective root scroller since the set Element may not
   // currently be a valid root scroller. e.g. If the page sets an Element
   // with `display: none`, get() will return that element, even though the
-  // effective root scroller will remain the element returned by
-  // defaultEffectiveRootScroller().
+  // effective root scroller will remain the document Node.
   Element* get() const;
 
   // This returns the Element that's actually being used to control viewport
   // actions right now. This is different from get() if a root scroller hasn't
   // been set, or if the set root scroller isn't currently a valid scroller.
-  Element* effectiveRootScroller() const;
+  // TODO(bokan): Make this a ref.
+  Node* effectiveRootScroller() const;
 
   // This class needs to be informed of changes in layout so that it can
   // determine if the current root scroller is still valid or if it must be
@@ -76,6 +75,13 @@ class CORE_EXPORT RootScrollerController
   // scroller.
   PaintLayer* rootScrollerPaintLayer() const;
 
+  // Used to determine which Element should scroll the viewport.  This is
+  // needed since Blink's scrolling machinery works on Elements whereas the
+  // document *Node* also scrolls so we need to designate an element one
+  // Element as the viewport scroller. Sadly, this is *not* the
+  // document.scrollingElement in general.
+  bool scrollsViewport(const Element&) const;
+
  private:
   RootScrollerController(Document&);
 
@@ -87,10 +93,6 @@ class CORE_EXPORT RootScrollerController
   // effective root scroller.
   bool isValidRootScroller(const Element&) const;
 
-  // Returns the Element that should be used if the currently set
-  // m_rootScroller isn't valid to be a root scroller.
-  Element* defaultEffectiveRootScroller();
-
   // The owning Document whose root scroller this object manages.
   WeakMember<Document> m_document;
 
@@ -100,10 +102,12 @@ class CORE_EXPORT RootScrollerController
   // Element being used as the root scroller.
   WeakMember<Element> m_rootScroller;
 
-  // The element currently being used as the root scroller in this Document.
+  // The Node currently being used as the root scroller in this Document.
   // If the m_rootScroller is valid this will point to it. Otherwise, it'll
-  // use a default Element.
-  WeakMember<Element> m_effectiveRootScroller;
+  // use the document Node.
+  Member<Node> m_effectiveRootScroller;
+
+  bool m_documentHasDocumentElement;
 };
 
 }  // namespace blink

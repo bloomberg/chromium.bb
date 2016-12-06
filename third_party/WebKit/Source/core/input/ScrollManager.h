@@ -106,7 +106,7 @@ class CORE_EXPORT ScrollManager
 
   FrameHost* frameHost() const;
 
-  bool isEffectiveRootScroller(const Node&) const;
+  bool isViewportScrollingElement(const Element&) const;
 
   bool handleScrollGestureOnResizer(Node*, const PlatformGestureEvent&);
 
@@ -129,7 +129,7 @@ class CORE_EXPORT ScrollManager
   // sequence. Null if no native element has scrolled this scroll
   // sequence, or if the most recent element to scroll used scroll
   // customization.
-  Member<Node> m_previousGestureScrolledNode;
+  Member<Element> m_previousGestureScrolledElement;
 
   // True iff some of the delta has been consumed for the current
   // scroll sequence in this frame, or any child frames. Only used

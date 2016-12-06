@@ -65,8 +65,15 @@ Element* TopDocumentRootScrollerController::findGlobalRootScrollerElement() {
     return nullptr;
 
   DCHECK(topDocument()->rootScrollerController());
-  Element* element =
+  Node* effectiveRootScroller =
       topDocument()->rootScrollerController()->effectiveRootScroller();
+
+  DCHECK(effectiveRootScroller);
+  if (effectiveRootScroller->isDocumentNode())
+    return topDocument()->documentElement();
+
+  DCHECK(effectiveRootScroller->isElementNode());
+  Element* element = toElement(effectiveRootScroller);
 
   while (element && element->isFrameOwnerElement()) {
     HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(element);
@@ -77,7 +84,13 @@ Element* TopDocumentRootScrollerController::findGlobalRootScrollerElement() {
       return element;
 
     DCHECK(iframeDocument->rootScrollerController());
-    element = iframeDocument->rootScrollerController()->effectiveRootScroller();
+    effectiveRootScroller =
+        iframeDocument->rootScrollerController()->effectiveRootScroller();
+    DCHECK(effectiveRootScroller);
+    if (effectiveRootScroller->isDocumentNode())
+      return iframeDocument->documentElement();
+
+    element = toElement(effectiveRootScroller);
   }
 
   return element;

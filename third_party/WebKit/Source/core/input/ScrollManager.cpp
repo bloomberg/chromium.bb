@@ -43,14 +43,14 @@ void ScrollManager::clear() {
 DEFINE_TRACE(ScrollManager) {
   visitor->trace(m_frame);
   visitor->trace(m_scrollGestureHandlingNode);
-  visitor->trace(m_previousGestureScrolledNode);
+  visitor->trace(m_previousGestureScrolledElement);
   visitor->trace(m_scrollbarHandlingScrollGesture);
   visitor->trace(m_resizeScrollableArea);
 }
 
 void ScrollManager::clearGestureScrollState() {
   m_scrollGestureHandlingNode = nullptr;
-  m_previousGestureScrolledNode = nullptr;
+  m_previousGestureScrolledElement = nullptr;
   m_deltaConsumedForScrollSequence = false;
   m_currentScrollChain.clear();
 
@@ -104,7 +104,7 @@ void ScrollManager::recomputeScrollChain(const Node& startNode,
 
     if (curElement) {
       scrollChain.push_front(DOMNodeIds::idForNode(curElement));
-      if (isEffectiveRootScroller(*curElement) ||
+      if (isViewportScrollingElement(*curElement) ||
           curElement->isSameNode(documentElement))
         break;
     }
@@ -288,25 +288,25 @@ WebInputEventResult ScrollManager::handleGestureScrollUpdate(
   scrollStateData->delta_consumed_for_scroll_sequence =
       m_deltaConsumedForScrollSequence;
   ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));
-  if (m_previousGestureScrolledNode) {
+  if (m_previousGestureScrolledElement) {
     // The ScrollState needs to know what the current
     // native scrolling element is, so that for an
     // inertial scroll that shouldn't propagate, only the
     // currently scrolling element responds.
-    DCHECK(m_previousGestureScrolledNode->isElementNode());
     scrollState->setCurrentNativeScrollingElement(
-        toElement(m_previousGestureScrolledNode.get()));
+        m_previousGestureScrolledElement);
   }
   customizedScroll(*node, *scrollState);
-  m_previousGestureScrolledNode = scrollState->currentNativeScrollingElement();
+  m_previousGestureScrolledElement =
+      scrollState->currentNativeScrollingElement();
   m_deltaConsumedForScrollSequence =
       scrollState->deltaConsumedForScrollSequence();
 
   bool didScrollX = scrollState->deltaX() != delta.width();
   bool didScrollY = scrollState->deltaY() != delta.height();
 
-  if ((!m_previousGestureScrolledNode ||
-       !isEffectiveRootScroller(*m_previousGestureScrolledNode)) &&
+  if ((!m_previousGestureScrolledElement ||
+       !isViewportScrollingElement(*m_previousGestureScrolledElement)) &&
       frameHost())
     frameHost()->overscrollController().resetAccumulated(didScrollX,
                                                          didScrollY);
@@ -368,17 +368,14 @@ WebInputEventResult ScrollManager::passScrollGestureEventToWidget(
       gestureEvent);
 }
 
-bool ScrollManager::isEffectiveRootScroller(const Node& node) const {
+bool ScrollManager::isViewportScrollingElement(const Element& element) const {
   // The root scroller is the one Element on the page designated to perform
   // "viewport actions" like browser controls movement and overscroll glow.
   if (!m_frame->document())
     return false;
 
-  if (!node.isElementNode())
-    return false;
-
-  return node.isSameNode(
-      m_frame->document()->rootScrollerController()->effectiveRootScroller());
+  return m_frame->document()->rootScrollerController()->scrollsViewport(
+      element);
 }
 
 WebInputEventResult ScrollManager::handleGestureScrollEvent(
@@ -408,7 +405,7 @@ WebInputEventResult ScrollManager::handleGestureScrollEvent(
 
     m_lastGestureScrollOverWidget = result.isOverWidget();
     m_scrollGestureHandlingNode = eventTarget;
-    m_previousGestureScrolledNode = nullptr;
+    m_previousGestureScrolledElement = nullptr;
     m_deltaConsumedForScrollSequence = false;
 
     if (!scrollbar)

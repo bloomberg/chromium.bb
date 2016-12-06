@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutBoxModelObject.h"
@@ -16,20 +17,24 @@ namespace blink {
 
 namespace RootScrollerUtil {
 
-ScrollableArea* scrollableAreaForRootScroller(const Element* element) {
-  if (!element)
+ScrollableArea* scrollableAreaForRootScroller(const Node* node) {
+  if (!node)
     return nullptr;
 
-  if (element == element->document().documentElement()) {
-    if (!element->document().view())
+  if (node->isDocumentNode() ||
+      node->isSameNode(node->document().documentElement())) {
+    if (!node->document().view())
       return nullptr;
 
     // For a FrameView, we use the layoutViewport rather than the
     // getScrollableArea() since that could be the RootFrameViewport. The
     // rootScroller's ScrollableArea will be swapped in as the layout viewport
     // in RootFrameViewport so we need to ensure we get the layout viewport.
-    return element->document().view()->layoutViewportScrollableArea();
+    return node->document().view()->layoutViewportScrollableArea();
   }
+
+  DCHECK(node->isElementNode());
+  const Element* element = toElement(node);
 
   if (!element->layoutObject() || !element->layoutObject()->isBox())
     return nullptr;
@@ -38,23 +43,24 @@ ScrollableArea* scrollableAreaForRootScroller(const Element* element) {
       toLayoutBoxModelObject(element->layoutObject())->getScrollableArea());
 }
 
-PaintLayer* paintLayerForRootScroller(const Element* element) {
-  if (!element || !element->layoutObject() || !element->layoutObject()->isBox())
+PaintLayer* paintLayerForRootScroller(const Node* node) {
+  if (!node)
+    return nullptr;
+
+  if (node->isDocumentNode() ||
+      node->isSameNode(node->document().documentElement())) {
+    if (!node->document().layoutView())
+      return nullptr;
+
+    return node->document().layoutView()->layer();
+  }
+
+  DCHECK(node->isElementNode());
+  const Element* element = toElement(node);
+  if (!element->layoutObject() || !element->layoutObject()->isBox())
     return nullptr;
 
   LayoutBox* box = toLayoutBox(element->layoutObject());
-
-  // If the root scroller is the <html> element we do a bit of a fake out
-  // because while <html> has a PaintLayer, scrolling for it is handled by the
-  // #document's PaintLayer (i.e. the PaintLayerCompositor's root layer). The
-  // reason the root scroller is the <html> layer and not #document is because
-  // the latter is a Node but not an Element.
-  if (element->isSameNode(element->document().documentElement())) {
-    if (!box->view())
-      return nullptr;
-    return box->view()->layer();
-  }
-
   return box->layer();
 }
 

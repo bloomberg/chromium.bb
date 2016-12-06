@@ -568,9 +568,7 @@ void Element::nativeApplyScroll(ScrollState& scrollState) {
 
   LayoutBox* boxToScroll = nullptr;
 
-  // We should only ever scroll the effective root scroller this way when the
-  // page removes the default applyScroll (ViewportScrollCallback).
-  if (document().rootScrollerController()->effectiveRootScroller() == this)
+  if (document().rootScrollerController()->scrollsViewport(*this))
     boxToScroll = document().layoutView();
   else if (layoutObject())
     boxToScroll = toLayoutBox(layoutObject());

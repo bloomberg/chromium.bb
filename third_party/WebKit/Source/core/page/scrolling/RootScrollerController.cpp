@@ -54,7 +54,9 @@ RootScrollerController* RootScrollerController::create(Document& document) {
 }
 
 RootScrollerController::RootScrollerController(Document& document)
-    : m_document(&document) {}
+    : m_document(&document),
+      m_effectiveRootScroller(&document),
+      m_documentHasDocumentElement(false) {}
 
 DEFINE_TRACE(RootScrollerController) {
   visitor->trace(m_document);
@@ -71,7 +73,7 @@ Element* RootScrollerController::get() const {
   return m_rootScroller;
 }
 
-Element* RootScrollerController::effectiveRootScroller() const {
+Node* RootScrollerController::effectiveRootScroller() const {
   return m_effectiveRootScroller;
 }
 
@@ -95,11 +97,24 @@ void RootScrollerController::recomputeEffectiveRootScroller() {
   bool rootScrollerValid =
       m_rootScroller && isValidRootScroller(*m_rootScroller);
 
-  Element* newEffectiveRootScroller =
-      rootScrollerValid ? m_rootScroller.get() : defaultEffectiveRootScroller();
+  Node* newEffectiveRootScroller = m_document;
+  if (rootScrollerValid)
+    newEffectiveRootScroller = m_rootScroller;
 
-  if (m_effectiveRootScroller == newEffectiveRootScroller)
-    return;
+  // TODO(bokan): This is a terrible hack but required because the viewport
+  // apply scroll works on Elements rather than Nodes. If we're going from
+  // !documentElement to documentElement, we can't early out even if the root
+  // scroller didn't change since the global root scroller didn't have an
+  // Element previously to put it's ViewportScrollCallback onto. We need this
+  // to kick the global root scroller to recompute itself. We can remove this
+  // if ScrollCustomization is moved to the Node rather than Element.
+  bool oldHasDocumentElement = m_documentHasDocumentElement;
+  m_documentHasDocumentElement = m_document->documentElement();
+
+  if (oldHasDocumentElement || !m_documentHasDocumentElement) {
+    if (m_effectiveRootScroller == newEffectiveRootScroller)
+      return;
+  }
 
   PaintLayer* oldRootScrollerLayer = rootScrollerPaintLayer();
 
@@ -139,9 +154,12 @@ PaintLayer* RootScrollerController::rootScrollerPaintLayer() const {
   return RootScrollerUtil::paintLayerForRootScroller(m_effectiveRootScroller);
 }
 
-Element* RootScrollerController::defaultEffectiveRootScroller() {
-  DCHECK(m_document);
-  return m_document->documentElement();
+bool RootScrollerController::scrollsViewport(const Element& element) const {
+  DCHECK(m_effectiveRootScroller);
+  if (m_effectiveRootScroller->isDocumentNode())
+    return element.isSameNode(m_document->documentElement());
+
+  return element.isSameNode(m_effectiveRootScroller);
 }
 
 }  // namespace blink
