@@ -52,11 +52,11 @@ void VrWebContentsObserver::DidToggleFullscreenModeForTab(
 }
 
 void VrWebContentsObserver::WebContentsDestroyed() {
-  vr_shell_->ContentWebContentsDestroyed();
+  vr_shell_->ContentWebContentsDestroyedOnUI();
 }
 
 void VrWebContentsObserver::WasHidden() {
-  vr_shell_->ContentWasHidden();
+  vr_shell_->ContentWasHiddenOnUI();
 }
 
 }  // namespace vr_shell

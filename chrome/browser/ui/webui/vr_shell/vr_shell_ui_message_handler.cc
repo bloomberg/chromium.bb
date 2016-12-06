@@ -19,12 +19,12 @@ VrShellUIMessageHandler::VrShellUIMessageHandler() = default;
 
 VrShellUIMessageHandler::~VrShellUIMessageHandler() {
   if (vr_shell_) {
-    vr_shell_->GetUiInterface()->SetUiCommandHandler(nullptr);
+    vr_shell_->GetUiInterfaceOnGL()->SetUiCommandHandler(nullptr);
   }
 }
 
 void VrShellUIMessageHandler::RegisterMessages() {
-  vr_shell_ = vr_shell::VrShell::GetWeakPtr(web_ui()->GetWebContents());
+  vr_shell_ = vr_shell::VrShell::GetWeakPtrOnUI(web_ui()->GetWebContents());
 
   web_ui()->RegisterMessageCallback(
       "domLoaded", base::Bind(&VrShellUIMessageHandler::HandleDomLoaded,
@@ -51,8 +51,8 @@ void VrShellUIMessageHandler::OnJavascriptAllowed() {
   // deleted.
   if (!vr_shell_)
     return;
-  vr_shell_->GetUiInterface()->SetUiCommandHandler(this);
-  vr_shell_->OnDomContentsLoaded();
+  vr_shell_->GetUiInterfaceOnGL()->SetUiCommandHandler(this);
+  vr_shell_->OnDomContentsLoadedOnUI();
 }
 
 void VrShellUIMessageHandler::HandleUpdateScene(const base::ListValue* args) {
@@ -61,17 +61,18 @@ void VrShellUIMessageHandler::HandleUpdateScene(const base::ListValue* args) {
 
   // Copy the update instructions and handle them on the render thread.
   auto cb = base::Bind(&vr_shell::UiScene::HandleCommands,
-                       base::Unretained(vr_shell_->GetScene()),
+                       // TODO(mthiesse): Clean up threading around scene class.
+                       base::Unretained(vr_shell_->GetSceneOnGL()),
                        base::Owned(args->CreateDeepCopy().release()),
                        vr_shell::UiScene::TimeInMicroseconds());
-  vr_shell_->QueueTask(cb);
+  vr_shell_->QueueTaskOnUI(cb);
 }
 
 void VrShellUIMessageHandler::HandleDoAction(const base::ListValue* args) {
   int action;
   CHECK(args->GetInteger(0, &action));
   if (vr_shell_) {
-    vr_shell_->DoUiAction((vr_shell::UiAction) action);
+    vr_shell_->DoUiActionOnUI((vr_shell::UiAction) action);
   }
 }
 
@@ -82,7 +83,7 @@ void VrShellUIMessageHandler::HandleSetUiCssSize(const base::ListValue* args) {
   CHECK(args->GetDouble(1, &height));
   CHECK(args->GetDouble(2, &dpr));
   if (vr_shell_) {
-    vr_shell_->SetUiCssSize(width, height, dpr);
+    vr_shell_->SetUiCssSizeOnUI(width, height, dpr);
   }
 }
 

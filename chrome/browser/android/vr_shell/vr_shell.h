@@ -72,41 +72,49 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
           ui::WindowAndroid* ui_window,
           bool for_web_vr);
 
-  void UpdateCompositorLayers(JNIEnv* env,
-                              const base::android::JavaParamRef<jobject>& obj);
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void SetDelegate(JNIEnv* env,
+  void UpdateCompositorLayersOnUI(
+      JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void DestroyOnUI(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
+  void SetDelegateOnUI(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj,
+                       const base::android::JavaParamRef<jobject>& delegate);
+  void GvrInitOnGL(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
-                   const base::android::JavaParamRef<jobject>& delegate);
-  void GvrInit(JNIEnv* env,
-               const base::android::JavaParamRef<jobject>& obj,
-               jlong native_gvr_api);
-  void InitializeGl(JNIEnv* env,
-                    const base::android::JavaParamRef<jobject>& obj,
-                    jint content_texture_handle,
-                    jint ui_texture_handle);
-  void DrawFrame(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void OnTriggerEvent(JNIEnv* env,
+                   jlong native_gvr_api);
+  void InitializeGlOnGL(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        jint content_texture_handle,
+                        jint ui_texture_handle);
+  void DrawFrameOnGL(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj);
+  void OnTriggerEventOnUI(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
-  void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void SetWebVrMode(JNIEnv* env,
-                    const base::android::JavaParamRef<jobject>& obj,
-                    bool enabled);
+  void OnPauseOnUI(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
+  void OnResumeOnUI(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj);
+  void SetWebVrModeOnUI(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        bool enabled);
 
-  void ContentWebContentsDestroyed();
+  void ContentWebContentsDestroyedOnUI();
   // Called when our WebContents have been hidden. Usually a sign that something
   // like another tab placed in front of it.
-  void ContentWasHidden();
+  void ContentWasHiddenOnUI();
 
   // html/js UI hooks.
-  static base::WeakPtr<VrShell> GetWeakPtr(
+  static base::WeakPtr<VrShell> GetWeakPtrOnUI(
       const content::WebContents* web_contents);
-  UiScene* GetScene();
-  UiInterface* GetUiInterface();
-  void OnDomContentsLoaded();
+  // TODO(mthiesse): Clean up threading around Scene.
+  UiScene* GetSceneOnGL();
+  // TODO(mthiesse): Clean up threading around UiInterface.
+  UiInterface* GetUiInterfaceOnGL();
+  void OnDomContentsLoadedOnUI();
 
   // device::GvrDelegate implementation
+  // TODO(mthiesse): Clean up threading around GVR API. These functions are
+  // called on the UI thread, but use GL thread objects in a non-threadsafe way.
   void SetWebVRSecureOrigin(bool secure_origin) override;
   void SubmitWebVRFrame() override;
   void UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
@@ -116,54 +124,54 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void SetWebVRRenderSurfaceSize(int width, int height) override;
   gvr::Sizei GetWebVRCompositorSurfaceSize() override;
 
-  void SurfacesChanged(
+  void SurfacesChangedOnUI(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
       const base::android::JavaParamRef<jobject>& content_surface,
       const base::android::JavaParamRef<jobject>& ui_surface);
 
-  void ContentBoundsChanged(
+  void ContentBoundsChangedOnUI(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
       jint width, jint height, jfloat dpr);
 
-  void UIBoundsChanged(
+  void UIBoundsChangedOnUI(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
       jint width, jint height, jfloat dpr);
 
   // Called from non-render thread to queue a callback onto the render thread.
   // The render thread checks for callbacks and processes them between frames.
-  void QueueTask(base::Callback<void()>& callback);
+  void QueueTaskOnUI(base::Callback<void()>& callback);
 
   // Perform a UI action triggered by the javascript API.
-  void DoUiAction(const UiAction action);
+  void DoUiActionOnUI(const UiAction action);
 
-  void SetContentCssSize(float width, float height, float dpr);
-  void SetUiCssSize(float width, float height, float dpr);
+  void SetContentCssSizeOnUI(float width, float height, float dpr);
+  void SetUiCssSizeOnUI(float width, float height, float dpr);
 
  private:
   ~VrShell() override;
-  void LoadUIContent();
-  void DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame &frame);
-  void DrawUiView(const gvr::Mat4f* head_pose,
-                  const std::vector<const ContentRectangle*>& elements,
-                  const gvr::Sizei& render_size, int viewport_offset);
-  void DrawElements(const gvr::Mat4f& render_matrix,
-                    const std::vector<const ContentRectangle*>& elements);
-  void DrawCursor(const gvr::Mat4f& render_matrix);
-  void DrawWebVr();
-  bool WebVrPoseByteIsValid(int pose_index_byte);
+  void LoadUIContentOnUI();
+  void DrawVrShellOnGL(const gvr::Mat4f& head_pose, gvr::Frame &frame);
+  void DrawUiViewOnGL(const gvr::Mat4f* head_pose,
+                      const std::vector<const ContentRectangle*>& elements,
+                      const gvr::Sizei& render_size, int viewport_offset);
+  void DrawElementsOnGL(const gvr::Mat4f& render_matrix,
+                        const std::vector<const ContentRectangle*>& elements);
+  void DrawCursorOnGL(const gvr::Mat4f& render_matrix);
+  void DrawWebVrOnGL();
+  bool WebVrPoseByteIsValidOnGL(int pose_index_byte);
 
-  void UpdateController(const gvr::Vec3f& forward_vector);
-  void SendEventsToTarget(InputTarget input_target, int pixel_x, int pixel_y);
-  // This function should only be called from the GL thread.
-  void SendGesture(InputTarget input_target,
-                   std::unique_ptr<blink::WebInputEvent> event);
+  void UpdateControllerOnGL(const gvr::Vec3f& forward_vector);
+  void SendEventsToTargetOnGL(InputTarget input_target, int pixel_x,
+                              int pixel_y);
+  void SendGestureOnGL(InputTarget input_target,
+                       std::unique_ptr<blink::WebInputEvent> event);
 
-  void HandleQueuedTasks();
+  void HandleQueuedTasksOnGL();
 
-  // content::WebContentsObserver implementation.
+  // content::WebContentsObserver implementation. All called on UI thread.
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
   void MainFrameWasResized(bool width_changed) override;

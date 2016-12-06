@@ -177,7 +177,7 @@ VrShell::VrShell(JNIEnv* env,
   vr_web_contents_observer_.reset(new VrWebContentsObserver(
       main_contents, html_interface_.get(), this));
 
-  LoadUIContent();
+  LoadUIContentOnUI();
 
   gvr::Mat4f identity;
   SetIdentityM(identity);
@@ -190,17 +190,17 @@ VrShell::VrShell(JNIEnv* env,
   weak_ui_input_manager_ = ui_input_manager_->GetWeakPtr();
 }
 
-void VrShell::UpdateCompositorLayers(JNIEnv* env,
+void VrShell::UpdateCompositorLayersOnUI(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj) {
   content_compositor_->SetLayer(main_contents_);
   ui_compositor_->SetLayer(ui_contents_);
 }
 
-void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void VrShell::DestroyOnUI(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void VrShell::LoadUIContent() {
+void VrShell::LoadUIContentOnUI() {
   GURL url(kVrShellUIURL);
   ui_contents_->GetController().LoadURL(
       url, content::Referrer(),
@@ -219,16 +219,14 @@ VrShell::~VrShell() {
   gl::init::ShutdownGL();
 }
 
-void VrShell::SetDelegate(JNIEnv* env,
+void VrShell::SetDelegateOnUI(JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jobject>& delegate) {
   base::AutoLock lock(gvr_init_lock_);
   delegate_ = VrShellDelegate::GetNativeDelegate(env, delegate);
   if (swap_chain_.get()) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnGvrDelegateReady,
-                              delegate_->GetDeviceProvider(),
-                              weak_ptr_factory_.GetWeakPtr()));
+    delegate_->GetDeviceProvider()->OnGvrDelegateReady(
+        weak_ptr_factory_.GetWeakPtr());
   }
 }
 
@@ -239,7 +237,7 @@ enum class ViewerType {
   VIEWER_TYPE_MAX,
 };
 
-void VrShell::GvrInit(JNIEnv* env,
+void VrShell::GvrInitOnGL(JNIEnv* env,
                       const JavaParamRef<jobject>& obj,
                       jlong native_gvr_api) {
   // set the initial webvr state
@@ -272,7 +270,7 @@ void VrShell::GvrInit(JNIEnv* env,
       static_cast<int>(ViewerType::VIEWER_TYPE_MAX));
 }
 
-void VrShell::InitializeGl(JNIEnv* env,
+void VrShell::InitializeGlOnGL(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            jint content_texture_handle,
                            jint ui_texture_handle) {
@@ -365,7 +363,7 @@ void VrShell::InitializeGl(JNIEnv* env,
   }
 }
 
-void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
+void VrShell::UpdateControllerOnGL(const gvr::Vec3f& forward_vector) {
   controller_->UpdateState();
 
 #if defined(ENABLE_VR_SHELL)
@@ -399,7 +397,7 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
       gesture->type = WebInputEvent::GestureTapDown;
       gesture->data.tapDown.width = 0;
       gesture->data.tapDown.height = 0;
-      SendGesture(CONTENT, std::move(gesture));
+      SendGestureOnGL(CONTENT, std::move(gesture));
     }
 
     return;
@@ -494,10 +492,10 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
       input_target = plane->content_quad ? CONTENT : UI;
     }
   }
-  SendEventsToTarget(input_target, pixel_x, pixel_y);
+  SendEventsToTargetOnGL(input_target, pixel_x, pixel_y);
 }
 
-void VrShell::SendEventsToTarget(InputTarget input_target,
+void VrShell::SendEventsToTargetOnGL(InputTarget input_target,
                                  int pixel_x,
                                  int pixel_y) {
   std::vector<std::unique_ptr<WebGestureEvent>> gesture_list =
@@ -509,7 +507,7 @@ void VrShell::SendEventsToTarget(InputTarget input_target,
       gesture->type == WebInputEvent::GestureScrollUpdate ||
       gesture->type == WebInputEvent::GestureScrollEnd ||
       gesture->type == WebInputEvent::GestureFlingCancel) {
-    SendGesture(CONTENT, base::WrapUnique(new WebGestureEvent(*gesture)));
+    SendGestureOnGL(CONTENT, base::WrapUnique(new WebGestureEvent(*gesture)));
   }
 
   if (gesture->type == WebInputEvent::GestureScrollEnd) {
@@ -518,9 +516,9 @@ void VrShell::SendEventsToTarget(InputTarget input_target,
       gesture_list.back()->data.tapDown.width = pixel_x;
       gesture_list.back()->data.tapDown.height = pixel_y;
       if (input_target != NONE)
-        SendGesture(input_target, std::move(gesture_list.back()));
+        SendGestureOnGL(input_target, std::move(gesture_list.back()));
     } else if (gesture_list.back()->type == WebInputEvent::GestureFlingStart) {
-      SendGesture(CONTENT, std::move(gesture_list.back()));
+      SendGestureOnGL(CONTENT, std::move(gesture_list.back()));
     } else {
       NOTREACHED();
     }
@@ -531,7 +529,7 @@ void VrShell::SendEventsToTarget(InputTarget input_target,
   bool new_target = input_target != current_input_target_;
   if (new_target && current_input_target_ != NONE) {
     // Send a move event indicating that the pointer moved off of an element.
-    SendGesture(current_input_target_, MakeMouseEvent(
+    SendGestureOnGL(current_input_target_, MakeMouseEvent(
         WebInputEvent::MouseLeave, gesture->timeStampSeconds, 0, 0));
   }
   current_input_target_ = input_target;
@@ -540,7 +538,7 @@ void VrShell::SendEventsToTarget(InputTarget input_target,
   }
   WebInputEvent::Type type =
       new_target ? WebInputEvent::MouseEnter : WebInputEvent::MouseMove;
-  SendGesture(current_input_target_, MakeMouseEvent(
+  SendGestureOnGL(current_input_target_, MakeMouseEvent(
       type, gesture->timeStampSeconds, pixel_x, pixel_y));
 
   if (original_type == WebInputEvent::GestureTapDown || touch_pending_) {
@@ -554,11 +552,11 @@ void VrShell::SendEventsToTarget(InputTarget input_target,
     event->type = WebInputEvent::GestureTapDown;
     event->data.tapDown.width = pixel_x;
     event->data.tapDown.height = pixel_y;
-    SendGesture(current_input_target_, std::move(event));
+    SendGestureOnGL(current_input_target_, std::move(event));
   }
 }
 
-void VrShell::SendGesture(InputTarget input_target,
+void VrShell::SendGestureOnGL(InputTarget input_target,
                           std::unique_ptr<blink::WebInputEvent> event) {
   DCHECK(input_target != NONE);
   const base::WeakPtr<VrInputManager>& weak_ptr =
@@ -602,7 +600,7 @@ int GetPixelEncodedPoseIndexByte() {
   return -1;
 }
 
-bool VrShell::WebVrPoseByteIsValid(int pose_index_byte) {
+bool VrShell::WebVrPoseByteIsValidOnGL(int pose_index_byte) {
   if (pose_index_byte < 0) {
     return false;
   }
@@ -614,7 +612,7 @@ bool VrShell::WebVrPoseByteIsValid(int pose_index_byte) {
   return true;
 }
 
-void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void VrShell::DrawFrameOnGL(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   TRACE_EVENT0("gpu", "VrShell::DrawFrame");
   // Reset the viewport list to just the pair of viewports for the
   // primary buffer each frame. Head-locked viewports get added by
@@ -658,16 +656,16 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   // Bind the primary framebuffer.
   frame.BindBuffer(kFramePrimaryBuffer);
 
-  HandleQueuedTasks();
+  HandleQueuedTasksOnGL();
 
   // Update the render position of all UI elements (including desktop).
   const float screen_tilt = kDesktopScreenTiltDefault * M_PI / 180.0f;
   scene_->UpdateTransforms(screen_tilt, UiScene::TimeInMicroseconds());
 
-  UpdateController(GetForwardVector(head_pose));
+  UpdateControllerOnGL(GetForwardVector(head_pose));
 
   if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
-    DrawWebVr();
+    DrawWebVrOnGL();
 
     // When using async reprojection, we need to know which pose was used in
     // the WebVR app for drawing this frame. Due to unknown amounts of
@@ -678,7 +676,7 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     // doing this once we have working no-compositor rendering for WebVR.
     if (gvr_api_->GetAsyncReprojectionEnabled()) {
       int pose_index_byte = GetPixelEncodedPoseIndexByte();
-      if (WebVrPoseByteIsValid(pose_index_byte)) {
+      if (WebVrPoseByteIsValidOnGL(pose_index_byte)) {
         // We have a valid pose, use it for reprojection.
         webvr_left_viewport_->SetReprojection(GVR_REPROJECTION_FULL);
         webvr_right_viewport_->SetReprojection(GVR_REPROJECTION_FULL);
@@ -699,13 +697,13 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     }
   }
 
-  DrawVrShell(head_pose, frame);
+  DrawVrShellOnGL(head_pose, frame);
 
   frame.Unbind();
   frame.Submit(*buffer_viewport_list_, head_pose);
 }
 
-void VrShell::DrawVrShell(const gvr::Mat4f& head_pose,
+void VrShell::DrawVrShellOnGL(const gvr::Mat4f& head_pose,
                           gvr::Frame &frame) {
   TRACE_EVENT0("gpu", "VrShell::DrawVrShell");
   std::vector<const ContentRectangle*> head_locked_elements;
@@ -740,7 +738,7 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose,
   }
 
   if (!world_elements.empty()) {
-    DrawUiView(&head_pose, world_elements, render_size_primary_,
+    DrawUiViewOnGL(&head_pose, world_elements, render_size_primary_,
                kViewportListPrimaryOffset);
   }
 
@@ -758,7 +756,7 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose,
     frame.BindBuffer(kFrameHeadlockedBuffer);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    DrawUiView(nullptr, head_locked_elements, render_size_headlocked_,
+    DrawUiViewOnGL(nullptr, head_locked_elements, render_size_headlocked_,
                kViewportListHeadlockedOffset);
   }
 }
@@ -778,7 +776,7 @@ gvr::Sizei VrShell::GetWebVRCompositorSurfaceSize() {
 }
 
 
-void VrShell::DrawUiView(const gvr::Mat4f* head_pose,
+void VrShell::DrawUiViewOnGL(const gvr::Mat4f* head_pose,
                          const std::vector<const ContentRectangle*>& elements,
                          const gvr::Sizei& render_size, int viewport_offset) {
   TRACE_EVENT0("gpu", "VrShell::DrawUiView");
@@ -802,15 +800,15 @@ void VrShell::DrawUiView(const gvr::Mat4f* head_pose,
             buffer_viewport_->GetSourceFov(), kZNear, kZFar),
         view_matrix);
 
-    DrawElements(render_matrix, elements);
+    DrawElementsOnGL(render_matrix, elements);
     if (head_pose != nullptr &&
         html_interface_->GetMode() != UiInterface::Mode::WEB_VR) {
-      DrawCursor(render_matrix);
+      DrawCursorOnGL(render_matrix);
     }
   }
 }
 
-void VrShell::DrawElements(
+void VrShell::DrawElementsOnGL(
     const gvr::Mat4f& render_matrix,
     const std::vector<const ContentRectangle*>& elements) {
   for (const auto& rect : elements) {
@@ -834,7 +832,7 @@ void VrShell::DrawElements(
   }
 }
 
-void VrShell::DrawCursor(const gvr::Mat4f& render_matrix) {
+void VrShell::DrawCursorOnGL(const gvr::Mat4f& render_matrix) {
   gvr::Mat4f mat;
   SetIdentityM(mat);
 
@@ -887,7 +885,6 @@ void VrShell::DrawCursor(const gvr::Mat4f& render_matrix) {
   const gvr::Mat4f beam_direction_mat =
       QuatToMatrix(GetRotationFromZAxis(beam_direction));
 
-
   // Render multiple faces to make the laser appear cylindrical.
   const int faces = 4;
   for (int i = 0; i < faces; i++) {
@@ -908,7 +905,7 @@ void VrShell::DrawCursor(const gvr::Mat4f& render_matrix) {
   }
 }
 
-void VrShell::DrawWebVr() {
+void VrShell::DrawWebVrOnGL() {
   TRACE_EVENT0("gpu", "VrShell::DrawWebVr");
   // Don't need face culling, depth testing, blending, etc. Turn it all off.
   glDisable(GL_CULL_FACE);
@@ -927,14 +924,17 @@ void VrShell::DrawWebVr() {
                                            *webvr_right_viewport_);
 }
 
-void VrShell::OnTriggerEvent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void VrShell::OnTriggerEventOnUI(JNIEnv* env,
+                                 const JavaParamRef<jobject>& obj) {
   // Set a flag to handle this on the render thread at the next frame.
   touch_pending_ = true;
 }
 
-void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void VrShell::OnPauseOnUI(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (gvr_api_ == nullptr)
     return;
+
+  // TODO(mthiesse): Clean up threading here.
   controller_->OnPause();
   gvr_api_->PauseTracking();
 
@@ -942,10 +942,11 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   metrics_helper_->SetVRActive(false);
 }
 
-void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void VrShell::OnResumeOnUI(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (gvr_api_ == nullptr)
     return;
 
+  // TODO(mthiesse): Clean up threading here.
   gvr_api_->RefreshViewerProfile();
   gvr_api_->ResumeTracking();
   controller_->OnResume();
@@ -954,7 +955,7 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   metrics_helper_->SetVRActive(true);
 }
 
-base::WeakPtr<VrShell> VrShell::GetWeakPtr(
+base::WeakPtr<VrShell> VrShell::GetWeakPtrOnUI(
     const content::WebContents* web_contents) {
   // Ensure that the WebContents requesting the VrShell instance is the one
   // we created.
@@ -963,13 +964,13 @@ base::WeakPtr<VrShell> VrShell::GetWeakPtr(
   return base::WeakPtr<VrShell>(nullptr);
 }
 
-void VrShell::OnDomContentsLoaded() {
+void VrShell::OnDomContentsLoadedOnUI() {
   html_interface_->SetURL(main_contents_->GetVisibleURL());
   html_interface_->SetLoading(main_contents_->IsLoading());
   html_interface_->OnDomContentsLoaded();
 }
 
-void VrShell::SetWebVrMode(JNIEnv* env,
+void VrShell::SetWebVrModeOnUI(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            bool enabled) {
   metrics_helper_->SetWebVREnabled(enabled);
@@ -996,7 +997,7 @@ gvr::GvrApi* VrShell::gvr_api() {
   return gvr_api_.get();
 }
 
-void VrShell::SurfacesChanged(JNIEnv* env,
+void VrShell::SurfacesChangedOnUI(JNIEnv* env,
                               const JavaParamRef<jobject>& object,
                               const JavaParamRef<jobject>& content_surface,
                               const JavaParamRef<jobject>& ui_surface) {
@@ -1004,7 +1005,7 @@ void VrShell::SurfacesChanged(JNIEnv* env,
   ui_compositor_->SurfaceChanged(ui_surface);
 }
 
-void VrShell::ContentBoundsChanged(JNIEnv* env,
+void VrShell::ContentBoundsChangedOnUI(JNIEnv* env,
                                    const JavaParamRef<jobject>& object,
                                    jint width, jint height, jfloat dpr) {
   TRACE_EVENT0("gpu", "VrShell::ContentBoundsChanged");
@@ -1018,26 +1019,26 @@ void VrShell::ContentBoundsChanged(JNIEnv* env,
   content_compositor_->SetWindowBounds(width, height);
 }
 
-void VrShell::UIBoundsChanged(JNIEnv* env,
+void VrShell::UIBoundsChangedOnUI(JNIEnv* env,
                               const JavaParamRef<jobject>& object,
                               jint width, jint height, jfloat dpr) {
   ui_compositor_->SetWindowBounds(width, height);
 }
 
-UiScene* VrShell::GetScene() {
+UiScene* VrShell::GetSceneOnGL() {
   return scene_.get();
 }
 
-UiInterface* VrShell::GetUiInterface() {
+UiInterface* VrShell::GetUiInterfaceOnGL() {
   return html_interface_.get();
 }
 
-void VrShell::QueueTask(base::Callback<void()>& callback) {
+void VrShell::QueueTaskOnUI(base::Callback<void()>& callback) {
   base::AutoLock lock(task_queue_lock_);
   task_queue_.push(callback);
 }
 
-void VrShell::HandleQueuedTasks() {
+void VrShell::HandleQueuedTasksOnGL() {
   // To protect a stream of tasks from blocking rendering indefinitely,
   // process only the number of tasks present when first checked.
   std::vector<base::Callback<void()>> tasks;
@@ -1054,7 +1055,7 @@ void VrShell::HandleQueuedTasks() {
   }
 }
 
-void VrShell::DoUiAction(const UiAction action) {
+void VrShell::DoUiActionOnUI(const UiAction action) {
   content::NavigationController& controller = main_contents_->GetController();
   switch (action) {
     case HISTORY_BACK:
@@ -1107,42 +1108,42 @@ void VrShell::WebContentsDestroyed() {
   delegate_->ForceExitVr();
 }
 
-void VrShell::ContentWebContentsDestroyed() {
+void VrShell::ContentWebContentsDestroyedOnUI() {
   content_input_manager_.reset();
   main_contents_ = nullptr;
   // TODO(mthiesse): Handle web contents being destroyed.
   delegate_->ForceExitVr();
 }
 
-void VrShell::ContentWasHidden() {
+void VrShell::ContentWasHiddenOnUI() {
   // Ensure we don't continue sending input to it.
   content_input_manager_.reset();
   // TODO(mthiesse): Handle web contents being hidden.
   delegate_->ForceExitVr();
 }
 
-void VrShell::SetContentCssSize(float width, float height, float dpr) {
+void VrShell::SetContentCssSizeOnUI(float width, float height, float dpr) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShellImpl_setContentCssSize(env, j_vr_shell_.obj(), width, height,
-                                     dpr);
+  Java_VrShellImpl_setContentCssSizeOnUI(env, j_vr_shell_.obj(), width, height,
+                                         dpr);
 }
 
-void VrShell::SetUiCssSize(float width, float height, float dpr) {
+void VrShell::SetUiCssSizeOnUI(float width, float height, float dpr) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShellImpl_setUiCssSize(env, j_vr_shell_.obj(), width, height, dpr);
+  Java_VrShellImpl_setUiCssSizeOnUI(env, j_vr_shell_.obj(), width, height, dpr);
 }
 
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj,
-           const JavaParamRef<jobject>& content_web_contents,
-           jlong content_window_android,
-           const JavaParamRef<jobject>& ui_web_contents,
-           jlong ui_window_android,
-           jboolean for_web_vr) {
+jlong InitOnUI(JNIEnv* env,
+               const JavaParamRef<jobject>& obj,
+               const JavaParamRef<jobject>& content_web_contents,
+               jlong content_window_android,
+               const JavaParamRef<jobject>& ui_web_contents,
+               jlong ui_window_android,
+               jboolean for_web_vr) {
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, content::WebContents::FromJavaWebContents(content_web_contents),
       reinterpret_cast<ui::WindowAndroid*>(content_window_android),

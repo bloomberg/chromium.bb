@@ -193,8 +193,8 @@ public class VrShellDelegate {
         mTab.addObserver(mTabObserver);
         addVrViews();
         setupVrModeWindowFlags();
-        mVrShell.initializeNative(mTab, this, mRequestedWebVR);
-        mVrShell.setCloseButtonListener(new Runnable() {
+        mVrShell.initializeNativeOnUI(mTab, this, mRequestedWebVR);
+        mVrShell.setCloseButtonListenerOnUI(new Runnable() {
             @Override
             public void run() {
                 exitVRIfNecessary(true);
@@ -202,7 +202,7 @@ public class VrShellDelegate {
         });
         // onResume needs to be called on GvrLayout after initialization to make sure DON flow work
         // properly.
-        mVrShell.resume();
+        mVrShell.resumeOnUI();
         mTab.updateFullscreenEnabledState();
         return true;
     }
@@ -241,7 +241,7 @@ public class VrShellDelegate {
         mRequestedWebVR = true;
         switch (enterVRIfNecessary()) {
             case ENTER_VR_NOT_NECESSARY:
-                mVrShell.setWebVrModeEnabled(true);
+                mVrShell.setWebVrModeEnabledOnUI(true);
                 nativeSetPresentResult(mNativeVrShellDelegate, true);
                 mRequestedWebVR = false;
                 break;
@@ -282,7 +282,7 @@ public class VrShellDelegate {
     @CalledByNative
     private boolean exitWebVR() {
         if (!mInVr) return false;
-        mVrShell.setWebVrModeEnabled(false);
+        mVrShell.setWebVrModeEnabledOnUI(false);
         // TODO(bajones): Once VR Shell can be invoked outside of WebVR this
         // should no longer exit the shell outright. Need a way to determine
         // how VrShell was created.
@@ -328,7 +328,7 @@ public class VrShellDelegate {
             setupVrModeWindowFlags();
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             try {
-                mVrShell.resume();
+                mVrShell.resumeOnUI();
             } catch (IllegalArgumentException e) {
                 Log.e(TAG, "Unable to resume VrShell", e);
             } finally {
@@ -444,7 +444,7 @@ public class VrShellDelegate {
             mLastVRExit = SystemClock.uptimeMillis();
         }
         mActivity.setRequestedOrientation(mRestoreOrientation);
-        mVrShell.pause();
+        mVrShell.pauseOnUI();
         removeVrViews();
         clearVrModeWindowFlags();
         destroyVrShell();
@@ -484,14 +484,14 @@ public class VrShellDelegate {
         LayoutParams params = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
-        decor.addView(mVrShell.getContainer(), params);
+        decor.addView(mVrShell.getContainerOnUI(), params);
         mActivity.setUIVisibilityForVR(View.GONE);
     }
 
     private void removeVrViews() {
         mActivity.setUIVisibilityForVR(View.VISIBLE);
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
-        decor.removeView(mVrShell.getContainer());
+        decor.removeView(mVrShell.getContainerOnUI());
     }
 
     private void setupVrModeWindowFlags() {
@@ -520,7 +520,7 @@ public class VrShellDelegate {
      */
     public void destroyVrShell() {
         if (mVrShell != null) {
-            mVrShell.teardown();
+            mVrShell.teardownOnUI();
             mVrShell = null;
         }
     }
