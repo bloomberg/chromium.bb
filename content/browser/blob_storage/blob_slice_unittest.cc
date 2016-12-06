@@ -48,6 +48,16 @@ class BlobSliceTest : public testing::Test {
         ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA));
   };
 
+  scoped_refptr<ShareableBlobDataItem> CreateTempFileItem(size_t offset,
+                                                          size_t size) {
+    std::unique_ptr<DataElement> element(new DataElement());
+    element->SetToFilePathRange(BlobDataBuilder::GetFutureFileItemPath(0),
+                                offset, size, base::Time());
+    return scoped_refptr<ShareableBlobDataItem>(
+        new ShareableBlobDataItem(new BlobDataItem(std::move(element)),
+                                  ShareableBlobDataItem::QUOTA_NEEDED));
+  };
+
   void ExpectFirstSlice(const BlobSlice& slice,
                         scoped_refptr<ShareableBlobDataItem> source_item,
                         size_t first_item_slice_offset,
@@ -56,8 +66,10 @@ class BlobSliceTest : public testing::Test {
     EXPECT_EQ(first_item_slice_offset, slice.first_item_slice_offset);
 
     ASSERT_LE(1u, slice.dest_items.size());
-    const DataElement& dest_element =
-        slice.dest_items[0]->item()->data_element();
+
+    scoped_refptr<ShareableBlobDataItem> item = slice.dest_items[0];
+    EXPECT_EQ(ShareableBlobDataItem::QUOTA_NEEDED, item->state());
+    const DataElement& dest_element = item->item()->data_element();
 
     EXPECT_EQ(DataElement::TYPE_BYTES_DESCRIPTION, dest_element.type());
     EXPECT_EQ(static_cast<uint64_t>(size), dest_element.length());
@@ -71,8 +83,9 @@ class BlobSliceTest : public testing::Test {
     EXPECT_TRUE(slice.last_source_item);
 
     ASSERT_LE(2u, slice.dest_items.size());
-    const DataElement& dest_element =
-        slice.dest_items.back()->item()->data_element();
+    scoped_refptr<ShareableBlobDataItem> item = slice.dest_items.back();
+    EXPECT_EQ(ShareableBlobDataItem::QUOTA_NEEDED, item->state());
+    const DataElement& dest_element = item->item()->data_element();
 
     EXPECT_EQ(DataElement::TYPE_BYTES_DESCRIPTION, dest_element.type());
     EXPECT_EQ(static_cast<uint64_t>(size), dest_element.length());
@@ -82,7 +95,6 @@ class BlobSliceTest : public testing::Test {
 };
 
 TEST_F(BlobSliceTest, FullItem) {
-  const std::string kBlobUUID = "kId";
   const size_t kSize = 5u;
 
   BlobEntry data(kType, kDisposition);
@@ -100,7 +112,6 @@ TEST_F(BlobSliceTest, FullItem) {
 }
 
 TEST_F(BlobSliceTest, SliceSingleItem) {
-  const std::string kBlobUUID = "kId";
   const size_t kSize = 5u;
 
   BlobEntry data(kType, kDisposition);
@@ -115,7 +126,6 @@ TEST_F(BlobSliceTest, SliceSingleItem) {
 }
 
 TEST_F(BlobSliceTest, SliceSingleLastItem) {
-  const std::string kBlobUUID = "kId";
   const size_t kSize1 = 5u;
   const size_t kSize2 = 10u;
 
@@ -132,7 +142,6 @@ TEST_F(BlobSliceTest, SliceSingleLastItem) {
 }
 
 TEST_F(BlobSliceTest, SliceAcrossTwoItems) {
-  const std::string kBlobUUID = "kId";
   const size_t kSize1 = 5u;
   const size_t kSize2 = 10u;
 
@@ -150,7 +159,6 @@ TEST_F(BlobSliceTest, SliceAcrossTwoItems) {
 }
 
 TEST_F(BlobSliceTest, SliceFileAndLastItem) {
-  const std::string kBlobUUID = "kId";
   const size_t kSize1 = 5u;
   const size_t kSize2 = 10u;
 
@@ -170,7 +178,6 @@ TEST_F(BlobSliceTest, SliceFileAndLastItem) {
 }
 
 TEST_F(BlobSliceTest, SliceAcrossLargeItem) {
-  const std::string kBlobUUID = "kId";
   const size_t kSize1 = 5u;
   const size_t kSize2 = 10u;
   const size_t kSize3 = 10u;
@@ -190,6 +197,25 @@ TEST_F(BlobSliceTest, SliceAcrossLargeItem) {
   ASSERT_EQ(3u, slice.dest_items.size());
 
   EXPECT_EQ(*item2, *slice.dest_items[1]);
+}
+
+TEST_F(BlobSliceTest, SliceTempFileItem) {
+  BlobEntry data(kType, kDisposition);
+  scoped_refptr<ShareableBlobDataItem> item1 = CreateTempFileItem(1u, 10u);
+  data.AppendSharedBlobItem(item1);
+  BlobSlice slice(data, 2, 5);
+  EXPECT_EQ(0u, slice.copying_memory_size.ValueOrDie());
+  EXPECT_TRUE(slice.first_source_item);
+  EXPECT_EQ(2u, slice.first_item_slice_offset);
+  ASSERT_LE(1u, slice.dest_items.size());
+  scoped_refptr<ShareableBlobDataItem> item = slice.dest_items[0];
+  EXPECT_EQ(ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA, item->state());
+
+  const DataElement& dest_element = item->item()->data_element();
+  EXPECT_EQ(DataElement::TYPE_FILE, dest_element.type());
+  EXPECT_EQ(static_cast<uint64_t>(5), dest_element.length());
+  EXPECT_EQ(*item1, *slice.first_source_item);
+  ASSERT_EQ(1u, slice.dest_items.size());
 }
 
 }  // namespace storage

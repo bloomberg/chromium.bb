@@ -10,12 +10,14 @@
 
 #include <memory>
 
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
 
 namespace base {
 class FilePath;
+class TaskRunner;
 class Time;
 }
 
@@ -44,7 +46,8 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   static ChromeBlobStorageContext* GetFor(
       BrowserContext* browser_context);
 
-  void InitializeOnIOThread();
+  void InitializeOnIOThread(base::FilePath blob_storage_dir,
+                            scoped_refptr<base::TaskRunner> file_task_runner);
 
   storage::BlobStorageContext* context() const { return context_.get(); }
 

@@ -28,8 +28,8 @@ struct BlobStorageLimits {
   size_t max_blob_in_memory_space = 500 * 1024 * 1024;
 
   // This is the maximum amount of disk space we can use.
-  // TODO(dmurph): Consider storage size of the device.
-  uint64_t max_blob_disk_space = 5ull * 1024 * 1024 * 1024;
+  // TODO(dmurph): Determine initial heuristic based on disk usage & arch.
+  uint64_t max_blob_disk_space = 0ull;
 
   // This is the minimum file size we can use when paging blob items to disk.
   // We combine items until we reach at least this size.
@@ -73,12 +73,13 @@ enum class BlobStatus {
   // Blob state section:
   // The blob has finished.
   DONE = 200,
-  // The system is pending on quota being granted, the transport layer
-  // populating pending data, and/or copying data from dependent blobs. See
-  // BlobEntry::BuildingState determine which of these are happening, as they
-  // all can happen concurrently.
+  // Waiting for memory or file quota for the to-be transported data.
   PENDING_QUOTA = 201,
+  // Waiting for data to be transported (quota has been granted).
   PENDING_TRANSPORT = 202,
+  // Waiting for any operations involving dependent blobs after transport data
+  // has been populated. See BlobEntry::BuildingState for more info.
+  // TODO(dmurph): Change to PENDING_REFERENCED_BLOBS (crbug.com/670398).
   PENDING_INTERNALS = 203,
   LAST = PENDING_INTERNALS
 };

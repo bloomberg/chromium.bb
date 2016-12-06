@@ -36,7 +36,19 @@ BlobEntry::BuildingState::BuildingState(
       transport_allowed_callback(transport_allowed_callback),
       num_building_dependent_blobs(num_building_dependent_blobs) {}
 
-BlobEntry::BuildingState::~BuildingState() {}
+BlobEntry::BuildingState::~BuildingState() {
+  DCHECK(!copy_quota_request);
+  DCHECK(!transport_quota_request);
+}
+
+void BlobEntry::BuildingState::CancelRequests() {
+  if (copy_quota_request) {
+    copy_quota_request->Cancel();
+  }
+  if (transport_quota_request) {
+    transport_quota_request->Cancel();
+  }
+}
 
 BlobEntry::BlobEntry(const std::string& content_type,
                      const std::string& content_disposition)
