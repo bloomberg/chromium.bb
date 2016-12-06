@@ -238,7 +238,7 @@ TimerThrottlingForHiddenFrames status=stable
 // touchscreen) in ApplyWebPreferences. "Touch events" themselves are always
 // enabled since they're a feature always supported by Chrome.
 TouchEventAPI status=stable
-TraceWrappables
+TraceWrappables status=stable
 TrueColorRendering status=experimental, settable_from_internals=True
 TrustedEventsDefaultAction status=stable
 UserSelectAll status=stable
