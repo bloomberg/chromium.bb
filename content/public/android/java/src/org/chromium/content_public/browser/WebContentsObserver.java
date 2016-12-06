@@ -117,10 +117,9 @@ public abstract class WebContentsObserver {
      * @param isMainFrame Whether the load is happening for the main frame.
      * @param validatedUrl The validated URL that is being navigated to.
      * @param isErrorPage Whether this is navigating to an error page.
-     * @param isIframeSrcdoc Whether this is navigating to about:srcdoc.
      */
     public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
-            boolean isMainFrame, String validatedUrl, boolean isErrorPage, boolean isIframeSrcdoc) {
+            boolean isMainFrame, String validatedUrl, boolean isErrorPage) {
     }
 
     /**

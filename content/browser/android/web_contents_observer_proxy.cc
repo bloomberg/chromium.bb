@@ -191,8 +191,7 @@ void WebContentsObserverProxy::DocumentAvailableInMainFrame() {
 void WebContentsObserverProxy::DidStartProvisionalLoadForFrame(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    bool is_error_page,
-    bool is_iframe_srcdoc) {
+    bool is_error_page) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(java_observer_);
   ScopedJavaLocalRef<jstring> jstring_url(
@@ -204,8 +203,7 @@ void WebContentsObserverProxy::DidStartProvisionalLoadForFrame(
       render_frame_host->GetParent()
           ? render_frame_host->GetParent()->GetRoutingID()
           : -1,
-      !render_frame_host->GetParent(), jstring_url, is_error_page,
-      is_iframe_srcdoc);
+      !render_frame_host->GetParent(), jstring_url, is_error_page);
 }
 
 void WebContentsObserverProxy::DidCommitProvisionalLoadForFrame(

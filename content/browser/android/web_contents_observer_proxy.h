@@ -57,8 +57,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
   void DidStartProvisionalLoadForFrame(RenderFrameHost* render_frame_host,
                                        const GURL& validated_url,
-                                       bool is_error_page,
-                                       bool is_iframe_srcdoc) override;
+                                       bool is_error_page) override;
   void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& url,

@@ -34,7 +34,6 @@ NavigationHandle::CreateNavigationHandleForTesting(
                    ->frame_tree_node(),
           true,   // is_renderer_initiated
           false,  // is_same_page
-          false,  // is_srcdoc
           base::TimeTicks::Now(), 0,
           has_user_gesture ? NavigationGestureUser : NavigationGestureAuto,
           false);  // started_from_context_menu

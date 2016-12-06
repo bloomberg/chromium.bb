@@ -876,10 +876,10 @@ std::map<std::string, bool> NavigationEntryImpl::GetSubframeUniqueNames(
       // that was the default URL.  PageState doesn't matter there, because
       // content injected into about:blank frames doesn't use it.
       //
-      // Be careful not to include iframe srcdoc URLs in this check, which do
-      // need their PageState.  The committed URL in that case gets rewritten to
-      // about:blank, but we can detect it via the PageState's URL.
-      //
+      // Be careful not to rely on FrameNavigationEntry's URLs in this check,
+      // because the committed URL in the browser could be rewritten to
+      // about:blank.
+      // See RenderProcessHostImpl::FilterURL to know which URLs are rewritten.
       // See https://crbug.com/657896 for details.
       bool is_about_blank = false;
       ExplodedPageState exploded_page_state;

@@ -1406,12 +1406,13 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
                                   SiteInstanceRelation::UNRELATED);
   }
 
-  // Use the source SiteInstance in case of data URLs or about:blank pages,
-  // because the content is then controlled and/or scriptable by the source
-  // SiteInstance.
+  // Use the source SiteInstance in case of data URLs, about:srcdoc pages and
+  // about:blank pages because the content is then controlled and/or scriptable
+  // by the source SiteInstance.
   GURL about_blank(url::kAboutBlankURL);
-  if (source_instance &&
-      (dest_url == about_blank || dest_url.scheme() == url::kDataScheme)) {
+  GURL about_srcdoc(content::kAboutSrcDocURL);
+  if (source_instance && (dest_url == about_srcdoc || dest_url == about_blank ||
+                          dest_url.scheme() == url::kDataScheme)) {
     return SiteInstanceDescriptor(source_instance);
   }
 

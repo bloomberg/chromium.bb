@@ -158,11 +158,9 @@ class RenderViewSizeObserver : public WebContentsObserver {
     rwhv_create_size_ = rvh->GetWidget()->GetView()->GetViewBounds().size();
   }
 
-  void DidStartProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override {
+  void DidStartProvisionalLoadForFrame(RenderFrameHost* render_frame_host,
+                                       const GURL& url,
+                                       bool is_error_page) override {
     ResizeWebContentsView(shell_, wcv_new_size_, false);
   }
 

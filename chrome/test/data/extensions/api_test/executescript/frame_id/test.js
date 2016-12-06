@@ -147,12 +147,10 @@ function runTests(config) {
     },
 
     function executeScriptInSrcdocFrameWithoutMatchAboutBlank() {
-      // TODO(robwu): Why is the origin serialized as "about:blank" instead of
-      // "about:srcdoc"?
       chrome.tabs.executeScript(
           tabId, {frameId: ID_FRAME_SRCDOC, code: 'document.URL'},
           fail(
-              'Cannot access "about:blank" at origin "' + testOrigin + '". ' +
+              'Cannot access "about:srcdoc" at origin "' + testOrigin + '". ' +
               'Extension must have permission to access the frame\'s origin, ' +
               'and matchAboutBlank must be true.'));
     },
@@ -283,12 +281,10 @@ function runTests(config) {
     },
 
     function insertCSSInSrcdocFrameWithoutMatchAboutBlank() {
-      // TODO(robwu): Why is the origin serialized as "about:blank" instead of
-      // "about:srcdoc"?
       chrome.tabs.insertCSS(
           tabId, {frameId: ID_FRAME_SRCDOC, code: 'body{color:red;}'},
           fail(
-              'Cannot access "about:blank" at origin "' + testOrigin + '". ' +
+              'Cannot access "about:srcdoc" at origin "' + testOrigin + '". ' +
               'Extension must have permission to access the frame\'s origin, ' +
               'and matchAboutBlank must be true.'));
     },

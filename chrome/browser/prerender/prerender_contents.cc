@@ -558,8 +558,7 @@ void PrerenderContents::DocumentLoadedInFrame(
 void PrerenderContents::DidStartProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    bool is_error_page,
-    bool is_iframe_srcdoc) {
+    bool is_error_page) {
   if (!render_frame_host->GetParent()) {
     if (!CheckURL(validated_url))
       return;

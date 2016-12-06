@@ -36,7 +36,6 @@ class NavigationHandleObserver : public WebContentsObserver {
         is_parent_main_frame_(false),
         is_renderer_initiated_(true),
         is_same_page_(false),
-        is_srcdoc_(false),
         was_redirected_(false),
         frame_tree_node_id_(-1),
         page_transition_(ui::PAGE_TRANSITION_LINK),
@@ -56,7 +55,6 @@ class NavigationHandleObserver : public WebContentsObserver {
     is_parent_main_frame_ = navigation_handle->IsParentMainFrame();
     is_renderer_initiated_ = navigation_handle->IsRendererInitiated();
     is_same_page_ = navigation_handle->IsSamePage();
-    is_srcdoc_ = navigation_handle->IsSrcdoc();
     was_redirected_ = navigation_handle->WasServerRedirect();
     frame_tree_node_id_ = navigation_handle->GetFrameTreeNodeId();
   }
@@ -69,7 +67,6 @@ class NavigationHandleObserver : public WebContentsObserver {
     DCHECK_EQ(is_parent_main_frame_, navigation_handle->IsParentMainFrame());
     DCHECK_EQ(is_same_page_, navigation_handle->IsSamePage());
     DCHECK_EQ(is_renderer_initiated_, navigation_handle->IsRendererInitiated());
-    DCHECK_EQ(is_srcdoc_, navigation_handle->IsSrcdoc());
     DCHECK_EQ(frame_tree_node_id_, navigation_handle->GetFrameTreeNodeId());
 
     was_redirected_ = navigation_handle->WasServerRedirect();
@@ -96,7 +93,6 @@ class NavigationHandleObserver : public WebContentsObserver {
   bool is_parent_main_frame() { return is_parent_main_frame_; }
   bool is_renderer_initiated() { return is_renderer_initiated_; }
   bool is_same_page() { return is_same_page_; }
-  bool is_srcdoc() { return is_srcdoc_; }
   bool was_redirected() { return was_redirected_; }
   int frame_tree_node_id() { return frame_tree_node_id_; }
 
@@ -115,7 +111,6 @@ class NavigationHandleObserver : public WebContentsObserver {
   bool is_parent_main_frame_;
   bool is_renderer_initiated_;
   bool is_same_page_;
-  bool is_srcdoc_;
   bool was_redirected_;
   int frame_tree_node_id_;
   ui::PageTransition page_transition_;
@@ -504,18 +499,19 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   }
 }
 
-// Ensure that the IsSrcdoc() method on NavigationHandle behaves correctly.
+// Ensure that methods on NavigationHandle behave correctly with an iframe that
+// navigates to its srcdoc attribute.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySrcdoc) {
   GURL url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_srcdoc_frame.html"));
   NavigationHandleObserver observer(shell()->web_contents(),
-                                    GURL(url::kAboutBlankURL));
+                                    GURL(kAboutSrcDocURL));
 
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   EXPECT_TRUE(observer.has_committed());
   EXPECT_FALSE(observer.is_error());
-  EXPECT_TRUE(observer.is_srcdoc());
+  EXPECT_EQ(GURL(kAboutSrcDocURL), observer.last_committed_url());
 }
 
 // Ensure that the IsSamePage() method on NavigationHandle behaves correctly.

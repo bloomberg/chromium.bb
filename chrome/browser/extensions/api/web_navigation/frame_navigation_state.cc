@@ -30,7 +30,6 @@ const char* const kValidSchemes[] = {
 
 FrameNavigationState::FrameState::FrameState() {
   error_occurred = false;
-  is_iframe_srcdoc = false;
   is_loading = false;
   is_parsing = false;
 }
@@ -71,13 +70,10 @@ void FrameNavigationState::StartTrackingDocumentLoad(
     content::RenderFrameHost* frame_host,
     const GURL& url,
     bool is_same_page,
-    bool is_error_page,
-    bool is_iframe_srcdoc) {
+    bool is_error_page) {
   FrameState& frame_state = frame_host_state_map_[frame_host];
   frame_state.error_occurred = is_error_page;
   frame_state.url = url;
-  frame_state.is_iframe_srcdoc = is_iframe_srcdoc;
-  DCHECK(!is_iframe_srcdoc || url == url::kAboutBlankURL);
   if (!is_same_page) {
     frame_state.is_loading = true;
     frame_state.is_parsing = true;
@@ -116,8 +112,6 @@ GURL FrameNavigationState::GetUrl(content::RenderFrameHost* frame_host) const {
   if (it == frame_host_state_map_.end())
     return GURL();
 
-  if (it->second.is_iframe_srcdoc)
-    return GURL(content::kAboutSrcDocURL);
   return it->second.url;
 }
 

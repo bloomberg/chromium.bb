@@ -50,11 +50,9 @@ class CONTENT_EXPORT NavigatorDelegate {
 
   // The RenderFrameHost started a provisional load for the frame
   // represented by |render_frame_host|.
-  virtual void DidStartProvisionalLoad(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) {}
+  virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
+                                       const GURL& validated_url,
+                                       bool is_error_page) {}
 
   // A provisional load in |render_frame_host| failed.
   virtual void DidFailProvisionalLoadWithError(

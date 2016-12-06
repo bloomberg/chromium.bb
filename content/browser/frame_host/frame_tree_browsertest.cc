@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
     EXPECT_EQ(2U, root->child_count());
     observer.Wait();
 
-    EXPECT_EQ(GURL(url::kAboutBlankURL), root->child_at(1)->current_url());
+    EXPECT_EQ(GURL(kAboutSrcDocURL), root->child_at(1)->current_url());
     EXPECT_TRUE(ExecuteScriptAndExtractString(
         root->child_at(1), "domAutomationController.send(document.origin);",
         &frame_origin));
@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
     EXPECT_TRUE(ExecuteScript(root, script));
     observer.Wait();
 
-    EXPECT_EQ(GURL(url::kAboutBlankURL), child->current_url());
+    EXPECT_EQ(GURL(kAboutSrcDocURL), child->current_url());
     EXPECT_TRUE(ExecuteScriptAndExtractString(
         child, "domAutomationController.send(document.origin);",
         &frame_origin));

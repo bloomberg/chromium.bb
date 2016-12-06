@@ -29,8 +29,7 @@ class MdSettingsUI : public content::WebUIController,
   void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override;
+      bool is_error_page) override;
   void DocumentLoadedInFrame(
       content::RenderFrameHost *render_frame_host) override;
   void DocumentOnLoadCompletedInMainFrame() override;

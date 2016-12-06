@@ -71,7 +71,6 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
         GURL(), main_test_rfh()->frame_tree_node(),
         true,   // is_renderer_initiated
         false,  // is_same_page
-        false,  // is_srcdoc
         base::TimeTicks::Now(), 0, NavigationGestureAuto,
         false);  // started_from_context_menu
     EXPECT_EQ(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
