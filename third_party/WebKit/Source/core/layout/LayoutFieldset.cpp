@@ -262,15 +262,7 @@ void LayoutFieldset::addChild(LayoutObject* newChild,
   if (isHTMLLegendElement(newChild->node())) {
     // Let legend block to be the 2nd for correct layout positioning.
     newChild->mutableStyle()->setOrder(2);
-
-    // LayoutFlexibleBox::addChild will create an anonymous block if legend is
-    // float. Use the existing fieldset's anonymous block here instead.
-    if (newChild->isFloatingOrOutOfFlowPositioned()) {
-      m_innerBlock->addChild(newChild);
-    } else {
-      LayoutFlexibleBox::addChild(newChild, m_innerBlock);
-    }
-
+    LayoutFlexibleBox::addChild(newChild, m_innerBlock);
   } else {
     if (beforeChild && isHTMLLegendElement(beforeChild->node())) {
       m_innerBlock->addChild(newChild);
@@ -293,17 +285,12 @@ void LayoutFieldset::createInnerBlock() {
 
 void LayoutFieldset::removeChild(LayoutObject* oldChild) {
   if (isHTMLLegendElement(oldChild->node())) {
-    if (oldChild->isFloatingOrOutOfFlowPositioned()) {
-      m_innerBlock->removeChild(oldChild);
-    } else {
-      LayoutFlexibleBox::removeChild(oldChild);
-      if (m_innerBlock) {
-        resetInnerBlockPadding(isHorizontalWritingMode(), m_innerBlock);
-        m_innerBlock->setNeedsLayout(LayoutInvalidationReason::FieldsetChanged,
-                                     MarkOnlyThis);
-      }
+    LayoutFlexibleBox::removeChild(oldChild);
+    if (m_innerBlock) {
+      resetInnerBlockPadding(isHorizontalWritingMode(), m_innerBlock);
+      m_innerBlock->setNeedsLayout(LayoutInvalidationReason::FieldsetChanged,
+                                   MarkOnlyThis);
     }
-
     setShouldDoFullPaintInvalidation();
   } else if (oldChild == m_innerBlock) {
     LayoutFlexibleBox::removeChild(oldChild);
