@@ -124,6 +124,8 @@ crbug.com/671097 virtual/spinvalidation/paint/invalidation/scroll-fixed-reflecte
 crbug.com/671097 virtual/spinvalidation/paint/invalidation/compositing/opacity-between-absolute.html [ Pass Crash ]
 crbug.com/671097 virtual/spinvalidation/paint/invalidation/compositing/opacity-between-absolute2.html [ Pass Crash ]
 
+crbug.com/671695 virtual/spinvalidation/paint/invalidation/animated-gif-transformed-offscreen.html [ Pass Crash ]
+
 crbug.com/646176 virtual/spinvalidation/paint/invalidation/svg/text-rescale.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
