@@ -9,7 +9,6 @@ if (is_android) {
 
 source_set("switches") {
   visibility = [
-    "//blimp/client/app:*",  # TODO(nyquist): Remove this. See crbug/651964.
     "//blimp/client/core/*",
     "//blimp/engine:browser_tests",  # TODO(nyquist): Remove this. See crbug/653789.
   ]

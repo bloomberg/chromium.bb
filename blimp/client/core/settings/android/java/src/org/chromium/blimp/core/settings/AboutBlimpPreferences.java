@@ -53,15 +53,12 @@ public class AboutBlimpPreferences extends PreferenceFragment {
     }
 
     private static void addBlimpPreferences(PreferenceFragment fragment) {
-        PreferenceScreen screen = fragment.getPreferenceScreen();
-
         Preference blimpSetting = new Preference(fragment.getActivity());
         blimpSetting.setTitle(R.string.blimp_about_blimp_preferences);
         blimpSetting.setFragment(AboutBlimpPreferences.class.getName());
         blimpSetting.setKey(PreferencesUtil.PREF_BLIMP_SWITCH);
 
-        screen.addPreference(blimpSetting);
-        fragment.setPreferenceScreen(screen);
+        fragment.getPreferenceScreen().addPreference(blimpSetting);
     }
 
     /**

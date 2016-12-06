@@ -6,6 +6,8 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -13,8 +15,6 @@
 #include "blimp/client/app/linux/blimp_client_context_delegate_linux.h"
 #include "blimp/client/app/linux/blimp_display_manager.h"
 #include "blimp/client/app/linux/blimp_display_manager_delegate_main.h"
-#include "blimp/client/core/settings/settings_prefs.h"
-#include "blimp/client/core/switches/blimp_client_switches.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/contents/blimp_navigation_controller.h"
 #include "blimp/client/support/compositor/compositor_dependencies_impl.h"
@@ -27,9 +27,12 @@
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontMgr_android.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/x/x11_connection.h"
 
 namespace {
+// Specifies directory where android fonts are stored.
+const char kAndroidFontsPath[] = "android-fonts-path";
 const char kDefaultUrl[] = "https://www.google.com";
 constexpr int kWindowWidth = 800;
 constexpr int kWindowHeight = 600;
@@ -46,14 +49,13 @@ class BlimpShellCommandLinePrefStore : public CommandLinePrefStore {
 };
 
 bool HasAndroidFontSwitch() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      blimp::switches::kAndroidFontsPath);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kAndroidFontsPath);
 }
 
 std::string GetAndroidFontsDirectory() {
   std::string android_fonts_dir =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          blimp::switches::kAndroidFontsPath);
+          kAndroidFontsPath);
   if (android_fonts_dir.size() > 0 && android_fonts_dir.back() != '/') {
     android_fonts_dir += '/';
   }
@@ -87,6 +89,15 @@ void SetupAndroidFontManager() {
     SetDefaultSkiaFactory(CreateAndroidFontMgr(GetAndroidFontsDirectory()));
   }
 }
+
+void InitializeResourceBundle() {
+  base::FilePath pak_file;
+  bool pak_file_valid = base::PathService::Get(base::DIR_MODULE, &pak_file);
+  CHECK(pak_file_valid);
+  pak_file = pak_file.Append(FILE_PATH_LITERAL("blimp_shell.pak"));
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
+}
+
 }  // namespace
 
 int main(int argc, const char**argv) {
@@ -98,7 +109,7 @@ int main(int argc, const char**argv) {
 
   blimp::client::InitializeLogging();
   blimp::client::InitializeMainMessageLoop();
-  blimp::client::InitializeResourceBundle();
+  InitializeResourceBundle();
 
   base::Thread io_thread("BlimpIOThread");
   base::Thread::Options options;

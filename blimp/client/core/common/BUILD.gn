@@ -10,7 +10,7 @@ if (is_android) {
 if (is_android) {
   android_library("common_java") {
     visibility = [
-      "//blimp/client/app/*",  # TODO(nyquist): Remove this. See crbug/651964.
+      "//blimp/client/app:blimp_test_java_core_deps",
       "//blimp/client/core/*",
     ]
 

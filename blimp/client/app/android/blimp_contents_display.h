@@ -18,10 +18,10 @@ class Size;
 
 namespace blimp {
 namespace client {
-class BlimpCompositorDependencies;
-class BlimpDocumentManager;
+class BlimpContents;
+class CompositorDependencies;
+class BlimpEnvironment;
 class BrowserCompositor;
-class RenderWidgetFeature;
 
 namespace app {
 
@@ -37,13 +37,12 @@ class BlimpContentsDisplay {
   // area not including system decorations (see android.view.Display.getSize()).
   // |dp_to_px| is the scale factor that is required to convert dp (device
   // pixels) to px.
-  BlimpContentsDisplay(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jobj,
-      const gfx::Size& real_size,
-      const gfx::Size& size,
-      float dp_to_px,
-      blimp::client::RenderWidgetFeature* render_widget_feature);
+  BlimpContentsDisplay(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& jobj,
+                       const gfx::Size& real_size,
+                       const gfx::Size& size,
+                       BlimpEnvironment* blimp_environment,
+                       BlimpContents* blimp_contents);
 
   // Methods called from Java via JNI.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
@@ -63,35 +62,6 @@ class BlimpContentsDisplay {
                         const base::android::JavaParamRef<jobject>& jobj);
   void OnSurfaceDestroyed(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& jobj);
-  jboolean OnTouchEvent(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& motion_event,
-      jlong time_ms,
-      jint android_action,
-      jint pointer_count,
-      jint history_size,
-      jint action_index,
-      jfloat pos_x_0,
-      jfloat pos_y_0,
-      jfloat pos_x_1,
-      jfloat pos_y_1,
-      jint pointer_id_0,
-      jint pointer_id_1,
-      jfloat touch_major_0,
-      jfloat touch_major_1,
-      jfloat touch_minor_0,
-      jfloat touch_minor_1,
-      jfloat orientation_0,
-      jfloat orientation_1,
-      jfloat tilt_0,
-      jfloat tilt_1,
-      jfloat raw_pos_x,
-      jfloat raw_pos_y,
-      jint android_tool_type_0,
-      jint android_tool_type_1,
-      jint android_button_state,
-      jint android_meta_state);
 
  private:
   virtual ~BlimpContentsDisplay();
@@ -103,11 +73,10 @@ class BlimpContentsDisplay {
   // Reference to the Java object which owns this class.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
 
-  const float device_scale_factor_;
-
-  std::unique_ptr<BlimpCompositorDependencies> compositor_dependencies_;
-  std::unique_ptr<BlimpDocumentManager> document_manager_;
+  std::unique_ptr<CompositorDependencies> compositor_dependencies_;
   std::unique_ptr<BrowserCompositor> compositor_;
+
+  BlimpContents* blimp_contents_;
 
   // The format of the current surface owned by |compositor_|.  See
   // android.graphics.PixelFormat.java.

@@ -67,6 +67,18 @@ BlimpContentsImplAndroid* BlimpContentsImpl::GetBlimpContentsImplAndroid() {
   return blimp_contents_impl_android;
 }
 
+// static
+BlimpContents* BlimpContents::FromJavaObject(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jobj) {
+  BlimpContentsImplAndroid* blimp_contents_impl_android =
+      BlimpContentsImplAndroid::FromJavaObject(env, jobj);
+  if (!blimp_contents_impl_android) {
+    return nullptr;
+  }
+  return blimp_contents_impl_android->blimp_contents_impl();
+}
+
 #endif  // defined(OS_ANDROID)
 
 BlimpNavigationControllerImpl& BlimpContentsImpl::GetNavigationController() {

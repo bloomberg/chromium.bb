@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/memory/ptr_util.h"
-#include "blimp/client/app/session/test_client_session.h"
 #include "blimp/client/core/contents/ime_feature.h"
 #include "blimp/client/core/contents/mock_ime_feature_delegate.h"
 #include "blimp/client/core/contents/mock_navigation_feature_delegate.h"
@@ -13,6 +12,7 @@
 #include "blimp/client/core/session/assignment_source.h"
 #include "blimp/client/public/session/assignment.h"
 #include "blimp/engine/browser_tests/blimp_browser_test.h"
+#include "blimp/engine/browser_tests/test_client_session.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/ip_address.h"

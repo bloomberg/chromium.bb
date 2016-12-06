@@ -54,10 +54,7 @@ repack_locales("locales") {
 # //blimp/client/public shouldn't directly depend on this since we want to
 # build different things based on |enable_blimp_client| build flag.
 source_set("resources") {
-  visibility = [
-    "//blimp/client/app/*",
-    "//blimp/client/core/*",
-  ]
+  visibility = [ "//blimp/client/core/*" ]
 
   sources = [
     "blimp_strings.cc",

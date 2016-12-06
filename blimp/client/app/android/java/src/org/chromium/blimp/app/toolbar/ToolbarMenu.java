@@ -16,9 +16,6 @@ import android.widget.ListPopupWindow;
 
 import org.chromium.base.Log;
 import org.chromium.blimp.app.R;
-import org.chromium.blimp.app.session.BlimpClientSession;
-import org.chromium.blimp.app.session.EngineInfo;
-import org.chromium.blimp.app.settings.AboutBlimpPreferences;
 import org.chromium.blimp.app.settings.Preferences;
 
 import java.util.ArrayList;
@@ -27,18 +24,7 @@ import java.util.List;
 /**
  * A PopupMenu attached to Blimp toolbar that presents various menu options to the user.
  */
-public class ToolbarMenu implements BlimpClientSession.ConnectionObserver {
-    /**
-     * An interface to be notified of user actions on ToolbarMenu.
-     */
-    public interface ToolbarMenuDelegate {
-        /**
-         * Called to show the debug view.
-         * @param show Show debug view if true, hide otherwise.
-         */
-        public void showDebugView(boolean show);
-    }
-
+public class ToolbarMenu {
     private static final String TAG = "ToolbarMenu";
 
     private Context mContext;
@@ -47,28 +33,12 @@ public class ToolbarMenu implements BlimpClientSession.ConnectionObserver {
 
     private static final int ID_OPEN_IN_CHROME = 0;
     private static final int ID_VERSION_INFO = 1;
-    private static final int ID_TOGGLE_DEBUG_INFO = 2;
 
     private List<String> mMenuTitles;
     private ArrayAdapter<String> mPopupMenuAdapter;
-    private EngineInfo mEngineInfo;
-
-    // Flag to set the visibility of debug view.
-    private boolean mDebugInfoEnabled = false;
-
-    /**
-     * Returns if the user has enabled debug view from the menu.
-     * @return true if debug view is showing, false otherwise
-     */
-    public boolean isDebugInfoEnabled() {
-        return mDebugInfoEnabled;
-    }
-
-    private ToolbarMenuDelegate mDelegate;
 
     public ToolbarMenu(Context context, Toolbar toolbar) {
         mContext = context;
-        mDelegate = (ToolbarMenuDelegate) mContext;
         mToolbar = toolbar;
     }
 
@@ -107,9 +77,6 @@ public class ToolbarMenu implements BlimpClientSession.ConnectionObserver {
                     case ID_VERSION_INFO:
                         showVersionInfo();
                         break;
-                    case ID_TOGGLE_DEBUG_INFO:
-                        toggleDebugInfo();
-                        break;
                     default:
                         assert false;
                         break;
@@ -126,8 +93,6 @@ public class ToolbarMenu implements BlimpClientSession.ConnectionObserver {
         mMenuTitles = new ArrayList<>();
         mMenuTitles.add(mContext.getString(R.string.open_in_chrome));
         mMenuTitles.add(mContext.getString(R.string.version_info));
-        mMenuTitles.add(mContext.getString(
-                mDebugInfoEnabled ? R.string.hide_debug_info : R.string.show_debug_info));
 
         mPopupMenuAdapter =
                 new ArrayAdapter<String>(mContext, R.layout.toolbar_popup_item, mMenuTitles);
@@ -153,43 +118,6 @@ public class ToolbarMenu implements BlimpClientSession.ConnectionObserver {
     private void showVersionInfo() {
         Intent intent = new Intent();
         intent.setClass(mContext, Preferences.class);
-        if (mEngineInfo != null) {
-            intent.putExtra(AboutBlimpPreferences.EXTRA_ENGINE_IP, mEngineInfo.ipAddress);
-            intent.putExtra(AboutBlimpPreferences.EXTRA_ENGINE_VERSION, mEngineInfo.engineVersion);
-        }
         mContext.startActivity(intent);
     }
-
-    private void toggleDebugInfo() {
-        mDebugInfoEnabled = !mDebugInfoEnabled;
-        mMenuTitles.set(ID_TOGGLE_DEBUG_INFO,
-                mContext.getString(
-                        mDebugInfoEnabled ? R.string.hide_debug_info : R.string.show_debug_info));
-        mPopupMenuAdapter.notifyDataSetChanged();
-        mDelegate.showDebugView(mDebugInfoEnabled);
-    }
-
-    // BlimpClientSession.ConnectionObserver interface.
-    @Override
-    public void onAssignmentReceived(
-            int result, int suggestedMessageResourceId, EngineInfo engineInfo) {
-        mEngineInfo = engineInfo;
-    }
-
-    @Override
-    public void onConnected() {
-        if (mEngineInfo == null) return;
-
-        mEngineInfo.setConnected(true);
-    }
-
-    @Override
-    public void onDisconnected(String reason) {
-        if (mEngineInfo == null) return;
-
-        mEngineInfo.setConnected(false);
-    }
-
-    @Override
-    public void updateDebugStatsUI(int received, int sent, int commits) {}
 }

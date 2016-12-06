@@ -9,8 +9,8 @@ if (is_android) {
 
 source_set("settings") {
   visibility = [
-    "//blimp/client/app:*",  # TODO(nyquist): Remove this. See crbug/651964.
     "//blimp/client/core/*",
+    "//blimp/engine:browser_tests",
   ]
 
   sources = [
@@ -78,7 +78,7 @@ source_set("unit_tests") {
 if (is_android) {
   android_library("settings_java") {
     visibility = [
-      "//blimp/client/app:*",  # TODO(nyquist): Remove this. See crbug/651964.
+      "//blimp/client/app:blimp_test_java_core_deps",
       "//blimp/client/core/*",
     ]
 

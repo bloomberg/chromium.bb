@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "blimp/client/app/blimp_discardable_memory_allocator.h"
-#include "blimp/client/core/compositor/decoding_image_generator.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gl/init/gl_factory.h"
@@ -27,10 +26,6 @@ base::LazyInstance<std::unique_ptr<base::MessageLoopForUI>>
 base::LazyInstance<blimp::client::BlimpDiscardableMemoryAllocator>
     g_discardable_memory_allocator = LAZY_INSTANCE_INITIALIZER;
 
-SkImageGenerator* CreateImageGenerator(SkData* data) {
-  return blimp::client::DecodingImageGenerator::create(data);
-}
-
 }  // namespace
 
 namespace blimp {
@@ -43,7 +38,7 @@ void InitializeLogging() {
     std::string vmodule_entries =
         "blimp_message_pump=1, blimp_connection=1,"
         "blimp_compositor=1, blimp_compositor_manager=1,"
-        "remote_channel_impl=1, blimp_client_session=1";
+        "remote_channel_impl=1";
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII("vmodule",
                                                               vmodule_entries);
   }
@@ -77,18 +72,8 @@ bool InitializeMainMessageLoop() {
   if (!gl::init::InitializeGLOneOff())
     return false;
   SkGraphics::Init();
-  SkGraphics::SetImageGeneratorFromEncodedFactory(CreateImageGenerator);
   g_main_message_loop.Get().reset(new base::MessageLoopForUI);
   return true;
-}
-
-void InitializeResourceBundle() {
-  // Load the pak file for the shell.
-  base::FilePath pak_file;
-  bool pak_file_valid = base::PathService::Get(base::DIR_MODULE, &pak_file);
-  CHECK(pak_file_valid);
-  pak_file = pak_file.Append(FILE_PATH_LITERAL("blimp_shell.pak"));
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
 }
 
 }  // namespace client

@@ -20,17 +20,20 @@ BrowserCompositor::BrowserCompositor(
     : BlimpEmbedderCompositor(compositor_dependencies) {}
 
 BrowserCompositor::~BrowserCompositor() {
-#if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
-  if (surface_handle_ != gpu::kNullSurfaceHandle)
-    gpu::GpuSurfaceTracker::Get()->RemoveSurface(surface_handle_);
-#endif
+  SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 }
 
 void BrowserCompositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
   scoped_refptr<cc::ContextProvider> provider;
 
+  if (surface_handle_ != gpu::kNullSurfaceHandle) {
+#if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+    gpu::GpuSurfaceTracker::Get()->RemoveSurface(surface_handle_);
+#endif
+    surface_handle_ = gpu::kNullSurfaceHandle;
+  }
+
   if (widget != gfx::kNullAcceleratedWidget) {
-    DCHECK_EQ(gpu::kNullSurfaceHandle, surface_handle_);
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
     surface_handle_ =
         gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(widget);

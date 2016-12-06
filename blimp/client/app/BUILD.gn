@@ -26,9 +26,6 @@ source_set("app") {
   ]
 
   public_deps = [
-    ":session",
-    "//blimp/client/core/compositor",
-    "//blimp/client/core/switches",
     "//blimp/client/support",
     "//cc",
     "//cc/surfaces",
@@ -42,7 +39,6 @@ source_set("app") {
 
   deps = [
     "//base",
-    "//blimp/client/core",
     "//blimp/client/public:public_headers",
     "//blimp/client/support",
     "//blimp/common",
@@ -57,42 +53,6 @@ source_set("app") {
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/gl/init",
-    "//url:url",
-  ]
-}
-
-source_set("session") {
-  visibility = [
-    ":*",
-    "//blimp/engine:browser_tests",
-  ]
-
-  sources = [
-    "session/blimp_client_session.cc",
-    "session/blimp_client_session.h",
-  ]
-
-  public_deps = [
-    "//blimp/client/core/context",
-    "//blimp/client/core/geolocation",
-    "//blimp/client/core/switches",
-    "//blimp/common/proto",
-    "//device/geolocation",
-    "//ui/events",
-  ]
-
-  deps = [
-    "//base",
-    "//blimp/client/core/compositor",
-    "//blimp/client/core/contents",
-    "//blimp/client/core/render_widget",
-    "//blimp/client/core/session",
-    "//blimp/client/core/settings",
-    "//blimp/common",
-    "//blimp/common/proto",
-    "//blimp/net",
-    "//net",
-    "//ui/gfx/geometry",
     "//url:url",
   ]
 }
@@ -115,20 +75,6 @@ source_set("app_unit_tests") {
   ]
 }
 
-source_set("test_support") {
-  testonly = true
-
-  sources = [
-    "session/test_client_session.cc",
-    "session/test_client_session.h",
-  ]
-
-  deps = [
-    ":session",
-    "//url",
-  ]
-}
-
 if (is_linux && !is_chromeos && use_x11) {
   executable("blimp_shell") {
     sources = [
@@ -145,10 +91,9 @@ if (is_linux && !is_chromeos && use_x11) {
       ":app",
       ":shell_strings",
       "//base",
-      "//blimp/client/core/compositor",
-      "//blimp/client/core/resources",
-      "//blimp/client/core/session",
-      "//blimp/client/core/settings:settings",
+      "//blimp/client/core",  # Necessary to link in correct code.
+      "//blimp/client/public:public_headers",
+      "//blimp/client/public/resources:shell_strings",
       "//blimp/net",
       "//components/pref_registry",
       "//components/prefs",
@@ -158,6 +103,8 @@ if (is_linux && !is_chromeos && use_x11) {
       # TODO(khushalsagar|scottmg): Remove this dependency from browser to
       # blink. See https://crbug.com/608114.
       "//third_party/WebKit/public:blink",
+      "//ui/base",
+      "//ui/events:gesture_detection",
       "//ui/events/platform/x11",
       "//ui/platform_window",
       "//ui/platform_window/x11",
@@ -165,7 +112,6 @@ if (is_linux && !is_chromeos && use_x11) {
 
     public_configs = [ "//build/config/linux:x11" ]
     public_deps = [
-      "//blimp/client/core/contents",
       "//ui/events/platform/x11",
     ]
   }
@@ -175,10 +121,12 @@ if (is_linux && !is_chromeos && use_x11) {
 repack("shell_strings") {
   sources = [
     "$root_gen_dir/blimp/client/core/resources/blimp_strings_en-US.pak",
+    "$root_gen_dir/blimp/client/support/resources/blimp_strings_en-US.pak",
   ]
 
   deps = [
     "//blimp/client/public/resources:shell_strings",
+    "//blimp/client/support/resources:strings",
   ]
 
   output = "$root_out_dir/blimp_shell.pak"
@@ -218,24 +166,19 @@ if (is_android) {
 
     sources = [
       "android/java/src/org/chromium/blimp/app/BlimpContentsDisplay.java",
+      "android/java/src/org/chromium/blimp/app/BlimpEnvironment.java",
       "android/java/src/org/chromium/blimp/app/BlimpLibraryLoader.java",
-      "android/java/src/org/chromium/blimp/app/session/BlimpClientSession.java",
-      "android/java/src/org/chromium/blimp/app/session/TabControlFeature.java",
-      "android/java/src/org/chromium/blimp/app/toolbar/Toolbar.java",
     ]
 
     jni_package = "blimp"
   }
 
   android_resources("blimp_java_resources") {
-    visibility = [
-      ":*",
-      "//blimp/client/core/contents/*",  # TODO(xingliu): Remove this.
-      "//blimp/client/core/settings/*",  # TODO(xingliu): Remove this.
-    ]
+    visibility = [ ":*" ]
     resource_dirs = [ "android/java/res" ]
     deps = [
       ":blimp_strings_grd",
+      "//third_party/android_tools:android_support_v7_appcompat_java",
     ]
     custom_package = "org.chromium.blimp.app"
   }
@@ -296,7 +239,7 @@ if (is_android) {
     deps = [
       ":blimp_java_resources",
       "//base:base_java",
-      "//blimp/client/core:core_java",
+      "//blimp/client/core:core_java",  # Necessary to link in correct code.
       "//blimp/client/public:public_headers_java",
       "//third_party/android_tools:android_support_annotations_java",
       "//third_party/android_tools:android_support_v7_appcompat_java",
@@ -308,19 +251,13 @@ if (is_android) {
     ]
 
     java_files = [
-      "android/java/src/org/chromium/blimp/app/auth/RetryingTokenSource.java",
-      "android/java/src/org/chromium/blimp/app/auth/TokenSource.java",
-      "android/java/src/org/chromium/blimp/app/auth/TokenSourceImpl.java",
       "android/java/src/org/chromium/blimp/app/BlimpApplication.java",
       "android/java/src/org/chromium/blimp/app/BlimpContentsDisplay.java",
+      "android/java/src/org/chromium/blimp/app/BlimpEnvironment.java",
       "android/java/src/org/chromium/blimp/app/BlimpLibraryLoader.java",
       "android/java/src/org/chromium/blimp/app/BlimpRendererActivity.java",
       "android/java/src/org/chromium/blimp/app/BrowserRestartActivity.java",
-      "android/java/src/org/chromium/blimp/app/preferences/PreferencesUtil.java",
-      "android/java/src/org/chromium/blimp/app/session/BlimpClientSession.java",
-      "android/java/src/org/chromium/blimp/app/session/EngineInfo.java",
-      "android/java/src/org/chromium/blimp/app/session/TabControlFeature.java",
-      "android/java/src/org/chromium/blimp/app/settings/AboutBlimpPreferences.java",
+      "android/java/src/org/chromium/blimp/app/settings/AppBlimpPreferenceScreen.java",
       "android/java/src/org/chromium/blimp/app/settings/Preferences.java",
       "android/java/src/org/chromium/blimp/app/toolbar/Toolbar.java",
       "android/java/src/org/chromium/blimp/app/toolbar/ToolbarMenu.java",
@@ -328,6 +265,22 @@ if (is_android) {
     ]
   }
 
+  # Wrapper target for all Java code in core that blimp_test_java tests.
+  # This enables the visibility of those targets to be specific instead of
+  # using the //blimp/client/app:* wildcard.
+  java_group("blimp_test_java_core_deps") {
+    visibility = [ ":*" ]
+
+    testonly = true
+
+    deps = [
+      "//blimp/client/core/common:common_java",
+      "//blimp/client/core/contents:contents_java",
+      "//blimp/client/core/settings:settings_java",
+    ]
+  }
+
+  # This test target is also the host for all //blimp/client/core tests.
   android_library("blimp_test_java") {
     visibility = [ ":*" ]
 
@@ -335,11 +288,9 @@ if (is_android) {
 
     deps = [
       ":blimp_java",
+      ":blimp_test_java_core_deps",
       "//base:base_java",
       "//base:base_java_test_support",
-      "//blimp/client/core/common:common_java",
-      "//blimp/client/core/contents:contents_java",
-      "//blimp/client/core/settings:settings_java",
       "//blimp/client/public:public_headers_java",
       "//components/signin/core/browser/android:java",
       "//components/sync/android:sync_java",
@@ -349,8 +300,6 @@ if (is_android) {
     ]
 
     java_files = [
-      "android/javatests/src/org/chromium/blimp/app/auth/MockTokenSource.java",
-      "android/javatests/src/org/chromium/blimp/app/auth/RetryingTokenSourceTest.java",
       "android/javatests/src/org/chromium/blimp/app/BlimpNativeInstrumentationTestCase.java",
       "android/javatests/src/org/chromium/blimp/core/MockBlimpClientContext.java",
       "android/javatests/src/org/chromium/blimp/core/MockBlimpClientContextDelegate.java",
@@ -364,47 +313,60 @@ if (is_android) {
       ":app",
       ":jni_headers",
       "//base",
-      "//blimp/client/core",
-      "//blimp/client/core/compositor",
-      "//blimp/client/core/contents",
-      "//blimp/client/core/session:session",
-      "//blimp/client/core/settings",
+      "//blimp/client/core",  # Necessary to link in correct code.
       "//blimp/client/public:public_headers",
+      "//blimp/client/support/resources",
       "//blimp/common",
       "//blimp/common/proto",
       "//blimp/net",
+      "//components/pref_registry",
+      "//components/prefs",
       "//components/safe_json/android:safe_json_jni_headers",
+      "//components/signin/core/browser",
       "//components/version_info",
       "//net",
       "//skia",
+      "//ui/android",
+      "//ui/base",
       "//ui/gfx/geometry",
       "//ui/gl",
-      "//url:url",
+      "//url",
     ]
 
     sources = [
       "android/blimp_app_jni_registrar.cc",
       "android/blimp_app_jni_registrar.h",
-      "android/blimp_client_session_android.cc",
-      "android/blimp_client_session_android.h",
+      "android/blimp_client_context_delegate_android.cc",
+      "android/blimp_client_context_delegate_android.h",
       "android/blimp_contents_display.cc",
       "android/blimp_contents_display.h",
+      "android/blimp_environment.cc",
+      "android/blimp_environment.h",
       "android/blimp_library_loader.cc",
       "android/blimp_library_loader.h",
-      "android/tab_control_feature_android.cc",
-      "android/tab_control_feature_android.h",
-      "android/toolbar.cc",
-      "android/toolbar.h",
     ]
 
     libs = [ "android" ]
   }
 
+  android_assets("blimp_apk_assets") {
+    sources = [
+      "$root_out_dir/blimp_shell.pak",
+    ]
+
+    deps = [
+      ":shell_strings",
+      "//third_party/icu:icu_assets",
+    ]
+    disable_compression = true
+  }
+
   android_apk("blimp_apk") {
     deps = [
+      ":blimp_apk_assets",
       ":blimp_java",
       "//base:base_java",
-      "//blimp/client/core:core_java",
+      "//blimp/client/core:core_java",  # Necessary to link in correct code.
       "//components/safe_json/android:safe_json_java",
       "//net/android:net_java",
     ]

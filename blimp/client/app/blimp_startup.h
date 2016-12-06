@@ -12,8 +12,6 @@ void InitializeLogging();
 
 bool InitializeMainMessageLoop();
 
-void InitializeResourceBundle();
-
 }  // namespace client
 }  // namespace blimp
 

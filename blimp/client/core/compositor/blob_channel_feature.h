@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
-#include "blimp/client/core/compositor/decoding_image_generator.h"
 #include "blimp/net/blimp_message_processor.h"
 
 namespace blimp {

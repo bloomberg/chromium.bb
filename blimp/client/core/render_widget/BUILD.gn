@@ -4,8 +4,8 @@
 
 source_set("render_widget") {
   visibility = [
-    "//blimp/client/app:session",  # TODO(nyquist): Remove this. See crbug/651964.
     "//blimp/client/core/*",
+    "//blimp/engine:browser_tests",
   ]
 
   sources = [

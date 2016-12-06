@@ -45,6 +45,12 @@ class BlimpContents : public base::SupportsUserData {
   virtual void Hide() = 0;
 
 #if defined(OS_ANDROID)
+  // Returns the native BlimpContents corresponding to a Java object of the type
+  // org.chromium.blimp.BlimpContents or nullptr if the lookup fails.
+  static BlimpContents* FromJavaObject(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj);
+
   // Returns a Java object of the type BlimpContents for the given
   // BlimpContents.
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;

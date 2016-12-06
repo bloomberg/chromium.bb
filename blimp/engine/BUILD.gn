@@ -770,12 +770,16 @@ source_set("browser_tests") {
   sources = [
     "browser_tests/blimp_browser_test.cc",
     "browser_tests/blimp_browser_test.h",
+    "browser_tests/blimp_client_session.cc",
+    "browser_tests/blimp_client_session.h",
     "browser_tests/blimp_contents_view_readback_helper.cc",
     "browser_tests/blimp_contents_view_readback_helper.h",
     "browser_tests/blimp_test_launcher.cc",
     "browser_tests/input_browsertest.cc",
     "browser_tests/integration_test.cc",
     "browser_tests/navigation_browsertest.cc",
+    "browser_tests/test_client_session.cc",
+    "browser_tests/test_client_session.h",
     "browser_tests/waitable_content_pump.cc",
     "browser_tests/waitable_content_pump.h",
   ]
@@ -784,15 +788,19 @@ source_set("browser_tests") {
 
   deps = [
     "//base",
-    "//blimp/client/app:session",
-    "//blimp/client/app:test_support",
+    "//blimp/client/core/compositor",
+    "//blimp/client/core/contents",
     "//blimp/client/core/contents:test_support",
     "//blimp/client/core/context",
+    "//blimp/client/core/geolocation",
+    "//blimp/client/core/render_widget",
     "//blimp/client/core/render_widget:test_support",
     "//blimp/client/core/session",
+    "//blimp/client/core/settings",
     "//blimp/client/core/switches",
     "//blimp/client/test",
     "//blimp/common",
+    "//blimp/common/proto",
     "//blimp/engine:app",
     "//blimp/engine:app_config",
     "//blimp/engine:app_switches",
@@ -803,8 +811,13 @@ source_set("browser_tests") {
     "//components/prefs:test_support",
     "//content/public/app:both",
     "//content/test:test_support",
+    "//device/geolocation",
+    "//net",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/events",
+    "//ui/gfx/geometry",
+    "//url",
   ]
 
   data = [
