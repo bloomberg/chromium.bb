@@ -1260,7 +1260,7 @@ void FrameView::layout() {
   if (m_nestedLayoutCount)
     return;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Post-layout assert that nobody was re-marked as needing layout during
   // layout.
   layoutView()->assertSubtreeIsLaidOut();
@@ -1289,7 +1289,7 @@ void FrameView::invalidateTreeIfNeeded(
   invalidatePaintIfNeeded(paintInvalidationState);
   rootForPaintInvalidation.invalidateTreeIfNeeded(paintInvalidationState);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   layoutView()->assertSubtreeClearedPaintInvalidationFlags();
 #endif
 
@@ -3114,7 +3114,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal() {
   // These asserts ensure that parent frames are clean, when child frames
   // finished updating layout and style.
   checkDoesNotNeedLayout();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_frame->document()->layoutView()->assertLaidOut();
 #endif
 
