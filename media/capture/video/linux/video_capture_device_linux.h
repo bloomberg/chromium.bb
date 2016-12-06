@@ -55,6 +55,9 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   // VideoCaptureDeviceLinux lives but otherwise operating on |v4l2_thread_|.
   scoped_refptr<V4L2CaptureDelegate> capture_impl_;
 
+  // Photo-related requests waiting for |v4l2_thread_| to be active.
+  std::list<base::Closure> photo_requests_queue_;
+
   base::Thread v4l2_thread_;  // Thread used for reading data from the device.
 
   const VideoCaptureDeviceDescriptor device_descriptor_;
