@@ -1910,3 +1910,7 @@ Bug(dpranke) imported/wpt/service-workers/service-worker/register-closed-window.
 
 # Added 2016-11-30
 crbug.com/669911 [ Win7 Win10 ] virtual/threaded/animations/zoom-responsive-transform-animation.html [ Pass Failure Timeout ]
+
+# Added 2016-11-06
+crbug.com/671548 paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
+crbug.com/671548 virtual/spinvalidation/paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
