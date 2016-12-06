@@ -1947,6 +1947,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 // Test that CertVerifyProcMac reacts appropriately when Apple's certificate
 // verifier rejects a certificate with a fatal error. This is a regression
 // test for https://crbug.com/472291.
+// (Since 10.12, this causes a recoverable error instead of a fatal one.)
+// TODO(mattm): Try to find a different way to cause a fatal error that works
+// on 10.12.
 TEST_F(CertVerifyProcTest, LargeKey) {
   // Load root_ca_cert.pem into the test root store.
   ScopedTestRoot test_root(
@@ -1963,7 +1966,7 @@ TEST_F(CertVerifyProcTest, LargeKey) {
   int error = Verify(cert.get(), "127.0.0.1", flags, NULL, empty_cert_list_,
                      &verify_result);
   EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
-  EXPECT_EQ(CERT_STATUS_INVALID, verify_result.cert_status);
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_INVALID);
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
