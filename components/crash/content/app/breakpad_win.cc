@@ -151,12 +151,27 @@ MSVC_ENABLE_OPTIMIZE()
 
 // Injects a thread into a remote process to dump state when there is no crash.
 extern "C" HANDLE __declspec(dllexport) __cdecl InjectDumpProcessWithoutCrash(
+    HANDLE process) {
+  return CreateRemoteThread(process, NULL, 0, DumpProcessWithoutCrashThread, 0,
+                            0, NULL);
+}
+
+extern "C" HANDLE __declspec(dllexport) __cdecl InjectDumpForHungInput(
     HANDLE process,
     void* serialized_crash_keys) {
   // |serialized_crash_keys| is not propagated in breakpad but is in crashpad
   // since breakpad is deprecated.
   return CreateRemoteThread(process, NULL, 0, DumpProcessWithoutCrashThread,
                             0, 0, NULL);
+}
+
+extern "C" HANDLE __declspec(
+    dllexport) __cdecl InjectDumpForHungInputNoCrashKeys(HANDLE process,
+                                                         int reason) {
+  // |reason| is not propagated in breakpad but is in crashpad since breakpad
+  // is deprecated.
+  return CreateRemoteThread(process, NULL, 0, DumpProcessWithoutCrashThread, 0,
+                            0, NULL);
 }
 
 extern "C" HANDLE __declspec(dllexport) __cdecl

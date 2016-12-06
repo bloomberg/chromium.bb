@@ -151,8 +151,9 @@ extern "C" void __declspec(dllexport) __cdecl DumpProcessWithoutCrash() {
 
 namespace {
 
-// We need to prevent ICF from folding DumpForHangDebuggingThread() and
-// DumpProcessWithoutCrashThread() together, since that makes them
+// We need to prevent ICF from folding DumpForHangDebuggingThread(),
+// DumpProcessForHungInputThread(), DumpProcessForHungInputNoCrashKeysThread()
+// and DumpProcessWithoutCrashThread() together, since that makes them
 // indistinguishable in crash dumps. We do this by making the function
 // bodies unique, and prevent optimization from shuffling things around.
 MSVC_DISABLE_OPTIMIZE()
@@ -160,7 +161,14 @@ MSVC_PUSH_DISABLE_WARNING(4748)
 
 // Note that this function must be in a namespace for the [Renderer hang]
 // annotations to work on the crash server.
-DWORD WINAPI DumpProcessWithoutCrashThread(void* crash_keys_str) {
+DWORD WINAPI DumpProcessWithoutCrashThread(void*) {
+  DumpProcessWithoutCrash();
+  return 0;
+}
+
+// TODO(dtapuska): Remove when enough information is gathered where the crash
+// reports without crash keys come from.
+DWORD WINAPI DumpProcessForHungInputThread(void* crash_keys_str) {
   base::StringPairs crash_keys;
   if (crash_keys_str && base::SplitStringIntoKeyValuePairs(
                             reinterpret_cast<const char*>(crash_keys_str), ':',
@@ -173,9 +181,19 @@ DWORD WINAPI DumpProcessWithoutCrashThread(void* crash_keys_str) {
   return 0;
 }
 
-// The following two functions do exactly the same thing as the two above. But
-// we want the signatures to be different so that we can easily track them in
-// crash reports.
+// TODO(dtapuska): Remove when enough information is gathered where the crash
+// reports without crash keys come from.
+DWORD WINAPI DumpProcessForHungInputNoCrashKeysThread(void* reason) {
+#pragma warning(push)
+#pragma warning(disable : 4311 4302)
+  base::debug::SetCrashKeyValue(
+      "hung-reason", base::IntToString(reinterpret_cast<int>(reason)));
+#pragma warning(pop)
+
+  DumpProcessWithoutCrash();
+  return 0;
+}
+
 // TODO(yzshen): Remove when enough information is collected and the hang rate
 // of pepper/renderer processes is reduced.
 DWORD WINAPI DumpForHangDebuggingThread(void*) {
@@ -207,17 +225,38 @@ int __declspec(dllexport) CrashForException(
 }
 
 // Injects a thread into a remote process to dump state when there is no crash.
+HANDLE __declspec(dllexport) __cdecl InjectDumpProcessWithoutCrash(
+    HANDLE process) {
+  return CreateRemoteThread(
+      process, nullptr, 0,
+      crash_reporter::internal::DumpProcessWithoutCrashThread, nullptr, 0,
+      nullptr);
+}
+
+// Injects a thread into a remote process to dump state when there is no crash.
 // |serialized_crash_keys| is a nul terminated string that represents serialized
 // crash keys sent from the browser. Keys and values are separated by ':', and
 // key/value pairs are separated by ','. All keys should be previously
-// registered as crash keys.
-HANDLE __declspec(dllexport) __cdecl InjectDumpProcessWithoutCrash(
+// registered as crash keys. This method is used solely to classify hung input.
+HANDLE __declspec(dllexport) __cdecl InjectDumpForHungInput(
     HANDLE process,
     void* serialized_crash_keys) {
   return CreateRemoteThread(
       process, nullptr, 0,
-      crash_reporter::internal::DumpProcessWithoutCrashThread,
+      crash_reporter::internal::DumpProcessForHungInputThread,
       serialized_crash_keys, 0, nullptr);
+}
+
+// Injects a thread into a remote process to dump state when there is no crash.
+// This method provides |reason| which will interpreted as an integer and logged
+// as a crash key.
+HANDLE __declspec(dllexport) __cdecl InjectDumpForHungInputNoCrashKeys(
+    HANDLE process,
+    int reason) {
+  return CreateRemoteThread(
+      process, nullptr, 0,
+      crash_reporter::internal::DumpProcessForHungInputNoCrashKeysThread,
+      reinterpret_cast<void*>(reason), 0, nullptr);
 }
 
 HANDLE __declspec(dllexport) __cdecl InjectDumpForHangDebugging(
