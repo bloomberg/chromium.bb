@@ -270,12 +270,13 @@ class RequestCoordinator : public KeyedService,
   void ScheduleAsNeeded();
 
   // Callback from the request picker when it has chosen our next request.
-  void RequestPicked(const SavePageRequest& request);
+  void RequestPicked(const SavePageRequest& request, bool cleanup_needed);
 
   // Callback from the request picker when no more requests are in the queue.
   // The parameter is a signal for what (if any) conditions to schedule future
   // processing for.
-  void RequestNotPicked(bool non_user_requested_tasks_remaining);
+  void RequestNotPicked(bool non_user_requested_tasks_remaining,
+                        bool cleanup_needed);
 
   // Callback from request picker that receives the current available queued
   // request count as well as the total queued request count (which may be

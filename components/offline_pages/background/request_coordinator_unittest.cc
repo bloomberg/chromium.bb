@@ -26,7 +26,6 @@
 #include "components/offline_pages/background/offliner_factory_stub.h"
 #include "components/offline_pages/background/offliner_policy.h"
 #include "components/offline_pages/background/offliner_stub.h"
-#include "components/offline_pages/background/pick_request_task_factory.h"
 #include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/background/save_page_request.h"
@@ -232,7 +231,7 @@ class RequestCoordinatorTest
     else
       coordinator_->disabled_requests_.clear();
 
-    coordinator_->RequestNotPicked(non_user_requested_tasks_remaining);
+    coordinator_->RequestNotPicked(non_user_requested_tasks_remaining, false);
   }
 
   void SetDeviceConditionsForTest(DeviceConditions device_conditions) {
@@ -326,12 +325,6 @@ void RequestCoordinatorTest::SetUp() {
       std::move(scheduler_stub), network_quality_estimator_.get()));
   coordinator_->AddObserver(&observer_);
   SetNetworkConnected(true);
-  std::unique_ptr<PickRequestTaskFactory> picker_factory(
-      new PickRequestTaskFactory(
-          coordinator_->policy(),
-          static_cast<RequestNotifier*>(coordinator_.get()),
-          coordinator_->GetLogger()));
-  coordinator_->queue()->SetPickerFactory(std::move(picker_factory));
   immediate_callback_ =
       base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
                  base::Unretained(this));

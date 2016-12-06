@@ -535,8 +535,6 @@ TEST_F(RequestQueueTest, MarkAttemptCompleted) {
             update_requests_result()->updated_items.at(0).request_state());
 }
 
-// Request expiration is detected during the call to pick a request, which
-// is why this test calls PickNextRequest().
 TEST_F(RequestQueueTest, CleanStaleRequests) {
   // Create a request that is already expired.
   base::Time creation_time =
@@ -554,21 +552,14 @@ TEST_F(RequestQueueTest, CleanStaleRequests) {
   OfflinerPolicy policy;
   RequestNotifierStub notifier;
   RequestCoordinatorEventLogger event_logger;
-  std::unique_ptr<PickRequestTaskFactory> picker_factory(
-      new PickRequestTaskFactory(&policy, &notifier, &event_logger));
-  queue()->SetPickerFactory(std::move(picker_factory));
+  std::unique_ptr<CleanupTaskFactory> cleanup_factory(
+      new CleanupTaskFactory(&policy, &notifier, &event_logger));
+  queue()->SetCleanupFactory(std::move(cleanup_factory));
 
   // Do a pick and clean operation, which will remove stale entries.
   DeviceConditions conditions;
   std::set<int64_t> disabled_list;
-  queue()->PickNextRequest(
-      base::Bind(&RequestQueueTest::RequestPickedCallback,
-                 base::Unretained(this)),
-      base::Bind(&RequestQueueTest::RequestNotPickedCallback,
-                 base::Unretained(this)),
-      base::Bind(&RequestQueueTest::RequestCountCallback,
-                 base::Unretained(this)),
-      conditions, disabled_list);
+  queue()->CleanupRequestQueue();
 
   this->PumpLoop();
 

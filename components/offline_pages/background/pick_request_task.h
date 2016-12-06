@@ -17,8 +17,6 @@ namespace offline_pages {
 class DeviceConditions;
 class OfflinerPolicy;
 class PickRequestTask;
-class RequestCoordinatorEventLogger;
-class RequestNotifier;
 class RequestQueueStore;
 
 typedef bool (PickRequestTask::*RequestCompareFunction)(
@@ -28,19 +26,19 @@ typedef bool (PickRequestTask::*RequestCompareFunction)(
 class PickRequestTask : public Task {
  public:
   // Callback to report when a request was available.
-  typedef base::Callback<void(const SavePageRequest& request)>
+  typedef base::Callback<void(const SavePageRequest& request,
+                              bool cleanup_needed)>
       RequestPickedCallback;
 
   // Callback to report when no request was available.
-  typedef base::Callback<void(bool)> RequestNotPickedCallback;
+  typedef base::Callback<void(bool non_user_requests, bool cleanup_needed)>
+      RequestNotPickedCallback;
 
   // Callback to report available total and available queued request counts.
   typedef base::Callback<void(size_t, size_t)> RequestCountCallback;
 
   PickRequestTask(RequestQueueStore* store,
                   OfflinerPolicy* policy,
-                  RequestNotifier* notifier,
-                  RequestCoordinatorEventLogger* event_logger,
                   RequestPickedCallback picked_callback,
                   RequestNotPickedCallback not_picked_callback,
                   RequestCountCallback request_count_callback,
@@ -53,28 +51,14 @@ class PickRequestTask : public Task {
   void Run() override;
 
  private:
-  // Step 1, handle getting the results from the store.
-  void ChooseAndPrune(bool request,
-                      std::vector<std::unique_ptr<SavePageRequest>> requests);
+  // Step 1. get the requests
+  void GetRequests();
 
-  // Step 2a. Handle choosing an entry, and calling the right picked callback
-  // and the request count callback.
-  void ChooseRequestAndCallback(
-      std::vector<std::unique_ptr<SavePageRequest>> valid_requests);
-
-  // Step 2b. Handle deleting stale entries and notifying observers.
-  void RemoveStaleRequests(std::vector<int64_t> stale_request_ids);
-
-  // Step 3. Send delete notifications for the expired requests.
-  void OnRequestsExpired(std::unique_ptr<UpdateRequestsResult> result);
+  // Step 2. pick a request that we like best from available requests.
+  void Choose(bool get_succeeded,
+              std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Helper functions.
-
-  // Split requests into valid and expired categories.
-  void SplitRequests(
-      std::vector<std::unique_ptr<SavePageRequest>> requests,
-      std::vector<std::unique_ptr<SavePageRequest>>* valid_requests,
-      std::vector<int64_t>* expired_request_ids);
 
   // Determine if this request has device conditions appropriate for running it.
   bool RequestConditionsSatisfied(const SavePageRequest* request);
@@ -105,8 +89,6 @@ class PickRequestTask : public Task {
   // Member variables, all pointers are not owned here.
   RequestQueueStore* store_;
   OfflinerPolicy* policy_;
-  RequestNotifier* notifier_;
-  RequestCoordinatorEventLogger* event_logger_;
   RequestPickedCallback picked_callback_;
   RequestNotPickedCallback not_picked_callback_;
   RequestCountCallback request_count_callback_;

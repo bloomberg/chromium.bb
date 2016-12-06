@@ -15,9 +15,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/background/cleanup_task_factory.h"
 #include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/pick_request_task.h"
-#include "components/offline_pages/background/pick_request_task_factory.h"
 #include "components/offline_pages/background/request_queue_results.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/core/task_queue.h"
@@ -26,8 +26,8 @@
 
 namespace offline_pages {
 
+class CleanupTaskFactory;
 class RequestQueueStore;
-class PickRequestTaskFactory;
 
 // Class responsible for managing save page requests.
 class RequestQueue {
@@ -91,18 +91,23 @@ class RequestQueue {
   // Make a task to pick the next request, and report our choice to the
   // callbacks.
   void PickNextRequest(
+      OfflinerPolicy* policy,
       PickRequestTask::RequestPickedCallback picked_callback,
       PickRequestTask::RequestNotPickedCallback not_picked_callback,
       PickRequestTask::RequestCountCallback request_count_callback,
       DeviceConditions& conditions,
       std::set<int64_t>& disabled_requests);
 
+  // Cleanup requests that have expired, exceeded the start or completed retry
+  // limit.
+  void CleanupRequestQueue();
+
   // Takes ownership of the factory.  We use a setter to allow users of the
-  // request queue to not need a PickerFactory to create it, since we have lots
+  // request queue to not need a CleanupFactory to create it, since we have lots
   // of code using the request queue.  The request coordinator will set a
-  // factory before calling PickNextRequest.
-  void SetPickerFactory(std::unique_ptr<PickRequestTaskFactory> factory) {
-    picker_factory_ = std::move(factory);
+  // factory before calling CleanupRequestQueue.
+  void SetCleanupFactory(std::unique_ptr<CleanupTaskFactory> factory) {
+    cleanup_factory_ = std::move(factory);
   }
 
  private:
@@ -115,8 +120,8 @@ class RequestQueue {
   // Task queue to serialize store access.
   TaskQueue task_queue_;
 
-  // Builds PickRequestTask objects.
-  std::unique_ptr<PickRequestTaskFactory> picker_factory_;
+  // Builds CleanupTask objects.
+  std::unique_ptr<CleanupTaskFactory> cleanup_factory_;
 
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestQueue> weak_ptr_factory_;

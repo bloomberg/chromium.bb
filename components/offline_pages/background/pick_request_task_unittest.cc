@@ -95,9 +95,10 @@ class PickRequestTaskTest : public testing::Test {
 
   void AddRequestDone(ItemActionStatus status);
 
-  void RequestPicked(const SavePageRequest& request);
+  void RequestPicked(const SavePageRequest& request, bool cleanup_needed);
 
-  void RequestNotPicked(const bool non_user_requested_tasks_remaining);
+  void RequestNotPicked(const bool non_user_requested_tasks_remaining,
+                        bool cleanup_needed);
 
   void RequestCountCallback(size_t total_count, size_t available_count);
 
@@ -105,7 +106,7 @@ class PickRequestTaskTest : public testing::Test {
                      const SavePageRequest& request2);
 
   // Reset the factory and the task using the current policy.
-  void MakeFactoryAndTask();
+  void MakePickRequestTask();
 
   RequestNotifierStub* GetNotifier() { return notifier_.get(); }
 
@@ -122,9 +123,9 @@ class PickRequestTaskTest : public testing::Test {
   std::unique_ptr<OfflinerPolicy> policy_;
   RequestCoordinatorEventLogger event_logger_;
   std::set<int64_t> disabled_requests_;
-  std::unique_ptr<PickRequestTaskFactory> factory_;
   std::unique_ptr<PickRequestTask> task_;
   bool request_queue_not_picked_called_;
+  bool cleanup_needed_;
   size_t total_request_count_;
   size_t available_request_count_;
   bool task_complete_called_;
@@ -145,12 +146,13 @@ void PickRequestTaskTest::SetUp() {
   store_.reset(new RequestQueueInMemoryStore());
   policy_.reset(new OfflinerPolicy());
   notifier_.reset(new RequestNotifierStub());
-  MakeFactoryAndTask();
+  MakePickRequestTask();
   request_queue_not_picked_called_ = false;
   total_request_count_ = 9999;
   available_request_count_ = 9999;
   task_complete_called_ = false;
   last_picked_.reset();
+  cleanup_needed_ = false;
 
   store_->Initialize(base::Bind(&PickRequestTaskTest::InitializeStoreDone,
                                 base::Unretained(this)));
@@ -167,12 +169,15 @@ void PickRequestTaskTest::TaskCompletionCallback(Task* completed_task) {
 
 void PickRequestTaskTest::AddRequestDone(ItemActionStatus status) {}
 
-void PickRequestTaskTest::RequestPicked(const SavePageRequest& request) {
+void PickRequestTaskTest::RequestPicked(const SavePageRequest& request,
+                                        const bool cleanup_needed) {
   last_picked_.reset(new SavePageRequest(request));
+  cleanup_needed_ = cleanup_needed;
 }
 
 void PickRequestTaskTest::RequestNotPicked(
-    const bool non_user_requested_tasks_remaining) {
+    const bool non_user_requested_tasks_remaining,
+    const bool cleanup_needed) {
   request_queue_not_picked_called_ = true;
 }
 
@@ -197,18 +202,16 @@ void PickRequestTaskTest::QueueRequests(const SavePageRequest& request1,
   PumpLoop();
 }
 
-void PickRequestTaskTest::MakeFactoryAndTask() {
-  factory_.reset(new PickRequestTaskFactory(policy_.get(), notifier_.get(),
-                                            &event_logger_));
+void PickRequestTaskTest::MakePickRequestTask() {
   DeviceConditions conditions;
-  task_ = factory_->CreatePickerTask(
-      store_.get(),
+  task_.reset(new PickRequestTask(
+      store_.get(), policy_.get(),
       base::Bind(&PickRequestTaskTest::RequestPicked, base::Unretained(this)),
       base::Bind(&PickRequestTaskTest::RequestNotPicked,
                  base::Unretained(this)),
       base::Bind(&PickRequestTaskTest::RequestCountCallback,
                  base::Unretained(this)),
-      conditions, disabled_requests_);
+      conditions, disabled_requests_));
   task_->SetTaskCompletionCallbackForTesting(
       task_runner_.get(),
       base::Bind(&PickRequestTaskTest::TaskCompletionCallback,
@@ -229,8 +232,8 @@ TEST_F(PickRequestTaskTest, PickFromEmptyQueue) {
   PumpLoop();
 
   EXPECT_TRUE(request_queue_not_picked_called_);
-  EXPECT_EQ((size_t) 0, total_request_count_);
-  EXPECT_EQ((size_t) 0, available_request_count_);
+  EXPECT_EQ(0UL, total_request_count_);
+  EXPECT_EQ(0UL, available_request_count_);
   EXPECT_TRUE(task_complete_called_);
 }
 
@@ -239,7 +242,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithHigherRetryCount) {
   policy_.reset(new OfflinerPolicy(
       kPreferUntried, kPreferEarlier, kPreferRetryCount, kMaxStartedTries,
       kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
-  MakeFactoryAndTask();
+  MakePickRequestTask();
 
   base::Time creation_time = base::Time::Now();
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
@@ -255,8 +258,8 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithHigherRetryCount) {
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
-  EXPECT_EQ((size_t) 2, total_request_count_);
-  EXPECT_EQ((size_t) 2, available_request_count_);
+  EXPECT_EQ(2UL, total_request_count_);
+  EXPECT_EQ(2UL, available_request_count_);
   EXPECT_TRUE(task_complete_called_);
 }
 
@@ -284,7 +287,7 @@ TEST_F(PickRequestTaskTest, ChooseEarlierRequest) {
   policy_.reset(new OfflinerPolicy(
       kPreferUntried, kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
       kMaxCompletedTries, kBackgroundProcessingTimeBudgetSeconds));
-  MakeFactoryAndTask();
+  MakePickRequestTask();
 
   base::Time creation_time1 =
       base::Time::Now() - base::TimeDelta::FromSeconds(10);
@@ -310,7 +313,7 @@ TEST_F(PickRequestTaskTest, ChooseSameTimeRequestWithHigherRetryCount) {
   policy_.reset(new OfflinerPolicy(
       kPreferUntried, kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
       kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
-  MakeFactoryAndTask();
+  MakePickRequestTask();
 
   base::Time creation_time = base::Time::Now();
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
@@ -334,7 +337,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithLowerRetryCount) {
   policy_.reset(new OfflinerPolicy(
       !kPreferUntried, kPreferEarlier, kPreferRetryCount, kMaxStartedTries,
       kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
-  MakeFactoryAndTask();
+  MakePickRequestTask();
 
   base::Time creation_time = base::Time::Now();
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
@@ -358,7 +361,7 @@ TEST_F(PickRequestTaskTest, ChooseLaterRequest) {
   policy_.reset(new OfflinerPolicy(
       kPreferUntried, !kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
       kMaxCompletedTries, kBackgroundProcessingTimeBudgetSeconds));
-  MakeFactoryAndTask();
+  MakePickRequestTask();
 
   base::Time creation_time1 =
       base::Time::Now() - base::TimeDelta::FromSeconds(10);
@@ -395,13 +398,10 @@ TEST_F(PickRequestTaskTest, ChooseNonExpiredRequest) {
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
-  EXPECT_EQ(kRequestId2, GetNotifier()->last_expired_request().request_id());
-  EXPECT_EQ(RequestNotifier::BackgroundSavePageResult::EXPIRED,
-            GetNotifier()->last_request_expiration_status());
-  EXPECT_EQ(1, GetNotifier()->total_expired_requests());
-  EXPECT_EQ((size_t) 1, total_request_count_);
-  EXPECT_EQ((size_t) 1, available_request_count_);
+  EXPECT_EQ(2UL, total_request_count_);
+  EXPECT_EQ(1UL, available_request_count_);
   EXPECT_TRUE(task_complete_called_);
+  EXPECT_TRUE(cleanup_needed_);
 }
 
 TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededStartLimit) {
@@ -424,11 +424,10 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededStartLimit) {
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
-  // TODO(dougarnett): Counts should be 1 here once requests exceeding start
-  // count get cleaned up from the queue.
-  EXPECT_EQ((size_t) 2, total_request_count_);
-  EXPECT_EQ((size_t) 2, available_request_count_);
+  EXPECT_EQ(2UL, total_request_count_);
+  EXPECT_EQ(1UL, available_request_count_);
   EXPECT_TRUE(task_complete_called_);
+  EXPECT_TRUE(cleanup_needed_);
 }
 
 TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededCompletionLimit) {
@@ -452,6 +451,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededCompletionLimit) {
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
   EXPECT_TRUE(task_complete_called_);
+  EXPECT_TRUE(cleanup_needed_);
 }
 
 TEST_F(PickRequestTaskTest, ChooseRequestThatIsNotDisabled) {
@@ -462,7 +462,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatIsNotDisabled) {
   // put request 2 on disabled list, ensure request1 picked instead,
   // even though policy would prefer 2.
   disabled_requests_.insert(kRequestId2);
-  MakeFactoryAndTask();
+  MakePickRequestTask();
 
   base::Time creation_time = base::Time::Now();
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
@@ -484,8 +484,8 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatIsNotDisabled) {
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
-  EXPECT_EQ((size_t) 2, total_request_count_);
-  EXPECT_EQ((size_t) 1, available_request_count_);
+  EXPECT_EQ(2UL, total_request_count_);
+  EXPECT_EQ(1UL, available_request_count_);
   EXPECT_TRUE(task_complete_called_);
 }
 

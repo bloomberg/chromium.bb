@@ -17,7 +17,6 @@
 #include "components/offline_pages/background/mark_attempt_completed_task.h"
 #include "components/offline_pages/background/mark_attempt_started_task.h"
 #include "components/offline_pages/background/pick_request_task.h"
-#include "components/offline_pages/background/pick_request_task_factory.h"
 #include "components/offline_pages/background/remove_requests_task.h"
 #include "components/offline_pages/background/request_queue_store.h"
 #include "components/offline_pages/background/save_page_request.h"
@@ -123,18 +122,27 @@ void RequestQueue::MarkAttemptCompleted(int64_t request_id,
 }
 
 void RequestQueue::PickNextRequest(
+    OfflinerPolicy* policy,
     PickRequestTask::RequestPickedCallback picked_callback,
     PickRequestTask::RequestNotPickedCallback not_picked_callback,
     PickRequestTask::RequestCountCallback request_count_callback,
     DeviceConditions& conditions,
     std::set<int64_t>& disabled_requests) {
   // Using the PickerContext, create a picker task.
-  std::unique_ptr<Task> task(picker_factory_->CreatePickerTask(
-      store_.get(), picked_callback, not_picked_callback,
+  std::unique_ptr<Task> task(new PickRequestTask(
+      store_.get(), policy, picked_callback, not_picked_callback,
       request_count_callback, conditions, disabled_requests));
 
   // Queue up the picking task, it will call one of the callbacks when it
   // completes.
+  task_queue_.AddTask(std::move(task));
+}
+
+void RequestQueue::CleanupRequestQueue() {
+  // Create a cleanup task.
+  std::unique_ptr<Task> task(cleanup_factory_->CreateCleanupTask(store_.get()));
+
+  // Queue up the cleanup task.
   task_queue_.AddTask(std::move(task));
 }
 

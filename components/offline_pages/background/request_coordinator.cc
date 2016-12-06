@@ -181,9 +181,11 @@ RequestCoordinator::RequestCoordinator(
       immediate_schedule_callback_(base::Bind(&EmptySchedulerCallback)),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
-  std::unique_ptr<PickRequestTaskFactory> picker_factory(
-      new PickRequestTaskFactory(policy_.get(), this, &event_logger_));
-  queue_->SetPickerFactory(std::move(picker_factory));
+  std::unique_ptr<CleanupTaskFactory> cleanup_factory(
+      new CleanupTaskFactory(policy_.get(), this, &event_logger_));
+  queue_->SetCleanupFactory(std::move(cleanup_factory));
+  // Do a cleanup at startup time.
+  queue_->CleanupRequestQueue();
 }
 
 RequestCoordinator::~RequestCoordinator() {}
@@ -641,8 +643,8 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
   // Ask request queue to make a new PickRequestTask object, then put it on the
   // task queue.
   queue_->PickNextRequest(
-      base::Bind(&RequestCoordinator::RequestPicked,
-                 weak_ptr_factory_.GetWeakPtr()),
+      policy_.get(), base::Bind(&RequestCoordinator::RequestPicked,
+                                weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&RequestCoordinator::RequestNotPicked,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&RequestCoordinator::RequestCounts,
@@ -655,7 +657,8 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
 }
 
 // Called by the request picker when a request has been picked.
-void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
+void RequestCoordinator::RequestPicked(const SavePageRequest& request,
+                                       bool cleanup_needed) {
   DVLOG(2) << request.url() << " " << __func__;
   is_starting_ = false;
 
@@ -664,10 +667,15 @@ void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
     // Send the request on to the offliner.
     SendRequestToOffliner(request);
   }
+
+  // Schedule a queue cleanup if needed.
+  if (cleanup_needed)
+    queue_->CleanupRequestQueue();
 }
 
 void RequestCoordinator::RequestNotPicked(
-    bool non_user_requested_tasks_remaining) {
+    bool non_user_requested_tasks_remaining,
+    bool cleanup_needed) {
   DVLOG(2) << __func__;
   is_starting_ = false;
 
@@ -682,6 +690,10 @@ void RequestCoordinator::RequestNotPicked(
     // If we don't have any of those, check for non-user-requested tasks.
     scheduler_->Schedule(GetTriggerConditions(!kUserRequest));
   }
+
+  // Schedule a queue cleanup if needed.
+  if (cleanup_needed)
+    queue_->CleanupRequestQueue();
 
   // Let the scheduler know we are done processing.
   scheduler_callback_.Run(true);
