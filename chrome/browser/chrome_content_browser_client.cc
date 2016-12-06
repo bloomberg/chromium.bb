@@ -2341,19 +2341,20 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     InfoMap* map = io_data->GetExtensionInfoMap();
     const Extension* extension =
         map->extensions().GetExtensionOrAppByURL(opener_url);
-    // TODO(lazyboy): http://crbug.com/585570, if |extension| is a platform app,
-    // disallow loading it in a tab via window.open(). Currently there are apps
-    // that rely on this to be allowed to get Cast API to work, so we are
-    // allowing this temporarily. Once Media Router is available on stable, this
-    // exception should not be required.
     if (extension && extension->is_platform_app()) {
       AppLoadedInTabSource source =
           opener_top_level_frame_url ==
                   extensions::BackgroundInfo::GetBackgroundURL(extension)
               ? APP_LOADED_IN_TAB_SOURCE_BACKGROUND_PAGE
               : APP_LOADED_IN_TAB_SOURCE_APP;
+      // TODO(lazyboy): Remove this UMA once the change below to disallow apps
+      // in tabs has settled in stable branch.
       UMA_HISTOGRAM_ENUMERATION("Extensions.AppLoadedInTab", source,
                                 APP_LOADED_IN_TAB_SOURCE_MAX);
+      // Platform apps and their background pages should not be able to call
+      // window.open() to load v2 apps in regular tab.
+      // Simply disallow window.open() calls in this case.
+      return false;
     }
   }
 #endif

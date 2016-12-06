@@ -25,8 +25,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
     // Trying to open a local resource in a new window will fail.
     function windowOpenInAppRelativeURL() {
       var w = window.open(IN_APP_RELATIVE_URL);
-      // TODO(lazyboy): Enable the assert once http://crbug.com/585570 is fixed.
-      //chrome.test.assertTrue(!w);
+      chrome.test.assertTrue(!w);
       chrome.test.succeed();
     },
     // Trying to open a local resource in a new window will fail.
@@ -39,8 +38,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
     // Similar to windowOpenInAppRelativeURL().
     function windowOpenInAppAbsoluteURL() {
       var w = window.open(IN_APP_ABSOLUTE_URL);
-      // TODO(lazyboy): Enable the assert once http://crbug.com/585570 is fixed.
-      //chrome.test.assertTrue(!w);
+      chrome.test.assertTrue(!w);
       chrome.test.succeed();
     },
     // Similar to openLinkToInAppRelativeURL().

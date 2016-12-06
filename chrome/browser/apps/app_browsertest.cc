@@ -443,11 +443,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        DisallowBackgroundPageNavigation) {
   // The test will try to open in app urls and external urls via clicking links
   // and window.open(). Only the external urls should succeed in opening tabs.
-  // TODO(lazyboy): non-external urls also succeed right now because of
-  // http://crbug.com/585570 not being fixed. Fix the test once the bug is
-  // fixed.
-  // const size_t kExpectedNumberOfTabs = 2u;
-  const size_t kExpectedNumberOfTabs = 6u;
+  const size_t kExpectedNumberOfTabs = 2u;
   TabsAddedNotificationObserver observer(kExpectedNumberOfTabs);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/background_page_navigation")) <<
       message_;
