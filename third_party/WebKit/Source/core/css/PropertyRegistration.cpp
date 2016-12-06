@@ -68,7 +68,7 @@ void PropertyRegistration::registerProperty(
   String name = descriptor.name();
   if (!CSSVariableParser::isValidVariableName(name)) {
     exceptionState.throwDOMException(
-        SyntaxError, "The name provided is not a valid custom property name.");
+        SyntaxError, "Custom property names must start with '--'.");
     return;
   }
   AtomicString atomicName(name);
