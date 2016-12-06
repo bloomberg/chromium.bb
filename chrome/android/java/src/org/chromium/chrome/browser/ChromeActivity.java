@@ -43,7 +43,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
-import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -243,9 +242,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     // A set of views obscuring all tabs. When this set is nonempty,
     // all tab content will be hidden from the accessibility tree.
     private List<View> mViewsObscuringAllTabs = new ArrayList<>();
-
-    // Callbacks to be called when a context menu is closed.
-    private final ObserverList<Callback<Menu>> mContextMenuCloseObservers = new ObserverList<>();
 
     // See enableHardwareAcceleration()
     private boolean mSetWindowHWA;
@@ -1868,26 +1864,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
     }
 
-    /**
-     * Adds a {@link Callback} that will be triggered whenever a ContextMenu is closed.
-     */
-    public void addContextMenuCloseCallback(Callback<Menu> callback) {
-        mContextMenuCloseObservers.addObserver(callback);
-    }
-
     @Override
     public void onContextMenuClosed(Menu menu) {
-        for (Callback<Menu> callback : mContextMenuCloseObservers) {
-            callback.onResult(menu);
-        }
-    }
+        if (mWindowAndroid == null) return;
 
-    /**
-     * Removes a {@link Callback} from the list of callbacks that will be triggered when a
-     * ContextMenu is closed.
-     */
-    public void removeContextMenuCloseCallback(Callback<Menu> callback) {
-        mContextMenuCloseObservers.removeObserver(callback);
+        mWindowAndroid.onContextMenuClosed();
     }
 
     private boolean shouldDisableHardwareAcceleration() {

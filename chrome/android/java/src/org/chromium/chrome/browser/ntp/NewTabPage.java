@@ -749,7 +749,7 @@ public class NewTabPage
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page_view, null);
-        mNewTabPageView.initialize(mNewTabPageManager, mActivity, mSearchProviderHasLogo,
+        mNewTabPageView.initialize(mNewTabPageManager, mTab, mSearchProviderHasLogo,
                 getScrollPositionFromNavigationEntry());
 
         DownloadManagerService.getDownloadManagerService(ContextUtils.getApplicationContext())

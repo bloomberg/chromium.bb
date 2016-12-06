@@ -26,6 +26,7 @@ import android.view.accessibility.AccessibilityManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -117,6 +118,19 @@ public class WindowAndroid {
     }
     private LinkedList<KeyboardVisibilityListener> mKeyboardVisibilityListeners =
             new LinkedList<>();
+
+    /**
+     * An interface to notify listeners that a context menu is closed.
+     */
+    public interface OnCloseContextMenuListener {
+        /**
+         * Called when a context menu has been closed.
+         */
+        void onContextMenuClosed();
+    }
+
+    private final ObserverList<OnCloseContextMenuListener> mContextMenuCloseListeners =
+            new ObserverList<>();
 
     private final VSyncMonitor.Listener mVSyncListener = new VSyncMonitor.Listener() {
         @Override
@@ -608,6 +622,32 @@ public class WindowAndroid {
         mKeyboardVisibilityListeners.remove(listener);
         if (mKeyboardVisibilityListeners.isEmpty()) {
             unregisterKeyboardVisibilityCallbacks();
+        }
+    }
+
+    /**
+     * Adds a listener that will be notified whenever a ContextMenu is closed.
+     */
+    public void addContextMenuCloseListener(OnCloseContextMenuListener listener) {
+        mContextMenuCloseListeners.addObserver(listener);
+    }
+
+    /**
+     * Removes a listener from the list of listeners that will be notified when a
+     * ContextMenu is closed.
+     */
+    public void removeContextMenuCloseListener(OnCloseContextMenuListener listener) {
+        mContextMenuCloseListeners.removeObserver(listener);
+    }
+
+    /**
+     * This hook is called whenever the context menu is being closed (either by
+     * the user canceling the menu with the back/menu button, or when an item is
+     * selected).
+     */
+    public void onContextMenuClosed() {
+        for (OnCloseContextMenuListener listener : mContextMenuCloseListeners) {
+            listener.onContextMenuClosed();
         }
     }
 

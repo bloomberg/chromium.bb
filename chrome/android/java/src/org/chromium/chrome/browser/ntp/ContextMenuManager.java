@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.app.Activity;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
 import android.view.ContextMenu;
@@ -12,12 +13,12 @@ import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 
-import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.lang.annotation.Retention;
@@ -28,7 +29,7 @@ import java.util.TreeMap;
 /**
  * Takes care of creating, closing a context menu and triaging the item clicks.
  */
-public class ContextMenuManager {
+public class ContextMenuManager implements OnCloseContextMenuListener {
     @IntDef({ID_OPEN_IN_NEW_WINDOW, ID_OPEN_IN_NEW_TAB, ID_OPEN_IN_INCOGNITO_TAB,
             ID_SAVE_FOR_OFFLINE, ID_REMOVE})
     @Retention(RetentionPolicy.SOURCE)
@@ -43,7 +44,7 @@ public class ContextMenuManager {
     public static final int ID_REMOVE = 4;
 
     private final NewTabPageManager mManager;
-    private final ChromeActivity mActivity;
+    private final Tab mTab;
     private final TouchDisableableView mOuterView;
 
     /** Defines callback to configure the context menu and respond to user interaction. */
@@ -64,10 +65,10 @@ public class ContextMenuManager {
     /** Interface for a view that can be set to stop responding to touches. */
     public interface TouchDisableableView { void setTouchEnabled(boolean enabled); }
 
-    public ContextMenuManager(NewTabPageManager newTabPageManager, ChromeActivity activity,
-            TouchDisableableView outerView) {
+    public ContextMenuManager(
+            NewTabPageManager newTabPageManager, Tab tab, TouchDisableableView outerView) {
         mManager = newTabPageManager;
-        mActivity = activity;
+        mTab = tab;
         mOuterView = outerView;
     }
 
@@ -111,18 +112,21 @@ public class ContextMenuManager {
         // https://crbug.com/636296)
         mOuterView.setTouchEnabled(false);
 
-        mActivity.addContextMenuCloseCallback(new Callback<Menu>() {
-            @Override
-            public void onResult(Menu result) {
-                mOuterView.setTouchEnabled(true);
-                mActivity.removeContextMenuCloseCallback(this);
-            }
-        });
+        mTab.getWindowAndroid().addContextMenuCloseListener(this);
+    }
+
+    @Override
+    public void onContextMenuClosed() {
+        mOuterView.setTouchEnabled(true);
+        mTab.getWindowAndroid().removeContextMenuCloseListener(this);
     }
 
     /** Closes the context menu, if open. */
     public void closeContextMenu() {
-        mActivity.closeContextMenu();
+        Activity activity = mTab.getWindowAndroid().getActivity().get();
+        if (activity == null) return;
+
+        activity.closeContextMenu();
     }
 
     private boolean shouldShowItem(@ContextMenuItemId int itemId, Delegate delegate) {

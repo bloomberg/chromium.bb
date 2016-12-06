@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 
 /**
  * A helper class that handles generating context menus for {@link ContentViewCore}s.
@@ -59,11 +60,11 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
      */
     @CalledByNative
     private void showContextMenu(ContentViewCore contentViewCore, ContextMenuParams params) {
-        final View view = contentViewCore.getContainerView();
+        View view = contentViewCore.getContainerView();
+        final WindowAndroid windowAndroid = contentViewCore.getWindowAndroid();
 
-        if (view == null
-                || view.getVisibility() != View.VISIBLE
-                || view.getParent() == null) {
+        if (view == null || view.getVisibility() != View.VISIBLE || view.getParent() == null
+                || windowAndroid == null) {
             return;
         }
 
@@ -74,6 +75,16 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
             WebContents webContents = contentViewCore.getWebContents();
             RecordHistogram.recordBooleanHistogram(
                     "ContextMenu.Shown", webContents != null);
+
+            windowAndroid.addContextMenuCloseListener(new OnCloseContextMenuListener() {
+                @Override
+                public void onContextMenuClosed() {
+                    if (mNativeContextMenuHelper == 0) return;
+
+                    nativeOnContextMenuClosed(mNativeContextMenuHelper);
+                    windowAndroid.removeContextMenuCloseListener(this);
+                }
+            });
         }
     }
 
@@ -139,4 +150,5 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
             long nativeContextMenuHelper, boolean isLink, boolean isDataReductionProxyEnabled);
     private native void nativeSearchForImage(long nativeContextMenuHelper);
     private native void nativeShareImage(long nativeContextMenuHelper);
+    private native void nativeOnContextMenuClosed(long nativeContextMenuHelper);
 }

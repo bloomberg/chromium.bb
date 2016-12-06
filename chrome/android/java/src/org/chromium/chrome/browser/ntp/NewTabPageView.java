@@ -42,7 +42,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -60,6 +59,7 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -314,11 +314,12 @@ public class NewTabPageView extends FrameLayout
      *
      * @param manager NewTabPageManager used to perform various actions when the user interacts
      *                with the page.
+     * @param tab The Tab that is showing this new tab page.
      * @param searchProviderHasLogo Whether the search provider has a logo.
      * @param scrollPosition The adapter scroll position to initialize to.
      */
-    public void initialize(NewTabPageManager manager, ChromeActivity activity,
-            boolean searchProviderHasLogo, int scrollPosition) {
+    public void initialize(
+            NewTabPageManager manager, Tab tab, boolean searchProviderHasLogo, int scrollPosition) {
         mManager = manager;
         mUiConfig = new UiConfig(this);
         ViewStub stub = (ViewStub) findViewById(R.id.new_tab_page_layout_stub);
@@ -358,8 +359,8 @@ public class NewTabPageView extends FrameLayout
             mScrollView.enableBottomShadow(SHADOW_COLOR);
             mNewTabPageLayout = (NewTabPageLayout) findViewById(R.id.ntp_content);
         }
-        mContextMenuManager = new ContextMenuManager(
-                mManager, activity, mUseCardsUi ? mRecyclerView : mScrollView);
+        mContextMenuManager =
+                new ContextMenuManager(mManager, tab, mUseCardsUi ? mRecyclerView : mScrollView);
 
         mMostVisitedDesign = new MostVisitedDesign(getContext());
         mMostVisitedLayout =
