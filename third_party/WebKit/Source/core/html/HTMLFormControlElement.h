@@ -26,6 +26,7 @@
 #define HTMLFormControlElement_h
 
 #include "core/CoreExport.h"
+#include "core/html/FormAssociated.h"
 #include "core/html/LabelableElement.h"
 #include "core/html/ListedElement.h"
 
@@ -43,7 +44,8 @@ enum CheckValidityEventBehavior {
 // ListedElement, and listed element implementations should use
 // HTMLFormControlElement unless there is a special reason.
 class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
-                                           public ListedElement {
+                                           public ListedElement,
+                                           public FormAssociated {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLFormControlElement);
 
  public:
@@ -126,6 +128,9 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   String nameForAutofill() const;
 
   void copyNonAttributePropertiesFromElement(const Element&) override;
+
+  FormAssociated* toFormAssociatedOrNull() override { return this; };
+  void associateWith(HTMLFormElement*) override;
 
  protected:
   HTMLFormControlElement(const QualifiedName& tagName,

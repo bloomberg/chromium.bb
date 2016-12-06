@@ -17,6 +17,7 @@ blink_core_sources("html") {
     "CrossOriginAttribute.h",
     "DocumentNameCollection.cpp",
     "DocumentNameCollection.h",
+    "FormAssociated.h",
     "FormData.cpp",
     "FormData.h",
     "HTMLAllCollection.cpp",

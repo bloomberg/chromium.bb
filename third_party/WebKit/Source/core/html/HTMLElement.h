@@ -29,9 +29,10 @@
 namespace blink {
 
 class DocumentFragment;
+class ExceptionState;
+class FormAssociated;
 class HTMLFormElement;
 class HTMLMenuElement;
-class ExceptionState;
 class KeyboardEvent;
 
 enum TranslateAttributeMode {
@@ -118,6 +119,8 @@ class CORE_EXPORT HTMLElement : public Element {
   int offsetHeightForBinding();
 
   Element* unclosedOffsetParent();
+
+  virtual FormAssociated* toFormAssociatedOrNull() { return nullptr; };
 
  protected:
   HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);

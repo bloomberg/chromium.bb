@@ -46,6 +46,7 @@
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/FormAssociated.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -871,7 +872,7 @@ CustomElementDefinition* HTMLConstructionSite::lookUpCustomElementDefinition(
 }
 
 // "create an element for a token"
-// https://html.spec.whatwg.org/#create-an-element-for-the-token
+// https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
 // TODO(dominicc): When form association is separate from creation, unify this
 // with foreign element creation. Add a namespace parameter and check for HTML
 // namespace to lookupCustomElementDefinition.
@@ -937,6 +938,10 @@ HTMLElement* HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token) {
     // occur after construction to allow better code sharing here.
     element = HTMLElementFactory::createHTMLElement(
         token->name(), document, form, getCreateElementFlags());
+    if (FormAssociated* formAssociatedElement =
+            element->toFormAssociatedOrNull()) {
+      formAssociatedElement->associateWith(form);
+    }
     // Definition for the created element does not exist here and it cannot be
     // custom or failed.
     DCHECK_NE(element->getCustomElementState(), CustomElementState::Custom);

@@ -465,4 +465,6 @@ bool HTMLObjectElement::willUseFallbackContentAtLayout() const {
   return !hasValidClassId() && hasFallbackContent();
 }
 
+void HTMLObjectElement::associateWith(HTMLFormElement*){};
+
 }  // namespace blink

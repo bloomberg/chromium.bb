@@ -27,6 +27,7 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/html/FormAssociated.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/canvas/CanvasImageSource.h"
@@ -44,7 +45,8 @@ class ImageBitmapOptions;
 class CORE_EXPORT HTMLImageElement final : public HTMLElement,
                                            public CanvasImageSource,
                                            public ImageBitmapSource,
-                                           public ActiveScriptWrappable {
+                                           public ActiveScriptWrappable,
+                                           public FormAssociated {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLImageElement);
 
@@ -139,6 +141,9 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement,
                                   Optional<IntRect> cropRect,
                                   const ImageBitmapOptions&,
                                   ExceptionState&) override;
+
+  FormAssociated* toFormAssociatedOrNull() override { return this; };
+  void associateWith(HTMLFormElement*) override;
 
  protected:
   explicit HTMLImageElement(Document&,

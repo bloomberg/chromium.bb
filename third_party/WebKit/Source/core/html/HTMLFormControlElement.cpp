@@ -627,4 +627,6 @@ void HTMLFormControlElement::copyNonAttributePropertiesFromElement(
   setNeedsValidityCheck();
 }
 
+void HTMLFormControlElement::associateWith(HTMLFormElement*){};
+
 }  // namespace blink

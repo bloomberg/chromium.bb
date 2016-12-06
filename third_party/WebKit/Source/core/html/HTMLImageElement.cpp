@@ -37,6 +37,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/html/FormAssociated.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFormElement.h"
@@ -890,5 +891,7 @@ IntSize HTMLImageElement::bitmapSourceSize() const {
   DCHECK(lSize.fraction().isZero());
   return IntSize(lSize.width().toInt(), lSize.height().toInt());
 }
+
+void HTMLImageElement::associateWith(HTMLFormElement*){};
 
 }  // namespace blink

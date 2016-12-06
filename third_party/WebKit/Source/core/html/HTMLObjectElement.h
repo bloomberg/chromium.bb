@@ -24,6 +24,7 @@
 #define HTMLObjectElement_h
 
 #include "core/CoreExport.h"
+#include "core/html/FormAssociated.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/ListedElement.h"
 
@@ -36,7 +37,8 @@ class HTMLFormElement;
 // working according to the spec.  See:
 // https://html.spec.whatwg.org/multipage/embedded-content.html#the-object-element
 class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
-                                            public ListedElement {
+                                            public ListedElement,
+                                            public FormAssociated {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
 
@@ -75,6 +77,9 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   bool isExposed() const;
 
   bool willUseFallbackContentAtLayout() const;
+
+  FormAssociated* toFormAssociatedOrNull() override { return this; };
+  void associateWith(HTMLFormElement*) override;
 
  private:
   HTMLObjectElement(Document&, HTMLFormElement*, bool createdByParser);
