@@ -50,12 +50,12 @@ class VrController {
 
   const gvr::Quatf Orientation();
 
-  bool IsTouchDown();
+  bool TouchDownHappened();
 
-  bool IsTouchUp();
+  bool TouchUpHappened();
 
-  bool IsButtonUp(gvr::ControllerButton button);
-  bool IsButtonDown(gvr::ControllerButton button);
+  bool ButtonUpHappened(gvr::ControllerButton button);
+  bool ButtonDownHappened(gvr::ControllerButton button);
 
   bool IsConnected();
 

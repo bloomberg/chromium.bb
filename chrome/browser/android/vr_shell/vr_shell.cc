@@ -367,9 +367,10 @@ void VrShell::UpdateControllerOnGL(const gvr::Vec3f& forward_vector) {
   controller_->UpdateState();
 
 #if defined(ENABLE_VR_SHELL)
-  // Note that button up/down state is transient, so IsButtonUp only returns
+  // Note that button up/down state is transient, so ButtonUpHappened only
+  // returns
   // true for a single frame (and we're guaranteed not to miss it).
-  if (controller_->IsButtonUp(
+  if (controller_->ButtonUpHappened(
           gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
     html_interface_->SetMenuMode(!html_interface_->GetMenuMode());
 
@@ -387,7 +388,8 @@ void VrShell::UpdateControllerOnGL(const gvr::Vec3f& forward_vector) {
   if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
     // Process screen touch events for Cardboard button compatibility.
     // Also send tap events for controller "touchpad click" events.
-    if (touch_pending_ || controller_->IsButtonUp(
+    if (touch_pending_ ||
+        controller_->ButtonUpHappened(
             gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK)) {
       touch_pending_ = false;
       std::unique_ptr<WebGestureEvent> gesture(new WebGestureEvent());
