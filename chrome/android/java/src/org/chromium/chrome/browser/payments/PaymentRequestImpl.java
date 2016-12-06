@@ -63,6 +63,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * Android implementation of the PaymentRequest service defined in
  * components/payments/payment_request.mojom.
@@ -644,18 +646,31 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mPaymentMethodsSection == null) return;
 
         for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {
-            PaymentOption option = mPaymentMethodsSection.getItem(i);
-            assert option instanceof PaymentInstrument;
-            PaymentInstrument instrument = (PaymentInstrument) option;
-            Set<String> methodNames = instrument.getInstrumentMethodNames();
-            methodNames.retainAll(mModifiedTotals.keySet());
-            PaymentItem modifiedTotal = methodNames.isEmpty()
-                    ? null
-                    : mModifiedTotals.get(methodNames.iterator().next());
-            instrument.setModifiedTotal(modifiedTotal == null
-                    ? null
-                    : mFormatter.format(modifiedTotal.amount.value));
+            PaymentInstrument instrument = (PaymentInstrument) mPaymentMethodsSection.getItem(i);
+            PaymentItem modifiedTotal = getModifiedTotal(instrument);
+            instrument.setModifiedTotal(
+                    modifiedTotal == null ? null : mFormatter.format(modifiedTotal.amount.value));
         }
+
+        updateOrderSummaryTotal((PaymentInstrument) mPaymentMethodsSection.getSelectedItem());
+    }
+
+    private void updateOrderSummaryTotal(@Nullable PaymentInstrument instrument) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
+
+        PaymentItem total = getModifiedTotal(instrument);
+        if (total == null) total = mRawTotal;
+
+        mUiShoppingCart.setTotal(new LineItem(total.label, mFormatter.getFormattedCurrencyCode(),
+                mFormatter.format(total.amount.value), false /* isPending */));
+        mUI.updateOrderSummarySection(mUiShoppingCart);
+    }
+
+    @Nullable private PaymentItem getModifiedTotal(@Nullable PaymentInstrument instrument) {
+        if (instrument == null) return null;
+        Set<String> methodNames = instrument.getInstrumentMethodNames();
+        methodNames.retainAll(mModifiedTotals.keySet());
+        return methodNames.isEmpty() ? null : mModifiedTotals.get(methodNames.iterator().next());
     }
 
     /**
@@ -829,6 +844,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 }
             }
 
+            updateOrderSummaryTotal((PaymentInstrument) option);
             mPaymentMethodsSection.setSelectedItem(option);
         }
 
@@ -953,6 +969,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     mPaymentMethodsSection.addAndSelectItem(completeCard);
                 }
 
+                updateInstrumentModifiedTotals();
                 mUI.updateSection(PaymentRequestUI.TYPE_PAYMENT_METHODS, mPaymentMethodsSection);
             }
         });
