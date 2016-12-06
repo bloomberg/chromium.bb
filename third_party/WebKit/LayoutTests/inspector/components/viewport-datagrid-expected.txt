@@ -5,23 +5,11 @@ Attached aaa to aa
 Attached aab to aa
 Attached a to root
 Attached aa to a
-Expanded node a
-Checking flattenChildren():
-  a
-  aa
-
 Attached ab to a
-Checking flattenChildren():
-  a
-  aa
-  ab
-
 Attached b to root
 
 Tree:
  a
-  aa
-  ab
  b
 
 Expanded node a
@@ -106,23 +94,6 @@ Tree:
  b <- selected
 
 Attached aac to ab
-Checking flattenChildren():
-  a
-  aa
-  aaa
-  aab
-  ab
-  aac
-  b
-
-Removed children of aa
-Checking flattenChildren():
-  a
-  aa
-  ab
-  aac
-  b
-
 
 Tree:
  a
@@ -132,20 +103,7 @@ Tree:
  b
 
 Attached aac to ab
-Checking flattenChildren():
-  a
-  aa
-  ab
-  aac
-  b
-
 Removing aa from a
-Checking flattenChildren():
-  a
-  ab
-  aac
-  b
-
 
 Tree:
  a
