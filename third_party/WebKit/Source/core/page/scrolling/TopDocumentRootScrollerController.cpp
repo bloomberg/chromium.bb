@@ -181,6 +181,26 @@ void TopDocumentRootScrollerController::didUpdateCompositing() {
   m_frameHost->chromeClient().registerViewportLayers();
 }
 
+void TopDocumentRootScrollerController::didDisposeScrollableArea(
+    ScrollableArea& area) {
+  if (!topDocument() || !topDocument()->view())
+    return;
+
+  // If the document is tearing down, we may no longer have a layoutViewport to
+  // fallback to.
+  if (topDocument()->lifecycle().state() >= DocumentLifecycle::Stopping)
+    return;
+
+  FrameView* frameView = topDocument()->view();
+
+  RootFrameViewport* rfv = frameView->getRootFrameViewport();
+
+  if (&area == &rfv->layoutViewport()) {
+    DCHECK(frameView->layoutViewportScrollableArea());
+    rfv->setLayoutViewport(*frameView->layoutViewportScrollableArea());
+  }
+}
+
 void TopDocumentRootScrollerController::initializeViewportScrollCallback(
     RootFrameViewport& rootFrameViewport) {
   DCHECK(m_frameHost);

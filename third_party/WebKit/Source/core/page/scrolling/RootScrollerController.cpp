@@ -82,18 +82,6 @@ void RootScrollerController::didUpdateLayout() {
   recomputeEffectiveRootScroller();
 }
 
-void RootScrollerController::didDisposePaintLayerScrollableArea(
-    PaintLayerScrollableArea& area) {
-  // If the document is being torn down we'll skip a bunch of notifications
-  // so recomputing the effective root scroller could touch dead objects.
-  // (e.g. ScrollAnchor keeps a pointer to dead LayoutObjects).
-  if (area.box().documentBeingDestroyed())
-    return;
-
-  if (&area.box() == m_effectiveRootScroller->layoutObject())
-    recomputeEffectiveRootScroller();
-}
-
 void RootScrollerController::recomputeEffectiveRootScroller() {
   bool rootScrollerValid =
       m_rootScroller && isValidRootScroller(*m_rootScroller);

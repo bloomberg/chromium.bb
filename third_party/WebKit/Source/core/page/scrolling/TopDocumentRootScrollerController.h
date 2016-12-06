@@ -17,6 +17,7 @@ class GraphicsLayer;
 class PaintLayer;
 class RootFrameViewport;
 class ScrollStateCallback;
+class ScrollableArea;
 class ViewportScrollCallback;
 
 // This class manages the the page level aspects of the root scroller.  That
@@ -35,6 +36,10 @@ class CORE_EXPORT TopDocumentRootScrollerController
   // This class needs to be informed of changes to compositing so that it can
   // update the compositor when the effective root scroller changes.
   void didUpdateCompositing();
+
+  // PaintLayerScrollableAreas need to notify this class when they're being
+  // disposed so that we can remove them as the root scroller.
+  void didDisposeScrollableArea(ScrollableArea&);
 
   // This method needs to be called to create a ViewportScrollCallback that
   // will be used to apply viewport scrolling actions like browser controls

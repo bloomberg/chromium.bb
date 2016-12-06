@@ -1059,9 +1059,6 @@ TEST_F(RootScrollerTest, RemoveRootScrollerFromDom) {
     // If the root scroller wasn't updated by the DOM removal above, this
     // will touch the disposed root scroller's ScrollableArea.
     mainFrameView()->getRootFrameViewport()->serviceScrollAnimations(0);
-
-    EXPECT_EQ(iframe->contentDocument(),
-              effectiveRootScroller(iframe->contentDocument()));
   }
 }
 
@@ -1233,8 +1230,7 @@ TEST_F(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
             &mainFrameView()->getRootFrameViewport()->layoutViewport());
 
   // Remove the <iframe> and make sure the layout viewport reverts to the
-  // FrameView
-  // without a layout.
+  // FrameView without a layout.
   iframe->remove();
 
   EXPECT_EQ(mainFrameView()->layoutViewportScrollableArea(),

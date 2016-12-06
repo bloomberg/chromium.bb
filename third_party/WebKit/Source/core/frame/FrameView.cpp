@@ -329,6 +329,10 @@ void FrameView::dispose() {
   if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
     scrollingCoordinator->willDestroyScrollableArea(this);
 
+  FrameHost* frameHost = m_frame->host();
+  DCHECK(frameHost);
+  frameHost->globalRootScrollerController().didDisposeScrollableArea(*this);
+
   // We need to clear the RootFrameViewport's animator since it gets called
   // from non-GC'd objects and RootFrameViewport will still have a pointer to
   // this class.
