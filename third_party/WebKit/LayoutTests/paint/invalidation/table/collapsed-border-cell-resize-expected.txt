@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 8, 104, 204],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutTableCell TD id='target'",
           "rect": [8, 8, 104, 204],
           "reason": "border box change"
@@ -20,10 +15,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "forced by layout"
-    },
     {
       "object": "LayoutTableCell TD id='target'",
       "reason": "border box change"

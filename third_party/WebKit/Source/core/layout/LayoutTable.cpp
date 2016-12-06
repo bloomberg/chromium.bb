@@ -99,8 +99,7 @@ void LayoutTable::styleDidChange(StyleDifference diff,
 
   // If border was changed, invalidate collapsed borders cache.
   if (!needsLayout() && oldStyle && oldStyle->border() != style()->border())
-    invalidateCollapsedBorders(PaintInvalidationStyleChange);
-
+    invalidateCollapsedBorders();
   if (LayoutTableBoxComponent::doCellsHaveDirtyWidth(*this, *this, diff,
                                                      *oldStyle))
     markAllCellsWidthsDirtyAndOrNeedsLayout(MarkDirtyAndNeedsLayout);
@@ -733,7 +732,7 @@ void LayoutTable::layout() {
     updateLayerTransformAfterLayout();
 
     // Layout was changed, so probably borders too.
-    invalidateCollapsedBorders(PaintInvalidationForcedByLayout);
+    invalidateCollapsedBorders();
 
     computeOverflow(clientLogicalBottom());
     updateAfterLayout();
@@ -752,19 +751,13 @@ void LayoutTable::layout() {
   clearNeedsLayout();
 }
 
-void LayoutTable::invalidateCollapsedBorders(PaintInvalidationReason reason) {
-  DCHECK(reason == PaintInvalidationStyleChange ||
-         reason == PaintInvalidationForcedByLayout);
-
-  m_collapsedBordersInfo = nullptr;
+void LayoutTable::invalidateCollapsedBorders() {
+  m_collapsedBorders.clear();
   if (!collapseBorders())
     return;
 
   m_collapsedBordersValid = false;
-  if (reason == PaintInvalidationForcedByLayout)
-    setShouldDoFullPaintInvalidation(reason);
-  else
-    setMayNeedPaintInvalidation();
+  setMayNeedPaintInvalidation();
 }
 
 // Collect all the unique border values that we want to paint in a sorted list.
@@ -772,15 +765,10 @@ void LayoutTable::invalidateCollapsedBorders(PaintInvalidationReason reason) {
 // cache of its containing section, and invalidates itself if any border
 // changes. This method doesn't affect layout.
 void LayoutTable::recalcCollapsedBordersIfNeeded() {
-  if (m_collapsedBordersValid)
+  if (m_collapsedBordersValid || !collapseBorders())
     return;
   m_collapsedBordersValid = true;
-  m_collapsedBordersInfo = nullptr;
-  if (!collapseBorders())
-    return;
-
-  LayoutRect boundsOfChangedCells;
-  Vector<CollapsedBorderValue> values;
+  m_collapsedBorders.clear();
   for (LayoutObject* section = firstChild(); section;
        section = section->nextSibling()) {
     if (!section->isTableSection())
@@ -789,23 +777,12 @@ void LayoutTable::recalcCollapsedBordersIfNeeded() {
          row = row->nextRow()) {
       for (LayoutTableCell* cell = row->firstCell(); cell;
            cell = cell->nextCell()) {
-        DCHECK(cell->table() == this);
-        bool cellChanged = cell->collectBorderValues(values);
-        if (cellChanged && !shouldDoFullPaintInvalidation()) {
-          LayoutRect cellRect = cell->localVisualRect();
-          cell->mapToVisualRectInAncestorSpace(this, cellRect);
-          boundsOfChangedCells.unite(cellRect);
-        }
+        ASSERT(cell->table() == this);
+        cell->collectBorderValues(m_collapsedBorders);
       }
     }
   }
-  if (!values.isEmpty()) {
-    LayoutTableCell::sortBorderValues(values);
-    m_collapsedBordersInfo =
-        wrapUnique(new CollapsedBordersInfo(std::move(values)));
-  }
-
-  invalidatePaintRectangle(boundsOfChangedCells);
+  LayoutTableCell::sortBorderValues(m_collapsedBorders);
 }
 
 void LayoutTable::addOverflowFromChildren() {
@@ -1685,10 +1662,10 @@ void LayoutTable::ensureIsReadyForPaintInvalidation() {
 
 PaintInvalidationReason LayoutTable::invalidatePaintIfNeeded(
     const PaintInvalidationState& paintInvalidationState) {
-  if (hasCollapsedBorders()) {
+  if (collapseBorders() && !m_collapsedBorders.isEmpty())
     paintInvalidationState.paintingLayer()
         .setNeedsPaintPhaseDescendantBlockBackgrounds();
-  }
+
   return LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState);
 }
 

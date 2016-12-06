@@ -67,6 +67,34 @@ LayoutTableCell::LayoutTableCell(Element* element)
   updateColAndRowSpanFlags();
 }
 
+LayoutTableCell::CollapsedBorderValues::CollapsedBorderValues(
+    const LayoutTable& layoutTable,
+    const CollapsedBorderValue& startBorder,
+    const CollapsedBorderValue& endBorder,
+    const CollapsedBorderValue& beforeBorder,
+    const CollapsedBorderValue& afterBorder)
+    : m_layoutTable(layoutTable),
+      m_startBorder(startBorder),
+      m_endBorder(endBorder),
+      m_beforeBorder(beforeBorder),
+      m_afterBorder(afterBorder) {}
+
+void LayoutTableCell::CollapsedBorderValues::setCollapsedBorderValues(
+    const CollapsedBorderValues& other) {
+  m_startBorder = other.startBorder();
+  m_endBorder = other.endBorder();
+  m_beforeBorder = other.beforeBorder();
+  m_afterBorder = other.afterBorder();
+}
+
+String LayoutTableCell::CollapsedBorderValues::debugName() const {
+  return "CollapsedBorderValues";
+}
+
+LayoutRect LayoutTableCell::CollapsedBorderValues::visualRect() const {
+  return m_layoutTable.visualRect();
+}
+
 void LayoutTableCell::willBeRemovedFromTree() {
   LayoutBlockFlow::willBeRemovedFromTree();
 
@@ -472,7 +500,7 @@ void LayoutTableCell::styleDidChange(StyleDifference diff,
     return;
   if (!table->selfNeedsLayout() && !table->normalChildNeedsLayout() &&
       oldStyle && oldStyle->border() != style()->border())
-    table->invalidateCollapsedBorders(PaintInvalidationStyleChange);
+    table->invalidateCollapsedBorders();
 
   if (LayoutTableBoxComponent::doCellsHaveDirtyWidth(*this, *table, diff,
                                                      *oldStyle)) {
@@ -1275,7 +1303,7 @@ void LayoutTableCell::paint(const PaintInfo& paintInfo,
   TableCellPainter(*this).paint(paintInfo, paintOffset);
 }
 
-static void addBorderStyle(Vector<CollapsedBorderValue>& borderValues,
+static void addBorderStyle(LayoutTable::CollapsedBorderValues& borderValues,
                            CollapsedBorderValue borderValue) {
   if (!borderValue.isVisible())
     return;
@@ -1287,34 +1315,56 @@ static void addBorderStyle(Vector<CollapsedBorderValue>& borderValues,
   borderValues.append(borderValue);
 }
 
-bool LayoutTableCell::collectBorderValues(
-    Vector<CollapsedBorderValue>& borderValues) {
-  CollapsedBorderValues newValues = {
-      computeCollapsedStartBorder(), computeCollapsedEndBorder(),
-      computeCollapsedBeforeBorder(), computeCollapsedAfterBorder()};
+void LayoutTableCell::collectBorderValues(
+    LayoutTable::CollapsedBorderValues& borderValues) {
+  CollapsedBorderValues newValues(
+      *table(), computeCollapsedStartBorder(), computeCollapsedEndBorder(),
+      computeCollapsedBeforeBorder(), computeCollapsedAfterBorder());
 
   bool changed = false;
-  if (newValues.allBordersAreInvisible()) {
+  if (!newValues.startBorder().isVisible() &&
+      !newValues.endBorder().isVisible() &&
+      !newValues.beforeBorder().isVisible() &&
+      !newValues.afterBorder().isVisible()) {
     changed = !!m_collapsedBorderValues;
     m_collapsedBorderValues = nullptr;
   } else if (!m_collapsedBorderValues) {
     changed = true;
-    m_collapsedBorderValues = wrapUnique(new CollapsedBorderValues(newValues));
+    m_collapsedBorderValues = wrapUnique(new CollapsedBorderValues(
+        *table(), newValues.startBorder(), newValues.endBorder(),
+        newValues.beforeBorder(), newValues.afterBorder()));
   } else {
-    changed = !m_collapsedBorderValues->bordersVisuallyEqual(newValues);
+    // We check visuallyEquals so that the table cell is invalidated only if a
+    // changed collapsed border is visible in the first place.
+    changed = !m_collapsedBorderValues->startBorder().visuallyEquals(
+                  newValues.startBorder()) ||
+              !m_collapsedBorderValues->endBorder().visuallyEquals(
+                  newValues.endBorder()) ||
+              !m_collapsedBorderValues->beforeBorder().visuallyEquals(
+                  newValues.beforeBorder()) ||
+              !m_collapsedBorderValues->afterBorder().visuallyEquals(
+                  newValues.afterBorder());
     if (changed)
-      *m_collapsedBorderValues = newValues;
+      m_collapsedBorderValues->setCollapsedBorderValues(newValues);
   }
 
-  addBorderStyle(borderValues, newValues.startBorder);
-  addBorderStyle(borderValues, newValues.endBorder);
-  addBorderStyle(borderValues, newValues.beforeBorder);
-  addBorderStyle(borderValues, newValues.afterBorder);
-  return changed;
+  // If collapsed borders changed, invalidate the cell's display item client on
+  // the table's backing.
+  // TODO(crbug.com/451090#c5): Need a way to invalidate/repaint the borders
+  // only.
+  if (changed)
+    ObjectPaintInvalidator(*table())
+        .slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
+            *this, PaintInvalidationStyleChange);
+
+  addBorderStyle(borderValues, newValues.startBorder());
+  addBorderStyle(borderValues, newValues.endBorder());
+  addBorderStyle(borderValues, newValues.beforeBorder());
+  addBorderStyle(borderValues, newValues.afterBorder());
 }
 
 void LayoutTableCell::sortBorderValues(
-    Vector<CollapsedBorderValue>& borderValues) {
+    LayoutTable::CollapsedBorderValues& borderValues) {
   std::sort(borderValues.begin(), borderValues.end(), compareBorders);
 }
 
@@ -1409,6 +1459,8 @@ void LayoutTableCell::invalidateDisplayItemClients(
     return;
 
   ObjectPaintInvalidator invalidator(*this);
+  if (m_collapsedBorderValues)
+    invalidator.invalidateDisplayItemClient(*m_collapsedBorderValues, reason);
   if (m_rowBackgroundDisplayItemClient) {
     invalidator.invalidateDisplayItemClient(*m_rowBackgroundDisplayItemClient,
                                             reason);

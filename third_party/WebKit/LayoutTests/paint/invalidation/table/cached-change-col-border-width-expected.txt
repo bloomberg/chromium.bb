@@ -7,14 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 8, 113, 104],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutTableCol COL id='col'",
           "rect": [8, 8, 113, 104],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 108, 113, 4],
+          "reason": "incremental"
         },
         {
           "object": "LayoutTableCell TD",
@@ -50,14 +50,35 @@
           "object": "LayoutTableCell TD",
           "rect": [63, 59, 54, 51],
           "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [116, 8, 5, 104],
+          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
       "object": "LayoutTable TABLE",
-      "reason": "forced by layout"
+      "reason": "incremental"
     },
     {
       "object": "LayoutTableCol COL id='col'",

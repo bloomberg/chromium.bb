@@ -13,11 +13,6 @@
         },
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 286, 95, 82],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTable TABLE",
           "rect": [8, 102, 95, 82],
           "reason": "full"
         },
@@ -107,6 +102,11 @@
           "reason": "layoutObject removal"
         },
         {
+          "object": "LayoutTable TABLE",
+          "rect": [74, 286, 29, 82],
+          "reason": "incremental"
+        },
+        {
           "object": "LayoutTableCell TD",
           "rect": [8, 224, 14, 22],
           "reason": "forced by layout"
@@ -145,6 +145,30 @@
     {
       "object": "LayoutTableCell TD id='d2'",
       "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
     },
     {
       "object": "LayoutTable TABLE id='t'",
@@ -232,7 +256,7 @@
     },
     {
       "object": "LayoutTable TABLE",
-      "reason": "forced by layout"
+      "reason": "incremental"
     },
     {
       "object": "LayoutTableCell TD",

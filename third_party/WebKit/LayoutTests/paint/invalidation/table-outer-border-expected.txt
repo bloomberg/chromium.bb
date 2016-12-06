@@ -95,6 +95,14 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
       "object": "LayoutTable TABLE id='table' class='green'",
       "reason": "layoutObject insertion"
     },
