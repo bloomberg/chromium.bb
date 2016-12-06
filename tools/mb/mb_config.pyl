@@ -603,7 +603,6 @@
       'android_one_perf_bisect': 'official_goma_minimal_symbols_android',
       'android_perf_bisect_builder': 'official_goma_minimal_symbols_android',
       'android_s5_perf_bisect': 'official_goma_minimal_symbols_android',
-      'android_s5_perf_cq': 'official_goma_minimal_symbols_android',
       'android_webview_arm64_aosp_perf_bisect': 'official_goma_minimal_symbols_android',
       'linux_fyi_perf_bisect': 'official_goma',
       'linux_perf_bisect': 'official_goma',
