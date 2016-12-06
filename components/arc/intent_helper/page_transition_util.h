@@ -15,7 +15,6 @@ bool ShouldIgnoreNavigation(ui::PageTransition page_transition,
                             bool allow_client_redirect);
 
 // Removes |mask| bits from |page_transition|.
-// TODO(djacobo): Move this to ui/base/page_transition_types.cc.
 ui::PageTransition MaskOutPageTransition(ui::PageTransition page_transition,
                                          ui::PageTransition mask);
 
