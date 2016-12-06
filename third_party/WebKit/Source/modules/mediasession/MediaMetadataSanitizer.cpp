@@ -39,10 +39,10 @@ bool checkMediaImageSrcSanity(const KURL& src, ExecutionContext* context) {
     return false;
 
   if (!src.protocolIs(url::kHttpScheme) && !src.protocolIs(url::kHttpsScheme) &&
-      !src.protocolIs(url::kDataScheme)) {
+      !src.protocolIs(url::kDataScheme) && !src.protocolIs(url::kBlobScheme)) {
     context->addConsoleMessage(ConsoleMessage::create(
         JSMessageSource, WarningMessageLevel,
-        "MediaImage src can only be of http/https/data scheme: " +
+        "MediaImage src can only be of http/https/data/blob scheme: " +
             src.getString()));
     return false;
   }

@@ -32,7 +32,9 @@ const size_t kMaxNumberOfMediaImageSizes = 10;
 bool CheckMediaImageSrcSanity(const GURL& src) {
   if (!src.is_valid())
     return false;
-  if (!src.SchemeIsHTTPOrHTTPS() && !src.SchemeIs(url::kDataScheme))
+  if (!src.SchemeIsHTTPOrHTTPS() &&
+      !src.SchemeIs(url::kDataScheme) &&
+      !src.SchemeIs(url::kBlobScheme))
     return false;
   if (src.spec().size() > url::kMaxURLChars)
     return false;
