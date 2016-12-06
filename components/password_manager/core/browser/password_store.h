@@ -71,6 +71,10 @@ class PasswordStore : protected PasswordStoreSync,
                const std::string& signon_realm,
                const GURL& origin);
     explicit FormDigest(const autofill::PasswordForm& form);
+    FormDigest(const FormDigest& other);
+    FormDigest(FormDigest&& other);
+    FormDigest& operator=(const FormDigest& other);
+    FormDigest& operator=(FormDigest&& other);
     bool operator==(const FormDigest& other) const;
 
     autofill::PasswordForm::Scheme scheme;

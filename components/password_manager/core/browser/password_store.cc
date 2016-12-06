@@ -69,6 +69,16 @@ PasswordStore::FormDigest::FormDigest(const PasswordForm& form)
       signon_realm(form.signon_realm),
       origin(form.origin) {}
 
+PasswordStore::FormDigest::FormDigest(const FormDigest& other) = default;
+
+PasswordStore::FormDigest::FormDigest(FormDigest&& other) = default;
+
+PasswordStore::FormDigest& PasswordStore::FormDigest::operator=(
+    const FormDigest& other) = default;
+
+PasswordStore::FormDigest& PasswordStore::FormDigest::operator=(
+    FormDigest&& other) = default;
+
 bool PasswordStore::FormDigest::operator==(const FormDigest& other) const {
   return scheme == other.scheme && signon_realm == other.signon_realm &&
          origin == other.origin;

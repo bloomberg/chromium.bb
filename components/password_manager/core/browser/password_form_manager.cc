@@ -18,7 +18,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/browser/validation.h"
@@ -141,9 +140,9 @@ PasswordFormManager::PasswordFormManager(
     PasswordManagerClient* client,
     const base::WeakPtr<PasswordManagerDriver>& driver,
     const PasswordForm& observed_form,
-    std::unique_ptr<FormSaver> form_saver)
+    std::unique_ptr<FormSaver> form_saver,
+    FormFetcher* form_fetcher)
     : observed_form_(observed_form),
-      provisionally_saved_form_(nullptr),
       other_possible_username_action_(
           PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES),
       form_path_segments_(
@@ -167,15 +166,18 @@ PasswordFormManager::PasswordFormManager(
       user_action_(kUserActionNone),
       submit_result_(kSubmitResultNotSubmitted),
       form_type_(kFormTypeUnspecified),
-      need_to_refetch_(false),
       form_saver_(std::move(form_saver)),
-      form_fetcher_impl_(client),
-      form_fetcher_(&form_fetcher_impl_) {
+      form_fetcher_impl_(
+          form_fetcher ? nullptr : base::MakeUnique<FormFetcherImpl>(
+                                       PasswordStore::FormDigest(observed_form),
+                                       client)),
+      form_fetcher_(form_fetcher ? form_fetcher : form_fetcher_impl_.get()) {
+  if (form_fetcher_impl_)
+    form_fetcher_impl_->Fetch();
   DCHECK_EQ(observed_form.scheme == PasswordForm::SCHEME_HTML,
             driver != nullptr);
   if (driver)
     drivers_.push_back(driver);
-  FetchDataFromPasswordStore();
   form_fetcher_->AddConsumer(this);
 }
 
@@ -310,7 +312,7 @@ void PasswordFormManager::ProvisionallySave(
   other_possible_username_action_ = action;
   does_look_like_signup_form_ = credentials.does_look_like_signup_form;
 
-  if (HasCompletedMatching())
+  if (form_fetcher_->GetState() == FormFetcher::State::NOT_WAITING)
     CreatePendingCredentials();
 }
 
@@ -369,49 +371,6 @@ void PasswordFormManager::Update(
   form_saver_->Update(pending_credentials_, best_matches_,
                       &more_credentials_to_update,
                       old_primary_key ? &old_primary_key.value() : nullptr);
-}
-
-void PasswordFormManager::FetchDataFromPasswordStore() {
-  if (form_fetcher_->GetState() == FormFetcher::State::WAITING) {
-    // There is currently a password store query in progress, need to re-fetch
-    // store results later.
-    need_to_refetch_ = true;
-    return;
-  }
-
-  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
-    logger->LogMessage(Logger::STRING_FETCH_LOGINS_METHOD);
-    logger->LogNumber(Logger::STRING_FORM_MANAGER_STATE,
-                      static_cast<int>(form_fetcher_->GetState()));
-  }
-
-  provisionally_saved_form_.reset();
-  form_fetcher_impl_.set_state(FormFetcher::State::WAITING);
-
-  PasswordStore* password_store = client_->GetPasswordStore();
-  if (!password_store) {
-    if (logger)
-      logger->LogMessage(Logger::STRING_NO_STORE);
-    // TODO(crbug.com/621355): The store might be empty in some tests. Start
-    // enforcing the presence of a (non-null) PasswordStore once FormFetcher is
-    // fetching the credentials instead of PasswordFormManager.
-    return;
-  }
-  password_store->GetLogins(PasswordStore::FormDigest(observed_form_), this);
-
-// The statistics isn't needed on mobile, only on desktop. Let's save some
-// processor cycles.
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  // The statistics is needed for the "Save password?" bubble.
-  password_store->GetSiteStats(observed_form_.origin.GetOrigin(), this);
-#endif
-}
-
-bool PasswordFormManager::HasCompletedMatching() const {
-  return form_fetcher_->GetState() == FormFetcher::State::NOT_WAITING;
 }
 
 void PasswordFormManager::SetSubmittedForm(const autofill::PasswordForm& form) {
@@ -608,36 +567,6 @@ void PasswordFormManager::ProcessLoginPrompt() {
 
   manager_action_ = kManagerActionAutofilled;
   password_manager_->AutofillHttpAuth(best_matches_, *preferred_match_);
-}
-
-void PasswordFormManager::OnGetPasswordStoreResults(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  DCHECK_EQ(FormFetcher::State::WAITING, form_fetcher_->GetState());
-
-  if (need_to_refetch_) {
-    // The received results are no longer up to date, need to re-request.
-    form_fetcher_impl_.set_state(FormFetcher::State::NOT_WAITING);
-    FetchDataFromPasswordStore();
-    need_to_refetch_ = false;
-    return;
-  }
-
-  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
-    logger->LogMessage(Logger::STRING_ON_GET_STORE_RESULTS_METHOD);
-    logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
-  }
-
-  form_fetcher_impl_.SetResults(std::move(results));
-}
-
-void PasswordFormManager::OnGetSiteStatistics(
-    std::vector<std::unique_ptr<InteractionsStats>> stats) {
-  // On Windows the password request may be resolved after the statistics due to
-  // importing from IE.
-  form_fetcher_impl_.SetStats(std::move(stats));
 }
 
 void PasswordFormManager::ProcessUpdate() {
@@ -1279,8 +1208,9 @@ void PasswordFormManager::LogSubmitFailed() {
 }
 
 void PasswordFormManager::WipeStoreCopyIfOutdated() {
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.StoreReadyWhenWiping",
-                        HasCompletedMatching());
+  UMA_HISTOGRAM_BOOLEAN(
+      "PasswordManager.StoreReadyWhenWiping",
+      form_fetcher_->GetState() == FormFetcher::State::NOT_WAITING);
 
   form_saver_->WipeOutdatedCopies(pending_credentials_, &best_matches_,
                                   &preferred_match_);

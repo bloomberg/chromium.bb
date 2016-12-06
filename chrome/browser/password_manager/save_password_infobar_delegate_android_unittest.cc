@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
@@ -34,13 +35,15 @@ class MockPasswordFormManager : public password_manager::PasswordFormManager {
       password_manager::PasswordManager* password_manager,
       password_manager::PasswordManagerClient* client,
       base::WeakPtr<password_manager::PasswordManagerDriver> driver,
-      const autofill::PasswordForm& form)
+      const autofill::PasswordForm& form,
+      password_manager::FormFetcher* form_fetcher)
       : PasswordFormManager(
             password_manager,
             client,
             driver,
             form,
-            base::WrapUnique(new password_manager::StubFormSaver)) {}
+            base::WrapUnique(new password_manager::StubFormSaver),
+            form_fetcher) {}
 
   ~MockPasswordFormManager() override {}
 
@@ -86,6 +89,8 @@ class SavePasswordInfoBarDelegateTest : public ChromeRenderViewHostTestHarness {
   autofill::PasswordForm test_form_;
 
  private:
+  password_manager::FakeFormFetcher fetcher_;
+
   DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegateTest);
 };
 
@@ -94,6 +99,7 @@ SavePasswordInfoBarDelegateTest::SavePasswordInfoBarDelegateTest()
   test_form_.origin = GURL("http://example.com");
   test_form_.username_value = base::ASCIIToUTF16("username");
   test_form_.password_value = base::ASCIIToUTF16("12345");
+  fetcher_.Fetch();
 }
 
 PrefService* SavePasswordInfoBarDelegateTest::prefs() {
@@ -104,8 +110,9 @@ PrefService* SavePasswordInfoBarDelegateTest::prefs() {
 
 std::unique_ptr<MockPasswordFormManager>
 SavePasswordInfoBarDelegateTest::CreateMockFormManager() {
-  return std::unique_ptr<MockPasswordFormManager>(new MockPasswordFormManager(
-      &password_manager_, &client_, driver_.AsWeakPtr(), test_form()));
+  return std::unique_ptr<MockPasswordFormManager>(
+      new MockPasswordFormManager(&password_manager_, &client_,
+                                  driver_.AsWeakPtr(), test_form(), &fetcher_));
 }
 
 std::unique_ptr<ConfirmInfoBarDelegate>

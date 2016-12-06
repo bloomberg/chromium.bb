@@ -408,7 +408,8 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStore) {
   RunAllPendingTasks();
 
   EXPECT_TRUE(called);
-  EXPECT_TRUE(client_->pending_manager()->HasCompletedMatching());
+  EXPECT_EQ(FormFetcher::State::NOT_WAITING,
+            client_->pending_manager()->form_fetcher()->GetState());
 
   autofill::PasswordForm new_form =
       client_->pending_manager()->pending_credentials();
@@ -441,7 +442,8 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStoreFederated) {
   RunAllPendingTasks();
 
   EXPECT_TRUE(called);
-  EXPECT_TRUE(client_->pending_manager()->HasCompletedMatching());
+  EXPECT_EQ(FormFetcher::State::NOT_WAITING,
+            client_->pending_manager()->form_fetcher()->GetState());
 
   autofill::PasswordForm new_form =
       client_->pending_manager()->pending_credentials();
@@ -479,7 +481,8 @@ TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
   RunAllPendingTasks();
 
   EXPECT_TRUE(called);
-  EXPECT_TRUE(client_->pending_manager()->HasCompletedMatching());
+  EXPECT_EQ(FormFetcher::State::NOT_WAITING,
+            client_->pending_manager()->form_fetcher()->GetState());
   client_->pending_manager()->Save();
 
   RunAllPendingTasks();

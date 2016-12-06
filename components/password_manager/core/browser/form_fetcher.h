@@ -68,6 +68,12 @@ class FormFetcher {
   virtual const std::vector<const autofill::PasswordForm*>&
   GetFederatedMatches() const = 0;
 
+  // Fetches stored matching logins. In addition the statistics is fetched on
+  // platforms with the password bubble. This is called automatically during
+  // construction and can be called manually later as well to cause an update
+  // of the cached credentials.
+  virtual void Fetch() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FormFetcher);
 };

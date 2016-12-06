@@ -1083,12 +1083,14 @@ TEST_F(PasswordManagerTest, SaveFormFetchedAfterSubmit) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
 
-  PasswordStoreConsumer* form_manager = nullptr;
   // No call-back from store after GetLogins is called emulates that
   // PasswordStore did not fetch a form in time before submission.
-  EXPECT_CALL(*store_, GetLogins(_, _)).WillOnce(SaveArg<1>(&form_manager));
+  EXPECT_CALL(*store_, GetLogins(_, _));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
+  ASSERT_EQ(1u, manager()->pending_login_managers().size());
+  PasswordFormManager* form_manager =
+      manager()->pending_login_managers().front().get();
 
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
@@ -1097,8 +1099,8 @@ TEST_F(PasswordManagerTest, SaveFormFetchedAfterSubmit) {
   // Emulate fetching password form from PasswordStore after submission but
   // before post-navigation load.
   ASSERT_TRUE(form_manager);
-  form_manager->OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<PasswordForm>>());
+  static_cast<FormFetcherImpl*>(form_manager->form_fetcher())
+      ->OnGetPasswordStoreResults(std::vector<std::unique_ptr<PasswordForm>>());
 
   std::unique_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
@@ -1373,13 +1375,13 @@ TEST_F(PasswordManagerTest,
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
-  PasswordStoreConsumer* consumer = nullptr;
-  EXPECT_CALL(*store_, GetLogins(PasswordStore::FormDigest(form), _))
-      .WillOnce(SaveArg<1>(&consumer));
+  EXPECT_CALL(*store_, GetLogins(PasswordStore::FormDigest(form), _));
   manager()->SetGenerationElementAndReasonForForm(&driver_, form,
                                                   base::string16(), false);
+  ASSERT_EQ(1u, manager()->pending_login_managers().size());
   PasswordFormManager* form_manager =
-      static_cast<PasswordFormManager*>(consumer);
+      manager()->pending_login_managers().front().get();
+
   EXPECT_FALSE(form_manager->has_generated_password());
 }
 
@@ -1436,19 +1438,20 @@ TEST_F(PasswordManagerTest, UpdateFormManagers) {
   // Seeing some forms should result in creating PasswordFormManagers and
   // querying PasswordStore. Calling UpdateFormManagers should result in
   // querying the store again.
-  PasswordStoreConsumer* consumer = nullptr;
-  EXPECT_CALL(*store_, GetLogins(_, _)).WillOnce(SaveArg<1>(&consumer));
+  EXPECT_CALL(*store_, GetLogins(_, _));
 
   PasswordForm form;
   std::vector<PasswordForm> observed;
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(&driver_, observed);
+  ASSERT_EQ(1u, manager()->pending_login_managers().size());
+  PasswordFormManager* form_manager =
+      manager()->pending_login_managers().front().get();
 
   // The first GetLogins should have fired, but to unblock the second, we need
   // to first send a response from the store (to be ignored).
-  ASSERT_TRUE(consumer);
-  consumer->OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<PasswordForm>>());
+  static_cast<FormFetcherImpl*>(form_manager->form_fetcher())
+      ->OnGetPasswordStoreResults(std::vector<std::unique_ptr<PasswordForm>>());
   EXPECT_CALL(*store_, GetLogins(_, _));
   manager()->UpdateFormManagers();
 }

@@ -23,10 +23,9 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
-#include "components/password_manager/core/browser/stub_password_manager_client.h"
-#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 
 ManagePasswordsTest::ManagePasswordsTest() {
+  fetcher_.Fetch();
 }
 
 ManagePasswordsTest::~ManagePasswordsTest() {
@@ -57,28 +56,20 @@ void ManagePasswordsTest::SetupManagingPasswords() {
 }
 
 void ManagePasswordsTest::SetupPendingPassword() {
-  password_manager::StubPasswordManagerClient client;
-  password_manager::StubLogManager log_manager;
-  password_manager::StubPasswordManagerDriver driver;
-
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          nullptr, &client, driver.AsWeakPtr(), *test_form(),
-          base::WrapUnique(new password_manager::StubFormSaver)));
-  std::vector<std::unique_ptr<autofill::PasswordForm>> best_matches;
-  test_form_manager->OnGetPasswordStoreResults(std::move(best_matches));
+          nullptr, &client_, driver_.AsWeakPtr(), *test_form(),
+          base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
+  fetcher_.SetNonFederated(std::vector<const autofill::PasswordForm*>(), 0u);
   GetController()->OnPasswordSubmitted(std::move(test_form_manager));
 }
 
 void ManagePasswordsTest::SetupAutomaticPassword() {
-  password_manager::StubPasswordManagerClient client;
-  password_manager::StubLogManager log_manager;
-  password_manager::StubPasswordManagerDriver driver;
-
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          nullptr, &client, driver.AsWeakPtr(), *test_form(),
-          base::WrapUnique(new password_manager::StubFormSaver)));
+          nullptr, &client_, driver_.AsWeakPtr(), *test_form(),
+          base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
+  fetcher_.SetNonFederated(std::vector<const autofill::PasswordForm*>(), 0u);
   GetController()->OnAutomaticPasswordSave(std::move(test_form_manager));
 }
 

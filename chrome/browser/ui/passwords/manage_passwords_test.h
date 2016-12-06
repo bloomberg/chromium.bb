@@ -12,6 +12,9 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/fake_form_fetcher.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -61,6 +64,9 @@ class ManagePasswordsTest : public InProcessBrowserTest {
  private:
   autofill::PasswordForm test_form_;
   base::HistogramTester histogram_tester_;
+  password_manager::StubPasswordManagerClient client_;
+  password_manager::StubPasswordManagerDriver driver_;
+  password_manager::FakeFormFetcher fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsTest);
 };

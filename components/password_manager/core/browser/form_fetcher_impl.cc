@@ -7,15 +7,20 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
 using autofill::PasswordForm;
+
+// Shorten the name to spare line breaks. The code provides enough context
+// already.
+using Logger = autofill::SavePasswordProgressLogger;
 
 namespace password_manager {
 
@@ -53,8 +58,9 @@ std::vector<const T*> MakeWeakCopies(
 
 }  // namespace
 
-FormFetcherImpl::FormFetcherImpl(const PasswordManagerClient* client)
-    : client_(client) {}
+FormFetcherImpl::FormFetcherImpl(PasswordStore::FormDigest form_digest,
+                                 const PasswordManagerClient* client)
+    : form_digest_(std::move(form_digest)), client_(client) {}
 
 FormFetcherImpl::~FormFetcherImpl() = default;
 
@@ -79,9 +85,25 @@ FormFetcherImpl::GetFederatedMatches() const {
   return weak_federated_;
 }
 
-void FormFetcherImpl::SetResults(
+void FormFetcherImpl::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
+  state_ = State::NOT_WAITING;
+
+  if (need_to_refetch_) {
+    // The received results are no longer up to date, need to re-request.
+    Fetch();
+    need_to_refetch_ = false;
+    return;
+  }
+
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (password_manager_util::IsLoggingActive(client_)) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger->LogMessage(Logger::STRING_ON_GET_STORE_RESULTS_METHOD);
+    logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
+  }
 
   federated_ = SplitFederatedMatches(&results);
   non_federated_ = std::move(results);
@@ -96,16 +118,51 @@ void FormFetcherImpl::SetResults(
   weak_non_federated_ = MakeWeakCopies(non_federated_);
   weak_federated_ = MakeWeakCopies(federated_);
 
-  state_ = State::NOT_WAITING;
-
   for (Consumer* consumer : consumers_)
     consumer->ProcessMatches(weak_non_federated_, filtered_count_);
 }
 
-void FormFetcherImpl::SetStats(
+void FormFetcherImpl::OnGetSiteStatistics(
     std::vector<std::unique_ptr<InteractionsStats>> stats) {
+  // On Windows the password request may be resolved after the statistics due to
+  // importing from IE.
   interactions_stats_ = std::move(stats);
   weak_interactions_stats_ = MakeWeakCopies(interactions_stats_);
+}
+
+void FormFetcherImpl::Fetch() {
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (password_manager_util::IsLoggingActive(client_)) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger->LogMessage(Logger::STRING_FETCH_METHOD);
+    logger->LogNumber(Logger::STRING_FORM_FETCHER_STATE,
+                      static_cast<int>(state_));
+  }
+
+  if (state_ == State::WAITING) {
+    // There is currently a password store query in progress, need to re-fetch
+    // store results later.
+    need_to_refetch_ = true;
+    return;
+  }
+
+  PasswordStore* password_store = client_->GetPasswordStore();
+  if (!password_store) {
+    if (logger)
+      logger->LogMessage(Logger::STRING_NO_STORE);
+    NOTREACHED();
+    return;
+  }
+  state_ = State::WAITING;
+  password_store->GetLogins(form_digest_, this);
+
+// The statistics isn't needed on mobile, only on desktop. Let's save some
+// processor cycles.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  // The statistics is needed for the "Save password?" bubble.
+  password_store->GetSiteStats(form_digest_.origin.GetOrigin(), this);
+#endif
 }
 
 }  // namespace password_manager

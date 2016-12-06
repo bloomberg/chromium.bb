@@ -318,11 +318,11 @@ std::string SavePasswordProgressLogger::GetStringFromID(
     case SavePasswordProgressLogger::STRING_BEST_SCORE:
       return "best_score";
     case SavePasswordProgressLogger::STRING_ON_GET_STORE_RESULTS_METHOD:
-      return "PasswordFormManager::OnGetPasswordStoreResults";
+      return "FormFetcherImpl::OnGetPasswordStoreResults";
     case SavePasswordProgressLogger::STRING_NUMBER_RESULTS:
       return "Number of results from the password store";
-    case SavePasswordProgressLogger::STRING_FETCH_LOGINS_METHOD:
-      return "PasswordFormManager::FetchMatchingLoginsFromPasswordStore";
+    case SavePasswordProgressLogger::STRING_FETCH_METHOD:
+      return "FormFetcherImpl::Fetch";
     case SavePasswordProgressLogger::STRING_NO_STORE:
       return "PasswordStore is not available";
     case SavePasswordProgressLogger::STRING_CREATE_LOGIN_MANAGERS_METHOD:
@@ -346,8 +346,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "PasswordFormManager::ProcessFrame";
     case SavePasswordProgressLogger::STRING_FORM_SIGNATURE:
       return "Signature of form";
-    case SavePasswordProgressLogger::STRING_FORM_MANAGER_STATE:
-      return "PasswordFormManager::state_";
+    case SavePasswordProgressLogger::STRING_FORM_FETCHER_STATE:
+      return "FormFetcherImpl::state_";
     case SavePasswordProgressLogger::STRING_ADDING_SIGNATURE:
       return "Adding manager for form";
     case SavePasswordProgressLogger::STRING_UNOWNED_INPUTS_VISIBLE:

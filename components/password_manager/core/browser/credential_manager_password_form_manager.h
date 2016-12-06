@@ -44,8 +44,9 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
       CredentialManagerPasswordFormManagerDelegate* delegate);
   ~CredentialManagerPasswordFormManager() override;
 
-  void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+  void ProcessMatches(
+      const std::vector<const autofill::PasswordForm*>& non_federated,
+      size_t filtered_count) override;
 
  private:
   CredentialManagerPasswordFormManagerDelegate* delegate_;

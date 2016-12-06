@@ -232,7 +232,8 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
   // ability to detect forms.
   auto manager = base::MakeUnique<PasswordFormManager>(
       this, client_, driver->AsWeakPtr(), form,
-      base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())));
+      base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())),
+      nullptr);
   pending_login_managers_.push_back(std::move(manager));
 }
 
@@ -273,8 +274,8 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   auto matched_manager_it = pending_login_managers_.end();
   PasswordFormManager::MatchResultMask current_match_result =
       PasswordFormManager::RESULT_NO_MATCH;
-  // Below, "matching" is in DoesManage-sense and "not ready" in
-  // !HasCompletedMatching sense. We keep track of such PasswordFormManager
+  // Below, "matching" is in DoesManage-sense and "not ready" in the sense of
+  // FormFetcher being ready. We keep track of such PasswordFormManager
   // instances for UMA.
   for (auto iter = pending_login_managers_.begin();
        iter != pending_login_managers_.end(); ++iter) {
@@ -358,7 +359,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
 
 void PasswordManager::UpdateFormManagers() {
   for (const auto& form_manager : pending_login_managers_) {
-    form_manager->FetchDataFromPasswordStore();
+    form_manager->form_fetcher()->Fetch();
   }
 }
 
@@ -520,8 +521,8 @@ void PasswordManager::CreatePendingLoginManagers(
     auto manager = base::MakeUnique<PasswordFormManager>(
         this, client_,
         (driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>()),
-        *iter,
-        base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())));
+        *iter, base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())),
+        nullptr);
     pending_login_managers_.push_back(std::move(manager));
   }
 
@@ -546,7 +547,8 @@ bool PasswordManager::CanProvisionalManagerSave() {
     return false;
   }
 
-  if (!provisional_save_manager_->HasCompletedMatching()) {
+  if (provisional_save_manager_->form_fetcher()->GetState() ==
+      FormFetcher::State::WAITING) {
     // We have a provisional save manager, but it didn't finish matching yet.
     // We just give up.
     RecordFailure(MATCHING_NOT_COMPLETE,

@@ -173,6 +173,15 @@ class PasswordManager : public LoginModel {
 
   PasswordManagerClient* client() { return client_; }
 
+#if defined(UNIT_TEST)
+  // TODO(crbug.com/639786): Replace using this by quering the factory for
+  // mocked PasswordFormManagers.
+  const std::vector<std::unique_ptr<PasswordFormManager>>&
+  pending_login_managers() {
+    return pending_login_managers_;
+  }
+#endif
+
  private:
   enum ProvisionalSaveFailure {
     SAVING_DISABLED,

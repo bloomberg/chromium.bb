@@ -28,7 +28,8 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
           client,
           driver,
           observed_form,
-          base::WrapUnique(new FormSaverImpl(client->GetPasswordStore()))),
+          base::WrapUnique(new FormSaverImpl(client->GetPasswordStore())),
+          nullptr),
       delegate_(delegate),
       saved_form_(std::move(saved_form)) {
   DCHECK(saved_form_);
@@ -37,9 +38,10 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
 CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() {
 }
 
-void CredentialManagerPasswordFormManager::OnGetPasswordStoreResults(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  PasswordFormManager::OnGetPasswordStoreResults(std::move(results));
+void CredentialManagerPasswordFormManager::ProcessMatches(
+    const std::vector<const PasswordForm*>& non_federated,
+    size_t filtered_count) {
+  PasswordFormManager::ProcessMatches(non_federated, filtered_count);
 
   // Mark the form as "preferred", as we've been told by the API that this is
   // indeed the credential set that the user used to sign into the site.
