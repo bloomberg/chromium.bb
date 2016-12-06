@@ -94,6 +94,9 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   // Whether or not a frame observer has been added.
   bool added_frame_observer_ = false;
 
+  // The set of BeginFrame children of this CompositorFrameSink.
+  std::unordered_set<FrameSinkId, FrameSinkIdHash> child_frame_sinks_;
+
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkSupport);

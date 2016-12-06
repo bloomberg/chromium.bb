@@ -33,6 +33,11 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
 }
 
 CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
+  for (auto& child_frame_sink_id : child_frame_sinks_) {
+    DCHECK(child_frame_sink_id.is_valid());
+    surface_manager_->UnregisterFrameSinkHierarchy(frame_sink_id_,
+                                                   child_frame_sink_id);
+  }
   // SurfaceFactory's destructor will attempt to return resources which will
   // call back into here and access |client_| so we should destroy
   // |surface_factory_|'s resources early on.
@@ -93,14 +98,19 @@ void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
 
 void CompositorFrameSinkSupport::AddChildFrameSink(
     const FrameSinkId& child_frame_sink_id) {
+  child_frame_sinks_.insert(child_frame_sink_id);
   surface_manager_->RegisterFrameSinkHierarchy(frame_sink_id_,
                                                child_frame_sink_id);
 }
 
 void CompositorFrameSinkSupport::RemoveChildFrameSink(
     const FrameSinkId& child_frame_sink_id) {
+  auto it = child_frame_sinks_.find(child_frame_sink_id);
+  DCHECK(it != child_frame_sinks_.end());
+  DCHECK(it->is_valid());
   surface_manager_->UnregisterFrameSinkHierarchy(frame_sink_id_,
                                                  child_frame_sink_id);
+  child_frame_sinks_.erase(it);
 }
 
 void CompositorFrameSinkSupport::DisplayOutputSurfaceLost() {}
