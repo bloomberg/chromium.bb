@@ -445,7 +445,8 @@ void ContentSettingsObserver::OnSetAllowRunningInsecureContent(bool allow) {
 void ContentSettingsObserver::OnReloadFrame() {
   DCHECK(!render_frame()->GetWebFrame()->parent()) <<
       "Should only be called on the main frame";
-  render_frame()->GetWebFrame()->reload();
+  render_frame()->GetWebFrame()->reload(
+      blink::WebFrameLoadType::ReloadMainResource);
 }
 
 void ContentSettingsObserver::OnRequestFileSystemAccessAsyncResponse(

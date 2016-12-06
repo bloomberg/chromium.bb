@@ -2261,7 +2261,7 @@ void RenderFrameImpl::OnPostMessageEvent(
 
 void RenderFrameImpl::OnReload(bool bypass_cache) {
   frame_->reload(bypass_cache ? WebFrameLoadType::ReloadBypassingCache
-                              : WebFrameLoadType::Reload);
+                              : WebFrameLoadType::ReloadMainResource);
 }
 
 void RenderFrameImpl::OnReloadLoFiImages() {
