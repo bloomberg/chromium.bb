@@ -164,15 +164,19 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   bool SetDisplayMode(int64_t display_id,
                       const scoped_refptr<ManagedDisplayMode>& display_mode);
 
-  // Register per display properties. |overscan_insets| is null if the display
-  // has no custom overscan insets.
-  void RegisterDisplayProperty(int64_t display_id,
-                               Display::Rotation rotation,
-                               float ui_scale,
-                               const gfx::Insets* overscan_insets,
-                               const gfx::Size& resolution_in_pixels,
-                               float device_scale_factor,
-                               ui::ColorCalibrationProfile color_profile);
+  // Register per display properties.
+  // |overscan_insets| is null if the display has no custom overscan insets.
+  // |touch_calibration_data| is null if the display has no touch calibration
+  // associated data.
+  void RegisterDisplayProperty(
+      int64_t display_id,
+      Display::Rotation rotation,
+      float ui_scale,
+      const gfx::Insets* overscan_insets,
+      const gfx::Size& resolution_in_pixels,
+      float device_scale_factor,
+      ui::ColorCalibrationProfile color_profile,
+      const TouchCalibrationData* touch_calibration_data);
 
   // Register stored rotation properties for the internal display.
   void RegisterDisplayRotationProperties(bool rotation_lock,
@@ -295,6 +299,11 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 #if defined(OS_CHROMEOS)
   void SetSoftwareMirroring(bool enabled) override;
   bool SoftwareMirroringEnabled() const override;
+  void SetTouchCalibrationData(
+      int64_t display_id,
+      const TouchCalibrationData::CalibrationPointPairQuad& point_pair_quad,
+      const gfx::Size& display_bounds);
+  void ClearTouchCalibrationData(int64_t display_id);
 #endif
 
   // Sets/gets default multi display mode.

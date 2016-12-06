@@ -628,6 +628,81 @@ TEST_P(DisplayManagerTest, ZeroOverscanInsets) {
   EXPECT_EQ(display2_id, changed()[0].id());
 }
 
+#if defined(OS_CHROMEOS)
+TEST_P(DisplayManagerTest, TouchCalibrationTest) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("0+0-500x500,0+501-1024x600");
+  reset();
+
+  ASSERT_EQ(2u, display_manager()->GetNumDisplays());
+  const display::ManagedDisplayInfo display_info1 = GetDisplayInfoAt(0);
+  const display::ManagedDisplayInfo display_info2 = GetDisplayInfoAt(1);
+
+  EXPECT_FALSE(display_info2.has_touch_calibration_data());
+
+  display::TouchCalibrationData::CalibrationPointPairQuad point_pair_quad = {
+      {std::make_pair(gfx::Point(50, 50), gfx::Point(43, 51)),
+       std::make_pair(gfx::Point(950, 50), gfx::Point(975, 45)),
+       std::make_pair(gfx::Point(50, 550), gfx::Point(48, 534)),
+       std::make_pair(gfx::Point(950, 550), gfx::Point(967, 574))}};
+  gfx::Size bounds_at_calibration(display_info2.size_in_pixel());
+  const display::TouchCalibrationData touch_data(point_pair_quad,
+                                                 bounds_at_calibration);
+
+  // Set the touch calibration data for the secondary display.
+  display_manager()->SetTouchCalibrationData(
+      display_info2.id(), point_pair_quad, bounds_at_calibration);
+
+  display::ManagedDisplayInfo updated_display_info2 = GetDisplayInfoAt(1);
+  EXPECT_TRUE(updated_display_info2.has_touch_calibration_data());
+  EXPECT_EQ(touch_data, updated_display_info2.GetTouchCalibrationData());
+
+  // Clearing touch calibration data from the secondary display.
+  display_manager()->ClearTouchCalibrationData(display_info2.id());
+  updated_display_info2 = GetDisplayInfoAt(1);
+  EXPECT_FALSE(updated_display_info2.has_touch_calibration_data());
+
+  // Make sure that SetTouchCalibrationData() is idempotent.
+  display::TouchCalibrationData::CalibrationPointPairQuad point_pair_quad_2 =
+      point_pair_quad;
+  point_pair_quad_2[1] =
+      std::make_pair(gfx::Point(950, 50), gfx::Point(975, 53));
+  display::TouchCalibrationData touch_data_2(point_pair_quad_2,
+                                             bounds_at_calibration);
+  display_manager()->SetTouchCalibrationData(
+      display_info2.id(), point_pair_quad_2, bounds_at_calibration);
+
+  updated_display_info2 = GetDisplayInfoAt(1);
+  EXPECT_TRUE(updated_display_info2.has_touch_calibration_data());
+  EXPECT_EQ(touch_data_2, updated_display_info2.GetTouchCalibrationData());
+
+  display_manager()->SetTouchCalibrationData(
+      display_info2.id(), point_pair_quad, bounds_at_calibration);
+  EXPECT_TRUE(updated_display_info2.has_touch_calibration_data());
+  EXPECT_EQ(touch_data_2, updated_display_info2.GetTouchCalibrationData());
+
+  // Recreate a new 2nd display. It won't apply the touhc calibration data
+  // because the new display has a different ID.
+  UpdateDisplay("0+0-500x500");
+  UpdateDisplay("0+0-500x500,0+501-400x400");
+  EXPECT_FALSE(GetDisplayInfoAt(1).has_touch_calibration_data());
+
+  // Recreate the displays with the same ID.  It should apply the touch
+  // calibration associated data.
+  UpdateDisplay("0+0-500x500");
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(display_info1);
+  display_info_list.push_back(display_info2);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  updated_display_info2 = GetDisplayInfoAt(1);
+
+  EXPECT_FALSE(updated_display_info2.has_touch_calibration_data());
+  EXPECT_EQ(touch_data, updated_display_info2.GetTouchCalibrationData());
+}
+#endif  // defined(OS_CHROMEOS)
+
 #if !defined(OS_WIN)
 // Disabled on windows because of http://crbug.com/650326.
 TEST_P(DisplayManagerTest, TestDeviceScaleOnlyChange) {
@@ -1471,7 +1546,7 @@ TEST_P(DisplayManagerTest, FHD125DefaultsTo08UIScalingNoOverride) {
   const gfx::Insets dummy_overscan_insets;
   display_manager()->RegisterDisplayProperty(
       display_id, display::Display::ROTATE_0, 1.0f, &dummy_overscan_insets,
-      gfx::Size(), 1.0f, ui::ColorCalibrationProfile());
+      gfx::Size(), 1.0f, ui::ColorCalibrationProfile(), nullptr);
 
   // Setup the display modes with UI-scale.
   display::ManagedDisplayInfo native_display_info =
@@ -2429,9 +2504,9 @@ TEST_F(DisplayManagerFontTest,
 
 TEST_P(DisplayManagerTest, CheckInitializationOfRotationProperty) {
   int64_t id = display_manager()->GetDisplayAt(0).id();
-  display_manager()->RegisterDisplayProperty(id, display::Display::ROTATE_90,
-                                             1.0f, nullptr, gfx::Size(), 1.0f,
-                                             ui::COLOR_PROFILE_STANDARD);
+  display_manager()->RegisterDisplayProperty(
+      id, display::Display::ROTATE_90, 1.0f, nullptr, gfx::Size(), 1.0f,
+      ui::COLOR_PROFILE_STANDARD, nullptr);
 
   const display::ManagedDisplayInfo& info =
       display_manager()->GetDisplayInfo(id);

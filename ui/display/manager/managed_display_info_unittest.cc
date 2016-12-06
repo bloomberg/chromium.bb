@@ -168,15 +168,7 @@ TEST_F(DisplayInfoTest, TouchCalibrationTest) {
   info.SetTouchCalibrationData(expected_data);
 
   EXPECT_TRUE(info.has_touch_calibration_data());
-  TouchCalibrationData actual_data = info.GetTouchCalibrationData();
-  EXPECT_EQ(actual_data.bounds, size);
-  for (size_t i = 0; i < expected_data.point_pairs.size(); i++) {
-    EXPECT_EQ(actual_data.point_pairs[i].first,
-              expected_data.point_pairs[i].first);
-
-    EXPECT_EQ(actual_data.point_pairs[i].second,
-              expected_data.point_pairs[i].second);
-  }
+  EXPECT_EQ(expected_data, info.GetTouchCalibrationData());
 
   // Clear all touch calibration data for the display.
   info.clear_touch_calibration_data();

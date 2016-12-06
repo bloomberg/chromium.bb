@@ -87,6 +87,19 @@ TouchCalibrationData::TouchCalibrationData(
     : point_pairs(calibration_data.point_pairs),
       bounds(calibration_data.bounds) {}
 
+bool TouchCalibrationData::operator==(TouchCalibrationData other) const {
+  if (bounds != other.bounds)
+    return false;
+  CalibrationPointPairQuad quad_1 = point_pairs;
+  CalibrationPointPairQuad& quad_2 = other.point_pairs;
+
+  // Make sure the point pairs are in the correct order.
+  std::sort(quad_1.begin(), quad_1.end(), CalibrationPointPairCompare);
+  std::sort(quad_2.begin(), quad_2.end(), CalibrationPointPairCompare);
+
+  return quad_1 == quad_2;
+}
+
 ManagedDisplayMode::ManagedDisplayMode()
     : refresh_rate_(0.0f),
       is_interlaced_(false),

@@ -6,11 +6,16 @@
 #define CHROME_BROWSER_CHROMEOS_DISPLAY_DISPLAY_PREFERENCES_H_
 
 #include <stdint.h>
+#include <array>
 
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/display/display_layout.h"
 
 class PrefRegistrySimple;
+
+namespace gfx {
+class Point;
+}
 
 namespace chromeos {
 
@@ -37,6 +42,13 @@ void StoreDisplayLayoutPrefForTest(const display::DisplayIdList& list,
 
 // Stores the given |power_state| for tests.
 void StoreDisplayPowerStateForTest(DisplayPowerState power_state);
+
+// Parses the marshalled string data stored in local preferences for calibration
+// points and populates |point_pair_quad| using the unmarshalled data.
+// See TouchCalibrationData in Managed display info.
+bool ParseTouchCalibrationStringForTest(
+    const std::string& str,
+    std::array<std::pair<gfx::Point, gfx::Point>, 4>* point_pair_quad);
 
 }  // namespace chromeos
 

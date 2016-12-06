@@ -6,7 +6,7 @@
 #define UI_DISPLAY_MANAGER_MANAGED_DISPLAY_INFO_H_
 
 #include <stdint.h>
-
+#include <algorithm>
 #include <array>
 #include <map>
 #include <string>
@@ -33,6 +33,15 @@ struct DISPLAY_MANAGER_EXPORT TouchCalibrationData {
   TouchCalibrationData(const CalibrationPointPairQuad& point_pairs,
                        const gfx::Size& bounds);
   TouchCalibrationData(const TouchCalibrationData& calibration_data);
+
+  static bool CalibrationPointPairCompare(const CalibrationPointPair& pair_1,
+                                          const CalibrationPointPair& pair_2) {
+    return pair_1.first.y() < pair_2.first.y()
+               ? true
+               : pair_1.first.x() < pair_2.first.x();
+  }
+
+  bool operator==(TouchCalibrationData other) const;
 
   // Calibration point pairs used during calibration. Each point pair contains a
   // display point and the corresponding touch point.
