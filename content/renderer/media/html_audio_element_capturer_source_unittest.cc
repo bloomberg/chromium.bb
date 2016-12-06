@@ -11,6 +11,7 @@
 #include "media/audio/null_audio_sink.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/fake_audio_render_callback.h"
+#include "media/base/media_log.h"
 #include "media/blink/webaudiosourceprovider_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +67,8 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
   HTMLAudioElementCapturerSourceTest()
       : fake_callback_(0.1),
         audio_source_(new media::WebAudioSourceProviderImpl(
-            new media::NullAudioSink(base::ThreadTaskRunnerHandle::Get()))) {}
+            new media::NullAudioSink(base::ThreadTaskRunnerHandle::Get()),
+            new media::MediaLog())) {}
 
   void SetUp() final {
     const media::AudioParameters params(

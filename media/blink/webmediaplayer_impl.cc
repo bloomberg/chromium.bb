@@ -264,15 +264,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   // TODO(xhwang): When we use an external Renderer, many methods won't work,
   // e.g. GetCurrentFrameFromCompositor(). See http://crbug.com/434861
-
-  // Use the null sink if no valid sink was provided.
-  audio_source_provider_ = new WebAudioSourceProviderImpl(
-      params.audio_renderer_sink().get() &&
-              params.audio_renderer_sink()
-                      ->GetOutputDeviceInfo()
-                      .device_status() == OUTPUT_DEVICE_STATUS_OK
-          ? params.audio_renderer_sink()
-          : new NullAudioSink(media_task_runner_));
+  audio_source_provider_ =
+      new WebAudioSourceProviderImpl(params.audio_renderer_sink(), media_log_);
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {

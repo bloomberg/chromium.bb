@@ -325,8 +325,11 @@ void AudioOutputDevice::OnDeviceAuthorized(
   // different from OUTPUT_DEVICE_STATUS_OK, so the AudioOutputDevice
   // will enter the IPC_CLOSED state anyway, which is the safe thing to do.
   // This is preferable to holding a lock.
-  if (!did_receive_auth_.IsSignaled())
+  if (!did_receive_auth_.IsSignaled()) {
     device_status_ = device_status;
+    UMA_HISTOGRAM_ENUMERATION("Media.Audio.Render.OutputDeviceStatus",
+                              device_status, OUTPUT_DEVICE_STATUS_MAX + 1);
+  }
 
   if (device_status == OUTPUT_DEVICE_STATUS_OK) {
     state_ = AUTHORIZED;

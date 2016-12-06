@@ -76,7 +76,7 @@ bool NullAudioSink::SetVolume(double volume) {
 }
 
 OutputDeviceInfo NullAudioSink::GetOutputDeviceInfo() {
-  return OutputDeviceInfo();
+  return OutputDeviceInfo(OUTPUT_DEVICE_STATUS_OK);
 }
 
 bool NullAudioSink::CurrentThreadIsRenderingThread() {

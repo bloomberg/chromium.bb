@@ -23,6 +23,7 @@ class WebAudioSourceProviderClient;
 }
 
 namespace media {
+class MediaLog;
 
 // WebAudioSourceProviderImpl is either one of two things (but not both):
 // - a connection between a RestartableAudioRendererSink (the |sink_|) passed in
@@ -47,8 +48,8 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
                                           uint32_t frames_delayed,
                                           int sample_rate)>;
 
-  explicit WebAudioSourceProviderImpl(
-      const scoped_refptr<SwitchableAudioRendererSink>& sink);
+  WebAudioSourceProviderImpl(scoped_refptr<SwitchableAudioRendererSink> sink,
+                             scoped_refptr<MediaLog> media_log);
 
   // blink::WebAudioSourceProvider implementation.
   void setClient(blink::WebAudioSourceProviderClient* client) override;
@@ -75,9 +76,12 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
 
   int RenderForTesting(AudioBus* audio_bus);
 
+ protected:
+  virtual scoped_refptr<SwitchableAudioRendererSink> CreateFallbackSink();
+  ~WebAudioSourceProviderImpl() override;
+
  private:
   friend class WebAudioSourceProviderImplTest;
-  ~WebAudioSourceProviderImpl() override;
 
   // Calls setFormat() on |client_| from the Blink renderer thread.
   void OnSetFormat();
@@ -96,12 +100,14 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
 
   // Where audio ends up unless overridden by |client_|.
   base::Lock sink_lock_;
-  const scoped_refptr<SwitchableAudioRendererSink> sink_;
+  scoped_refptr<SwitchableAudioRendererSink> sink_;
   std::unique_ptr<AudioBus> bus_wrapper_;
 
   // An inner class acting as a T filter where actual data can be tapped.
   class TeeFilter;
   const std::unique_ptr<TeeFilter> tee_filter_;
+
+  const scoped_refptr<MediaLog> media_log_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebAudioSourceProviderImpl> weak_factory_;
