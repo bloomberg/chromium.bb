@@ -260,16 +260,17 @@ void LayoutFieldset::addChild(LayoutObject* newChild,
     createInnerBlock();
 
   if (isHTMLLegendElement(newChild->node())) {
-    // Flexbox forces the floating legend to be non-floating => add the floating
-    // legend to the inner block.
+    // Let legend block to be the 2nd for correct layout positioning.
+    newChild->mutableStyle()->setOrder(2);
+
+    // LayoutFlexibleBox::addChild will create an anonymous block if legend is
+    // float. Use the existing fieldset's anonymous block here instead.
     if (newChild->isFloatingOrOutOfFlowPositioned()) {
-      // Always add the legend first, i.e. before m_innerBlock->firstChild()
-      m_innerBlock->addChild(newChild, m_innerBlock->firstChild());
+      m_innerBlock->addChild(newChild);
     } else {
-      // Let legend block to be the 2nd for correct layout positioning.
-      newChild->mutableStyle()->setOrder(2);
       LayoutFlexibleBox::addChild(newChild, m_innerBlock);
     }
+
   } else {
     if (beforeChild && isHTMLLegendElement(beforeChild->node())) {
       m_innerBlock->addChild(newChild);
@@ -292,12 +293,17 @@ void LayoutFieldset::createInnerBlock() {
 
 void LayoutFieldset::removeChild(LayoutObject* oldChild) {
   if (isHTMLLegendElement(oldChild->node())) {
-    LayoutFlexibleBox::removeChild(oldChild);
-    if (m_innerBlock) {
-      resetInnerBlockPadding(isHorizontalWritingMode(), m_innerBlock);
-      m_innerBlock->setNeedsLayout(LayoutInvalidationReason::FieldsetChanged,
-                                   MarkOnlyThis);
+    if (oldChild->isFloatingOrOutOfFlowPositioned()) {
+      m_innerBlock->removeChild(oldChild);
+    } else {
+      LayoutFlexibleBox::removeChild(oldChild);
+      if (m_innerBlock) {
+        resetInnerBlockPadding(isHorizontalWritingMode(), m_innerBlock);
+        m_innerBlock->setNeedsLayout(LayoutInvalidationReason::FieldsetChanged,
+                                     MarkOnlyThis);
+      }
     }
+
     setShouldDoFullPaintInvalidation();
   } else if (oldChild == m_innerBlock) {
     LayoutFlexibleBox::removeChild(oldChild);
