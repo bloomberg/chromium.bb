@@ -411,7 +411,6 @@ if (ozone_platform_x11) {
     testonly = true
     data_deps = [
       ":gl_unittests",
-      "//tools/xdisplaycheck",
     ]
   }
 

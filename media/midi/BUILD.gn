@@ -209,10 +209,6 @@ test("midi_unittests") {
     sources += [ "midi_manager_alsa_unittest.cc" ]
   }
 
-  if (use_x11) {
-    deps += [ "//tools/xdisplaycheck" ]
-  }
-
   # This target should not require the Chrome executable to run.
   assert_no_deps = [ "//chrome" ]
 }

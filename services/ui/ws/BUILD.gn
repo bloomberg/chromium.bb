@@ -258,10 +258,6 @@ test("mus_ws_unittests") {
   # TODO(fsamuel): Remove this dep. crbug.com/670454
   deps += [ "//services/ui/surfaces" ]
 
-  if (use_x11) {
-    deps += [ "//tools/xdisplaycheck" ]
-  }
-
   data_deps = [
     ":mus_ws_unittests_app_manifest",
   ]

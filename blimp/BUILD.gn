@@ -70,7 +70,6 @@ if (is_linux) {
   test("blimp_browsertests") {
     deps = [
       "//blimp/engine:browser_tests",
-      "//tools/xdisplaycheck",
     ]
     data = [
       "test/data/",

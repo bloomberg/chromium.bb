@@ -746,7 +746,6 @@ if (!is_android) {
 
     if (use_x11) {
       configs += [ "//build/config/linux:xtst" ]
-      data_deps += [ "//tools/xdisplaycheck" ]
     }
 
     if (enable_app_list) {
@@ -2683,9 +2682,6 @@ test("browser_tests") {
       ]
       deps += [ "//remoting/webapp" ]
     }
-    if (use_x11) {
-      deps += [ "//tools/xdisplaycheck" ]
-    }
 
     if (use_aura) {
       if (enable_wifi_display) {
@@ -4440,7 +4436,6 @@ test("unit_tests") {
   }
   if (use_x11) {
     deps += [ "//ui/events/devices" ]
-    data_deps += [ "//tools/xdisplaycheck" ]
   } else {
     sources -= [ "../browser/password_manager/password_store_x_unittest.cc" ]
   }

@@ -162,10 +162,6 @@ test("exo_unittests") {
     "//ash/resources:ash_test_resources_200_percent",
   ]
 
-  if (use_x11) {
-    deps += [ "//tools/xdisplaycheck" ]
-  }
-
   if (is_linux) {
     deps += [ "//components/exo/wayland:unit_tests" ]
   }
