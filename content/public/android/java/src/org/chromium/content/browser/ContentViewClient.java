@@ -8,7 +8,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.view.KeyEvent;
-import android.view.View.MeasureSpec;
 
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
@@ -24,14 +23,12 @@ import org.chromium.base.metrics.RecordUserAction;
  *  TODO(mkosiba): Rid this class of default implementations. This class is used by both WebView and
  *  the browser and we don't want a the browser-specific default implementation to accidentally leak
  *  over to WebView.
+ *
+ *  WARNING: ConteViewClient is going away. Do not add new stuff in this class.
  */
 public class ContentViewClient {
     // Tag used for logging.
     private static final String TAG = "cr_ContentViewClient";
-
-    // Default value to signal that the ContentView's size should not be overridden.
-    private static final int UNSPECIFIED_MEASURE_SPEC =
-            MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 
     private static final String GEO_SCHEME = "geo";
     private static final String TEL_SCHEME = "tel";
@@ -147,28 +144,6 @@ public class ContentViewClient {
             return false;
         }
         return true;
-    }
-
-    /**
-     * ContentViewClient users can return a custom value to override the width of
-     * the ContentView. By default, this method returns MeasureSpec.UNSPECIFIED, which
-     * indicates that the value should not be overridden.
-     *
-     * @return The desired width of the ContentView.
-     */
-    public int getDesiredWidthMeasureSpec() {
-        return UNSPECIFIED_MEASURE_SPEC;
-    }
-
-    /**
-     * ContentViewClient users can return a custom value to override the height of
-     * the ContentView. By default, this method returns MeasureSpec.UNSPECIFIED, which
-     * indicates that the value should not be overridden.
-     *
-     * @return The desired height of the ContentView.
-     */
-    public int getDesiredHeightMeasureSpec() {
-        return UNSPECIFIED_MEASURE_SPEC;
     }
 
     /**

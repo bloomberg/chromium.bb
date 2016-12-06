@@ -15,6 +15,7 @@ import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
@@ -33,7 +34,18 @@ public class ContentView extends FrameLayout
 
     private static final String TAG = "cr.ContentView";
 
+    // Default value to signal that the ContentView's size need not be overridden.
+    public static final int DEFAULT_MEASURE_SPEC =
+            MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+
     protected final ContentViewCore mContentViewCore;
+
+    /**
+     * The desired size of this view in {@link MeasureSpec}. Set by the host
+     * when it should be different from that of the parent.
+     */
+    private int mDesiredWidthMeasureSpec = DEFAULT_MEASURE_SPEC;
+    private int mDesiredHeightMeasureSpec = DEFAULT_MEASURE_SPEC;
 
     /**
      * Constructs a new ContentView for the appropriate Android version.
@@ -76,6 +88,27 @@ public class ContentView extends FrameLayout
         }
 
         return super.performAccessibilityAction(action, arguments);
+    }
+
+    /**
+     * Set the desired size of the view. The values are in {@link MeasureSpec}.
+     * @param width The width of the content view.
+     * @param height The height of the content view.
+     */
+    public void setDesiredMeasureSpec(int width, int height) {
+        mDesiredWidthMeasureSpec = width;
+        mDesiredHeightMeasureSpec = height;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        if (mDesiredWidthMeasureSpec != DEFAULT_MEASURE_SPEC) {
+            widthMeasureSpec = mDesiredWidthMeasureSpec;
+        }
+        if (mDesiredHeightMeasureSpec != DEFAULT_MEASURE_SPEC) {
+            heightMeasureSpec = mDesiredHeightMeasureSpec;
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
@@ -229,25 +262,6 @@ public class ContentView extends FrameLayout
     @Override
     protected int computeVerticalScrollRange() {
         return mContentViewCore.computeVerticalScrollRange();
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        ContentViewClient client = mContentViewCore.getContentViewClient();
-
-        // Allow the ContentViewClient to override the ContentView's width.
-        int desiredWidthMeasureSpec = client.getDesiredWidthMeasureSpec();
-        if (MeasureSpec.getMode(desiredWidthMeasureSpec) != MeasureSpec.UNSPECIFIED) {
-            widthMeasureSpec = desiredWidthMeasureSpec;
-        }
-
-        // Allow the ContentViewClient to override the ContentView's height.
-        int desiredHeightMeasureSpec = client.getDesiredHeightMeasureSpec();
-        if (MeasureSpec.getMode(desiredHeightMeasureSpec) != MeasureSpec.UNSPECIFIED) {
-            heightMeasureSpec = desiredHeightMeasureSpec;
-        }
-
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     // End FrameLayout overrides.

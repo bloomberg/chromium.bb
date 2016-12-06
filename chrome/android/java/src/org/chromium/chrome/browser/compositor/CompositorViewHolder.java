@@ -53,7 +53,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
-import org.chromium.content.browser.ContentViewClient;
+import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.SPenSupport;
 import org.chromium.ui.UiUtils;
@@ -122,6 +122,13 @@ public class CompositorViewHolder extends CoordinatorLayout
 
     // If we've drawn at least one frame.
     private boolean mHasDrawnOnce = false;
+
+    /**
+     * The desired size of this view in {@link MeasureSpec}. Set by the host
+     * when it should be different from that of the parent.
+     */
+    private int mDesiredWidthMeasureSpec = ContentView.DEFAULT_MEASURE_SPEC;
+    private int mDesiredHeightMeasureSpec = ContentView.DEFAULT_MEASURE_SPEC;
 
     /**
      * This view is created on demand to display debugging information.
@@ -237,6 +244,16 @@ public class CompositorViewHolder extends CoordinatorLayout
      */
     public void setRootView(View view) {
         mCompositorView.setRootView(view);
+    }
+
+    /**
+     * Set the desired size of the view. The values are in {@link MeasureSpec}.
+     * @param width The width of the content view.
+     * @param height The height of the content view.
+     */
+    public void setDesiredMeasureSpec(int width, int height) {
+        mDesiredWidthMeasureSpec = width;
+        mDesiredHeightMeasureSpec = height;
     }
 
     /**
@@ -918,30 +935,20 @@ public class CompositorViewHolder extends CoordinatorLayout
     }
 
     /**
-     * Adjusts the physical backing size of a given ContentViewCore. This method will first check
-     * if the ContentViewCore's client wants to override the size and, if so, it will use the
-     * values provided by the {@link ContentViewClient#getDesiredWidthMeasureSpec()} and
-     * {@link ContentViewClient#getDesiredHeightMeasureSpec()} methods. If no value is provided
-     * in one of these methods, the values from the |width| and |height| arguments will be
-     * used instead.
-     *
+     * Adjusts the physical backing size of a given ContentViewCore. This method checks
+     * the associated container view to see if the size needs to be overriden, such as when used for
+     * {@link OverlayPanel}.
      * @param contentViewCore The {@link ContentViewCore} to resize.
      * @param width The default width.
      * @param height The default height.
      */
     private void adjustPhysicalBackingSize(ContentViewCore contentViewCore, int width, int height) {
-        ContentViewClient client = contentViewCore.getContentViewClient();
-
-        int desiredWidthMeasureSpec = client.getDesiredWidthMeasureSpec();
-        if (MeasureSpec.getMode(desiredWidthMeasureSpec) != MeasureSpec.UNSPECIFIED) {
-            width = MeasureSpec.getSize(desiredWidthMeasureSpec);
+        if (mDesiredWidthMeasureSpec != ContentView.DEFAULT_MEASURE_SPEC) {
+            width = MeasureSpec.getSize(mDesiredWidthMeasureSpec);
         }
-
-        int desiredHeightMeasureSpec = client.getDesiredHeightMeasureSpec();
-        if (MeasureSpec.getMode(desiredHeightMeasureSpec) != MeasureSpec.UNSPECIFIED) {
-            height = MeasureSpec.getSize(desiredHeightMeasureSpec);
+        if (mDesiredHeightMeasureSpec != ContentView.DEFAULT_MEASURE_SPEC) {
+            height = MeasureSpec.getSize(mDesiredHeightMeasureSpec);
         }
-
         contentViewCore.onPhysicalBackingSizeChanged(width, height);
     }
 

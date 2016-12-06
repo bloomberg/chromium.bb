@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.app.Activity;
 import android.content.Context;
-import android.view.View.MeasureSpec;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -27,7 +26,6 @@ import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.LocalizationUtils;
@@ -383,30 +381,9 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      */
     private OverlayPanelContent createNewOverlayPanelContentInternal() {
         OverlayPanelContent content = mContentFactory.createNewOverlayPanelContent();
-
-        content.setContentViewClient(new ContentViewClient() {
-            @Override
-            public int getDesiredWidthMeasureSpec() {
-                if (isFullWidthSizePanel()) {
-                    return super.getDesiredWidthMeasureSpec();
-                } else {
-                    return MeasureSpec.makeMeasureSpec(
-                            getContentViewWidthPx(),
-                            MeasureSpec.EXACTLY);
-                }
-            }
-
-            @Override
-            public int getDesiredHeightMeasureSpec() {
-                if (isFullWidthSizePanel()) {
-                    return super.getDesiredHeightMeasureSpec();
-                } else {
-                    return MeasureSpec.makeMeasureSpec(
-                            getContentViewHeightPx(),
-                            MeasureSpec.EXACTLY);
-                }
-            }
-        });
+        if (!isFullWidthSizePanel()) {
+            content.setContentViewSize(getContentViewWidthPx(), getContentViewHeightPx());
+        }
         return content;
     }
 
