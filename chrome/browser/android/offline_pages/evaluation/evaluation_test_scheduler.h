@@ -8,6 +8,9 @@
 #include "components/offline_pages/background/scheduler.h"
 
 namespace offline_pages {
+
+class RequestCoordinator;
+
 namespace android {
 
 class EvaluationTestScheduler : public Scheduler {
@@ -20,6 +23,9 @@ class EvaluationTestScheduler : public Scheduler {
 
   // Callback used by user request.
   void ImmediateScheduleCallback(bool result);
+
+ private:
+  RequestCoordinator* coordinator_;
 };
 
 }  // namespace android

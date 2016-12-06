@@ -8,10 +8,16 @@
 
 namespace offline_pages {
 
+extern const size_t kMaxLogCount = 50;
+
 OfflineEventLogger::OfflineEventLogger()
-    : activities_(kMaxLogCount), is_logging_(false) {}
+    : activities_(0), is_logging_(false), client_(nullptr) {}
 
 OfflineEventLogger::~OfflineEventLogger() {}
+
+void OfflineEventLogger::Clear() {
+  activities_.clear();
+}
 
 void OfflineEventLogger::SetIsLogging(bool is_logging) {
   is_logging_ = is_logging;
@@ -21,16 +27,14 @@ bool OfflineEventLogger::GetIsLogging() {
   return is_logging_;
 }
 
-void OfflineEventLogger::Clear() {
-  activities_.clear();
+void OfflineEventLogger::GetLogs(std::vector<std::string>* records) {
+  DCHECK(records);
+  records->insert(records->end(), activities_.begin(), activities_.end());
 }
 
 void OfflineEventLogger::RecordActivity(const std::string& activity) {
-  if (!is_logging_) {
+  if (!is_logging_ || activity.empty())
     return;
-  }
-  if (activities_.size() == kMaxLogCount)
-    activities_.pop_back();
 
   base::Time::Exploded current_time;
   base::Time::Now().LocalExplode(&current_time);
@@ -44,16 +48,20 @@ void OfflineEventLogger::RecordActivity(const std::string& activity) {
       current_time.minute,
       current_time.second);
 
-  activities_.push_front(date_string + ": " + activity);
+  std::string log_message = date_string + ": " + activity;
+  if (client_)
+    client_->CustomLog(log_message);
+
+  if (activities_.size() == kMaxLogCount)
+    activities_.pop_back();
+
+  activities_.push_front(log_message);
 }
 
-void OfflineEventLogger::GetLogs(std::vector<std::string>* records) {
-  DCHECK(records);
-  for (std::deque<std::string>::iterator it = activities_.begin();
-       it != activities_.end(); it++) {
-    if (!it->empty())
-      records->push_back(*it);
-  }
+void OfflineEventLogger::SetClient(Client* client) {
+  DCHECK(client);
+  SetIsLogging(true);
+  client_ = client;
 }
 
 }  // namespace offline_pages

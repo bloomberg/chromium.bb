@@ -88,6 +88,7 @@ source_set("unit_tests") {
   sources = [
     "archive_manager_unittest.cc",
     "client_policy_controller_unittest.cc",
+    "offline_event_logger_unittest.cc",
     "offline_page_metadata_store_impl_unittest.cc",
     "offline_page_model_event_logger_unittest.cc",
     "offline_page_model_impl_unittest.cc",

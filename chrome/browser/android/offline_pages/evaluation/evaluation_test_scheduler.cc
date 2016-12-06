@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/request_coordinator.h"
+#include "components/offline_pages/offline_event_logger.h"
 #include "net/base/network_change_notifier.h"
 
 namespace offline_pages {
@@ -18,6 +19,8 @@ namespace offline_pages {
 namespace android {
 
 namespace {
+
+const char kLogTag[] = "EvaluationTestScheduler";
 
 void StartProcessing();
 
@@ -51,6 +54,16 @@ void StartProcessing() {
 
 void EvaluationTestScheduler::Schedule(
     const TriggerConditions& trigger_conditions) {
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (!coordinator_) {
+    coordinator_ =
+        RequestCoordinatorFactory::GetInstance()->GetForBrowserContext(profile);
+    // It's not expected that the coordinator would be nullptr since this bridge
+    // would only be used for testing scenario.
+    DCHECK(coordinator_);
+  }
+  coordinator_->GetLogger()->RecordActivity(std::string(kLogTag) +
+                                            " Start schedule!");
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 base::Bind(&StartProcessing));
 }

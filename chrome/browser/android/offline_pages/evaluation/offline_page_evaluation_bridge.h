@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "components/offline_pages/background/request_coordinator.h"
 #include "components/offline_pages/background/request_notifier.h"
+#include "components/offline_pages/offline_event_logger.h"
 #include "components/offline_pages/offline_page_model.h"
 
 namespace content {
@@ -25,7 +26,8 @@ namespace android {
  * Bridge for exposing native implementation which are used by evaluation.
  */
 class OfflinePageEvaluationBridge : public OfflinePageModel::Observer,
-                                    public RequestCoordinator::Observer {
+                                    public RequestCoordinator::Observer,
+                                    public OfflineEventLogger::Client {
  public:
   static bool Register(JNIEnv* env);
   static std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
@@ -50,6 +52,10 @@ class OfflinePageEvaluationBridge : public OfflinePageModel::Observer,
                    RequestNotifier::BackgroundSavePageResult status) override;
   void OnChanged(const SavePageRequest& request) override;
 
+  // OfflineEventLogger::Client implementation.
+  void CustomLog(const std::string& message) override;
+
+  // Gets all pages in offline page model.
   void GetAllPages(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    const base::android::JavaParamRef<jobject>& j_result_obj,

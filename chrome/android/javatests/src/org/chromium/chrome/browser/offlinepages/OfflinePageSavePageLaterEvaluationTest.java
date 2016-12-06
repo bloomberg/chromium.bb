@@ -96,7 +96,6 @@ public class OfflinePageSavePageLaterEvaluationTest
     private boolean mUseTestScheduler;
 
     private LongSparseArray<RequestMetadata> mRequestMetadata;
-    private OutputStreamWriter mLogOutput;
 
     public OfflinePageSavePageLaterEvaluationTest() {
         super(ChromeActivity.class);
@@ -138,6 +137,7 @@ public class OfflinePageSavePageLaterEvaluationTest
         });
         checkTrue(mClearingSemaphore.tryAcquire(REMOVE_REQUESTS_TIMEOUT_MS, TimeUnit.MILLISECONDS),
                 "Timed out when clearing remaining requests!");
+        mBridge.closeLog();
         super.tearDown();
     }
 
@@ -178,32 +178,25 @@ public class OfflinePageSavePageLaterEvaluationTest
                     for (String file : files) {
                         File currentFile = new File(externalArchiveDir.getPath(), file);
                         if (!currentFile.delete()) {
-                            logError(file + " cannot be deleted when clearing previous archives.");
+                            log(file + " cannot be deleted when clearing previous archives.");
                         }
                     }
                 }
-            } else if (!externalArchiveDir.mkdir()) {
-                logError("Cannot create directory on external storage to store saved pages.");
+            }
+            if (!externalArchiveDir.mkdir()) {
+                log("Cannot create directory on external storage to store saved pages.");
             }
         } catch (SecurityException e) {
-            logError("Failed to delete or create external archive folder!");
+            log("Failed to delete or create external archive folder!");
         }
         return externalArchiveDir;
     }
 
     /**
-     * Logs error in both console and output file.
+     * Print log message in output file through evaluation bridge.
      */
-    private void logError(String error) {
-        Log.e(TAG, error);
-        if (mLogOutput != null) {
-            try {
-                mLogOutput.write(error + NEW_LINE);
-                mLogOutput.flush();
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage(), e);
-            }
-        }
+    private void log(String message) {
+        mBridge.log(TAG, message);
     }
 
     /**
@@ -211,14 +204,7 @@ public class OfflinePageSavePageLaterEvaluationTest
      */
     private void checkTrue(boolean condition, String message) {
         if (!condition) {
-            logError(message);
-            if (mLogOutput != null) {
-                try {
-                    mLogOutput.close();
-                } catch (IOException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
-            }
+            log(message);
             fail();
         }
     }
@@ -237,7 +223,7 @@ public class OfflinePageSavePageLaterEvaluationTest
                 Profile profile = Profile.getLastUsedProfile();
                 mBridge = OfflinePageEvaluationBridge.getForProfile(profile, useTestingScheduler);
                 if (mBridge == null) {
-                    logError("OfflinePageEvaluationBridge initialization failed!");
+                    fail("OfflinePageEvaluationBridge initialization failed!");
                     return;
                 }
                 if (mBridge.isOfflinePageModelLoaded()) {
@@ -264,16 +250,9 @@ public class OfflinePageSavePageLaterEvaluationTest
      */
     protected void setUpIOAndBridge(final boolean useCustomScheduler) throws InterruptedException {
         try {
-            mLogOutput = getOutputStream(LOG_OUTPUT_FILE_PATH);
-        } catch (IOException e) {
-            Log.wtf(TAG, "Cannot set output file!");
-            Log.wtf(TAG, e.getMessage(), e);
-        }
-        try {
             getUrlListFromInputFile(INPUT_FILE_PATH);
         } catch (IOException e) {
-            Log.wtf(TAG, "Cannot read input file!");
-            Log.wtf(TAG, e.getMessage(), e);
+            Log.wtf(TAG, "Cannot read input file!", e);
         }
         checkTrue(mUrls != null, "URLs weren't loaded.");
         checkTrue(mUrls.size() > 0, "No valid URLs in the input file.");
@@ -307,6 +286,13 @@ public class OfflinePageSavePageLaterEvaluationTest
             public void savePageRequestChanged(SavePageRequest request) {}
         };
         mBridge.addObserver(mObserver);
+        try {
+            File logOutputFile =
+                    new File(Environment.getExternalStorageDirectory(), LOG_OUTPUT_FILE_PATH);
+            mBridge.setLogOutputFile(logOutputFile);
+        } catch (IOException e) {
+            Log.wtf(TAG, "Cannot set log output file!", e);
+        }
     }
 
     /**
@@ -326,7 +312,7 @@ public class OfflinePageSavePageLaterEvaluationTest
 
     private void processUrls(List<String> urls) throws InterruptedException, IOException {
         if (mBridge == null) {
-            logError("Test initialization error, aborting. No results would be written.");
+            fail("Test initialization error, aborting. No results would be written.");
             return;
         }
         for (String url : mUrls) {
@@ -428,7 +414,7 @@ public class OfflinePageSavePageLaterEvaluationTest
         try {
             int failedCount = 0;
             if (mCount < mUrls.size()) {
-                logError("Test terminated before all requests completed.");
+                log("Test terminated before all requests completed.");
             }
             File externalArchiveDir = getExternalArchiveDir();
             for (int i = 0; i < mRequestMetadata.size(); i++) {
@@ -451,7 +437,7 @@ public class OfflinePageSavePageLaterEvaluationTest
                 File originalPage = new File(page.getFilePath());
                 File externalPage = new File(externalArchiveDir, originalPage.getName());
                 if (!OfflinePageUtils.copyToShareableLocation(originalPage, externalPage)) {
-                    logError("Saved page for url " + page.getUrl() + " cannot be moved.");
+                    log("Saved page for url " + page.getUrl() + " cannot be moved.");
                 }
             }
             output.write(String.format(
@@ -463,9 +449,6 @@ public class OfflinePageSavePageLaterEvaluationTest
         } finally {
             if (output != null) {
                 output.close();
-            }
-            if (mLogOutput != null) {
-                mLogOutput.close();
             }
         }
     }

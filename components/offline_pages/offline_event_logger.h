@@ -13,8 +13,9 @@
 
 namespace offline_pages {
 
-// Maximum number of recorded Logs to keep track of at any moment.
-static const size_t kMaxLogCount = 50;
+// Maximum number of recorded Logs to keep track of at any moment. Defined in
+// offline_event_logger.cc.
+extern const size_t kMaxLogCount;
 
 // Facilitates the logging of events. Subclasses should create methods that
 // call RecordActivity to write into the log. |SetIsLogging|, |GetLogs|, and
@@ -27,6 +28,16 @@ static const size_t kMaxLogCount = 50;
 // This log only keeps track of the last |kMaxLogCount| events.
 class OfflineEventLogger {
  public:
+  // This client interface should be implemented by the class which provides the
+  // ability to pipe the log somewhere else (Eg. a java class which can write
+  // logs into a file). It's optional and uses SetClient() to attach the client
+  // to the event logger instance.
+  class Client {
+   public:
+    virtual ~Client(){};
+    virtual void CustomLog(const std::string& message) = 0;
+  };
+
   OfflineEventLogger();
 
   ~OfflineEventLogger();
@@ -43,9 +54,11 @@ class OfflineEventLogger {
   // Dumps the current activity list into |records|.
   void GetLogs(std::vector<std::string>* records);
 
- protected:
   // Write the activity into the cycling log if we are currently logging.
   void RecordActivity(const std::string& activity);
+
+  // Sets the client for custom logging process if needed.
+  void SetClient(Client* client);
 
  private:
   // Recorded offline page activities.
@@ -53,6 +66,9 @@ class OfflineEventLogger {
 
   // Whether we are currently recording logs or not.
   bool is_logging_;
+
+  // Not owned.
+  Client* client_;
 };
 }  // namespace offline_pages
 

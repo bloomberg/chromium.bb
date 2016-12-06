@@ -47,6 +47,7 @@ namespace offline_pages {
 namespace android {
 
 namespace {
+const char kNativeTag[] = "OPNative";
 
 void ToJavaOfflinePageList(JNIEnv* env,
                            jobject j_result_obj,
@@ -214,6 +215,8 @@ OfflinePageEvaluationBridge::OfflinePageEvaluationBridge(
   NotifyIfDoneLoading();
   offline_page_model_->AddObserver(this);
   request_coordinator_->AddObserver(this);
+  offline_page_model_->GetLogger()->SetClient(this);
+  request_coordinator_->GetLogger()->SetClient(this);
 }
 
 OfflinePageEvaluationBridge::~OfflinePageEvaluationBridge() {
@@ -256,6 +259,13 @@ void OfflinePageEvaluationBridge::OnChanged(const SavePageRequest& request) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_OfflinePageEvaluationBridge_savePageRequestChanged(
       env, java_ref_, ToJavaSavePageRequest(env, request));
+}
+
+void OfflinePageEvaluationBridge::CustomLog(const std::string& message) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_OfflinePageEvaluationBridge_log(env, java_ref_,
+                                       ConvertUTF8ToJavaString(env, kNativeTag),
+                                       ConvertUTF8ToJavaString(env, message));
 }
 
 void OfflinePageEvaluationBridge::GetAllPages(

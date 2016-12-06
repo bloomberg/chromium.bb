@@ -76,4 +76,4 @@ TEST(OfflinePageModelEventLoggerTest, DoesNotExceedMaxSize) {
   EXPECT_EQ(kMaxLogCount, log.size());
 }
 
-}  // namespace offline_internals
+}  // namespace offline_pages

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.offlinepages.evaluation;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -14,8 +15,17 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.SavePageRequest;
 import org.chromium.chrome.browser.profiles.Profile;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+
+import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Class used for offline page evaluation testing tools.
@@ -65,10 +75,13 @@ public class OfflinePageEvaluationBridge {
         return nativeGetBridgeForProfile(profile, useEvaluationScheduler);
     }
 
+    private static final String TAG = "OPEvalBridge";
     private long mNativeOfflinePageEvaluationBridge;
     private boolean mIsOfflinePageModelLoaded;
     private ObserverList<OfflinePageEvaluationObserver> mObservers =
             new ObserverList<OfflinePageEvaluationObserver>();
+
+    private OutputStreamWriter mLogOutput;
 
     /**
      * Creates an offline page evalutaion bridge for a given profile.
@@ -152,11 +165,36 @@ public class OfflinePageEvaluationBridge {
         nativeRemoveRequestsFromQueue(mNativeOfflinePageEvaluationBridge, ids, callback);
     }
 
+    public void setLogOutputFile(File outputFile) throws IOException {
+        mLogOutput = new FileWriter(outputFile);
+    }
+
     /**
      * @return True if the offline page model has fully loaded.
      */
     public boolean isOfflinePageModelLoaded() {
         return mIsOfflinePageModelLoaded;
+    }
+
+    @CalledByNative
+    public void log(String sourceTag, String message) {
+        try {
+            Date date = new Date(System.currentTimeMillis());
+            SimpleDateFormat formatter =
+                    new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.getDefault());
+            mLogOutput.write(formatter.format(date) + ": " + sourceTag + " | " + message
+                    + System.getProperty("line.separator"));
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    public void closeLog() {
+        try {
+            mLogOutput.close();
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
     }
 
     @CalledByNative
