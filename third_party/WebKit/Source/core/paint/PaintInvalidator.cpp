@@ -214,11 +214,8 @@ void PaintInvalidator::updatePaintingLayer(const LayoutObject& object,
     context.paintingLayer->setNeedsPaintPhaseDescendantBlockBackgrounds();
   }
 
-  if (object.isTable()) {
-    const LayoutTable& table = toLayoutTable(object);
-    if (table.collapseBorders() && !table.collapsedBorders().isEmpty())
-      context.paintingLayer->setNeedsPaintPhaseDescendantBlockBackgrounds();
-  }
+  if (object.isTable() && toLayoutTable(object).hasCollapsedBorders())
+    context.paintingLayer->setNeedsPaintPhaseDescendantBlockBackgrounds();
 }
 
 namespace {

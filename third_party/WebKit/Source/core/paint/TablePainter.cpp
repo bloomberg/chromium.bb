@@ -44,29 +44,59 @@ void TablePainter::paintObject(const PaintInfo& paintInfo,
       }
     }
 
-    if (m_layoutTable.collapseBorders() &&
-        shouldPaintDescendantBlockBackgrounds(paintPhase) &&
-        m_layoutTable.style()->visibility() == EVisibility::Visible) {
-      // Using our cached sorted styles, we then do individual passes,
-      // painting each style of border from lowest precedence to highest
-      // precedence.
-      LayoutTable::CollapsedBorderValues collapsedBorders =
-          m_layoutTable.collapsedBorders();
-      size_t count = collapsedBorders.size();
-      for (size_t i = 0; i < count; ++i) {
-        for (LayoutTableSection* section = m_layoutTable.bottomSection();
-             section; section = m_layoutTable.sectionAbove(section)) {
-          LayoutPoint childPoint =
-              m_layoutTable.flipForWritingModeForChild(section, paintOffset);
-          TableSectionPainter(*section).paintCollapsedBorders(
-              paintInfoForDescendants, childPoint, collapsedBorders[i]);
-        }
-      }
-    }
+    if (shouldPaintDescendantBlockBackgrounds(paintPhase))
+      paintCollapsedBorders(paintInfoForDescendants, paintOffset);
   }
 
   if (shouldPaintSelfOutline(paintPhase))
     ObjectPainter(m_layoutTable).paintOutline(paintInfo, paintOffset);
+}
+
+void TablePainter::paintCollapsedBorders(const PaintInfo& paintInfo,
+                                         const LayoutPoint& paintOffset) {
+  if (!m_layoutTable.hasCollapsedBorders() ||
+      m_layoutTable.style()->visibility() != EVisibility::Visible)
+    return;
+
+  LayoutTable::CollapsedBordersInfo& collapsedBorders =
+      m_layoutTable.getCollapsedBordersInfo();
+
+  // Normally we don't clip individual display items by paint dirty rect
+  // (aka interest rect), to keep display items independent with paint dirty
+  // rect so we can just depend on paint invalidation status to repaint them.
+  // However, the collapsed border display item may be too big to contain all
+  // collapsed borders in a huge table, so we clip it to paint dirty rect.
+  // We need to invalidate the display item if the previous paint is clipped
+  // and the paint dirty rect changed.
+  if (collapsedBorders.lastPaintResult != FullyPainted &&
+      collapsedBorders.lastPaintRect != paintInfo.cullRect())
+    m_layoutTable.setDisplayItemsUncached();
+
+  if (DrawingRecorder::useCachedDrawingIfPossible(
+          paintInfo.context, m_layoutTable,
+          DisplayItem::kTableCollapsedBorders))
+    return;
+
+  DrawingRecorder recorder(
+      paintInfo.context, m_layoutTable, DisplayItem::kTableCollapsedBorders,
+      FloatRect(LayoutRect(paintOffset, m_layoutTable.size())));
+
+  // Using our cached sorted styles, we then do individual passes, painting
+  // each style of border from lowest precedence to highest precedence.
+  PaintResult paintResult = FullyPainted;
+  for (const auto& borderValue : collapsedBorders.values) {
+    for (LayoutTableSection* section = m_layoutTable.bottomSection(); section;
+         section = m_layoutTable.sectionAbove(section)) {
+      LayoutPoint childPoint =
+          m_layoutTable.flipForWritingModeForChild(section, paintOffset);
+      if (TableSectionPainter(*section).paintCollapsedBorders(
+              paintInfo, childPoint, borderValue) ==
+          MayBeClippedByPaintDirtyRect)
+        paintResult = MayBeClippedByPaintDirtyRect;
+    }
+  }
+  collapsedBorders.lastPaintResult = paintResult;
+  collapsedBorders.lastPaintRect = paintInfo.cullRect();
 }
 
 void TablePainter::paintBoxDecorationBackground(

@@ -7,6 +7,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 8, 60, 103],
+          "reason": "forced by layout"
+        },
+        {
           "object": "LayoutTableCell TD",
           "rect": [8, 8, 60, 54],
           "reason": "forced by layout"
@@ -17,11 +22,6 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 109, 60, 2],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableRow TR id='row'",
           "rect": [10, 10, 56, 50],
           "reason": "style change"
@@ -30,27 +30,14 @@
           "object": "LayoutTableRow TR id='row'",
           "rect": [9, 9, 54, 50],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [62, 8, 6, 103],
-          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
       "object": "LayoutTable TABLE",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutTableRow TR id='row'",

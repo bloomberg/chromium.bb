@@ -8,12 +8,20 @@
       "paintInvalidations": [
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 8, 113, 104],
+          "rect": [8, 82, 112, 112],
           "reason": "invalidate paint rectangle"
-        },
+        }
+      ]
+    },
+    {
+      "name": "LayoutTableSection THEAD id='a'",
+      "position": [10, 84],
+      "bounds": [107, 107],
+      "drawsContent": true,
+      "paintInvalidations": [
         {
-          "object": "LayoutTableCol COL id='col'",
-          "rect": [8, 8, 113, 104],
+          "object": "LayoutTableSection THEAD id='a'",
+          "rect": [0, 0, 107, 107],
           "reason": "style change"
         }
       ]
@@ -25,7 +33,7 @@
       "reason": "invalidate paint rectangle"
     },
     {
-      "object": "LayoutTableCol COL id='col'",
+      "object": "LayoutTableSection THEAD id='a'",
       "reason": "style change"
     }
   ]

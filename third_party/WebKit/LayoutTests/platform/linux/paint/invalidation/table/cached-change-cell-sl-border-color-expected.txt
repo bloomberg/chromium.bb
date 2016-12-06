@@ -7,6 +7,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutTable (relative positioned) TABLE",
+          "rect": [8, 8, 114, 54],
+          "reason": "invalidate paint rectangle"
+        },
+        {
           "object": "LayoutTableCell TD id='foo'",
           "rect": [8, 8, 60, 54],
           "reason": "style change"
@@ -30,12 +35,8 @@
       "reason": "layoutObject removal"
     },
     {
-      "object": "LayoutTableCell TD id='foo'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
+      "object": "LayoutTable (relative positioned) TABLE",
+      "reason": "invalidate paint rectangle"
     },
     {
       "object": "LayoutTableCell TD id='foo'",
