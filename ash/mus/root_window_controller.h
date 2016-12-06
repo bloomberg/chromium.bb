@@ -8,9 +8,15 @@
 #include <memory>
 
 #include "ash/mus/disconnected_app_handler.h"
-#include "services/ui/public/cpp/window_observer.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/display/display.h"
+
+namespace aura {
+class WindowTreeHostMus;
+namespace client {
+class WindowParentingClient;
+}
+}
 
 namespace gfx {
 class Insets;
@@ -24,7 +30,6 @@ namespace ash {
 
 namespace mus {
 
-class LayoutManager;
 class WindowManager;
 class WmRootWindowControllerMus;
 class WmShelfMus;
@@ -33,24 +38,28 @@ class WmTestHelper;
 class WmWindowMus;
 
 // RootWindowController manages the windows and state for a single display.
-// RootWindowController takes ownership of the Window that it passed to it.
+// RootWindowController takes ownership of the WindowTreeHostMus that it passed
+// to it.
 class RootWindowController {
  public:
-  RootWindowController(WindowManager* window_manager,
-                       ui::Window* root,
-                       const display::Display& display);
+  RootWindowController(
+      WindowManager* window_manager,
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
+      const display::Display& display);
   ~RootWindowController();
 
   void Shutdown();
 
   service_manager::Connector* GetConnector();
 
-  ui::Window* root() { return root_; }
+  aura::Window* root();
+  const aura::Window* root() const;
   WmRootWindowControllerMus* wm_root_window_controller() {
     return wm_root_window_controller_.get();
   }
 
-  ui::Window* NewTopLevelWindow(
+  aura::Window* NewTopLevelWindow(
+      ui::mojom::WindowType window_type,
       std::map<std::string, std::vector<uint8_t>>* properties);
 
   WmWindowMus* GetWindowByShellWindowId(int id);
@@ -60,6 +69,10 @@ class RootWindowController {
 
   WindowManager* window_manager() { return window_manager_; }
 
+  aura::WindowTreeHostMus* window_tree_host() {
+    return window_tree_host_.get();
+  }
+
   const display::Display& display() const { return display_; }
 
   WmShelfMus* wm_shelf() { return wm_shelf_.get(); }
@@ -68,14 +81,13 @@ class RootWindowController {
   friend class WmTestBase;
   friend class WmTestHelper;
 
-  gfx::Rect CalculateDefaultBounds(ui::Window* window) const;
+  gfx::Rect CalculateDefaultBounds(
+      aura::Window* container_window,
+      const std::map<std::string, std::vector<uint8_t>>* properties) const;
   gfx::Rect GetMaximizedWindowBounds() const;
 
-  // Creates the necessary set of layout managers in the shell windows.
-  void CreateLayoutManagers();
-
   WindowManager* window_manager_;
-  ui::Window* root_;
+  std::unique_ptr<aura::WindowTreeHostMus> window_tree_host_;
   int window_count_ = 0;
 
   display::Display display_;
@@ -83,7 +95,7 @@ class RootWindowController {
   std::unique_ptr<WmRootWindowControllerMus> wm_root_window_controller_;
   std::unique_ptr<WmShelfMus> wm_shelf_;
 
-  std::map<ui::Window*, std::unique_ptr<LayoutManager>> layout_managers_;
+  std::unique_ptr<aura::client::WindowParentingClient> parenting_client_;
 
   std::unique_ptr<DisconnectedAppHandler> disconnected_app_handler_;
 

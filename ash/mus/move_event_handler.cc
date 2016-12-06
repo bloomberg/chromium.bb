@@ -6,22 +6,21 @@
 
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/bridge/workspace_event_handler_mus.h"
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_manager_delegate.h"
-#include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
+#include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 
-MUS_DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::MoveEventHandler*)
+DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::MoveEventHandler*);
 
 namespace {
 
 // Key used for storing identifier sent to clients for windows.
-MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(ash::mus::MoveEventHandler*,
-                                     kWmMoveEventHandler,
-                                     nullptr);
+DEFINE_WINDOW_PROPERTY_KEY(ash::mus::MoveEventHandler*,
+                           kWmMoveEventHandler,
+                           nullptr);
 
 }  // namespace
 
@@ -61,17 +60,15 @@ void OnMoveLoopCompleted(const base::Callback<void(bool success)>& end_closure,
 }  // namespace
 
 MoveEventHandler::MoveEventHandler(
-    ui::Window* mus_window,
-    ui::WindowManagerClient* window_manager_client,
-    aura::Window* aura_window)
-    : wm_window_(WmWindowMus::Get(mus_window)),
+    aura::WindowManagerClient* window_manager_client,
+    aura::Window* window)
+    : wm_window_(WmWindowMus::Get(window)),
       window_manager_client_(window_manager_client),
-      root_window_(aura_window->GetRootWindow()),
       toplevel_window_event_handler_(wm_window_->GetShell()) {
-  root_window_->AddObserver(this);
-  root_window_->AddPreTargetHandler(this);
+  window->AddObserver(this);
+  window->AddPreTargetHandler(this);
 
-  mus_window->SetLocalProperty(kWmMoveEventHandler, this);
+  window->SetProperty(kWmMoveEventHandler, this);
 }
 
 MoveEventHandler::~MoveEventHandler() {
@@ -80,7 +77,7 @@ MoveEventHandler::~MoveEventHandler() {
 
 // static
 MoveEventHandler* MoveEventHandler::GetForWindow(WmWindow* wm_window) {
-  return WmWindowMus::GetMusWindow(wm_window)->GetLocalProperty(
+  return WmWindowMus::GetAuraWindow(wm_window)->GetProperty(
       kWmMoveEventHandler);
 }
 
@@ -103,19 +100,20 @@ void MoveEventHandler::RevertDrag() {
 }
 
 void MoveEventHandler::Detach() {
-  if (!root_window_)
+  if (!wm_window_)
     return;
 
-  root_window_->RemoveObserver(this);
-  root_window_->RemovePreTargetHandler(this);
-  root_window_ = nullptr;
+  wm_window_->aura_window()->RemoveObserver(this);
+  wm_window_->aura_window()->RemovePreTargetHandler(this);
+  wm_window_->aura_window()->ClearProperty(kWmMoveEventHandler);
+  wm_window_ = nullptr;
 }
 
 WorkspaceEventHandlerMus* MoveEventHandler::GetWorkspaceEventHandlerMus() {
   if (!wm_window_->GetParent())
     return nullptr;
 
-  return WorkspaceEventHandlerMus::Get(wm_window_->mus_window()->parent());
+  return WorkspaceEventHandlerMus::Get(wm_window_->aura_window()->parent());
 }
 
 void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
@@ -126,7 +124,7 @@ void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     const int hit_test_location =
         wm_window_->GetNonClientComponent(event->location());
     window_manager_client_->SetNonClientCursor(
-        wm_window_->mus_window(), CursorForWindowComponent(hit_test_location));
+        wm_window_->aura_window(), CursorForWindowComponent(hit_test_location));
   }
 
   WorkspaceEventHandlerMus* workspace_event_handler =
@@ -149,7 +147,7 @@ void MoveEventHandler::OnCancelMode(ui::CancelModeEvent* event) {
 }
 
 void MoveEventHandler::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(root_window_, window);
+  DCHECK_EQ(wm_window_->aura_window(), window);
   Detach();
 }
 

@@ -6,18 +6,19 @@
 
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 namespace mus {
 namespace {
 
-bool IsContainer(ui::Window* window) {
+bool IsContainer(aura::Window* window) {
   return WmWindowMus::Get(window)->IsContainer();
 }
 
 }  // namespace
 
-DisconnectedAppHandler::DisconnectedAppHandler(ui::Window* root_window) {
+DisconnectedAppHandler::DisconnectedAppHandler(aura::Window* root_window) {
   WmWindowMus* root = WmWindowMus::Get(root_window);
   for (int shell_window_id = kShellWindowId_Min;
        shell_window_id < kShellWindowId_Max; ++shell_window_id) {
@@ -36,11 +37,11 @@ DisconnectedAppHandler::DisconnectedAppHandler(ui::Window* root_window) {
 
     WmWindowMus* container = WmWindowMus::AsWmWindowMus(
         root->GetChildByShellWindowId(shell_window_id));
-    Add(container->mus_window());
+    Add(container->aura_window());
 
     // Add any pre-existing windows in the container to
     // |disconnected_app_handler_|.
-    for (ui::Window* child : container->mus_window()->children()) {
+    for (aura::Window* child : container->aura_window()->children()) {
       if (!IsContainer(child))
         Add(child);
     }
@@ -49,20 +50,20 @@ DisconnectedAppHandler::DisconnectedAppHandler(ui::Window* root_window) {
 
 DisconnectedAppHandler::~DisconnectedAppHandler() {}
 
-void DisconnectedAppHandler::OnWindowEmbeddedAppDisconnected(
-    ui::Window* window) {
+void DisconnectedAppHandler::OnEmbeddedAppDisconnected(aura::Window* window) {
   if (!IsContainer(window))
-    window->Destroy();
+    delete window;
 }
 
-void DisconnectedAppHandler::OnTreeChanging(const TreeChangeParams& params) {
+void DisconnectedAppHandler::OnWindowHierarchyChanging(
+    const HierarchyChangeParams& params) {
   if (params.old_parent == params.receiver && IsContainer(params.old_parent))
     Remove(params.target);
 
   if (params.new_parent == params.receiver && IsContainer(params.new_parent))
     Add(params.target);
 
-  ui::WindowTracker::OnTreeChanging(params);
+  aura::WindowTracker::OnWindowHierarchyChanging(params);
 }
 
 }  // namespace mus

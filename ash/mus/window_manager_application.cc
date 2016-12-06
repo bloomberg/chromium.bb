@@ -9,7 +9,6 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/mojo_interface_factory.h"
 #include "ash/common/wm_shell.h"
-#include "ash/mus/native_widget_factory_mus.h"
 #include "ash/mus/window_manager.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -19,9 +18,9 @@
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/public/cpp/gpu/gpu_service.h"
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/mus_context_factory.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/events/event.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/mus/aura_init.h"
@@ -66,8 +65,11 @@ WindowManagerApplication::~WindowManagerApplication() {
 }
 
 void WindowManagerApplication::InitWindowManager(
-    std::unique_ptr<ui::WindowTreeClient> window_tree_client,
+    std::unique_ptr<aura::WindowTreeClient> window_tree_client,
     const scoped_refptr<base::SequencedWorkerPool>& blocking_pool) {
+  // Tests may have already set the WindowTreeClient.
+  if (!aura::Env::GetInstance()->HasWindowTreeClient())
+    aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client.get());
   InitializeComponents();
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Refactor StatisticsProvider so we can get just the data
@@ -79,8 +81,6 @@ void WindowManagerApplication::InitWindowManager(
   statistics_provider_->SetMachineStatistic("keyboard_layout", "");
 #endif
   window_manager_->Init(std::move(window_tree_client), blocking_pool);
-  native_widget_factory_mus_ =
-      base::MakeUnique<NativeWidgetFactoryMus>(window_manager_.get());
 }
 
 void WindowManagerApplication::InitializeComponents() {
@@ -120,10 +120,11 @@ void WindowManagerApplication::ShutdownComponents() {
 void WindowManagerApplication::OnStart() {
   aura_init_ = base::MakeUnique<views::AuraInit>(
       context()->connector(), context()->identity(), "ash_mus_resources.pak",
-      "ash_mus_resources_200.pak");
+      "ash_mus_resources_200.pak", nullptr,
+      views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER);
   gpu_service_ = ui::GpuService::Create(context()->connector());
-  compositor_context_factory_.reset(
-      new views::SurfaceContextFactory(gpu_service_.get()));
+  compositor_context_factory_ =
+      base::MakeUnique<aura::MusContextFactory>(gpu_service_.get());
   aura::Env::GetInstance()->set_context_factory(
       compositor_context_factory_.get());
   window_manager_.reset(new WindowManager(context()->connector()));
@@ -132,10 +133,10 @@ void WindowManagerApplication::OnStart() {
 
   tracing_.Initialize(context()->connector(), context()->identity().name());
 
-  std::unique_ptr<ui::WindowTreeClient> window_tree_client =
-      base::MakeUnique<ui::WindowTreeClient>(window_manager_.get(),
-                                             window_manager_.get());
-  window_tree_client->ConnectAsWindowManager(context()->connector());
+  std::unique_ptr<aura::WindowTreeClient> window_tree_client =
+      base::MakeUnique<aura::WindowTreeClient>(
+          context()->connector(), window_manager_.get(), window_manager_.get());
+  window_tree_client->ConnectAsWindowManager();
 
   const size_t kMaxNumberThreads = 3u;  // Matches that of content.
   const char kThreadNamePrefix[] = "MashBlocking";

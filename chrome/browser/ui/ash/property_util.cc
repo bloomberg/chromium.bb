@@ -11,6 +11,7 @@
 #include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/mus/mus_util.h"
+#include "ui/aura/mus/property_converter.h"
 
 namespace {
 
@@ -32,8 +33,9 @@ void SetIntProperty(aura::Window* window,
                     int value) {
   DCHECK(window);
   if (chrome::IsRunningInMash()) {
-    aura::GetMusWindow(window)->SetSharedProperty<int>(GetMusProperty(property),
-                                                       value);
+    aura::GetMusWindow(window)
+        ->SetSharedProperty<aura::PropertyConverter::PrimitiveType>(
+            GetMusProperty(property), value);
   } else {
     window->SetProperty(property, value);
   }

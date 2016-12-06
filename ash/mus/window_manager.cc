@@ -8,6 +8,9 @@
 
 #include <utility>
 
+#include "ash/common/wm/container_finder.h"
+#include "ash/common/wm/window_state.h"
+#include "ash/display/screen_position_controller.h"
 #include "ash/mus/accelerators/accelerator_handler.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/app_list_presenter_mus.h"
@@ -19,42 +22,85 @@
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/root_window_controller.h"
+#include "ash/mus/screen_mus.h"
 #include "ash/mus/shadow_controller.h"
 #include "ash/mus/shell_delegate_mus.h"
 #include "ash/mus/window_manager_observer.h"
+#include "ash/mus/window_properties.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/ash_focus_rules.h"
+#include "ash/wm/event_client_impl.h"
+#include "ash/wm/window_properties.h"
 #include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_property.h"
-#include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/mus_constants.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/client/window_parenting_client.h"
+#include "ui/aura/env.h"
+#include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/mojo/event.mojom.h"
-#include "ui/views/mus/pointer_watcher_event_router.h"
+#include "ui/views/mus/pointer_watcher_event_router2.h"
 #include "ui/views/mus/screen_mus.h"
+#include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/focus_controller.h"
+#include "ui/wm/core/wm_state.h"
 
 namespace ash {
 namespace mus {
+namespace {
 
+// TODO: this is temporary until WindowManager create the real Shell (which is
+// the event target). http://crbug.com/670744.
+class EventClientImplMus : public EventClientImpl {
+ public:
+  EventClientImplMus() = default;
+  ~EventClientImplMus() override = default;
+
+  // EventClientImpl:
+  ui::EventTarget* GetToplevelEventTarget() override { return nullptr; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EventClientImplMus);
+};
+
+}  // namespace
+
+// TODO: need to register OSExchangeDataProviderMus. http://crbug.com/665077.
 WindowManager::WindowManager(service_manager::Connector* connector)
-    : connector_(connector) {}
+    : connector_(connector),
+      focus_controller_(base::MakeUnique<::wm::FocusController>(
+          new ::ash::wm::AshFocusRules())),
+      wm_state_(base::MakeUnique<::wm::WMState>()),
+      property_converter_(base::MakeUnique<aura::PropertyConverter>()),
+      event_client_(base::MakeUnique<EventClientImplMus>()),
+      screen_position_controller_(
+          base::MakeUnique<ScreenPositionController>()) {
+  property_converter_->RegisterProperty(
+      kShelfItemTypeKey, ui::mojom::WindowManager::kShelfItemType_Property);
+}
 
 WindowManager::~WindowManager() {
   Shutdown();
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void WindowManager::Init(
-    std::unique_ptr<ui::WindowTreeClient> window_tree_client,
+    std::unique_ptr<aura::WindowTreeClient> window_tree_client,
     const scoped_refptr<base::SequencedWorkerPool>& blocking_pool) {
+  DCHECK(window_manager_client_);
   DCHECK(!window_tree_client_);
   window_tree_client_ = std::move(window_tree_client);
+
+  aura::Env::GetInstance()->AddObserver(this);
 
   // |connector_| will be null in some tests.
   if (connector_) {
@@ -62,17 +108,15 @@ void WindowManager::Init(
                                    &display_controller_);
   }
 
-  screen_ = base::MakeUnique<display::ScreenBase>();
+  screen_ = base::MakeUnique<ScreenMus>();
   display::Screen::SetScreenInstance(screen_.get());
 
-  pointer_watcher_event_router_.reset(
-      new views::PointerWatcherEventRouter(window_tree_client_.get()));
+  pointer_watcher_event_router_ =
+      base::MakeUnique<views::PointerWatcherEventRouter2>(
+          window_tree_client_.get());
 
-  shadow_controller_.reset(new ShadowController(window_tree_client_.get()));
+  shadow_controller_ = base::MakeUnique<ShadowController>();
 
-  // The insets are roughly what is needed by CustomFrameView. The expectation
-  // is at some point we'll write our own NonClientFrameView and get the insets
-  // from it.
   ui::mojom::FrameDecorationValuesPtr frame_decoration_values =
       ui::mojom::FrameDecorationValues::New();
   const gfx::Insets client_area_insets =
@@ -99,15 +143,31 @@ void WindowManager::SetScreenLocked(bool is_locked) {
     WmWindowMus* non_lock_screen_containers_container =
         root_window_controller->GetWindowByShellWindowId(
             kShellWindowId_NonLockScreenContainersContainer);
-    non_lock_screen_containers_container->mus_window()->SetVisible(!is_locked);
+    if (is_locked)
+      non_lock_screen_containers_container->aura_window()->Hide();
+    else
+      non_lock_screen_containers_container->aura_window()->Show();
   }
 }
 
-ui::Window* WindowManager::NewTopLevelWindow(
+aura::Window* WindowManager::NewTopLevelWindow(
+    ui::mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties) {
   RootWindowController* root_window_controller =
       GetRootWindowControllerForNewTopLevelWindow(properties);
-  return root_window_controller->NewTopLevelWindow(properties);
+  aura::Window* window =
+      root_window_controller->NewTopLevelWindow(window_type, properties);
+  if (properties->count(
+          ui::mojom::WindowManager::kWindowIgnoredByShelf_Property)) {
+    wm::WindowState* window_state =
+        static_cast<WmWindow*>(WmWindowMus::Get(window))->GetWindowState();
+    window_state->set_ignored_by_shelf(mojo::ConvertTo<bool>(
+        (*properties)
+            [ui::mojom::WindowManager::kWindowIgnoredByShelf_Property]));
+    // No need to persist this value.
+    properties->erase(ui::mojom::WindowManager::kWindowIgnoredByShelf_Property);
+  }
+  return window;
 }
 
 std::set<RootWindowController*> WindowManager::GetRootWindowControllers() {
@@ -150,25 +210,22 @@ display::mojom::DisplayController* WindowManager::GetDisplayController() {
 }
 
 RootWindowController* WindowManager::CreateRootWindowController(
-    ui::Window* window,
+    std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
-  // CreateRootWindowController() means a new display is being added, so the
-  // DisplayList needs to be updated. Calling AddDisplay() results in
-  // notifying DisplayObservers. Ash code assumes when this happens there is
-  // a valid RootWindowController for the new display. Suspend notifying
-  // observers, add the Display, create the RootWindowController, and then
-  // notify DisplayObservers. Classic ash does this by making sure
-  // WindowTreeHostManager is added as a DisplayObserver early on.
-  std::unique_ptr<display::DisplayListObserverLock> display_lock =
-      screen_->display_list().SuspendObserverUpdates();
-  const bool is_first_display = screen_->display_list().displays().empty();
-  // TODO(sky): should be passed whether display is primary.
-  screen_->display_list().AddDisplay(
-      display, is_first_display ? display::DisplayList::Type::PRIMARY
-                                : display::DisplayList::Type::NOT_PRIMARY);
+  window_tree_host->InitCompositor();
+  // TODO(sky): this is temporary, should use RootWindowController directly.
+  aura::client::SetCaptureClient(window_tree_host->window(),
+                                 wm_state_->capture_controller());
+  aura::client::SetFocusClient(window_tree_host->window(),
+                               focus_controller_.get());
+  aura::client::SetActivationClient(window_tree_host->window(),
+                                    focus_controller_.get());
+  aura::client::SetEventClient(window_tree_host->window(), event_client_.get());
+  aura::client::SetScreenPositionClient(window_tree_host->window(),
+                                        screen_position_controller_.get());
 
   std::unique_ptr<RootWindowController> root_window_controller_ptr(
-      new RootWindowController(this, window, display));
+      new RootWindowController(this, std::move(window_tree_host), display));
   RootWindowController* root_window_controller =
       root_window_controller_ptr.get();
   root_window_controllers_.insert(std::move(root_window_controller_ptr));
@@ -193,20 +250,28 @@ void WindowManager::DestroyRootWindowController(
         WmWindowMus::Get(GetPrimaryRootWindowController()->root()));
   }
 
-  ui::Window* root_window = root_window_controller->root();
-  auto it = FindRootWindowControllerByWindow(root_window);
-  DCHECK(it != root_window_controllers_.end());
-
-  (*it)->Shutdown();
+  root_window_controller->Shutdown();
 
   // NOTE: classic ash deleted RootWindowController after a delay (DeleteSoon())
   // this may need to change to mirror that.
-  root_window_controllers_.erase(it);
+  for (auto iter = root_window_controllers_.begin();
+       iter != root_window_controllers_.end(); ++iter) {
+    if (iter->get() == root_window_controller) {
+      root_window_controllers_.erase(iter);
+      break;
+    }
+  }
 }
 
 void WindowManager::Shutdown() {
   if (!window_tree_client_)
     return;
+
+  // Remove the focus from any window. This will prevent overhead and side
+  // effects (e.g. crashes) from changing focus during shutdown.
+  // See bug crbug.com/134502.
+  static_cast<aura::client::FocusClient*>(focus_controller_.get())
+      ->FocusWindow(nullptr);
 
   // Observers can rely on WmShell from the callback. So notify the observers
   // before destroying it.
@@ -245,16 +310,6 @@ void WindowManager::Shutdown() {
   display::Screen::SetScreenInstance(nullptr);
 }
 
-WindowManager::RootWindowControllers::iterator
-WindowManager::FindRootWindowControllerByWindow(ui::Window* window) {
-  for (auto it = root_window_controllers_.begin();
-       it != root_window_controllers_.end(); ++it) {
-    if ((*it)->root() == window)
-      return it;
-  }
-  return root_window_controllers_.end();
-}
-
 RootWindowController* WindowManager::GetPrimaryRootWindowController() {
   return static_cast<WmRootWindowControllerMus*>(
              WmShell::Get()->GetPrimaryRootWindowController())
@@ -278,17 +333,18 @@ WindowManager::GetRootWindowControllerForNewTopLevelWindow(
       ->root_window_controller();
 }
 
-void WindowManager::OnEmbed(ui::Window* root) {
+void WindowManager::OnEmbed(
+    std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
   // WindowManager should never see this, instead OnWmNewDisplay() is called.
   NOTREACHED();
 }
 
-void WindowManager::OnEmbedRootDestroyed(ui::Window* root) {
+void WindowManager::OnEmbedRootDestroyed(aura::Window* root) {
   // WindowManager should never see this.
   NOTREACHED();
 }
 
-void WindowManager::OnLostConnection(ui::WindowTreeClient* client) {
+void WindowManager::OnLostConnection(aura::WindowTreeClient* client) {
   DCHECK_EQ(client, window_tree_client_.get());
   Shutdown();
   // TODO(sky): this case should trigger shutting down WindowManagerApplication
@@ -296,15 +352,23 @@ void WindowManager::OnLostConnection(ui::WindowTreeClient* client) {
 }
 
 void WindowManager::OnPointerEventObserved(const ui::PointerEvent& event,
-                                           ui::Window* target) {
+                                           aura::Window* target) {
   pointer_watcher_event_router_->OnPointerEventObserved(event, target);
 }
 
-void WindowManager::SetWindowManagerClient(ui::WindowManagerClient* client) {
+aura::client::CaptureClient* WindowManager::GetCaptureClient() {
+  return wm_state_->capture_controller();
+}
+
+aura::PropertyConverter* WindowManager::GetPropertyConverter() {
+  return property_converter_.get();
+}
+
+void WindowManager::SetWindowManagerClient(aura::WindowManagerClient* client) {
   window_manager_client_ = client;
 }
 
-bool WindowManager::OnWmSetBounds(ui::Window* window, gfx::Rect* bounds) {
+bool WindowManager::OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) {
   // TODO(sky): this indirectly sets bounds, which is against what
   // OnWmSetBounds() recommends doing. Remove that restriction, or fix this.
   WmWindowMus::Get(window)->SetBounds(*bounds);
@@ -313,10 +377,17 @@ bool WindowManager::OnWmSetBounds(ui::Window* window, gfx::Rect* bounds) {
 }
 
 bool WindowManager::OnWmSetProperty(
-    ui::Window* window,
+    aura::Window* window,
     const std::string& name,
     std::unique_ptr<std::vector<uint8_t>>* new_data) {
   // TODO(sky): constrain this to set of keys we know about, and allowed values.
+  if (name == ui::mojom::WindowManager::kWindowIgnoredByShelf_Property) {
+    wm::WindowState* window_state =
+        static_cast<WmWindow*>(WmWindowMus::Get(window))->GetWindowState();
+    window_state->set_ignored_by_shelf(
+        new_data ? mojo::ConvertTo<bool>(**new_data) : false);
+    return false;  // Won't attempt to map through property converter.
+  }
   return name == ui::mojom::WindowManager::kAppIcon_Property ||
          name == ui::mojom::WindowManager::kShowState_Property ||
          name == ui::mojom::WindowManager::kPreferredSize_Property ||
@@ -326,27 +397,49 @@ bool WindowManager::OnWmSetProperty(
          name == ui::mojom::WindowManager::kWindowTitle_Property;
 }
 
-ui::Window* WindowManager::OnWmCreateTopLevelWindow(
+aura::Window* WindowManager::OnWmCreateTopLevelWindow(
+    ui::mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties) {
-  return NewTopLevelWindow(properties);
+  return NewTopLevelWindow(window_type, properties);
 }
 
 void WindowManager::OnWmClientJankinessChanged(
-    const std::set<ui::Window*>& client_windows,
+    const std::set<aura::Window*>& client_windows,
     bool janky) {
   for (auto* window : client_windows)
-    SetWindowIsJanky(window, janky);
+    window->SetProperty(kWindowIsJanky, janky);
 }
 
-void WindowManager::OnWmNewDisplay(ui::Window* window,
-                                   const display::Display& display) {
-  CreateRootWindowController(window, display);
+void WindowManager::OnWmWillCreateDisplay(const display::Display& display) {
+  // A call to this function means a new display is being added, so the
+  // DisplayList needs to be updated. Calling AddDisplay() results in
+  // notifying DisplayObservers. Ash code assumes when this happens there is
+  // a valid RootWindowController for the new display. Suspend notifying
+  // observers, add the Display. The RootWindowController is created in
+  // OnWmNewDisplay(), which is called immediately after this function.
+  std::unique_ptr<display::DisplayListObserverLock> display_lock =
+      screen_->display_list().SuspendObserverUpdates();
+  const bool is_first_display = screen_->display_list().displays().empty();
+  // TODO(sky): should be passed whether display is primary.
+  screen_->display_list().AddDisplay(
+      display, is_first_display ? display::DisplayList::Type::PRIMARY
+                                : display::DisplayList::Type::NOT_PRIMARY);
 }
 
-void WindowManager::OnWmDisplayRemoved(ui::Window* window) {
-  auto iter = FindRootWindowControllerByWindow(window);
-  DCHECK(iter != root_window_controllers_.end());
-  DestroyRootWindowController(iter->get());
+void WindowManager::OnWmNewDisplay(
+    std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
+    const display::Display& display) {
+  CreateRootWindowController(std::move(window_tree_host), display);
+}
+
+void WindowManager::OnWmDisplayRemoved(
+    aura::WindowTreeHostMus* window_tree_host) {
+  for (auto& root_window_controller_ptr : root_window_controllers_) {
+    if (root_window_controller_ptr->window_tree_host() == window_tree_host) {
+      DestroyRootWindowController(root_window_controller_ptr.get());
+      break;
+    }
+  }
 }
 
 void WindowManager::OnWmDisplayModified(const display::Display& display) {
@@ -362,7 +455,7 @@ void WindowManager::OnWmDisplayModified(const display::Display& display) {
 }
 
 void WindowManager::OnWmPerformMoveLoop(
-    ui::Window* window,
+    aura::Window* window,
     ui::mojom::MoveLoopSource source,
     const gfx::Point& cursor_location,
     const base::Callback<void(bool)>& on_done) {
@@ -381,7 +474,7 @@ void WindowManager::OnWmPerformMoveLoop(
   handler->AttemptToStartDrag(cursor_location, HTCAPTION, aura_source, on_done);
 }
 
-void WindowManager::OnWmCancelMoveLoop(ui::Window* window) {
+void WindowManager::OnWmCancelMoveLoop(aura::Window* window) {
   WmWindowMus* child_window = WmWindowMus::Get(window);
   MoveEventHandler* handler = MoveEventHandler::GetForWindow(child_window);
   if (handler)
@@ -395,6 +488,24 @@ ui::mojom::EventResult WindowManager::OnAccelerator(uint32_t id,
     return ui::mojom::EventResult::HANDLED;
 
   return iter->second->OnAccelerator(id, event);
+}
+
+void WindowManager::OnWmSetClientArea(
+    aura::Window* window,
+    const gfx::Insets& insets,
+    const std::vector<gfx::Rect>& additional_client_areas) {
+  NonClientFrameController* non_client_frame_controller =
+      NonClientFrameController::Get(window);
+  if (!non_client_frame_controller)
+    return;
+  non_client_frame_controller->SetClientArea(insets, additional_client_areas);
+}
+
+void WindowManager::OnWindowInitialized(aura::Window* window) {
+  // This ensures WmWindowAura won't be called before WmWindowMus. This is
+  // important as if WmWindowAura::Get() is called first, then WmWindowAura
+  // would be created, not WmWindowMus.
+  WmWindowMus::Get(window);
 }
 
 }  // namespace mus

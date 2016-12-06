@@ -1,9 +1,4 @@
 include_rules = [
-  "-ash",
-  "+ash/common",
-  "+ash/mus",
-  "+ash/public",
-  "+ash/shared",
   "+services/ui/common",
   "+services/ui/public",
   "+grit/ash_mus_resources.h",

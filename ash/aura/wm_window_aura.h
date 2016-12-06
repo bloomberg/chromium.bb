@@ -14,12 +14,12 @@
 
 namespace ash {
 
-// WmWindowAura is tied to the life of the underlying aura::Window.
+// WmWindowAura is tied to the life of the underlying aura::Window. Use the
+// static Get() function to obtain a WmWindowAura from an aura::Window.
 class ASH_EXPORT WmWindowAura : public WmWindow,
                                 public aura::WindowObserver,
                                 public ::wm::TransientWindowObserver {
  public:
-  explicit WmWindowAura(aura::Window* window);
   // NOTE: this class is owned by the corresponding window. You shouldn't delete
   // TODO(sky): friend deleter and make private.
   ~WmWindowAura() override;
@@ -188,7 +188,14 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   void AddLimitedPreTargetHandler(ui::EventHandler* handler) override;
   void RemoveLimitedPreTargetHandler(ui::EventHandler* handler) override;
 
- private:
+ protected:
+  explicit WmWindowAura(aura::Window* window);
+
+  // Returns true if a WmWindowAura has been created for |window|.
+  static bool HasInstance(const aura::Window* window);
+
+  base::ObserverList<WmWindowObserver>& observers() { return observers_; }
+
   // aura::WindowObserver:
   void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
@@ -211,6 +218,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   void OnTransientChildRemoved(aura::Window* window,
                                aura::Window* transient) override;
 
+ private:
   aura::Window* window_;
 
   base::ObserverList<WmWindowObserver> observers_;

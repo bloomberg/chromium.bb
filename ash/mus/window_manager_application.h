@@ -19,6 +19,11 @@
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/common/types.h"
 
+namespace aura {
+class MusContextFactory;
+class WindowTreeClient;
+}
+
 namespace base {
 class SequencedWorkerPool;
 }
@@ -31,18 +36,15 @@ class ScopedFakeStatisticsProvider;
 
 namespace views {
 class AuraInit;
-class SurfaceContextFactory;
 }
 
 namespace ui {
 class GpuService;
-class WindowTreeClient;
 }
 
 namespace ash {
 namespace mus {
 
-class NativeWidgetFactoryMus;
 class NetworkConnectDelegateMus;
 class WindowManager;
 
@@ -63,7 +65,7 @@ class WindowManagerApplication
   friend class WmTestHelper;
 
   void InitWindowManager(
-      std::unique_ptr<ui::WindowTreeClient> window_tree_client,
+      std::unique_ptr<aura::WindowTreeClient> window_tree_client,
       const scoped_refptr<base::SequencedWorkerPool>& blocking_pool);
 
   // Initializes lower-level OS-specific components (e.g. D-Bus services).
@@ -81,10 +83,9 @@ class WindowManagerApplication
   tracing::Provider tracing_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
-  std::unique_ptr<NativeWidgetFactoryMus> native_widget_factory_mus_;
 
   std::unique_ptr<ui::GpuService> gpu_service_;
-  std::unique_ptr<views::SurfaceContextFactory> compositor_context_factory_;
+  std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
   std::unique_ptr<WindowManager> window_manager_;
 
   // A blocking pool used by the WindowManager's shell; not used in tests.

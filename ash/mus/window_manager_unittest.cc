@@ -48,6 +48,7 @@ void OnEmbed(bool success) {
 // (ash::MaterialDesignController::IsShelfMaterial()). See
 // crbug.com/660194 and crbug.com/642879.
 // TODO(rockot): Reenable this test.
+// TODO(sky): convert to using aura.
 TEST_F(WindowManagerTest, DISABLED_OpenWindow) {
   WindowTreeClientDelegate window_tree_delegate;
 

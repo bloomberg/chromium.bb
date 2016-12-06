@@ -8,27 +8,28 @@
 #include "ash/common/wm/workspace/workspace_event_handler.h"
 #include "base/macros.h"
 
-namespace ui {
+namespace aura {
 class Window;
 }
 
 namespace ash {
 namespace mus {
 
+// TODO(sky): investigate if can use aura version.
 class WorkspaceEventHandlerMus : public WorkspaceEventHandler {
  public:
-  WorkspaceEventHandlerMus(ui::Window* workspace_window);
+  explicit WorkspaceEventHandlerMus(aura::Window* workspace_window);
   ~WorkspaceEventHandlerMus() override;
 
   // Returns the WorkspaceEventHandlerMus associated with |window|, or null
   // if |window| is not the workspace window.
-  static WorkspaceEventHandlerMus* Get(ui::Window* window);
+  static WorkspaceEventHandlerMus* Get(aura::Window* window);
 
   // Returns the window associated with the workspace.
-  ui::Window* workspace_window() { return workspace_window_; }
+  aura::Window* workspace_window() { return workspace_window_; }
 
  private:
-  ui::Window* workspace_window_;
+  aura::Window* workspace_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceEventHandlerMus);
 };

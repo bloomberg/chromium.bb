@@ -14,10 +14,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "services/ui/common/types.h"
-#include "services/ui/public/cpp/window_manager_delegate.h"
-#include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/env_observer.h"
+#include "ui/aura/mus/window_manager_delegate.h"
+#include "ui/aura/mus/window_tree_client_delegate.h"
 
 namespace base {
 class SequencedWorkerPool;
@@ -25,7 +26,6 @@ class SequencedWorkerPool;
 
 namespace display {
 class Display;
-class ScreenBase;
 }
 
 namespace service_manager {
@@ -33,10 +33,20 @@ class Connector;
 }
 
 namespace views {
-class PointerWatcherEventRouter;
+class PointerWatcherEventRouter2;
+}
+
+namespace wm {
+class FocusController;
+class WMState;
 }
 
 namespace ash {
+
+class EventClientImpl;
+class ScreenPositionController;
+class ScreenMus;
+
 namespace mus {
 
 class AcceleratorHandler;
@@ -51,33 +61,41 @@ class WmTestHelper;
 // WindowTreeClientDelegate for mash. WindowManager creates (and owns)
 // a RootWindowController per Display. WindowManager takes ownership of
 // the WindowTreeClient.
-class WindowManager : public ui::WindowManagerDelegate,
-                      public ui::WindowTreeClientDelegate {
+class WindowManager : public aura::WindowManagerDelegate,
+                      public aura::WindowTreeClientDelegate,
+                      public aura::EnvObserver {
  public:
   explicit WindowManager(service_manager::Connector* connector);
   ~WindowManager() override;
 
-  void Init(std::unique_ptr<ui::WindowTreeClient> window_tree_client,
+  void Init(std::unique_ptr<aura::WindowTreeClient> window_tree_client,
             const scoped_refptr<base::SequencedWorkerPool>& blocking_pool);
 
   WmShellMus* shell() { return shell_.get(); }
 
-  display::ScreenBase* screen() { return screen_.get(); }
+  ScreenMus* screen() { return screen_.get(); }
 
-  ui::WindowTreeClient* window_tree_client() {
+  aura::WindowTreeClient* window_tree_client() {
     return window_tree_client_.get();
   }
 
-  ui::WindowManagerClient* window_manager_client() {
+  aura::WindowManagerClient* window_manager_client() {
     return window_manager_client_;
   }
 
+  ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
+
   service_manager::Connector* connector() { return connector_; }
+
+  aura::PropertyConverter* property_converter() {
+    return property_converter_.get();
+  }
 
   void SetScreenLocked(bool is_locked);
 
   // Creates a new top level window.
-  ui::Window* NewTopLevelWindow(
+  aura::Window* NewTopLevelWindow(
+      ui::mojom::WindowType window_type,
       std::map<std::string, std::vector<uint8_t>>* properties);
 
   std::set<RootWindowController*> GetRootWindowControllers();
@@ -102,7 +120,7 @@ class WindowManager : public ui::WindowManagerDelegate,
   using RootWindowControllers = std::set<std::unique_ptr<RootWindowController>>;
 
   RootWindowController* CreateRootWindowController(
-      ui::Window* window,
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
       const display::Display& display);
 
   // Deletes the specified RootWindowController. Called when a display is
@@ -112,12 +130,6 @@ class WindowManager : public ui::WindowManagerDelegate,
 
   void Shutdown();
 
-  // Returns an iterator into |root_window_controllers_|. Returns
-  // root_window_controllers_.end() if |window| is not the root of a
-  // RootWindowController.
-  RootWindowControllers::iterator FindRootWindowControllerByWindow(
-      ui::Window* window);
-
   RootWindowController* GetPrimaryRootWindowController();
 
   // Returns the RootWindowController where new top levels are created.
@@ -126,43 +138,59 @@ class WindowManager : public ui::WindowManagerDelegate,
       std::map<std::string, std::vector<uint8_t>>* properties);
 
   // WindowTreeClientDelegate:
-  void OnEmbed(ui::Window* root) override;
-  void OnEmbedRootDestroyed(ui::Window* root) override;
-  void OnLostConnection(ui::WindowTreeClient* client) override;
+  void OnEmbed(
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) override;
+  void OnEmbedRootDestroyed(aura::Window* root) override;
+  void OnLostConnection(aura::WindowTreeClient* client) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
-                              ui::Window* target) override;
+                              aura::Window* target) override;
+  aura::client::CaptureClient* GetCaptureClient() override;
+  aura::PropertyConverter* GetPropertyConverter() override;
 
   // WindowManagerDelegate:
-  void SetWindowManagerClient(ui::WindowManagerClient* client) override;
-  bool OnWmSetBounds(ui::Window* window, gfx::Rect* bounds) override;
+  void SetWindowManagerClient(aura::WindowManagerClient* client) override;
+  bool OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) override;
   bool OnWmSetProperty(
-      ui::Window* window,
+      aura::Window* window,
       const std::string& name,
       std::unique_ptr<std::vector<uint8_t>>* new_data) override;
-  ui::Window* OnWmCreateTopLevelWindow(
+  aura::Window* OnWmCreateTopLevelWindow(
+      ui::mojom::WindowType window_type,
       std::map<std::string, std::vector<uint8_t>>* properties) override;
-  void OnWmClientJankinessChanged(const std::set<ui::Window*>& client_windows,
+  void OnWmClientJankinessChanged(const std::set<aura::Window*>& client_windows,
                                   bool not_responding) override;
-  void OnWmNewDisplay(ui::Window* window,
+  void OnWmWillCreateDisplay(const display::Display& display) override;
+  void OnWmNewDisplay(std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
                       const display::Display& display) override;
-  void OnWmDisplayRemoved(ui::Window* window) override;
+  void OnWmDisplayRemoved(aura::WindowTreeHostMus* window_tree_host) override;
   void OnWmDisplayModified(const display::Display& display) override;
-  void OnWmPerformMoveLoop(ui::Window* window,
+  void OnWmPerformMoveLoop(aura::Window* window,
                            ui::mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,
                            const base::Callback<void(bool)>& on_done) override;
-  void OnWmCancelMoveLoop(ui::Window* window) override;
+  void OnWmCancelMoveLoop(aura::Window* window) override;
   ui::mojom::EventResult OnAccelerator(uint32_t id,
                                        const ui::Event& event) override;
+  void OnWmSetClientArea(
+      aura::Window* window,
+      const gfx::Insets& insets,
+      const std::vector<gfx::Rect>& additional_client_areas) override;
+
+  // aura::EnvObserver:
+  void OnWindowInitialized(aura::Window* window) override;
 
   service_manager::Connector* connector_;
   display::mojom::DisplayControllerPtr display_controller_;
 
-  std::unique_ptr<ui::WindowTreeClient> window_tree_client_;
+  std::unique_ptr<::wm::FocusController> focus_controller_;
+  std::unique_ptr<::wm::WMState> wm_state_;
+  std::unique_ptr<aura::PropertyConverter> property_converter_;
 
-  ui::WindowManagerClient* window_manager_client_ = nullptr;
+  std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
 
-  std::unique_ptr<views::PointerWatcherEventRouter>
+  aura::WindowManagerClient* window_manager_client_ = nullptr;
+
+  std::unique_ptr<views::PointerWatcherEventRouter2>
       pointer_watcher_event_router_;
 
   std::unique_ptr<ShadowController> shadow_controller_;
@@ -171,7 +199,7 @@ class WindowManager : public ui::WindowManagerDelegate,
 
   base::ObserverList<WindowManagerObserver> observers_;
 
-  std::unique_ptr<display::ScreenBase> screen_;
+  std::unique_ptr<ScreenMus> screen_;
 
   std::unique_ptr<WmShellMus> shell_;
 
@@ -179,6 +207,10 @@ class WindowManager : public ui::WindowManagerDelegate,
 
   std::map<uint16_t, AcceleratorHandler*> accelerator_handlers_;
   uint16_t next_accelerator_namespace_id_ = 0u;
+
+  std::unique_ptr<EventClientImpl> event_client_;
+
+  std::unique_ptr<ScreenPositionController> screen_position_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };

@@ -4,17 +4,21 @@
 
 #include "ash/mus/shadow.h"
 
-#include "ash/mus/property_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/resources/grit/ui_resources.h"
 
+DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::Shadow*);
+
 namespace ash {
 namespace mus {
-
 namespace {
+
+DEFINE_WINDOW_PROPERTY_KEY(Shadow*, kShadowProperty, nullptr);
 
 // The opacity used for active shadow when animating between
 // inactive/active shadow.
@@ -57,7 +61,7 @@ Shadow::Shadow() : style_(STYLE_ACTIVE), interior_inset_(0), window_(nullptr) {}
 
 Shadow::~Shadow() {
   if (window_) {
-    SetShadow(window_, nullptr);
+    window_->ClearProperty(kShadowProperty);
     window_->RemoveObserver(this);
   }
 }
@@ -73,6 +77,11 @@ void Shadow::Init(Style style) {
   shadow_layer_->set_name("Shadow");
   shadow_layer_->SetVisible(true);
   shadow_layer_->SetFillsBoundsOpaquely(false);
+}
+
+// static
+Shadow* Shadow::Get(aura::Window* window) {
+  return window->GetProperty(kShadowProperty);
 }
 
 // static
@@ -144,8 +153,8 @@ void Shadow::SetStyle(Style style) {
   }
 }
 
-void Shadow::Install(ui::Window* window) {
-  SetShadow(window, this);
+void Shadow::Install(aura::Window* window) {
+  window->SetProperty(kShadowProperty, this);
   window_ = window;
   window_->AddObserver(this);
 }
@@ -216,7 +225,7 @@ void Shadow::UpdateLayerBounds() {
   shadow_layer_->UpdateNinePatchOcclusion(content_bounds);
 }
 
-void Shadow::OnWindowDestroyed(ui::Window* window) {
+void Shadow::OnWindowDestroyed(aura::Window* window) {
   DCHECK_EQ(window_, window);
   window_ = nullptr;
 }

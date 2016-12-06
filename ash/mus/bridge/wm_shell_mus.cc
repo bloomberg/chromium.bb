@@ -33,12 +33,13 @@
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "base/memory/ptr_util.h"
 #include "components/user_manager/user_info_impl.h"
-#include "services/ui/common/util.h"
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_tree_client.h"
+#include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/window.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
-#include "ui/views/mus/pointer_watcher_event_router.h"
+#include "ui/views/mus/pointer_watcher_event_router2.h"
+#include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/focus_controller.h"
 
 namespace ash {
 namespace mus {
@@ -111,12 +112,11 @@ class SessionStateDelegateStub : public SessionStateDelegate {
 WmShellMus::WmShellMus(
     std::unique_ptr<ShellDelegate> shell_delegate,
     WindowManager* window_manager,
-    views::PointerWatcherEventRouter* pointer_watcher_event_router)
+    views::PointerWatcherEventRouter2* pointer_watcher_event_router)
     : WmShell(std::move(shell_delegate)),
       window_manager_(window_manager),
       pointer_watcher_event_router_(pointer_watcher_event_router),
       session_state_delegate_(new SessionStateDelegateStub) {
-  window_tree_client()->AddObserver(this);
   WmShell::Set(this);
 
   uint16_t accelerator_namespace_id = 0u;
@@ -157,8 +157,6 @@ WmShellMus::~WmShellMus() {
   DeleteWindowCycleController();
   DeleteWindowSelectorController();
   DeleteMruWindowTracker();
-  if (window_tree_client())
-    window_tree_client()->RemoveObserver(this);
   WmShell::Set(nullptr);
 }
 
@@ -184,7 +182,7 @@ void WmShellMus::RemoveRootWindowController(
 }
 
 // static
-WmWindowMus* WmShellMus::GetToplevelAncestor(ui::Window* window) {
+WmWindowMus* WmShellMus::GetToplevelAncestor(aura::Window* window) {
   while (window) {
     if (IsActivationParent(window->parent()))
       return WmWindowMus::Get(window);
@@ -204,29 +202,39 @@ WmRootWindowControllerMus* WmShellMus::GetRootWindowControllerWithDisplayId(
   return nullptr;
 }
 
+aura::WindowTreeClient* WmShellMus::window_tree_client() {
+  return window_manager_->window_tree_client();
+}
+
 bool WmShellMus::IsRunningInMash() const {
   return true;
 }
 
 WmWindow* WmShellMus::NewWindow(ui::wm::WindowType window_type,
                                 ui::LayerType layer_type) {
-  WmWindowMus* window = WmWindowMus::Get(window_tree_client()->NewWindow());
-  window->set_wm_window_type(window_type);
-  // TODO(sky): support layer_type.
-  NOTIMPLEMENTED();
-  return window;
+  aura::Window* window = new aura::Window(nullptr);
+  window->SetType(window_type);
+  window->Init(layer_type);
+  return WmWindowMus::Get(window);
 }
 
 WmWindow* WmShellMus::GetFocusedWindow() {
-  return WmWindowMus::Get(window_tree_client()->GetFocusedWindow());
+  // TODO: remove as both WmShells use same implementation.
+  return WmWindowMus::Get(static_cast<aura::client::FocusClient*>(
+                              window_manager_->focus_controller())
+                              ->GetFocusedWindow());
 }
 
 WmWindow* WmShellMus::GetActiveWindow() {
-  return GetToplevelAncestor(window_tree_client()->GetFocusedWindow());
+  // TODO: remove as both WmShells use same implementation.
+  return WmWindowMus::Get(static_cast<aura::client::ActivationClient*>(
+                              window_manager_->focus_controller())
+                              ->GetActiveWindow());
 }
 
 WmWindow* WmShellMus::GetCaptureWindow() {
-  return WmWindowMus::Get(window_tree_client()->GetCaptureWindow());
+  // TODO: remove as both WmShells use same implementation.
+  return WmWindowMus::Get(::wm::CaptureController::Get()->GetCaptureWindow());
 }
 
 WmWindow* WmShellMus::GetPrimaryRootWindow() {
@@ -276,11 +284,10 @@ bool WmShellMus::IsForceMaximizeOnFirstRun() {
 
 void WmShellMus::SetDisplayWorkAreaInsets(WmWindow* window,
                                           const gfx::Insets& insets) {
-  RootWindowController* root_window_controller =
-      GetRootWindowControllerWithDisplayId(
-          WmWindowMus::GetMusWindow(window)->display_id())
-          ->root_window_controller();
-  root_window_controller->SetWorkAreaInests(insets);
+  WmRootWindowControllerMus* root_window_controller_mus =
+      static_cast<WmWindowMus*>(window)->GetRootWindowControllerMus();
+  root_window_controller_mus->root_window_controller()->SetWorkAreaInests(
+      insets);
 }
 
 bool WmShellMus::IsPinned() {
@@ -361,7 +368,7 @@ WmShellMus::CreateScopedDisableInternalMouseAndKeyboard() {
 std::unique_ptr<WorkspaceEventHandler> WmShellMus::CreateWorkspaceEventHandler(
     WmWindow* workspace_window) {
   return base::MakeUnique<WorkspaceEventHandlerMus>(
-      WmWindowMus::GetMusWindow(workspace_window));
+      WmWindowMus::GetAuraWindow(workspace_window));
 }
 
 std::unique_ptr<ImmersiveFullscreenController>
@@ -437,34 +444,23 @@ void WmShellMus::SetLaserPointerEnabled(bool enabled) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-ui::WindowTreeClient* WmShellMus::window_tree_client() {
-  return window_manager_->window_tree_client();
-}
-
 // static
-bool WmShellMus::IsActivationParent(ui::Window* window) {
+bool WmShellMus::IsActivationParent(aura::Window* window) {
   return window && IsActivatableShellWindowId(
                        WmWindowMus::Get(window)->GetShellWindowId());
 }
 
 // TODO: support OnAttemptToReactivateWindow, http://crbug.com/615114.
-void WmShellMus::OnWindowTreeFocusChanged(ui::Window* gained_focus,
-                                          ui::Window* lost_focus) {
-  WmWindow* gained_active = GetToplevelAncestor(gained_focus);
-  if (gained_active)
-    set_root_window_for_new_windows(gained_active->GetRootWindow());
-
-  WmWindow* lost_active = GetToplevelAncestor(lost_focus);
-  if (gained_active == lost_active)
-    return;
-
+// TODO: Nuke and let client code use ActivationChangeObserver directly.
+void WmShellMus::OnWindowActivated(ActivationReason reason,
+                                   aura::Window* gained_active,
+                                   aura::Window* lost_active) {
+  WmWindow* gained_active_wm = WmWindowMus::Get(gained_active);
+  if (gained_active_wm)
+    set_root_window_for_new_windows(gained_active_wm->GetRootWindow());
+  WmWindow* lost_active_wm = WmWindowMus::Get(lost_active);
   for (auto& observer : activation_observers_)
-    observer.OnWindowActivated(gained_active, lost_active);
-}
-
-void WmShellMus::OnDidDestroyClient(ui::WindowTreeClient* client) {
-  DCHECK_EQ(window_tree_client(), client);
-  client->RemoveObserver(this);
+    observer.OnWindowActivated(gained_active_wm, lost_active_wm);
 }
 
 }  // namespace mus

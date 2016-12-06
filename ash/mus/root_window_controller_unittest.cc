@@ -8,8 +8,18 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/mus/test/wm_test_base.h"
+#include "ui/aura/window.h"
+#include "ui/display/screen.h"
 
 namespace ash {
+
+namespace {
+
+int64_t GetDisplayId(aura::Window* window) {
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+}
+
+}  // namespace
 
 using RootWindowControllerTest = AshTest;
 
@@ -30,16 +40,15 @@ TEST_F(RootWindowControllerWmTest, IsWindowShownInCorrectDisplay) {
   UpdateDisplay("400x400,400x400");
   EXPECT_NE(GetPrimaryDisplay().id(), GetSecondaryDisplay().id());
 
-  ui::Window* window_primary_display =
-      CreateFullscreenTestWindow(GetPrimaryDisplay().id());
-  ui::Window* window_secondary_display =
-      CreateFullscreenTestWindow(GetSecondaryDisplay().id());
+  std::unique_ptr<aura::Window> window_primary_display(
+      CreateFullscreenTestWindow(GetPrimaryDisplay().id()));
+  std::unique_ptr<aura::Window> window_secondary_display(
+      CreateFullscreenTestWindow(GetSecondaryDisplay().id()));
 
-  DCHECK(window_primary_display);
-  DCHECK(window_secondary_display);
-
-  EXPECT_EQ(window_primary_display->display_id(), GetPrimaryDisplay().id());
-  EXPECT_EQ(window_secondary_display->display_id(), GetSecondaryDisplay().id());
+  EXPECT_EQ(GetPrimaryDisplay().id(),
+            GetDisplayId(window_primary_display.get()));
+  EXPECT_EQ(GetSecondaryDisplay().id(),
+            GetDisplayId(window_secondary_display.get()));
 }
 
 }  // namespace ash

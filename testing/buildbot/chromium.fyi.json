@@ -12708,6 +12708,7 @@
         "args": [
           "--override-use-gl-with-osmesa-for-tests",
           "--run-in-mash",
+          "--service-overrides=src/chrome/app/mash/mash_service_overrides.json",
           "--test-launcher-filter-file=src/testing/buildbot/filters/mojo.fyi.browser_tests.filter",
           "--use-test-config"
         ],
@@ -12745,6 +12746,7 @@
         "args": [
           "--override-use-gl-with-osmesa-for-tests",
           "--run-in-mash",
+          "--service-overrides=src/chrome/app/mash/mash_service_overrides.json",
           "--test-launcher-filter-file=src/testing/buildbot/filters/mojo.fyi.browser_tests.filter"
         ],
         "swarming": {

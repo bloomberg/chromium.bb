@@ -55,6 +55,8 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   static Env* GetInstance();
   static Env* GetInstanceDontCreate();
 
+  Mode mode() const { return mode_; }
+
   // Called internally to create the appropriate WindowPort implementation.
   std::unique_ptr<WindowPort> CreateWindowPort(Window* window);
 
@@ -87,6 +89,7 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
 
   // See CreateInstance() for description.
   void SetWindowTreeClient(WindowTreeClient* window_tree_client);
+  bool HasWindowTreeClient() const { return window_tree_client_ != nullptr; }
 
   // Sets the active FocusClient and the window the FocusClient is associated
   // with. |window| is not necessarily the window that actually has focus.

@@ -8,10 +8,6 @@
 #include "base/macros.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace ui {
-class Window;
-}
-
 namespace ash {
 namespace mus {
 
@@ -35,13 +31,12 @@ class DetachedTitleAreaRenderer : public views::WidgetDelegate {
     MASH,
   };
 
-  // Creates a widget to render the title area and shows it. |window| is the
-  // window to render to and |widget| the widget whose frame state is rendered
-  // to |window|. This object is deleted either when |window| is destroyed, or
-  // Destroy() is called.
+  // Creates a widget to render the title area and shows it. |frame| is the
+  // widget whose frame state is rendered to. This object is deleted explicitly
+  // by calling Destroy().
   DetachedTitleAreaRenderer(DetachedTitleAreaRendererHost* host,
                             views::Widget* frame,
-                            ui::Window* window,
+                            const gfx::Rect& bounds,
                             Source source);
 
   void Destroy();

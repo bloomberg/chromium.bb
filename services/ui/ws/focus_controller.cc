@@ -185,9 +185,10 @@ bool FocusController::CanBeActivated(ServerWindow* window) const {
     bool is_minimized = false;
     const ServerWindow::Properties& props = window->properties();
     if (props.count(mojom::WindowManager::kShowState_Property)) {
+      // The type must match that of PropertyConverter::PrimitiveType.
       is_minimized =
           props.find(mojom::WindowManager::kShowState_Property)->second[0] ==
-          static_cast<int>(ui::mojom::ShowState::MINIMIZED);
+          static_cast<int64_t>(ui::mojom::ShowState::MINIMIZED);
     }
     if (!is_minimized)
       return false;

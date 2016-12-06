@@ -7,33 +7,28 @@
 
 #include <memory>
 
-#include "ash/common/wm_window.h"
-#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/aura/wm_window_aura.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
-#include "services/ui/public/cpp/window_observer.h"
+
+namespace aura {
+class Window;
+}
 
 namespace views {
 class Widget;
 }
 
 namespace ash {
-
-namespace wm {
-class WmLayoutManager;
-}
-
 namespace mus {
 
-class MusLayoutManagerAdapter;
 class WmRootWindowControllerMus;
 class WmWindowMusTestApi;
 
 // WmWindow implementation for mus.
 //
-// WmWindowMus is tied to the life of the underlying ui::Window (it is stored
+// WmWindowMus is tied to the life of the underlying aura::Window (it is stored
 // as an owned property).
-class WmWindowMus : public WmWindow, public ui::WindowObserver {
+class WmWindowMus : public WmWindowAura {
  public:
   // Indicates the source of the widget creation.
   enum class WidgetCreationType {
@@ -43,40 +38,27 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
     INTERNAL,
 
     // The widget was created for a client. In other words there is a client
-    // embedded in the ui::Window. For example, when Chrome creates a new
-    // browser window the window manager is asked to create the ui::Window.
-    // The window manager creates a ui::Window and a views::Widget to show the
-    // non-client frame decorations. In this case the creation type is
+    // embedded in the aura::Window. For example, when Chrome creates a new
+    // browser window the window manager is asked to create the aura::Window.
+    // The window manager creates an aura::Window and a views::Widget to show
+    // the non-client frame decorations. In this case the creation type is
     // FOR_CLIENT.
     FOR_CLIENT,
   };
 
-  explicit WmWindowMus(ui::Window* window);
+  explicit WmWindowMus(aura::Window* window);
   // NOTE: this class is owned by the corresponding window. You shouldn't delete
   // TODO(sky): friend deleter and make private.
   ~WmWindowMus() override;
 
-  // Returns a WmWindow for an ui::Window, creating if necessary.
-  static WmWindowMus* Get(ui::Window* window) {
-    return const_cast<WmWindowMus*>(Get(const_cast<const ui::Window*>(window)));
+  // Returns a WmWindow for an aura::Window, creating if necessary.
+  static WmWindowMus* Get(aura::Window* window) {
+    return const_cast<WmWindowMus*>(
+        Get(const_cast<const aura::Window*>(window)));
   }
-  static const WmWindowMus* Get(const ui::Window* window);
+  static const WmWindowMus* Get(const aura::Window* window);
 
   static WmWindowMus* Get(views::Widget* widget);
-
-  static ui::Window* GetMusWindow(WmWindow* wm_window) {
-    return const_cast<ui::Window*>(
-        GetMusWindow(const_cast<const WmWindow*>(wm_window)));
-  }
-  static const ui::Window* GetMusWindow(const WmWindow* wm_window);
-
-  static std::vector<WmWindow*> FromMusWindows(
-      const std::vector<ui::Window*>& mus_windows);
-
-  void set_wm_window_type(ui::wm::WindowType type) {
-    wm_window_type_ = type;
-    is_wm_window_type_set_ = true;
-  }
 
   // Sets the widget associated with the window. The widget is used to query
   // state, such as min/max size. The widget is not owned by the WmWindowMus.
@@ -84,9 +66,6 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
     widget_ = widget;
     widget_creation_type_ = type;
   }
-
-  ui::Window* mus_window() { return window_; }
-  const ui::Window* mus_window() const { return window_; }
 
   WmRootWindowControllerMus* GetRootWindowControllerMus() {
     return const_cast<WmRootWindowControllerMus*>(
@@ -101,8 +80,6 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
     return static_cast<const WmWindowMus*>(window);
   }
 
-  wm::WindowState* GetWindowState() { return WmWindow::GetWindowState(); }
-
   // See description of |children_use_extended_hit_region_|.
   bool ShouldUseExtendedHitRegion() const;
 
@@ -110,129 +87,27 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   bool IsContainer() const;
 
   // WmWindow:
-  void Destroy() override;
   const WmWindow* GetRootWindow() const override;
   WmRootWindowController* GetRootWindowController() override;
   WmShell* GetShell() const override;
-  void SetName(const char* name) override;
-  std::string GetName() const override;
-  void SetTitle(const base::string16& title) override;
-  base::string16 GetTitle() const override;
-  void SetShellWindowId(int id) override;
-  int GetShellWindowId() const override;
-  WmWindow* GetChildByShellWindowId(int id) override;
-  ui::wm::WindowType GetType() const override;
-  int GetAppType() const override;
-  void SetAppType(int app_type) const override;
   bool IsBubble() override;
-  ui::Layer* GetLayer() override;
-  bool GetLayerTargetVisibility() override;
-  bool GetLayerVisible() override;
-  display::Display GetDisplayNearestWindow() override;
   bool HasNonClientArea() override;
   int GetNonClientComponent(const gfx::Point& location) override;
-  gfx::Point ConvertPointToTarget(const WmWindow* target,
-                                  const gfx::Point& point) const override;
-  gfx::Point ConvertPointToScreen(const gfx::Point& point) const override;
-  gfx::Point ConvertPointFromScreen(const gfx::Point& point) const override;
-  gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const override;
-  gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect) const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
-  bool GetTargetVisibility() const override;
-  bool IsVisible() const override;
-  void SetOpacity(float opacity) override;
-  float GetTargetOpacity() const override;
   gfx::Rect GetMinimizeAnimationTargetBoundsInScreen() const override;
-  void SetTransform(const gfx::Transform& transform) override;
-  gfx::Transform GetTargetTransform() const override;
   bool IsSystemModal() const override;
   bool GetBoolProperty(WmWindowProperty key) override;
-  SkColor GetColorProperty(WmWindowProperty key) override;
-  void SetColorProperty(WmWindowProperty key, SkColor value) override;
   int GetIntProperty(WmWindowProperty key) override;
-  void SetIntProperty(WmWindowProperty key, int value) override;
-  std::string GetStringProperty(WmWindowProperty key) override;
-  void SetStringProperty(WmWindowProperty key,
-                         const std::string& value) override;
-  gfx::ImageSkia GetWindowIcon() override;
-  gfx::ImageSkia GetAppIcon() override;
-  const wm::WindowState* GetWindowState() const override;
   WmWindow* GetToplevelWindow() override;
   WmWindow* GetToplevelWindowForFocus() override;
-  void SetParentUsingContext(WmWindow* context,
-                             const gfx::Rect& screen_bounds) override;
-  void AddChild(WmWindow* window) override;
-  void RemoveChild(WmWindow* child) override;
-  const WmWindow* GetParent() const override;
-  const WmWindow* GetTransientParent() const override;
-  std::vector<WmWindow*> GetTransientChildren() override;
   bool MoveToEventRoot(const ui::Event& event) override;
-  void SetLayoutManager(
-      std::unique_ptr<WmLayoutManager> layout_manager) override;
-  WmLayoutManager* GetLayoutManager() override;
-  void SetVisibilityChangesAnimated() override;
-  void SetVisibilityAnimationType(int type) override;
-  void SetVisibilityAnimationDuration(base::TimeDelta delta) override;
-  void SetVisibilityAnimationTransition(
-      ::wm::WindowVisibilityAnimationTransition transition) override;
-  void Animate(::wm::WindowAnimationType type) override;
-  void StopAnimatingProperty(
-      ui::LayerAnimationElement::AnimatableProperty property) override;
-  void SetChildWindowVisibilityChangesAnimated() override;
-  void SetMasksToBounds(bool value) override;
-  void SetBounds(const gfx::Rect& bounds) override;
-  void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
-                                    base::TimeDelta delta) override;
-  void SetBoundsDirect(const gfx::Rect& bounds) override;
-  void SetBoundsDirectAnimated(const gfx::Rect& bounds) override;
-  void SetBoundsDirectCrossFade(const gfx::Rect& bounds) override;
   void SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
                          const display::Display& dst_display) override;
-  gfx::Rect GetBoundsInScreen() const override;
-  const gfx::Rect& GetBounds() const override;
-  gfx::Rect GetTargetBounds() override;
-  void ClearRestoreBounds() override;
-  void SetRestoreBoundsInScreen(const gfx::Rect& bounds) override;
-  gfx::Rect GetRestoreBoundsInScreen() const override;
-  bool Contains(const WmWindow* other) const override;
-  void SetShowState(ui::WindowShowState show_state) override;
-  ui::WindowShowState GetShowState() const override;
-  void SetRestoreShowState(ui::WindowShowState show_state) override;
-  void SetRestoreOverrides(const gfx::Rect& bounds_override,
-                           ui::WindowShowState window_state_override) override;
-  void SetLockedToRoot(bool value) override;
-  bool IsLockedToRoot() const override;
-  void SetCapture() override;
-  bool HasCapture() override;
-  void ReleaseCapture() override;
-  bool HasRestoreBounds() const override;
   void SetPinned(bool trusted) override;
-  void SetAlwaysOnTop(bool value) override;
-  bool IsAlwaysOnTop() const override;
-  void Hide() override;
-  void Show() override;
   views::Widget* GetInternalWidget() override;
   void CloseWidget() override;
-  void SetFocused() override;
-  bool IsFocused() const override;
-  bool IsActive() const override;
-  void Activate() override;
-  void Deactivate() override;
-  void SetFullscreen() override;
-  void Maximize() override;
-  void Minimize() override;
-  void Unminimize() override;
-  void SetExcludedFromMru(bool) override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
-  bool CanResize() const override;
   bool CanActivate() const override;
-  void StackChildAtTop(WmWindow* child) override;
-  void StackChildAtBottom(WmWindow* child) override;
-  void StackChildAbove(WmWindow* child, WmWindow* target) override;
-  void StackChildBelow(WmWindow* child, WmWindow* target) override;
-  std::vector<WmWindow*> GetChildren() override;
   void ShowResizeShadow(int component) override;
   void HideResizeShadow() override;
   void InstallResizeHandleWindowTargeter(
@@ -242,59 +117,14 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   void SetSnapsChildrenToPhysicalPixelBoundary() override;
   void SnapToPixelBoundaryIfNecessary() override;
   void SetChildrenUseExtendedHitRegion() override;
-  std::unique_ptr<views::View> CreateViewWithRecreatedLayers() override;
-  void AddObserver(WmWindowObserver* observer) override;
-  void RemoveObserver(WmWindowObserver* observer) override;
-  bool HasObserver(const WmWindowObserver* observer) const override;
-  void AddTransientWindowObserver(WmTransientWindowObserver* observer) override;
-  void RemoveTransientWindowObserver(
-      WmTransientWindowObserver* observer) override;
   void AddLimitedPreTargetHandler(ui::EventHandler* handler) override;
-  void RemoveLimitedPreTargetHandler(ui::EventHandler* handler) override;
 
  private:
   friend class WmWindowMusTestApi;
 
-  // ui::WindowObserver:
-  void OnTreeChanging(const TreeChangeParams& params) override;
-  void OnTreeChanged(const TreeChangeParams& params) override;
-  void OnWindowReordered(ui::Window* window,
-                         ui::Window* relative_window,
-                         ui::mojom::OrderDirection direction) override;
-  void OnWindowSharedPropertyChanged(
-      ui::Window* window,
-      const std::string& name,
-      const std::vector<uint8_t>* old_data,
-      const std::vector<uint8_t>* new_data) override;
-  void OnWindowBoundsChanged(ui::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
-  void OnWindowDestroying(ui::Window* window) override;
-  void OnWindowDestroyed(ui::Window* window) override;
-  void OnWindowVisibilityChanging(ui::Window* window, bool visible) override;
-  void OnWindowVisibilityChanged(ui::Window* window, bool visible) override;
-  void OnTransientChildAdded(ui::Window* window,
-                             ui::Window* transient) override;
-  void OnTransientChildRemoved(ui::Window* window,
-                               ui::Window* transient) override;
-
-  ui::Window* window_;
-
-  // The shell window id of this window. Shell window ids are defined in
-  // ash/public/cpp/shell_window_ids.h.
-  int shell_window_id_ = kShellWindowId_Invalid;
-
-  std::unique_ptr<wm::WindowState> window_state_;
-
   views::Widget* widget_ = nullptr;
 
   WidgetCreationType widget_creation_type_ = WidgetCreationType::INTERNAL;
-
-  base::ObserverList<WmWindowObserver> observers_;
-
-  std::unique_ptr<MusLayoutManagerAdapter> layout_manager_adapter_;
-
-  ui::WindowShowState restore_show_state_ = ui::SHOW_STATE_DEFAULT;
 
   bool snap_children_to_pixel_boundary_ = false;
 
@@ -302,19 +132,14 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   // resizing easier.
   bool children_use_extended_hit_region_ = false;
 
-  base::ObserverList<WmTransientWindowObserver, true> transient_observers_;
+  // Default value for |use_empty_minimum_size_for_testing_|.
+  static bool default_use_empty_minimum_size_for_testing_;
 
   // If true the minimum size is 0x0, default is minimum size comes from widget.
   bool use_empty_minimum_size_for_testing_ = false;
 
-  ui::wm::WindowType wm_window_type_ = ui::wm::WINDOW_TYPE_UNKNOWN;
-  // Set to true if set_window_type() is called.
-  bool is_wm_window_type_set_ = false;
-
   BoundsInScreenBehavior child_bounds_in_screen_behavior_ =
       BoundsInScreenBehavior::USE_LOCAL_COORDINATES;
-
-  bool locked_to_root_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WmWindowMus);
 };

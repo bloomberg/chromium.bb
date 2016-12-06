@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/test/test_event_handler.h"
@@ -622,9 +623,10 @@ TEST_F(NativeWidgetMusTest, IsMaximized) {
   params.native_widget = new NativeWidgetMus(
       widget.get(), window, ui::mojom::CompositorFrameSinkType::DEFAULT);
   widget->Init(params);
-  window->SetSharedProperty<int32_t>(
+  window->SetSharedProperty<aura::PropertyConverter::PrimitiveType>(
       ui::mojom::WindowManager::kShowState_Property,
-      static_cast<uint32_t>(ui::mojom::ShowState::MAXIMIZED));
+      static_cast<aura::PropertyConverter::PrimitiveType>(
+          ui::mojom::ShowState::MAXIMIZED));
   EXPECT_TRUE(widget->IsMaximized());
 }
 

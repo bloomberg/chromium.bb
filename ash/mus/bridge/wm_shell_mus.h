@@ -13,14 +13,14 @@
 #include "ash/common/wm_shell.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "services/ui/public/cpp/window_tree_client_observer.h"
+#include "ui/wm/public/activation_change_observer.h"
 
-namespace ui {
+namespace aura {
 class WindowTreeClient;
 }
 
 namespace views {
-class PointerWatcherEventRouter;
+class PointerWatcherEventRouter2;
 }
 
 namespace ash {
@@ -35,11 +35,12 @@ class WmShellMusTestApi;
 class WmWindowMus;
 
 // WmShell implementation for mus.
-class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
+class WmShellMus : public WmShell,
+                   public aura::client::ActivationChangeObserver {
  public:
   WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
              WindowManager* window_manager,
-             views::PointerWatcherEventRouter* pointer_watcher_event_router);
+             views::PointerWatcherEventRouter2* pointer_watcher_event_router);
   ~WmShellMus() override;
 
   static WmShellMus* Get();
@@ -49,13 +50,17 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
 
   // Returns the ancestor of |window| (including |window|) that is considered
   // toplevel. |window| may be null.
-  static WmWindowMus* GetToplevelAncestor(ui::Window* window);
+  static WmWindowMus* GetToplevelAncestor(aura::Window* window);
 
   WmRootWindowControllerMus* GetRootWindowControllerWithDisplayId(int64_t id);
 
   AcceleratorControllerDelegateMus* accelerator_controller_delegate() {
     return accelerator_controller_delegate_.get();
   }
+
+  aura::WindowTreeClient* window_tree_client();
+
+  WindowManager* window_manager() { return window_manager_; }
 
   // WmShell:
   bool IsRunningInMash() const override;
@@ -118,19 +123,17 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
  private:
   friend class WmShellMusTestApi;
 
-  ui::WindowTreeClient* window_tree_client();
-
   // Returns true if |window| is a window that can have active children.
-  static bool IsActivationParent(ui::Window* window);
+  static bool IsActivationParent(aura::Window* window);
 
-  // ui::WindowTreeClientObserver:
-  void OnWindowTreeFocusChanged(ui::Window* gained_focus,
-                                ui::Window* lost_focus) override;
-  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
+  // aura::client::ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   WindowManager* window_manager_;
 
-  views::PointerWatcherEventRouter* pointer_watcher_event_router_;
+  views::PointerWatcherEventRouter2* pointer_watcher_event_router_;
 
   std::vector<WmRootWindowControllerMus*> root_window_controllers_;
 

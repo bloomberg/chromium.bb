@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "services/ui/public/cpp/window_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -20,7 +20,9 @@ namespace ash {
 namespace mus {
 
 // Simple class that draws a drop shadow around content at given bounds.
-class Shadow : public ui::ImplicitAnimationObserver, public ui::WindowObserver {
+// http://crbug.com/670840.
+class Shadow : public ui::ImplicitAnimationObserver,
+               public aura::WindowObserver {
  public:
   enum Style {
     // Active windows have more opaque shadows, shifted down to make the window
@@ -39,6 +41,8 @@ class Shadow : public ui::ImplicitAnimationObserver, public ui::WindowObserver {
   ~Shadow() override;
 
   void Init(Style style);
+
+  static Shadow* Get(aura::Window* window);
 
   // Returns the interio inset for the specified style. The interior inset
   // is the amount of padding added to each side of the content bounds that the
@@ -62,7 +66,7 @@ class Shadow : public ui::ImplicitAnimationObserver, public ui::WindowObserver {
   void SetStyle(Style style);
 
   // Installs this shadow for |window|.
-  void Install(ui::Window* window);
+  void Install(aura::Window* window);
 
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
@@ -76,7 +80,7 @@ class Shadow : public ui::ImplicitAnimationObserver, public ui::WindowObserver {
   void UpdateLayerBounds();
 
   // WindowObserver:
-  void OnWindowDestroyed(ui::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
   // The current style, set when the transition animation starts.
   Style style_;
@@ -98,7 +102,7 @@ class Shadow : public ui::ImplicitAnimationObserver, public ui::WindowObserver {
   // grid should be set to |content_bounds_| inset by this amount.
   int interior_inset_;
 
-  ui::Window* window_;
+  aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(Shadow);
 };

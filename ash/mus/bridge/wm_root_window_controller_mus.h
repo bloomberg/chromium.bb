@@ -8,12 +8,12 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "base/macros.h"
 
-namespace display {
-class Display;
+namespace aura {
+class Window;
 }
 
-namespace ui {
-class Window;
+namespace display {
+class Display;
 }
 
 namespace ash {
@@ -30,11 +30,11 @@ class WmRootWindowControllerMus : public WmRootWindowController {
                             RootWindowController* root_window_controller);
   ~WmRootWindowControllerMus() override;
 
-  static WmRootWindowControllerMus* Get(ui::Window* window) {
+  static WmRootWindowControllerMus* Get(aura::Window* window) {
     return const_cast<WmRootWindowControllerMus*>(
-        Get(const_cast<const ui::Window*>(window)));
+        Get(const_cast<const aura::Window*>(window)));
   }
-  static const WmRootWindowControllerMus* Get(const ui::Window* window);
+  static const WmRootWindowControllerMus* Get(const aura::Window* window);
 
   RootWindowController* root_window_controller() {
     return root_window_controller_;

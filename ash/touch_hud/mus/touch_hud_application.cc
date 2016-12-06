@@ -14,6 +14,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "ui/aura/mus/property_converter.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
@@ -97,7 +98,8 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
             ash::kShellWindowId_OverlayContainer);
     properties[ui::mojom::WindowManager::kShowState_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<int32_t>(ui::mojom::ShowState::FULLSCREEN));
+            static_cast<aura::PropertyConverter::PrimitiveType>(
+                ui::mojom::ShowState::FULLSCREEN));
     ui::Window* window =
         window_manager_connection_.get()->NewTopLevelWindow(properties);
     params.native_widget = new views::NativeWidgetMus(

@@ -4,34 +4,35 @@
 
 #include "ash/mus/bridge/workspace_event_handler_mus.h"
 
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_property.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 
-MUS_DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::WorkspaceEventHandlerMus*);
+DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::WorkspaceEventHandlerMus*);
 
 namespace {
 
-MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(ash::mus::WorkspaceEventHandlerMus*,
-                                     kWorkspaceEventHandlerProperty,
-                                     nullptr);
+DEFINE_WINDOW_PROPERTY_KEY(ash::mus::WorkspaceEventHandlerMus*,
+                           kWorkspaceEventHandlerProperty,
+                           nullptr);
 
 }  // namespace
 
 namespace ash {
 namespace mus {
 
-WorkspaceEventHandlerMus::WorkspaceEventHandlerMus(ui::Window* workspace_window)
+WorkspaceEventHandlerMus::WorkspaceEventHandlerMus(
+    aura::Window* workspace_window)
     : workspace_window_(workspace_window) {
-  workspace_window_->SetLocalProperty(kWorkspaceEventHandlerProperty, this);
+  workspace_window_->SetProperty(kWorkspaceEventHandlerProperty, this);
 }
 
 WorkspaceEventHandlerMus::~WorkspaceEventHandlerMus() {
-  workspace_window_->ClearLocalProperty(kWorkspaceEventHandlerProperty);
+  workspace_window_->ClearProperty(kWorkspaceEventHandlerProperty);
 }
 
 // static
-WorkspaceEventHandlerMus* WorkspaceEventHandlerMus::Get(ui::Window* window) {
-  return window->GetLocalProperty(kWorkspaceEventHandlerProperty);
+WorkspaceEventHandlerMus* WorkspaceEventHandlerMus::Get(aura::Window* window) {
+  return window->GetProperty(kWorkspaceEventHandlerProperty);
 }
 
 }  // namespace mus

@@ -9,20 +9,21 @@
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/window_manager.h"
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_property.h"
-#include "services/ui/public/cpp/window_tree_client.h"
+#include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/display/display.h"
-#include "ui/views/mus/native_widget_mus.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
-MUS_DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::WmRootWindowControllerMus*);
+DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::WmRootWindowControllerMus*);
 
 namespace {
 
-MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(ash::mus::WmRootWindowControllerMus*,
-                                     kWmRootWindowControllerKey,
-                                     nullptr);
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(ash::mus::WmRootWindowControllerMus*,
+                                 kWmRootWindowControllerKey,
+                                 nullptr);
 
 }  // namespace
 
@@ -36,8 +37,8 @@ WmRootWindowControllerMus::WmRootWindowControllerMus(
       shell_(shell),
       root_window_controller_(root_window_controller) {
   shell_->AddRootWindowController(this);
-  root_window_controller_->root()->SetLocalProperty(kWmRootWindowControllerKey,
-                                                    this);
+  root_window_controller_->root()->SetProperty(kWmRootWindowControllerKey,
+                                               this);
 }
 
 WmRootWindowControllerMus::~WmRootWindowControllerMus() {
@@ -46,11 +47,11 @@ WmRootWindowControllerMus::~WmRootWindowControllerMus() {
 
 // static
 const WmRootWindowControllerMus* WmRootWindowControllerMus::Get(
-    const ui::Window* window) {
+    const aura::Window* window) {
   if (!window)
     return nullptr;
 
-  return window->GetRoot()->GetLocalProperty(kWmRootWindowControllerKey);
+  return window->GetRootWindow()->GetProperty(kWmRootWindowControllerKey);
 }
 
 gfx::Point WmRootWindowControllerMus::ConvertPointToScreen(
@@ -98,17 +99,15 @@ void WmRootWindowControllerMus::ConfigureWidgetInitParamsForContainer(
     views::Widget* widget,
     int shell_container_id,
     views::Widget::InitParams* init_params) {
-  init_params->parent_mus = WmWindowMus::GetMusWindow(
+  init_params->parent = WmWindowMus::GetAuraWindow(
       WmWindowMus::Get(root_window_controller_->root())
           ->GetChildByShellWindowId(shell_container_id));
-  DCHECK(init_params->parent_mus);
-  ui::Window* new_window =
-      root_window_controller_->root()->window_tree()->NewWindow(
-          &(init_params->mus_properties));
-  WmWindowMus::Get(new_window)
+  DCHECK(init_params->parent);
+  views::NativeWidgetAura* native_widget_aura =
+      new views::NativeWidgetAura(widget);
+  init_params->native_widget = native_widget_aura;
+  WmWindowMus::Get(native_widget_aura->GetNativeView())
       ->set_widget(widget, WmWindowMus::WidgetCreationType::INTERNAL);
-  init_params->native_widget = new views::NativeWidgetMus(
-      widget, new_window, ui::mojom::CompositorFrameSinkType::DEFAULT);
 }
 
 WmWindow* WmRootWindowControllerMus::FindEventTarget(
@@ -128,9 +127,12 @@ gfx::Point WmRootWindowControllerMus::GetLastMouseLocationInRoot() {
 
 bool WmRootWindowControllerMus::ShouldDestroyWindowInCloseChildWindows(
     WmWindow* window) {
-  ui::Window* ui_window = WmWindowMus::GetMusWindow(window);
-  return ui_window->WasCreatedByThisClient() ||
-         ui_window->window_tree()->GetRoots().count(ui_window);
+  aura::WindowTreeClient* window_tree_client =
+      root_window_controller_->window_manager()->window_tree_client();
+  aura::Window* aura_window = WmWindowMus::GetAuraWindow(window);
+  aura::WindowMus* window_mus = aura::WindowMus::Get(aura_window);
+  return window_tree_client->WasCreatedByThisClient(window_mus) ||
+         window_tree_client->IsRoot(window_mus);
 }
 
 }  // namespace mus

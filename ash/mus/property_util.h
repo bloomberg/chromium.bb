@@ -5,90 +5,48 @@
 #ifndef ASH_MUS_PROPERTY_UTIL_H_
 #define ASH_MUS_PROPERTY_UTIL_H_
 
-#include "ash/public/interfaces/ash_window_type.mojom.h"
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
-#include "ui/wm/public/window_types.h"
+#include <stdint.h>
+
+#include <map>
+#include <string>
+#include <vector>
 
 namespace gfx {
 class Rect;
 class Size;
 }
 
-namespace ui {
-class Window;
-}
-
 namespace ash {
 namespace mus {
 
-class Shadow;
+// Functions for extracting properties that are used at a Window creation time.
+// When an aura::Window is created at the request of a client an initial set of
+// properties is supplied to allow the WindowManager (ash) to configure the
+// newly created window. Not all of these properties need be persisted, some are
+// used solely to configure the window. This file contains the functions used
+// to extract these properties.
+// Long lived properties are converted and stored as properties on the
+// associated aura::Window. See aura::PropertyConverter for this set of
+// properties.
 
-// Utility functions to read values from properties & convert them to the
-// appropriate types.
+using InitProperties = std::map<std::string, std::vector<uint8_t>>;
 
-void SetWindowShowState(ui::Window* window, ui::mojom::ShowState show_state);
-ui::mojom::ShowState GetWindowShowState(const ui::Window* window);
-
-void SetWindowUserSetBounds(ui::Window* window, const gfx::Rect& bounds);
-gfx::Rect GetWindowUserSetBounds(const ui::Window* window);
-
-void SetWindowPreferredSize(ui::Window* window, const gfx::Size& size);
-gfx::Size GetWindowPreferredSize(const ui::Window* window);
+// Returns the kInitialDisplayId_Property if present, otherwise
+// kInvalidDisplayID.
+int64_t GetInitialDisplayId(const InitProperties& properties);
 
 // If |window| has the |kInitialContainerId_Property| set as a property, then
 // the value of |kInitialContainerId_Property| is set in |container_id| and true
 // is returned. Otherwise false is returned.
-bool GetRequestedContainer(const ui::Window* window, int* container_id);
+bool GetInitialContainerId(const InitProperties& properties, int* container_id);
 
-// Returns a bitfield of kResizeBehavior* values from
-// window_manager_constants.mojom.
-void SetResizeBehavior(ui::Window::SharedProperties* properties,
-                       int32_t resize_behavior);
-int32_t GetResizeBehavior(const ui::Window* window);
+bool GetInitialBounds(const InitProperties& properties, gfx::Rect* bounds);
 
-void SetRestoreBounds(ui::Window* window, const gfx::Rect& bounds);
-gfx::Rect GetRestoreBounds(const ui::Window* window);
+bool GetWindowPreferredSize(const InitProperties& properties, gfx::Size* size);
 
-void SetShadow(ui::Window* window, Shadow* shadow);
-Shadow* GetShadow(const ui::Window* window);
+bool ShouldRemoveStandardFrame(const InitProperties& properties);
 
-ui::mojom::WindowType GetWindowType(const ui::Window* window);
-ui::mojom::WindowType GetWindowType(const ui::Window::SharedProperties& window);
-
-ui::wm::WindowType GetWmWindowType(const ui::Window* window);
-
-mojom::AshWindowType GetAshWindowType(const ui::Window* window);
-
-void SetWindowTitle(ui::Window* window, base::string16 title);
-base::string16 GetWindowTitle(const ui::Window* window);
-
-void SetAppID(ui::Window* window, const base::string16& app_id);
-base::string16 GetAppID(const ui::Window* window);
-
-bool GetWindowIgnoredByShelf(ui::Window* window);
-
-void SetWindowIsJanky(ui::Window* window, bool janky);
-bool IsWindowJanky(ui::Window* window);
-bool IsWindowJankyProperty(const void* key);
-
-void SetAlwaysOnTop(ui::Window* window, bool value);
-bool IsAlwaysOnTop(ui::Window* window);
-
-bool ShouldRemoveStandardFrame(ui::Window* window);
-
-// See description of |WindowManager::kRendererParentTitleArea_Property|.
-bool ShouldRenderParentTitleArea(ui::Window* window);
-
-// Returns the kInitialDisplayId_Property if present, otherwise
-// kInvalidDisplayID.
-int64_t GetInitialDisplayId(const ui::Window::SharedProperties& properties);
-
-// Manipulates the kExcludeFromMru_Property property.
-void SetExcludeFromMru(ui::Window* window, bool value);
-
-// Returns true if the property is set and true, otherwise false.
-bool GetExcludeFromMru(const ui::Window* window);
+bool ShouldEnableImmersive(const InitProperties& properties);
 
 }  // namespace mus
 }  // namespace ash

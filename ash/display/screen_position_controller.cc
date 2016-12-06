@@ -8,23 +8,15 @@
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
-#include "ui/aura/client/capture_client.h"
-#include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/window_util.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -111,8 +103,9 @@ void ScreenPositionController::ConvertHostPointToScreen(
     gfx::Point* point) {
   aura::Window* root = root_window->GetRootWindow();
   aura::Window* target_root = nullptr;
-  ConvertHostPointToRelativeToRootWindow(root, Shell::GetAllRootWindows(),
-                                         point, &target_root);
+  ConvertHostPointToRelativeToRootWindow(
+      root, WmWindowAura::ToAuraWindows(WmShell::Get()->GetAllRootWindows()),
+      point, &target_root);
   ConvertPointToScreen(target_root, point);
 }
 

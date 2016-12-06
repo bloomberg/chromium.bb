@@ -66,6 +66,7 @@
 
 DECLARE_WINDOW_PROPERTY_TYPE(ui::Window*);
 
+using PrimitiveType = aura::PropertyConverter::PrimitiveType;
 using ui::mojom::EventResult;
 
 namespace views {
@@ -376,8 +377,9 @@ ui::mojom::ShowState GetShowState(const ui::Window* window) {
     return ui::mojom::ShowState::DEFAULT;
   }
 
-  return static_cast<ui::mojom::ShowState>(window->GetSharedProperty<int32_t>(
-      ui::mojom::WindowManager::kShowState_Property));
+  return static_cast<ui::mojom::ShowState>(
+      window->GetSharedProperty<PrimitiveType>(
+          ui::mojom::WindowManager::kShowState_Property));
 }
 
 // Set the app or window icon property for the window.
@@ -666,24 +668,21 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
   }
   (*properties)[ui::mojom::WindowManager::kAlwaysOnTop_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<aura::PropertyConverter::PrimitiveType>(
-              init_params.keep_on_top));
+          static_cast<PrimitiveType>(init_params.keep_on_top));
+
+  (*properties)[ui::mojom::WindowManager::kWindowType_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(static_cast<PrimitiveType>(
+          mojo::ConvertTo<ui::mojom::WindowType>(init_params.type)));
 
   if (!Widget::RequiresNonClientView(init_params.type))
     return;
-
-  (*properties)[ui::mojom::WindowManager::kWindowType_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<aura::PropertyConverter::PrimitiveType>(
-              mojo::ConvertTo<ui::mojom::WindowType>(init_params.type)));
 
   if (init_params.delegate) {
     if (properties->count(ui::mojom::WindowManager::kResizeBehavior_Property) ==
         0) {
       (*properties)[ui::mojom::WindowManager::kResizeBehavior_Property] =
-          mojo::ConvertTo<std::vector<uint8_t>>(
-              static_cast<aura::PropertyConverter::PrimitiveType>(
-                  init_params.delegate->GetResizeBehavior()));
+          mojo::ConvertTo<std::vector<uint8_t>>(static_cast<PrimitiveType>(
+              init_params.delegate->GetResizeBehavior()));
     }
 
     // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
@@ -1331,7 +1330,7 @@ void NativeWidgetMus::OnSizeConstraintsChanged() {
   int32_t behavior = ui::mojom::kResizeBehaviorNone;
   if (GetWidget()->widget_delegate())
     behavior = GetWidget()->widget_delegate()->GetResizeBehavior();
-  window_->SetSharedProperty<int32_t>(
+  window_->SetSharedProperty<PrimitiveType>(
       ui::mojom::WindowManager::kResizeBehavior_Property, behavior);
 }
 
@@ -1412,9 +1411,9 @@ void NativeWidgetMus::GetHitTestMask(gfx::Path* mask) const {
 void NativeWidgetMus::SetShowState(ui::mojom::ShowState show_state) {
   if (!window_)
     return;
-  window_->SetSharedProperty<int32_t>(
+  window_->SetSharedProperty<PrimitiveType>(
       ui::mojom::WindowManager::kShowState_Property,
-      static_cast<int32_t>(show_state));
+      static_cast<PrimitiveType>(show_state));
 }
 
 void NativeWidgetMus::OnKeyEvent(ui::KeyEvent* event) {

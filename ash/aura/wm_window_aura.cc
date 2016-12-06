@@ -29,6 +29,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -85,14 +86,6 @@ class BoundsSetter : public aura::LayoutManager {
 
 }  // namespace
 
-WmWindowAura::WmWindowAura(aura::Window* window)
-    : window_(window),
-      // Mirrors that of aura::Window.
-      observers_(base::ObserverList<WmWindowObserver>::NOTIFY_EXISTING_ONLY) {
-  window_->AddObserver(this);
-  window_->SetProperty(kWmWindowKey, this);
-}
-
 WmWindowAura::~WmWindowAura() {
   if (added_transient_observer_)
     ::wm::TransientWindowManager::Get(window_)->RemoveObserver(this);
@@ -108,6 +101,7 @@ const WmWindow* WmWindowAura::Get(const aura::Window* window) {
   const WmWindow* wm_window = window->GetProperty(kWmWindowKey);
   if (wm_window)
     return wm_window;
+  DCHECK_EQ(aura::Env::Mode::LOCAL, aura::Env::GetInstance()->mode());
   // WmWindowAura is owned by the aura::Window.
   // TODO(sky): fix constness.
   return new WmWindowAura(const_cast<aura::Window*>(window));
@@ -836,6 +830,19 @@ void WmWindowAura::AddLimitedPreTargetHandler(ui::EventHandler* handler) {
 
 void WmWindowAura::RemoveLimitedPreTargetHandler(ui::EventHandler* handler) {
   window_->RemovePreTargetHandler(handler);
+}
+
+WmWindowAura::WmWindowAura(aura::Window* window)
+    : window_(window),
+      // Mirrors that of aura::Window.
+      observers_(base::ObserverList<WmWindowObserver>::NOTIFY_EXISTING_ONLY) {
+  window_->AddObserver(this);
+  window_->SetProperty(kWmWindowKey, this);
+}
+
+// static
+bool WmWindowAura::HasInstance(const aura::Window* window) {
+  return window->GetProperty(kWmWindowKey) != nullptr;
 }
 
 void WmWindowAura::OnWindowHierarchyChanging(

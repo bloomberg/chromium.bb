@@ -7,33 +7,59 @@
 
 #include <stdint.h>
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "ash/mus/frame/detached_title_area_renderer_host.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "services/ui/public/cpp/window_observer.h"
+#include "ui/aura/window_observer.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget_delegate.h"
+
+namespace aura {
+class Window;
+class WindowManagerClient;
+}
 
 namespace gfx {
 class Insets;
 }
 
 namespace ui {
-class Window;
-class WindowManagerClient;
+namespace mojom {
+enum class WindowType;
+}
 }
 
 namespace ash {
 namespace mus {
 
+class WindowManager;
+
 // Provides the non-client frame for mus Windows.
 class NonClientFrameController : public views::WidgetDelegateView,
-                                 public ui::WindowObserver,
+                                 public aura::WindowObserver,
                                  public DetachedTitleAreaRendererHost {
  public:
-  // NonClientFrameController deletes itself when |window| is destroyed.
-  static void Create(ui::Window* parent,
-                     ui::Window* window,
-                     ui::WindowManagerClient* window_manager_client);
+  // Creates a new NonClientFrameController and window to render the non-client
+  // frame decorations. This deletes itself when |window| is destroyed. |parent|
+  // is the parent to place the newly created window in, and may be null. If
+  // |parent| is null |context| is used to determine the parent Window. One of
+  // |parent| or |context| must be non-null.
+  NonClientFrameController(
+      aura::Window* parent,
+      aura::Window* context,
+      const gfx::Rect& bounds,
+      ui::mojom::WindowType window_type,
+      std::map<std::string, std::vector<uint8_t>>* properties,
+      WindowManager* window_manager);
+
+  // Returns the NonClientFrameController for the specified window, null if
+  // one was not created.
+  static NonClientFrameController* Get(aura::Window* window);
 
   // Returns the preferred client area insets.
   static gfx::Insets GetPreferredClientAreaInsets();
@@ -42,12 +68,16 @@ class NonClientFrameController : public views::WidgetDelegateView,
   // title bar.
   static int GetMaxTitleBarButtonWidth();
 
-  ui::Window* window() { return window_; }
+  aura::Window* window() { return window_; }
+
+  aura::WindowManagerClient* window_manager_client() {
+    return window_manager_client_;
+  }
+
+  void SetClientArea(const gfx::Insets& insets,
+                     const std::vector<gfx::Rect>& additional_client_areas);
 
  private:
-  NonClientFrameController(ui::Window* parent,
-                           ui::Window* window,
-                           ui::WindowManagerClient* window_manager_client);
   ~NonClientFrameController() override;
 
   // DetachedTitleAreaRendererHost:
@@ -62,27 +92,29 @@ class NonClientFrameController : public views::WidgetDelegateView,
   bool ShouldShowWindowTitle() const override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
 
-  // ui::WindowObserver:
-  void OnTreeChanged(const TreeChangeParams& params) override;
-  void OnWindowSharedPropertyChanged(
-      ui::Window* window,
-      const std::string& name,
-      const std::vector<uint8_t>* old_data,
-      const std::vector<uint8_t>* new_data) override;
-  void OnWindowLocalPropertyChanged(ui::Window* window,
-                                    const void* key,
-                                    intptr_t old) override;
-  void OnWindowDestroyed(ui::Window* window) override;
+  // aura::WindowObserver:
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+  void OnWindowDestroyed(aura::Window* window) override;
+
+  aura::WindowManagerClient* window_manager_client_;
 
   views::Widget* widget_;
 
   // WARNING: as widget delays destruction there is a portion of time when this
   // is null.
-  ui::Window* window_;
+  aura::Window* window_;
 
   // Used if a child window is added that has the
   // kRendererParentTitleArea_Property set.
   DetachedTitleAreaRenderer* detached_title_area_renderer_ = nullptr;
+
+  bool did_init_native_widget_ = false;
+
+  gfx::Insets client_area_insets_;
+  std::vector<gfx::Rect> additional_client_areas_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameController);
 };

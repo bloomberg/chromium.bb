@@ -14,12 +14,11 @@
 
 namespace aura {
 class Window;
+class WindowManagerClient;
 }
 
 namespace ui {
 class CancelModeEvent;
-class Window;
-class WindowManagerClient;
 }
 
 namespace ash {
@@ -35,9 +34,8 @@ class WorkspaceEventHandlerMus;
 // events in addition to drag.
 class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
  public:
-  MoveEventHandler(ui::Window* mus_window,
-                   ui::WindowManagerClient* window_manager_client,
-                   aura::Window* aura_window);
+  MoveEventHandler(aura::WindowManagerClient* window_manager_client,
+                   aura::Window* window);
   ~MoveEventHandler() override;
 
   // Retrieves the MoveEventHandler for an existing WmWindow.
@@ -60,7 +58,7 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   void RevertDrag();
 
  private:
-  // Removes observer and EventHandler installed on |root_window_|.
+  // Removes observer and EventHandler.
   void Detach();
 
   // Returns the WorkspaceEventHandlerMus, or null if the window is not in a
@@ -76,10 +74,7 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   void OnWindowDestroying(aura::Window* window) override;
 
   WmWindowMus* wm_window_;
-  ui::WindowManagerClient* window_manager_client_;
-  // The root window of the aura::Window supplied to the constructor.
-  // MoveEventHandler is added as a pre-target handler (and observer) of this.
-  aura::Window* root_window_;
+  aura::WindowManagerClient* window_manager_client_;
   wm::WmToplevelWindowEventHandler toplevel_window_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(MoveEventHandler);

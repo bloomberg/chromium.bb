@@ -13,7 +13,11 @@
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
 #include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/cpp/window_tree_client.h"
+#include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/window.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/display/display.h"
 
 namespace ash {
 namespace mus {
@@ -67,14 +71,14 @@ void WmTestBase::UpdateDisplay(const std::string& display_spec) {
   test_helper_->UpdateDisplay(display_spec);
 }
 
-ui::Window* WmTestBase::GetPrimaryRootWindow() {
+aura::Window* WmTestBase::GetPrimaryRootWindow() {
   std::vector<RootWindowController*> roots =
       test_helper_->GetRootsOrderedByDisplayId();
   DCHECK(!roots.empty());
   return roots[0]->root();
 }
 
-ui::Window* WmTestBase::GetSecondaryRootWindow() {
+aura::Window* WmTestBase::GetSecondaryRootWindow() {
   std::vector<RootWindowController*> roots =
       test_helper_->GetRootsOrderedByDisplayId();
   return roots.size() < 2 ? nullptr : roots[1]->root();
@@ -93,71 +97,71 @@ display::Display WmTestBase::GetSecondaryDisplay() {
   return roots.size() < 2 ? display::Display() : roots[1]->display();
 }
 
-ui::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds) {
+aura::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds) {
   return CreateTestWindow(bounds, ui::wm::WINDOW_TYPE_NORMAL);
 }
 
-ui::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds,
-                                         ui::wm::WindowType window_type) {
+aura::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds,
+                                           ui::wm::WindowType window_type) {
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[ui::mojom::WindowManager::kWindowType_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(MusWindowTypeFromWmWindowType(window_type)));
   if (!bounds.IsEmpty()) {
     properties[ui::mojom::WindowManager::kInitialBounds_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(bounds);
   }
+
   properties[ui::mojom::WindowManager::kResizeBehavior_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          ui::mojom::kResizeBehaviorCanResize |
-          ui::mojom::kResizeBehaviorCanMaximize |
-          ui::mojom::kResizeBehaviorCanMinimize);
+          static_cast<aura::PropertyConverter::PrimitiveType>(
+              ui::mojom::kResizeBehaviorCanResize |
+              ui::mojom::kResizeBehaviorCanMaximize |
+              ui::mojom::kResizeBehaviorCanMinimize));
 
-  ui::Window* window = test_helper_->GetRootsOrderedByDisplayId()[0]
-                           ->window_manager()
-                           ->NewTopLevelWindow(&properties);
-  window->SetVisible(true);
-  // Most tests expect a minimum size of 0x0.
-  WmWindowMusTestApi(WmWindowMus::Get(window)).set_use_empty_minimum_size(true);
+  const ui::mojom::WindowType mus_window_type =
+      MusWindowTypeFromWmWindowType(window_type);
+  aura::Window* window = test_helper_->GetRootsOrderedByDisplayId()[0]
+                             ->window_manager()
+                             ->NewTopLevelWindow(mus_window_type, &properties);
+  window->Show();
   return window;
 }
 
-ui::Window* WmTestBase::CreateFullscreenTestWindow(int64_t display_id) {
+aura::Window* WmTestBase::CreateFullscreenTestWindow(int64_t display_id) {
   std::map<std::string, std::vector<uint8_t>> properties;
   properties[ui::mojom::WindowManager::kShowState_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(ui::mojom::ShowState::FULLSCREEN));
-
+          static_cast<aura::PropertyConverter::PrimitiveType>(
+              ui::mojom::ShowState::FULLSCREEN));
   if (display_id != display::kInvalidDisplayId) {
     properties[ui::mojom::WindowManager::kInitialDisplayId_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(display_id);
   }
-
-  ui::Window* window = test_helper_->GetRootsOrderedByDisplayId()[0]
-                           ->window_manager()
-                           ->NewTopLevelWindow(&properties);
-  window->SetVisible(true);
+  aura::Window* window =
+      test_helper_->GetRootsOrderedByDisplayId()[0]
+          ->window_manager()
+          ->NewTopLevelWindow(ui::mojom::WindowType::WINDOW, &properties);
+  window->Show();
   return window;
 }
 
-ui::Window* WmTestBase::CreateChildTestWindow(ui::Window* parent,
-                                              const gfx::Rect& bounds) {
+aura::Window* WmTestBase::CreateChildTestWindow(aura::Window* parent,
+                                                const gfx::Rect& bounds) {
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[ui::mojom::WindowManager::kWindowType_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(
-          MusWindowTypeFromWmWindowType(ui::wm::WINDOW_TYPE_NORMAL)));
-  ui::Window* window = test_helper_->GetRootsOrderedByDisplayId()[0]
-                           ->root()
-                           ->window_tree()
-                           ->NewWindow(&properties);
+  aura::Window* window = new aura::Window(nullptr);
+  window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(bounds);
-  window->SetVisible(true);
+  window->Show();
   parent->AddChild(window);
   return window;
 }
 
 void WmTestBase::SetUp() {
   setup_called_ = true;
+  // Disable animations during tests.
+  zero_duration_mode_ = base::MakeUnique<ui::ScopedAnimationDurationScaleMode>(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  // Most tests expect a minimum size of 0x0.
+  minimum_size_lock_ =
+      base::MakeUnique<WmWindowMusTestApi::GlobalMinimumSizeLock>();
   test_helper_.reset(new WmTestHelper);
   test_helper_->Init();
 }
@@ -165,6 +169,8 @@ void WmTestBase::SetUp() {
 void WmTestBase::TearDown() {
   teardown_called_ = true;
   test_helper_.reset();
+  minimum_size_lock_.reset();
+  zero_duration_mode_.reset();
 }
 
 }  // namespace mus

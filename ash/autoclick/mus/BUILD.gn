@@ -26,6 +26,7 @@ source_set("lib") {
     "//services/service_manager/public/cpp:sources",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
+    "//ui/aura",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]

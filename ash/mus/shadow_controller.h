@@ -6,34 +6,45 @@
 #define ASH_MUS_SHADOW_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "services/ui/public/cpp/window_observer.h"
-#include "services/ui/public/cpp/window_tree_client_observer.h"
+#include "ui/aura/client/focus_change_observer.h"
+#include "ui/aura/env_observer.h"
+#include "ui/aura/window_observer.h"
 
-namespace ui {
-class WindowTreeClient;
+namespace aura {
+namespace client {
+class FocusClient;
+}
 }
 
 namespace ash {
 namespace mus {
 
-class ShadowController : public ui::WindowTreeClientObserver,
-                         public ui::WindowObserver {
+// TODO: use the wm::ShadowController. http://crbug.com/670840.
+class ShadowController : public aura::EnvObserver,
+                         public aura::WindowObserver,
+                         public aura::client::FocusChangeObserver {
  public:
-  explicit ShadowController(ui::WindowTreeClient* window_tree);
+  ShadowController();
   ~ShadowController() override;
 
  private:
-  void SetActiveWindow(ui::Window* window);
+  void SetActiveWindow(aura::Window* window);
+  void SetFocusClient(aura::client::FocusClient* focus_client);
 
-  // ui::WindowTreeClientObserver:
-  void OnWindowTreeFocusChanged(ui::Window* gained_focus,
-                                ui::Window* lost_focus) override;
+  // aura::EnvObserver:
+  void OnWindowInitialized(aura::Window* window) override;
+  void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,
+                                  aura::Window* window) override;
+
+  // aura::client::FocusChangeObserver:
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override;
 
   // ui::WindowObserver:
-  void OnWindowDestroying(ui::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
-  ui::WindowTreeClient* window_tree_;
-  ui::Window* active_window_;
+  aura::Window* active_window_ = nullptr;
+  aura::client::FocusClient* active_focus_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowController);
 };

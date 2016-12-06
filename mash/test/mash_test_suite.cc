@@ -29,7 +29,7 @@ void MashTestSuite::Initialize() {
   ui::ResourceBundle::InitSharedInstanceWithPakPath(resources);
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
-  env_ = aura::Env::CreateInstance();
+  env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
   gl::GLSurfaceTestSupport::InitializeOneOff();
   const bool enable_pixel_output = false;
   env_->set_context_factory(

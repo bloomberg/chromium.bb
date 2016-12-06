@@ -5,6 +5,8 @@
 #ifndef ASH_WM_WINDOW_PROPERTIES_H_
 #define ASH_WM_WINDOW_PROPERTIES_H_
 
+#include <stdint.h>
+
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ui/base/ui_base_types.h"
@@ -45,7 +47,7 @@ ASH_EXPORT extern const aura::WindowProperty<ui::WindowShowState>* const
 ASH_EXPORT extern const aura::WindowProperty<ShelfID>* const kShelfIDKey;
 
 // A property key to store the type of a window's shelf item.
-ASH_EXPORT extern const aura::WindowProperty<int>* const kShelfItemTypeKey;
+ASH_EXPORT extern const aura::WindowProperty<int32_t>* const kShelfItemTypeKey;
 
 // Containers with this property (true) are aligned with physical pixel
 // boundary.

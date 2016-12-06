@@ -43,6 +43,7 @@ TEST_F(MruWindowTrackerTest, Basic) {
   w1->Activate();
 
   WmWindow::Windows window_list = mru_window_tracker()->BuildMruWindowList();
+  ASSERT_EQ(3u, window_list.size());
   EXPECT_EQ(w1, window_list[0]);
   EXPECT_EQ(w2, window_list[1]);
   EXPECT_EQ(w3, window_list[2]);

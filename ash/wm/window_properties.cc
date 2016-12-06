@@ -21,7 +21,7 @@ DEFINE_WINDOW_PROPERTY_KEY(ui::WindowShowState,
 
 DEFINE_WINDOW_PROPERTY_KEY(ShelfID, kShelfIDKey, kInvalidShelfID);
 
-DEFINE_WINDOW_PROPERTY_KEY(int, kShelfItemTypeKey, TYPE_UNDEFINED);
+DEFINE_WINDOW_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED);
 
 DEFINE_WINDOW_PROPERTY_KEY(bool, kSnapChildrenToPixelBoundary, false);
 

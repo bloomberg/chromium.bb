@@ -6,13 +6,12 @@
 #define ASH_WM_EVENT_CLIENT_IMPL_H_
 
 #include "ash/ash_export.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/client/event_client.h"
 
 namespace ash {
 
-class EventClientImpl : public aura::client::EventClient {
+class ASH_EXPORT EventClientImpl : public aura::client::EventClient {
  public:
   EventClientImpl();
   ~EventClientImpl() override;

@@ -11,6 +11,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
@@ -55,6 +56,7 @@ const WmRootWindowControllerAura* WmRootWindowControllerAura::Get(
   if (wm_root_window_controller)
     return wm_root_window_controller;
 
+  DCHECK_EQ(aura::Env::Mode::LOCAL, aura::Env::GetInstance()->mode());
   // WmRootWindowControllerAura is owned by the RootWindowController's window.
   return new WmRootWindowControllerAura(root_window_controller);
 }

@@ -7,12 +7,14 @@
 
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/client/screen_position_client.h"
 
 namespace ash {
 
-class ScreenPositionController : public aura::client::ScreenPositionClient {
+class ASH_EXPORT ScreenPositionController
+    : public aura::client::ScreenPositionClient {
  public:
   // Finds the root window at |location| in |window|'s coordinates
   // from given |root_windows| and returns the found root window and

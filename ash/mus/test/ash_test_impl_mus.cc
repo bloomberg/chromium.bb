@@ -11,6 +11,7 @@
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace mus {
@@ -88,15 +89,17 @@ bool AshTestImplMus::SetSecondaryDisplayPlacement(
 void AshTestImplMus::ConfigureWidgetInitParamsForDisplay(
     WmWindow* window,
     views::Widget::InitParams* init_params) {
+  init_params->context = WmWindowMus::GetAuraWindow(window);
   init_params
       ->mus_properties[ui::mojom::WindowManager::kInitialDisplayId_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          WmWindowMus::GetMusWindow(window)->display_id());
+          window->GetDisplayNearestWindow().id());
 }
 
 void AshTestImplMus::AddTransientChild(WmWindow* parent, WmWindow* window) {
-  WmWindowMus::GetMusWindow(parent)->AddTransientWindow(
-      WmWindowMus::GetMusWindow(window));
+  // TODO(sky): remove this as both classes can share same implementation now.
+  ::wm::AddTransientChild(WmWindowAura::GetAuraWindow(parent),
+                          WmWindowAura::GetAuraWindow(window));
 }
 
 }  // namespace mus

@@ -24,6 +24,7 @@ service("window_type_launcher") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/tracing/public/cpp",
+    "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//skia",
     "//ui/aura",

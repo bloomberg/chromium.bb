@@ -27,6 +27,9 @@
 #include "ash/mus/test/wm_test_base.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/test/user_action_tester.cc"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/test/event_generator.h"
@@ -429,8 +432,8 @@ TEST_F(AcceleratorControllerTest, IsRegistered) {
 }
 
 TEST_F(AcceleratorControllerTest, WindowSnap) {
-  ui::Window* ui_window = CreateTestWindow(gfx::Rect(5, 5, 20, 20));
-  WmWindow* window = mus::WmWindowMus::Get(ui_window);
+  aura::Window* aura_window = CreateTestWindow(gfx::Rect(5, 5, 20, 20));
+  WmWindow* window = mus::WmWindowMus::Get(aura_window);
   wm::WindowState* window_state = window->GetWindowState();
 
   window_state->Activate();
@@ -737,15 +740,14 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(5, 5, 20, 20);
-  mus::SetResizeBehavior(
-      &params.mus_properties,
-      static_cast<uint32_t>(ui::mojom::kResizeBehaviorCanMaximize));
   views::Widget* widget = new views::Widget;
   mus::WmWindowMus::Get(GetPrimaryRootWindow())
       ->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
           widget, kShellWindowId_DefaultContainer, &params);
   widget->Init(params);
+  widget->GetNativeView()->SetProperty(aura::client::kResizeBehaviorKey,
+                                       ui::mojom::kResizeBehaviorCanMaximize);
   widget->Show();
   widget->Activate();
 
@@ -1275,23 +1277,23 @@ TEST_F(AcceleratorControllerTest, DISABLED_DisallowedWithNoWindow) {
 
   // Make sure we don't alert if we do have a window.
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
-    ui::Window* ui_window = CreateTestWindow(gfx::Rect(5, 5, 20, 20));
-    mus::WmWindowMus::Get(ui_window)->Activate();
+    aura::Window* aura_window = CreateTestWindow(gfx::Rect(5, 5, 20, 20));
+    mus::WmWindowMus::Get(aura_window)->Activate();
     delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
     GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]);
     EXPECT_NE(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
-    ui_window->Destroy();
+    delete aura_window;
   }
 
   // Don't alert if we have a minimized window either.
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
-    ui::Window* ui_window = CreateTestWindow(gfx::Rect(5, 5, 20, 20));
-    mus::WmWindowMus::Get(ui_window)->Activate();
+    aura::Window* aura_window = CreateTestWindow(gfx::Rect(5, 5, 20, 20));
+    mus::WmWindowMus::Get(aura_window)->Activate();
     GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE);
     delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
     GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]);
     EXPECT_NE(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
-    ui_window->Destroy();
+    delete aura_window;
   }
 }
 
