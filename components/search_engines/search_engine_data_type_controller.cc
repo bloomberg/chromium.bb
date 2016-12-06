@@ -12,11 +12,11 @@ SearchEngineDataTypeController::SearchEngineDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     TemplateURLService* template_url_service)
-    : NonUIDataTypeController(syncer::SEARCH_ENGINES,
-                              dump_stack,
-                              sync_client,
-                              syncer::GROUP_UI,
-                              base::ThreadTaskRunnerHandle::Get()),
+    : AsyncDirectoryTypeController(syncer::SEARCH_ENGINES,
+                                   dump_stack,
+                                   sync_client,
+                                   syncer::GROUP_UI,
+                                   base::ThreadTaskRunnerHandle::Get()),
       template_url_service_(template_url_service) {}
 
 TemplateURLService::Subscription*

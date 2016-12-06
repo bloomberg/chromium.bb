@@ -11,13 +11,13 @@
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of typed_url sync.
-class TypedUrlDataTypeController : public syncer::NonUIDataTypeController {
+class TypedUrlDataTypeController : public syncer::AsyncDirectoryTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   TypedUrlDataTypeController(const base::Closure& dump_stack,
@@ -25,11 +25,11 @@ class TypedUrlDataTypeController : public syncer::NonUIDataTypeController {
                              const char* history_disabled_pref_name);
   ~TypedUrlDataTypeController() override;
 
-  // NonUIDataTypeController implementation.
+  // AsyncDirectoryTypeController implementation.
   bool ReadyForStart() const override;
 
  protected:
-  // NonUIDataTypeController implementation.
+  // AsyncDirectoryTypeController implementation.
   bool PostTaskOnModelThread(const tracked_objects::Location& from_here,
                              const base::Closure& task) override;
 

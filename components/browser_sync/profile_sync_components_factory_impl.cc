@@ -29,10 +29,10 @@
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/device_info/device_info_data_type_controller.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/data_type_manager_impl.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
 #include "components/sync/driver/model_type_controller.h"
-#include "components/sync/driver/non_ui_data_type_controller.h"
 #include "components/sync/driver/proxy_data_type_controller.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -59,7 +59,7 @@ using syncer::DataTypeManagerObserver;
 using syncer::DeviceInfoDataTypeController;
 using syncer::ProxyDataTypeController;
 using syncer::ModelTypeController;
-using syncer::NonUIDataTypeController;
+using syncer::AsyncDirectoryTypeController;
 using sync_sessions::SessionDataTypeController;
 
 namespace browser_sync {
@@ -240,11 +240,11 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
       !disabled_types.Has(syncer::FAVICON_TRACKING) && !history_disabled) {
     // crbug/384552. We disable error uploading for this data types for now.
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<NonUIDataTypeController>(
+        base::MakeUnique<AsyncDirectoryTypeController>(
             syncer::FAVICON_IMAGES, base::Closure(), sync_client_,
             syncer::GROUP_UI, ui_thread_));
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<NonUIDataTypeController>(
+        base::MakeUnique<AsyncDirectoryTypeController>(
             syncer::FAVICON_TRACKING, base::Closure(), sync_client_,
             syncer::GROUP_UI, ui_thread_));
   }
@@ -261,7 +261,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::PREFERENCES)) {
     if (!override_prefs_controller_to_uss_for_test_) {
       sync_service->RegisterDataTypeController(
-          base::MakeUnique<NonUIDataTypeController>(
+          base::MakeUnique<AsyncDirectoryTypeController>(
               syncer::PREFERENCES, error_callback, sync_client_,
               syncer::GROUP_UI, ui_thread_));
     } else {
@@ -273,7 +273,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<NonUIDataTypeController>(
+        base::MakeUnique<AsyncDirectoryTypeController>(
             syncer::PRIORITY_PREFERENCES, error_callback, sync_client_,
             syncer::GROUP_UI, ui_thread_));
   }
@@ -281,7 +281,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // Article sync is disabled by default.  Register only if explicitly enabled.
   if (dom_distiller::IsEnableSyncArticlesSet()) {
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<NonUIDataTypeController>(
+        base::MakeUnique<AsyncDirectoryTypeController>(
             syncer::ARTICLES, error_callback, sync_client_, syncer::GROUP_UI,
             ui_thread_));
   }

@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 
 class Profile;
 
@@ -20,7 +20,7 @@ class SyncClient;
 namespace browser_sync {
 
 class ExtensionSettingDataTypeController
-    : public syncer::NonUIDataTypeController {
+    : public syncer::AsyncDirectoryTypeController {
  public:
   // |type| is either EXTENSION_SETTINGS or APP_SETTINGS.
   // |dump_stack| is called when an unrecoverable error occurs.
@@ -31,7 +31,7 @@ class ExtensionSettingDataTypeController
   ~ExtensionSettingDataTypeController() override;
 
  private:
-  // NonUIDataTypeController implementation.
+  // AsyncDirectoryTypeController implementation.
   bool StartModels() override;
 
   // Only used on the UI thread.

@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 
 namespace autofill {
 class AutofillWebDataService;
@@ -20,7 +20,7 @@ namespace browser_sync {
 
 // Controls syncing of the AUTOFILL_PROFILE data type.
 class AutofillProfileDataTypeController
-    : public syncer::NonUIDataTypeController,
+    : public syncer::AsyncDirectoryTypeController,
       public autofill::PersonalDataManagerObserver {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
@@ -35,7 +35,7 @@ class AutofillProfileDataTypeController
   void OnPersonalDataChanged() override;
 
  protected:
-  // NonUIDataTypeController:
+  // AsyncDirectoryTypeController:
   bool StartModels() override;
   void StopModels() override;
 

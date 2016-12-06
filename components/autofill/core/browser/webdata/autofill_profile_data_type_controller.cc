@@ -23,11 +23,11 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
-    : NonUIDataTypeController(syncer::AUTOFILL_PROFILE,
-                              dump_stack,
-                              sync_client,
-                              syncer::GROUP_DB,
-                              std::move(db_thread)),
+    : AsyncDirectoryTypeController(syncer::AUTOFILL_PROFILE,
+                                   dump_stack,
+                                   sync_client,
+                                   syncer::GROUP_DB,
+                                   std::move(db_thread)),
       sync_client_(sync_client),
       web_data_service_(web_data_service),
       callback_registered_(false) {}

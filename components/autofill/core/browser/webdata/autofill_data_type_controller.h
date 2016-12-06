@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 
 namespace autofill {
 class AutofillWebDataService;
@@ -20,7 +20,7 @@ class AutofillWebDataService;
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of autofill sync.
-class AutofillDataTypeController : public syncer::NonUIDataTypeController {
+class AutofillDataTypeController : public syncer::AsyncDirectoryTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   AutofillDataTypeController(
@@ -31,7 +31,7 @@ class AutofillDataTypeController : public syncer::NonUIDataTypeController {
   ~AutofillDataTypeController() override;
 
  protected:
-  // NonUIDataTypeController implementation.
+  // AsyncDirectoryTypeController implementation.
   bool StartModels() override;
 
  private:

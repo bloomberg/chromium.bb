@@ -51,11 +51,11 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     const char* history_disabled_pref_name)
-    : NonUIDataTypeController(syncer::TYPED_URLS,
-                              dump_stack,
-                              sync_client,
-                              syncer::GROUP_HISTORY,
-                              nullptr),
+    : AsyncDirectoryTypeController(syncer::TYPED_URLS,
+                                   dump_stack,
+                                   sync_client,
+                                   syncer::GROUP_HISTORY,
+                                   nullptr),
       history_disabled_pref_name_(history_disabled_pref_name),
       sync_client_(sync_client) {
   pref_registrar_.Init(sync_client->GetPrefService());

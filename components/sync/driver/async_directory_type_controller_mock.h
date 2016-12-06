@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_MOCK_H_
-#define COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_MOCK_H_
+#ifndef COMPONENTS_SYNC_DRIVER_ASYNC_DIRECTORY_TYPE_CONTROLLER_MOCK_H_
+#define COMPONENTS_SYNC_DRIVER_ASYNC_DIRECTORY_TYPE_CONTROLLER_MOCK_H_
 
 #include <string>
 
-#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/model/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {
 
-class NonUIDataTypeControllerMock : public NonUIDataTypeController {
+class AsyncDirectoryTypeControllerMock : public AsyncDirectoryTypeController {
  public:
-  NonUIDataTypeControllerMock();
-  virtual ~NonUIDataTypeControllerMock();
+  AsyncDirectoryTypeControllerMock();
+  virtual ~AsyncDirectoryTypeControllerMock();
 
   // DataTypeController mocks.
   MOCK_METHOD1(StartAssociating, void(const StartCallback& start_callback));
@@ -26,7 +26,7 @@ class NonUIDataTypeControllerMock : public NonUIDataTypeController {
   MOCK_CONST_METHOD0(name, std::string());
   MOCK_CONST_METHOD0(state, State());
 
-  // NonUIDataTypeController mocks.
+  // AsyncDirectoryTypeController mocks.
   MOCK_METHOD0(StartModels, bool());
   MOCK_METHOD0(StopModels, void());
   MOCK_METHOD2(PostTaskOnModelThread,
@@ -40,4 +40,4 @@ class NonUIDataTypeControllerMock : public NonUIDataTypeController {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_MOCK_H_
+#endif  // COMPONENTS_SYNC_DRIVER_ASYNC_DIRECTORY_TYPE_CONTROLLER_MOCK_H_

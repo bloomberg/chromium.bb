@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 
 namespace autofill {
 class AutofillWebDataService;
@@ -17,7 +17,7 @@ namespace browser_sync {
 
 // Controls syncing of either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
 class AutofillWalletDataTypeController
-    : public syncer::NonUIDataTypeController {
+    : public syncer::AsyncDirectoryTypeController {
  public:
   // |type| should be either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
   // |dump_stack| is called when an unrecoverable error occurs.
@@ -30,7 +30,7 @@ class AutofillWalletDataTypeController
   ~AutofillWalletDataTypeController() override;
 
  private:
-  // NonUIDataTypeController implementation.
+  // AsyncDirectoryTypeController implementation.
   bool StartModels() override;
   void StopModels() override;
   bool ReadyForStart() const override;

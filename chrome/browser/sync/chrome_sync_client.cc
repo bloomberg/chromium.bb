@@ -57,7 +57,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/browser_thread_model_worker.h"
@@ -117,7 +117,7 @@ using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
 #endif
 using browser_sync::SearchEngineDataTypeController;
-using syncer::NonUIDataTypeController;
+using syncer::AsyncDirectoryTypeController;
 
 namespace browser_sync {
 
@@ -582,7 +582,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
 #if BUILDFLAG(ENABLE_APP_LIST)
   if (app_list::switches::IsAppListSyncEnabled()) {
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<NonUIDataTypeController>(
+        base::MakeUnique<AsyncDirectoryTypeController>(
             syncer::APP_LIST, error_callback, this, syncer::GROUP_UI,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
   }
@@ -592,7 +592,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
   // Dictionary sync is enabled by default.
   if (!disabled_types.Has(syncer::DICTIONARY)) {
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<NonUIDataTypeController>(
+        base::MakeUnique<AsyncDirectoryTypeController>(
             syncer::DICTIONARY, error_callback, this, syncer::GROUP_UI,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
   }
@@ -619,7 +619,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
           switches::kEnableWifiCredentialSync) &&
       !disabled_types.Has(syncer::WIFI_CREDENTIALS)) {
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<NonUIDataTypeController>(
+        base::MakeUnique<AsyncDirectoryTypeController>(
             syncer::WIFI_CREDENTIALS, error_callback, this, syncer::GROUP_UI,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
   }

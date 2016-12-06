@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 
 #include <utility>
 #include <vector>
@@ -19,10 +19,10 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
+#include "components/sync/driver/async_directory_type_controller_mock.h"
 #include "components/sync/driver/data_type_controller_mock.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/generic_change_processor_factory.h"
-#include "components/sync/driver/non_ui_data_type_controller_mock.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/model/fake_syncable_service.h"
 #include "components/sync/model/sync_change.h"
@@ -98,23 +98,23 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   DISALLOW_COPY_AND_ASSIGN(SharedChangeProcessorMock);
 };
 
-class NonUIDataTypeControllerFake : public NonUIDataTypeController {
+class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
  public:
-  NonUIDataTypeControllerFake(
+  AsyncDirectoryTypeControllerFake(
       SyncClient* sync_client,
-      NonUIDataTypeControllerMock* mock,
+      AsyncDirectoryTypeControllerMock* mock,
       SharedChangeProcessor* change_processor,
       scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner)
-      : NonUIDataTypeController(kType,
-                                base::Closure(),
-                                sync_client,
-                                GROUP_DB,
-                                nullptr),
+      : AsyncDirectoryTypeController(kType,
+                                     base::Closure(),
+                                     sync_client,
+                                     GROUP_DB,
+                                     nullptr),
         blocked_(false),
         mock_(mock),
         change_processor_(change_processor),
         backend_task_runner_(backend_task_runner) {}
-  ~NonUIDataTypeControllerFake() override {}
+  ~AsyncDirectoryTypeControllerFake() override {}
 
   // Prevent tasks from being posted on the backend thread until
   // UnblockBackendTasks() is called.
@@ -136,7 +136,7 @@ class NonUIDataTypeControllerFake : public NonUIDataTypeController {
   }
 
   std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() override {
-    return NonUIDataTypeController::CreateErrorHandler();
+    return AsyncDirectoryTypeController::CreateErrorHandler();
   }
 
  protected:
@@ -170,24 +170,25 @@ class NonUIDataTypeControllerFake : public NonUIDataTypeController {
 
   bool blocked_;
   std::vector<PendingTask> pending_tasks_;
-  NonUIDataTypeControllerMock* mock_;
+  AsyncDirectoryTypeControllerMock* mock_;
   scoped_refptr<SharedChangeProcessor> change_processor_;
   scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(NonUIDataTypeControllerFake);
+  DISALLOW_COPY_AND_ASSIGN(AsyncDirectoryTypeControllerFake);
 };
 
-class SyncNonUIDataTypeControllerTest : public testing::Test,
-                                        public FakeSyncClient {
+class SyncAsyncDirectoryTypeControllerTest : public testing::Test,
+                                             public FakeSyncClient {
  public:
-  SyncNonUIDataTypeControllerTest() : backend_thread_("dbthread") {}
+  SyncAsyncDirectoryTypeControllerTest() : backend_thread_("dbthread") {}
 
   void SetUp() override {
     backend_thread_.Start();
     change_processor_ = new SharedChangeProcessorMock(kType);
     // All of these are refcounted, so don't need to be released.
-    dtc_mock_ = base::MakeUnique<StrictMock<NonUIDataTypeControllerMock>>();
-    non_ui_dtc_ = base::MakeUnique<NonUIDataTypeControllerFake>(
+    dtc_mock_ =
+        base::MakeUnique<StrictMock<AsyncDirectoryTypeControllerMock>>();
+    non_ui_dtc_ = base::MakeUnique<AsyncDirectoryTypeControllerFake>(
         this, dtc_mock_.get(), change_processor_.get(),
         backend_thread_.task_runner());
   }
@@ -199,7 +200,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test,
                        base::WaitableEvent::InitialState::NOT_SIGNALED);
     backend_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&SyncNonUIDataTypeControllerTest::SignalDone, &done));
+        base::Bind(&SyncAsyncDirectoryTypeControllerTest::SignalDone, &done));
     done.TimedWait(TestTimeouts::action_timeout());
     if (!done.IsSignaled()) {
       ADD_FAILURE() << "Timed out waiting for DB thread to finish.";
@@ -262,13 +263,13 @@ class SyncNonUIDataTypeControllerTest : public testing::Test,
   ModelLoadCallbackMock model_load_callback_;
   // Must be destroyed after non_ui_dtc_.
   FakeSyncableService syncable_service_;
-  std::unique_ptr<NonUIDataTypeControllerFake> non_ui_dtc_;
-  std::unique_ptr<NonUIDataTypeControllerMock> dtc_mock_;
+  std::unique_ptr<AsyncDirectoryTypeControllerFake> non_ui_dtc_;
+  std::unique_ptr<AsyncDirectoryTypeControllerMock> dtc_mock_;
   scoped_refptr<SharedChangeProcessorMock> change_processor_;
   std::unique_ptr<SyncChangeProcessor> saved_change_processor_;
 };
 
-TEST_F(SyncNonUIDataTypeControllerTest, StartOk) {
+TEST_F(SyncAsyncDirectoryTypeControllerTest, StartOk) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
@@ -278,7 +279,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartOk) {
   EXPECT_EQ(DataTypeController::RUNNING, non_ui_dtc_->state());
 }
 
-TEST_F(SyncNonUIDataTypeControllerTest, StartFirstRun) {
+TEST_F(SyncAsyncDirectoryTypeControllerTest, StartFirstRun) {
   SetStartExpectations();
   change_processor_->SetConnectReturn(syncable_service_.AsWeakPtr());
   EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
@@ -297,7 +298,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartFirstRun) {
 
 // Start the DTC and have StartModels() return false.  Then, stop the
 // DTC without finishing model startup.  It should stop cleanly.
-TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringStartModels) {
+TEST_F(SyncAsyncDirectoryTypeControllerTest, AbortDuringStartModels) {
   EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(false));
   EXPECT_CALL(*dtc_mock_.get(), StopModels());
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
@@ -312,7 +313,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringStartModels) {
 // Start the DTC and have MergeDataAndStartSyncing() return an error.
 // The DTC should become disabled, and the DTC should still stop
 // cleanly.
-TEST_F(SyncNonUIDataTypeControllerTest, StartAssociationFailed) {
+TEST_F(SyncAsyncDirectoryTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   change_processor_->SetConnectReturn(syncable_service_.AsWeakPtr());
   EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
@@ -334,7 +335,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
 }
 
-TEST_F(SyncNonUIDataTypeControllerTest,
+TEST_F(SyncAsyncDirectoryTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::UNRECOVERABLE_ERROR);
@@ -350,7 +351,7 @@ TEST_F(SyncNonUIDataTypeControllerTest,
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
 }
 
-TEST_F(SyncNonUIDataTypeControllerTest, StartAssociationCryptoNotReady) {
+TEST_F(SyncAsyncDirectoryTypeControllerTest, StartAssociationCryptoNotReady) {
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::NEEDS_CRYPTO);
   // Set up association to fail with a NEEDS_CRYPTO error.
@@ -365,7 +366,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAssociationCryptoNotReady) {
 
 // Trigger a Stop() call when we check if the model associator has user created
 // nodes.
-TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringAssociation) {
+TEST_F(SyncAsyncDirectoryTypeControllerTest, AbortDuringAssociation) {
   WaitableEvent wait_for_db_thread_pause(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -397,7 +398,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringAssociation) {
 
 // Start the DTC while the backend tasks are blocked. Then stop the DTC before
 // the backend tasks get a chance to run.
-TEST_F(SyncNonUIDataTypeControllerTest, StartAfterSyncShutdown) {
+TEST_F(SyncAsyncDirectoryTypeControllerTest, StartAfterSyncShutdown) {
   non_ui_dtc_->BlockBackendTasks();
 
   SetStartExpectations();
@@ -415,7 +416,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAfterSyncShutdown) {
   WaitForDTC();
 }
 
-TEST_F(SyncNonUIDataTypeControllerTest, Stop) {
+TEST_F(SyncAsyncDirectoryTypeControllerTest, Stop) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
@@ -432,7 +433,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, Stop) {
 // tasks are blocked, stop and start it again, then unblock its
 // backend tasks.  The (delayed) running of the backend tasks from the
 // stop after the restart shouldn't cause any problems.
-TEST_F(SyncNonUIDataTypeControllerTest, StopStart) {
+TEST_F(SyncAsyncDirectoryTypeControllerTest, StopStart) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
@@ -455,7 +456,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, StopStart) {
   EXPECT_EQ(DataTypeController::RUNNING, non_ui_dtc_->state());
 }
 
-TEST_F(SyncNonUIDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncAsyncDirectoryTypeControllerTest, OnUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);

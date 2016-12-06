@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/sync_service_observer.h"
 
 namespace password_manager {
@@ -22,7 +22,7 @@ class SyncClient;
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of password sync.
-class PasswordDataTypeController : public syncer::NonUIDataTypeController,
+class PasswordDataTypeController : public syncer::AsyncDirectoryTypeController,
                                    public syncer::SyncServiceObserver {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
@@ -34,7 +34,7 @@ class PasswordDataTypeController : public syncer::NonUIDataTypeController,
   ~PasswordDataTypeController() override;
 
  protected:
-  // NonUIDataTypeController interface.
+  // AsyncDirectoryTypeController interface.
   bool PostTaskOnModelThread(const tracked_objects::Location& from_here,
                              const base::Closure& task) override;
   bool StartModels() override;

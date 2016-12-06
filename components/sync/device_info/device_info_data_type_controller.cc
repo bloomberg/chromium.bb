@@ -13,11 +13,11 @@ DeviceInfoDataTypeController::DeviceInfoDataTypeController(
     const base::Closure& dump_stack,
     SyncClient* sync_client,
     LocalDeviceInfoProvider* local_device_info_provider)
-    : NonUIDataTypeController(DEVICE_INFO,
-                              dump_stack,
-                              sync_client,
-                              GROUP_UI,
-                              base::ThreadTaskRunnerHandle::Get()),
+    : AsyncDirectoryTypeController(DEVICE_INFO,
+                                   dump_stack,
+                                   sync_client,
+                                   GROUP_UI,
+                                   base::ThreadTaskRunnerHandle::Get()),
       local_device_info_provider_(local_device_info_provider) {}
 
 DeviceInfoDataTypeController::~DeviceInfoDataTypeController() {}

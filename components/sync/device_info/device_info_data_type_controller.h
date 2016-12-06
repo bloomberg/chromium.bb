@@ -9,12 +9,12 @@
 
 #include "base/macros.h"
 #include "components/sync/device_info/local_device_info_provider.h"
-#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 
 namespace syncer {
 
 // DataTypeController for DEVICE_INFO model type.
-class DeviceInfoDataTypeController : public NonUIDataTypeController {
+class DeviceInfoDataTypeController : public AsyncDirectoryTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   DeviceInfoDataTypeController(
@@ -24,7 +24,7 @@ class DeviceInfoDataTypeController : public NonUIDataTypeController {
   ~DeviceInfoDataTypeController() override;
 
  private:
-  // NonUIDataTypeController implementation.
+  // AsyncDirectoryTypeController implementation.
   bool StartModels() override;
   void StopModels() override;
 

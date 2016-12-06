@@ -31,11 +31,11 @@ ArcPackageSyncDataTypeController::ArcPackageSyncDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     Profile* profile)
-    : syncer::NonUIDataTypeController(type,
-                                      dump_stack,
-                                      sync_client,
-                                      syncer::GROUP_UI,
-                                      base::ThreadTaskRunnerHandle::Get()),
+    : syncer::AsyncDirectoryTypeController(type,
+                                           dump_stack,
+                                           sync_client,
+                                           syncer::GROUP_UI,
+                                           base::ThreadTaskRunnerHandle::Get()),
       profile_(profile) {
   pref_registrar_.Init(profile_->GetPrefs());
   pref_registrar_.Add(

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
-#define COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_ASYNC_DIRECTORY_TYPE_CONTROLLER_H_
+#define COMPONENTS_SYNC_DRIVER_ASYNC_DIRECTORY_TYPE_CONTROLLER_H_
 
 #include <memory>
 #include <string>
@@ -20,20 +20,19 @@ namespace syncer {
 class SyncClient;
 struct UserShare;
 
-// Implementation for datatypes that reside on non-UI thread. All interaction
-// with datatype controller happens on UI thread. Calls to SyncableService are
-// posted to model thread through PostTaskOnModelThread().
-// Note: RefCountedThreadSafe by way of DataTypeController.
-class NonUIDataTypeController : public DirectoryDataTypeController {
+// Implementation for directory based datatypes that interact with their
+// syncable services by posting to model thread. All interaction with datatype
+// controller happens on UI thread.
+class AsyncDirectoryTypeController : public DirectoryDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
-  NonUIDataTypeController(
+  AsyncDirectoryTypeController(
       ModelType type,
       const base::Closure& dump_stack,
       SyncClient* sync_client,
       ModelSafeGroup model_safe_group,
       scoped_refptr<base::SequencedTaskRunner> model_thread);
-  ~NonUIDataTypeController() override;
+  ~AsyncDirectoryTypeController() override;
 
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
@@ -50,7 +49,7 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
 
  protected:
   // For testing only.
-  NonUIDataTypeController();
+  AsyncDirectoryTypeController();
 
   // Start any dependent services that need to be running before we can
   // associate models. The default implementation is a no-op.
@@ -151,4 +150,4 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_ASYNC_DIRECTORY_TYPE_CONTROLLER_H_

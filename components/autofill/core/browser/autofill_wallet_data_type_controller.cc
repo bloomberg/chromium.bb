@@ -24,11 +24,11 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
-    : NonUIDataTypeController(type,
-                              dump_stack,
-                              sync_client,
-                              syncer::GROUP_DB,
-                              std::move(db_thread)),
+    : AsyncDirectoryTypeController(type,
+                                   dump_stack,
+                                   sync_client,
+                                   syncer::GROUP_DB,
+                                   std::move(db_thread)),
       callback_registered_(false),
       web_data_service_(web_data_service),
       currently_enabled_(IsEnabled()) {

@@ -16,11 +16,11 @@ ExtensionDataTypeController::ExtensionDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     Profile* profile)
-    : NonUIDataTypeController(type,
-                              dump_stack,
-                              sync_client,
-                              syncer::GROUP_UI,
-                              base::ThreadTaskRunnerHandle::Get()),
+    : AsyncDirectoryTypeController(type,
+                                   dump_stack,
+                                   sync_client,
+                                   syncer::GROUP_UI,
+                                   base::ThreadTaskRunnerHandle::Get()),
       profile_(profile) {
   DCHECK(type == syncer::EXTENSIONS || type == syncer::APPS);
 }

@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/data_type_controller.h"
-#include "components/sync/driver/non_ui_data_type_controller.h"
 
 class Profile;
 
@@ -19,8 +19,9 @@ class SyncClient;
 
 // A DataTypeController for arc package sync datatypes, which enables or
 // disables these types based on whether ArcAppInstance is ready.
-class ArcPackageSyncDataTypeController : public syncer::NonUIDataTypeController,
-                                         public ArcAppListPrefs::Observer {
+class ArcPackageSyncDataTypeController
+    : public syncer::AsyncDirectoryTypeController,
+      public ArcAppListPrefs::Observer {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   ArcPackageSyncDataTypeController(syncer::ModelType type,
@@ -29,7 +30,7 @@ class ArcPackageSyncDataTypeController : public syncer::NonUIDataTypeController,
                                    Profile* profile);
   ~ArcPackageSyncDataTypeController() override;
 
-  // NonUIDataTypeController implementation.
+  // AsyncDirectoryTypeController implementation.
   bool ReadyForStart() const override;
   bool StartModels() override;
   void StopModels() override;

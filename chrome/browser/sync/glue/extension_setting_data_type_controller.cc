@@ -22,7 +22,7 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     Profile* profile)
-    : NonUIDataTypeController(
+    : AsyncDirectoryTypeController(
           type,
           dump_stack,
           sync_client,
