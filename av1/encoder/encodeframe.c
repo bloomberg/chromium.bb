@@ -264,8 +264,8 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
                                            int mi_col, BLOCK_SIZE bsize) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
-  const int mi_width = num_8x8_blocks_wide_lookup[bsize];
-  const int mi_height = num_8x8_blocks_high_lookup[bsize];
+  const int mi_width = mi_size_wide[bsize];
+  const int mi_height = mi_size_high[bsize];
   const int bwl = b_width_log2_lookup[AOMMAX(bsize, BLOCK_8X8)];
   const int bhl = b_height_log2_lookup[AOMMAX(bsize, BLOCK_8X8)];
 
@@ -438,8 +438,8 @@ static void set_vt_partitioning(AV1_COMP *cpi, MACROBLOCK *const x,
                                 int mi_col, const int64_t *const threshold,
                                 const BLOCK_SIZE *const bsize_min) {
   AV1_COMMON *const cm = &cpi->common;
-  const int hbw = num_8x8_blocks_wide_lookup[vt->bsize] / 2;
-  const int hbh = num_8x8_blocks_high_lookup[vt->bsize] / 2;
+  const int hbw = mi_size_wide[vt->bsize] / 2;
+  const int hbh = mi_size_high[vt->bsize] / 2;
   const int has_cols = mi_col + hbw < cm->mi_cols;
   const int has_rows = mi_row + hbh < cm->mi_rows;
 
@@ -827,8 +827,8 @@ static void choose_partitioning(AV1_COMP *const cpi, ThreadData *const td,
   const uint8_t *ref;
   int src_stride;
   int ref_stride;
-  int pixels_wide = 8 * num_8x8_blocks_wide_lookup[cm->sb_size];
-  int pixels_high = 8 * num_8x8_blocks_high_lookup[cm->sb_size];
+  int pixels_wide = MI_SIZE * mi_size_wide[cm->sb_size];
+  int pixels_high = MI_SIZE * mi_size_high[cm->sb_size];
   int64_t thresholds[5] = {
     cpi->vbp_thresholds[0], cpi->vbp_thresholds[1], cpi->vbp_thresholds[2],
     cpi->vbp_thresholds[3], cpi->vbp_thresholds[4],
@@ -1028,16 +1028,16 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   MODE_INFO *mi_addr = xd->mi[0];
   const struct segmentation *const seg = &cm->seg;
-  const int bw = num_8x8_blocks_wide_lookup[mi->mbmi.sb_type];
-  const int bh = num_8x8_blocks_high_lookup[mi->mbmi.sb_type];
+  const int bw = mi_size_wide[mi->mbmi.sb_type];
+  const int bh = mi_size_high[mi->mbmi.sb_type];
   const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
   const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
   MV_REF *const frame_mvs = cm->cur_frame->mvs + mi_row * cm->mi_cols + mi_col;
   int w, h;
 
   const int mis = cm->mi_stride;
-  const int mi_width = num_8x8_blocks_wide_lookup[bsize];
-  const int mi_height = num_8x8_blocks_high_lookup[bsize];
+  const int mi_width = mi_size_wide[bsize];
+  const int mi_height = mi_size_high[bsize];
 
 #if CONFIG_REF_MV
   int8_t rf_type;
@@ -2131,10 +2131,12 @@ static void restore_context(MACROBLOCK *x,
                             BLOCK_SIZE bsize) {
   MACROBLOCKD *xd = &x->e_mbd;
   int p;
-  const int num_4x4_blocks_wide = num_4x4_blocks_wide_lookup[bsize];
-  const int num_4x4_blocks_high = num_4x4_blocks_high_lookup[bsize];
-  int mi_width = num_8x8_blocks_wide_lookup[bsize];
-  int mi_height = num_8x8_blocks_high_lookup[bsize];
+  const int num_4x4_blocks_wide =
+      block_size_wide[bsize] >> tx_size_wide_log2[0];
+  const int num_4x4_blocks_high =
+      block_size_high[bsize] >> tx_size_high_log2[0];
+  int mi_width = mi_size_wide[bsize];
+  int mi_height = mi_size_high[bsize];
   for (p = 0; p < MAX_MB_PLANE; p++) {
     memcpy(xd->above_context[p] + ((mi_col * 2) >> xd->plane[p].subsampling_x),
            ctx->a + num_4x4_blocks_wide * p,
@@ -2171,10 +2173,12 @@ static void save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,
                          BLOCK_SIZE bsize) {
   const MACROBLOCKD *xd = &x->e_mbd;
   int p;
-  const int num_4x4_blocks_wide = num_4x4_blocks_wide_lookup[bsize];
-  const int num_4x4_blocks_high = num_4x4_blocks_high_lookup[bsize];
-  int mi_width = num_8x8_blocks_wide_lookup[bsize];
-  int mi_height = num_8x8_blocks_high_lookup[bsize];
+  const int num_4x4_blocks_wide =
+      block_size_wide[bsize] >> tx_size_wide_log2[0];
+  const int num_4x4_blocks_high =
+      block_size_high[bsize] >> tx_size_high_log2[0];
+  int mi_width = mi_size_wide[bsize];
+  int mi_height = mi_size_high[bsize];
 
   // buffer the above/left context information of the block in search.
   for (p = 0; p < MAX_MB_PLANE; ++p) {
@@ -2238,7 +2242,7 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
   MACROBLOCKD *const xd = &x->e_mbd;
 
   const int ctx = partition_plane_context(xd, mi_row, mi_col, bsize);
-  const int hbs = num_8x8_blocks_wide_lookup[bsize] / 2;
+  const int hbs = mi_size_wide[bsize] / 2;
   const PARTITION_TYPE partition = pc_tree->partitioning;
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_EXT_PARTITION_TYPES
@@ -2450,8 +2454,8 @@ static BLOCK_SIZE find_partition_size(BLOCK_SIZE bsize, int rows_left,
     return AOMMIN(bsize, BLOCK_8X8);
   } else {
     for (; bsize > 0; bsize -= 3) {
-      *bh = num_8x8_blocks_high_lookup[bsize];
-      *bw = num_8x8_blocks_wide_lookup[bsize];
+      *bh = mi_size_high[bsize];
+      *bw = mi_size_wide[bsize];
       if ((*bh <= rows_left) && (*bw <= cols_left)) {
         break;
       }
@@ -2491,8 +2495,8 @@ static void set_fixed_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   const int mi_cols_remaining = tile->mi_col_end - mi_col;
   int block_row, block_col;
   MODE_INFO *const mi_upper_left = cm->mi + mi_row * cm->mi_stride + mi_col;
-  int bh = num_8x8_blocks_high_lookup[bsize];
-  int bw = num_8x8_blocks_wide_lookup[bsize];
+  int bh = mi_size_high[bsize];
+  int bw = mi_size_wide[bsize];
 
   assert((mi_rows_remaining > 0) && (mi_cols_remaining > 0));
 
@@ -2525,7 +2529,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   TileInfo *const tile_info = &tile_data->tile_info;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  const int bs = num_8x8_blocks_wide_lookup[bsize];
+  const int bs = mi_size_wide[bsize];
   const int hbs = bs / 2;
   int i;
   const int pl = partition_plane_context(xd, mi_row, mi_col, bsize);
@@ -3077,8 +3081,8 @@ static void set_partition_range(const AV1_COMMON *const cm,
                                 int mi_col, BLOCK_SIZE bsize,
                                 BLOCK_SIZE *const min_bs,
                                 BLOCK_SIZE *const max_bs) {
-  const int mi_width = num_8x8_blocks_wide_lookup[bsize];
-  const int mi_height = num_8x8_blocks_high_lookup[bsize];
+  const int mi_width = mi_size_wide[bsize];
+  const int mi_height = mi_size_high[bsize];
   int idx, idy;
 
   const int idx_str = cm->mi_stride * mi_row + mi_col;
@@ -3424,7 +3428,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   TileInfo *const tile_info = &tile_data->tile_info;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  const int mi_step = num_8x8_blocks_wide_lookup[bsize] / 2;
+  const int mi_step = mi_size_wide[bsize] / 2;
   RD_SEARCH_MACROBLOCK_CONTEXT x_ctx;
   const TOKENEXTRA *const tp_orig = *tp;
   PICK_MODE_CONTEXT *ctx_none = &pc_tree->none;
@@ -3506,8 +3510,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // NDEBUG
 #endif  // CONFIG_VAR_TX
 
-  assert(num_8x8_blocks_wide_lookup[bsize] ==
-         num_8x8_blocks_high_lookup[bsize]);
+  assert(mi_size_wide[bsize] == mi_size_high[bsize]);
 
   av1_rd_cost_init(&this_rdc);
   av1_rd_cost_init(&sum_rdc);
@@ -5440,8 +5443,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
   const int seg_skip =
       segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP);
   const int mis = cm->mi_stride;
-  const int mi_width = num_8x8_blocks_wide_lookup[bsize];
-  const int mi_height = num_8x8_blocks_high_lookup[bsize];
+  const int mi_width = mi_size_wide[bsize];
+  const int mi_height = mi_size_high[bsize];
   const int is_inter = is_inter_block(mbmi);
 
   x->use_lp32x32fdct = cpi->sf.use_lp32x32fdct;

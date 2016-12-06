@@ -175,8 +175,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const MODE_INFO *const candidate_mi =
           xd->mi[mi_pos.row * xd->mi_stride + mi_pos.col];
       const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
-      int len =
-          AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[candidate->sb_type]);
+      int len = AOMMIN(xd->n8_w, mi_size_wide[candidate->sb_type]);
       if (use_step_16) len = AOMMAX(2, len);
       newmv_count += add_ref_mv_candidate(
           candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
@@ -211,8 +210,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const MODE_INFO *const candidate_mi =
           xd->mi[mi_pos.row * xd->mi_stride + mi_pos.col];
       const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
-      int len =
-          AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[candidate->sb_type]);
+      int len = AOMMIN(xd->n8_h, mi_size_high[candidate->sb_type]);
       if (use_step_16) len = AOMMAX(2, len);
       newmv_count += add_ref_mv_candidate(
           candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
@@ -513,12 +511,12 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           ? cm->prev_frame->mvs + mi_row * cm->mi_cols + mi_col
           : NULL;
   const TileInfo *const tile = &xd->tile;
-  const int bw = num_8x8_blocks_wide_lookup[mi->mbmi.sb_type] << 3;
-  const int bh = num_8x8_blocks_high_lookup[mi->mbmi.sb_type] << 3;
+  const int bw = block_size_wide[AOMMAX(mi->mbmi.sb_type, BLOCK_8X8)];
+  const int bh = block_size_high[AOMMAX(mi->mbmi.sb_type, BLOCK_8X8)];
 #if CONFIG_REF_MV
   POSITION mv_ref_search[MVREF_NEIGHBOURS];
-  const int num_8x8_blocks_wide = bw >> 3;
-  const int num_8x8_blocks_high = bh >> 3;
+  const int num_8x8_blocks_wide = bw >> MI_SIZE_LOG2;
+  const int num_8x8_blocks_high = bh >> MI_SIZE_LOG2;
   mv_ref_search[0].row = num_8x8_blocks_high - 1;
   mv_ref_search[0].col = -1;
   mv_ref_search[1].row = -1;

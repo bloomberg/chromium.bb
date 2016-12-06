@@ -215,8 +215,8 @@ void av1_cyclic_refresh_update_segment(const AV1_COMP *cpi,
                                        int64_t rate, int64_t dist, int skip) {
   const AV1_COMMON *const cm = &cpi->common;
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
-  const int bw = num_8x8_blocks_wide_lookup[bsize];
-  const int bh = num_8x8_blocks_high_lookup[bsize];
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
   const int xmis = AOMMIN(cm->mi_cols - mi_col, bw);
   const int ymis = AOMMIN(cm->mi_rows - mi_row, bh);
   const int block_index = mi_row * cm->mi_cols + mi_col;

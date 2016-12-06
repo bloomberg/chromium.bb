@@ -497,8 +497,8 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   int predicted_segment_id, segment_id;
   const int mi_offset = mi_row * cm->mi_cols + mi_col;
-  const int bw = num_8x8_blocks_wide_lookup[mbmi->sb_type];
-  const int bh = num_8x8_blocks_high_lookup[mbmi->sb_type];
+  const int bw = mi_size_wide[mbmi->sb_type];
+  const int bh = mi_size_high[mbmi->sb_type];
 
   // TODO(slavarnway): move x_mis, y_mis into xd ?????
   const int x_mis = AOMMIN(cm->mi_cols - mi_col, bw);

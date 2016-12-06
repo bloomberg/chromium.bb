@@ -160,7 +160,7 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                           unsigned *t_unpred_seg_counts, int mi_row, int mi_col,
                           BLOCK_SIZE bsize) {
   const int mis = cm->mi_stride;
-  const int bs = num_8x8_blocks_wide_lookup[bsize], hbs = bs / 2;
+  const int bs = mi_size_wide[bsize], hbs = bs / 2;
 #if CONFIG_EXT_PARTITION_TYPES
   PARTITION_TYPE partition;
 #else
@@ -252,8 +252,8 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
     default: assert(0);
   }
 #else
-  bw = num_8x8_blocks_wide_lookup[mi[0]->mbmi.sb_type];
-  bh = num_8x8_blocks_high_lookup[mi[0]->mbmi.sb_type];
+  bw = mi_size_wide[mi[0]->mbmi.sb_type];
+  bh = mi_size_high[mi[0]->mbmi.sb_type];
 
   if (bw == bs && bh == bs) {
     count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,

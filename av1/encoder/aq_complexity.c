@@ -116,8 +116,8 @@ void av1_caq_select_segment(const AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
   const AV1_COMMON *const cm = &cpi->common;
 
   const int mi_offset = mi_row * cm->mi_cols + mi_col;
-  const int xmis = AOMMIN(cm->mi_cols - mi_col, num_8x8_blocks_wide_lookup[bs]);
-  const int ymis = AOMMIN(cm->mi_rows - mi_row, num_8x8_blocks_high_lookup[bs]);
+  const int xmis = AOMMIN(cm->mi_cols - mi_col, mi_size_wide[bs]);
+  const int ymis = AOMMIN(cm->mi_rows - mi_row, mi_size_high[bs]);
   int x, y;
   int i;
   unsigned char segment;

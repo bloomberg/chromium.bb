@@ -1811,8 +1811,8 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
 
   assert(m->mbmi.sb_type <= cm->sb_size);
 
-  bh = num_8x8_blocks_high_lookup[m->mbmi.sb_type];
-  bw = num_8x8_blocks_wide_lookup[m->mbmi.sb_type];
+  bh = mi_size_high[m->mbmi.sb_type];
+  bw = mi_size_wide[m->mbmi.sb_type];
 
   cpi->td.mb.mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
 
@@ -2189,7 +2189,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
                            int mi_row, int mi_col, BLOCK_SIZE bsize) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
-  const int hbs = num_8x8_blocks_wide_lookup[bsize] / 2;
+  const int hbs = mi_size_wide[bsize] / 2;
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_SUPERTX
@@ -4013,7 +4013,7 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 
   aom_wb_write_literal(wb, cm->frame_context_idx, FRAME_CONTEXTS_LOG2);
 
-  assert(cm->mib_size == num_8x8_blocks_wide_lookup[cm->sb_size]);
+  assert(cm->mib_size == mi_size_wide[cm->sb_size]);
   assert(cm->mib_size == 1 << cm->mib_size_log2);
 #if CONFIG_EXT_PARTITION
   assert(cm->sb_size == BLOCK_128X128 || cm->sb_size == BLOCK_64X64);

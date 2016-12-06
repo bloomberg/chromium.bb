@@ -643,13 +643,13 @@ static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
       xd->left_seg_context + (mi_row & MAX_MIB_MASK);
 
 #if CONFIG_EXT_PARTITION_TYPES
-  const int bw = num_8x8_blocks_wide_lookup[bsize];
-  const int bh = num_8x8_blocks_high_lookup[bsize];
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
   memset(above_ctx, partition_context_lookup[subsize].above, bw);
   memset(left_ctx, partition_context_lookup[subsize].left, bh);
 #else
   // num_4x4_blocks_wide_lookup[bsize] / 2
-  const int bs = num_8x8_blocks_wide_lookup[bsize];
+  const int bs = mi_size_wide[bsize];
 
   // update the partition context at the end notes. set partition bits
   // of block sizes larger than the current one to be one, and partition
@@ -792,8 +792,8 @@ static INLINE void txfm_partition_update(TXFM_CONTEXT *above_ctx,
                                          TXFM_CONTEXT *left_ctx,
                                          TX_SIZE tx_size) {
   BLOCK_SIZE bsize = txsize_to_bsize[tx_size];
-  int bh = num_8x8_blocks_high_lookup[bsize];
-  int bw = num_8x8_blocks_wide_lookup[bsize];
+  int bh = mi_size_high[bsize];
+  int bw = mi_size_wide[bsize];
   uint8_t txw = tx_size_wide[tx_size];
   uint8_t txh = tx_size_high[tx_size];
   int i;
@@ -835,7 +835,7 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
 #if !CONFIG_EXT_PARTITION_TYPES
     return partition;
 #else
-    const int hbs = num_8x8_blocks_wide_lookup[bsize] / 2;
+    const int hbs = mi_size_wide[bsize] / 2;
 
     assert(cm->mi_grid_visible[offset] == &cm->mi[offset]);
 
@@ -865,11 +865,10 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
 
 static INLINE void set_sb_size(AV1_COMMON *const cm, const BLOCK_SIZE sb_size) {
   cm->sb_size = sb_size;
+  cm->mib_size = mi_size_wide[cm->sb_size];
 #if CONFIG_CB4X4
-  cm->mib_size = num_4x4_blocks_wide_lookup[cm->sb_size];
   cm->mib_size_log2 = b_width_log2_lookup[cm->sb_size];
 #else
-  cm->mib_size = num_8x8_blocks_wide_lookup[cm->sb_size];
   cm->mib_size_log2 = mi_width_log2_lookup[cm->sb_size];
 #endif
 }

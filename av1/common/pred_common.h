@@ -24,8 +24,8 @@ static INLINE int get_segment_id(const AV1_COMMON *const cm,
                                  const uint8_t *segment_ids, BLOCK_SIZE bsize,
                                  int mi_row, int mi_col) {
   const int mi_offset = mi_row * cm->mi_cols + mi_col;
-  const int bw = num_8x8_blocks_wide_lookup[bsize];
-  const int bh = num_8x8_blocks_high_lookup[bsize];
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
   const int xmis = AOMMIN(cm->mi_cols - mi_col, bw);
   const int ymis = AOMMIN(cm->mi_rows - mi_row, bh);
   int x, y, segment_id = MAX_SEGMENTS;
