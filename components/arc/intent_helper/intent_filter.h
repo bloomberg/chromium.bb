@@ -8,11 +8,15 @@
 #include <string>
 #include <vector>
 
-#include "components/arc/common/intent_helper.mojom.h"
+#include "base/macros.h"
 
 class GURL;
 
 namespace arc {
+
+namespace mojom {
+enum class PatternType;
+}  // namespace mojom
 
 // A chrome-side implementation of Android's IntentFilter class.  This is used
 // to approximate the intent filtering and determine whether a given URL is
@@ -20,43 +24,74 @@ namespace arc {
 // calls.
 class IntentFilter {
  public:
-  explicit IntentFilter(const mojom::IntentFilterPtr& mojo_intent_filter);
-  IntentFilter(const IntentFilter& other);
-  ~IntentFilter();
-
-  bool Match(const GURL& url) const;
-
- private:
   // A helper class for handling matching of the host part of the URL.
   class AuthorityEntry {
    public:
-    explicit AuthorityEntry(const mojom::AuthorityEntryPtr& entry);
+    AuthorityEntry();
+    AuthorityEntry(AuthorityEntry&& other);
+    AuthorityEntry(const std::string& host, int port);
+
+    AuthorityEntry& operator=(AuthorityEntry&& other);
+
     bool Match(const GURL& url) const;
+
+    const std::string& host() const { return host_; }
+    int port() const { return port_; }
 
    private:
     std::string host_;
     bool wild_;
     int port_;
+
+    DISALLOW_COPY_AND_ASSIGN(AuthorityEntry);
   };
 
   // A helper class for handling matching of various patterns in the URL.
   class PatternMatcher {
    public:
-    explicit PatternMatcher(const mojom::PatternMatcherPtr& pattern);
+    PatternMatcher();
+    PatternMatcher(PatternMatcher&& other);
+    PatternMatcher(const std::string& pattern, mojom::PatternType match_type);
+
+    PatternMatcher& operator=(PatternMatcher&& other);
+
     bool Match(const std::string& match) const;
+
+    const std::string& pattern() const { return pattern_; }
+    mojom::PatternType match_type() const { return match_type_; }
 
    private:
     bool MatchGlob(const std::string& match) const;
 
     std::string pattern_;
     mojom::PatternType match_type_;
+
+    DISALLOW_COPY_AND_ASSIGN(PatternMatcher);
   };
 
+  IntentFilter();
+  IntentFilter(IntentFilter&& other);
+  IntentFilter(std::vector<AuthorityEntry> authorities,
+               std::vector<PatternMatcher> paths);
+  ~IntentFilter();
+
+  IntentFilter& operator=(IntentFilter&& other);
+
+  bool Match(const GURL& url) const;
+
+  const std::vector<AuthorityEntry>& authorities() const {
+    return authorities_;
+  }
+  const std::vector<PatternMatcher>& paths() const { return paths_; }
+
+ private:
   bool MatchDataAuthority(const GURL& url) const;
   bool HasDataPath(const GURL& url) const;
 
   std::vector<AuthorityEntry> authorities_;
   std::vector<PatternMatcher> paths_;
+
+  DISALLOW_COPY_AND_ASSIGN(IntentFilter);
 };
 
 }  // namespace arc

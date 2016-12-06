@@ -6,30 +6,26 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string_util.h"
+#include "components/arc/common/intent_helper.mojom.h"
 #include "url/gurl.h"
 
 namespace arc {
 
-IntentFilter::IntentFilter(const mojom::IntentFilterPtr& mojo_intent_filter) {
-  // TODO(yusukes): Use mojo typemaps to simplify the constructor.
-  if (mojo_intent_filter->data_authorities.has_value()) {
-    for (const mojom::AuthorityEntryPtr& authorityptr :
-         *mojo_intent_filter->data_authorities) {
-      authorities_.emplace_back(authorityptr);
-    }
-  }
+IntentFilter::IntentFilter() = default;
+IntentFilter::IntentFilter(IntentFilter&& other) = default;
+
+IntentFilter::IntentFilter(
+    std::vector<IntentFilter::AuthorityEntry> authorities,
+    std::vector<IntentFilter::PatternMatcher> paths)
+    : authorities_(std::move(authorities)) {
   // In order to register a path we need to have at least one authority.
-  if (!authorities_.empty() && mojo_intent_filter->data_paths.has_value()) {
-    for (const mojom::PatternMatcherPtr& pattern :
-         *mojo_intent_filter->data_paths) {
-      paths_.emplace_back(pattern);
-    }
-  }
+  if (!authorities_.empty())
+    paths_ = std::move(paths);
 }
 
-IntentFilter::IntentFilter(const IntentFilter& other) = default;
-
 IntentFilter::~IntentFilter() = default;
+
+IntentFilter& IntentFilter::operator=(IntentFilter&& other) = default;
 
 // Logically, this maps to IntentFilter#match, but this code only deals with
 // view intents for http/https URLs and so it really only implements the
@@ -73,9 +69,15 @@ bool IntentFilter::MatchDataAuthority(const GURL& url) const {
   return false;
 }
 
+IntentFilter::AuthorityEntry::AuthorityEntry() = default;
 IntentFilter::AuthorityEntry::AuthorityEntry(
-    const mojom::AuthorityEntryPtr& entry)
-    : host_(entry->host), port_(entry->port) {
+    IntentFilter::AuthorityEntry&& other) = default;
+
+IntentFilter::AuthorityEntry& IntentFilter::AuthorityEntry::operator=(
+    IntentFilter::AuthorityEntry&& other) = default;
+
+IntentFilter::AuthorityEntry::AuthorityEntry(const std::string& host, int port)
+    : host_(host), port_(port) {
   // Wildcards are only allowed at the front of the host string.
   wild_ = !host_.empty() && host_[0] == '*';
   if (wild_) {
@@ -118,9 +120,16 @@ bool IntentFilter::AuthorityEntry::Match(const GURL& url) const {
   }
 }
 
+IntentFilter::PatternMatcher::PatternMatcher() = default;
 IntentFilter::PatternMatcher::PatternMatcher(
-    const mojom::PatternMatcherPtr& pattern)
-    : pattern_(pattern->pattern), match_type_(pattern->type) {}
+    IntentFilter::PatternMatcher&& other) = default;
+
+IntentFilter::PatternMatcher::PatternMatcher(const std::string& pattern,
+                                             mojom::PatternType match_type)
+    : pattern_(pattern), match_type_(match_type) {}
+
+IntentFilter::PatternMatcher& IntentFilter::PatternMatcher::operator=(
+    IntentFilter::PatternMatcher&& other) = default;
 
 // Transcribed from android's PatternMatcher#matchPattern.
 bool IntentFilter::PatternMatcher::Match(const std::string& str) const {
