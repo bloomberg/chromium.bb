@@ -784,6 +784,27 @@
             ]
         }
     ],
+    "Html5ByDefault": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "engagement_threshold_for_flash": "1"
+                    },
+                    "enable_features": [
+                        "PreferHtmlOverPlugins"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSurfaceClearYosemite": [
         {
             "platforms": [
@@ -1480,24 +1501,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PreconnectMore"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PreferHtmlOverPlugins": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PreferHtmlOverPlugins"
                     ]
                 }
             ]
