@@ -6,6 +6,7 @@
 #define WorkerOrWorkletGlobalScope_h
 
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/UseCounter.h"
 
 namespace blink {
 
@@ -15,6 +16,12 @@ class WorkerThread;
 
 class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
  public:
+  WorkerOrWorkletGlobalScope();
+  virtual ~WorkerOrWorkletGlobalScope();
+
+  // ExecutionContext
+  bool isWorkerOrWorkletGlobalScope() const final { return true; }
+
   virtual ScriptWrappable* getScriptWrappable() const = 0;
   virtual WorkerOrWorkletScriptController* scriptController() = 0;
 
@@ -28,9 +35,23 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
   // sub-classes to perform any cleanup needed.
   virtual void dispose() = 0;
 
+  // Called from UseCounter to record API use in this execution context.
+  virtual void countFeature(UseCounter::Feature) = 0;
+
+  // Called from UseCounter to record deprecated API use in this execution
+  // context. Sub-classes should call addDeprecationMessage() in this function.
+  virtual void countDeprecation(UseCounter::Feature) = 0;
+
   // May return nullptr if this global scope is not threaded (i.e.,
   // MainThreadWorkletGlobalScope) or after dispose() is called.
   virtual WorkerThread* thread() const = 0;
+
+ protected:
+  // Adds a deprecation message to the console.
+  void addDeprecationMessage(UseCounter::Feature);
+
+ private:
+  BitVector m_deprecationWarningBits;
 };
 
 DEFINE_TYPE_CASTS(

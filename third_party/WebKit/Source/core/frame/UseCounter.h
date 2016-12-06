@@ -1397,17 +1397,13 @@ class CORE_EXPORT UseCounter {
   // "count" sets the bit for this feature to 1. Repeated calls are ignored.
   static void count(const Frame*, Feature);
   static void count(const Document&, Feature);
-  // This doesn't count for ExecutionContexts for shared workers and service
-  // workers.
-  static void count(const ExecutionContext*, Feature);
+  static void count(ExecutionContext*, Feature);
   // Use countIfNotPrivateScript() instead of count() if you don't want
   // to count metrics in private scripts. You should use
   // countIfNotPrivateScript() in a binding layer.
   static void countIfNotPrivateScript(v8::Isolate*, const Frame*, Feature);
   static void countIfNotPrivateScript(v8::Isolate*, const Document&, Feature);
-  static void countIfNotPrivateScript(v8::Isolate*,
-                                      const ExecutionContext*,
-                                      Feature);
+  static void countIfNotPrivateScript(v8::Isolate*, ExecutionContext*, Feature);
 
   void count(CSSParserMode, CSSPropertyID);
   void count(Feature);

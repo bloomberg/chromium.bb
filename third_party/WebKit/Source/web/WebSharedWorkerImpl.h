@@ -74,6 +74,8 @@ class WebSharedWorkerImpl final : public WorkerReportingProxy,
   explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
 
   // WorkerReportingProxy methods:
+  void countFeature(UseCounter::Feature) override;
+  void countDeprecation(UseCounter::Feature) override;
   void reportException(const WTF::String&,
                        std::unique_ptr<SourceLocation>,
                        int exceptionId) override;

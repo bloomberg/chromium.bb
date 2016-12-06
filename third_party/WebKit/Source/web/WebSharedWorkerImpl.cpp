@@ -224,6 +224,18 @@ WebSharedWorkerImpl::createClientMessageLoop() {
 
 // WorkerReportingProxy --------------------------------------------------------
 
+void WebSharedWorkerImpl::countFeature(UseCounter::Feature) {
+  // TODO(nhiroki): Support UseCounter for SharedWorker. Send an IPC message to
+  // the browser process and ask each connected document to record API use in
+  // its UseCounter (https://crbug.com/376039).
+}
+
+void WebSharedWorkerImpl::countDeprecation(UseCounter::Feature) {
+  // TODO(nhiroki): Support UseCounter for SharedWorker. Send an IPC message to
+  // the browser process and ask each connected document to record API use in
+  // its UseCounter (https://crbug.com/376039).
+}
+
 void WebSharedWorkerImpl::reportException(const String& errorMessage,
                                           std::unique_ptr<SourceLocation>,
                                           int exceptionId) {

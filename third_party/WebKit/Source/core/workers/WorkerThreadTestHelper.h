@@ -57,6 +57,8 @@ class MockWorkerReportingProxy : public WorkerReportingProxy {
       : m_parentFrameTaskRunners(ParentFrameTaskRunners::create(nullptr)) {}
   ~MockWorkerReportingProxy() override {}
 
+  MOCK_METHOD1(countFeature, void(UseCounter::Feature));
+  MOCK_METHOD1(countDeprecation, void(UseCounter::Feature));
   MOCK_METHOD3(reportExceptionMock,
                void(const String& errorMessage,
                     SourceLocation*,

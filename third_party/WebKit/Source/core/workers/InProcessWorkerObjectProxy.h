@@ -33,7 +33,6 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
-#include "core/frame/UseCounter.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -70,12 +69,9 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
   void confirmMessageFromWorkerObject();
   void startPendingActivityTimer();
 
-  // TODO(nhiroki): Move these to WorkerReportingProxy so that we can reuse them
-  // for other workers and worklets (https://crbug.com/376039, 667357).
-  void countFeature(UseCounter::Feature);
-  void countDeprecation(UseCounter::Feature);
-
   // WorkerReportingProxy overrides.
+  void countFeature(UseCounter::Feature) override;
+  void countDeprecation(UseCounter::Feature) override;
   void reportException(const String& errorMessage,
                        std::unique_ptr<SourceLocation>,
                        int exceptionId) override;

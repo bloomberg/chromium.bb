@@ -352,6 +352,18 @@ bool ServiceWorkerGlobalScopeProxy::hasFetchEventHandler() {
   return m_workerGlobalScope->hasEventListeners(EventTypeNames::fetch);
 }
 
+void ServiceWorkerGlobalScopeProxy::countFeature(UseCounter::Feature) {
+  // TODO(nhiroki): Support UseCounter for ServiceWorker. Send an IPC message to
+  // the browser process and ask each controlled document to record API use in
+  // its UseCoutner (https://crbug.com/376039).
+}
+
+void ServiceWorkerGlobalScopeProxy::countDeprecation(UseCounter::Feature) {
+  // TODO(nhiroki): Support UseCounter for ServiceWorker. Send an IPC message to
+  // the browser process and ask each controlled document to record API use in
+  // its UseCoutner (https://crbug.com/376039).
+}
+
 void ServiceWorkerGlobalScopeProxy::reportException(
     const String& errorMessage,
     std::unique_ptr<SourceLocation> location,

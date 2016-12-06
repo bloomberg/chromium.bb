@@ -58,6 +58,7 @@ blink_core_sources("workers") {
     "WorkerLocation.h",
     "WorkerNavigator.cpp",
     "WorkerNavigator.h",
+    "WorkerOrWorkletGlobalScope.cpp",
     "WorkerOrWorkletGlobalScope.h",
     "WorkerReportingProxy.h",
     "WorkerScriptLoader.cpp",

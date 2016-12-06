@@ -26,6 +26,18 @@ ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() {
   DCHECK(m_messagingProxyWeakPtr);
 }
 
+void ThreadedWorkletObjectProxy::countFeature(UseCounter::Feature) {
+  // TODO(nhiroki): Support UseCounter for ThreadedWorklets. We could do the
+  // same thing with InProcessWorkerObjectProxy here.
+  // (https://crbug.com/376039)
+}
+
+void ThreadedWorkletObjectProxy::countDeprecation(UseCounter::Feature) {
+  // TODO(nhiroki): Support UseCounter for ThreadedWorklets. We could do the
+  // same thing with InProcessWorkerObjectProxy here.
+  // (https://crbug.com/376039)
+}
+
 void ThreadedWorkletObjectProxy::reportConsoleMessage(
     MessageSource source,
     MessageLevel level,

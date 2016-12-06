@@ -39,7 +39,6 @@
 #include "core/events/Event.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/frame/DOMTimerCoordinator.h"
-#include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -77,32 +76,6 @@ WorkerGlobalScope::~WorkerGlobalScope() {
       InstanceCounters::WorkerGlobalScopeCounter);
 }
 
-void WorkerGlobalScope::countFeature(UseCounter::Feature) const {
-  // TODO(nhiroki): How should we count features for shared/service workers?
-  // (http://crbug.com/376039)
-}
-
-void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const {
-  // TODO(nhiroki): How should we count features for shared/service workers?
-  // (http://crbug.com/376039)
-
-  DCHECK(isSharedWorkerGlobalScope() || isServiceWorkerGlobalScope() ||
-         isCompositorWorkerGlobalScope());
-  DCHECK(feature != UseCounter::OBSOLETE_PageDestruction);
-  DCHECK(feature < UseCounter::NumberOfFeatures);
-
-  // For each deprecated feature, send console message at most once
-  // per worker lifecycle.
-  if (!m_deprecationWarningBits.quickGet(feature)) {
-    m_deprecationWarningBits.quickSet(feature);
-    DCHECK(!Deprecation::deprecationMessage(feature).isEmpty());
-    DCHECK(getExecutionContext());
-    getExecutionContext()->addConsoleMessage(
-        ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel,
-                               Deprecation::deprecationMessage(feature)));
-  }
-}
-
 KURL WorkerGlobalScope::completeURL(const String& url) const {
   // Always return a null URL when passed a null string.
   // FIXME: Should we change the KURL constructor to have this behavior?
@@ -132,6 +105,19 @@ void WorkerGlobalScope::dispose() {
   m_scriptController.clear();
   m_eventQueue->close();
   m_thread = nullptr;
+}
+
+void WorkerGlobalScope::countFeature(UseCounter::Feature feature) {
+  DCHECK(isContextThread());
+  DCHECK(m_thread);
+  m_thread->workerReportingProxy().countFeature(feature);
+}
+
+void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) {
+  DCHECK(isContextThread());
+  DCHECK(m_thread);
+  addDeprecationMessage(feature);
+  m_thread->workerReportingProxy().countDeprecation(feature);
 }
 
 void WorkerGlobalScope::exceptionUnhandled(int exceptionId) {
@@ -322,7 +308,6 @@ WorkerGlobalScope::WorkerGlobalScope(
       m_url(url),
       m_userAgent(userAgent),
       m_v8CacheOptions(V8CacheOptionsDefault),
-      m_deprecationWarningBits(UseCounter::NumberOfFeatures),
       m_scriptController(
           WorkerOrWorkletScriptController::create(this, thread->isolate())),
       m_thread(thread),

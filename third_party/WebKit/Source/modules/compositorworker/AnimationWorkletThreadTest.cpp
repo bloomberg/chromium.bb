@@ -38,6 +38,8 @@ class TestAnimationWorkletReportingProxy : public WorkerReportingProxy {
   }
 
   // (Empty) WorkerReportingProxy implementation:
+  void countFeature(UseCounter::Feature) override {}
+  void countDeprecation(UseCounter::Feature) override {}
   void reportException(const String& errorMessage,
                        std::unique_ptr<SourceLocation>,
                        int exceptionId) override {}

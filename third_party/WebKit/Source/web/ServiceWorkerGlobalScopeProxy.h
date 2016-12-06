@@ -120,6 +120,8 @@ class ServiceWorkerGlobalScopeProxy final
       std::unique_ptr<WebServiceWorkerError>) override;
 
   // WorkerReportingProxy overrides:
+  void countFeature(UseCounter::Feature) override;
+  void countDeprecation(UseCounter::Feature) override;
   void reportException(const String& errorMessage,
                        std::unique_ptr<SourceLocation>,
                        int exceptionId) override;

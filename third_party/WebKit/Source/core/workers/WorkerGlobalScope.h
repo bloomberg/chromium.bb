@@ -37,7 +37,6 @@
 #include "core/fetch/CachedMetadataHandler.h"
 #include "core/frame/DOMTimerCoordinator.h"
 #include "core/frame/DOMWindowBase64.h"
-#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerEventQueue.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
@@ -71,9 +70,6 @@ class CORE_EXPORT WorkerGlobalScope : public EventTargetWithInlineData,
 
   ~WorkerGlobalScope() override;
 
-  virtual void countFeature(UseCounter::Feature) const;
-  virtual void countDeprecation(UseCounter::Feature) const;
-
   // Returns null if caching is not supported.
   virtual CachedMetadataHandler* createWorkerScriptCachedMetadataHandler(
       const KURL& scriptURL,
@@ -86,6 +82,8 @@ class CORE_EXPORT WorkerGlobalScope : public EventTargetWithInlineData,
   // WorkerOrWorkletGlobalScope
   bool isClosing() const final { return m_closing; }
   virtual void dispose();
+  void countFeature(UseCounter::Feature) final;
+  void countDeprecation(UseCounter::Feature) final;
   WorkerThread* thread() const final { return m_thread; }
 
   void exceptionUnhandled(int exceptionId);
@@ -191,8 +189,6 @@ class CORE_EXPORT WorkerGlobalScope : public EventTargetWithInlineData,
 
   mutable Member<WorkerLocation> m_location;
   mutable Member<WorkerNavigator> m_navigator;
-
-  mutable BitVector m_deprecationWarningBits;
 
   Member<WorkerOrWorkletScriptController> m_scriptController;
   WorkerThread* m_thread;

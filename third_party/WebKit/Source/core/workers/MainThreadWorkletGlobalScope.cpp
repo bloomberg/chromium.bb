@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/MainThreadDebugger.h"
@@ -22,6 +23,20 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
       DOMWindowProperty(frame) {}
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}
+
+void MainThreadWorkletGlobalScope::countFeature(UseCounter::Feature feature) {
+  // TODO(nhiroki): Support UseCounter for main thread worklets. A parent
+  // document is on the same thread, so just record API use in the document's
+  // UseCounter (https://crbug.com/667357).
+}
+
+void MainThreadWorkletGlobalScope::countDeprecation(
+    UseCounter::Feature feature) {
+  addDeprecationMessage(feature);
+  // TODO(nhiroki): Support UseCounter for main thread worklets. A parent
+  // document is on the same thread, so just record API use in the document's
+  // UseCounter (https://crbug.com/667357).
+}
 
 WorkerThread* MainThreadWorkletGlobalScope::thread() const {
   NOTREACHED();

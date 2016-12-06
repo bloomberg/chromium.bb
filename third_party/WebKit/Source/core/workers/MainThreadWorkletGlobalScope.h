@@ -25,6 +25,8 @@ class CORE_EXPORT MainThreadWorkletGlobalScope : public WorkletGlobalScope,
   bool isMainThreadWorkletGlobalScope() const final { return true; }
 
   // WorkerOrWorkletGlobalScope
+  void countFeature(UseCounter::Feature) final;
+  void countDeprecation(UseCounter::Feature) final;
   WorkerThread* thread() const final;
 
   // WorkletGlobalScopeProxy

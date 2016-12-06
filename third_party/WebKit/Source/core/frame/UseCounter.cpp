@@ -1175,15 +1175,15 @@ bool UseCounter::isCounted(Document& document, const String& string) {
   return host->useCounter().isCounted(unresolvedProperty);
 }
 
-void UseCounter::count(const ExecutionContext* context, Feature feature) {
+void UseCounter::count(ExecutionContext* context, Feature feature) {
   if (!context)
     return;
   if (context->isDocument()) {
     count(*toDocument(context), feature);
     return;
   }
-  if (context->isWorkerGlobalScope())
-    toWorkerGlobalScope(context)->countFeature(feature);
+  if (context->isWorkerOrWorkletGlobalScope())
+    toWorkerOrWorkletGlobalScope(context)->countFeature(feature);
 }
 
 void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate,
@@ -1203,7 +1203,7 @@ void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate,
 }
 
 void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate,
-                                         const ExecutionContext* context,
+                                         ExecutionContext* context,
                                          Feature feature) {
   if (DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld())
     return;

@@ -98,16 +98,6 @@ void DedicatedWorkerGlobalScope::postMessage(
                                                 std::move(channels));
 }
 
-void DedicatedWorkerGlobalScope::countFeature(
-    UseCounter::Feature feature) const {
-  workerObjectProxy().countFeature(feature);
-}
-
-void DedicatedWorkerGlobalScope::countDeprecation(
-    UseCounter::Feature feature) const {
-  workerObjectProxy().countDeprecation(feature);
-}
-
 InProcessWorkerObjectProxy& DedicatedWorkerGlobalScope::workerObjectProxy()
     const {
   return static_cast<DedicatedWorkerThread*>(thread())->workerObjectProxy();

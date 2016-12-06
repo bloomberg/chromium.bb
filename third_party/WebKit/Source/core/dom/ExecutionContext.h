@@ -71,6 +71,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   };
 
   virtual bool isDocument() const { return false; }
+  virtual bool isWorkerOrWorkletGlobalScope() const { return false; }
   virtual bool isWorkerGlobalScope() const { return false; }
   virtual bool isWorkletGlobalScope() const { return false; }
   virtual bool isMainThreadWorkletGlobalScope() const { return false; }
