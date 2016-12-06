@@ -32,10 +32,6 @@ class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }
 
-namespace chrome {
-class NativeMediaFileUtilTest;
-}
-
 namespace storage {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
@@ -46,7 +42,6 @@ class URLRequest;
 }
 
 namespace storage {
-class BlobURLRequestJobTest;
 class FileStreamReader;
 }
 
@@ -58,7 +53,6 @@ class ExternalFileSystemBackend;
 class ExternalMountPoints;
 class FileStreamWriter;
 class FileSystemBackend;
-class FileSystemFileUtil;
 class FileSystemOperation;
 class FileSystemOperationRunner;
 class FileSystemOptions;
@@ -68,7 +62,6 @@ class IsolatedFileSystemBackend;
 class MountPoints;
 class QuotaReservation;
 class SandboxFileSystemBackend;
-class WatchManager;
 
 struct DefaultContextDeleter;
 struct FileSystemInfo;

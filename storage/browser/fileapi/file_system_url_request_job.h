@@ -22,10 +22,6 @@
 
 class GURL;
 
-namespace base {
-class FilePath;
-}
-
 namespace storage {
 class FileStreamReader;
 }

@@ -18,7 +18,6 @@
 #include "storage/common/storage_common_export.h"
 
 namespace base {
-class SingleThreadTaskRunner;
 class WaitableEvent;
 }
 

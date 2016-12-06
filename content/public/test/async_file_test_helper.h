@@ -12,13 +12,12 @@
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/quota/quota_status_code.h"
 
-namespace storage {
-class QuotaManager;
-}
+class GURL;
 
 namespace storage {
 class FileSystemContext;
 class FileSystemURL;
+class QuotaManager;
 }
 
 namespace content {

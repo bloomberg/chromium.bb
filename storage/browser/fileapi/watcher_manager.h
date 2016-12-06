@@ -12,7 +12,6 @@
 
 namespace storage {
 
-class FileSystemOperationContext;
 class FileSystemURL;
 
 // An interface for providing entry observing capability for file system

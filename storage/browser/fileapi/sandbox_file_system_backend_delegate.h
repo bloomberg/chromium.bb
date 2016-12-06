@@ -53,7 +53,6 @@ class FileSystemURL;
 class FileSystemUsageCache;
 class ObfuscatedFileUtil;
 class QuotaReservationManager;
-class SandboxFileSystemBackend;
 class SandboxQuotaObserver;
 
 // Delegate implementation of the some methods in Sandbox/SyncFileSystemBackend.

@@ -28,7 +28,6 @@
 
 namespace base {
 class SequencedTaskRunner;
-class TimeTicks;
 }
 
 namespace content {

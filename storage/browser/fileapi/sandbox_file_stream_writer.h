@@ -24,7 +24,6 @@
 namespace storage {
 
 class FileSystemContext;
-class FileSystemQuotaUtil;
 class FileStreamWriter;
 
 class STORAGE_EXPORT SandboxFileStreamWriter

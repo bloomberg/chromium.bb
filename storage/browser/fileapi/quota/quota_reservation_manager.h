@@ -28,8 +28,6 @@ namespace storage {
 
 class QuotaReservation;
 class QuotaReservationBuffer;
-class OpenFileHandle;
-class OpenFileHandleContext;
 
 class STORAGE_EXPORT QuotaReservationManager {
  public:

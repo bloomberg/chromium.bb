@@ -34,7 +34,6 @@ class TaskRunner;
 }
 
 namespace storage {
-class DataElement;
 class ShareableBlobDataItem;
 class ShareableFileReference;
 

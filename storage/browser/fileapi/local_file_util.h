@@ -19,8 +19,6 @@ namespace base {
 class Time;
 }
 
-class GURL;
-
 namespace storage {
 
 class FileSystemOperationContext;

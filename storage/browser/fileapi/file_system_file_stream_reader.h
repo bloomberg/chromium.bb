@@ -21,7 +21,6 @@
 
 namespace base {
 class FilePath;
-class SequencedTaskRunner;
 }
 
 namespace content {

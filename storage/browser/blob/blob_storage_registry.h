@@ -21,9 +21,7 @@
 class GURL;
 
 namespace storage {
-class BlobDataHandle;
 class BlobEntry;
-class ShareableBlobDataItem;
 
 // This class stores the blob data in the various states of construction, as
 // well as URL mappings to blob uuids.

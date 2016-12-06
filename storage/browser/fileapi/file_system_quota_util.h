@@ -15,10 +15,6 @@
 #include "storage/common/fileapi/file_system_types.h"
 #include "url/gurl.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace storage {
 class QuotaManagerProxy;
 }

@@ -30,8 +30,6 @@ namespace storage {
 class ShareableFileReference;
 }
 
-class GURL;
-
 namespace storage {
 
 class FileSystemContext;

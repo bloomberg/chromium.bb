@@ -24,7 +24,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace net {
-class DrainableIOBuffer;
 class IOBuffer;
 }
 

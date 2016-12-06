@@ -22,7 +22,6 @@
 namespace storage {
 class BlobDataHandle;
 class ShareableBlobDataItem;
-class ViewBlobInternalsJob;
 
 // Represents a blob in BlobStorageRegistry. Exported only for unit tests.
 class STORAGE_EXPORT BlobEntry {

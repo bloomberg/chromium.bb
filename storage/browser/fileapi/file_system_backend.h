@@ -31,7 +31,6 @@ class FileSystemURL;
 class FileStreamReader;
 class FileStreamWriter;
 class FileSystemContext;
-class FileSystemFileUtil;
 class FileSystemOperation;
 class FileSystemQuotaUtil;
 class WatcherManager;

@@ -23,13 +23,11 @@ class IOBufferWithSize;
 
 namespace storage {
 class FileStreamReader;
-class ShareableFileReference;
 enum class FlushPolicy;
 }
 
 namespace storage {
 
-class CopyOrMoveFileValidator;
 class FileStreamWriter;
 
 // A delegate class for recursive copy or move operations.

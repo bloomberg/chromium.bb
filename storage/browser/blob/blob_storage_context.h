@@ -27,12 +27,6 @@
 
 class GURL;
 
-namespace base {
-class FilePath;
-class Time;
-class TaskRunner;
-}
-
 namespace content {
 class BlobDispatcherHost;
 class BlobDispatcherHostTest;
@@ -42,7 +36,6 @@ class BlobStorageBrowserTest;
 namespace storage {
 class BlobDataBuilder;
 class BlobDataHandle;
-class BlobDataItem;
 class BlobDataSnapshot;
 class ShareableBlobDataItem;
 

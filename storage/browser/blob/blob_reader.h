@@ -39,7 +39,6 @@ class BlobDataItem;
 class BlobDataHandle;
 class BlobDataSnapshot;
 class FileStreamReader;
-class FileSystemContext;
 
 // The blob reader is used to read a blob.  This can only be used in the browser
 // process, and we need to be on the IO thread.
