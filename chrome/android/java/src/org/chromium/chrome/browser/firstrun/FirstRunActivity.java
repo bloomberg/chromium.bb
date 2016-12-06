@@ -59,6 +59,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
     static final String SHOW_DATA_REDUCTION_PAGE = "ShowDataReduction";
 
+    static final String POST_NATIVE_SETUP_NEEDED = "PostNativeSetupNeeded";
+
     // Outgoing results:
     public static final String RESULT_CLOSE_APP = "Close App";
     public static final String RESULT_SIGNIN_ACCOUNT_NAME = "ResultSignInTo";
@@ -98,10 +100,13 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     private String mResultSignInAccountName;
     private boolean mResultShowSignInSettings;
 
+    private boolean mPostNativePageSequenceCreated;
     private boolean mNativeSideIsInitialized;
 
     private ProfileDataCache mProfileDataCache;
     private FirstRunViewPager mPager;
+
+    private FirstRunFlowSequencer mFirstRunFlowSequencer;
 
     protected Bundle mFreProperties;
 
@@ -125,27 +130,47 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         if (mShowWelcomePage) {
             mPages.add(pageOf(ToSAndUMAFirstRunFragment.class));
             mFreProgressStates.add(FRE_PROGRESS_WELCOME_SHOWN);
+        } else {
+            // Otherwise, if we're skipping past the welcome page, then init the
+            // native process and determine if data reduction proxy and signin
+            // pages should be shown - which both depend on native code.
+            createPostNativePageSequence();
         }
+    }
 
+    private void createPostNativePageSequence() {
+        // Note: Can't just use POST_NATIVE_SETUP_NEEDED for the early return, because this
+        // populates |mPages| which needs to be done even even if onNativeInitialized() was
+        // performed in a previous session.
+        if (mPostNativePageSequenceCreated) return;
+        ensureBrowserProcessInitialized();
+        mFirstRunFlowSequencer.onNativeInitialized(mFreProperties);
+
+        boolean notifyAdapter = false;
         // An optional Data Saver page.
         if (mFreProperties.getBoolean(SHOW_DATA_REDUCTION_PAGE)) {
             mPages.add(pageOf(DataReductionProxyFirstRunFragment.class));
             mFreProgressStates.add(FRE_PROGRESS_DATA_SAVER_SHOWN);
+            notifyAdapter = true;
         }
 
         // An optional sign-in page.
         if (mFreProperties.getBoolean(SHOW_SIGNIN_PAGE)) {
             mPages.add(pageOf(AccountFirstRunFragment.class));
             mFreProgressStates.add(FRE_PROGRESS_SIGNIN_SHOWN);
+            notifyAdapter = true;
         }
+
+        if (notifyAdapter && mPagerAdapter != null) {
+            mPagerAdapter.notifyDataSetChanged();
+        }
+        mPostNativePageSequenceCreated = true;
     }
 
     // Activity:
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        initializeBrowserProcess();
-
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState != null) {
@@ -168,7 +193,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         mPager.setId(R.id.fre_pager);
         setContentView(mPager);
 
-        new FirstRunFlowSequencer(this, mFreProperties) {
+        mFirstRunFlowSequencer = new FirstRunFlowSequencer(this, mFreProperties) {
             @Override
             public void onFlowIsKnown(Bundle freProperties) {
                 if (freProperties == null) {
@@ -200,7 +225,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
                 skipPagesIfNecessary();
             }
-        }.start();
+        };
+        mFirstRunFlowSequencer.start();
 
         recordFreProgressHistogram(FRE_PROGRESS_STARTED);
     }
@@ -226,6 +252,12 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     @Override
     protected void onStart() {
         super.onStart();
+        // Since the FRE may be shown before any tab is shown, mark that this is the point at
+        // which Chrome went to foreground. This is needed as otherwise an assert will be hit
+        // in UmaUtils.getForegroundStartTime() when recording the time taken to load the first
+        // page (which happens after native has been initialized possibly while FRE is still
+        // active).
+        UmaUtils.recordForegroundStartTime();
         stopProgressionIfNotAcceptedTermsOfService();
         if (!mFreProperties.getBoolean(EXTRA_USE_FRE_FLOW_SEQUENCER)) {
             if (FirstRunStatus.getFirstRunFlowComplete(this)) {
@@ -290,6 +322,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
     @Override
     public void completeFirstRunExperience() {
+        ensureBrowserProcessInitialized();
         if (!TextUtils.isEmpty(mResultSignInAccountName)) {
             boolean defaultAccountName =
                     sGlue.isDefaultAccountName(getApplicationContext(), mResultSignInAccountName);
@@ -360,6 +393,13 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
     @Override
     public void acceptTermsOfService(boolean allowCrashUpload) {
+        // At this point, we're advancing past the first page, which has no native
+        // dependencies to further pages in the sequence, if any. These require
+        // native to be initialized and will be added by the call below if needed.
+        // Additionally, the calls later in this function also require native
+        // to be initialized.
+        createPostNativePageSequence();
+
         // If default is true then it corresponds to opt-out and false corresponds to opt-in.
         UmaUtils.recordMetricsReportingDefaultOptIn(!DEFAULT_METRICS_AND_CRASH_REPORTING);
         sGlue.acceptTermsOfService(allowCrashUpload);
@@ -461,17 +501,17 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         while (currentPageIndex < mPagerAdapter.getCount()) {
             FirstRunPage currentPage = (FirstRunPage) mPagerAdapter.getItem(currentPageIndex);
             if (!currentPage.shouldSkipPageOnCreate(getApplicationContext())) return;
+            // If we're advancing to the next page, ensure to init the post native page
+            // sequence - as every page except the first requires that to be initialized.
+            // This is a no-op if it has already been done.
+            createPostNativePageSequence();
             if (!jumpToPage(currentPageIndex + 1)) return;
             currentPageIndex = mPager.getCurrentItem();
         }
     }
 
-    private void initializeBrowserProcess() {
-        // The Chrome browser process must be started here because this Activity
-        // may be started explicitly for tests cases, from Android notifications or
-        // when the application is restoring a FRE fragment after Chrome being killed.
-        // This should happen before super.onCreate() because it might recreate a fragment,
-        // and a fragment might depend on the native library.
+    private void ensureBrowserProcessInitialized() {
+        if (mNativeSideIsInitialized) return;
         try {
             ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
             mNativeSideIsInitialized = true;

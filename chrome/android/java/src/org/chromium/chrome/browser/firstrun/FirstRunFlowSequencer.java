@@ -44,6 +44,13 @@ public abstract class FirstRunFlowSequencer  {
     private final Activity mActivity;
     private final Bundle mLaunchProperties;
 
+    // The following are initialized via initializeSharedState().
+    private boolean mIsAndroidEduDevice;
+    private boolean mHasChildAccount;
+    private Account[] mGoogleAccounts;
+    private boolean mOnlyOneAccount;
+    private boolean mForceEduSignIn;
+
     /**
      * Callback that is called once the flow is determined.
      * If the properties is null, the First Run experience needs to finish and
@@ -68,15 +75,11 @@ public abstract class FirstRunFlowSequencer  {
             return;
         }
 
-        if (!mLaunchProperties.getBoolean(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER)) {
-            onFlowIsKnown(mLaunchProperties);
-            return;
-        }
-
         new AndroidEduAndChildAccountHelper() {
             @Override
             public void onParametersReady() {
-                processFreEnvironment(isAndroidEduDevice(), hasChildAccount());
+                initializeSharedState(isAndroidEduDevice(), hasChildAccount());
+                processFreEnvironmentPreNative();
             }
         }.start(mActivity.getApplicationContext());
     }
@@ -135,7 +138,17 @@ public abstract class FirstRunFlowSequencer  {
                 mActivity.getApplicationContext(), true);
     }
 
-    void processFreEnvironment(boolean androidEduDevice, boolean hasChildAccount) {
+    void initializeSharedState(boolean isAndroidEduDevice, boolean hasChildAccount) {
+        mIsAndroidEduDevice = isAndroidEduDevice;
+        mHasChildAccount = hasChildAccount;
+        mGoogleAccounts = getGoogleAccounts();
+        mOnlyOneAccount = mGoogleAccounts.length == 1;
+        // EDU devices should always have exactly 1 google account, which will be automatically
+        // signed-in. All FRE screens are skipped in this case.
+        mForceEduSignIn = mIsAndroidEduDevice && mOnlyOneAccount && !isSignedIn();
+    }
+
+    void processFreEnvironmentPreNative() {
         if (isFirstRunFlowComplete()) {
             assert isFirstRunEulaAccepted();
             // We do not need any interactive FRE.
@@ -143,59 +156,69 @@ public abstract class FirstRunFlowSequencer  {
             return;
         }
 
+        if (!mLaunchProperties.getBoolean(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER)) {
+            // If EXTRA_USE_FRE_FLOW_SEQUENCER is not set, it means we should use the properties as
+            // provided instead of setting them up. However, the properties as provided may not yet
+            // have post-native properties computed, so the Runnable still needs to be passed.
+            onFlowIsKnown(mLaunchProperties);
+            return;
+        }
+
         Bundle freProperties = new Bundle();
         freProperties.putAll(mLaunchProperties);
         freProperties.remove(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER);
 
-        Account[] googleAccounts = getGoogleAccounts();
-        boolean onlyOneAccount = googleAccounts.length == 1;
-
-        // EDU devices should always have exactly 1 google account, which will be automatically
-        // signed-in. All FRE screens are skipped in this case.
-        boolean forceEduSignIn = androidEduDevice && onlyOneAccount && !isSignedIn();
-
         // In the full FRE we always show the Welcome page, except on EDU devices.
-        boolean showWelcomePage = !forceEduSignIn;
+        boolean showWelcomePage = !mForceEduSignIn;
         freProperties.putBoolean(FirstRunActivity.SHOW_WELCOME_PAGE, showWelcomePage);
+        freProperties.putBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT, mHasChildAccount);
+
+        // Set a boolean to indicate we need to do post native setup via the runnable below.
+        freProperties.putBoolean(FirstRunActivity.POST_NATIVE_SETUP_NEEDED, true);
 
         // Initialize usage and crash reporting according to the default value.
         // The user can explicitly enable or disable the reporting on the Welcome page.
         // This is controlled by the administrator via a policy on EDU devices.
         setDefaultMetricsAndCrashReporting();
 
-        // We show the sign-in page if sync is allowed, and not signed in, and this is not an EDU
-        // device, and
+        onFlowIsKnown(freProperties);
+        if (mHasChildAccount || mForceEduSignIn) {
+            // Child and Edu forced signins are processed independently.
+            setFirstRunFlowSignInComplete();
+        }
+    }
+
+    /**
+     * Called onNativeInitialized() a given flow as completed.
+     * @param activity An activity.
+     * @param data Resulting FRE properties bundle.
+     */
+    public void onNativeInitialized(Bundle freProperties) {
+        if (!freProperties.getBoolean(FirstRunActivity.POST_NATIVE_SETUP_NEEDED)) return;
+
+        // We show the sign-in page if sync is allowed, and not signed in, and this is not
+        // an EDU device, and
         // - no "skip the first use hints" is set, or
         // - "skip the first use hints" is set, but there is at least one account.
-        final boolean offerSignInOk = isSyncAllowed()
-                && !isSignedIn()
-                && !forceEduSignIn
-                && (!shouldSkipFirstUseHints() || googleAccounts.length > 0);
+        boolean offerSignInOk = isSyncAllowed() && !isSignedIn() && !mForceEduSignIn
+                && (!shouldSkipFirstUseHints() || mGoogleAccounts.length > 0);
         freProperties.putBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE, offerSignInOk);
-
-        if (offerSignInOk || forceEduSignIn) {
+        if (offerSignInOk || mForceEduSignIn) {
             // If the user has accepted the ToS in the Setup Wizard and there is exactly
             // one account, or if the device has a child account, or if the device is an
             // Android EDU device and there is exactly one account, preselect the sign-in
             // account and force the selection if necessary.
-            if ((hasAnyUserSeenToS() && onlyOneAccount) || hasChildAccount || forceEduSignIn) {
-                freProperties.putString(AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO,
-                        googleAccounts[0].name);
+            if ((hasAnyUserSeenToS() && mOnlyOneAccount) || mHasChildAccount || mForceEduSignIn) {
+                freProperties.putString(
+                        AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO, mGoogleAccounts[0].name);
                 freProperties.putBoolean(AccountFirstRunFragment.PRESELECT_BUT_ALLOW_TO_CHANGE,
-                        !forceEduSignIn && !hasChildAccount);
+                        !mForceEduSignIn && !mHasChildAccount);
             }
         }
 
-        freProperties.putBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT, hasChildAccount);
-
-        freProperties.putBoolean(FirstRunActivity.SHOW_DATA_REDUCTION_PAGE,
-                shouldShowDataReductionPage());
-
-        onFlowIsKnown(freProperties);
-        if (hasChildAccount || forceEduSignIn) {
-            // Child and Edu forced signins are processed independently.
-            setFirstRunFlowSignInComplete();
-        }
+        freProperties.putBoolean(
+                FirstRunActivity.SHOW_DATA_REDUCTION_PAGE, shouldShowDataReductionPage());
+        freProperties.remove(FirstRunActivity.POST_NATIVE_SETUP_NEEDED);
     }
 
     /**

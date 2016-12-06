@@ -364,8 +364,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         try {
             TraceEvent.begin("ChromeTabbedActivity.finishNativeInitialization");
 
-            launchFirstRunExperience();
-
             refreshSignIn();
 
             ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance(this);
@@ -937,6 +935,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 && OmahaClient.isFreshInstallOrDataHasBeenCleared(getApplicationContext())) {
             getIntent().setData(null);
         }
+
+        launchFirstRunExperience();
     }
 
     @Override

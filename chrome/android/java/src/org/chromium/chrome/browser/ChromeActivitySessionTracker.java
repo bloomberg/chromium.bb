@@ -131,6 +131,7 @@ public class ChromeActivitySessionTracker {
      */
     private void onForegroundSessionEnd() {
         if (!mIsStarted) return;
+        UmaUtils.recordBackgroundTime();
         ChromeApplication.flushPersistentData();
         mIsStarted = false;
         mPowerBroadcastReceiver.onForegroundSessionEnd();

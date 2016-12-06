@@ -18,6 +18,7 @@ public class UmaUtils {
 
     private static boolean sRunningApplicationStart;
     private static long sForegroundStartTimeMs;
+    private static long sBackgroundTimeMs;
 
     /**
      * Record the time at which the activity started. This should be called asap after
@@ -31,8 +32,23 @@ public class UmaUtils {
         sApplicationStartWallClockMs = System.currentTimeMillis();
     }
 
+    /**
+     * Record the time at which Chrome was brought to foreground.
+     */
     public static void recordForegroundStartTime() {
-        sForegroundStartTimeMs = SystemClock.uptimeMillis();
+        // Since this can be called from multiple places (e.g. ChromeActivitySessionTracker
+        // and FirstRunActivity), only set the time if it hasn't been set previously or if
+        // Chrome has been sent to background since the last foreground time.
+        if (sForegroundStartTimeMs == 0 || sForegroundStartTimeMs < sBackgroundTimeMs) {
+            sForegroundStartTimeMs = SystemClock.uptimeMillis();
+        }
+    }
+
+    /**
+     * Record the time at which Chrome was sent to background.
+     */
+    public static void recordBackgroundTime() {
+        sBackgroundTimeMs = SystemClock.uptimeMillis();
     }
 
     /**

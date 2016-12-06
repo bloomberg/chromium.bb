@@ -13,9 +13,6 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.os.Bundle;
 
-import org.chromium.base.BaseChromiumApplication;
-import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +21,10 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 import org.robolectric.util.ActivityController;
+
+import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.util.Feature;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Tests FirstRunFlowSequencer which contains the core logic of what should be shown during the
@@ -62,6 +63,7 @@ public class FirstRunFlowSequencerTest {
         @Override
         public void onFlowIsKnown(Bundle freProperties) {
             calledOnFlowIsKnown = true;
+            if (freProperties != null) onNativeInitialized(freProperties);
             returnedBundle = freProperties;
         }
 
@@ -122,7 +124,10 @@ public class FirstRunFlowSequencerTest {
     @Before
     public void setUp() throws Exception {
         mActivityController = Robolectric.buildActivity(Activity.class);
-        mSequencer = new TestFirstRunFlowSequencer(mActivityController.setup().get(), new Bundle());
+        Bundle launchProperties = new Bundle();
+        launchProperties.putBoolean(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER, true);
+        mSequencer =
+                new TestFirstRunFlowSequencer(mActivityController.setup().get(), launchProperties);
     }
 
     @After
@@ -133,16 +138,18 @@ public class FirstRunFlowSequencerTest {
     @Test
     @Feature({"FirstRun"})
     public void testFirstRunComplete() {
+        Account[] accounts = new Account[1];
+        accounts[0] = new Account(DEFAULT_ACCOUNT, GOOGLE_ACCOUNT_TYPE);
         mSequencer.isFirstRunFlowComplete = true;
         mSequencer.isSignedIn = false;
         mSequencer.isSyncAllowed = true;
-        mSequencer.googleAccounts = null;
+        mSequencer.googleAccounts = accounts;
         mSequencer.hasAnyUserSeenToS = true;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.isFirstRunEulaAccepted = true;
-        mSequencer.processFreEnvironment(
-                false, // androidEduDevice
+        mSequencer.initializeSharedState(false, // androidEduDevice
                 false); // hasChildAccount
+        mSequencer.processFreEnvironmentPreNative();
         assertTrue(mSequencer.calledOnFlowIsKnown);
         assertNull(mSequencer.returnedBundle);
         assertFalse(mSequencer.calledSetDefaultMetricsAndCrashReporting);
@@ -158,9 +165,9 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = false;
-        mSequencer.processFreEnvironment(
-                false, // androidEduDevice
+        mSequencer.initializeSharedState(false, // androidEduDevice
                 false); // hasChildAccount
+        mSequencer.processFreEnvironmentPreNative();
         assertTrue(mSequencer.calledOnFlowIsKnown);
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE));
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE));
@@ -184,9 +191,9 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = true;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = false;
-        mSequencer.processFreEnvironment(
-                false, // androidEduDevice
+        mSequencer.initializeSharedState(false, // androidEduDevice
                 false); // hasChildAccount
+        mSequencer.processFreEnvironmentPreNative();
         assertTrue(mSequencer.calledOnFlowIsKnown);
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE));
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE));
@@ -214,9 +221,9 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = false;
-        mSequencer.processFreEnvironment(
-                false, // androidEduDevice
+        mSequencer.initializeSharedState(false, // androidEduDevice
                 true); // hasChildAccount
+        mSequencer.processFreEnvironmentPreNative();
         assertTrue(mSequencer.calledOnFlowIsKnown);
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE));
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE));
@@ -242,9 +249,9 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = true;
-        mSequencer.processFreEnvironment(
-                false, // androidEduDevice
+        mSequencer.initializeSharedState(false, // androidEduDevice
                 false); // hasChildAccount
+        mSequencer.processFreEnvironmentPreNative();
         assertTrue(mSequencer.calledOnFlowIsKnown);
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE));
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE));
