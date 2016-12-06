@@ -60,6 +60,13 @@ class PhysicalWebPageSuggestionsProvider
   // Manually requests all physical web pages and updates the suggestions.
   void FetchPhysicalWebPages();
 
+  // Returns at most |max_count| ContentSuggestions with IDs not in
+  // |excluded_ids| and sorted by distance (the closest first). The raw pages
+  // are obtained from Physical Web data source.
+  std::vector<ContentSuggestion> GetMostRecentPhysicalWebPagesWithFilter(
+      int max_count,
+      const std::set<std::string>& excluded_ids);
+
   // Converts an Physical Web page to a ContentSuggestion.
   ContentSuggestion ConvertPhysicalWebPage(
       const base::DictionaryValue& page) const;

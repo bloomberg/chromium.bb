@@ -29,6 +29,15 @@ namespace {
 
 const size_t kMaxSuggestionsCount = 10;
 
+std::string GetPageId(const DictionaryValue& page_dictionary) {
+  std::string raw_resolved_url;
+  if (!page_dictionary.GetString(physical_web::kResolvedUrlKey,
+                                 &raw_resolved_url)) {
+    LOG(DFATAL) << physical_web::kResolvedUrlKey << " field is missing.";
+  }
+  return raw_resolved_url;
+}
+
 }  // namespace
 
 PhysicalWebPageSuggestionsProvider::PhysicalWebPageSuggestionsProvider(
@@ -59,11 +68,10 @@ CategoryInfo PhysicalWebPageSuggestionsProvider::GetCategoryInfo(
     Category category) {
   // TODO(vitaliii): Use the proper string once it has been agreed on.
   // TODO(vitaliii): Use a translateable string. (crbug.com/667764)
-  // TODO(vitaliii): Implement More action. (crbug.com/667759)
   return CategoryInfo(
       base::ASCIIToUTF16("Physical web pages"),
       ContentSuggestionsCardLayout::FULL_CARD,
-      /*has_more_action=*/false,
+      /*has_more_action=*/true,
       /*has_reload_action=*/false,
       /*has_view_all_action=*/false,
       /*show_if_empty=*/false,
@@ -88,14 +96,12 @@ void PhysicalWebPageSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
     const FetchDoneCallback& callback) {
-  LOG(DFATAL)
-      << "PhysicalWebPageSuggestionsProvider has no |Fetch| functionality!";
+  DCHECK_EQ(category, provided_category_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, Status(StatusCode::PERMANENT_ERROR,
-                                  "PhysicalWebPageSuggestionsProvider "
-                                  "has no |Fetch| functionality!"),
-                 base::Passed(std::vector<ContentSuggestion>())));
+      base::Bind(callback, Status(StatusCode::SUCCESS),
+                 base::Passed(GetMostRecentPhysicalWebPagesWithFilter(
+                     kMaxSuggestionsCount, known_suggestion_ids))));
 }
 
 void PhysicalWebPageSuggestionsProvider::ClearHistory(
@@ -135,7 +141,17 @@ void PhysicalWebPageSuggestionsProvider::NotifyStatusChanged(
 }
 
 void PhysicalWebPageSuggestionsProvider::FetchPhysicalWebPages() {
-  NotifyStatusChanged(CategoryStatus::AVAILABLE);
+  DCHECK_EQ(CategoryStatus::AVAILABLE, category_status_);
+  observer()->OnNewSuggestions(this, provided_category_,
+                               GetMostRecentPhysicalWebPagesWithFilter(
+                                   kMaxSuggestionsCount,
+                                   /*excluded_ids=*/std::set<std::string>()));
+}
+
+std::vector<ContentSuggestion>
+PhysicalWebPageSuggestionsProvider::GetMostRecentPhysicalWebPagesWithFilter(
+    int max_quantity,
+    const std::set<std::string>& excluded_ids) {
   std::unique_ptr<ListValue> page_values =
       physical_web_data_source_->GetMetadata();
 
@@ -144,8 +160,11 @@ void PhysicalWebPageSuggestionsProvider::FetchPhysicalWebPages() {
     const DictionaryValue* page_dictionary;
     if (!page_value->GetAsDictionary(&page_dictionary)) {
       LOG(DFATAL) << "Physical Web page is not a dictionary.";
+      continue;
     }
-    page_dictionaries.push_back(page_dictionary);
+    if (!excluded_ids.count(GetPageId(*page_dictionary))) {
+      page_dictionaries.push_back(page_dictionary);
+    }
   }
 
   std::sort(page_dictionaries.begin(), page_dictionaries.end(),
@@ -164,14 +183,13 @@ void PhysicalWebPageSuggestionsProvider::FetchPhysicalWebPages() {
 
   std::vector<ContentSuggestion> suggestions;
   for (const DictionaryValue* page_dictionary : page_dictionaries) {
-    suggestions.push_back(ConvertPhysicalWebPage(*page_dictionary));
-    if (suggestions.size() == kMaxSuggestionsCount) {
+    if (static_cast<int>(suggestions.size()) == max_quantity) {
       break;
     }
+    suggestions.push_back(ConvertPhysicalWebPage(*page_dictionary));
   }
 
-  observer()->OnNewSuggestions(this, provided_category_,
-                               std::move(suggestions));
+  return suggestions;
 }
 
 ContentSuggestion PhysicalWebPageSuggestionsProvider::ConvertPhysicalWebPage(
@@ -191,7 +209,7 @@ ContentSuggestion PhysicalWebPageSuggestionsProvider::ConvertPhysicalWebPage(
   }
 
   const GURL resolved_url(raw_resolved_url);
-  ContentSuggestion suggestion(provided_category_, resolved_url.spec(),
+  ContentSuggestion suggestion(provided_category_, GetPageId(page),
                                resolved_url);
   DCHECK(base::IsStringUTF8(title));
   suggestion.set_title(base::UTF8ToUTF16(title));

@@ -8,12 +8,16 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
+#include "components/ntp_snippets/status.h"
 #include "components/physical_web/data_source/fake_physical_web_data_source.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,6 +30,7 @@ using physical_web::FakePhysicalWebDataSource;
 using testing::_;
 using testing::AnyNumber;
 using testing::ElementsAre;
+using testing::ElementsAreArray;
 using testing::StrictMock;
 using testing::UnorderedElementsAre;
 
@@ -35,8 +40,24 @@ namespace {
 
 MATCHER_P(HasUrl, url, "") {
   *result_listener << "expected URL: " << url
-                   << "has URL: " << arg.url().spec();
-  return arg.url().spec() == url;
+                   << ", but has URL: " << arg.url().spec();
+  return url == arg.url().spec();
+}
+
+void CompareFetchMoreResult(
+    const base::Closure& done_closure,
+    Status expected_status_code,
+    const std::vector<std::string>& expected_suggestion_urls,
+    Status actual_status_code,
+    std::vector<ContentSuggestion> actual_suggestions) {
+  EXPECT_EQ(expected_status_code.status, actual_status_code.status);
+  std::vector<std::string> actual_suggestion_urls;
+  for (const ContentSuggestion& suggestion : actual_suggestions) {
+    actual_suggestion_urls.push_back(suggestion.url().spec());
+  }
+  EXPECT_THAT(actual_suggestion_urls,
+              ElementsAreArray(expected_suggestion_urls));
+  done_closure.Run();
 }
 
 }  // namespace
@@ -102,6 +123,8 @@ class PhysicalWebPageSuggestionsProviderTest : public testing::Test {
   StrictMock<MockContentSuggestionsProviderObserver> observer_;
   CategoryFactory category_factory_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  // Added in order to test provider's |Fetch| method.
+  base::MessageLoop message_loop_;
   // Last so that the dependencies are deleted after the provider.
   std::unique_ptr<PhysicalWebPageSuggestionsProvider> provider_;
 
@@ -137,6 +160,50 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest, ShouldSortByDistance) {
                                    HasUrl("https://resolved_url.com/2"),
                                    HasUrl("https://resolved_url.com/1"))));
   CreateProvider();
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       FetchMoreShouldFilterAndReturnSortedSuggestions) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+  std::vector<int> ids;
+  const int kNumSuggestionsInSection = 10;
+  const int kNumSuggestionsInSource = 3 * kNumSuggestionsInSection;
+  for (int i = 1; i <= kNumSuggestionsInSource; ++i) {
+    ids.push_back(i);
+  }
+  // |CreateDummyPhysicalWebPages| builds pages with distances 1, 2, 3, ... ,
+  // so we know the order of suggestions in the provider.
+  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages(ids));
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, provided_category(), _));
+  CreateProvider();
+
+  const std::string dummy_resolved_url = "https://resolved_url.com/";
+  std::set<std::string> known_ids;
+  for (int i = 1; i <= kNumSuggestionsInSection; ++i) {
+    known_ids.insert(dummy_resolved_url + base::IntToString(i));
+  }
+  known_ids.insert(dummy_resolved_url + base::IntToString(12));
+  known_ids.insert(dummy_resolved_url + base::IntToString(17));
+  std::vector<std::string> expected_suggestion_urls;
+  for (int i = 1; i <= kNumSuggestionsInSource; ++i) {
+    if (expected_suggestion_urls.size() == kNumSuggestionsInSection) {
+      break;
+    }
+    std::string url = dummy_resolved_url + base::IntToString(i);
+    if (!known_ids.count(url)) {
+      expected_suggestion_urls.push_back(url);
+    }
+  }
+
+  // Added to wait for |Fetch| callback to be called.
+  base::RunLoop run_loop;
+  provider()->Fetch(
+      provided_category(), known_ids,
+      base::Bind(CompareFetchMoreResult, run_loop.QuitClosure(),
+                 Status(StatusCode::SUCCESS), expected_suggestion_urls));
+  // Wait for the callback to be called.
+  run_loop.Run();
 }
 
 }  // namespace ntp_snippets
