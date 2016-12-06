@@ -18,27 +18,26 @@ namespace cc {
 namespace devtools_instrumentation {
 
 namespace internal {
-const char kCategory[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
-const char kCategoryFrame[] =
-    TRACE_DISABLED_BY_DEFAULT("devtools.timeline.frame");
-const char kData[] = "data";
-const char kFrameId[] = "frameId";
-const char kLayerId[] = "layerId";
-const char kLayerTreeId[] = "layerTreeId";
-const char kPixelRefId[] = "pixelRefId";
+extern const char kCategory[];
+extern const char kCategoryFrame[];
+extern const char kData[];
+extern const char kFrameId[];
+extern const char kLayerId[];
+extern const char kLayerTreeId[];
+extern const char kPixelRefId[];
 
-const char kImageDecodeTask[] = "ImageDecodeTask";
-const char kBeginFrame[] = "BeginFrame";
-const char kNeedsBeginFrameChanged[] = "NeedsBeginFrameChanged";
-const char kActivateLayerTree[] = "ActivateLayerTree";
-const char kRequestMainThreadFrame[] = "RequestMainThreadFrame";
-const char kBeginMainThreadFrame[] = "BeginMainThreadFrame";
-const char kDrawFrame[] = "DrawFrame";
-const char kCompositeLayers[] = "CompositeLayers";
+extern const char kImageDecodeTask[];
+extern const char kBeginFrame[];
+extern const char kNeedsBeginFrameChanged[];
+extern const char kActivateLayerTree[];
+extern const char kRequestMainThreadFrame[];
+extern const char kBeginMainThreadFrame[];
+extern const char kDrawFrame[];
+extern const char kCompositeLayers[];
 }  // namespace internal
 
-const char kPaintSetup[] = "PaintSetup";
-const char kUpdateLayer[] = "UpdateLayer";
+extern const char kPaintSetup[];
+extern const char kUpdateLayer[];
 
 class ScopedLayerTask {
  public:

@@ -33,6 +33,7 @@ cc_component("cc") {
     "debug/debug_colors.h",
     "debug/debug_rect_history.cc",
     "debug/debug_rect_history.h",
+    "debug/devtools_instrumentation.cc",
     "debug/devtools_instrumentation.h",
     "debug/frame_rate_counter.cc",
     "debug/frame_rate_counter.h",
