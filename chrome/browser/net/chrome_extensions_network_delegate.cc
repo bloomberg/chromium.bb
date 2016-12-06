@@ -173,7 +173,7 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
     GURL* new_url) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
-  GURL url(request->url());
+  const GURL& url(request->url());
 
   // Block top-level navigations to blob: or filesystem: URLs with extension
   // origin from non-extension processes.  See https://crbug.com/645028.
@@ -188,37 +188,39 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
   bool is_nested_url = url.SchemeIsFileSystem() || url.SchemeIsBlob();
   bool is_navigation =
       info && content::IsResourceTypeFrame(info->GetResourceType());
-  url::Origin origin(url);
-  if (is_nested_url && is_navigation && info->IsMainFrame() &&
-      origin.scheme() == extensions::kExtensionScheme &&
-      !extension_info_map_->process_map().Contains(info->GetChildID()) &&
-      !content::IsBrowserSideNavigationEnabled()) {
-    // Relax this restriction for apps that use <webview>.  See
-    // https://crbug.com/652077.
-    const extensions::Extension* extension =
-        extension_info_map_->extensions().GetByID(origin.host());
-    bool has_webview_permission =
-        extension &&
-        extension->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kWebView);
-    // Check whether the request is coming from a <webview> guest process via
-    // ChildProcessSecurityPolicy.  A guest process should have already been
-    // granted permission to request |origin| when its WebContents was created.
-    // See https://crbug.com/656752.
-    auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
-    bool from_guest =
-        policy->HasSpecificPermissionForOrigin(info->GetChildID(), origin);
-    if (!has_webview_permission || !from_guest) {
-      // TODO(alexmos): Temporary instrumentation to find any regressions for
-      // this blocking.  Remove after verifying that this is not breaking any
-      // legitimate use cases.
-      char origin_copy[256];
-      base::strlcpy(origin_copy, origin.Serialize().c_str(),
-                    arraysize(origin_copy));
-      base::debug::Alias(&origin_copy);
-      base::debug::Alias(&from_guest);
-      base::debug::DumpWithoutCrashing();
-      return net::ERR_ABORTED;
+  if (is_nested_url && is_navigation && info->IsMainFrame()) {
+    // Nested conditional so we don't always pay the GURL -> Origin conversion.
+    url::Origin origin = url::Origin(url);
+    if (origin.scheme() == extensions::kExtensionScheme &&
+        !extension_info_map_->process_map().Contains(info->GetChildID()) &&
+        !content::IsBrowserSideNavigationEnabled()) {
+      // Relax this restriction for apps that use <webview>.  See
+      // https://crbug.com/652077.
+      const extensions::Extension* extension =
+          extension_info_map_->extensions().GetByID(origin.host());
+      bool has_webview_permission =
+          extension &&
+          extension->permissions_data()->HasAPIPermission(
+              extensions::APIPermission::kWebView);
+      // Check whether the request is coming from a <webview> guest process via
+      // ChildProcessSecurityPolicy.  A guest process should have already been
+      // granted permission to request |origin| when its WebContents was
+      // created. See https://crbug.com/656752.
+      auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
+      bool from_guest =
+          policy->HasSpecificPermissionForOrigin(info->GetChildID(), origin);
+      if (!has_webview_permission || !from_guest) {
+        // TODO(alexmos): Temporary instrumentation to find any regressions for
+        // this blocking.  Remove after verifying that this is not breaking any
+        // legitimate use cases.
+        char origin_copy[256];
+        base::strlcpy(origin_copy, origin.Serialize().c_str(),
+                      arraysize(origin_copy));
+        base::debug::Alias(&origin_copy);
+        base::debug::Alias(&from_guest);
+        base::debug::DumpWithoutCrashing();
+        return net::ERR_ABORTED;
+      }
     }
   }
 
