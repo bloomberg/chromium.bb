@@ -9332,19 +9332,31 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 
 #if CONFIG_REF_MV
-      // TODO(jingning): This needs some refactoring to improve code quality
-      // and reduce redundant steps.
+// TODO(jingning): This needs some refactoring to improve code quality
+// and reduce redundant steps.
+#if CONFIG_EXT_INTER
+      if (((mbmi->mode == NEARMV || mbmi->mode == NEAR_NEARMV) &&
+           mbmi_ext->ref_mv_count[ref_frame_type] > 2) ||
+          ((mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) &&
+           mbmi_ext->ref_mv_count[ref_frame_type] > 1)) {
+#else
       if ((mbmi->mode == NEARMV &&
            mbmi_ext->ref_mv_count[ref_frame_type] > 2) ||
           (mbmi->mode == NEWMV && mbmi_ext->ref_mv_count[ref_frame_type] > 1)) {
+#endif  // CONFIG_EXT_INTER
         int_mv backup_mv = frame_mv[NEARMV][ref_frame];
         MB_MODE_INFO backup_mbmi = *mbmi;
         int backup_skip = x->skip;
         int64_t tmp_ref_rd = this_rd;
         int ref_idx;
 
-        // TODO(jingning): This should be deprecated shortly.
+// TODO(jingning): This should be deprecated shortly.
+#if CONFIG_EXT_INTER
+        int idx_offset =
+            (mbmi->mode == NEARMV || mbmi->mode == NEAR_NEARMV) ? 1 : 0;
+#else
         int idx_offset = (mbmi->mode == NEARMV) ? 1 : 0;
+#endif
         int ref_set =
             AOMMIN(2, mbmi_ext->ref_mv_count[ref_frame_type] - 1 - idx_offset);
 
@@ -9383,6 +9395,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           int ref;
           int_mv cur_mv;
           RD_STATS tmp_rd_stats, tmp_rd_stats_y, tmp_rd_stats_uv;
+#if CONFIG_EXT_INTER
+          int tmp_compmode_interintra_cost = 0;
+          int tmp_compmode_interinter_cost = 0;
+#endif  // CONFIG_EXT_INTER
 
           av1_invalid_rd_stats(&tmp_rd_stats);
 
@@ -9413,8 +9429,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                                                     { { 0 } } };
             int dummy_single_newmvs_rate[2][TOTAL_REFS_PER_FRAME] = { { 0 },
                                                                       { 0 } };
-            int dummy_compmode_interintra_cost = 0;
-            int dummy_compmode_interinter_cost = 0;
 #else
             int_mv dummy_single_newmv[TOTAL_REFS_PER_FRAME] = { { 0 } };
 #endif
@@ -9429,8 +9443,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_MOTION_VAR
 #if CONFIG_EXT_INTER
                 dummy_single_newmvs, dummy_single_newmvs_rate,
-                &dummy_compmode_interintra_cost,
-                &dummy_compmode_interinter_cost, NULL,
+                &tmp_compmode_interintra_cost, &tmp_compmode_interinter_cost,
+                NULL,
 #else
                 dummy_single_newmv,
 #endif
@@ -9497,6 +9511,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             for (i = 0; i < MAX_MB_PLANE; ++i)
               memcpy(x->blk_skip_drl[i], x->blk_skip[i],
                      sizeof(uint8_t) * ctx->num_4x4_blk);
+#endif
+#if CONFIG_EXT_INTER
+            compmode_interintra_cost = tmp_compmode_interintra_cost;
+            compmode_interinter_cost = tmp_compmode_interinter_cost;
 #endif
           } else {
             *mbmi = backup_mbmi;
