@@ -123,9 +123,6 @@ struct CONTENT_EXPORT FrameReplicationState {
   // True if a frame's origin is unique and should be considered potentially
   // trustworthy.
   bool has_potentially_trustworthy_unique_origin;
-
-  // TODO(alexmos): Eventually, this structure can also hold other state that
-  // needs to be replicated, such as frame sizing info.
 };
 
 }  // namespace content
