@@ -1226,9 +1226,10 @@ void UseCounter::count(CSSParserMode cssParserMode, CSSPropertyID property) {
   if (!m_CSSRecorded.quickGet(property)) {
     // Note that HTTPArchive tooling looks specifically for this event - see
     // https://github.com/HTTPArchive/httparchive/issues/59
+    int sampleId = mapCSSPropertyIdToCSSSampleIdForHistogram(property);
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
-                 "CSSFeatureFirstUsed", "feature", property);
-    cssHistogram().count(mapCSSPropertyIdToCSSSampleIdForHistogram(property));
+                 "CSSFeatureFirstUsed", "feature", sampleId);
+    cssHistogram().count(sampleId);
     m_CSSRecorded.quickSet(property);
   }
   m_legacyCounter.countCSS(property);
