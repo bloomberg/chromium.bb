@@ -18,18 +18,8 @@
         },
         {
           "object": "LayoutView #document",
-          "rect": [8, 193, 285, 200],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutView #document",
           "rect": [8, 393, 285, 15],
           "reason": "scroll"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [93, 108, 200, 285],
-          "reason": "incremental"
         },
         {
           "object": "LayoutView #document",
@@ -87,10 +77,6 @@
     {
       "object": "VerticalScrollbar",
       "reason": "scroll"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
     }
   ]
 }

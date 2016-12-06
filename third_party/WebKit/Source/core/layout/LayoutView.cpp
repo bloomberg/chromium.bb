@@ -1026,13 +1026,4 @@ LayoutRect LayoutView::debugRect() const {
   return rect;
 }
 
-bool LayoutView::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  // Frame scroll corner is painted using LayoutView as the display item client.
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
-      (frameView()->horizontalScrollbar() || frameView()->verticalScrollbar()))
-    return false;
-
-  return LayoutBlockFlow::paintedOutputOfObjectHasNoEffectRegardlessOfSize();
-}
-
 }  // namespace blink
