@@ -23,6 +23,8 @@
 #include "base/strings/string_util.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/spdy/hpack/hpack_constants.h"
+#include "net/spdy/hpack/hpack_decoder.h"
+#include "net/spdy/hpack/hpack_decoder2.h"
 #include "net/spdy/spdy_bitmasks.h"
 #include "net/spdy/spdy_bug_tracker.h"
 #include "net/spdy/spdy_flags.h"
@@ -2359,7 +2361,11 @@ HpackEncoder* SpdyFramer::GetHpackEncoder() {
 
 HpackDecoderInterface* SpdyFramer::GetHpackDecoder() {
   if (hpack_decoder_.get() == nullptr) {
-    hpack_decoder_.reset(new HpackDecoder());
+    if (FLAGS_chromium_http2_flag_spdy_use_hpack_decoder2) {
+      hpack_decoder_.reset(new HpackDecoder2());
+    } else {
+      hpack_decoder_.reset(new HpackDecoder());
+    }
   }
   return hpack_decoder_.get();
 }
