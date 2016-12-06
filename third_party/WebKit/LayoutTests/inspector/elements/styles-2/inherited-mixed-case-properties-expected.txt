@@ -17,7 +17,7 @@ Style Attribute { ()
     CoLoR: blAck;
 
 [expanded] 
-#container { (inherited-mixed…perties.html:4 -> inherited-mixed-case-properties.html:4:1)
+#container { (inherited-mixed…perties.html:4 -> inherited-mixed-case-properties.html:4:13)
     -webkit-FONT-smoothing: antialiased;
 
 

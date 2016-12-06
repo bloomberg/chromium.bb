@@ -16,7 +16,7 @@ Running: testDisableProperty
 element.style { ()
 
 [expanded] 
-#inspected, .INSERTED-OTHER-SELECTOR { (styles-disable-…r-edit.html:41 -> styles-disable-property-after-selector-edit.html:41:1)
+#inspected, .INSERTED-OTHER-SELECTOR { (styles-disable-…r-edit.html:41 -> styles-disable-property-after-selector-edit.html:41:39)
 /-- overloaded --/ /-- disabled --/     /* color: red; */
 
 [expanded] 

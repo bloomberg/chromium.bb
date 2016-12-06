@@ -3,7 +3,7 @@ Tests that webkit css region styling can be parsed correctly. Test passes if it 
 P color styled in region: #008000.
 
 color: rgb(255, 0, 0);
-    #ff0000 - #p1 region-style-crash.html:6 -> region-style-crash.html:6:1
+    #ff0000 - #p1 region-style-crash.html:6 -> region-style-crash.html:6:6
 display: block;
     block - p user agent stylesheet
 -webkit-margin-after: 16px;
@@ -18,7 +18,7 @@ display: block;
 element.style { ()
 
 [expanded] 
-#p1 { (region-style-crash.html:6 -> region-style-crash.html:6:1)
+#p1 { (region-style-crash.html:6 -> region-style-crash.html:6:6)
     color: #ff0000;
 
 [expanded] 

@@ -5,7 +5,7 @@ Original style:
 element.style { ()
 
 [expanded] 
-#main { (media-emulation.html:5 -> media-emulation.html:5:1)
+#main { (media-emulation.html:5 -> media-emulation.html:5:8)
     color: red;
 
 [expanded] 
@@ -18,11 +18,11 @@ element.style { ()
 
 [expanded] 
 @media print
-#main { (media-emulation.html:8 -> media-emulation.html:8:1)
+#main { (media-emulation.html:8 -> media-emulation.html:8:8)
     color: black;
 
 [expanded] 
-#main { (media-emulation.html:5 -> media-emulation.html:5:1)
+#main { (media-emulation.html:5 -> media-emulation.html:5:8)
 /-- overloaded --/     color: red;
 
 [expanded] 
@@ -34,11 +34,11 @@ tty media emulated:
 element.style { ()
 
 [expanded] 
-#main { (media-emulation.html:12 -> media-emulation.html:12:1)
+#main { (media-emulation.html:12 -> media-emulation.html:12:8)
     color: green;
 
 [expanded] 
-#main { (media-emulation.html:5 -> media-emulation.html:5:1)
+#main { (media-emulation.html:5 -> media-emulation.html:5:8)
 /-- overloaded --/     color: red;
 
 [expanded] 
@@ -50,7 +50,7 @@ No media emulated:
 element.style { ()
 
 [expanded] 
-#main { (media-emulation.html:5 -> media-emulation.html:5:1)
+#main { (media-emulation.html:5 -> media-emulation.html:5:8)
     color: red;
 
 [expanded] 

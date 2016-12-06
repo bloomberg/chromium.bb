@@ -6,14 +6,14 @@ Other
 #inspected computed styles: 
 color: rgb(0, 0, 255);
 display: flex;
-    flex - #inspected computed-proper…xpanded.html:5 -> computed-properties-retain-expanded.html:5:1
-    OVERLOADED block - div computed-proper…panded.html:14 -> computed-properties-retain-expanded.html:14:1
+    flex - #inspected computed-proper…xpanded.html:5 -> computed-properties-retain-expanded.html:5:13
+    OVERLOADED block - div computed-proper…panded.html:14 -> computed-properties-retain-expanded.html:14:6
     OVERLOADED block - div user agent stylesheet
 
 #other computed styles: 
 color: rgb(0, 0, 0);
 display: inline;
-    inline - #other computed-proper…panded.html:10 -> computed-properties-retain-expanded.html:10:1
-    OVERLOADED block - div computed-proper…panded.html:14 -> computed-properties-retain-expanded.html:14:1
+    inline - #other computed-proper…panded.html:10 -> computed-properties-retain-expanded.html:10:9
+    OVERLOADED block - div computed-proper…panded.html:14 -> computed-properties-retain-expanded.html:14:6
     OVERLOADED block - div user agent stylesheet
 

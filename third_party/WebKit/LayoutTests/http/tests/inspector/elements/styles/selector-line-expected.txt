@@ -5,11 +5,11 @@ Text
 element.style { ()
 
 [expanded] 
-#container #inspected { (selector-line.scss:4 -> selector-line.scss:4:5)
+#container #inspected { (selector-line.scss:4 -> selector-line.scss:4:16)
     color: green;
 
 [expanded] 
-#inspected { (selector-line.html:4 -> selector-line.html:4:1)
+#inspected { (selector-line.html:5 -> selector-line.html:5:2)
 /-- overloaded --/     color: green;
 
 [expanded] 

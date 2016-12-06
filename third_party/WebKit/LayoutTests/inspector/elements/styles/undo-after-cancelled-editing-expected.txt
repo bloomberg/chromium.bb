@@ -11,7 +11,7 @@ Running: editProperty
 element.style { ()
 
 [expanded] 
-#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:1)
+#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:13)
     color: blue;
     : ;
 
@@ -27,7 +27,7 @@ Running: undoStyles
 element.style { ()
 
 [expanded] 
-#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:1)
+#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:13)
     color: blue;
 
 [expanded] 
@@ -40,7 +40,7 @@ Running: onUndoedProperty
 element.style { ()
 
 [expanded] 
-#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:1)
+#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:13)
 
 [expanded] 
 div { (user agent stylesheet)

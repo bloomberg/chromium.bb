@@ -78,7 +78,7 @@ Running: testSetViaAncestorClass
 element.style { ()
 
 [expanded] 
-.red div:first-child { (styles-update-from-js.html:4 -> styles-update-from-js.html:4:1)
+.red div:first-child { (styles-update-from-js.html:4 -> styles-update-from-js.html:4:23)
     background-color: red;
 
 [expanded] 
@@ -97,7 +97,7 @@ Running: testSetViaSiblingAttr
 element.style { ()
 
 [expanded] 
-div[foo="bar"] + div { (styles-update-from-js.html:8 -> styles-update-from-js.html:8:1)
+div[foo="bar"] + div { (styles-update-from-js.html:8 -> styles-update-from-js.html:8:23)
     background-color: blue;
 
 [expanded] 

@@ -5,13 +5,13 @@ Main style:
 element.style { ()
 
 [expanded] 
-#main { (parse-comments.html:25 -> parse-comments.html:25:1)
+#main { (parse-comments.html:25 -> parse-comments.html:25:24)
 /-- overloaded --/ /-- disabled --/     /* color: red; */
     color/* color: red */:/* color: red */ green/* color: red */;
 /-- overloaded --/ /-- disabled --/     /* color: red; */
 
 [expanded] 
-#main { (parse-comments.html:9 -> parse-comments.html:9:21)
+#main { (parse-comments.html:9 -> parse-comments.html:9:43)
 /-- overloaded --/ /-- disabled --/     /* color: red; */
     background /* color: red */ :/* color: red */blue/* color: red */;
 /-- overloaded --/ /-- disabled --/     /* color: red; */

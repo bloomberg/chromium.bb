@@ -5,7 +5,7 @@ Tests that setting selector text can be undone.
 element.style { ()
 
 [expanded] 
-#inspected { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:1)
+#inspected { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:13)
     color: green;
 
 [expanded] 
@@ -17,7 +17,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-#inspected, #other { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:13)
+#inspected, #other { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:21)
     color: green;
 
 [expanded] 
@@ -29,7 +29,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-#inspected { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:1)
+#inspected { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:13)
     color: green;
 
 [expanded] 
@@ -41,7 +41,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-#inspected, #other { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:13)
+#inspected, #other { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:21)
     color: green;
 
 [expanded] 

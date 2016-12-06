@@ -6,7 +6,7 @@ element.style { ()
     display: none;
 
 [expanded] 
-.foo { (styles-source-l…-inline.html:7 -> styles-source-lines-inline.html:7:1)
+.foo { (styles-source-l…-inline.html:7 -> styles-source-lines-inline.html:7:7)
     color: blue;
 
 [expanded] 

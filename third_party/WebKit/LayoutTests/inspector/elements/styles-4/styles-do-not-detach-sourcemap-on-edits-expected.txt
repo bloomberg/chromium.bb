@@ -8,7 +8,7 @@ element.style { ()
 
 [expanded] 
 @media (min-width: 6px)
-#container { (styles-do-not-d…n-edits.scss:2 -> styles-do-not-detach-sourcemap-on-edits.scss:2:5)
+#container { (styles-do-not-d…n-edits.scss:3 -> styles-do-not-detach-sourcemap-on-edits.scss:3:9)
     border: 1px solid blue;
     color: blue;
 
@@ -23,7 +23,7 @@ element.style { ()
 
 [expanded] 
 @media (min-width: 6px)
-#container { (styles-do-not-d…n-edits.scss:2 -> styles-do-not-detach-sourcemap-on-edits.scss:2:5)
+#container { (styles-do-not-d…n-edits.scss:3 -> styles-do-not-detach-sourcemap-on-edits.scss:3:9)
     border: 1px solid blue;
 /-- overloaded --/     NAME: VALUE;
 
@@ -38,7 +38,7 @@ element.style { ()
 
 [expanded] 
 @media (min-width: 6px)
-#container, SELECTOR { (styles-do-not-d…n-edits.scss:2 -> styles-do-not-detach-sourcemap-on-edits.scss:2:5)
+#container, SELECTOR { (styles-do-not-d…n-edits.scss:3 -> styles-do-not-detach-sourcemap-on-edits.scss:3:17)
     border: 1px solid blue;
 /-- overloaded --/     NAME: VALUE;
 
@@ -53,7 +53,7 @@ element.style { ()
 
 [expanded] 
 @media (max-width: 9999999px)
-#container, SELECTOR { (styles-do-not-d…n-edits.scss:2 -> styles-do-not-detach-sourcemap-on-edits.scss:2:5)
+#container, SELECTOR { (styles-do-not-d…n-edits.scss:3 -> styles-do-not-detach-sourcemap-on-edits.scss:3:17)
     border: 1px solid blue;
 /-- overloaded --/     NAME: VALUE;
 
@@ -71,7 +71,7 @@ NEW-RULE { (styles-do-not-d…n-edits.scss:4 -> styles-do-not-detach-sourcemap-o
 
 [expanded] 
 @media (max-width: 9999999px)
-#container, SELECTOR { (styles-do-not-d…n-edits.scss:2 -> styles-do-not-detach-sourcemap-on-edits.scss:2:5)
+#container, SELECTOR { (styles-do-not-d…n-edits.scss:3 -> styles-do-not-detach-sourcemap-on-edits.scss:3:17)
     border: 1px solid blue;
 /-- overloaded --/     NAME: VALUE;
 

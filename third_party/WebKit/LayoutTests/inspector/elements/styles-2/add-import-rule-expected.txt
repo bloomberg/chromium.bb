@@ -5,7 +5,7 @@
 element.style { ()
 
 [expanded] 
-span { (add-import-rule.html:4 -> add-import-rule.html:4:8)
+span { (add-import-rule.html:4 -> add-import-rule.html:4:14)
     color: red;
 
 
@@ -15,7 +15,7 @@ span { (add-import-rule.html:4 -> add-import-rule.html:4:8)
 element.style { ()
 
 [expanded] 
-span { (data:text/css,s…color:green}:1 -> data:text/css,span{color:green}:1:1)
+span { (data:text/css,s…color:green}:1 -> data:text/css,span{color:green}:1:6)
     color: green;
 
 

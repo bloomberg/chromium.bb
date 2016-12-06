@@ -2,58 +2,58 @@ Tests that computed styles expand and allow tracing to style rules.
 
 ==== Computed style for ID1 ====
 background-attachment: scroll;
-    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:7
 background-clip: border-box;
-    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:7
 background-color: rgb(128, 128, 128);
-    gray - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
-    OVERLOADED black - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:1
-    OVERLOADED green - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:1
+    gray - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:7
+    OVERLOADED black - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:7
+    OVERLOADED green - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:7
 background-image: none;
-    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:7
 background-origin: padding-box;
-    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:7
 background-position-x: 0%;
-    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:7
 background-position-y: 0%;
-    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:7
 background-repeat-x: ;
-    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:7
 background-repeat-y: ;
-    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:7
 background-size: auto;
-    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:7
 display: block;
     block - div user agent stylesheet
 font-family: Courier;
-    Courier - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:1
-    OVERLOADED Times - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:1
-    OVERLOADED Arial - body styles-computed-trace.html:4 -> styles-computed-trace.html:4:1
+    Courier - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:7
+    OVERLOADED Times - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:7
+    OVERLOADED Arial - body styles-computed-trace.html:4 -> styles-computed-trace.html:4:7
 text-decoration-color: rgb(0, 0, 0);
-    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:6
 text-decoration-line: underline;
-    underline - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+    underline - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:6
 text-decoration-style: solid;
-    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:6
 [expanded] 
 element.style { ()
 
 ==== Computed style for ID2 ====
 background-color: rgb(0, 0, 255);
-    blue - #id2 styles-computed-trace.html:27 -> styles-computed-trace.html:27:1
+    blue - #id2 styles-computed-trace.html:27 -> styles-computed-trace.html:27:7
 display: block;
     block - div user agent stylesheet
 font-family: Courier;
-    Courier - #id2 styles-computed-trace.html:27 -> styles-computed-trace.html:27:1
-    OVERLOADED Courier - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:1
-    OVERLOADED Times - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:1
-    OVERLOADED Arial - body styles-computed-trace.html:4 -> styles-computed-trace.html:4:1
+    Courier - #id2 styles-computed-trace.html:27 -> styles-computed-trace.html:27:7
+    OVERLOADED Courier - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:7
+    OVERLOADED Times - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:7
+    OVERLOADED Arial - body styles-computed-trace.html:4 -> styles-computed-trace.html:4:7
 text-decoration-color: rgb(0, 0, 0);
-    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:6
 text-decoration-line: underline;
-    underline - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+    underline - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:6
 text-decoration-style: solid;
-    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:6
 [expanded] 
 element.style { ()
 

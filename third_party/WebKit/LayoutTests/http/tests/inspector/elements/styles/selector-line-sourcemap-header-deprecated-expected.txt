@@ -5,7 +5,7 @@ Text
 element.style { ()
 
 [expanded] 
-#container #inspected { (selector-line-s…-header.scss:4 -> selector-line-sourcemap-header.scss:4:5)
+#container #inspected { (selector-line-s…-header.scss:4 -> selector-line-sourcemap-header.scss:4:16)
     color: green;
 
 [expanded] 

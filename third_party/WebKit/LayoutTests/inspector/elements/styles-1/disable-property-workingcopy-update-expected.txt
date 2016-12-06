@@ -24,7 +24,7 @@ Running: dumpDisabledText
 element.style { ()
 
 [expanded] 
-#inspected { (disable-propert…y-update.css:1 -> disable-property-workingcopy-update.css:1:1)
+#inspected { (disable-propert…y-update.css:1 -> disable-property-workingcopy-update.css:1:13)
 /-- overloaded --/ /-- disabled --/     /* font-weight: bold; */
 
 [expanded] 
@@ -45,7 +45,7 @@ Running: dumpEnabledText
 element.style { ()
 
 [expanded] 
-#inspected { (disable-propert…y-update.css:1 -> disable-property-workingcopy-update.css:1:1)
+#inspected { (disable-propert…y-update.css:1 -> disable-property-workingcopy-update.css:1:13)
     font-weight: bold;
 
 [expanded] 

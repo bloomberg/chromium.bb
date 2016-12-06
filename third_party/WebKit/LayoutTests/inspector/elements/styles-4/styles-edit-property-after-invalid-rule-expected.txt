@@ -5,7 +5,7 @@ Initial value
 element.style { ()
 
 [expanded] 
-#container { (styles-edit-pro…d-rule.html:10 -> styles-edit-property-after-invalid-rule.html:10:1)
+#container { (styles-edit-pro…d-rule.html:10 -> styles-edit-property-after-invalid-rule.html:10:13)
     padding: 15px;
 
 [expanded] 
@@ -17,7 +17,7 @@ After changing property
 element.style { ()
 
 [expanded] 
-#container { (styles-edit-pro…d-rule.html:10 -> styles-edit-property-after-invalid-rule.html:10:1)
+#container { (styles-edit-pro…d-rule.html:10 -> styles-edit-property-after-invalid-rule.html:10:13)
     padding: 20px;
 
 [expanded] 

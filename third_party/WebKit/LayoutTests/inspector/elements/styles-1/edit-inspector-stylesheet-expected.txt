@@ -12,7 +12,7 @@ Inspector stylesheet content:
 element.style { ()
 
 [expanded] 
-#inspected { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
+#inspected { (inspector-stylesheet:1 -> inspector-stylesheet:1:13)
     background-color: green;
 
 [expanded] 

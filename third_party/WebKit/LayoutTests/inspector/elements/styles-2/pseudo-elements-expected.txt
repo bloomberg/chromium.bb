@@ -25,24 +25,24 @@ element.style { ()
 
 ======== Pseudo ::before element ========
 [expanded] 
-[$#inspected:before, $].some-other-selector { (pseudo-elements.html:4 -> pseudo-elements.html:4:1)
+[$#inspected:before, $].some-other-selector { (pseudo-elements.html:4 -> pseudo-elements.html:4:42)
     content: "BEFORE";
 
 ======== Pseudo ::after element ========
 [expanded] 
-[$#inspected:after$] { (pseudo-elements.html:8 -> pseudo-elements.html:8:1)
+[$#inspected:after$] { (pseudo-elements.html:8 -> pseudo-elements.html:8:19)
     content: "AFTER";
 
 
 Running: dumpBeforeStyles
 [expanded] 
-[$#inspected:before, $].some-other-selector { (pseudo-elements.html:4 -> pseudo-elements.html:4:1)
+[$#inspected:before, $].some-other-selector { (pseudo-elements.html:4 -> pseudo-elements.html:4:42)
     content: "BEFORE";
 
 
 Running: dumpAfterStyles
 [expanded] 
-[$#inspected:after$] { (pseudo-elements.html:8 -> pseudo-elements.html:8:1)
+[$#inspected:after$] { (pseudo-elements.html:8 -> pseudo-elements.html:8:19)
     content: "AFTER";
 
 

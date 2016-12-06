@@ -4,7 +4,7 @@ Verifies that links for URLs with spaces displayed properly for matched styles.
 element.style { ()
 
 [expanded] 
-#inspected { (style.css:1 -> style.css:1:1)
+#inspected { (style.css:1 -> style.css:1:13)
     background-color: blue;
 
 [expanded] 

@@ -5,7 +5,7 @@ Initial value
 element.style { ()
 
 [expanded] 
-.container { (undo-change-property.html:7 -> undo-change-property.html:7:1)
+.container { (undo-change-property.html:7 -> undo-change-property.html:7:13)
     font-weight: bold;
 
 [expanded] 
@@ -17,7 +17,7 @@ After changing property
 element.style { ()
 
 [expanded] 
-.container { (undo-change-property.html:7 -> undo-change-property.html:7:1)
+.container { (undo-change-property.html:7 -> undo-change-property.html:7:13)
     font-weight: normal;
 
 [expanded] 
@@ -29,7 +29,7 @@ After undo
 element.style { ()
 
 [expanded] 
-.container { (undo-change-property.html:7 -> undo-change-property.html:7:1)
+.container { (undo-change-property.html:7 -> undo-change-property.html:7:13)
     font-weight: bold;
 
 [expanded] 
@@ -41,7 +41,7 @@ After redo
 element.style { ()
 
 [expanded] 
-.container { (undo-change-property.html:7 -> undo-change-property.html:7:1)
+.container { (undo-change-property.html:7 -> undo-change-property.html:7:13)
     font-weight: normal;
 
 [expanded] 

@@ -5,7 +5,7 @@ Tests that computed styles expand and allow tracing to style rules.
 element.style { ()
 
 [expanded] 
-#inspected { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:1)
+#inspected { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:13)
     background: gray;
         background-image: initial;
         background-position-x: initial;
@@ -19,12 +19,12 @@ element.style { ()
         background-color: gray;
 
 [expanded] 
-#inspected { (lazy-computed-style.html:10 -> lazy-computed-style.html:10:1)
+#inspected { (lazy-computed-style.html:10 -> lazy-computed-style.html:10:13)
 /-- overloaded --/     background-color: black;
     font-family: Courier;
 
 [expanded] 
-#inspected { (lazy-computed-style.html:5 -> lazy-computed-style.html:5:1)
+#inspected { (lazy-computed-style.html:5 -> lazy-computed-style.html:5:13)
 /-- overloaded --/     background-color: green;
 /-- overloaded --/     font-family: Times;
 
@@ -34,37 +34,37 @@ div { (user agent stylesheet)
 
 ==== All styles (computed should be there) ====
 background-attachment: scroll;
-    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:13
 background-clip: border-box;
-    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:13
 background-color: rgb(128, 128, 128);
-    gray - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
-    OVERLOADED black - #inspected lazy-computed-style.html:10 -> lazy-computed-style.html:10:1
-    OVERLOADED green - #inspected lazy-computed-style.html:5 -> lazy-computed-style.html:5:1
+    gray - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:13
+    OVERLOADED black - #inspected lazy-computed-style.html:10 -> lazy-computed-style.html:10:13
+    OVERLOADED green - #inspected lazy-computed-style.html:5 -> lazy-computed-style.html:5:13
 background-image: none;
-    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:13
 background-origin: padding-box;
-    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:13
 background-position-x: 0%;
-    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:13
 background-position-y: 0%;
-    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:13
 background-repeat-x: ;
-    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:13
 background-repeat-y: ;
-    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:13
 background-size: auto;
-    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:13
 display: block;
     block - div user agent stylesheet
 font-family: Courier;
-    Courier - #inspected lazy-computed-style.html:10 -> lazy-computed-style.html:10:1
-    OVERLOADED Times - #inspected lazy-computed-style.html:5 -> lazy-computed-style.html:5:1
+    Courier - #inspected lazy-computed-style.html:10 -> lazy-computed-style.html:10:13
+    OVERLOADED Times - #inspected lazy-computed-style.html:5 -> lazy-computed-style.html:5:13
 [expanded] 
 element.style { ()
 
 [expanded] 
-#inspected { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:1)
+#inspected { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:13)
     background: gray;
         background-image: initial;
         background-position-x: initial;
@@ -78,12 +78,12 @@ element.style { ()
         background-color: gray;
 
 [expanded] 
-#inspected { (lazy-computed-style.html:10 -> lazy-computed-style.html:10:1)
+#inspected { (lazy-computed-style.html:10 -> lazy-computed-style.html:10:13)
 /-- overloaded --/     background-color: black;
     font-family: Courier;
 
 [expanded] 
-#inspected { (lazy-computed-style.html:5 -> lazy-computed-style.html:5:1)
+#inspected { (lazy-computed-style.html:5 -> lazy-computed-style.html:5:13)
 /-- overloaded --/     background-color: green;
 /-- overloaded --/     font-family: Times;
 

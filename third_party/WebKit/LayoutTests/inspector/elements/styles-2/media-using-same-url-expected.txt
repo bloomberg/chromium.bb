@@ -5,11 +5,11 @@ Main style:
 element.style { ()
 
 [expanded] 
-#main { (media-using-same-url.html:14 -> media-using-same-url.html:14:1)
+#main { (media-using-same-url.html:14 -> media-using-same-url.html:14:8)
     color: white;
 
 [expanded] 
-#main { (media-using-same-url.html:6 -> media-using-same-url.html:6:1)
+#main { (media-using-same-url.html:6 -> media-using-same-url.html:6:8)
     background: blue;
 
 [expanded] 

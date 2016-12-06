@@ -7,11 +7,11 @@ DIV with :hover and :active
 element.style { ()
 
 [expanded] 
-div:active, a:active { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
+div:active, a:active { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:23)
     font-weight: bold;
 
 [expanded] 
-div:hover, a:hover { (force-pseudo-state.html:4 -> force-pseudo-state.html:4:1)
+div:hover, a:hover { (force-pseudo-state.html:4 -> force-pseudo-state.html:4:21)
     color: red;
 
 [expanded] 
@@ -36,11 +36,11 @@ DIV with :active and :focus
 element.style { ()
 
 [expanded] 
-div:active, a:active { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
+div:active, a:active { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:23)
     font-weight: bold;
 
 [expanded] 
-div:focus, a:focus { (force-pseudo-state.html:8 -> force-pseudo-state.html:8:1)
+div:focus, a:focus { (force-pseudo-state.html:8 -> force-pseudo-state.html:8:21)
     border: 1px solid green;
         border-top-color: green;
         border-top-style: solid;

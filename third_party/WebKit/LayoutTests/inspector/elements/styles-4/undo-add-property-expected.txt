@@ -6,7 +6,7 @@ Tests that adding a property is undone properly.
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     font-weight: bold;
 
 [expanded] 
@@ -18,7 +18,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     font-weight: bold;
     margin-left: 2px;
 
@@ -31,7 +31,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     font-weight: bold;
 
 [expanded] 
@@ -43,7 +43,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     font-weight: bold;
     margin-left: 2px;
 
@@ -57,7 +57,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     font-weight: bold;
     margin-left: 2px;
 
@@ -70,7 +70,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     margin-top: 0px;
     font-weight: bold;
     margin-left: 2px;
@@ -84,7 +84,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     font-weight: bold;
     margin-left: 2px;
 
@@ -97,7 +97,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     margin-top: 0px;
     font-weight: bold;
     margin-left: 2px;
@@ -112,7 +112,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     margin-top: 0px;
     font-weight: bold;
     margin-left: 2px;
@@ -126,7 +126,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     margin-top: 0px;
     margin-right: 1px;
     font-weight: bold;
@@ -141,7 +141,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     margin-top: 0px;
     font-weight: bold;
     margin-left: 2px;
@@ -155,7 +155,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (undo-add-property.html:7 -> undo-add-property.html:7:1)
+.container { (undo-add-property.html:7 -> undo-add-property.html:7:13)
     margin-top: 0px;
     margin-right: 1px;
     font-weight: bold;

@@ -5,15 +5,15 @@ Main style:
 element.style { ()
 
 [expanded] 
-#main { (media-queries.css:6 -> media-queries.css:6:7)
+#main { (media-queries.css:6 -> media-queries.css:6:14)
     color: yellow;
 
 [expanded] 
-#main { (media-queries-1.css:6 -> media-queries-1.css:6:5)
+#main { (media-queries-1.css:6 -> media-queries-1.css:6:12)
     border: 1px solid black;
 
 [expanded] 
-#main { (media-queries.html:6 -> media-queries.html:6:5)
+#main { (media-queries.html:6 -> media-queries.html:6:12)
     background: blue;
 
 [expanded] 

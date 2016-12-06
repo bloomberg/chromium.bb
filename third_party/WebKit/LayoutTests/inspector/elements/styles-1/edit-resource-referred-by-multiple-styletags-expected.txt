@@ -5,15 +5,15 @@ Inspected node
 element.style { ()
 
 [expanded] 
-#inspected { (stylesheet.css:2 -> stylesheet.css:2:1)
+#inspected { (stylesheet.css:2 -> stylesheet.css:2:13)
     font-size: 2em;
 
 [expanded] 
-#inspected { (stylesheet.css:2 -> stylesheet.css:2:1)
+#inspected { (stylesheet.css:2 -> stylesheet.css:2:13)
 /-- overloaded --/     font-size: 2em;
 
 [expanded] 
-#inspected { (stylesheet.css:2 -> stylesheet.css:2:1)
+#inspected { (stylesheet.css:2 -> stylesheet.css:2:13)
 /-- overloaded --/     font-size: 2em;
 
 [expanded] 

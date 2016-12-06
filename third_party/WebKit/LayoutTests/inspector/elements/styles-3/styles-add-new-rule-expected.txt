@@ -7,7 +7,7 @@ element.style { ()
     font-size: 12px;
 
 [expanded] 
-foo, [$div#inspected, $]bar { (inspector-stylesheet:1 -> inspector-stylesheet:1:6)
+foo, [$div#inspected, $]bar { (inspector-stylesheet:1 -> inspector-stylesheet:1:26)
     color: maroon;
 
 [expanded] 
@@ -20,7 +20,7 @@ element.style { ()
     color: red;
 
 [expanded] 
-div#other { (inspector-stylesheet:5 -> inspector-stylesheet:5:1)
+div#other { (inspector-stylesheet:5 -> inspector-stylesheet:5:12)
 
 [expanded] 
 div { (user agent stylesheet)
@@ -30,7 +30,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.my-class { (inspector-stylesheet:7 -> inspector-stylesheet:7:1)
+.my-class { (inspector-stylesheet:7 -> inspector-stylesheet:7:12)
 
 [expanded] 
 div { (user agent stylesheet)
@@ -40,7 +40,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.class-1.class-2.class-3 { (inspector-stylesheet:9 -> inspector-stylesheet:9:1)
+.class-1.class-2.class-3 { (inspector-stylesheet:9 -> inspector-stylesheet:9:27)
 
 [expanded] 
 div { (user agent stylesheet)

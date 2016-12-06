@@ -7,7 +7,7 @@ Main frame style:
 element.style { ()
 
 [expanded] 
-#main { (styles-iframe.html:2 -> styles-iframe.html:2:3)
+#main { (styles-iframe.html:2 -> styles-iframe.html:2:10)
     background: blue;
 
 [expanded] 
@@ -19,7 +19,7 @@ iframe style:
 element.style { ()
 
 [expanded] 
-body { (styles-iframe-data.html:4 -> styles-iframe-data.html:4:3)
+body { (styles-iframe-data.html:4 -> styles-iframe-data.html:4:9)
     background: green;
 
 [expanded] 

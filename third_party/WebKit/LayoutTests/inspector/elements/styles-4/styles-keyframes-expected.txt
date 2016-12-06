@@ -5,7 +5,7 @@ Tests that keyframes are shown in styles pane.
 element.style { ()
 
 [expanded] 
-#element { (keyframes.css:1 -> keyframes.css:1:1)
+#element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
         animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
@@ -57,7 +57,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-#element { (keyframes.css:1 -> keyframes.css:1:1)
+#element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
         animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
@@ -109,7 +109,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-#element { (keyframes.css:1 -> keyframes.css:1:1)
+#element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
         animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
@@ -161,7 +161,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-#element { (keyframes.css:1 -> keyframes.css:1:1)
+#element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
         animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;

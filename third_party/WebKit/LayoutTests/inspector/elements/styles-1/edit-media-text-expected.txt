@@ -8,12 +8,12 @@ element.style { ()
 
 [expanded] 
 @media screen and (max-device-width: 100000px)
-#inspected { (edit-media-text.html:8 -> edit-media-text.html:8:5)
+#inspected { (edit-media-text.html:8 -> edit-media-text.html:8:17)
 /-- overloaded --/     color: blue;
 
 [expanded] 
 @media screen and (max-device-width: 100000px)
-#inspected { (edit-media-text.html:5 -> edit-media-text.html:5:5)
+#inspected { (edit-media-text.html:5 -> edit-media-text.html:5:17)
 /-- overloaded --/     color: green;
 
 [expanded] 
@@ -27,12 +27,12 @@ element.style { ()
 
 [expanded] 
 @media screen and (max-device-width: 99999px)
-#inspected { (edit-media-text.html:8 -> edit-media-text.html:8:5)
+#inspected { (edit-media-text.html:8 -> edit-media-text.html:8:17)
 /-- overloaded --/     color: blue;
 
 [expanded] 
 @media screen and (max-device-width: 99999px)
-#inspected { (edit-media-text.html:5 -> edit-media-text.html:5:5)
+#inspected { (edit-media-text.html:5 -> edit-media-text.html:5:17)
 /-- overloaded --/     color: green;
 
 [expanded] 
@@ -45,11 +45,11 @@ element.style { ()
     color: red;
 
 [expanded] 
-#inspected { (edit-media-text.html:8 -> edit-media-text.html:8:5)
+#inspected { (edit-media-text.html:8 -> edit-media-text.html:8:17)
 /-- overloaded --/     color: blue;
 
 [expanded] 
-#inspected { (edit-media-text.html:5 -> edit-media-text.html:5:5)
+#inspected { (edit-media-text.html:5 -> edit-media-text.html:5:17)
 /-- overloaded --/     color: green;
 
 [expanded] 

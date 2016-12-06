@@ -7,7 +7,7 @@ element.style { ()
     color: red;
 
 [expanded] 
-#inspected { (commit-selector.html:4 -> commit-selector.html:4:1)
+#inspected { (commit-selector.html:4 -> commit-selector.html:4:13)
 /-- overloaded --/     color: green;
 
 [expanded] 
@@ -20,7 +20,7 @@ element.style { ()
     color: red;
 
 [expanded] 
-hr, #inspected { (commit-selector.html:4 -> commit-selector.html:4:5)
+hr, #inspected { (commit-selector.html:4 -> commit-selector.html:4:17)
 /-- overloaded --/     color: green;
 
 [expanded] 
@@ -33,7 +33,7 @@ element.style { ()
     color: red;
 
 [expanded] [no-affect] 
-#inspectedChanged { (commit-selector.html:4 -> commit-selector.html:4:1)
+#inspectedChanged { (commit-selector.html:4 -> commit-selector.html:4:20)
     color: green;
 
 [expanded] 

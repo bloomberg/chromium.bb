@@ -19,16 +19,16 @@ article, aside, footer, header, hgroup, main, nav, section { (user agent stylesh
 
 ======== Pseudo ::before element ========
 [expanded] 
-#pseudo::before { (styles-update-links-4.html:17 -> styles-update-links-4.html:17:1)
+#pseudo::before { (styles-update-links-4.html:17 -> styles-update-links-4.html:17:18)
     color: blue;
 
 ======== Pseudo ::after element ========
 [expanded] 
-#pseudo::after { (styles-update-links-4.html:13 -> styles-update-links-4.html:13:1)
+#pseudo::after { (styles-update-links-4.html:13 -> styles-update-links-4.html:13:17)
     border: 1px solid black;
 
 [expanded] 
-#pseudo::after { (styles-update-links-4.html:7 -> styles-update-links-4.html:7:1)
+#pseudo::after { (styles-update-links-4.html:7 -> styles-update-links-4.html:7:17)
 /-- overloaded --/     pseudo-property: "12";
 /-- overloaded --/     PROPERTY: INSERTED;
     color: red;

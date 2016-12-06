@@ -5,17 +5,17 @@ Text
 element.style { ()
 
 [expanded] 
-FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO { (selector-list.html:14 -> selector-list.html:14:48)
+FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO { (selector-list.html:19 -> selector-list.html:19:2)
     color: green;
 
 [expanded] 
-#inspected { (selector-list.html:10 -> selector-list.html:10:6)
+#inspected { (selector-list.html:10 -> selector-list.html:10:23)
 
 [expanded] 
-#InSpEcTeD { (selector-list.html:7 -> selector-list.html:7:1)
+#InSpEcTeD { (selector-list.html:7 -> selector-list.html:7:13)
 
 [expanded] 
-#inspected { (selector-list.html:4 -> selector-list.html:4:1)
+#inspected { (selector-list.html:4 -> selector-list.html:4:12)
 
 [expanded] 
 div { (user agent stylesheet)

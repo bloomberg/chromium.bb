@@ -5,7 +5,7 @@ Tests that svg:style does not crash when the related element is inspected.
 element.style { ()
 
 [expanded] 
-rect { (svg-style.xhtml:38 -> svg-style.xhtml:38:10)
+rect { (svg-style.xhtml:38 -> svg-style.xhtml:38:16)
     fill: red;
 
 [expanded] 

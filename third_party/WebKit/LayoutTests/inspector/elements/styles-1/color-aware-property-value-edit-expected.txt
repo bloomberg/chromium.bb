@@ -30,5 +30,5 @@ Running: editHexAsRGB
 rgb(255, 255, 238)
 
 Running: editNewProperty
-hsl(120, 100%, 25%)
+alicebluehsl(120, 100%, 25%)
 

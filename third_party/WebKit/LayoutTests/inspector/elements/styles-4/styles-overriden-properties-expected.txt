@@ -4,7 +4,7 @@ Tests that overriding shorthands within rule are visible.
 element.style { ()
 
 [expanded] 
-#main { (styles-override…perties.html:4 -> styles-overriden-properties.html:4:1)
+#main { (styles-override…perties.html:4 -> styles-overriden-properties.html:4:8)
 /-- overloaded --/     background: #000;
     background: #bada55;
 

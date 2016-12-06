@@ -6,7 +6,7 @@ I'm red.
 element.style { ()
 
 [expanded] 
-h1 { (parse-utf8-bom-main.css:3 -> parse-utf8-bom-main.css:3:1)
+h1 { (parse-utf8-bom-main.css:3 -> parse-utf8-bom-main.css:3:5)
     color: red;
 
 [expanded] 
