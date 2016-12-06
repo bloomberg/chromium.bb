@@ -9,10 +9,6 @@
 #include "components/infobars/core/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace autofill {
 
 std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
