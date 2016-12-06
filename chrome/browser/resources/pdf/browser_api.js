@@ -55,28 +55,28 @@ class BrowserApi {
    * @param {number} defaultZoom The default browser zoom.
    * @param {number} initialZoom The initial browser zoom
    *     upon starting the plugin.
-   * @param {boolean} manageZoom Whether to manage zoom.
+   * @param {BrowserApi.ZoomBehavior} zoomBehavior How to manage zoom.
    */
-  constructor(streamInfo, defaultZoom, initialZoom, manageZoom) {
+  constructor(streamInfo, defaultZoom, initialZoom, zoomBehavior) {
     this.streamInfo_ = streamInfo;
     this.defaultZoom_ = defaultZoom;
     this.initialZoom_ = initialZoom;
-    this.manageZoom_ = manageZoom;
+    this.zoomBehavior_ = zoomBehavior;
   }
 
   /**
    * Returns a promise to a BrowserApi.
    * @param {!Object} streamInfo The stream object pointing to the data
    *     contained in the PDF.
-   * @param {boolean} manageZoom Whether to manage zoom.
+   * @param {BrowserApi.ZoomBehavior} zoomBehavior How to manage zoom.
    */
-  static create(streamInfo, manageZoom) {
+  static create(streamInfo, zoomBehavior) {
     return Promise.all([
         lookupDefaultZoom(streamInfo),
         lookupInitialZoom(streamInfo)
     ]).then(function(zoomFactors) {
       return new BrowserApi(
-          streamInfo, zoomFactors[0], zoomFactors[1], manageZoom);
+          streamInfo, zoomFactors[0], zoomFactors[1], zoomBehavior);
     });
   }
 
@@ -103,8 +103,8 @@ class BrowserApi {
    *     has been updated.
    */
   setZoom(zoom) {
-    if (!this.manageZoom_)
-      return Promise.resolve();
+    if (this.zoomBehavior_ != BrowserApi.ZoomBehavior.MANAGE)
+      return Promise.reject(new Error('Viewer does not manage browser zoom.'));
     return new Promise(function(resolve, reject) {
       chrome.tabs.setZoom(this.streamInfo_.tabId, zoom, resolve);
     }.bind(this));
@@ -127,12 +127,21 @@ class BrowserApi {
   }
 
   /**
+   * Returns how to manage the zoom.
+   * @return {BrowserApi.ZoomBehavior} How to manage zoom.
+   */
+  getZoomBehavior() {
+    return this.zoomBehavior_;
+  }
+
+  /**
    * Adds an event listener to be notified when the browser zoom changes.
    * @param {function} listener The listener to be called with the new zoom
    *     factor.
    */
   addZoomEventListener(listener) {
-    if (!this.manageZoom_)
+    if (!(this.zoomBehavior_ == BrowserApi.ZoomBehavior.MANAGE ||
+          this.zoomBehavior_ == BrowserApi.ZoomBehavior.PROPAGATE_PARENT))
       return;
 
     chrome.tabs.onZoomChange.addListener(function(zoomChangeInfo) {
@@ -141,6 +150,16 @@ class BrowserApi {
       listener(zoomChangeInfo.newZoomFactor);
     }.bind(this));
   }
+};
+
+/**
+ * Enumeration of ways to manage zoom changes.
+ * @enum {number}
+ */
+BrowserApi.ZoomBehavior = {
+  NONE: 0,
+  MANAGE: 1,
+  PROPAGATE_PARENT: 2
 };
 
 /**
@@ -153,8 +172,11 @@ function createBrowserApiForMimeHandlerView() {
     chrome.mimeHandlerPrivate.getStreamInfo(resolve);
   }).then(function(streamInfo) {
     let promises = [];
-    let manageZoom = !streamInfo.embedded && streamInfo.tabId != -1;
+    let zoomBehavior = BrowserApi.ZoomBehavior.NONE;
     if (streamInfo.tabId != -1) {
+      zoomBehavior = streamInfo.embedded ?
+                      BrowserApi.ZoomBehavior.PROPAGATE_PARENT :
+                      BrowserApi.ZoomBehavior.MANAGE;
       promises.push(new Promise(function(resolve) {
         chrome.tabs.get(streamInfo.tabId, resolve);
       }).then(function(tab) {
@@ -162,14 +184,14 @@ function createBrowserApiForMimeHandlerView() {
           streamInfo.tabUrl = tab.url;
       }));
     }
-    if (manageZoom) {
+    if (zoomBehavior == BrowserApi.ZoomBehavior.MANAGE) {
       promises.push(new Promise(function(resolve) {
         chrome.tabs.setZoomSettings(
             streamInfo.tabId, {mode: 'manual', scope: 'per-tab'}, resolve);
       }));
     }
     return Promise.all(promises).then(
-        function() { return BrowserApi.create(streamInfo, manageZoom); });
+        function() { return BrowserApi.create(streamInfo, zoomBehavior); });
   });
 }
 
@@ -197,7 +219,9 @@ function createBrowserApiForPrintPreview() {
       streamInfo.tabUrl = tab.url;
       resolve();
     });
-  }).then(function() { return BrowserApi.create(streamInfo, false); });
+  }).then(function() {
+    return BrowserApi.create(streamInfo, BrowserApi.ZoomBehavior.NONE);
+  });
 }
 
 /**

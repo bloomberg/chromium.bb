@@ -9,11 +9,16 @@ chrome.test.runTests(function() {
     constructor() {
       this.zooms = [];
       this.zoom = 1;
+      this.browserOnlyZoomChange = false;
     }
 
     setZoom(zoom) {
       this.zooms.push(zoom);
       this.zoom = zoom;
+    }
+
+    updateZoomFromBrowserChange(oldBrowserZoom) {
+      this.browserOnlyZoomChange = true;
     }
   }
 
@@ -53,9 +58,9 @@ chrome.test.runTests(function() {
     function testZoomChange() {
       let viewport = new MockViewport();
       let browserZoomSetter = new MockBrowserZoomSetter();
-      let zoomManager = new ZoomManager(
-          viewport, browserZoomSetter.setBrowserZoom.bind(browserZoomSetter),
-          1);
+      let zoomManager = ZoomManager.create(
+          BrowserApi.ZoomBehavior.MANAGE, viewport,
+          browserZoomSetter.setBrowserZoom.bind(browserZoomSetter), 1);
       viewport.zoom = 2;
       zoomManager.onPdfZoomChange();
       chrome.test.assertEq(2, browserZoomSetter.zoom);
@@ -65,7 +70,8 @@ chrome.test.runTests(function() {
 
     function testBrowserZoomChange() {
       let viewport = new MockViewport();
-      let zoomManager = new ZoomManager(viewport, chrome.test.fail, 1);
+      let zoomManager = ZoomManager.create(
+          BrowserApi.ZoomBehavior.MANAGE, viewport, chrome.test.fail, 1);
       zoomManager.onBrowserZoomChange(3);
       chrome.test.assertEq(1, viewport.zooms.length);
       chrome.test.assertEq(3, viewport.zooms[0]);
@@ -73,12 +79,28 @@ chrome.test.runTests(function() {
       chrome.test.succeed();
     },
 
+    function testBrowserZoomChangeEmbedded() {
+      let viewport = new MockViewport();
+      let zoomManager = ZoomManager.create(
+          BrowserApi.ZoomBehavior.PROPAGATE_PARENT, viewport,
+          function() { return Promise.reject(); }, 1);
+
+      // Zooming in the browser should not overwrite the viewport's zoom,
+      // but be applied seperately.
+      viewport.zoom = 2;
+      zoomManager.onBrowserZoomChange(3);
+      chrome.test.assertEq(2, viewport.zoom);
+      chrome.test.assertTrue(viewport.browserOnlyZoomChange);
+
+      chrome.test.succeed();
+    },
+
     function testSmallZoomChange() {
       let viewport = new MockViewport();
       let browserZoomSetter = new MockBrowserZoomSetter();
-      let zoomManager = new ZoomManager(
-          viewport, browserZoomSetter.setBrowserZoom.bind(browserZoomSetter),
-          2);
+      let zoomManager = ZoomManager.create(
+          BrowserApi.ZoomBehavior.MANAGE, viewport,
+          browserZoomSetter.setBrowserZoom.bind(browserZoomSetter), 2);
       viewport.zoom = 2.0001;
       zoomManager.onPdfZoomChange();
       chrome.test.assertEq(1, browserZoomSetter.zoom);
@@ -88,7 +110,8 @@ chrome.test.runTests(function() {
 
     function testSmallBrowserZoomChange() {
       let viewport = new MockViewport();
-      let zoomManager = new ZoomManager(viewport, chrome.test.fail, 1);
+      let zoomManager = ZoomManager.create(
+          BrowserApi.ZoomBehavior.MANAGE, viewport, chrome.test.fail, 1);
       zoomManager.onBrowserZoomChange(0.999);
       chrome.test.assertEq(0, viewport.zooms.length);
       chrome.test.assertEq(1, viewport.zoom);
@@ -98,9 +121,9 @@ chrome.test.runTests(function() {
     function testMultiplePdfZoomChanges() {
       let viewport = new MockViewport();
       let browserZoomSetter = new MockBrowserZoomSetter();
-      let zoomManager = new ZoomManager(
-          viewport, browserZoomSetter.setBrowserZoom.bind(browserZoomSetter),
-          1);
+      let zoomManager = ZoomManager.create(
+          BrowserApi.ZoomBehavior.MANAGE, viewport,
+          browserZoomSetter.setBrowserZoom.bind(browserZoomSetter), 1);
       viewport.zoom = 2;
       zoomManager.onPdfZoomChange();
       viewport.zoom = 3;
@@ -117,7 +140,8 @@ chrome.test.runTests(function() {
 
     function testMultipleBrowserZoomChanges() {
       let viewport = new MockViewport();
-      let zoomManager = new ZoomManager(viewport, chrome.test.fail, 1);
+      let zoomManager = ZoomManager.create(
+          BrowserApi.ZoomBehavior.MANAGE, viewport, chrome.test.fail, 1);
       zoomManager.onBrowserZoomChange(2);
       zoomManager.onBrowserZoomChange(3);
       chrome.test.assertEq(2, viewport.zooms.length);
