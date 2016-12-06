@@ -19,40 +19,40 @@ static const CollapsedBorderValue& collapsedLeftBorder(
     const ComputedStyle& styleForCellFlow,
     const LayoutTableCell::CollapsedBorderValues& values) {
   if (styleForCellFlow.isHorizontalWritingMode()) {
-    return styleForCellFlow.isLeftToRightDirection() ? values.startBorder
-                                                     : values.endBorder;
+    return styleForCellFlow.isLeftToRightDirection() ? values.startBorder()
+                                                     : values.endBorder();
   }
-  return styleForCellFlow.isFlippedBlocksWritingMode() ? values.afterBorder
-                                                       : values.beforeBorder;
+  return styleForCellFlow.isFlippedBlocksWritingMode() ? values.afterBorder()
+                                                       : values.beforeBorder();
 }
 
 static const CollapsedBorderValue& collapsedRightBorder(
     const ComputedStyle& styleForCellFlow,
     const LayoutTableCell::CollapsedBorderValues& values) {
   if (styleForCellFlow.isHorizontalWritingMode()) {
-    return styleForCellFlow.isLeftToRightDirection() ? values.endBorder
-                                                     : values.startBorder;
+    return styleForCellFlow.isLeftToRightDirection() ? values.endBorder()
+                                                     : values.startBorder();
   }
-  return styleForCellFlow.isFlippedBlocksWritingMode() ? values.beforeBorder
-                                                       : values.afterBorder;
+  return styleForCellFlow.isFlippedBlocksWritingMode() ? values.beforeBorder()
+                                                       : values.afterBorder();
 }
 
 static const CollapsedBorderValue& collapsedTopBorder(
     const ComputedStyle& styleForCellFlow,
     const LayoutTableCell::CollapsedBorderValues& values) {
   if (styleForCellFlow.isHorizontalWritingMode())
-    return values.beforeBorder;
-  return styleForCellFlow.isLeftToRightDirection() ? values.startBorder
-                                                   : values.endBorder;
+    return values.beforeBorder();
+  return styleForCellFlow.isLeftToRightDirection() ? values.startBorder()
+                                                   : values.endBorder();
 }
 
 static const CollapsedBorderValue& collapsedBottomBorder(
     const ComputedStyle& styleForCellFlow,
     const LayoutTableCell::CollapsedBorderValues& values) {
   if (styleForCellFlow.isHorizontalWritingMode())
-    return values.afterBorder;
-  return styleForCellFlow.isLeftToRightDirection() ? values.endBorder
-                                                   : values.startBorder;
+    return values.afterBorder();
+  return styleForCellFlow.isLeftToRightDirection() ? values.endBorder()
+                                                   : values.startBorder();
 }
 
 void TableCellPainter::paint(const PaintInfo& paintInfo,
@@ -66,6 +66,15 @@ static EBorderStyle collapsedBorderStyle(EBorderStyle style) {
   if (style == BorderStyleInset)
     return BorderStyleRidge;
   return style;
+}
+
+const DisplayItemClient& TableCellPainter::displayItemClientForBorders() const {
+  // TODO(wkorman): We may need to handle PaintInvalidationDelayedFull.
+  // http://crbug.com/657186
+  return m_layoutTableCell.usesCompositedCellDisplayItemClients()
+             ? static_cast<const DisplayItemClient&>(
+                   *m_layoutTableCell.collapsedBorderValues())
+             : m_layoutTableCell;
 }
 
 void TableCellPainter::paintCollapsedBorders(
@@ -95,6 +104,18 @@ void TableCellPainter::paintCollapsedBorders(
   const CollapsedBorderValue& bottomBorderValue =
       collapsedBottomBorder(styleForCellFlow, *values);
 
+  int displayItemType = DisplayItem::kTableCollapsedBorderBase;
+  if (topBorderValue.shouldPaint(currentBorderValue))
+    displayItemType |= DisplayItem::TableCollapsedBorderTop;
+  if (bottomBorderValue.shouldPaint(currentBorderValue))
+    displayItemType |= DisplayItem::TableCollapsedBorderBottom;
+  if (leftBorderValue.shouldPaint(currentBorderValue))
+    displayItemType |= DisplayItem::TableCollapsedBorderLeft;
+  if (rightBorderValue.shouldPaint(currentBorderValue))
+    displayItemType |= DisplayItem::TableCollapsedBorderRight;
+  if (displayItemType == DisplayItem::kTableCollapsedBorderBase)
+    return;
+
   int topWidth = topBorderValue.width();
   int bottomWidth = bottomBorderValue.width();
   int leftWidth = leftBorderValue.width();
@@ -110,32 +131,41 @@ void TableCellPainter::paintCollapsedBorders(
       paintRect.height() + topWidth / 2 + (bottomWidth + 1) / 2);
 
   GraphicsContext& graphicsContext = paintInfo.context;
+  const DisplayItemClient& client = displayItemClientForBorders();
+  if (DrawingRecorder::useCachedDrawingIfPossible(
+          graphicsContext, client,
+          static_cast<DisplayItem::Type>(displayItemType)))
+    return;
+
+  DrawingRecorder recorder(graphicsContext, client,
+                           static_cast<DisplayItem::Type>(displayItemType),
+                           borderRect);
   Color cellColor = m_layoutTableCell.resolveColor(CSSPropertyColor);
 
   // We never paint diagonals at the joins.  We simply let the border with the
   // highest precedence paint on top of borders with lower precedence.
-  if (topBorderValue.shouldPaint(currentBorderValue)) {
+  if (displayItemType & DisplayItem::TableCollapsedBorderTop) {
     ObjectPainter::drawLineForBoxSide(
         graphicsContext, borderRect.x(), borderRect.y(), borderRect.maxX(),
         borderRect.y() + topWidth, BSTop,
         topBorderValue.color().resolve(cellColor),
         collapsedBorderStyle(topBorderValue.style()), 0, 0, true);
   }
-  if (bottomBorderValue.shouldPaint(currentBorderValue)) {
+  if (displayItemType & DisplayItem::TableCollapsedBorderBottom) {
     ObjectPainter::drawLineForBoxSide(
         graphicsContext, borderRect.x(), borderRect.maxY() - bottomWidth,
         borderRect.maxX(), borderRect.maxY(), BSBottom,
         bottomBorderValue.color().resolve(cellColor),
         collapsedBorderStyle(bottomBorderValue.style()), 0, 0, true);
   }
-  if (leftBorderValue.shouldPaint(currentBorderValue)) {
+  if (displayItemType & DisplayItem::TableCollapsedBorderLeft) {
     ObjectPainter::drawLineForBoxSide(
         graphicsContext, borderRect.x(), borderRect.y(),
         borderRect.x() + leftWidth, borderRect.maxY(), BSLeft,
         leftBorderValue.color().resolve(cellColor),
         collapsedBorderStyle(leftBorderValue.style()), 0, 0, true);
   }
-  if (rightBorderValue.shouldPaint(currentBorderValue)) {
+  if (displayItemType & DisplayItem::TableCollapsedBorderRight) {
     ObjectPainter::drawLineForBoxSide(
         graphicsContext, borderRect.maxX() - rightWidth, borderRect.y(),
         borderRect.maxX(), borderRect.maxY(), BSRight,

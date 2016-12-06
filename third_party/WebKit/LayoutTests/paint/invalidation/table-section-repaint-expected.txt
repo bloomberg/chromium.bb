@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 308, 60, 83],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutTableCell TD class='half'",
           "rect": [8, 353, 60, 38],
           "reason": "bounds change"
@@ -105,6 +100,11 @@
           "object": "LayoutTableCell TD class='red half'",
           "rect": [8, 8, 60, 30],
           "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 372, 60, 19],
+          "reason": "incremental"
         }
       ]
     }
@@ -172,7 +172,7 @@
     },
     {
       "object": "LayoutTable TABLE",
-      "reason": "forced by layout"
+      "reason": "incremental"
     },
     {
       "object": "LayoutTableRow TR",

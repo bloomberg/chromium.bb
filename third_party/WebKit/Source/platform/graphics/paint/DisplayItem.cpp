@@ -68,6 +68,23 @@ static WTF::String paintPhaseAsDebugString(int paintPhase) {
     return "Unknown"
 
 static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type) {
+  if (type >= DisplayItem::kTableCollapsedBorderUnalignedBase) {
+    if (type <= DisplayItem::kTableCollapsedBorderBase)
+      return "TableCollapsedBorderAlignment";
+    if (type <= DisplayItem::kTableCollapsedBorderLast) {
+      StringBuilder sb;
+      sb.append("TableCollapsedBorder");
+      if (type & DisplayItem::TableCollapsedBorderTop)
+        sb.append("Top");
+      if (type & DisplayItem::TableCollapsedBorderRight)
+        sb.append("Right");
+      if (type & DisplayItem::TableCollapsedBorderBottom)
+        sb.append("Bottom");
+      if (type & DisplayItem::TableCollapsedBorderLeft)
+        sb.append("Left");
+      return sb.toString();
+    }
+  }
   switch (type) {
     DEBUG_STRING_CASE(BoxDecorationBackground);
     DEBUG_STRING_CASE(Caret);
@@ -109,7 +126,6 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(TableCellBackgroundFromColumn);
     DEBUG_STRING_CASE(TableCellBackgroundFromSection);
     DEBUG_STRING_CASE(TableCellBackgroundFromRow);
-    DEBUG_STRING_CASE(TableCollapsedBorders);
     DEBUG_STRING_CASE(TableSectionBoxShadowInset);
     DEBUG_STRING_CASE(TableSectionBoxShadowNormal);
     DEBUG_STRING_CASE(TableRowBoxShadowInset);

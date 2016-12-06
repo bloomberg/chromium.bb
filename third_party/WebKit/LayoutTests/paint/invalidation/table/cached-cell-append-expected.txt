@@ -8,13 +8,18 @@
       "paintInvalidations": [
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 8, 120, 56],
-          "reason": "forced by layout"
+          "rect": [8, 59, 120, 5],
+          "reason": "incremental"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [64, 8, 64, 56],
           "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [65, 8, 63, 56],
+          "reason": "incremental"
         },
         {
           "object": "LayoutTableCell TD",
@@ -26,8 +31,16 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
       "object": "LayoutTable TABLE",
-      "reason": "forced by layout"
+      "reason": "incremental"
     },
     {
       "object": "LayoutTableRow TR id='row'",
