@@ -8,6 +8,12 @@ import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
 
+declare_args() {
+  # A temporary arg for building MCVD while it's being implemented.
+  # See http://crbug.com/660942
+  enable_media_codec_video_decoder = false
+}
+
 if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
@@ -187,6 +193,13 @@ component("gpu") {
       sources += [
         "android_video_encode_accelerator.cc",
         "android_video_encode_accelerator.h",
+      ]
+    }
+
+    if (enable_media_codec_video_decoder) {
+      sources += [
+        "android/media_codec_video_decoder.cc",
+        "android/media_codec_video_decoder.h",
       ]
     }
 
@@ -415,6 +428,9 @@ source_set("android_video_decode_accelerator_unittests") {
       "android_video_decode_accelerator_unittest.cc",
       "avda_codec_allocator_unittest.cc",
     ]
+    if (enable_media_codec_video_decoder) {
+      sources += [ "android/media_codec_video_decoder_unittest.cc" ]
+    }
     deps = [
       ":gpu",
       "//base/test:test_support",

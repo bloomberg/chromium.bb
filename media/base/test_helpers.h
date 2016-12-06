@@ -84,6 +84,7 @@ class TestVideoConfig {
   static VideoDecoderConfig Invalid();
 
   static VideoDecoderConfig Normal();
+  static VideoDecoderConfig NormalH264();
   static VideoDecoderConfig NormalEncrypted();
 
   // Returns a configuration that is larger in dimensions than Normal().

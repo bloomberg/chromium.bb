@@ -152,6 +152,11 @@ VideoDecoderConfig TestVideoConfig::Normal() {
 }
 
 // static
+VideoDecoderConfig TestVideoConfig::NormalH264() {
+  return GetTestConfig(kCodecH264, kNormalSize, false);
+}
+
+// static
 VideoDecoderConfig TestVideoConfig::NormalEncrypted() {
   return GetTestConfig(kCodecVP8, kNormalSize, true);
 }
