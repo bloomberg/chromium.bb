@@ -88,7 +88,6 @@
 #include "core/dom/IntersectionObserverController.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/LiveNodeList.h"
-#include "core/dom/MainThreadTaskRunner.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeComputedStyle.h"
@@ -474,7 +473,6 @@ Document::Document(const DocumentInit& initializer,
       m_documentTiming(*this),
       m_writeRecursionIsTooDeep(false),
       m_writeRecursionDepth(0),
-      m_taskRunner(MainThreadTaskRunner::create(this)),
       m_registrationContext(initializer.registrationContext(this)),
       m_elementDataCacheClearTimer(
           TaskRunnerHelper::get(TaskType::Internal, this),
@@ -4364,6 +4362,14 @@ void Document::sendSensitiveInputVisibilityInternal() {
   sensitiveInputServicePtr->AllPasswordFieldsInInsecureContextInvisible();
 }
 
+void Document::runExecutionContextTask(
+    std::unique_ptr<ExecutionContextTask> task,
+    bool isInstrumented) {
+  InspectorInstrumentation::AsyncTask asyncTask(this, task.get(),
+                                                isInstrumented);
+  task->performTask(this);
+}
+
 void Document::registerEventFactory(
     std::unique_ptr<EventFactoryBase> eventFactory) {
   DCHECK(!eventFactories().contains(eventFactory.get()));
@@ -5721,11 +5727,10 @@ static void runAddConsoleMessageTask(MessageSource source,
 
 void Document::addConsoleMessage(ConsoleMessage* consoleMessage) {
   if (!isContextThread()) {
-    m_taskRunner->postTask(
-        BLINK_FROM_HERE,
-        createCrossThreadTask(&runAddConsoleMessageTask,
-                              consoleMessage->source(), consoleMessage->level(),
-                              consoleMessage->message()));
+    postTask(BLINK_FROM_HERE, createCrossThreadTask(&runAddConsoleMessageTask,
+                                                    consoleMessage->source(),
+                                                    consoleMessage->level(),
+                                                    consoleMessage->message()));
     return;
   }
 
@@ -5748,11 +5753,21 @@ void Document::addConsoleMessage(ConsoleMessage* consoleMessage) {
   m_frame->console().addMessage(consoleMessage);
 }
 
-void Document::postTask(TaskType,
+void Document::postTask(TaskType taskType,
                         const WebTraceLocation& location,
                         std::unique_ptr<ExecutionContextTask> task,
                         const String& taskNameForInstrumentation) {
-  m_taskRunner->postTask(location, std::move(task), taskNameForInstrumentation);
+  if (!taskNameForInstrumentation.isEmpty()) {
+    InspectorInstrumentation::asyncTaskScheduled(
+        this, taskNameForInstrumentation, task.get());
+  }
+
+  TaskRunnerHelper::get(taskType, this)
+      ->postTask(location,
+                 crossThreadBind(&Document::runExecutionContextTask,
+                                 wrapCrossThreadWeakPersistent(this),
+                                 WTF::passed(std::move(task)),
+                                 !taskNameForInstrumentation.isEmpty()));
 }
 
 void Document::tasksWereSuspended() {
@@ -6286,8 +6301,7 @@ void Document::setAutofocusElement(Element* element) {
   m_hasAutofocused = true;
   DCHECK(!m_autofocusElement);
   m_autofocusElement = element;
-  m_taskRunner->postTask(BLINK_FROM_HERE,
-                         createSameThreadTask(&runAutofocusTask));
+  postTask(BLINK_FROM_HERE, createSameThreadTask(&runAutofocusTask));
 }
 
 Element* Document::activeElement() const {

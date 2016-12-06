@@ -133,7 +133,6 @@ class LocalDOMWindow;
 class Locale;
 class LocalFrame;
 class Location;
-class MainThreadTaskRunner;
 class MediaQueryListListener;
 class MediaQueryMatcher;
 class NodeFilter;
@@ -1422,6 +1421,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void sendSensitiveInputVisibility();
   void sendSensitiveInputVisibilityInternal();
 
+  void runExecutionContextTask(std::unique_ptr<ExecutionContextTask>,
+                               bool instrumenting);
+
   DocumentLifecycle m_lifecycle;
 
   bool m_hasNodesWithPlaceholderStyle;
@@ -1610,7 +1612,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<ScriptedAnimationController> m_scriptedAnimationController;
   Member<ScriptedIdleTaskController> m_scriptedIdleTaskController;
-  std::unique_ptr<MainThreadTaskRunner> m_taskRunner;
   Member<TextAutosizer> m_textAutosizer;
 
   Member<V0CustomElementRegistrationContext> m_registrationContext;

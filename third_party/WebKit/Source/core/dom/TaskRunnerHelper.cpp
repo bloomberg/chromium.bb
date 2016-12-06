@@ -29,13 +29,13 @@ WebTaskRunner* TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
     case TaskType::UnshippedPortMessage:
     case TaskType::Timer:
     case TaskType::Internal:
+    case TaskType::Unspecified:
       return frame ? frame->frameScheduler()->timerTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();
     case TaskType::Networking:
       return frame ? frame->frameScheduler()->loadingTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();
     case TaskType::Unthrottled:
-    case TaskType::Unspecified:
       return frame ? frame->frameScheduler()->unthrottledTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();
   }
