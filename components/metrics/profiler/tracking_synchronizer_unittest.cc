@@ -69,8 +69,8 @@ class TestObserver : public TrackingSynchronizerObserver {
         EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromMilliseconds(333),
                   attributes.phase_finish);
 
-        EXPECT_EQ("death_thread0",
-                  process_data_phase.tasks[0].death_thread_name);
+        EXPECT_EQ("death_threadA",
+                  process_data_phase.tasks[0].death_sanitized_thread_name);
         EXPECT_EQ(0u, past_events.size());
         break;
 
@@ -83,8 +83,8 @@ class TestObserver : public TrackingSynchronizerObserver {
         EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromMilliseconds(777),
                   attributes.phase_finish);
 
-        EXPECT_EQ("death_thread1",
-                  process_data_phase.tasks[0].death_thread_name);
+        EXPECT_EQ("death_threadB",
+                  process_data_phase.tasks[0].death_sanitized_thread_name);
         ASSERT_EQ(1u, past_events.size());
         EXPECT_EQ(ProfilerEventProto::EVENT_FIRST_NONEMPTY_PAINT,
                   past_events[0]);
@@ -135,12 +135,12 @@ TEST(TrackingSynchronizerTest, ProfilerData) {
   tracked_objects::ProcessDataSnapshot profiler_data;
   ProcessDataPhaseSnapshot snapshot0;
   tracked_objects::TaskSnapshot task_snapshot0;
-  task_snapshot0.death_thread_name = "death_thread0";
+  task_snapshot0.death_sanitized_thread_name = "death_threadA";
   snapshot0.tasks.push_back(task_snapshot0);
   ProcessDataPhaseSnapshot snapshot1;
   profiler_data.phased_snapshots[0] = snapshot0;
   tracked_objects::TaskSnapshot task_snapshot1;
-  task_snapshot1.death_thread_name = "death_thread1";
+  task_snapshot1.death_sanitized_thread_name = "death_threadB";
   snapshot1.tasks.push_back(task_snapshot1);
   profiler_data.phased_snapshots[1] = snapshot1;
   profiler_data.process_id = 239;

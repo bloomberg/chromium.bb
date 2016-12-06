@@ -41,7 +41,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(tracked_objects::BirthOnThreadSnapshot)
   IPC_STRUCT_TRAITS_MEMBER(location)
-  IPC_STRUCT_TRAITS_MEMBER(thread_name)
+  IPC_STRUCT_TRAITS_MEMBER(sanitized_thread_name)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(tracked_objects::DeathDataSnapshot)
@@ -63,7 +63,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(tracked_objects::TaskSnapshot)
   IPC_STRUCT_TRAITS_MEMBER(birth)
   IPC_STRUCT_TRAITS_MEMBER(death_data)
-  IPC_STRUCT_TRAITS_MEMBER(death_thread_name)
+  IPC_STRUCT_TRAITS_MEMBER(death_sanitized_thread_name)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(tracked_objects::ProcessDataPhaseSnapshot)

@@ -32,7 +32,8 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().birth.location.file_name = "a/b/file.h";
     process_data_phase.tasks.back().birth.location.function_name = "function";
     process_data_phase.tasks.back().birth.location.line_number = 1337;
-    process_data_phase.tasks.back().birth.thread_name = "birth_thread";
+    process_data_phase.tasks.back().birth.sanitized_thread_name =
+        "birth_thread";
     process_data_phase.tasks.back().death_data.count = 37;
     process_data_phase.tasks.back().death_data.run_duration_sum = 31;
     process_data_phase.tasks.back().death_data.run_duration_max = 17;
@@ -40,12 +41,13 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().death_data.queue_duration_sum = 8;
     process_data_phase.tasks.back().death_data.queue_duration_max = 5;
     process_data_phase.tasks.back().death_data.queue_duration_sample = 3;
-    process_data_phase.tasks.back().death_thread_name = "Still_Alive";
+    process_data_phase.tasks.back().death_sanitized_thread_name = "Still_Alive";
     process_data_phase.tasks.push_back(TaskSnapshot());
     process_data_phase.tasks.back().birth.location.file_name = "c\\d\\file2";
     process_data_phase.tasks.back().birth.location.function_name = "function2";
     process_data_phase.tasks.back().birth.location.line_number = 1773;
-    process_data_phase.tasks.back().birth.thread_name = "birth_thread2";
+    process_data_phase.tasks.back().birth.sanitized_thread_name =
+        "birth_thread*";
     process_data_phase.tasks.back().death_data.count = 19;
     process_data_phase.tasks.back().death_data.run_duration_sum = 23;
     process_data_phase.tasks.back().death_data.run_duration_max = 11;
@@ -53,7 +55,8 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().death_data.queue_duration_sum = 0;
     process_data_phase.tasks.back().death_data.queue_duration_max = 0;
     process_data_phase.tasks.back().death_data.queue_duration_sample = 0;
-    process_data_phase.tasks.back().death_thread_name = "death_thread";
+    process_data_phase.tasks.back().death_sanitized_thread_name =
+        "death_thread";
 
     profiler_metrics_provider.RecordProfilerData(
         process_data_phase, 177, ProfilerEventProto::TrackedObject::BROWSER, 0,
@@ -68,7 +71,8 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().birth.location.file_name = "a/b/file10.h";
     process_data_phase.tasks.back().birth.location.function_name = "function10";
     process_data_phase.tasks.back().birth.location.line_number = 101337;
-    process_data_phase.tasks.back().birth.thread_name = "birth_thread_ten";
+    process_data_phase.tasks.back().birth.sanitized_thread_name =
+        "birth_thread_ten";
     process_data_phase.tasks.back().death_data.count = 1037;
     process_data_phase.tasks.back().death_data.run_duration_sum = 1031;
     process_data_phase.tasks.back().death_data.run_duration_max = 1017;
@@ -76,13 +80,15 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().death_data.queue_duration_sum = 108;
     process_data_phase.tasks.back().death_data.queue_duration_max = 105;
     process_data_phase.tasks.back().death_data.queue_duration_sample = 103;
-    process_data_phase.tasks.back().death_thread_name = "Already_Dead";
+    process_data_phase.tasks.back().death_sanitized_thread_name =
+        "Already_Dead";
     process_data_phase.tasks.push_back(TaskSnapshot());
     process_data_phase.tasks.back().birth.location.file_name = "c\\d\\file210";
     process_data_phase.tasks.back().birth.location.function_name =
         "function210";
     process_data_phase.tasks.back().birth.location.line_number = 101773;
-    process_data_phase.tasks.back().birth.thread_name = "birth_thread_ten2";
+    process_data_phase.tasks.back().birth.sanitized_thread_name =
+        "birth_thread_ten*";
     process_data_phase.tasks.back().death_data.count = 1019;
     process_data_phase.tasks.back().death_data.run_duration_sum = 1023;
     process_data_phase.tasks.back().death_data.run_duration_max = 1011;
@@ -90,7 +96,8 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().death_data.queue_duration_sum = 100;
     process_data_phase.tasks.back().death_data.queue_duration_max = 100;
     process_data_phase.tasks.back().death_data.queue_duration_sample = 100;
-    process_data_phase.tasks.back().death_thread_name = "death_thread_ten";
+    process_data_phase.tasks.back().death_sanitized_thread_name =
+        "death_thread_ten";
 
     profiler_metrics_provider.RecordProfilerData(
         process_data_phase, 177, ProfilerEventProto::TrackedObject::BROWSER, 1,
@@ -105,7 +112,8 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().birth.location.file_name = "file3";
     process_data_phase.tasks.back().birth.location.function_name = "function3";
     process_data_phase.tasks.back().birth.location.line_number = 7331;
-    process_data_phase.tasks.back().birth.thread_name = "birth_thread3";
+    process_data_phase.tasks.back().birth.sanitized_thread_name =
+        "birth_thread*";
     process_data_phase.tasks.back().death_data.count = 137;
     process_data_phase.tasks.back().death_data.run_duration_sum = 131;
     process_data_phase.tasks.back().death_data.run_duration_max = 117;
@@ -113,12 +121,13 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().death_data.queue_duration_sum = 108;
     process_data_phase.tasks.back().death_data.queue_duration_max = 105;
     process_data_phase.tasks.back().death_data.queue_duration_sample = 103;
-    process_data_phase.tasks.back().death_thread_name = "death_thread3";
+    process_data_phase.tasks.back().death_sanitized_thread_name =
+        "death_thread*";
     process_data_phase.tasks.push_back(TaskSnapshot());
     process_data_phase.tasks.back().birth.location.file_name = "";
     process_data_phase.tasks.back().birth.location.function_name = "";
     process_data_phase.tasks.back().birth.location.line_number = 7332;
-    process_data_phase.tasks.back().birth.thread_name = "";
+    process_data_phase.tasks.back().birth.sanitized_thread_name = "";
     process_data_phase.tasks.back().death_data.count = 138;
     process_data_phase.tasks.back().death_data.run_duration_sum = 132;
     process_data_phase.tasks.back().death_data.run_duration_max = 118;
@@ -126,7 +135,7 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     process_data_phase.tasks.back().death_data.queue_duration_sum = 109;
     process_data_phase.tasks.back().death_data.queue_duration_max = 106;
     process_data_phase.tasks.back().death_data.queue_duration_sample = 104;
-    process_data_phase.tasks.back().death_thread_name = "";
+    process_data_phase.tasks.back().death_sanitized_thread_name = "";
 
     profiler_metrics_provider.RecordProfilerData(
         process_data_phase, 1177, ProfilerEventProto::TrackedObject::RENDERER,

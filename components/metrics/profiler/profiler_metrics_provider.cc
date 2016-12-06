@@ -4,7 +4,6 @@
 
 #include "components/metrics/profiler/profiler_metrics_provider.h"
 
-#include <ctype.h>
 #include <stddef.h>
 #include <string>
 #include <vector>
@@ -15,23 +14,6 @@
 
 namespace metrics {
 namespace {
-
-// Maps a thread name by replacing trailing sequence of digits with "*".
-// Examples:
-// 1. "BrowserBlockingWorker1/23857" => "BrowserBlockingWorker1/*"
-// 2. "Chrome_IOThread" => "Chrome_IOThread"
-std::string MapThreadName(const std::string& thread_name) {
-  size_t i = thread_name.length();
-
-  while (i > 0 && isdigit(thread_name[i - 1])) {
-    --i;
-  }
-
-  if (i == thread_name.length())
-    return thread_name;
-
-  return thread_name.substr(0, i) + '*';
-}
 
 // Normalizes a source filename (which is platform- and build-method-dependent)
 // by extracting the last component of the full file name.
@@ -52,9 +34,9 @@ void WriteProfilerData(
     ProfilerEventProto::TrackedObject* tracked_object =
         performance_profile->add_tracked_object();
     tracked_object->set_birth_thread_name_hash(
-        MetricsLog::Hash(MapThreadName(task.birth.thread_name)));
+        MetricsLog::Hash(task.birth.sanitized_thread_name));
     tracked_object->set_exec_thread_name_hash(
-        MetricsLog::Hash(MapThreadName(task.death_thread_name)));
+        MetricsLog::Hash(task.death_sanitized_thread_name));
     tracked_object->set_source_file_name_hash(
         MetricsLog::Hash(NormalizeFileName(task.birth.location.file_name)));
     tracked_object->set_source_function_name_hash(

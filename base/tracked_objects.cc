@@ -4,6 +4,7 @@
 
 #include "base/tracked_objects.h"
 
+#include <ctype.h>
 #include <limits.h>
 #include <stdlib.h>
 
@@ -13,10 +14,10 @@
 #include "base/compiler_specific.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
-#include "base/strings/stringprintf.h"
 #include "base/third_party/valgrind/memcheck.h"
 #include "base/threading/worker_pool.h"
 #include "base/tracking_info.h"
@@ -31,6 +32,9 @@ class TimeDelta;
 namespace tracked_objects {
 
 namespace {
+
+constexpr char kWorkerThreadSanitizedName[] = "WorkerThread-*";
+
 // When ThreadData is first initialized, should we start in an ACTIVE state to
 // record all of the startup-time tasks, or should we start up DEACTIVATED, so
 // that we only record after parsing the command line flag --enable-tracking.
@@ -74,6 +78,22 @@ inline bool IsProfilerTimingEnabled() {
                                   current_timing_enabled);
   }
   return current_timing_enabled == ENABLED_TIMING;
+}
+
+// Sanitize a thread name by replacing trailing sequence of digits with "*".
+// Examples:
+// 1. "BrowserBlockingWorker1/23857" => "BrowserBlockingWorker1/*"
+// 2. "Chrome_IOThread" => "Chrome_IOThread"
+std::string SanitizeThreadName(const std::string& thread_name) {
+  size_t i = thread_name.length();
+
+  while (i > 0 && isdigit(thread_name[i - 1]))
+    --i;
+
+  if (i == thread_name.length())
+    return thread_name;
+
+  return thread_name.substr(0, i) + '*';
 }
 
 }  // namespace
@@ -330,8 +350,7 @@ BirthOnThreadSnapshot::BirthOnThreadSnapshot() {
 
 BirthOnThreadSnapshot::BirthOnThreadSnapshot(const BirthOnThread& birth)
     : location(birth.location()),
-      thread_name(birth.birth_thread()->thread_name()) {
-}
+      sanitized_thread_name(birth.birth_thread()->sanitized_thread_name()) {}
 
 BirthOnThreadSnapshot::~BirthOnThreadSnapshot() {
 }
@@ -363,9 +382,6 @@ ThreadData::NowFunction* ThreadData::now_function_for_testing_ = NULL;
 base::ThreadLocalStorage::StaticSlot ThreadData::tls_index_ = TLS_INITIALIZER;
 
 // static
-int ThreadData::worker_thread_data_creation_count_ = 0;
-
-// static
 int ThreadData::cleanup_count_ = 0;
 
 // static
@@ -375,7 +391,7 @@ int ThreadData::incarnation_counter_ = 0;
 ThreadData* ThreadData::all_thread_data_list_head_ = NULL;
 
 // static
-ThreadData* ThreadData::first_retired_worker_ = NULL;
+ThreadData* ThreadData::first_retired_thread_data_ = NULL;
 
 // static
 base::LazyInstance<base::Lock>::Leaky
@@ -384,25 +400,14 @@ base::LazyInstance<base::Lock>::Leaky
 // static
 base::subtle::Atomic32 ThreadData::status_ = ThreadData::UNINITIALIZED;
 
-ThreadData::ThreadData(const std::string& suggested_name)
+ThreadData::ThreadData(const std::string& sanitized_thread_name)
     : next_(NULL),
-      next_retired_worker_(NULL),
-      worker_thread_number_(0),
+      next_retired_thread_data_(NULL),
+      sanitized_thread_name_(sanitized_thread_name),
       incarnation_count_for_pool_(-1),
       current_stopwatch_(NULL) {
-  DCHECK_GE(suggested_name.size(), 0u);
-  thread_name_ = suggested_name;
-  PushToHeadOfList();  // Which sets real incarnation_count_for_pool_.
-}
-
-ThreadData::ThreadData(int thread_number)
-    : next_(NULL),
-      next_retired_worker_(NULL),
-      worker_thread_number_(thread_number),
-      incarnation_count_for_pool_(-1),
-      current_stopwatch_(NULL) {
-  CHECK_GT(thread_number, 0);
-  base::StringAppendF(&thread_name_, "WorkerThread-%d", thread_number);
+  DCHECK(sanitized_thread_name_.empty() ||
+         !isdigit(sanitized_thread_name_.back()));
   PushToHeadOfList();  // Which sets real incarnation_count_for_pool_.
 }
 
@@ -433,15 +438,17 @@ ThreadData* ThreadData::first() {
 ThreadData* ThreadData::next() const { return next_; }
 
 // static
-void ThreadData::InitializeThreadContext(const std::string& suggested_name) {
+void ThreadData::InitializeThreadContext(const std::string& thread_name) {
   if (base::WorkerPool::RunsTasksOnCurrentThread())
     return;
+  DCHECK_NE(thread_name, kWorkerThreadSanitizedName);
   EnsureTlsInitialization();
   ThreadData* current_thread_data =
       reinterpret_cast<ThreadData*>(tls_index_.Get());
   if (current_thread_data)
     return;  // Browser tests instigate this.
-  current_thread_data = new ThreadData(suggested_name);
+  current_thread_data =
+      GetRetiredOrCreateThreadData(SanitizeThreadName(thread_name));
   tls_index_.Set(current_thread_data);
 }
 
@@ -454,26 +461,8 @@ ThreadData* ThreadData::Get() {
     return registered;
 
   // We must be a worker thread, since we didn't pre-register.
-  ThreadData* worker_thread_data = NULL;
-  int worker_thread_number = 0;
-  {
-    base::AutoLock lock(*list_lock_.Pointer());
-    if (first_retired_worker_) {
-      worker_thread_data = first_retired_worker_;
-      first_retired_worker_ = first_retired_worker_->next_retired_worker_;
-      worker_thread_data->next_retired_worker_ = NULL;
-    } else {
-      worker_thread_number = ++worker_thread_data_creation_count_;
-    }
-  }
-
-  // If we can't find a previously used instance, then we have to create one.
-  if (!worker_thread_data) {
-    DCHECK_GT(worker_thread_number, 0);
-    worker_thread_data = new ThreadData(worker_thread_number);
-  }
-  DCHECK_GT(worker_thread_data->worker_thread_number_, 0);
-
+  ThreadData* worker_thread_data =
+      GetRetiredOrCreateThreadData(kWorkerThreadSanitizedName);
   tls_index_.Set(worker_thread_data);
   return worker_thread_data;
 }
@@ -487,21 +476,23 @@ void ThreadData::OnThreadTermination(void* thread_data) {
 }
 
 void ThreadData::OnThreadTerminationCleanup() {
+  // We must NOT do any allocations during this callback. There is a chance that
+  // the allocator is no longer active on this thread.
+
   // The list_lock_ was created when we registered the callback, so it won't be
   // allocated here despite the lazy reference.
   base::AutoLock lock(*list_lock_.Pointer());
   if (incarnation_counter_ != incarnation_count_for_pool_)
     return;  // ThreadData was constructed in an earlier unit test.
   ++cleanup_count_;
-  // Only worker threads need to be retired and reused.
-  if (!worker_thread_number_) {
-    return;
-  }
-  // We must NOT do any allocations during this callback.
-  // Using the simple linked lists avoids all allocations.
-  DCHECK_EQ(this->next_retired_worker_, reinterpret_cast<ThreadData*>(NULL));
-  this->next_retired_worker_ = first_retired_worker_;
-  first_retired_worker_ = this;
+
+  // Add this ThreadData to a retired list so that it can be reused by a thread
+  // with the same name sanitized name in the future.
+  // |next_retired_thread_data_| is expected to be nullptr for a ThreadData
+  // associated with an active thread.
+  DCHECK(!next_retired_thread_data_);
+  next_retired_thread_data_ = first_retired_thread_data_;
+  first_retired_thread_data_ = this;
 }
 
 // static
@@ -728,7 +719,7 @@ void ThreadData::SnapshotExecutedTasks(
       if (death_data.count > 0) {
         (*phased_snapshots)[phase->profiling_phase].tasks.push_back(
             TaskSnapshot(BirthOnThreadSnapshot(*death.first), death_data,
-                         thread_name()));
+                         sanitized_thread_name()));
       }
     }
   }
@@ -847,8 +838,6 @@ TrackedTime ThreadData::Now() {
 // static
 void ThreadData::EnsureCleanupWasCalled(int major_threads_shutdown_count) {
   base::AutoLock lock(*list_lock_.Pointer());
-  if (worker_thread_data_creation_count_ == 0)
-    return;  // We haven't really run much, and couldn't have leaked.
 
   // TODO(jar): until this is working on XP, don't run the real test.
 #if 0
@@ -873,16 +862,14 @@ void ThreadData::ShutdownSingleThreadedCleanup(bool leak) {
     all_thread_data_list_head_ = NULL;
     ++incarnation_counter_;
     // To be clean, break apart the retired worker list (though we leak them).
-    while (first_retired_worker_) {
-      ThreadData* worker = first_retired_worker_;
-      CHECK_GT(worker->worker_thread_number_, 0);
-      first_retired_worker_ = worker->next_retired_worker_;
-      worker->next_retired_worker_ = NULL;
+    while (first_retired_thread_data_) {
+      ThreadData* thread_data = first_retired_thread_data_;
+      first_retired_thread_data_ = thread_data->next_retired_thread_data_;
+      thread_data->next_retired_thread_data_ = nullptr;
     }
   }
 
   // Put most global static back in pristine shape.
-  worker_thread_data_creation_count_ = 0;
   cleanup_count_ = 0;
   tls_index_.Set(NULL);
   // Almost UNINITIALIZED.
@@ -912,6 +899,39 @@ void ThreadData::ShutdownSingleThreadedCleanup(bool leak) {
       delete it->second;  // Delete the Birth Records.
     delete next_thread_data;  // Includes all Death Records.
   }
+}
+
+// static
+ThreadData* ThreadData::GetRetiredOrCreateThreadData(
+    const std::string& sanitized_thread_name) {
+  SCOPED_UMA_HISTOGRAM_TIMER("TrackedObjects.GetRetiredOrCreateThreadData");
+
+  {
+    base::AutoLock lock(*list_lock_.Pointer());
+    ThreadData** pcursor = &first_retired_thread_data_;
+    ThreadData* cursor = first_retired_thread_data_;
+
+    // Assuming that there aren't more than a few tens of retired ThreadData
+    // instances, this lookup should be quick compared to the thread creation
+    // time. Retired ThreadData instances cannot be stored in a map because
+    // insertions are done from OnThreadTerminationCleanup() where allocations
+    // are not allowed.
+    //
+    // Note: Test processes may have more than a few tens of retired ThreadData
+    // instances.
+    while (cursor) {
+      if (cursor->sanitized_thread_name() == sanitized_thread_name) {
+        DCHECK_EQ(*pcursor, cursor);
+        *pcursor = cursor->next_retired_thread_data_;
+        cursor->next_retired_thread_data_ = nullptr;
+        return cursor;
+      }
+      pcursor = &cursor->next_retired_thread_data_;
+      cursor = cursor->next_retired_thread_data_;
+    }
+  }
+
+  return new ThreadData(sanitized_thread_name);
 }
 
 //------------------------------------------------------------------------------
@@ -1038,11 +1058,10 @@ TaskSnapshot::TaskSnapshot() {
 
 TaskSnapshot::TaskSnapshot(const BirthOnThreadSnapshot& birth,
                            const DeathDataSnapshot& death_data,
-                           const std::string& death_thread_name)
+                           const std::string& death_sanitized_thread_name)
     : birth(birth),
       death_data(death_data),
-      death_thread_name(death_thread_name) {
-}
+      death_sanitized_thread_name(death_sanitized_thread_name) {}
 
 TaskSnapshot::~TaskSnapshot() {
 }

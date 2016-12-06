@@ -11,14 +11,17 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/strings/stringprintf.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/tracking_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const int kLineNumber = 1776;
 const char kFile[] = "FixedUnitTestFileName";
-const char kWorkerThreadName[] = "WorkerThread-1";
+const char kWorkerThreadName[] = "WorkerThread-*";
 const char kMainThreadName[] = "SomeMainThreadName";
 const char kStillAlive[] = "Still_Alive";
 
@@ -92,7 +95,8 @@ class TrackedObjectsTest : public testing::Test {
     EXPECT_EQ(kLineNumber,
               process_data_phase.tasks[0].birth.location.line_number);
 
-    EXPECT_EQ(birth_thread, process_data_phase.tasks[0].birth.thread_name);
+    EXPECT_EQ(birth_thread,
+              process_data_phase.tasks[0].birth.sanitized_thread_name);
 
     EXPECT_EQ(count, process_data_phase.tasks[0].death_data.count);
     EXPECT_EQ(count * run_ms,
@@ -107,13 +111,24 @@ class TrackedObjectsTest : public testing::Test {
     EXPECT_EQ(queue_ms,
               process_data_phase.tasks[0].death_data.queue_duration_sample);
 
-    EXPECT_EQ(death_thread, process_data_phase.tasks[0].death_thread_name);
+    EXPECT_EQ(death_thread,
+              process_data_phase.tasks[0].death_sanitized_thread_name);
 
     EXPECT_EQ(base::GetCurrentProcId(), process_data.process_id);
   }
 
   // Sets time that will be returned by ThreadData::Now().
   static void SetTestTime(unsigned int test_time) { test_time_ = test_time; }
+
+  int GetNumThreadData() {
+    int num_thread_data = 0;
+    ThreadData* current = ThreadData::first();
+    while (current) {
+      ++num_thread_data;
+      current = current->next();
+    }
+    return num_thread_data;
+  }
 
  private:
   // Returns test time in milliseconds.
@@ -230,7 +245,8 @@ TEST_F(TrackedObjectsTest, TinyStartupShutdown) {
             process_data_phase.tasks[0].birth.location.function_name);
   EXPECT_EQ(kLineNumber,
             process_data_phase.tasks[0].birth.location.line_number);
-  EXPECT_EQ(kWorkerThreadName, process_data_phase.tasks[0].birth.thread_name);
+  EXPECT_EQ(kWorkerThreadName,
+            process_data_phase.tasks[0].birth.sanitized_thread_name);
   EXPECT_EQ(1, process_data_phase.tasks[0].death_data.count);
   EXPECT_EQ(time_elapsed,
             process_data_phase.tasks[0].death_data.run_duration_sum);
@@ -241,7 +257,8 @@ TEST_F(TrackedObjectsTest, TinyStartupShutdown) {
   EXPECT_EQ(0, process_data_phase.tasks[0].death_data.queue_duration_sum);
   EXPECT_EQ(0, process_data_phase.tasks[0].death_data.queue_duration_max);
   EXPECT_EQ(0, process_data_phase.tasks[0].death_data.queue_duration_sample);
-  EXPECT_EQ(kWorkerThreadName, process_data_phase.tasks[0].death_thread_name);
+  EXPECT_EQ(kWorkerThreadName,
+            process_data_phase.tasks[0].death_sanitized_thread_name);
 }
 
 TEST_F(TrackedObjectsTest, DeathDataTestRecordDurations) {
@@ -659,7 +676,8 @@ TEST_F(TrackedObjectsTest, TwoPhases) {
   EXPECT_EQ(kLineNumber,
             process_data_phase0.tasks[0].birth.location.line_number);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase0.tasks[0].birth.thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase0.tasks[0].birth.sanitized_thread_name);
 
   EXPECT_EQ(1, process_data_phase0.tasks[0].death_data.count);
   EXPECT_EQ(2, process_data_phase0.tasks[0].death_data.run_duration_sum);
@@ -669,7 +687,8 @@ TEST_F(TrackedObjectsTest, TwoPhases) {
   EXPECT_EQ(4, process_data_phase0.tasks[0].death_data.queue_duration_max);
   EXPECT_EQ(4, process_data_phase0.tasks[0].death_data.queue_duration_sample);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase0.tasks[0].death_thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase0.tasks[0].death_sanitized_thread_name);
 
   auto it1 = process_data.phased_snapshots.find(1);
   ASSERT_TRUE(it1 != process_data.phased_snapshots.end());
@@ -683,7 +702,8 @@ TEST_F(TrackedObjectsTest, TwoPhases) {
   EXPECT_EQ(kLineNumber,
             process_data_phase1.tasks[0].birth.location.line_number);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase1.tasks[0].birth.thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase1.tasks[0].birth.sanitized_thread_name);
 
   EXPECT_EQ(1, process_data_phase1.tasks[0].death_data.count);
   EXPECT_EQ(10, process_data_phase1.tasks[0].death_data.run_duration_sum);
@@ -693,7 +713,8 @@ TEST_F(TrackedObjectsTest, TwoPhases) {
   EXPECT_EQ(2, process_data_phase1.tasks[0].death_data.queue_duration_max);
   EXPECT_EQ(2, process_data_phase1.tasks[0].death_data.queue_duration_sample);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase1.tasks[0].death_thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase1.tasks[0].death_sanitized_thread_name);
 
   EXPECT_EQ(base::GetCurrentProcId(), process_data.process_id);
 }
@@ -776,7 +797,8 @@ TEST_F(TrackedObjectsTest, ThreePhases) {
   EXPECT_EQ(kLineNumber,
             process_data_phase0.tasks[0].birth.location.line_number);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase0.tasks[0].birth.thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase0.tasks[0].birth.sanitized_thread_name);
 
   EXPECT_EQ(1, process_data_phase0.tasks[0].death_data.count);
   EXPECT_EQ(6, process_data_phase0.tasks[0].death_data.run_duration_sum);
@@ -786,7 +808,8 @@ TEST_F(TrackedObjectsTest, ThreePhases) {
   EXPECT_EQ(7, process_data_phase0.tasks[0].death_data.queue_duration_max);
   EXPECT_EQ(7, process_data_phase0.tasks[0].death_data.queue_duration_sample);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase0.tasks[0].death_thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase0.tasks[0].death_sanitized_thread_name);
 
   auto it1 = process_data.phased_snapshots.find(1);
   ASSERT_TRUE(it1 != process_data.phased_snapshots.end());
@@ -800,7 +823,8 @@ TEST_F(TrackedObjectsTest, ThreePhases) {
   EXPECT_EQ(kLineNumber,
             process_data_phase1.tasks[0].birth.location.line_number);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase1.tasks[0].birth.thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase1.tasks[0].birth.sanitized_thread_name);
 
   EXPECT_EQ(1, process_data_phase1.tasks[0].death_data.count);
   EXPECT_EQ(4, process_data_phase1.tasks[0].death_data.run_duration_sum);
@@ -810,7 +834,8 @@ TEST_F(TrackedObjectsTest, ThreePhases) {
   EXPECT_EQ(5, process_data_phase1.tasks[0].death_data.queue_duration_max);
   EXPECT_EQ(5, process_data_phase1.tasks[0].death_data.queue_duration_sample);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase1.tasks[0].death_thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase1.tasks[0].death_sanitized_thread_name);
 
   auto it2 = process_data.phased_snapshots.find(2);
   ASSERT_TRUE(it2 != process_data.phased_snapshots.end());
@@ -824,7 +849,8 @@ TEST_F(TrackedObjectsTest, ThreePhases) {
   EXPECT_EQ(kLineNumber,
             process_data_phase2.tasks[0].birth.location.line_number);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase2.tasks[0].birth.thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase2.tasks[0].birth.sanitized_thread_name);
 
   EXPECT_EQ(1, process_data_phase2.tasks[0].death_data.count);
   EXPECT_EQ(2, process_data_phase2.tasks[0].death_data.run_duration_sum);
@@ -834,7 +860,8 @@ TEST_F(TrackedObjectsTest, ThreePhases) {
   EXPECT_EQ(3, process_data_phase2.tasks[0].death_data.queue_duration_max);
   EXPECT_EQ(3, process_data_phase2.tasks[0].death_data.queue_duration_sample);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase2.tasks[0].death_thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase2.tasks[0].death_sanitized_thread_name);
 
   EXPECT_EQ(base::GetCurrentProcId(), process_data.process_id);
 }
@@ -881,7 +908,8 @@ TEST_F(TrackedObjectsTest, TwoPhasesSecondEmpty) {
   EXPECT_EQ(kLineNumber,
             process_data_phase0.tasks[0].birth.location.line_number);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase0.tasks[0].birth.thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase0.tasks[0].birth.sanitized_thread_name);
 
   EXPECT_EQ(1, process_data_phase0.tasks[0].death_data.count);
   EXPECT_EQ(2, process_data_phase0.tasks[0].death_data.run_duration_sum);
@@ -891,7 +919,8 @@ TEST_F(TrackedObjectsTest, TwoPhasesSecondEmpty) {
   EXPECT_EQ(4, process_data_phase0.tasks[0].death_data.queue_duration_max);
   EXPECT_EQ(4, process_data_phase0.tasks[0].death_data.queue_duration_sample);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase0.tasks[0].death_thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase0.tasks[0].death_sanitized_thread_name);
 
   auto it1 = process_data.phased_snapshots.find(1);
   ASSERT_TRUE(it1 != process_data.phased_snapshots.end());
@@ -944,7 +973,8 @@ TEST_F(TrackedObjectsTest, TwoPhasesFirstEmpty) {
   EXPECT_EQ(kLineNumber,
             process_data_phase1.tasks[0].birth.location.line_number);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase1.tasks[0].birth.thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase1.tasks[0].birth.sanitized_thread_name);
 
   EXPECT_EQ(1, process_data_phase1.tasks[0].death_data.count);
   EXPECT_EQ(2, process_data_phase1.tasks[0].death_data.run_duration_sum);
@@ -954,7 +984,8 @@ TEST_F(TrackedObjectsTest, TwoPhasesFirstEmpty) {
   EXPECT_EQ(4, process_data_phase1.tasks[0].death_data.queue_duration_max);
   EXPECT_EQ(4, process_data_phase1.tasks[0].death_data.queue_duration_sample);
 
-  EXPECT_EQ(kMainThreadName, process_data_phase1.tasks[0].death_thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase1.tasks[0].death_sanitized_thread_name);
 
   EXPECT_EQ(base::GetCurrentProcId(), process_data.process_id);
 }
@@ -1121,7 +1152,8 @@ TEST_F(TrackedObjectsTest, DifferentLives) {
             process_data_phase.tasks[0].birth.location.function_name);
   EXPECT_EQ(kLineNumber,
             process_data_phase.tasks[0].birth.location.line_number);
-  EXPECT_EQ(kMainThreadName, process_data_phase.tasks[0].birth.thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase.tasks[0].birth.sanitized_thread_name);
   EXPECT_EQ(1, process_data_phase.tasks[0].death_data.count);
   EXPECT_EQ(2, process_data_phase.tasks[0].death_data.run_duration_sum);
   EXPECT_EQ(2, process_data_phase.tasks[0].death_data.run_duration_max);
@@ -1129,13 +1161,15 @@ TEST_F(TrackedObjectsTest, DifferentLives) {
   EXPECT_EQ(4, process_data_phase.tasks[0].death_data.queue_duration_sum);
   EXPECT_EQ(4, process_data_phase.tasks[0].death_data.queue_duration_max);
   EXPECT_EQ(4, process_data_phase.tasks[0].death_data.queue_duration_sample);
-  EXPECT_EQ(kMainThreadName, process_data_phase.tasks[0].death_thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase.tasks[0].death_sanitized_thread_name);
   EXPECT_EQ(kFile, process_data_phase.tasks[1].birth.location.file_name);
   EXPECT_EQ(kFunction,
             process_data_phase.tasks[1].birth.location.function_name);
   EXPECT_EQ(kSecondFakeLineNumber,
             process_data_phase.tasks[1].birth.location.line_number);
-  EXPECT_EQ(kMainThreadName, process_data_phase.tasks[1].birth.thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase.tasks[1].birth.sanitized_thread_name);
   EXPECT_EQ(1, process_data_phase.tasks[1].death_data.count);
   EXPECT_EQ(0, process_data_phase.tasks[1].death_data.run_duration_sum);
   EXPECT_EQ(0, process_data_phase.tasks[1].death_data.run_duration_max);
@@ -1143,7 +1177,8 @@ TEST_F(TrackedObjectsTest, DifferentLives) {
   EXPECT_EQ(0, process_data_phase.tasks[1].death_data.queue_duration_sum);
   EXPECT_EQ(0, process_data_phase.tasks[1].death_data.queue_duration_max);
   EXPECT_EQ(0, process_data_phase.tasks[1].death_data.queue_duration_sample);
-  EXPECT_EQ(kStillAlive, process_data_phase.tasks[1].death_thread_name);
+  EXPECT_EQ(kStillAlive,
+            process_data_phase.tasks[1].death_sanitized_thread_name);
   EXPECT_EQ(base::GetCurrentProcId(), process_data.process_id);
 }
 
@@ -1286,7 +1321,8 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusionWithNestedTask) {
             process_data_phase.tasks[t0].birth.location.function_name);
   EXPECT_EQ(kLineNumber,
             process_data_phase.tasks[t0].birth.location.line_number);
-  EXPECT_EQ(kMainThreadName, process_data_phase.tasks[t0].birth.thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase.tasks[t0].birth.sanitized_thread_name);
   EXPECT_EQ(1, process_data_phase.tasks[t0].death_data.count);
   EXPECT_EQ(6, process_data_phase.tasks[t0].death_data.run_duration_sum);
   EXPECT_EQ(6, process_data_phase.tasks[t0].death_data.run_duration_max);
@@ -1294,13 +1330,15 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusionWithNestedTask) {
   EXPECT_EQ(4, process_data_phase.tasks[t0].death_data.queue_duration_sum);
   EXPECT_EQ(4, process_data_phase.tasks[t0].death_data.queue_duration_max);
   EXPECT_EQ(4, process_data_phase.tasks[t0].death_data.queue_duration_sample);
-  EXPECT_EQ(kMainThreadName, process_data_phase.tasks[t0].death_thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase.tasks[t0].death_sanitized_thread_name);
   EXPECT_EQ(kFile, process_data_phase.tasks[t1].birth.location.file_name);
   EXPECT_EQ(kFunction,
             process_data_phase.tasks[t1].birth.location.function_name);
   EXPECT_EQ(kSecondFakeLineNumber,
             process_data_phase.tasks[t1].birth.location.line_number);
-  EXPECT_EQ(kMainThreadName, process_data_phase.tasks[t1].birth.thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase.tasks[t1].birth.sanitized_thread_name);
   EXPECT_EQ(1, process_data_phase.tasks[t1].death_data.count);
   EXPECT_EQ(2, process_data_phase.tasks[t1].death_data.run_duration_sum);
   EXPECT_EQ(2, process_data_phase.tasks[t1].death_data.run_duration_max);
@@ -1308,8 +1346,30 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusionWithNestedTask) {
   EXPECT_EQ(1, process_data_phase.tasks[t1].death_data.queue_duration_sum);
   EXPECT_EQ(1, process_data_phase.tasks[t1].death_data.queue_duration_max);
   EXPECT_EQ(1, process_data_phase.tasks[t1].death_data.queue_duration_sample);
-  EXPECT_EQ(kMainThreadName, process_data_phase.tasks[t1].death_thread_name);
+  EXPECT_EQ(kMainThreadName,
+            process_data_phase.tasks[t1].death_sanitized_thread_name);
   EXPECT_EQ(base::GetCurrentProcId(), process_data.process_id);
+}
+
+// Repetitively create and stop named threads. Verify that the number of
+// instantiated ThreadData instance is equal to the number of different
+// sanitized thread names used in the test.
+TEST_F(TrackedObjectsTest, ReuseRetiredThreadData) {
+  const char* const kThreadNames[] = {"Foo%d", "Bar%d", "123Dummy%d",
+                                      "456Dummy%d", "%d"};
+  constexpr int kNumIterations = 10;
+  EXPECT_EQ(0, GetNumThreadData());
+
+  for (int i = 0; i < kNumIterations; ++i) {
+    for (const char* thread_name : kThreadNames) {
+      base::Thread thread(base::StringPrintf(thread_name, i));
+      EXPECT_TRUE(thread.Start());
+    }
+  }
+
+  // Expect one ThreadData instance for each element in |kThreadNames| and one
+  // ThreadData instance for the main thread.
+  EXPECT_EQ(static_cast<int>(arraysize(kThreadNames) + 1), GetNumThreadData());
 }
 
 }  // namespace tracked_objects

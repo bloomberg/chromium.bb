@@ -54,14 +54,13 @@ TEST(TaskProfilerDataSerializerTest, SerializeProcessDataToJson) {
     parent.location.file_name = "path/to/foo.cc";
     parent.location.function_name = "WhizBang";
     parent.location.line_number = 101;
-    parent.thread_name = "CrBrowserMain";
+    parent.sanitized_thread_name = "CrBrowserMain";
 
     tracked_objects::BirthOnThreadSnapshot child;
     child.location.file_name = "path/to/bar.cc";
     child.location.function_name = "FizzBoom";
     child.location.line_number = 433;
-    child.thread_name = "Chrome_IOThread";
-
+    child.sanitized_thread_name = "Chrome_IOThread";
 
     // Add a snapshot.
     process_data_phase.tasks.push_back(tracked_objects::TaskSnapshot());
@@ -79,7 +78,7 @@ TEST(TaskProfilerDataSerializerTest, SerializeProcessDataToJson) {
     process_data_phase.tasks.back().death_data.freed_bytes = 1092;
     process_data_phase.tasks.back().death_data.alloc_overhead_bytes = 201;
     process_data_phase.tasks.back().death_data.max_allocated_bytes = 1500;
-    process_data_phase.tasks.back().death_thread_name =
+    process_data_phase.tasks.back().death_sanitized_thread_name =
         "WorkerPool/-1340960768";
 
     // Add a second snapshot.
@@ -98,7 +97,8 @@ TEST(TaskProfilerDataSerializerTest, SerializeProcessDataToJson) {
     process_data_phase.tasks.back().death_data.freed_bytes = 10092;
     process_data_phase.tasks.back().death_data.alloc_overhead_bytes = 2001;
     process_data_phase.tasks.back().death_data.max_allocated_bytes = 15000;
-    process_data_phase.tasks.back().death_thread_name = "PAC thread #3";
+    process_data_phase.tasks.back().death_sanitized_thread_name =
+        "PAC thread #3";
 
     ExpectSerialization(process_data_phase, 239,
                         metrics::ProfilerEventProto::TrackedObject::RENDERER,

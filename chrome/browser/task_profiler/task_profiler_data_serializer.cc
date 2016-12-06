@@ -51,7 +51,8 @@ void BirthOnThreadSnapshotToValue(const BirthOnThreadSnapshot& birth,
   LocationSnapshotToValue(birth.location, location_value.get());
   dictionary->Set(prefix + "_location", location_value.release());
 
-  dictionary->Set(prefix + "_thread", new base::StringValue(birth.thread_name));
+  dictionary->Set(prefix + "_thread",
+                  new base::StringValue(birth.sanitized_thread_name));
 }
 
 // Re-serializes the |death_data| into |dictionary|.
@@ -83,7 +84,7 @@ void TaskSnapshotToValue(const TaskSnapshot& snapshot,
   DeathDataSnapshotToValue(snapshot.death_data, death_data.get());
   dictionary->Set("death_data", death_data.release());
 
-  dictionary->SetString("death_thread", snapshot.death_thread_name);
+  dictionary->SetString("death_thread", snapshot.death_sanitized_thread_name);
 }
 
 int AsChromeProcessType(
