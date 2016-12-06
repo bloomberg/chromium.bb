@@ -250,7 +250,6 @@ void DocumentMarkerController::addMarker(Node* node,
   Member<MarkerList>& list = markers->at(markerListIndex);
   RenderedDocumentMarker* newRenderedMarker =
       RenderedDocumentMarker::create(newMarker);
-  updateMarkerRenderedRect(*node, *newRenderedMarker);
   if (list->isEmpty() || list->back()->endOffset() < newMarker.startOffset()) {
     list->append(newRenderedMarker);
   } else {
