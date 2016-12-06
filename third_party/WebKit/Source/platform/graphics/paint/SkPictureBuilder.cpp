@@ -26,6 +26,10 @@ SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds,
     m_paintControllerPtr = PaintController::create();
     m_paintController = m_paintControllerPtr.get();
   }
+#if DCHECK_IS_ON()
+  m_paintController->setUsage(PaintController::ForSkPictureBuilder);
+#endif
+
   m_context = wrapUnique(
       new GraphicsContext(*m_paintController, disabledMode, metaData));
 
@@ -35,7 +39,11 @@ SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds,
   }
 }
 
-SkPictureBuilder::~SkPictureBuilder() {}
+SkPictureBuilder::~SkPictureBuilder() {
+#if DCHECK_IS_ON()
+  m_paintController->setUsage(PaintController::ForNormalUsage);
+#endif
+}
 
 sk_sp<SkPicture> SkPictureBuilder::endRecording() {
   m_context->beginRecording(m_bounds);

@@ -40,6 +40,9 @@ class LayoutDetailsMarker final : public LayoutBlockFlow {
     return type == LayoutObjectDetailsMarker || LayoutBlockFlow::isOfType(type);
   }
   void paint(const PaintInfo&, const LayoutPoint&) const override;
+  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override {
+    return false;
+  }
 
   bool isOpen() const;
 };

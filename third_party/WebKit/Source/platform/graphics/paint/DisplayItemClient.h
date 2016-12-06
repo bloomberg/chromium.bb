@@ -55,6 +55,20 @@ class PLATFORM_EXPORT DisplayItemClient {
   // offsetFromLayoutObjectWithSubpixelAccumulation().
   virtual LayoutRect visualRect() const = 0;
 
+  // This is declared here instead of in LayoutObject for verifying the
+  // condition in DrawingRecorder.
+  // Returns true if the object itself will not generate any effective painted
+  // output no matter what size the object is. For example, this function can
+  // return false for an object whose size is currently 0x0 but would have
+  // effective painted output if it was set a non-empty size. It's used to skip
+  // unforced paint invalidation of LayoutObjects (which is when
+  // shouldDoFullPaintInvalidation is false, but mayNeedPaintInvalidation or
+  // childShouldCheckForPaintInvalidation is true) to avoid unnecessary paint
+  // invalidations of empty areas covered by such objects.
+  virtual bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
+    return false;
+  }
+
   void setDisplayItemsUncached(
       PaintInvalidationReason reason = PaintInvalidationFull) const {
     m_cacheGenerationOrInvalidationReason.invalidate(reason);
