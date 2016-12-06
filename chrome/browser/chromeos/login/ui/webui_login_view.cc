@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_set_background_color.h"
@@ -191,9 +192,11 @@ WebUILoginView::WebUILoginView() {
   accel_map_[ui::Accelerator(
       ui::VKEY_A, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
       kAccelNameEnrollmentAd;
-  accel_map_[ui::Accelerator(ui::VKEY_K,
-                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelNameKioskEnable;
+  if (KioskAppManager::IsConsumerKioskEnabled()) {
+    accel_map_[ui::Accelerator(ui::VKEY_K,
+                               ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
+        kAccelNameKioskEnable;
+  }
   accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
       kAccelNameVersion;
   accel_map_[ui::Accelerator(ui::VKEY_R,

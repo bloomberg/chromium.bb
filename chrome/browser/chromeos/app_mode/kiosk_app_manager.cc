@@ -10,6 +10,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -35,6 +36,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -183,6 +185,12 @@ void KioskAppManager::RemoveObsoleteCryptohomes() {
       base::Bind(&PerformDelayedCryptohomeRemovals));
 }
 
+// static
+bool KioskAppManager::IsConsumerKioskEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableConsumerKiosk);
+}
+
 KioskAppManager::App::App(const KioskAppData& data,
                           bool is_extension_pending,
                           bool auto_launched_with_zero_delay)
@@ -255,6 +263,12 @@ void KioskAppManager::AddAppForTest(
 
 void KioskAppManager::EnableConsumerKioskAutoLaunch(
     const KioskAppManager::EnableKioskAutoLaunchCallback& callback) {
+  if (!IsConsumerKioskEnabled()) {
+    if (!callback.is_null())
+      callback.Run(false);
+    return;
+  }
+
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   connector->GetInstallAttributes()->LockDevice(
@@ -268,6 +282,12 @@ void KioskAppManager::EnableConsumerKioskAutoLaunch(
 
 void KioskAppManager::GetConsumerKioskAutoLaunchStatus(
     const KioskAppManager::GetConsumerKioskAutoLaunchStatusCallback& callback) {
+  if (!IsConsumerKioskEnabled()) {
+    if (!callback.is_null())
+      callback.Run(CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED);
+    return;
+  }
+
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   connector->GetInstallAttributes()->ReadImmutableAttributes(

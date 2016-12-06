@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN('#include "base/command_line.h"');
+
 /**
  * TestFixture for kiosk app settings WebUI testing.
  * @extends {testing.Test}
@@ -16,6 +18,11 @@ KioskAppSettingsWebUITest.prototype = {
    * Browse to the kiosk app settings page.
    */
   browsePreload: 'chrome://extensions-frame/',
+
+  /** @override */
+  commandLineSwitches: [{
+    switchName: 'enable-consumer-kiosk',
+  }],
 
   /**
    * Mock settings data.
@@ -232,4 +239,27 @@ TEST_F('KioskAppSettingsWebUITest', 'testAllowDisableBailout', function() {
   this.settings_.hasAutoLaunchApp = true;
   extensions.KioskAppsOverlay.setSettings(this.settings_);
   expectFalse(checkbox.disabled);
+});
+
+/**
+ * TestFixture for kiosk app settings when consumer kiosk is disabled.
+ * @extends {testing.Test}
+ * @constructor
+ */
+function NoConsumerKioskWebUITest() {}
+
+NoConsumerKioskWebUITest.prototype = {
+  __proto__: KioskAppSettingsWebUITest.prototype,
+
+  /** @override */
+  commandLineSwitches: [],
+
+  /** @override */
+  setUp: function() {}
+};
+
+// Test kiosk app settings are not visible when consumer kiosk is disabled.
+TEST_F('NoConsumerKioskWebUITest', 'settingsHidden', function() {
+  assertEquals(this.browsePreload, document.location.href);
+  assertTrue($('add-kiosk-app').hidden);
 });

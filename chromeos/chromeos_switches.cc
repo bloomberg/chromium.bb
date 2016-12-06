@@ -217,6 +217,9 @@ const char kEnableArc[] = "enable-arc";
 // Enables ARC OptIn flow in OOBE.
 const char kEnableArcOOBEOptIn[] = "enable-arc-oobe-optin";
 
+// Enables consume kiosk mode.
+const char kEnableConsumerKiosk[] = "enable-consumer-kiosk";
+
 // Enables Data Saver prompt on cellular networks.
 const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
 

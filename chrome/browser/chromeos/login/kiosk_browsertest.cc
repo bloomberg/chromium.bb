@@ -542,6 +542,9 @@ class KioskTest : public OobeBaseTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
     fake_cws_->Init(embedded_test_server());
+
+    if (use_consumer_kiosk_mode_)
+      command_line->AppendSwitch(switches::kEnableConsumerKiosk);
   }
 
   void LaunchApp(const std::string& app_id, bool diagnostic_mode) {
@@ -714,15 +717,13 @@ class KioskTest : public OobeBaseTest {
   }
 
   void EnableConsumerKioskMode() {
-    std::unique_ptr<bool> locked(new bool(false));
+    bool locked = false;
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    KioskAppManager::Get()->EnableConsumerKioskAutoLaunch(
-        base::Bind(&ConsumerKioskModeAutoStartLockCheck,
-                   locked.get(),
-                   runner->QuitClosure()));
+    KioskAppManager::Get()->EnableConsumerKioskAutoLaunch(base::Bind(
+        &ConsumerKioskModeAutoStartLockCheck, &locked, runner->QuitClosure()));
     runner->Run();
-    EXPECT_TRUE(*locked.get());
+    EXPECT_TRUE(locked);
   }
 
   KioskAppManager::ConsumerKioskAutoLaunchStatus

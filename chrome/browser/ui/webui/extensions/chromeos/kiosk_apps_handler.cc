@@ -19,6 +19,7 @@
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -213,12 +214,23 @@ void KioskAppsHandler::OnKioskExtensionDownloadFailed(
 void KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus(
     chromeos::KioskAppManager::ConsumerKioskAutoLaunchStatus status) {
   initialized_ = true;
-  is_kiosk_enabled_ = user_manager::UserManager::Get()->IsCurrentUserOwner() ||
-                      !base::SysInfo::IsRunningOnChromeOS();
-
-  is_auto_launch_enabled_ =
-      status == KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_ENABLED ||
-      !base::SysInfo::IsRunningOnChromeOS();
+  if (KioskAppManager::IsConsumerKioskEnabled()) {
+    if (!base::SysInfo::IsRunningOnChromeOS()) {
+      // Enable everything when running on a dev box.
+      is_kiosk_enabled_ = true;
+      is_auto_launch_enabled_ = true;
+    } else {
+      // Enable consumer kiosk for owner and enable auto launch if configured.
+      is_kiosk_enabled_ =
+          ProfileHelper::IsOwnerProfile(Profile::FromWebUI(web_ui()));
+      is_auto_launch_enabled_ =
+          status == KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_ENABLED;
+    }
+  } else {
+    // Otherwise, consumer kiosk is disabled.
+    is_kiosk_enabled_ = false;
+    is_auto_launch_enabled_ = false;
+  }
 
   if (is_kiosk_enabled_) {
     base::DictionaryValue kiosk_params;

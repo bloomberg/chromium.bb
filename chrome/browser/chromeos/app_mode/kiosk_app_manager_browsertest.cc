@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/test_utils.h"
@@ -780,79 +781,81 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAndRemoveApp) {
 }
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, EnableConsumerKiosk) {
-  std::unique_ptr<KioskAppManager::ConsumerKioskAutoLaunchStatus> status(
-      new KioskAppManager::ConsumerKioskAutoLaunchStatus(
-          KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED));
-  std::unique_ptr<bool> locked(new bool(false));
+  // Consumer kiosk is disabled by default. Enable it for test.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableConsumerKiosk);
+
+  KioskAppManager::ConsumerKioskAutoLaunchStatus status =
+      KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED;
+  bool locked = false;
 
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
-  manager()->GetConsumerKioskAutoLaunchStatus(
-      base::Bind(&ConsumerKioskAutoLaunchStatusCheck,
-                 status.get(),
-                 runner->QuitClosure()));
+  manager()->GetConsumerKioskAutoLaunchStatus(base::Bind(
+      &ConsumerKioskAutoLaunchStatusCheck, &status, runner->QuitClosure()));
   runner->Run();
-  EXPECT_EQ(*status.get(),
-            KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE);
+  EXPECT_EQ(status, KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE);
 
   scoped_refptr<content::MessageLoopRunner> runner2 =
       new content::MessageLoopRunner;
   manager()->EnableConsumerKioskAutoLaunch(
-      base::Bind(&ConsumerKioskModeLockCheck,
-                 locked.get(),
-                 runner2->QuitClosure()));
+      base::Bind(&ConsumerKioskModeLockCheck, &locked, runner2->QuitClosure()));
   runner2->Run();
-  EXPECT_TRUE(*locked.get());
+  EXPECT_TRUE(locked);
 
   scoped_refptr<content::MessageLoopRunner> runner3 =
       new content::MessageLoopRunner;
-  manager()->GetConsumerKioskAutoLaunchStatus(
-      base::Bind(&ConsumerKioskAutoLaunchStatusCheck,
-                 status.get(),
-                 runner3->QuitClosure()));
+  manager()->GetConsumerKioskAutoLaunchStatus(base::Bind(
+      &ConsumerKioskAutoLaunchStatusCheck, &status, runner3->QuitClosure()));
   runner3->Run();
-  EXPECT_EQ(*status.get(),
-            KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_ENABLED);
+  EXPECT_EQ(status, KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_ENABLED);
+}
+
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, ConsumerKioskDisabled) {
+  KioskAppManager::ConsumerKioskAutoLaunchStatus status =
+      KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE;
+
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  manager()->GetConsumerKioskAutoLaunchStatus(base::Bind(
+      &ConsumerKioskAutoLaunchStatusCheck, &status, runner->QuitClosure()));
+  runner->Run();
+  EXPECT_EQ(status, KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED);
 }
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest,
                        PreventEnableConsumerKioskForEnterprise) {
-  // First, lock the device as enterprise.
+  // Consumer kiosk is disabled by default. Enable it for test.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableConsumerKiosk);
+
+  // Lock the device as enterprise.
   EXPECT_EQ(LockDeviceForEnterprise(), InstallAttributes::LOCK_SUCCESS);
 
-  std::unique_ptr<KioskAppManager::ConsumerKioskAutoLaunchStatus> status(
-      new KioskAppManager::ConsumerKioskAutoLaunchStatus(
-          KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED));
-  std::unique_ptr<bool> locked(new bool(true));
+  KioskAppManager::ConsumerKioskAutoLaunchStatus status =
+      KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED;
+  bool locked = true;
 
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
-  manager()->GetConsumerKioskAutoLaunchStatus(
-      base::Bind(&ConsumerKioskAutoLaunchStatusCheck,
-                 status.get(),
-                 runner->QuitClosure()));
+  manager()->GetConsumerKioskAutoLaunchStatus(base::Bind(
+      &ConsumerKioskAutoLaunchStatusCheck, &status, runner->QuitClosure()));
   runner->Run();
-  EXPECT_EQ(*status.get(),
-            KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED);
+  EXPECT_EQ(status, KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED);
 
   scoped_refptr<content::MessageLoopRunner> runner2 =
       new content::MessageLoopRunner;
   manager()->EnableConsumerKioskAutoLaunch(
-      base::Bind(&ConsumerKioskModeLockCheck,
-                 locked.get(),
-                 runner2->QuitClosure()));
+      base::Bind(&ConsumerKioskModeLockCheck, &locked, runner2->QuitClosure()));
   runner2->Run();
-  EXPECT_FALSE(*locked.get());
+  EXPECT_FALSE(locked);
 
   scoped_refptr<content::MessageLoopRunner> runner3 =
       new content::MessageLoopRunner;
-  manager()->GetConsumerKioskAutoLaunchStatus(
-      base::Bind(&ConsumerKioskAutoLaunchStatusCheck,
-                 status.get(),
-                 runner3->QuitClosure()));
+  manager()->GetConsumerKioskAutoLaunchStatus(base::Bind(
+      &ConsumerKioskAutoLaunchStatusCheck, &status, runner3->QuitClosure()));
   runner3->Run();
-  EXPECT_EQ(*status.get(),
-            KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED);
+  EXPECT_EQ(status, KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED);
 }
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest,
