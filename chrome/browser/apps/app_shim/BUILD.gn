@@ -21,5 +21,7 @@ source_set("app_shim") {
   deps = [
     "//content/public/browser",
     "//content/public/common",
+    "//extensions/browser",
+    "//extensions/common",
   ]
 }
