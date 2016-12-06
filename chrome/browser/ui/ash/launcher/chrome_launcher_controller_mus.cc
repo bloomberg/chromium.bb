@@ -69,10 +69,10 @@ ash::ShelfID ChromeLauncherControllerMus::CreateAppLauncherItem(
   return ash::TYPE_UNDEFINED;
 }
 
-const ash::ShelfItem& ChromeLauncherControllerMus::GetItem(
+const ash::ShelfItem* ChromeLauncherControllerMus::GetItem(
     ash::ShelfID id) const {
   NOTIMPLEMENTED();
-  return fake_item_;
+  return nullptr;
 }
 
 void ChromeLauncherControllerMus::SetItemType(ash::ShelfID id,

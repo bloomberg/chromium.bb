@@ -63,7 +63,7 @@ class ChromeLauncherControllerImpl
   ash::ShelfID CreateAppLauncherItem(LauncherItemController* controller,
                                      const std::string& app_id,
                                      ash::ShelfItemStatus status) override;
-  const ash::ShelfItem& GetItem(ash::ShelfID id) const override;
+  const ash::ShelfItem* GetItem(ash::ShelfID id) const override;
   void SetItemType(ash::ShelfID id, ash::ShelfItemType type) override;
   void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status) override;
   void SetItemController(ash::ShelfID id,

@@ -90,7 +90,11 @@ void ShelfModel::Move(int index, int target_index) {
 }
 
 void ShelfModel::Set(int index, const ShelfItem& item) {
-  DCHECK(index >= 0 && index < item_count());
+  if (index < 0 || index >= item_count()) {
+    NOTREACHED();
+    return;
+  }
+
   int new_index = item.type == items_[index].type
                       ? index
                       : ValidateInsertionIndex(item.type, index);

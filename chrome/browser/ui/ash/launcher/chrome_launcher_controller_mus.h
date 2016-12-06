@@ -24,7 +24,7 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   ash::ShelfID CreateAppLauncherItem(LauncherItemController* controller,
                                      const std::string& app_id,
                                      ash::ShelfItemStatus status) override;
-  const ash::ShelfItem& GetItem(ash::ShelfID id) const override;
+  const ash::ShelfItem* GetItem(ash::ShelfID id) const override;
   void SetItemType(ash::ShelfID id, ash::ShelfItemType type) override;
   void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status) override;
   void SetItemController(ash::ShelfID id,
@@ -92,9 +92,6 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
 
   std::map<std::string, std::unique_ptr<ChromeShelfItemDelegate>>
       app_id_to_item_delegate_;
-
-  // A fake item used for the unimplemented GetItem() override.
-  const ash::ShelfItem fake_item_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerMus);
 };

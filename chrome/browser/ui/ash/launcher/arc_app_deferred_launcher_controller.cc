@@ -196,7 +196,8 @@ void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
   const ash::ShelfID shelf_id = owner_->GetShelfIDForAppID(shelf_app_id);
 
   // We are allowed to apply new deferred controller only over shortcut.
-  if (shelf_id && owner_->GetItem(shelf_id).type != ash::TYPE_APP_SHORTCUT)
+  const ash::ShelfItem* item = owner_->GetItem(shelf_id);
+  if (item && item->type != ash::TYPE_APP_SHORTCUT)
     return;
 
   ArcAppDeferredLauncherItemController* controller =

@@ -85,8 +85,8 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
                                              const std::string& app_id,
                                              ash::ShelfItemStatus status) = 0;
 
-  // A helper to get the shelf item with the given id, which must be valid.
-  virtual const ash::ShelfItem& GetItem(ash::ShelfID id) const = 0;
+  // Returns the shelf item with the given id, or null if |id| isn't found.
+  virtual const ash::ShelfItem* GetItem(ash::ShelfID id) const = 0;
 
   // Updates the type of an item.
   virtual void SetItemType(ash::ShelfID id, ash::ShelfItemType type) = 0;
