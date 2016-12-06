@@ -135,7 +135,9 @@ bool VideoDecoderConfig::Matches(const VideoDecoderConfig& config) const {
           (visible_rect() == config.visible_rect()) &&
           (natural_size() == config.natural_size()) &&
           (extra_data() == config.extra_data()) &&
-          (encryption_scheme().Matches(config.encryption_scheme())));
+          (encryption_scheme().Matches(config.encryption_scheme())) &&
+          (color_space_info() == config.color_space_info()) &&
+          (hdr_metadata() == config.hdr_metadata()));
 }
 
 std::string VideoDecoderConfig::AsHumanReadableString() const {
