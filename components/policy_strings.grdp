@@ -338,7 +338,7 @@
     Cloud
   </message>
   <message name="IDS_POLICY_SOURCE_ACTIVE_DIRECTORY" desc="Indicates that the policy originates from Active Directory.">
-    Microsoft® Active Directory®
+    <ph name="MICROSOFT_ACTIVE_DIRECTORY">Microsoft® Active Directory®</ph>
   </message>
   <message name="IDS_POLICY_SOURCE_PLATFORM" desc="Indicates that the policy is obtained from the local OS.">
     Platform
