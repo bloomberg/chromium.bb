@@ -65,7 +65,7 @@ class SubtreeLayoutScope {
  private:
   LayoutObject& m_root;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   HashSet<LayoutObject*> m_layoutObjectsToLayout;
 #endif
 };

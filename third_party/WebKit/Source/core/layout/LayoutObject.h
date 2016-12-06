@@ -2490,7 +2490,9 @@ inline void LayoutObject::setNeedsLayout(
     LayoutInvalidationReasonForTracing reason,
     MarkingBehavior markParents,
     SubtreeLayoutScope* layouter) {
-  ASSERT(!isSetNeedsLayoutForbidden());
+#if DCHECK_IS_ON()
+  DCHECK(!isSetNeedsLayoutForbidden());
+#endif
   bool alreadyNeededLayout = m_bitfields.selfNeedsLayout();
   setSelfNeedsLayout(true);
   if (!alreadyNeededLayout) {
@@ -2534,7 +2536,9 @@ inline void LayoutObject::clearNeedsLayout() {
 
 inline void LayoutObject::setChildNeedsLayout(MarkingBehavior markParents,
                                               SubtreeLayoutScope* layouter) {
-  ASSERT(!isSetNeedsLayoutForbidden());
+#if DCHECK_IS_ON()
+  DCHECK(!isSetNeedsLayoutForbidden());
+#endif
   bool alreadyNeededLayout = normalChildNeedsLayout();
   setNormalChildNeedsLayout(true);
   // FIXME: Replace MarkOnlyThis with the SubtreeLayoutScope code path and
@@ -2547,7 +2551,9 @@ inline void LayoutObject::setChildNeedsLayout(MarkingBehavior markParents,
 inline void LayoutObject::setNeedsPositionedMovementLayout() {
   bool alreadyNeededLayout = needsPositionedMovementLayout();
   setNeedsPositionedMovementLayout(true);
-  ASSERT(!isSetNeedsLayoutForbidden());
+#if DCHECK_IS_ON()
+  DCHECK(!isSetNeedsLayoutForbidden());
+#endif
   if (!alreadyNeededLayout)
     markContainerChainForLayout();
 }

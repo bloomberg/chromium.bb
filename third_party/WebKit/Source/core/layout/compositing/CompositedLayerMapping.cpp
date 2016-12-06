@@ -2796,7 +2796,7 @@ void CompositedLayerMapping::doPaintTask(
         roundedIntSize(paintInfo.paintLayer->subpixelAccumulation()));
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   if (!layoutObject()->view()->frame() ||
       !layoutObject()->view()->frame()->shouldThrottleRendering())
     paintInfo.paintLayer->layoutObject()->assertSubtreeIsLaidOut();

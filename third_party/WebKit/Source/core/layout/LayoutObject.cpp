@@ -236,7 +236,9 @@ LayoutObject::LayoutObject(Node* node)
 }
 
 LayoutObject::~LayoutObject() {
-  ASSERT(!m_hasAXObject);
+#if DCHECK_IS_ON()
+  DCHECK(!m_hasAXObject);
+#endif
   InstanceCounters::decrementCounter(InstanceCounters::LayoutObjectCounter);
 }
 
@@ -737,7 +739,9 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object) {
 
 void LayoutObject::markContainerChainForLayout(bool scheduleRelayout,
                                                SubtreeLayoutScope* layouter) {
-  ASSERT(!isSetNeedsLayoutForbidden());
+#if DCHECK_IS_ON()
+  DCHECK(!isSetNeedsLayoutForbidden());
+#endif
   ASSERT(!layouter || this != layouter->root());
   // When we're in layout, we're marking a descendant as needing layout with
   // the intention of visiting it during this layout. We shouldn't be
@@ -768,18 +772,18 @@ void LayoutObject::markContainerChainForLayout(bool scheduleRelayout,
       container = object->container();
       object->setPosChildNeedsLayout(true);
       simplifiedNormalFlowLayout = true;
-      ASSERT(!object->isSetNeedsLayoutForbidden());
     } else if (simplifiedNormalFlowLayout) {
       if (object->needsSimplifiedNormalFlowLayout())
         return;
       object->setNeedsSimplifiedNormalFlowLayout(true);
-      ASSERT(!object->isSetNeedsLayoutForbidden());
     } else {
       if (object->normalChildNeedsLayout())
         return;
       object->setNormalChildNeedsLayout(true);
-      ASSERT(!object->isSetNeedsLayoutForbidden());
     }
+#if DCHECK_IS_ON()
+    DCHECK(!object->isSetNeedsLayoutForbidden());
+#endif
 
     if (layouter) {
       layouter->recordObjectMarkedForLayout(object);

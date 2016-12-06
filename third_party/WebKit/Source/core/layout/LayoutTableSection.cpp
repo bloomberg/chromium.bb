@@ -829,7 +829,7 @@ void LayoutTableSection::updateBaselineForCell(LayoutTableCell* cell,
 }
 
 int LayoutTableSection::calcRowLogicalHeight() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   SetLayoutNeededForbiddenScope layoutForbiddenScope(*this);
 #endif
 
@@ -1120,7 +1120,7 @@ static bool shouldFlexCellChild(LayoutObject* cellDescendant) {
 }
 
 void LayoutTableSection::layoutRows() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   SetLayoutNeededForbiddenScope layoutForbiddenScope(*this);
 #endif
 

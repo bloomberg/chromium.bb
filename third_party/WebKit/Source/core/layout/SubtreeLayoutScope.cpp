@@ -42,7 +42,7 @@ SubtreeLayoutScope::SubtreeLayoutScope(LayoutObject& root) : m_root(root) {
 SubtreeLayoutScope::~SubtreeLayoutScope() {
   RELEASE_ASSERT(!m_root.needsLayout());
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   for (auto* layoutObject : m_layoutObjectsToLayout)
     layoutObject->assertLaidOut();
 #endif
@@ -62,7 +62,7 @@ void SubtreeLayoutScope::setChildNeedsLayout(LayoutObject* descendant) {
 
 void SubtreeLayoutScope::recordObjectMarkedForLayout(
     LayoutObject* layoutObject) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_layoutObjectsToLayout.add(layoutObject);
 #endif
 }

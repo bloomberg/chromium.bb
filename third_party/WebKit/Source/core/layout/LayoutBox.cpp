@@ -1159,7 +1159,7 @@ void LayoutBox::computeIntrinsicLogicalWidths(
 
 LayoutUnit LayoutBox::minPreferredLogicalWidth() const {
   if (preferredLogicalWidthsDirty()) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     SetLayoutNeededForbiddenScope layoutForbiddenScope(
         const_cast<LayoutBox&>(*this));
 #endif
@@ -1173,7 +1173,7 @@ LayoutUnit LayoutBox::minPreferredLogicalWidth() const {
 DISABLE_CFI_PERF
 LayoutUnit LayoutBox::maxPreferredLogicalWidth() const {
   if (preferredLogicalWidthsDirty()) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     SetLayoutNeededForbiddenScope layoutForbiddenScope(
         const_cast<LayoutBox&>(*this));
 #endif
