@@ -46,7 +46,7 @@ ReadingListEntry::ReadingListEntry(const GURL& url,
                                    std::unique_ptr<net::BackoffEntry> backoff)
     : ReadingListEntry(url,
                        title,
-                       false,
+                       UNSEEN,
                        0,
                        0,
                        WAITING,
@@ -57,7 +57,7 @@ ReadingListEntry::ReadingListEntry(const GURL& url,
 ReadingListEntry::ReadingListEntry(
     const GURL& url,
     const std::string& title,
-    bool read,
+    State state,
     int64_t creation_time,
     int64_t update_time,
     ReadingListEntry::DistillationState distilled_state,
@@ -66,7 +66,7 @@ ReadingListEntry::ReadingListEntry(
     std::unique_ptr<net::BackoffEntry> backoff)
     : url_(url),
       title_(title),
-      read_(read),
+      state_(state),
       distilled_path_(distilled_path),
       distilled_state_(distilled_state),
       failed_download_counter_(failed_download_counter),
@@ -90,7 +90,7 @@ ReadingListEntry::ReadingListEntry(
 ReadingListEntry::ReadingListEntry(ReadingListEntry&& entry)
     : url_(std::move(entry.url_)),
       title_(std::move(entry.title_)),
-      read_(std::move(entry.read_)),
+      state_(std::move(entry.state_)),
       distilled_path_(std::move(entry.distilled_path_)),
       distilled_state_(std::move(entry.distilled_state_)),
       backoff_(std::move(entry.backoff_)),
@@ -130,7 +130,7 @@ ReadingListEntry& ReadingListEntry::operator=(ReadingListEntry&& other) {
   distilled_path_ = std::move(other.distilled_path_);
   distilled_state_ = std::move(other.distilled_state_);
   backoff_ = std::move(other.backoff_);
-  read_ = std::move(other.read_);
+  state_ = std::move(other.state_);
   failed_download_counter_ = std::move(other.failed_download_counter_);
   creation_time_us_ = std::move(other.creation_time_us_);
   update_time_us_ = std::move(other.update_time_us_);
@@ -146,12 +146,16 @@ void ReadingListEntry::SetTitle(const std::string& title) {
 }
 
 void ReadingListEntry::SetRead(bool read) {
-  read_ = read;
+  state_ = read ? READ : UNREAD;
   MarkEntryUpdated();
 }
 
 bool ReadingListEntry::IsRead() const {
-  return read_;
+  return state_ == READ;
+}
+
+bool ReadingListEntry::HasBeenSeen() const {
+  return state_ != UNSEEN;
 }
 
 void ReadingListEntry::SetDistilledPath(const base::FilePath& path) {
@@ -215,9 +219,19 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
     update_time_us = pb_entry.update_time_us();
   }
 
-  bool read = false;
+  State state = UNSEEN;
   if (pb_entry.has_status()) {
-    read = pb_entry.status() == reading_list::ReadingListLocal::READ;
+    switch (pb_entry.status()) {
+      case reading_list::ReadingListLocal::READ:
+        state = READ;
+        break;
+      case reading_list::ReadingListLocal::UNREAD:
+        state = UNREAD;
+        break;
+      case reading_list::ReadingListLocal::UNSEEN:
+        state = UNSEEN;
+        break;
+    }
   }
 
   ReadingListEntry::DistillationState distillation_state =
@@ -264,7 +278,7 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
   }
 
   return base::WrapUnique<ReadingListEntry>(new ReadingListEntry(
-      url, title, read, creation_time_us, update_time_us, distillation_state,
+      url, title, state, creation_time_us, update_time_us, distillation_state,
       distilled_path, failed_download_counter, std::move(backoff)));
 }
 
@@ -293,13 +307,23 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
     update_time_us = pb_entry.update_time_us();
   }
 
-  bool read = false;
+  State state = UNSEEN;
   if (pb_entry.has_status()) {
-    read = pb_entry.status() == sync_pb::ReadingListSpecifics::READ;
+    switch (pb_entry.status()) {
+      case sync_pb::ReadingListSpecifics::READ:
+        state = READ;
+        break;
+      case sync_pb::ReadingListSpecifics::UNREAD:
+        state = UNREAD;
+        break;
+      case sync_pb::ReadingListSpecifics::UNSEEN:
+        state = UNSEEN;
+        break;
+    }
   }
 
   return base::WrapUnique<ReadingListEntry>(
-      new ReadingListEntry(url, title, read, creation_time_us, update_time_us,
+      new ReadingListEntry(url, title, state, creation_time_us, update_time_us,
                            WAITING, base::FilePath(), 0, nullptr));
 }
 
@@ -323,10 +347,16 @@ ReadingListEntry::AsReadingListLocal() const {
   pb_entry->set_creation_time_us(CreationTime());
   pb_entry->set_update_time_us(UpdateTime());
 
-  if (read_) {
-    pb_entry->set_status(reading_list::ReadingListLocal::READ);
-  } else {
-    pb_entry->set_status(reading_list::ReadingListLocal::UNREAD);
+  switch (state_) {
+    case READ:
+      pb_entry->set_status(reading_list::ReadingListLocal::READ);
+      break;
+    case UNREAD:
+      pb_entry->set_status(reading_list::ReadingListLocal::UNREAD);
+      break;
+    case UNSEEN:
+      pb_entry->set_status(reading_list::ReadingListLocal::UNSEEN);
+      break;
   }
 
   reading_list::ReadingListLocal::DistillationState distilation_state;
@@ -379,10 +409,16 @@ ReadingListEntry::AsReadingListSpecifics() const {
   pb_entry->set_creation_time_us(CreationTime());
   pb_entry->set_update_time_us(UpdateTime());
 
-  if (read_) {
-    pb_entry->set_status(sync_pb::ReadingListSpecifics::READ);
-  } else {
-    pb_entry->set_status(sync_pb::ReadingListSpecifics::UNREAD);
+  switch (state_) {
+    case READ:
+      pb_entry->set_status(sync_pb::ReadingListSpecifics::READ);
+      break;
+    case UNREAD:
+      pb_entry->set_status(sync_pb::ReadingListSpecifics::UNREAD);
+      break;
+    case UNSEEN:
+      pb_entry->set_status(sync_pb::ReadingListSpecifics::UNSEEN);
+      break;
   }
 
   return pb_entry;

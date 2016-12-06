@@ -61,6 +61,8 @@ class ReadingListEntry {
   int FailedDownloadCounter() const;
   // The read status of the entry.
   bool IsRead() const;
+  // Returns if an entry has ever been seen.
+  bool HasBeenSeen() const;
 
   // The last update time of the entry. This value may be used to sort the
   // entries. The value is in microseconds since Jan 1st 1970.
@@ -109,13 +111,14 @@ class ReadingListEntry {
   void SetDistilledPath(const base::FilePath& path);
   // Sets the state to one of PROCESSING, WILL_RETRY or ERROR.
   void SetDistilledState(DistillationState distilled_state);
-  // Sets the read stat of the entry. Will set the UpdateTime of the entry.
+  // Sets the read state of the entry. Will set the UpdateTime of the entry.
   void SetRead(bool read);
 
  private:
+  enum State { UNSEEN, UNREAD, READ };
   ReadingListEntry(const GURL& url,
                    const std::string& title,
-                   bool read,
+                   State state,
                    int64_t creation_time,
                    int64_t update_time,
                    ReadingListEntry::DistillationState distilled_state,
@@ -124,7 +127,7 @@ class ReadingListEntry {
                    std::unique_ptr<net::BackoffEntry> backoff);
   GURL url_;
   std::string title_;
-  bool read_;
+  State state_;
   base::FilePath distilled_path_;
   DistillationState distilled_state_;
 

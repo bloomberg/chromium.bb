@@ -44,6 +44,18 @@ TEST(ReadingListEntry, MovesAreEquals) {
   EXPECT_EQ(e3.Title(), e2.Title());
 }
 
+TEST(ReadingListEntry, ReadState) {
+  ReadingListEntry e(GURL("http://example.com"), "bar");
+  EXPECT_FALSE(e.HasBeenSeen());
+  EXPECT_FALSE(e.IsRead());
+  e.SetRead(false);
+  EXPECT_TRUE(e.HasBeenSeen());
+  EXPECT_FALSE(e.IsRead());
+  e.SetRead(true);
+  EXPECT_TRUE(e.HasBeenSeen());
+  EXPECT_TRUE(e.IsRead());
+}
+
 TEST(ReadingListEntry, DistilledPathAndURL) {
   ReadingListEntry e(GURL("http://example.com"), "bar");
 
@@ -198,7 +210,7 @@ TEST(ReadingListEntry, AsReadingListSpecifics) {
   EXPECT_EQ(pb_entry->title(), "bar");
   EXPECT_EQ(pb_entry->creation_time_us(), creation_time_us);
   EXPECT_EQ(pb_entry->update_time_us(), entry.UpdateTime());
-  EXPECT_EQ(pb_entry->status(), sync_pb::ReadingListSpecifics::UNREAD);
+  EXPECT_EQ(pb_entry->status(), sync_pb::ReadingListSpecifics::UNSEEN);
 
   entry.SetRead(true);
   EXPECT_NE(entry.UpdateTime(), creation_time_us);
@@ -242,7 +254,7 @@ TEST(ReadingListEntry, AsReadingListLocal) {
   EXPECT_EQ(pb_entry->title(), "bar");
   EXPECT_EQ(pb_entry->creation_time_us(), creation_time_us);
   EXPECT_EQ(pb_entry->update_time_us(), entry.UpdateTime());
-  EXPECT_EQ(pb_entry->status(), reading_list::ReadingListLocal::UNREAD);
+  EXPECT_EQ(pb_entry->status(), reading_list::ReadingListLocal::UNSEEN);
   EXPECT_EQ(pb_entry->distillation_state(),
             reading_list::ReadingListLocal::WAITING);
   EXPECT_EQ(pb_entry->distilled_path(), "");

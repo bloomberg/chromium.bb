@@ -178,7 +178,7 @@ TEST_F(ReadingListStoreTest, SaveOneUnread) {
       data->specifics.reading_list();
   EXPECT_EQ(specifics.title(), "unread title");
   EXPECT_EQ(specifics.url(), "http://unread.example.com/");
-  EXPECT_EQ(specifics.status(), sync_pb::ReadingListSpecifics::UNREAD);
+  EXPECT_EQ(specifics.status(), sync_pb::ReadingListSpecifics::UNSEEN);
 }
 
 TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {

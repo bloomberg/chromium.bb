@@ -335,10 +335,11 @@ const char* ProtoEnumToString(sync_pb::TabNavigation::PasswordState state) {
 const char* ProtoEnumToString(
     sync_pb::ReadingListSpecifics::ReadingListEntryStatus status) {
   ASSERT_ENUM_BOUNDS(sync_pb::ReadingListSpecifics, ReadingListEntryStatus,
-                     UNREAD, READ);
+                     UNREAD, UNSEEN);
   switch (status) {
     ENUM_CASE(sync_pb::ReadingListSpecifics, UNREAD);
     ENUM_CASE(sync_pb::ReadingListSpecifics, READ);
+    ENUM_CASE(sync_pb::ReadingListSpecifics, UNSEEN);
   }
   NOTREACHED();
   return "";
