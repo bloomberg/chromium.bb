@@ -364,7 +364,7 @@ You can look at a snapshot of the output by:
 
 Alternatively, you can use testing/xvfb.py to set up your environment for you:
 
-    testing/xvfb.py out/Debug out/Debug/browser_tests \
+    testing/xvfb.py out/Debug/browser_tests \
         --gtest_filter="MyBrowserTest.MyActivateWindowTest"
 
 ### BROWSER_WRAPPER
