@@ -122,13 +122,13 @@ public class BidirectionalStreamTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testBuilderCheck() throws Exception {
         if (testingJavaImpl()) {
-            testBuilderCheckJavaImpl();
+            runBuilderCheckJavaImpl();
         } else {
-            testBuilderCheckNativeImpl();
+            runBuilderCheckNativeImpl();
         }
     }
 
-    private void testBuilderCheckNativeImpl() throws Exception {
+    private void runBuilderCheckNativeImpl() throws Exception {
         TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
         try {
             mTestFramework.mCronetEngine.newBidirectionalStreamBuilder(
@@ -175,7 +175,7 @@ public class BidirectionalStreamTest extends CronetTestBase {
         }
     }
 
-    private void testBuilderCheckJavaImpl() {
+    private void runBuilderCheckJavaImpl() {
         try {
             TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
             mTestFramework.mCronetEngine.newBidirectionalStreamBuilder(
