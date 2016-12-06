@@ -4,6 +4,7 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../../http/tests/inspector/live-edit-test.js"></script>
 <script src="resources/edit-me.js"></script>
+<script src="resources/edit-me-2.js"></script>
 <script src="resources/edit-me-when-paused.js"></script>
 
 <script>
@@ -136,7 +137,7 @@ function test()
 
         function testNoCrashWhenLiveEditOnBreakpoint(next)
         {
-            InspectorTest.showScriptSource("edit-me.js", didShowScriptSource);
+            InspectorTest.showScriptSource("edit-me-2.js", didShowScriptSource);
 
             var testSourceFrame;
 
@@ -151,12 +152,12 @@ function test()
             function breakpointAdded()
             {
                 InspectorTest.waitUntilPaused(pausedInF);
-                InspectorTest.evaluateInPage("setTimeout(f, 0)");
+                InspectorTest.evaluateInPage("setTimeout(editMe2F, 0)");
             }
 
             function pausedInF(callFrames)
             {
-                replaceInSource(panel.visibleView, "function f()", "function f()\n", didEditScriptSource);
+                replaceInSource(panel.visibleView, "function editMe2F()", "function editMe2F()\n", didEditScriptSource);
             }
 
             function didEditScriptSource()
