@@ -1,0 +1,11 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//ios/web/js_compile.gni")
+
+js_compile_checked("injected_js") {
+  sources = [
+    "resources/payment_request_manager.js",
+  ]
+}

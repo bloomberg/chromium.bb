@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/web/js_compile.gni")
+
 source_set("web") {
   sources = [
     "dom_altering_lock.h",
@@ -128,5 +130,11 @@ bundle_data("resources") {
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
+js_compile_unchecked("injected_js") {
+  sources = [
+    "resources/print.js",
   ]
 }

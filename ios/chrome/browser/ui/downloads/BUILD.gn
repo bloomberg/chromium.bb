@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ios/rules.gni")
+
 bundle_data("assets") {
   sources = [
     "resources/download_manager_assets.xcassets/Contents.json",
@@ -25,4 +27,8 @@ bundle_data("assets") {
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
+}
+
+bundle_data_xib("download_manager_controller_xib") {
+  source = "resources/DownloadManagerController.xib"
 }

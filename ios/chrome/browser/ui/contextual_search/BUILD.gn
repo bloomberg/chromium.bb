@@ -2,11 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/web/js_compile.gni")
+
 bundle_data("resources") {
   sources = [
     "resources/expand_less.png",
     "resources/expand_less@2x.png",
     "resources/expand_less@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
+js_compile_unchecked("injected_js") {
+  sources = [
+    "resources/contextualsearch.js",
+  ]
+}
+
+bundle_data("resources_unit_tests") {
+  testonly = true
+  sources = [
+    "resources/contextualsearch_unittest.js",
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",
