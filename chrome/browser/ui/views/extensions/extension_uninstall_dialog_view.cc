@@ -21,6 +21,7 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -95,11 +96,6 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
   base::string16 GetWindowTitle() const override;
 
-  // views::View:
-  gfx::Size GetPreferredSize() const override;
-
-  void Layout() override;
-
   ExtensionUninstallDialogViews* dialog_;
 
   views::ImageView* icon_;
@@ -172,12 +168,14 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     : dialog_(dialog_view),
       triggered_by_extension_(triggered_by_extension),
       report_abuse_checkbox_(nullptr) {
-  // Scale down to icon size, but allow smaller icons (don't scale up).
-  gfx::Size size(image->width(), image->height());
-  if (size.width() > kIconSize || size.height() > kIconSize)
-    size = gfx::Size(kIconSize, kIconSize);
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, views::kButtonHEdgeMarginNew,
+      views::kPanelVertMargin, views::kRelatedControlHorizontalSpacing));
+
   icon_ = new views::ImageView();
-  icon_->SetImageSize(size);
+  DCHECK_GE(image->width(), kIconSize);
+  DCHECK_GE(image->height(), kIconSize);
+  icon_->SetImageSize(gfx::Size(kIconSize, kIconSize));
   icon_->SetImage(*image);
   AddChildView(icon_);
 
@@ -185,6 +183,7 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
   heading_->SetMultiLine(true);
   heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   heading_->SetAllowCharacterBreak(true);
+  heading_->SizeToFit(kRightColumnWidth);
   AddChildView(heading_);
 }
 
@@ -236,45 +235,6 @@ bool ExtensionUninstallDialogDelegateView::Cancel() {
 
 base::string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
-}
-
-gfx::Size ExtensionUninstallDialogDelegateView::GetPreferredSize() const {
-  int width = kRightColumnWidth;
-  width += kIconSize;
-  width += views::kButtonHEdgeMarginNew * 2;
-  width += views::kRelatedControlHorizontalSpacing;
-
-  int height = views::kPanelVertMargin * 2;
-  height += heading_->GetHeightForWidth(kRightColumnWidth);
-
-  return gfx::Size(width,
-                   std::max(height, kIconSize + views::kPanelVertMargin * 2));
-}
-
-void ExtensionUninstallDialogDelegateView::Layout() {
-  int x = views::kButtonHEdgeMarginNew;
-  int y = views::kPanelVertMargin;
-
-  heading_->SizeToFit(kRightColumnWidth);
-
-  if (heading_->height() <= kIconSize) {
-    icon_->SetBounds(x, y, kIconSize, kIconSize);
-    x += kIconSize;
-    x += views::kRelatedControlHorizontalSpacing;
-
-    heading_->SetX(x);
-    heading_->SetY(y + (kIconSize - heading_->height()) / 2);
-  } else {
-    icon_->SetBounds(x,
-                     y + (heading_->height() - kIconSize) / 2,
-                     kIconSize,
-                     kIconSize);
-    x += kIconSize;
-    x += views::kRelatedControlHorizontalSpacing;
-
-    heading_->SetX(x);
-    heading_->SetY(y);
-  }
 }
 
 }  // namespace

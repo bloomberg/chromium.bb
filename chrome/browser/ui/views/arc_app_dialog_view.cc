@@ -21,6 +21,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -32,9 +33,25 @@ namespace {
 
 const int kRightColumnWidth = 210;
 const int kIconSize = 64;
+// Currenty Arc apps only support 48*48 native icon.
+const int kIconSourceSize = 48;
 
 using ArcAppConfirmCallback =
     base::Callback<void(const std::string& app_id, Profile* profile)>;
+
+// Helper class to hold a smaller icon in a fixed-size view.
+class FixedBoundarySizeImageView : public views::ImageView {
+ public:
+  FixedBoundarySizeImageView() {}
+  ~FixedBoundarySizeImageView() override {}
+  // Overriden from View:
+  gfx::Size GetPreferredSize() const override {
+    return gfx::Size(kIconSize, kIconSize);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FixedBoundarySizeImageView);
+};
 
 class ArcAppDialogView : public views::DialogDelegateView,
                          public AppIconLoaderDelegate {
@@ -57,10 +74,6 @@ class ArcAppDialogView : public views::DialogDelegateView,
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
-
-  // views::View:
-  gfx::Size GetPreferredSize() const override;
-  void Layout() override;
 
   // views::DialogDelegate:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
@@ -121,17 +134,21 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
   if (parent_)
     parent_window_tracker_ = NativeWindowTracker::Create(parent_);
 
-  icon_view_ = new views::ImageView();
-  icon_view_->SetImageSize(gfx::Size(kIconSize, kIconSize));
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, views::kButtonHEdgeMarginNew,
+      views::kPanelVertMargin, views::kRelatedControlHorizontalSpacing));
+
+  icon_view_ = new FixedBoundarySizeImageView();
   AddChildView(icon_view_);
 
   heading_view_ = new views::Label(heading_text);
   heading_view_->SetMultiLine(true);
   heading_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   heading_view_->SetAllowCharacterBreak(true);
+  heading_view_->SizeToFit(kRightColumnWidth);
   AddChildView(heading_view_);
 
-  icon_loader_.reset(new ArcAppIconLoader(profile_, kIconSize, this));
+  icon_loader_.reset(new ArcAppIconLoader(profile_, kIconSourceSize, this));
   // The dialog will show once the icon is loaded.
   icon_loader_->FetchImage(app_id_);
 }
@@ -163,46 +180,6 @@ ui::ModalType ArcAppDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-// TODO(lgcheng@) The code below is copied from
-// ExtensionUninstallDialogDelegateView sizing and layout code. Use
-// LayoutManager to relace these manual layout. See crbug.com/670110.
-gfx::Size ArcAppDialogView::GetPreferredSize() const {
-  int width = kRightColumnWidth;
-  width += kIconSize;
-  width += views::kButtonHEdgeMarginNew * 2;
-  width += views::kRelatedControlHorizontalSpacing;
-
-  int height = views::kPanelVertMargin * 2;
-  height += heading_view_->GetHeightForWidth(kRightColumnWidth);
-
-  return gfx::Size(width,
-                   std::max(height, kIconSize + views::kPanelVertMargin * 2));
-}
-
-void ArcAppDialogView::Layout() {
-  int x = views::kButtonHEdgeMarginNew;
-  int y = views::kPanelVertMargin;
-
-  heading_view_->SizeToFit(kRightColumnWidth);
-
-  if (heading_view_->height() <= kIconSize) {
-    icon_view_->SetBounds(x, y, kIconSize, kIconSize);
-    x += kIconSize;
-    x += views::kRelatedControlHorizontalSpacing;
-
-    heading_view_->SetX(x);
-    heading_view_->SetY(y + (kIconSize - heading_view_->height()) / 2);
-  } else {
-    icon_view_->SetBounds(x, y + (heading_view_->height() - kIconSize) / 2,
-                          kIconSize, kIconSize);
-    x += kIconSize;
-    x += views::kRelatedControlHorizontalSpacing;
-
-    heading_view_->SetX(x);
-    heading_view_->SetY(y);
-  }
-}
-
 base::string16 ArcAppDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_CANCEL ? cancel_button_text_
@@ -218,7 +195,9 @@ void ArcAppDialogView::OnAppImageUpdated(const std::string& app_id,
                                          const gfx::ImageSkia& image) {
   DCHECK_EQ(app_id, app_id_);
   DCHECK(!image.isNull());
-
+  DCHECK_EQ(image.width(), kIconSourceSize);
+  DCHECK_EQ(image.height(), kIconSourceSize);
+  icon_view_->SetImageSize(image.size());
   icon_view_->SetImage(image);
 
   if (initial_setup_)
