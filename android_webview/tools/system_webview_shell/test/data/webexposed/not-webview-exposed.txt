@@ -57,6 +57,11 @@ interface ServiceWorkerRegistration : EventTarget
 interface HTMLInputElement : HTMLElement
     getter webkitEntries
 
+# crbug.com/671461
+interface MediaDevices : EventTarget
+    getter ondevicechange
+    setter ondevicechange
+
 # TODO(timvolodine): investigate in more detail
 [GLOBAL OBJECT]
     method openDatabase
