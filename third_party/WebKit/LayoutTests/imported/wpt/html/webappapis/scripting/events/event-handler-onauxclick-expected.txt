@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS onauxclick is on the appropriate locations for GlobalEventHandlers 
-PASS The default value of onauxclick is always null 
-FAIL The onauxclick content attribute must be compiled into the onauxclick property assert_equals: The onauxclick property must be a function expected "function" but got "object"
-FAIL The onauxclick content attribute must execute when an event is dispatched assert_true: Dispatching the event must run the code expected true got false
-PASS dispatching an auxclick event must trigger element.onauxclick 
-Harness: the test ran to completion.
-
