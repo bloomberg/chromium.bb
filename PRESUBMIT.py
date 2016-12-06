@@ -2030,7 +2030,8 @@ def _CommonChecks(input_api, output_api):
   results.extend(input_api.canned_checks.PanProjectChecks(
       input_api, output_api,
       excluded_paths=_EXCLUDED_PATHS + _TESTRUNNER_PATHS))
-  results.extend(_CheckAuthorizedAuthor(input_api, output_api))
+  results.extend(
+      input_api.canned_checks.CheckAuthorizedAuthor(input_api, output_api))
   results.extend(
       _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
   results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
@@ -2081,33 +2082,6 @@ def _CommonChecks(input_api, output_api):
         input_api.PresubmitLocalPath(),
         whitelist=[r'^PRESUBMIT_test\.py$']))
   return results
-
-
-def _CheckAuthorizedAuthor(input_api, output_api):
-  """For non-googler/chromites committers, verify the author's email address is
-  in AUTHORS.
-  """
-  author = input_api.change.author_email
-  if not author:
-    input_api.logging.info('No author, skipping AUTHOR check')
-    return []
-  authors_path = input_api.os_path.join(
-      input_api.PresubmitLocalPath(), 'AUTHORS')
-  valid_authors = (
-      input_api.re.match(r'[^#]+\s+\<(.+?)\>\s*$', line)
-      for line in open(authors_path))
-  valid_authors = [item.group(1).lower() for item in valid_authors if item]
-  if not any(input_api.fnmatch.fnmatch(author.lower(), valid)
-             for valid in valid_authors):
-    input_api.logging.info('Valid authors are %s', ', '.join(valid_authors))
-    return [output_api.PresubmitPromptWarning(
-        ('%s is not in AUTHORS file. If you are a new contributor, please visit'
-        '\n'
-        'http://www.chromium.org/developers/contributing-code and read the '
-        '"Legal" section\n'
-        'If you are a chromite, verify the contributor signed the CLA.') %
-        author)]
-  return []
 
 
 def _CheckPatchFiles(input_api, output_api):
