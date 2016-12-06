@@ -1,6 +1,3 @@
-CONSOLE ERROR: line 1: Uncaught (in promise) #<Object>
-CONSOLE ERROR: Uncaught (in promise) #<Object>
-CONSOLE ERROR: Uncaught (in promise) 239
 Tests that Runtime.awaitPromise works.
 
 Running test: testResolvedPromise

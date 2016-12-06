@@ -30,6 +30,7 @@ function runGC()
         window.gc();
 }
 
+testRunner.setDumpConsoleMessages(false);
 function test()
 {
     InspectorTest.sendCommandPromise("Debugger.enable", {})
