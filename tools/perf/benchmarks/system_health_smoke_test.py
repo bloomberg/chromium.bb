@@ -32,8 +32,6 @@ def GetSystemHealthBenchmarksToSmokeTest():
 
 
 _DISABLED_TESTS = frozenset({
-  # crbug.com/662003
-  'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_desktop.browse:social:twitter',  # pylint: disable=line-too-long
   # crbug.com/662021
   'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_desktop.browse:news:flipboard',  # pylint: disable=line-too-long
   # crbug.com/629123
