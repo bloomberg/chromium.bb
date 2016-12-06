@@ -4,20 +4,14 @@
 
 import("//build/config/chrome_build.gni")
 
-_default_ios_launchscreen_assets_target =
-    "//ios/chrome/app/resources:launchscreen_assets"
-_default_ios_provider_target = "//ios/chrome/browser/providers:provider_factory"
-
 declare_args() {
   # Label of the target providing image assets for the launchscreen.  This
   # target must be an asset catalog that contains at least two imagesets, one
   # named "launchscreen_app_logo" and one named "launchscreen_brand_name".
-  ios_launchscreen_assets_target = _default_ios_launchscreen_assets_target
+  ios_launchscreen_assets_target =
+      "//ios/chrome/app/resources:launchscreen_assets"
 
   # Label of the target providing implementation for ChromeBrowserProvider.
   # Overridden when using the Google-internal repository to build Chrome on iOS.
-  ios_provider_target = _default_ios_provider_target
+  ios_provider_target = "//ios/chrome/browser/providers:provider_factory"
 }
-
-# True if the provider target used has not been overridden.
-use_default_ios_provider = ios_provider_target == _default_ios_provider_target
