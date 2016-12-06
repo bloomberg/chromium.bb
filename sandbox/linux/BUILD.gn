@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/nacl/config.gni")
+import("//sandbox/features.gni")
 import("//testing/test.gni")
 
 if (is_android) {

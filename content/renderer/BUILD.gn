@@ -893,8 +893,8 @@ target(link_target_type, "renderer") {
     ]
   }
 
-  if (use_seccomp_bpf) {
-    defines += [ "USE_SECCOMP_BPF" ]
+  if (is_linux || is_android) {
+    deps += [ "//sandbox:sandbox_features" ]
   }
 
   if (use_ozone) {

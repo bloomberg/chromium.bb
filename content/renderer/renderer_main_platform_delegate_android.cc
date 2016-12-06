@@ -9,8 +9,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "sandbox/sandbox_features.h"
 
-#ifdef USE_SECCOMP_BPF
+#if BUILDFLAG(USE_SECCOMP_BPF)
 #include "content/common/sandbox_linux/android/sandbox_bpf_base_policy_android.h"
 #include "content/public/common/content_features.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
@@ -47,7 +48,7 @@ class RecordSeccompStatus {
   DISALLOW_COPY_AND_ASSIGN(RecordSeccompStatus);
 };
 
-#ifdef USE_SECCOMP_BPF
+#if BUILDFLAG(USE_SECCOMP_BPF)
 // Determines if the running device should support Seccomp, based on the Android
 // SDK version.
 bool IsSeccompBPFSupportedBySDK() {
@@ -92,7 +93,7 @@ void RendererMainPlatformDelegate::PlatformUninitialize() {
 bool RendererMainPlatformDelegate::EnableSandbox() {
   RecordSeccompStatus status_uma;
 
-#ifdef USE_SECCOMP_BPF
+#if BUILDFLAG(USE_SECCOMP_BPF)
   // Determine if Seccomp is available via the Android SDK version.
   if (!IsSeccompBPFSupportedBySDK())
     return true;

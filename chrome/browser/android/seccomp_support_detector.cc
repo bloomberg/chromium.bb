@@ -10,8 +10,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "content/public/browser/browser_thread.h"
+#include "sandbox/sandbox_features.h"
 
-#if defined(USE_SECCOMP_BPF)
+#if BUILDFLAG(USE_SECCOMP_BPF)
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #endif
 
@@ -67,7 +68,7 @@ void SeccompSupportDetector::DetectKernelVersion() {
 void SeccompSupportDetector::DetectSeccomp() {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
-#if defined(USE_SECCOMP_BPF)
+#if BUILDFLAG(USE_SECCOMP_BPF)
   bool prctl_supported = sandbox::SandboxBPF::SupportsSeccompSandbox(
       sandbox::SandboxBPF::SeccompLevel::SINGLE_THREADED);
 #else

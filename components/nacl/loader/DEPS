@@ -9,6 +9,7 @@ include_rules = [
   "+sandbox/linux/services",
   "+sandbox/linux/suid",
   "+sandbox/linux/system_headers",
+  "+sandbox/sandbox_features.h",
   "+sandbox/win/src",
   "+ppapi/c",  # header files only
 

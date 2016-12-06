@@ -94,11 +94,10 @@ if (is_component_build) {
     ]
     set_sources_assignment_filter(sources_assignment_filter)
 
-    defines = [ "USE_SECCOMP_BPF=1" ]
-
     deps = [
       "//base",
       "//media:media_features",
+      "//sandbox:sandbox_features",
       "//sandbox/linux:sandbox",
     ]
   }

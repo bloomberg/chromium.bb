@@ -24,14 +24,11 @@ source_set("sandbox_linux") {
     "//crypto",
     "//ipc",
     "//sandbox",
+    "//sandbox:sandbox_features",
     "//sandbox/linux:sandbox_services_headers",
   ]
 
   if (use_glib) {
     configs += [ "//build/config/linux:glib" ]
-  }
-
-  if (use_seccomp_bpf) {
-    defines += [ "USE_SECCOMP_BPF" ]
   }
 }

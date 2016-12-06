@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
+import("//sandbox/features.gni")
+
 # Meta-target that forwards to the proper platform one.
 group("sandbox") {
   if (is_win) {
@@ -18,4 +21,9 @@ group("sandbox") {
       "//sandbox/linux:sandbox",
     ]
   }
+}
+
+buildflag_header("sandbox_features") {
+  header = "sandbox_features.h"
+  flags = [ "USE_SECCOMP_BPF=$use_seccomp_bpf" ]
 }

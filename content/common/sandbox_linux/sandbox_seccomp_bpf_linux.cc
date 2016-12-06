@@ -18,8 +18,9 @@
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/sandbox_features.h"
 
-#if defined(USE_SECCOMP_BPF)
+#if BUILDFLAG(USE_SECCOMP_BPF)
 
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
@@ -58,7 +59,7 @@ using sandbox::bpf_dsl::ResultExpr;
 
 namespace content {
 
-#if defined(USE_SECCOMP_BPF)
+#if BUILDFLAG(USE_SECCOMP_BPF)
 namespace {
 
 // This function takes ownership of |policy|.
@@ -231,7 +232,7 @@ bool SandboxSeccompBPF::IsSeccompBPFDesired() {
 #if !defined(OS_NACL_NONSFI)
 bool SandboxSeccompBPF::ShouldEnableSeccompBPF(
     const std::string& process_type) {
-#if defined(USE_SECCOMP_BPF)
+#if BUILDFLAG(USE_SECCOMP_BPF)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (process_type == switches::kGpuProcess)
@@ -244,7 +245,7 @@ bool SandboxSeccompBPF::ShouldEnableSeccompBPF(
 #endif  // !defined(OS_NACL_NONSFI)
 
 bool SandboxSeccompBPF::SupportsSandbox() {
-#if defined(USE_SECCOMP_BPF)
+#if BUILDFLAG(USE_SECCOMP_BPF)
   return SandboxBPF::SupportsSeccompSandbox(
       SandboxBPF::SeccompLevel::SINGLE_THREADED);
 #endif
@@ -253,7 +254,7 @@ bool SandboxSeccompBPF::SupportsSandbox() {
 
 #if !defined(OS_NACL_NONSFI)
 bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
-#if defined(USE_SECCOMP_BPF)
+#if BUILDFLAG(USE_SECCOMP_BPF)
   return SandboxBPF::SupportsSeccompSandbox(
       SandboxBPF::SeccompLevel::MULTI_THREADED);
 #endif
@@ -262,7 +263,7 @@ bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
 
 bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
                                      base::ScopedFD proc_fd) {
-#if defined(USE_SECCOMP_BPF)
+#if BUILDFLAG(USE_SECCOMP_BPF)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -284,24 +285,24 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
 bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
     std::unique_ptr<sandbox::bpf_dsl::Policy> policy,
     base::ScopedFD proc_fd) {
-#if defined(USE_SECCOMP_BPF)
+#if BUILDFLAG(USE_SECCOMP_BPF)
   if (IsSeccompBPFDesired() && SupportsSandbox()) {
     CHECK(policy);
     StartSandboxWithPolicy(policy.release(), std::move(proc_fd));
     return true;
   }
-#endif  // defined(USE_SECCOMP_BPF)
+#endif  // BUILDFLAG(USE_SECCOMP_BPF)
   return false;
 }
 
 #if !defined(OS_NACL_NONSFI)
 std::unique_ptr<sandbox::bpf_dsl::Policy>
 SandboxSeccompBPF::GetBaselinePolicy() {
-#if defined(USE_SECCOMP_BPF)
+#if BUILDFLAG(USE_SECCOMP_BPF)
   return std::unique_ptr<sandbox::bpf_dsl::Policy>(new BaselinePolicy);
 #else
   return std::unique_ptr<sandbox::bpf_dsl::Policy>();
-#endif  // defined(USE_SECCOMP_BPF)
+#endif  // BUILDFLAG(USE_SECCOMP_BPF)
 }
 #endif  // !defined(OS_NACL_NONSFI)
 
