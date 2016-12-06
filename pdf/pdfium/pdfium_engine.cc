@@ -12,6 +12,7 @@
 #include <memory>
 #include <set>
 
+#include "base/auto_reset.h"
 #include "base/i18n/encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/lazy_instance.h"
@@ -2470,9 +2471,8 @@ int PDFiumEngine::GetMostVisiblePage() {
   // to defer the page deletion otherwise we could potentially delete the page
   // that originated the calling JS request and destroy the objects that are
   // currently being used.
-  defer_page_unload_ = true;
+  base::AutoReset<bool> defer_page_unload_guard(&defer_page_unload_, true);
   CalculateVisiblePages();
-  defer_page_unload_ = false;
   return most_visible_page_;
 }
 
