@@ -9,7 +9,7 @@
       "requires": {
         "*": [ "app" ],
         "mash_init": [ "mash_init:init" ],
-        "ui": [ "ui:user_access_manager" ],
+        "ui": [ "user_access_manager" ],
         "service_manager": [ "service_manager:all_users" ]
       }
     }

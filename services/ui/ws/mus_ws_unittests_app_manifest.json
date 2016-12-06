@@ -12,8 +12,8 @@
         "*": [ "app" ],
         "mus_ws_unittests_app": [ "ui:window_tree_client" ],
         "ui": [
-          "ui:window_tree_host_factory",
-          "ui:window_manager"
+          "window_manager",
+          "window_tree_host_factory"
         ]
       }
     }

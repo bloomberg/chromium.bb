@@ -19,7 +19,7 @@
       },
       "requires": {
         "content_browser": [ "renderer" ],
-        "ui": [ "ui:gpu_client" ]
+        "ui": [ "gpu_client" ]
       }
     },
     "navigation:frame": {

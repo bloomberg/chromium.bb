@@ -18,7 +18,7 @@
         "accessibility_autoclick": [ "ash:autoclick" ],
         "mash_session": [ "app" ],
         "task_viewer": [ "mash:launchable" ],
-        "ui": [ "ui:ime_registrar" ]
+        "ui": [ "ime_registrar" ]
       }
     }
   }

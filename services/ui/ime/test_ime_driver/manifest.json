@@ -5,7 +5,7 @@
     "service_manager:connector": {
       "provides": { "ime:test_ime_driver": [] },
       "requires": {
-        "ui": [ "ui:ime_registrar" ]
+        "ui": [ "ime_registrar" ]
       }
     }
   }
