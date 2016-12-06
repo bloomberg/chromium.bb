@@ -44,6 +44,7 @@ source_set("libjingle_webrtc_common") {
     "//third_party/usrsctp",
     "//third_party/webrtc/api:libjingle_peerconnection",
     "//third_party/webrtc/media:rtc_media",
+    "//third_party/webrtc/media:rtc_media_base",
     "//third_party/webrtc/modules/media_file",
     "//third_party/webrtc/modules/video_capture",
     "//third_party/webrtc/pc:rtc_pc",
