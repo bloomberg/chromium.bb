@@ -9,7 +9,6 @@
 #include <map>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
@@ -126,10 +125,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     builder_.payload().set_download_url(kTestDownload);
     builder_.payload().set_secure_hash(crypto::SHA256HashString(kTestPolicy));
 
-    std::vector<uint8_t> public_key_bits;
-    builder_.GetSigningKey()->ExportPublicKey(&public_key_bits);
-    public_key_.assign(reinterpret_cast<const char*>(public_key_bits.data()),
-                       public_key_bits.size());
+    public_key_ = builder_.GetPublicSigningKeyAsString();
 
     expected_policy_.Set(
         "Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
@@ -603,12 +599,7 @@ TEST_F(ComponentCloudPolicyServiceTest, KeyRotation) {
   ASSERT_FALSE(fetcher_factory_.GetFetcherByID(0));
 
   // Update the signing key in the store.
-  std::vector<uint8_t> new_public_key_bits;
-  new_signing_key->ExportPublicKey(&new_public_key_bits);
-  const std::string new_public_key(
-      reinterpret_cast<const char*>(new_public_key_bits.data()),
-      new_public_key_bits.size());
-  store_.policy_signature_public_key_ = new_public_key;
+  store_.policy_signature_public_key_ = builder_.GetPublicSigningKeyAsString();
   store_.policy_->set_public_key_version(kNewPublicKeyVersion);
   store_.NotifyStoreLoaded();
   RunUntilIdle();

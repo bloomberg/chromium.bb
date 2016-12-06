@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -93,7 +92,7 @@ class DeviceCloudPolicyStoreChromeOSTest
         base::Value::Equals(&expected,
                             store_->policy_map().GetValue(
                                 key::kDeviceMetricsReportingEnabled)));
-    EXPECT_NE(std::string(), store_->policy_signature_public_key());
+    EXPECT_FALSE(store_->policy_signature_public_key().empty());
   }
 
   void PrepareExistingPolicy() {
@@ -121,25 +120,6 @@ class DeviceCloudPolicyStoreChromeOSTest
     store_.reset(new DeviceCloudPolicyStoreChromeOS(
         &device_settings_service_, install_attributes_.get(),
         base::ThreadTaskRunnerHandle::Get()));
-  }
-
-  static std::string ConvertPublicKeyToString(
-      const std::vector<uint8_t>& public_key) {
-    return std::string(reinterpret_cast<const char*>(public_key.data()),
-                       public_key.size());
-  }
-
-  std::string GetPolicyPublicKeyAsString() {
-    std::vector<uint8_t> public_key;
-    EXPECT_TRUE(device_policy_.GetSigningKey()->ExportPublicKey(&public_key));
-    return ConvertPublicKeyToString(public_key);
-  }
-
-  std::string GetPolicyNewPublicKeyAsString() {
-    std::vector<uint8_t> new_public_key;
-    EXPECT_TRUE(
-        device_policy_.GetNewSigningKey()->ExportPublicKey(&new_public_key));
-    return ConvertPublicKeyToString(new_public_key);
   }
 
   ScopedTestingLocalState local_state_;
@@ -177,7 +157,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, LoadSuccess) {
   store_->Load();
   FlushDeviceSettings();
   ExpectSuccess();
-  EXPECT_EQ(GetPolicyPublicKeyAsString(),
+  EXPECT_EQ(device_policy_.GetPublicSigningKeyAsString(),
             store_->policy_signature_public_key());
 }
 
@@ -186,7 +166,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreSuccess) {
   store_->Store(device_policy_.policy());
   FlushDeviceSettings();
   ExpectSuccess();
-  EXPECT_EQ(GetPolicyPublicKeyAsString(),
+  EXPECT_EQ(device_policy_.GetPublicSigningKeyAsString(),
             store_->policy_signature_public_key());
 }
 
@@ -198,7 +178,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreNoSignature) {
   EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR, store_->status());
   EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE,
             store_->validation_status());
-  EXPECT_EQ(GetPolicyPublicKeyAsString(),
+  EXPECT_EQ(device_policy_.GetPublicSigningKeyAsString(),
             store_->policy_signature_public_key());
 }
 
@@ -210,7 +190,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreBadSignature) {
   EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR, store_->status());
   EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE,
             store_->validation_status());
-  EXPECT_EQ(GetPolicyPublicKeyAsString(),
+  EXPECT_EQ(device_policy_.GetPublicSigningKeyAsString(),
             store_->policy_signature_public_key());
 }
 
@@ -225,7 +205,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreKeyRotation) {
       *device_policy_.GetNewSigningKey());
   ReloadDeviceSettings();
   ExpectSuccess();
-  EXPECT_EQ(GetPolicyNewPublicKeyAsString(),
+  EXPECT_EQ(device_policy_.GetPublicNewSigningKeyAsString(),
             store_->policy_signature_public_key());
 }
 
@@ -241,7 +221,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest,
   EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR, store_->status());
   EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE,
             store_->validation_status());
-  EXPECT_EQ(GetPolicyPublicKeyAsString(),
+  EXPECT_EQ(device_policy_.GetPublicSigningKeyAsString(),
             store_->policy_signature_public_key());
 }
 
@@ -257,7 +237,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest,
   EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR, store_->status());
   EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE,
             store_->validation_status());
-  EXPECT_EQ(GetPolicyPublicKeyAsString(),
+  EXPECT_EQ(device_policy_.GetPublicSigningKeyAsString(),
             store_->policy_signature_public_key());
 }
 
@@ -266,7 +246,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, InstallInitialPolicySuccess) {
   store_->InstallInitialPolicy(device_policy_.policy());
   FlushDeviceSettings();
   ExpectSuccess();
-  EXPECT_EQ(GetPolicyNewPublicKeyAsString(),
+  EXPECT_EQ(device_policy_.GetPublicNewSigningKeyAsString(),
             store_->policy_signature_public_key());
 }
 

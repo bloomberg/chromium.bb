@@ -13,6 +13,7 @@
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -101,7 +102,7 @@ bool LocalPolicyTestServer::SetSigningKeyAndSignature(
       policy_key_, reinterpret_cast<const char*>(signing_key_bits.data()),
       signing_key_bits.size());
 
-  if (bytes_written != static_cast<int>(signing_key_bits.size()))
+  if (bytes_written != base::checked_cast<int>(signing_key_bits.size()))
     return false;
 
   // Write the signature data.
@@ -112,7 +113,7 @@ bool LocalPolicyTestServer::SetSigningKeyAndSignature(
       signature.c_str(),
       signature.size());
 
-  return bytes_written == static_cast<int>(signature.size());
+  return bytes_written == base::checked_cast<int>(signature.size());
 }
 
 void LocalPolicyTestServer::EnableAutomaticRotationOfSigningKeys() {
@@ -152,7 +153,7 @@ bool LocalPolicyTestServer::UpdatePolicy(const std::string& type,
       base::StringPrintf("policy_%s.bin", selector.c_str()));
 
   return base::WriteFile(policy_file, policy.c_str(), policy.size()) ==
-      static_cast<int>(policy.size());
+         base::checked_cast<int>(policy.size());
 }
 
 bool LocalPolicyTestServer::UpdatePolicyData(const std::string& type,
@@ -165,7 +166,7 @@ bool LocalPolicyTestServer::UpdatePolicyData(const std::string& type,
       base::StringPrintf("policy_%s.data", selector.c_str()));
 
   return base::WriteFile(data_file, data.c_str(), data.size()) ==
-      static_cast<int>(data.size());
+         base::checked_cast<int>(data.size());
 }
 
 GURL LocalPolicyTestServer::GetServiceURL() const {
@@ -255,7 +256,7 @@ bool LocalPolicyTestServer::GenerateAdditionalArguments(
       base::FilePath client_state_file =
           server_data_dir_.GetPath().Append(kClientStateFileName);
       if (base::WriteFile(client_state_file, json.c_str(), json.size()) !=
-          static_cast<int>(json.size())) {
+          base::checked_cast<int>(json.size())) {
         return false;
       }
       arguments->SetString("client-state", client_state_file.AsUTF8Unsafe());

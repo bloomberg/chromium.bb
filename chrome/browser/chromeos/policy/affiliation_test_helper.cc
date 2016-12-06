@@ -6,11 +6,11 @@
 #include <stdint.h>
 
 #include <string>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -54,13 +54,12 @@ void SetUserKeys(policy::UserPolicyBuilder* user_policy) {
           cryptohome::Identification(account_id));
   const base::FilePath user_key_file =
       user_keys_dir.AppendASCII(sanitized_username).AppendASCII("policy.pub");
-  std::vector<uint8_t> user_key_bits;
-  ASSERT_TRUE(user_policy->GetSigningKey()->ExportPublicKey(&user_key_bits));
+  std::string user_key_bits = user_policy->GetPublicSigningKeyAsString();
+  ASSERT_FALSE(user_key_bits.empty());
   ASSERT_TRUE(base::CreateDirectory(user_key_file.DirName()));
-  ASSERT_EQ(base::WriteFile(user_key_file,
-                            reinterpret_cast<const char*>(user_key_bits.data()),
-                            user_key_bits.size()),
-            static_cast<int>(user_key_bits.size()));
+  ASSERT_EQ(base::WriteFile(user_key_file, user_key_bits.data(),
+                            user_key_bits.length()),
+            base::checked_cast<int>(user_key_bits.length()));
 }
 
 void SetDeviceAffiliationID(

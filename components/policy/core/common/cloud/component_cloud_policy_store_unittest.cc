@@ -9,7 +9,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -85,10 +84,7 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
     builder_.payload().set_download_url(kTestDownload);
     builder_.payload().set_secure_hash(TestPolicyHash());
 
-    std::vector<uint8_t> public_key_bits;
-    builder_.GetSigningKey()->ExportPublicKey(&public_key_bits);
-    public_key_.assign(reinterpret_cast<const char*>(public_key_bits.data()),
-                       public_key_bits.size());
+    public_key_ = builder_.GetPublicSigningKeyAsString();
 
     PolicyMap& policy = expected_bundle_.Get(kTestPolicyNS);
     policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

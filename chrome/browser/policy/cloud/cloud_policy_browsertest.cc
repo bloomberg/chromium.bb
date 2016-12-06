@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -283,7 +284,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
   void SetServerPolicy(const std::string& policy) {
     int result = base::WriteFile(policy_file_path(), policy.data(),
                                  policy.size());
-    ASSERT_EQ(static_cast<int>(policy.size()), result);
+    ASSERT_EQ(base::checked_cast<int>(policy.size()), result);
   }
 
   base::FilePath policy_file_path() const {

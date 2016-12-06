@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -81,16 +81,8 @@ class CloudPolicyValidatorTest : public testing::Test {
 
   std::unique_ptr<UserCloudPolicyValidator> CreateValidator(
       std::unique_ptr<em::PolicyFetchResponse> policy_response) {
-    std::vector<uint8_t> public_key_bytes;
-    EXPECT_TRUE(
-        PolicyBuilder::CreateTestSigningKey()->ExportPublicKey(
-            &public_key_bytes));
-
-    // Convert from bytes to string format (which is what ValidateSignature()
-    // takes).
-    std::string public_key =
-        std::string(reinterpret_cast<const char*>(public_key_bytes.data()),
-                    public_key_bytes.size());
+    std::string public_key = PolicyBuilder::GetPublicTestKeyAsString();
+    EXPECT_FALSE(public_key.empty());
 
     UserCloudPolicyValidator* validator = UserCloudPolicyValidator::Create(
         std::move(policy_response), base::ThreadTaskRunnerHandle::Get());

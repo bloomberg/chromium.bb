@@ -4,6 +4,10 @@
 
 #include "components/policy/core/common/cloud/component_cloud_policy_updater.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
@@ -19,6 +23,7 @@
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/proto/chrome_extension_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -97,10 +102,7 @@ ComponentCloudPolicyUpdaterTest::ComponentCloudPolicyUpdaterTest()
   builder_.payload().set_download_url(kTestDownload);
   builder_.payload().set_secure_hash(crypto::SHA256HashString(kTestPolicy));
 
-  std::vector<uint8_t> public_key_bits;
-  builder_.GetSigningKey()->ExportPublicKey(&public_key_bits);
-  public_key_.assign(reinterpret_cast<const char*>(public_key_bits.data()),
-                     public_key_bits.size());
+  public_key_ = builder_.GetPublicSigningKeyAsString();
 
   PolicyMap& policy = expected_bundle_.Get(kTestPolicyNS);
   policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

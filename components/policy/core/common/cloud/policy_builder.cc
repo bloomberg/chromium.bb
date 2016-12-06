@@ -4,8 +4,6 @@
 
 #include "components/policy/core/common/cloud/policy_builder.h"
 
-#include <vector>
-
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -135,6 +133,31 @@ const uint8_t kNewSigningKeySignature[] = {
     0xDD, 0x6F, 0x80, 0xC3,
 };
 
+std::vector<uint8_t> ExportPublicKey(const crypto::RSAPrivateKey& key) {
+  std::vector<uint8_t> public_key;
+  CHECK(key.ExportPublicKey(&public_key));
+  return public_key;
+}
+
+std::string ConvertPublicKeyToString(const std::vector<uint8_t>& public_key) {
+  return std::string(reinterpret_cast<const char*>(public_key.data()),
+                     public_key.size());
+}
+
+// Produces |key|'s signature over |data| and stores it in |signature|.
+void SignData(const std::string& data,
+              crypto::RSAPrivateKey* const key,
+              std::string* const signature) {
+  std::unique_ptr<crypto::SignatureCreator> signature_creator(
+      crypto::SignatureCreator::Create(key, crypto::SignatureCreator::SHA1));
+  signature_creator->Update(reinterpret_cast<const uint8_t*>(data.c_str()),
+                            data.size());
+  std::vector<uint8_t> signature_bytes;
+  CHECK(signature_creator->Final(&signature_bytes));
+  signature->assign(reinterpret_cast<const char*>(signature_bytes.data()),
+                    signature_bytes.size());
+}
+
 }  // namespace
 
 // Constants used as dummy data for filling the PolicyData protobuf.
@@ -148,9 +171,9 @@ const char PolicyBuilder::kFakeToken[] = "token";
 const char PolicyBuilder::kFakeUsername[] = "username@example.com";
 const char PolicyBuilder::kFakeServiceAccountIdentity[] = "robot4test@g.com";
 
-PolicyBuilder::PolicyBuilder()
-    : policy_data_(new em::PolicyData()) {
+PolicyBuilder::PolicyBuilder() {
   SetDefaultSigningKey();
+  CreatePolicyData();
   policy_data_->set_policy_type(kFakePolicyType);
   policy_data_->set_timestamp(kFakeTimestamp);
   policy_data_->set_request_token(kFakeToken);
@@ -164,11 +187,10 @@ PolicyBuilder::PolicyBuilder()
 
 PolicyBuilder::~PolicyBuilder() {}
 
-std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetSigningKey() {
+std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetSigningKey() const {
   if (raw_signing_key_.empty())
     return std::unique_ptr<crypto::RSAPrivateKey>();
-  return std::unique_ptr<crypto::RSAPrivateKey>(
-      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_signing_key_));
+  return crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_signing_key_);
 }
 
 void PolicyBuilder::SetSigningKey(const crypto::RSAPrivateKey& key) {
@@ -176,15 +198,14 @@ void PolicyBuilder::SetSigningKey(const crypto::RSAPrivateKey& key) {
 }
 
 void PolicyBuilder::SetDefaultSigningKey() {
-  std::vector<uint8_t> key(kSigningKey, kSigningKey + arraysize(kSigningKey));
-  raw_signing_key_.swap(key);
+  raw_signing_key_.assign(kSigningKey, kSigningKey + arraysize(kSigningKey));
 }
 
 void PolicyBuilder::UnsetSigningKey() {
   raw_signing_key_.clear();
 }
 
-std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetNewSigningKey() {
+std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetNewSigningKey() const {
   if (raw_new_signing_key_.empty())
     return std::unique_ptr<crypto::RSAPrivateKey>();
   return std::unique_ptr<crypto::RSAPrivateKey>(
@@ -192,22 +213,21 @@ std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetNewSigningKey() {
 }
 
 void PolicyBuilder::SetDefaultNewSigningKey() {
-  std::vector<uint8_t> key(kNewSigningKey,
-                           kNewSigningKey + arraysize(kNewSigningKey));
-  raw_new_signing_key_.swap(key);
+  raw_new_signing_key_.assign(kNewSigningKey,
+                              kNewSigningKey + arraysize(kNewSigningKey));
   raw_new_signing_key_signature_ = GetTestOtherSigningKeySignature();
-}
-
-void PolicyBuilder::SetDefaultInitialSigningKey() {
-  std::vector<uint8_t> key(kSigningKey, kSigningKey + arraysize(kSigningKey));
-  raw_new_signing_key_.swap(key);
-  raw_new_signing_key_signature_ = GetTestSigningKeySignature();
-  UnsetSigningKey();
 }
 
 void PolicyBuilder::UnsetNewSigningKey() {
   raw_new_signing_key_.clear();
   raw_new_signing_key_signature_.clear();
+}
+
+void PolicyBuilder::SetDefaultInitialSigningKey() {
+  raw_new_signing_key_.assign(kSigningKey,
+                              kSigningKey + arraysize(kSigningKey));
+  raw_new_signing_key_signature_ = GetTestSigningKeySignature();
+  UnsetSigningKey();
 }
 
 void PolicyBuilder::Build() {
@@ -216,11 +236,8 @@ void PolicyBuilder::Build() {
       GetNewSigningKey();
   if (policy_signing_key) {
     // Add the new public key.
-    std::vector<uint8_t> raw_new_public_signing_key;
-    CHECK(policy_signing_key->ExportPublicKey(&raw_new_public_signing_key));
-    policy_.set_new_public_key(raw_new_public_signing_key.data(),
-                               raw_new_public_signing_key.size());
-
+    policy_.set_new_public_key(
+        ConvertPublicKeyToString(ExportPublicKey(*policy_signing_key)));
     policy_.set_new_public_key_verification_signature_deprecated(
         raw_new_signing_key_signature_);
 
@@ -235,42 +252,43 @@ void PolicyBuilder::Build() {
     // No new signing key, so clear the old public key (this allows us to
     // reuse the same PolicyBuilder to build multiple policy blobs).
     policy_.clear_new_public_key();
+    policy_.clear_new_public_key_verification_signature_deprecated();
     policy_.clear_new_public_key_signature();
     policy_signing_key = GetSigningKey();
   }
 
-  // Policy isn't signed, so there shouldn't be a public key version.
-  if (!policy_signing_key)
-    policy_data_->clear_public_key_version();
+  if (policy_data_) {
+    // Policy isn't signed, so there shouldn't be a public key version.
+    if (!policy_signing_key)
+      policy_data_->clear_public_key_version();
 
-  // Serialize the policy data.
-  if (policy_data_.get())
+    // Serialize the policy data.
     CHECK(policy_data_->SerializeToString(policy_.mutable_policy_data()));
 
-  // PolicyData signature.
-  if (policy_signing_key) {
-    SignData(policy_.policy_data(), policy_signing_key.get(),
-             policy_.mutable_policy_data_signature());
+    // PolicyData signature.
+    if (policy_signing_key) {
+      SignData(policy_.policy_data(), policy_signing_key.get(),
+               policy_.mutable_policy_data_signature());
+    }
+  } else {
+    policy_.clear_policy_data();
+    policy_.clear_policy_data_signature();
   }
 }
 
-std::string PolicyBuilder::GetBlob() {
+std::string PolicyBuilder::GetBlob() const {
   return policy_.SerializeAsString();
 }
 
-std::unique_ptr<em::PolicyFetchResponse> PolicyBuilder::GetCopy() {
-  std::unique_ptr<em::PolicyFetchResponse> result(
-      new em::PolicyFetchResponse());
-  result->CopyFrom(policy_);
-  return result;
+std::unique_ptr<em::PolicyFetchResponse> PolicyBuilder::GetCopy() const {
+  return base::MakeUnique<em::PolicyFetchResponse>(policy_);
 }
 
 // static
 std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::CreateTestSigningKey() {
   std::vector<uint8_t> raw_signing_key(kSigningKey,
                                        kSigningKey + arraysize(kSigningKey));
-  return std::unique_ptr<crypto::RSAPrivateKey>(
-      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_signing_key));
+  return crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_signing_key);
 }
 
 // static
@@ -278,8 +296,7 @@ std::unique_ptr<crypto::RSAPrivateKey>
 PolicyBuilder::CreateTestOtherSigningKey() {
   std::vector<uint8_t> raw_new_signing_key(
       kNewSigningKey, kNewSigningKey + arraysize(kNewSigningKey));
-  return std::unique_ptr<crypto::RSAPrivateKey>(
-      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_new_signing_key));
+  return crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_new_signing_key);
 }
 
 // static
@@ -294,17 +311,46 @@ std::string PolicyBuilder::GetTestOtherSigningKeySignature() {
                      sizeof(kNewSigningKeySignature));
 }
 
-void PolicyBuilder::SignData(const std::string& data,
-                             crypto::RSAPrivateKey* key,
-                             std::string* signature) {
-  std::unique_ptr<crypto::SignatureCreator> signature_creator(
-      crypto::SignatureCreator::Create(key, crypto::SignatureCreator::SHA1));
-  signature_creator->Update(reinterpret_cast<const uint8_t*>(data.c_str()),
-                            data.size());
-  std::vector<uint8_t> signature_bytes;
-  CHECK(signature_creator->Final(&signature_bytes));
-  signature->assign(reinterpret_cast<const char*>(signature_bytes.data()),
-                    signature_bytes.size());
+std::vector<uint8_t> PolicyBuilder::GetPublicSigningKey() const {
+  std::unique_ptr<crypto::RSAPrivateKey> key = GetSigningKey();
+  if (!key)
+    return std::vector<uint8_t>();
+  return ExportPublicKey(*key);
+}
+
+std::vector<uint8_t> PolicyBuilder::GetPublicNewSigningKey() const {
+  std::unique_ptr<crypto::RSAPrivateKey> key = GetNewSigningKey();
+  if (!key)
+    return std::vector<uint8_t>();
+  return ExportPublicKey(*key);
+}
+
+// static
+std::vector<uint8_t> PolicyBuilder::GetPublicTestKey() {
+  return ExportPublicKey(*CreateTestSigningKey());
+}
+
+// static
+std::vector<uint8_t> PolicyBuilder::GetPublicTestOtherKey() {
+  return ExportPublicKey(*CreateTestOtherSigningKey());
+}
+
+std::string PolicyBuilder::GetPublicSigningKeyAsString() const {
+  return ConvertPublicKeyToString(GetPublicSigningKey());
+}
+
+std::string PolicyBuilder::GetPublicNewSigningKeyAsString() const {
+  return ConvertPublicKeyToString(GetPublicNewSigningKey());
+}
+
+// static
+std::string PolicyBuilder::GetPublicTestKeyAsString() {
+  return ConvertPublicKeyToString(GetPublicTestKey());
+}
+
+// static
+std::string PolicyBuilder::GetPublicTestOtherKeyAsString() {
+  return ConvertPublicKeyToString(GetPublicTestOtherKey());
 }
 
 template<>
@@ -318,8 +364,8 @@ template class TypedPolicyBuilder<em::CloudPolicySettings>;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 template<>
-TypedPolicyBuilder<em::ExternalPolicyData>::TypedPolicyBuilder()
-    : payload_(new em::ExternalPolicyData()) {
+TypedPolicyBuilder<em::ExternalPolicyData>::TypedPolicyBuilder() {
+  CreatePayload();
   policy_data().set_policy_type(dm_protocol::kChromeExtensionPolicyType);
 }
 
