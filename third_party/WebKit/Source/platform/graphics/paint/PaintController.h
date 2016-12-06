@@ -187,10 +187,6 @@ class PLATFORM_EXPORT PaintController {
 
 #if DCHECK_IS_ON()
   void assertDisplayItemClientsAreLive();
-
-  enum Usage { ForNormalUsage, ForSkPictureBuilder };
-  void setUsage(Usage usage) { m_usage = usage; }
-  bool isForSkPictureBuilder() const { return m_usage == ForSkPictureBuilder; }
 #endif
 
   void setTracksRasterInvalidations(bool value);
@@ -355,8 +351,6 @@ class PLATFORM_EXPORT PaintController {
 #if DCHECK_IS_ON()
   // This is used to check duplicated ids during createAndAppend().
   IndicesByClientMap m_newDisplayItemIndicesByClient;
-
-  Usage m_usage;
 #endif
 
   // These are set in useCachedDrawingIfPossible() and

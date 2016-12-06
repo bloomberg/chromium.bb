@@ -79,19 +79,9 @@ DrawingRecorder::~DrawingRecorder() {
          m_context.getPaintController().newDisplayItemList().size());
 #endif
 
-  sk_sp<const SkPicture> picture = m_context.endRecording();
-
-#if DCHECK_IS_ON()
-  if (!RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled() &&
-      !m_context.getPaintController().isForSkPictureBuilder() &&
-      m_displayItemClient.paintedOutputOfObjectHasNoEffectRegardlessOfSize()) {
-    DCHECK_EQ(0, picture->approximateOpCount())
-        << m_displayItemClient.debugName();
-  }
-#endif
-
   m_context.getPaintController().createAndAppend<DrawingDisplayItem>(
-      m_displayItemClient, m_displayItemType, picture, m_knownToBeOpaque);
+      m_displayItemClient, m_displayItemType, m_context.endRecording(),
+      m_knownToBeOpaque);
 }
 
 }  // namespace blink
