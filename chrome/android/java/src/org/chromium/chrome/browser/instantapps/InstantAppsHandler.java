@@ -75,7 +75,7 @@ public class InstantAppsHandler {
 
     /** A histogram to record how long the GMS Core API call took. */
     private static final TimesHistogramSample sInstantAppsApiCallTimes = new TimesHistogramSample(
-            "Android.InstantApps.ApiCallDuration", TimeUnit.MILLISECONDS);
+            "Android.InstantApps.ApiCallDuration2", TimeUnit.MILLISECONDS);
 
     /** @return The singleton instance of {@link InstantAppsHandler}. */
     public static InstantAppsHandler getInstance() {
