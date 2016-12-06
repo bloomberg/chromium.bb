@@ -58,7 +58,8 @@ void GpuCompositorFrameSink::RemoveSurfaceReferences(
 }
 
 void GpuCompositorFrameSink::DidReceiveCompositorFrameAck() {
-  client_->DidReceiveCompositorFrameAck();
+  if (client_)
+    client_->DidReceiveCompositorFrameAck();
 }
 
 void GpuCompositorFrameSink::AddChildFrameSink(
