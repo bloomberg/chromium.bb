@@ -20,7 +20,7 @@ class CORE_EXPORT CSSPropertyMetadata {
   static bool isInterpolableProperty(CSSPropertyID);
   static bool isInheritedProperty(CSSPropertyID);
   static bool propertySupportsPercentage(CSSPropertyID);
-  static bool propertySupportsMultiple(CSSPropertyID);
+  static bool propertyIsRepeated(CSSPropertyID);
   static bool isDescriptorOnly(CSSPropertyID);
 
   static void filterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,

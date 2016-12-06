@@ -37,7 +37,7 @@ class CSSProperties(in_generator.Writer):
         'initial_keyword': None,
         'keyword_only': False,
         'supports_percentage': False,
-        'supports_multiple': False,
+        'repeated': False,
     }
 
     valid_values = {

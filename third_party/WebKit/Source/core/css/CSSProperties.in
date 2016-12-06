@@ -49,7 +49,7 @@
 // Keyword does not need to be specified as every property can take keywords.
 // - keywords=[keyword1|keyword2]
 // The property can take these keywords.
-// - supports_multiple
+// - repeated
 // The property supports a list of values.
 // - supports_percentage
 // The property supports percentage types.
@@ -124,10 +124,10 @@
 
 // Animation Priority properties
 animation-delay custom_all
-animation-direction keywords=[normal|reverse|alternate|alternate-reverse], supports_multiple, custom_all
+animation-direction keywords=[normal|reverse|alternate|alternate-reverse], repeated, custom_all
 animation-duration custom_all
 animation-fill-mode custom_all
-animation-iteration-count keywords=[infinite], supports_multiple, custom_all
+animation-iteration-count keywords=[infinite], repeated, custom_all
 animation-name custom_all
 animation-play-state custom_all
 animation-timing-function custom_all
@@ -218,7 +218,7 @@ color-interpolation-filters inherited, svg, type_name=EColorInterpolation
 color-rendering inherited, svg
 column-fill type_name=ColumnFill
 contain runtime_flag=CSSContainment, converter=convertFlags<Containment>
-content custom_all, typedom_types=[Image], supports_multiple
+content custom_all, typedom_types=[Image], repeated
 counter-increment custom_all
 counter-reset custom_all
 cursor inherited, custom_all

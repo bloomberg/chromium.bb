@@ -30,7 +30,7 @@ const CSSValue* styleValueToCSSValue(CSSPropertyID propertyID,
 
 const CSSValue* singleStyleValueAsCSSValue(CSSPropertyID propertyID,
                                            const CSSStyleValue& styleValue) {
-  if (!CSSPropertyMetadata::propertySupportsMultiple(propertyID))
+  if (!CSSPropertyMetadata::propertyIsRepeated(propertyID))
     return styleValueToCSSValue(propertyID, styleValue);
 
   const CSSValue* cssValue = styleValueToCSSValue(propertyID, styleValue);
@@ -116,7 +116,7 @@ void InlineStylePropertyMap::set(
     cssValue =
         singleStyleValueAsCSSValue(propertyID, *item.getAsCSSStyleValue());
   } else if (item.isCSSStyleValueSequence()) {
-    if (!CSSPropertyMetadata::propertySupportsMultiple(propertyID)) {
+    if (!CSSPropertyMetadata::propertyIsRepeated(propertyID)) {
       exceptionState.throwTypeError(
           "Property does not support multiple values");
       return;
@@ -140,7 +140,7 @@ void InlineStylePropertyMap::append(
     CSSPropertyID propertyID,
     CSSStyleValueOrCSSStyleValueSequenceOrString& item,
     ExceptionState& exceptionState) {
-  if (!CSSPropertyMetadata::propertySupportsMultiple(propertyID)) {
+  if (!CSSPropertyMetadata::propertyIsRepeated(propertyID)) {
     exceptionState.throwTypeError("Property does not support multiple values");
     return;
   }
