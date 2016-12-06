@@ -95,7 +95,7 @@ void DataObserver::OnURLVisited(history::HistoryService* history_service,
                                 const history::URLRow& row,
                                 const history::RedirectList& redirects,
                                 base::Time visit_time) {
-  if (row.hidden())
+  if (row.hidden() || ui::PageTransitionIsRedirect(transition))
     return;
 
   delta_file_service_->PageAdded(row.url());

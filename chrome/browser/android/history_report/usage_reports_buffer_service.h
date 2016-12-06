@@ -35,7 +35,9 @@ class UsageReportsBufferService {
   void Init();
 
   // Add report about page visit to the buffer. It's asynchronous.
-  void AddVisit(const std::string& id, int64_t timestamp_ms, bool typed_visit);
+  virtual void AddVisit(const std::string& id,
+                        int64_t timestamp_ms,
+                        bool typed_visit);
 
   // Get a batch of usage reports of size up to |batch_size|. It's synchronous.
   std::unique_ptr<std::vector<UsageReport>> GetUsageReportsBatch(

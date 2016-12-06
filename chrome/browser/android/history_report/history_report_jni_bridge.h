@@ -27,7 +27,6 @@ class UsageReportsBufferService;
 
 bool RegisterHistoryReportJniBridge(JNIEnv* env);
 
-// JNI Bridge which connects native and java parts of Icing integration.
 class HistoryReportJniBridge {
  public:
   HistoryReportJniBridge(JNIEnv* env, jobject obj);
@@ -44,8 +43,8 @@ class HistoryReportJniBridge {
       const base::android::JavaParamRef<jobject>& obj,
       jlong last_seq_no,
       jint limit);
-  // Queries usage reports buffer for a batch of reports to be reported to
-  // Icing.
+  // Queries usage reports buffer for a batch of reports to be reported for
+  // local indexing.
   base::android::ScopedJavaLocalRef<jobjectArray> GetUsageReportsBatch(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

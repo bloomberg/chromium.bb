@@ -32,7 +32,7 @@ class DeltaFileService {
   ~DeltaFileService();
 
   // Adds new addtion entry to delta file.
-  void PageAdded(const GURL& url);
+  virtual void PageAdded(const GURL& url);
   // Adds new deletion entry to delta file.
   void PageDeleted(const GURL& url);
   // Removes all delta file entries with seqno <= lower_bound.
