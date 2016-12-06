@@ -36,7 +36,6 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
 
  public:
   static HTMLFieldSetElement* create(Document&, HTMLFormElement*);
-  DECLARE_VIRTUAL_TRACE();
   HTMLLegendElement* legend() const;
   HTMLCollection* elements();
 
@@ -60,14 +59,6 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
   bool alwaysCreateUserAgentShadowRoot() const override { return false; }
 
   static void invalidateDisabledStateUnder(Element&);
-  void refreshElementsIfNeeded() const;
-  const ListedElement::List& listedElements() const;
-
-  // TODO(tkent): Remove m_listedElements.
-  mutable ListedElement::List m_listedElements;
-  // When dom tree is modified, we have to refresh the m_listedElements
-  // array.
-  mutable uint64_t m_documentVersion;
 };
 
 }  // namespace blink

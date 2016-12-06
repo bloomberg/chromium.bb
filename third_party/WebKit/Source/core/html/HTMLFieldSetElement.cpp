@@ -28,9 +28,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/html/HTMLCollection.h"
-#include "core/html/HTMLFormControlsCollection.h"
 #include "core/html/HTMLLegendElement.h"
-#include "core/html/HTMLObjectElement.h"
 #include "core/layout/LayoutFieldset.h"
 #include "wtf/StdLibExtras.h"
 
@@ -40,17 +38,11 @@ using namespace HTMLNames;
 
 inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document,
                                                 HTMLFormElement* form)
-    : HTMLFormControlElement(fieldsetTag, document, form),
-      m_documentVersion(0) {}
+    : HTMLFormControlElement(fieldsetTag, document, form) {}
 
 HTMLFieldSetElement* HTMLFieldSetElement::create(Document& document,
                                                  HTMLFormElement* form) {
   return new HTMLFieldSetElement(document, form);
-}
-
-DEFINE_TRACE(HTMLFieldSetElement) {
-  visitor->trace(m_listedElements);
-  HTMLFormControlElement::trace(visitor);
 }
 
 bool HTMLFieldSetElement::matchesValidityPseudoClasses() const {
@@ -58,12 +50,11 @@ bool HTMLFieldSetElement::matchesValidityPseudoClasses() const {
 }
 
 bool HTMLFieldSetElement::isValidElement() {
-  const ListedElement::List& elements = listedElements();
-  for (unsigned i = 0; i < elements.size(); ++i) {
-    if (elements[i]->isFormControlElement()) {
-      HTMLFormControlElement* control =
-          toHTMLFormControlElement(elements[i].get());
-      if (!control->checkValidity(0, CheckValidityDispatchNoEvent))
+  HTMLCollection* elements = this->elements();
+  for (unsigned i = 0; i < elements->length(); ++i) {
+    if (elements->item(i)->isFormControlElement()) {
+      if (!toHTMLFormControlElement(elements->item(i))
+               ->checkValidity(nullptr, CheckValidityDispatchNoEvent))
         return false;
     }
   }
@@ -113,33 +104,6 @@ HTMLLegendElement* HTMLFieldSetElement::legend() const {
 
 HTMLCollection* HTMLFieldSetElement::elements() {
   return ensureCachedCollection<HTMLCollection>(FormControls);
-}
-
-void HTMLFieldSetElement::refreshElementsIfNeeded() const {
-  uint64_t docVersion = document().domTreeVersion();
-  if (m_documentVersion == docVersion)
-    return;
-
-  m_documentVersion = docVersion;
-
-  m_listedElements.clear();
-
-  for (HTMLElement& element : Traversal<HTMLElement>::descendantsOf(*this)) {
-    if (isHTMLObjectElement(element)) {
-      m_listedElements.append(toHTMLObjectElement(&element));
-      continue;
-    }
-
-    if (!element.isFormControlElement())
-      continue;
-
-    m_listedElements.append(toHTMLFormControlElement(&element));
-  }
-}
-
-const ListedElement::List& HTMLFieldSetElement::listedElements() const {
-  refreshElementsIfNeeded();
-  return m_listedElements;
 }
 
 int HTMLFieldSetElement::tabIndex() const {
