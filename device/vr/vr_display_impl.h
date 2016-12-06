@@ -16,6 +16,8 @@
 
 namespace device {
 
+class VRServiceImpl;
+
 class VRDisplayImpl : public mojom::VRDisplay {
  public:
   VRDisplayImpl(device::VRDevice* device, VRServiceImpl* service);

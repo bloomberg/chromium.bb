@@ -4,13 +4,13 @@
 
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
-#include "device/vr/vr_service_impl.h"
+#include "device/vr/vr_display_impl.h"
 
 namespace device {
 
 unsigned int VRDevice::next_id_ = 1;
 
-VRDevice::VRDevice() : presenting_service_(nullptr), id_(next_id_) {
+VRDevice::VRDevice() : presenting_display_(nullptr), id_(next_id_) {
   // Prevent wraparound. Devices with this ID will be treated as invalid.
   if (next_id_ != VR_DEVICE_LAST_ID)
     next_id_++;
@@ -24,24 +24,22 @@ void VRDevice::RequestPresent(const base::Callback<void(bool)>& callback) {
 
 void VRDevice::SetSecureOrigin(bool secure_origin) {}
 
-void VRDevice::AddService(VRServiceImpl* service) {
-  // Create a VRDisplayImpl for this service/device pair
-  VRDisplayImpl* display_impl = service->GetVRDisplayImpl(this);
-  displays_.insert(std::make_pair(service, display_impl));
+void VRDevice::AddDisplay(VRDisplayImpl* display) {
+  displays_.insert(display);
 }
 
-void VRDevice::RemoveService(VRServiceImpl* service) {
-  displays_.erase(service);
-  if (IsPresentingService(service))
+void VRDevice::RemoveDisplay(VRDisplayImpl* display) {
+  if (CheckPresentingDisplay(display))
     ExitPresent();
+  displays_.erase(display);
 }
 
-bool VRDevice::IsAccessAllowed(VRServiceImpl* service) {
-  return (!presenting_service_ || presenting_service_ == service);
+bool VRDevice::IsAccessAllowed(VRDisplayImpl* display) {
+  return (!presenting_display_ || presenting_display_ == display);
 }
 
-bool VRDevice::IsPresentingService(VRServiceImpl* service) {
-  return (presenting_service_ && presenting_service_ == service);
+bool VRDevice::CheckPresentingDisplay(VRDisplayImpl* display) {
+  return (presenting_display_ && presenting_display_ == display);
 }
 
 void VRDevice::OnChanged() {
@@ -50,39 +48,39 @@ void VRDevice::OnChanged() {
     return;
 
   for (const auto& display : displays_)
-    display.second->client()->OnChanged(vr_device_info.Clone());
+    display->client()->OnChanged(vr_device_info.Clone());
 }
 
 void VRDevice::OnExitPresent() {
-  DisplayClientMap::iterator it = displays_.find(presenting_service_);
+  auto it = displays_.find(presenting_display_);
   if (it != displays_.end())
-    it->second->client()->OnExitPresent();
+    (*it)->client()->OnExitPresent();
 
-  SetPresentingService(nullptr);
+  SetPresentingDisplay(nullptr);
 }
 
 void VRDevice::OnBlur() {
   for (const auto& display : displays_)
-    display.second->client()->OnBlur();
+    display->client()->OnBlur();
 }
 
 void VRDevice::OnFocus() {
   for (const auto& display : displays_)
-    display.second->client()->OnFocus();
+    display->client()->OnFocus();
 }
 
 void VRDevice::OnActivate(mojom::VRDisplayEventReason reason) {
   for (const auto& display : displays_)
-    display.second->client()->OnActivate(reason);
+    display->client()->OnActivate(reason);
 }
 
 void VRDevice::OnDeactivate(mojom::VRDisplayEventReason reason) {
   for (const auto& display : displays_)
-    display.second->client()->OnDeactivate(reason);
+    display->client()->OnDeactivate(reason);
 }
 
-void VRDevice::SetPresentingService(VRServiceImpl* service) {
-  presenting_service_ = service;
+void VRDevice::SetPresentingDisplay(VRDisplayImpl* display) {
+  presenting_display_ = display;
 }
 
 }  // namespace device

@@ -16,7 +16,6 @@
 
 namespace device {
 
-
 class VRServiceImplTest : public testing::Test {
  public:
   VRServiceImplTest() {}

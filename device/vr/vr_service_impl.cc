@@ -37,16 +37,27 @@ VRDisplayImpl* VRServiceImpl::GetVRDisplayImpl(VRDevice* device) {
 }
 
 void VRServiceImpl::Bind(mojo::InterfaceRequest<mojom::VRService> request) {
-  // TODO(shaobo.yan@intel.com) : Keep one binding_ and use close and rebind.
-  binding_.reset(new mojo::Binding<mojom::VRService>(this, std::move(request)));
+  if (!binding_)
+    binding_.reset(
+        new mojo::Binding<mojom::VRService>(this, std::move(request)));
+  else
+    binding_->Bind(std::move(request));
   binding_->set_connection_error_handler(base::Bind(
       &VRServiceImpl::RemoveFromDeviceManager, base::Unretained(this)));
 }
 
 void VRServiceImpl::RemoveFromDeviceManager() {
-  displays_.clear();
+  // Remove VRDisplayImpl in service/device pair.
+  // displays_ is a map which first element is a VRDevice pointer,
+  // the second element is a VRDisplayImpl pointer.
+  for (DisplayImplMap::iterator it = displays_.begin(); it != displays_.end();
+       ++it) {
+    it->first->RemoveDisplay(it->second.get());
+  }
+
   VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
   device_manager->RemoveService(this);
+  displays_.clear();
 }
 
 void VRServiceImpl::RemoveDevice(VRDevice* device) {
@@ -56,7 +67,6 @@ void VRServiceImpl::RemoveDevice(VRDevice* device) {
 void VRServiceImpl::SetClient(mojom::VRServiceClientPtr service_client,
                               const SetClientCallback& callback) {
   DCHECK(!client_.get());
-
   client_ = std::move(service_client);
   VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
   // Once a client has been connected AddService will force any VRDisplays to

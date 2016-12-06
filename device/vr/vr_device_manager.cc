@@ -70,20 +70,16 @@ void VRDeviceManager::AddService(VRServiceImpl* service) {
   // when they are created.
   GetVRDevices(service);
 
-  services_.push_back(service);
+  services_.insert(service);
 }
 
 void VRDeviceManager::RemoveService(VRServiceImpl* service) {
-  services_.erase(std::remove(services_.begin(), services_.end(), service),
-                  services_.end());
-
-  for (auto device : devices_) {
-    device.second->RemoveService(service);
-  }
 
   if (service->listening_for_activate()) {
     ListeningForActivateChanged(false);
   }
+
+  services_.erase(service);
 
   if (services_.empty() && !keep_alive_) {
     // Delete the device manager when it has no active connections.
@@ -110,7 +106,10 @@ bool VRDeviceManager::GetVRDevices(VRServiceImpl* service) {
     if (devices_.find(device->id()) == devices_.end())
       devices_[device->id()] = device;
 
-    device->AddService(service);
+    // Create a VRDisplayImpl for this service/device pair and attach
+    // the VRDisplayImpl to the device.
+    VRDisplayImpl* display_impl = service->GetVRDisplayImpl(device);
+    device->AddDisplay(display_impl);
   }
 
   return true;

@@ -70,7 +70,6 @@ mojom::VRPosePtr FakeVRDevice::GetPose() {
 
 void FakeVRDevice::ResetPose() {}
 
-// TODO(shaobo.yan@intel.com): Will implemenate for VRDeviceServiceImpl tests.
 void FakeVRDevice::RequestPresent(const base::Callback<void(bool)>& callback) {
   callback.Run(true);
 }

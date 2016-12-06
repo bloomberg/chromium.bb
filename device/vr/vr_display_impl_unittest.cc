@@ -57,7 +57,7 @@ class VRDisplayImplTest : public testing::Test {
 
   VRDevice* device() { return device_; }
 
-  bool presenting() { return !!device_->presenting_service_; }
+  bool presenting() { return !!device_->presenting_display_; }
 
   base::MessageLoop message_loop_;
   bool is_request_presenting_success_ = false;
@@ -73,12 +73,12 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   auto service_1 = BindService();
   auto service_2 = BindService();
 
-  // When not presenting either service should be able to access the device.
-  EXPECT_TRUE(device()->IsAccessAllowed(service_1.get()));
-  EXPECT_TRUE(device()->IsAccessAllowed(service_2.get()));
-
   VRDisplayImpl* display_1 = service_1->GetVRDisplayImpl(device());
   VRDisplayImpl* display_2 = service_2->GetVRDisplayImpl(device());
+
+  // When not presenting either service should be able to access the device.
+  EXPECT_TRUE(device()->IsAccessAllowed(display_1));
+  EXPECT_TRUE(device()->IsAccessAllowed(display_2));
 
   // Begin presenting to the fake device with service 1.
   RequestPresent(display_1);
@@ -89,8 +89,8 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   // is still presenting.
   RequestPresent(display_2);
   EXPECT_FALSE(is_request_presenting_success_);
-  EXPECT_TRUE(device()->IsAccessAllowed(service_1.get()));
-  EXPECT_FALSE(device()->IsAccessAllowed(service_2.get()));
+  EXPECT_TRUE(device()->IsAccessAllowed(display_1));
+  EXPECT_FALSE(device()->IsAccessAllowed(display_2));
 
   // Service 2 should not be able to exit presentation to the device.
   ExitPresent(display_2);
@@ -102,8 +102,8 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
 
   // Once presentation had ended both services should be able to access the
   // device.
-  EXPECT_TRUE(device()->IsAccessAllowed(service_1.get()));
-  EXPECT_TRUE(device()->IsAccessAllowed(service_2.get()));
+  EXPECT_TRUE(device()->IsAccessAllowed(display_1));
+  EXPECT_TRUE(device()->IsAccessAllowed(display_2));
 }
 
 // This test case tests VRDevice class default behaviour when it
