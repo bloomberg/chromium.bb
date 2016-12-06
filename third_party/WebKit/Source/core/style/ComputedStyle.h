@@ -2150,9 +2150,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // pointer-events
-  static EPointerEvents initialPointerEvents() {
-    return EPointerEvents::PE_AUTO;
-  }
+  static EPointerEvents initialPointerEvents() { return EPointerEvents::Auto; }
   EPointerEvents pointerEvents() const {
     return static_cast<EPointerEvents>(m_inheritedData.m_pointerEvents);
   }
@@ -3578,7 +3576,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Visibility utility functions.
   bool visibleToHitTesting() const {
     return visibility() == EVisibility::Visible &&
-           pointerEvents() != EPointerEvents::PE_NONE;
+           pointerEvents() != EPointerEvents::None;
   }
 
   // Animation utility functions.

@@ -497,17 +497,17 @@ enum class EDisplay : unsigned {
 enum EInsideLink { NotInsideLink, InsideUnvisitedLink, InsideVisitedLink };
 
 enum class EPointerEvents : unsigned {
-  PE_NONE,
-  PE_AUTO,
-  PE_STROKE,
-  PE_FILL,
-  PE_PAINTED,
-  PE_VISIBLE,
-  PE_VISIBLE_STROKE,
-  PE_VISIBLE_FILL,
-  PE_VISIBLE_PAINTED,
-  PE_BOUNDINGBOX,
-  PE_ALL
+  None,
+  Auto,
+  Stroke,
+  Fill,
+  Painted,
+  Visible,
+  VisibleStroke,
+  VisibleFill,
+  VisiblePainted,
+  BoundingBox,
+  All
 };
 
 enum ETransformStyle3D { TransformStyle3DFlat, TransformStyle3DPreserve3D };
