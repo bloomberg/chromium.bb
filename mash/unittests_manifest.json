@@ -5,7 +5,8 @@
     "service_manager:connector": {
       "requires": {
         "*": [ "app", "test" ],
-        "ash": [ "mus:window_manager" ]
+        "ash": [ "mus:window_manager" ],
+        "ui": [ "app" ]
       }
     }
   }

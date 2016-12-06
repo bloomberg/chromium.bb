@@ -400,6 +400,11 @@ bool WindowManager::OnWmSetProperty(
 aura::Window* WindowManager::OnWmCreateTopLevelWindow(
     ui::mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties) {
+  if (window_type == ui::mojom::WindowType::UNKNOWN) {
+    LOG(WARNING) << "Request to create top level of unknown type, failing";
+    return nullptr;
+  }
+
   return NewTopLevelWindow(window_type, properties);
 }
 
