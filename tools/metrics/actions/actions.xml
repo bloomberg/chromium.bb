@@ -2371,6 +2371,42 @@ should be able to be added at any place in this file.
   <description>
     Fired when a user drops a bookmark after a drag in the bookmark manager.
   </description>
+  <obsolete>
+    Superseded by BookmarkManager_DropToList, BookmarkManager_DropToTree,
+    BookmarkManager_DropToListItem and BookmarkManager_DropToTreeItem.
+  </obsolete>
+</action>
+
+<action name="BookmarkManager_DropToList">
+  <owner>calamity@chromium.org</owner>
+  <description>
+    Fired when a user drops a bookmark into the bookmark list between other
+    items in the bookmark manager.
+  </description>
+</action>
+
+<action name="BookmarkManager_DropToListItem">
+  <owner>calamity@chromium.org</owner>
+  <description>
+    Fired when a user drops a bookmark directly onto a bookmark list item in the
+    bookmark manager.
+  </description>
+</action>
+
+<action name="BookmarkManager_DropToTree">
+  <owner>calamity@chromium.org</owner>
+  <description>
+    Fired when a user drops a bookmark into the bookmark tree between other
+    nodes in the bookmark manager.
+  </description>
+</action>
+
+<action name="BookmarkManager_DropToTreeItem">
+  <owner>calamity@chromium.org</owner>
+  <description>
+    Fired when a user drops a bookmark directly onto a bookmark tree item in the
+    bookmark manager.
+  </description>
 </action>
 
 <action name="BookmarkManager_Export">
@@ -2422,6 +2458,24 @@ should be able to be added at any place in this file.
   <owner>calamity@chromium.org</owner>
   <description>
     Fired when a user starts a drag in the bookmark manager.
+  </description>
+  <obsolete>
+    Superseded by BookmarkManager_StartDragFromList and
+    BookmarkManager_StartDragFromTree.
+  </obsolete>
+</action>
+
+<action name="BookmarkManager_StartDragFromList">
+  <owner>calamity@chromium.org</owner>
+  <description>
+    Fired when a user starts a drag to the tree in the bookmark manager.
+  </description>
+</action>
+
+<action name="BookmarkManager_StartDragFromTree">
+  <owner>calamity@chromium.org</owner>
+  <description>
+    Fired when a user starts a drag from the tree in the bookmark manager.
   </description>
 </action>
 

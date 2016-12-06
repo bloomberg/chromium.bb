@@ -345,7 +345,18 @@ cr.define('dnd', function() {
       chrome.bookmarkManagerPrivate.startDrag(draggedNodes.map(function(node) {
         return node.id;
       }), isFromTouch);
-      chrome.metricsPrivate.recordUserAction('BookmarkManager_StartDrag');
+      var dragTarget = getBookmarkElement(e.target);
+      if (dragTarget instanceof ListItem ||
+          dragTarget instanceof BookmarkList) {
+        chrome.metricsPrivate.recordUserAction(
+            'BookmarkManager_StartDragFromList');
+      } else if (dragTarget instanceof TreeItem) {
+        chrome.metricsPrivate.recordUserAction(
+            'BookmarkManager_StartDragFromTree');
+      }
+
+      chrome.metricsPrivate.recordSmallCount(
+          'BookmarkManager.NumDragged', draggedNodes.length);
     }
   }
 
@@ -485,9 +496,22 @@ cr.define('dnd', function() {
       else
         chrome.bookmarkManagerPrivate.drop(dropInfo.parentId);
 
-      chrome.metricsPrivate.recordUserAction('BookmarkManager_Drop');
-
       e.preventDefault();
+
+      var dragTarget = getBookmarkElement(e.target);
+      var action;
+      if (dragTarget instanceof ListItem ||
+          dragTarget instanceof BookmarkList) {
+        action = 'BookmarkManager_DropToList';
+        if (dropDestination.position == DropPosition.ON)
+          action = 'BookmarkManager_DropToListItem';
+      } else if (dragTarget instanceof TreeItem) {
+        action = 'BookmarkManager_DropToTree';
+        if (dropDestination.position == DropPosition.ON)
+          action = 'BookmarkManager_DropToTreeItem';
+      }
+      if (action)
+        chrome.metricsPrivate.recordUserAction(action);
     }
     dropDestination = null;
     dropIndicator.finish();
