@@ -411,10 +411,6 @@ void EnableNoiseSuppression(AudioProcessing* audio_processing,
   CHECK_EQ(err, 0);
 }
 
-void EnableHighPassFilter(AudioProcessing* audio_processing) {
-  CHECK_EQ(audio_processing->high_pass_filter()->Enable(true), 0);
-}
-
 void EnableTypingDetection(AudioProcessing* audio_processing,
                            webrtc::TypingDetection* typing_detector) {
   int err = audio_processing->voice_detection()->Enable(true);

@@ -141,9 +141,6 @@ void EnableEchoCancellation(AudioProcessing* audio_processing);
 void EnableNoiseSuppression(AudioProcessing* audio_processing,
                             webrtc::NoiseSuppression::Level ns_level);
 
-// Enables the high pass filter in |audio_processing|.
-void EnableHighPassFilter(AudioProcessing* audio_processing);
-
 // Enables the typing detection in |audio_processing|.
 void EnableTypingDetection(AudioProcessing* audio_processing,
                            webrtc::TypingDetection* typing_detector);

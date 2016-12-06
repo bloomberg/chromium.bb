@@ -631,6 +631,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   audio_processing_.reset(webrtc::AudioProcessing::Create(config));
 
   // Enable the audio processing components.
+  webrtc::AudioProcessing::Config apm_config;
+
   if (echo_cancellation) {
     EnableEchoCancellation(audio_processing_.get());
 
@@ -652,8 +654,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     EnableNoiseSuppression(audio_processing_.get(), ns_level);
   }
 
-  if (goog_high_pass_filter)
-    EnableHighPassFilter(audio_processing_.get());
+  apm_config.high_pass_filter.enabled = goog_high_pass_filter;
 
   if (goog_typing_detection) {
     // TODO(xians): Remove this |typing_detector_| after the typing suppression
@@ -664,6 +665,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   if (goog_agc)
     EnableAutomaticGainControl(audio_processing_.get());
+
+  audio_processing_->ApplyConfig(apm_config);
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);
 }
