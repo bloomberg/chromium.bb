@@ -106,10 +106,15 @@ struct SaturatedCastNaNBehaviorReturnZero {
 };
 
 namespace internal {
-// This wrapper is used for C++11 constexpr support by avoiding the declaration
-// of local variables in the saturated_cast template function.
-// TODO(jschuh): convert this back to a switch once we support C++14.
-template <typename Dst, class NaNHandler, typename Src>
+// These wrappers are used for C++11 constexpr support by avoiding both the
+// declaration of local variables and invalid evaluation resulting from the
+// lack of "constexpr if" support in the saturated_cast template function.
+// TODO(jschuh): Convert to single function with a switch once we support C++14.
+template <
+    typename Dst,
+    class NaNHandler,
+    typename Src,
+    typename std::enable_if<std::is_integral<Dst>::value>::type* = nullptr>
 constexpr Dst saturated_cast_impl(const Src value,
                                   const RangeConstraint constraint) {
   return constraint == RANGE_VALID
@@ -121,6 +126,22 @@ constexpr Dst saturated_cast_impl(const Src value,
                            : NaNHandler::template HandleFailure<Dst>()));
 }
 
+template <typename Dst,
+          class NaNHandler,
+          typename Src,
+          typename std::enable_if<std::is_floating_point<Dst>::value>::type* =
+              nullptr>
+constexpr Dst saturated_cast_impl(const Src value,
+                                  const RangeConstraint constraint) {
+  return constraint == RANGE_VALID
+             ? static_cast<Dst>(value)
+             : (constraint == RANGE_UNDERFLOW
+                    ? -std::numeric_limits<Dst>::infinity()
+                    : (constraint == RANGE_OVERFLOW
+                           ? std::numeric_limits<Dst>::infinity()
+                           : std::numeric_limits<Dst>::quiet_NaN()));
+}
+
 // saturated_cast<> is analogous to static_cast<> for numeric types, except
 // that the specified numeric conversion will saturate rather than overflow or
 // underflow. NaN assignment to an integral will defer the behavior to a
@@ -130,12 +151,8 @@ template <typename Dst,
           typename Src>
 constexpr Dst saturated_cast(Src value) {
   using SrcType = typename UnderlyingType<Src>::type;
-  return std::is_floating_point<Dst>::value
-             ? static_cast<Dst>(
-                   static_cast<SrcType>(value))  // Floating point optimization.
-             : internal::saturated_cast_impl<Dst, NaNHandler>(
-                   value,
-                   internal::DstRangeRelationToSrcRange<Dst, SrcType>(value));
+  return internal::saturated_cast_impl<Dst, NaNHandler>(
+      value, internal::DstRangeRelationToSrcRange<Dst, SrcType>(value));
 }
 
 // strict_cast<> is analogous to static_cast<> for numeric types, except that

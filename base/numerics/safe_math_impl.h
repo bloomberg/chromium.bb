@@ -635,6 +635,16 @@ class CheckedNumericState<T, NUMERIC_INTEGER> {
   bool is_valid_;
   T value_;
 
+  // Ensures that a type conversion does not trigger undefined behavior.
+  template <typename Src>
+  static constexpr T WellDefinedConversionOrZero(const Src value,
+                                                 const bool is_valid) {
+    using SrcType = typename internal::UnderlyingType<Src>::type;
+    return (std::is_integral<SrcType>::value || is_valid)
+               ? static_cast<T>(value)
+               : static_cast<T>(0);
+  }
+
  public:
   template <typename Src, NumericRepresentation type>
   friend class CheckedNumericState;
@@ -644,7 +654,7 @@ class CheckedNumericState<T, NUMERIC_INTEGER> {
   template <typename Src>
   constexpr CheckedNumericState(Src value, bool is_valid)
       : is_valid_(is_valid && IsValueInRangeForNumericType<T>(value)),
-        value_(is_valid_ ? static_cast<T>(value) : 0) {
+        value_(WellDefinedConversionOrZero(value, is_valid_)) {
     static_assert(std::is_arithmetic<Src>::value, "Argument must be numeric.");
   }
 
@@ -652,12 +662,12 @@ class CheckedNumericState<T, NUMERIC_INTEGER> {
   template <typename Src>
   constexpr CheckedNumericState(const CheckedNumericState<Src>& rhs)
       : is_valid_(rhs.IsValid()),
-        value_(is_valid_ ? static_cast<T>(rhs.value()) : 0) {}
+        value_(WellDefinedConversionOrZero(rhs.value(), is_valid_)) {}
 
   template <typename Src>
   constexpr explicit CheckedNumericState(Src value)
       : is_valid_(IsValueInRangeForNumericType<T>(value)),
-        value_(is_valid_ ? static_cast<T>(value) : 0) {}
+        value_(WellDefinedConversionOrZero(value, is_valid_)) {}
 
   constexpr bool is_valid() const { return is_valid_; }
   constexpr T value() const { return value_; }
@@ -669,6 +679,18 @@ class CheckedNumericState<T, NUMERIC_FLOATING> {
  private:
   T value_;
 
+  // Ensures that a type conversion does not trigger undefined behavior.
+  template <typename Src>
+  static constexpr T WellDefinedConversionOrNaN(const Src value,
+                                                const bool is_valid) {
+    using SrcType = typename internal::UnderlyingType<Src>::type;
+    return (StaticDstRangeRelationToSrcRange<T, SrcType>::value ==
+                NUMERIC_RANGE_CONTAINED ||
+            is_valid)
+               ? static_cast<T>(value)
+               : std::numeric_limits<T>::quiet_NaN();
+  }
+
  public:
   template <typename Src, NumericRepresentation type>
   friend class CheckedNumericState;
@@ -677,18 +699,20 @@ class CheckedNumericState<T, NUMERIC_FLOATING> {
 
   template <typename Src>
   constexpr CheckedNumericState(Src value, bool is_valid)
-      : value_((is_valid && IsValueInRangeForNumericType<T>(value))
-                   ? static_cast<T>(value)
-                   : std::numeric_limits<T>::quiet_NaN()) {}
+      : value_(WellDefinedConversionOrNaN(value, is_valid)) {}
 
   template <typename Src>
   constexpr explicit CheckedNumericState(Src value)
-      : value_(static_cast<T>(value)) {}
+      : value_(WellDefinedConversionOrNaN(
+            value,
+            IsValueInRangeForNumericType<T>(value))) {}
 
   // Copy constructor.
   template <typename Src>
   constexpr CheckedNumericState(const CheckedNumericState<Src>& rhs)
-      : value_(static_cast<T>(rhs.value())) {}
+      : value_(WellDefinedConversionOrNaN(
+            rhs.value(),
+            rhs.is_valid() && IsValueInRangeForNumericType<T>(rhs.value()))) {}
 
   constexpr bool is_valid() const {
     // Written this way because std::isfinite is not reliably constexpr.
