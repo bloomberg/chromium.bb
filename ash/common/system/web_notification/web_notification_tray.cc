@@ -636,7 +636,7 @@ void WebNotificationTray::UpdateTrayContent() {
     counter_->SetVisible(false);
   }
 
-  SetVisible(IsLoggedIn());
+  SetVisible(IsLoggedIn() && ShouldShowMessageCenter());
   PreferredSizeChanged();
   Layout();
   SchedulePaint();

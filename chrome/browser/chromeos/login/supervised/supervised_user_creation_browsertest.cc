@@ -4,6 +4,9 @@
 
 #include <string>
 
+#include "ash/common/system/status_area_widget.h"
+#include "ash/common/system/web_notification/web_notification_tray.h"
+#include "ash/test/status_area_widget_test_helper.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -40,6 +43,16 @@ using chromeos::kTestSupervisedUserDisplayName;
 using chromeos::kTestManager;
 
 namespace chromeos {
+
+namespace {
+
+bool GetWebNotificationTrayVisibility() {
+  return ash::StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+      ->web_notification_tray()
+      ->visible();
+}
+
+}  // anonymous namespace
 
 class SupervisedUserCreationTest : public SupervisedUserTestBase {
  public:
@@ -182,6 +195,38 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
 
   // We wait for token now. Press cancel button at this point.
   JSEvalOrExitBrowser("$('supervised-user-creation').cancel()");
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+                       PRE_PRE_PRE_CheckNoNotificationTray) {
+  PrepareUsers();
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+                       PRE_PRE_CheckNoNotificationTray) {
+  // Before sign-in, the tray should not be visible.
+  EXPECT_FALSE(GetWebNotificationTrayVisibility());
+
+  StartFlowLoginAsManager();
+
+  // On supervised user creation flow, the tray should not be visible.
+  EXPECT_FALSE(GetWebNotificationTrayVisibility());
+
+  FillNewUserData(kTestSupervisedUserDisplayName);
+  StartUserCreation("supervised-user-creation-next-button",
+                    kTestSupervisedUserDisplayName);
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+                       PRE_CheckNoNotificationTray) {
+  SigninAsSupervisedUser(true, 0, kTestSupervisedUserDisplayName);
+
+  // After sign-in, the tray should be visible.
+  EXPECT_TRUE(GetWebNotificationTrayVisibility());
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest, CheckNoNotificationTray) {
+  RemoveSupervisedUser(3, 0, kTestSupervisedUserDisplayName);
 }
 
 IN_PROC_BROWSER_TEST_(
