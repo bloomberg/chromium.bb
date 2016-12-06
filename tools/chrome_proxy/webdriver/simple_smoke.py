@@ -18,6 +18,10 @@ class SimpleSmoke(IntegrationTest):
       t.LoadPage()
       print 'Document Title: ', t.ExecuteJavascript('document.title')
       time.sleep(5)
+      responses = t.GetHTTPResponses()
+      for response in responses:
+        print "URL: %s, ViaHeader: %s, XHR: %s" % (response.url,
+          response.ResponseHasViaHeader(), response.WasXHR())
 
 if __name__ == '__main__':
   test = SimpleSmoke()
