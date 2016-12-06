@@ -14,6 +14,37 @@ const char kForceScoutGroupValueTrue[] = "true";
 // Switch value which force the ScoutGroupSelected pref to false.
 const char kForceScoutGroupValueFalse[] = "false";
 
+// Name of the Scout Transition UMA metric.
+const char kScoutTransitionMetricName[] = "SafeBrowsing.Pref.Scout.Transition";
+
+// Reasons that a state transition for Scout was performed.
+// These values are written to logs.  New enum values can be added, but
+// existing enums must never be renumbered or deleted and reused.
+enum ScoutTransitionReason {
+  // Flag forced Scout Group to true
+  FORCE_SCOUT_FLAG_TRUE = 0,
+  // Flag forced Scout Group to false
+  FORCE_SCOUT_FLAG_FALSE = 1,
+  // User in OnlyShowScout group, enters Scout Group
+  ONLY_SHOW_SCOUT_OPT_IN = 2,
+  // User in CanShowScout group, enters Scout Group immediately
+  CAN_SHOW_SCOUT_OPT_IN_SCOUT_GROUP_ON = 3,
+  // User in CanShowScout group, waiting for interstitial to enter Scout Group
+  CAN_SHOW_SCOUT_OPT_IN_WAIT_FOR_INTERSTITIAL = 4,
+  // User in CanShowScout group saw the first interstitial and entered the Scout
+  // Group
+  CAN_SHOW_SCOUT_OPT_IN_SAW_FIRST_INTERSTITIAL = 5,
+  // User in Control group
+  CONTROL = 5,
+  // Rollback: SBER2 on on implies SBER1 can turn on
+  ROLLBACK_SBER2_IMPLIES_SBER1 = 6,
+  // Rollback: SBER2 off so SBER1 must be turned off
+  ROLLBACK_NO_SBER2_SET_SBER1_FALSE = 7,
+  // Rollback: SBER2 absent so SBER1 must be cleared
+  ROLLBACK_NO_SBER2_CLEAR_SBER1 = 8,
+  // New reasons must be added BEFORE MAX_REASONS
+  MAX_REASONS
+};
 }  // namespace
 
 namespace prefs {
@@ -83,8 +114,12 @@ void InitializeSafeBrowsingPrefs(PrefService* prefs) {
             kSwitchForceScoutGroup);
     if (switch_value == kForceScoutGroupValueTrue) {
       prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
+      UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
+                                FORCE_SCOUT_FLAG_TRUE, MAX_REASONS);
     } else if (switch_value == kForceScoutGroupValueFalse) {
       prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, false);
+      UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
+                                FORCE_SCOUT_FLAG_FALSE, MAX_REASONS);
     }
 
     // If the switch is used, don't process the experiment state.
@@ -95,6 +130,8 @@ void InitializeSafeBrowsingPrefs(PrefService* prefs) {
   if (base::FeatureList::IsEnabled(kOnlyShowScoutOptIn)) {
     // OnlyShowScoutOptIn immediately turns on ScoutGroupSelected pref.
     prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
+    UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
+                              ONLY_SHOW_SCOUT_OPT_IN, MAX_REASONS);
   } else if (base::FeatureList::IsEnabled(kCanShowScoutOptIn)) {
     // CanShowScoutOptIn will only turn on ScoutGroupSelected pref if the legacy
     // SBER pref is false. Otherwise the legacy SBER pref will stay on and
@@ -102,16 +139,26 @@ void InitializeSafeBrowsingPrefs(PrefService* prefs) {
     // the Scout pref will become the active one.
     if (!prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled)) {
       prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
+      UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
+                                CAN_SHOW_SCOUT_OPT_IN_SCOUT_GROUP_ON,
+                                MAX_REASONS);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
+                                CAN_SHOW_SCOUT_OPT_IN_WAIT_FOR_INTERSTITIAL,
+                                MAX_REASONS);
     }
   } else {
     // Both experiment features are off, so this is the Control group. We must
     // handle the possibility that the user was previously in an experiment
     // group (above) that was reverted. We want to restore the user to a
     // reasonable state based on the ScoutGroup and ScoutReporting preferences.
+    UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName, CONTROL, MAX_REASONS);
     if (prefs->GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled)) {
       // User opted-in to Scout which is broader than legacy Extended Reporting.
       // Opt them in to Extended Reporting.
       prefs->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, true);
+      UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
+                                ROLLBACK_SBER2_IMPLIES_SBER1, MAX_REASONS);
     } else if (prefs->GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
       // User was in the Scout Group (ie: seeing the Scout opt-in text) but did
       // NOT opt-in to Scout. Assume this was a conscious choice and remove
@@ -124,9 +171,14 @@ void InitializeSafeBrowsingPrefs(PrefService* prefs) {
         // Scout Reporting pref was explicitly set to false, so set the SBER
         // pref to false.
         prefs->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, false);
+        UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
+                                  ROLLBACK_NO_SBER2_SET_SBER1_FALSE,
+                                  MAX_REASONS);
       } else {
         // Scout Reporting pref is unset, so clear the SBER pref.
         prefs->ClearPref(prefs::kSafeBrowsingExtendedReportingEnabled);
+        UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
+                                  ROLLBACK_NO_SBER2_CLEAR_SBER1, MAX_REASONS);
       }
     }
 
@@ -182,9 +234,13 @@ void SetExtendedReportingPref(PrefService* prefs, bool value) {
 
 void UpdatePrefsBeforeSecurityInterstitial(PrefService* prefs) {
   // Move the user into the Scout Group if the CanShowScoutOptIn experiment is
-  // enabled.
-  if (base::FeatureList::IsEnabled(kCanShowScoutOptIn)) {
+  // enabled and they're not in the group already.
+  if (base::FeatureList::IsEnabled(kCanShowScoutOptIn) &&
+      !prefs->GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
     prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
+    UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
+                              CAN_SHOW_SCOUT_OPT_IN_SAW_FIRST_INTERSTITIAL,
+                              MAX_REASONS);
   }
 }
 
