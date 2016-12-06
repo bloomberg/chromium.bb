@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -16,10 +17,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
 
 namespace {
-const int kListPadding = 10;
 const int kIconSize = 16;
 }
 
@@ -72,7 +71,9 @@ views::View* ToolbarActionsBarBubbleViews::CreateExtraView() {
     views::View* parent = new views::View();
     parent->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                             views::kRelatedControlVerticalSpacing));
+                             LayoutDelegate::Get()->GetLayoutDistance(
+                                 LayoutDelegate::LayoutDistanceType::
+                                     RELATED_CONTROL_VERTICAL_SPACING)));
     parent->AddChildView(icon.release());
     parent->AddChildView(label.release());
     return parent;
@@ -106,8 +107,11 @@ bool ToolbarActionsBarBubbleViews::Close() {
 }
 
 void ToolbarActionsBarBubbleViews::Init() {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
-                                        views::kRelatedControlVerticalSpacing));
+  LayoutDelegate* delegate = LayoutDelegate::Get();
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, 0, 0,
+      delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                      RELATED_CONTROL_VERTICAL_SPACING)));
 
   // Add the content string.
   views::Label* content_label = new views::Label(
@@ -120,9 +124,13 @@ void ToolbarActionsBarBubbleViews::Init() {
   AddChildView(content_label);
 
   base::string16 item_list = delegate_->GetItemListText();
+
   if (!item_list.empty()) {
     item_list_ = new views::Label(item_list);
-    item_list_->SetBorder(views::CreateEmptyBorder(0, kListPadding, 0, 0));
+    item_list_->SetBorder(views::CreateEmptyBorder(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_HORIZONTAL_SPACING),
+        0, 0));
     item_list_->SetMultiLine(true);
     item_list_->SizeToFit(width);
     item_list_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
