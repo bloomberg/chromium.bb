@@ -82,14 +82,14 @@ struct FieldTrialEntry {
   uint32_t activated;
 
   // Size of the pickled structure, NOT the total size of this entry.
-  uint32_t size;
+  uint32_t pickle_size;
 
   // Returns an iterator over the data containing names and params.
   PickleIterator GetPickleIterator() const {
-    char* src = reinterpret_cast<char*>(const_cast<FieldTrialEntry*>(this)) +
-                sizeof(FieldTrialEntry);
+    const char* src =
+        reinterpret_cast<const char*>(this) + sizeof(FieldTrialEntry);
 
-    Pickle pickle(src, size);
+    Pickle pickle(src, pickle_size);
     return PickleIterator(pickle);
   }
 
@@ -1053,7 +1053,7 @@ bool FieldTrialList::GetParamsFromSharedMemory(
 
   size_t allocated_size =
       global_->field_trial_allocator_->GetAllocSize(field_trial->ref_);
-  size_t actual_size = sizeof(FieldTrialEntry) + entry->size;
+  size_t actual_size = sizeof(FieldTrialEntry) + entry->pickle_size;
   if (allocated_size < actual_size)
     return false;
 
@@ -1101,7 +1101,7 @@ void FieldTrialList::ClearParamsFromSharedMemoryForTesting() {
     FieldTrialEntry* new_entry =
         allocator->GetAsObject<FieldTrialEntry>(new_ref, kFieldTrialType);
     new_entry->activated = prev_entry->activated;
-    new_entry->size = pickle.size();
+    new_entry->pickle_size = pickle.size();
 
     // TODO(lawrencewu): Modify base::Pickle to be able to write over a section
     // in memory, so we can avoid this memcpy.
@@ -1265,7 +1265,7 @@ void FieldTrialList::AddToAllocatorWhileLocked(FieldTrial* field_trial) {
   FieldTrialEntry* entry =
       allocator->GetAsObject<FieldTrialEntry>(ref, kFieldTrialType);
   entry->activated = trial_state.activated;
-  entry->size = pickle.size();
+  entry->pickle_size = pickle.size();
 
   // TODO(lawrencewu): Modify base::Pickle to be able to write over a section in
   // memory, so we can avoid this memcpy.
