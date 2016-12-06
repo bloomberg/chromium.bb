@@ -25,7 +25,7 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_4x4_blk,
 #endif
                                PICK_MODE_CONTEXT *ctx) {
   const int num_blk = (num_4x4_blk < 4 ? 4 : num_4x4_blk);
-  const int num_pix = num_blk << 4;
+  const int num_pix = num_blk * tx_size_2d[0];
   int i;
   ctx->num_4x4_blk = num_blk;
 #if CONFIG_EXT_PARTITION_TYPES
@@ -228,7 +228,11 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   for (pc_tree_index = 0; pc_tree_index < leaf_nodes; ++pc_tree_index) {
     PC_TREE *const tree = &td->pc_tree[pc_tree_index];
     tree->block_size = square[0];
+#if CONFIG_CB4X4
+    alloc_tree_contexts(cm, tree, 16);
+#else
     alloc_tree_contexts(cm, tree, 4);
+#endif
     tree->leaf_split[0] = this_leaf++;
     for (j = 1; j < 4; j++) tree->leaf_split[j] = tree->leaf_split[0];
   }
@@ -238,7 +242,11 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   for (nodes = leaf_nodes >> 2; nodes > 0; nodes >>= 2) {
     for (i = 0; i < nodes; ++i) {
       PC_TREE *const tree = &td->pc_tree[pc_tree_index];
+#if CONFIG_CB4X4
+      alloc_tree_contexts(cm, tree, 16 << (2 * square_index));
+#else
       alloc_tree_contexts(cm, tree, 4 << (2 * square_index));
+#endif
       tree->block_size = square[square_index];
       for (j = 0; j < 4; j++) tree->split[j] = this_pc++;
       ++pc_tree_index;
