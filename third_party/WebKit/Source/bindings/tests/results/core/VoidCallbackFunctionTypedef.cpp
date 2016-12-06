@@ -36,7 +36,7 @@ bool VoidCallbackFunctionTypedef::call(ScriptWrappable* scriptWrappable, const S
 
   ExecutionContext* context = m_scriptState->getExecutionContext();
   DCHECK(context);
-  if (context->activeDOMObjectsAreSuspended() || context->activeDOMObjectsAreStopped())
+  if (context->activeDOMObjectsAreSuspended() || context->isContextDestroyed())
     return false;
 
   if (m_callback.isEmpty())

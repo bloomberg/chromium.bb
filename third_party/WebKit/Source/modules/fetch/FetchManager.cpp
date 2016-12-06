@@ -870,7 +870,7 @@ void FetchManager::Loader::failed(const String& message) {
   if (m_failed || m_finished)
     return;
   m_failed = true;
-  if (m_executionContext->activeDOMObjectsAreStopped())
+  if (m_executionContext->isContextDestroyed())
     return;
   if (!message.isEmpty())
     m_executionContext->addConsoleMessage(

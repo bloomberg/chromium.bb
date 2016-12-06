@@ -278,7 +278,7 @@ void Permissions::taskComplete(ScriptPromiseResolver* resolver,
                                mojom::blink::PermissionDescriptorPtr descriptor,
                                mojom::blink::PermissionStatus result) {
   if (!resolver->getExecutionContext() ||
-      resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      resolver->getExecutionContext()->isContextDestroyed())
     return;
   resolver->resolve(
       PermissionStatus::take(resolver, result, std::move(descriptor)));
@@ -290,7 +290,7 @@ void Permissions::batchTaskComplete(
     Vector<int> callerIndexToInternalIndex,
     const Vector<mojom::blink::PermissionStatus>& results) {
   if (!resolver->getExecutionContext() ||
-      resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      resolver->getExecutionContext()->isContextDestroyed())
     return;
 
   // Create the response vector by finding the status for each index by

@@ -31,7 +31,7 @@ void PresentationConnectionCallbacks::onSuccess(
       wrapUnique(PresentationConnectionClient.release()));
 
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->resolve(PresentationConnection::take(
       m_resolver.get(), std::move(result), m_request));
@@ -40,7 +40,7 @@ void PresentationConnectionCallbacks::onSuccess(
 void PresentationConnectionCallbacks::onError(
     const WebPresentationError& error) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->reject(PresentationError::take(m_resolver.get(), error));
 }

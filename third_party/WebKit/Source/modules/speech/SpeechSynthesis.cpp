@@ -52,8 +52,7 @@ ExecutionContext* SpeechSynthesis::getExecutionContext() const {
 
 void SpeechSynthesis::voicesDidChange() {
   m_voiceList.clear();
-  if (getExecutionContext() &&
-      !getExecutionContext()->activeDOMObjectsAreStopped())
+  if (getExecutionContext() && !getExecutionContext()->isContextDestroyed())
     dispatchEvent(Event::create(EventTypeNames::voiceschanged));
 }
 
@@ -131,8 +130,7 @@ void SpeechSynthesis::fireEvent(const AtomicString& type,
                                 SpeechSynthesisUtterance* utterance,
                                 unsigned long charIndex,
                                 const String& name) {
-  if (getExecutionContext() &&
-      !getExecutionContext()->activeDOMObjectsAreStopped()) {
+  if (getExecutionContext() && !getExecutionContext()->isContextDestroyed()) {
     double elapsedTimeMillis =
         (monotonicallyIncreasingTime() - utterance->startTime()) * 1000.0;
     utterance->dispatchEvent(SpeechSynthesisEvent::create(

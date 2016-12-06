@@ -393,8 +393,7 @@ Response* Response::clone(ScriptState* scriptState,
 }
 
 bool Response::hasPendingActivity() const {
-  if (!getExecutionContext() ||
-      getExecutionContext()->activeDOMObjectsAreStopped())
+  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
     return false;
   if (!internalBodyBuffer())
     return false;

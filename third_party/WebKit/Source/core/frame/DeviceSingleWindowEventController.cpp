@@ -26,7 +26,7 @@ void DeviceSingleWindowEventController::didUpdateData() {
 
 void DeviceSingleWindowEventController::dispatchDeviceEvent(Event* event) {
   if (!document().domWindow() || document().activeDOMObjectsAreSuspended() ||
-      document().activeDOMObjectsAreStopped())
+      document().isContextDestroyed())
     return;
 
   document().domWindow()->dispatchEvent(event);

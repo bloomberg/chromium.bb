@@ -222,11 +222,11 @@ void MediaKeySystemAccessInitializer::requestNotSupported(
 }
 
 bool MediaKeySystemAccessInitializer::isExecutionContextValid() const {
-  // activeDOMObjectsAreStopped() is called to see if the context is in the
+  // isContextDestroyed() is called to see if the context is in the
   // process of being destroyed. If it is true, assume the context is no
   // longer valid as it is about to be destroyed anyway.
   ExecutionContext* context = m_resolver->getExecutionContext();
-  return context && !context->activeDOMObjectsAreStopped();
+  return context && !context->isContextDestroyed();
 }
 
 void MediaKeySystemAccessInitializer::checkVideoCapabilityRobustness() const {

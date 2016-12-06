@@ -62,7 +62,7 @@ class GetCharacteristicsCallback
   void onSuccess(const WebVector<WebBluetoothRemoteGATTCharacteristicInit*>&
                      webCharacteristics) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
 
     // If the resolver is not in the set of ActiveAlgorithms then the frame
@@ -100,7 +100,7 @@ class GetCharacteristicsCallback
           error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
       override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
 
     // If the resolver is not in the set of ActiveAlgorithms then the frame

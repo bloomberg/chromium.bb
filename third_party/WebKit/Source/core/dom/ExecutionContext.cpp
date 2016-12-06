@@ -49,7 +49,7 @@ ExecutionContext::ExecutionContext()
     : m_circularSequentialID(0),
       m_inDispatchErrorEvent(false),
       m_activeDOMObjectsAreSuspended(false),
-      m_activeDOMObjectsAreStopped(false),
+      m_isContextDestroyed(false),
       m_windowInteractionTokens(0),
       m_referrerPolicy(ReferrerPolicyDefault) {}
 
@@ -68,7 +68,7 @@ void ExecutionContext::resumeActiveDOMObjects() {
 }
 
 void ExecutionContext::notifyContextDestroyed() {
-  m_activeDOMObjectsAreStopped = true;
+  m_isContextDestroyed = true;
   ContextLifecycleNotifier::notifyContextDestroyed();
 }
 

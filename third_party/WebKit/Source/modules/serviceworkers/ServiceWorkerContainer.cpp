@@ -72,7 +72,7 @@ class RegistrationCallback
   void onSuccess(
       std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->resolve(ServiceWorkerRegistration::getOrCreate(
         m_resolver->getExecutionContext(), wrapUnique(handle.release())));
@@ -80,7 +80,7 @@ class RegistrationCallback
 
   void onError(const WebServiceWorkerError& error) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     ScriptState::Scope scope(m_resolver->getScriptState());
     if (error.errorType == WebServiceWorkerError::ErrorTypeType) {
@@ -109,7 +109,7 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::
     std::unique_ptr<WebServiceWorkerRegistration::Handle> handle =
         wrapUnique(webPassHandle.release());
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     if (!handle) {
       // Resolve the promise with undefined.
@@ -122,7 +122,7 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::
 
   void onError(const WebServiceWorkerError& error) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
   }
@@ -150,7 +150,7 @@ class GetRegistrationsCallback : public WebServiceWorkerProvider::
     }
 
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->resolve(
         ServiceWorkerRegistrationArray::take(m_resolver.get(), &handles));
@@ -158,7 +158,7 @@ class GetRegistrationsCallback : public WebServiceWorkerProvider::
 
   void onError(const WebServiceWorkerError& error) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
   }
@@ -181,7 +181,7 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback
     ASSERT(m_ready->getState() == ReadyProperty::Pending);
 
     if (m_ready->getExecutionContext() &&
-        !m_ready->getExecutionContext()->activeDOMObjectsAreStopped())
+        !m_ready->getExecutionContext()->isContextDestroyed())
       m_ready->resolve(ServiceWorkerRegistration::getOrCreate(
           m_ready->getExecutionContext(), wrapUnique(handle.release())));
   }

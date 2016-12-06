@@ -54,7 +54,7 @@ class CacheStorage::Callbacks final
 
   void onSuccess() override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->resolve(true);
     m_resolver.clear();
@@ -62,7 +62,7 @@ class CacheStorage::Callbacks final
 
   void onError(WebServiceWorkerCacheError reason) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     if (reason == WebServiceWorkerCacheErrorNotFound)
       m_resolver->resolve(false);
@@ -91,7 +91,7 @@ class CacheStorage::WithCacheCallbacks final
 
   void onSuccess(std::unique_ptr<WebServiceWorkerCache> webCache) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     Cache* cache = Cache::create(m_cacheStorage->m_scopedFetcher,
                                  wrapUnique(webCache.release()));
@@ -101,7 +101,7 @@ class CacheStorage::WithCacheCallbacks final
 
   void onError(WebServiceWorkerCacheError reason) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     if (reason == WebServiceWorkerCacheErrorNotFound)
       m_resolver->resolve();
@@ -127,7 +127,7 @@ class CacheStorage::MatchCallbacks
 
   void onSuccess(const WebServiceWorkerResponse& webResponse) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     ScriptState::Scope scope(m_resolver->getScriptState());
     m_resolver->resolve(
@@ -137,7 +137,7 @@ class CacheStorage::MatchCallbacks
 
   void onError(WebServiceWorkerCacheError reason) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     if (reason == WebServiceWorkerCacheErrorNotFound ||
         reason == WebServiceWorkerCacheErrorCacheNameNotFound)
@@ -167,7 +167,7 @@ class CacheStorage::DeleteCallbacks final
 
   void onSuccess() override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->resolve(true);
     m_resolver.clear();
@@ -175,7 +175,7 @@ class CacheStorage::DeleteCallbacks final
 
   void onError(WebServiceWorkerCacheError reason) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     if (reason == WebServiceWorkerCacheErrorNotFound)
       m_resolver->resolve(false);
@@ -202,7 +202,7 @@ class CacheStorage::KeysCallbacks final
 
   void onSuccess(const WebVector<WebString>& keys) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     Vector<String> wtfKeys;
     for (size_t i = 0; i < keys.size(); ++i)
@@ -213,7 +213,7 @@ class CacheStorage::KeysCallbacks final
 
   void onError(WebServiceWorkerCacheError reason) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->reject(CacheStorageError::createException(reason));
     m_resolver.clear();

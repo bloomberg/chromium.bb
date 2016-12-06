@@ -139,7 +139,7 @@ class CallbackPromiseAdapterInternal {
     void onSuccess(typename S::WebType result) override {
       ScriptPromiseResolver* resolver = this->resolver();
       if (!resolver->getExecutionContext() ||
-          resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+          resolver->getExecutionContext()->isContextDestroyed())
         return;
       resolver->resolve(S::take(resolver, std::move(result)));
     }
@@ -153,7 +153,7 @@ class CallbackPromiseAdapterInternal {
     void onSuccess() override {
       ScriptPromiseResolver* resolver = this->resolver();
       if (!resolver->getExecutionContext() ||
-          resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+          resolver->getExecutionContext()->isContextDestroyed())
         return;
       resolver->resolve();
     }
@@ -166,7 +166,7 @@ class CallbackPromiseAdapterInternal {
     void onError(typename T::WebType e) override {
       ScriptPromiseResolver* resolver = this->resolver();
       if (!resolver->getExecutionContext() ||
-          resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+          resolver->getExecutionContext()->isContextDestroyed())
         return;
       ScriptState::Scope scope(resolver->getScriptState());
       resolver->reject(T::take(resolver, std::move(e)));
@@ -182,7 +182,7 @@ class CallbackPromiseAdapterInternal {
     void onError() override {
       ScriptPromiseResolver* resolver = this->resolver();
       if (!resolver->getExecutionContext() ||
-          resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+          resolver->getExecutionContext()->isContextDestroyed())
         return;
       resolver->reject();
     }

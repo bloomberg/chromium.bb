@@ -72,7 +72,7 @@ class GetCallback : public WebServiceWorkerClientCallbacks {
     std::unique_ptr<WebServiceWorkerClientInfo> client =
         wrapUnique(webClient.release());
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     if (!client) {
       // Resolve the promise with undefined.
@@ -85,7 +85,7 @@ class GetCallback : public WebServiceWorkerClientCallbacks {
 
   void onError(const WebServiceWorkerError& error) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
   }

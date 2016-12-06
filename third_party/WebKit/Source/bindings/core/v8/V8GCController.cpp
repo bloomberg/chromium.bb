@@ -184,7 +184,7 @@ class MajorGCWrapperVisitor : public v8::PersistentHandleVisitor {
       // TODO(haraken): Implement correct lifetime using traceWrapper.
       ExecutionContext* context =
           toExecutionContext(wrapper->CreationContext());
-      if (context && !context->activeDOMObjectsAreStopped()) {
+      if (context && !context->isContextDestroyed()) {
         m_isolate->SetObjectGroupId(*value, liveRootId());
         ++m_domObjectsWithPendingActivity;
       }
@@ -517,7 +517,7 @@ class PendingActivityVisitor : public v8::PersistentHandleVisitor {
       ExecutionContext* context =
           toExecutionContext(wrapper->CreationContext());
       if (context == m_executionContext && context &&
-          !context->activeDOMObjectsAreStopped())
+          !context->isContextDestroyed())
         m_pendingActivityFound = true;
     }
   }

@@ -130,7 +130,7 @@ void NavigatorGamepad::didUpdateData() {
   if (!m_hasEventListener)
     return;
 
-  if (document->activeDOMObjectsAreStopped() ||
+  if (document->isContextDestroyed() ||
       document->activeDOMObjectsAreSuspended())
     return;
 

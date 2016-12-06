@@ -61,7 +61,7 @@ class ScriptPromiseResolverTest : public ::testing::Test {
 };
 
 TEST_F(ScriptPromiseResolverTest, construct) {
-  ASSERT_FALSE(getExecutionContext()->activeDOMObjectsAreStopped());
+  ASSERT_FALSE(getExecutionContext()->isContextDestroyed());
   ScriptState::Scope scope(getScriptState());
   ScriptPromiseResolver::create(getScriptState());
 }

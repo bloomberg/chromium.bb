@@ -31,8 +31,7 @@ ScriptPromise BatteryManager::startRequest(ScriptState* scriptState) {
                                             this, BatteryProperty::Ready);
 
     // If the context is in a stopped state already, do not start updating.
-    if (!getExecutionContext() ||
-        getExecutionContext()->activeDOMObjectsAreStopped()) {
+    if (!getExecutionContext() || getExecutionContext()->isContextDestroyed()) {
       m_batteryProperty->resolve(this);
     } else {
       m_hasEventListener = true;
@@ -73,7 +72,7 @@ void BatteryManager::didUpdateData() {
   Document* document = toDocument(getExecutionContext());
   DCHECK(document);
   if (document->activeDOMObjectsAreSuspended() ||
-      document->activeDOMObjectsAreStopped())
+      document->isContextDestroyed())
     return;
 
   if (m_batteryStatus.charging() != oldStatus.charging())

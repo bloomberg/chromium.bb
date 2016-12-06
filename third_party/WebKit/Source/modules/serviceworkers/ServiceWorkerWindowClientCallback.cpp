@@ -15,7 +15,7 @@ namespace blink {
 void NavigateClientCallback::onSuccess(
     std::unique_ptr<WebServiceWorkerClientInfo> clientInfo) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->resolve(ServiceWorkerWindowClient::take(
       m_resolver.get(), wrapUnique(clientInfo.release())));
@@ -23,7 +23,7 @@ void NavigateClientCallback::onSuccess(
 
 void NavigateClientCallback::onError(const WebServiceWorkerError& error) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
 
   if (error.errorType == WebServiceWorkerError::ErrorTypeNavigation) {

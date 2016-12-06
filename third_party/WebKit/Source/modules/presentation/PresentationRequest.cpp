@@ -101,8 +101,7 @@ void PresentationRequest::addedEventListener(
 }
 
 bool PresentationRequest::hasPendingActivity() const {
-  if (!getExecutionContext() ||
-      getExecutionContext()->activeDOMObjectsAreStopped())
+  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
     return false;
 
   // Prevents garbage collecting of this object when not hold by another

@@ -107,11 +107,10 @@ ExecutionContext* ContentDecryptionModuleResultPromise::getExecutionContext()
 
 bool ContentDecryptionModuleResultPromise::isValidToFulfillPromise() {
   // getExecutionContext() is no longer valid once the context is destroyed.
-  // activeDOMObjectsAreStopped() is called to see if the context is in the
+  // isContextDestroyed() is called to see if the context is in the
   // process of being destroyed. If it is, there is no need to fulfill this
   // promise which is about to go away anyway.
-  return getExecutionContext() &&
-         !getExecutionContext()->activeDOMObjectsAreStopped();
+  return getExecutionContext() && !getExecutionContext()->isContextDestroyed();
 }
 
 DEFINE_TRACE(ContentDecryptionModuleResultPromise) {

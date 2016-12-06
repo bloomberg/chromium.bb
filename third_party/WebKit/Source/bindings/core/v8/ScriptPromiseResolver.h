@@ -54,7 +54,7 @@ class CORE_EXPORT ScriptPromiseResolver
     //    ExecutionContext is stopped.
     ASSERT(m_state == Detached || !m_isPromiseCalled ||
            !getScriptState()->contextIsValid() || !getExecutionContext() ||
-           getExecutionContext()->activeDOMObjectsAreStopped());
+           getExecutionContext()->isContextDestroyed());
   }
 #endif
 
@@ -120,8 +120,7 @@ class CORE_EXPORT ScriptPromiseResolver
   template <typename T>
   void resolveOrReject(T value, ResolutionState newState) {
     if (m_state != Pending || !getScriptState()->contextIsValid() ||
-        !getExecutionContext() ||
-        getExecutionContext()->activeDOMObjectsAreStopped())
+        !getExecutionContext() || getExecutionContext()->isContextDestroyed())
       return;
     ASSERT(newState == Resolving || newState == Rejecting);
     m_state = newState;

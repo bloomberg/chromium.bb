@@ -214,7 +214,7 @@ ScriptPromise BodyStreamBuffer::cancel(ScriptState* scriptState,
 
 void BodyStreamBuffer::onStateChange() {
   if (!m_consumer || !getExecutionContext() ||
-      getExecutionContext()->activeDOMObjectsAreStopped())
+      getExecutionContext()->isContextDestroyed())
     return;
 
   switch (m_consumer->getPublicState()) {

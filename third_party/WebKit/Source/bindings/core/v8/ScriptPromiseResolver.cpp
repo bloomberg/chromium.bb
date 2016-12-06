@@ -19,7 +19,7 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
       m_isPromiseCalled(false)
 #endif
 {
-  if (getExecutionContext()->activeDOMObjectsAreStopped()) {
+  if (getExecutionContext()->isContextDestroyed()) {
     m_state = Detached;
     m_resolver.clear();
   }
@@ -71,8 +71,8 @@ void ScriptPromiseResolver::onTimerFired(TimerBase*) {
 }
 
 void ScriptPromiseResolver::resolveOrRejectImmediately() {
-  ASSERT(!getExecutionContext()->activeDOMObjectsAreStopped());
-  ASSERT(!getExecutionContext()->activeDOMObjectsAreSuspended());
+  DCHECK(!getExecutionContext()->isContextDestroyed());
+  DCHECK(!getExecutionContext()->activeDOMObjectsAreSuspended());
   {
     InspectorInstrumentation::AsyncTask asyncTask(getExecutionContext(), this);
     if (m_state == Resolving) {

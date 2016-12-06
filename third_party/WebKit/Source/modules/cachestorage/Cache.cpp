@@ -39,7 +39,7 @@ class CacheMatchCallbacks : public WebServiceWorkerCache::CacheMatchCallbacks {
 
   void onSuccess(const WebServiceWorkerResponse& webResponse) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     ScriptState::Scope scope(m_resolver->getScriptState());
     m_resolver->resolve(
@@ -49,7 +49,7 @@ class CacheMatchCallbacks : public WebServiceWorkerCache::CacheMatchCallbacks {
 
   void onError(WebServiceWorkerCacheError reason) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     if (reason == WebServiceWorkerCacheErrorNotFound)
       m_resolver->resolve();
@@ -74,7 +74,7 @@ class CacheWithResponsesCallbacks
   void onSuccess(
       const WebVector<WebServiceWorkerResponse>& webResponses) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     ScriptState::Scope scope(m_resolver->getScriptState());
     HeapVector<Member<Response>> responses;
@@ -87,7 +87,7 @@ class CacheWithResponsesCallbacks
 
   void onError(WebServiceWorkerCacheError reason) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->reject(CacheStorageError::createException(reason));
     m_resolver.clear();
@@ -107,7 +107,7 @@ class CacheDeleteCallback : public WebServiceWorkerCache::CacheBatchCallbacks {
 
   void onSuccess() override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->resolve(true);
     m_resolver.clear();
@@ -115,7 +115,7 @@ class CacheDeleteCallback : public WebServiceWorkerCache::CacheBatchCallbacks {
 
   void onError(WebServiceWorkerCacheError reason) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     if (reason == WebServiceWorkerCacheErrorNotFound)
       m_resolver->resolve(false);
@@ -140,7 +140,7 @@ class CacheWithRequestsCallbacks
   void onSuccess(
       const WebVector<WebServiceWorkerRequest>& webRequests) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     ScriptState::Scope scope(m_resolver->getScriptState());
     HeapVector<Member<Request>> requests;
@@ -153,7 +153,7 @@ class CacheWithRequestsCallbacks
 
   void onError(WebServiceWorkerCacheError reason) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->reject(CacheStorageError::createException(reason));
     m_resolver.clear();
@@ -300,7 +300,7 @@ class Cache::BarrierCallbackForPut final
     if (m_completed)
       return;
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_batchOperations[index] = batchOperation;
     if (--m_numberOfRemainingOperations != 0)
@@ -316,7 +316,7 @@ class Cache::BarrierCallbackForPut final
       return;
     m_completed = true;
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     ScriptState* state = m_resolver->getScriptState();
     ScriptState::Scope scope(state);

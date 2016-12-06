@@ -81,7 +81,7 @@ void SetSinkIdResolver::timerFired(TimerBase* timer) {
     } else {
       // The context has been detached. Impossible to get a security origin to
       // check.
-      ASSERT(context->activeDOMObjectsAreStopped());
+      DCHECK(context->isContextDestroyed());
       reject(DOMException::create(
           SecurityError,
           "Impossible to authorize device for detached context"));

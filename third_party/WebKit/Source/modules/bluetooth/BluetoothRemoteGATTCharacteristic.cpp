@@ -133,7 +133,7 @@ class ReadValueCallback : public WebBluetoothReadValueCallbacks {
 
   void onSuccess(const WebVector<uint8_t>& value) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
 
     if (!m_characteristic->gatt()->RemoveFromActiveAlgorithms(
@@ -155,7 +155,7 @@ class ReadValueCallback : public WebBluetoothReadValueCallbacks {
           error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
       override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
 
     if (!m_characteristic->gatt()->RemoveFromActiveAlgorithms(
@@ -212,7 +212,7 @@ class WriteValueCallback : public WebBluetoothWriteValueCallbacks {
 
   void onSuccess(const WebVector<uint8_t>& value) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
 
     if (!m_characteristic->gatt()->RemoveFromActiveAlgorithms(
@@ -233,7 +233,7 @@ class WriteValueCallback : public WebBluetoothWriteValueCallbacks {
           error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
       override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
 
     if (!m_characteristic->gatt()->RemoveFromActiveAlgorithms(
@@ -305,7 +305,7 @@ class NotificationsCallback : public WebBluetoothNotificationsCallbacks {
 
   void onSuccess() override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
 
     if (!m_characteristic->gatt()->RemoveFromActiveAlgorithms(
@@ -323,7 +323,7 @@ class NotificationsCallback : public WebBluetoothNotificationsCallbacks {
           error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
       override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
 
     if (!m_characteristic->gatt()->RemoveFromActiveAlgorithms(

@@ -200,7 +200,7 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(
 
   Document* document = navigator.frame()->document();
   ASSERT(document);
-  if (document->activeDOMObjectsAreStopped())
+  if (document->isContextDestroyed())
     return declined;
 
   if (!verifyCustomHandlerURL(*document, url, exceptionState))

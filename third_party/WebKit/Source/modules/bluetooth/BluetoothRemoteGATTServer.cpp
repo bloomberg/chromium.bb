@@ -62,7 +62,7 @@ class ConnectCallback : public WebBluetoothRemoteGATTServerConnectCallbacks {
 
   void onSuccess() override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_device->gatt()->setConnected(true);
     m_resolver->resolve(m_device->gatt());
@@ -73,7 +73,7 @@ class ConnectCallback : public WebBluetoothRemoteGATTServerConnectCallbacks {
           error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
       override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->reject(BluetoothError::take(m_resolver, error));
   }
@@ -125,7 +125,7 @@ class GetPrimaryServicesCallback
   void onSuccess(
       const WebVector<WebBluetoothRemoteGATTService*>& webServices) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
 
     // If the resolver is not in the set of ActiveAlgorithms then the frame
@@ -157,7 +157,7 @@ class GetPrimaryServicesCallback
           error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
       override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
 
     if (!m_device->gatt()->RemoveFromActiveAlgorithms(m_resolver.get())) {

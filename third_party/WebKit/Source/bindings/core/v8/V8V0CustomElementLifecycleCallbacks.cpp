@@ -151,8 +151,7 @@ void V8V0CustomElementLifecycleCallbacks::created(Element* element) {
   // FIXME: callbacks while paused should be queued up for execution to
   // continue then be delivered in order rather than delivered immediately.
   // Bug 329665 tracks similar behavior for other synchronous events.
-  if (!getExecutionContext() ||
-      getExecutionContext()->activeDOMObjectsAreStopped())
+  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
     return;
 
   if (!m_scriptState->contextIsValid())
@@ -202,8 +201,7 @@ void V8V0CustomElementLifecycleCallbacks::attributeChanged(
   // FIXME: callbacks while paused should be queued up for execution to
   // continue then be delivered in order rather than delivered immediately.
   // Bug 329665 tracks similar behavior for other synchronous events.
-  if (!getExecutionContext() ||
-      getExecutionContext()->activeDOMObjectsAreStopped())
+  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
     return;
 
   if (!m_scriptState->contextIsValid())
@@ -238,8 +236,7 @@ void V8V0CustomElementLifecycleCallbacks::call(
   // FIXME: callbacks while paused should be queued up for execution to
   // continue then be delivered in order rather than delivered immediately.
   // Bug 329665 tracks similar behavior for other synchronous events.
-  if (!getExecutionContext() ||
-      getExecutionContext()->activeDOMObjectsAreStopped())
+  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
     return;
 
   if (!m_scriptState->contextIsValid())

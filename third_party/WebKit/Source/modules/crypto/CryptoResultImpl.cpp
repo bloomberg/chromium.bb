@@ -53,7 +53,7 @@ static void rejectWithTypeError(const String& errorDetails,
                                 ScriptPromiseResolver* resolver) {
   // Duplicate some of the checks done by ScriptPromiseResolver.
   if (!resolver->getExecutionContext() ||
-      resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      resolver->getExecutionContext()->isContextDestroyed())
     return;
 
   ScriptState::Scope scope(resolver->getScriptState());
@@ -123,7 +123,7 @@ CryptoResultImpl::CryptoResultImpl(ScriptState* scriptState)
     : m_resolver(Resolver::create(scriptState, this)),
       m_cancel(ResultCancel::create()) {
   // Sync cancellation state.
-  if (scriptState->getExecutionContext()->activeDOMObjectsAreStopped())
+  if (scriptState->getExecutionContext()->isContextDestroyed())
     m_cancel->cancel();
 }
 

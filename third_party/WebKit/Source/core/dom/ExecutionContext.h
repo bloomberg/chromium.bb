@@ -144,9 +144,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool activeDOMObjectsAreSuspended() const {
     return m_activeDOMObjectsAreSuspended;
   }
-  bool activeDOMObjectsAreStopped() const {
-    return m_activeDOMObjectsAreStopped;
-  }
+  bool isContextDestroyed() const { return m_isContextDestroyed; }
 
   // Called after the construction of an ActiveDOMObject to synchronize suspend
   // state.
@@ -202,7 +200,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   HeapVector<Member<ErrorEvent>> m_pendingExceptions;
 
   bool m_activeDOMObjectsAreSuspended;
-  bool m_activeDOMObjectsAreStopped;
+  bool m_isContextDestroyed;
 
   Member<PublicURLManager> m_publicURLManager;
 

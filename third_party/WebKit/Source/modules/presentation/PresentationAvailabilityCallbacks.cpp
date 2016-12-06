@@ -23,7 +23,7 @@ PresentationAvailabilityCallbacks::~PresentationAvailabilityCallbacks() {}
 
 void PresentationAvailabilityCallbacks::onSuccess(bool value) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->resolve(
       PresentationAvailability::take(m_resolver.get(), m_url, value));
@@ -32,7 +32,7 @@ void PresentationAvailabilityCallbacks::onSuccess(bool value) {
 void PresentationAvailabilityCallbacks::onError(
     const WebPresentationError& error) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->reject(PresentationError::take(m_resolver.get(), error));
 }

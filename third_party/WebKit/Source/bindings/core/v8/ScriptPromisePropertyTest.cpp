@@ -375,9 +375,8 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_DeadContext) {
   }
 
   destroyContext();
-  EXPECT_TRUE(
-      !getProperty()->getExecutionContext() ||
-      getProperty()->getExecutionContext()->activeDOMObjectsAreStopped());
+  EXPECT_TRUE(!getProperty()->getExecutionContext() ||
+              getProperty()->getExecutionContext()->isContextDestroyed());
 
   getProperty()->resolve(new GarbageCollectedScriptWrappable("value"));
   EXPECT_EQ(Property::Pending, getProperty()->getState());

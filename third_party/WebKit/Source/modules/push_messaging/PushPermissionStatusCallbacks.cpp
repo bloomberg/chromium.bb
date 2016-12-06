@@ -23,7 +23,7 @@ void PushPermissionStatusCallbacks::onSuccess(WebPushPermissionStatus status) {
 
 void PushPermissionStatusCallbacks::onError(const WebPushError& error) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->reject(PushError::take(m_resolver.get(), error));
 }

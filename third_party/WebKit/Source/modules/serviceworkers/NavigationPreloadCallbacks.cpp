@@ -22,7 +22,7 @@ EnableNavigationPreloadCallbacks::~EnableNavigationPreloadCallbacks() {}
 
 void EnableNavigationPreloadCallbacks::onSuccess() {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->resolve();
 }
@@ -30,7 +30,7 @@ void EnableNavigationPreloadCallbacks::onSuccess() {
 void EnableNavigationPreloadCallbacks::onError(
     const WebServiceWorkerError& error) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
 }
@@ -46,7 +46,7 @@ GetNavigationPreloadStateCallbacks::~GetNavigationPreloadStateCallbacks() {}
 void GetNavigationPreloadStateCallbacks::onSuccess(
     const WebNavigationPreloadState& state) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   NavigationPreloadState dict;
   dict.setEnabled(state.enabled);
@@ -57,7 +57,7 @@ void GetNavigationPreloadStateCallbacks::onSuccess(
 void GetNavigationPreloadStateCallbacks::onError(
     const WebServiceWorkerError& error) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
 }
@@ -72,7 +72,7 @@ SetNavigationPreloadHeaderCallbacks::~SetNavigationPreloadHeaderCallbacks() {}
 
 void SetNavigationPreloadHeaderCallbacks::onSuccess() {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->resolve();
 }
@@ -80,7 +80,7 @@ void SetNavigationPreloadHeaderCallbacks::onSuccess() {
 void SetNavigationPreloadHeaderCallbacks::onError(
     const WebServiceWorkerError& error) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
 }

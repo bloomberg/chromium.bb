@@ -161,7 +161,7 @@ void StorageManager::permissionServiceConnectionError() {
 void StorageManager::permissionRequestComplete(ScriptPromiseResolver* resolver,
                                                PermissionStatus status) {
   if (!resolver->getExecutionContext() ||
-      resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      resolver->getExecutionContext()->isContextDestroyed())
     return;
   resolver->resolve(status == PermissionStatus::GRANTED);
 }

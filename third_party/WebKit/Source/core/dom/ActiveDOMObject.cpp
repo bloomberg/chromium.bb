@@ -66,7 +66,7 @@ void ActiveDOMObject::resume() {}
 void ActiveDOMObject::didMoveToNewExecutionContext(ExecutionContext* context) {
   setContext(context);
 
-  if (context->activeDOMObjectsAreStopped()) {
+  if (context->isContextDestroyed()) {
     contextDestroyed();
     return;
   }

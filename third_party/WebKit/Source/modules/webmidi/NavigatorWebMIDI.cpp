@@ -73,7 +73,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState,
 
 ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState,
                                                   const MIDIOptions& options) {
-  if (!frame() || frame()->document()->activeDOMObjectsAreStopped()) {
+  if (!frame() || frame()->document()->isContextDestroyed()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(AbortError, "The frame is not working."));

@@ -43,7 +43,7 @@ SetSinkIdCallbacks::~SetSinkIdCallbacks() {}
 
 void SetSinkIdCallbacks::onSuccess() {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
 
   HTMLMediaElementAudioOutputDevice& aodElement =
@@ -54,7 +54,7 @@ void SetSinkIdCallbacks::onSuccess() {
 
 void SetSinkIdCallbacks::onError(WebSetSinkIdError error) {
   if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+      m_resolver->getExecutionContext()->isContextDestroyed())
     return;
 
   m_resolver->reject(ToException(error));

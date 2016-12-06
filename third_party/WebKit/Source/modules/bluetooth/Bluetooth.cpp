@@ -153,7 +153,7 @@ class RequestDeviceCallback : public WebBluetoothRequestDeviceCallbacks {
 
   void onSuccess(std::unique_ptr<WebBluetoothDeviceInit> deviceInit) override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
 
     BluetoothDevice* device = m_bluetooth->getBluetoothDeviceRepresentingDevice(
@@ -167,7 +167,7 @@ class RequestDeviceCallback : public WebBluetoothRequestDeviceCallbacks {
           error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
       override {
     if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     m_resolver->reject(BluetoothError::take(m_resolver, error));
   }

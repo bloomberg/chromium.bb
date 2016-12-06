@@ -44,7 +44,7 @@ ActiveDOMCallback::~ActiveDOMCallback() {}
 bool ActiveDOMCallback::canInvokeCallback() const {
   ExecutionContext* context = getExecutionContext();
   return context && !context->activeDOMObjectsAreSuspended() &&
-         !context->activeDOMObjectsAreStopped();
+         !context->isContextDestroyed();
 }
 
 }  // namespace blink
