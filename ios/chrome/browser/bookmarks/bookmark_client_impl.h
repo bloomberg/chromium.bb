@@ -35,10 +35,8 @@ class BookmarkClientImpl : public bookmarks::BookmarkClient {
       favicon_base::IconType type,
       const favicon_base::FaviconImageCallback& callback,
       base::CancelableTaskTracker* tracker) override;
-  bool SupportsTypedCountForNodes() override;
-  void GetTypedCountForNodes(
-      const NodeSet& nodes,
-      NodeTypedCountPairs* node_typed_count_pairs) override;
+  bool SupportsTypedCountForUrls() override;
+  void GetTypedCountForUrls(UrlTypedCountMap* url_typed_count_map) override;
   bool IsPermanentNodeVisible(
       const bookmarks::BookmarkPermanentNode* node) override;
   void RecordAction(const base::UserMetricsAction& action) override;

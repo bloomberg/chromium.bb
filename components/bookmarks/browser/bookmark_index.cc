@@ -26,10 +26,13 @@
 
 namespace bookmarks {
 
-typedef BookmarkClient::NodeTypedCountPair NodeTypedCountPair;
-typedef BookmarkClient::NodeTypedCountPairs NodeTypedCountPairs;
+using UrlTypedCountMap = BookmarkClient::UrlTypedCountMap;
 
 namespace {
+
+using UrlNodeMap = std::unordered_map<const GURL*, const BookmarkNode*>;
+using UrlTypedCountPair = std::pair<const GURL*, int>;
+using UrlTypedCountPairs = std::vector<UrlTypedCountPair>;
 
 // Returns a normalized version of the UTF16 string |text|.  If it fails to
 // normalize the string, returns |text| itself as a best-effort.
@@ -54,20 +57,30 @@ base::string16 Normalize(const base::string16& text) {
                         unicode_normalized_text.length());
 }
 
-// Sort functor for NodeTypedCountPairs. We sort in decreasing order of typed
-// count so that the best matches will always be added to the results.
-struct NodeTypedCountPairSortFunctor {
-  bool operator()(const NodeTypedCountPair& a,
-                  const NodeTypedCountPair& b) const {
+// Sort functor for sorting bookmark URLs by typed count. We sort in decreasing
+// order of typed count so that the best matches will always be added to the
+// results.
+struct UrlTypedCountPairSortFunctor {
+  bool operator()(const UrlTypedCountPair& a,
+                  const UrlTypedCountPair& b) const {
     return a.second > b.second;
   }
 };
 
-// Extract the const Node* stored in a BookmarkClient::NodeTypedCountPair.
-struct NodeTypedCountPairExtractNodeFunctor {
-  const BookmarkNode* operator()(const NodeTypedCountPair& pair) const {
-    return pair.first;
+// Extract the GURL stored in a BookmarkClient::UrlTypedCountPair and use it to
+// look up the corresponding BookmarkNode.
+class UrlTypedCountPairNodeLookupFunctor {
+ public:
+  explicit UrlTypedCountPairNodeLookupFunctor(UrlNodeMap& url_node_map)
+      : url_node_map_(url_node_map) {
   }
+
+  const BookmarkNode* operator()(const UrlTypedCountPair& pair) const {
+    return url_node_map_[pair.first];
+  }
+
+ private:
+  UrlNodeMap& url_node_map_;
 };
 
 }  // namespace
@@ -149,16 +162,27 @@ void BookmarkIndex::GetBookmarksMatching(
 void BookmarkIndex::SortMatches(const NodeSet& matches,
                                 Nodes* sorted_nodes) const {
   sorted_nodes->reserve(matches.size());
-  if (client_->SupportsTypedCountForNodes()) {
-    NodeTypedCountPairs node_typed_counts;
-    client_->GetTypedCountForNodes(matches, &node_typed_counts);
-    std::sort(node_typed_counts.begin(),
-              node_typed_counts.end(),
-              NodeTypedCountPairSortFunctor());
-    std::transform(node_typed_counts.begin(),
-                   node_typed_counts.end(),
+  if (client_->SupportsTypedCountForUrls()) {
+    UrlNodeMap url_node_map;
+    UrlTypedCountMap url_typed_count_map;
+    for (auto node : matches) {
+      url_node_map.insert(std::make_pair(&node->url(), node));
+      url_typed_count_map.insert(std::make_pair(&node->url(), 0));
+    }
+
+    client_->GetTypedCountForUrls(&url_typed_count_map);
+
+    UrlTypedCountPairs url_typed_counts;
+    std::copy(url_typed_count_map.begin(),
+              url_typed_count_map.end(),
+              std::back_inserter(url_typed_counts));
+    std::sort(url_typed_counts.begin(),
+              url_typed_counts.end(),
+              UrlTypedCountPairSortFunctor());
+    std::transform(url_typed_counts.begin(),
+                   url_typed_counts.end(),
                    std::back_inserter(*sorted_nodes),
-                   NodeTypedCountPairExtractNodeFunctor());
+                   UrlTypedCountPairNodeLookupFunctor(url_node_map));
   } else {
     sorted_nodes->insert(sorted_nodes->end(), matches.begin(), matches.end());
   }
@@ -169,6 +193,9 @@ void BookmarkIndex::AddMatchToResults(
     query_parser::QueryParser* parser,
     const query_parser::QueryNodeVector& query_nodes,
     std::vector<BookmarkMatch>* results) {
+  if (!node) {
+    return;
+  }
   // Check that the result matches the query.  The previous search
   // was a simple per-word search, while the more complex matching
   // of QueryParser may filter it out.  For example, the query

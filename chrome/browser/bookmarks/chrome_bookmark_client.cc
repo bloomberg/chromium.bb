@@ -59,30 +59,29 @@ ChromeBookmarkClient::GetFaviconImageForPageURL(
       page_url, type, callback, tracker);
 }
 
-bool ChromeBookmarkClient::SupportsTypedCountForNodes() {
+bool ChromeBookmarkClient::SupportsTypedCountForUrls() {
   return true;
 }
 
-void ChromeBookmarkClient::GetTypedCountForNodes(
-    const NodeSet& nodes,
-    NodeTypedCountPairs* node_typed_count_pairs) {
+void ChromeBookmarkClient::GetTypedCountForUrls(
+    UrlTypedCountMap* url_typed_count_map) {
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfileIfExists(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
   history::URLDatabase* url_db =
       history_service ? history_service->InMemoryDatabase() : nullptr;
-  for (NodeSet::const_iterator i = nodes.begin(); i != nodes.end(); ++i) {
+  for (auto& url_typed_count_pair : *url_typed_count_map) {
     int typed_count = 0;
 
     // If |url_db| is the InMemoryDatabase, it might not cache all URLRows, but
     // it guarantees to contain those with |typed_count| > 0. Thus, if we cannot
     // fetch the URLRow, it is safe to assume that its |typed_count| is 0.
-    history::URLRow url;
-    if (url_db && url_db->GetRowForURL((*i)->url(), &url))
-      typed_count = url.typed_count();
+    history::URLRow url_row;
+    const GURL* url = url_typed_count_pair.first;
+    if (url_db && url && url_db->GetRowForURL(*url, &url_row))
+      typed_count = url_row.typed_count();
 
-    NodeTypedCountPair pair(*i, typed_count);
-    node_typed_count_pairs->push_back(pair);
+    url_typed_count_pair.second = typed_count;
   }
 }
 

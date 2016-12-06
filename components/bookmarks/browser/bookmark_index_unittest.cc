@@ -34,19 +34,19 @@ class BookmarkClientMock : public TestBookmarkClient {
   BookmarkClientMock(const std::map<GURL, int>& typed_count_map)
       : typed_count_map_(typed_count_map) {}
 
-  bool SupportsTypedCountForNodes() override { return true; }
+  bool SupportsTypedCountForUrls() override { return true; }
 
-  void GetTypedCountForNodes(
-      const NodeSet& nodes,
-      NodeTypedCountPairs* node_typed_count_pairs) override {
-    for (NodeSet::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
-      const BookmarkNode* node = *it;
-      std::map<GURL, int>::const_iterator found =
-          typed_count_map_.find(node->url());
+  void GetTypedCountForUrls(UrlTypedCountMap* url_typed_count_map) override {
+    for (auto& url_typed_count_pair : *url_typed_count_map) {
+      const GURL* url = url_typed_count_pair.first;
+      if (!url)
+        continue;
+
+      auto found = typed_count_map_.find(*url);
       if (found == typed_count_map_.end())
         continue;
 
-      node_typed_count_pairs->push_back(std::make_pair(node, found->second));
+      url_typed_count_pair.second = found->second;
     }
   }
 

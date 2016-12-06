@@ -5,9 +5,8 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_CLIENT_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_CLIENT_H_
 
-#include <set>
+#include <map>
 #include <utility>
-#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -32,12 +31,9 @@ class BookmarkPermanentNode;
 // e.g. Chrome.
 class BookmarkClient {
  public:
-  // Types representing a set of BookmarkNode and a mapping from BookmarkNode
-  // to the number of time the corresponding URL has been typed by the user in
-  // the Omnibox.
-  typedef std::set<const BookmarkNode*> NodeSet;
-  typedef std::pair<const BookmarkNode*, int> NodeTypedCountPair;
-  typedef std::vector<NodeTypedCountPair> NodeTypedCountPairs;
+  // Type representing a mapping from URLs to the number of times the URL has
+  // been typed by the user in the Omnibox.
+  using UrlTypedCountMap = std::unordered_map<const GURL*, int>;
 
   virtual ~BookmarkClient() {}
 
@@ -62,13 +58,13 @@ class BookmarkClient {
       base::CancelableTaskTracker* tracker);
 
   // Returns true if the embedder supports typed count for URL.
-  virtual bool SupportsTypedCountForNodes();
+  virtual bool SupportsTypedCountForUrls();
 
-  // Retrieves the number of time each BookmarkNode URL has been typed in
-  // the Omnibox by the user.
-  virtual void GetTypedCountForNodes(
-      const NodeSet& nodes,
-      NodeTypedCountPairs* node_typed_count_pairs);
+  // Retrieves the number of times each bookmark URL has been typed in
+  // the Omnibox by the user. For each key (URL) in |url_typed_count_map|,
+  // the corresponding value will be updated with the typed count of that URL.
+  // |url_typed_count_map| must not be null.
+  virtual void GetTypedCountForUrls(UrlTypedCountMap* url_typed_count_map);
 
   // Returns whether the embedder wants permanent node |node|
   // to always be visible or to only show them when not empty.
