@@ -718,6 +718,7 @@ public class CustomTabActivity extends ChromeActivity {
      * @param reparenting true iff the activity finishes due to tab reparenting.
      */
     public final void finishAndClose(boolean reparenting) {
+        if (mIsClosing) return;
         mIsClosing = true;
         if (!reparenting) {
             // Closing the activity destroys the renderer as well. Re-create a spare renderer some
