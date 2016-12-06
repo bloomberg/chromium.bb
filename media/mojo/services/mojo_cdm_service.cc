@@ -232,9 +232,8 @@ void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
                                std::move(keys_data));
 }
 
-void MojoCdmService::OnSessionExpirationUpdate(
-    const std::string& session_id,
-    const base::Time& new_expiry_time_sec) {
+void MojoCdmService::OnSessionExpirationUpdate(const std::string& session_id,
+                                               base::Time new_expiry_time_sec) {
   DVLOG(2) << __func__ << " expiry=" << new_expiry_time_sec;
   client_->OnSessionExpirationUpdate(session_id,
                                      new_expiry_time_sec.ToDoubleT());

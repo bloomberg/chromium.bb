@@ -56,7 +56,7 @@ class WebContentDecryptionModuleSessionImpl
                         const std::vector<uint8_t>& message);
   void OnSessionKeysChange(bool has_additional_usable_key,
                            CdmKeysInfo keys_info);
-  void OnSessionExpirationUpdate(const base::Time& new_expiry_time);
+  void OnSessionExpirationUpdate(base::Time new_expiry_time);
   void OnSessionClosed();
 
  private:

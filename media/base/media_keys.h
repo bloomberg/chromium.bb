@@ -189,7 +189,7 @@ typedef base::Callback<void(const std::string& session_id,
 // Called when the CDM changes the expiration time of a session.
 // See http://w3c.github.io/encrypted-media/#update-expiration
 typedef base::Callback<void(const std::string& session_id,
-                            const base::Time& new_expiry_time)>
+                            base::Time new_expiry_time)>
     SessionExpirationUpdateCB;
 
 }  // namespace media

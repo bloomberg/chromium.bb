@@ -191,9 +191,8 @@ void CdmSessionAdapter::OnSessionKeysChange(const std::string& session_id,
                                  std::move(keys_info));
 }
 
-void CdmSessionAdapter::OnSessionExpirationUpdate(
-    const std::string& session_id,
-    const base::Time& new_expiry_time) {
+void CdmSessionAdapter::OnSessionExpirationUpdate(const std::string& session_id,
+                                                  base::Time new_expiry_time) {
   WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
   DLOG_IF(WARNING, !session) << __func__ << " for unknown session "
                              << session_id;

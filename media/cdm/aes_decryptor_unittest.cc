@@ -458,8 +458,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
                     const std::vector<uint8_t>& message));
   MOCK_METHOD1(OnSessionClosed, void(const std::string& session_id));
   MOCK_METHOD2(OnSessionExpirationUpdate,
-               void(const std::string& session_id,
-                    const base::Time& new_expiry_time));
+               void(const std::string& session_id, base::Time new_expiry_time));
 
   scoped_refptr<MediaKeys> cdm_;
   Decryptor* decryptor_;

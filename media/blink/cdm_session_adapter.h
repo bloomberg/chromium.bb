@@ -123,7 +123,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info);
   void OnSessionExpirationUpdate(const std::string& session_id,
-                                 const base::Time& new_expiry_time);
+                                 base::Time new_expiry_time);
   void OnSessionClosed(const std::string& session_id);
 
   // Helper function of the callbacks.

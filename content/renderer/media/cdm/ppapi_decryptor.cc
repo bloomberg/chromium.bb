@@ -416,9 +416,8 @@ void PpapiDecryptor::OnSessionKeysChange(const std::string& session_id,
                               std::move(keys_info));
 }
 
-void PpapiDecryptor::OnSessionExpirationUpdate(
-    const std::string& session_id,
-    const base::Time& new_expiry_time) {
+void PpapiDecryptor::OnSessionExpirationUpdate(const std::string& session_id,
+                                               base::Time new_expiry_time) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   session_expiration_update_cb_.Run(session_id, new_expiry_time);
 }

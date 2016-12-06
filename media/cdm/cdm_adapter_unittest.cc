@@ -233,8 +233,7 @@ class CdmAdapterTest : public testing::Test {
     OnSessionKeysChangeCalled(session_id, has_additional_usable_key);
   }
   MOCK_METHOD2(OnSessionExpirationUpdate,
-               void(const std::string& session_id,
-                    const base::Time& new_expiry_time));
+               void(const std::string& session_id, base::Time new_expiry_time));
 
   // Helper class to load/unload External Clear Key Library.
   ExternalClearKeyTestHelper helper_;

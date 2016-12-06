@@ -488,7 +488,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionKeysChange(
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionExpirationUpdate(
-    const base::Time& new_expiry_time) {
+    base::Time new_expiry_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
   client_->expirationChanged(new_expiry_time.ToJsTime());
 }
