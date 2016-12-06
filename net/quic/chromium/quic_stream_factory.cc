@@ -25,6 +25,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_delegate.h"
+#include "net/base/trace_constants.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_verifier.h"
 #include "net/dns/host_resolver.h"
@@ -400,7 +401,7 @@ int QuicStreamFactory::Job::Run(const CompletionCallback& callback) {
 }
 
 int QuicStreamFactory::Job::DoLoop(int rv) {
-  TRACE_EVENT0("net", "QuicStreamFactory::Job::DoLoop");
+  TRACE_EVENT0(kNetTracingCategory, "QuicStreamFactory::Job::DoLoop");
   do {
     IoState state = io_state_;
     io_state_ = STATE_NONE;
@@ -1612,7 +1613,7 @@ int QuicStreamFactory::CreateSession(
 
     need_to_evaluate_consecutive_disabled_count_ = false;
   }
-  TRACE_EVENT0("net", "QuicStreamFactory::CreateSession");
+  TRACE_EVENT0(kNetTracingCategory, "QuicStreamFactory::CreateSession");
   IPEndPoint addr = *address_list.begin();
   const QuicServerId& server_id = key.server_id();
   DatagramSocket::BindType bind_type = DatagramSocket::DEFAULT_BIND;

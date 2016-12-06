@@ -86,11 +86,22 @@ if (is_linux) {
   net_configs += [ "//build/config/linux:libresolv" ]
 }
 
+source_set("constants") {
+  sources = [
+    "base/trace_constants.cc",
+    "base/trace_constants.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
 component("net") {
   sources = gypi_values.net_nacl_common_sources
   net_unfiltered_sources = []
 
   deps = [
+    ":constants",
     ":net_resources",
     "//base",
     "//net/base/registry_controlled_domains",
@@ -687,6 +698,7 @@ if (use_v8_in_net) {
     ]
 
     public_deps = [
+      ":constants",
       ":net",
     ]
     deps = [

@@ -31,6 +31,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/sdch_manager.h"
 #include "net/base/sdch_problem_codes.h"
+#include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cookies/cookie_store.h"
@@ -853,8 +854,7 @@ void URLRequestHttpJob::ProcessExpectCTHeader() {
 }
 
 void URLRequestHttpJob::OnStartCompleted(int result) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("net"),
-               "URLRequestHttpJob::OnStartCompleted");
+  TRACE_EVENT0(kNetTracingCategory, "URLRequestHttpJob::OnStartCompleted");
   RecordTimer();
 
   // If the job is done (due to cancellation), can just ignore this
@@ -936,8 +936,7 @@ void URLRequestHttpJob::OnHeadersReceivedCallback(int result) {
 }
 
 void URLRequestHttpJob::OnReadCompleted(int result) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("net"),
-               "URLRequestHttpJob::OnReadCompleted");
+  TRACE_EVENT0(kNetTracingCategory, "URLRequestHttpJob::OnReadCompleted");
   read_in_progress_ = false;
 
   DCHECK_NE(ERR_IO_PENDING, result);

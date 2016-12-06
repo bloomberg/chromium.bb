@@ -14,6 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
+#include "net/base/trace_constants.h"
 #include "third_party/zlib/zlib.h"
 
 namespace net {
@@ -294,7 +295,7 @@ static bool ReadDeltaCRL(base::StringPiece* data,
 // static
 bool CRLSetStorage::Parse(base::StringPiece data,
                           scoped_refptr<CRLSet>* out_crl_set) {
-  TRACE_EVENT0("net", "CRLSetStorage::Parse");
+  TRACE_EVENT0(kNetTracingCategory, "CRLSetStorage::Parse");
   // Other parts of Chrome assume that we're little endian, so we don't lose
   // anything by doing this.
 #if defined(__BYTE_ORDER)
