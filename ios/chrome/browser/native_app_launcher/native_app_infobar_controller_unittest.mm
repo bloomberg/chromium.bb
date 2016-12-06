@@ -12,6 +12,10 @@
 #import "ios/chrome/browser/native_app_launcher/native_app_navigation_controller_protocol.h"
 #include "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface NativeAppInfoBarController (Testing)
 - (void)infoBarButtonDidPress:(UIButton*)button;
 - (void)setInfoBarDelegate:(NativeAppInfoBarDelegate*)delegate;

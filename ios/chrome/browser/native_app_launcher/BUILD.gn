@@ -26,6 +26,7 @@ source_set("native_app_launcher") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "native_app_infobar_controller_unittest.mm",
