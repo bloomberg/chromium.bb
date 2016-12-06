@@ -1793,6 +1793,11 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Open with…
       </message>
 
+      <!-- Browsing History UI -->
+      <message name="IDS_HISTORY_MANAGER_EMPTY" desc="Indicates that there are no browsing history items.">
+        No history here
+      </message>
+
       <!-- Document mode messages -->
       <message name="IDS_CLOSE_ALL_INCOGNITO_NOTIFICATION" desc="Message on the notification that closes all incognito tabs in document mode">
         Close all incognito tabs

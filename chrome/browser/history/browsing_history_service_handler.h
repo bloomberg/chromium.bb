@@ -32,6 +32,7 @@ class BrowsingHistoryServiceHandler {
 
  protected:
   BrowsingHistoryServiceHandler() {}
+  virtual ~BrowsingHistoryServiceHandler() {}
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryServiceHandler);
 };

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<!-- TODO(twellington): Polish this after spec is available. -->
+<org.chromium.chrome.browser.history.HistoryItemView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" >
+
+    <RelativeLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp" >
+
+        <ImageView
+            android:id="@+id/icon_view"
+            android:layout_width="@dimen/default_favicon_size"
+            android:layout_height="@dimen/default_favicon_size"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="@null"
+            android:scaleType="center"
+            android:src="@drawable/default_favicon" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/icon_view"
+            android:layout_toStartOf="@+id/remove"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textColor="@color/default_text_color"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/domain"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@+id/icon_view"
+            android:layout_toStartOf="@+id/remove"
+            android:layout_below="@+id/title"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textColor="@color/google_grey_600"
+            android:textSize="14sp" />
+
+        <org.chromium.chrome.browser.widget.TintedImageButton
+            android:id="@+id/remove"
+            android:layout_width="@dimen/selectable_list_layout_end_icon"
+            android:layout_height="@dimen/selectable_list_layout_end_icon"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:background="@null"
+            android:contentDescription="@string/remove"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:src="@drawable/btn_trash"
+            chrome:tint="@color/dark_mode_tint" />
+    </RelativeLayout>
+
+</org.chromium.chrome.browser.history.HistoryItemView>

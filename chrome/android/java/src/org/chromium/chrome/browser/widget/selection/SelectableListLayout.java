@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.widget.selection;
 
 import android.content.Context;
-import android.support.graphics.drawable.VectorDrawableCompat;
+import android.graphics.drawable.Drawable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -131,14 +131,11 @@ public class SelectableListLayout extends RelativeLayout {
     /**
      * Initializes the view shown when the selectable list is empty.
      *
-     * @param emptyIconResId The icon to show when the selectable list is empty.
+     * @param emptyDrawable The Drawable to show when the selectable list is empty.
      * @param emptyStringResId The string to show when the selectable list is empty.
      */
-    public void initializeEmptyView(int emptyIconResId, int emptyStringResId) {
-        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null,
-                VectorDrawableCompat.create(getResources(), emptyIconResId,
-                        getContext().getTheme()),
-                null, null);
+    public void initializeEmptyView(Drawable emptyDrawable, int emptyStringResId) {
+        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, emptyDrawable, null, null);
         mEmptyView.setText(emptyStringResId);
     }
 

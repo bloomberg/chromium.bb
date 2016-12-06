@@ -79,6 +79,7 @@ import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAAccountChangeListener;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -1682,8 +1683,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             WebsiteSettingsPopup.show(
                     this, currentTab, null, WebsiteSettingsPopup.OPENED_FROM_MENU);
         } else if (id == R.id.open_history_menu_id) {
-            currentTab.loadUrl(
-                    new LoadUrlParams(UrlConstants.HISTORY_URL, PageTransition.AUTO_TOPLEVEL));
+            if (!HistoryManagerUtils.showHistoryManager(this)) {
+                currentTab.loadUrl(
+                        new LoadUrlParams(UrlConstants.HISTORY_URL, PageTransition.AUTO_TOPLEVEL));
+            }
             RecordUserAction.record("MobileMenuHistory");
             StartupMetrics.getInstance().recordOpenedHistory();
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {

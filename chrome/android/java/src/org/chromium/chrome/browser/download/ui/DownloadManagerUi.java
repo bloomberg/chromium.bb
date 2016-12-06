@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.AsyncTask;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
@@ -194,7 +195,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         mSelectableListLayout =
                 (SelectableListLayout) mMainView.findViewById(R.id.selectable_list);
 
-        mSelectableListLayout.initializeEmptyView(R.drawable.downloads_big,
+        mSelectableListLayout.initializeEmptyView(
+                VectorDrawableCompat.create(mActivity.getResources(),
+                        R.drawable.downloads_big, mActivity.getTheme()),
                 R.string.download_manager_ui_empty);
 
         mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord, parentComponent);

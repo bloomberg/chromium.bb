@@ -53,6 +53,7 @@
 #include "chrome/browser/android/feedback/screenshot_task.h"
 #include "chrome/browser/android/find_in_page/find_in_page_bridge.h"
 #include "chrome/browser/android/foreign_session_helper.h"
+#include "chrome/browser/android/history/browsing_history_bridge.h"
 #include "chrome/browser/android/history_report/history_report_jni_bridge.h"
 #include "chrome/browser/android/instantapps/instant_apps_infobar_delegate.h"
 #include "chrome/browser/android/instantapps/instant_apps_settings.h"
@@ -238,6 +239,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"BluetoothChooserAndroid", BluetoothChooserAndroid::Register},
     {"BookmarkBridge", BookmarkBridge::RegisterBookmarkBridge},
     {"BrowsingDataCounterBridge", BrowsingDataCounterBridge::Register},
+    {"BrowsingHistoryBridge", RegisterBrowsingHistoryBridge},
     {"CardUnmaskPrompt", autofill::CardUnmaskPromptViewAndroid::Register},
     {"CertificateViewer", RegisterCertificateViewer},
     {"ChildAccountService", RegisterChildAccountService},

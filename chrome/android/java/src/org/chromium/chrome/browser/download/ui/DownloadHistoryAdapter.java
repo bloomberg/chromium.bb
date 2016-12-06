@@ -186,7 +186,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     @Override
     protected int getTimedItemViewResId() {
-        return R.layout.download_date_view;
+        return R.layout.date_view;
     }
 
     @Override
