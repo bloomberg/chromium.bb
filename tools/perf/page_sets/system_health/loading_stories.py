@@ -279,6 +279,7 @@ class LoadDocsStory(_LoadingStory):
       'https://docs.google.com/document/d/1GvzDP-tTLmJ0myRhUAfTYWs3ZUFilUICg8psNHyccwQ/edit?usp=sharing')
 
 
+@decorators.Disabled('android')  # crbug.com.com/664505
 class _LoadGmailBaseStory(_LoadingStory):
   NAME = 'load:tools:gmail'
   URL = 'https://mail.google.com/mail/'
