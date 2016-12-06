@@ -2190,7 +2190,7 @@ static int64_t rd_pick_intra4x4block(
 
     for (idy = 0; idy < num_4x4_blocks_high; ++idy) {
       for (idx = 0; idx < num_4x4_blocks_wide; ++idx) {
-        const int block = (row + idy) * 2 + (col + idx);
+        int block = (row + idy) * 2 + (col + idx);
         const uint8_t *const src = &src_init[idx * 4 + idy * 4 * src_stride];
         uint8_t *const dst = &dst_init[idx * 4 + idy * 4 * dst_stride];
 #if !CONFIG_PVQ
@@ -2211,8 +2211,13 @@ static int64_t rd_pick_intra4x4block(
 #endif
         xd->mi[0]->bmi[block].as_mode = mode;
         av1_predict_intra_block(xd, pd->width, pd->height, TX_4X4, mode, dst,
-                                dst_stride, dst, dst_stride, col + idx,
-                                row + idy, 0);
+                                dst_stride, dst, dst_stride,
+#if CONFIG_CB4X4
+                                2 * (col + idx), 2 * (row + idy),
+#else
+                                col + idx, row + idy,
+#endif
+                                0);
 #if !CONFIG_PVQ
         aom_subtract_block(4, 4, src_diff, 8, src, src_stride, dst, dst_stride);
 #else
@@ -2245,12 +2250,20 @@ static int64_t rd_pick_intra4x4block(
           const SCAN_ORDER *scan_order = get_scan(cm, TX_4X4, tx_type, 0);
           const int coeff_ctx =
               combine_entropy_contexts(*(tempa + idx), *(templ + idy));
+#if CONFIG_CB4X4
+          block = 4 * block;
+#endif
 #if CONFIG_NEW_QUANT
           av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
                           TX_4X4, coeff_ctx, AV1_XFORM_QUANT_B_NUQ);
 #else
-          av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
-                          TX_4X4, coeff_ctx, AV1_XFORM_QUANT_B);
+          av1_xform_quant(cm, x, 0, block,
+#if CONFIG_CB4X4
+                          2 * (row + idy), 2 * (col + idx),
+#else
+                          row + idy, col + idx,
+#endif
+                          BLOCK_8X8, TX_4X4, coeff_ctx, AV1_XFORM_QUANT_B);
 #endif  // CONFIG_NEW_QUANT
           ratey += av1_cost_coeffs(cm, x, 0, block, coeff_ctx, TX_4X4,
                                    scan_order->scan, scan_order->neighbors,
@@ -2284,12 +2297,20 @@ static int64_t rd_pick_intra4x4block(
           const SCAN_ORDER *scan_order = get_scan(cm, TX_4X4, tx_type, 0);
           const int coeff_ctx =
               combine_entropy_contexts(*(tempa + idx), *(templ + idy));
+#if CONFIG_CB4X4
+          block = 4 * block;
+#endif
 #if CONFIG_NEW_QUANT
           av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
                           TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP_NUQ);
 #else
-          av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
-                          TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP);
+          av1_xform_quant(cm, x, 0, block,
+#if CONFIG_CB4X4
+                          2 * (row + idy), 2 * (col + idx),
+#else
+                          row + idy, col + idx,
+#endif
+                          BLOCK_8X8, TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
           av1_optimize_b(cm, x, 0, block, TX_4X4, coeff_ctx);
           ratey += av1_cost_coeffs(cm, x, 0, block, coeff_ctx, TX_4X4,

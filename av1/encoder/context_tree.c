@@ -218,9 +218,9 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   // context so we only need to allocate 1 for each 8x8 block.
   for (i = 0; i < leaf_nodes; ++i) {
 #if CONFIG_EXT_PARTITION_TYPES
-    alloc_mode_context(cm, 1, PARTITION_NONE, &td->leaf_tree[i]);
+    alloc_mode_context(cm, 4, PARTITION_NONE, &td->leaf_tree[i]);
 #else
-    alloc_mode_context(cm, 1, &td->leaf_tree[i]);
+    alloc_mode_context(cm, 16, &td->leaf_tree[i]);
 #endif
   }
 
