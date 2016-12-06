@@ -19,21 +19,13 @@ source_set("surfaces") {
     "//cc",
     "//cc/ipc:internal_interfaces",
     "//cc/surfaces",
-    "//cc/surfaces:surface_id",
     "//components/display_compositor",
     "//gpu/command_buffer/client",
-    "//gpu/command_buffer/client:gles2_cmd_helper",
-    "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc:command_buffer",
-    "//gpu/ipc/client",
-    "//gpu/ipc/common",
-    "//services/service_manager/public/cpp",
-    "//services/tracing/public/cpp",
     "//ui/display/types",
     "//ui/gfx",
     "//ui/gfx/geometry/mojo",
-    "//ui/gl",
   ]
 
   if (use_ozone) {
@@ -41,6 +33,9 @@ source_set("surfaces") {
       "display_output_surface_ozone.cc",
       "display_output_surface_ozone.h",
     ]
-    deps += [ "//gpu/command_buffer/common" ]
+    deps += [
+      "//gpu/command_buffer/common",
+      "//ui/gl",
+    ]
   }
 }
