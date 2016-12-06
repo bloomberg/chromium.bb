@@ -50,9 +50,12 @@ class ResourceRequest;
 
 class CORE_EXPORT FrameFetchContext final : public FetchContext {
  public:
-  static ResourceFetcher* createContextAndFetcher(DocumentLoader* loader,
-                                                  Document* document) {
-    return ResourceFetcher::create(new FrameFetchContext(loader, document));
+  static ResourceFetcher* createFetcherFromDocumentLoader(
+      DocumentLoader* loader) {
+    return ResourceFetcher::create(new FrameFetchContext(loader, nullptr));
+  }
+  static ResourceFetcher* createFetcherFromDocument(Document* document) {
+    return ResourceFetcher::create(new FrameFetchContext(nullptr, document));
   }
 
   static void provideDocumentToContext(FetchContext& context,
@@ -155,10 +158,11 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit FrameFetchContext(DocumentLoader*, Document*);
+  FrameFetchContext(DocumentLoader*, Document*);
   inline DocumentLoader* masterDocumentLoader() const;
 
-  LocalFrame* frame() const;  // Can be null
+  LocalFrame* frameOfImportsController() const;
+  LocalFrame* frame() const;
   void printAccessDeniedMessage(const KURL&) const;
   ResourceRequestBlockedReason canRequestInternal(
       Resource::Type,

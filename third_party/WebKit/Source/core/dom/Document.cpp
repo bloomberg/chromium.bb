@@ -507,10 +507,11 @@ Document::Document(const DocumentInit& initializer,
     if (registry && m_registrationContext)
       registry->entangle(m_registrationContext);
   } else if (m_importsController) {
-    m_fetcher = FrameFetchContext::createContextAndFetcher(nullptr, this);
+    m_fetcher = FrameFetchContext::createFetcherFromDocument(this);
   } else {
     m_fetcher = ResourceFetcher::create(nullptr);
   }
+  DCHECK(m_fetcher);
 
   m_rootScrollerController = RootScrollerController::create(*this);
 

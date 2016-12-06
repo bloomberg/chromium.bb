@@ -99,7 +99,7 @@ DocumentLoader::DocumentLoader(LocalFrame* frame,
                                const SubstituteData& substituteData,
                                ClientRedirectPolicy clientRedirectPolicy)
     : m_frame(frame),
-      m_fetcher(FrameFetchContext::createContextAndFetcher(this, nullptr)),
+      m_fetcher(FrameFetchContext::createFetcherFromDocumentLoader(this)),
       m_originalRequest(req),
       m_substituteData(substituteData),
       m_request(req),

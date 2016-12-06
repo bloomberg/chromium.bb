@@ -193,6 +193,7 @@ FrameLoader::FrameLoader(LocalFrame* frame)
       m_dispatchingDidClearWindowObjectInMainWorld(false),
       m_protectProvisionalLoader(false),
       m_isNavigationHandledByClient(false) {
+  DCHECK(m_frame);
   TRACE_EVENT_OBJECT_CREATED_WITH_ID("loading", "FrameLoader", this);
   takeObjectSnapshot();
 }

@@ -203,12 +203,20 @@ FrameFetchContext::~FrameFetchContext() {
   m_documentLoader = nullptr;
 }
 
+LocalFrame* FrameFetchContext::frameOfImportsController() const {
+  DCHECK(m_document);
+  HTMLImportsController* importsController = m_document->importsController();
+  DCHECK(importsController);
+  LocalFrame* frame = importsController->master()->frame();
+  DCHECK(frame);
+  return frame;
+}
+
 LocalFrame* FrameFetchContext::frame() const {
-  LocalFrame* frame = nullptr;
-  if (m_documentLoader)
-    frame = m_documentLoader->frame();
-  else if (m_document && m_document->importsController())
-    frame = m_document->importsController()->master()->frame();
+  if (!m_documentLoader)
+    return frameOfImportsController();
+
+  LocalFrame* frame = m_documentLoader->frame();
   DCHECK(frame);
   return frame;
 }
@@ -357,8 +365,10 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(
 // FIXME(http://crbug.com/274173): This means Inspector, which uses
 // DocumentLoader as a grouping entity, cannot see imported documents.
 inline DocumentLoader* FrameFetchContext::masterDocumentLoader() const {
-  return m_documentLoader ? m_documentLoader.get()
-                          : frame()->loader().documentLoader();
+  if (m_documentLoader)
+    return m_documentLoader.get();
+
+  return frameOfImportsController()->loader().documentLoader();
 }
 
 void FrameFetchContext::dispatchDidChangeResourcePriority(
@@ -491,9 +501,11 @@ void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(
 bool FrameFetchContext::shouldLoadNewResource(Resource::Type type) const {
   if (!m_documentLoader)
     return true;
+
+  FrameLoader& loader = m_documentLoader->frame()->loader();
   if (type == Resource::MainResource)
-    return m_documentLoader == frame()->loader().provisionalDocumentLoader();
-  return m_documentLoader == frame()->loader().documentLoader();
+    return m_documentLoader == loader.provisionalDocumentLoader();
+  return m_documentLoader == loader.documentLoader();
 }
 
 static std::unique_ptr<TracedValue>
@@ -767,8 +779,10 @@ bool FrameFetchContext::isControlledByServiceWorker() const {
     return false;
 
   if (m_documentLoader) {
-    return frame()->loader().client()->isControlledByServiceWorker(
-        *m_documentLoader);
+    return m_documentLoader->frame()
+        ->loader()
+        .client()
+        ->isControlledByServiceWorker(*m_documentLoader);
   }
   // m_documentLoader is null while loading resources from an HTML import. In
   // such cases whether the request is controlled by ServiceWorker or not is
@@ -779,8 +793,10 @@ bool FrameFetchContext::isControlledByServiceWorker() const {
 
 int64_t FrameFetchContext::serviceWorkerID() const {
   DCHECK(m_documentLoader || frame()->loader().documentLoader());
-  if (m_documentLoader)
-    return frame()->loader().client()->serviceWorkerID(*m_documentLoader);
+  if (m_documentLoader) {
+    return m_documentLoader->frame()->loader().client()->serviceWorkerID(
+        *m_documentLoader);
+  }
   // m_documentLoader is null while loading resources from an HTML import.
   // In such cases a service worker ID could be retrieved from the document
   // loader of the frame.
@@ -975,7 +991,8 @@ void FrameFetchContext::dispatchDidReceiveResponseInternal(
   MixedContentChecker::checkMixedPrivatePublic(frame(),
                                                response.remoteIPAddress());
   if (m_documentLoader &&
-      m_documentLoader == frame()->loader().provisionalDocumentLoader()) {
+      m_documentLoader ==
+          m_documentLoader->frame()->loader().provisionalDocumentLoader()) {
     ResourceFetcher* fetcher = nullptr;
     if (frame()->document())
       fetcher = frame()->document()->fetcher();
