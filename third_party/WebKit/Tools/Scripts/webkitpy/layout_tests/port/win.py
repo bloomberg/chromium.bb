@@ -227,7 +227,10 @@ class WinPort(base.Port):
         return self._build_path(binary_name)
 
     def _path_to_wdiff(self):
-        return self.path_from_chromium_base('third_party', 'cygwin', 'bin', 'wdiff.exe')
+        # Temporarily disabling wdiff on Windows to see how this affects
+        # the rate of layout test hanging on try bots (http://crbug.com/637478).
+        # TODO(qyearsley): Re-enable this when possible.
+        return None
 
     def _check_crash_service_available(self):
         """Checks whether the crash service binary is present."""
