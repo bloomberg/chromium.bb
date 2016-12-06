@@ -452,14 +452,25 @@ void av1_quantize_fp_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 
   switch (qparam->log_scale) {
     case 0:
-      av1_quantize_fp(coeff_ptr, n_coeffs, skip_block, p->zbin, p->round_fp,
-                      p->quant_fp, p->quant_shift, qcoeff_ptr, dqcoeff_ptr,
-                      pd->dequant, eob_ptr, sc->scan, sc->iscan
+      if (n_coeffs < 16) {
+        av1_quantize_fp_c(coeff_ptr, n_coeffs, skip_block, p->zbin, p->round_fp,
+                          p->quant_fp, p->quant_shift, qcoeff_ptr, dqcoeff_ptr,
+                          pd->dequant, eob_ptr, sc->scan, sc->iscan
 #if CONFIG_AOM_QM
-                      ,
-                      qm_ptr, iqm_ptr
+                          ,
+                          qm_ptr, iqm_ptr
 #endif
-                      );
+                          );
+      } else {
+        av1_quantize_fp(coeff_ptr, n_coeffs, skip_block, p->zbin, p->round_fp,
+                        p->quant_fp, p->quant_shift, qcoeff_ptr, dqcoeff_ptr,
+                        pd->dequant, eob_ptr, sc->scan, sc->iscan
+#if CONFIG_AOM_QM
+                        ,
+                        qm_ptr, iqm_ptr
+#endif
+                        );
+      }
       break;
     case 1:
       av1_quantize_fp_32x32(coeff_ptr, n_coeffs, skip_block, p->zbin,
