@@ -1336,6 +1336,25 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+// Verify that reloading a page with url anchor scrolls to correct position.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/reload-with-url-anchor.html#d2"));
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+
+  std::string script =
+      "domAutomationController.send(document.getElementById('div').scrollTop)";
+  int value = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(shell(), script, &value));
+  EXPECT_EQ(100, value);
+
+  // Reload.
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(shell(), script, &value));
+  EXPECT_EQ(100, value);
+}
+
 // Verify that empty GURL navigations are not classified as SAME_PAGE.
 // See https://crbug.com/534980.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,

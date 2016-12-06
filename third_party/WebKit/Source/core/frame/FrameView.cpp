@@ -647,6 +647,10 @@ void FrameView::setContentsSize(const IntSize& size) {
   updateParentScrollableAreaSet();
 
   page->chromeClient().contentsSizeChanged(m_frame.get(), size);
+
+  // Ensure the scrollToFragmentAnchor is called before
+  // restoreScrollPositionAndViewState when reload
+  scrollToFragmentAnchor();
   frame().loader().restoreScrollPositionAndViewState();
 }
 
