@@ -232,13 +232,11 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(
   return NoInherit;
 }
 
-// TODO(sashab): Generate this function.
 void ComputedStyle::propagateIndependentInheritedProperties(
     const ComputedStyle& parentStyle) {
+  ComputedStyleBase::propagateIndependentInheritedProperties(parentStyle);
   if (m_nonInheritedData.m_isPointerEventsInherited)
     setPointerEvents(parentStyle.pointerEvents());
-  if (m_nonInheritedData.m_isVisibilityInherited)
-    setVisibility(parentStyle.visibility());
   if (m_nonInheritedData.m_isWhiteSpaceInherited)
     setWhiteSpace(parentStyle.whiteSpace());
 }
@@ -426,8 +424,6 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   // that share this style.
   m_nonInheritedData.m_isPointerEventsInherited =
       other.m_nonInheritedData.m_isPointerEventsInherited;
-  m_nonInheritedData.m_isVisibilityInherited =
-      other.m_nonInheritedData.m_isVisibilityInherited;
   m_nonInheritedData.m_isWhiteSpaceInherited =
       other.m_nonInheritedData.m_isWhiteSpaceInherited;
 

@@ -31,12 +31,17 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 enum_values = [camel_case(k) for k in property['keywords']]
                 self._computed_enums[enum_name] = enum_values
 
-        # A list of fields
+        # A list of fields for the generated class.
+        # TODO(sashab): Rename this to Member, and add better documentation for what this list is for,
+        # including asserts to show inter-field dependencies.
         Field = namedtuple('Field', [
             # Name of field member variable
             'name',
             # Property field is for
             'property',
+            # Field family: one of these must be true
+            'is_enum',
+            'is_inherited_flag',
             # Field storage type
             'type',
             # Bits needed for storage
@@ -48,7 +53,10 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'setter_method_name',
             'initial_method_name',
             'resetter_method_name',
+            'is_inherited_method_name',
         ])
+
+        # A list of all the fields to be generated. Add new fields here.
         self._fields = []
         for property in self._properties.values():
             if property['keyword_only']:
@@ -67,9 +75,32 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                      'for property ' + property['name'])
                 default_value = type_name + '::' + camel_case(property['initial_keyword'])
 
+                # If the property is independent, add the single-bit sized isInherited flag
+                # to the list of member variable as well.
+                if property['independent']:
+                    field_name_suffix_upper = property['upper_camel_name'] + 'IsInherited'
+                    field_name_suffix_lower = property_name_lower + 'IsInherited'
+                    self._fields.append(Field(
+                        name='m_' + field_name_suffix_lower,
+                        property=property,
+                        is_enum=False,
+                        is_inherited_flag=True,
+                        type='bool',
+                        size=1,
+                        default_value='true',
+                        getter_method_name=field_name_suffix_lower,
+                        setter_method_name='set' + field_name_suffix_upper,
+                        initial_method_name='initial' + field_name_suffix_upper,
+                        resetter_method_name='reset' + field_name_suffix_upper,
+                        is_inherited_method_name='',
+                    ))
+
+                # Add the property itself as a member variable.
                 self._fields.append(Field(
                     name=field_name,
                     property=property,
+                    is_enum=True,
+                    is_inherited_flag=False,
                     type=type_name,
                     size=int(math.ceil(bits_needed)),
                     default_value=default_value,
@@ -77,6 +108,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                     setter_method_name='set' + property_name,
                     initial_method_name='initial' + property_name,
                     resetter_method_name='reset' + property_name,
+                    is_inherited_method_name=property_name_lower + 'IsInherited',
                 ))
 
     @template_expander.use_jinja('ComputedStyleBase.h.tmpl')

@@ -345,7 +345,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // - The compareEqual() methods in the corresponding class
     // InheritedFlags
     unsigned m_isPointerEventsInherited : 1;
-    unsigned m_isVisibilityInherited : 1;
     unsigned m_isWhiteSpaceInherited : 1;
 
     // If you add more style bits here, you will also need to update
@@ -403,7 +402,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     // All independently inherited properties default to being inherited.
     m_nonInheritedData.m_isPointerEventsInherited = true;
-    m_nonInheritedData.m_isVisibilityInherited = true;
     m_nonInheritedData.m_isWhiteSpaceInherited = true;
   }
 
@@ -1931,12 +1929,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setVerticalAlignLength(const Length& length) {
     setVerticalAlign(VerticalAlignLength);
     SET_VAR(m_box, m_verticalAlign, length);
-  }
-
-  // visibility
-  // TODO(sashab): Move this to ComputedStyleBase.
-  void setVisibilityIsInherited(bool isInherited) {
-    m_nonInheritedData.m_isVisibilityInherited = isInherited;
   }
 
   // will-change

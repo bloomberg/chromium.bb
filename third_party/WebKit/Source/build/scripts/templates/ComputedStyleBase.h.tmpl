@@ -45,7 +45,7 @@ class CORE_EXPORT ComputedStyleBase {
 
   inline bool inheritedEqual(const ComputedStyleBase& o) const {
     return true &&
-    {% for field in fields if field.property['inherited'] %}
+    {% for field in fields if field.is_enum and field.property['inherited'] %}
         {{field.name}} == o.{{field.name}} &&
     {% endfor %}
         true;
@@ -53,7 +53,7 @@ class CORE_EXPORT ComputedStyleBase {
 
   inline bool independentInheritedEqual(const ComputedStyleBase& o) const {
     return true &&
-    {% for field in fields if field.property['inherited'] and field.property['independent'] %}
+    {% for field in fields if field.is_enum and field.property['inherited'] and field.property['independent'] %}
         {{field.name}} == o.{{field.name}} &&
     {% endfor %}
         true;
@@ -61,7 +61,7 @@ class CORE_EXPORT ComputedStyleBase {
 
   inline bool nonIndependentInheritedEqual(const ComputedStyleBase& o) const {
     return true &&
-    {% for field in fields if field.property['inherited'] and not field.property['independent'] %}
+    {% for field in fields if field.is_enum and field.property['inherited'] and not field.property['independent'] %}
         {{field.name}} == o.{{field.name}} &&
     {% endfor %}
         true;
@@ -69,7 +69,7 @@ class CORE_EXPORT ComputedStyleBase {
 
   inline bool nonInheritedEqual(const ComputedStyleBase& o) const {
     return true &&
-    {% for field in fields if not field.property['inherited'] %}
+    {% for field in fields if field.is_enum and not field.property['inherited'] %}
         {{field.name}} == o.{{field.name}} &&
     {% endfor %}
         true;
@@ -89,6 +89,11 @@ class CORE_EXPORT ComputedStyleBase {
                    IsAtShadowBoundary isAtShadowBoundary = NotAtShadowBoundary);
 
   void copyNonInheritedFromCached(const ComputedStyleBase& other);
+
+  // Copies the values of any independent inherited properties from the parent
+  // style that are marked as inherited by this style.
+  void propagateIndependentInheritedProperties(
+      const ComputedStyleBase& parentStyle);
 
   // Fields.
   // TODO(sashab): Remove initialFoo() static methods and update callers to
