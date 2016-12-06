@@ -2076,11 +2076,11 @@ void WebViewImpl::themeChanged() {
   view->invalidateRect(damagedRect);
 }
 
-void WebViewImpl::enterFullscreenForElement(Element* element) {
-  m_fullscreenController->enterFullscreenForElement(element);
+void WebViewImpl::enterFullscreen(LocalFrame& frame) {
+  m_fullscreenController->enterFullscreen(frame);
 }
 
-void WebViewImpl::exitFullscreen(LocalFrame* frame) {
+void WebViewImpl::exitFullscreen(LocalFrame& frame) {
   m_fullscreenController->exitFullscreen(frame);
 }
 

@@ -43,8 +43,8 @@
 
 namespace blink {
 
-class LayoutFullScreen;
 class ComputedStyle;
+class LayoutFullScreen;
 
 class CORE_EXPORT Fullscreen final
     : public GarbageCollectedFinalized<Fullscreen>,
@@ -92,7 +92,9 @@ class CORE_EXPORT Fullscreen final
                : nullptr;
   }
 
-  void didEnterFullscreenForElement(Element*);
+  // Called by FullscreenController to notify that we've entered or exited
+  // fullscreen. All frames are notified, so there may be no pending request.
+  void didEnterFullscreen();
   void didExitFullscreen();
 
   void setFullScreenLayoutObject(LayoutFullScreen*);
@@ -137,6 +139,7 @@ class CORE_EXPORT Fullscreen final
   void enqueueErrorEvent(Element&, RequestType);
   void eventQueueTimerFired(TimerBase*);
 
+  Member<Element> m_pendingFullscreenElement;
   HeapVector<std::pair<Member<Element>, RequestType>> m_fullscreenElementStack;
   Member<Element> m_currentFullScreenElement;
   LayoutFullScreen* m_fullScreenLayoutObject;

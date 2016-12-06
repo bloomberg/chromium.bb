@@ -33,8 +33,7 @@
 
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -42,15 +41,14 @@ class Element;
 class LocalFrame;
 class WebViewImpl;
 
-class FullscreenController final
-    : public GarbageCollected<FullscreenController> {
+class FullscreenController {
  public:
-  static FullscreenController* create(WebViewImpl*);
+  static std::unique_ptr<FullscreenController> create(WebViewImpl*);
 
   // Called by Fullscreen (via ChromeClient) to request entering or exiting
   // fullscreen.
-  void enterFullscreenForElement(Element*);
-  void exitFullscreen(LocalFrame*);
+  void enterFullscreen(LocalFrame&);
+  void exitFullscreen(LocalFrame&);
 
   // Called by content::RenderWidget (via WebWidget) to notify that we've
   // entered or exited fullscreen. This can be because we requested it, or it
@@ -62,13 +60,11 @@ class FullscreenController final
   // element has changed.
   void fullscreenElementChanged(Element*, Element*);
 
-  bool isFullscreen() { return m_fullscreenFrame; }
+  bool isFullscreen() { return m_state == State::Fullscreen; }
 
   void updateSize();
 
   void didUpdateLayout();
-
-  DECLARE_TRACE();
 
  protected:
   explicit FullscreenController(WebViewImpl*);
@@ -78,19 +74,26 @@ class FullscreenController final
 
   WebViewImpl* m_webViewImpl;
 
-  bool m_haveEnteredFullscreen;
-  float m_exitFullscreenPageScaleFactor;
-  IntSize m_exitFullscreenScrollOffset;
-  FloatPoint m_exitFullscreenVisualViewportOffset;
-  bool m_needsScrollAndScaleRestore;
+  // State is used to avoid unnecessary enter/exit requests, and to restore the
+  // m_initial* after the first layout upon exiting fullscreen. Typically, the
+  // state goes through every state from Initial to NeedsScrollAndScaleRestore
+  // and then back to Initial, but the are two exceptions:
+  //  1. didExitFullscreen() can transition from any non-Initial state to
+  //     NeedsScrollAndScaleRestore, in case of a browser-intiated exit.
+  //  2. enterFullscreen() can transition from NeedsScrollAndScaleRestore to
+  //     EnteringFullscreen, in case of a quick exit+enter.
+  enum class State {
+    Initial,
+    EnteringFullscreen,
+    Fullscreen,
+    ExitingFullscreen,
+    NeedsScrollAndScaleRestore
+  };
+  State m_state = State::Initial;
 
-  // If set, the WebView is transitioning to fullscreen for this element.
-  Member<Element> m_provisionalFullscreenElement;
-
-  // If set, the WebView is in fullscreen mode for an element in this frame.
-  Member<LocalFrame> m_fullscreenFrame;
-
-  bool m_isCancelingFullscreen;
+  float m_initialPageScaleFactor = 0.0f;
+  IntSize m_initialScrollOffset;
+  FloatPoint m_initialVisualViewportOffset;
 };
 
 }  // namespace blink

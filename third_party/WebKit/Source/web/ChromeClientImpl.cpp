@@ -851,11 +851,11 @@ void ChromeClientImpl::detachCompositorAnimationTimeline(
         compositorTimeline);
 }
 
-void ChromeClientImpl::enterFullscreenForElement(Element* element) {
-  m_webView->enterFullscreenForElement(element);
+void ChromeClientImpl::enterFullscreen(LocalFrame& frame) {
+  m_webView->enterFullscreen(frame);
 }
 
-void ChromeClientImpl::exitFullscreen(LocalFrame* frame) {
+void ChromeClientImpl::exitFullscreen(LocalFrame& frame) {
   m_webView->exitFullscreen(frame);
 }
 

@@ -445,8 +445,8 @@ class WEB_EXPORT WebViewImpl final
     return m_fakePageScaleAnimationUseAnchor;
   }
 
-  void enterFullscreenForElement(Element*);
-  void exitFullscreen(LocalFrame*);
+  void enterFullscreen(LocalFrame&);
+  void exitFullscreen(LocalFrame&);
   void fullscreenElementChanged(Element*, Element*);
 
   // Exposed for the purpose of overriding device metrics.
@@ -697,7 +697,7 @@ class WEB_EXPORT WebViewImpl final
   WebGestureDevice m_flingSourceDevice;
   Vector<std::unique_ptr<LinkHighlightImpl>> m_linkHighlights;
   std::unique_ptr<CompositorAnimationTimeline> m_linkHighlightsTimeline;
-  Persistent<FullscreenController> m_fullscreenController;
+  std::unique_ptr<FullscreenController> m_fullscreenController;
 
   WebColor m_baseBackgroundColor;
   WebColor m_backgroundColorOverride;

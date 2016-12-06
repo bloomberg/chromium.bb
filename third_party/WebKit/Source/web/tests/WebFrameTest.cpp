@@ -7816,9 +7816,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenNestedExit) {
   webViewImpl->updateAllLifecyclePhases();
 
   // We should now have fully exited fullscreen.
-  // TODO(foolip): The top document's currentFullScreenElement is left
-  // unchanged, leaving the page in a strange state. https://crbug.com/552541
-  EXPECT_EQ(topBody, Fullscreen::currentFullScreenElementFrom(*topDoc));
+  EXPECT_EQ(nullptr, Fullscreen::currentFullScreenElementFrom(*topDoc));
   EXPECT_EQ(nullptr, Fullscreen::fullscreenElementFrom(*topDoc));
   EXPECT_EQ(nullptr, Fullscreen::currentFullScreenElementFrom(*iframeDoc));
   EXPECT_EQ(nullptr, Fullscreen::fullscreenElementFrom(*iframeDoc));

@@ -33,7 +33,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -298,8 +297,8 @@ void Fullscreen::requestFullscreen(Element& element,
     }
   }
 
-  // Ignore this request if the document is not in a live frame.
-  if (!document.isActive())
+  // Ignore this call if the document is not in a live frame.
+  if (!document.isActive() || !document.frame())
     return;
 
   // If |element| is on top of |doc|'s fullscreen element stack, terminate these
@@ -399,7 +398,8 @@ void Fullscreen::requestFullscreen(Element& element,
 
     // 5. Return, and run the remaining steps asynchronously.
     // 6. Optionally, perform some animation.
-    document.frameHost()->chromeClient().enterFullscreenForElement(&element);
+    from(document).m_pendingFullscreenElement = &element;
+    document.frame()->chromeClient().enterFullscreen(*document.frame());
 
     // 7. Optionally, display a message indicating how the user can exit
     // displaying the context object fullscreen.
@@ -441,10 +441,11 @@ void Fullscreen::fullyExitFullscreen(Document& document) {
 void Fullscreen::exitFullscreen(Document& document) {
   // The exitFullscreen() method must run these steps:
 
-  // 1. Let doc be the context object. (i.e. "this")
-  if (!document.isActive())
+  // Ignore this call if the document is not in a live frame.
+  if (!document.isActive() || !document.frame())
     return;
 
+  // 1. Let doc be the context object. (i.e. "this")
   // 2. If doc's fullscreen element stack is empty, terminate these steps.
   if (!fullscreenElementFrom(document))
     return;
@@ -454,9 +455,8 @@ void Fullscreen::exitFullscreen(Document& document) {
   // child of the doc is last and the document furthest away from the doc is
   // first.
   HeapDeque<Member<Document>> descendants;
-  for (Frame* descendant =
-           document.frame() ? document.frame()->tree().traverseNext() : nullptr;
-       descendant; descendant = descendant->tree().traverseNext()) {
+  for (Frame* descendant = document.frame()->tree().traverseNext(); descendant;
+       descendant = descendant->tree().traverseNext()) {
     if (!descendant->isLocalFrame())
       continue;
     DCHECK(toLocalFrame(descendant)->document());
@@ -521,23 +521,15 @@ void Fullscreen::exitFullscreen(Document& document) {
   // 6. Return, and run the remaining steps asynchronously.
   // 7. Optionally, perform some animation.
 
-  FrameHost* host = document.frameHost();
-
-  // Speculative fix for engaget.com/videos per crbug.com/336239.
-  // FIXME: This check is wrong. We DCHECK(document->isActive()) above
-  // so this should be redundant and should be removed!
-  if (!host)
-    return;
-
-  // Only exit out of full screen window mode if there are no remaining elements
-  // in the full screen stack.
+  // Only exit fullscreen mode if the fullscreen element stack is empty.
   if (!newTop) {
-    host->chromeClient().exitFullscreen(document.frame());
+    document.frame()->chromeClient().exitFullscreen(*document.frame());
     return;
   }
 
-  // Otherwise, notify the chrome of the new full screen element.
-  host->chromeClient().enterFullscreenForElement(newTop);
+  // Otherwise, enter fullscreen for the fullscreen element stack's top element.
+  from(document).m_pendingFullscreenElement = newTop;
+  from(document).didEnterFullscreen();
 }
 
 // https://fullscreen.spec.whatwg.org/#dom-document-fullscreenenabled
@@ -549,13 +541,32 @@ bool Fullscreen::fullscreenEnabled(Document& document) {
          fullscreenIsSupported(document);
 }
 
-void Fullscreen::didEnterFullscreenForElement(Element* element) {
-  DCHECK(element);
+void Fullscreen::didEnterFullscreen() {
   if (!document()->isActive() || !document()->frame())
+    return;
+
+  // Start the timer for events enqueued by |requestFullscreen()|. The hover
+  // state update is scheduled first so that it's done when the events fire.
+  document()->frame()->eventHandler().scheduleHoverStateUpdate();
+  m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
+
+  Element* element = m_pendingFullscreenElement.release();
+  if (!element)
     return;
 
   if (m_currentFullScreenElement == element)
     return;
+
+  if (!element->isConnected() || &element->document() != document()) {
+    // The element was removed or has moved to another document since the
+    // |requestFullscreen()| call. Exit fullscreen again to recover.
+    // TODO(foolip): Fire a fullscreenerror event. This is currently difficult
+    // because the fullscreenchange event has already been enqueued and possibly
+    // even fired. https://crbug.com/402376
+    LocalFrame& frame = *document()->frame();
+    frame.chromeClient().exitFullscreen(frame);
+    return;
+  }
 
   if (m_fullScreenLayoutObject)
     m_fullScreenLayoutObject->unwrapLayoutObject();
@@ -604,10 +615,6 @@ void Fullscreen::didEnterFullscreenForElement(Element* element) {
   // FIXME: This should not call updateStyleAndLayoutTree.
   document()->updateStyleAndLayoutTree();
 
-  document()->frame()->eventHandler().scheduleHoverStateUpdate();
-
-  m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
-
   document()->frame()->chromeClient().fullscreenElementChanged(previousElement,
                                                                element);
 }
@@ -615,6 +622,18 @@ void Fullscreen::didEnterFullscreenForElement(Element* element) {
 void Fullscreen::didExitFullscreen() {
   if (!document()->isActive() || !document()->frame())
     return;
+
+  // Start the timer for events enqueued by |exitFullscreen()|. The hover state
+  // update is scheduled first so that it's done when the events fire.
+  document()->frame()->eventHandler().scheduleHoverStateUpdate();
+  m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
+
+  // If fullscreen was canceled by the browser, e.g. if the user pressed Esc,
+  // then |exitFullscreen()| was never called. Let |fullyExitFullscreen()| clear
+  // the fullscreen element stack and fire any events as necessary.
+  // TODO(foolip): Remove this when state changes and events are synchronized
+  // with animation frames. https://crbug.com/402376
+  fullyExitFullscreen(*document());
 
   if (!m_currentFullScreenElement)
     return;
@@ -632,17 +651,6 @@ void Fullscreen::didExitFullscreen() {
   m_currentFullScreenElement->pseudoStateChanged(CSSSelector::PseudoFullScreen);
   Element* previousElement = m_currentFullScreenElement;
   m_currentFullScreenElement = nullptr;
-
-  document()->frame()->eventHandler().scheduleHoverStateUpdate();
-
-  // When fullyExitFullscreen is called, we call exitFullscreen on the
-  // topDocument(). That means that the events will be queued there. So if we
-  // have no events here, start the timer on the exiting document.
-  Document* exitingDocument = document();
-  if (m_eventQueue.isEmpty())
-    exitingDocument = &topmostLocalAncestor(*document());
-  DCHECK(exitingDocument);
-  from(*exitingDocument).m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 
   m_forCrossProcessDescendant = false;
 
@@ -692,8 +700,7 @@ void Fullscreen::enqueueChangeEvent(Document& document,
     event = createEvent(EventTypeNames::webkitfullscreenchange, *target);
   }
   m_eventQueue.append(event);
-  // NOTE: The timer is started in
-  // didEnterFullscreenForElement/didExitFullscreen.
+  // NOTE: The timer is started in didEnterFullscreen/didExitFullscreen.
 }
 
 void Fullscreen::enqueueErrorEvent(Element& element, RequestType requestType) {
@@ -766,8 +773,9 @@ void Fullscreen::pushFullscreenElementStack(Element& element,
 }
 
 DEFINE_TRACE(Fullscreen) {
-  visitor->trace(m_currentFullScreenElement);
+  visitor->trace(m_pendingFullscreenElement);
   visitor->trace(m_fullscreenElementStack);
+  visitor->trace(m_currentFullScreenElement);
   visitor->trace(m_eventQueue);
   Supplement<Document>::trace(visitor);
   ContextLifecycleObserver::trace(visitor);
