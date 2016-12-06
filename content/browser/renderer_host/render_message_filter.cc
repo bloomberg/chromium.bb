@@ -44,6 +44,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/view_messages.h"
@@ -60,7 +61,6 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/base/media_log_event.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
 #include "net/base/mime_util.h"
@@ -184,6 +184,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     // handled here for renderer processes. For non-renderer child processes,
     // they are handled in ChildProcessHostImpl.
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        ChildProcessHostMsg_SyncAllocateSharedBitmap, OnAllocateSharedBitmap)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
         ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
         OnAllocateGpuMemoryBuffer)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChildProcessHostMsg_EstablishGpuChannel,
@@ -192,6 +194,11 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                                     OnHasGpuProcess)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
                         OnDeletedGpuMemoryBuffer)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_AllocatedSharedBitmap,
+                        OnAllocatedSharedBitmap)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedSharedBitmap,
+                        OnDeletedSharedBitmap)
+
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SetThreadPriority,
                         OnSetThreadPriority)
@@ -320,18 +327,39 @@ void RenderMessageFilter::SendLoadFontReply(IPC::Message* reply,
 
 #endif  // defined(OS_MACOSX)
 
-void RenderMessageFilter::AllocatedSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
-    const cc::SharedBitmapId& id) {
-  base::SharedMemoryHandle memory_handle;
-  size_t size;
-  MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      std::move(buffer), &memory_handle, &size, NULL);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
-  bitmap_manager_client_.ChildAllocatedSharedBitmap(size, memory_handle, id);
+void RenderMessageFilter::AllocateSharedBitmapOnFileThread(
+    uint32_t buffer_size,
+    const cc::SharedBitmapId& id,
+    IPC::Message* reply_msg) {
+  base::SharedMemoryHandle handle;
+  bitmap_manager_client_.AllocateSharedBitmapForChild(PeerHandle(), buffer_size,
+                                                      id, &handle);
+  ChildProcessHostMsg_SyncAllocateSharedBitmap::WriteReplyParams(reply_msg,
+                                                                 handle);
+  Send(reply_msg);
 }
 
-void RenderMessageFilter::DeletedSharedBitmap(const cc::SharedBitmapId& id) {
+void RenderMessageFilter::OnAllocateSharedBitmap(uint32_t buffer_size,
+                                                 const cc::SharedBitmapId& id,
+                                                 IPC::Message* reply_msg) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE_USER_BLOCKING,
+      FROM_HERE,
+      base::Bind(&RenderMessageFilter::AllocateSharedBitmapOnFileThread,
+                 this,
+                 buffer_size,
+                 id,
+                 reply_msg));
+}
+
+void RenderMessageFilter::OnAllocatedSharedBitmap(
+    size_t buffer_size,
+    const base::SharedMemoryHandle& handle,
+    const cc::SharedBitmapId& id) {
+  bitmap_manager_client_.ChildAllocatedSharedBitmap(buffer_size, handle, id);
+}
+
+void RenderMessageFilter::OnDeletedSharedBitmap(const cc::SharedBitmapId& id) {
   bitmap_manager_client_.ChildDeletedSharedBitmap(id);
 }
 

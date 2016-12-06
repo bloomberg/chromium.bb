@@ -663,14 +663,6 @@ void RenderThreadImpl::Init(
   gpu_memory_buffer_manager_ =
       base::MakeUnique<ChildGpuMemoryBufferManager>(thread_safe_sender());
 
-  thread_safe_associated_interface_ptr_provider_ =
-      base::MakeUnique<ThreadSafeAssociatedInterfacePtrProvider>(channel());
-  thread_safe_render_message_filter_ =
-      thread_safe_associated_interface_ptr_provider_
-          ->CreateInterfacePtr<mojom::RenderMessageFilter>();
-  shared_bitmap_manager_.reset(
-      new ChildSharedBitmapManager(thread_safe_render_message_filter_));
-
   InitializeWebKit(resource_task_queue);
 
   // In single process the single process is all there is.
@@ -702,6 +694,12 @@ void RenderThreadImpl::Init(
   AddFilter(blob_message_filter_.get());
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
+
+  thread_safe_associated_interface_ptr_provider_ =
+      base::MakeUnique<ThreadSafeAssociatedInterfacePtrProvider>(channel());
+  thread_safe_render_message_filter_ =
+      thread_safe_associated_interface_ptr_provider_
+          ->CreateInterfacePtr<mojom::RenderMessageFilter>();
 
   vc_manager_.reset(new VideoCaptureImplManager());
 

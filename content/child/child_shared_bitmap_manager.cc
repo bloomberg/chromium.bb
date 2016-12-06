@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/child_process_messages.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -24,34 +23,27 @@ namespace {
 
 class ChildSharedBitmap : public SharedMemoryBitmap {
  public:
-  ChildSharedBitmap(
-      const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
-          render_message_filter_ptr,
-      base::SharedMemory* shared_memory,
-      const cc::SharedBitmapId& id)
+  ChildSharedBitmap(scoped_refptr<ThreadSafeSender> sender,
+                    base::SharedMemory* shared_memory,
+                    const cc::SharedBitmapId& id)
       : SharedMemoryBitmap(static_cast<uint8_t*>(shared_memory->memory()),
                            id,
                            shared_memory),
-        render_message_filter_ptr_(render_message_filter_ptr) {}
+        sender_(sender) {}
 
-  ChildSharedBitmap(
-      const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
-          render_message_filter_ptr,
-      std::unique_ptr<base::SharedMemory> shared_memory_holder,
-      const cc::SharedBitmapId& id)
-      : ChildSharedBitmap(render_message_filter_ptr,
-                          shared_memory_holder.get(),
-                          id) {
+  ChildSharedBitmap(scoped_refptr<ThreadSafeSender> sender,
+                    std::unique_ptr<base::SharedMemory> shared_memory_holder,
+                    const cc::SharedBitmapId& id)
+      : ChildSharedBitmap(sender, shared_memory_holder.get(), id) {
     shared_memory_holder_ = std::move(shared_memory_holder);
   }
 
   ~ChildSharedBitmap() override {
-    (*render_message_filter_ptr_)->DeletedSharedBitmap(id());
+    sender_->Send(new ChildProcessHostMsg_DeletedSharedBitmap(id()));
   }
 
  private:
-  scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>
-      render_message_filter_ptr_;
+  scoped_refptr<ThreadSafeSender> sender_;
   std::unique_ptr<base::SharedMemory> shared_memory_holder_;
 };
 
@@ -87,14 +79,25 @@ SharedMemoryBitmap::SharedMemoryBitmap(uint8_t* pixels,
     : SharedBitmap(pixels, id), shared_memory_(shared_memory) {}
 
 ChildSharedBitmapManager::ChildSharedBitmapManager(
-    const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
-        render_message_filter_ptr)
-    : render_message_filter_ptr_(render_message_filter_ptr) {}
+    scoped_refptr<ThreadSafeSender> sender)
+    : sender_(sender) {
+}
 
 ChildSharedBitmapManager::~ChildSharedBitmapManager() {}
 
 std::unique_ptr<cc::SharedBitmap>
 ChildSharedBitmapManager::AllocateSharedBitmap(const gfx::Size& size) {
+  std::unique_ptr<SharedMemoryBitmap> bitmap = AllocateSharedMemoryBitmap(size);
+#if defined(OS_POSIX)
+  // Close file descriptor to avoid running out.
+  if (bitmap)
+    bitmap->shared_memory()->Close();
+#endif
+  return std::move(bitmap);
+}
+
+std::unique_ptr<SharedMemoryBitmap>
+ChildSharedBitmapManager::AllocateSharedMemoryBitmap(const gfx::Size& size) {
   TRACE_EVENT2("renderer",
                "ChildSharedBitmapManager::AllocateSharedMemoryBitmap", "width",
                size.width(), "height", size.height());
@@ -102,10 +105,25 @@ ChildSharedBitmapManager::AllocateSharedBitmap(const gfx::Size& size) {
   if (!cc::SharedBitmap::SizeInBytes(size, &memory_size))
     return std::unique_ptr<SharedMemoryBitmap>();
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
-  bool out_of_memory = false;
-  std::unique_ptr<base::SharedMemory> memory =
-      ChildThreadImpl::AllocateSharedMemory(memory_size, nullptr,
-                                            &out_of_memory);
+  std::unique_ptr<base::SharedMemory> memory;
+#if defined(OS_POSIX)
+  base::SharedMemoryHandle handle;
+  bool send_success =
+      sender_->Send(new ChildProcessHostMsg_SyncAllocateSharedBitmap(
+          memory_size, id, &handle));
+  if (!send_success) {
+    // Callers of this method are not prepared to handle failures during
+    // shutdown. Exit immediately. This is expected behavior during the Fast
+    // Shutdown path, so use EXIT_SUCCESS. https://crbug.com/615121.
+    exit(EXIT_SUCCESS);
+  }
+  memory = base::MakeUnique<base::SharedMemory>(handle, false);
+  if (!memory->Map(memory_size))
+    CollectMemoryUsageAndDie(size, memory_size);
+#else
+  bool out_of_memory;
+  memory = ChildThreadImpl::AllocateSharedMemory(memory_size, sender_.get(),
+                                                 &out_of_memory);
   if (!memory) {
     if (out_of_memory) {
       CollectMemoryUsageAndDie(size, memory_size);
@@ -120,14 +138,11 @@ ChildSharedBitmapManager::AllocateSharedBitmap(const gfx::Size& size) {
   if (!memory->Map(memory_size))
     CollectMemoryUsageAndDie(size, memory_size);
 
-  NotifyAllocatedSharedBitmap(memory.get(), id);
-
-  // Close the associated FD to save resources, the previously mapped memory
-  // remains available.
-  memory->Close();
-
-  return base::MakeUnique<ChildSharedBitmap>(render_message_filter_ptr_,
-                                             std::move(memory), id);
+  base::SharedMemoryHandle handle_to_send = memory->handle();
+  sender_->Send(new ChildProcessHostMsg_AllocatedSharedBitmap(
+      memory_size, handle_to_send, id));
+#endif
+  return base::MakeUnique<ChildSharedBitmap>(sender_, std::move(memory), id);
 }
 
 std::unique_ptr<cc::SharedBitmap>
@@ -140,28 +155,15 @@ ChildSharedBitmapManager::GetSharedBitmapFromId(const gfx::Size&,
 std::unique_ptr<cc::SharedBitmap>
 ChildSharedBitmapManager::GetBitmapForSharedMemory(base::SharedMemory* mem) {
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
-  NotifyAllocatedSharedBitmap(mem, cc::SharedBitmap::GenerateId());
-  return base::MakeUnique<ChildSharedBitmap>(render_message_filter_ptr_,
-                                             std::move(mem), id);
-}
+  base::SharedMemoryHandle handle_to_send = mem->handle();
+#if defined(OS_POSIX)
+  if (!mem->ShareToProcess(base::GetCurrentProcessHandle(), &handle_to_send))
+    return std::unique_ptr<cc::SharedBitmap>();
+#endif
+  sender_->Send(new ChildProcessHostMsg_AllocatedSharedBitmap(
+      mem->mapped_size(), handle_to_send, id));
 
-// Notifies the browser process that a shared bitmap with the given ID was
-// allocated. Caller keeps ownership of |memory|.
-void ChildSharedBitmapManager::NotifyAllocatedSharedBitmap(
-    base::SharedMemory* memory,
-    const cc::SharedBitmapId& id) {
-  base::SharedMemoryHandle handle_to_send =
-      base::SharedMemory::DuplicateHandle(memory->handle());
-  if (!base::SharedMemory::IsHandleValid(handle_to_send)) {
-    LOG(ERROR) << "Failed to duplicate shared memory handle for bitmap.";
-    return;
-  }
-
-  mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      handle_to_send, memory->mapped_size(), true /* read_only */);
-
-  (*render_message_filter_ptr_)
-      ->AllocatedSharedBitmap(std::move(buffer_handle), id);
+  return base::MakeUnique<ChildSharedBitmap>(sender_, mem, id);
 }
 
 }  // namespace content

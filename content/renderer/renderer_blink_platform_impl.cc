@@ -257,13 +257,13 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   }
 #endif
 
-  // RenderThread may not exist in some tests.
-  if (RenderThreadImpl::current()) {
-    sync_message_filter_ = RenderThreadImpl::current()->sync_message_filter();
-    thread_safe_sender_ = RenderThreadImpl::current()->thread_safe_sender();
-    quota_message_filter_ = RenderThreadImpl::current()->quota_message_filter();
+  // ChildThread may not exist in some tests.
+  if (ChildThreadImpl::current()) {
+    sync_message_filter_ = ChildThreadImpl::current()->sync_message_filter();
+    thread_safe_sender_ = ChildThreadImpl::current()->thread_safe_sender();
+    quota_message_filter_ = ChildThreadImpl::current()->quota_message_filter();
     shared_bitmap_manager_ =
-        RenderThreadImpl::current()->shared_bitmap_manager();
+        ChildThreadImpl::current()->shared_bitmap_manager();
     blob_registry_.reset(new WebBlobRegistryImpl(
         RenderThreadImpl::current()->GetIOTaskRunner().get(),
         base::ThreadTaskRunnerHandle::Get(), thread_safe_sender_.get()));

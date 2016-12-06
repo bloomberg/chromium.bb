@@ -110,7 +110,6 @@ class BlobMessageFilter;
 class BrowserPluginManager;
 class CacheStorageDispatcher;
 class ChildGpuMemoryBufferManager;
-class ChildSharedBitmapManager;
 class CompositorForwardingMessageFilter;
 class ContextProviderCommandBuffer;
 class DBMessageFilter;
@@ -351,11 +350,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   VideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
-  }
-
-  ChildSharedBitmapManager* shared_bitmap_manager() const {
-    DCHECK(shared_bitmap_manager_);
-    return shared_bitmap_manager_.get();
   }
 
   mojom::RenderFrameMessageFilter* render_frame_message_filter();
@@ -614,8 +608,6 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;
   std::unique_ptr<ThreadSafeAssociatedInterfacePtrProvider>
       thread_safe_associated_interface_ptr_provider_;
-
-  std::unique_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;
