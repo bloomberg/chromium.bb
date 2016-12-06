@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.webkit.WebMessage;
 import android.webkit.WebMessagePort;
 
+import org.chromium.content.browser.AppWebMessagePort;
 import org.chromium.content_public.browser.MessagePort;
 
 /**
@@ -61,7 +62,7 @@ public class WebMessagePortAdapter extends WebMessagePort {
 
     public static MessagePort[] toMessagePorts(WebMessagePort[] webMessagePorts) {
         if (webMessagePorts == null) return null;
-        MessagePort[] ports = new MessagePort[webMessagePorts.length];
+        MessagePort[] ports = new AppWebMessagePort[webMessagePorts.length];
         for (int i = 0; i < webMessagePorts.length; i++) {
             ports[i] = ((WebMessagePortAdapter) webMessagePorts[i]).getPort();
         }
