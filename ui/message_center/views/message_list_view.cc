@@ -102,13 +102,19 @@ void MessageListView::AddNotificationAt(MessageView* view, int index) {
 
 void MessageListView::RemoveNotification(MessageView* view) {
   DCHECK_EQ(view->parent(), this);
+
+
   if (GetContentsBounds().IsEmpty()) {
     delete view;
   } else {
+    if (adding_views_.find(view) != adding_views_.end())
+      adding_views_.erase(view);
+    if (animator_.IsAnimating(view))
+      animator_.StopAnimatingView(view);
+
     if (view->layer()) {
       deleting_views_.insert(view);
     } else {
-      animator_.StopAnimatingView(view);
       delete view;
     }
     DoUpdateIfPossible();
