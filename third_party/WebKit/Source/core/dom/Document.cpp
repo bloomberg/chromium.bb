@@ -4274,6 +4274,10 @@ EventQueue* Document::getEventQueue() const {
   return m_domWindow->getEventQueue();
 }
 
+void Document::enqueueAnimationFrameTask(std::unique_ptr<WTF::Closure> task) {
+  ensureScriptedAnimationController().enqueueTask(std::move(task));
+}
+
 void Document::enqueueAnimationFrameEvent(Event* event) {
   ensureScriptedAnimationController().enqueueEvent(event);
 }

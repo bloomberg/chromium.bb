@@ -43,7 +43,7 @@ class FrameRequestCallback;
 class MediaQueryListListener;
 
 class CORE_EXPORT ScriptedAnimationController
-    : public GarbageCollected<ScriptedAnimationController> {
+    : public GarbageCollectedFinalized<ScriptedAnimationController> {
  public:
   static ScriptedAnimationController* create(Document* document) {
     return new ScriptedAnimationController(document);
@@ -52,16 +52,25 @@ class CORE_EXPORT ScriptedAnimationController
   DECLARE_TRACE();
   void clearDocumentPointer() { m_document = nullptr; }
 
+  // Animation frame callbacks are used for requestAnimationFrame().
   typedef int CallbackId;
-
-  int registerCallback(FrameRequestCallback*);
+  CallbackId registerCallback(FrameRequestCallback*);
   void cancelCallback(CallbackId);
-  void serviceScriptedAnimations(double monotonicTimeNow);
 
+  // Animation frame events are used for resize events, scroll events, etc.
   void enqueueEvent(Event*);
   void enqueuePerFrameEvent(Event*);
+
+  // Animation frame tasks are used for Fullscreen.
+  void enqueueTask(std::unique_ptr<WTF::Closure>);
+
+  // Used for the MediaQueryList change event.
   void enqueueMediaQueryChangeListeners(
       HeapVector<Member<MediaQueryListListener>>&);
+
+  // Invokes callbacks, dispatches events, etc. The order is defined by HTML:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model
+  void serviceScriptedAnimations(double monotonicTimeNow);
 
   void suspend();
   void resume();
@@ -73,6 +82,7 @@ class CORE_EXPORT ScriptedAnimationController
 
   void scheduleAnimationIfNeeded();
 
+  void runTasks();
   void dispatchEvents(
       const AtomicString& eventInterfaceFilter = AtomicString());
   void executeCallbacks(double monotonicTimeNow);
@@ -83,6 +93,7 @@ class CORE_EXPORT ScriptedAnimationController
   Member<Document> m_document;
   FrameRequestCallbackCollection m_callbackCollection;
   int m_suspendCount;
+  Vector<std::unique_ptr<WTF::Closure>> m_taskQueue;
   HeapVector<Member<Event>> m_eventQueue;
   HeapListHashSet<std::pair<Member<const EventTarget>, const StringImpl*>>
       m_perFrameEvents;

@@ -1115,6 +1115,7 @@ source_set("unit_tests") {
     "dom/NthIndexCacheTest.cpp",
     "dom/RangeTest.cpp",
     "dom/ScriptRunnerTest.cpp",
+    "dom/ScriptedAnimationControllerTest.cpp",
     "dom/SelectorQueryTest.cpp",
     "dom/StaticRangeTest.cpp",
     "dom/StyleElementTest.cpp",

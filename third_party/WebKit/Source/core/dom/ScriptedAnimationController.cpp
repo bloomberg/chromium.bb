@@ -81,6 +81,13 @@ void ScriptedAnimationController::cancelCallback(CallbackId id) {
   m_callbackCollection.cancelCallback(id);
 }
 
+void ScriptedAnimationController::runTasks() {
+  Vector<std::unique_ptr<WTF::Closure>> tasks;
+  tasks.swap(m_taskQueue);
+  for (auto& task : tasks)
+    (*task)();
+}
+
 void ScriptedAnimationController::dispatchEvents(
     const AtomicString& eventInterfaceFilter) {
   HeapVector<Member<Event>> events;
@@ -144,8 +151,8 @@ bool ScriptedAnimationController::hasScheduledItems() const {
   if (m_suspendCount)
     return false;
 
-  return !m_callbackCollection.isEmpty() || !m_eventQueue.isEmpty() ||
-         !m_mediaQueryListListeners.isEmpty();
+  return !m_callbackCollection.isEmpty() || !m_taskQueue.isEmpty() ||
+         !m_eventQueue.isEmpty() || !m_mediaQueryListListeners.isEmpty();
 }
 
 void ScriptedAnimationController::serviceScriptedAnimations(
@@ -155,8 +162,15 @@ void ScriptedAnimationController::serviceScriptedAnimations(
 
   callMediaQueryListListeners();
   dispatchEvents();
+  runTasks();
   executeCallbacks(monotonicTimeNow);
 
+  scheduleAnimationIfNeeded();
+}
+
+void ScriptedAnimationController::enqueueTask(
+    std::unique_ptr<WTF::Closure> task) {
+  m_taskQueue.append(std::move(task));
   scheduleAnimationIfNeeded();
 }
 
