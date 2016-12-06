@@ -445,7 +445,6 @@ _arm_internal_release_boards = frozenset([
     'veyron_minnie-cheets',
     'veyron_pinky',
     'veyron_rialto',
-    'veyron_shark',
     'veyron_speedy',
     'veyron_tiger',
     'whirlwind',
