@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.widget.Button;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -62,6 +63,7 @@ public class SadTabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @SmallTest
     @Feature({"SadTab"})
+    @DisabledTest(message = "crbug.com/670920")
     public void testChangeSadButtonToFeedbackAfterFailedRefresh() {
         final Tab tab = getActivity().getActivityTab();
 
@@ -87,6 +89,7 @@ public class SadTabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @SmallTest
     @Feature({"SadTab"})
+    @DisabledTest(message = "crbug.com/670920")
     public void testSadButtonRevertsBackToReloadAfterSuccessfulLoad() {
         final Tab tab = getActivity().getActivityTab();
 
