@@ -194,7 +194,7 @@ AXLayoutObject::AXLayoutObject(LayoutObject* layoutObject,
                                AXObjectCacheImpl& axObjectCache)
     : AXNodeObject(layoutObject->node(), axObjectCache),
       m_layoutObject(layoutObject) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_layoutObject->setHasAXObject(true);
 #endif
 }
@@ -314,7 +314,7 @@ void AXLayoutObject::detach() {
 
   detachRemoteSVGRoot();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   if (m_layoutObject)
     m_layoutObject->setHasAXObject(false);
 #endif
