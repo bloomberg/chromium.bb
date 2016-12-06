@@ -105,6 +105,11 @@ void FontResource::didAddClient(ResourceClient* c) {
 void FontResource::setRevalidatingRequest(const ResourceRequest& request) {
   // Reload will use the same object, and needs to reset |m_loadLimitState|
   // before any didAddClient() is called again.
+  // TODO(toyoshim): Change following CHECKs to DCHECKs once we confirm these do
+  // not fire.
+  CHECK(isLoaded());
+  CHECK(!m_fontLoadShortLimitTimer.isActive());
+  CHECK(!m_fontLoadLongLimitTimer.isActive());
   m_loadLimitState = LoadNotStarted;
   Resource::setRevalidatingRequest(request);
 }
