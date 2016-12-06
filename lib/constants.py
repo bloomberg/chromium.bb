@@ -336,6 +336,16 @@ ARC_BUCKET_ACLS = {
     'SDK_TOOLS': 'googlestorage_acl_public.txt',
     'XTS': 'googlestorage_acl_cts.txt',
 }
+# x86-user, x86-userdebug and x86-eng builders create build artifacts with the
+# same name, e.g. cheets_x86-target_files-${VERSION}.zip. Chrome OS builders
+# that need to select x86-user or x86-userdebug artifacts at emerge time need
+# the artifacts to have different filenames to avoid checksum failures. These
+# targets will have their artifacts renamed when the PFQ copies them from the
+# the Android bucket to the ARC++ bucket (b/33072485).
+ARC_BUILDS_NEED_ARTIFACTS_RENAMED = {
+    'X86_USERDEBUG',
+    'AOSP_X86_USERDEBUG',
+}
 
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')
 GITCOOKIES_PATH = os.path.expanduser('~/.gitcookies')

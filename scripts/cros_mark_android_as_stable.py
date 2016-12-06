@@ -180,6 +180,38 @@ def FindAndroidCandidates(package_dir):
   return portage_util.BestEBuild(unstable_ebuilds), stable_ebuilds
 
 
+def _GetArcBasename(build, basename):
+  """Tweaks filenames between Android bucket and ARC++ bucket.
+
+  Android builders create build artifacts with the same name for -user and
+  -userdebug builds, which breaks the android-container ebuild (b/33072485).
+  When copying the artifacts from the Android bucket to the ARC++ bucket some
+  artifacts will be renamed from the usual pattern
+  *cheets_${ARCH}-target_files-S{VERSION}.zip to
+  cheets_${BUILD_NAME}-target_files-S{VERSION}.zip which will typically look
+  like cheets_(${LABEL})*${ARCH}_userdebug-target_files-S{VERSION}.zip.
+
+  Args:
+    build: the build being mirrored, e.g. 'X86', 'ARM', 'X86_USERDEBUG'.
+    basename: the basename of the artifact to copy.
+
+  Returns:
+    The basename of the destination.
+  """
+  if build not in constants.ARC_BUILDS_NEED_ARTIFACTS_RENAMED:
+    return basename
+  to_discard, sep, to_keep = basename.partition('-')
+  if not sep:
+    logging.error(('Build %s: Could not find separator "-" in artifact'
+                   ' basename %s'), build, basename)
+    return basename
+  if 'cheets_' not in to_discard:
+    logging.error('Build %s: Unexpected artifact basename %s',
+                  build, basename)
+    return basename
+  return 'cheets_%s-%s' % (build.lower(), to_keep)
+
+
 def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
                     targets, arc_bucket_url, acls):
   """Copies from source Android bucket to ARC++ specific bucket.
@@ -208,7 +240,7 @@ def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
     for targetfile in gs_context.List(android_dir):
       if re.search(pattern, targetfile.url):
         basename = os.path.basename(targetfile.url)
-        arc_path = os.path.join(arc_dir, basename)
+        arc_path = os.path.join(arc_dir, _GetArcBasename(build, basename))
         acl = acls[build]
         needs_copy = True
 
