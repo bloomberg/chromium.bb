@@ -92,6 +92,7 @@ void InitializeDebugGLBindings() {
 }
 
 void ShutdownGLPlatform() {
+  GLSurfaceEGL::ShutdownOneOff();
   if (HasGLOzone()) {
     GetGLOzone()->ShutdownGL();
     return;

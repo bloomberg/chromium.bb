@@ -78,7 +78,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   GLSurface::Format GetFormat() override;
 
   static bool InitializeOneOff(EGLNativeDisplayType native_display);
-  static void ResetForTesting();
+  static void ShutdownOneOff();
   static EGLDisplay GetHardwareDisplay();
   static EGLDisplay InitializeDisplay(EGLNativeDisplayType native_display);
   static EGLNativeDisplayType GetNativeDisplay();
