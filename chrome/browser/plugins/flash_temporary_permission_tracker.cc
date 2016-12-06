@@ -4,6 +4,8 @@
 
 #include "chrome/browser/plugins/flash_temporary_permission_tracker.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/plugins/flash_temporary_permission_tracker_factory.h"
@@ -23,18 +25,13 @@ class FlashTemporaryPermissionTracker::GrantObserver
                 const GURL& origin,
                 FlashTemporaryPermissionTracker* owner);
 
+  const GURL& origin() { return origin_; }
+
  private:
   // content::WebContentsObserver
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
-                              content::RenderFrameHost* new_host) override;
+  void WebContentsDestroyed() override;
 
   GURL origin_;
-  content::RenderFrameHost* original_rfh_;
-
-  bool refreshed_;
   FlashTemporaryPermissionTracker* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(GrantObserver);
@@ -60,24 +57,26 @@ bool FlashTemporaryPermissionTracker::IsFlashEnabled(const GURL& url) {
 void FlashTemporaryPermissionTracker::FlashEnabledForWebContents(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // In some infrequent circumstances (for example, if two permission bubbles
-  // were being displayed and answered) we may receive a grant for an origin
-  // that's already enabled. We just ignore the grant in this case.
   GURL origin = web_contents->GetLastCommittedURL().GetOrigin();
   {
     base::AutoLock lock(granted_origins_lock_);
-    if (!base::ContainsKey(granted_origins_, origin)) {
-      granted_origins_[origin] =
-          base::MakeUnique<GrantObserver>(web_contents, origin, this);
-    }
+    granted_origins_.insert(std::make_pair(
+        origin, base::MakeUnique<GrantObserver>(web_contents, origin, this)));
   }
   content::PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 }
 
-void FlashTemporaryPermissionTracker::RevokeAccess(const GURL& origin) {
+void FlashTemporaryPermissionTracker::RevokeAccess(GrantObserver* observer) {
+  DCHECK(observer);
   {
     base::AutoLock lock(granted_origins_lock_);
-    granted_origins_.erase(origin);
+    auto range = granted_origins_.equal_range(observer->origin());
+    for (auto it = range.first; it != range.second;) {
+      if (it->second.get() == observer) {
+        it = granted_origins_.erase(it);
+        break;
+      }
+    }
   }
   content::PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 }
@@ -92,48 +91,8 @@ FlashTemporaryPermissionTracker::GrantObserver::GrantObserver(
     FlashTemporaryPermissionTracker* owner)
     : content::WebContentsObserver(web_contents),
       origin_(origin),
-      original_rfh_(web_contents->GetMainFrame()),
-      refreshed_(false),
       owner_(owner) {}
 
-void FlashTemporaryPermissionTracker::GrantObserver::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // Ignore navigations not associated with the main frame.
-  if (!navigation_handle->IsInMainFrame())
-    return;
-
-  // Ignore unsuccesful navigations.
-  if (!navigation_handle->HasCommitted())
-    return;
-
-  // If the page has already refreshed once, revoke access.
-  if (refreshed_) {
-    owner_->RevokeAccess(origin_);
-    return;
-  }
-
-  // Don't revoke access to the page if it is being refreshed. Refreshing the
-  // page happens as a part of answering the permission prompt so we don't
-  // want that to revoke access. We verify the refresh is happening on the
-  // same origin for security purposes.
-  if (navigation_handle->GetPageTransition() == ui::PAGE_TRANSITION_RELOAD &&
-      origin_ == navigation_handle->GetURL().GetOrigin()) {
-    refreshed_ = true;
-  } else {
-    // All other navigation should revoke access.
-    owner_->RevokeAccess(origin_);
-  }
-}
-
-void FlashTemporaryPermissionTracker::GrantObserver::FrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host == original_rfh_)
-    owner_->RevokeAccess(origin_);
-}
-
-void FlashTemporaryPermissionTracker::GrantObserver::RenderFrameHostChanged(
-    content::RenderFrameHost* old_host,
-    content::RenderFrameHost* new_host) {
-  if (old_host == original_rfh_)
-    owner_->RevokeAccess(origin_);
+void FlashTemporaryPermissionTracker::GrantObserver::WebContentsDestroyed() {
+  owner_->RevokeAccess(this);
 }

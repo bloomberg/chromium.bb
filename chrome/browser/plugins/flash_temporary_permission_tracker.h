@@ -17,22 +17,21 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-// This class tracks temporary permission grants to allow flash to run on web
-// pages. This is used when the enterprise plugins setting is set to ASK. After
-// permission has been given to use flash, the page is automatically refreshed
-// so we need to make sure we don't revoke access when the page is first
-// refreshed. But any subsequent navigations or destroying the render frame
-// should revoke access. |IsFlashEnabled| can be called from any thread.
+// This class tracks temporary permission grants to allow Flash to run on web
+// pages. This is used when the enterprise plugins setting is set to ASK.
+// Temporary permission grants last until all granting WebContents for that
+// origin are destroyed. |IsFlashEnabled| can be called from any thread.
 class FlashTemporaryPermissionTracker : public RefcountedKeyedService {
  public:
   static scoped_refptr<FlashTemporaryPermissionTracker> Get(Profile* profile);
 
-  // Returns true if flash is enabled for a given |url|. Can be called from any
+  // Returns true if Flash is enabled for a given |url|. Can be called from any
   // thread.
   bool IsFlashEnabled(const GURL& url);
 
-  // Call if flash was enabled in the main frame of a given |web_contents|.
-  // Must be called on the UI thread.
+  // Call if Flash was enabled in the main frame of a given |web_contents|.
+  // Flash is then enabled for the origin of |web_contents| profile-wide until
+  // all granting |web_contents| of that origin are destroyed.
   void FlashEnabledForWebContents(content::WebContents* web_contents);
 
  private:
@@ -44,8 +43,8 @@ class FlashTemporaryPermissionTracker : public RefcountedKeyedService {
   explicit FlashTemporaryPermissionTracker(Profile* profile);
   ~FlashTemporaryPermissionTracker() override;
 
-  // Revoke access from the given origin.
-  void RevokeAccess(const GURL& origin);
+  // Revoke access from the given |origin| for a given |web_contents|.
+  void RevokeAccess(GrantObserver* observer);
 
   // RefCountedProfileKeyedBase method override.
   void ShutdownOnUIThread() override;
@@ -56,7 +55,7 @@ class FlashTemporaryPermissionTracker : public RefcountedKeyedService {
   // scheme comparing equal to itself.
   // TODO(raymes): Revisit this after we decide what to do with plugins on file:
   // URLs.
-  std::map<GURL, std::unique_ptr<GrantObserver>> granted_origins_;
+  std::multimap<GURL, std::unique_ptr<GrantObserver>> granted_origins_;
 
   // Lock to protect |granted_origins_|. This is needed because IsFlashEnabled
   // may be called from any thread via the ChromePluginServiceFilter.

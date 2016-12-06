@@ -9,6 +9,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -55,7 +56,7 @@ class FlashTemporaryPermissionTrackerTest
   scoped_refptr<FlashTemporaryPermissionTracker> tracker_;
 };
 
-TEST_F(FlashTemporaryPermissionTrackerTest, Basic) {
+TEST_F(FlashTemporaryPermissionTrackerTest, GrantSurvivesReloads) {
   GetMainRFH(kOrigin1);
 
   // Flash shouldn't be enabled initially.
@@ -72,24 +73,25 @@ TEST_F(FlashTemporaryPermissionTrackerTest, Basic) {
 
   // Refresh again.
   Reload();
-  // Flash shouldn't be enabled anymore.
-  EXPECT_FALSE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
+  // Flash should still be enabled.
+  EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
 }
 
-TEST_F(FlashTemporaryPermissionTrackerTest, NavigateAway) {
+TEST_F(FlashTemporaryPermissionTrackerTest, GrantSurvivesNavigations) {
   content::RenderFrameHost* rfh = GetMainRFH(kOrigin1);
 
   tracker()->FlashEnabledForWebContents(web_contents());
   Reload();
   EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
 
-  // Navigate to another origin. Flash shouldn't be enabled anymore.
+  // Navigate to another origin. Flash should still be enabled.
   content::RenderFrameHostTester::For(rfh)->SimulateNavigationCommit(
       GURL(kOrigin2));
-  EXPECT_FALSE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
+  EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
 }
 
-TEST_F(FlashTemporaryPermissionTrackerTest, NavigateChildFrame) {
+TEST_F(FlashTemporaryPermissionTrackerTest,
+       GrantSurvivesChildFrameNavigations) {
   content::RenderFrameHost* rfh = GetMainRFH(kOrigin1);
   content::RenderFrameHost* child = AddChildRFH(rfh, kOrigin2);
 
@@ -101,4 +103,50 @@ TEST_F(FlashTemporaryPermissionTrackerTest, NavigateChildFrame) {
   content::RenderFrameHostTester::For(child)->SimulateNavigationCommit(
       GURL(kOrigin3));
   EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
+}
+
+TEST_F(FlashTemporaryPermissionTrackerTest,
+       GrantRevokedWhenWebContentsDestroyed) {
+  GetMainRFH(kOrigin1);
+  EXPECT_FALSE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
+
+  std::unique_ptr<content::WebContents> temporary_web_contents(
+      CreateTestWebContents());
+  content::WebContentsTester::For(temporary_web_contents.get())
+      ->NavigateAndCommit(GURL(kOrigin1));
+
+  tracker()->FlashEnabledForWebContents(temporary_web_contents.get());
+  EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
+
+  temporary_web_contents.reset();
+  EXPECT_FALSE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
+}
+
+TEST_F(FlashTemporaryPermissionTrackerTest,
+       GrantRevokedOnLastGrantingWebContentsDestruction) {
+  EXPECT_FALSE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
+
+  std::unique_ptr<content::WebContents> temporary_web_contents(
+      CreateTestWebContents());
+  content::WebContentsTester::For(temporary_web_contents.get())
+      ->NavigateAndCommit(GURL(kOrigin1));
+
+  tracker()->FlashEnabledForWebContents(temporary_web_contents.get());
+  EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
+
+  // Make a second WebContents that also grants Flash permission on the origin.
+  std::unique_ptr<content::WebContents> second_web_contents(
+      CreateTestWebContents());
+  content::WebContentsTester::For(second_web_contents.get())
+      ->NavigateAndCommit(GURL(kOrigin1));
+  tracker()->FlashEnabledForWebContents(second_web_contents.get());
+  EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
+
+  // Now destroying the original WebContents should no longer revoke the grant.
+  temporary_web_contents.reset();
+  EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
+
+  // And destroying the second WebContents should revoke the grant.
+  second_web_contents.reset();
+  EXPECT_FALSE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
 }
