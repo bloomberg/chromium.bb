@@ -28,7 +28,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_tag.h"
 #include "net/quic/core/quic_utils.h"
-#include "net/quic/platform/api/quic_clock.h"
+#include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_pool_manager_impl.h"
 #include "net/socket/next_proto.h"
@@ -160,7 +160,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.socket_performance_watcher_factory,
           params.quic_crypto_client_stream_factory,
           params.quic_random ? params.quic_random : QuicRandom::GetInstance(),
-          params.quic_clock ? params.quic_clock : new QuicClock(),
+          params.quic_clock ? params.quic_clock : new QuicChromiumClock(),
           params.quic_max_packet_length,
           params.quic_user_agent_id,
           params.quic_supported_versions,

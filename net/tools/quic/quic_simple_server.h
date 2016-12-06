@@ -19,7 +19,7 @@
 #include "net/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/quic/core/quic_config.h"
 #include "net/quic/core/quic_version_manager.h"
-#include "net/quic/platform/api/quic_clock.h"
+#include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/tools/quic/quic_http_response_cache.h"
 
 namespace net {
@@ -74,7 +74,7 @@ class QuicSimpleServer {
   std::unique_ptr<QuicDispatcher> dispatcher_;
 
   // Used by the helper_ to time alarms.
-  QuicClock clock_;
+  QuicChromiumClock clock_;
 
   // Used to manage the message loop. Owned by dispatcher_.
   QuicChromiumConnectionHelper* helper_;

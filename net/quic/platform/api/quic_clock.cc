@@ -4,28 +4,11 @@
 
 #include "net/quic/platform/api/quic_clock.h"
 
-#include "base/time/time.h"
-
 namespace net {
 
 QuicClock::QuicClock() {}
 
 QuicClock::~QuicClock() {}
-
-QuicTime QuicClock::ApproximateNow() const {
-  // At the moment, Chrome does not have a distinct notion of ApproximateNow().
-  // We should consider implementing this using MessageLoop::recent_time_.
-  return Now();
-}
-
-QuicTime QuicClock::Now() const {
-  return QuicTime(base::TimeTicks::Now());
-}
-
-QuicWallTime QuicClock::WallNow() const {
-  return QuicWallTime::FromUNIXMicroseconds(base::Time::Now().ToJavaTime() *
-                                            1000);
-}
 
 QuicTime QuicClock::ConvertWallTimeToQuicTime(
     const QuicWallTime& walltime) const {

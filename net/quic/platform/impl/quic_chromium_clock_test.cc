@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/platform/api/quic_clock.h"
+#include "net/quic/platform/impl/quic_chromium_clock.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace test {
 
-TEST(QuicClockTest, Now) {
-  QuicClock clock;
+TEST(QuicChromiumClockTest, Now) {
+  QuicChromiumClock clock;
 
   QuicTime start(base::TimeTicks::Now());
   QuicTime now = clock.ApproximateNow();
@@ -20,8 +20,8 @@ TEST(QuicClockTest, Now) {
   EXPECT_LE(now, end);
 }
 
-TEST(QuicClockTest, WallNow) {
-  QuicClock clock;
+TEST(QuicChromiumClockTest, WallNow) {
+  QuicChromiumClock clock;
 
   base::Time start = base::Time::Now();
   QuicWallTime now = clock.WallNow();
