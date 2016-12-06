@@ -80,20 +80,26 @@ ReadingListWebStateObserver::ReadingListWebStateObserver(
 }
 
 void ReadingListWebStateObserver::DidStopLoading() {
-  timer_.reset();
+  StopCheckingProgress();
 }
 
 void ReadingListWebStateObserver::PageLoaded(
     web::PageLoadCompletionStatus load_completion_status) {
-  timer_.reset();
+  if (load_completion_status == web::PageLoadCompletionStatus::SUCCESS &&
+      pending_url_.is_valid()) {
+    reading_list_model_->SetReadStatus(pending_url_, true);
+  }
+  StopCheckingProgress();
 }
 
 void ReadingListWebStateObserver::WebStateDestroyed() {
-  timer_.reset();
+  StopCheckingProgress();
   web_state()->RemoveUserData(kObserverKey);
 }
 
-void ReadingListWebStateObserver::StartCheckingProgress() {
+void ReadingListWebStateObserver::StartCheckingProgress(
+    const GURL& pending_url) {
+  pending_url_ = pending_url;
   timer_.reset(new base::Timer(false, true));
   const base::TimeDelta kDelayUntilLoadingProgressIsChecked =
       base::TimeDelta::FromSeconds(1);
@@ -104,20 +110,23 @@ void ReadingListWebStateObserver::StartCheckingProgress() {
           base::Unretained(this)));
 }
 
+void ReadingListWebStateObserver::StopCheckingProgress() {
+  pending_url_ = GURL();
+  timer_.reset();
+}
+
 void ReadingListWebStateObserver::VerifyIfReadingListEntryStartedLoading() {
-  web::NavigationManager* navigation_manager =
-      web_state()->GetNavigationManager();
-  web::NavigationItem* item = navigation_manager->GetVisibleItem();
-  if (!item) {
+  if (!pending_url_.is_valid()) {
     return;
   }
-  const GURL& url = item->GetURL();
+  const ReadingListEntry* entry =
+      reading_list_model_->GetEntryByURL(pending_url_);
+  if (!entry || entry->DistilledState() != ReadingListEntry::PROCESSED) {
+    return;
+  }
   double progress = web_state()->GetLoadingProgress();
   const double kMinimumExpectedProgress = 0.15;
   if (progress < kMinimumExpectedProgress) {
-    const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
-    if (!entry)
-      return;
     reading_list::LoadReadingListDistilled(*entry, reading_list_model_,
                                            web_state());
   }

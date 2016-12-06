@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
+#include "url/gurl.h"
 
 class ReadingListModel;
 
@@ -28,7 +29,7 @@ class ReadingListWebStateObserver : public web::WebStateObserver {
   // quickly enough, stops checking the loading of that page.
   // [1] A page loading quickly enough is a page that has loaded 15% within
   // 1 second.
-  void StartCheckingProgress();
+  void StartCheckingProgress(const GURL& pending_url);
 
  private:
   ReadingListWebStateObserver(web::WebState* web_state,
@@ -40,6 +41,10 @@ class ReadingListWebStateObserver : public web::WebStateObserver {
 
   friend class ReadingListWebStateObserverUserDataWrapper;
 
+  // Stop checking the loading of the |pending_url_|.
+  // The WebState will still be observed, but no action will be done on events.
+  void StopCheckingProgress();
+
   // WebContentsObserver implementation.
   void DidStopLoading() override;
   void PageLoaded(
@@ -48,6 +53,7 @@ class ReadingListWebStateObserver : public web::WebStateObserver {
 
   ReadingListModel* reading_list_model_;
   std::unique_ptr<base::Timer> timer_;
+  GURL pending_url_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListWebStateObserver);
 };

@@ -51,7 +51,8 @@ TEST_F(ReadingListEntryLoadingUtilTest, TestLoadEntryOnlineWODistilled) {
   web::NavigationManager* navigation_manager =
       web_state()->GetNavigationManager();
   EXPECT_EQ(navigation_manager->GetPendingItem()->GetURL(), url);
-  EXPECT_TRUE(entry->IsRead());
+  // Entry is only marked read when successfully loaded.
+  EXPECT_FALSE(entry->IsRead());
 }
 
 // Tests that loading a distilled entry with network will load online version.
@@ -71,7 +72,8 @@ TEST_F(ReadingListEntryLoadingUtilTest, TestLoadEntryOnlineWithistilled) {
   web::NavigationManager* navigation_manager =
       web_state()->GetNavigationManager();
   EXPECT_EQ(navigation_manager->GetPendingItem()->GetURL(), url);
-  EXPECT_TRUE(entry->IsRead());
+  // Entry is only marked read when successfully loaded.
+  EXPECT_FALSE(entry->IsRead());
 }
 
 // Tests that loading a not distilled entry without network will load online
@@ -89,7 +91,8 @@ TEST_F(ReadingListEntryLoadingUtilTest, TestLoadEntryOfflineWODistilled) {
   web::NavigationManager* navigation_manager =
       web_state()->GetNavigationManager();
   EXPECT_EQ(navigation_manager->GetPendingItem()->GetURL(), url);
-  EXPECT_TRUE(entry->IsRead());
+  // Entry is only marked read when successfully loaded.
+  EXPECT_FALSE(entry->IsRead());
 }
 
 // Tests that loading a distilled entry without network will load offline

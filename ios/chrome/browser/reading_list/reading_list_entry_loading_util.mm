@@ -32,8 +32,7 @@ void LoadReadingListEntry(ReadingListEntry const& entry,
   web_state->GetNavigationManager()->LoadURLWithParams(params);
   ReadingListWebStateObserver* web_state_observer =
       ReadingListWebStateObserver::FromWebState(web_state, model);
-  web_state_observer->StartCheckingProgress();
-  model->SetReadStatus(entry.URL(), true);
+  web_state_observer->StartCheckingProgress(entry.URL());
 }
 
 void LoadReadingListDistilled(ReadingListEntry const& entry,
