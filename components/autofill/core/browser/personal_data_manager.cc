@@ -1011,7 +1011,8 @@ std::string PersonalDataManager::MergeProfile(
   std::string guid = new_profile.guid();
 
   // If we have already saved this address, merge in any missing values.
-  // Only merge with the first match.
+  // Only merge with the first match. Merging the new profile into the existing
+  // one preserves the validity of credit card's billing address reference.
   AutofillProfileComparator comparator(app_locale);
   for (const auto& existing_profile : *existing_profiles) {
     if (!matching_profile_found &&
@@ -1703,9 +1704,13 @@ bool PersonalDataManager::ApplyDedupingRoutine() {
   std::unordered_set<AutofillProfile*> profiles_to_delete;
   profiles_to_delete.reserve(web_profiles_.size());
 
-  DedupeProfiles(&web_profiles_, &profiles_to_delete);
+  // Create the map used to update credit card's billing addresses after the
+  // dedupe.
+  std::unordered_map<std::string, std::string> guids_merge_map;
 
-  // Apply the changes to the database.
+  DedupeProfiles(&web_profiles_, &profiles_to_delete, &guids_merge_map);
+
+  // Apply the profile changes to the database.
   for (const auto& profile : web_profiles_) {
     // If the profile was set to be deleted, remove it from the database.
     if (profiles_to_delete.count(profile.get())) {
@@ -1715,6 +1720,8 @@ bool PersonalDataManager::ApplyDedupingRoutine() {
       database_->UpdateAutofillProfile(*profile);
     }
   }
+
+  UpdateCardsBillingAddressReference(guids_merge_map);
 
   // Set the pref to the current major version.
   pref_service_->SetInteger(prefs::kAutofillLastVersionDeduped,
@@ -1728,7 +1735,8 @@ bool PersonalDataManager::ApplyDedupingRoutine() {
 
 void PersonalDataManager::DedupeProfiles(
     std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
-    std::unordered_set<AutofillProfile*>* profiles_to_delete) {
+    std::unordered_set<AutofillProfile*>* profiles_to_delete,
+    std::unordered_map<std::string, std::string>* guids_merge_map) {
   AutofillMetrics::LogNumberOfProfilesConsideredForDedupe(
       existing_profiles->size());
 
@@ -1782,6 +1790,11 @@ void PersonalDataManager::DedupeProfiles(
       // and will not accept updates from profile_to_merge.
       if (existing_profile->SaveAdditionalInfo(*profile_to_merge,
                                                app_locale_)) {
+        // Keep track that a credit card using |profile_to_merge|'s GUID as its
+        // billing address id should replace it by |existing_profile|'s GUID.
+        guids_merge_map->insert(std::pair<std::string, std::string>(
+            profile_to_merge->guid(), existing_profile->guid()));
+
         // Since |profile_to_merge| was a duplicate of |existing_profile|
         // and was merged successfully, it can now be deleted.
         profiles_to_delete->insert(profile_to_merge);
@@ -1799,6 +1812,49 @@ void PersonalDataManager::DedupeProfiles(
   }
   AutofillMetrics::LogNumberOfProfilesRemovedDuringDedupe(
       profiles_to_delete->size());
+}
+
+void PersonalDataManager::UpdateCardsBillingAddressReference(
+    const std::unordered_map<std::string, std::string>& guids_merge_map) {
+  /*  Here is an example of what the graph might look like.
+
+      A -> B
+             \
+               -> E
+             /
+      C -> D
+  */
+
+  for (auto& credit_card : local_credit_cards_) {
+    // If the credit card is not associated with a billing address, skip it.
+    if (credit_card->billing_address_id().empty())
+      break;
+
+    // If the billing address profile associated with the card has been merged,
+    // replace it by the id of the profile in which it was merged. Repeat the
+    // process until the billing address has not been merged into another one.
+    std::unordered_map<std::string, std::string>::size_type nb_guid_changes = 0;
+    bool was_modified = false;
+    auto it = guids_merge_map.find(credit_card->billing_address_id());
+    while (it != guids_merge_map.end()) {
+      was_modified = true;
+      credit_card->set_billing_address_id(it->second);
+      it = guids_merge_map.find(credit_card->billing_address_id());
+
+      // Out of abundance of caution.
+      if (nb_guid_changes > guids_merge_map.size()) {
+        NOTREACHED();
+        // Cancel the changes for that card.
+        was_modified = false;
+        break;
+      }
+    }
+
+    // If the card was modified, apply the changes to the database.
+    if (was_modified) {
+      database_->UpdateCreditCard(*credit_card);
+    }
+  }
 }
 
 }  // namespace autofill

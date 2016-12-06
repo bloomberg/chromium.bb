@@ -4674,8 +4674,10 @@ TEST_F(PersonalDataManagerTest, DedupeProfiles_ProfilesToDelete) {
   EnableAutofillProfileCleanup();
 
   base::HistogramTester histogram_tester;
+  std::unordered_map<std::string, std::string> guids_merge_map;
   std::unordered_set<AutofillProfile*> profiles_to_delete;
-  personal_data_->DedupeProfiles(&existing_profiles, &profiles_to_delete);
+  personal_data_->DedupeProfiles(&existing_profiles, &profiles_to_delete,
+                                 &guids_merge_map);
   // 5 profiles were considered for dedupe.
   histogram_tester.ExpectUniqueSample(
       "Autofill.NumberOfProfilesConsideredForDedupe", 5, 1);
@@ -4696,6 +4698,272 @@ TEST_F(PersonalDataManagerTest, DedupeProfiles_ProfilesToDelete) {
 
   // All profiles should still be present in |existing_profiles|.
   EXPECT_EQ(5U, existing_profiles.size());
+}
+
+// Tests that DedupeProfiles sets the correct merge mapping for billing address
+// id references.
+TEST_F(PersonalDataManagerTest, DedupeProfiles_GuidsMergeMap) {
+  // Create the profile for which to find duplicates. It has the highest
+  // frecency.
+  AutofillProfile* profile1 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile1, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742. Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+  profile1->set_use_count(9);
+
+  // Create a different profile that should not be deduped (different address).
+  AutofillProfile* profile2 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile2, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "Fox", "1234 Other Street", "",
+                       "Springfield", "IL", "91601", "US", "12345678910");
+  profile2->set_use_count(7);
+
+  // Create a profile similar to profile1 which should be deduped.
+  AutofillProfile* profile3 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile3, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
+                       "Springfield", "IL", "91601", "US", "12345678910");
+  profile3->set_use_count(5);
+
+  // Create another different profile that should not be deduped (different
+  // name).
+  AutofillProfile* profile4 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile4, "Marjorie", "Jacqueline", "Simpson",
+                       "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+  profile4->set_use_count(3);
+
+  // Create another profile similar to profile1. Since that one has the lowest
+  // frecency, the result of the merge should be in this profile at the end of
+  // the test.
+  AutofillProfile* profile5 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile5, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+  profile5->set_use_count(1);
+
+  // Add the profiles.
+  std::vector<std::unique_ptr<AutofillProfile>> existing_profiles;
+  existing_profiles.push_back(base::WrapUnique(profile1));
+  existing_profiles.push_back(base::WrapUnique(profile2));
+  existing_profiles.push_back(base::WrapUnique(profile3));
+  existing_profiles.push_back(base::WrapUnique(profile4));
+  existing_profiles.push_back(base::WrapUnique(profile5));
+
+  // Enable the profile cleanup.
+  EnableAutofillProfileCleanup();
+
+  std::unordered_map<std::string, std::string> guids_merge_map;
+  std::unordered_set<AutofillProfile*> profiles_to_delete;
+  personal_data_->DedupeProfiles(&existing_profiles, &profiles_to_delete,
+                                 &guids_merge_map);
+
+  // The two profile merges should be recorded in the map.
+  EXPECT_EQ(2U, guids_merge_map.size());
+
+  // Profile 1 was merged into profile 3.
+  ASSERT_TRUE(guids_merge_map.count(profile1->guid()));
+  EXPECT_TRUE(guids_merge_map.at(profile1->guid()) == profile3->guid());
+
+  // Profile 3 was merged into profile 5.
+  ASSERT_TRUE(guids_merge_map.count(profile3->guid()));
+  EXPECT_TRUE(guids_merge_map.at(profile3->guid()) == profile5->guid());
+}
+
+// Tests that UpdateCardsBillingAddressReference sets the correct billing
+// address id as specified in the map.
+TEST_F(PersonalDataManagerTest, UpdateCardsBillingAddressReference) {
+  /*  The merges will be as follow:
+
+      A -> B            F (not merged)
+             \
+               -> E
+             /
+      C -> D
+  */
+
+  std::unordered_map<std::string, std::string> guids_merge_map;
+  guids_merge_map.insert(std::pair<std::string, std::string>("A", "B"));
+  guids_merge_map.insert(std::pair<std::string, std::string>("C", "D"));
+  guids_merge_map.insert(std::pair<std::string, std::string>("B", "E"));
+  guids_merge_map.insert(std::pair<std::string, std::string>("D", "E"));
+
+  // Create cards that use A, D, E and F as their billing address id.
+  CreditCard* credit_card1 =
+      new CreditCard(base::GenerateGUID(), "https://www.example.com");
+  credit_card1->set_billing_address_id("A");
+  CreditCard* credit_card2 =
+      new CreditCard(base::GenerateGUID(), "https://www.example.com");
+  credit_card2->set_billing_address_id("D");
+  CreditCard* credit_card3 =
+      new CreditCard(base::GenerateGUID(), "https://www.example.com");
+  credit_card3->set_billing_address_id("E");
+  CreditCard* credit_card4 =
+      new CreditCard(base::GenerateGUID(), "https://www.example.com");
+  credit_card4->set_billing_address_id("F");
+
+  // Add the credit cards to the database.
+  personal_data_->local_credit_cards_.push_back(base::WrapUnique(credit_card1));
+  personal_data_->local_credit_cards_.push_back(base::WrapUnique(credit_card2));
+  personal_data_->local_credit_cards_.push_back(base::WrapUnique(credit_card3));
+  personal_data_->local_credit_cards_.push_back(base::WrapUnique(credit_card4));
+
+  personal_data_->UpdateCardsBillingAddressReference(guids_merge_map);
+
+  // The first card's billing address should now be E.
+  EXPECT_EQ("E", credit_card1->billing_address_id());
+  // The second card's billing address should now be E.
+  EXPECT_EQ("E", credit_card2->billing_address_id());
+  // The third card's billing address should still be E.
+  EXPECT_EQ("E", credit_card3->billing_address_id());
+  // The fourth card's billing address should still be F.
+  EXPECT_EQ("F", credit_card4->billing_address_id());
+}
+
+// Tests that ApplyDedupingRoutine updates the credit cards' billing address id
+// based on the deduped profiles.
+TEST_F(PersonalDataManagerTest,
+       ApplyDedupingRoutine_CardsBillingAddressIdUpdated) {
+  // A set of 6 profiles will be created. They should merge in this way:
+  //  1 -> 2 -> 3
+  //  4 -> 5
+  //  6
+  // Set their frencency score so that profile 3 has a higher score than 5, and
+  // 5 has a higher score than 6. This will ensure a deterministic order when
+  // verifying results.
+
+  // Create a set of 3 profiles to be merged together.
+  // Create a profile with a higher frecency score.
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Homer", "J", "Simpson",
+                       "homer.simpson@abc.com", "", "742. Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "");
+  profile1.set_use_count(12);
+  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+
+  // Create a profile with a medium frecency score.
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile2, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
+                       "Springfield", "IL", "91601", "", "12345678910");
+  profile2.set_use_count(5);
+  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+
+  // Create a profile with a lower frecency score.
+  AutofillProfile profile3(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile3, "Homer", "J", "Simpson",
+                       "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
+                       "", "Springfield", "IL", "91601", "", "");
+  profile3.set_use_count(3);
+  profile3.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
+
+  // Create a set of two profiles to be merged together.
+  // Create a profile with a higher frecency score.
+  AutofillProfile profile4(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile4, "Marge", "B", "Simpson",
+                       "marge.simpson@abc.com", "", "742. Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "");
+  profile4.set_use_count(11);
+  profile4.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+
+  // Create a profile with a lower frecency score.
+  AutofillProfile profile5(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile5, "Marge", "B", "Simpson",
+                       "marge.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
+                       "", "Springfield", "IL", "91601", "", "");
+  profile5.set_use_count(5);
+  profile5.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(3));
+
+  // Create a unique profile.
+  AutofillProfile profile6(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile6, "Bart", "J", "Simpson",
+                       "bart.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
+                       "", "Springfield", "IL", "91601", "", "");
+  profile6.set_use_count(10);
+  profile6.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+
+  // Add three credit cards. Give them a frecency score so that they are
+  // suggested in order (1, 2, 3). This will ensure a deterministic order for
+  // verifying results.
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card1, "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2999");
+  credit_card1.set_use_count(10);
+
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card2, "John Dillinger",
+                          "423456789012" /* Visa */, "01", "2999");
+  credit_card2.set_use_count(5);
+
+  CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card3, "Bonnie Parker",
+                          "518765432109" /* Mastercard */, "12", "2999");
+  credit_card3.set_use_count(1);
+
+  // Associate the first card with profile1.
+  credit_card1.set_billing_address_id(profile1.guid());
+  // Associate the second card with profile4.
+  credit_card2.set_billing_address_id(profile4.guid());
+  // Associate the third card with profile6.
+  credit_card3.set_billing_address_id(profile6.guid());
+
+  personal_data_->AddProfile(profile1);
+  personal_data_->AddProfile(profile2);
+  personal_data_->AddProfile(profile3);
+  personal_data_->AddProfile(profile4);
+  personal_data_->AddProfile(profile5);
+  personal_data_->AddProfile(profile6);
+  personal_data_->AddCreditCard(credit_card1);
+  personal_data_->AddCreditCard(credit_card2);
+  personal_data_->AddCreditCard(credit_card3);
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // Make sure the 6 profiles and 3 credit cards were saved.
+  EXPECT_EQ(6U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
+
+  // Enable the profile cleanup now. Otherwise it would be triggered by the
+  // calls to AddProfile.
+  EnableAutofillProfileCleanup();
+
+  EXPECT_TRUE(personal_data_->ApplyDedupingRoutine());
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // Get the profiles and cards sorted by frecency to have a deterministic
+  // order.
+  std::vector<AutofillProfile*> profiles =
+      personal_data_->GetProfilesToSuggest();
+  std::vector<CreditCard*> credit_cards =
+      personal_data_->GetCreditCardsToSuggest();
+
+  // |profile1| should have been merged into |profile2| which should then have
+  // been merged into |profile3|. |profile4| should have been merged into
+  // |profile5| and |profile6| should not have merged. Therefore there should be
+  // 3 profile left.
+  ASSERT_EQ(3U, profiles.size());
+
+  // Make sure the remaining profiles are the expected ones.
+  EXPECT_EQ(profile3.guid(), profiles[0]->guid());
+  EXPECT_EQ(profile5.guid(), profiles[1]->guid());
+  EXPECT_EQ(profile6.guid(), profiles[2]->guid());
+
+  // |credit_card1|'s billing address should now be profile 3.
+  EXPECT_EQ(profile3.guid(), credit_cards[0]->billing_address_id());
+
+  // |credit_card2|'s billing address should now be profile 5.
+  EXPECT_EQ(profile5.guid(), credit_cards[1]->billing_address_id());
+
+  // |credit_card3|'s billing address should still be profile 6.
+  EXPECT_EQ(profile6.guid(), credit_cards[2]->billing_address_id());
 }
 
 // Tests that ApplyDedupingRoutine merges the profile values correctly, i.e.

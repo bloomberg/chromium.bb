@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -288,9 +289,15 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtStartup);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            DedupeProfiles_ProfilesToDelete);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           DedupeProfiles_GuidsMergeMap);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           UpdateCardsBillingAddressReference);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, ApplyProfileUseDatesFix);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            ApplyProfileUseDatesFix_NotAppliedTwice);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           ApplyDedupingRoutine_CardsBillingAddressIdUpdated);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            ApplyDedupingRoutine_MergedProfileValues);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
@@ -472,20 +479,28 @@ class PersonalDataManager : public KeyedService,
   // Applies the deduping routine once per major version if the feature is
   // enabled. Calls DedupeProfiles with the content of |web_profiles_| as a
   // parameter. Removes the profiles to delete from the database and updates the
-  // others. Returns true if the routine was run.
+  // others. Also updates the credit cards' billing address references. Returns
+  // true if the routine was run.
   bool ApplyDedupingRoutine();
 
   // Goes through all the |existing_profiles| and merges all similar unverified
   // profiles together. Also discards unverified profiles that are similar to a
   // verified profile. All the profiles except the results of the merges will be
   // added to |profile_guids_to_delete|. This routine should be run once per
-  // major version.
+  // major version. Records all the merges into the |guids_merge_map|.
   //
   // This method should only be called by ApplyDedupingRoutine. It is split for
   // testing purposes.
   void DedupeProfiles(
       std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
-      std::unordered_set<AutofillProfile*>* profile_guids_to_delete);
+      std::unordered_set<AutofillProfile*>* profile_guids_to_delete,
+      std::unordered_map<std::string, std::string>* guids_merge_map);
+
+  // Updates the credit cards' billing address reference based on the merges
+  // that happened during the dedupe, as defined in |guids_merge_map|. Also
+  // updates the cards entries in the database.
+  void UpdateCardsBillingAddressReference(
+      const std::unordered_map<std::string, std::string>& guids_merge_map);
 
   const std::string app_locale_;
 
