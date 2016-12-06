@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://webaudio.github.io/web-midi-api/#requestMIDIAccess
+
 partial interface Navigator {
     [CallWith=ScriptState, MeasureAs=RequestMIDIAccess] Promise requestMIDIAccess(optional MIDIOptions options);
 };

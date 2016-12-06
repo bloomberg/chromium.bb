@@ -28,21 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://webaudio.github.io/web-midi-api/#idl-def-MIDIPortConnectionState
+
 enum MIDIPortConnectionState {
     "open",
     "closed",
     "pending"
 };
 
+// https://webaudio.github.io/web-midi-api/#idl-def-MIDIPortDeviceState
+
 enum MIDIPortDeviceState {
     "disconnected",
     "connected"
 };
 
+// https://webaudio.github.io/web-midi-api/#idl-def-MIDIPortType
+
 enum MIDIPortType {
     "input",
     "output"
 };
+
+// https://webaudio.github.io/web-midi-api/#MIDIPort
 
 [
     ActiveScriptWrappable,
