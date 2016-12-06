@@ -5,8 +5,8 @@ layer at (0,0) size 800x317
     LayoutBlockFlow {BODY} at (8,8) size 784x293
       LayoutBlockFlow (anonymous) at (0,0) size 784x60
         LayoutText {#text} at (0,0) size 773x59
-          text run at (0,0) width 501: "Tests of WebKit's intepretation of font sizes when no absolute font size is specified. "
-          text run at (500,0) width 256: "Percentages and logical keywords scale to"
+          text run at (0,0) width 506: "Tests of WebKit's interpretation of font sizes when no absolute font size is specified. "
+          text run at (505,0) width 256: "Percentages and logical keywords scale to"
           text run at (0,20) width 136: "reflect the family type. "
           text run at (136,20) width 637: "Opera 9 matches this behavior as well (except it has a bug with multiple font-family mappings as in the first"
           text run at (0,40) width 59: "example)."
