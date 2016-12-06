@@ -16,7 +16,12 @@ group("command_buffer") {
   }
 }
 
-source_set("command_buffer_sources") {
+if (is_component_build) {
+  link_target_type = "source_set"
+} else {
+  link_target_type = "static_library"
+}
+target(link_target_type, "command_buffer_sources") {
   visibility = [ "//gpu/*" ]
   sources = [
     "gpu_in_process_thread_service.cc",
