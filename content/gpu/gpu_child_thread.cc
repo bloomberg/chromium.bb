@@ -359,7 +359,8 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
 
   // Only set once per process instance.
-  service_factory_.reset(new GpuServiceFactory);
+  service_factory_.reset(
+      new GpuServiceFactory(media_gpu_channel_manager_->AsWeakPtr()));
 
   GetInterfaceRegistry()->AddInterface(base::Bind(
       &GpuChildThread::BindServiceFactoryRequest, base::Unretained(this)));

@@ -11,6 +11,7 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/video/video_decode_accelerator.h"
@@ -23,7 +24,8 @@ namespace media {
 
 class MediaGpuChannel;
 
-class MediaGpuChannelManager {
+class MediaGpuChannelManager
+    : public base::SupportsWeakPtr<MediaGpuChannelManager> {
  public:
   explicit MediaGpuChannelManager(gpu::GpuChannelManager* channel_manager);
   ~MediaGpuChannelManager();

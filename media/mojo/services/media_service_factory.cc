@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "media/mojo/services/gpu_mojo_media_client.h"
 #include "media/mojo/services/media_service.h"
 #include "media/mojo/services/test_mojo_media_client.h"
 
@@ -25,6 +26,14 @@ std::unique_ptr<service_manager::Service> CreateMediaService() {
   NOTREACHED() << "No MediaService implementation available.";
   return nullptr;
 #endif
+}
+
+std::unique_ptr<service_manager::Service> CreateGpuMediaService(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager) {
+  return std::unique_ptr<service_manager::Service>(
+      new MediaService(base::MakeUnique<GpuMojoMediaClient>(
+          task_runner, media_gpu_channel_manager)));
 }
 
 std::unique_ptr<service_manager::Service> CreateMediaServiceForTesting() {

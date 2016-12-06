@@ -61,6 +61,8 @@ source_set("lib") {
   sources = [
     "demuxer_stream_provider_shim.cc",
     "demuxer_stream_provider_shim.h",
+    "gpu_mojo_media_client.cc",
+    "gpu_mojo_media_client.h",
     "interface_factory_impl.cc",
     "interface_factory_impl.h",
     "media_mojo_export.h",
