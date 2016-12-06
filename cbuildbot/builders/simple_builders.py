@@ -9,11 +9,7 @@ from __future__ import print_function
 import collections
 
 from chromite.cbuildbot import afdo
-from chromite.lib import config_lib
-from chromite.lib import constants
 from chromite.cbuildbot import manifest_version
-from chromite.lib import results_lib
-from chromite.lib import failures_lib
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.stages import afdo_stages
 from chromite.cbuildbot.stages import android_stages
@@ -24,11 +20,16 @@ from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import release_stages
 from chromite.cbuildbot.stages import report_stages
+from chromite.cbuildbot.stages import scheduler_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import test_stages
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import patch as cros_patch
 from chromite.lib import parallel
+from chromite.lib import results_lib
+from chromite.lib import failures_lib
 
 
 # TODO: SimpleBuilder needs to be broken up big time.
@@ -230,6 +231,10 @@ class SimpleBuilder(generic_builders.Builder):
 
   def _RunMasterPaladinOrPFQBuild(self):
     """Runs through the stages of the paladin or chrome PFQ master build."""
+    # If this master build uses Buildbucket scheduler, run
+    # scheduler_stages.ScheduleSlavesStage to schedule slaves.
+    if config_lib.UseBuildbucketScheduler(self._run.config):
+      self._RunStage(scheduler_stages.ScheduleSlavesStage)
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
     # The CQ/Chrome PFQ master will not actually run the SyncChrome stage, but

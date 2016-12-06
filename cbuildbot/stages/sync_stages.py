@@ -11,7 +11,6 @@ import ConfigParser
 import contextlib
 import datetime
 import itertools
-import json
 import os
 import re
 import shutil
@@ -22,9 +21,6 @@ from xml.dom import minidom
 
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chroot_lib
-from chromite.lib import config_lib
-from chromite.lib import constants
-from chromite.lib import failures_lib
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
@@ -35,9 +31,12 @@ from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import build_stages
 from chromite.lib import clactions
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import failures_lib
 from chromite.lib import git
 from chromite.lib import graphite
 from chromite.lib import metrics
@@ -460,112 +459,6 @@ class SyncStage(generic_stages.BuilderStage):
                                          x[cros_patch.ATTR_PATCH_NUMBER],
                                          x[cros_patch.ATTR_REMOTE]))
     self._run.attrs.metadata.UpdateWithDict({'changes': changes_list})
-
-  def _GetBuildbucketBucket(self, build_name, build_config):
-    """Get the corresponding Buildbucket bucket.
-
-    Args:
-      build_name: name of the build to put to Buildbucket.
-      build_config: config of the build to put to Buildbucket.
-
-    Raises:
-      NoBuildbucketBucketFoundException when no Buildbucket bucket found.
-    """
-    bucket = buildbucket_lib.WATERFALL_BUCKET_MAP.get(
-        build_config.active_waterfall)
-
-    if bucket is None:
-      raise buildbucket_lib.NoBuildbucketBucketFoundException(
-          'No Buildbucket bucket found for builder %s waterfall: %s' %
-          (build_name, build_config.active_waterfall))
-
-    return bucket
-
-  def PostSlaveBuildToBuildbucket(self, build_name, build_config,
-                                  master_build_id, buildset_tag, dryrun):
-    """Send a Put slave build request to Buildbucket.
-
-    Args:
-      build_name: Salve build name to put to Buildbucket.
-      build_config: Slave build config to put to Buildbucket.
-      master_build_id: Master build id of the slave build.
-      buildset_tag: The buildset tag for strong consistent tag queries.
-                    More context: crbug.com/661689
-      dryrun: Whether a dryrun.
-    """
-    body = json.dumps({
-        'bucket': self._GetBuildbucketBucket(build_name, build_config),
-        'parameters_json': json.dumps({
-            'builder_name': build_name,
-            'properties': {
-                'cbb_config': build_name,
-                'cbb_branch': self._run.manifest_branch,
-                'cbb_master_build_id': master_build_id,
-            }
-        }),
-        'tags':['buildset:%s' % buildset_tag,
-                'build_type:%s' % build_config.build_type,
-                'master:False',
-                'cbb_config:%s' % build_name,
-                'cbb_master_build_id:%s' % master_build_id]
-    })
-
-    content = self.buildbucket_client.PutBuildRequest(body, dryrun)
-
-    buildbucket_id = buildbucket_lib.GetBuildId(content)
-    created_ts = buildbucket_lib.GetBuildCreated_ts(content)
-
-    logging.info('Build_name %s buildbucket_id %s created_timestamp %s',
-                 build_name, buildbucket_id, created_ts)
-
-    return (buildbucket_id, created_ts)
-
-  def ScheduleSlaveBuildsViaBuildbucket(self, important_only, dryrun):
-    """Schedule slave builds by sending PUT requests to Buildbucket.
-
-    Args:
-      important_only: Whether only schedule important slave builds.
-      dryrun: Whether a dryrun.
-    """
-    if self.buildbucket_client is None:
-      logging.info('No buildbucket_client. Skip scheduling slaves.')
-      return
-
-    build_id, _ = self._run.GetCIDBHandle()
-    if build_id is None:
-      logging.info('No build id. Skip scheduling slaves.')
-      return
-
-    buildset_tag = 'cbuildbot/%s/%s/%s' % (
-        self._run.manifest_branch, self._run.config.name, build_id)
-
-    scheduled_slave_builds = []
-    unscheduled_slave_builds = []
-
-    # Get all active slave build configs.
-    slave_config_map = self._GetSlaveConfigMap(important_only)
-    for slave_name, slave_config in slave_config_map.iteritems():
-      try:
-        buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
-            slave_name, slave_config, build_id, buildset_tag, dryrun)
-
-        if slave_config.important:
-          scheduled_slave_builds.append(
-              (slave_name, buildbucket_id, created_ts))
-      except buildbucket_lib.BuildbucketResponseException as e:
-        # Use 16-digit ts to be consistent with the created_ts from Buildbucket
-        current_ts = int(round(time.time() * 1000000))
-        unscheduled_slave_builds.append((slave_name, None, current_ts))
-        if important_only or slave_config.important:
-          raise
-        else:
-          logging.warning('Failed to schedule %s current timestamp %s: %s'
-                          % (slave_name, current_ts, e))
-
-    self._run.attrs.metadata.ExtendKeyListWithList(
-        constants.METADATA_SCHEDULED_SLAVES, scheduled_slave_builds)
-    self._run.attrs.metadata.ExtendKeyListWithList(
-        constants.METADATA_UNSCHEDULED_SLAVES, unscheduled_slave_builds)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
@@ -1221,15 +1114,6 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
       ManifestVersionedSyncStage.PerformStage(self)
 
     self.WriteChangesToMetadata(self.pool.applied)
-
-    # If this builder is a cq-master but not force_version build,
-    # schedule all slave builders via Buildbucket. If it's a debug mode run,
-    # PutSlaveBuildToBuildbucket would be a dryrun.
-    if (config_lib.UseBuildbucketScheduler(self._run.config) and
-        not self._run.options.force_version and
-        self._run.options.buildbot):
-      self.ScheduleSlaveBuildsViaBuildbucket(important_only=False,
-                                             dryrun=self._run.options.debug)
 
 
 class PreCQSyncStage(SyncStage):

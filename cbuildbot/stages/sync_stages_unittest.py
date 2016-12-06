@@ -17,32 +17,30 @@ import tempfile
 
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chromeos_config
-from chromite.lib import config_lib
-from chromite.lib import constants
-from chromite.lib import failures_lib
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
-from chromite.lib import metadata_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
-from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import auth
 from chromite.lib import cidb
 from chromite.lib import clactions
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import fake_cidb
+from chromite.lib import failures_lib
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import git_unittest
 from chromite.lib import gob_util
+from chromite.lib import metadata_lib
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
@@ -414,91 +412,6 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
     result = self._run.attrs.metadata.GetValue('changes')
     self.assertEqual(expected, result)
 
-  def testScheduleImportantSlaveBuildsFailure(self):
-    """Test ScheduleSlaveBuilds with important slave failures."""
-    stage = self.ConstructStage()
-    self.PatchObject(sync_stages.SyncStage, 'PostSlaveBuildToBuildbucket',
-                     side_effect=buildbucket_lib.BuildbucketResponseException)
-
-    slave_config_map_1 = {
-        'slave_external': config_lib.BuildConfig(
-            important=True, active_waterfall=constants.WATERFALL_EXTERNAL)}
-    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
-                     return_value=slave_config_map_1)
-    self.assertRaises(
-        buildbucket_lib.BuildbucketResponseException,
-        stage.ScheduleSlaveBuildsViaBuildbucket,
-        important_only=False, dryrun=True)
-
-    slave_config_map_2 = {
-        'slave_internal': config_lib.BuildConfig(
-            important=True, active_waterfall=constants.WATERFALL_INTERNAL)}
-    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
-                     return_value=slave_config_map_2)
-    self.assertRaises(
-        buildbucket_lib.BuildbucketResponseException,
-        stage.ScheduleSlaveBuildsViaBuildbucket,
-        important_only=False, dryrun=True)
-
-  def testScheduleUnimportantSlaveBuildsFailure(self):
-    """Test ScheduleSlaveBuilds with unimportant slave failures."""
-    stage = self.ConstructStage()
-    self.PatchObject(sync_stages.SyncStage, 'PostSlaveBuildToBuildbucket',
-                     side_effect=buildbucket_lib.BuildbucketResponseException)
-
-    slave_config_map = {
-        'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=constants.WATERFALL_EXTERNAL),
-        'slave_internal': config_lib.BuildConfig(
-            important=False, active_waterfall=constants.WATERFALL_INTERNAL),}
-    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
-                     return_value=slave_config_map)
-    stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
-
-    scheduled_slaves = self._run.attrs.metadata.GetValue('scheduled_slaves')
-    self.assertEqual(len(scheduled_slaves), 0)
-    unscheduled_slaves = self._run.attrs.metadata.GetValue('unscheduled_slaves')
-    self.assertEqual(len(unscheduled_slaves), 2)
-
-  def testScheduleSlaveBuildsFailure(self):
-    """Test ScheduleSlaveBuilds with mixed slave failures."""
-    stage = self.ConstructStage()
-    self.PatchObject(sync_stages.SyncStage, 'PostSlaveBuildToBuildbucket',
-                     side_effect=buildbucket_lib.BuildbucketResponseException)
-
-    slave_config_map = {
-        'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=constants.WATERFALL_EXTERNAL),
-        'slave_internal': config_lib.BuildConfig(
-            important=True, active_waterfall=constants.WATERFALL_INTERNAL)}
-    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
-                     return_value=slave_config_map)
-    self.assertRaises(
-        buildbucket_lib.BuildbucketResponseException,
-        stage.ScheduleSlaveBuildsViaBuildbucket,
-        important_only=False, dryrun=True)
-
-  def testScheduleSlaveBuildsSuccess(self):
-    """Test ScheduleSlaveBuilds with success."""
-    stage = self.ConstructStage()
-
-    self.PatchObject(sync_stages.SyncStage, 'PostSlaveBuildToBuildbucket',
-                     return_value=('buildbucket_id', None))
-
-    slave_config_map = {
-        'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=constants.WATERFALL_EXTERNAL),
-        'slave_internal': config_lib.BuildConfig(
-            important=True, active_waterfall=constants.WATERFALL_INTERNAL)}
-    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
-                     return_value=slave_config_map)
-
-    stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
-
-    scheduled_slaves = self._run.attrs.metadata.GetValue('scheduled_slaves')
-    self.assertEqual(len(scheduled_slaves), 1)
-    unscheduled_slaves = self._run.attrs.metadata.GetValue('unscheduled_slaves')
-    self.assertEqual(len(unscheduled_slaves), 0)
 
 class BaseCQTestCase(generic_stages_unittest.StageTestCase):
   """Helper class for testing the CommitQueueSync stage"""
