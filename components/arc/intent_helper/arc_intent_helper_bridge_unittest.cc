@@ -154,13 +154,13 @@ TEST_F(ArcIntentHelperTest, TestObserver) {
   auto observer = base::MakeUnique<FakeObserver>();
   instance_->AddObserver(observer.get());
   EXPECT_FALSE(observer->IsUpdated());
-  instance_->OnIntentFiltersUpdated(std::vector<IntentFilter>());
+  instance_->OnIntentFiltersUpdated(std::vector<mojom::IntentFilterPtr>());
   EXPECT_TRUE(observer->IsUpdated());
 
   // Observer should not be called after it's removed.
   observer->Reset();
   instance_->RemoveObserver(observer.get());
-  instance_->OnIntentFiltersUpdated(std::vector<IntentFilter>());
+  instance_->OnIntentFiltersUpdated(std::vector<mojom::IntentFilterPtr>());
   EXPECT_FALSE(observer->IsUpdated());
 }
 

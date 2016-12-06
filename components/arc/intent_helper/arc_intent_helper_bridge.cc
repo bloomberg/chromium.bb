@@ -170,7 +170,7 @@ mojom::IntentHelperInstance* ArcIntentHelperBridge::GetIntentHelperInstance(
 }
 
 void ArcIntentHelperBridge::OnIntentFiltersUpdated(
-    std::vector<IntentFilter> filters) {
+    std::vector<mojom::IntentFilterPtr> filters) {
   DCHECK(thread_checker_.CalledOnValidThread());
   activity_resolver_->UpdateIntentFilters(std::move(filters));
 

@@ -30,7 +30,6 @@ namespace arc {
 
 class ActivityIconLoader;
 class ArcBridgeService;
-class IntentFilter;
 class LocalActivityResolver;
 
 // Receives intents from ARC.
@@ -65,7 +64,7 @@ class ArcIntentHelperBridge
   // mojom::IntentHelperHost
   void OnIconInvalidated(const std::string& package_name) override;
   void OnIntentFiltersUpdated(
-      std::vector<IntentFilter> intent_filters) override;
+      std::vector<mojom::IntentFilterPtr> intent_filters) override;
   void OnOpenDownloads() override;
   void OnOpenUrl(const std::string& url) override;
   void OpenWallpaperPicker() override;

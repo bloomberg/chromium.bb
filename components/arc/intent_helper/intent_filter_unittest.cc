@@ -20,32 +20,41 @@ namespace {
 
 class IntentFilterBuilder {
  public:
-  IntentFilterBuilder() = default;
+  IntentFilterBuilder():
+      filter_spec_(mojom::IntentFilter::New()) {
+  }
 
   IntentFilterBuilder& authority(const std::string& host) {
     return authority(host, -1);
   }
 
   IntentFilterBuilder& authority(const std::string& host, int port) {
-    authorities_.emplace_back(host, port);
+    mojom::AuthorityEntryPtr ae = mojom::AuthorityEntry::New();
+    ae->host = host;
+    ae->port = port;
+    if (!filter_spec_->data_authorities.has_value())
+      filter_spec_->data_authorities = std::vector<mojom::AuthorityEntryPtr>();
+    filter_spec_->data_authorities->push_back(std::move(ae));
     return *this;
   }
 
   IntentFilterBuilder& path(const std::string& path,
                             const mojom::PatternType& type) {
-    paths_.emplace_back(path, type);
+    mojom::PatternMatcherPtr p = mojom::PatternMatcher::New();
+    p->pattern = path;
+    p->type = type;
+    if (!filter_spec_->data_paths.has_value())
+      filter_spec_->data_paths = std::vector<mojom::PatternMatcherPtr>();
+    filter_spec_->data_paths->push_back(std::move(p));
     return *this;
   }
 
-  operator IntentFilter() {
-    return IntentFilter(std::move(authorities_), std::move(paths_));
+  operator IntentFilter() const {
+    return std::move(IntentFilter(filter_spec_));
   }
 
  private:
-  std::vector<IntentFilter::AuthorityEntry> authorities_;
-  std::vector<IntentFilter::PatternMatcher> paths_;
-
-  DISALLOW_COPY_AND_ASSIGN(IntentFilterBuilder);
+  mojom::IntentFilterPtr filter_spec_;
 };
 
 }  // namespace
