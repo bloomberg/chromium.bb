@@ -18,6 +18,9 @@ BackgroundKeyboardHandler = function() {
   /** @type {number} @private */
   this.passThroughKeyUpCount_ = 0;
 
+  /** @type {Set} @private */
+  this.eatenKeyDowns_ = new Set();
+
   document.addEventListener('keydown', this.onKeyDown.bind(this), false);
   document.addEventListener('keyup', this.onKeyUp.bind(this), false);
 };
@@ -38,6 +41,7 @@ BackgroundKeyboardHandler.prototype = {
         !cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
       evt.preventDefault();
       evt.stopPropagation();
+      this.eatenKeyDowns_.add(evt.keyCode);
     }
     Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
     return false;
@@ -59,6 +63,13 @@ BackgroundKeyboardHandler.prototype = {
         this.passThroughKeyUpCount_++;
       }
     }
+
+    if (this.eatenKeyDowns_.has(evt.keyCode)) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.eatenKeyDowns_.delete(evt.keyCode);
+    }
+
     return false;
   },
 
