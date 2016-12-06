@@ -1,9 +1,9 @@
-<!-- This is feature markdown template
+<!-- Feature template markdown:
 ## Header
 
 **Usage Example:**
 
-``` js
+```js
 
 ```
 
@@ -12,9 +12,7 @@
 **Discussion Notes / Link to Thread:**
 
 hyphen-hyphen-hyphen (change to actual hyphen)
-
 -->
-
 
 <style type="text/css">
   .doc {
@@ -57,30 +55,30 @@ hyphen-hyphen-hyphen (change to actual hyphen)
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", function(event) {
+document.addEventListener('DOMContentLoaded', function(event) {
   // Move all headers and corresponding contents to an accordion container.
-  document.querySelectorAll('h2[id]').forEach(function(header){
+  document.querySelectorAll('h2[id]').forEach(function(header) {
     var container = document.createElement('div');
     container.classList.add('feature-container');
     header.parentNode.insertBefore(container, header);
 
-    // Add all the following siblings until it hits an <hr>
-    var ele = header;
-    while(ele && ele.tagName !== 'HR') {
-      var nextEle = ele.nextElementSibling;
-      container.append(ele);
-      ele = nextEle;
+    // Add all the following siblings until it hits an <hr>.
+    var el = header;
+    while (el && el.tagName !== 'HR') {
+      var nextEl = el.nextElementSibling;
+      container.append(el);
+      el = nextEl;
     }
 
     // Add handler to open accordion on click.
-    header.addEventListener('click', () => {
+    header.addEventListener('click', function() {
       header.parentNode.classList.toggle('open');
     });
   });
 
   // Then remove all <hr>s since everything's accordionized.
-  document.querySelectorAll('hr').forEach(function(ele){
-    ele.parentNode.removeChild(ele);
+  document.querySelectorAll('hr').forEach(function(el) {
+    el.parentNode.removeChild(el);
   });
 });
 </script>
@@ -92,10 +90,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
 This is a list of new/updated features in ES6 specs that is being considered to
 be supported for Chromium development.
 
->**TBD:** Do we want to differenciate allow/ban status between subprojects? If
-so, how to denote?
+> **TBD:** Do we want to differenciate allow/ban status between subprojects? If
+> so, how to denote?
 
->**TBD:** Cross platform-build support?
+> **TBD:** Cross platform-build support?
 
 You can propose changing the status of a feature by sending an email to
 chromium-dev@chromium.org. Include a short blurb on what the feature is and why
@@ -103,8 +101,8 @@ you think it should or should not be allowed, along with links to any relevant
 previous discussion. If the list arrives at some consensus, send a codereview
 to change this file accordingly, linking to your discussion thread.
 
->Some descriptions and Usage examples are from [kangax](https://kangax.github.
-io/compat-table/es6/) and [http://es6-features.org/](http://es6-features.org/)
+> Some descriptions and Usage examples are from [kangax](https://kangax.github.io/compat-table/es6/)
+and [http://es6-features.org/](http://es6-features.org/)
 
 # Allowed Features
 
@@ -112,31 +110,31 @@ The following features are allowed in Chromium development.
 
 ## `Promise`
 
-Built-in representation of a value that might be determined asynchronously,
-relieving developers from "callback hell".
+The Promise object is used for asynchronous computations. A Promise represents a
+value which may be available now, or in the future, or never.
 
 **Usage Example:**
 
-``` js
-function promiseA() {
-  return new Promise((resolve, reject) => setTimeout(resolve, 100));
-}
+```js
+/** @type {!Promise} */
+var fullyLoaded = new Promise(function(resolve) {
+  function isLoaded() { return document.readyState == 'complete'; }
 
-function promiseB() {
-  return new Promise((resolve, reject) => setTimeout(resolve, 200));
-}
-
-function promiseC() {
-  return new Promise((resolve, reject) => setTimeout(resolve, 300));
-}
-
-Promise.all([promiseA(), promiseB(), promiseC()]).then(([a, b, c]) => {
-  someFunction(a, b, c);
+  if (isLoaded()) {
+    resolve();
+  } else {
+    document.onreadystatechange = function() {
+      if (isLoaded()) resolve();
+    };
+  }
 });
+
+// ... some time later ...
+loaded.then(startTheApp).then(maybeShowFirstRun);
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-promise-objects)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-promise-objects)
+[link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 
 **Discussion Notes:** Feature already extensively used prior to creation of
 this document.
@@ -155,36 +153,42 @@ sections.
 
 ## `let` (Block-Scoped Variables)
 
-Declare variable that exists within the block scope. `let` can generally be
-used to replace `var` but `let` in global scope, unlike `var`, does not
-introduce a property on the global object.
+`let` declares a variable within the scope of a block.  This differs from `var`,
+which uses function level scope.
 
 **Usage Example:**
 
-``` js
-// This will make all buttons output "3".
-for(var i = 0; i < 3; i++) {
-  buttons[i].onclick = function() {
-    console.log(i);
-  };
+```js
+// Scope.
+function varTest() {
+  var x = 1;
+  if (true) {
+    var x = 2;  // Same variable!
+    console.log(x);  // 2
+  }
+  console.log(x);  // 2
 }
 
-// This will make buttons output corresponding "i" values.
-for(let i = 0; i < 3; i++) {
-  buttons[i].onclick = function() {
-    console.log(i);
-  };
+function letTest() {
+  let x = 1;
+  if (true) {
+    let x = 2;  // Different variable.
+    console.log(x);  // 2
+  }
+  console.log(x);  // 1
 }
 
-var bar = 1;
-var bar = 1; // No error thrown.
+// Redeclaration throws.
+function f() {
+  var a = 'hello';
+  var a = 'hola';  // No error!
 
-let foo = 1;
-let foo = 1; // TypeError: Identifier 'foo' has already been declared.
+  let b = 'world';
+  let b = 'mundo;  // TypeError Identifier 'b' has already been declared.
+}
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-let-and-const-declarations)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-let-and-const-declarations)
 
 **Discussion Notes / Link to Thread:**
 
@@ -196,21 +200,23 @@ Constants (also known as "immutable variables") are variables which cannot be
 re-assigned new content. Note that if the value is an object, the object itself
 is still mutable.
 
-`const` has traditionally been supported as a "function scoped" declaration
-like `var` (except in Internet Explorer), however in VMs supporting ES6 `const`
-is now a block scope declaration.
+Also note that in Chrome, `const` is block scoped like `let`.
 
 **Usage Example:**
 
-``` js
+```js
 const gravity = 9.81;
-gravity = 0; // TypeError: Assignment to constant variable.
+gravity = 0;  // TypeError: Assignment to constant variable.
+gravity === 9.81;  // true
 
-gravity === 9.81; // true
+const frobber = {isFrobbing: true};
+frobber = {isFrobbing: false};  // TypeError: Assignment to constant variable.
+frobber.isFrobbing = false;  // Works.
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-let-and-const-declarations)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-let-and-const-declarations)
+
+**See also:** [Object.freeze()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze)
 
 **Discussion Notes / Link to Thread:**
 
@@ -219,17 +225,16 @@ gravity === 9.81; // true
 ## `=>` (Arrow Functions)
 
 Arrow functions provide a concise syntax to create a function, and fix a number
-of difficulties with this (e.g. eliminating the need to write `const self =
-this`. Particularly useful for nested functions or callbacks.
+of difficulties with `this` (e.g. eliminating the need to write `const self =
+this`). Particularly useful for nested functions or callbacks.
 
-Prefer arrow functions over the function keyword, over `f.bind(this)`, and
-especially over `goog.bind(f, this)`.
+Prefer arrow functions over `.bind(this)`.
 
-Arrow functions has an implicit return when used without a body block.
+Arrow functions have an implicit return when used without a body block.
 
 **Usage Example:**
 
-``` js
+```js
 // General usage, eliminating need for .bind(this).
 setTimeout(() => {
   this.doSomething();
@@ -241,13 +246,12 @@ window.addEventListener('scroll', (event) => {
 });  // no need for .bind(this) or const self = this.
 
 // Implicit return: returns the value if expression not inside a body block.
-() => 1 // returns 1
-() => {1} // returns undefined - body block does not implicitly return.
-() => {return 1;} // returns 1
+() => 1  // returns 1.
+() => {1}  // returns undefined - body block does not implicitly return.
+() => {return 1;}  // returns 1.
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-arrow-function-definitions)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-arrow-function-definitions)
 
 **Discussion Notes / Link to Thread:**
 
@@ -255,30 +259,35 @@ window.addEventListener('scroll', (event) => {
 
 ## Classes
 
-OOP-style and boilerplate-free class syntax, including inheritance, super(),
+OOP-style and boilerplate-free class syntax, including inheritance, `super()`,
 static members, and getters and setters.
 
 **Usage Example:**
 
-``` js
+```js
+class Shape {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+// Note: let Shape = class {...}; is also valid.
+
 class Rectangle extends Shape {
-  constructor(id, x, y, width, height) {
+  constructor(x, y, width, height) {
     super(id, x, y);
     this.width  = width;
     this.height = height;
   }
-  static defaultRectangle() {
-    return new Rectangle('default', 0, 0, 100, 100);
+
+  static goldenRectangle() {
+		var PHI = (1 + Math.sqrt(5)) / 2;
+    return new Rectangle(0, 0, PHI, 1);
   }
-  move(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-};
+}
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-class-definitions)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-class-definitions)
 
 **Discussion Notes / Link to Thread:**
 
@@ -288,7 +297,7 @@ class Rectangle extends Shape {
 
 **Usage Example:**
 
-``` js
+```js
 {
   function foo() {
     return 1;
@@ -304,8 +313,7 @@ class Rectangle extends Shape {
 }
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-functiondeclarationinstantiation)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-functiondeclarationinstantiation)
 
 **Discussion Notes / Link to Thread:**
 
@@ -313,17 +321,30 @@ class Rectangle extends Shape {
 
 ## Default Function Parameters
 
+Initialize parameters with default values if no value or `undefined` is passed.
+
 **Usage Example:**
 
-``` js
-function f(x, y = 7, z = 42) {
-  return x + y + z;
+```js
+/**
+ * @param {!Element} element An element to hide.
+ * @param {boolean=} animate Whether to animatedly hide |element|.
+ */
+function hide(element, animate=true) {
+  function setHidden() { element.hidden = true; }
+
+  if (animate)
+    element.animate({...}).then(setHidden);
+  else
+    setHidden();
 }
-// f(1) === 50;
+
+hide(document.body);  // Animated, animate=true by default.
+hide(document.body, false);  // Not animated.
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-functiondeclarationinstantiation)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-functiondeclarationinstantiation)
+[link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters)
 
 **Discussion Notes / Link to Thread:**
 
@@ -335,16 +356,17 @@ Aggregation of function arguments into one Array variable.
 
 **Usage Example:**
 
-``` js
-function f(x, y, ...a) {
-  // for f(1, 2, 3, 4, 5)...
-    // x = 1, y = 2
-    // a = [3, 4, 5]
+```js
+function usesRestParams(a, b, ...theRest) {
+  console.log(a);  // 'a'
+  console.log(b);  // 'b'
+  console.log(theRest);  // [1, 2, 3]
 }
+
+usesRestParams('a', 'b', 1, 2, 3);
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-function-definitions)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-function-definitions)
 
 **Discussion Notes / Link to Thread:**
 
@@ -357,19 +379,17 @@ function parameters.
 
 **Usage Example:**
 
-``` js
+```js
 // Spreading an Array
-var params = [ 'hello', true, 7 ];
-var other = [ 1, 2, ...params ]; // [ 1, 2, 'hello', true, 7 ]
-f(1, 2, ...params) === 9;
+var params = ['hello', true, 7];
+var other = [1, 2, ...params];  // [1, 2, 'hello', true, 7]
 
 // Spreading a String
 var str = 'foo';
-var chars = [ ...str ]; // [ 'f', 'o', 'o' ]
+var chars = [...str];  // ['f', 'o', 'o']
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-argument-lists-runtime-semantics-argumentlistevaluation)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-argument-lists-runtime-semantics-argumentlistevaluation)
 
 **Discussion Notes / Link to Thread:**
 
@@ -381,23 +401,33 @@ Convenient new ways for object property definition.
 
 **Usage Example:**
 
-``` js
+```js
 // Computed property name
-var x = 'key';
-var obj = {[x]: 1};
+var prop = 'foo';
+var o = {
+  [prop]: 'hey',
+  ['b' + 'ar']: 'there',
+};
+console.log(o);  // {foo: 'hey', bar: 'there'}
 
 // Shorthand property
-var obj = {x, y}; //equivalent to {x:x, y:y}
+var foo = 1;
+var bar = 2;
+var o = {foo, bar};
+console.log(o);  // {foo: 1, bar: 2}
 
 // Method property
-var obj = {
-  foo() {...},
-  bar() {...}
-}
+var clearSky = {
+  // Basically the same as clouds: function() { return 0; }.
+  clouds() { return 0; },
+  color() { return 'blue'; },
+};
+console.log(clearSky.color());  // 'blue'
+console.log(clearSky.clouds());  // 0
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-object-initialiser)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-object-initialiser)
+[link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer)
 
 **Discussion Notes / Link to Thread:**
 
@@ -410,29 +440,16 @@ pieces.
 
 **Usage Example:**
 
-``` js
+```js
 // Simple example
 var greeting = 'hello';
 var myName = {first: 'Foo', last: 'Bar'};
 var message = `${greeting},
 my name is ${myName.first + myName.last}`;
 // message == 'hello,\nmy name is FooBar'
-
-// Custom interpolation
-function foo (strings, ...values) {
-  // for foo`bar${42}baz`...
-    // strings[0] === 'bar';
-    // strings[1] === 'baz';
-    // values[0] === 42;
-
-  return strings[1] + strings[0] + values[0];
-}
-
-var newString = foo`bar${42}baz`; // 'bazbar42'
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-template-literals)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-template-literals)
 
 **Discussion Notes / Link to Thread:**
 
@@ -442,13 +459,12 @@ var newString = foo`bar${42}baz`; // 'bazbar42'
 
 **Usage Example:**
 
-``` js
+```js
 0b111110111 === 503;
 0o767 === 503;
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-literals-numeric-literals)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-literals-numeric-literals)
 
 **Discussion Notes / Link to Thread:**
 
@@ -458,12 +474,11 @@ var newString = foo`bar${42}baz`; // 'bazbar42'
 
 **Usage Example:**
 
-``` js
+```js
 '𠮷'.match(/./u)[0].length === 2;
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-get-regexp.prototype.sticky)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-get-regexp.prototype.sticky)
 
 **Discussion Notes / Link to Thread:**
 
@@ -473,12 +488,11 @@ var newString = foo`bar${42}baz`; // 'bazbar42'
 
 **Usage Example:**
 
-``` js
-'\u{1d306}' == '\ud834\udf06'; // true
+```js
+'\u{1d306}' == '\ud834\udf06';  // true
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-literals-string-literals)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-literals-string-literals)
 
 **Discussion Notes / Link to Thread:**
 
@@ -487,20 +501,19 @@ var newString = foo`bar${42}baz`; // 'bazbar42'
 ## `/y` Regex Sticky Matching
 
 Keep the matching position sticky between matches and this way support
-efficient parsing of arbitrary long input strings, even with an arbitrary
+efficient parsing of arbitrarily long input strings, even with an arbitrary
 number of distinct regular expressions.
 
 **Usage Example:**
 
-``` js
+```js
 var re = new RegExp('yy', 'y');
 re.lastIndex = 3;
 var result = re.exec('xxxyyxx')[0];
-result === 'yy' && re.lastIndex === 5; // true
+result === 'yy' && re.lastIndex === 5;  // true
 ```
 
-**Documentation:** [link](http://es6-features.org
-/#RegularExpressionStickyMatching)
+**Documentation:** [link](http://es6-features.org/#RegularExpressionStickyMatching)
 
 **Discussion Notes / Link to Thread:**
 
@@ -512,35 +525,33 @@ Flexible destructuring of collections or parameters.
 
 **Usage Example:**
 
-``` js
+```js
 // Array
-var list = [ 1, 2, 3 ];
-var [ a, , b ] = list;
-// a = 1, b = 3
+var [a, , b] = [1, 2, 3];  // a = 1, b = 3
 
 // Object
-var {width, height, area: a} = rect;
-// width = rect.width, height = rect.height, a = rect.area
+var {width, height} = document.body.getBoundingClientRect();
+// width = rect.width, height = rect.height
 
 // Parameters
-function f ([ name, val ]) {
-  console.log(name, val);
+function f([name, val]) {
+  console.log(name, val);  // 'bar', 42
 }
-function g ({ name: n, val: v }) {
-  console.log(n, v);
-}
-function h ({ name, val }) {
-  console.log(name, val);
-}
+f(['bar', 42, 'extra 1', 'extra 2']);  // 'extra 1' and 'extra 2' are ignored.
 
-f([ 'bar', 42 ]);
-g({ name: 'foo', val:  7 });
-h({ name: 'bar', val: 42 });
+function g({name: n, val: v}) {
+  console.log(n, v);  // 'foo', 7
+}
+g({name: 'foo', val:  7});
+
+function h({name, val}) {
+  console.log(name, val);  // 'bar', 42
+}
+h({name: 'bar', val: 42});
 
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-destructuring-assignment)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-destructuring-assignment)
 
 **Discussion Notes / Link to Thread:**
 
@@ -553,18 +564,17 @@ namespace pollution.
 
 **Usage Example:**
 
-``` js
+```js
 // lib/rect.js
 export function getArea() {...};
-export { width, height, unimportant };
+export {width, height, unimportant};
 
 // app.js
 import {getArea, width, height} from 'lib/rect';
 
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-modules)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-modules)
 
 **Discussion Notes / Link to Thread:**
 
@@ -577,22 +587,21 @@ properties.
 
 **Usage Example:**
 
-``` js
+```js
 const foo = Symbol();
 const bar = Symbol();
-typeof foo === 'symbol'; // true
-typeof bar === 'symbol'; // true
+typeof foo === 'symbol';  // true
+typeof bar === 'symbol';  // true
 let obj = {};
 obj[foo] = 'foo';
 obj[bar] = 'bar';
-JSON.stringify(obj); // {}
-Object.keys(obj); // []
-Object.getOwnPropertyNames(obj); // []
-Object.getOwnPropertySymbols(obj); // [ foo, bar ]
+JSON.stringify(obj);  // {}
+Object.keys(obj);  // []
+Object.getOwnPropertyNames(obj);  // []
+Object.getOwnPropertySymbols(obj);  // [foo, bar]
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-symbol-constructor)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-symbol-constructor)
 
 **Discussion Notes / Link to Thread:**
 
@@ -600,19 +609,20 @@ Object.getOwnPropertySymbols(obj); // [ foo, bar ]
 
 ## `for ...of` Loops
 
-Convenient operator to iterate over all values of an iterable object.
+Convenient operator to iterate over all values in an iterable collection. This
+differs from `for ...in`, which iterates over all iterable properties.
 
 **Usage Example:**
 
-``` js
-// Given an iterable  collection `fibonacci`...
-for (let n of fibonacci) {
-  console.log(n);
+```js
+// Given an iterable collection fibonacci numbers...
+for (var n of fibonacci) {
+  console.log(n);  // 1, 1, 2, 3, ...
 }
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-for-in-and-for-of-statements)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-for-in-and-for-of-statements)
+[link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of)
 
 **Discussion Notes / Link to Thread:**
 
@@ -622,20 +632,19 @@ for (let n of fibonacci) {
 
 **Usage Example:**
 
-``` js
+```js
 // Object.assign
 var o = Object.assign({a:true}, {b:true}, {c:true});
-'a' in o && 'b' in o && 'c' in o; // true
+'a' in o && 'b' in o && 'c' in o;  // true
 
 // Object.setPrototypeOf
-Object.setPrototypeOf({}, Array.prototype) instanceof Array; //true
+Object.setPrototypeOf({}, Array.prototype) instanceof Array;  // true
 
 // Object.is
 // Object.getOwnPropertySymbols
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-properties-of-the-object-constructor)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-object-constructor)
 
 **Discussion Notes / Link to Thread:**
 
@@ -645,7 +654,7 @@ Object.setPrototypeOf({}, Array.prototype) instanceof Array; //true
 
 **Usage Example:**
 
-``` js
+```js
 // String.raw
 // String.fromCodePoint
 
@@ -657,8 +666,7 @@ Object.setPrototypeOf({}, Array.prototype) instanceof Array; //true
 // String.prototype.includes
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-properties-of-the-string-constructor)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-string-constructor)
 
 **Discussion Notes / Link to Thread:**
 
@@ -668,7 +676,7 @@ Object.setPrototypeOf({}, Array.prototype) instanceof Array; //true
 
 **Usage Example:**
 
-``` js
+```js
 // Array.from
 // Array.of
 
@@ -681,8 +689,7 @@ Object.setPrototypeOf({}, Array.prototype) instanceof Array; //true
 // Array.prototype.entries
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-properties-of-the-array-constructor)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-array-constructor)
 
 **Discussion Notes / Link to Thread:**
 
@@ -692,7 +699,7 @@ Object.setPrototypeOf({}, Array.prototype) instanceof Array; //true
 
 **Usage Example:**
 
-``` js
+```js
 // Number.isFinite
 // Number.isInteger
 // Number.isSafeInteger
@@ -702,8 +709,7 @@ Object.setPrototypeOf({}, Array.prototype) instanceof Array; //true
 // Number.MAX_SAFE_INTEGER
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-isfinite-number)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-isfinite-number)
 
 **Discussion Notes / Link to Thread:**
 
@@ -713,14 +719,14 @@ Object.setPrototypeOf({}, Array.prototype) instanceof Array; //true
 
 **Usage Example:**
 
-``` js
+```js
 let fibonacci = {
   [Symbol.iterator]() {
     let pre = 0, cur = 1;
     return {
       next () {
-        [ pre, cur ] = [ cur, pre + cur ];
-        return { done: false, value: cur };
+        [pre, cur] = [cur, pre + cur];
+        return {done: false, value: cur};
       }
     };
   }
@@ -739,7 +745,7 @@ Special iterators with specified pausing points.
 
 **Usage Example:**
 
-``` js
+```js
 function* range(start, end, step) {
   while (start < end) {
     yield start;
@@ -748,13 +754,12 @@ function* range(start, end, step) {
 }
 
 for (let i of range(0, 10, 2)) {
-  console.log(i); // 0, 2, 4, 6, 8
+  console.log(i);  // 0, 2, 4, 6, 8
 }
 
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-generator-function-definitions)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-generator-function-definitions)
 
 **Discussion Notes / Link to Thread:**
 
@@ -762,19 +767,29 @@ for (let i of range(0, 10, 2)) {
 
 ## `Map`
 
+A simple key/value map in which any value (both objects and primitive values)
+may be used as either a key or a value.
+
 **Usage Example:**
 
-``` js
-var key = {};
+```js
 var map = new Map();
+map.size === 0;  // true
+map.get('foo');  // undefined
 
+var key = {};
 map.set(key, 123);
+map.size === 1;  // true
+map.has(key);  // true
+map.get(key);  // 123
 
-map.has(key) && map.get(key) === 123; // true
+map.delete(key);
+map.has(key);  // false
+map.size === 0;  // true
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-map-objects)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-map-objects)
+[link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
 
 **Discussion Notes / Link to Thread:**
 
@@ -782,20 +797,24 @@ map.has(key) && map.get(key) === 123; // true
 
 ## `Set`
 
+An object that lets you store unique values of any type, whether primitive
+values or object references.
+
 **Usage Example:**
 
-``` js
-var obj = {};
+```js
 var set = new Set();
 
 set.add(123);
-set.add(123);
+set.size();  // 1
+set.has(123);  // true
 
-set.has(123); // true
+set.add(123);
+set.size();  // 1
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-set-objects)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-set-objects)
+[link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
 
 **Discussion Notes / Link to Thread:**
 
@@ -808,17 +827,16 @@ within the collection.
 
 **Usage Example:**
 
-``` js
+```js
 var key = {};
 var weakmap = new WeakMap();
 
 weakmap.set(key, 123);
 
-weakmap.has(key) && weakmap.get(key) === 123; // true
+weakmap.has(key) && weakmap.get(key) === 123;  // true
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-weakmap-objects)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-weakmap-objects)
 
 **Discussion Notes / Link to Thread:**
 
@@ -831,18 +849,17 @@ within the collection.
 
 **Usage Example:**
 
-``` js
+```js
 var obj1 = {};
 var weakset = new WeakSet();
 
 weakset.add(obj1);
 weakset.add(obj1);
 
-weakset.has(obj1); // true
+weakset.has(obj1);  // true
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-weakset-objects)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-weakset-objects)
 
 **Discussion Notes / Link to Thread:**
 
@@ -854,15 +871,14 @@ A lot of new typed Arrays...
 
 **Usage Example:**
 
-``` js
+```js
 new Int8Array();
 new UInt8Array();
-new UInt8ClampedArray()
-// ...You get the idea. Click on the Documentation link below to see all.
+new UInt8ClampedArray();
+// ... You get the idea. Click on the Documentation link below to see all.
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-typedarray-objects)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-typedarray-objects)
 
 **Discussion Notes / Link to Thread:**
 
@@ -874,21 +890,27 @@ Hooking into runtime-level object meta-operations.
 
 **Usage Example:**
 
-``` js
-let target = {
-  foo: 'Welcome, foo'
-};
-let proxy = new Proxy(target, {
-  get (receiver, name) {
-    return name in receiver ? receiver[name] : `Hello, ${name}`;
-  }
+```js
+var keyTracker = new Proxy({}, {
+  keysCreated: 0,
+
+  get (receiver, key) {
+    if (key in receiver) {
+      console.log('key already exists');
+    } else {
+      ++this.keysCreated;
+      console.log(this.keysCreated + ' keys created!');
+      receiver[key] = true;
+    }
+  },
 });
-proxy.foo === 'Welcome, foo'; // true
-proxy.world === 'Hello, world'; // true
+
+keyTracker.key1;  // '1 keys created!'
+keyTracker.key1;  // 'key already exists'
+keyTracker.key2;  // '2 keys created!'
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-proxy-object-internal-methods-and-internal-slots)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-proxy-object-internal-methods-and-internal-slots)
 
 **Discussion Notes / Link to Thread:**
 
@@ -900,15 +922,14 @@ Make calls corresponding to the object meta-operations.
 
 **Usage Example:**
 
-``` js
-let obj = { a: 1 };
-Object.defineProperty(obj, 'b', { value: 2 });
+```js
+let obj = {a: 1};
+Object.defineProperty(obj, 'b', {value: 2});
 obj[Symbol('c')] = 3;
-Reflect.ownKeys(obj); // ['a', 'b', Symbol(c)]
+Reflect.ownKeys(obj);  // ['a', 'b', Symbol(c)]
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-reflection)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-reflection)
 
 **Discussion Notes / Link to Thread:**
 
@@ -920,12 +941,11 @@ A lot of new Math methods.
 
 **Usage Example:**
 
-``` js
+```js
 // See Doc
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0
-/#sec-math)
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-math)
 
 **Discussion Notes / Link to Thread:**
 
