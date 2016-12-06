@@ -586,7 +586,7 @@ bool SourceListDirective::hasSourceMatchInList(
   return false;
 }
 
-bool SourceListDirective::allowAllInline() {
+bool SourceListDirective::allowAllInline() const {
   const ContentSecurityPolicy::DirectiveType& type =
       ContentSecurityPolicy::getDirectiveType(m_directiveName);
   if (type != ContentSecurityPolicy::DirectiveType::DefaultSrc &&
@@ -600,7 +600,7 @@ bool SourceListDirective::allowAllInline() {
 }
 
 bool SourceListDirective::subsumes(
-    HeapVector<Member<SourceListDirective>> other) {
+    const HeapVector<Member<SourceListDirective>>& other) const {
   // TODO(amalika): Handle here special keywords.
   if (!other.size() || other[0]->isNone())
     return other.size();
@@ -651,7 +651,7 @@ bool SourceListDirective::subsumes(
 
 HeapHashMap<String, Member<CSPSource>>
 SourceListDirective::getIntersectSchemesOnly(
-    HeapVector<Member<CSPSource>> other) {
+    const HeapVector<Member<CSPSource>>& other) const {
   HeapHashMap<String, Member<CSPSource>> schemesA;
   for (const auto& sourceA : m_list) {
     if (sourceA->isSchemeOnly())
@@ -675,7 +675,7 @@ SourceListDirective::getIntersectSchemesOnly(
 }
 
 HeapVector<Member<CSPSource>> SourceListDirective::getIntersectCSPSources(
-    HeapVector<Member<CSPSource>> other) {
+    const HeapVector<Member<CSPSource>>& other) const {
   auto schemesMap = getIntersectSchemesOnly(other);
   HeapVector<Member<CSPSource>> normalized;
   // Add all normalized scheme source expressions.

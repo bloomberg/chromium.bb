@@ -105,7 +105,7 @@ bool CSPSource::portMatches(int port, const String& protocol) const {
   return false;
 }
 
-bool CSPSource::subsumes(CSPSource* other) {
+bool CSPSource::subsumes(CSPSource* other) const {
   if (!schemeMatches(other->m_scheme))
     return false;
 
@@ -124,7 +124,7 @@ bool CSPSource::subsumes(CSPSource* other) {
   return hostSubsumes && portSubsumes && pathSubsumes;
 }
 
-bool CSPSource::isSimilar(CSPSource* other) {
+bool CSPSource::isSimilar(CSPSource* other) const {
   bool schemesMatch =
       schemeMatches(other->m_scheme) || other->schemeMatches(m_scheme);
   if (!schemesMatch || isSchemeOnly() || other->isSchemeOnly())
@@ -140,13 +140,13 @@ bool CSPSource::isSimilar(CSPSource* other) {
   return false;
 }
 
-CSPSource* CSPSource::intersect(CSPSource* other) {
+CSPSource* CSPSource::intersect(CSPSource* other) const {
   if (!isSimilar(other))
     return nullptr;
 
   String scheme = other->schemeMatches(m_scheme) ? m_scheme : other->m_scheme;
   if (isSchemeOnly() || other->isSchemeOnly()) {
-    CSPSource* stricter = isSchemeOnly() ? other : this;
+    const CSPSource* stricter = isSchemeOnly() ? other : this;
     return new CSPSource(m_policy, scheme, stricter->m_host, stricter->m_port,
                          stricter->m_path, stricter->m_hostWildcard,
                          stricter->m_portWildcard);
@@ -169,8 +169,9 @@ bool CSPSource::isSchemeOnly() const {
   return m_host.isEmpty();
 }
 
-bool CSPSource::firstSubsumesSecond(HeapVector<Member<CSPSource>> listA,
-                                    HeapVector<Member<CSPSource>> listB) {
+bool CSPSource::firstSubsumesSecond(
+    const HeapVector<Member<CSPSource>>& listA,
+    const HeapVector<Member<CSPSource>>& listB) {
   // Empty vector of CSPSources has an effect of 'none'.
   if (!listA.size() || !listB.size())
     return !listB.size();

@@ -1595,7 +1595,7 @@ ContentSecurityPolicy::DirectiveType ContentSecurityPolicy::getDirectiveType(
   return DirectiveType::Undefined;
 }
 
-bool ContentSecurityPolicy::subsumes(const ContentSecurityPolicy& other) {
+bool ContentSecurityPolicy::subsumes(const ContentSecurityPolicy& other) const {
   if (!m_policies.size() || !other.m_policies.size())
     return !m_policies.size();
   // Embedding-CSP must specify only one policy.

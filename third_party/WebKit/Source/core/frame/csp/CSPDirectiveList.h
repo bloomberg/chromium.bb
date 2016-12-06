@@ -273,10 +273,10 @@ class CORE_EXPORT CSPDirectiveList
 
   bool denyIfEnforcingPolicy() const { return isReportOnly(); }
 
-  // Tthis function returns a SourceListDirective of a given type
+  // This function returns a SourceListDirective of a given type
   // or if it is not defined, the default SourceListDirective for that type.
   SourceListDirective* operativeDirective(
-      const ContentSecurityPolicy::DirectiveType&);
+      const ContentSecurityPolicy::DirectiveType&) const;
 
   // This function aggregates from a vector of policies all operative
   // SourceListDirectives of a given type into a vector.

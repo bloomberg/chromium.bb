@@ -1168,7 +1168,7 @@ void CSPDirectiveList::addDirective(const String& name, const String& value) {
 }
 
 SourceListDirective* CSPDirectiveList::operativeDirective(
-    const ContentSecurityPolicy::DirectiveType& type) {
+    const ContentSecurityPolicy::DirectiveType& type) const {
   switch (type) {
     // Directives that do not have a default directive.
     case ContentSecurityPolicy::DirectiveType::BaseURI:

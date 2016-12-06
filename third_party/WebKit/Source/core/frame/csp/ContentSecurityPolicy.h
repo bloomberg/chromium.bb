@@ -360,7 +360,7 @@ class CORE_EXPORT ContentSecurityPolicy
   // Note the correct result is guaranteed if this policy contains only one
   // CSPDirectiveList. More information here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy
-  bool subsumes(const ContentSecurityPolicy&);
+  bool subsumes(const ContentSecurityPolicy&) const;
 
   Document* document() const;
 
