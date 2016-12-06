@@ -4393,6 +4393,8 @@ static int mov_read_uuid(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     } else if (!memcmp(uuid, uuid_xmp, sizeof(uuid))) {
         uint8_t *buffer;
         size_t len = atom.size - sizeof(uuid);
+        if (len >= UINT_MAX)
+            return AVERROR_INVALIDDATA;
 
         buffer = av_mallocz(len + 1);
         if (!buffer) {
