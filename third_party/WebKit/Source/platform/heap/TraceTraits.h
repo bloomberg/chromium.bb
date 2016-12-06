@@ -206,9 +206,15 @@ class TraceTrait {
   static void trace(InlinedGlobalMarkingVisitor, void* self);
 
   static void markWrapper(const WrapperVisitor* visitor, const void* t) {
+    static_assert(CanTraceWrappers<T>::value,
+                  "T should be able to trace wrappers. See "
+                  "dispatchTraceWrappers in WrapperVisitor.h");
     AdjustAndMarkTrait<T>::markWrapper(visitor, reinterpret_cast<const T*>(t));
   }
   static HeapObjectHeader* heapObjectHeader(const void* t) {
+    static_assert(CanTraceWrappers<T>::value,
+                  "T should be able to trace wrappers. See "
+                  "dispatchTraceWrappers in WrapperVisitor.h");
     return AdjustAndMarkTrait<T>::heapObjectHeader(
         reinterpret_cast<const T*>(t));
   }

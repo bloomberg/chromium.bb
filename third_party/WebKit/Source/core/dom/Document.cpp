@@ -87,6 +87,7 @@
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/IntersectionObserverController.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
+#include "core/dom/LiveNodeList.h"
 #include "core/dom/MainThreadTaskRunner.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/NodeChildRemovalTracker.h"
@@ -4100,10 +4101,21 @@ void Document::setCSSTarget(Element* newTarget) {
     m_cssTarget->pseudoStateChanged(CSSSelector::PseudoTarget);
 }
 
+static void liveNodeListBaseWriteBarrier(void* parent,
+                                         const LiveNodeListBase* list) {
+  if (isHTMLCollectionType(list->type())) {
+    ScriptWrappableVisitor::writeBarrier(
+        parent, static_cast<const HTMLCollection*>(list));
+  } else {
+    ScriptWrappableVisitor::writeBarrier(
+        parent, static_cast<const LiveNodeList*>(list));
+  }
+}
+
 void Document::registerNodeList(const LiveNodeListBase* list) {
   DCHECK(!m_nodeLists[list->invalidationType()].contains(list));
   m_nodeLists[list->invalidationType()].add(list);
-  ScriptWrappableVisitor::writeBarrier(this, list);
+  liveNodeListBaseWriteBarrier(this, list);
   if (list->isRootedAtTreeScope())
     m_listsInvalidatedAtDocument.add(list);
 }
@@ -4120,7 +4132,7 @@ void Document::unregisterNodeList(const LiveNodeListBase* list) {
 void Document::registerNodeListWithIdNameCache(const LiveNodeListBase* list) {
   DCHECK(!m_nodeLists[InvalidateOnIdNameAttrChange].contains(list));
   m_nodeLists[InvalidateOnIdNameAttrChange].add(list);
-  ScriptWrappableVisitor::writeBarrier(this, list);
+  liveNodeListBaseWriteBarrier(this, list);
 }
 
 void Document::unregisterNodeListWithIdNameCache(const LiveNodeListBase* list) {
@@ -6520,13 +6532,20 @@ DEFINE_TRACE_WRAPPERS(Document) {
   visitor->traceWrappers(m_styleEngine);
   for (int i = 0; i < numNodeListInvalidationTypes; ++i) {
     for (auto list : m_nodeLists[i]) {
-      visitor->traceWrappersWithManualWriteBarrier(list);
+      if (isHTMLCollectionType(list->type())) {
+        visitor->traceWrappersWithManualWriteBarrier(
+            static_cast<const HTMLCollection*>(list.get()));
+      } else {
+        visitor->traceWrappersWithManualWriteBarrier(
+            static_cast<const LiveNodeList*>(list.get()));
+      }
     }
   }
   // Cannot trace in Supplementable<Document> as it is part of platform/ and
   // thus cannot refer to ScriptWrappableVisitor.
-  visitor->traceWrappers(Supplementable<Document>::m_supplements.get(
-      FontFaceSet::supplementName()));
+  visitor->traceWrappers(
+      static_cast<FontFaceSet*>(Supplementable<Document>::m_supplements.get(
+          FontFaceSet::supplementName())));
   ContainerNode::traceWrappers(visitor);
 }
 

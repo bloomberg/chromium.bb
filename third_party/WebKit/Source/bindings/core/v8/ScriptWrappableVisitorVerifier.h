@@ -31,7 +31,6 @@ class ScriptWrappableVisitorVerifier : public WrapperVisitor {
   WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);
 
 #undef DECLARE_DISPATCH_TRACE_WRAPPERS
-  void dispatchTraceWrappers(const void*) const override {}
 
   void traceWrappers(const TraceWrapperV8Reference<v8::Value>&) const override {
   }

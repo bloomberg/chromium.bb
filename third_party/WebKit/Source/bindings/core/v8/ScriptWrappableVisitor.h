@@ -162,12 +162,6 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
 
 #undef DECLARE_DISPATCH_TRACE_WRAPPERS
 
-  void dispatchTraceWrappers(const void*) const override {
-    // Getting here means that we lack the proper infrastructure for handling
-    // a specific type. Crash instead of failing silently to flush out issues.
-    NOTREACHED();
-  }
-
   void traceWrappers(const TraceWrapperV8Reference<v8::Value>&) const override;
   void markWrapper(const v8::PersistentBase<v8::Value>*) const override;
 

@@ -137,6 +137,10 @@ class PLATFORM_EXPORT WrapperVisitor {
   void traceWrappersWithManualWriteBarrier(const WeakMember<T>& t) const {
     traceWrappers(t.get());
   }
+  template <typename T>
+  void traceWrappersWithManualWriteBarrier(const T* traceable) const {
+    traceWrappers(traceable);
+  }
 
   virtual void traceWrappers(
       const TraceWrapperV8Reference<v8::Value>&) const = 0;
@@ -149,7 +153,14 @@ class PLATFORM_EXPORT WrapperVisitor {
   WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);
 
 #undef DECLARE_DISPATCH_TRACE_WRAPPERS
-  virtual void dispatchTraceWrappers(const void*) const = 0;
+
+  void dispatchTraceWrappers(const void*) const {
+    // This call should never be reached as we access all tracing through
+    // TraceTraits, which will check that we can dispatch at compile time.
+    // This handler is merely here to make adjustAndMarkWrapper compile
+    // for GarbageCollectedMixin objects.
+    NOTREACHED();
+  }
 
   virtual bool markWrapperHeader(HeapObjectHeader*) const = 0;
   virtual void markWrappersInAllWorlds(const ScriptWrappable*) const = 0;
@@ -159,6 +170,17 @@ class PLATFORM_EXPORT WrapperVisitor {
       HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
       const void*) const = 0;
 };
+
+#define SPECIALIZE_WRAPPER_TRACING_MARK_TRAIT(ClassName) \
+  template <>                                            \
+  class CanTraceWrappers<ClassName, false> {             \
+   public:                                               \
+    static const bool value = true;                      \
+  };
+
+WRAPPER_VISITOR_SPECIAL_CLASSES(SPECIALIZE_WRAPPER_TRACING_MARK_TRAIT)
+
+#undef SPECIALIZE_WRAPPER_TRACING_MARK_TRAIT
 
 }  // namespace blink
 

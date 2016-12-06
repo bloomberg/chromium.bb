@@ -16,6 +16,7 @@ template <typename T>
 class GarbageCollected;
 class HeapObjectHeader;
 class InlinedGlobalMarkingVisitor;
+class TraceWrapperBase;
 class WrapperVisitor;
 
 // GC_PLUGIN_IGNORE is used to make the plugin ignore a particular class or
@@ -101,27 +102,29 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
                                                                               \
  private:
 
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_WRAPPER_METHODS(TYPE)                   \
- public:                                                                       \
-  void adjustAndMarkWrapper(const WrapperVisitor* visitor) const override {    \
-    typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type,  \
-                                      blink::GarbageCollected>                 \
-        IsSubclassOfGarbageCollected;                                          \
-    static_assert(                                                             \
-        IsSubclassOfGarbageCollected::value,                                   \
-        "only garbage collected objects can have garbage collected mixins");   \
-    TraceTrait<TYPE>::markWrapper(visitor, static_cast<const TYPE*>(this));    \
-  }                                                                            \
-  HeapObjectHeader* adjustAndGetHeapObjectHeader() const override {            \
-    typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type,  \
-                                      blink::GarbageCollected>                 \
-        IsSubclassOfGarbageCollected;                                          \
-    static_assert(                                                             \
-        IsSubclassOfGarbageCollected::value,                                   \
-        "only garbage collected objects can have garbage collected mixins");   \
-    return TraceTrait<TYPE>::heapObjectHeader(static_cast<const TYPE*>(this)); \
-  }                                                                            \
-                                                                               \
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_WRAPPER_METHODS(TYPE)                  \
+ public:                                                                      \
+  void adjustAndMarkWrapper(const WrapperVisitor* visitor) const override {   \
+    typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type, \
+                                      blink::GarbageCollected>                \
+        IsSubclassOfGarbageCollected;                                         \
+    static_assert(                                                            \
+        IsSubclassOfGarbageCollected::value,                                  \
+        "only garbage collected objects can have garbage collected mixins");  \
+    AdjustAndMarkTrait<TYPE>::markWrapper(visitor,                            \
+                                          static_cast<const TYPE*>(this));    \
+  }                                                                           \
+  HeapObjectHeader* adjustAndGetHeapObjectHeader() const override {           \
+    typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type, \
+                                      blink::GarbageCollected>                \
+        IsSubclassOfGarbageCollected;                                         \
+    static_assert(                                                            \
+        IsSubclassOfGarbageCollected::value,                                  \
+        "only garbage collected objects can have garbage collected mixins");  \
+    return AdjustAndMarkTrait<TYPE>::heapObjectHeader(                        \
+        static_cast<const TYPE*>(this));                                      \
+  }                                                                           \
+                                                                              \
  private:
 
 // A C++ object's vptr will be initialized to its leftmost base's vtable after
@@ -282,6 +285,31 @@ class NeedsAdjustAndMark<T, false> {
 };
 template <typename T>
 const bool NeedsAdjustAndMark<T, false>::value;
+
+template <typename T,
+          bool = std::is_base_of<TraceWrapperBase,
+                                 typename std::remove_const<T>::type>::value>
+class CanTraceWrappers;
+
+template <typename T>
+class CanTraceWrappers<T, true> {
+  static_assert(sizeof(T), "T must be fully defined");
+
+ public:
+  static const bool value = true;
+};
+template <typename T>
+const bool CanTraceWrappers<T, true>::value;
+
+template <typename T>
+class CanTraceWrappers<T, false> {
+  static_assert(sizeof(T), "T must be fully defined");
+
+ public:
+  static const bool value = false;
+};
+template <typename T>
+const bool CanTraceWrappers<T, false>::value;
 
 // TODO(sof): migrate to wtf/TypeTraits.h
 template <typename T>
