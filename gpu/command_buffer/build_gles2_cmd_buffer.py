@@ -76,6 +76,8 @@ _CAPABILITY_FLAGS = [
   {'name': 'cull_face'},
   {'name': 'depth_test', 'state_flag': 'framebuffer_state_.clear_state_dirty'},
   {'name': 'dither', 'default': True},
+  {'name': 'framebuffer_srgb_ext', 'default': True, 'no_init': True,
+   'extension_flag': 'ext_srgb_write_control'},
   {'name': 'polygon_offset_fill'},
   {'name': 'sample_alpha_to_coverage'},
   {'name': 'sample_coverage'},
@@ -10177,6 +10179,10 @@ void ContextState::InitCapabilities(const ContextState* prev_state) const {
       def WriteCapabilities(test_prev, es3_caps):
         for capability in _CAPABILITY_FLAGS:
           capability_name = capability['name']
+          capability_no_init = 'no_init' in capability and \
+              capability['no_init'] == True
+          if capability_no_init:
+            continue
           capability_es3 = 'es3' in capability and capability['es3'] == True
           if capability_es3 and not es3_caps or not capability_es3 and es3_caps:
             continue
@@ -10462,6 +10468,10 @@ namespace gles2 {
 """void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations(
       bool es3_capable) {""")
       for capability in _CAPABILITY_FLAGS:
+        capability_no_init = 'no_init' in capability and \
+            capability['no_init'] == True
+        if capability_no_init:
+            continue
         capability_es3 = 'es3' in capability and capability['es3'] == True
         if capability_es3:
           continue

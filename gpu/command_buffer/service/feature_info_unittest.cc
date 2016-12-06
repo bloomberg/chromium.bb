@@ -246,8 +246,11 @@ TEST_P(FeatureInfoTest, InitializeNoExtensions) {
       NOTREACHED();
       break;
   }
+  // Note that because GL_EXT_sRGB is a substring of GL_EXT_sRGB_write_control,
+  // which is not part of the ES3 core, we have to be careful to search for
+  // "GL_EXT_sRGB ", and append a space to the end of the extension string.
   if (expect_ext_srgb) {
-    EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_sRGB"));
+    EXPECT_THAT(info_->extensions() + " ", HasSubstr("GL_EXT_sRGB "));
     EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_SRGB_EXT));
     EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_SRGB_ALPHA_EXT));
     EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
@@ -259,7 +262,7 @@ TEST_P(FeatureInfoTest, InitializeNoExtensions) {
     EXPECT_TRUE(info_->validators()->framebuffer_parameter.IsValid(
         GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
   } else {
-    EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_EXT_sRGB")));
+    EXPECT_THAT(info_->extensions() + " ", Not(HasSubstr("GL_EXT_sRGB ")));
     EXPECT_FALSE(info_->validators()->texture_format.IsValid(GL_SRGB_EXT));
     EXPECT_FALSE(info_->validators()->texture_format.IsValid(
         GL_SRGB_ALPHA_EXT));
@@ -593,7 +596,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_sRGB) {
   SetupInitExpectations("GL_EXT_sRGB GL_OES_rgb8_rgba8");
 
   if (GetContextType() == CONTEXT_TYPE_OPENGLES3) {
-    EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_EXT_sRGB")));
+    EXPECT_THAT(info_->extensions() + " ", Not(HasSubstr("GL_EXT_sRGB ")));
     EXPECT_FALSE(info_->validators()->texture_format.IsValid(GL_SRGB_EXT));
     EXPECT_FALSE(
         info_->validators()->texture_format.IsValid(GL_SRGB_ALPHA_EXT));
@@ -606,7 +609,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_sRGB) {
     EXPECT_FALSE(info_->validators()->framebuffer_parameter.IsValid(
         GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
   } else {
-    EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_sRGB"));
+    EXPECT_THAT(info_->extensions() + " ", HasSubstr("GL_EXT_sRGB "));
     EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_SRGB_EXT));
     EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_SRGB_ALPHA_EXT));
     EXPECT_TRUE(
@@ -922,7 +925,7 @@ TEST_P(FeatureInfoTest, Initialize_texture_floatGLES3) {
 
 TEST_P(FeatureInfoTest, Initialize_sRGBGLES3) {
   SetupInitExpectationsWithGLVersion("", "", "OpenGL ES 3.0");
-  EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_EXT_sRGB")));
+  EXPECT_THAT(info_->extensions() + " ", Not(HasSubstr("GL_EXT_sRGB ")));
   EXPECT_FALSE(info_->validators()->texture_format.IsValid(
       GL_SRGB_EXT));
   EXPECT_FALSE(info_->validators()->texture_format.IsValid(
