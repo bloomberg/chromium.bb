@@ -25,9 +25,7 @@ class ModelViewChannel;
 // Screens are identified by ID, screen and it's JS counterpart must have same
 // id.
 // Most of the screens will be re-created for each appearance with Initialize()
-// method called just once. However if initialization is too expensive, screen
-// can override result of IsPermanent() method, and do clean-up upon subsequent
-// Initialize() method calls.
+// method called just once.
 class BaseScreen {
  public:
   explicit BaseScreen(BaseScreenDelegate* base_screen_delegate);
@@ -50,8 +48,7 @@ class BaseScreen {
 
   // Called to perform initialization of the screen. UI is guaranteed to exist
   // at this point. Screen can alter context, resulting context will be passed
-  // to JS. This method will be called once per instance of the Screen object,
-  // unless |IsPermanent()| returns |true|.
+  // to JS. This method will be called once per instance of the Screen object.
   virtual void Initialize(::login::ScreenContext* context);
 
   // Called when screen appears.
@@ -68,10 +65,6 @@ class BaseScreen {
   // Indicates whether status area should be displayed while this screen is
   // displayed.
   virtual bool IsStatusAreaDisplayed();
-
-  // If this method returns |true|, screen will not be deleted once we leave it.
-  // However, Initialize() might be called several times in this case.
-  virtual bool IsPermanent();
 
   // Returns the identifier of the screen.
   virtual std::string GetID() const;

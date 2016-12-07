@@ -92,10 +92,6 @@ bool BaseScreen::IsStatusAreaDisplayed() {
   return true;
 }
 
-bool BaseScreen::IsPermanent() {
-  return false;
-}
-
 std::string BaseScreen::GetID() const {
   // TODO (ygorshenin, crbug.com/433797): elimitate intermediate
   // GetName() ASAP.
