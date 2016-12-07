@@ -452,6 +452,27 @@ TEST_F(ArcSessionManagerTest, RemoveDataFolder) {
 
   arc_session_manager()->StartArc();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
+  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->StartArc();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  // Report some failure that does not stop the bridge.
+  arc_session_manager()->OnProvisioningFinished(
+      ProvisioningResult::GMS_SIGN_IN_FAILED);
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  // Try to send another error that stops the bridge if sent first. It should
+  // be ignored.
+  arc_session_manager()->OnProvisioningFinished(
+      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
   arc_session_manager()->Shutdown();
 }
 
