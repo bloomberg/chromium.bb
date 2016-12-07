@@ -25,13 +25,7 @@ are declared in build/common.gypi.
     <output filename="generated_resources_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="generated_resources_en-US.pak" type="data_package" lang="en" />
     <output filename="generated_resources_es.pak" type="data_package" lang="es" />
-    <if expr="is_ios">
-      <!-- iOS uses es-MX for es-419 -->
-      <output filename="generated_resources_es-MX.pak" type="data_package" lang="es-419" />
-    </if>
-    <if expr="not is_ios">
-      <output filename="generated_resources_es-419.pak" type="data_package" lang="es-419" />
-    </if>
+    <output filename="generated_resources_es-419.pak" type="data_package" lang="es-419" />
     <output filename="generated_resources_et.pak" type="data_package" lang="et" />
     <output filename="generated_resources_fa.pak" type="data_package" lang="fa" />
     <output filename="generated_resources_fake-bidi.pak" type="data_package" lang="fake-bidi" />
@@ -58,13 +52,7 @@ are declared in build/common.gypi.
          be 'nb'. -->
     <output filename="generated_resources_nb.pak" type="data_package" lang="no" />
     <output filename="generated_resources_pl.pak" type="data_package" lang="pl" />
-    <if expr="is_ios">
-      <!-- iOS uses pt for pt-BR -->
-      <output filename="generated_resources_pt.pak" type="data_package" lang="pt-BR" />
-    </if>
-    <if expr="not is_ios">
-      <output filename="generated_resources_pt-BR.pak" type="data_package" lang="pt-BR" />
-    </if>
+    <output filename="generated_resources_pt-BR.pak" type="data_package" lang="pt-BR" />
     <output filename="generated_resources_pt-PT.pak" type="data_package" lang="pt-PT" />
     <output filename="generated_resources_ro.pak" type="data_package" lang="ro" />
     <output filename="generated_resources_ru.pak" type="data_package" lang="ru" />
@@ -202,7 +190,7 @@ are declared in build/common.gypi.
       </if>
 
       <!-- Settings specific strings -->
-      <if expr="not is_android and not is_ios">
+      <if expr="not is_android">
         <part file="settings_strings.grdp" />
       </if>
 
@@ -6306,14 +6294,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PUSH_API_BACKGROUND_MODE_DESCRIPTION" desc="Description for the flag to enable background mode for the Push API.">
         Enable background mode for the Push API. This allows Chrome to continue running after the last window is closed, and to launch at OS startup, if the Push API needs it.
       </message>
-      <if expr="not is_ios">
-        <message name="IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_NAME" desc="Name of the flag to enable the &quot;stale-while-revalidate&quot; cache directive. This message is intended for web developers who are familiar with technical terms. &quot;stale-while-revalidate&quot; here is the literal string sent by the HTTP server, and so should be untranslated where possible. &quot;cache&quot; here refers to an HTTP cache. &quot;directive&quot; here is an instruction sent by an HTTP server to indicate what caching behaviour should be used.">
-          Enable the "stale-while-revalidate" cache directive
-        </message>
-        <message name="IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_DESCRIPTION" desc="Description of the flag to enable the &quot;stale-while-revalidate&quot; cache directive. This message is intended for web developers who are familiar with technical terms. &quot;Cache-Control: stale-while-revalidate&quot; is the literal string sent by the HTTP server, and so should be untranslated where possible. If necessary for translation it can be split into the HTTP header name part &quot;Cache-Control&quot; and the value part &quot;stale-while-revalidate&quot;. &quot;directive&quot; here is an instruction sent by an HTTP server to indicate what caching behaviour should be used. The directive is typically configured by the server administrator. &quot;servers&quot; here refers to HTTP server software. &quot;resources&quot; here means individual files served by HTTP servers and cached by the browser. &quot;be revalidated&quot; means &quot;be checked with the HTTP server whether or not the browser has the latest version&quot;. &quot;in the background&quot; here means without making the user wait. &quot;latency&quot; here refers to the time the user waits for a web page to be loaded or become usable.">
-          Enable the experimental implementation of the "Cache-Control: stale-while-revalidate" directive. This permits servers to specify that some resources may be revalidated in the background to improve latency.
-        </message>
-      </if>
+      <message name="IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_NAME" desc="Name of the flag to enable the &quot;stale-while-revalidate&quot; cache directive. This message is intended for web developers who are familiar with technical terms. &quot;stale-while-revalidate&quot; here is the literal string sent by the HTTP server, and so should be untranslated where possible. &quot;cache&quot; here refers to an HTTP cache. &quot;directive&quot; here is an instruction sent by an HTTP server to indicate what caching behaviour should be used.">
+        Enable the "stale-while-revalidate" cache directive
+      </message>
+      <message name="IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_DESCRIPTION" desc="Description of the flag to enable the &quot;stale-while-revalidate&quot; cache directive. This message is intended for web developers who are familiar with technical terms. &quot;Cache-Control: stale-while-revalidate&quot; is the literal string sent by the HTTP server, and so should be untranslated where possible. If necessary for translation it can be split into the HTTP header name part &quot;Cache-Control&quot; and the value part &quot;stale-while-revalidate&quot;. &quot;directive&quot; here is an instruction sent by an HTTP server to indicate what caching behaviour should be used. The directive is typically configured by the server administrator. &quot;servers&quot; here refers to HTTP server software. &quot;resources&quot; here means individual files served by HTTP servers and cached by the browser. &quot;be revalidated&quot; means &quot;be checked with the HTTP server whether or not the browser has the latest version&quot;. &quot;in the background&quot; here means without making the user wait. &quot;latency&quot; here refers to the time the user waits for a web page to be loaded or become usable.">
+        Enable the experimental implementation of the "Cache-Control: stale-while-revalidate" directive. This permits servers to specify that some resources may be revalidated in the background to improve latency.
+      </message>
       <message name="IDS_FLAGS_ENABLE_NAVIGATION_TRACING" desc="Name of the flag to enable navigation tracing">
         Enable navigation tracing
       </message>
@@ -9183,7 +9169,7 @@ I don't think this site should be blocked!
       <message name="IDS_MALWARE_V3_HEADING" desc="The large heading at the top of the malware interstitial.">
         The site ahead contains malware
       </message>
-      <if expr="is_android or is_ios">
+      <if expr="is_android">
         <message name="IDS_MALWARE_V3_PRIMARY_PARAGRAPH" desc="Mobile: The primary explanatory paragraph for the malware interstitial.">
           Attackers currently on <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="SITE">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> might attempt to install dangerous apps on your device that steal or delete your information (for example, photos, passwords, messages, and credit cards).
         </message>
@@ -9193,7 +9179,7 @@ I don't think this site should be blocked!
           Attackers currently on <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="SITE">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> might attempt to install dangerous programs on your Mac that steal or delete your information (for example, photos, passwords, messages, and credit cards).
         </message>
       </if>
-      <if expr="not is_android and not is_macosx and not is_ios">
+      <if expr="not is_android and not is_macosx">
         <message name="IDS_MALWARE_V3_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the malware interstitial.">
           Attackers currently on <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="SITE">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> might attempt to install dangerous programs on your computer that steal or delete your information (for example, photos, passwords, messages, and credit cards).
         </message>
@@ -9899,12 +9885,12 @@ I don't think this site should be blocked!
           This language cannot be translated
         </message>
 
-        <if expr="is_android or is_ios">
+        <if expr="is_android">
           <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="Mobile: The info label for the 'Proxy settings' button when managed by the system.">
             <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your device's system proxy settings to connect to the network.
           </message>
         </if>
-        <if expr="not is_android and not is_ios">
+        <if expr="not is_android">
           <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by the system.">
             <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your computer's system proxy settings to connect to the network.
           </message>
@@ -10389,19 +10375,6 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_ACCNAME_INFOBAR_PAGE_ACTION" desc="The accessible name for page action infobar type.">
           Page Action
-        </message>
-      </if>
-
-      <!-- Auto-login infobar -->
-      <if expr="is_ios">
-        <message name="IDS_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that they can press one button to auto-login instead of entering their user name and password. [length: 60em]">
-          Automatic sign-in is available <ph name="EMAIL_ADDRESS">$1</ph>
-        </message>
-        <message name="IDS_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login. [length: 10em]">
-          Sign in
-        </message>
-        <message name="IDS_AUTOLOGIN_INFOBAR_CANCEL_BUTTON" desc="Mobile: The string used in the autologin infobar button that the user presses to close the infobar without logging in.">
-          Cancel
         </message>
       </if>
 
@@ -12155,56 +12128,54 @@ Tell us what happened exactly before you got the profile error message:
       </if>
 
       <!-- Web and message center notifications -->
-      <if expr="not is_ios">
-        <message name="IDS_NOTIFICATION_PERMISSIONS" desc="Text requesting permission for Web Notifications.">
-          <ph name="site">$1<ex>mail.google.com</ex></ph> wants to send you notifications.
-        </message>
-        <message name="IDS_NOTIFICATION_PERMISSIONS_FRAGMENT" desc="Permission sentence fragment to show following the prompt 'This site wants to:' in a permissions request">
-          Show notifications
-        </message>
-        <message name="IDS_NOTIFICATION_PERMISSION_YES" desc="The label of the 'allow' button on the notification permission infobar.">
-          Allow
-        </message>
-        <message name="IDS_NOTIFICATION_PERMISSION_NO" desc="The label of the 'deny' button on the notification permission infobar.">
-          Deny
-        </message>
-        <message name="IDS_NOTIFICATION_WELCOME_BODY" desc="Notification body for the Welcome Notification">
-          Stay connected to what you need to know, across all devices.
-        </message>
-        <message name="IDS_NOTIFICATION_WELCOME_BUTTON_LEARN_MORE" desc="Learn more button text for the Welcome Notification">
-          Learn more
-        </message>
-        <message name="IDS_NOTIFICATION_WELCOME_DISPLAY_SOURCE" desc="Display source for the Welcome Notification">
-          Notifications
-        </message>
-        <message name="IDS_NOTIFICATION_WELCOME_TITLE" desc="Notification title for the Welcome Notification">
-          Google Now for Chrome!
-        </message>
-        <message name="IDS_NOTIFICATION_BUTTON_SETTINGS" desc="Short button label to go to the notification settings panel">
-          Settings
-        </message>
-        <message name="IDS_NOTIFICATION_BUTTON_CLOSE" desc="Button label to close a notification">
-          Close
-        </message>
-        <message name="IDS_NOTIFICATION_BUTTON_OPTIONS" desc="Button label to display more options like extra buttons or going to the site settings page.">
-          Options
-        </message>
-        <message name="IDS_NOTIFICATION_SETTINGS" desc="Button label to go to the notification settings panel">
-          Notification settings
-        </message>
-        <message name="IDS_NOTIFIER_WELCOME_BUTTON" desc="Notification body for when a new notifier service is introduced.">
-          Turn off these notifications
-        </message>
-        <message name="IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_NAME" desc="Name of the flag to enable custom layouts for Web Notifications.">
-          Enable custom layouts for Web Notifications.
-        </message>
-        <message name="IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_DESCRIPTION" desc="Description for the flag to enable custom layouts for Web Notifications.">
-          Enable custom layouts for Web Notifications. They will have subtle layout improvements that are otherwise not possible.
-        </message>
-        <message name="IDS_NOTIFICATION_REPLY_PLACEHOLDER" desc="Placeholder text shown in the text box before any text is entered when replying directly to a notification.">
-          Send message
-        </message>
-      </if>
+      <message name="IDS_NOTIFICATION_PERMISSIONS" desc="Text requesting permission for Web Notifications.">
+        <ph name="site">$1<ex>mail.google.com</ex></ph> wants to send you notifications.
+      </message>
+      <message name="IDS_NOTIFICATION_PERMISSIONS_FRAGMENT" desc="Permission sentence fragment to show following the prompt 'This site wants to:' in a permissions request">
+        Show notifications
+      </message>
+      <message name="IDS_NOTIFICATION_PERMISSION_YES" desc="The label of the 'allow' button on the notification permission infobar.">
+        Allow
+      </message>
+      <message name="IDS_NOTIFICATION_PERMISSION_NO" desc="The label of the 'deny' button on the notification permission infobar.">
+        Deny
+      </message>
+      <message name="IDS_NOTIFICATION_WELCOME_BODY" desc="Notification body for the Welcome Notification">
+        Stay connected to what you need to know, across all devices.
+      </message>
+      <message name="IDS_NOTIFICATION_WELCOME_BUTTON_LEARN_MORE" desc="Learn more button text for the Welcome Notification">
+        Learn more
+      </message>
+      <message name="IDS_NOTIFICATION_WELCOME_DISPLAY_SOURCE" desc="Display source for the Welcome Notification">
+        Notifications
+      </message>
+      <message name="IDS_NOTIFICATION_WELCOME_TITLE" desc="Notification title for the Welcome Notification">
+        Google Now for Chrome!
+      </message>
+      <message name="IDS_NOTIFICATION_BUTTON_SETTINGS" desc="Short button label to go to the notification settings panel">
+        Settings
+      </message>
+      <message name="IDS_NOTIFICATION_BUTTON_CLOSE" desc="Button label to close a notification">
+        Close
+      </message>
+      <message name="IDS_NOTIFICATION_BUTTON_OPTIONS" desc="Button label to display more options like extra buttons or going to the site settings page.">
+        Options
+      </message>
+      <message name="IDS_NOTIFICATION_SETTINGS" desc="Button label to go to the notification settings panel">
+        Notification settings
+      </message>
+      <message name="IDS_NOTIFIER_WELCOME_BUTTON" desc="Notification body for when a new notifier service is introduced.">
+        Turn off these notifications
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_NAME" desc="Name of the flag to enable custom layouts for Web Notifications.">
+        Enable custom layouts for Web Notifications.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_DESCRIPTION" desc="Description for the flag to enable custom layouts for Web Notifications.">
+        Enable custom layouts for Web Notifications. They will have subtle layout improvements that are otherwise not possible.
+      </message>
+      <message name="IDS_NOTIFICATION_REPLY_PLACEHOLDER" desc="Placeholder text shown in the text box before any text is entered when replying directly to a notification.">
+        Send message
+      </message>
 
       <!-- Mac AppleScript -->
       <if expr="is_macosx">
@@ -12248,7 +12219,7 @@ Tell us what happened exactly before you got the profile error message:
 
 
       <!-- Mac Menubar Menus -->
-      <if expr="is_macosx or is_ios">
+      <if expr="is_macosx">
         <!-- Menubar Menu Titles -->
         <!-- NOTE: Some of these exist in context menus with Title Case support, but we use different IDs in case we need slightly different strings in some language due to the different context. -->
         <message name="IDS_FILE_MENU_MAC" desc="The menu title of the Mac file menu.">
@@ -12513,7 +12484,7 @@ Tell us what happened exactly before you got the profile error message:
       </if> <!-- is_macosx -->
 
       <!-- Linux Global Menubar Menus -->
-      <if expr="is_posix and not is_macosx and not is_ios">
+      <if expr="is_posix and not is_macosx">
         <!-- Unity and some other GNOME configurations now have a permanent,
              Mac-like menu bar that lives outside the window at the top of the
              screen. The following strings should be in Linux style, not Mac
@@ -12892,7 +12863,7 @@ Tell us what happened exactly before you got the profile error message:
         </message>
       </if>
 
-      <if expr="is_posix and not is_macosx and not is_ios">
+      <if expr="is_posix and not is_macosx">
         <!-- Linux proxy configuration fallback help -->
         <message name="IDS_ABOUT_LINUX_PROXY_CONFIG_TITLE" desc="Title of HTML page shown on systems where system proxy configuration is unsupported.">
           Proxy Configuration Help
@@ -13334,7 +13305,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
       </if>
 
-      <if expr="not is_android and not is_ios">
+      <if expr="not is_android">
         <!-- User manager web UI -->
         <if expr="use_titlecase">
           <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
@@ -13989,16 +13960,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
       </if>
 
-      <!-- iOS Chrome to Device strings-->
-      <if expr="is_ios">
-        <message name="IDS_CHROME_TO_DEVICE_PRINT_TO_PHONE" desc="The message indicating print-to-phone jobs are now available. [Length: 30em]">
-          Your document is ready to view.
-        </message>
-        <message name="IDS_CHROME_TO_DEVICE_SNAPSHOTS" desc="The message indicating snapshot jobs are now available. [Length: 30em]">
-          Your page is available to view.
-        </message>
-      </if>
-
       <!-- Pepper 3D and WebGL (client 3D APIs) infobar strings -->
       <message name="IDS_3D_APIS_BLOCKED_TEXT" desc="Infobar message when 3D graphics APIs are blocked because the graphics processor was reset recently. NOTE that 'rats' here is being used like 'darn'.">
         Rats! <ph name="API_NAME">$1<ex>WebGL</ex></ph> hit a snag.
@@ -14420,14 +14381,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_PUSH_MESSSAGING_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny a site to send push messages.">
         Do not allow any sites to send push messages
       </message>
-      <if expr="not is_ios">
-        <message name="IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY" desc="Body text of an auto-generated notification informing the user that the site may have received an update in the background, in case the site did not satisfy the visible notification requirement itself.">
-          This site has been updated in the background.
-        </message>
-        <message name="IDS_NOTIFICATIONS_BACKGROUND_SERVICE_NAME" desc="The name of the Notifications service that can run in the background">
-          Notifications
-        </message>
-      </if>
+      <message name="IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY" desc="Body text of an auto-generated notification informing the user that the site may have received an update in the background, in case the site did not satisfy the visible notification requirement itself.">
+        This site has been updated in the background.
+      </message>
+      <message name="IDS_NOTIFICATIONS_BACKGROUND_SERVICE_NAME" desc="The name of the Notifications service that can run in the background">
+        Notifications
+      </message>
 
       <!-- Easy Unlock strings -->
       <!-- Strings for the Easy Unlock promo notification -->
@@ -15046,33 +15005,31 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
     </if>
 
-    <if expr="not is_ios">
-      <!-- WebUsb Notification -->
-      <message name="IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION" desc="Content for notification shown to the user when a USB device gets plugged in.">
-        Go to <ph name="LANDING_PAGE">$1<ex>www.google.com</ex></ph> to connect.
-      </message>
-      <message name="IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION_TITLE" desc="Title for notification shown to the user when a USB device gets plugged in.">
-        <ph name="USB_DEVICE_NAME">$1<ex>Nexus 5</ex></ph> detected
+    <!-- WebUsb Notification -->
+    <message name="IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION" desc="Content for notification shown to the user when a USB device gets plugged in.">
+      Go to <ph name="LANDING_PAGE">$1<ex>www.google.com</ex></ph> to connect.
+    </message>
+    <message name="IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION_TITLE" desc="Title for notification shown to the user when a USB device gets plugged in.">
+      <ph name="USB_DEVICE_NAME">$1<ex>Nexus 5</ex></ph> detected
+    </message>
+
+    <!-- Audio device strings. -->
+    <message name="IDS_DEFAULT_AUDIO_DEVICE_NAME" desc="System default audio device (microphone or loudspeaker). This is typically presented to users in a drop-down list of device choices.">
+        Default
+    </message>
+    <if expr="is_win">
+      <message name="IDS_COMMUNICATIONS_AUDIO_DEVICE_NAME" desc="System default communications audio device (microphone or loudspeaker). This is typically presented to users in a drop-down list of device choices.">
+        Communications
       </message>
     </if>
-
-      <!-- Audio device strings. -->
-      <message name="IDS_DEFAULT_AUDIO_DEVICE_NAME" desc="System default audio device (microphone or loudspeaker). This is typically presented to users in a drop-down list of device choices.">
-          Default
+    <if expr="chromeos">
+      <message name="IDS_BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME" desc="Default audio input device (microphone) with a narrow angle coverage. Only the user in front of the device (i.e. you) will be listened to. This is typically presented to users in a drop-down list of device choices.">
+        Default (pick up just you)
       </message>
-      <if expr="is_win">
-        <message name="IDS_COMMUNICATIONS_AUDIO_DEVICE_NAME" desc="System default communications audio device (microphone or loudspeaker). This is typically presented to users in a drop-down list of device choices.">
-          Communications
-        </message>
-      </if>
-      <if expr="chromeos">
-        <message name="IDS_BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME" desc="Default audio input device (microphone) with a narrow angle coverage. Only the user in front of the device (i.e. you) will be listened to. This is typically presented to users in a drop-down list of device choices.">
-          Default (pick up just you)
-        </message>
-        <message name="IDS_BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME" desc="Default audio input device (microphone) with a wide angle coverage. All the sounds in the vicinity will be listend to. This is typically presented to users in a drop-down list of device choices.">
-          Default (pick up everything)
-        </message>
-      </if>
+      <message name="IDS_BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME" desc="Default audio input device (microphone) with a wide angle coverage. All the sounds in the vicinity will be listend to. This is typically presented to users in a drop-down list of device choices.">
+        Default (pick up everything)
+      </message>
+    </if>
 
     <if expr="is_android">
       <!-- Data Use -->
@@ -15143,7 +15100,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
     </if>
 
-    <if expr="not is_android and not is_ios">
+    <if expr="not is_android">
       <!-- Device Chooser Prompt -->
       <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_ORIGIN" desc="The label that is used to introduce Bluetooth chooser details to the user in a popup when it is from a website.">
         <ph name="Origin">$1<ex>www.google.com</ex></ph> wants to pair
@@ -15394,7 +15351,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
     </if>
 
-    <if expr="not is_android and not is_ios and _google_chrome">
+    <if expr="not is_android and _google_chrome">
       <message name="IDS_FLAGS_GOOGLE_BRANDED_CONTEXT_MENU_NAME" desc="Name for the flag to enable Google branding in the context menu.">
         Google branding in the context menu
       </message>

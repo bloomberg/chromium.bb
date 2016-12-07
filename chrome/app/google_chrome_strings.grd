@@ -22,13 +22,7 @@ chromium_strings.grd. -->
     <output filename="google_chrome_strings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="google_chrome_strings_en-US.pak" type="data_package" lang="en" />
     <output filename="google_chrome_strings_es.pak" type="data_package" lang="es" />
-    <if expr="is_ios">
-      <!-- iOS uses es-MX for es-419 -->
-      <output filename="google_chrome_strings_es-MX.pak" type="data_package" lang="es-419" />
-    </if>
-    <if expr="not is_ios">
-      <output filename="google_chrome_strings_es-419.pak" type="data_package" lang="es-419" />
-    </if>
+    <output filename="google_chrome_strings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="google_chrome_strings_et.pak" type="data_package" lang="et" />
     <output filename="google_chrome_strings_fa.pak" type="data_package" lang="fa" />
     <output filename="google_chrome_strings_fi.pak" type="data_package" lang="fi" />
@@ -53,13 +47,7 @@ chromium_strings.grd. -->
     <output filename="google_chrome_strings_nb.pak" type="data_package" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
     <output filename="google_chrome_strings_pl.pak" type="data_package" lang="pl" />
-    <if expr="is_ios">
-      <!-- iOS uses pt for pt-BR -->
-      <output filename="google_chrome_strings_pt.pak" type="data_package" lang="pt-BR" />
-    </if>
-    <if expr="not is_ios">
-      <output filename="google_chrome_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
-    </if>
+    <output filename="google_chrome_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
     <output filename="google_chrome_strings_pt-PT.pak" type="data_package" lang="pt-PT" />
     <output filename="google_chrome_strings_ro.pak" type="data_package" lang="ro" />
     <output filename="google_chrome_strings_ru.pak" type="data_package" lang="ru" />
@@ -136,7 +124,7 @@ chromium_strings.grd. -->
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
       <!-- Settings specific strings -->
-      <if expr="not is_android and not is_ios">
+      <if expr="not is_android">
         <part file="settings_google_chrome_strings.grdp" />
       </if>
 
@@ -308,13 +296,7 @@ chromium_strings.grd. -->
           Get Started with Chrome OS
         </message>
       </if>
-      <if expr="is_ios">
-        <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
-                 desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show. [Length: 14em]">
-          Welcome
-        </message>
-      </if>
-      <if expr="not chromeos and not is_ios">
+      <if expr="not chromeos">
         <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
                  desc="Title for the hard-coded thumbnail that represents the Google Chrome OS Welcome page. This is used on the NTP when there aren't enough thumbnails to show.">
           Welcome to Google Chrome
@@ -975,7 +957,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       </if>
 
       <!-- Material Design User Manager -->
-      <if expr="not is_android and not is_ios and not chromeos">
+      <if expr="not is_android and not chromeos">
         <!-- Supervised user create confirmation page -->
         <message name="IDS_SUPERVISED_USER_CREATED_TEXT" desc="Informative text for the confirmation dialog that appears after a supervised user has been created.">
           To set which websites <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> can view, you can configure restrictions and settings by visiting <ph name="BEGIN_LINK_1">&lt;a target="_blank" href="$3"&gt;</ph><ph name="DISPLAY_LINK">$4</ph><ph name="END_LINK_1">&lt;/a&gt;</ph>. If you do not change the default settings, <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> can browse everything on the web.
