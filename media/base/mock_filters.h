@@ -16,9 +16,11 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/cdm_context.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer.h"
+#include "media/base/media_keys.h"
 #include "media/base/media_track.h"
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
@@ -329,6 +331,41 @@ class MockTextTrack : public TextTrack {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTextTrack);
+};
+
+// Mock CDM callbacks.
+// TODO(xhwang): This could be a subclass of CdmClient if we plan to add one.
+// See http://crbug.com/657940
+class MockCdmClient {
+ public:
+  MockCdmClient();
+  virtual ~MockCdmClient();
+
+  MOCK_METHOD3(OnSessionMessage,
+               void(const std::string& session_id,
+                    MediaKeys::MessageType message_type,
+                    const std::vector<uint8_t>& message));
+  MOCK_METHOD1(OnSessionClosed, void(const std::string& session_id));
+
+  // MOCK methods don't work with move-only types like CdmKeysInfo. Add an extra
+  // OnSessionKeysChangeCalled() function to work around this.
+  MOCK_METHOD2(OnSessionKeysChangeCalled,
+               void(const std::string& session_id,
+                    bool has_additional_usable_key));
+  void OnSessionKeysChange(const std::string& session_id,
+                           bool has_additional_usable_key,
+                           CdmKeysInfo keys_info) {
+    keys_info_.swap(keys_info);
+    OnSessionKeysChangeCalled(session_id, has_additional_usable_key);
+  }
+
+  MOCK_METHOD2(OnSessionExpirationUpdate,
+               void(const std::string& session_id, base::Time new_expiry_time));
+
+  const CdmKeysInfo& keys_info() const { return keys_info_; }
+
+ private:
+  CdmKeysInfo keys_info_;
 };
 
 class MockDecryptor : public Decryptor {

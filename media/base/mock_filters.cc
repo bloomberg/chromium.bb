@@ -126,6 +126,10 @@ MockTextTrack::MockTextTrack() {}
 
 MockTextTrack::~MockTextTrack() {}
 
+MockCdmClient::MockCdmClient() {}
+
+MockCdmClient::~MockCdmClient() {}
+
 MockDecryptor::MockDecryptor() {}
 
 MockDecryptor::~MockDecryptor() {}
