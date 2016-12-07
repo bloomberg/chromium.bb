@@ -599,14 +599,25 @@ TEST_F(ConnectionFactoryImplTest, MultipleFailuresWrapClientEvents) {
   WaitForConnections();
 
   // There should be one failed client event for each failed connection, but
-  // there is a maximum cap of kMaxClientEvents, which is 30.
+  // there is a maximum cap of kMaxClientEvents, which is 30. There should also
+  // be a single event which records the events which were discarded.
   const auto client_events = GetClientEvents();
-  ASSERT_EQ(30, client_events.size());
+  ASSERT_EQ(31, client_events.size());
 
+  bool found_discarded_events = false;
   for (const auto& client_event : client_events) {
-    EXPECT_EQ(mcs_proto::ClientEvent::FAILED_CONNECTION, client_event.type());
-    EXPECT_EQ(net::ERR_CONNECTION_FAILED, client_event.error_code());
+    if (client_event.type() == mcs_proto::ClientEvent::DISCARDED_EVENTS) {
+      // There should only be one event for discarded events.
+      EXPECT_FALSE(found_discarded_events);
+      found_discarded_events = true;
+      // There should be 50-30=20 discarded events.
+      EXPECT_EQ(20U, client_event.number_discarded_events());
+    } else {
+      EXPECT_EQ(mcs_proto::ClientEvent::FAILED_CONNECTION, client_event.type());
+      EXPECT_EQ(net::ERR_CONNECTION_FAILED, client_event.error_code());
+    }
   }
+  EXPECT_TRUE(found_discarded_events);
 
   factory()->SetConnectResult(net::OK);
   WaitForConnections();

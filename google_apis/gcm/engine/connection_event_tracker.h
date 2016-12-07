@@ -5,6 +5,8 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_CONNECTION_EVENT_TRACKER_H_
 #define GOOGLE_APIS_GCM_ENGINE_CONNECTION_EVENT_TRACKER_H_
 
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/macros.h"
@@ -48,6 +50,10 @@ class GCM_EXPORT ConnectionEventTracker {
 
   // Current connection attempt.
   mcs_proto::ClientEvent current_event_;
+
+  // Number of events which were discarded due to exceeding the total number of
+  // events collected. This is sent to GCM to represent those events.
+  uint32_t number_discarded_events_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionEventTracker);
 };

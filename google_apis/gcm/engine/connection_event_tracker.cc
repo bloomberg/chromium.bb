@@ -36,7 +36,7 @@ void ConnectionEventTracker::EndConnectionAttempt() {
   if (completed_events_.size() == kMaxClientEvents) {
     // Don't let the completed events grow beyond the max.
     completed_events_.pop_front();
-    // TODO(harkness): Keep track of deleted events.
+    number_discarded_events_++;
   }
 
   // Current event is now completed, so add it to our list of completed events.
@@ -56,6 +56,7 @@ void ConnectionEventTracker::ConnectionAttemptSucceeded() {
   // A completed connection means that the old client event data has now been
   // sent to GCM. Delete old data.
   completed_events_.clear();
+  number_discarded_events_ = 0;
 }
 
 void ConnectionEventTracker::ConnectionLoginFailed() {
@@ -79,6 +80,14 @@ void ConnectionEventTracker::ConnectionAttemptFailed(int error) {
 void ConnectionEventTracker::WriteToLoginRequest(
     mcs_proto::LoginRequest* request) {
   DCHECK(request);
+
+  // Add an event to represented the discarded events if needed.
+  if (number_discarded_events_ > 0) {
+    mcs_proto::ClientEvent* event = request->add_client_event();
+    event->set_type(mcs_proto::ClientEvent::DISCARDED_EVENTS);
+    event->set_number_discarded_events(number_discarded_events_);
+  }
+
   for (const mcs_proto::ClientEvent& event : completed_events_)
     request->add_client_event()->CopyFrom(event);
 }
