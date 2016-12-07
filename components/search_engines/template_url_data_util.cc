@@ -77,7 +77,7 @@ std::unique_ptr<TemplateURLData> TemplateURLDataFromDictionary(
     result->date_created = base::Time::FromInternalValue(date_created);
 
   int64_t last_modified = 0;
-  if (base::StringToInt64(date_created_str, &last_modified))
+  if (base::StringToInt64(last_modified_str, &last_modified))
     result->last_modified = base::Time::FromInternalValue(last_modified);
 
   int64_t last_visited = 0;

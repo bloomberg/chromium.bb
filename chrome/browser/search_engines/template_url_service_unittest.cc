@@ -1497,3 +1497,26 @@ TEST_F(TemplateURLServiceTest, LastVisitedTimeUpdate) {
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("key1"));
   AssertTimesEqual(modified_last_visited, reloaded_url->last_visited());
 }
+
+TEST_F(TemplateURLServiceTest, LastModifiedTimeUpdate) {
+  test_util()->VerifyLoad();
+  TemplateURLData data;
+  data.SetShortName(ASCIIToUTF16("test_engine"));
+  data.SetKeyword(ASCIIToUTF16("engine_keyword"));
+  data.SetURL("http://test_engine");
+  data.safe_for_autoreplace = true;
+  TemplateURL* original_url = model()->Add(base::MakeUnique<TemplateURL>(data));
+  const base::Time original_last_modified = original_url->last_modified();
+  model()->ResetTemplateURL(original_url, ASCIIToUTF16("test_engine2"),
+                            ASCIIToUTF16("engine_keyword"),
+                            "http://test_engine");
+  TemplateURL* update_url =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("engine_keyword"));
+  const base::Time update_last_modified = update_url->last_modified();
+  model()->SetUserSelectedDefaultSearchProvider(update_url);
+  TemplateURL* reloaded_url =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("engine_keyword"));
+  const base::Time reloaded_last_modified = reloaded_url->last_modified();
+  EXPECT_NE(original_last_modified, reloaded_last_modified);
+  EXPECT_EQ(update_last_modified, reloaded_last_modified);
+}
