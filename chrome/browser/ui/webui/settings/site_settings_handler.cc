@@ -398,9 +398,9 @@ void SiteSettingsHandler::HandleGetDefaultValueForContentType(
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
 
-  std::string setting = content_settings::ContentSettingToString(
-      map->GetDefaultContentSetting(content_type, nullptr));
-  ResolveJavascriptCallback(*callback_id, base::StringValue(setting));
+  base::DictionaryValue category;
+  site_settings::GetContentCategorySetting(map, content_type, &category);
+  ResolveJavascriptCallback(*callback_id, category);
 }
 
 void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {

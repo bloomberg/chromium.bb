@@ -24,7 +24,9 @@ cr.define('site_settings_category', function() {
        */
       var prefsLocationDisabled = {
         defaults: {
-          geolocation: 'block',
+          geolocation: {
+            setting: 'block',
+          },
         },
         exceptions: {
           geolocation: [],
@@ -37,7 +39,9 @@ cr.define('site_settings_category', function() {
        */
       var prefsLocationEnabled = {
         defaults: {
-          geolocation: 'allow',
+          geolocation: {
+            setting: 'allow',
+          },
         },
         exceptions: {
           geolocation: [],
@@ -49,7 +53,9 @@ cr.define('site_settings_category', function() {
        */
       var prefsFlashDetect = {
         defaults: {
-          plugins: 'detect_important_content',
+          plugins: {
+            setting: 'detect_important_content',
+          },
         },
         exceptions: {
           plugins: [],
@@ -62,7 +68,9 @@ cr.define('site_settings_category', function() {
        */
       var prefsCookesSessionOnly = {
         defaults: {
-          cookies: 'session_only',
+          cookies: {
+            setting: 'session_only',
+          },
         },
         exceptions: {
           cookies: [],
@@ -94,6 +102,7 @@ cr.define('site_settings_category', function() {
       });
 
       function testCategoryEnabled(testElement, enabled) {
+        browserProxy.reset();
         browserProxy.setPrefs(
             enabled ? prefsLocationEnabled : prefsLocationDisabled);
 

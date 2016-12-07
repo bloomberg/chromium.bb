@@ -88,6 +88,14 @@ void GetExceptionsFromHostContentSettingsMap(
     const std::string* filter,
     base::ListValue* exceptions);
 
+// Fills in object saying what the current settings is for the category (such as
+// enabled or blocked) and the source of that setting (such preference, policy,
+// or extension).
+void GetContentCategorySetting(
+    const HostContentSettingsMap* map,
+    ContentSettingsType content_type,
+    base::DictionaryValue* object);
+
 // Returns exceptions constructed from the policy-set allowed URLs
 // for the content settings |type| mic or camera.
 void GetPolicyAllowedUrls(

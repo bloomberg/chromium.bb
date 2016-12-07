@@ -139,7 +139,8 @@ Polymer({
   onCategoryChanged_: function() {
     settings.SiteSettingsPrefsBrowserProxyImpl.getInstance()
         .getDefaultValueForContentType(
-            this.category).then(function(setting) {
+            this.category).then(function(defaultValue) {
+              var setting = defaultValue.setting;
               this.categoryEnabled = this.computeIsSettingEnabled(setting);
 
               // Flash only shows ALLOW or BLOCK descriptions on the slider.

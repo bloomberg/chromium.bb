@@ -273,6 +273,20 @@ void GetExceptionsFromHostContentSettingsMap(
   }
 }
 
+void GetContentCategorySetting(
+    const HostContentSettingsMap* map,
+    ContentSettingsType content_type,
+    base::DictionaryValue* object) {
+  std::string provider;
+  std::string setting = content_settings::ContentSettingToString(
+      map->GetDefaultContentSetting(content_type, &provider));
+  DCHECK(!setting.empty());
+
+  object->SetString(site_settings::kSetting, setting);
+  if (provider != "default")
+    object->SetString(site_settings::kSource, provider);
+}
+
 void GetPolicyAllowedUrls(
     ContentSettingsType type,
     std::vector<std::unique_ptr<base::DictionaryValue>>* exceptions,

@@ -8,6 +8,17 @@
  */
 
 /**
+ * The handler will send a police source that is similar, but not exactly the
+ * same as a ControlledBy value. If the ContentSettingProvider is omitted it
+ * should be treated as 'default'.
+ * @enum {string}
+ */
+var ContentSettingProvider = {
+  EXTENSION: 'extension',
+  PREFERENCE: 'preference',
+};
+
+/**
  * @typedef {{embeddingOrigin: string,
  *            embeddingDisplayName: string,
  *            incognito: boolean,
@@ -23,6 +34,12 @@ var SiteException;
  *            notifications: string}}
  */
 var CategoryDefaultsPref;
+
+/**
+ * @typedef {{setting: string,
+ *            source: ContentSettingProvider}}
+ */
+var DefaultContentSetting;
 
 /**
  * @typedef {{location: Array<SiteException>,
@@ -96,7 +113,7 @@ cr.define('settings', function() {
     /**
      * Gets the default value for a site settings category.
      * @param {string} contentType The name of the category to query.
-     * @return {!Promise<string>} The string value of the default setting.
+     * @return {!Promise<!DefaultContentSetting>}
      */
     getDefaultValueForContentType: function(contentType) {},
 

@@ -21,6 +21,8 @@
 namespace {
 
 const char kCallbackId[] = "test-callback-id";
+const char kSetting[] = "setting";
+const char kSource[] = "source";
 
 }
 
@@ -40,7 +42,8 @@ class SiteSettingsHandlerTest : public testing::Test {
   content::TestWebUI* web_ui() { return &web_ui_; }
   SiteSettingsHandler* handler() { return &handler_; }
 
-  void ValidateDefault(const std::string& expected_default,
+  void ValidateDefault(const std::string& expected_setting,
+                       const std::string& expected_source,
                        size_t expected_total_calls) {
     EXPECT_EQ(expected_total_calls, web_ui()->call_data().size());
 
@@ -55,9 +58,14 @@ class SiteSettingsHandlerTest : public testing::Test {
     ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
     ASSERT_TRUE(success);
 
-    std::string default_value;
-    ASSERT_TRUE(data.arg3()->GetAsString(&default_value));
-    EXPECT_EQ(expected_default, default_value);
+    const base::DictionaryValue* default_value = nullptr;
+    ASSERT_TRUE(data.arg3()->GetAsDictionary(&default_value));
+    std::string setting;
+    ASSERT_TRUE(default_value->GetString(kSetting, &setting));
+    EXPECT_EQ(expected_setting, setting);
+    std::string source;
+    if (default_value->GetString(kSource, &source))
+      EXPECT_EQ(expected_source, source);
   }
 
   void ValidateOrigin(
@@ -208,7 +216,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
   getArgs.AppendString(kCallbackId);
   getArgs.AppendString("notifications");
   handler()->HandleGetDefaultValueForContentType(&getArgs);
-  ValidateDefault("ask", 1U);
+  ValidateDefault("ask", "default", 1U);
 
   // Set the default to 'Blocked'.
   base::ListValue setArgs;
@@ -220,7 +228,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
 
   // Verify that the default has been set to 'Blocked'.
   handler()->HandleGetDefaultValueForContentType(&getArgs);
-  ValidateDefault("block", 3U);
+  ValidateDefault("block", "default", 3U);
 }
 
 TEST_F(SiteSettingsHandlerTest, Origins) {
