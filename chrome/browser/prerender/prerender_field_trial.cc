@@ -6,37 +6,45 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace prerender {
 
-void ConfigurePrerender(const base::CommandLine& command_line) {
+// NoStatePrefetch feature modes, to control the PrerenderManager mode using
+// the base::Feature API and field trials.
+const char kNoStatePrefetchFeatureModeParameterName[] = "mode";
+const char kNoStatePrefetchFeatureModeParameterPrefetch[] = "no_state_prefetch";
+const char kNoStatePrefetchFeatureModeParameterPrerender[] = "prerender";
+const char kNoStatePrefetchFeatureModeParameterSimpleLoad[] = "simple_load";
+
+const base::Feature kNoStatePrefetchFeature{"NoStatePrefetch",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+void ConfigurePrerender() {
   PrerenderManager::PrerenderManagerMode mode =
       PrerenderManager::PRERENDER_MODE_ENABLED;
-  if (command_line.HasSwitch(switches::kPrerenderMode)) {
-    const std::string switch_value =
-        command_line.GetSwitchValueASCII(switches::kPrerenderMode);
-
-    if (switch_value == switches::kPrerenderModeSwitchValueDisabled) {
-      mode = PrerenderManager::PRERENDER_MODE_DISABLED;
-    } else if (switch_value == switches::kPrerenderModeSwitchValuePrefetch) {
+  if (!base::FeatureList::IsEnabled(kNoStatePrefetchFeature)) {
+    mode = PrerenderManager::PRERENDER_MODE_DISABLED;
+  } else {
+    std::string mode_value = variations::GetVariationParamValueByFeature(
+        kNoStatePrefetchFeature, kNoStatePrefetchFeatureModeParameterName);
+    if (mode_value == kNoStatePrefetchFeatureModeParameterPrefetch) {
       mode = PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH;
-    } else if (switch_value.empty() ||
-               switch_value == switches::kPrerenderModeSwitchValueEnabled) {
+    } else if (mode_value.empty() ||
+               mode_value == kNoStatePrefetchFeatureModeParameterPrerender) {
       // The empty string means the option was provided with no value, and that
       // means enable.
       mode = PrerenderManager::PRERENDER_MODE_ENABLED;
-    } else if (switch_value == switches::kPrerenderModeSwitchValueSimpleLoad) {
+    } else if (mode_value == kNoStatePrefetchFeatureModeParameterSimpleLoad) {
       mode = PrerenderManager::PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT;
     } else {
-      mode = PrerenderManager::PRERENDER_MODE_DISABLED;
-      LOG(ERROR) << "Invalid --prerender option received on command line: "
-                 << switch_value;
+      LOG(ERROR) << "Invalid prerender mode: " << mode_value;
       LOG(ERROR) << "Disabling prerendering!";
+      mode = PrerenderManager::PRERENDER_MODE_DISABLED;
     }
   }
 

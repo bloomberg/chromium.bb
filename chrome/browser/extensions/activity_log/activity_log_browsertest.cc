@@ -36,8 +36,12 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
-    command_line->AppendSwitchASCII(switches::kPrerenderMode,
-                                    switches::kPrerenderModeSwitchValueEnabled);
+  }
+
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    prerender::PrerenderManager::SetMode(
+        prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
   }
 
   static void Prerender_Arguments(

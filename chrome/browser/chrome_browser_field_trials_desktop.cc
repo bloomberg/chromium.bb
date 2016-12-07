@@ -107,8 +107,8 @@ void SetupStabilityDebugging() {
 
 }  // namespace
 
-void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line) {
-  prerender::ConfigurePrerender(parsed_command_line);
+void SetupDesktopFieldTrials() {
+  prerender::ConfigurePrerender();
   SetupStunProbeTrial();
 #if defined(OS_WIN)
   SetupStabilityDebugging();

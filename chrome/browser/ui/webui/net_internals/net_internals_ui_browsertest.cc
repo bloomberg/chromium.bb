@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/net_log/chrome_net_log.h"
@@ -330,15 +329,11 @@ NetInternalsTest::NetInternalsTest()
 NetInternalsTest::~NetInternalsTest() {
 }
 
-void NetInternalsTest::SetUpCommandLine(base::CommandLine* command_line) {
-  WebUIBrowserTest::SetUpCommandLine(command_line);
-  // Needed to test the prerender view.
-  command_line->AppendSwitchASCII(switches::kPrerenderMode,
-                                  switches::kPrerenderModeSwitchValueEnabled);
-}
-
 void NetInternalsTest::SetUpOnMainThread() {
   WebUIBrowserTest::SetUpOnMainThread();
+  // Needed to test the prerender view.
+  prerender::PrerenderManager::SetMode(
+      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
   // Increase the memory allowed in a prerendered page above normal settings,
   // as debug builds use more memory and often go over the usual limit.
   Profile* profile = browser()->profile();

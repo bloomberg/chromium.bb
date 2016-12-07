@@ -17,9 +17,9 @@
 
 namespace chrome {
 
-void SetupMobileFieldTrials(const base::CommandLine& parsed_command_line) {
+void SetupMobileFieldTrials() {
 #if defined(OS_ANDROID)
-  prerender::ConfigurePrerender(parsed_command_line);
+  prerender::ConfigurePrerender();
 
   // Force-enable profiler timing depending on the field trial.
   if (base::FieldTrialList::FindFullName("ProfilerTiming") == "Enable")

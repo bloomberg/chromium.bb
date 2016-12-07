@@ -724,22 +724,6 @@ const char kPrerenderFromOmniboxSwitchValueDisabled[] = "disabled";
 //   enabled: Guaranteed prerendering.
 const char kPrerenderFromOmniboxSwitchValueEnabled[] = "enabled";
 
-// Controls speculative prerendering of pages, and content prefetching. Both
-// are dispatched from <link rel=prefetch href=...> elements.
-const char kPrerenderMode[]                 = "prerender";
-
-// These are the values the kPrerenderMode switch may have, as in
-// "--prerender=disabled".
-//   disabled: No prerendering.
-const char kPrerenderModeSwitchValueDisabled[] = "disabled";
-//   enabled: Prerendering.
-const char kPrerenderModeSwitchValueEnabled[] = "enabled";
-//   prefetch: NoState Prefetch experiment.
-const char kPrerenderModeSwitchValuePrefetch[] = "prefetch";
-//   simple-load: experiment with prerendering disabled but metrics reporting
-//                enabled, to use as a reference for comparisons.
-const char kPrerenderModeSwitchValueSimpleLoad[] = "simple-load";
-
 // Use IPv6 only for privet HTTP.
 const char kPrivetIPv6Only[]                   = "privet-ipv6-only";
 

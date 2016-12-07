@@ -574,10 +574,10 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
                                 expected_number_of_loads);
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PrerenderInProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kPrerenderMode,
-                                    switches::kPrerenderModeSwitchValueEnabled);
+  void SetUpOnMainThread() override {
+    test_utils::PrerenderInProcessBrowserTest::SetUpOnMainThread();
+    prerender::PrerenderManager::SetMode(
+        prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -2625,7 +2625,6 @@ class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
   void SetUp() override { PrerenderBrowserTest::SetUp(); }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    PrerenderBrowserTest::SetUpCommandLine(command_line);
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
@@ -3297,7 +3296,6 @@ class PrerenderBrowserTestWithNaCl : public PrerenderBrowserTest {
   ~PrerenderBrowserTestWithNaCl() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    PrerenderBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableNaCl);
   }
 };

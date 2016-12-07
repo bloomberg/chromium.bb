@@ -5,18 +5,20 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_
 
-class Profile;
+#include "base/feature_list.h"
 
-namespace base {
-class CommandLine;
-}
+class Profile;
 
 namespace prerender {
 
-// Parse the --prerender= command line switch, which controls prerendering. If
-// the switch is unset or is set to "auto" then the user is assigned to a
-// field trial.
-void ConfigurePrerender(const base::CommandLine& command_line);
+// Exposed for testing.
+extern const base::Feature kNoStatePrefetchFeature;
+extern const char kNoStatePrefetchFeatureModeParameterName[];
+extern const char kNoStatePrefetchFeatureModeParameterSimpleLoad[];
+
+// Configures prerender using kNoStatePrefetchFeature and field trial
+// parameters.
+void ConfigurePrerender();
 
 // Returns true if the user has opted in or has been opted in to the
 // prerendering from Omnibox experiment.

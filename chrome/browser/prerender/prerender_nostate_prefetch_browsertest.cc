@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/escape.h"
@@ -59,10 +58,10 @@ class NoStatePrefetchBrowserTest
  public:
   NoStatePrefetchBrowserTest() {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PrerenderInProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(
-        switches::kPrerenderMode, switches::kPrerenderModeSwitchValuePrefetch);
+  void SetUpOnMainThread() override {
+    test_utils::PrerenderInProcessBrowserTest::SetUpOnMainThread();
+    PrerenderManager::SetMode(
+        PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
   }
 
   // Set up a request counter for |path|, which is also the location of the data

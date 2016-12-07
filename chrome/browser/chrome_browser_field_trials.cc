@@ -126,10 +126,7 @@ void CreateFallbackSamplingTrialIfNeeded(bool has_seed,
 
 }  // namespace
 
-ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(
-    const base::CommandLine& parsed_command_line)
-    : parsed_command_line_(parsed_command_line) {
-}
+ChromeBrowserFieldTrials::ChromeBrowserFieldTrials() {}
 
 ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 }
@@ -139,9 +136,9 @@ void ChromeBrowserFieldTrials::SetupFieldTrials() {
   InstantiateDynamicTrials();
 
 #if defined(OS_ANDROID)
-  chrome::SetupMobileFieldTrials(parsed_command_line_);
+  chrome::SetupMobileFieldTrials();
 #else
-  chrome::SetupDesktopFieldTrials(parsed_command_line_);
+  chrome::SetupDesktopFieldTrials();
 #endif
 }
 

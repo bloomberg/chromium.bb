@@ -14,7 +14,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
@@ -32,6 +34,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/network_change_notifier.h"
@@ -411,12 +414,53 @@ class PrerenderTest : public testing::Test {
 TEST_F(PrerenderTest, PrerenderRespectsDisableFlag) {
   RestorePrerenderMode restore_prerender_mode;
   ASSERT_TRUE(PrerenderManager::IsPrerenderingPossible());
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII(
-    switches::kPrerenderMode,
-    switches::kPrerenderModeSwitchValueDisabled);
-  prerender::ConfigurePrerender(*command_line);
-  ASSERT_FALSE(PrerenderManager::IsPrerenderingPossible());
+  ASSERT_EQ(PrerenderManager::PRERENDER_MODE_ENABLED,
+            PrerenderManager::GetMode());
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(kNoStatePrefetchFeature);
+    prerender::ConfigurePrerender();
+    EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
+              PrerenderManager::GetMode());
+    EXPECT_FALSE(PrerenderManager::IsPrerenderingPossible());
+  }
+}
+
+TEST_F(PrerenderTest, PrerenderRespectsFieldTrialParameters) {
+  RestorePrerenderMode restore_prerender_mode;
+
+  // Set up the prerender mode through a field trial.
+  std::string kTrialName = "name";
+  std::string kTrialGroup = "group";
+  base::FieldTrial* trial =
+      base::FieldTrialList::CreateFieldTrial(kTrialName, kTrialGroup);
+  std::map<std::string, std::string> params = {
+      {kNoStatePrefetchFeatureModeParameterName,
+       kNoStatePrefetchFeatureModeParameterSimpleLoad}};
+  ASSERT_TRUE(
+      variations::AssociateVariationParams(kTrialName, kTrialGroup, params));
+
+  std::unique_ptr<base::FeatureList> feature_list =
+      base::MakeUnique<base::FeatureList>();
+  feature_list->RegisterFieldTrialOverride(
+      kNoStatePrefetchFeature.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+      trial);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  EXPECT_EQ(base::FeatureList::GetFieldTrial(kNoStatePrefetchFeature), trial);
+
+  std::map<std::string, std::string> actual_params;
+  EXPECT_TRUE(variations::GetVariationParamsByFeature(kNoStatePrefetchFeature,
+                                                      &actual_params));
+  EXPECT_EQ(params, actual_params);
+
+  prerender::ConfigurePrerender();
+  EXPECT_TRUE(PrerenderManager::IsPrerenderingPossible());
+  EXPECT_EQ(PrerenderManager::PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT,
+            PrerenderManager::GetMode());
 }
 
 TEST_F(PrerenderTest, PrerenderRespectsThirdPartyCookiesPref) {
