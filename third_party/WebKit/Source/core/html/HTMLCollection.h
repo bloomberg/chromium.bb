@@ -33,6 +33,38 @@
 
 namespace blink {
 
+// A simple iterator based on an index number in an HTMLCollection.
+// This doesn't work if the HTMLCollection is updated during iteration.
+template <class CollectionType, class NodeType>
+class HTMLCollectionIterator {
+  STACK_ALLOCATED();
+
+ public:
+  explicit HTMLCollectionIterator(const CollectionType* collection)
+      : m_collection(collection) {}
+  NodeType* operator*() { return m_collection->item(m_index); }
+
+  void operator++() {
+    if (m_index < m_collection->length())
+      ++m_index;
+  }
+
+  bool operator!=(const HTMLCollectionIterator& other) const {
+    return m_collection != other.m_collection || m_index != other.m_index;
+  }
+
+  static HTMLCollectionIterator createEnd(const CollectionType* collection) {
+    HTMLCollectionIterator iterator(collection);
+    iterator.m_index = collection->length();
+    return iterator;
+  }
+
+ private:
+  Member<const CollectionType> m_collection;
+  unsigned m_index = 0;
+};
+
+// blink::HTMLCollection implements HTMLCollection IDL interface.
 class CORE_EXPORT HTMLCollection
     : public GarbageCollectedFinalized<HTMLCollection>,
       public ScriptWrappable,
@@ -76,6 +108,10 @@ class CORE_EXPORT HTMLCollection
   Element* traverseBackwardToOffset(unsigned offset,
                                     Element& currentElement,
                                     unsigned& currentOffset) const;
+
+  using Iterator = HTMLCollectionIterator<HTMLCollection, Element>;
+  Iterator begin() const { return Iterator(this); }
+  Iterator end() const { return Iterator::createEnd(this); }
 
   DECLARE_VIRTUAL_TRACE();
 

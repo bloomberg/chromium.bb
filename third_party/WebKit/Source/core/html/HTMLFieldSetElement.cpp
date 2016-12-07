@@ -50,11 +50,10 @@ bool HTMLFieldSetElement::matchesValidityPseudoClasses() const {
 }
 
 bool HTMLFieldSetElement::isValidElement() {
-  HTMLCollection* elements = this->elements();
-  for (unsigned i = 0; i < elements->length(); ++i) {
-    if (elements->item(i)->isFormControlElement()) {
-      if (!toHTMLFormControlElement(elements->item(i))
-               ->checkValidity(nullptr, CheckValidityDispatchNoEvent))
+  for (Element* element : *elements()) {
+    if (element->isFormControlElement()) {
+      if (!toHTMLFormControlElement(element)->checkValidity(
+              nullptr, CheckValidityDispatchNoEvent))
         return false;
     }
   }
