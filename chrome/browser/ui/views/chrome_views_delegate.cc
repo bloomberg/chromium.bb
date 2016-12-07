@@ -544,6 +544,16 @@ int ChromeViewsDelegate::GetDialogRelatedButtonHorizontalSpacing() {
   return ViewsDelegate::GetDialogRelatedButtonHorizontalSpacing();
 }
 
+gfx::Insets ChromeViewsDelegate::GetDialogFrameViewInsets() {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    // Titles are inset at the top and sides, but not at the bottom.
+    return gfx::Insets(HarmonyLayoutDelegate::kHarmonyLayoutUnit,
+                       HarmonyLayoutDelegate::kHarmonyLayoutUnit, 0,
+                       HarmonyLayoutDelegate::kHarmonyLayoutUnit);
+  }
+  return ViewsDelegate::GetDialogFrameViewInsets();
+}
+
 #if !defined(USE_ASH)
 views::Widget::InitParams::WindowOpacity
 ChromeViewsDelegate::GetOpacityForInitParams(

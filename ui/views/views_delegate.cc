@@ -131,6 +131,11 @@ int ViewsDelegate::GetDialogRelatedButtonHorizontalSpacing() {
   return kRelatedButtonHSpacing;
 }
 
+gfx::Insets ViewsDelegate::GetDialogFrameViewInsets() {
+  return gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew, 0,
+                     kButtonHEdgeMarginNew);
+}
+
 ViewsDelegate::ViewsDelegate()
     : views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
   DCHECK(!views_delegate);

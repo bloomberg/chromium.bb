@@ -63,6 +63,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 
   gfx::Insets GetDialogButtonInsets() override;
   int GetDialogRelatedButtonHorizontalSpacing() override;
+  gfx::Insets GetDialogFrameViewInsets() override;
 
  private:
 #if defined(OS_WIN)

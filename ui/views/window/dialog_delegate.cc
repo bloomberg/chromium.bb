@@ -17,6 +17,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -199,10 +200,9 @@ NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
 NonClientFrameView* DialogDelegate::CreateDialogFrameView(
     Widget* widget,
     const gfx::Insets& content_margins) {
-  BubbleFrameView* frame =
-      new BubbleFrameView(gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew,
-                                      0, kButtonHEdgeMarginNew),
-                          content_margins);
+  BubbleFrameView* frame = new BubbleFrameView(
+      ViewsDelegate::GetInstance()->GetDialogFrameViewInsets(),
+      content_margins);
   const BubbleBorder::Shadow kShadow = BubbleBorder::SMALL_SHADOW;
   std::unique_ptr<BubbleBorder> border(
       new BubbleBorder(BubbleBorder::FLOAT, kShadow, gfx::kPlaceholderColor));

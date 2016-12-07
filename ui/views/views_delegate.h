@@ -202,6 +202,9 @@ class VIEWS_EXPORT ViewsDelegate {
   // dialog layout.
   virtual int GetDialogRelatedButtonHorizontalSpacing();
 
+  // Returns the insets that should be applied around a dialog's frame view.
+  virtual gfx::Insets GetDialogFrameViewInsets();
+
  protected:
   ViewsDelegate();
 
