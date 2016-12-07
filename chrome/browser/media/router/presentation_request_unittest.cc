@@ -9,8 +9,9 @@ namespace media_router {
 
 TEST(PresentationRequestTest, Equals) {
   GURL frame_url("http://www.site.com/");
-  std::vector<GURL> presentation_urls =
-      {GURL("http://www.example.com/presentation.html")};
+  std::vector<GURL> presentation_urls = {
+      GURL("http://www.example.com/presentation.html"),
+      GURL("http://www.example.net/alternate.html")};
 
   PresentationRequest request1(RenderFrameHostId(1, 2), presentation_urls,
                                frame_url);
@@ -23,7 +24,9 @@ TEST(PresentationRequestTest, Equals) {
   // Presentation URLs are different.
   PresentationRequest request3(
       RenderFrameHostId(1, 2),
-      {GURL("http://www.example.net/presentation.html")}, frame_url);
+      {GURL("http://www.example.net/presentation.html"),
+       GURL("http://www.example.com/presentation.html")},
+      frame_url);
   EXPECT_FALSE(request1.Equals(request3));
 
   // Frame URLs are different.
@@ -33,7 +36,8 @@ TEST(PresentationRequestTest, Equals) {
 
   PresentationRequest request5(
       RenderFrameHostId(1, 2),
-      {GURL("http://www.example.com/presentation.html")},
+      {GURL("http://www.example.com/presentation.html"),
+       GURL("http://www.example.net/alternate.html")},
       GURL("http://www.site.com/"));
   EXPECT_TRUE(request1.Equals(request5));
 }

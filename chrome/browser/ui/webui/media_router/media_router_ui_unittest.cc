@@ -475,7 +475,8 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoSinks) {
       "No screens found.");
   PresentationRequestCallbacks request_callbacks(expected_error);
   create_session_request_.reset(new CreatePresentationConnectionRequest(
-      RenderFrameHostId(0, 0), GURL("http://google.com/presentation"),
+      RenderFrameHostId(0, 0), {GURL("http://google.com/presentation"),
+                                GURL("http://google.com/presentation2")},
       GURL("http://google.com"),
       base::Bind(&PresentationRequestCallbacks::Success,
                  base::Unretained(&request_callbacks)),
@@ -494,7 +495,7 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
   PresentationRequestCallbacks request_callbacks(expected_error);
   GURL presentation_url("http://google.com/presentation");
   create_session_request_.reset(new CreatePresentationConnectionRequest(
-      RenderFrameHostId(0, 0), presentation_url, GURL("http://google.com"),
+      RenderFrameHostId(0, 0), {presentation_url}, GURL("http://google.com"),
       base::Bind(&PresentationRequestCallbacks::Success,
                  base::Unretained(&request_callbacks)),
       base::Bind(&PresentationRequestCallbacks::Error,
@@ -524,7 +525,7 @@ TEST_F(MediaRouterUITest, AbortErrorOnClose) {
   PresentationRequestCallbacks request_callbacks(expected_error);
   GURL presentation_url("http://google.com/presentation");
   create_session_request_.reset(new CreatePresentationConnectionRequest(
-      RenderFrameHostId(0, 0), presentation_url, GURL("http://google.com"),
+      RenderFrameHostId(0, 0), {presentation_url}, GURL("http://google.com"),
       base::Bind(&PresentationRequestCallbacks::Success,
                  base::Unretained(&request_callbacks)),
       base::Bind(&PresentationRequestCallbacks::Error,

@@ -31,6 +31,8 @@ namespace {
 
 const char kPresentationUrl1[] = "http://foo.fakeurl.com/";
 const char kPresentationUrl2[] = "http://bar.fakeurl.com/";
+const char kPresentationUrl3[] =
+    "https://google.com/cast#__castAppId__=233637DE";
 const char kFrameUrl[] = "http://anotherframeurl.fakeurl.com/";
 
 }  // namespace
@@ -284,7 +286,7 @@ TEST_F(PresentationServiceDelegateImplTest, SetDefaultPresentationUrl) {
   ASSERT_TRUE(delegate_impl_->HasDefaultPresentationRequest());
   PresentationRequest request1 =
       delegate_impl_->GetDefaultPresentationRequest();
-  EXPECT_EQ(presentation_url1_, request1.presentation_url());
+  EXPECT_EQ(presentation_url1_, request1.presentation_urls()[0]);
   EXPECT_EQ(RenderFrameHostId(render_process_id, routing_id),
             request1.render_frame_host_id());
   EXPECT_EQ(frame_url, request1.frame_url());
@@ -296,7 +298,7 @@ TEST_F(PresentationServiceDelegateImplTest, SetDefaultPresentationUrl) {
   ASSERT_TRUE(delegate_impl_->HasDefaultPresentationRequest());
   PresentationRequest request2 =
       delegate_impl_->GetDefaultPresentationRequest();
-  EXPECT_EQ(presentation_url2_, request2.presentation_url());
+  EXPECT_EQ(presentation_url2_, request2.presentation_urls()[0]);
   EXPECT_EQ(RenderFrameHostId(render_process_id, routing_id),
             request2.render_frame_host_id());
   EXPECT_EQ(frame_url, request2.frame_url());
@@ -385,6 +387,7 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
       .WillOnce(SaveArg<4>(&route_response_callbacks));
 
   const std::string kPresentationId("pid");
+  presentation_urls_.push_back(GURL(kPresentationUrl3));
   MockCreatePresentationConnnectionCallbacks mock_create_connection_callbacks;
   delegate_impl_->JoinSession(
       render_process_id, routing_id, presentation_urls_, kPresentationId,

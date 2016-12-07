@@ -33,7 +33,10 @@ RouteRequestResult::RouteRequestResult(std::unique_ptr<MediaRoute> route,
     : route_(std::move(route)),
       presentation_id_(presentation_id),
       error_(error),
-      result_code_(result_code) {}
+      result_code_(result_code) {
+  if (route_)
+    presentation_url_ = route_->media_source().url();
+}
 
 RouteRequestResult::~RouteRequestResult() = default;
 

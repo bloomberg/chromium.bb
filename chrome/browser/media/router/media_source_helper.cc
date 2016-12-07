@@ -22,7 +22,8 @@ constexpr char kTabMediaUrnFormat[] = "urn:x-org.chromium.media:source:tab:%d";
 constexpr char kDesktopMediaUrn[] = "urn:x-org.chromium.media:source:desktop";
 constexpr char kTabRemotingUrnFormat[] =
     "urn:x-org.chromium.media:source:tab_content_remoting:%d";
-
+constexpr char kCastPresentationUrlDomain[] = "google.com";
+constexpr char kCastPresentationUrlPath[] = "/cast";
 }  // namespace
 
 MediaSource MediaSourceForTab(int tab_id) {
@@ -57,6 +58,17 @@ bool IsTabMirroringMediaSource(const MediaSource& source) {
 bool IsMirroringMediaSource(const MediaSource& source) {
   return IsDesktopMirroringMediaSource(source) ||
          IsTabMirroringMediaSource(source);
+}
+
+bool CanConnectToMediaSource(const MediaSource& source) {
+  // compare host, port, scheme, and path prefix for source.url()
+  if (!source.url().SchemeIs(url::kHttpsScheme) ||
+      !source.url().DomainIs(kCastPresentationUrlDomain) ||
+      (!source.url().has_path() ||
+       source.url().path() != kCastPresentationUrlPath))
+    return false;
+
+  return true;
 }
 
 int TabIdFromMediaSource(const MediaSource& source) {

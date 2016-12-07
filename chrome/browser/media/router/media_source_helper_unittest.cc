@@ -45,5 +45,24 @@ TEST(MediaSourcesTest, IsValidMediaSource) {
       MediaSourceForPresentationUrl(GURL("totally not a url"))));
 }
 
+TEST(MediaSourcesTest, CanConnectToMediaSource) {
+  EXPECT_TRUE(CanConnectToMediaSource(
+      MediaSource(GURL("https://google.com/cast#__castAppId__=233637DE"))));
+  // false scheme
+  EXPECT_FALSE(CanConnectToMediaSource(
+      MediaSource(GURL("http://google.com/cast#__castAppId__=233637DE"))));
+  // false domain
+  EXPECT_FALSE(CanConnectToMediaSource(
+      MediaSource(GURL("https://google2.com/cast#__castAppId__=233637DE"))));
+  // empty path
+  EXPECT_FALSE(
+      CanConnectToMediaSource(MediaSource(GURL("https://www.google.com"))));
+  // false path
+  EXPECT_FALSE(CanConnectToMediaSource(
+      MediaSource(GURL("https://www.google.com/path"))));
+
+  EXPECT_FALSE(CanConnectToMediaSource(MediaSource(GURL(""))));
+}
+
 }  // namespace media_router
 

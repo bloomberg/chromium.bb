@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "url/gurl.h"
 
 namespace media_router {
 
@@ -62,6 +63,7 @@ class RouteRequestResult {
   // create a copy if they wish to use it after this object is destroyed.
   const MediaRoute* route() const { return route_.get(); }
   std::string presentation_id() const { return presentation_id_; }
+  GURL presentation_url() const { return presentation_url_; }
   std::string error() const { return error_; }
   ResultCode result_code() const { return result_code_; }
 
@@ -73,6 +75,7 @@ class RouteRequestResult {
 
   std::unique_ptr<MediaRoute> route_;
   std::string presentation_id_;
+  GURL presentation_url_;
   std::string error_;
   ResultCode result_code_;
 

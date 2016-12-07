@@ -32,8 +32,9 @@ class PresentationRequest {
   const RenderFrameHostId& render_frame_host_id() const {
     return render_frame_host_id_;
   }
-  // TODO(crbug.com/627655): Use multiple URLs.
-  const GURL& presentation_url() const { return presentation_urls_[0]; }
+  const std::vector<GURL>& presentation_urls() const {
+    return presentation_urls_;
+  }
   const GURL& frame_url() const { return frame_url_; }
 
  private:

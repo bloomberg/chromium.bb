@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/browser/media/router/media_router_ui_service.h"
 #include "chrome/browser/media/router/test_helper.h"
@@ -252,15 +254,17 @@ TEST_F(MediaRouterDialogControllerImplTest, NotifyActionController) {
 
   EXPECT_CALL(*action_controller, OnDialogShown());
   dialog_controller_->ShowMediaRouterDialogForPresentation(
-      base::MakeUnique<CreatePresentationConnectionRequest>(
-          RenderFrameHostId(1, 2), GURL("http://test.com"),
-          GURL("http://example.com"),
-          base::Bind(
-              &MediaRouterDialogControllerImplTest::PresentationSuccessCallback,
-              base::Unretained(this)),
-          base::Bind(
-              &MediaRouterDialogControllerImplTest::PresentationErrorCallback,
-              base::Unretained(this))));
+      std::unique_ptr<CreatePresentationConnectionRequest>(
+          new CreatePresentationConnectionRequest(
+              RenderFrameHostId(1, 2),
+              {GURL("http://test.com"), GURL("http://test2.com")},
+              GURL("http://example.com"),
+              base::Bind(&MediaRouterDialogControllerImplTest::
+                             PresentationSuccessCallback,
+                         base::Unretained(this)),
+              base::Bind(&MediaRouterDialogControllerImplTest::
+                             PresentationErrorCallback,
+                         base::Unretained(this)))));
 
   // When |dialog_controller_| is destroyed with its dialog open,
   // |action_controller| should be notified.

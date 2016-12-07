@@ -92,6 +92,15 @@ base::TimeDelta GetRouteRequestTimeout(MediaCastMode cast_mode) {
   }
 }
 
+// Returns the first source in |sources| that can be connected to by using the
+// "Cast" button in the dialog, or an empty source if there is none.  This is
+// used by the Media Router to find such a matching route if it exists.
+MediaSource GetSourceForRouteObserver(const std::vector<MediaSource>& sources) {
+  auto source_it =
+      std::find_if(sources.begin(), sources.end(), CanConnectToMediaSource);
+  return source_it != sources.end() ? *source_it : MediaSource("");
+}
+
 }  // namespace
 
 // static
@@ -310,10 +319,15 @@ void MediaRouterUI::OnDefaultPresentationChanged(
   query_result_manager_->SetSourcesForCastMode(
       MediaCastMode::DEFAULT, sources,
       presentation_request_->frame_url().GetOrigin());
-  // Register for MediaRoute updates.
-  // TODO(crbug.com/627655): Use multiple URLs.
+  // Register for MediaRoute updates.  NOTE(mfoltz): If there are multiple
+  // sources that can be connected to via the dialog, this will break.  We will
+  // need to observe multiple sources (keyed by sinks) in that case.  As this is
+  // Cast-specific for the forseeable future, it may be simpler to plumb a new
+  // observer API for this case.
+  const MediaSource source_for_route_observer =
+      GetSourceForRouteObserver(sources);
   routes_observer_.reset(new UIMediaRoutesObserver(
-      router_, sources[0].id(),
+      router_, source_for_route_observer.id(),
       base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
 
   UpdateCastModes();

@@ -14,7 +14,7 @@ var presentationUrl = null;
 if (window.location.href.indexOf('__is_android__=true') >= 0) {
   // For android, "google.com/cast" is required in presentation URL.
   // TODO(zqzhang): this requirement may be removed in the future.
-  presentationUrl = "http://google.com/cast#__castAppId__=CCCCCCCC/";
+  presentationUrl = "https://google.com/cast#__castAppId__=CCCCCCCC/";
 } else {
   presentationUrl = "http://www.google.com/#__testprovider__=true";
 }

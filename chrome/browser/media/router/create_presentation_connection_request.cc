@@ -15,13 +15,11 @@ namespace media_router {
 
 CreatePresentationConnectionRequest::CreatePresentationConnectionRequest(
     const RenderFrameHostId& render_frame_host_id,
-    const GURL& presentation_url,
+    const std::vector<GURL>& presentation_urls,
     const GURL& frame_url,
     const PresentationSessionSuccessCallback& success_cb,
     const PresentationSessionErrorCallback& error_cb)
-    : presentation_request_(render_frame_host_id,
-                            {presentation_url},
-                            frame_url),
+    : presentation_request_(render_frame_host_id, presentation_urls, frame_url),
       success_cb_(success_cb),
       error_cb_(error_cb),
       cb_invoked_(false) {
@@ -38,12 +36,12 @@ CreatePresentationConnectionRequest::~CreatePresentationConnectionRequest() {
 
 void CreatePresentationConnectionRequest::InvokeSuccessCallback(
     const std::string& presentation_id,
+    const GURL& presentation_url,
     const MediaRoute& route) {
   DCHECK(!cb_invoked_);
   if (!cb_invoked_) {
     success_cb_.Run(
-        content::PresentationSessionInfo(
-            presentation_request_.presentation_url(), presentation_id),
+        content::PresentationSessionInfo(presentation_url, presentation_id),
         route);
     cb_invoked_ = true;
   }
@@ -66,8 +64,8 @@ void CreatePresentationConnectionRequest::HandleRouteResponse(
     presentation_request->InvokeErrorCallback(content::PresentationError(
         content::PRESENTATION_ERROR_UNKNOWN, result.error()));
   } else {
-    presentation_request->InvokeSuccessCallback(result.presentation_id(),
-                                                *result.route());
+    presentation_request->InvokeSuccessCallback(
+        result.presentation_id(), result.presentation_url(), *result.route());
   }
 }
 

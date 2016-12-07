@@ -11,8 +11,7 @@
 #include <string>
 
 #include "base/hash.h"
-
-class GURL;
+#include "url/gurl.h"
 
 // TODO(mfoltz): Right now this is a wrapper for std::string.  Factor methods
 // from media_source_helper here so this object becomes useful; and don't just
@@ -30,6 +29,10 @@ class MediaSource {
   // Gets the ID of the media source.
   MediaSource::Id id() const;
 
+  // If MediaSource is created from a URL, return the URL; otherwise return an
+  // empty GURL.
+  GURL url() const;
+
   // Returns true if two MediaSource objects use the same media ID.
   bool operator==(const MediaSource& other) const;
 
@@ -45,6 +48,7 @@ class MediaSource {
 
  private:
   MediaSource::Id id_;
+  GURL url_;
 };
 
 }  // namespace media_router
