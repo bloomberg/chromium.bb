@@ -573,7 +573,8 @@ TEST_F(RecentTabsSubMenuModelTest, MaxTabsPerSessionAndRecency) {
     EXPECT_EQ(tab_titles[i], model.GetLabelAt(i + 5));
 }
 
-TEST_F(RecentTabsSubMenuModelTest, MaxWidth) {
+// Flaky, see crbug.com/671902.
+TEST_F(RecentTabsSubMenuModelTest, DISABLED_MaxWidth) {
   // Create 1 session with 1 window and 1 tab.
   RecentTabsBuilderTestHelper recent_tabs_builder;
   recent_tabs_builder.AddSession();
