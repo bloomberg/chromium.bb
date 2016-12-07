@@ -1057,7 +1057,7 @@ Output.prototype = {
             }
           }
           options.annotation.push(token);
-          if (selectedText) {
+          if (selectedText && !this.formatOptions_.braille) {
             this.append_(buff, selectedText, options);
             this.append_(buff, Msgs.getMsg('selected'));
           } else {
