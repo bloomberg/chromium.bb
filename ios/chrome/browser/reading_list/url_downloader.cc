@@ -207,6 +207,10 @@ std::string URLDownloader::SaveAndReplaceImagesInHTML(
         images) {
   std::string mutable_html = html;
   for (size_t i = 0; i < images.size(); i++) {
+    if (images[i].url.SchemeIs(url::kDataScheme)) {
+      // Data URI, the data part of the image is empty, no need to store it.
+      continue;
+    }
     base::FilePath local_image_path;
     std::string local_image_name;
     if (!SaveImage(url, images[i].url, images[i].data, &local_image_name)) {
