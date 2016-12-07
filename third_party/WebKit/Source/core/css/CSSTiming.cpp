@@ -25,6 +25,11 @@ void CSSTiming::recordAuthorStyleSheetParseTime(double seconds) {
     m_parseTimeBeforeFCP += seconds;
 }
 
+void CSSTiming::recordUpdateDuration(double seconds) {
+  if (!m_paintTiming->firstContentfulPaint())
+    m_updateTimeBeforeFCP += seconds;
+}
+
 DEFINE_TRACE(CSSTiming) {
   visitor->trace(m_document);
   visitor->trace(m_paintTiming);

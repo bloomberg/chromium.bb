@@ -328,7 +328,7 @@ void StyleSheetContents::parseAuthorStyleSheet(
     const SecurityOrigin* securityOrigin) {
   TRACE_EVENT1("blink,devtools.timeline", "ParseAuthorStyleSheet", "data",
                InspectorParseAuthorStyleSheetEvent::data(cachedStyleSheet));
-  double startTimeMS = monotonicallyIncreasingTimeMS();
+  double startTime = monotonicallyIncreasingTime();
 
   bool isSameOriginRequest =
       securityOrigin && securityOrigin->canRequest(baseURL());
@@ -364,12 +364,11 @@ void StyleSheetContents::parseAuthorStyleSheet(
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, parseHistogram,
                       ("Style.AuthorStyleSheet.ParseTime", 0, 10000000, 50));
-  double parseDurationMS = (monotonicallyIncreasingTimeMS() - startTimeMS);
-  parseHistogram.count(parseDurationMS * 1000);
+  double parseDurationSeconds = (monotonicallyIncreasingTime() - startTime);
+  parseHistogram.count(parseDurationSeconds * 1000 * 1000);
   if (Document* document = singleOwnerDocument()) {
-    // CSSTiming expects time in seconds.
-    CSSTiming::from(*document).recordAuthorStyleSheetParseTime(parseDurationMS /
-                                                               1000);
+    CSSTiming::from(*document).recordAuthorStyleSheetParseTime(
+        parseDurationSeconds);
   }
 }
 

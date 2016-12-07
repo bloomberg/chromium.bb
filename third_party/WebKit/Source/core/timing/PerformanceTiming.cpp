@@ -414,6 +414,14 @@ unsigned long long PerformanceTiming::authorStyleSheetParseDurationBeforeFCP()
       timing->authorStyleSheetParseDurationBeforeFCP());
 }
 
+unsigned long long PerformanceTiming::updateStyleDurationBeforeFCP() const {
+  const CSSTiming* timing = cssTiming();
+  if (!timing)
+    return 0;
+
+  return toIntegerMilliseconds(timing->updateDurationBeforeFCP());
+}
+
 DocumentLoader* PerformanceTiming::documentLoader() const {
   if (!frame())
     return nullptr;

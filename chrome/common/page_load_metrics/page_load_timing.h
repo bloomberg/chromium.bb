@@ -26,6 +26,9 @@ struct StyleSheetTiming {
   // Total time spent parsing author style sheets, before the first contentful
   // paint.
   base::Optional<base::TimeDelta> author_style_sheet_parse_duration_before_fcp;
+
+  // Time spent in Document::updateStyle before FCP.
+  base::Optional<base::TimeDelta> update_style_duration_before_fcp;
 };
 
 // PageLoadTiming contains timing metrics associated with a page load. Many of

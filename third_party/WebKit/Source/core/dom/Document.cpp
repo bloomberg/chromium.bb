@@ -56,6 +56,7 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/CSSTiming.h"
 #include "core/css/FontFaceSet.h"
 #include "core/css/MediaQueryMatcher.h"
 #include "core/css/PropertyRegistry.h"
@@ -2003,7 +2004,7 @@ void Document::updateActiveStyle() {
 void Document::updateStyle() {
   DCHECK(!view()->shouldThrottleRendering());
   TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Style.UpdateTime");
+  double startTime = monotonicallyIncreasingTime();
 
   unsigned initialElementCount = styleEngine().styleForElementCount();
 
@@ -2075,6 +2076,12 @@ void Document::updateStyle() {
         "blink,blink_style", "Document::updateStyle", "resolverAccessCount",
         styleEngine().styleForElementCount() - initialElementCount);
   }
+
+  double updateDurationSeconds = monotonicallyIncreasingTime() - startTime;
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, updateHistogram,
+                      ("Style.UpdateTime", 0, 10000000, 50));
+  updateHistogram.count(updateDurationSeconds * 1000 * 1000);
+  CSSTiming::from(*this).recordUpdateDuration(updateDurationSeconds);
 }
 
 void Document::notifyLayoutTreeOfSubtreeChanges() {

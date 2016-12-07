@@ -150,6 +150,10 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
         base::TimeDelta::FromSecondsD(
             perf.authorStyleSheetParseDurationBeforeFCP());
   }
+  if (perf.updateStyleDurationBeforeFCP() > 0.0) {
+    timing.style_sheet_timing.update_style_duration_before_fcp =
+        base::TimeDelta::FromSecondsD(perf.updateStyleDurationBeforeFCP());
+  }
   return timing;
 }
 

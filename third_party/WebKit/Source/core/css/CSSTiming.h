@@ -22,12 +22,14 @@ class CSSTiming : public GarbageCollectedFinalized<CSSTiming>,
  public:
   virtual ~CSSTiming() {}
 
-  // TODO(csharrison): Also record update style time before first paint.
   void recordAuthorStyleSheetParseTime(double seconds);
+  void recordUpdateDuration(double seconds);
 
   double authorStyleSheetParseDurationBeforeFCP() const {
     return m_parseTimeBeforeFCP;
   }
+
+  double updateDurationBeforeFCP() const { return m_updateTimeBeforeFCP; }
 
   static CSSTiming& from(Document&);
   DECLARE_VIRTUAL_TRACE();
@@ -36,6 +38,7 @@ class CSSTiming : public GarbageCollectedFinalized<CSSTiming>,
   explicit CSSTiming(Document&);
 
   double m_parseTimeBeforeFCP = 0;
+  double m_updateTimeBeforeFCP = 0;
 
   Member<Document> m_document;
   Member<PaintTiming> m_paintTiming;

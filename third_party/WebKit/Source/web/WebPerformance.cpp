@@ -202,6 +202,11 @@ double WebPerformance::authorStyleSheetParseDurationBeforeFCP() const {
       m_private->timing()->authorStyleSheetParseDurationBeforeFCP());
 }
 
+double WebPerformance::updateStyleDurationBeforeFCP() const {
+  return millisecondsToSeconds(
+      m_private->timing()->updateStyleDurationBeforeFCP());
+}
+
 WebPerformance::WebPerformance(Performance* performance)
     : m_private(performance) {}
 

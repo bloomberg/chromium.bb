@@ -15,6 +15,7 @@
 
 IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::StyleSheetTiming)
   IPC_STRUCT_TRAITS_MEMBER(author_style_sheet_parse_duration_before_fcp)
+  IPC_STRUCT_TRAITS_MEMBER(update_style_duration_before_fcp)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::PageLoadTiming)

@@ -98,6 +98,7 @@ class WebPerformance {
   BLINK_EXPORT double parseBlockedOnScriptExecutionFromDocumentWriteDuration()
       const;
   BLINK_EXPORT double authorStyleSheetParseDurationBeforeFCP() const;
+  BLINK_EXPORT double updateStyleDurationBeforeFCP() const;
 
 #if BLINK_IMPLEMENTATION
   WebPerformance(Performance*);

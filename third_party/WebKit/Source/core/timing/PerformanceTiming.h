@@ -108,10 +108,8 @@ class CORE_EXPORT PerformanceTiming final
   unsigned long long parseBlockedOnScriptExecutionDuration() const;
   unsigned long long parseBlockedOnScriptExecutionFromDocumentWriteDuration()
       const;
-
-  // Microseconds spend parsing author style sheets before the first contentful
-  // paint.
   unsigned long long authorStyleSheetParseDurationBeforeFCP() const;
+  unsigned long long updateStyleDurationBeforeFCP() const;
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 

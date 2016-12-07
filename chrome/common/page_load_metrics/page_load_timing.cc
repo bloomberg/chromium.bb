@@ -14,11 +14,14 @@ StyleSheetTiming::~StyleSheetTiming() {}
 
 bool StyleSheetTiming::operator==(const StyleSheetTiming& other) const {
   return author_style_sheet_parse_duration_before_fcp ==
-         other.author_style_sheet_parse_duration_before_fcp;
+             other.author_style_sheet_parse_duration_before_fcp &&
+         update_style_duration_before_fcp ==
+             other.update_style_duration_before_fcp;
 }
 
 bool StyleSheetTiming::IsEmpty() const {
-  return !author_style_sheet_parse_duration_before_fcp;
+  return !author_style_sheet_parse_duration_before_fcp &&
+         !update_style_duration_before_fcp;
 }
 
 PageLoadTiming::PageLoadTiming() {}

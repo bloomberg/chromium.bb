@@ -345,6 +345,21 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
           timing.style_sheet_timing.author_style_sheet_parse_duration_before_fcp
               .value());
     }
+    if (timing.style_sheet_timing.update_style_duration_before_fcp) {
+      PAGE_LOAD_HISTOGRAM(
+          "PageLoad.CSSTiming.Update.BeforeFirstContentfulPaint",
+          timing.style_sheet_timing.update_style_duration_before_fcp.value());
+    }
+    if (timing.style_sheet_timing
+            .author_style_sheet_parse_duration_before_fcp ||
+        timing.style_sheet_timing.update_style_duration_before_fcp) {
+      PAGE_LOAD_HISTOGRAM(
+          "PageLoad.CSSTiming.ParseAndUpdate.BeforeFirstContentfulPaint",
+          timing.style_sheet_timing.author_style_sheet_parse_duration_before_fcp
+                  .value_or(base::TimeDelta()) +
+              timing.style_sheet_timing.update_style_duration_before_fcp
+                  .value_or(base::TimeDelta()));
+    }
 
     switch (GetPageLoadType(transition_)) {
       case LOAD_TYPE_RELOAD:

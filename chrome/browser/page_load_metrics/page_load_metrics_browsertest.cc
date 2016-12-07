@@ -552,4 +552,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CSSTiming) {
                                      1);
   histogram_tester_.ExpectTotalCount(
       "PageLoad.CSSTiming.Parse.BeforeFirstContentfulPaint", 1);
+  histogram_tester_.ExpectTotalCount(
+      "PageLoad.CSSTiming.Update.BeforeFirstContentfulPaint", 1);
+  histogram_tester_.ExpectTotalCount(
+      "PageLoad.CSSTiming.ParseAndUpdate.BeforeFirstContentfulPaint", 1);
 }
