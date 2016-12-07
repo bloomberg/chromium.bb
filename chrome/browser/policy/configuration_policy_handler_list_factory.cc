@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/guest_mode_policy_handler.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
+#include "chrome/browser/supervised_user/supervised_user_creation_policy_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -396,9 +397,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kVariationsRestrictParameter,
     variations::prefs::kVariationsRestrictParameter,
     base::Value::Type::STRING },
-  { key::kSupervisedUserCreationEnabled,
-    prefs::kSupervisedUserCreationAllowed,
-    base::Value::Type::BOOLEAN },
   { key::kForceEphemeralProfiles,
     prefs::kForceEphemeralProfiles,
     base::Value::Type::BOOLEAN },
@@ -807,6 +805,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       base::MakeUnique<extensions::NativeMessagingHostListPolicyHandler>(
           key::kNativeMessagingBlacklist,
           extensions::pref_names::kNativeMessagingBlacklist, true));
+  handlers->AddHandler(base::MakeUnique<SupervisedUserCreationPolicyHandler>());
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
