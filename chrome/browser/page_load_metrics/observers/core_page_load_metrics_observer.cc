@@ -333,7 +333,10 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
                           timing.first_contentful_paint.value());
     }
 
-    if (info.user_initiated) {
+    // TODO(bmcquade): consider adding a histogram that uses
+    // UserInputInfo.user_input_event.
+    if (info.user_initiated_info.browser_initiated ||
+        info.user_initiated_info.user_gesture) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintUserInitiated,
                           timing.first_contentful_paint.value());
     }
@@ -366,7 +369,10 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
         PAGE_LOAD_HISTOGRAM(
             internal::kHistogramLoadTypeFirstContentfulPaintReload,
             timing.first_contentful_paint.value());
-        if (info.user_initiated) {
+        // TODO(bmcquade): consider adding a histogram that uses
+        // UserInputInfo.user_input_event.
+        if (info.user_initiated_info.browser_initiated ||
+            info.user_initiated_info.user_gesture) {
           PAGE_LOAD_HISTOGRAM(
               internal::kHistogramLoadTypeFirstContentfulPaintReloadByGesture,
               timing.first_contentful_paint.value());

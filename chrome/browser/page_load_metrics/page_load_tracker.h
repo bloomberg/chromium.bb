@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/user_input_tracker.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "ui/base/page_transition_types.h"
 
@@ -127,6 +128,7 @@ class PageLoadTracker {
                   PageLoadMetricsEmbedderInterface* embedder_interface,
                   const GURL& currently_committed_url,
                   content::NavigationHandle* navigation_handle,
+                  UserInitiatedInfo user_initiated_info,
                   int aborted_chain_size,
                   int aborted_chain_size_same_url);
   ~PageLoadTracker();
@@ -175,11 +177,11 @@ class PageLoadTracker {
   // browser process or not. We need this to possibly clamp browser timestamp on
   // a machine with inter process time tick skew.
   void NotifyAbort(UserAbortType abort_type,
-                   bool user_initiated,
+                   UserInitiatedInfo user_initiated_info,
                    base::TimeTicks timestamp,
                    bool is_certainly_browser_timestamp);
   void UpdateAbort(UserAbortType abort_type,
-                   bool user_initiated,
+                   UserInitiatedInfo user_initiated_info,
                    base::TimeTicks timestamp,
                    bool is_certainly_browser_timestamp);
 
@@ -204,6 +206,10 @@ class PageLoadTracker {
 
   ui::PageTransition page_transition() const { return page_transition_; }
 
+  UserInitiatedInfo user_initiated_info() const { return user_initiated_info_; }
+
+  UserInputTracker* input_tracker() { return &input_tracker_; }
+
  private:
   // This function converts a TimeTicks value taken in the browser process
   // to navigation_start_ if:
@@ -214,7 +220,7 @@ class PageLoadTracker {
       base::TimeTicks* event_time);
 
   void UpdateAbortInternal(UserAbortType abort_type,
-                           bool user_initiated,
+                           UserInitiatedInfo user_initiated_info,
                            base::TimeTicks timestamp,
                            bool is_certainly_browser_timestamp);
 
@@ -222,6 +228,8 @@ class PageLoadTracker {
   // and represents a sequence of provisional aborts that never ends with a
   // committed load.
   void LogAbortChainHistograms(content::NavigationHandle* final_navigation);
+
+  UserInputTracker input_tracker_;
 
   // Whether we stopped tracking this navigation after it was initiated. We may
   // stop tracking a navigation if it doesn't meet the criteria for tracking
@@ -255,7 +263,7 @@ class PageLoadTracker {
   // this field is never set to true for some abort types, such as stop and
   // close, since we don't yet have sufficient instrumentation to know if a stop
   // or close was caused by a user action.
-  bool abort_user_initiated_;
+  UserInitiatedInfo abort_user_initiated_info_;
 
   base::TimeTicks abort_time_;
 
@@ -277,9 +285,8 @@ class PageLoadTracker {
   int num_cache_requests_;
   int num_network_requests_;
 
-  // This is derived from the user gesture bit in the renderer. For browser
-  // initiated navigations this will always be true.
-  bool user_initiated_;
+  // Whether this page load was user initiated.
+  UserInitiatedInfo user_initiated_info_;
 
   // This is a subtle member. If a provisional load A gets aborted by
   // provisional load B, which gets aborted by C that eventually commits, then

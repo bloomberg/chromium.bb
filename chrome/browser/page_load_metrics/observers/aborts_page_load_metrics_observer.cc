@@ -58,48 +58,57 @@ const char kHistogramAbortCloseDuringParse[] =
 const char kHistogramAbortBackgroundDuringParse[] =
     "PageLoad.Experimental.AbortTiming.Background.DuringParse";
 
-// These metrics should be temporary until we have landed on a one-size-fits-all
-// abort metric.
-const char kHistogramAbortNewNavigationUserInitiated[] =
-    "PageLoad.Experimental.AbortTiming.NewNavigation.BeforeCommit."
-    "UserInitiated";
-const char kHistogramAbortForwardBackUserInitiated[] =
-    "PageLoad.Experimental.AbortTiming.ForwardBackNavigation.BeforeCommit."
-    "UserInitiated";
-const char kHistogramAbortReloadUserInitiated[] =
-    "PageLoad.Experimental.AbortTiming.Reload.BeforeCommit.UserInitiated";
-
 }  // namespace internal
 
 namespace {
 
-bool IsAbortUserInitiated(const page_load_metrics::PageLoadExtraInfo& info) {
-  // We consider an abort to be user initiated if the abort was triggered by a
-  // user action, and the page load being aborted was also user initiated. A
-  // user may abort a non-user-initiated page load, but we exclude these from
-  // our user initiated abort tracking since it's less clear that such an abort
-  // is interesting from a user perspective.
-  return info.abort_user_initiated && info.user_initiated;
-}
-
-void RecordAbortBeforeCommit(UserAbortType abort_type,
-                             bool user_initiated,
-                             base::TimeDelta time_to_abort) {
+void RecordAbortBeforeCommit(
+    UserAbortType abort_type,
+    page_load_metrics::UserInitiatedInfo user_initiated_info,
+    base::TimeDelta time_to_abort) {
   switch (abort_type) {
     case UserAbortType::ABORT_RELOAD:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadBeforeCommit,
                           time_to_abort);
-      if (user_initiated) {
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadUserInitiated,
-                            time_to_abort);
+      if (user_initiated_info.user_gesture) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.Reload.BeforeCommit."
+            "UserGesture",
+            time_to_abort);
+      }
+      if (user_initiated_info.user_input_event) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.Reload.BeforeCommit."
+            "UserInputEvent",
+            time_to_abort);
+      }
+      if (user_initiated_info.browser_initiated) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.Reload.BeforeCommit."
+            "BrowserInitiated",
+            time_to_abort);
       }
       return;
     case UserAbortType::ABORT_FORWARD_BACK:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackBeforeCommit,
                           time_to_abort);
-      if (user_initiated) {
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackUserInitiated,
-                            time_to_abort);
+      if (user_initiated_info.user_gesture) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.ForwardBackNavigation."
+            "BeforeCommit.UserGesture",
+            time_to_abort);
+      }
+      if (user_initiated_info.user_input_event) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.ForwardBackNavigation."
+            "BeforeCommit.UserInputEvent",
+            time_to_abort);
+      }
+      if (user_initiated_info.browser_initiated) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.ForwardBackNavigation."
+            "BeforeCommit.BrowserInitiated",
+            time_to_abort);
       }
       return;
     case UserAbortType::ABORT_CLIENT_REDIRECT:
@@ -109,9 +118,23 @@ void RecordAbortBeforeCommit(UserAbortType abort_type,
     case UserAbortType::ABORT_NEW_NAVIGATION:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortNewNavigationBeforeCommit,
                           time_to_abort);
-      if (user_initiated) {
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortNewNavigationUserInitiated,
-                            time_to_abort);
+      if (user_initiated_info.user_gesture) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.NewNavigation.BeforeCommit."
+            "UserGesture",
+            time_to_abort);
+      }
+      if (user_initiated_info.user_input_event) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.NewNavigation.BeforeCommit."
+            "UserInputEvent",
+            time_to_abort);
+      }
+      if (user_initiated_info.browser_initiated) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.NewNavigation.BeforeCommit."
+            "BrowserInitiated",
+            time_to_abort);
       }
       return;
     case UserAbortType::ABORT_STOP:
@@ -138,16 +161,54 @@ void RecordAbortBeforeCommit(UserAbortType abort_type,
   NOTREACHED();
 }
 
-void RecordAbortAfterCommitBeforePaint(UserAbortType abort_type,
-                                       base::TimeDelta time_to_abort) {
+void RecordAbortAfterCommitBeforePaint(
+    UserAbortType abort_type,
+    page_load_metrics::UserInitiatedInfo user_initiated_info,
+    base::TimeDelta time_to_abort) {
   switch (abort_type) {
     case UserAbortType::ABORT_RELOAD:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadBeforePaint,
                           time_to_abort);
+      if (user_initiated_info.user_gesture) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.Reload.AfterCommit.BeforePaint."
+            "UserGesture",
+            time_to_abort);
+      }
+      if (user_initiated_info.user_input_event) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.Reload.AfterCommit.BeforePaint."
+            "UserInputEvent",
+            time_to_abort);
+      }
+      if (user_initiated_info.browser_initiated) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.Reload.AfterCommit.BeforePaint."
+            "BrowserInitiated",
+            time_to_abort);
+      }
       return;
     case UserAbortType::ABORT_FORWARD_BACK:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackBeforePaint,
                           time_to_abort);
+      if (user_initiated_info.user_gesture) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.ForwardBackNavigation."
+            "AfterCommit.BeforePaint.UserGesture",
+            time_to_abort);
+      }
+      if (user_initiated_info.user_input_event) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.ForwardBackNavigation."
+            "AfterCommit.BeforePaint.UserInputEvent",
+            time_to_abort);
+      }
+      if (user_initiated_info.browser_initiated) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.ForwardBackNavigation."
+            "AfterCommit.BeforePaint.BrowserInitiated",
+            time_to_abort);
+      }
       return;
     case UserAbortType::ABORT_CLIENT_REDIRECT:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortClientRedirectBeforePaint,
@@ -156,6 +217,24 @@ void RecordAbortAfterCommitBeforePaint(UserAbortType abort_type,
     case UserAbortType::ABORT_NEW_NAVIGATION:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortNewNavigationBeforePaint,
                           time_to_abort);
+      if (user_initiated_info.user_gesture) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.NewNavigation.AfterCommit."
+            "BeforePaint.UserGesture",
+            time_to_abort);
+      }
+      if (user_initiated_info.user_input_event) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.NewNavigation.AfterCommit."
+            "BeforePaint.UserInputEvent",
+            time_to_abort);
+      }
+      if (user_initiated_info.browser_initiated) {
+        PAGE_LOAD_HISTOGRAM(
+            "PageLoad.Experimental.AbortTiming.NewNavigation.AfterCommit."
+            "BeforePaint.BrowserInitiated",
+            time_to_abort);
+      }
       return;
     case UserAbortType::ABORT_STOP:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortStopBeforePaint,
@@ -264,7 +343,9 @@ void AbortsPageLoadMetricsObserver::OnComplete(
     RecordAbortDuringParse(extra_info.abort_type, time_to_abort);
   }
   if (!timing.first_paint || timing.first_paint >= time_to_abort) {
-    RecordAbortAfterCommitBeforePaint(extra_info.abort_type, time_to_abort);
+    RecordAbortAfterCommitBeforePaint(extra_info.abort_type,
+                                      extra_info.abort_user_initiated_info,
+                                      time_to_abort);
   }
 }
 
@@ -275,6 +356,6 @@ void AbortsPageLoadMetricsObserver::OnFailedProvisionalLoad(
     return;
 
   RecordAbortBeforeCommit(extra_info.abort_type,
-                          IsAbortUserInitiated(extra_info),
+                          extra_info.abort_user_initiated_info,
                           extra_info.time_to_abort.value());
 }

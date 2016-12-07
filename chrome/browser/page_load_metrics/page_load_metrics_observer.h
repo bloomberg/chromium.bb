@@ -65,16 +65,56 @@ struct FailedProvisionalLoadInfo {
   net::Error error;
 };
 
+// Information related to whether an associated action, such as a navigation or
+// an abort, was initiated by a user. Clicking a link or tapping on a UI
+// element are examples of user initiation actions.
+struct UserInitiatedInfo {
+  static UserInitiatedInfo NotUserInitiated() {
+    return UserInitiatedInfo(false, false, false);
+  }
+
+  static UserInitiatedInfo BrowserInitiated() {
+    return UserInitiatedInfo(true, false, false);
+  }
+
+  static UserInitiatedInfo RenderInitiated(bool user_gesture,
+                                           bool user_input_event) {
+    return UserInitiatedInfo(false, user_gesture, user_input_event);
+  }
+
+  // Whether the associated action was initiated from the browser process, as
+  // opposed to from the render process. We generally assume that all actions
+  // initiated from the browser process are user initiated.
+  bool browser_initiated;
+
+  // Whether the associated action was initiated by a user, according to user
+  // gesture tracking in content and Blink, as reported by NavigationHandle.
+  bool user_gesture;
+
+  // Whether the associated action was initiated by a user, based on our
+  // heuristic-driven implementation that tests to see if there was an input
+  // event that happened shortly before the given action.
+  bool user_input_event;
+
+ private:
+  UserInitiatedInfo(bool browser_initiated,
+                    bool user_gesture,
+                    bool user_input_event)
+      : browser_initiated(browser_initiated),
+        user_gesture(user_gesture),
+        user_input_event(user_input_event) {}
+};
+
 struct PageLoadExtraInfo {
   PageLoadExtraInfo(
       const base::Optional<base::TimeDelta>& first_background_time,
       const base::Optional<base::TimeDelta>& first_foreground_time,
       bool started_in_foreground,
-      bool user_initiated,
+      UserInitiatedInfo user_initiated_info,
       const GURL& committed_url,
       const GURL& start_url,
       UserAbortType abort_type,
-      bool abort_user_initiated,
+      UserInitiatedInfo abort_user_initiated_info,
       const base::Optional<base::TimeDelta>& time_to_abort,
       int num_cache_requests,
       int num_network_requests,
@@ -93,9 +133,8 @@ struct PageLoadExtraInfo {
   // True if the page load started in the foreground.
   const bool started_in_foreground;
 
-  // True if this is either a browser initiated navigation or the user_gesture
-  // bit is true in the renderer.
-  const bool user_initiated;
+  // Whether the page load was initiated by a user.
+  const UserInitiatedInfo user_initiated_info;
 
   // Committed URL. If the page load did not commit, |committed_url| will be
   // empty.
@@ -113,13 +152,13 @@ struct PageLoadExtraInfo {
   // that new navigation was user-initiated. This field is only useful if this
   // page load's abort type is a value other than ABORT_NONE. Note that this
   // value is currently experimental, and is subject to change. In particular,
-  // this field is never set to true for some abort types, such as stop and
+  // this field is not currently set for some abort types, such as stop and
   // close, since we don't yet have sufficient instrumentation to know if a stop
   // or close was caused by a user action.
   //
   // TODO(csharrison): If more metadata for aborts is needed we should provide a
   // better abstraction. Note that this is an approximation.
-  bool abort_user_initiated;
+  UserInitiatedInfo abort_user_initiated_info;
 
   const base::Optional<base::TimeDelta> time_to_abort;
 

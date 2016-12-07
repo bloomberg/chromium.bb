@@ -96,9 +96,10 @@ class MetricsWebContentsObserver
 
   // Notify all loads, provisional and committed, that we performed an action
   // that might abort them.
-  void NotifyAbortAllLoads(UserAbortType abort_type, bool user_initiated);
+  void NotifyAbortAllLoads(UserAbortType abort_type,
+                           UserInitiatedInfo user_initiated_info);
   void NotifyAbortAllLoadsWithTimestamp(UserAbortType abort_type,
-                                        bool user_initiated,
+                                        UserInitiatedInfo user_initiated_info,
                                         base::TimeTicks timestamp,
                                         bool is_certainly_browser_timestamp);
 
@@ -111,7 +112,8 @@ class MetricsWebContentsObserver
   // loads. This method returns the provisional load that was likely aborted
   // by this navigation, to help instantiate the new PageLoadTracker.
   std::unique_ptr<PageLoadTracker> NotifyAbortedProvisionalLoadsNewNavigation(
-      content::NavigationHandle* new_navigation);
+      content::NavigationHandle* new_navigation,
+      UserInitiatedInfo user_initiated_info);
 
   void OnTimingUpdated(content::RenderFrameHost*,
                        const PageLoadTiming& timing,
