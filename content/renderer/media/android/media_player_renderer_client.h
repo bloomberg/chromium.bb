@@ -71,9 +71,10 @@ class CONTENT_EXPORT MediaPlayerRendererClient : public media::Renderer,
   void OnFrameAvailable();
 
  private:
-  void InitializeRemoteRenderer(
-      media::DemuxerStreamProvider* demuxer_stream_provider);
-  void CompleteInitialization(media::PipelineStatus status);
+  void OnStreamTextureWrapperInitialized(
+      media::DemuxerStreamProvider* demuxer_stream_provider,
+      bool success);
+  void OnRemoteRendererInitialized(media::PipelineStatus status);
 
   void OnScopedSurfaceRequested(const base::UnguessableToken& request_token);
 

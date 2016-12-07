@@ -45,16 +45,23 @@ void MediaPlayerRendererClient::Initialize(
       base::Bind(&MediaPlayerRendererClient::OnFrameAvailable,
                  base::Unretained(this)),
       gfx::Size(1, 1), compositor_task_runner_,
-      base::Bind(&MediaPlayerRendererClient::InitializeRemoteRenderer,
+      base::Bind(&MediaPlayerRendererClient::OnStreamTextureWrapperInitialized,
                  weak_factory_.GetWeakPtr(), demuxer_stream_provider));
 }
 
-void MediaPlayerRendererClient::InitializeRemoteRenderer(
-    media::DemuxerStreamProvider* demuxer_stream_provider) {
+void MediaPlayerRendererClient::OnStreamTextureWrapperInitialized(
+    media::DemuxerStreamProvider* demuxer_stream_provider,
+    bool success) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+  if (!success) {
+    base::ResetAndReturn(&init_cb_).Run(
+        media::PipelineStatus::PIPELINE_ERROR_INITIALIZATION_FAILED);
+    return;
+  }
+
   mojo_renderer_->Initialize(
       demuxer_stream_provider, this,
-      base::Bind(&MediaPlayerRendererClient::CompleteInitialization,
+      base::Bind(&MediaPlayerRendererClient::OnRemoteRendererInitialized,
                  weak_factory_.GetWeakPtr()));
 }
 
@@ -64,7 +71,7 @@ void MediaPlayerRendererClient::OnScopedSurfaceRequested(
   stream_texture_wrapper_->ForwardStreamTextureForSurfaceRequest(request_token);
 }
 
-void MediaPlayerRendererClient::CompleteInitialization(
+void MediaPlayerRendererClient::OnRemoteRendererInitialized(
     media::PipelineStatus status) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_.is_null());
