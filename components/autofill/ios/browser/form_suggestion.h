@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/mac/objc_property_releaser.h"
-
 // Represents a user-selectable suggestion for a single field within a form
 // on a web page.
 @interface FormSuggestion : NSObject

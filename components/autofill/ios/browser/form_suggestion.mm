@@ -4,6 +4,8 @@
 
 #import "components/autofill/ios/browser/form_suggestion.h"
 
+#include "base/mac/objc_property_releaser.h"
+
 @interface FormSuggestion ()
 // Local initializer for a FormSuggestion.
 - (id)initWithValue:(NSString*)value
