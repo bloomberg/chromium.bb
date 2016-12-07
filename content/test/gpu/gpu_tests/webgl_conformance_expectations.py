@@ -314,6 +314,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/renderbuffers/framebuffer-test.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/renderbuffers/renderbuffer-initialization.html',
