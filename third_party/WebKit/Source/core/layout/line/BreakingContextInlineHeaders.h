@@ -1113,17 +1113,8 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
 
     midWordBreak = false;
     if (!m_width.fitsOnLine()) {
-      if (canBreakMidWord) {
-        m_width.addUncommittedWidth(-wordMeasurement.width);
-        if (rewindToMidWordBreak(layoutText, style, font, breakAll,
-                                 wordMeasurement)) {
-          lastWidthMeasurement = wordMeasurement.width + lastSpaceWordSpacing;
-          midWordBreak = true;
-        }
-        m_width.addUncommittedWidth(wordMeasurement.width);
-      } else if (hyphenation &&
-                 (m_nextObject || isLineEmpty ||
-                  hasVisibleText(layoutText, m_current.offset()))) {
+      if (hyphenation && (m_nextObject || isLineEmpty ||
+                          hasVisibleText(layoutText, m_current.offset()))) {
         m_width.addUncommittedWidth(-wordMeasurement.width);
         DCHECK(lastSpace == static_cast<unsigned>(wordMeasurement.startOffset));
         DCHECK(m_current.offset() ==
@@ -1134,6 +1125,15 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
           hyphenated = true;
           m_atEnd = true;
           return false;
+        }
+        m_width.addUncommittedWidth(wordMeasurement.width);
+      }
+      if (canBreakMidWord) {
+        m_width.addUncommittedWidth(-wordMeasurement.width);
+        if (rewindToMidWordBreak(layoutText, style, font, breakAll,
+                                 wordMeasurement)) {
+          lastWidthMeasurement = wordMeasurement.width + lastSpaceWordSpacing;
+          midWordBreak = true;
         }
         m_width.addUncommittedWidth(wordMeasurement.width);
       }
@@ -1227,7 +1227,6 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
   float lastWidthMeasurement = 0;
   wordMeasurement.startOffset = lastSpace;
   wordMeasurement.endOffset = m_current.offset();
-  midWordBreak = false;
   if (!m_ignoringSpaces) {
     lastWidthMeasurement =
         textWidth(layoutText, lastSpace, m_current.offset() - lastSpace, font,
@@ -1236,13 +1235,6 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
     wordMeasurement.width =
         lastWidthMeasurement + wordSpacingForWordMeasurement;
     wordMeasurement.glyphBounds.move(wordSpacingForWordMeasurement, 0);
-
-    if (canBreakMidWord && !m_width.fitsOnLine(lastWidthMeasurement) &&
-        rewindToMidWordBreak(layoutText, style, font, breakAll,
-                             wordMeasurement)) {
-      lastWidthMeasurement = wordMeasurement.width;
-      midWordBreak = true;
-    }
   }
   lastWidthMeasurement += lastSpaceWordSpacing;
 
@@ -1259,15 +1251,12 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
 
   m_includeEndWidth = false;
 
-  if (midWordBreak) {
-    m_width.commit();
-    m_atEnd = true;
-  } else if (!m_width.fitsOnLine()) {
+  if (!m_ignoringSpaces && !m_width.fitsOnLine()) {
     if (hyphenation && (m_nextObject || isLineEmpty)) {
       m_width.addUncommittedWidth(-wordMeasurement.width);
-      DCHECK(lastSpace == static_cast<unsigned>(wordMeasurement.startOffset));
-      DCHECK(m_current.offset() ==
-             static_cast<unsigned>(wordMeasurement.endOffset));
+      DCHECK_EQ(lastSpace, static_cast<unsigned>(wordMeasurement.startOffset));
+      DCHECK_EQ(m_current.offset(),
+                static_cast<unsigned>(wordMeasurement.endOffset));
       if (hyphenate(layoutText, style, font, *hyphenation, lastSpaceWordSpacing,
                     wordMeasurement)) {
         hyphenated = true;
@@ -1278,9 +1267,19 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
     if (!hyphenated && isBreakAtSoftHyphen() && !disableSoftHyphen) {
       hyphenated = true;
       m_atEnd = true;
-    } else if (!m_ignoringSpaces && canBreakMidWord &&
-               m_width.committedWidth()) {
-      m_atEnd = true;
+    }
+    if (!hyphenated && canBreakMidWord) {
+      m_width.addUncommittedWidth(-wordMeasurement.width);
+      if (rewindToMidWordBreak(layoutText, style, font, breakAll,
+                               wordMeasurement)) {
+        m_width.addUncommittedWidth(wordMeasurement.width);
+        m_width.commit();
+        m_atEnd = true;
+      } else {
+        m_width.addUncommittedWidth(wordMeasurement.width);
+        if (m_width.committedWidth())
+          m_atEnd = true;
+      }
     }
   }
   return false;

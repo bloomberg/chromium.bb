@@ -672,12 +672,16 @@ crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphens-auto.html [ Skip ]
 crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphens-auto-mock.html [ Skip ]
 crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphens-locale.html [ Skip ]
 crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphens-orphaned-word.html [ Skip ]
+crbug.com/605840 [ Linux Win ] fast/text/hyphens/midword-break-priority.html [ Skip ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-align.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-auto.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-auto-mock.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-locale.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-orphaned-word.html [ Pass ]
+crbug.com/605840 [ Android ] fast/text/hyphens/midword-break-priority.html [ Pass ]
+
+crbug.com/671341 fast/text/basic/015.html [ NeedsRebaseline ]
 
 crbug.com/655963 inspector/console/console-dir.html [ NeedsManualRebaseline ]
 
