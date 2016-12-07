@@ -332,7 +332,7 @@ katakana-iroha
 //none
 //
 // display
-// The order here must match the order of the EDisplay enum in ComputedStyleConstants.h.
+// The order of this enum must match the order found in CSSParserFastPaths::isValidKeywordPropertyAndValue().
 //
 inline
 block

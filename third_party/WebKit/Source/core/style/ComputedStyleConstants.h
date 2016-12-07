@@ -465,8 +465,6 @@ enum class ECursor : unsigned {
   None
 };
 
-// The order of this enum must match the order of the display values in
-// CSSValueKeywords.in.
 enum class EDisplay : unsigned {
   Inline,
   Block,

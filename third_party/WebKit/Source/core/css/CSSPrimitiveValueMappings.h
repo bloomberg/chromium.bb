@@ -1271,17 +1271,58 @@ inline CSSIdentifierValue::CSSIdentifierValue(EDisplay e)
 
 template <>
 inline EDisplay CSSIdentifierValue::convertTo() const {
-  if (m_valueID == CSSValueNone)
-    return EDisplay::None;
-
-  if (m_valueID == CSSValueWebkitFlex)
-    return EDisplay::Flex;
-  if (m_valueID == CSSValueWebkitInlineFlex)
-    return EDisplay::InlineFlex;
-
-  EDisplay display = static_cast<EDisplay>(m_valueID - CSSValueInline);
-  // TODO(sashab): Check display is a valid EDisplay here.
-  return display;
+  switch (m_valueID) {
+    case CSSValueInline:
+      return EDisplay::Inline;
+    case CSSValueBlock:
+      return EDisplay::Block;
+    case CSSValueListItem:
+      return EDisplay::ListItem;
+    case CSSValueInlineBlock:
+      return EDisplay::InlineBlock;
+    case CSSValueTable:
+      return EDisplay::Table;
+    case CSSValueInlineTable:
+      return EDisplay::InlineTable;
+    case CSSValueTableRowGroup:
+      return EDisplay::TableRowGroup;
+    case CSSValueTableHeaderGroup:
+      return EDisplay::TableHeaderGroup;
+    case CSSValueTableFooterGroup:
+      return EDisplay::TableFooterGroup;
+    case CSSValueTableRow:
+      return EDisplay::TableRow;
+    case CSSValueTableColumnGroup:
+      return EDisplay::TableColumnGroup;
+    case CSSValueTableColumn:
+      return EDisplay::TableColumn;
+    case CSSValueTableCell:
+      return EDisplay::TableCell;
+    case CSSValueTableCaption:
+      return EDisplay::TableCaption;
+    case CSSValueWebkitBox:
+      return EDisplay::WebkitBox;
+    case CSSValueWebkitInlineBox:
+      return EDisplay::WebkitInlineBox;
+    case CSSValueFlex:
+    case CSSValueWebkitFlex:
+      return EDisplay::Flex;
+    case CSSValueInlineFlex:
+    case CSSValueWebkitInlineFlex:
+      return EDisplay::InlineFlex;
+    case CSSValueGrid:
+      return EDisplay::Grid;
+    case CSSValueInlineGrid:
+      return EDisplay::InlineGrid;
+    case CSSValueContents:
+      return EDisplay::Contents;
+    case CSSValueNone:
+      return EDisplay::None;
+      break;
+    default:
+      NOTREACHED();
+      return EDisplay::None;
+  }
 }
 
 template <>
