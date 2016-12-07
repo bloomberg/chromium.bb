@@ -21,9 +21,9 @@ DEFINE_TRACE(V0CustomElementMicrotaskQueueBase) {
 
 #if !defined(NDEBUG)
 void V0CustomElementMicrotaskQueueBase::show(unsigned indent) {
-  for (unsigned q = 0; q < m_queue.size(); ++q) {
-    if (m_queue[q])
-      m_queue[q]->show(indent);
+  for (const auto& step : m_queue) {
+    if (step)
+      step->show(indent);
     else
       fprintf(stderr, "%*snull\n", indent, "");
   }

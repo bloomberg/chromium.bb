@@ -107,18 +107,18 @@ void ScriptedAnimationController::dispatchEvents(
     remaining.swap(m_eventQueue);
   }
 
-  for (size_t i = 0; i < events.size(); ++i) {
-    EventTarget* eventTarget = events[i]->target();
+  for (const auto& event : events) {
+    EventTarget* eventTarget = event->target();
     // FIXME: we should figure out how to make dispatchEvent properly virtual to
     // avoid special casting window.
     // FIXME: We should not fire events for nodes that are no longer in the
     // tree.
     InspectorInstrumentation::AsyncTask asyncTask(
-        eventTarget->getExecutionContext(), events[i]);
+        eventTarget->getExecutionContext(), event);
     if (LocalDOMWindow* window = eventTarget->toLocalDOMWindow())
-      window->dispatchEvent(events[i], nullptr);
+      window->dispatchEvent(event, nullptr);
     else
-      eventTarget->dispatchEvent(events[i]);
+      eventTarget->dispatchEvent(event);
   }
 }
 
@@ -189,8 +189,8 @@ void ScriptedAnimationController::enqueuePerFrameEvent(Event* event) {
 
 void ScriptedAnimationController::enqueueMediaQueryChangeListeners(
     HeapVector<Member<MediaQueryListListener>>& listeners) {
-  for (size_t i = 0; i < listeners.size(); ++i) {
-    m_mediaQueryListListeners.add(listeners[i]);
+  for (const auto& listener : listeners) {
+    m_mediaQueryListListeners.add(listener);
   }
   scheduleAnimationIfNeeded();
 }

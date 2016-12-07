@@ -42,9 +42,9 @@ void V0CustomElementAsyncImportMicrotaskQueue::enqueue(
 void V0CustomElementAsyncImportMicrotaskQueue::doDispatch() {
   HeapVector<Member<V0CustomElementMicrotaskStep>> remaining;
 
-  for (unsigned i = 0; i < m_queue.size(); ++i) {
-    if (V0CustomElementMicrotaskStep::Processing == m_queue[i]->process())
-      remaining.append(m_queue[i].release());
+  for (auto& step : m_queue) {
+    if (V0CustomElementMicrotaskStep::Processing == step->process())
+      remaining.append(step.release());
   }
 
   m_queue.swap(remaining);

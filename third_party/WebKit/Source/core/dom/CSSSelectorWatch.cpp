@@ -92,8 +92,7 @@ void CSSSelectorWatch::updateSelectorMatches(
     const Vector<String>& addedSelectors) {
   bool shouldUpdateTimer = false;
 
-  for (unsigned i = 0; i < removedSelectors.size(); ++i) {
-    const String& selector = removedSelectors[i];
+  for (const auto& selector : removedSelectors) {
     if (!m_matchingCallbackSelectors.remove(selector))
       continue;
 
@@ -106,8 +105,7 @@ void CSSSelectorWatch::updateSelectorMatches(
       m_removedSelectors.add(selector);
   }
 
-  for (unsigned i = 0; i < addedSelectors.size(); ++i) {
-    const String& selector = addedSelectors[i];
+  for (const auto& selector : addedSelectors) {
     HashCountedSet<String>::AddResult result =
         m_matchingCallbackSelectors.add(selector);
     if (!result.isNewEntry)
@@ -151,9 +149,9 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors) {
   StylePropertySet* callbackPropertySet =
       ImmutableStylePropertySet::create(nullptr, 0, UASheetMode);
 
-  for (unsigned i = 0; i < selectors.size(); ++i) {
+  for (const auto& selector : selectors) {
     CSSSelectorList selectorList = CSSParser::parseSelector(
-        CSSParserContext(UASheetMode, nullptr), nullptr, selectors[i]);
+        CSSParserContext(UASheetMode, nullptr), nullptr, selector);
     if (!selectorList.isValid())
       continue;
 

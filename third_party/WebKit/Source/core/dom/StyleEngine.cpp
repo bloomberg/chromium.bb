@@ -559,8 +559,8 @@ void StyleEngine::removeFontFaceRules(
     return;
 
   FontFaceCache* cache = m_fontSelector->fontFaceCache();
-  for (unsigned i = 0; i < fontFaceRules.size(); ++i)
-    cache->remove(fontFaceRules[i]);
+  for (const auto& rule : fontFaceRules)
+    cache->remove(rule);
   if (m_resolver)
     m_resolver->invalidateMatchedPropertiesCache();
 }

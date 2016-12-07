@@ -164,10 +164,7 @@ void ElementShadowV0::distribute() {
   for (ShadowRoot* root = &youngestShadowRoot(); root;
        root = root->olderShadowRoot()) {
     HTMLShadowElement* shadowInsertionPoint = 0;
-    const HeapVector<Member<InsertionPoint>>& insertionPoints =
-        root->descendantInsertionPoints();
-    for (size_t i = 0; i < insertionPoints.size(); ++i) {
-      InsertionPoint* point = insertionPoints[i];
+    for (const auto& point : root->descendantInsertionPoints()) {
       if (!point->isActive())
         continue;
       if (isHTMLShadowElement(*point)) {

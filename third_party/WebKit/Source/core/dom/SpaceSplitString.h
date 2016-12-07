@@ -67,9 +67,8 @@ class SpaceSplitString {
     ~Data();
 
     bool contains(const AtomicString& string) {
-      size_t size = m_vector.size();
-      for (size_t i = 0; i < size; ++i) {
-        if (m_vector[i] == string)
+      for (const auto& item : m_vector) {
+        if (item == string)
           return true;
       }
       return false;

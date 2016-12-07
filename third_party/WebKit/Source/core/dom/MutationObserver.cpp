@@ -75,9 +75,8 @@ void MutationObserver::observe(Node* node,
 
   HashSet<AtomicString> attributeFilter;
   if (observerInit.hasAttributeFilter()) {
-    const Vector<String>& sequence = observerInit.attributeFilter();
-    for (unsigned i = 0; i < sequence.size(); ++i)
-      attributeFilter.add(AtomicString(sequence[i]));
+    for (const auto& name : observerInit.attributeFilter())
+      attributeFilter.add(AtomicString(name));
     options |= AttributeFilter;
   }
 
@@ -227,8 +226,8 @@ void MutationObserver::deliver() {
     if (registration->hasTransientRegistrations())
       transientRegistrations.append(registration);
   }
-  for (size_t i = 0; i < transientRegistrations.size(); ++i)
-    transientRegistrations[i]->clearTransientRegistrations();
+  for (const auto& registration : transientRegistrations)
+    registration->clearTransientRegistrations();
 
   if (m_records.isEmpty())
     return;
@@ -249,10 +248,10 @@ void MutationObserver::resumeSuspendedObservers() {
 
   MutationObserverVector suspended;
   copyToVector(suspendedMutationObservers(), suspended);
-  for (size_t i = 0; i < suspended.size(); ++i) {
-    if (!suspended[i]->shouldBeSuspended()) {
-      suspendedMutationObservers().remove(suspended[i]);
-      activateObserver(suspended[i]);
+  for (const auto& observer : suspended) {
+    if (!observer->shouldBeSuspended()) {
+      suspendedMutationObservers().remove(observer);
+      activateObserver(observer);
     }
   }
 }
@@ -263,11 +262,11 @@ void MutationObserver::deliverMutations() {
   copyToVector(activeMutationObservers(), observers);
   activeMutationObservers().clear();
   std::sort(observers.begin(), observers.end(), ObserverLessThan());
-  for (size_t i = 0; i < observers.size(); ++i) {
-    if (observers[i]->shouldBeSuspended())
-      suspendedMutationObservers().add(observers[i]);
+  for (const auto& observer : observers) {
+    if (observer->shouldBeSuspended())
+      suspendedMutationObservers().add(observer);
     else
-      observers[i]->deliver();
+      observer->deliver();
   }
 }
 

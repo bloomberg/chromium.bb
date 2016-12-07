@@ -145,9 +145,8 @@ bool SelectorDataList::matches(Element& targetElement) const {
   if (m_needsUpdatedDistribution)
     targetElement.updateDistribution();
 
-  unsigned selectorCount = m_selectors.size();
-  for (unsigned i = 0; i < selectorCount; ++i) {
-    if (selectorMatches(*m_selectors[i], targetElement, targetElement))
+  for (const auto& selector : m_selectors) {
+    if (selectorMatches(*selector, targetElement, targetElement))
       return true;
   }
 
@@ -155,16 +154,15 @@ bool SelectorDataList::matches(Element& targetElement) const {
 }
 
 Element* SelectorDataList::closest(Element& targetElement) const {
-  unsigned selectorCount = m_selectors.size();
-  if (!selectorCount)
+  if (m_selectors.size() == 0)
     return nullptr;
   if (m_needsUpdatedDistribution)
     targetElement.updateDistribution();
 
   for (Element* currentElement = &targetElement; currentElement;
        currentElement = currentElement->parentElement()) {
-    for (unsigned i = 0; i < selectorCount; ++i) {
-      if (selectorMatches(*m_selectors[i], *currentElement, targetElement))
+    for (const auto& selector : m_selectors) {
+      if (selectorMatches(*selector, *currentElement, targetElement))
         return currentElement;
     }
   }
@@ -409,8 +407,8 @@ bool SelectorDataList::selectorListMatches(
     ContainerNode& rootNode,
     Element& element,
     typename SelectorQueryTrait::OutputType& output) const {
-  for (unsigned i = 0; i < m_selectors.size(); ++i) {
-    if (selectorMatches(*m_selectors[i], element, rootNode)) {
+  for (const auto& selector : m_selectors) {
+    if (selectorMatches(*selector, element, rootNode)) {
       SelectorQueryTrait::appendElement(output, element);
       return true;
     }
@@ -546,13 +544,11 @@ void SelectorDataList::execute(
     if (rootNode.treeScope().containsMultipleElementsWithId(idToMatch)) {
       const HeapVector<Member<Element>>& elements =
           rootNode.treeScope().getAllElementsById(idToMatch);
-      size_t count = elements.size();
-      for (size_t i = 0; i < count; ++i) {
-        Element& element = *elements[i];
-        if (!(isTreeScopeRoot(rootNode) || element.isDescendantOf(&rootNode)))
+      for (const auto& element : elements) {
+        if (!(isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
           continue;
-        if (selectorMatches(selector, element, rootNode)) {
-          SelectorQueryTrait::appendElement(output, element);
+        if (selectorMatches(selector, *element, rootNode)) {
+          SelectorQueryTrait::appendElement(output, *element);
           if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
             return;
         }

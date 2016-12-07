@@ -89,9 +89,8 @@ bool TreeScopeStyleSheetCollection::activeLoadingStyleSheetLoaded(
   // StyleSheets of <style> elements that @import stylesheets are active but
   // loading. We need to trigger a full recalc when such loads are done.
   bool hasActiveLoadingStylesheet = false;
-  unsigned newStylesheetCount = newStyleSheets.size();
-  for (unsigned i = 0; i < newStylesheetCount; ++i) {
-    if (newStyleSheets[i]->isLoading())
+  for (const auto& sheet : newStyleSheets) {
+    if (sheet->isLoading())
       hasActiveLoadingStylesheet = true;
   }
   if (m_hadActiveLoadingStylesheet && !hasActiveLoadingStylesheet) {
@@ -107,11 +106,11 @@ static bool findFontFaceRulesFromStyleSheetContents(
     HeapVector<Member<const StyleRuleFontFace>>& fontFaceRules) {
   bool hasFontFaceRule = false;
 
-  for (unsigned i = 0; i < sheets.size(); ++i) {
-    DCHECK(sheets[i]);
-    if (sheets[i]->hasFontFaceRule()) {
+  for (const auto& sheet : sheets) {
+    DCHECK(sheet);
+    if (sheet->hasFontFaceRule()) {
       // FIXME: We don't need this for styles in shadow tree.
-      sheets[i]->findFontFaceRules(fontFaceRules);
+      sheet->findFontFaceRules(fontFaceRules);
       hasFontFaceRule = true;
     }
   }
@@ -171,8 +170,8 @@ void TreeScopeStyleSheetCollection::analyzeStyleSheetChange(
 }
 
 void TreeScopeStyleSheetCollection::clearMediaQueryRuleSetStyleSheets() {
-  for (size_t i = 0; i < m_activeAuthorStyleSheets.size(); ++i) {
-    StyleSheetContents* contents = m_activeAuthorStyleSheets[i]->contents();
+  for (const auto& sheet : m_activeAuthorStyleSheets) {
+    StyleSheetContents* contents = sheet->contents();
     if (contents->hasMediaQueries())
       contents->clearRuleSet();
   }

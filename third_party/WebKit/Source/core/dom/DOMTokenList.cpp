@@ -80,8 +80,8 @@ bool DOMTokenList::validateToken(const String& token,
 
 bool DOMTokenList::validateTokens(const Vector<String>& tokens,
                                   ExceptionState& exceptionState) const {
-  for (size_t i = 0; i < tokens.size(); ++i) {
-    if (!validateToken(tokens[i], exceptionState))
+  for (const auto& token : tokens) {
+    if (!validateToken(token, exceptionState))
       return false;
   }
 
@@ -115,14 +115,14 @@ void DOMTokenList::add(const Vector<String>& tokens,
                        ExceptionState& exceptionState) {
   Vector<String> filteredTokens;
   filteredTokens.reserveCapacity(tokens.size());
-  for (size_t i = 0; i < tokens.size(); ++i) {
-    if (!validateToken(tokens[i], exceptionState))
+  for (const auto& token : tokens) {
+    if (!validateToken(token, exceptionState))
       return;
-    if (containsInternal(AtomicString(tokens[i])))
+    if (containsInternal(AtomicString(token)))
       continue;
-    if (filteredTokens.contains(tokens[i]))
+    if (filteredTokens.contains(token))
       continue;
-    filteredTokens.append(tokens[i]);
+    filteredTokens.append(token);
   }
 
   if (!filteredTokens.isEmpty())
@@ -146,8 +146,8 @@ void DOMTokenList::remove(const Vector<String>& tokens,
   // Check using containsInternal first since it is a lot faster than going
   // through the string character by character.
   bool found = false;
-  for (size_t i = 0; i < tokens.size(); ++i) {
-    if (containsInternal(AtomicString(tokens[i]))) {
+  for (const auto& token : tokens) {
+    if (containsInternal(AtomicString(token))) {
       found = true;
       break;
     }
@@ -221,10 +221,10 @@ AtomicString DOMTokenList::addTokens(const AtomicString& input,
     needsSpace = !isHTMLSpace<UChar>(input[input.length() - 1]);
   }
 
-  for (size_t i = 0; i < tokens.size(); ++i) {
+  for (const auto& token : tokens) {
     if (needsSpace)
       builder.append(' ');
-    builder.append(tokens[i]);
+    builder.append(token);
     needsSpace = true;
   }
 

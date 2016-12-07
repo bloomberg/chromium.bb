@@ -1814,9 +1814,8 @@ void Node::didMoveToNewDocument(Document& oldDocument) {
   if (const EventTargetData* eventTargetData = this->eventTargetData()) {
     const EventListenerMap& listenerMap = eventTargetData->eventListenerMap;
     if (!listenerMap.isEmpty()) {
-      Vector<AtomicString> types = listenerMap.eventTypes();
-      for (unsigned i = 0; i < types.size(); ++i)
-        document().addListenerTypeIfNeeded(types[i]);
+      for (const auto& type : listenerMap.eventTypes())
+        document().addListenerTypeIfNeeded(type);
     }
   }
 
@@ -1832,8 +1831,8 @@ void Node::didMoveToNewDocument(Document& oldDocument) {
 
   if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
           registry = mutationObserverRegistry()) {
-    for (size_t i = 0; i < registry->size(); ++i) {
-      document().addMutationObserverTypes(registry->at(i)->mutationTypes());
+    for (const auto& registration : *registry) {
+      document().addMutationObserverTypes(registration->mutationTypes());
     }
   }
 
@@ -1975,11 +1974,10 @@ void Node::registerMutationObserver(
     MutationObserverOptions options,
     const HashSet<AtomicString>& attributeFilter) {
   MutationObserverRegistration* registration = nullptr;
-  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>& registry =
-      ensureRareData().ensureMutationObserverData().registry();
-  for (size_t i = 0; i < registry.size(); ++i) {
-    if (&registry[i]->observer() == &observer) {
-      registration = registry[i].get();
+  for (const auto& item :
+       ensureRareData().ensureMutationObserverData().registry()) {
+    if (&item->observer() == &observer) {
+      registration = item.get();
       registration->resetObservation(options, attributeFilter);
     }
   }
@@ -2035,9 +2033,8 @@ void Node::notifyMutationObserversNodeWillDetach() {
   for (Node* node = parentNode(); node; node = node->parentNode()) {
     if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
             registry = node->mutationObserverRegistry()) {
-      const size_t size = registry->size();
-      for (size_t i = 0; i < size; ++i)
-        registry->at(i)->observedSubtreeNodeWillDetach(*this);
+      for (const auto& registration : *registry)
+        registration->observedSubtreeNodeWillDetach(*this);
     }
 
     if (const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
@@ -2293,8 +2290,7 @@ StaticNodeList* Node::getDestinationInsertionPoints() {
   HeapVector<Member<InsertionPoint>, 8> insertionPoints;
   collectDestinationInsertionPoints(*this, insertionPoints);
   HeapVector<Member<Node>> filteredInsertionPoints;
-  for (size_t i = 0; i < insertionPoints.size(); ++i) {
-    InsertionPoint* insertionPoint = insertionPoints[i];
+  for (const auto& insertionPoint : insertionPoints) {
     DCHECK(insertionPoint->containingShadowRoot());
     if (!insertionPoint->containingShadowRoot()->isOpenOrV0())
       break;
