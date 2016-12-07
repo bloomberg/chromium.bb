@@ -63,8 +63,16 @@ DownloadFilePicker::DownloadFilePicker(
   should_record_file_picker_result_ = !prefs->PromptForDownload();
 
   WebContents* web_contents = item->GetWebContents();
+  if (!web_contents || !web_contents->GetNativeView())
+    return;
+
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_contents));
+  // |select_file_dialog_| could be null in Linux. See CreateSelectFileDialog()
+  // in shell_dialog_linux.cc.
+  if (!select_file_dialog_.get())
+    return;
+
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   // Platform file pickers, notably on Mac and Windows, tend to break
   // with double extensions like .tar.gz, so only pass in normal ones.
