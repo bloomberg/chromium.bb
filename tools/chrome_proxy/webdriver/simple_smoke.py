@@ -16,7 +16,8 @@ class SimpleSmoke(IntegrationTest):
       t.AddChromeArgs(['--enable-spdy-proxy-auth'])
       t.SetURL('http://check.googlezip.net/test.html')
       t.LoadPage()
-      print 'Document Title: ', t.ExecuteJavascript('document.title')
+      print 'Document Title: ', t.ExecuteJavascriptStatement('document.title',
+        timeout=1)
       time.sleep(5)
       responses = t.GetHTTPResponses()
       for response in responses:

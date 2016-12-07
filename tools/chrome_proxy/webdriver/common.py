@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import re
+import socket
 import shlex
 import sys
 import time
@@ -204,28 +205,53 @@ class TestDriver:
     """
     self._url = url
 
-  # TODO(robertogden): Add timeout.
-  def LoadPage(self):
+  def LoadPage(self, timeout=30):
     """Starts Chromium with any arguments previously given and navigates to the
     given URL.
+
+    Args:
+      timeout: Page load timeout in seconds.
     """
     if not self._driver:
       self._StartDriver()
+    self._driver.set_page_load_timeout(timeout)
     self._driver.get(self._url)
 
-  # TODO(robertogden): Add timeout.
-  def ExecuteJavascript(self, script):
-    """Executes the given javascript in the browser's current page as if it were
-    on the console.
+  def ExecuteJavascript(self, script, timeout=30):
+    """Executes the given javascript in the browser's current page in an
+    anonymous function.
+
+    If you expect a result and don't get one, try adding a return statement or
+    using ExecuteJavascriptStatement() below.
 
     Args:
       script: A string of Javascript code.
+      timeout: Timeout for the Javascript code to return in seconds.
     Returns:
       A string of the verbatim output from the Javascript execution.
     """
     if not self._driver:
       self._StartDriver()
-    return self._driver.execute_script("return " + script)
+    # TODO(robertogden): Use 'driver.set_script_timeout(timeout)' instead after
+    # crbug/672114 is fixed.
+    default_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(timeout)
+    script_result = self._driver.execute_script(script)
+    socket.setdefaulttimeout(default_timeout)
+    return script_result
+
+  def ExecuteJavascriptStatement(self, script, timeout=30):
+    """Wraps ExecuteJavascript() for use with a single statement.
+
+    Behavior is analogous to 'function(){ return <script> }();'
+
+    Args:
+      script: A string of Javascript code.
+      timeout: Timeout for the Javascript code to return in seconds.
+    Returns:
+      A string of the verbatim output from the Javascript execution.
+    """
+    return self.ExecuteJavascript("return " + script, timeout)
 
   def GetPerformanceLogs(self, method_filter=r'Network\.responseReceived'):
     """Returns all logged Performance events from Chrome.
