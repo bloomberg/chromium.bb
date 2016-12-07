@@ -47,7 +47,6 @@ RemotePlayback* RemotePlayback::create(HTMLMediaElement& element) {
 
 RemotePlayback::RemotePlayback(HTMLMediaElement& element)
     : ActiveScriptWrappable(this),
-      ContextLifecycleObserver(&element.document()),
       m_state(element.isPlayingRemotely()
                   ? WebRemotePlaybackState::Connected
                   : WebRemotePlaybackState::Disconnected),
@@ -202,13 +201,11 @@ String RemotePlayback::state() const {
 }
 
 bool RemotePlayback::hasPendingActivity() const {
+  // TODO(haraken): This check should be moved to ActiveScriptWrappable.
+  if (getExecutionContext()->isContextDestroyed())
+    return false;
   return hasEventListeners() || !m_availabilityCallbacks.isEmpty() ||
          m_promptPromiseResolver;
-}
-
-void RemotePlayback::contextDestroyed() {
-  m_availabilityCallbacks.clear();
-  m_promptPromiseResolver = nullptr;
 }
 
 void RemotePlayback::notifyInitialAvailability(int callbackId) {
@@ -310,7 +307,6 @@ DEFINE_TRACE(RemotePlayback) {
   visitor->trace(m_promptPromiseResolver);
   visitor->trace(m_mediaElement);
   EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(RemotePlayback) {
