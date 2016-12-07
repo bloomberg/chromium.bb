@@ -1818,8 +1818,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 #endif
 #if CONFIG_PVQ
   if (best_rd != INT64_MAX) {
-    txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, best_tx,
-                     cpi->sf.use_fast_coef_costing);
+    txfm_yrd(cpi, x, rd_stats, ref_best_rd, bs, best_tx_type, best_tx);
   }
 #endif
 }
