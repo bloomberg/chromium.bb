@@ -6,7 +6,6 @@
 
 #import "ios/chrome/browser/itunes_links/itunes_links_observer.h"
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/public/test/test_web_state.h"
 #import "ios/chrome/browser/storekit_launcher.h"
 #include "testing/gtest_mac.h"
@@ -15,30 +14,38 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 class ITunesLinksObserverTest : public PlatformTest {
  protected:
   void SetUp() override {
-    mocked_store_kit_launcher_.reset(
-        [[OCMockObject mockForProtocol:@protocol(StoreKitLauncher)] retain]);
-    link_observer_.reset(
-        [[ITunesLinksObserver alloc] initWithWebState:&web_state_]);
+    mocked_store_kit_launcher_ =
+        [OCMockObject mockForProtocol:@protocol(StoreKitLauncher)];
+    link_observer_ = [[ITunesLinksObserver alloc] initWithWebState:&web_state_];
     [link_observer_ setStoreKitLauncher:mocked_store_kit_launcher_];
   }
   void VerifyOpeningOfAppStore(NSString* expected_product_id,
                                std::string const& url_string) {
     if (expected_product_id)
-      [[mocked_store_kit_launcher_.get() expect]
-          openAppStore:expected_product_id];
+      [[mocked_store_kit_launcher_ expect] openAppStore:expected_product_id];
     web_state_.SetCurrentURL(GURL(url_string));
     [link_observer_ webStateDidLoadPage:&web_state_];
-    EXPECT_OCMOCK_VERIFY(mocked_store_kit_launcher_.get());
+    EXPECT_OCMOCK_VERIFY(mocked_store_kit_launcher_);
   }
+
+  void TearDown() override {
+    // |link_observer_| must be destroyed before web_state_.
+    link_observer_ = nil;
+  }
+
   web::TestWebState web_state_;
-  base::scoped_nsobject<id> mocked_store_kit_launcher_;
+  id mocked_store_kit_launcher_;
   // |link_observer_| must be destroyed before web_state_.
-  base::scoped_nsobject<ITunesLinksObserver> link_observer_;
+  ITunesLinksObserver* link_observer_;
 };
 
 // Verifies that navigating to URLs not concerning a product hosted on the
