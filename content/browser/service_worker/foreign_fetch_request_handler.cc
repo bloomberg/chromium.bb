@@ -82,8 +82,10 @@ void ForeignFetchRequestHandler::InitializeHandler(
   if (!IsForeignFetchEnabled())
     return;
 
-  if (!context_wrapper)
+  if (!context_wrapper || !context_wrapper->context() ||
+      provider_id == kInvalidServiceWorkerProviderId) {
     return;
+  }
 
   if (skip_service_worker == SkipServiceWorker::ALL)
     return;
