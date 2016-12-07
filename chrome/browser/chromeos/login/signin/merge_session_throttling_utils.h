@@ -47,6 +47,9 @@ bool ShouldDelayRequestForWebContents(content::WebContents* web_contents);
 // called on any thread.
 bool ShouldDelayUrl(const GURL& url);
 
+// True if session restore hasn't started or in progress.
+bool IsSessionRestorePending(Profile* profile);
+
 }  // namespace merge_session_throttling_utils
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_MERGE_SESSION_THROTTLING_UTILS_H_

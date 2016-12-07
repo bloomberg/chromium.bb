@@ -184,4 +184,27 @@ bool ShouldDelayUrl(const GURL& url) {
                                        google_util::ALLOW_SUBDOMAIN);
 }
 
+bool IsSessionRestorePending(Profile* profile) {
+  if (!profile)
+    return false;
+
+  chromeos::OAuth2LoginManager* login_manager =
+      chromeos::OAuth2LoginManagerFactory::GetInstance()->GetForProfile(
+          profile);
+  bool pending_session_restore = false;
+  if (login_manager) {
+    switch (login_manager->state()) {
+      case chromeos::OAuth2LoginManager::SESSION_RESTORE_PREPARING:
+      case chromeos::OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS:
+        pending_session_restore = true;
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  return pending_session_restore;
+}
+
 }  // namespace merge_session_throttling_utils

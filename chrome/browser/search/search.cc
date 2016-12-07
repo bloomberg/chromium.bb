@@ -182,8 +182,8 @@ bool ShouldShowLocalNewTab(const GURL& url, Profile* profile) {
   // On Chrome OS, if the session hasn't merged yet, we need to avoid loading
   // the remote NTP because that will trigger showing the merge session throttle
   // interstitial page, which can show for 5+ seconds. crbug.com/591530.
-  if (merge_session_throttling_utils::ShouldDelayRequestForProfile(profile) &&
-      merge_session_throttling_utils::ShouldDelayUrl(url)) {
+  if (merge_session_throttling_utils::ShouldDelayUrl(url) &&
+      merge_session_throttling_utils::IsSessionRestorePending(profile)) {
     return true;
   }
 #endif  // defined(OS_CHROMEOS)
