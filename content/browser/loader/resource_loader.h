@@ -84,9 +84,8 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void StartRequestInternal();
   void CancelRequestInternal(int error, bool from_renderer);
   void CompleteResponseStarted();
-  void StartReading(bool is_continuation);
+  void ReadMore(bool is_continuation);
   void ResumeReading();
-  void ReadMore(int* bytes_read);
   // Passes a read result to the handler.
   void CompleteRead(int bytes_read);
   void ResponseCompleted();

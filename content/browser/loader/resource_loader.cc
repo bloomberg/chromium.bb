@@ -350,13 +350,13 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
 
   CompleteResponseStarted();
 
-  if (is_deferred())
+  // If the handler deferred the request, it will resume the request later. If
+  // the request was cancelled, the request will call back into |this| with a
+  // bogus read completed error.
+  if (is_deferred() || !request_->status().is_success())
     return;
 
-  if (request_->status().is_success())
-    StartReading(false);  // Read the first chunk.
-  else
-    ResponseCompleted();
+  ReadMore(false);  // Read the first chunk.
 }
 
 void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
@@ -375,17 +375,14 @@ void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
   CompleteRead(bytes_read);
 
   // If the handler cancelled or deferred the request, do not continue
-  // processing the read. If cancelled, the URLRequest has already been
-  // cancelled and will schedule an erroring OnReadCompleted later. If deferred,
-  // do nothing until resumed.
-  //
-  // Note: if bytes_read is 0 (EOF) and the handler defers, resumption will call
-  // ResponseCompleted().
+  // processing the read. If canceled, either the request will call into |this|
+  // with a bogus read error, or, if the request was completed, a task posted
+  // from ResourceLoader::CancelREquestInternal will run OnResponseCompleted.
   if (is_deferred() || !request_->status().is_success())
     return;
 
   if (bytes_read > 0) {
-    StartReading(true);  // Read the next chunk.
+    ReadMore(true);  // Read the next chunk.
   } else {
     // TODO(darin): Remove ScopedTracker below once crbug.com/475761 is fixed.
     tracked_objects::ScopedTracker tracking_profile(
@@ -557,42 +554,7 @@ void ResourceLoader::CompleteResponseStarted() {
   }
 }
 
-void ResourceLoader::StartReading(bool is_continuation) {
-  int bytes_read = 0;
-  ReadMore(&bytes_read);
-
-  // If IO is pending, wait for the URLRequest to call OnReadCompleted.
-  if (request_->status().is_io_pending())
-    return;
-
-  if (!is_continuation || bytes_read <= 0) {
-    OnReadCompleted(request_.get(), bytes_read);
-  } else {
-    // Else, trigger OnReadCompleted asynchronously to avoid starving the IO
-    // thread in case the URLRequest can provide data synchronously.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&ResourceLoader::OnReadCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), request_.get(), bytes_read));
-  }
-}
-
-void ResourceLoader::ResumeReading() {
-  DCHECK(!is_deferred());
-
-  if (!read_deferral_start_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("Net.ResourceLoader.ReadDeferral",
-                        base::TimeTicks::Now() - read_deferral_start_time_);
-    read_deferral_start_time_ = base::TimeTicks();
-  }
-  if (request_->status().is_success()) {
-    StartReading(false);  // Read the next chunk (OK to complete synchronously).
-  } else {
-    ResponseCompleted();
-  }
-}
-
-void ResourceLoader::ReadMore(int* bytes_read) {
+void ResourceLoader::ReadMore(bool is_continuation) {
   TRACE_EVENT_WITH_FLOW0("loading", "ResourceLoader::ReadMore", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(!is_deferred());
@@ -608,6 +570,8 @@ void ResourceLoader::ReadMore(int* bytes_read) {
         FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnWillRead()"));
 
     if (!handler_->OnWillRead(&buf, &buf_size, -1)) {
+      // Cancel the request, which will then call back into |this| to inform it
+      // of a "read error".
       Cancel();
       return;
     }
@@ -616,10 +580,36 @@ void ResourceLoader::ReadMore(int* bytes_read) {
   DCHECK(buf.get());
   DCHECK(buf_size > 0);
 
-  request_->Read(buf.get(), buf_size, bytes_read);
+  int result = request_->Read(buf.get(), buf_size);
 
-  // No need to check the return value here as we'll detect errors by
-  // inspecting the URLRequest's status.
+  if (result == net::ERR_IO_PENDING)
+    return;
+
+  if (!is_continuation || result <= 0) {
+    OnReadCompleted(request_.get(), result);
+  } else {
+    // Else, trigger OnReadCompleted asynchronously to avoid starving the IO
+    // thread in case the URLRequest can provide data synchronously.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&ResourceLoader::OnReadCompleted,
+                   weak_ptr_factory_.GetWeakPtr(), request_.get(), result));
+  }
+}
+
+void ResourceLoader::ResumeReading() {
+  DCHECK(!is_deferred());
+
+  if (!read_deferral_start_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("Net.ResourceLoader.ReadDeferral",
+                        base::TimeTicks::Now() - read_deferral_start_time_);
+    read_deferral_start_time_ = base::TimeTicks();
+  }
+  if (request_->status().is_success()) {
+    ReadMore(false);  // Read the next chunk (OK to complete synchronously).
+  } else {
+    ResponseCompleted();
+  }
 }
 
 void ResourceLoader::CompleteRead(int bytes_read) {

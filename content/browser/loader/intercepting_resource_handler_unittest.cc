@@ -233,6 +233,11 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchWithPayload) {
   std::string old_handler_body;
   std::unique_ptr<TestResourceHandler> old_handler_scoped(
       new TestResourceHandler(&old_handler_status, &old_handler_body));
+  // When sending a payload to the old ResourceHandler, the
+  // InterceptingResourceHandler doesn't send a final EOF read.
+  // TODO(mmenke):  Should it?  Or can we just get rid of that 0-byte read
+  // entirely?
+  old_handler_scoped->set_expect_eof_read(false);
   TestResourceHandler* old_handler = old_handler_scoped.get();
   scoped_refptr<net::IOBuffer> old_buffer = old_handler->buffer();
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
@@ -600,6 +605,11 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   std::string old_handler_body;
   std::unique_ptr<TestResourceHandler> old_handler(
       new TestResourceHandler(&old_handler_status, &old_handler_body));
+  // When sending a payload to the old ResourceHandler, the
+  // InterceptingResourceHandler doesn't send a final EOF read.
+  // TODO(mmenke):  Should it?  Or can we just get rid of that 0-byte read
+  // entirely?
+  old_handler->set_expect_eof_read(false);
   old_handler->SetBufferSize(10);
   old_handler->set_defer_on_read_completed(true);
 
@@ -687,6 +697,10 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   EXPECT_EQ(old_handler_status.status(), net::URLRequestStatus::SUCCESS);
   EXPECT_EQ(new_handler_status.status(), net::URLRequestStatus::IO_PENDING);
 
+  // Final EOF byte is read.
+  ASSERT_TRUE(intercepting_handler->OnReadCompleted(0, &defer));
+  ASSERT_FALSE(defer);
+
   defer = false;
   intercepting_handler->OnResponseCompleted({net::URLRequestStatus::SUCCESS, 0},
                                             &defer);
@@ -760,6 +774,11 @@ TEST_F(InterceptingResourceHandlerTest, CancelNewHandler) {
   std::string old_handler_body;
   std::unique_ptr<TestResourceHandler> old_handler(
       new TestResourceHandler(&old_handler_status, &old_handler_body));
+  // When sending a payload to the old ResourceHandler, the
+  // InterceptingResourceHandler doesn't send a final EOF read.
+  // TODO(mmenke):  Should it?  Or can we just get rid of that 0-byte read
+  // entirely?
+  old_handler->set_expect_eof_read(false);
 
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
       new InterceptingResourceHandler(std::move(old_handler), request.get()));

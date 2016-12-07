@@ -13,7 +13,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
+#include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
@@ -44,6 +46,9 @@ class FakeProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       : headers_(headers),
         response_(response) {
   }
+
+  ~FakeProtocolHandler() override {}
+
   net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
@@ -56,6 +61,29 @@ class FakeProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   std::string response_;
 };
 
+// Creates URLRequestJobs that fail at the specified phase.
+class FakeFailingProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  FakeFailingProtocolHandler(
+      net::URLRequestFailedJob::FailurePhase failure_phase,
+      net::Error net_error)
+      : failure_phase_(failure_phase), net_error_(net_error) {}
+
+  ~FakeFailingProtocolHandler() override {}
+
+  net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return new net::URLRequestFailedJob(request, network_delegate,
+                                        failure_phase_, net_error_);
+  }
+
+ private:
+  const net::URLRequestFailedJob::FailurePhase failure_phase_;
+  const net::Error net_error_;
+};
+
 class SetResponseURLRequestContext: public net::TestURLRequestContext {
  public:
   void SetResponse(const std::string& headers, const std::string& response) {
@@ -63,6 +91,16 @@ class SetResponseURLRequestContext: public net::TestURLRequestContext {
         base::MakeUnique<net::URLRequestJobFactoryImpl>();
     factory->SetProtocolHandler(
         "https", base::MakeUnique<FakeProtocolHandler>(headers, response));
+    context_storage_.set_job_factory(std::move(factory));
+  }
+
+  void SetErrorResponse(net::URLRequestFailedJob::FailurePhase failure_phase,
+                        net::Error net_error) {
+    std::unique_ptr<net::URLRequestJobFactoryImpl> factory =
+        base::MakeUnique<net::URLRequestJobFactoryImpl>();
+    factory->SetProtocolHandler(
+        "https",
+        base::MakeUnique<FakeFailingProtocolHandler>(failure_phase, net_error));
     context_storage_.set_job_factory(std::move(factory));
   }
 };
@@ -131,6 +169,14 @@ class TokenValidatorFactoryImplTest : public testing::Test {
     context->SetResponse(headers, response);
   }
 
+  void SetErrorResponse(net::URLRequestFailedJob::FailurePhase failure_phase,
+                        net::Error net_error) {
+    SetResponseURLRequestContext* context =
+        static_cast<SetResponseURLRequestContext*>(
+            request_context_getter_->GetURLRequestContext());
+    context->SetErrorResponse(failure_phase, net_error);
+  }
+
   base::MessageLoop message_loop_;
   scoped_refptr<RsaKeyPair> key_pair_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
@@ -186,6 +232,45 @@ TEST_F(TokenValidatorFactoryImplTest, DeleteOnFailure) {
       kToken, base::Bind(
           &TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
           base::Unretained(this)));
+  base::RunLoop().Run();
+}
+
+TEST_F(TokenValidatorFactoryImplTest, DeleteOnStartError) {
+  token_validator_ =
+      token_validator_factory_->CreateTokenValidator(kLocalJid, kRemoteJid);
+
+  SetErrorResponse(net::URLRequestFailedJob::START, net::ERR_FAILED);
+
+  token_validator_->ValidateThirdPartyToken(
+      kToken,
+      base::Bind(&TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
+                 base::Unretained(this)));
+  base::RunLoop().Run();
+}
+
+TEST_F(TokenValidatorFactoryImplTest, DeleteOnSyncReadError) {
+  token_validator_ =
+      token_validator_factory_->CreateTokenValidator(kLocalJid, kRemoteJid);
+
+  SetErrorResponse(net::URLRequestFailedJob::READ_SYNC, net::ERR_FAILED);
+
+  token_validator_->ValidateThirdPartyToken(
+      kToken,
+      base::Bind(&TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
+                 base::Unretained(this)));
+  base::RunLoop().Run();
+}
+
+TEST_F(TokenValidatorFactoryImplTest, DeleteOnAsyncReadError) {
+  token_validator_ =
+      token_validator_factory_->CreateTokenValidator(kLocalJid, kRemoteJid);
+
+  SetErrorResponse(net::URLRequestFailedJob::READ_ASYNC, net::ERR_FAILED);
+
+  token_validator_->ValidateThirdPartyToken(
+      kToken,
+      base::Bind(&TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
+                 base::Unretained(this)));
   base::RunLoop().Run();
 }
 

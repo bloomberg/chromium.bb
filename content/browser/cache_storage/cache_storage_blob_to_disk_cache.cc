@@ -127,7 +127,7 @@ void CacheStorageBlobToDiskCache::OnContextShuttingDown() {
 
 void CacheStorageBlobToDiskCache::ReadFromBlob() {
   int bytes_read = blob_request_->Read(buffer_.get(), buffer_->size());
-  if (bytes_read >= 0)
+  if (bytes_read != net::ERR_IO_PENDING)
     OnReadCompleted(blob_request_.get(), bytes_read);
 }
 

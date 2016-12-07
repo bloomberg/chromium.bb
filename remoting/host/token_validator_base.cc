@@ -127,11 +127,14 @@ void TokenValidatorBase::OnResponseStarted(net::URLRequest* source,
   DCHECK_NE(net_result, net::ERR_IO_PENDING);
   DCHECK_EQ(request_.get(), source);
 
-  if (net_result != net::OK)
+  if (net_result != net::OK) {
+    // Process all network errors in the same manner as read errors.
+    OnReadCompleted(request_.get(), net_result);
     return;
+  }
 
   int bytes_read = request_->Read(buffer_.get(), kBufferSize);
-  if (bytes_read > 0)
+  if (bytes_read != net::ERR_IO_PENDING)
     OnReadCompleted(request_.get(), bytes_read);
 }
 
