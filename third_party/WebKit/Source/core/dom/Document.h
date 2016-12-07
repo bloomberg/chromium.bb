@@ -353,8 +353,8 @@ class CORE_EXPORT Document : public ContainerNode,
   Range* caretRangeFromPoint(int x, int y);
   Element* scrollingElement();
 
-  void addStyleReattachData(Element&, StyleReattachData&);
-  StyleReattachData getStyleReattachData(Element&);
+  void addStyleReattachData(Node&, StyleReattachData&);
+  StyleReattachData getStyleReattachData(Node&);
 
   String readyState() const;
 
@@ -1444,7 +1444,10 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<DocumentParser> m_parser;
   Member<ContextFeatures> m_contextFeatures;
 
-  HeapHashMap<Member<Element>, StyleReattachData> m_styleReattachDataMap;
+  // This HashMap is used to stash information (ComputedStyle, nextTextSibling)
+  // generated in the Style Resolution phase that is required in the
+  // Layout Tree construction phase.
+  HeapHashMap<Member<Node>, StyleReattachData> m_styleReattachDataMap;
 
   bool m_wellFormed;
 

@@ -1359,15 +1359,16 @@ Element* Document::scrollingElement() {
 }
 
 // We use HashMap::set over HashMap::add here as we want to
-// replace the ComputedStyle but not the Element if the Element is
+// replace the ComputedStyle but not the Node if the Node is
 // already present.
-void Document::addStyleReattachData(Element& element,
+void Document::addStyleReattachData(Node& node,
                                     StyleReattachData& styleReattachData) {
-  m_styleReattachDataMap.set(&element, styleReattachData);
+  DCHECK(node.isElementNode() || node.isTextNode());
+  m_styleReattachDataMap.set(&node, styleReattachData);
 }
 
-StyleReattachData Document::getStyleReattachData(Element& element) {
-  return m_styleReattachDataMap.get(&element);
+StyleReattachData Document::getStyleReattachData(Node& node) {
+  return m_styleReattachDataMap.get(&node);
 }
 
 /*
