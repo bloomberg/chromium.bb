@@ -1403,6 +1403,11 @@ TEST_F(CertVerifyProcTest, CRLSetDuringPathBuilding) {
 // The verifier should rollback until it just tries A(B) alone, at which point
 // it will pull B(F) & F(E) from the keychain and succeed.
 TEST_F(CertVerifyProcTest, MacCRLIntermediate) {
+  if (base::mac::IsAtLeastOS10_12()) {
+    // TODO(crbug.com/671889): Investigate SecTrustSetKeychains issue on Sierra.
+    LOG(INFO) << "Skipping test, SecTrustSetKeychains does not work on 10.12";
+    return;
+  }
   const char* const kPath2Files[] = {
       "multi-root-A-by-B.pem", "multi-root-B-by-C.pem", "multi-root-C-by-E.pem",
       "multi-root-E-by-E.pem"};
