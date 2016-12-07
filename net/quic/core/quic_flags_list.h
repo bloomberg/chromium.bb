@@ -151,3 +151,7 @@ QUIC_FLAG(bool, FLAGS_quic_fix_cubic_convex_mode, false)
 
 // Ensure that BBR startup pacing rate does not drop below the initial one.
 QUIC_FLAG(bool, FLAGS_quic_bbr_faster_startup, false)
+
+// If true, GFE sends SETTINGS_MAX_HEADER_LIST_SIZE to the client at the
+// beginning of a connection.
+QUIC_FLAG(bool, FLAGS_quic_send_max_header_list_size, true)
