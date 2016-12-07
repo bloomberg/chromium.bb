@@ -409,6 +409,31 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    public void testSerializationWorksWithPoorlySerializedResult() throws Exception {
+        addPwsResult1();
+        addPwsResult2();
+        long curTime = System.currentTimeMillis();
+        mUrlManager.addUrl(new UrlInfo(URL1, 99.5, curTime + 42));
+        mUrlManager.addUrl(new UrlInfo(URL2, 100.5, curTime + 43));
+        getInstrumentation().waitForIdleSync();
+
+        // Create an invalid serialization.
+        Set<String> serializedUrls = new HashSet<>();
+        serializedUrls.add(new UrlInfo(URL1, 99.5, curTime + 42).jsonSerialize().toString());
+        serializedUrls.add("{\"not_a_value\": \"This is totally not a serialized UrlInfo.\"}");
+        mSharedPreferences.edit()
+                .putStringSet("physicalweb_all_urls", serializedUrls)
+                .apply();
+
+        // Make sure only the properly serialized URL is restored.
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        UrlManager urlManager = new UrlManager(context);
+        List<UrlInfo> urlInfos = urlManager.getUrls();
+        assertEquals(1, urlInfos.size());
+        assertEquals(URL1, urlInfos.get(0).getUrl());
+    }
+
+    @SmallTest
     @RetryOnFailure
     public void testSerializationWorksWithoutGarbageCollection() throws Exception {
         addPwsResult1();

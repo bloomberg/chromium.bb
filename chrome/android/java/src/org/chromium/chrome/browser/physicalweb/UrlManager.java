@@ -401,7 +401,6 @@ class UrlManager {
         }
 
         // Read the cache.
-        mNearbyUrls.addAll(prefs.getStringSet(PREFS_NEARBY_URLS_KEY, new HashSet<String>()));
         for (String serializedUrl : prefs.getStringSet(PREFS_ALL_URLS_KEY, new HashSet<String>())) {
             try {
                 JSONObject jsonObject = new JSONObject(serializedUrl);
@@ -412,6 +411,8 @@ class UrlManager {
                 Log.e(TAG, "Could not deserialize UrlInfo", e);
             }
         }
+        mNearbyUrls.addAll(prefs.getStringSet(PREFS_NEARBY_URLS_KEY, new HashSet<String>()));
+        mNearbyUrls.retainAll(mUrlInfoMap.keySet());
         for (String serializedPwsResult : prefs.getStringSet(PREFS_PWS_RESULTS_KEY,
                 new HashSet<String>())) {
             try {
