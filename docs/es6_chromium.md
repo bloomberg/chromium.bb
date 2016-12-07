@@ -87,13 +87,15 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
 # ES6 Support In Chromium
 
-This is a list of new/updated features in ES6 specs that is being considered to
-be supported for Chromium development.
+This is a list of [ECMAScript6](https://developer.mozilla.org/en-US/docs/Web/JavaScript/New_in_JavaScript/ECMAScript_6_support_in_Mozilla)
+features allowed in Chromium code.
 
-> **TBD:** Do we want to differenciate allow/ban status between subprojects? If
-> so, how to denote?
+This is **not** a status list of [v8](https://developers.google.com/v8/)'s
+support for language features.
 
-> **TBD:** Cross platform-build support?
+> **TBD:** Do we need to differentiate per-project?
+
+> **TBD:** Cross-platform build support? As in: transpilers?
 
 You can propose changing the status of a feature by sending an email to
 chromium-dev@chromium.org. Include a short blurb on what the feature is and why
