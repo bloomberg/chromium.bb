@@ -1120,15 +1120,16 @@ void av1_build_inter_predictors_sb_sub8x8_extend(MACROBLOCKD *xd,
                            mi_x, mi_y);
   }
 #if CONFIG_EXT_INTER
-  BUFFER_SET ctx = { { xd->plane[0].dst.buf, xd->plane[1].dst.buf,
-                       xd->plane[2].dst.buf },
-                     { xd->plane[0].dst.stride, xd->plane[1].dst.stride,
-                       xd->plane[2].dst.stride } };
-  if (is_interintra_pred(&xd->mi[0]->mbmi))
+  if (is_interintra_pred(&xd->mi[0]->mbmi)) {
+    BUFFER_SET ctx = { { xd->plane[0].dst.buf, xd->plane[1].dst.buf,
+                         xd->plane[2].dst.buf },
+                       { xd->plane[0].dst.stride, xd->plane[1].dst.stride,
+                         xd->plane[2].dst.stride } };
     av1_build_interintra_predictors(
         xd, xd->plane[0].dst.buf, xd->plane[1].dst.buf, xd->plane[2].dst.buf,
         xd->plane[0].dst.stride, xd->plane[1].dst.stride,
         xd->plane[2].dst.stride, &ctx, bsize);
+  }
 #endif  // CONFIG_EXT_INTER
 }
 
