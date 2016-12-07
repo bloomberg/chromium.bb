@@ -6,6 +6,7 @@
 #define MediaSession_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -15,17 +16,19 @@
 
 namespace blink {
 
+class ExecutionContext;
 class MediaMetadata;
-class ScriptState;
 
 class MODULES_EXPORT MediaSession final
     : public EventTargetWithInlineData,
+      public ContextLifecycleObserver,
       blink::mojom::blink::MediaSessionClient {
+  USING_GARBAGE_COLLECTED_MIXIN(MediaSession);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(MediaSession, dispose);
 
  public:
-  static MediaSession* create(ScriptState*);
+  static MediaSession* create(ExecutionContext*);
 
   void dispose();
 
@@ -49,7 +52,7 @@ class MODULES_EXPORT MediaSession final
  private:
   friend class MediaSessionTest;
 
-  MediaSession(ScriptState*);
+  explicit MediaSession(ExecutionContext*);
 
   // EventTarget overrides
   bool addEventListenerInternal(
@@ -64,9 +67,8 @@ class MODULES_EXPORT MediaSession final
   void DidReceiveAction(blink::mojom::blink::MediaSessionAction) override;
 
   // Returns null when the ExecutionContext is not document.
-  mojom::blink::MediaSessionService* getService(ScriptState*);
+  mojom::blink::MediaSessionService* getService();
 
-  RefPtr<ScriptState> m_scriptState;
   Member<MediaMetadata> m_metadata;
   mojom::blink::MediaSessionServicePtr m_service;
   mojo::Binding<blink::mojom::blink::MediaSessionClient> m_clientBinding;

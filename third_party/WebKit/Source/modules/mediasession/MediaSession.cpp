@@ -4,7 +4,6 @@
 
 #include "modules/mediasession/MediaSession.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ExecutionContext.h"
@@ -69,11 +68,11 @@ WTF::Optional<MediaSessionAction> eventNameToMojomAction(
 
 }  // anonymous namespace
 
-MediaSession::MediaSession(ScriptState* scriptState)
-    : m_scriptState(scriptState), m_clientBinding(this) {}
+MediaSession::MediaSession(ExecutionContext* executionContext)
+    : ContextLifecycleObserver(executionContext), m_clientBinding(this) {}
 
-MediaSession* MediaSession::create(ScriptState* scriptState) {
-  return new MediaSession(scriptState);
+MediaSession* MediaSession::create(ExecutionContext* executionContext) {
+  return new MediaSession(executionContext);
 }
 
 void MediaSession::dispose() {
@@ -81,8 +80,7 @@ void MediaSession::dispose() {
 }
 
 void MediaSession::setMetadata(MediaMetadata* metadata) {
-  if (mojom::blink::MediaSessionService* service =
-          getService(m_scriptState.get())) {
+  if (mojom::blink::MediaSessionService* service = getService()) {
     service->SetMetadata(MediaMetadataSanitizer::sanitizeAndConvertToMojo(
         metadata, getExecutionContext()));
   }
@@ -97,17 +95,18 @@ const WTF::AtomicString& MediaSession::interfaceName() const {
 }
 
 ExecutionContext* MediaSession::getExecutionContext() const {
-  return m_scriptState->getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
-mojom::blink::MediaSessionService* MediaSession::getService(
-    ScriptState* scriptState) {
+mojom::blink::MediaSessionService* MediaSession::getService() {
   if (m_service)
     return m_service.get();
+  if (!getExecutionContext())
+    return nullptr;
 
-  DCHECK(scriptState->getExecutionContext()->isDocument())
+  DCHECK(getExecutionContext()->isDocument())
       << "MediaSession::getService() is only available from a frame";
-  Document* document = toDocument(scriptState->getExecutionContext());
+  Document* document = toDocument(getExecutionContext());
   if (!document->frame())
     return nullptr;
 
@@ -126,8 +125,7 @@ bool MediaSession::addEventListenerInternal(
     const AtomicString& eventType,
     EventListener* listener,
     const AddEventListenerOptionsResolved& options) {
-  if (mojom::blink::MediaSessionService* service =
-          getService(m_scriptState.get())) {
+  if (mojom::blink::MediaSessionService* service = getService()) {
     auto mojomAction = eventNameToMojomAction(eventType);
     DCHECK(mojomAction.has_value());
     service->EnableAction(mojomAction.value());
@@ -139,8 +137,7 @@ bool MediaSession::removeEventListenerInternal(
     const AtomicString& eventType,
     const EventListener* listener,
     const EventListenerOptions& options) {
-  if (mojom::blink::MediaSessionService* service =
-          getService(m_scriptState.get())) {
+  if (mojom::blink::MediaSessionService* service = getService()) {
     auto mojomAction = eventNameToMojomAction(eventType);
     DCHECK(mojomAction.has_value());
     service->DisableAction(mojomAction.value());
@@ -160,6 +157,7 @@ void MediaSession::DidReceiveAction(
 DEFINE_TRACE(MediaSession) {
   visitor->trace(m_metadata);
   EventTargetWithInlineData::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink
