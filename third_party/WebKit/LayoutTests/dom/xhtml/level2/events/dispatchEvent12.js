@@ -101,7 +101,7 @@ EventListenerN10035.prototype.handleEvent = function(evt) {
 *
 A monitor is added, multiple calls to removeEventListener
 are mde with similar but not identical arguments, and an event is dispatched.
-The monitor should recieve handleEvent calls.
+The monitor should receive handleEvent calls.
 
 * @author Curt Arnold
 * @see http://www.w3.org/TR/DOM-Level-2-Events/events#Events-EventTarget-dispatchEvent

@@ -69,7 +69,7 @@ function loadComplete() {
 
 /**
 *
-    Retreive 2 different "em" nodes of this Document   Use isEqualNode
+    Retrieve 2 different "em" nodes of this Document   Use isEqualNode
     check if nodes are not equal.
 
 * @author IBM

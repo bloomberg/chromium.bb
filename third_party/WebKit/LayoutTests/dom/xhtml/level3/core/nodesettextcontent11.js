@@ -71,7 +71,7 @@ function loadComplete() {
 *
 
     Using setTextContent on a new DocumentFragment node Element child, attempt to set its content to
-    DOCUMENTFRAGMENT.  Retreive the textContent and verify if it is was set to DOCUMENTFRAGMENT
+    DOCUMENTFRAGMENT.  Retrieve the textContent and verify if it is was set to DOCUMENTFRAGMENT
 
 * @author IBM
 * @author Neil Delima

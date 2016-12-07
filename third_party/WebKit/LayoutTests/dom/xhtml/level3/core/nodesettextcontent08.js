@@ -71,7 +71,7 @@ function loadComplete() {
 *
 
     Using setTextContent on a new Processing Instruction node, attempt to set its data to PID.
-    Retreive the textContent and verify if it is was set to PID.
+    Retrieve the textContent and verify if it is was set to PID.
 
 * @author IBM
 * @author Neil Delima

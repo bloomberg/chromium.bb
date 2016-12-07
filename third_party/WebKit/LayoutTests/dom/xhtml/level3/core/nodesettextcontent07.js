@@ -71,7 +71,7 @@ function loadComplete() {
 *
 
     Using setTextContent on an existing Text node, attempt to set its value to Text.
-    Retreive the textContent and verify if it is was set to Text.
+    Retrieve the textContent and verify if it is was set to Text.
 
 * @author IBM
 * @author Neil Delima

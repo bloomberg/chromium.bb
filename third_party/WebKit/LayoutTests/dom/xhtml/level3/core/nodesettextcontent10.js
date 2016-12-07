@@ -74,7 +74,7 @@ function loadComplete() {
     The method setTextContent has no effect when the node is defined to be null.
 
     Using setTextContent on a new Element node, attempt to set its content to ELEMENT.
-    Retreive the textContent and verify if it is was set to ELEMENT.
+    Retrieve the textContent and verify if it is was set to ELEMENT.
 
 * @author IBM
 * @author Neil Delima

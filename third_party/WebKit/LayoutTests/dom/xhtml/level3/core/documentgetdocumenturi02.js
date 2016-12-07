@@ -69,7 +69,7 @@ function loadComplete() {
 
 /**
 *
-    Create a new Document, retreive its documentURI, and verify if it is null.
+    Create a new Document, retrieve its documentURI, and verify if it is null.
 
 * @author IBM
 * @author Neil Delima

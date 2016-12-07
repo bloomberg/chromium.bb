@@ -69,7 +69,7 @@ function loadComplete() {
 
 /**
 *
-    Retreive the documentURI of this document, and verify if it is not null.
+    Retrieve the documentURI of this document, and verify if it is not null.
 
 * @author IBM
 * @author Neil Delima

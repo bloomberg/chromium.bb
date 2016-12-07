@@ -75,7 +75,7 @@ function loadComplete() {
 
 /**
 *
-    Retreive the first element node whose localName is "p".  Import it into a new
+    Retrieve the first element node whose localName is "p".  Import it into a new
     Document with deep=false.  Using isEqualNode check if the original and the imported
     Element Node are not equal the child nodes are different.
     Import with deep and the should still be unequal if

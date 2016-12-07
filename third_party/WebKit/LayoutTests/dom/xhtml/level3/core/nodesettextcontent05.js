@@ -70,7 +70,7 @@ function loadComplete() {
 /**
 *
 
-    Using setTextContent on a default Attr node, attempt to set its value to NA.  Retreive
+    Using setTextContent on a default Attr node, attempt to set its value to NA.  Retrieve
     the textContent and verify if it is was set to NA.
 
 * @author IBM

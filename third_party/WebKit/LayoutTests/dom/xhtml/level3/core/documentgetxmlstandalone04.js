@@ -70,7 +70,7 @@ function loadComplete() {
 
 /**
 *
-    Retreive the documentURI of a document for which standalone was specified as "yes", this
+    Retrieve the documentURI of a document for which standalone was specified as "yes", this
     should return true.
 
 * @author IBM

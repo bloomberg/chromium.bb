@@ -69,7 +69,7 @@ function loadComplete() {
 
 /**
 *
-    Retreive the doctype node, create a new Doctype node, call replaceChild and try replacing the
+    Retrieve the doctype node, create a new Doctype node, call replaceChild and try replacing the
     docType node with a new docType node.  Check if the docType node was correctly replaced with
     the new one.
 

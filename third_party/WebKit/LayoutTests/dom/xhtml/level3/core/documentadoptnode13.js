@@ -70,7 +70,7 @@ function loadComplete() {
 /**
 *
     Using the method adoptNode, adopt a newly created DocumentFragment node populated with
-    with the first acronym element of this Document.  Since the decendants of a documentFragment
+    with the first acronym element of this Document.  Since the descendants of a documentFragment
     are recursively adopted, check if the adopted node has children.
 
 * @author IBM

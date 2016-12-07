@@ -71,7 +71,7 @@ function loadComplete() {
 *
     The setDocmentURI method set the location of the document.
 
-    Set the documentURI to a valid string and retreive the documentURI of this
+    Set the documentURI to a valid string and retrieve the documentURI of this
     document and verify if it is was correctly set.
 
 * @author IBM

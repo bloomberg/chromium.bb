@@ -72,7 +72,7 @@ function loadComplete() {
 /**
 *
 
-    Retreive an element node of this Document having nodeName as employeeId and
+    Retrieve an element node of this Document having nodeName as employeeId and
     namespaceURI as http://www.nist.gov.  Create a new Element node having the same attributes
     in this Document and using isEqualNode check if 2 Element nodes are equal.
 

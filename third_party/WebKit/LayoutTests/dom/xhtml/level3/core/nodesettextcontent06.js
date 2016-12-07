@@ -70,7 +70,7 @@ function loadComplete() {
 /**
 *
 
-    Using setTextContent on a new Attr node with a null value, attempt to set its value to NA.  Retreive
+    Using setTextContent on a new Attr node with a null value, attempt to set its value to NA.  Retrieve
     the textContent and verify if it is was set to NA.
 
 * @author IBM

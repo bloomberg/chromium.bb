@@ -71,7 +71,7 @@ function loadComplete() {
 *
 
     Using setTextContent on this DocumentType node, attempt to set the textContent of this
-    DocumentType node to textContent.  Retreive the textContent and verify if it is null.
+    DocumentType node to textContent.  Retrieve the textContent and verify if it is null.
 
 * @author IBM
 * @author Neil Delima

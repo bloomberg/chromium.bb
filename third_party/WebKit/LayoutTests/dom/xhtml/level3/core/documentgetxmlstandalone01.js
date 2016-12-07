@@ -69,7 +69,7 @@ function loadComplete() {
 
 /**
 *
-    Retreive the xmlStandalone attribute of a document for which standalone was not specified, this
+    Retrieve the xmlStandalone attribute of a document for which standalone was not specified, this
     should return false since the default for standalone is no when external markup decls
     are present.
 

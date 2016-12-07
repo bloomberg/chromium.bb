@@ -73,7 +73,7 @@ var monitor;
 /**
 *
 The same monitor is registered twice and an event is dispatched.  The monitor should
-recieve only one handleEvent call.
+receive only one handleEvent call.
 
 * @author Curt Arnold
 * @see http://www.w3.org/TR/DOM-Level-2-Events/events#Events-EventTarget-dispatchEvent

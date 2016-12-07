@@ -106,7 +106,7 @@ DOMErrorHandlerN10048.prototype.handleError = function(error) {
     and load cycle, putting the document in a "normal" form.
 
     Set the validate feature to true.  Invoke the normalizeDocument method on this
-    document.  Retreive the documentElement node and check the nodeName of this node
+    document.  Retrieve the documentElement node and check the nodeName of this node
     to make sure it has not changed.  Now set validate to false and verify the same.
     Register an error handler on this Document and in each case make sure that it does
     not get called.

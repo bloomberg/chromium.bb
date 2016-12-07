@@ -73,7 +73,7 @@ var monitor;
 /**
 *
 An EventListener registered on the target node with capture false, should
-recieve any event fired on that node.
+receive any event fired on that node.
 
 * @author Curt Arnold
 * @see http://www.w3.org/TR/DOM-Level-2-Events/events#Events-EventTarget-dispatchEvent
