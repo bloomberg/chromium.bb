@@ -988,6 +988,12 @@ TEST_F(PipelineIntegrationTest, PlaybackWithVideoTrackDisabledThenEnabled) {
   EXPECT_HASH_EQ("fd59357dfd9c144ab4fb8181b2de32c3", GetVideoHash());
 }
 
+TEST_F(PipelineIntegrationTest, TrackStatusChangesBeforePipelineStarted) {
+  std::vector<MediaTrack::Id> empty_track_ids;
+  pipeline_->OnEnabledAudioTracksChanged(empty_track_ids);
+  pipeline_->OnSelectedVideoTrackChanged(empty_track_ids);
+}
+
 TEST_F(PipelineIntegrationTest, TrackStatusChangesAfterPipelineEnded) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
   Play();

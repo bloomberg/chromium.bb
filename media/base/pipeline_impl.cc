@@ -571,6 +571,16 @@ void PipelineImpl::RendererWrapper::OnEnabledAudioTracksChanged(
     const std::vector<MediaTrack::Id>& enabledTrackIds) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
+  // If the pipeline has been created, but not started yet, we may still receive
+  // track notifications from blink level (e.g. when video track gets deselected
+  // due to player/pipeline belonging to a background tab). We can safely ignore
+  // these, since WebMediaPlayerImpl will ensure that demuxer stream / track
+  // status is in sync with blink after pipeline is started.
+  if (state_ == kCreated) {
+    DCHECK(!demuxer_);
+    return;
+  }
+
   // Track status notifications might be delivered asynchronously. If we receive
   // a notification when pipeline is stopped/shut down, it's safe to ignore it.
   if (state_ == kStopping || state_ == kStopped) {
@@ -589,6 +599,16 @@ void PipelineImpl::RendererWrapper::OnEnabledAudioTracksChanged(
 void PipelineImpl::RendererWrapper::OnSelectedVideoTrackChanged(
     const std::vector<MediaTrack::Id>& selectedTrackId) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  // If the pipeline has been created, but not started yet, we may still receive
+  // track notifications from blink level (e.g. when video track gets deselected
+  // due to player/pipeline belonging to a background tab). We can safely ignore
+  // these, since WebMediaPlayerImpl will ensure that demuxer stream / track
+  // status is in sync with blink after pipeline is started.
+  if (state_ == kCreated) {
+    DCHECK(!demuxer_);
+    return;
+  }
 
   // Track status notifications might be delivered asynchronously. If we receive
   // a notification when pipeline is stopped/shut down, it's safe to ignore it.
