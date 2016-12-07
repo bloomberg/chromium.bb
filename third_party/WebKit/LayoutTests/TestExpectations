@@ -669,10 +669,12 @@ crbug.com/659456 http/tests/inspector/persistence/automapping-sourcemap.html [ P
 crbug.com/659456 virtual/mojo-loading/http/tests/inspector/persistence/automapping-sourcemap.html [ Pass Failure ]
 
 crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
+crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphens-align.html [ Skip ]
 crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphens-auto.html [ Skip ]
 crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphens-auto-mock.html [ Skip ]
 crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphens-locale.html [ Skip ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Pass ]
+crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-align.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-auto.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-auto-mock.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-locale.html [ Pass ]

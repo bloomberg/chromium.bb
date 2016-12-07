@@ -898,7 +898,7 @@ ALWAYS_INLINE bool BreakingContext::hyphenate(
   // ignores the kerning between the last letter and the hyphen.
   return rewindToMidWordBreak(
       wordMeasurement, start + prefixLength,
-      font.getCharacterRange(run, 0, prefixLength).width() + hyphenWidth);
+      font.getCharacterRange(run, 0, prefixLength).width());
 }
 
 ALWAYS_INLINE bool BreakingContext::isBreakAtSoftHyphen() const {
