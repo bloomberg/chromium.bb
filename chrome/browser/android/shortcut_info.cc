@@ -50,10 +50,12 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
   // Set the orientation based on the manifest value, if any.
   if (manifest.orientation != blink::WebScreenOrientationLockDefault) {
     // Ignore the orientation if the display mode is different from
-    // 'standalone'.
+    // 'standalone' or 'fullscreen'.
     // TODO(mlamouri): send a message to the developer console about this.
-    if (display == blink::WebDisplayModeStandalone)
+    if (display == blink::WebDisplayModeStandalone ||
+        display == blink::WebDisplayModeFullscreen) {
       orientation = manifest.orientation;
+    }
   }
 
   // Set the theme color based on the manifest value, if any.
