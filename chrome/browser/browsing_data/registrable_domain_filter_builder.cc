@@ -35,6 +35,88 @@ bool IsSubdomainOfARegistrableDomain(const std::string& domain) {
 // 2. IsSubdomainOfARegistrableDomain(domain)      - e.g. www.google.com
 // 3. GetDomainAndRegistry(domain, _) == ""        - e.g. localhost, 127.0.0.1
 
+
+// True if the domain of |url| is in the whitelist, or isn't in the blacklist.
+// The whitelist or blacklist is represented as |registerable_domains|
+// and |mode|.
+bool MatchesURL(
+    const std::set<std::string>& registerable_domains,
+    BrowsingDataFilterBuilder::Mode mode,
+    const GURL& url) {
+  std::string url_registerable_domain =
+      GetDomainAndRegistry(url, INCLUDE_PRIVATE_REGISTRIES);
+  return (registerable_domains.find(
+              url_registerable_domain != "" ? url_registerable_domain
+                                            : url.host()) !=
+          registerable_domains.end()) ==
+         (mode == BrowsingDataFilterBuilder::WHITELIST);
+}
+
+// True if the pattern something in the whitelist, or doesn't match something
+// in the blacklist.
+// The whitelist or blacklist is represented as |patterns|,  and |mode|.
+bool MatchesWebsiteSettingsPattern(
+    const std::vector<ContentSettingsPattern>& domain_patterns,
+    BrowsingDataFilterBuilder::Mode mode,
+    const ContentSettingsPattern& pattern) {
+  for (const ContentSettingsPattern& domain : domain_patterns) {
+    DCHECK(domain.IsValid());
+    Relation relation = pattern.Compare(domain);
+    if (relation == Relation::IDENTITY || relation == Relation::PREDECESSOR)
+      return mode == BrowsingDataFilterBuilder::WHITELIST;
+  }
+  return mode != BrowsingDataFilterBuilder::WHITELIST;
+}
+
+// True if no domains can see the given cookie and we're a blacklist, or any
+// domains can see the cookie and we're a whitelist.
+// The whitelist or blacklist is represented as |domains_and_ips| and |mode|.
+bool MatchesCookieForRegisterableDomainsAndIPs(
+    const std::set<std::string>& domains_and_ips,
+    BrowsingDataFilterBuilder::Mode mode,
+    const net::CanonicalCookie& cookie) {
+  if (domains_and_ips.empty())
+    return mode == BrowsingDataFilterBuilder::BLACKLIST;
+  std::string cookie_domain = cookie.Domain();
+  if (cookie.IsDomainCookie())
+    cookie_domain = cookie_domain.substr(1);
+  std::string parsed_cookie_domain =
+      GetDomainAndRegistry(cookie_domain, INCLUDE_PRIVATE_REGISTRIES);
+  // This means we're an IP address or an internal hostname.
+  if (parsed_cookie_domain.empty())
+    parsed_cookie_domain = cookie_domain;
+  return (mode == BrowsingDataFilterBuilder::WHITELIST) ==
+      (domains_and_ips.find(parsed_cookie_domain) != domains_and_ips.end());
+}
+
+// True if none of the supplied domains matches this Channel ID's server ID
+// and we're a blacklist, or one of them does and we're a whitelist.
+// The whitelist or blacklist is represented as |domains_and_ips| and |mode|.
+bool MatchesChannelIDForRegisterableDomainsAndIPs(
+    const std::set<std::string>& domains_and_ips,
+    BrowsingDataFilterBuilder::Mode mode,
+    const std::string& channel_id_server_id) {
+  return ((mode == BrowsingDataFilterBuilder::WHITELIST) ==
+      (domains_and_ips.find(channel_id_server_id) != domains_and_ips.end()));
+}
+
+// True if none of the supplied domains matches this plugin's |site| and we're
+// a blacklist, or one of them does and we're a whitelist. The whitelist or
+// blacklist is represented by |domains_and_ips| and |mode|.
+bool MatchesPluginSiteForRegisterableDomainsAndIPs(
+    const std::set<std::string>& domains_and_ips,
+    BrowsingDataFilterBuilder::Mode mode,
+    const std::string& site) {
+  // If |site| is a third- or lower-level domain, find the corresponding eTLD+1.
+  std::string domain_or_ip =
+      GetDomainAndRegistry(site, INCLUDE_PRIVATE_REGISTRIES);
+  if (domain_or_ip.empty())
+    domain_or_ip = site;
+
+  return ((mode == BrowsingDataFilterBuilder::WHITELIST) ==
+      (domains_and_ips.find(domain_or_ip) != domains_and_ips.end()));
+}
+
 }  // namespace
 
 RegistrableDomainFilterBuilder::RegistrableDomainFilterBuilder(Mode mode)
@@ -48,24 +130,21 @@ void RegistrableDomainFilterBuilder::AddRegisterableDomain(
   // We check that the domain we're given is actually a eTLD+1, an IP address,
   // or an internal hostname.
   DCHECK(!IsSubdomainOfARegistrableDomain(domain));
-  domain_list_.insert(domain);
+  domains_.insert(domain);
 }
 
 base::Callback<bool(const GURL&)>
 RegistrableDomainFilterBuilder::BuildGeneralFilter() const {
-  std::set<std::string>* domains = new std::set<std::string>(domain_list_);
-  return base::Bind(&RegistrableDomainFilterBuilder::MatchesURL,
-                    base::Owned(domains), mode());
+  return base::BindRepeating(MatchesURL, domains_, mode());
 }
 
 base::Callback<bool(const ContentSettingsPattern& pattern)>
 RegistrableDomainFilterBuilder
     ::BuildWebsiteSettingsPatternMatchesFilter() const {
-  std::vector<ContentSettingsPattern>* patterns_from_domains =
-      new std::vector<ContentSettingsPattern>();
-  patterns_from_domains->reserve(domain_list_.size());
+  std::vector<ContentSettingsPattern> patterns_from_domains;
+  patterns_from_domains.reserve(domains_.size());
 
-  for (const std::string& domain : domain_list_) {
+  for (const std::string& domain : domains_) {
     std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
         ContentSettingsPattern::CreateBuilder(/* use_legacy_validate */ false));
     builder->WithSchemeWildcard()
@@ -75,126 +154,40 @@ RegistrableDomainFilterBuilder
     if (IsRegistrableDomain(domain))
       builder->WithDomainWildcard();
 
-    patterns_from_domains->push_back(builder->Build());
+    patterns_from_domains.push_back(builder->Build());
   }
 
-  for (const ContentSettingsPattern& domain : *patterns_from_domains) {
+  for (const ContentSettingsPattern& domain : patterns_from_domains) {
     DCHECK(domain.IsValid());
   }
 
-  return base::Bind(
-      &RegistrableDomainFilterBuilder::MatchesWebsiteSettingsPattern,
-      base::Owned(patterns_from_domains), mode());
+  return base::BindRepeating(&MatchesWebsiteSettingsPattern,
+                             std::move(patterns_from_domains), mode());
 }
 
 base::Callback<bool(const net::CanonicalCookie& cookie)>
 RegistrableDomainFilterBuilder::BuildCookieFilter() const {
-  std::set<std::string>* domains_and_ips =
-      new std::set<std::string>(domain_list_);
-  return base::Bind(
-      &RegistrableDomainFilterBuilder
-          ::MatchesCookieForRegisterableDomainsAndIPs,
-      base::Owned(domains_and_ips), mode());
+  return base::BindRepeating(&MatchesCookieForRegisterableDomainsAndIPs,
+                             domains_, mode());
 }
 
 base::Callback<bool(const std::string& cookie)>
 RegistrableDomainFilterBuilder::BuildChannelIDFilter() const {
-  std::set<std::string>* domains_and_ips =
-      new std::set<std::string>(domain_list_);
-  return base::Bind(
-      &RegistrableDomainFilterBuilder
-          ::MatchesChannelIDForRegisterableDomainsAndIPs,
-      base::Owned(domains_and_ips), mode());
+  return base::BindRepeating(&MatchesChannelIDForRegisterableDomainsAndIPs,
+                             domains_, mode());
 }
 
 base::Callback<bool(const std::string& site)>
 RegistrableDomainFilterBuilder::BuildPluginFilter() const {
-  std::set<std::string>* domains_and_ips =
-      new std::set<std::string>(domain_list_);
-  return base::Bind(
-      &RegistrableDomainFilterBuilder
-          ::MatchesPluginSiteForRegisterableDomainsAndIPs,
-      base::Owned(domains_and_ips), mode());
+  return base::BindRepeating(&MatchesPluginSiteForRegisterableDomainsAndIPs,
+                             domains_, mode());
 }
 
 bool RegistrableDomainFilterBuilder::operator==(
     const RegistrableDomainFilterBuilder& other) const {
-  return domain_list_ == other.domain_list_ && mode() == other.mode();
+  return domains_ == other.domains_ && mode() == other.mode();
 }
 
 bool RegistrableDomainFilterBuilder::IsEmpty() const {
-  return domain_list_.empty();
-}
-
-// static
-bool RegistrableDomainFilterBuilder::MatchesURL(
-    std::set<std::string>* registerable_domains,
-    Mode mode,
-    const GURL& url) {
-  std::string url_registerable_domain =
-      GetDomainAndRegistry(url, INCLUDE_PRIVATE_REGISTRIES);
-  return (registerable_domains->find(
-              url_registerable_domain != "" ? url_registerable_domain
-                                            : url.host()) !=
-          registerable_domains->end()) ==
-         (mode == WHITELIST);
-}
-
-// static
-bool RegistrableDomainFilterBuilder::MatchesWebsiteSettingsPattern(
-    std::vector<ContentSettingsPattern>* domain_patterns,
-    Mode mode,
-    const ContentSettingsPattern& pattern) {
-  for (const ContentSettingsPattern& domain : *domain_patterns) {
-    DCHECK(domain.IsValid());
-    Relation relation = pattern.Compare(domain);
-    if (relation == Relation::IDENTITY || relation == Relation::PREDECESSOR)
-      return mode == WHITELIST;
-  }
-  return mode != WHITELIST;
-}
-
-// static
-bool RegistrableDomainFilterBuilder::MatchesCookieForRegisterableDomainsAndIPs(
-    std::set<std::string>* domains_and_ips,
-    Mode mode,
-    const net::CanonicalCookie& cookie) {
-  if (domains_and_ips->empty())
-    return mode == BLACKLIST;
-  std::string cookie_domain = cookie.Domain();
-  if (cookie.IsDomainCookie())
-    cookie_domain = cookie_domain.substr(1);
-  std::string parsed_cookie_domain =
-      GetDomainAndRegistry(cookie_domain, INCLUDE_PRIVATE_REGISTRIES);
-  // This means we're an IP address or an internal hostname.
-  if (parsed_cookie_domain.empty())
-    parsed_cookie_domain = cookie_domain;
-  return (mode == WHITELIST) == (domains_and_ips->find(parsed_cookie_domain) !=
-                                 domains_and_ips->end());
-}
-
-// static
-bool
-RegistrableDomainFilterBuilder::MatchesChannelIDForRegisterableDomainsAndIPs(
-    std::set<std::string>* domains_and_ips,
-    Mode mode,
-    const std::string& channel_id_server_id) {
-  return ((mode == WHITELIST) == (domains_and_ips->find(channel_id_server_id) !=
-                                  domains_and_ips->end()));
-}
-
-// static
-bool
-RegistrableDomainFilterBuilder::MatchesPluginSiteForRegisterableDomainsAndIPs(
-    std::set<std::string>* domains_and_ips,
-    Mode mode,
-    const std::string& site) {
-  // If |site| is a third- or lower-level domain, find the corresponding eTLD+1.
-  std::string domain_or_ip =
-      GetDomainAndRegistry(site, INCLUDE_PRIVATE_REGISTRIES);
-  if (domain_or_ip.empty())
-    domain_or_ip = site;
-
-  return ((mode == WHITELIST) == (domains_and_ips->find(domain_or_ip) !=
-                                  domains_and_ips->end()));
+  return domains_.empty();
 }
