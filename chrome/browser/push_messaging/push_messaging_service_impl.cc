@@ -254,6 +254,8 @@ void PushMessagingServiceImpl::ShutdownHandler() {
 void PushMessagingServiceImpl::OnStoreReset() {
   // Delete all cached subscriptions, since they are now invalid.
   for (const auto& identifier : PushMessagingAppIdentifier::GetAll(profile_)) {
+    RecordUnsubscribeReason(
+        content::PUSH_UNREGISTRATION_REASON_GCM_STORE_RESET);
     // Clear all the subscriptions in parallel, to reduce risk that shutdown
     // occurs before we finish clearing them.
     ClearPushSubscriptionId(profile_, identifier.origin(),
