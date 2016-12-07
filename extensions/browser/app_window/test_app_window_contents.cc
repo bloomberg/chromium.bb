@@ -28,9 +28,6 @@ void TestAppWindowContents::NativeWindowChanged(
 void TestAppWindowContents::NativeWindowClosed() {
 }
 
-void TestAppWindowContents::DispatchWindowShownForTests() const {
-}
-
 void TestAppWindowContents::OnWindowReady() {}
 
 content::WebContents* TestAppWindowContents::GetWebContents() const {

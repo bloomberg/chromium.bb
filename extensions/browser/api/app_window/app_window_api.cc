@@ -404,7 +404,6 @@ bool AppWindowCreateFunction::RunAsync() {
   }
 
   SendResponse(true);
-  app_window->WindowEventsReady();
 
   return true;
 }

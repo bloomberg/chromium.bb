@@ -36,7 +36,6 @@ class AshPanelContents
   void NativeWindowChanged(
       extensions::NativeAppWindow* native_app_window) override;
   void NativeWindowClosed() override;
-  void DispatchWindowShownForTests() const override;
   void OnWindowReady() override;
   content::WebContents* GetWebContents() const override;
   extensions::WindowController* GetWindowController() const override;

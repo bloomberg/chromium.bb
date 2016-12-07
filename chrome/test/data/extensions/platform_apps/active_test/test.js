@@ -33,16 +33,9 @@ function processNextCommand() {
 
     chrome.app.window.create('empty.html', createOptions,
         function(createdWindow) {
-      handleWindowReady = function() {
-        createdWindow.onClosed.addListener(windowClosed);
-        windows.push(createdWindow);
-        processNextCommand();
-      }
-
-      if (createOptions.hidden)
-        handleWindowReady();
-      else
-        createdWindow.handleWindowFirstShownForTests(handleWindowReady);
+      createdWindow.onClosed.addListener(windowClosed);
+      windows.push(createdWindow);
+      processNextCommand();
     });
   });
 }

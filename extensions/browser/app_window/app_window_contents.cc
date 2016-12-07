@@ -82,14 +82,6 @@ void AppWindowContentsImpl::NativeWindowClosed() {
   rvh->Send(new ExtensionMsg_AppWindowClosed(rvh->GetRoutingID()));
 }
 
-void AppWindowContentsImpl::DispatchWindowShownForTests() const {
-  base::ListValue args;
-  content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
-  rfh->Send(new ExtensionMsg_MessageInvoke(rfh->GetRoutingID(),
-                                           host_->extension_id(), "app.window",
-                                           "appWindowShownForTests", args));
-}
-
 void AppWindowContentsImpl::OnWindowReady() {
   is_window_ready_ = true;
   if (is_blocking_requests_) {

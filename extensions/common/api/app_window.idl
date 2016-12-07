@@ -385,7 +385,6 @@ namespace app.window {
     [nodoc] boolean hasFrameColor;
     [nodoc] long activeFrameColor;
     [nodoc] long inactiveFrameColor;
-    [nodoc] boolean? firstShowHasHappened;
 
     // Set whether the window should stay above most other windows. Requires the
     // <code>alwaysOnTopWindows</code> permission.
@@ -488,8 +487,5 @@ namespace app.window {
 
     // Fired when the window's ability to use alpha transparency changes.
     [nocompile, nodoc] static void onAlphaEnabledChanged();
-
-    // Event for testing. Lets tests wait until a window has been shown.
-    [nocompile, nodoc] static void onWindowFirstShown();
   };
 };

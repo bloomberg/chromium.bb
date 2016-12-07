@@ -71,9 +71,6 @@ void AshPanelContents::NativeWindowChanged(NativeAppWindow* native_app_window) {
 void AshPanelContents::NativeWindowClosed() {
 }
 
-void AshPanelContents::DispatchWindowShownForTests() const {
-}
-
 void AshPanelContents::OnWindowReady() {}
 
 content::WebContents* AshPanelContents::GetWebContents() const {

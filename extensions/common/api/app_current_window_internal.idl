@@ -61,7 +61,5 @@ namespace app.currentWindowInternal {
     static void onMaximized();
     static void onRestored();
     static void onAlphaEnabledChanged();
-    // Only sent in tests.
-    static void onWindowShownForTests();
   };
 };
