@@ -648,7 +648,7 @@ static void ClearBrowsingData(
     filter_builder->AddRegisterableDomain(domain);
   }
 
-  if (!excluding_domains.empty()) {
+  if (!excluding_domains.empty() || !ignoring_domains.empty()) {
     ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
         GetOriginalProfile(), excluding_domains, excluding_domain_reasons,
         ignoring_domains, ignoring_domain_reasons);
