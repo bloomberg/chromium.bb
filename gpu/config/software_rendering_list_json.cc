@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.04",
+  "version": "12.05",
   "entries": [
     {
       "id": 1,
@@ -1254,7 +1254,7 @@ LONG_STRING_CONST(
     },
     {
       "id": 122,
-      "description": "GPU rasterization should only be enabled on NVIDIA Pascal and Maxwell, Intel Broadwell+, and AMD RX-R5 GPUs for now.",
+      "description": "GPU rasterization should only be enabled on NVIDIA Pascal and Maxwell, Intel Broadwell+, and AMD RX-R2 GPUs for now.",
       "cr_bugs": [643850],
       "os": {
         "type": "win"
@@ -1291,7 +1291,7 @@ LONG_STRING_CONST(
             "type": "win",
             "version": {
               "op": ">=",
-              "value": "10.0"
+              "value": "8.1"
             }
           },
           "vendor_id": "0x8086",
@@ -1316,34 +1316,22 @@ LONG_STRING_CONST(
             "type": "win",
             "version": {
               "op": ">=",
-              "value": "10.0"
+              "value": "8.1"
             }
           },
           "vendor_id": "0x1002",
-          "device_id": ["0x1309", "0x130a", "0x130c", "0x130d", "0x130e",
-                        "0x130f", "0x130f", "0x130f", "0x130f", "0x130f",
-                        "0x1313", "0x1313", "0x1313", "0x1313", "0x1315",
-                        "0x1315", "0x1315", "0x1315", "0x1315", "0x1316",
-                        "0x1318", "0x131c", "0x131d", "0x6600", "0x6604",
-                        "0x6604", "0x6605", "0x6605", "0x6610", "0x6610",
-                        "0x6610", "0x6611", "0x6617", "0x6640", "0x6646",
-                        "0x6646", "0x6647", "0x6647", "0x6658", "0x665d",
-                        "0x665f", "0x6660", "0x6660", "0x6663", "0x6664",
-                        "0x6665", "0x6665", "0x6665", "0x6667", "0x67b0",
-                        "0x67b0", "0x67b1", "0x67b1", "0x67b9", "0x67df",
-                        "0x67df", "0x67ef", "0x67ef", "0x67ef", "0x67ef",
-                        "0x6810", "0x6811", "0x6820", "0x6820", "0x6821",
-                        "0x6821", "0x682b", "0x6835", "0x6900", "0x6900",
-                        "0x6900", "0x6900", "0x6900", "0x6901", "0x6907",
-                        "0x6907", "0x6920", "0x6920", "0x6921", "0x6938",
-                        "0x6938", "0x6938", "0x6939", "0x6939", "0x6939",
-                        "0x7300", "0x7300", "0x7300", "0x7300", "0x9851",
-                        "0x9851", "0x9855", "0x9855", "0x9874", "0x9874",
-                        "0x9874", "0x9874", "0x9874", "0x9874", "0x9874",
-                        "0x9874", "0x9874", "0x9874", "0x9874", "0x9874",
-                        "0x9874", "0x9874", "0x9874", "0x9874", "0x9874",
-                        "0x9874", "0x9874", "0x9874", "0x9874", "0x98e4",
-                        "0x98e4", "0x98e4"]
+          "device_id": ["0x1309", "0x130a", "0x130b", "0x130c", "0x130d",
+                        "0x130e", "0x130f", "0x1313", "0x1315", "0x1316",
+                        "0x1318", "0x131b", "0x131c", "0x131d", "0x6600",
+                        "0x6604", "0x6605", "0x6610", "0x6611", "0x6617",
+                        "0x6640", "0x6646", "0x6647", "0x6647", "0x6658",
+                        "0x665d", "0x665f", "0x6660", "0x6663", "0x6664",
+                        "0x6665", "0x6667", "0x67b0", "0x67b1", "0x67b9",
+                        "0x67df", "0x67ef", "0x6810", "0x6811", "0x6820",
+                        "0x6821", "0x682b", "0x6835", "0x6900", "0x6901",
+                        "0x6907", "0x6920", "0x6921", "0x6938", "0x6939",
+                        "0x7300", "0x9851", "0x9852", "0x9853", "0x9854",
+                        "0x9855", "0x9856", "0x9874", "0x98e4"]
         }
       ]
     },
