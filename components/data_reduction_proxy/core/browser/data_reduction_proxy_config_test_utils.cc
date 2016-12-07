@@ -54,7 +54,8 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
       tick_clock_(nullptr),
       network_quality_prohibitively_slow_set_(false),
       network_quality_prohibitively_slow_(false),
-      lofi_accuracy_recording_intervals_set_(false) {
+      lofi_accuracy_recording_intervals_set_(false),
+      is_captive_portal_(false) {
   network_interfaces_.reset(new net::NetworkInterfaceList());
 }
 
@@ -148,6 +149,14 @@ void TestDataReductionProxyConfig::SetWasDataReductionProxyUsedProxyIndex(
 void TestDataReductionProxyConfig::ResetWasDataReductionProxyUsed() {
   was_data_reduction_proxy_used_.reset();
   proxy_index_.reset();
+}
+
+void TestDataReductionProxyConfig::SetIsCaptivePortal(bool is_captive_portal) {
+  is_captive_portal_ = is_captive_portal;
+}
+
+bool TestDataReductionProxyConfig::GetIsCaptivePortal() const {
+  return is_captive_portal_;
 }
 
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(

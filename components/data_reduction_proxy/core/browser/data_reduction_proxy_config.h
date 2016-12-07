@@ -299,6 +299,15 @@ class DataReductionProxyConfig
   bool IsEffectiveConnectionTypeSlowerThanThreshold(
       net::EffectiveConnectionType effective_connection_type) const;
 
+  // Checks if the current network has captive portal, and handles the result.
+  // If the captive portal probe was blocked on the current network, disables
+  // the use of secure proxies.
+  void HandleCaptivePortal();
+
+  // Returns true if the current network has captive portal. Virtualized
+  // for testing.
+  virtual bool GetIsCaptivePortal() const;
+
   std::unique_ptr<SecureProxyChecker> secure_proxy_checker_;
 
   // Indicates if the secure Data Reduction Proxy can be used or not.
@@ -372,6 +381,10 @@ class DataReductionProxyConfig
   // Intervals after the main frame request arrives at which accuracy of network
   // quality prediction is recorded.
   std::vector<base::TimeDelta> lofi_accuracy_recording_intervals_;
+
+  // Set to true if the captive portal probe for the current network has been
+  // blocked.
+  bool is_captive_portal_;
 
   base::WeakPtrFactory<DataReductionProxyConfig> weak_factory_;
 

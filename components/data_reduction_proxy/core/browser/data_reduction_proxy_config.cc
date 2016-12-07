@@ -42,6 +42,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
+#if defined(OS_ANDROID)
+#include "net/android/network_library.h"
+#endif  // OS_ANDROID
+
 using base::FieldTrialList;
 
 namespace {
@@ -300,6 +304,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       lofi_off_(false),
       network_quality_at_last_query_(NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN),
       previous_state_lofi_on_(false),
+      is_captive_portal_(false),
       weak_factory_(this) {
   DCHECK(io_task_runner_);
   DCHECK(configurator);
@@ -346,7 +351,8 @@ void DataReductionProxyConfig::ReloadConfig() {
       config_values_->proxies_for_http();
   if (enabled_by_user_ && !config_values_->holdback() &&
       !proxies_for_http.empty()) {
-    configurator_->Enable(!secure_proxy_allowed_, proxies_for_http);
+    configurator_->Enable(!secure_proxy_allowed_ || is_captive_portal_,
+                          proxies_for_http);
   } else {
     configurator_->Disable();
   }
@@ -639,8 +645,10 @@ void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
   enabled_by_user_ = enabled;
   ReloadConfig();
 
-  // Check if the proxy has been restricted explicitly by the carrier.
   if (enabled) {
+    HandleCaptivePortal();
+
+    // Check if the proxy has been restricted explicitly by the carrier.
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives
     // |secure_proxy_checker_|.
@@ -649,6 +657,27 @@ void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
         base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
                    base::Unretained(this)));
   }
+}
+
+void DataReductionProxyConfig::HandleCaptivePortal() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  bool is_captive_portal = GetIsCaptivePortal();
+  UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.CaptivePortalDetected.Platform",
+                        is_captive_portal);
+  if (is_captive_portal == is_captive_portal_)
+    return;
+  is_captive_portal_ = is_captive_portal;
+  ReloadConfig();
+}
+
+bool DataReductionProxyConfig::GetIsCaptivePortal() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+#if defined(OS_ANDROID)
+  return net::android::GetIsCaptivePortal();
+#endif  // OS_ANDROID
+  return false;
 }
 
 void DataReductionProxyConfig::UpdateConfigForTesting(
@@ -711,6 +740,7 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
     // quality prediction accuracy if there was a change in the IP address.
     network_quality_at_last_query_ = NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN;
 
+    HandleCaptivePortal();
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives
     // |secure_proxy_checker_|.

@@ -114,9 +114,14 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // Resets the behavior of WasDataReductionProxyUsed() calls.
   void ResetWasDataReductionProxyUsed();
 
+  // Sets if the captive portal probe has been blocked for the current network.
+  void SetIsCaptivePortal(bool is_captive_portal);
+
   using DataReductionProxyConfig::UpdateConfigForTesting;
 
  private:
+  bool GetIsCaptivePortal() const override;
+
   base::TickClock* tick_clock_;
 
   base::Optional<bool> was_data_reduction_proxy_used_;
@@ -130,6 +135,10 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   bool lofi_accuracy_recording_intervals_set_;
   std::vector<base::TimeDelta> lofi_accuracy_recording_intervals_;
+
+  // Set to true if the captive portal probe for the current network has been
+  // blocked.
+  bool is_captive_portal_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataReductionProxyConfig);
 };

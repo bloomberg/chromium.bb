@@ -130,6 +130,7 @@ class DataReductionProxyConfigTest : public testing::Test {
 
   void CheckSecureProxyCheckOnIPChange(
       const std::string& response,
+      bool is_captive_portal,
       int response_code,
       net::URLRequestStatus status,
       SecureProxyCheckFetchResult expected_fetch_result,
@@ -144,6 +145,7 @@ class DataReductionProxyConfigTest : public testing::Test {
         .Times(1)
         .WillRepeatedly(testing::WithArgs<1>(
             testing::Invoke(&responder, &TestResponder::ExecuteCallback)));
+    config()->SetIsCaptivePortal(is_captive_portal);
     net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     test_context_->RunUntilIdle();
     EXPECT_EQ(expected_proxies_for_http, GetConfiguredProxiesForHttp());
@@ -158,6 +160,11 @@ class DataReductionProxyConfigTest : public testing::Test {
     }
     histogram_tester.ExpectUniqueSample("DataReductionProxy.ProbeURL",
                                         expected_fetch_result, 1);
+
+    // Recorded on every IP change.
+    histogram_tester.ExpectUniqueSample(
+        "DataReductionProxy.CaptivePortalDetected.Platform", is_captive_portal,
+        1);
   }
 
   void RunUntilIdle() {
@@ -231,13 +238,31 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
 
   // IP address change triggers a secure proxy check that succeeds. Proxy
   // remains unrestricted.
-  CheckSecureProxyCheckOnIPChange("OK", net::HTTP_OK, kSuccess,
+  CheckSecureProxyCheckOnIPChange("OK", false, net::HTTP_OK, kSuccess,
                                   SUCCEEDED_PROXY_ALREADY_ENABLED,
+                                  {kHttpsProxy, kHttpProxy});
+
+  // IP address change triggers a secure proxy check that succeeds but captive
+  // portal fails. Proxy is restricted.
+  CheckSecureProxyCheckOnIPChange("OK", true, net::HTTP_OK, kSuccess,
+                                  SUCCEEDED_PROXY_ALREADY_ENABLED,
+                                  std::vector<net::ProxyServer>(1, kHttpProxy));
+
+  // IP address change triggers a secure proxy check that fails. Proxy is
+  // restricted.
+  CheckSecureProxyCheckOnIPChange("Bad", false, net::HTTP_OK, kSuccess,
+                                  FAILED_PROXY_DISABLED,
+                                  std::vector<net::ProxyServer>(1, kHttpProxy));
+
+  // IP address change triggers a secure proxy check that succeeds. Proxies
+  // are unrestricted.
+  CheckSecureProxyCheckOnIPChange("OK", false, net::HTTP_OK, kSuccess,
+                                  SUCCEEDED_PROXY_ENABLED,
                                   {kHttpsProxy, kHttpProxy});
 
   // IP address change triggers a secure proxy check that fails. Proxy is
   // restricted.
-  CheckSecureProxyCheckOnIPChange("Bad", net::HTTP_OK, kSuccess,
+  CheckSecureProxyCheckOnIPChange("Bad", true, net::HTTP_OK, kSuccess,
                                   FAILED_PROXY_DISABLED,
                                   std::vector<net::ProxyServer>(1, kHttpProxy));
 
@@ -245,20 +270,20 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   // network changing again. This should be ignored, so the proxy should remain
   // unrestricted.
   CheckSecureProxyCheckOnIPChange(
-      std::string(), net::URLFetcher::RESPONSE_CODE_INVALID,
+      std::string(), false, net::URLFetcher::RESPONSE_CODE_INVALID,
       net::URLRequestStatus(net::URLRequestStatus::FAILED,
                             net::ERR_INTERNET_DISCONNECTED),
       INTERNET_DISCONNECTED, std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // IP address change triggers a secure proxy check that fails. Proxy remains
   // restricted.
-  CheckSecureProxyCheckOnIPChange("Bad", net::HTTP_OK, kSuccess,
+  CheckSecureProxyCheckOnIPChange("Bad", false, net::HTTP_OK, kSuccess,
                                   FAILED_PROXY_ALREADY_DISABLED,
                                   std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // IP address change triggers a secure proxy check that succeeds. Proxy is
   // unrestricted.
-  CheckSecureProxyCheckOnIPChange("OK", net::HTTP_OK, kSuccess,
+  CheckSecureProxyCheckOnIPChange("OK", false, net::HTTP_OK, kSuccess,
                                   SUCCEEDED_PROXY_ENABLED,
                                   {kHttpsProxy, kHttpProxy});
 
@@ -266,7 +291,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   // network changing again. This should be ignored, so the proxy should remain
   // unrestricted.
   CheckSecureProxyCheckOnIPChange(
-      std::string(), net::URLFetcher::RESPONSE_CODE_INVALID,
+      std::string(), false, net::URLFetcher::RESPONSE_CODE_INVALID,
       net::URLRequestStatus(net::URLRequestStatus::FAILED,
                             net::ERR_INTERNET_DISCONNECTED),
       INTERNET_DISCONNECTED, {kHttpsProxy, kHttpProxy});
@@ -274,7 +299,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   // IP address change triggers a secure proxy check that fails because of a
   // redirect response, e.g. by a captive portal. Proxy is restricted.
   CheckSecureProxyCheckOnIPChange(
-      "Bad", net::HTTP_FOUND,
+      "Bad", false, net::HTTP_FOUND,
       net::URLRequestStatus(net::URLRequestStatus::CANCELED, net::ERR_ABORTED),
       FAILED_PROXY_DISABLED, std::vector<net::ProxyServer>(1, kHttpProxy));
 }
