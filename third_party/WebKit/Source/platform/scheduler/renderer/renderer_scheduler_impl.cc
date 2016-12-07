@@ -487,6 +487,8 @@ void RendererSchedulerImpl::OnRendererBackgrounded() {
 
   MainThreadOnly().renderer_backgrounded = true;
 
+  UpdatePolicy();
+
   base::TimeTicks now = tick_clock()->NowTicks();
   MainThreadOnly().foreground_main_thread_load_tracker.Pause(now);
   MainThreadOnly().background_main_thread_load_tracker.Resume(now);
@@ -512,6 +514,8 @@ void RendererSchedulerImpl::OnRendererForegrounded() {
 
   MainThreadOnly().renderer_backgrounded = false;
   MainThreadOnly().renderer_suspended = false;
+
+  UpdatePolicy();
 
   base::TimeTicks now = tick_clock()->NowTicks();
   MainThreadOnly().foreground_main_thread_load_tracker.Resume(now);
@@ -1072,6 +1076,11 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   new_policy.should_disable_throttling =
       ShouldDisableThrottlingBecauseOfAudio(now) ||
       MainThreadOnly().use_virtual_time;
+
+  // TODO(altimin): Consider adding default timer tq to background time
+  // budget pool.
+  if (MainThreadOnly().renderer_backgrounded)
+    new_policy.timer_queue_policy.time_domain_type = TimeDomainType::THROTTLED;
 
   // Tracing is done before the early out check, because it's quite possible we
   // will otherwise miss this information in traces.

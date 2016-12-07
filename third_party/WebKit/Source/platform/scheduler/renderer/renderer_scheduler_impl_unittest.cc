@@ -178,6 +178,26 @@ void AnticipationTestTask(RendererSchedulerImpl* scheduler,
   *is_anticipated_after = scheduler->IsHighPriorityWorkAnticipated();
 }
 
+// RAII helper class to enable auto advancing of time inside mock task runner.
+// Automatically disables auto-advancement when destroyed.
+class ScopedAutoAdvanceNowEnabler {
+ public:
+  ScopedAutoAdvanceNowEnabler(
+      scoped_refptr<cc::OrderedSimpleTaskRunner> task_runner)
+      : task_runner_(task_runner) {
+    task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+  }
+
+  ~ScopedAutoAdvanceNowEnabler() {
+    task_runner_->SetAutoAdvanceNowToPendingTasks(false);
+  }
+
+ private:
+  scoped_refptr<cc::OrderedSimpleTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAutoAdvanceNowEnabler);
+};
+
 };  // namespace
 
 class RendererSchedulerImplForTest : public RendererSchedulerImpl {
@@ -321,7 +341,7 @@ class RendererSchedulerImplTest : public testing::Test {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
     // RunUntilIdle won't actually run all of the SimpleTestTickClock::Advance
     // tasks unless we set AutoAdvanceNow to true :/
-    mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+    ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
 
     // Simulate a bunch of expensive tasks
     for (int i = 0; i < 10; i++) {
@@ -332,10 +352,6 @@ class RendererSchedulerImplTest : public testing::Test {
     }
 
     RunUntilIdle();
-
-    // Switch back to not auto-advancing because we want to be in control of
-    // when time advances.
-    mock_task_runner_->SetAutoAdvanceNowToPendingTasks(false);
   }
 
   enum class TouchEventPolicy {
@@ -721,7 +737,7 @@ TEST_F(RendererSchedulerImplTest, TestRepostingIdleTask) {
 }
 
 TEST_F(RendererSchedulerImplTest, TestIdleTaskExceedsDeadline) {
-  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+  ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
   int run_count = 0;
 
   // Post two UpdateClockToDeadlineIdleTestTask tasks.
@@ -1696,7 +1712,7 @@ TEST_F(RendererSchedulerImplWithMockSchedulerTest,
 
 TEST_F(RendererSchedulerImplWithMockSchedulerTest,
        OnePendingDelayedAndOneUrgentUpdatePolicy) {
-  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+  ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
 
   mock_scheduler_->ScheduleDelayedPolicyUpdate(
       clock_->NowTicks(), base::TimeDelta::FromMilliseconds(1));
@@ -1710,7 +1726,7 @@ TEST_F(RendererSchedulerImplWithMockSchedulerTest,
 
 TEST_F(RendererSchedulerImplWithMockSchedulerTest,
        OneUrgentAndOnePendingDelayedUpdatePolicy) {
-  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+  ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
 
   mock_scheduler_->EnsureUrgentPolicyUpdatePostedOnMainThread();
   mock_scheduler_->ScheduleDelayedPolicyUpdate(
@@ -1835,7 +1851,7 @@ TEST_F(RendererSchedulerImplWithMockSchedulerTest,
 
 TEST_F(RendererSchedulerImplWithMockSchedulerTest,
        EnsureUpdatePolicyNotTriggeredTooOften) {
-  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+  ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
 
   EXPECT_EQ(0, mock_scheduler_->update_policy_count_);
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
@@ -2012,7 +2028,7 @@ TEST_F(RendererSchedulerImplTest,
 }
 
 TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
-  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+  ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
   std::vector<base::TimeTicks> actual_deadlines;
   int run_count = 0;
 
@@ -2253,6 +2269,8 @@ TEST_F(RendererSchedulerImplTest, SuspendRenderer) {
 }
 
 TEST_F(RendererSchedulerImplTest, ResumeRenderer) {
+  ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
+
   // Assume that the renderer is backgrounded.
   scheduler_->OnRendererBackgrounded();
 
@@ -2342,26 +2360,35 @@ TEST_F(RendererSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
+  base::TimeTicks now;
+
   // The background signal will not immediately suspend the timer queue.
   scheduler_->OnRendererBackgrounded();
+  now += base::TimeDelta::FromMilliseconds(1100);
+  clock_->SetNowTicks(now);
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("T1"), std::string("T2")));
 
   run_order.clear();
   PostTestTasks(&run_order, "T3");
+
+  now += base::TimeDelta::FromSeconds(1);
+  clock_->SetNowTicks(now);
   RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre(std::string("T3")));
 
   // Advance the time until after the scheduled timer queue suspension.
+  now = base::TimeTicks() + suspend_timers_when_backgrounded_delay() +
+        base::TimeDelta::FromMilliseconds(10);
   run_order.clear();
-  clock_->Advance(suspend_timers_when_backgrounded_delay() +
-                  base::TimeDelta::FromMilliseconds(10));
+  clock_->SetNowTicks(now);
   RunUntilIdle();
   ASSERT_TRUE(run_order.empty());
 
   // Timer tasks should be suspended until the foregrounded signal.
   PostTestTasks(&run_order, "T4 T5");
+  now += base::TimeDelta::FromSeconds(10);
   RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
@@ -3551,6 +3578,47 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> value =
       scheduler_->AsValue(base::TimeTicks());
   EXPECT_TRUE(value);
+}
+
+namespace {
+
+void RecordingTimeTestTask(std::vector<base::TimeTicks>* run_times,
+                           base::SimpleTestTickClock* clock) {
+  run_times->push_back(clock->NowTicks());
+}
+
+}  // namespace
+
+TEST_F(RendererSchedulerImplTest,
+       DefaultTimerTasksAreThrottledWhenBackgrounded) {
+  ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
+
+  scheduler_->OnRendererBackgrounded();
+
+  std::vector<base::TimeTicks> run_times;
+
+  timer_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&RecordingTimeTestTask, &run_times, clock_.get()));
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(1100));
+
+  EXPECT_THAT(run_times, testing::ElementsAre(base::TimeTicks() +
+                                              base::TimeDelta::FromSeconds(1)));
+  run_times.clear();
+
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::Bind(&RecordingTimeTestTask, &run_times, clock_.get()),
+      base::TimeDelta::FromMilliseconds(200));
+
+  scheduler_->OnRendererForegrounded();
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(1500));
+
+  EXPECT_THAT(run_times,
+              testing::ElementsAre(base::TimeTicks() +
+                                   base::TimeDelta::FromMilliseconds(1300)));
 }
 
 }  // namespace scheduler
