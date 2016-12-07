@@ -128,7 +128,7 @@
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
-#include "components/offline_pages/stub_offline_page_model.h"
+#include "components/offline_pages/core/stub_offline_page_model.h"
 #endif
 
 using base::Time;

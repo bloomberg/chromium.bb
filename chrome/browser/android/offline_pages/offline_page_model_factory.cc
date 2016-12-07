@@ -13,8 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/offline_pages/offline_page_metadata_store_sql.h"
-#include "components/offline_pages/offline_page_model_impl.h"
+#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_model_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace offline_pages {

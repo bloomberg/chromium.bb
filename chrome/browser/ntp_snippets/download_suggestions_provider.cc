@@ -22,7 +22,7 @@
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/pref_util.h"
-#include "components/offline_pages/offline_page_model_query.h"
+#include "components/offline_pages/core/offline_page_model_query.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"

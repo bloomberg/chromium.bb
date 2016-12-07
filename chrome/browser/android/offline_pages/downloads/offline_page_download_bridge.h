@@ -11,7 +11,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "components/offline_pages/downloads/download_ui_adapter.h"
+#include "components/offline_pages/core/downloads/download_ui_adapter.h"
 
 namespace content {
 class BrowserContext;

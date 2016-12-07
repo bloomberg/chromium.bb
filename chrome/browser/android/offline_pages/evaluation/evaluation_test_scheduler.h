@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_EVALUATION_EVALUATION_TEST_SCHEDULER_H_
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_EVALUATION_EVALUATION_TEST_SCHEDULER_H_
 
-#include "components/offline_pages/background/scheduler.h"
+#include "components/offline_pages/core/background/scheduler.h"
 
 namespace offline_pages {
 

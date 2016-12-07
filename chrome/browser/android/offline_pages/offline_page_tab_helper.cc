@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/offline_pages/offline_page_request_job.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
-#include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/core/offline_page_item.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"

@@ -6,13 +6,13 @@
 
 #include <utility>
 
-#include "components/offline_pages/background/network_quality_provider_stub.h"
-#include "components/offline_pages/background/offliner_factory_stub.h"
-#include "components/offline_pages/background/offliner_policy.h"
-#include "components/offline_pages/background/request_coordinator.h"
-#include "components/offline_pages/background/request_queue.h"
-#include "components/offline_pages/background/request_queue_in_memory_store.h"
-#include "components/offline_pages/background/scheduler_stub.h"
+#include "components/offline_pages/core/background/network_quality_provider_stub.h"
+#include "components/offline_pages/core/background/offliner_factory_stub.h"
+#include "components/offline_pages/core/background/offliner_policy.h"
+#include "components/offline_pages/core/background/request_coordinator.h"
+#include "components/offline_pages/core/background/request_queue.h"
+#include "components/offline_pages/core/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/core/background/scheduler_stub.h"
 #include "content/public/browser/browser_context.h"
 
 namespace offline_pages {

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_PRERENDERING_OFFLINER_FACTORY_H_
 
 #include "base/macros.h"
-#include "components/offline_pages/background/offliner_factory.h"
+#include "components/offline_pages/core/background/offliner_factory.h"
 
 namespace content {
 class BrowserContext;

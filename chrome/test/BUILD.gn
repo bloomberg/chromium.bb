@@ -153,7 +153,7 @@ static_library("test_support") {
       "//components/guest_view/browser:test_support",
       "//components/infobars/core",
       "//components/network_time:network_time_test_support",
-      "//components/offline_pages:test_support",
+      "//components/offline_pages/core:test_support",
       "//components/sessions:test_support",
       "//components/web_resource:test_support",
       "//content/public/child",
@@ -3546,8 +3546,8 @@ test("unit_tests") {
       ":unit_tests_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
-      "//components/offline_pages:test_support",
-      "//components/offline_pages/background:test_support",
+      "//components/offline_pages/core:test_support",
+      "//components/offline_pages/core/background:test_support",
       "//v8:v8_external_startup_data_assets",
     ]
     deps -= [ "//third_party/libaddressinput" ]

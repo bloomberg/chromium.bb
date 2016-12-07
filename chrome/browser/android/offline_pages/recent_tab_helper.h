@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "components/offline_pages/downloads/download_ui_item.h"
-#include "components/offline_pages/offline_page_model.h"
-#include "components/offline_pages/snapshot_controller.h"
+#include "components/offline_pages/core/downloads/download_ui_item.h"
+#include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/snapshot_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"

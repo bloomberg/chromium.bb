@@ -47,7 +47,7 @@
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_tiles/switches.h"
-#include "components/offline_pages/offline_page_feature.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/proximity_auth/switches.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/offline_pages/background/request_coordinator.h"
+#include "components/offline_pages/core/background/request_coordinator.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

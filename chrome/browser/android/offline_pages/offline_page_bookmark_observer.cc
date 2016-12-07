@@ -6,8 +6,8 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_node.h"
-#include "components/offline_pages/client_namespace_constants.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/offline_page_model.h"
 #include "url/gurl.h"
 
 namespace offline_pages {

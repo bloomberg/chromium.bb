@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/callback.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/core/offline_page_model.h"
 
 class GURL;
 

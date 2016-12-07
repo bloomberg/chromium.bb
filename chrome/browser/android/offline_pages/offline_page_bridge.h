@@ -12,8 +12,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "components/offline_pages/offline_page_item.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/core/offline_page_item.h"
+#include "components/offline_pages/core/offline_page_model.h"
 
 namespace content {
 class BrowserContext;

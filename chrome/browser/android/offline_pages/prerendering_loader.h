@@ -9,8 +9,8 @@
 
 #include "base/callback.h"
 #include "chrome/browser/android/offline_pages/prerender_adapter.h"
-#include "components/offline_pages/background/offliner.h"
-#include "components/offline_pages/snapshot_controller.h"
+#include "components/offline_pages/core/background/offliner.h"
+#include "components/offline_pages/core/snapshot_controller.h"
 
 class GURL;
 

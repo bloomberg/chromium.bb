@@ -14,7 +14,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/offline_pages/client_namespace_constants.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "net/base/network_change_notifier.h"
 

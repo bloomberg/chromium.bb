@@ -7,10 +7,10 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "components/offline_pages/background/request_coordinator.h"
-#include "components/offline_pages/background/save_page_request.h"
-#include "components/offline_pages/offline_page_model.h"
-#include "components/offline_pages/offline_store_types.h"
+#include "components/offline_pages/core/background/request_coordinator.h"
+#include "components/offline_pages/core/background/save_page_request.h"
+#include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/offline_store_types.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace offline_pages {

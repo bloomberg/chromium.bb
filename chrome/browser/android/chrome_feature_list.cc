@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/ntp_snippets/features.h"
-#include "components/offline_pages/offline_page_feature.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/common/content_features.h"
 #include "jni/ChromeFeatureList_jni.h"

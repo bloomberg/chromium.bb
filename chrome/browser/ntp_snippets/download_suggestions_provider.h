@@ -18,7 +18,7 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/download_manager.h"
 
 class PrefRegistrySimple;

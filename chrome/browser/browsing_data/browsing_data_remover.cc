@@ -96,8 +96,8 @@
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/precache/precache_manager_factory.h"
-#include "components/offline_pages/offline_page_feature.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/core/offline_page_feature.h"
+#include "components/offline_pages/core/offline_page_model.h"
 #include "components/precache/content/precache_manager.h"
 #endif
 

@@ -8,7 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
-#include "components/offline_pages/offline_page_types.h"
+#include "components/offline_pages/core/offline_page_types.h"
 
 class GURL;
 

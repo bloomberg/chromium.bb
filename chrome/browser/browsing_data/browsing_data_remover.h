@@ -26,7 +26,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/core/offline_page_model.h"
 #include "components/prefs/pref_member.h"
 #include "components/search_engines/template_url_service.h"
 #include "media/media_features.h"

@@ -29,8 +29,8 @@
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "base/guid.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
-#include "components/offline_pages/background/request_coordinator.h"
-#include "components/offline_pages/client_namespace_constants.h"
+#include "components/offline_pages/core/background/request_coordinator.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 using content::BrowserContext;

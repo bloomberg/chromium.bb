@@ -9,9 +9,9 @@
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "components/offline_pages/background/device_conditions.h"
-#include "components/offline_pages/background/request_coordinator.h"
-#include "components/offline_pages/offline_event_logger.h"
+#include "components/offline_pages/core/background/device_conditions.h"
+#include "components/offline_pages/core/background/request_coordinator.h"
+#include "components/offline_pages/core/offline_event_logger.h"
 #include "net/base/network_change_notifier.h"
 
 namespace offline_pages {

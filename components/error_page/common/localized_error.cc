@@ -37,7 +37,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "components/offline_pages/offline_page_feature.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #endif
 
 namespace error_page {

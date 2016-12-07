@@ -14,7 +14,7 @@
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
 #include "components/ntp_snippets/offline_pages/offline_pages_test_utils.h"
-#include "components/offline_pages/client_namespace_constants.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"

@@ -9,10 +9,10 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "components/offline_pages/background/request_coordinator.h"
-#include "components/offline_pages/background/request_notifier.h"
-#include "components/offline_pages/offline_event_logger.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/core/background/request_coordinator.h"
+#include "components/offline_pages/core/background/request_notifier.h"
+#include "components/offline_pages/core/offline_event_logger.h"
+#include "components/offline_pages/core/offline_page_model.h"
 
 namespace content {
 class BrowserContext;

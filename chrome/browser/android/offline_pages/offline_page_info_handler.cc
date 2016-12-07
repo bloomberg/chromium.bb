@@ -5,7 +5,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_info_handler.h"
 
 #include "base/strings/string_util.h"
-#include "components/offline_pages/request_header/offline_page_header.h"
+#include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "components/sessions/content/content_serialized_navigation_driver.h"
 #include "content/public/browser/navigation_entry.h"
 

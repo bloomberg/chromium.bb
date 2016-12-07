@@ -59,7 +59,7 @@
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/core/offline_page_model.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 
 using content::DownloadManager;

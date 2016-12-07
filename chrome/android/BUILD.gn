@@ -245,7 +245,7 @@ android_library("chrome_java") {
       "//components/infobars/core:infobar_enums_java",
       "//components/ntp_snippets:ntp_snippets_java_enums_srcjar",
       "//components/ntp_tiles:ntp_tiles_enums_java",
-      "//components/offline_pages:offline_page_model_enums_java",
+      "//components/offline_pages/core:offline_page_model_enums_java",
       "//components/omnibox/browser:autocomplete_match_javagen",
       "//components/omnibox/browser:autocomplete_match_type_javagen",
       "//components/security_state/core:security_state_enums_java",

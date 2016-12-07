@@ -9,8 +9,8 @@
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "components/offline_pages/background/device_conditions.h"
-#include "components/offline_pages/background/request_coordinator.h"
+#include "components/offline_pages/core/background/device_conditions.h"
+#include "components/offline_pages/core/background/request_coordinator.h"
 #include "jni/BackgroundSchedulerBridge_jni.h"
 
 using base::android::JavaParamRef;

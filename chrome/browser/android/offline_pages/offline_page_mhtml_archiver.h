@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/offline_pages/offline_page_archiver.h"
+#include "components/offline_pages/core/offline_page_archiver.h"
 
 namespace base {
 class FilePath;
