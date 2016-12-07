@@ -2308,9 +2308,14 @@ blink::WebWidget* RenderWidget::GetWebWidget() const {
 
 blink::WebInputMethodController* RenderWidget::GetInputMethodController()
     const {
-  // TODO(ekaramad): Remove this CHECK when GetWebWidget() is
-  // always a WebFrameWidget.
-  CHECK(GetWebWidget()->isWebFrameWidget());
+  if (!GetWebWidget()->isWebFrameWidget()) {
+    // TODO(ekaramad): We should not get here in response to IME IPC or updates
+    // when the RenderWidget is swapped out. We should top sending IPCs from the
+    // browser side (https://crbug.com/669219).
+    // If there is no WebFrameWidget, then there will be no
+    // InputMethodControllers for a WebLocalFrame.
+    return nullptr;
+  }
   return static_cast<blink::WebFrameWidget*>(GetWebWidget())
       ->getActiveWebInputMethodController();
 }
