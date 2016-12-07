@@ -38,6 +38,7 @@
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mac_util.h"
 #include "net/cert/test_keychain_search_list_mac.h"
 #endif
 
@@ -120,6 +121,16 @@ bool SupportsDetectingKnownRoots() {
   return false;
 #endif
   return true;
+}
+
+bool WeakKeysAreInvalid() {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Starting with Mac OS 10.12, certs with weak keys are treated as
+  // (recoverable) invalid certificate errors.
+  return base::mac::IsAtLeastOS10_12();
+#else
+  return false;
+#endif
 }
 
 // Template helper to load a series of certificate files into a CertificateList.
@@ -407,7 +418,7 @@ TEST_F(CertVerifyProcTest, RejectWeakKeys) {
         EXPECT_NE(OK, error);
         EXPECT_EQ(CERT_STATUS_WEAK_KEY,
                   verify_result.cert_status & CERT_STATUS_WEAK_KEY);
-        EXPECT_NE(CERT_STATUS_INVALID,
+        EXPECT_EQ(WeakKeysAreInvalid() ? CERT_STATUS_INVALID : 0,
                   verify_result.cert_status & CERT_STATUS_INVALID);
       } else {
         EXPECT_THAT(error, IsOk());
