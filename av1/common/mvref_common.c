@@ -570,7 +570,8 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
 #if CONFIG_REF_MV
       if (candidate == NULL) continue;
-      if ((mi_row % 8) + mv_ref->row >= 8 || (mi_col % 8) + mv_ref->col >= 8)
+      if ((mi_row % MAX_MIB_SIZE) + mv_ref->row >= MAX_MIB_SIZE ||
+          (mi_col % MAX_MIB_SIZE) + mv_ref->col >= MAX_MIB_SIZE)
         continue;
 #endif
       different_ref_found = 1;
@@ -621,7 +622,8 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
             &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
 #if CONFIG_REF_MV
         if (candidate == NULL) continue;
-        if ((mi_row % 8) + mv_ref->row >= 8 || (mi_col % 8) + mv_ref->col >= 8)
+        if ((mi_row % MAX_MIB_SIZE) + mv_ref->row >= MAX_MIB_SIZE ||
+            (mi_col % MAX_MIB_SIZE) + mv_ref->col >= MAX_MIB_SIZE)
           continue;
 #endif
 
