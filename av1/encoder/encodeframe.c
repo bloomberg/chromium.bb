@@ -1063,7 +1063,8 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
           (i == 0)
               ? x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].this_mv
               : x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].comp_mv;
-      clamp_mv_ref(&this_mv.as_mv, xd->n8_w << 3, xd->n8_h << 3, xd);
+      clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                   xd->n8_h << MI_SIZE_LOG2, xd);
       x->mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
       mbmi->pred_mv[i] = this_mv;
       mi->mbmi.pred_mv[i] = this_mv;
@@ -1260,7 +1261,8 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
           (i == 0)
               ? x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].this_mv
               : x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].comp_mv;
-      clamp_mv_ref(&this_mv.as_mv, xd->n8_w << 3, xd->n8_h << 3, xd);
+      clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                   xd->n8_h << MI_SIZE_LOG2, xd);
       lower_mv_precision(&this_mv.as_mv, cm->allow_high_precision_mv);
       x->mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
       mbmi->pred_mv[i] = this_mv;
@@ -5546,9 +5548,10 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
                        pd->pre[0].stride, pd->dst.buf,
                        ((mi_col * MI_SIZE) >> pd->subsampling_x),
                        ((mi_row * MI_SIZE) >> pd->subsampling_y),
-                       xd->n8_w * (8 >> pd->subsampling_x),
-                       xd->n8_h * (8 >> pd->subsampling_y), pd->dst.stride,
-                       pd->subsampling_x, pd->subsampling_y, 16, 16, 0);
+                       xd->n8_w * (MI_SIZE >> pd->subsampling_x),
+                       xd->n8_h * (MI_SIZE >> pd->subsampling_y),
+                       pd->dst.stride, pd->subsampling_x, pd->subsampling_y, 16,
+                       16, 0);
       }
     } else {
 #endif  // CONFIG_WARPED_MOTION

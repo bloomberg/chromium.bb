@@ -780,8 +780,8 @@ static INLINE void set_txfm_ctxs(TX_SIZE tx_size, int n8_w, int n8_h,
   uint8_t bh = tx_size_high[tx_size];
 
   if (skip) {
-    bw = n8_w * 8;
-    bh = n8_h * 8;
+    bw = n8_w * MI_SIZE;
+    bh = n8_h * MI_SIZE;
   }
 
   set_txfm_ctx(xd->above_txfm_context, bw, n8_w);

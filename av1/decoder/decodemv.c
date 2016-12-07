@@ -1749,7 +1749,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
             (ref == 0)
                 ? xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx].this_mv
                 : xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx].comp_mv;
-        clamp_mv_ref(&ref_mv[ref].as_mv, xd->n8_w << 3, xd->n8_h << 3, xd);
+        clamp_mv_ref(&ref_mv[ref].as_mv, xd->n8_w << MI_SIZE_LOG2,
+                     xd->n8_h << MI_SIZE_LOG2, xd);
       }
 #endif
       nearestmv[ref] = ref_mv[ref];

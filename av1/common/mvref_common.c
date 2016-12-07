@@ -477,15 +477,16 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   if (rf[1] > NONE) {
     for (idx = 0; idx < *refmv_count; ++idx) {
-      clamp_mv_ref(&ref_mv_stack[idx].this_mv.as_mv, xd->n8_w << 3,
-                   xd->n8_h << 3, xd);
-      clamp_mv_ref(&ref_mv_stack[idx].comp_mv.as_mv, xd->n8_w << 3,
-                   xd->n8_h << 3, xd);
+      clamp_mv_ref(&ref_mv_stack[idx].this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                   xd->n8_h << MI_SIZE_LOG2, xd);
+      clamp_mv_ref(&ref_mv_stack[idx].comp_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                   xd->n8_h << MI_SIZE_LOG2, xd);
     }
   } else {
     for (idx = 0; idx < AOMMIN(MAX_MV_REF_CANDIDATES, *refmv_count); ++idx) {
       mv_ref_list[idx].as_int = ref_mv_stack[idx].this_mv.as_int;
-      clamp_mv_ref(&mv_ref_list[idx].as_mv, xd->n8_w << 3, xd->n8_h << 3, xd);
+      clamp_mv_ref(&mv_ref_list[idx].as_mv, xd->n8_w << MI_SIZE_LOG2,
+                   xd->n8_h << MI_SIZE_LOG2, xd);
     }
   }
 }
@@ -877,8 +878,8 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 
   for (idx = 0; idx < *ref_mv_count; ++idx)
-    clamp_mv_ref(&ref_mv_stack[idx].this_mv.as_mv, xd->n8_w << 3, xd->n8_h << 3,
-                 xd);
+    clamp_mv_ref(&ref_mv_stack[idx].this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                 xd->n8_h << MI_SIZE_LOG2, xd);
 
   for (idx = 0; idx < AOMMIN(MAX_MV_REF_CANDIDATES, *ref_mv_count); ++idx)
     mv_list[idx].as_int = ref_mv_stack[idx].this_mv.as_int;

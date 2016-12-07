@@ -1595,9 +1595,10 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                        pd->pre[0].stride, pd->dst.buf,
                        ((mi_col * MI_SIZE) >> pd->subsampling_x),
                        ((mi_row * MI_SIZE) >> pd->subsampling_y),
-                       xd->n8_w * (8 >> pd->subsampling_x),
-                       xd->n8_h * (8 >> pd->subsampling_y), pd->dst.stride,
-                       pd->subsampling_x, pd->subsampling_y, 16, 16, 0);
+                       xd->n8_w * (MI_SIZE >> pd->subsampling_x),
+                       xd->n8_h * (MI_SIZE >> pd->subsampling_y),
+                       pd->dst.stride, pd->subsampling_x, pd->subsampling_y, 16,
+                       16, 0);
       }
     } else {
 #endif  // CONFIG_WARPED_MOTION

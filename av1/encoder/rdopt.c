@@ -7918,9 +7918,10 @@ static int64_t handle_inter_mode(
                          pd->pre[0].stride, pd->dst.buf,
                          (mi_col * MI_SIZE) >> pd->subsampling_x,
                          (mi_row * MI_SIZE) >> pd->subsampling_y,
-                         (xd->n8_w * 8) >> pd->subsampling_x,
-                         (xd->n8_h * 8) >> pd->subsampling_y, pd->dst.stride,
-                         pd->subsampling_x, pd->subsampling_y, 16, 16, 0);
+                         (xd->n8_w * MI_SIZE) >> pd->subsampling_x,
+                         (xd->n8_h * MI_SIZE) >> pd->subsampling_y,
+                         pd->dst.stride, pd->subsampling_x, pd->subsampling_y,
+                         16, 16, 0);
         }
 
         model_rd_for_sb(cpi, bsize, x, xd, 0, MAX_MB_PLANE - 1, &tmp_rate,
@@ -9298,7 +9299,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           int_mv this_mv =
               (ref == 0) ? mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv
                          : mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv;
-          clamp_mv_ref(&this_mv.as_mv, xd->n8_w << 3, xd->n8_h << 3, xd);
+          clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                       xd->n8_h << MI_SIZE_LOG2, xd);
           mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0] = this_mv;
         }
       }
@@ -9393,7 +9395,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                           .this_mv
                     : mbmi_ext->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx]
                           .comp_mv;
-            clamp_mv_ref(&this_mv.as_mv, xd->n8_w << 3, xd->n8_h << 3, xd);
+            clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                         xd->n8_h << MI_SIZE_LOG2, xd);
             mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0] = this_mv;
           }
 
@@ -9736,9 +9739,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                          pd->pre[0].stride, pd->dst.buf,
                          ((mi_col * MI_SIZE) >> pd->subsampling_x),
                          ((mi_row * MI_SIZE) >> pd->subsampling_y),
-                         xd->n8_w * (8 >> pd->subsampling_x),
-                         xd->n8_h * (8 >> pd->subsampling_y), pd->dst.stride,
-                         pd->subsampling_x, pd->subsampling_y, 16, 16, 0);
+                         xd->n8_w * (MI_SIZE >> pd->subsampling_x),
+                         xd->n8_h * (MI_SIZE >> pd->subsampling_y),
+                         pd->dst.stride, pd->subsampling_x, pd->subsampling_y,
+                         16, 16, 0);
         }
       } else {
 #endif  // CONFIG_WARPED_MOTION
@@ -11172,8 +11176,8 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
                                       int left_stride) {
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   int row, col, i;
-  const int bw = 8 * xd->n8_w;
-  const int bh = 8 * xd->n8_h;
+  const int bw = xd->n8_w << MI_SIZE_LOG2;
+  const int bh = xd->n8_h << MI_SIZE_LOG2;
   int32_t *mask_buf = x->mask_buf;
   int32_t *wsrc_buf = x->wsrc_buf;
   const int wsrc_stride = bw;

@@ -484,7 +484,7 @@ typedef struct macroblockd {
 #endif
 #endif
 
-  // dimension in the unit of 8x8 block of the current block
+  // block dimension in the unit of mode_info.
   uint8_t n8_w, n8_h;
 
 #if CONFIG_REF_MV
