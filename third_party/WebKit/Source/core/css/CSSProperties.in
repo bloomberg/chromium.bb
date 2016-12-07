@@ -291,7 +291,8 @@ offset-anchor runtime_flag=CSSOffsetPositionAnchor, interpolable, converter=conv
 offset-distance interpolable, converter=convertLength
 offset-path converter=convertPathOrNone
 offset-position runtime_flag=CSSOffsetPositionAnchor, interpolable, converter=convertPositionOrAuto
-offset-rotation interpolable, converter=convertOffsetRotation
+offset-rotate runtime_flag=CSSOffsetRotate, interpolable, converter=convertOffsetRotation
+offset-rotation runtime_flag=CSSOffsetRotation, interpolable, converter=convertOffsetRotation
 opacity interpolable, type_name=float
 order type_name=int
 orphans interpolable, inherited, type_name=short

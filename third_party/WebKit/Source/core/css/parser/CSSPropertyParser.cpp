@@ -3659,6 +3659,7 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
               unresolvedProperty == CSSPropertyAliasMotionPath);
     case CSSPropertyOffsetDistance:
       return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeAll);
+    case CSSPropertyOffsetRotate:
     case CSSPropertyOffsetRotation:
       return consumeOffsetRotation(m_range);
     case CSSPropertyWebkitTextEmphasisStyle:

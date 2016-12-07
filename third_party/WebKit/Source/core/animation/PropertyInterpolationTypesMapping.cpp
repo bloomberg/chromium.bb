@@ -209,6 +209,7 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(
         applicableTypes->append(
             makeUnique<CSSClipInterpolationType>(usedProperty));
         break;
+      case CSSPropertyOffsetRotate:
       case CSSPropertyOffsetRotation:
         applicableTypes->append(
             makeUnique<CSSOffsetRotationInterpolationType>(usedProperty));

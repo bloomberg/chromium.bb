@@ -206,6 +206,7 @@ object-fit: fill
 object-position: 50% 50%
 offset-distance: 0px
 offset-path: none
+offset-rotate: auto 0deg
 offset-rotation: auto 0deg
 opacity: 1
 order: 0

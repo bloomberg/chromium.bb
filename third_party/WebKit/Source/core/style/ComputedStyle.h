@@ -1462,6 +1462,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                    offsetPosition);
   }
 
+  // offset-rotate
+  static StyleOffsetRotation initialOffsetRotate() {
+    return initialOffsetRotation();
+  }
+  const StyleOffsetRotation& offsetRotate() const { return offsetRotation(); }
+  void setOffsetRotate(const StyleOffsetRotation& offsetRotate) {
+    setOffsetRotation(offsetRotate);
+  }
+
   // offset-rotation
   static StyleOffsetRotation initialOffsetRotation() {
     return StyleOffsetRotation(0, OffsetRotationAuto);

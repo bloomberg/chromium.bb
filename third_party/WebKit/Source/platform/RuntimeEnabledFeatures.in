@@ -67,6 +67,8 @@ CSSIndependentTransformProperties status=experimental
 CSSMaskSourceType status=experimental
 CSSOMSmoothScroll status=experimental
 CSSOffsetPositionAnchor status=experimental
+CSSOffsetRotate status=stable
+CSSOffsetRotation status=stable
 CSSPaintAPI status=experimental, depends_on=CSSTypedOM, depends_on=Worklet
 CSSSnapSize status=experimental
 CSSStickyPosition status=stable

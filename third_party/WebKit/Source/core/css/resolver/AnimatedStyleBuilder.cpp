@@ -762,6 +762,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property,
     case CSSPropertyOffsetPosition:
       style->setOffsetPosition(animatableValueToLengthPoint(value, state));
       return;
+    case CSSPropertyOffsetRotate:
     case CSSPropertyOffsetRotation:
       style->setOffsetRotation(StyleOffsetRotation(
           toAnimatableDoubleAndBool(value)->toDouble(),

@@ -1050,7 +1050,9 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(
       return 540;
     case CSSPropertyOffsetPath:
       return 541;
+    case CSSPropertyOffsetRotate:
     case CSSPropertyOffsetRotation:
+      // TODO(ericwilligers): Distinct use counter for CSSPropertyOffsetRotate.
       return 542;
     case CSSPropertyOffset:
       return 543;

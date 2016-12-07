@@ -620,6 +620,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(
       return createFromLength(style.offsetDistance(), style);
     case CSSPropertyOffsetPosition:
       return createFromLengthPoint(style.offsetPosition(), style);
+    case CSSPropertyOffsetRotate:
     case CSSPropertyOffsetRotation:
       return createFromDoubleAndBool(
           style.offsetRotation().angle,
