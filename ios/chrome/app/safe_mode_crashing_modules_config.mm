@@ -32,7 +32,7 @@ NSString* const kModuleFriendlyNameKey = @"ModuleFriendlyName";
   self = [super init];
   if (self) {
     NSString* configPath =
-        [[NSBundle mainBundle] pathForResource:@"CrashingModules"
+        [[NSBundle mainBundle] pathForResource:@"SafeModeCrashingModules"
                                         ofType:@"plist"];
     _configuration.reset(
         [[NSDictionary alloc] initWithContentsOfFile:configPath]);
