@@ -7676,9 +7676,7 @@ DEFINE_TRACE(WebGLRenderingContextBase) {
 }
 
 DEFINE_TRACE_WRAPPERS(WebGLRenderingContextBase) {
-  if (isContextLost()) {
-    return;
-  }
+  visitor->traceWrappers(m_contextGroup);
   visitor->traceWrappers(m_boundArrayBuffer);
   visitor->traceWrappers(m_renderbufferBinding);
   visitor->traceWrappers(m_framebufferBinding);
