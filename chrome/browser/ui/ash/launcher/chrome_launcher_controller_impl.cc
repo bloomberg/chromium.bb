@@ -28,10 +28,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -67,7 +65,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -79,14 +76,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_util.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_resource.h"
-#include "extensions/common/manifest_handlers/icons_handler.h"
-#include "extensions/common/url_pattern.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -97,7 +87,6 @@
 #include "ui/wm/core/window_animations.h"
 
 using extensions::Extension;
-using extensions::UnloadedExtensionInfo;
 using extension_misc::kGmailAppId;
 using content::WebContents;
 
@@ -487,19 +476,6 @@ void ChromeLauncherControllerImpl::ActivateApp(const std::string& app_id,
     LaunchApp(app_id, source, event_flags);
 }
 
-extensions::LaunchType ChromeLauncherControllerImpl::GetLaunchType(
-    ash::ShelfID id) {
-  const Extension* extension =
-      GetExtensionForAppID(GetAppIDForShelfID(id), profile());
-
-  // An extension can be unloaded/updated/unavailable at any time.
-  if (!extension)
-    return extensions::LAUNCH_TYPE_DEFAULT;
-
-  return extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile()),
-                                   extension);
-}
-
 void ChromeLauncherControllerImpl::SetLauncherItemImage(
     ash::ShelfID shelf_id,
     const gfx::ImageSkia& image) {
@@ -509,16 +485,6 @@ void ChromeLauncherControllerImpl::SetLauncherItemImage(
     new_item.image = image;
     model_->Set(model_->ItemIndexByID(shelf_id), new_item);
   }
-}
-
-void ChromeLauncherControllerImpl::SetLaunchType(
-    ash::ShelfID id,
-    extensions::LaunchType launch_type) {
-  LauncherItemController* controller = GetLauncherItemController(id);
-  if (!controller)
-    return;
-
-  extensions::SetLaunchType(profile(), controller->app_id(), launch_type);
 }
 
 void ChromeLauncherControllerImpl::UpdateAppState(
@@ -1304,6 +1270,7 @@ ash::ShelfID ChromeLauncherControllerImpl::InsertAppLauncherItem(
 
   ash::ShelfItem item;
   item.type = shelf_item_type;
+  item.app_id = app_id;
   item.image = extensions::util::GetDefaultAppIcon();
 
   ash::ShelfItemStatus new_state = GetAppState(app_id);

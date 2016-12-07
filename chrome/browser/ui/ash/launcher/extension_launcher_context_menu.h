@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
+#include "extensions/common/constants.h"
 
 class ChromeLauncherControllerImpl;
 
@@ -21,8 +22,7 @@ namespace extensions {
 class ContextMenuMatcher;
 }
 
-// Class for context menu which is shown for a regular extension item in the
-// shelf.
+// Context menu shown for an extension item in the shelf.
 class ExtensionLauncherContextMenu : public LauncherContextMenu {
  public:
   ExtensionLauncherContextMenu(ChromeLauncherControllerImpl* controller,
@@ -39,6 +39,10 @@ class ExtensionLauncherContextMenu : public LauncherContextMenu {
 
  private:
   void Init();
+
+  // Helpers to get and set the launch type for the extension item.
+  extensions::LaunchType GetLaunchType() const;
+  void SetLaunchType(extensions::LaunchType launch_type);
 
   std::unique_ptr<extensions::ContextMenuMatcher> extension_items_;
 

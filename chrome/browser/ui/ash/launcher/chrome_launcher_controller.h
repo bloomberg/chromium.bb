@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
-#include "extensions/common/constants.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 class AccountId;
@@ -156,16 +155,9 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
                            ash::LaunchSource source,
                            int event_flags) = 0;
 
-  // Returns the launch type of app for the specified id.
-  virtual extensions::LaunchType GetLaunchType(ash::ShelfID id) = 0;
-
   // Set the image for a specific shelf item (e.g. when set by the app).
   virtual void SetLauncherItemImage(ash::ShelfID shelf_id,
                                     const gfx::ImageSkia& image) = 0;
-
-  // Updates the launch type of the app for the specified id to |launch_type|.
-  virtual void SetLaunchType(ash::ShelfID id,
-                             extensions::LaunchType launch_type) = 0;
 
   // Notify the controller that the state of an non platform app's tabs
   // have changed,

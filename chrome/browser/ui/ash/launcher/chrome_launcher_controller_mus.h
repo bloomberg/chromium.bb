@@ -44,11 +44,8 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   void ActivateApp(const std::string& app_id,
                    ash::LaunchSource source,
                    int event_flags) override;
-  extensions::LaunchType GetLaunchType(ash::ShelfID id) override;
   void SetLauncherItemImage(ash::ShelfID shelf_id,
                             const gfx::ImageSkia& image) override;
-  void SetLaunchType(ash::ShelfID id,
-                     extensions::LaunchType launch_type) override;
   void UpdateAppState(content::WebContents* contents,
                       AppState app_state) override;
   ash::ShelfID GetShelfIDForWebContents(

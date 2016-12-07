@@ -9,14 +9,17 @@
 #include "base/bind.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
+#include "extensions/browser/extension_prefs.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -123,7 +126,7 @@ base::string16 ExtensionLauncherContextMenu::GetLabelForCommandId(
   if (command_id == MENU_OPEN_NEW) {
     if (controller()->IsPlatformApp(item().id))
       return l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
-    switch (controller()->GetLaunchType(item().id)) {
+    switch (GetLaunchType()) {
       case extensions::LAUNCH_TYPE_PINNED:
       case extensions::LAUNCH_TYPE_REGULAR:
         return l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB);
@@ -142,17 +145,13 @@ base::string16 ExtensionLauncherContextMenu::GetLabelForCommandId(
 bool ExtensionLauncherContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case LAUNCH_TYPE_PINNED_TAB:
-      return controller()->GetLaunchType(item().id) ==
-             extensions::LAUNCH_TYPE_PINNED;
+      return GetLaunchType() == extensions::LAUNCH_TYPE_PINNED;
     case LAUNCH_TYPE_REGULAR_TAB:
-      return controller()->GetLaunchType(item().id) ==
-             extensions::LAUNCH_TYPE_REGULAR;
+      return GetLaunchType() == extensions::LAUNCH_TYPE_REGULAR;
     case LAUNCH_TYPE_WINDOW:
-      return controller()->GetLaunchType(item().id) ==
-             extensions::LAUNCH_TYPE_WINDOW;
+      return GetLaunchType() == extensions::LAUNCH_TYPE_WINDOW;
     case LAUNCH_TYPE_FULLSCREEN:
-      return controller()->GetLaunchType(item().id) ==
-             extensions::LAUNCH_TYPE_FULLSCREEN;
+      return GetLaunchType() == extensions::LAUNCH_TYPE_FULLSCREEN;
     default:
       if (command_id < MENU_ITEM_COUNT)
         return LauncherContextMenu::IsCommandIdChecked(command_id);
@@ -187,27 +186,25 @@ void ExtensionLauncherContextMenu::ExecuteCommand(int command_id,
     return;
   switch (static_cast<MenuItem>(command_id)) {
     case LAUNCH_TYPE_PINNED_TAB:
-      controller()->SetLaunchType(item().id, extensions::LAUNCH_TYPE_PINNED);
+      SetLaunchType(extensions::LAUNCH_TYPE_PINNED);
       break;
     case LAUNCH_TYPE_REGULAR_TAB:
-      controller()->SetLaunchType(item().id, extensions::LAUNCH_TYPE_REGULAR);
+      SetLaunchType(extensions::LAUNCH_TYPE_REGULAR);
       break;
     case LAUNCH_TYPE_WINDOW: {
       extensions::LaunchType launch_type = extensions::LAUNCH_TYPE_WINDOW;
       // With bookmark apps enabled, hosted apps can only toggle between
       // LAUNCH_WINDOW and LAUNCH_REGULAR.
       if (extensions::util::IsNewBookmarkAppsEnabled()) {
-        launch_type = controller()->GetLaunchType(item().id) ==
-                              extensions::LAUNCH_TYPE_WINDOW
+        launch_type = GetLaunchType() == extensions::LAUNCH_TYPE_WINDOW
                           ? extensions::LAUNCH_TYPE_REGULAR
                           : extensions::LAUNCH_TYPE_WINDOW;
       }
-      controller()->SetLaunchType(item().id, launch_type);
+      SetLaunchType(launch_type);
       break;
     }
     case LAUNCH_TYPE_FULLSCREEN:
-      controller()->SetLaunchType(item().id,
-                                  extensions::LAUNCH_TYPE_FULLSCREEN);
+      SetLaunchType(extensions::LAUNCH_TYPE_FULLSCREEN);
       break;
     case MENU_NEW_WINDOW:
       chrome::NewEmptyWindow(controller()->profile());
@@ -221,4 +218,20 @@ void ExtensionLauncherContextMenu::ExecuteCommand(int command_id,
                                          content::ContextMenuParams());
       }
   }
+}
+
+extensions::LaunchType ExtensionLauncherContextMenu::GetLaunchType() const {
+  const extensions::Extension* extension =
+      GetExtensionForAppID(item().app_id, controller()->profile());
+
+  // An extension can be unloaded/updated/unavailable at any time.
+  if (!extension)
+    return extensions::LAUNCH_TYPE_DEFAULT;
+
+  return extensions::GetLaunchType(
+      extensions::ExtensionPrefs::Get(controller()->profile()), extension);
+}
+
+void ExtensionLauncherContextMenu::SetLaunchType(extensions::LaunchType type) {
+  extensions::SetLaunchType(controller()->profile(), item().app_id, type);
 }

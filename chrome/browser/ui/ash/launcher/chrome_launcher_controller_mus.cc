@@ -149,21 +149,9 @@ void ChromeLauncherControllerMus::ActivateApp(const std::string& app_id,
   NOTIMPLEMENTED();
 }
 
-extensions::LaunchType ChromeLauncherControllerMus::GetLaunchType(
-    ash::ShelfID id) {
-  NOTIMPLEMENTED();
-  return extensions::LAUNCH_TYPE_INVALID;
-}
-
 void ChromeLauncherControllerMus::SetLauncherItemImage(
     ash::ShelfID shelf_id,
     const gfx::ImageSkia& image) {
-  NOTIMPLEMENTED();
-}
-
-void ChromeLauncherControllerMus::SetLaunchType(
-    ash::ShelfID id,
-    extensions::LaunchType launch_type) {
   NOTIMPLEMENTED();
 }
 
