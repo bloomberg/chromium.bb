@@ -53,7 +53,8 @@ CSSVariableData* CSSVariableResolver::valueForCustomProperty(
     if (m_inheritedVariables)
       variableData = m_inheritedVariables->getVariable(name);
   } else {
-    variableData = m_nonInheritedVariables->getVariable(name);
+    if (m_nonInheritedVariables)
+      variableData = m_nonInheritedVariables->getVariable(name);
   }
   if (!variableData)
     return registration ? registration->initialVariableData() : nullptr;
