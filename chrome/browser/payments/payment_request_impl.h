@@ -14,8 +14,6 @@ class WebContents;
 
 namespace payments {
 
-class PaymentRequestDialog;
-
 class PaymentRequestImpl : payments::mojom::PaymentRequest,
                            public base::RefCounted<PaymentRequestImpl> {
  public:
@@ -34,7 +32,10 @@ class PaymentRequestImpl : payments::mojom::PaymentRequest,
   void Complete(payments::mojom::PaymentComplete result) override {}
   void CanMakePayment() override {}
 
+  void Cancel();
   void OnError();
+
+  content::WebContents* web_contents() { return web_contents_; }
 
  private:
   friend class base::RefCounted<PaymentRequestImpl>;
@@ -42,7 +43,8 @@ class PaymentRequestImpl : payments::mojom::PaymentRequest,
 
   content::WebContents* web_contents_;
   mojo::Binding<payments::mojom::PaymentRequest> binding_;
-  PaymentRequestDialog* dialog_;
+  payments::mojom::PaymentRequestClientPtr client_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestImpl);
 };
 

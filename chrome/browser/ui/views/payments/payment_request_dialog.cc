@@ -3,15 +3,25 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/payments/ui/payment_request_dialog.h"
+#include "chrome/browser/payments/payment_request_impl.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/views/layout/fill_layout.h"
 
+namespace chrome {
+
+void ShowPaymentRequestDialog(payments::PaymentRequestImpl* impl) {
+    constrained_window::ShowWebModalDialogViews(
+        new payments::PaymentRequestDialog(impl), impl->web_contents());
+}
+
+}
+
 namespace payments {
 
-PaymentRequestDialog::PaymentRequestDialog(
-    payments::mojom::PaymentRequestClientPtr client)
-    : client_(std::move(client)),
+PaymentRequestDialog::PaymentRequestDialog(PaymentRequestImpl* impl)
+    : impl_(impl),
       label_(new views::Label(base::ASCIIToUTF16("Payments dialog"))) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   SetLayoutManager(new views::FillLayout());
@@ -32,7 +42,7 @@ gfx::Size PaymentRequestDialog::GetPreferredSize() const {
 
 bool PaymentRequestDialog::Cancel() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  client_->OnError(payments::mojom::PaymentErrorReason::USER_CANCEL);
+  impl_->Cancel();
   return true;
 }
 

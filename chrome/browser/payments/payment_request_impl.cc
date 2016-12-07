@@ -7,10 +7,7 @@
 #include <map>
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/payments/ui/payment_request_dialog.h"
-#include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -51,8 +48,7 @@ PaymentRequestImpl::PaymentRequestImpl(
     content::WebContents* web_contents,
     mojo::InterfaceRequest<payments::mojom::PaymentRequest> request)
     : web_contents_(web_contents),
-      binding_(this, std::move(request)),
-      dialog_(nullptr) {
+      binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(
       base::Bind(&PaymentRequestImpl::OnError, this));
 }
@@ -65,19 +61,17 @@ void PaymentRequestImpl::Init(
     payments::mojom::PaymentDetailsPtr details,
     payments::mojom::PaymentOptionsPtr options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  dialog_ = new PaymentRequestDialog(std::move(client));
-  views::DialogDelegate::CreateDialogWidget(
-      dialog_, nullptr,
-      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_)
-          ->delegate()
-          ->GetWebContentsModalDialogHost()
-          ->GetHostView())
-      ->Show();
+  client_ = std::move(client);
+  chrome::ShowPaymentRequestDialog(this);
+}
+
+void PaymentRequestImpl::Cancel() {
+  client_->OnError(payments::mojom::PaymentErrorReason::USER_CANCEL);
 }
 
 void PaymentRequestImpl::OnError() {
   binding_.Close();
-  // TODO(krb): Call dialog_->Close() here, but avoid double-free
+  // TODO(krb): Close the dialog here, but avoid double-free
   payment_request_factory.Get().UnassignPaymentRequest(web_contents_);
 }
 

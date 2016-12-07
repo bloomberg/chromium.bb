@@ -3544,10 +3544,11 @@ split_static_library("browser") {
 
   if (is_linux || is_win) {
     sources += [
+      "payments/payment_request_impl.cc",
+      "payments/payment_request_impl.h",
       "renderer_context_menu/spelling_options_submenu_observer.cc",
       "renderer_context_menu/spelling_options_submenu_observer.h",
     ]
-    deps += [ "//chrome/browser/payments:payments" ]
   }
 
   if (is_desktop_linux) {

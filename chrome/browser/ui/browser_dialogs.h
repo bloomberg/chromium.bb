@@ -48,6 +48,10 @@ class AuthChallengeInfo;
 class URLRequest;
 }
 
+namespace payments {
+class PaymentRequestImpl;
+}
+
 namespace security_state {
 struct SecurityInfo;
 }  // namespace security_state
@@ -145,6 +149,8 @@ void ShowBookmarkEditorViews(gfx::NativeWindow parent_window,
                              Profile* profile,
                              const BookmarkEditor::EditDetails& details,
                              BookmarkEditor::Configuration configuration);
+
+void ShowPaymentRequestDialog(payments::PaymentRequestImpl* impl);
 
 #if defined(OS_MACOSX)
 
