@@ -31,7 +31,6 @@
 #include "platform/LayoutLocale.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFamily.h"
-#include "platform/fonts/FontFeatureSettings.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontSmoothingMode.h"
 #include "platform/fonts/FontTraits.h"
@@ -39,6 +38,7 @@
 #include "platform/fonts/FontWidthVariant.h"
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/fonts/TypesettingFeatures.h"
+#include "platform/fonts/opentype/FontSettings.h"
 #include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 
