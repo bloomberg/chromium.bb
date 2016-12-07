@@ -640,15 +640,34 @@ void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(
   context.current.paintOffset = LayoutPoint();
 }
 
+MainThreadScrollingReasons mainScrollingReasons(const LayoutObject& object) {
+  MainThreadScrollingReasons reasons = 0;
+  if (!object.document().settings()->threadedScrollingEnabled())
+    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+  // Checking for descendants in the layout tree has two downsides:
+  // 1) There can be more descendants in layout order than in paint order (e.g.,
+  //    fixed position objects).
+  // 2) Iterating overall all background attachment fixed objects for every
+  //    scroll node can be slow, though there will be none in the common case.
+  const FrameView& frameView = *object.frameView();
+  if (frameView.hasBackgroundAttachmentFixedDescendants(object))
+    reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+  return reasons;
+}
+
 void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
   if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
+    bool needsScrollProperties = false;
     if (object.hasOverflowClip()) {
+      auto mainThreadScrollingReasons = mainScrollingReasons(object);
       const LayoutBox& box = toLayoutBox(object);
-      const PaintLayerScrollableArea* scrollableArea = box.getScrollableArea();
+      const auto* scrollableArea = box.getScrollableArea();
       IntSize scrollOffset = box.scrolledContentOffset();
-      if (!scrollOffset.isZero() || scrollableArea->scrollsOverflow()) {
+      if (mainThreadScrollingReasons || !scrollOffset.isZero() ||
+          scrollableArea->scrollsOverflow()) {
+        needsScrollProperties = true;
         auto& properties =
             object.getMutableForPainting().ensurePaintProperties();
         TransformationMatrix matrix = TransformationMatrix().translate(
@@ -664,32 +683,18 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
             scrollableArea->userInputScrollable(HorizontalScrollbar);
         bool userScrollableVertical =
             scrollableArea->userInputScrollable(VerticalScrollbar);
-        MainThreadScrollingReasons reasons = 0;
-        if (!object.document().settings()->threadedScrollingEnabled())
-          reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
-        // Checking for descendants in the layout tree has two downsides:
-        // 1) There can be more descendants in layout order than in paint
-        //    order (e.g., fixed position objects).
-        // 2) Iterating overall all background attachment fixed objects for
-        //    every scroll node can be slow, though there will be no objects
-        //    in the common case.
-        const FrameView& frameView = *object.frameView();
-        if (frameView.hasBackgroundAttachmentFixedDescendants(object)) {
-          reasons |=
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
-        }
         context.forceSubtreeUpdate |= properties.updateScroll(
             context.current.scroll, properties.scrollTranslation(), scrollClip,
             scrollBounds, userScrollableHorizontal, userScrollableVertical,
-            reasons);
-      } else {
-        // Ensure pre-existing properties are cleared when there is no
-        // scrolling.
-        auto* properties = object.getMutableForPainting().paintProperties();
-        if (properties) {
-          context.forceSubtreeUpdate |= properties->clearScrollTranslation();
-          context.forceSubtreeUpdate |= properties->clearScroll();
-        }
+            mainThreadScrollingReasons);
+      }
+    }
+
+    if (!needsScrollProperties) {
+      // Ensure pre-existing properties are cleared.
+      if (auto* properties = object.getMutableForPainting().paintProperties()) {
+        context.forceSubtreeUpdate |= properties->clearScrollTranslation();
+        context.forceSubtreeUpdate |= properties->clearScroll();
       }
     }
   }

@@ -2696,6 +2696,36 @@ TEST_P(PaintPropertyTreeBuilderTest,
                    ->hasBackgroundAttachmentFixedDescendants());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithoutScrolling) {
+  setBodyInnerHTML(
+      "<style>"
+      "  #overflow {"
+      "    overflow: scroll;"
+      "    width: 100px;"
+      "    height: 100px;"
+      "  }"
+      "  .backgroundAttachmentFixed {"
+      "    background-image: url('foo');"
+      "    background-attachment: fixed;"
+      "    width: 10px;"
+      "    height: 10px;"
+      "  }"
+      "  .forceScroll {"
+      "    height: 4000px;"
+      "  }"
+      "</style>"
+      "<div id='overflow'>"
+      "  <div class='backgroundAttachmentFixed'></div>"
+      "</div>"
+      "<div class='forceScroll'></div>");
+  Element* overflow = document().getElementById("overflow");
+  EXPECT_TRUE(frameScroll()->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_TRUE(overflow->layoutObject()
+                  ->paintProperties()
+                  ->scroll()
+                  ->hasBackgroundAttachmentFixedDescendants());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest,
        BackgroundAttachmentFixedMainThreadScrollReasonsWithFixedScroller) {
   setBodyInnerHTML(
