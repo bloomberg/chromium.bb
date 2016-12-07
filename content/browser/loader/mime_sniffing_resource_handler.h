@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/layered_resource_handler.h"
+#include "content/browser/loader/resource_controller.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/common/request_context_type.h"
 #include "ppapi/features/features.h"
 

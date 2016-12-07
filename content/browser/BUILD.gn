@@ -791,6 +791,7 @@ source_set("browser") {
     "loader/redirect_to_file_resource_handler.h",
     "loader/resource_buffer.cc",
     "loader/resource_buffer.h",
+    "loader/resource_controller.h",
     "loader/resource_dispatcher_host_impl.cc",
     "loader/resource_dispatcher_host_impl.h",
     "loader/resource_handler.cc",

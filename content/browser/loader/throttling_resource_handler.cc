@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/common/resource_response.h"
 #include "net/url_request/url_request.h"
 

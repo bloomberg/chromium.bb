@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_handler.h"
-#include "content/public/browser/resource_controller.h"
 
 namespace net {
 class IOBuffer;

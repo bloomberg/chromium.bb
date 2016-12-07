@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_CONTROLLER_H_
-#define CONTENT_PUBLIC_BROWSER_RESOURCE_CONTROLLER_H_
+#ifndef CONTENT_BROWSER_LOADER_RESOURCE_CONTROLLER_H_
+#define CONTENT_BROWSER_LOADER_RESOURCE_CONTROLLER_H_
 
 #include "content/common/content_export.h"
 
@@ -20,10 +20,11 @@ class CONTENT_EXPORT ResourceController {
   virtual void CancelAndIgnore() = 0;
   virtual void CancelWithError(int error_code) = 0;
   virtual void Resume() = 0;
+
  protected:
   virtual ~ResourceController() {}
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_RESOURCE_CONTROLLER_H_
+#endif  // CONTENT_BROWSER_LOADER_RESOURCE_CONTROLLER_H_

@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/browser/loader/resource_controller.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/resource_controller.h"
 #include "net/url_request/url_request.h"
 
 namespace net {

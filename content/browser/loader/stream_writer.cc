@@ -5,9 +5,9 @@
 #include "content/browser/loader/stream_writer.h"
 
 #include "base/guid.h"
+#include "content/browser/loader/resource_controller.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_registry.h"
-#include "content/public/browser/resource_controller.h"
 #include "net/base/io_buffer.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"

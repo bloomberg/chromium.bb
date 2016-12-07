@@ -12,9 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/layered_resource_handler.h"
+#include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/resource_controller.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_status.h"
 
