@@ -70,11 +70,8 @@
   const Promise_reject = v8.simpleBind(Promise.reject, Promise);
 
   // User-visible strings.
-  // TODO(ricea): Share strings with ReadableStream that are identical in both.
-  const errIllegalInvocation = 'Illegal invocation';
-  const errIllegalConstructor = 'Illegal constructor';
-  const errInvalidType = 'Invalid type is specified';
-  const errAbortLockedStream =  'Cannot abort a writable stream that is locked to a writer';
+  const streamErrors = binding.streamErrors;
+  const errAbortLockedStream = 'Cannot abort a writable stream that is locked to a writer';
   const errStreamAborted = 'The stream has been aborted';
   const errWriterLockReleasedPrefix = 'This writable stream writer has been released and cannot be ';
   const errCloseCloseRequestedStream =
@@ -86,12 +83,6 @@
   const errReleasedWriterClosedPromise =
       'This writable stream writer has been released and cannot be used to monitor the stream\'s state';
   const templateErrorIsNotAFunction = f => `${f} is not a function`;
-  const errSizeNotAFunction =
-      'A queuing strategy\'s size property must be a function';
-  const errInvalidHWM =
-      'A queuing strategy\'s highWaterMark property must be a non-negative, non-NaN number';
-  const errInvalidSize =
-      'The return value of a queuing strategy\'s size function must be a finite, non-NaN, non-negative number';
 
   // These verbs are used after errWriterLockReleasedPrefix
   const verbUsedToGetTheDesiredSize = 'used to get the desiredSize';
@@ -172,7 +163,7 @@
       this[_writeRequests] = new v8.InternalPackedArray();
       const type = underlyingSink.type;
       if (type !== undefined) {
-        throw new RangeError(errInvalidType);
+        throw new RangeError(streamErrors.invalidType);
       }
       this[_writableStreamController] =
           new WritableStreamDefaultController(this, underlyingSink, size,
@@ -181,14 +172,14 @@
 
     get locked() {
       if (!IsWritableStream(this)) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
       return IsWritableStreamLocked(this);
     }
 
     abort(reason) {
       if (!IsWritableStream(this)) {
-        return Promise_reject(new TypeError(errIllegalInvocation));
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
       }
       if (IsWritableStreamLocked(this)) {
         return Promise_reject(new TypeError(errAbortLockedStream));
@@ -198,7 +189,7 @@
 
     getWriter() {
       if (!IsWritableStream(this)) {
-         throw new TypeError(errIllegalInvocation);
+         throw new TypeError(streamErrors.illegalInvocation);
       }
       return AcquireWritableStreamDefaultWriter(this);
     }
@@ -304,10 +295,10 @@
   class WritableStreamDefaultWriter {
     constructor(stream) {
       if (!IsWritableStream(stream)) {
-        throw new TypeError(errIllegalConstructor);
+        throw new TypeError(streamErrors.illegalConstructor);
       }
       if (IsWritableStreamLocked(stream)) {
-        throw new TypeError(errIllegalConstructor);
+        throw new TypeError(streamErrors.illegalConstructor);
       }
       this[_ownerWritableStream] = stream;
       stream[_writer] = this;
@@ -332,14 +323,14 @@
 
     get closed() {
       if (!IsWritableStreamDefaultWriter(this)) {
-        return Promise_reject(new TypeError(errIllegalInvocation));
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
       }
       return this[_closedPromise];
     }
 
     get desiredSize() {
       if (!IsWritableStreamDefaultWriter(this)) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
       if (this[_ownerWritableStream] === undefined) {
         throw createWriterLockReleasedError(verbUsedToGetTheDesiredSize);
@@ -349,14 +340,14 @@
 
     get ready() {
       if (!IsWritableStreamDefaultWriter(this)) {
-        return Promise_reject(new TypeError(errIllegalInvocation));
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
       }
       return this[_readyPromise];
     }
 
     abort(reason) {
      if (!IsWritableStreamDefaultWriter(this)) {
-        return Promise_reject(new TypeError(errIllegalInvocation));
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
       }
       if (this[_ownerWritableStream] === undefined) {
         return Promise_reject(createWriterLockReleasedError(verbAborted));
@@ -366,7 +357,7 @@
 
     close() {
       if (!IsWritableStreamDefaultWriter(this)) {
-        return Promise_reject(new TypeError(errIllegalInvocation));
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
       }
       const stream = this[_ownerWritableStream];
       if (stream === undefined) {
@@ -380,7 +371,7 @@
 
     releaseLock() {
       if (!IsWritableStreamDefaultWriter(this)) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
       const stream = this[_ownerWritableStream];
       if (stream === undefined) {
@@ -393,7 +384,7 @@
 
     write(chunk) {
       if (!IsWritableStreamDefaultWriter(this)) {
-        return Promise_reject(new TypeError(errIllegalInvocation));
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
       }
       const stream = this[_ownerWritableStream];
       if (stream === undefined) {
@@ -497,10 +488,10 @@
   class WritableStreamDefaultController {
     constructor(stream, underlyingSink, size, highWaterMark) {
       if (!IsWritableStream(stream)) {
-        throw new TypeError(errIllegalConstructor);
+        throw new TypeError(streamErrors.illegalConstructor);
       }
       if (stream[_writableStreamController] !== undefined) {
-        throw new TypeError(errIllegalConstructor);
+        throw new TypeError(streamErrors.illegalConstructor);
       }
       this[_controlledWritableStream] = stream;
       this[_underlyingSink] = underlyingSink;
@@ -529,7 +520,7 @@
 
     error(e) {
       if (!IsWritableStreamDefaultController(this)) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
       const state = this[_controlledWritableStream][_state];
       if (state === CLOSED || state === ERRORED) {
@@ -713,7 +704,7 @@
   function EnqueueValueWithSizeForController(controller, value, size) {
     size = Number(size);
     if (!IsFiniteNonNegativeNumber(size)) {
-      throw new RangeError(errInvalidSize);
+      throw new RangeError(streamErrors.invalidSize);
     }
 
     controller[_queueSize] += size;
@@ -787,12 +778,15 @@
   // TODO(ricea): Share this operation with ReadableStream.js.
   function ValidateAndNormalizeQueuingStrategy(size, highWaterMark) {
     if (size !== undefined && typeof size !== 'function') {
-      throw new TypeError(errSizeNotAFunction);
+      throw new TypeError(streamErrors.sizeNotAFunction);
     }
 
     highWaterMark = Number(highWaterMark);
-    if (Number_isNaN(highWaterMark) || highWaterMark < 0) {
-      throw new RangeError(errInvalidHWM);
+    if (Number_isNaN(highWaterMark)) {
+      throw new RangeError(streamErrors.errInvalidHWM);
+    }
+    if (highWaterMark < 0) {
+      throw new RangeError(streamErrors.invalidHWM);
     }
 
     return {size, highWaterMark};

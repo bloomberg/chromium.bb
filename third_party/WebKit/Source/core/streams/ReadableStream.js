@@ -62,8 +62,7 @@
   const Promise_resolve = v8.simpleBind(Promise.resolve, Promise);
   const Promise_reject = v8.simpleBind(Promise.reject, Promise);
 
-  const errIllegalInvocation = 'Illegal invocation';
-  const errIllegalConstructor = 'Illegal constructor';
+  const streamErrors = binding.streamErrors;
   const errCancelLockedStream =
       'Cannot cancel a readable stream that is locked to a reader';
   const errEnqueueCloseRequestedStream =
@@ -91,12 +90,7 @@
       'Cannot release a readable stream reader when it still has outstanding read() calls that have not yet settled';
   const errReleasedReaderClosedPromise =
       'This readable stream reader has been released and cannot be used to monitor the stream\'s state';
-  const errInvalidSize =
-      'The return value of a queuing strategy\'s size function must be a finite, non-NaN, non-negative number';
-  const errSizeNotAFunction =
-      'A queuing strategy\'s size property must be a function';
-  const errInvalidHWM =
-      'A queueing strategy\'s highWaterMark property must be a nonnegative, non-NaN number';
+
   const errTmplMustBeFunctionOrUndefined = name =>
       `${name} must be a function or undefined`;
 
@@ -129,7 +123,7 @@
       if (typeString === 'bytes') {
         throw new RangeError('bytes type is not yet implemented');
       } else if (type !== undefined) {
-        throw new RangeError('Invalid type is specified');
+        throw new RangeError(streamErrors.invalidType);
       }
 
       this[_controller] =
@@ -138,7 +132,7 @@
 
     get locked() {
       if (IsReadableStream(this) === false) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
 
       return IsReadableStreamLocked(this);
@@ -146,7 +140,7 @@
 
     cancel(reason) {
       if (IsReadableStream(this) === false) {
-        return Promise_reject(new TypeError(errIllegalInvocation));
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
       }
 
       if (IsReadableStreamLocked(this) === true) {
@@ -158,7 +152,7 @@
 
     getReader({ mode } = {}) {
       if (IsReadableStream(this) === false) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
 
       if (mode === 'byob') {
@@ -180,7 +174,7 @@
 
     tee() {
       if (IsReadableStream(this) === false) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
 
       return ReadableStreamTee(this);
@@ -190,11 +184,11 @@
   class ReadableStreamDefaultController {
     constructor(stream, underlyingSource, size, highWaterMark, isExternallyControlled) {
       if (IsReadableStream(stream) === false) {
-        throw new TypeError(errIllegalConstructor);
+        throw new TypeError(streamErrors.illegalConstructor);
       }
 
       if (stream[_controller] !== undefined) {
-        throw new TypeError(errIllegalConstructor);
+        throw new TypeError(streamErrors.illegalConstructor);
       }
 
       this[_controlledReadableStream] = stream;
@@ -232,7 +226,7 @@
 
     get desiredSize() {
       if (IsReadableStreamDefaultController(this) === false) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
 
       return ReadableStreamDefaultControllerGetDesiredSize(this);
@@ -240,7 +234,7 @@
 
     close() {
       if (IsReadableStreamDefaultController(this) === false) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
 
       const stream = this[_controlledReadableStream];
@@ -262,7 +256,7 @@
 
     enqueue(chunk) {
       if (IsReadableStreamDefaultController(this) === false) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
 
       const stream = this[_controlledReadableStream];
@@ -284,7 +278,7 @@
 
     error(e) {
       if (IsReadableStreamDefaultController(this) === false) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
 
       const stream = this[_controlledReadableStream];
@@ -351,7 +345,7 @@
 
     get closed() {
       if (IsReadableStreamDefaultReader(this) === false) {
-        return Promise_reject(new TypeError(errIllegalInvocation));
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
       }
 
       return this[_closedPromise];
@@ -359,7 +353,7 @@
 
     cancel(reason) {
       if (IsReadableStreamDefaultReader(this) === false) {
-        return Promise_reject(new TypeError(errIllegalInvocation));
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
       }
 
       const stream = this[_ownerReadableStream];
@@ -372,7 +366,7 @@
 
     read() {
       if (IsReadableStreamDefaultReader(this) === false) {
-        return Promise_reject(new TypeError(errIllegalInvocation));
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
       }
 
       if (this[_ownerReadableStream] === undefined) {
@@ -384,7 +378,7 @@
 
     releaseLock() {
       if (IsReadableStreamDefaultReader(this) === false) {
-        throw new TypeError(errIllegalInvocation);
+        throw new TypeError(streamErrors.illegalInvocation);
       }
 
       const stream = this[_ownerReadableStream];
@@ -808,7 +802,7 @@
   function EnqueueValueWithSize(controller, value, size) {
     size = Number(size);
     if (Number_isNaN(size) || size === +Infinity || size < 0) {
-      throw new RangeError(errInvalidSize);
+      throw new RangeError(streamErrors.invalidSize);
     }
 
     controller[_totalQueuedSize] += size;
@@ -823,12 +817,15 @@
 
   function ValidateAndNormalizeQueuingStrategy(size, highWaterMark) {
     if (size !== undefined && typeof size !== 'function') {
-      throw new TypeError(errSizeNotAFunction);
+      throw new TypeError(streamErrors.sizeNotAFunction);
     }
 
     highWaterMark = Number(highWaterMark);
-    if (Number_isNaN(highWaterMark) || highWaterMark < 0) {
-      throw new RangeError(errInvalidHWM);
+    if (Number_isNaN(highWaterMark)) {
+      throw new RangeError(streamErrors.errInvalidHWM);
+    }
+    if (highWaterMark < 0) {
+      throw new RangeError(streamErrors.invalidHWM);
     }
 
     return {size, highWaterMark};
