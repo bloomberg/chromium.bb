@@ -213,6 +213,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/uniforms/uniform-default-values.html',
         ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
+        ['win10', 'intel', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/glsl/variables/gl-pointcoord.html',
+        ['win10', 'intel', 'opengl'], bug=1007) # angle bug ID
 
     # Win / Passthrough command decoder
     self.Fail('conformance/attribs/gl-vertexattribpointer.html',
