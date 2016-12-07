@@ -74,7 +74,7 @@ static base::TimeDelta ExtractStartTime(AVStream* stream,
                                         base::TimeDelta start_time_estimate) {
   DCHECK(start_time_estimate != kNoTimestamp);
   if (stream->start_time == static_cast<int64_t>(AV_NOPTS_VALUE)) {
-    return start_time_estimate == kInfiniteDuration ? kNoTimestamp
+    return start_time_estimate == kInfiniteDuration ? base::TimeDelta()
                                                     : start_time_estimate;
   }
 
@@ -1347,11 +1347,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
     const base::TimeDelta start_time =
         ExtractStartTime(stream, start_time_estimates[i]);
-    const bool has_start_time = start_time != kNoTimestamp;
-
-    if (!has_start_time)
-      continue;
-
     streams_[i]->set_start_time(start_time);
     if (start_time < start_time_) {
       start_time_ = start_time;
@@ -1531,6 +1526,20 @@ void FFmpegDemuxer::LogMetadata(AVFormatContext* avctx,
   media_log_->AddEvent(std::move(metadata_event));
 }
 
+FFmpegDemuxerStream* FFmpegDemuxer::FindStreamWithLowestStartTimestamp(
+    bool enabled) {
+  FFmpegDemuxerStream* lowest_start_time_stream = nullptr;
+  for (const auto& stream : streams_) {
+    if (!stream || stream->enabled() != enabled)
+      continue;
+    if (!lowest_start_time_stream ||
+        stream->start_time() < lowest_start_time_stream->start_time()) {
+      lowest_start_time_stream = stream.get();
+    }
+  }
+  return lowest_start_time_stream;
+}
+
 FFmpegDemuxerStream* FFmpegDemuxer::FindPreferredStreamForSeeking(
     base::TimeDelta seek_time) {
   // If we have a selected/enabled video stream and its start time is lower
@@ -1539,8 +1548,7 @@ FFmpegDemuxerStream* FFmpegDemuxer::FindPreferredStreamForSeeking(
   for (const auto& stream : streams_) {
     if (stream && stream->type() == DemuxerStream::VIDEO && stream->enabled()) {
       video_stream = stream.get();
-      if (video_stream->start_time() == kNoTimestamp ||
-          video_stream->start_time() <= seek_time) {
+      if (video_stream->start_time() <= seek_time) {
         return video_stream;
       }
       break;
@@ -1549,25 +1557,30 @@ FFmpegDemuxerStream* FFmpegDemuxer::FindPreferredStreamForSeeking(
 
   // If video stream is not present or |seek_time| is lower than the video start
   // time, then try to find an enabled stream with the lowest start time.
-  FFmpegDemuxerStream* lowest_start_time_stream = nullptr;
-  for (const auto& stream : streams_) {
-    if (!stream || !stream->enabled() || stream->start_time() == kNoTimestamp)
-      continue;
-    if (!lowest_start_time_stream ||
-        stream->start_time() < lowest_start_time_stream->start_time()) {
-      lowest_start_time_stream = stream.get();
-    }
-  }
-  // If we found a stream with start time lower than |seek_time|, then use it.
-  if (lowest_start_time_stream &&
-      lowest_start_time_stream->start_time() <= seek_time) {
-    return lowest_start_time_stream;
+  FFmpegDemuxerStream* lowest_start_time_enabled_stream =
+      FindStreamWithLowestStartTimestamp(true);
+  if (lowest_start_time_enabled_stream &&
+      lowest_start_time_enabled_stream->start_time() <= seek_time) {
+    return lowest_start_time_enabled_stream;
   }
 
-  // If we couldn't find any streams with the start time lower than |seek_time|
-  // then use either video (if one exists) or any audio stream.
-  return video_stream ? video_stream : static_cast<FFmpegDemuxerStream*>(
-                                           GetStream(DemuxerStream::AUDIO));
+  // If there's no enabled streams to consider from, try a disabled stream with
+  // the lowest known start time.
+  FFmpegDemuxerStream* lowest_start_time_disabled_stream =
+      FindStreamWithLowestStartTimestamp(false);
+  if (lowest_start_time_disabled_stream &&
+      lowest_start_time_disabled_stream->start_time() <= seek_time) {
+    return lowest_start_time_disabled_stream;
+  }
+
+  // Otherwise fall back to any other stream.
+  for (const auto& stream : streams_) {
+    if (stream)
+      return stream.get();
+  }
+
+  NOTREACHED();
+  return nullptr;
 }
 
 void FFmpegDemuxer::OnSeekFrameDone(int result) {
