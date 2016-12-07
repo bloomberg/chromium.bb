@@ -12,6 +12,10 @@
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLError.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 
 class WebAutofillClient;
@@ -436,6 +440,14 @@ class WebLocalFrame : public WebFrame {
   // TEMP: Usage count for chrome.loadtimes deprecation.
   // This will be removed following the deprecation.
   virtual void usageCountChromeLoadTimes(const WebString& metric) = 0;
+
+  // Task queues --------------------------------------------------------------
+
+  // Returns frame-specific task runner to run tasks of this type on.
+  // They have the same lifetime as the frame.
+  virtual base::SingleThreadTaskRunner* timerTaskRunner() = 0;
+  virtual base::SingleThreadTaskRunner* loadingTaskRunner() = 0;
+  virtual base::SingleThreadTaskRunner* unthrottledTaskRunner() = 0;
 
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}

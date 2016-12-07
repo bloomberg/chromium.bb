@@ -189,7 +189,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       highest_ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       preload_(MultibufferDataSource::AUTO),
       buffering_strategy_(MultibufferDataSource::BUFFERING_STRATEGY_NORMAL),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      main_task_runner_(frame->loadingTaskRunner()),
       media_task_runner_(params.media_task_runner()),
       worker_task_runner_(params.worker_task_runner()),
       media_log_(params.media_log()),

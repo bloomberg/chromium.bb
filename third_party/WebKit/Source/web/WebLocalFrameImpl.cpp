@@ -182,6 +182,7 @@
 #include "public/platform/WebDoubleSize.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
+#include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
@@ -2335,6 +2336,27 @@ void WebLocalFrameImpl::usageCountChromeLoadTimes(const WebString& metric) {
     feature = UseCounter::ChromeLoadTimesConnectionInfo;
   }
   UseCounter::count(frame(), feature);
+}
+
+base::SingleThreadTaskRunner* WebLocalFrameImpl::timerTaskRunner() {
+  return frame()
+      ->frameScheduler()
+      ->timerTaskRunner()
+      ->toSingleThreadTaskRunner();
+}
+
+base::SingleThreadTaskRunner* WebLocalFrameImpl::loadingTaskRunner() {
+  return frame()
+      ->frameScheduler()
+      ->loadingTaskRunner()
+      ->toSingleThreadTaskRunner();
+}
+
+base::SingleThreadTaskRunner* WebLocalFrameImpl::unthrottledTaskRunner() {
+  return frame()
+      ->frameScheduler()
+      ->unthrottledTaskRunner()
+      ->toSingleThreadTaskRunner();
 }
 
 WebInputMethodControllerImpl* WebLocalFrameImpl::inputMethodController() const {

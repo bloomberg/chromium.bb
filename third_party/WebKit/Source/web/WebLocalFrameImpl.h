@@ -292,6 +292,9 @@ class WEB_EXPORT WebLocalFrameImpl final
   void saveImageAt(const WebPoint&) override;
   void clearActiveFindMatch() override;
   void usageCountChromeLoadTimes(const WebString& metric) override;
+  base::SingleThreadTaskRunner* timerTaskRunner() override;
+  base::SingleThreadTaskRunner* loadingTaskRunner() override;
+  base::SingleThreadTaskRunner* unthrottledTaskRunner() override;
 
   // WebFrameImplBase methods:
   void initializeCoreFrame(FrameHost*,
