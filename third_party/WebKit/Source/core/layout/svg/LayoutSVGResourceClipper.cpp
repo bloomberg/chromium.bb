@@ -36,17 +36,27 @@ namespace blink {
 
 namespace {
 
-bool requiresMask(const SVGElement& childElement) {
-  // TODO(fs): This needs to special-case <use> in a way similar to
-  // contributesToClip. (crbug.com/604677)
-  LayoutObject* layoutObject = childElement.layoutObject();
-  DCHECK(layoutObject);
+bool requiresMask(const LayoutObject& layoutObject) {
   // Only basic shapes or paths are supported for direct clipping. We need to
   // fallback to masking for texts.
-  if (layoutObject->isSVGText())
+  if (layoutObject.isSVGText())
     return true;
   // Current shape in clip-path gets clipped too. Fallback to masking.
-  return layoutObject->styleRef().clipPath();
+  return layoutObject.styleRef().clipPath();
+}
+
+bool requiresMask(const SVGElement& element) {
+  const LayoutObject* layoutObject = element.layoutObject();
+  DCHECK(layoutObject);
+  if (isSVGUseElement(element)) {
+    if (layoutObject->styleRef().clipPath())
+      return true;
+    const SVGGraphicsElement* clippingElement =
+        toSVGUseElement(element).visibleTargetGraphicsElementForClipping();
+    DCHECK(clippingElement);
+    layoutObject = clippingElement->layoutObject();
+  }
+  return requiresMask(*layoutObject);
 }
 
 bool contributesToClip(const SVGGraphicsElement& element) {
