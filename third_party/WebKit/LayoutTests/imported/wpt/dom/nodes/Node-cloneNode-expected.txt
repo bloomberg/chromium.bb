@@ -129,7 +129,7 @@ PASS createElementNS HTML
 PASS createElementNS non-HTML 
 PASS createProcessingInstruction 
 PASS implementation.createDocumentType 
-PASS implementation.createDocument 
+FAIL implementation.createDocument assert_equals: expected "about:blank" but got ""
 PASS implementation.createHTMLDocument 
 PASS node with children 
 Harness: the test ran to completion.
