@@ -16,16 +16,19 @@ class UrlInfo {
     private static final String URL_KEY = "url";
     private static final String DISTANCE_KEY = "distance";
     private static final String SCAN_TIMESTAMP_KEY = "scan_timestamp";
+    private static final String DEVICE_ADDRESS_KEY = "device_address";
     private static final String HAS_BEEN_DISPLAYED_KEY = "has_been_displayed";
     private final String mUrl;
     private double mDistance;
     private long mScanTimestamp;
+    private String mDeviceAddress;
     private boolean mHasBeenDisplayed;
 
     public UrlInfo(String url, double distance, long scanTimestamp) {
         mUrl = url;
         mDistance = distance;
         mScanTimestamp = scanTimestamp;
+        mDeviceAddress = null;
         mHasBeenDisplayed = false;
     }
 
@@ -48,8 +51,9 @@ class UrlInfo {
      * Sets the distance of the URL from the scanner in meters.
      * @param distance The estimated distance of the URL from the scanner in meters.
      */
-    public void setDistance(double distance) {
+    public UrlInfo setDistance(double distance) {
         mDistance = distance;
+        return this;
     }
 
     /**
@@ -65,8 +69,9 @@ class UrlInfo {
      * This timestamp should be recorded using System.currentTimeMillis().
      * @param scanTimestamp the new timestamp.
      */
-    public void setScanTimestamp(long scanTimestamp) {
+    public UrlInfo setScanTimestamp(long scanTimestamp) {
         mScanTimestamp = scanTimestamp;
+        return this;
     }
 
     /**
@@ -79,10 +84,29 @@ class UrlInfo {
     }
 
     /**
+     * Sets the device address for the BLE beacon that last emitted this URL.
+     * @param deviceAddress the new device address, matching the
+     *        BluetoothAdapter.checkBluetoothAddress format.
+     */
+    public UrlInfo setDeviceAddress(String deviceAddress) {
+        mDeviceAddress = deviceAddress;
+        return this;
+    }
+
+    /**
+     * Gets the device address for the BLE beacon that last emitted this URL.
+     * @return The device address.
+     */
+    public String getDeviceAddress() {
+        return mDeviceAddress;
+    }
+
+    /**
      * Marks this URL as having been displayed to the user.
      */
-    public void setHasBeenDisplayed() {
+    public UrlInfo setHasBeenDisplayed() {
         mHasBeenDisplayed = true;
+        return this;
     }
 
     /**
@@ -103,6 +127,7 @@ class UrlInfo {
                 .put(URL_KEY, mUrl)
                 .put(DISTANCE_KEY, mDistance)
                 .put(SCAN_TIMESTAMP_KEY, mScanTimestamp)
+                .put(DEVICE_ADDRESS_KEY, mDeviceAddress)
                 .put(HAS_BEEN_DISPLAYED_KEY, mHasBeenDisplayed);
     }
 
@@ -116,7 +141,8 @@ class UrlInfo {
         UrlInfo urlInfo = new UrlInfo(
                 jsonObject.getString(URL_KEY),
                 jsonObject.getDouble(DISTANCE_KEY),
-                jsonObject.getLong(SCAN_TIMESTAMP_KEY));
+                jsonObject.getLong(SCAN_TIMESTAMP_KEY))
+                .setDeviceAddress(jsonObject.optString(DEVICE_ADDRESS_KEY));
         if (jsonObject.optBoolean(HAS_BEEN_DISPLAYED_KEY, false)) {
             urlInfo.setHasBeenDisplayed();
         }

@@ -263,6 +263,30 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    public void testAddUrlUpdatesCache() throws Exception {
+        addEmptyPwsResult();
+        addEmptyPwsResult();
+
+        UrlInfo urlInfo = new UrlInfo(URL1);
+        mUrlManager.addUrl(urlInfo);
+        List<UrlInfo> urls = mUrlManager.getUrls(true);
+        assertEquals(1, urls.size());
+        assertEquals(urlInfo.getDistance(), urls.get(0).getDistance());
+        assertEquals(urlInfo.getDeviceAddress(), urls.get(0).getDeviceAddress());
+        assertEquals(urlInfo.getScanTimestamp(), urls.get(0).getScanTimestamp());
+
+        urlInfo = new UrlInfo(URL1)
+                .setDistance(100.0)
+                .setDeviceAddress("00:11:22:33:AA:BB");
+        mUrlManager.addUrl(urlInfo);
+        urls = mUrlManager.getUrls(true);
+        assertEquals(1, urls.size());
+        assertEquals(urlInfo.getDistance(), urls.get(0).getDistance());
+        assertEquals(urlInfo.getDeviceAddress(), urls.get(0).getDeviceAddress());
+        assertEquals(urlInfo.getScanTimestamp(), urls.get(0).getScanTimestamp());
+    }
+
+    @SmallTest
     @RetryOnFailure
     public void testAddUrlTwiceWorks() throws Exception {
         // Add and remove an old URL twice and add new URL twice before removing.

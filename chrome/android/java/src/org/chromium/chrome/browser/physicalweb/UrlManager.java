@@ -491,7 +491,12 @@ class UrlManager {
         } else {
             mUrlsSortedByTimestamp.remove(urlInfo.getUrl());
             currentUrlInfo.setScanTimestamp(urlInfo.getScanTimestamp());
-            currentUrlInfo.setDistance(urlInfo.getDistance());
+            if (urlInfo.getDistance() > 0.0) {
+                currentUrlInfo.setDistance(urlInfo.getDistance());
+            }
+            if (urlInfo.getDeviceAddress() != null) {
+                currentUrlInfo.setDeviceAddress(urlInfo.getDeviceAddress());
+            }
         }
         mUrlsSortedByTimestamp.add(urlInfo.getUrl());
         return currentUrlInfo;

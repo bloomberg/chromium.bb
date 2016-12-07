@@ -22,13 +22,15 @@ public class UrlInfoTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mReferenceUrlInfo = new UrlInfo(URL, 99.5, 42);
-        mReferenceUrlInfo.setHasBeenDisplayed();
+        mReferenceUrlInfo = new UrlInfo(URL, 99.5, 42)
+                .setHasBeenDisplayed()
+                .setDeviceAddress("00:11:22:33:AA:BB");
         // Because we can't print JSON sorted by keys, the order is important here.
         mReferenceJsonObject = new JSONObject("{"
                 + "    \"url\": \"" + URL + "\","
                 + "    \"distance\": 99.5,"
                 + "    \"scan_timestamp\": 42,"
+                + "    \"device_address\": \"00:11:22:33:AA:BB\","
                 + "    \"has_been_displayed\": true"
                 + "}");
     }
@@ -44,6 +46,7 @@ public class UrlInfoTest extends TestCase {
         assertEquals(mReferenceUrlInfo.getUrl(), urlInfo.getUrl());
         assertEquals(mReferenceUrlInfo.getDistance(), urlInfo.getDistance());
         assertEquals(mReferenceUrlInfo.getScanTimestamp(), urlInfo.getScanTimestamp());
+        assertEquals(mReferenceUrlInfo.getDeviceAddress(), urlInfo.getDeviceAddress());
         assertEquals(mReferenceUrlInfo.hasBeenDisplayed(), urlInfo.hasBeenDisplayed());
     }
 }
