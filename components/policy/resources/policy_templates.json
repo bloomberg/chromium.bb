@@ -7506,7 +7506,7 @@
           'id': 200,
           'caption': '''Enable remote attestation for the user''',
           'tags': [],
-          'desc': '''If true, the user can use the hardware on Chrome devices to remote attest its identity to the privacy CA via the Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey().
+          'desc': '''If true, the user can use the hardware on Chrome devices to remote attest its identity to the privacy CA via the <ph name="ENTERPRISE_PLATFORM_KEYS_API">Enterprise Platform Keys API</ph> using <ph name="CHALLENGE_USER_KEY_FUNCTION">chrome.enterprise.platformKeys.challengeUserKey()</ph>.
 
           If it is set to false, or if it is not set, calls to the API will fail with an error code.''',
         },
@@ -7526,7 +7526,7 @@
           'id': 201,
           'caption': '''Extensions allowed to to use the remote attestation API''',
           'tags': [],
-          'desc': '''This policy specifies the allowed extensions to use Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() for remote attestation. Extensions must be added to this list to use the API.
+          'desc': '''This policy specifies the allowed extensions to use the <ph name="ENTERPRISE_PLATFORM_KEYS_API">Enterprise Platform Keys API</ph> function <ph name="CHALLENGE_USER_KEY_FUNCTION">chrome.enterprise.platformKeys.challengeUserKey()</ph> for remote attestation. Extensions must be added to this list to use the API.
 
           If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.''',
         },
