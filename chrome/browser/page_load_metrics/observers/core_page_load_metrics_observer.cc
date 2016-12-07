@@ -195,8 +195,8 @@ const char kHistogramFirstContentfulPaintUserInitiated[] =
 
 const char kHistogramFirstMeaningfulPaintStatus[] =
     "PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintStatus";
-const char kHistogramFirstMeaningfulPaintSignalStatus[] =
-    "PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintSignalStatus";
+const char kHistogramFirstMeaningfulPaintSignalStatus2[] =
+    "PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintSignalStatus2";
 
 const char kHistogramFirstNonScrollInputAfterFirstPaint[] =
     "PageLoad.InputTiming.NavigationToFirstNonScroll.AfterPaint";
@@ -582,18 +582,20 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
         internal::FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_FIRST_CONTENTFUL_PAINT);
   }
 
-  enum FirstMeaningfulPaintSignalStatus {
-    HAD_USER_INPUT = 1 << 0,
-    NETWORK_STABLE = 1 << 1,
-    FIRST_MEANINGFUL_PAINT_SIGNAL_STATUS_LAST_ENTRY = 1 << 2
-  };
-  int signal_status =
-      (first_user_interaction_after_first_paint_.is_null() ?
-       0 : HAD_USER_INPUT) +
-      (timing.first_meaningful_paint ? NETWORK_STABLE : 0);
-  UMA_HISTOGRAM_ENUMERATION(
-      internal::kHistogramFirstMeaningfulPaintSignalStatus,
-      signal_status, FIRST_MEANINGFUL_PAINT_SIGNAL_STATUS_LAST_ENTRY);
+  if (timing.first_paint) {
+    enum FirstMeaningfulPaintSignalStatus {
+      HAD_USER_INPUT = 1 << 0,
+      NETWORK_STABLE = 1 << 1,
+      FIRST_MEANINGFUL_PAINT_SIGNAL_STATUS_LAST_ENTRY = 1 << 2
+    };
+    int signal_status =
+        (first_user_interaction_after_first_paint_.is_null() ?
+         0 : HAD_USER_INPUT) +
+        (timing.first_meaningful_paint ? NETWORK_STABLE : 0);
+    UMA_HISTOGRAM_ENUMERATION(
+        internal::kHistogramFirstMeaningfulPaintSignalStatus2,
+        signal_status, FIRST_MEANINGFUL_PAINT_SIGNAL_STATUS_LAST_ENTRY);
+  }
   if (timing.first_meaningful_paint) {
     if (first_user_interaction_after_first_paint_.is_null()) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstMeaningfulPaintNoUserInput,
