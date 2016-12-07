@@ -68,6 +68,7 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
 
  protected:
   friend class NativeTheme;
+  friend class NativeThemeMacTest;
   static NativeThemeMac* instance();
 
  private:
