@@ -3389,6 +3389,7 @@ void HTMLMediaElement::exitFullscreen() {
 }
 
 void HTMLMediaElement::didEnterFullscreen() {
+  configureMediaControls();
   if (mediaControls())
     mediaControls()->enteredFullscreen();
   // FIXME: There is no embedder-side handling in layout test mode.
@@ -3402,6 +3403,7 @@ void HTMLMediaElement::didEnterFullscreen() {
 }
 
 void HTMLMediaElement::didExitFullscreen() {
+  configureMediaControls();
   if (mediaControls())
     mediaControls()->exitedFullscreen();
   if (webMediaPlayer())
@@ -3640,14 +3642,6 @@ void HTMLMediaElement::configureTextTrackDisplay() {
   // This appears to be a spec bug, which we work around here:
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28236
   updateTextTrackDisplay();
-}
-
-EventDispatchHandlingState* HTMLMediaElement::preDispatchEventHandler(
-    Event* event) {
-  if (event && event->type() == EventTypeNames::webkitfullscreenchange)
-    configureMediaControls();
-
-  return nullptr;
 }
 
 // TODO(srirama.m): Merge it to resetMediaElement if possible and remove it.

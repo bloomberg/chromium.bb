@@ -483,8 +483,6 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
 
   TextTrackContainer& ensureTextTrackContainer();
 
-  EventDispatchHandlingState* preDispatchEventHandler(Event*) final;
-
   void changeNetworkStateFromLoadingToIdle();
 
   bool isAutoplaying() const { return m_autoplaying; }
