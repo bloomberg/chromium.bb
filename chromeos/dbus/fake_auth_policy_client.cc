@@ -64,7 +64,7 @@ void FakeAuthPolicyClient::JoinAdDomain(const std::string& machine_name,
                                         const std::string& user,
                                         int password_fd,
                                         const JoinCallback& callback) {
-  callback.Run(authpolicy::AD_JOIN_ERROR_NONE);
+  callback.Run(authpolicy::types::AD_JOIN_ERROR_NONE);
 }
 
 void FakeAuthPolicyClient::RefreshDevicePolicy(

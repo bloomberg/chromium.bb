@@ -81,16 +81,16 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
     if (!response) {
       LOG(ERROR) << "Join: Couldn't call to authpolicy";
       // TODO(rsorokin): make proper call, after defining possible errors codes.
-      callback.Run(authpolicy::AD_JOIN_ERROR_UNKNOWN);
+      callback.Run(authpolicy::types::AD_JOIN_ERROR_UNKNOWN);
       return;
     }
 
     dbus::MessageReader reader(response);
-    int res = authpolicy::AD_JOIN_ERROR_UNKNOWN;
+    int res = authpolicy::types::AD_JOIN_ERROR_UNKNOWN;
     if (!reader.PopInt32(&res)) {
       LOG(ERROR) << "Join: Couldn't get an error from the response";
       // TODO(rsorokin): make proper call, after defining possible errors codes.
-      callback.Run(authpolicy::AD_JOIN_ERROR_DBUS_FAIL);
+      callback.Run(authpolicy::types::AD_JOIN_ERROR_DBUS_FAIL);
       return;
     }
 

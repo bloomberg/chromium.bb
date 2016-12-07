@@ -14,12 +14,14 @@
 // TODO(rsorokin): Switch to service constants when it's landed.
 // (see crbug.com/659732)
 namespace authpolicy {
+namespace types {
 enum ADJoinErrorType {
   AD_JOIN_ERROR_NONE = 0,
   AD_JOIN_ERROR_UNKNOWN = 1,
   AD_JOIN_ERROR_DBUS_FAIL = 2,
 };
-}
+}  // namespace types
+}  // namespace authpolicy
 
 namespace chromeos {
 
