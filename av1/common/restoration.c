@@ -428,24 +428,25 @@ static void boxsum(int64_t *src, int width, int height, int src_stride, int r,
 
 static void boxnum(int width, int height, int r, int8_t *num, int num_stride) {
   int i, j;
-  for (i = 0; i <= r; ++i) {
-    for (j = 0; j <= r; ++j) {
-      num[i * num_stride + j] = (r + 1 + i) * (r + 1 + j);
+  for (i = 0; i <= AOMMIN(r, height - 1); ++i) {
+    for (j = 0; j <= AOMMIN(r, width - 1); ++j) {
+      num[i * num_stride + j] =
+          AOMMIN(r + 1 + i, height) * AOMMIN(r + 1 + j, width);
       num[i * num_stride + (width - 1 - j)] = num[i * num_stride + j];
       num[(height - 1 - i) * num_stride + j] = num[i * num_stride + j];
       num[(height - 1 - i) * num_stride + (width - 1 - j)] =
           num[i * num_stride + j];
     }
   }
-  for (j = 0; j <= r; ++j) {
-    const int val = (2 * r + 1) * (r + 1 + j);
+  for (j = 0; j <= AOMMIN(r, width - 1); ++j) {
+    const int val = AOMMIN(2 * r + 1, height) * AOMMIN(r + 1 + j, width);
     for (i = r + 1; i < height - r; ++i) {
       num[i * num_stride + j] = val;
       num[i * num_stride + (width - 1 - j)] = val;
     }
   }
-  for (i = 0; i <= r; ++i) {
-    const int val = (2 * r + 1) * (r + 1 + i);
+  for (i = 0; i <= AOMMIN(r, height - 1); ++i) {
+    const int val = AOMMIN(2 * r + 1, width) * AOMMIN(r + 1 + i, height);
     for (j = r + 1; j < width - r; ++j) {
       num[i * num_stride + j] = val;
       num[(height - 1 - i) * num_stride + j] = val;
@@ -453,7 +454,8 @@ static void boxnum(int width, int height, int r, int8_t *num, int num_stride) {
   }
   for (i = r + 1; i < height - r; ++i) {
     for (j = r + 1; j < width - r; ++j) {
-      num[i * num_stride + j] = (2 * r + 1) * (2 * r + 1);
+      num[i * num_stride + j] =
+          AOMMIN(2 * r + 1, height) * AOMMIN(2 * r + 1, width);
     }
   }
 }
