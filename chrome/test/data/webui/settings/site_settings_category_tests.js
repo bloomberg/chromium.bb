@@ -105,13 +105,13 @@ cr.define('site_settings_category', function() {
             assertEquals(enabled, testElement.categoryEnabled);
             MockInteractions.tap(testElement.$.toggle);
             return browserProxy.whenCalled('setDefaultValueForContentType');
-          }).then(function(arguments) {
+          }).then(function(args) {
             assertEquals(
-                settings.ContentSettingsTypes.GEOLOCATION, arguments[0]);
+                settings.ContentSettingsTypes.GEOLOCATION, args[0]);
             assertEquals(
                 enabled ? settings.PermissionValues.BLOCK :
                     settings.PermissionValues.ASK,
-                arguments[1]);
+                args[1]);
             assertNotEquals(enabled, testElement.categoryEnabled);
           });
       }
@@ -187,12 +187,12 @@ cr.define('site_settings_category', function() {
 
             MockInteractions.tap(testElement.$.toggle);
             return browserProxy.whenCalled('setDefaultValueForContentType');
-          }).then(function(arguments) {
+          }).then(function(args) {
             // Check THIRD_STATE => BLOCK transition succeeded.
             Polymer.dom.flush();
 
-            assertEquals(category, arguments[0]);
-            assertEquals(settings.PermissionValues.BLOCK, arguments[1]);
+            assertEquals(category, args[0]);
+            assertEquals(settings.PermissionValues.BLOCK, args[1]);
             assertFalse(testElement.categoryEnabled);
             assertTrue(askCheckbox.disabled);
             assertTrue(askCheckbox.checked);
@@ -200,12 +200,12 @@ cr.define('site_settings_category', function() {
             browserProxy.resetResolver('setDefaultValueForContentType');
             MockInteractions.tap(testElement.$.toggle);
             return browserProxy.whenCalled('setDefaultValueForContentType');
-          }).then(function(arguments) {
+          }).then(function(args) {
             // Check BLOCK => THIRD_STATE transition succeeded.
             Polymer.dom.flush();
 
-            assertEquals(category, arguments[0]);
-            assertEquals(thirdState, arguments[1]);
+            assertEquals(category, args[0]);
+            assertEquals(thirdState, args[1]);
             assertTrue(testElement.categoryEnabled);
             assertFalse(askCheckbox.disabled);
             assertTrue(askCheckbox.checked);
@@ -213,13 +213,13 @@ cr.define('site_settings_category', function() {
             browserProxy.resetResolver('setDefaultValueForContentType');
             MockInteractions.tap(askCheckbox);
             return browserProxy.whenCalled('setDefaultValueForContentType');
-          }).then(function(arguments) {
+          }).then(function(args) {
             // Check THIRD_STATE => ALLOW transition succeeded.
             Polymer.dom.flush();
 
-            assertEquals(category, arguments[0]);
+            assertEquals(category, args[0]);
             assertEquals(
-                settings.PermissionValues.ALLOW, arguments[1]);
+                settings.PermissionValues.ALLOW, args[1]);
             assertTrue(testElement.categoryEnabled);
             assertFalse(askCheckbox.disabled);
             assertFalse(askCheckbox.checked);
@@ -227,12 +227,12 @@ cr.define('site_settings_category', function() {
             browserProxy.resetResolver('setDefaultValueForContentType');
             MockInteractions.tap(testElement.$.toggle);
             return browserProxy.whenCalled('setDefaultValueForContentType');
-          }).then(function(arguments) {
+          }).then(function(args) {
             // Check ALLOW => BLOCK transition succeeded.
             Polymer.dom.flush();
 
-            assertEquals(category, arguments[0]);
-            assertEquals(settings.PermissionValues.BLOCK, arguments[1]);
+            assertEquals(category, args[0]);
+            assertEquals(settings.PermissionValues.BLOCK, args[1]);
             assertFalse(testElement.categoryEnabled);
             assertTrue(askCheckbox.disabled);
             assertFalse(askCheckbox.checked);
@@ -240,12 +240,12 @@ cr.define('site_settings_category', function() {
             browserProxy.resetResolver('setDefaultValueForContentType');
             MockInteractions.tap(testElement.$.toggle);
             return browserProxy.whenCalled('setDefaultValueForContentType');
-          }).then(function(arguments) {
+          }).then(function(args) {
             // Check BLOCK => ALLOW transition succeeded.
             Polymer.dom.flush();
 
-            assertEquals(category, arguments[0]);
-            assertEquals(settings.PermissionValues.ALLOW, arguments[1]);
+            assertEquals(category, args[0]);
+            assertEquals(settings.PermissionValues.ALLOW, args[1]);
             assertTrue(testElement.categoryEnabled);
             assertFalse(askCheckbox.disabled);
             assertFalse(askCheckbox.checked);
@@ -253,12 +253,12 @@ cr.define('site_settings_category', function() {
             browserProxy.resetResolver('setDefaultValueForContentType');
             MockInteractions.tap(askCheckbox);
             return browserProxy.whenCalled('setDefaultValueForContentType');
-          }).then(function(arguments) {
+          }).then(function(args) {
             // Check ALLOW => THIRD_STATE transition succeeded.
             Polymer.dom.flush();
 
-            assertEquals(category, arguments[0]);
-            assertEquals(thirdState, arguments[1]);
+            assertEquals(category, args[0]);
+            assertEquals(thirdState, args[1]);
             assertTrue(testElement.categoryEnabled);
             assertFalse(askCheckbox.disabled);
             assertTrue(askCheckbox.checked);

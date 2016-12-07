@@ -96,8 +96,8 @@ cr.define('zoom_levels', function() {
           assert(!!removeButton);
           MockInteractions.tap(removeButton);
           return browserProxy.whenCalled('removeZoomLevel');
-        }).then(function(arguments) {
-          assertEquals("http://www.google.com", arguments[0]);
+        }).then(function(args) {
+          assertEquals("http://www.google.com", args[0]);
         });
       });
     });
