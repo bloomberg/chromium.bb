@@ -9,7 +9,7 @@ namespace media {
 CdmSessionTracker::CdmSessionTracker() {}
 
 CdmSessionTracker::~CdmSessionTracker() {
-  DCHECK(session_ids_.empty());
+  DCHECK(!HasRemainingSessions());
 }
 
 void CdmSessionTracker::AddSession(const std::string& session_id) {
@@ -30,6 +30,10 @@ void CdmSessionTracker::CloseRemainingSessions(
 
   for (const auto& session_id : session_ids)
     session_closed_cb.Run(session_id);
+}
+
+bool CdmSessionTracker::HasRemainingSessions() const {
+  return !session_ids_.empty();
 }
 
 }  // namespace media

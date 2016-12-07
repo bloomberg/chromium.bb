@@ -112,7 +112,7 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
   }
 
   // Otherwise, set an error handler to catch the connection error.
-  remote_cdm_.set_connection_error_handler(
+  remote_cdm_.set_connection_error_with_reason_handler(
       base::Bind(&MojoCdm::OnConnectionError, base::Unretained(this)));
 
   pending_init_promise_ = std::move(promise);
@@ -122,15 +122,22 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
       base::Bind(&MojoCdm::OnCdmInitialized, base::Unretained(this)));
 }
 
-void MojoCdm::OnConnectionError() {
-  LOG(ERROR) << "Remote CDM connection error.";
+// TODO(xhwang): Properly handle CDM calls after connection error.
+// See http://crbug.com/671362
+void MojoCdm::OnConnectionError(uint32_t custom_reason,
+                                const std::string& description) {
+  LOG(ERROR) << "Remote CDM connection error: custom_reason=" << custom_reason
+             << ", description=\"" << description << "\"";
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Handle initial connection error.
   if (pending_init_promise_) {
+    DCHECK(!cdm_session_tracker_.HasRemainingSessions());
     pending_init_promise_->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
                                   "Mojo CDM creation failed.");
+    // Dropping the promise could cause |this| to be destructed.
     pending_init_promise_.reset();
+    return;
   }
 
   cdm_session_tracker_.CloseRemainingSessions(session_closed_cb_);

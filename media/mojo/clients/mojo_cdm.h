@@ -89,7 +89,8 @@ class MojoCdm : public MediaKeys,
                      const CdmConfig& cdm_config,
                      std::unique_ptr<CdmInitializedPromise> promise);
 
-  void OnConnectionError();
+  void OnConnectionError(uint32_t custom_reason,
+                         const std::string& description);
 
   // mojom::ContentDecryptionModuleClient implementation.
   void OnSessionMessage(const std::string& session_id,
