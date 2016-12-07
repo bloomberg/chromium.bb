@@ -79,9 +79,6 @@ declare_args() {
 
 # Additional dependent variables -----------------------------------------------
 
-# Enable notifications everywhere except iOS.
-enable_notifications = !is_ios
-
 enable_web_speech = !is_android && !is_ios
 
 enable_task_manager = !is_ios && !is_android

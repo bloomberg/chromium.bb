@@ -56,12 +56,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-
-#if defined(ENABLE_NOTIFICATIONS)
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
-#endif
 
 using content::SiteInstance;
 using content::WebContents;
@@ -80,12 +77,10 @@ void CloseBalloon(const std::string& balloon_id, ProfileID profile_id) {
       g_browser_process->notification_ui_manager();
   bool cancelled = notification_ui_manager->CancelById(balloon_id, profile_id);
   if (cancelled) {
-#if defined(ENABLE_NOTIFICATIONS)
     // TODO(dewittj): Add this functionality to the notification UI manager's
     // API.
     g_browser_process->message_center()->SetVisibility(
         message_center::VISIBILITY_TRANSIENT);
-#endif
   }
 }
 
@@ -158,7 +153,6 @@ class CrashNotificationDelegate : public NotificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(CrashNotificationDelegate);
 };
 
-#if defined(ENABLE_NOTIFICATIONS)
 void NotificationImageReady(
     const std::string extension_name,
     const base::string16 message,
@@ -192,12 +186,10 @@ void NotificationImageReady(
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);
 }
-#endif
 
 // Show a popup notification balloon with a crash message for a given app/
 // extension.
 void ShowBalloon(const Extension* extension, Profile* profile) {
-#if defined(ENABLE_NOTIFICATIONS)
   const base::string16 message = l10n_util::GetStringFUTF16(
       extension->is_app() ? IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
                             IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
@@ -220,7 +212,6 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
           message,
           make_scoped_refptr(new CrashNotificationDelegate(profile, extension)),
           profile));
-#endif
 }
 
 void ReloadExtension(const std::string& extension_id, Profile* profile) {

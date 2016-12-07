@@ -12155,7 +12155,7 @@ Tell us what happened exactly before you got the profile error message:
       </if>
 
       <!-- Web and message center notifications -->
-      <if expr="enable_notifications">
+      <if expr="not is_ios">
         <message name="IDS_NOTIFICATION_PERMISSIONS" desc="Text requesting permission for Web Notifications.">
           <ph name="site">$1<ex>mail.google.com</ex></ph> wants to send you notifications.
         </message>
@@ -14420,7 +14420,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_PUSH_MESSSAGING_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny a site to send push messages.">
         Do not allow any sites to send push messages
       </message>
-      <if expr="enable_notifications">
+      <if expr="not is_ios">
         <message name="IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY" desc="Body text of an auto-generated notification informing the user that the site may have received an update in the background, in case the site did not satisfy the visible notification requirement itself.">
           This site has been updated in the background.
         </message>

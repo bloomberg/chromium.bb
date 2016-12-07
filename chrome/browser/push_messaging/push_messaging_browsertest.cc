@@ -111,9 +111,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(https_server_->Start());
 
-#if defined(ENABLE_NOTIFICATIONS)
     notification_manager_.reset(new StubNotificationUIManager);
-#endif
 
     InProcessBrowserTest::SetUp();
   }
@@ -135,12 +133,10 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
     push_service_ =
         PushMessagingServiceFactory::GetForProfile(GetBrowser()->profile());
-#if defined(ENABLE_NOTIFICATIONS)
     display_service_.reset(new MessageCenterDisplayService(
         GetBrowser()->profile(), notification_manager_.get()));
     notification_service()->SetNotificationDisplayServiceForTesting(
         display_service_.get());
-#endif
 
     LoadTestPage();
     InProcessBrowserTest::SetUpOnMainThread();
@@ -174,10 +170,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void TearDown() override {
-#if defined(ENABLE_NOTIFICATIONS)
     notification_service()->SetNotificationDisplayServiceForTesting(nullptr);
-#endif
-
     InProcessBrowserTest::TearDown();
   }
 
@@ -240,7 +233,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   net::EmbeddedTestServer* https_server() const { return https_server_.get(); }
 
-#if defined(ENABLE_NOTIFICATIONS)
   // To be called when delivery of a push message has finished. The |run_loop|
   // will be told to quit after |messages_required| messages were received.
   void OnDeliveryFinished(std::vector<size_t>* number_of_notifications_shown,
@@ -260,7 +252,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   PlatformNotificationServiceImpl* notification_service() const {
     return PlatformNotificationServiceImpl::GetInstance();
   }
-#endif
 
   PushMessagingServiceImpl* push_service() const { return push_service_; }
 
@@ -287,10 +278,8 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   PushMessagingServiceImpl* push_service_;
 
-#if defined(ENABLE_NOTIFICATIONS)
   std::unique_ptr<StubNotificationUIManager> notification_manager_;
   std::unique_ptr<MessageCenterDisplayService> display_service_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingBrowserTest);
 };
@@ -1204,7 +1193,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventWithoutPermission) {
       content::PUSH_UNREGISTRATION_REASON_DELIVERY_PERMISSION_DENIED, 1);
 }
 
-#if defined(ENABLE_NOTIFICATIONS)
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        PushEventEnforcesUserVisibleNotification) {
   std::string script_result;
@@ -1469,7 +1457,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("permissionState()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PermissionStateSaysPrompt) {
   std::string script_result;

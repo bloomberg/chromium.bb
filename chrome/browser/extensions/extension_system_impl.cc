@@ -33,6 +33,8 @@
 #include "chrome/browser/extensions/state_store_notification_observer.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/update_install_gate.h"
+#include "chrome/browser/notifications/notifier_state_tracker.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -55,12 +57,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_url_handlers.h"
-
-#if defined(ENABLE_NOTIFICATIONS)
-#include "chrome/browser/notifications/notifier_state_tracker.h"
-#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "ui/message_center/notifier_settings.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -430,7 +427,6 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
   bool incognito_enabled = util::IsIncognitoEnabled(extension->id(), profile_);
 
   bool notifications_disabled = false;
-#if defined(ENABLE_NOTIFICATIONS)
   message_center::NotifierId notifier_id(
       message_center::NotifierId::APPLICATION,
       extension->id());
@@ -439,7 +435,6 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
       NotifierStateTrackerFactory::GetForProfile(profile_);
   notifications_disabled =
       !notifier_state_tracker->IsNotifierEnabled(notifier_id);
-#endif
 
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,

@@ -383,6 +383,7 @@ if (!is_android) {
       "../browser/autofill/autofill_uitest_util.cc",
       "../browser/browser_keyevents_browsertest.cc",
       "../browser/extensions/api/extension_action/browser_action_interactive_test.cc",
+      "../browser/extensions/api/notifications/notifications_apitest.cc",
       "../browser/extensions/api/omnibox/omnibox_api_interactive_test.cc",
       "../browser/extensions/api/tabs/tabs_interactive_test.cc",
       "../browser/extensions/browsertest_util.cc",
@@ -400,6 +401,7 @@ if (!is_android) {
       "../browser/extensions/updater/extension_cache_fake.h",
       "../browser/extensions/window_open_interactive_apitest.cc",
       "../browser/mouseleave_browsertest.cc",
+      "../browser/notifications/message_center_notifications_browsertest.cc",
       "../browser/password_manager/password_generation_interactive_uitest.cc",
       "../browser/password_manager/password_manager_interactive_uitest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc",
@@ -693,6 +695,13 @@ if (!is_android) {
           "../browser/ui/views/bookmarks/bookmark_bar_view_test.cc",
         ]
       }
+    } else {  # ! is_chromeos
+      # Non-ChromeOS notifications tests (ChromeOS does not use cross-platform
+      # panels).
+      sources += [
+        "../browser/notifications/notification_interactive_uitest.cc",
+        "../browser/notifications/platform_notification_service_interactive_uitest.cc",
+      ]
     }
 
     if (is_win) {
@@ -776,32 +785,16 @@ if (!is_android) {
       deps += [ "//ash/test:interactive_ui_test_support" ]
     }
 
-    if (enable_notifications) {
-      sources += [
-        "../browser/extensions/api/notifications/notifications_apitest.cc",
+    if (is_android) {
+      sources -= [
+        # Android does not use the message center-based Notification system.
         "../browser/notifications/message_center_notifications_browsertest.cc",
+
+        # TODO(peter): Enable the Notification browser tests.
+        "../browser/notifications/notification_interactive_uitest.cc",
+        "../browser/notifications/platform_notification_service_interactive_uitest.cc",
       ]
-
-      # Non-ChromeOS notifications tests (ChromeOS does not use cross-platform
-      # panels).
-      if (!is_chromeos) {
-        sources += [
-          "../browser/notifications/notification_interactive_uitest.cc",
-          "../browser/notifications/platform_notification_service_interactive_uitest.cc",
-        ]
-      }
-
-      if (is_android) {
-        sources -= [
-          # Android does not use the message center-based Notification system.
-          "../browser/notifications/message_center_notifications_browsertest.cc",
-
-          # TODO(peter): Enable the Notification browser tests.
-          "../browser/notifications/notification_interactive_uitest.cc",
-          "../browser/notifications/platform_notification_service_interactive_uitest.cc",
-        ]
-      }
-    }  # enable_notifications
+    }
 
     if (!use_aura || is_chromeos) {
       sources -= [ "//ui/views/corewm/desktop_capture_controller_unittest.cc" ]
@@ -3213,6 +3206,14 @@ test("unit_tests") {
     "../browser/net/spdyproxy/data_reduction_proxy_chrome_settings_unittest.cc",
     "../browser/net/spdyproxy/data_reduction_proxy_settings_unittest_android.cc",
     "../browser/net/url_info_unittest.cc",
+    "../browser/notifications/desktop_notification_profile_util_unittest.cc",
+    "../browser/notifications/notification_permission_context_unittest.cc",
+    "../browser/notifications/notification_platform_bridge_mac_unittest.mm",
+    "../browser/notifications/platform_notification_service_unittest.cc",
+    "../browser/notifications/stub_alert_dispatcher_mac.h",
+    "../browser/notifications/stub_alert_dispatcher_mac.mm",
+    "../browser/notifications/stub_notification_center_mac.h",
+    "../browser/notifications/stub_notification_center_mac.mm",
     "../browser/ntp_snippets/download_suggestions_provider_unittest.cc",
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
@@ -3586,7 +3587,11 @@ test("unit_tests") {
       "../browser/memory/tab_manager_delegate_chromeos_unittest.cc",
       "../browser/memory/tab_manager_unittest.cc",
       "../browser/memory/tab_manager_web_contents_data_unittest.cc",
+
+      # Android does not use the Message Center notification system.
       "../browser/net/firefox_proxy_settings_unittest.cc",
+      "../browser/notifications/message_center_notifications_unittest.cc",
+      "../browser/notifications/message_center_settings_controller_unittest.cc",
       "../browser/permissions/permission_request_manager_unittest.cc",
       "../browser/platform_util_unittest.cc",
       "../browser/power_usage_monitor/power_usage_monitor_unittest.cc",
@@ -4197,27 +4202,6 @@ test("unit_tests") {
       "../browser/speech/extension_api/extension_manifests_tts_unittest.cc",
       "../browser/speech/tts_controller_unittest.cc",
     ]
-  }
-  if (enable_notifications) {
-    sources += [
-      "../browser/notifications/desktop_notification_profile_util_unittest.cc",
-      "../browser/notifications/message_center_notifications_unittest.cc",
-      "../browser/notifications/message_center_settings_controller_unittest.cc",
-      "../browser/notifications/notification_permission_context_unittest.cc",
-      "../browser/notifications/notification_platform_bridge_mac_unittest.mm",
-      "../browser/notifications/platform_notification_service_unittest.cc",
-      "../browser/notifications/stub_alert_dispatcher_mac.h",
-      "../browser/notifications/stub_alert_dispatcher_mac.mm",
-      "../browser/notifications/stub_notification_center_mac.h",
-      "../browser/notifications/stub_notification_center_mac.mm",
-    ]
-    if (is_android) {
-      sources -= [
-        # Android does not use the Message Center notification system.
-        "../browser/notifications/message_center_notifications_unittest.cc",
-        "../browser/notifications/message_center_settings_controller_unittest.cc",
-      ]
-    }
   }
 
   if (safe_browsing_mode > 0) {

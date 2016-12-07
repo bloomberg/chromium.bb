@@ -16,7 +16,7 @@ component("message_center") {
 
   defines = [ "MESSAGE_CENTER_IMPLEMENTATION" ]
 
-  if (enable_notifications && !is_android) {
+  if (!is_ios && !is_android) {
     deps += [
       "//base:i18n",
       "//base/third_party/dynamic_annotations",
@@ -167,7 +167,7 @@ component("message_center") {
 static_library("test_support") {
   testonly = true
 
-  if (enable_notifications && !is_android) {
+  if (!is_ios && !is_android) {
     sources = [
       "fake_message_center.cc",
       "fake_message_center.h",
@@ -218,7 +218,7 @@ test("message_center_unittests") {
     "//ui/resources:ui_test_pak_data",
   ]
 
-  if (enable_notifications && !is_android) {
+  if (!is_ios && !is_android) {
     sources += [
       "cocoa/notification_controller_unittest.mm",
       "cocoa/popup_collection_unittest.mm",
@@ -260,5 +260,5 @@ test("message_center_unittests") {
         "//ui/message_center/mojo:test_interfaces",
       ]
     }
-  }  # enable_notifications && !is_android
+  }  # !is_ios && !is_android
 }

@@ -2269,12 +2269,7 @@ content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
 
 content::PlatformNotificationService*
 ChromeContentBrowserClient::GetPlatformNotificationService() {
-#if defined(ENABLE_NOTIFICATIONS)
   return PlatformNotificationServiceImpl::GetInstance();
-#else
-  NOTIMPLEMENTED();
-  return NULL;
-#endif
 }
 
 bool ChromeContentBrowserClient::CanCreateWindow(

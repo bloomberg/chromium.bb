@@ -1692,13 +1692,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_CROS_REGIONS_MODE_DESCRIPTION, kOsCrOS,
      MULTI_VALUE_TYPE(kCrosRegionsModeChoices)},
 #endif  // OS_CHROMEOS
-#if defined(ENABLE_NOTIFICATIONS) && defined(OS_ANDROID)
+#if defined(OS_ANDROID)
     {"enable-web-notification-custom-layouts",
      IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_NAME,
      IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_DESCRIPTION, kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableWebNotificationCustomLayouts,
                                switches::kDisableWebNotificationCustomLayouts)},
-#endif  // ENABLE_NOTIFICATIONS && OS_ANDROID
+#endif  // OS_ANDROID
 #if defined(OS_WIN)
     {"enable-appcontainer", IDS_FLAGS_ENABLE_APPCONTAINER_NAME,
      IDS_FLAGS_ENABLE_APPCONTAINER_DESCRIPTION, kOsWin,

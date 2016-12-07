@@ -252,12 +252,6 @@ if (enable_task_manager) {
     "enable_task_manager",
   ]
 }
-if (enable_notifications) {
-  grit_defines += [
-    "-D",
-    "enable_notifications",
-  ]
-}
 
 # TODO(aberent): Enable for other platforms once the build machines have
 #                Java on them (and hence can run the closure compiler).

@@ -214,12 +214,10 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   CrossDevicePromoFactory::GetInstance();
 #endif
-#if defined(ENABLE_NOTIFICATIONS)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ExtensionWelcomeNotificationFactory::GetInstance();
 #endif
   NotifierStateTrackerFactory::GetInstance();
-#endif  // defined(ENABLE_NOTIFICATIONS)
   data_use_measurement::ChromeDataUseAscriberServiceFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   domain_reliability::DomainReliabilityServiceFactory::GetInstance();

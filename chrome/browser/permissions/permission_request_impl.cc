@@ -46,11 +46,9 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
   switch (permission_type_) {
     case content::PermissionType::GEOLOCATION:
       return IDR_ANDROID_INFOBAR_GEOLOCATION;
-#if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
     case content::PermissionType::PUSH_MESSAGING:
       return IDR_ANDROID_INFOBAR_NOTIFICATIONS;
-#endif
     case content::PermissionType::MIDI_SYSEX:
       return IDR_ANDROID_INFOBAR_MIDI;
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
@@ -63,11 +61,9 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
   switch (permission_type_) {
     case content::PermissionType::GEOLOCATION:
       return gfx::VectorIconId::LOCATION_ON;
-#if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
     case content::PermissionType::PUSH_MESSAGING:
       return gfx::VectorIconId::NOTIFICATIONS;
-#endif
 #if defined(OS_CHROMEOS)
     // TODO(xhwang): fix this icon, see crrev.com/863263007
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
@@ -90,12 +86,10 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
     case content::PermissionType::GEOLOCATION:
       message_id = IDS_GEOLOCATION_INFOBAR_PERMISSION_FRAGMENT;
       break;
-#if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
     case content::PermissionType::PUSH_MESSAGING:
       message_id = IDS_NOTIFICATION_PERMISSIONS_FRAGMENT;
       break;
-#endif
     case content::PermissionType::MIDI_SYSEX:
       message_id = IDS_MIDI_SYSEX_PERMISSION_FRAGMENT;
       break;
@@ -158,9 +152,7 @@ ContentSettingsType PermissionRequestImpl::GetContentSettingsType() const {
     case content::PermissionType::GEOLOCATION:
       return CONTENT_SETTINGS_TYPE_GEOLOCATION;
     case content::PermissionType::PUSH_MESSAGING:
-#if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
-#endif
       return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
     case content::PermissionType::MIDI_SYSEX:
       return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;

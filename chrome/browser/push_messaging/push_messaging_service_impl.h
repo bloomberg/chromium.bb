@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/background/background_trigger.h"
+#include "chrome/browser/push_messaging/push_messaging_notification_manager.h"
 #include "chrome/common/features.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -29,10 +30,6 @@
 #include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
-
-#if defined(ENABLE_NOTIFICATIONS)
-#include "chrome/browser/push_messaging/push_messaging_notification_manager.h"
-#endif
 
 class Profile;
 class PushMessagingAppIdentifier;
@@ -252,9 +249,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   base::Closure message_callback_for_testing_;
   base::Closure content_setting_changed_callback_for_testing_;
 
-#if defined(ENABLE_NOTIFICATIONS)
   PushMessagingNotificationManager notification_manager_;
-#endif
 
   // A multiset containing one entry for each in-flight push message delivery,
   // keyed by the receiver's app id.

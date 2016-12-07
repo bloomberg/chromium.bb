@@ -490,6 +490,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   MediaCaptureDevicesDispatcher::RegisterProfilePrefs(registry);
   MediaDeviceIDSalt::RegisterProfilePrefs(registry);
   MediaStreamDevicesController::RegisterProfilePrefs(registry);
+  NotifierStateTracker::RegisterProfilePrefs(registry);
   ntp_snippets::BookmarkSuggestionsProvider::RegisterProfilePrefs(registry);
   ntp_snippets::ForeignSessionsSuggestionsProvider::RegisterProfilePrefs(
       registry);
@@ -529,12 +530,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::RuntimeAPI::RegisterPrefs(registry);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if defined(ENABLE_NOTIFICATIONS)
-  NotifierStateTracker::RegisterProfilePrefs(registry);
-#endif
-
-#if defined(ENABLE_NOTIFICATIONS) && BUILDFLAG(ENABLE_EXTENSIONS) && \
-    !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_ANDROID)
   // The extension welcome notification requires a build that enables extensions
   // and notifications, and uses the UI message center.
   ExtensionWelcomeNotification::RegisterProfilePrefs(registry);

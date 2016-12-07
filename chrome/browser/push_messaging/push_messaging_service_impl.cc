@@ -186,9 +186,7 @@ PushMessagingServiceImpl::PushMessagingServiceImpl(Profile* profile)
     : profile_(profile),
       push_subscription_count_(0),
       pending_push_subscription_count_(0),
-#if defined(ENABLE_NOTIFICATIONS)
       notification_manager_(profile),
-#endif
       push_messaging_service_observer_(PushMessagingServiceObserver::Create()),
       weak_factory_(this) {
   DCHECK(profile);
@@ -374,7 +372,6 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     case content::PUSH_DELIVERY_STATUS_SUCCESS:
     case content::PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED:
     case content::PUSH_DELIVERY_STATUS_TIMEOUT:
-#if defined(ENABLE_NOTIFICATIONS)
       // Only enforce the user visible requirements if this is currently running
       // as the delivery callback for the last in-flight message, and silent
       // push has not been enabled through a command line flag.
@@ -385,7 +382,6 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
             requesting_origin, service_worker_registration_id,
             completion_closure_runner.Release());
       }
-#endif
       break;
     case content::PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR:
       // Do nothing, and hope the error is transient.

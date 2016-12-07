@@ -60,10 +60,8 @@ PermissionRequestType PermissionUtil::GetRequestType(
   switch (type) {
     case content::PermissionType::GEOLOCATION:
       return PermissionRequestType::PERMISSION_GEOLOCATION;
-#if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
       return PermissionRequestType::PERMISSION_NOTIFICATIONS;
-#endif
     case content::PermissionType::MIDI_SYSEX:
       return PermissionRequestType::PERMISSION_MIDI_SYSEX;
     case content::PermissionType::PUSH_MESSAGING:

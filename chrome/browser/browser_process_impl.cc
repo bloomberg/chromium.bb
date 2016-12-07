@@ -1139,7 +1139,7 @@ void BrowserProcessImpl::CreateIntranetRedirectDetector() {
 }
 
 void BrowserProcessImpl::CreateNotificationPlatformBridge() {
-#if (defined(OS_ANDROID) || defined(OS_MACOSX)) && defined(ENABLE_NOTIFICATIONS)
+#if (defined(OS_ANDROID) || defined(OS_MACOSX))
   DCHECK(!notification_bridge_);
   notification_bridge_.reset(NotificationPlatformBridge::Create());
   created_notification_bridge_ = true;
@@ -1149,7 +1149,7 @@ void BrowserProcessImpl::CreateNotificationPlatformBridge() {
 void BrowserProcessImpl::CreateNotificationUIManager() {
 // Android does not use the NotificationUIManager anymore
 // All notification traffic is routed through NotificationPlatformBridge.
-#if defined(ENABLE_NOTIFICATIONS) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
   DCHECK(!notification_ui_manager_);
   notification_ui_manager_.reset(NotificationUIManager::Create());
   created_notification_ui_manager_ = true;

@@ -15,6 +15,8 @@
 #include "chrome/browser/background/background_contents.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/notifications/message_center_notification_manager.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/pref_names.h"
@@ -30,15 +32,10 @@
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "url/gurl.h"
-
-#if defined(ENABLE_NOTIFICATIONS)
-#include "chrome/browser/notifications/message_center_notification_manager.h"
-#include "chrome/browser/notifications/notification.h"
 #include "ui/message_center/fake_message_center_tray_delegate.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
-#endif
+#include "url/gurl.h"
 
 class BackgroundContentsServiceTest : public testing::Test {
  public:
@@ -126,7 +123,6 @@ class MockBackgroundContents : public BackgroundContents {
   Profile* profile_;
 };
 
-#if defined(ENABLE_NOTIFICATIONS)
 // Wait for the notification created.
 class NotificationWaiter : public message_center::MessageCenterObserver {
  public:
@@ -226,7 +222,6 @@ class BackgroundContentsServiceNotificationTest
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContentsServiceNotificationTest);
 };
-#endif  // ENABLE_NOTIFICATIONS
 
 TEST_F(BackgroundContentsServiceTest, Create) {
   // Check for creation and leaks.
@@ -360,7 +355,6 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
   EXPECT_EQ(url2.spec(), GetPrefURLForApp(&profile, contents2->appid()));
 }
 
-#if defined(ENABLE_NOTIFICATIONS)
 TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloon) {
   scoped_refptr<extensions::Extension> extension =
       extension_test_util::LoadManifest("image_loading_tracker", "app.json");
@@ -420,4 +414,3 @@ TEST_F(BackgroundContentsServiceNotificationTest, TestShowTwoBalloons) {
       message_center->GetVisibleNotifications();
   ASSERT_EQ(1u, notifications.size());
 }
-#endif

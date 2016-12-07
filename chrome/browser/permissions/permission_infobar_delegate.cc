@@ -52,13 +52,11 @@ PermissionInfoBarDelegate::CreateDelegate(
       return std::unique_ptr<PermissionInfoBarDelegate>(
               new GeolocationInfoBarDelegateAndroid(
                   requesting_frame, user_gesture, profile, callback));
-#if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
     case content::PermissionType::PUSH_MESSAGING:
       return std::unique_ptr<PermissionInfoBarDelegate>(
           new NotificationPermissionInfoBarDelegate(
               type, requesting_frame, user_gesture, profile, callback));
-#endif  // ENABLE_NOTIFICATIONS
     case content::PermissionType::MIDI_SYSEX:
       return std::unique_ptr<PermissionInfoBarDelegate>(
               new MidiPermissionInfoBarDelegateAndroid(

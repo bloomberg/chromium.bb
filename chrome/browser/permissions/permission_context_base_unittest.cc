@@ -621,11 +621,9 @@ TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithBubbles) {
   TestGrantAndRevoke_TestContent(content::PermissionType::GEOLOCATION,
                                  CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                  CONTENT_SETTING_ASK);
-#if defined(ENABLE_NOTIFICATIONS)
   TestGrantAndRevoke_TestContent(content::PermissionType::NOTIFICATIONS,
                                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                  CONTENT_SETTING_ASK);
-#endif
   TestGrantAndRevoke_TestContent(content::PermissionType::MIDI_SYSEX,
                                  CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                                  CONTENT_SETTING_ASK);
