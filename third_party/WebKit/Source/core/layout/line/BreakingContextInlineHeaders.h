@@ -492,8 +492,14 @@ inline void BreakingContext::handleFloat() {
 
   if (m_floatsFitOnLine) {
     // We need to calculate the logical width of the float before we can tell
-    // whether it's going to fit on the line.
-    m_block.positionAndLayoutFloat(*floatingObject, m_block.logicalHeight());
+    // whether it's going to fit on the line. That means that we need to
+    // position and lay it out. Note that we have to avoid positioning floats
+    // that have been placed prematurely: Sometimes, floats are inserted too
+    // early by skipTrailingWhitespace(), and later on they all get placed by
+    // the first float here in handleFloat(). Their position may then be wrong,
+    // but it's too late to do anything about that now. See crbug.com/671577
+    if (!floatingObject->isPlaced())
+      m_block.positionAndLayoutFloat(*floatingObject, m_block.logicalHeight());
 
     // Check if it fits in the current line; if it does, place it now,
     // otherwise, place it after moving to next line (in newLine() func).

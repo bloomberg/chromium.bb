@@ -3636,6 +3636,11 @@ bool LayoutBlockFlow::placeNewFloats(LayoutUnit logicalTopMarginEdge,
 LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
     FloatingObject& floatingObject,
     LayoutUnit logicalTopMarginEdge) {
+  // Once a float has been placed, we cannot update its position, or the float
+  // interval tree will be out of sync with reality. This may in turn lead to
+  // objects being used after they have been deleted.
+  CHECK(!floatingObject.isPlaced());
+
   LayoutBox& child = *floatingObject.layoutObject();
 
   // FIXME Investigate if this can be removed. crbug.com/370006
