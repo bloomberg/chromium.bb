@@ -1312,8 +1312,8 @@ void PictureLayerImpl::AsValueInto(
 
   state->BeginArray("coverage_tiles");
   for (PictureLayerTilingSet::CoverageIterator iter(
-           tilings_.get(), 1.f, gfx::Rect(raster_source_->GetSize()),
-           ideal_contents_scale_);
+           tilings_.get(), MaximumTilingContentsScale(),
+           gfx::Rect(raster_source_->GetSize()), ideal_contents_scale_);
        iter; ++iter) {
     state->BeginDictionary();
 
