@@ -112,6 +112,8 @@ class TestDriver:
         if arg_key in original_args:
           self._chrome_args.remove(original_args[arg_key])
         self._chrome_args.add(override_arg)
+    # Always add the flag that allows histograms to be queried in javascript.
+    self._chrome_args.add('--enable-stats-collection-bindings')
 
   def _StartDriver(self):
     """Parses the flags to pass to Chromium, then starts the ChromeDriver.
@@ -252,6 +254,11 @@ class TestDriver:
       A string of the verbatim output from the Javascript execution.
     """
     return self.ExecuteJavascript("return " + script, timeout)
+
+  def GetHistogram(self, histogram):
+    js_query = 'statsCollectionController.getBrowserHistogram("%s")' % histogram
+    string_response = self.ExecuteJavascriptStatement(js_query)
+    return json.loads(string_response)
 
   def GetPerformanceLogs(self, method_filter=r'Network\.responseReceived'):
     """Returns all logged Performance events from Chrome.
