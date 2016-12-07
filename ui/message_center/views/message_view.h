@@ -16,11 +16,9 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/slide_out_view.h"
 
 namespace views {
-class ImageButton;
 class ImageView;
 class Painter;
 class ScrollView;
@@ -38,8 +36,7 @@ const int kWebNotificationIconSize = 40;
 
 // An base class for a notification entry. Contains background and other
 // elements shared by derived notification views.
-class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
-                                          public views::ButtonListener {
+class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView {
  public:
   MessageView(MessageCenterController* controller,
               const Notification& notification);
@@ -54,9 +51,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   // Creates a shadow around the notification.
   void CreateShadowBorder();
 
-  bool IsCloseButtonFocused();
-  void RequestFocusOnCloseButton();
-  bool IsPinned();
+  virtual bool IsCloseButtonFocused() const = 0;
+  virtual void RequestFocusOnCloseButton() = 0;
+  virtual bool IsPinned() const = 0;
 
   // Overridden from views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -70,9 +67,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // Overridden from ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
   std::string notification_id() { return notification_id_; }
@@ -98,7 +92,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
 
   views::View* background_view() { return background_view_; }
   views::ImageView* small_image() { return small_image_view_.get(); }
-  views::ImageButton* close_button() { return close_button_.get(); }
   views::ScrollView* scroller() { return scroller_; }
   MessageCenterController* controller() { return controller_; }
 
@@ -108,7 +101,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   NotifierId notifier_id_;
   views::View* background_view_ = nullptr;  // Owned by views hierarchy.
   std::unique_ptr<views::ImageView> small_image_view_;
-  std::unique_ptr<views::ImageButton> close_button_;
   views::ScrollView* scroller_ = nullptr;
 
   base::string16 accessible_name_;

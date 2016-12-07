@@ -8,8 +8,8 @@
 
 namespace message_center {
 
-std::unique_ptr<views::View> NotificationDelegate::CreateCustomContent() {
-  return std::unique_ptr<views::View>();
+std::unique_ptr<CustomContent> NotificationDelegate::CreateCustomContent() {
+  return nullptr;
 }
 
 }  // namespace message_center

@@ -14,6 +14,7 @@
 #include "ui/arc/notification/arc_custom_notification_view.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
+#include "ui/message_center/views/custom_notification_content_view_delegate.h"
 
 namespace arc {
 
@@ -26,8 +27,12 @@ class ArcNotificationDelegate : public message_center::NotificationDelegate {
   explicit ArcNotificationDelegate(ArcCustomNotificationItem* item)
       : item_(item) {}
 
-  std::unique_ptr<views::View> CreateCustomContent() override {
-    return base::MakeUnique<ArcCustomNotificationView>(item_);
+  std::unique_ptr<message_center::CustomContent> CreateCustomContent()
+      override {
+    auto view = base::MakeUnique<ArcCustomNotificationView>(item_);
+    auto content_view_delegate = view->CreateContentViewDelegate();
+    return base::MakeUnique<message_center::CustomContent>(
+        std::move(view), std::move(content_view_delegate));
   }
 
  private:

@@ -12,6 +12,7 @@
 #include "ui/arc/notification/arc_custom_notification_item.h"
 #include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/aura/window_observer.h"
+#include "ui/message_center/views/custom_notification_content_view_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/native/native_view_host.h"
 
@@ -36,7 +37,11 @@ class ArcCustomNotificationView
   explicit ArcCustomNotificationView(ArcCustomNotificationItem* item);
   ~ArcCustomNotificationView() override;
 
+  std::unique_ptr<message_center::CustomNotificationContentViewDelegate>
+  CreateContentViewDelegate();
+
  private:
+  class ContentViewDelegate;
   class EventForwarder;
   class SlideHelper;
 

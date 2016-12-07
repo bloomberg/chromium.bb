@@ -66,13 +66,22 @@ class TestCustomView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TestCustomView);
 };
 
+class TestContentViewDelegate : public CustomNotificationContentViewDelegate {
+ public:
+  bool IsCloseButtonFocused() const override { return false; }
+  void RequestFocusOnCloseButton() override {}
+  bool IsPinned() const override { return false; }
+};
+
 class TestNotificationDelegate : public NotificationDelegate {
  public:
   TestNotificationDelegate() {}
 
   // NotificateDelegate
-  std::unique_ptr<views::View> CreateCustomContent() override {
-    return base::WrapUnique(new TestCustomView);
+  std::unique_ptr<CustomContent> CreateCustomContent() override {
+    return base::MakeUnique<CustomContent>(
+        base::MakeUnique<TestCustomView>(),
+        base::MakeUnique<TestContentViewDelegate>());
   }
 
  private:
@@ -187,9 +196,6 @@ class CustomNotificationViewTest : public views::ViewsTestBase {
     widget()->OnKeyEvent(&event);
   }
 
-  views::ImageButton* close_button() {
-    return notification_view_->close_button();
-  }
   TestMessageCenterController* controller() { return &controller_; }
   Notification* notification() { return notification_.get(); }
   TestCustomView* custom_view() {
@@ -208,15 +214,6 @@ class CustomNotificationViewTest : public views::ViewsTestBase {
 
 TEST_F(CustomNotificationViewTest, Background) {
   EXPECT_EQ(kBackgroundColor, GetBackgroundColor());
-}
-
-TEST_F(CustomNotificationViewTest, ClickCloseButton) {
-  widget()->Show();
-
-  gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToWidget(close_button(), &cursor_location);
-  PerformClick(cursor_location);
-  EXPECT_TRUE(controller()->IsRemoved(notification()->id()));
 }
 
 TEST_F(CustomNotificationViewTest, Events) {

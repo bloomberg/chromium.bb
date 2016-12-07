@@ -21,6 +21,9 @@ class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
 
   // Overidden from MessageView:
   void SetDrawBackgroundAsActive(bool active) override;
+  bool IsCloseButtonFocused() const override;
+  void RequestFocusOnCloseButton() override;
+  bool IsPinned() const override;
 
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
@@ -31,6 +34,8 @@ class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
 
   // The view for the custom content. Owned by view hierarchy.
   views::View* contents_view_ = nullptr;
+  std::unique_ptr<CustomNotificationContentViewDelegate>
+      contents_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomNotificationView);
 };

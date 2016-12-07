@@ -14,7 +14,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/message_center_controller.h"
-#include "ui/message_center/views/padded_button.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -26,9 +25,6 @@
 #include "ui/views/shadow_border.h"
 
 namespace {
-
-constexpr int kCloseIconTopPadding = 5;
-constexpr int kCloseIconRightPadding = 5;
 
 constexpr int kShadowOffset = 1;
 constexpr int kShadowBlur = 4;
@@ -92,7 +88,6 @@ MessageView::~MessageView() {
 void MessageView::UpdateWithNotification(const Notification& notification) {
   small_image_view_->SetImage(notification.small_image().AsImageSkia());
   display_source_ = notification.display_source();
-  CreateOrUpdateCloseButtonView(notification);
   accessible_name_ = CreateAccessibleName(notification);
 }
 
@@ -108,24 +103,6 @@ void MessageView::CreateShadowBorder() {
   SetBorder(std::unique_ptr<views::Border>(new views::ShadowBorder(
       gfx::ShadowValue(gfx::Vector2d(0, kShadowOffset), kShadowBlur,
                        message_center::kShadowColor))));
-}
-
-bool MessageView::IsCloseButtonFocused() {
-  if (!close_button_)
-    return false;
-
-  views::FocusManager* focus_manager = GetFocusManager();
-  return focus_manager &&
-         focus_manager->GetFocusedView() == close_button_.get();
-}
-
-void MessageView::RequestFocusOnCloseButton() {
-  if (close_button_)
-    close_button_->RequestFocus();
-}
-
-bool MessageView::IsPinned() {
-  return !close_button_;
 }
 
 void MessageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -169,7 +146,6 @@ bool MessageView::OnKeyReleased(const ui::KeyEvent& event) {
 
 void MessageView::OnPaint(gfx::Canvas* canvas) {
   DCHECK_EQ(this, small_image_view_->parent());
-  DCHECK_EQ(this, close_button_->parent());
   SlideOutView::OnPaint(canvas);
   views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
@@ -191,16 +167,6 @@ void MessageView::Layout() {
 
   // Background.
   background_view_->SetBoundsRect(content_bounds);
-
-  // Close button.
-  if (close_button_) {
-    gfx::Rect content_bounds = GetContentsBounds();
-    gfx::Size close_size(close_button_->GetPreferredSize());
-    gfx::Rect close_rect(content_bounds.right() - close_size.width(),
-                         content_bounds.y(), close_size.width(),
-                         close_size.height());
-    close_button_->SetBoundsRect(close_rect);
-  }
 
   gfx::Size small_image_size(small_image_view_->GetPreferredSize());
   gfx::Rect small_image_rect(small_image_size);
@@ -246,13 +212,6 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-void MessageView::ButtonPressed(views::Button* sender,
-                                const ui::Event& event) {
-  if (close_button_ && sender == close_button_.get()) {
-    controller()->RemoveNotification(notification_id(), true);  // By user.
-  }
-}
-
 void MessageView::OnSlideOut() {
   controller_->RemoveNotification(notification_id_, true);  // By user.
 }
@@ -262,29 +221,6 @@ void MessageView::SetDrawBackgroundAsActive(bool active) {
       SetNativeControlColor(active ? kHoveredButtonBackgroundColor :
                                      kNotificationBackgroundColor);
   SchedulePaint();
-}
-
-void MessageView::CreateOrUpdateCloseButtonView(
-    const Notification& notification) {
-  set_slide_out_enabled(!notification.pinned());
-
-  if (!notification.pinned() && !close_button_) {
-    PaddedButton* close = new PaddedButton(this);
-    close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
-    close->SetNormalImage(IDR_NOTIFICATION_CLOSE);
-    close->SetHoveredImage(IDR_NOTIFICATION_CLOSE_HOVER);
-    close->SetPressedImage(IDR_NOTIFICATION_CLOSE_PRESSED);
-    close->set_animate_on_state_change(false);
-    close->SetAccessibleName(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
-    close->SetTooltipText(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
-    close->set_owned_by_client();
-    AddChildView(close);
-    close_button_.reset(close);
-  } else if (notification.pinned() && close_button_) {
-    close_button_.reset();
-  }
 }
 
 }  // namespace message_center

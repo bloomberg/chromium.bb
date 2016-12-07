@@ -20,9 +20,14 @@ CustomNotificationView::CustomNotificationView(
     : MessageView(controller, notification) {
   DCHECK_EQ(NOTIFICATION_TYPE_CUSTOM, notification.type());
 
-  contents_view_ = notification.delegate()->CreateCustomContent().release();
+  auto custom_content = notification.delegate()->CreateCustomContent();
+
+  contents_view_ = custom_content->view.release();
   DCHECK(contents_view_);
   AddChildView(contents_view_);
+
+  contents_view_delegate_ = std::move(custom_content->delegate);
+  DCHECK(contents_view_delegate_);
 
   if (contents_view_->background()) {
     background_view()->background()->SetNativeControlColor(
@@ -30,8 +35,6 @@ CustomNotificationView::CustomNotificationView(
   }
 
   AddChildView(small_image());
-
-  CreateOrUpdateCloseButtonView(notification);
 }
 
 CustomNotificationView::~CustomNotificationView() {}
@@ -42,6 +45,23 @@ void CustomNotificationView::SetDrawBackgroundAsActive(bool active) {
     return;
 
   MessageView::SetDrawBackgroundAsActive(active);
+}
+
+bool CustomNotificationView::IsCloseButtonFocused() const {
+  if (!contents_view_delegate_)
+    return false;
+  return contents_view_delegate_->IsCloseButtonFocused();
+}
+
+void CustomNotificationView::RequestFocusOnCloseButton() {
+  if (contents_view_delegate_)
+    contents_view_delegate_->RequestFocusOnCloseButton();
+}
+
+bool CustomNotificationView::IsPinned() const {
+  if (!contents_view_delegate_)
+    return false;
+  return contents_view_delegate_->IsPinned();
 }
 
 gfx::Size CustomNotificationView::GetPreferredSize() const {

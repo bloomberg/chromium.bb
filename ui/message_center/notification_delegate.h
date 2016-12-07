@@ -15,9 +15,7 @@
 #include "ui/message_center/message_center_export.h"
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
-namespace views {
-class View;
-}
+#include "ui/message_center/views/custom_notification_content_view_delegate.h"
 #endif
 
 namespace message_center {
@@ -59,7 +57,7 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
   // To be called to construct the contents view of a popup for notifications
   // whose type is NOTIFICATION_TYPE_CUSTOM.
-  virtual std::unique_ptr<views::View> CreateCustomContent();
+  virtual std::unique_ptr<CustomContent> CreateCustomContent();
 #endif
 
   // Indicates whether this notification should be displayed when there is

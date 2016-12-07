@@ -52,6 +52,9 @@ namespace {
 // Dimensions.
 const int kProgressBarBottomPadding = 0;
 
+constexpr int kCloseIconTopPadding = 5;
+constexpr int kCloseIconRightPadding = 5;
+
 // static
 std::unique_ptr<views::Border> MakeEmptyBorder(int top,
                                                int left,
@@ -294,6 +297,16 @@ void NotificationView::Layout() {
                                      settings_size.height());
   }
 
+  // Close button.
+  if (close_button_) {
+    gfx::Rect content_bounds = GetContentsBounds();
+    gfx::Size close_size(close_button_->GetPreferredSize());
+    gfx::Rect close_rect(content_bounds.right() - close_size.width(),
+                         content_bounds.y(), close_size.width(),
+                         close_size.height());
+    close_button_->SetBoundsRect(close_rect);
+  }
+
   bottom_view_->SetBounds(insets.left(), bottom_y,
                           content_width, bottom_height);
 }
@@ -321,6 +334,7 @@ void NotificationView::UpdateWithNotification(
   MessageView::UpdateWithNotification(notification);
 
   CreateOrUpdateViews(notification);
+  CreateOrUpdateCloseButtonView(notification);
   Layout();
   SchedulePaint();
 }
@@ -331,6 +345,13 @@ void NotificationView::ButtonPressed(views::Button* sender,
   // we send to other parts of the code.
   // TODO(dewittj): Remove this hack.
   std::string id(notification_id());
+
+  if (close_button_ && sender == close_button_.get()) {
+    // Warning: This causes the NotificationView itself to be deleted, so don't
+    // do anything afterwards.
+    controller()->RemoveNotification(id, true /* by_user */);
+    return;
+  }
 
   if (sender == settings_button_view_) {
     controller()->ClickOnSettingsButton(id);
@@ -344,11 +365,24 @@ void NotificationView::ButtonPressed(views::Button* sender,
       return;
     }
   }
+}
 
-  // Let the superclass handle everything else.
-  // Warning: This may cause the NotificationView itself to be deleted,
-  // so don't do anything afterwards.
-  MessageView::ButtonPressed(sender, event);
+bool NotificationView::IsCloseButtonFocused() const {
+  if (!close_button_)
+    return false;
+
+  const views::FocusManager* focus_manager = GetFocusManager();
+  return focus_manager &&
+         focus_manager->GetFocusedView() == close_button_.get();
+}
+
+void NotificationView::RequestFocusOnCloseButton() {
+  if (close_button_)
+    close_button_->RequestFocus();
+}
+
+bool NotificationView::IsPinned() const {
+  return !close_button_;
 }
 
 void NotificationView::CreateOrUpdateTitleView(
@@ -627,6 +661,29 @@ void NotificationView::CreateOrUpdateActionButtonViews(
       widget->SetSize(widget->GetContentsView()->GetPreferredSize());
       GetWidget()->SynthesizeMouseMoveEvent();
     }
+  }
+}
+
+void NotificationView::CreateOrUpdateCloseButtonView(
+    const Notification& notification) {
+  set_slide_out_enabled(!notification.pinned());
+
+  if (!notification.pinned() && !close_button_) {
+    PaddedButton* close = new PaddedButton(this);
+    close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
+    close->SetNormalImage(IDR_NOTIFICATION_CLOSE);
+    close->SetHoveredImage(IDR_NOTIFICATION_CLOSE_HOVER);
+    close->SetPressedImage(IDR_NOTIFICATION_CLOSE_PRESSED);
+    close->set_animate_on_state_change(false);
+    close->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
+    close->SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
+    close->set_owned_by_client();
+    AddChildView(close);
+    close_button_.reset(close);
+  } else if (notification.pinned() && close_button_) {
+    close_button_.reset();
   }
 }
 
