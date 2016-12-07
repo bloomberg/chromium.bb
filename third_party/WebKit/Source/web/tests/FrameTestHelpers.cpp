@@ -138,11 +138,11 @@ void loadHistoryItem(WebFrame* frame,
 }
 
 void reloadFrame(WebFrame* frame) {
-  frame->reload(WebFrameLoadType::Reload);
+  frame->reload(WebFrameLoadType::ReloadMainResource);
   pumpPendingRequestsForFrameToLoad(frame);
 }
 
-void reloadFrameIgnoringCache(WebFrame* frame) {
+void reloadFrameBypassingCache(WebFrame* frame) {
   frame->reload(WebFrameLoadType::ReloadBypassingCache);
   pumpPendingRequestsForFrameToLoad(frame);
 }

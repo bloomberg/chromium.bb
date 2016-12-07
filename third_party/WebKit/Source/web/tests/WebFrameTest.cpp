@@ -4089,7 +4089,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadDoesntSetRedirect) {
   webViewHelper.webView()->mainFrame()->reload(
       WebFrameLoadType::ReloadBypassingCache);
   // start another reload before request is delivered.
-  FrameTestHelpers::reloadFrameIgnoringCache(
+  FrameTestHelpers::reloadFrameBypassingCache(
       webViewHelper.webView()->mainFrame());
 }
 
@@ -4147,7 +4147,7 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
   EXPECT_EQ(0, webViewHelper.webView()->mainFrame()->getScrollOffset().height);
   EXPECT_EQ(1.0f, webViewHelper.webView()->pageScaleFactor());
 
-  // Reload the page while ignoring the cache. State should not be propagated.
+  // Reload the page while bypassing the cache. State should not be propagated.
   webViewHelper.webView()->mainFrame()->reloadWithOverrideURL(
       toKURL(m_baseURL + thirdURL), WebFrameLoadType::ReloadBypassingCache);
   FrameTestHelpers::pumpPendingRequestsForFrameToLoad(
@@ -4167,7 +4167,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadWhileProvisional) {
   WebURLRequest request(toKURL(m_baseURL + "fixed_layout.html"));
   webViewHelper.webView()->mainFrame()->loadRequest(request);
   // start reload before first request is delivered.
-  FrameTestHelpers::reloadFrameIgnoringCache(
+  FrameTestHelpers::reloadFrameBypassingCache(
       webViewHelper.webView()->mainFrame());
 
   WebDataSource* dataSource =
@@ -7088,7 +7088,12 @@ TEST_P(ParameterizedWebFrameTest, ReloadIframe) {
 
   EXPECT_EQ(mainClient.childFrameCreationCount(), 2);
   EXPECT_EQ(childClient.willSendRequestCallCount(), 2);
-  EXPECT_EQ(childClient.getCachePolicy(), WebCachePolicy::ValidatingCacheData);
+
+  // Sub-frames should not be forcibly revalidated.
+  // TODO(toyoshim): Will consider to revalidate main resources in sub-frames
+  // on reloads. Or will do only for bypassingCache.
+  EXPECT_EQ(childClient.getCachePolicy(),
+            WebCachePolicy::UseProtocolCachePolicy);
 }
 
 class TestSameDocumentWebFrameClient
@@ -8248,13 +8253,13 @@ TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelfReportOnly) {
 }
 
 TEST_P(ParameterizedWebFrameTest, ReloadBypassingCache) {
-  // Check that a reload ignoring cache on a frame will result in the cache
+  // Check that a reload bypassing cache on a frame will result in the cache
   // policy of the request being set to ReloadBypassingCache.
   registerMockedHttpURLLoad("foo.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initializeAndLoad(m_baseURL + "foo.html", true);
   WebFrame* frame = webViewHelper.webView()->mainFrame();
-  FrameTestHelpers::reloadFrameIgnoringCache(frame);
+  FrameTestHelpers::reloadFrameBypassingCache(frame);
   EXPECT_EQ(WebCachePolicy::BypassingCache,
             frame->dataSource()->request().getCachePolicy());
 }

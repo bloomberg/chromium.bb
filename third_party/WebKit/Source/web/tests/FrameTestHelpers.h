@@ -75,7 +75,7 @@ void loadHistoryItem(WebFrame*,
                      WebCachePolicy);
 // Same as above, but for WebFrame::reload().
 void reloadFrame(WebFrame*);
-void reloadFrameIgnoringCache(WebFrame*);
+void reloadFrameBypassingCache(WebFrame*);
 
 // Pumps pending resource requests while waiting for a frame to load. Consider
 // using one of the above helper methods whenever possible.
