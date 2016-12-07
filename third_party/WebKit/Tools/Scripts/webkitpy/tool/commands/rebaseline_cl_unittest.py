@@ -7,6 +7,7 @@ import optparse
 
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.git_cl import GitCL
+from webkitpy.common.net.layouttestresults import LayoutTestResults
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.logtesting import LoggingTestCase
@@ -57,6 +58,57 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             },
         })
         self.command.rietveld = Rietveld(web)
+
+        layout_test_results = LayoutTestResults({
+            'tests': {
+                'fast': {
+                    'dom': {
+                        'prototype-inheritance.html': {
+                            'expected': 'PASS',
+                            'actual': 'TEXT',
+                            'is_unexpected': True,
+                        },
+                        'prototype-banana.html': {
+                            'expected': 'FAIL',
+                            'actual': 'PASS',
+                            'is_unexpected': True,
+                        },
+                        'prototype-taco.html': {
+                            'expected': 'PASS',
+                            'actual': 'PASS TEXT',
+                            'is_unexpected': True,
+                        },
+                        'prototype-chocolate.html': {
+                            'expected': 'FAIL',
+                            'actual': 'IMAGE+TEXT'
+                        },
+                        'prototype-crashy.html': {
+                            'expected': 'PASS',
+                            'actual': 'CRASH',
+                            'is_unexpected': True,
+                        },
+                        'prototype-newtest.html': {
+                            'expected': 'PASS',
+                            'actual': 'MISSING',
+                            'is_unexpected': True,
+                            'is_missing_text': True,
+                        }
+                    }
+                },
+                'svg': {
+                    'dynamic-updates': {
+                        'SVGFEDropShadowElement-dom-stdDeviation-attr.html': {
+                            'expected': 'PASS',
+                            'actual': 'IMAGE',
+                            'has_stderr': True,
+                            'is_unexpected': True,
+                        }
+                    }
+                }
+            }
+        })
+        for build in [Build('MOCK Try Win', 5000), Build('MOCK Try Mac', 4000)]:
+            self.tool.buildbot.set_results(build, layout_test_results)
 
         self.tool.buildbot.set_retry_sumary_json(Build('MOCK Try Win', 5000), json.dumps({
             'failures': [

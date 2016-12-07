@@ -86,7 +86,7 @@ class LayoutTestResults(object):
         """Creates a LayoutTestResults object from a test result JSON string.
 
         Args:
-            string: JSON string containg layout test result.
+            string: JSON string containing layout test result.
             chromium_revision: If given, it will override the chromium_revision
                 field in json, to indicate the last revision that has completed
                 uploading onto the storage server. chromium_revision can be a
