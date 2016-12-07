@@ -17,11 +17,11 @@ ExtensionZoomRequestClient::ExtensionZoomRequestClient(
 
 bool ExtensionZoomRequestClient::ShouldSuppressBubble() const {
   const Feature* feature =
-      FeatureProvider::GetBehaviorFeature(BehaviorFeature::kZoomWithoutBubble);
+      FeatureProvider::GetBehaviorFeature(behavior_feature::kZoomWithoutBubble);
   return feature && feature->IsAvailableToExtension(extension()).is_available();
 }
 
 ExtensionZoomRequestClient::~ExtensionZoomRequestClient() {
 }
 
-}  // namespace Extensions
+}  // namespace extensions

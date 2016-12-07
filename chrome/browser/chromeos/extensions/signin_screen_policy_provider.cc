@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <cstddef>
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
@@ -49,7 +50,7 @@ bool SigninScreenPolicyProvider::UserMayLoad(
     return true;
   const extensions::Feature* feature =
       extensions::FeatureProvider::GetBehaviorFeature(
-          extensions::BehaviorFeature::kSigninScreen);
+          extensions::behavior_feature::kSigninScreen);
   CHECK(feature);
   extensions::Feature::Availability availability =
       feature->IsAvailableToExtension(extension);

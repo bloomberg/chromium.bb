@@ -4,17 +4,18 @@
 
 #include "extensions/test/test_extensions_client.h"
 
+#include <memory>
+#include <set>
+#include <string>
+
+#include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_aliases.h"
-#include "extensions/common/features/api_feature.h"
-#include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/json_feature_provider_source.h"
-#include "extensions/common/features/manifest_feature.h"
-#include "extensions/common/features/permission_feature.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/extensions_api_permissions.h"
 #include "extensions/common/permissions/permissions_info.h"
@@ -27,15 +28,6 @@
 #include "grit/extensions_resources.h"
 
 namespace extensions {
-
-namespace {
-
-template <class FeatureClass>
-SimpleFeature* CreateFeature() {
-  return new FeatureClass;
-}
-
-}  // namespace
 
 TestExtensionsClient::TestExtensionsClient()
     : webstore_base_url_(extension_urls::kChromeWebstoreBaseURL),

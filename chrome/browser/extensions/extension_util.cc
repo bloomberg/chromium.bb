@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_util.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -51,7 +53,7 @@ const char kWasInstalledByCustodianPrefName[] = "was_installed_by_custodian";
 // Returns true if |extension| should always be enabled in incognito mode.
 bool IsWhitelistedForIncognito(const Extension* extension) {
   const Feature* feature = FeatureProvider::GetBehaviorFeature(
-      BehaviorFeature::kWhitelistedForIncognito);
+      behavior_feature::kWhitelistedForIncognito);
   return feature && feature->IsAvailableToExtension(extension).is_available();
 }
 

@@ -21,7 +21,7 @@ namespace sync_helper {
 
 bool IsSyncable(const Extension* extension) {
   const Feature* feature =
-      FeatureProvider::GetBehaviorFeature(BehaviorFeature::kDoNotSync);
+      FeatureProvider::GetBehaviorFeature(behavior_feature::kDoNotSync);
   if (feature && feature->IsAvailableToExtension(extension).is_available())
     return false;
 

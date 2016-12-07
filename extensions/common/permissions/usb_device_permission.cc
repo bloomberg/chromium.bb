@@ -5,6 +5,8 @@
 #include "extensions/common/permissions/usb_device_permission.h"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -31,7 +33,7 @@ const int kHidInterfaceClass = 3;
 
 bool IsInterfaceClassPermissionAlowed(const Extension* extension) {
   const Feature* feature = FeatureProvider::GetBehaviorFeature(
-      BehaviorFeature::kAllowUsbDevicesPermissionInterfaceClass);
+      behavior_feature::kAllowUsbDevicesPermissionInterfaceClass);
   if (!feature)
     return false;
   if (!extension)

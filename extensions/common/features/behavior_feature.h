@@ -5,26 +5,19 @@
 #ifndef EXTENSIONS_COMMON_FEATURES_BEHAVIOR_FEATURE_H_
 #define EXTENSIONS_COMMON_FEATURES_BEHAVIOR_FEATURE_H_
 
-#include <string>
-
-#include "extensions/common/features/simple_feature.h"
-
 namespace extensions {
 
-// Implementation of the features in _behavior_features.json.
-//
-// For now, this is just constants + a vacuous implementation of SimpleFeature,
-// for consistency with the other Feature types. One day we may add some
-// additional functionality. One day we may also generate the feature names.
-class BehaviorFeature : public SimpleFeature {
- public:
-  // Constants corresponding to keys in _behavior_features.json.
-  static const char kWhitelistedForIncognito[];
-  static const char kDoNotSync[];
-  static const char kZoomWithoutBubble[];
-  static const char kAllowUsbDevicesPermissionInterfaceClass[];
-  static const char kSigninScreen[];
-};
+// Contains constants corresponding to keys in _behavior_features.json.
+// One day we might want to auto generate these.
+namespace behavior_feature {
+
+extern const char kWhitelistedForIncognito[];
+extern const char kDoNotSync[];
+extern const char kZoomWithoutBubble[];
+extern const char kAllowUsbDevicesPermissionInterfaceClass[];
+extern const char kSigninScreen[];
+
+}  // namespace behavior_feature
 
 }  // namespace extensions
 

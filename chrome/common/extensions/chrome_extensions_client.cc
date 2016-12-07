@@ -5,6 +5,8 @@
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
 #include <memory>
+#include <set>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -36,14 +38,9 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_aliases.h"
-#include "extensions/common/features/api_feature.h"
-#include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/json_feature_provider_source.h"
-#include "extensions/common/features/manifest_feature.h"
-#include "extensions/common/features/permission_feature.h"
-#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -66,11 +63,6 @@ const char kExtensionBlocklistHttpsUrlPrefix[] =
     "https://www.gstatic.com/chrome/extensions/blacklist";
 
 const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
-
-template <class FeatureClass>
-SimpleFeature* CreateFeature() {
-  return new FeatureClass();
-}
 
 // Mirrors version_info::Channel for histograms.
 enum ChromeChannelForHistogram {
