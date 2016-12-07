@@ -64,6 +64,8 @@ TestCase screenTestCases[] = {
     {"(display-mode: @browser)", 0},
     {"(display-mode: 'browser')", 0},
     {"(display-mode: @junk browser)", 0},
+    {"(shape: rect)", 1},
+    {"(shape: round)", 0},
     {0, 0}  // Do not remove the terminator line.
 };
 
@@ -160,6 +162,7 @@ TEST(MediaQueryEvaluatorTest, Cached) {
   data.mediaType = MediaTypeNames::screen;
   data.strictMode = true;
   data.displayMode = WebDisplayModeBrowser;
+  data.displayShape = DisplayShapeRect;
   MediaValues* mediaValues = MediaValuesCached::create(data);
 
   MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);

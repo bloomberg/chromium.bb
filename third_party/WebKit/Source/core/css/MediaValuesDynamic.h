@@ -38,6 +38,7 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   bool strictMode() const override;
   const String mediaType() const override;
   WebDisplayMode displayMode() const override;
+  DisplayShape displayShape() const override;
   Document* document() const override;
   bool hasValues() const override;
   void overrideViewportDimensions(double width, double height) override;

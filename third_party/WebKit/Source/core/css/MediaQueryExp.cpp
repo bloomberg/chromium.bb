@@ -61,6 +61,10 @@ static inline bool featureWithValidIdent(const String& mediaFeature,
   if (mediaFeature == scanMediaFeature)
     return ident == CSSValueInterlace || ident == CSSValueProgressive;
 
+  if (RuntimeEnabledFeatures::mediaQueryShapeEnabled()) {
+    if (mediaFeature == shapeMediaFeature)
+      return ident == CSSValueRect || ident == CSSValueRound;
+  }
   return false;
 }
 
@@ -164,7 +168,7 @@ static inline bool featureWithoutValue(const String& mediaFeature) {
          mediaFeature == devicePixelRatioMediaFeature ||
          mediaFeature == resolutionMediaFeature ||
          mediaFeature == displayModeMediaFeature ||
-         mediaFeature == scanMediaFeature;
+         mediaFeature == scanMediaFeature || mediaFeature == shapeMediaFeature;
 }
 
 bool MediaQueryExp::isViewportDependent() const {
@@ -193,7 +197,8 @@ bool MediaQueryExp::isDeviceDependent() const {
          m_mediaFeature == minDeviceHeightMediaFeature ||
          m_mediaFeature == maxDeviceAspectRatioMediaFeature ||
          m_mediaFeature == maxDeviceWidthMediaFeature ||
-         m_mediaFeature == maxDeviceHeightMediaFeature;
+         m_mediaFeature == maxDeviceHeightMediaFeature ||
+         m_mediaFeature == shapeMediaFeature;
 }
 
 MediaQueryExp::MediaQueryExp(const MediaQueryExp& other)

@@ -52,6 +52,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/PointerProperties.h"
+#include "public/platform/ShapeProperties.h"
 #include "public/platform/WebDisplayMode.h"
 #include "wtf/HashMap.h"
 
@@ -685,6 +686,28 @@ static bool pointerMediaFeatureEval(const MediaQueryExpValue& value,
   return (pointer == PointerTypeNone && value.id == CSSValueNone) ||
          (pointer == PointerTypeCoarse && value.id == CSSValueCoarse) ||
          (pointer == PointerTypeFine && value.id == CSSValueFine);
+}
+
+static bool shapeMediaFeatureEval(const MediaQueryExpValue& value,
+                                  MediaFeaturePrefix,
+                                  const MediaValues& mediaValues) {
+  if (!value.isValid())
+    return true;
+
+  if (!value.isID)
+    return false;
+
+  DisplayShape shape = mediaValues.displayShape();
+
+  switch (value.id) {
+    case CSSValueRect:
+      return shape == DisplayShapeRect;
+    case CSSValueRound:
+      return shape == DisplayShapeRound;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 static bool anyPointerMediaFeatureEval(const MediaQueryExpValue& value,

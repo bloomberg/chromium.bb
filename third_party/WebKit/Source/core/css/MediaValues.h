@@ -9,6 +9,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/PointerProperties.h"
+#include "public/platform/ShapeProperties.h"
 #include "public/platform/WebDisplayMode.h"
 
 namespace blink {
@@ -71,6 +72,7 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
   virtual bool hasValues() const = 0;
 
   virtual void overrideViewportDimensions(double width, double height) = 0;
+  virtual DisplayShape displayShape() const = 0;
 
  protected:
   static double calculateViewportWidth(LocalFrame*);
@@ -89,6 +91,7 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
   static int calculateAvailablePointerTypes(LocalFrame*);
   static HoverType calculatePrimaryHoverType(LocalFrame*);
   static int calculateAvailableHoverTypes(LocalFrame*);
+  static DisplayShape calculateDisplayShape(LocalFrame*);
   static LocalFrame* frameFrom(Document&);
 };
 

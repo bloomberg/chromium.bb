@@ -32,6 +32,7 @@
 #define WebScreenInfo_h
 
 #include "WebRect.h"
+#include "public/platform/ShapeProperties.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
 namespace blink {
@@ -77,13 +78,17 @@ struct WebScreenInfo {
   // It is the opposite of the physical rotation.
   uint16_t orientationAngle;
 
+  // This is the shape of display.
+  DisplayShape displayShape;
+
   WebScreenInfo()
       : deviceScaleFactor(1),
         depth(0),
         depthPerComponent(0),
         isMonochrome(false),
         orientationType(WebScreenOrientationUndefined),
-        orientationAngle(0) {}
+        orientationAngle(0),
+        displayShape(DisplayShapeRect) {}
 
   bool operator==(const WebScreenInfo& other) const {
     return this->deviceScaleFactor == other.deviceScaleFactor &&
@@ -93,7 +98,8 @@ struct WebScreenInfo {
            this->rect == other.rect &&
            this->availableRect == other.availableRect &&
            this->orientationType == other.orientationType &&
-           this->orientationAngle == other.orientationAngle;
+           this->orientationAngle == other.orientationAngle &&
+           this->displayShape == other.displayShape;
   }
 
   bool operator!=(const WebScreenInfo& other) const {

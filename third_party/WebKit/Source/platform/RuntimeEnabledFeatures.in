@@ -142,6 +142,7 @@ MediaSession status=experimental
 MediaSourceExperimental status=experimental
 MediaSourceNewAbortAndDuration status=experimental
 MediaStreamSpeech status=experimental
+MediaQueryShape status=experimental
 MemoryInfoInWorkers status=experimental
 // This is enabled by default on Windows only. The only part that's
 // "experimental" is the support on other platforms.

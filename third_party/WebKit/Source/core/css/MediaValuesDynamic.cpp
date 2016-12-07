@@ -132,6 +132,10 @@ bool MediaValuesDynamic::strictMode() const {
   return calculateStrictMode(m_frame);
 }
 
+DisplayShape MediaValuesDynamic::displayShape() const {
+  return calculateDisplayShape(m_frame);
+}
+
 Document* MediaValuesDynamic::document() const {
   return m_frame->document();
 }

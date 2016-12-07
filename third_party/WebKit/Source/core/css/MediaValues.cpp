@@ -140,6 +140,11 @@ int MediaValues::calculateAvailableHoverTypes(LocalFrame* frame) {
   return frame->settings()->availableHoverTypes();
 }
 
+DisplayShape MediaValues::calculateDisplayShape(LocalFrame* frame) {
+  DCHECK(frame && frame->host());
+  return frame->host()->chromeClient().screenInfo().displayShape;
+}
+
 bool MediaValues::computeLengthImpl(double value,
                                     CSSPrimitiveValue::UnitType type,
                                     unsigned defaultFontSize,

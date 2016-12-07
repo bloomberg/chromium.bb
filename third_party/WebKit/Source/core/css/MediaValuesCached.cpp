@@ -43,6 +43,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     strictMode = MediaValues::calculateStrictMode(frame);
     displayMode = MediaValues::calculateDisplayMode(frame);
     mediaType = MediaValues::calculateMediaType(frame);
+    displayShape = MediaValues::calculateDisplayShape(frame);
   }
 }
 
@@ -152,6 +153,10 @@ void MediaValuesCached::overrideViewportDimensions(double width,
                                                    double height) {
   m_data.viewportWidth = width;
   m_data.viewportHeight = height;
+}
+
+DisplayShape MediaValuesCached::displayShape() const {
+  return m_data.displayShape;
 }
 
 }  // namespace blink

@@ -45,6 +45,7 @@
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
+#include "public/platform/ShapeProperties.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebRect.h"
 #include "wtf/Allocator.h"
@@ -215,6 +216,9 @@ class CORE_EXPORT FrameView final
 
   WebDisplayMode displayMode() { return m_displayMode; }
   void setDisplayMode(WebDisplayMode);
+
+  DisplayShape displayShape() { return m_displayShape; }
+  void setDisplayShape(DisplayShape);
 
   // Fixed-position objects.
   typedef HashSet<LayoutObject*> ViewportConstrainedObjectSet;
@@ -977,6 +981,8 @@ class CORE_EXPORT FrameView final
   Member<LocalFrame> m_frame;
 
   WebDisplayMode m_displayMode;
+
+  DisplayShape m_displayShape;
 
   bool m_canHaveScrollbars;
 
