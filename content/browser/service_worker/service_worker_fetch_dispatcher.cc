@@ -398,20 +398,20 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   ResourceRequestInfoImpl* original_info =
       ResourceRequestInfoImpl::ForRequest(original_request);
+  ResourceRequesterInfo* requester_info = original_info->requester_info();
   if (IsBrowserSideNavigationEnabled()) {
-    // TODO(horo): Support NavigationPreload with PlzNavigate.
-    DCHECK(original_info->requester_info()->IsBrowserSideNavigation());
-    NOTIMPLEMENTED();
-    return;
+    DCHECK(requester_info->IsBrowserSideNavigation());
+  } else {
+    DCHECK(requester_info->IsRenderer());
+    if (!requester_info->filter())
+      return;
   }
-  DCHECK(original_info->requester_info()->IsRenderer());
-  if (!original_info->requester_info()->filter())
-    return;
 
   DCHECK(!url_loader_factory_);
   mojom::URLLoaderFactoryPtr factory;
-  URLLoaderFactoryImpl::Create(original_info->requester_info(),
-                               mojo::GetProxy(&url_loader_factory_));
+  URLLoaderFactoryImpl::Create(
+      ResourceRequesterInfo::CreateForNavigationPreload(requester_info),
+      mojo::GetProxy(&url_loader_factory_));
 
   preload_handle_ = mojom::FetchEventPreloadHandle::New();
 

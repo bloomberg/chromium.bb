@@ -1,9 +1,6 @@
 -NavigationControllerBrowserTest.EnsureSamePageNavigationUpdatesFrameNavigationEntry
 -RequestDataResourceDispatcherHostBrowserTest.*
 
-# NavigationPreload dosn't work well with PlzNavigate yet. https://crbug.com/649558
--ServiceWorkerBrowserTest/ServiceWorkerNavigationPreloadTest.*
-
 # Browser-initiated fragment navigations are handled improperly. https://crbug.com/663777
 -NavigationControllerBrowserTest.SamePageBrowserInitiated
 

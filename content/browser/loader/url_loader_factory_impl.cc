@@ -36,8 +36,8 @@ void DispatchSyncLoadResult(
 URLLoaderFactoryImpl::URLLoaderFactoryImpl(
     scoped_refptr<ResourceRequesterInfo> requester_info)
     : requester_info_(std::move(requester_info)) {
-  DCHECK(requester_info_->IsRenderer());
-  DCHECK(requester_info_->filter());
+  DCHECK((requester_info_->IsRenderer() && requester_info_->filter()) ||
+         requester_info_->IsNavigationPreload());
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 

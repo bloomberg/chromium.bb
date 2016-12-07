@@ -10,9 +10,24 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_context.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
+
+namespace {
+
+void GetContextsCallbackForNavigationPreload(
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    ResourceType resource_type,
+    ResourceContext** resource_context_out,
+    net::URLRequestContext** request_context_out) {
+  *resource_context_out = service_worker_context->resource_context();
+  *request_context_out = (*resource_context_out)->GetRequestContext();
+}
+
+}  // namespace
 
 ResourceRequesterInfo::ResourceRequesterInfo(
     RequesterType type,
@@ -83,6 +98,33 @@ ResourceRequesterInfo::CreateForDownloadOrPageSave(int child_id) {
       nullptr /* appcache_service */, nullptr /* blob_storage_context */,
       nullptr /* file_system_context */, nullptr /*service_worker_context */,
       GetContextsCallback()));
+}
+
+scoped_refptr<ResourceRequesterInfo>
+ResourceRequesterInfo::CreateForNavigationPreload(
+    ResourceRequesterInfo* original_request_info) {
+  GetContextsCallback get_contexts_callback =
+      original_request_info->get_contexts_callback_;
+  if (IsBrowserSideNavigationEnabled()) {
+    DCHECK(original_request_info->IsBrowserSideNavigation());
+    DCHECK(!get_contexts_callback);
+    DCHECK(original_request_info->service_worker_context());
+    // The requester info for browser side navigation doesn't have the
+    // get_contexts_callback. So create the callback here which gets the
+    // ResourceContext and the URLRequestContext form ServiceWorkerContext.
+    get_contexts_callback =
+        base::Bind(&GetContextsCallbackForNavigationPreload,
+                   scoped_refptr<ServiceWorkerContextWrapper>(
+                       original_request_info->service_worker_context()));
+  } else {
+    DCHECK(original_request_info->IsRenderer());
+    DCHECK(get_contexts_callback);
+  }
+
+  return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
+      RequesterType::NAVIGATION_PRELOAD, -1, nullptr /* appcache_service */,
+      nullptr /* blob_storage_context */, nullptr /* file_system_context */,
+      original_request_info->service_worker_context(), get_contexts_callback));
 }
 
 }  // namespace content

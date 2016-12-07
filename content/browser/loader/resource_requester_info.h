@@ -29,11 +29,12 @@ class ResourceMessageFilter;
 class ServiceWorkerContextWrapper;
 
 // This class represents the type of resource requester.
-// Currently there are three types:
+// Currently there are four types:
 // - Requesters that request resources from renderer processes.
 // - Requesters that request resources within the browser process for browser
 //   side navigation (aka PlzNavigate).
 // - Requesters that request resources for download or page save.
+// - Requesters that request service worker navigation preload requests.
 class CONTENT_EXPORT ResourceRequesterInfo
     : public base::RefCountedThreadSafe<ResourceRequesterInfo> {
  public:
@@ -67,9 +68,18 @@ class CONTENT_EXPORT ResourceRequesterInfo
   static scoped_refptr<ResourceRequesterInfo> CreateForDownloadOrPageSave(
       int child_id);
 
+  // Creates a ResourceRequesterInfo for a service worker navigation preload
+  // request. When PlzNavigate is enabled, |original_request_info| must be
+  // browser side navigation type. Otherwise it must be renderer type.
+  static scoped_refptr<ResourceRequesterInfo> CreateForNavigationPreload(
+      ResourceRequesterInfo* original_request_info);
+
   bool IsRenderer() const { return type_ == RequesterType::RENDERER; }
   bool IsBrowserSideNavigation() const {
     return type_ == RequesterType::BROWSER_SIDE_NAVIGATION;
+  }
+  bool IsNavigationPreload() const {
+    return type_ == RequesterType::NAVIGATION_PRELOAD;
   }
 
   // Returns the renderer process ID associated with the requester. Returns -1
@@ -88,7 +98,7 @@ class CONTENT_EXPORT ResourceRequesterInfo
 
   // Returns the ResourceContext and URLRequestContext associated to the
   // requester. Currently this method is available only for renderer type
-  // requester.
+  // requester and service worker navigation preload type.
   void GetContexts(ResourceType resource_type,
                    ResourceContext** resource_context,
                    net::URLRequestContext** request_context) const;
@@ -110,8 +120,9 @@ class CONTENT_EXPORT ResourceRequesterInfo
   }
 
   // Returns the ServiceWorkerContext associated with the requester. Currently
-  // this method is available for renderer type requester and browser side
-  // navigation type requester.
+  // this method is available for renderer type requester, browser side
+  // navigation type requester and service worker navigation preload type
+  // requester.
   ServiceWorkerContextWrapper* service_worker_context() {
     return service_worker_context_.get();
   }
@@ -122,7 +133,8 @@ class CONTENT_EXPORT ResourceRequesterInfo
   enum class RequesterType {
     RENDERER,
     BROWSER_SIDE_NAVIGATION,
-    DOWNLOAD_OR_PAGE_SAVE
+    DOWNLOAD_OR_PAGE_SAVE,
+    NAVIGATION_PRELOAD
   };
 
   ResourceRequesterInfo(RequesterType type,

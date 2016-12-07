@@ -1068,7 +1068,7 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
     const ResourceRequest& request_data,
     mojom::URLLoaderAssociatedRequest mojo_request,
     mojom::URLLoaderClientAssociatedPtr url_loader_client) {
-  DCHECK(requester_info->IsRenderer());
+  DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -1274,11 +1274,14 @@ void ResourceDispatcherHostImpl::BeginRequest(
     int route_id,
     mojom::URLLoaderAssociatedRequest mojo_request,
     mojom::URLLoaderClientAssociatedPtr url_loader_client) {
-  DCHECK(requester_info->IsRenderer());
+  DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
   int child_id = requester_info->child_id();
 
   // Reject request id that's currently in use.
   if (IsRequestIDInUse(GlobalRequestID(child_id, request_id))) {
+    // Navigation preload requests have child_id's of -1 and monotonically
+    // increasing request IDs allocated by MakeRequestID.
+    DCHECK(requester_info->IsRenderer());
     bad_message::ReceivedBadMessage(requester_info->filter(),
                                     bad_message::RDH_INVALID_REQUEST_ID);
     return;
@@ -1290,6 +1293,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
       IsResourceTypeFrame(request_data.resource_type);
   if (is_navigation_stream_request &&
       !request_data.resource_body_stream_url.SchemeIs(url::kBlobScheme)) {
+    // The resource_type of navigation preload requests must be SUB_RESOURCE.
+    DCHECK(requester_info->IsRenderer());
     bad_message::ReceivedBadMessage(requester_info->filter(),
                                     bad_message::RDH_INVALID_URL);
     return;
@@ -1298,6 +1303,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Reject invalid priority.
   if (request_data.priority < net::MINIMUM_PRIORITY ||
       request_data.priority > net::MAXIMUM_PRIORITY) {
+    // The priority of navigation preload requests are copied from the original
+    // request priority which must be checked beforehand.
+    DCHECK(requester_info->IsRenderer());
     bad_message::ReceivedBadMessage(requester_info->filter(),
                                     bad_message::RDH_INVALID_PRIORITY);
     return;
@@ -1379,12 +1387,14 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     mojom::URLLoaderClientAssociatedPtr url_loader_client,
     bool continue_request,
     int error_code) {
-  DCHECK(requester_info->IsRenderer());
+  DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
   if (!continue_request) {
-    // TODO(ananta): Find a way to specify the right error code here.  Passing
-    // in a non-content error code is not safe.
-    bad_message::ReceivedBadMessage(requester_info->filter(),
-                                    bad_message::RDH_ILLEGAL_ORIGIN);
+    if (requester_info->IsRenderer()) {
+      // TODO(ananta): Find a way to specify the right error code here. Passing
+      // in a non-content error code is not safe.
+      bad_message::ReceivedBadMessage(requester_info->filter(),
+                                      bad_message::RDH_ILLEGAL_ORIGIN);
+    }
     AbortRequestBeforeItStarts(requester_info->filter(), sync_result_handler,
                                request_id, std::move(url_loader_client));
     return;
@@ -1614,7 +1624,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
     ResourceContext* resource_context,
     mojom::URLLoaderAssociatedRequest mojo_request,
     mojom::URLLoaderClientAssociatedPtr url_loader_client) {
-  DCHECK(requester_info->IsRenderer());
+  DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -1624,6 +1634,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
   if (sync_result_handler) {
     // download_to_file is not supported for synchronous requests.
     if (request_data.download_to_file) {
+      DCHECK(requester_info->IsRenderer());
       bad_message::ReceivedBadMessage(requester_info->filter(),
                                       bad_message::RDH_BAD_DOWNLOAD);
       return std::unique_ptr<ResourceHandler>();

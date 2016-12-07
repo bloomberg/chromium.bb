@@ -282,6 +282,7 @@ specific_include_rules = {
     "-content",
     "+content/browser/loader/resource_requester_info.h",
     "+content/common/content_export.h",
+    "+content/public/browser/resource_context.h",
     "+content/public/common/resource_type.h",
 
     # TODO: these all have to be removed.
@@ -289,6 +290,7 @@ specific_include_rules = {
     "+content/browser/blob_storage/chrome_blob_storage_context.h",
     "+content/browser/service_worker/service_worker_context_wrapper.h",
     "+content/public/browser/browser_thread.h",
+    "+content/public/common/browser_side_navigation_policy.h",
   ],
   "resource_scheduler\.(cc|h)": [
     "-content",

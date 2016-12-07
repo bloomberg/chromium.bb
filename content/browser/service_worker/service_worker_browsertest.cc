@@ -50,6 +50,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -1467,6 +1468,16 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
     return request.headers.find(kNavigationPreloadHeaderName)->second;
   }
 
+  static void CancellingInterceptorCallback(
+      const std::string& header,
+      const std::string& value,
+      int child_process_id,
+      content::ResourceContext* resource_context,
+      OnHeaderProcessedCallback callback) {
+    DCHECK_EQ(kNavigationPreloadHeaderName, header);
+    callback.Run(false, 0);
+  }
+
   void SetupForNavigationPreloadTest(const GURL& scope,
                                      const GURL& worker_url) {
     scoped_refptr<WorkerActivatedObserver> observer =
@@ -1924,6 +1935,33 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, NetworkError) {
   SetupForNavigationPreloadTest(page_url, worker_url);
 
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
+  const base::string16 title = base::ASCIIToUTF16("REJECTED");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("RESOLVED"));
+  NavigateToURL(shell(), page_url);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  EXPECT_EQ("NetworkError: Service Worker navigation preload network error.",
+            GetTextContent());
+}
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest,
+                       CanceledByInterceptor) {
+  content::ResourceDispatcherHost::Get()->RegisterInterceptor(
+      kNavigationPreloadHeaderName, "",
+      base::Bind(&CancellingInterceptorCallback));
+
+  const char kPageUrl[] = "/service_worker/navigation_preload.html";
+  const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
+  const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
+  const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
+  RegisterStaticFile(
+      kWorkerUrl, kEnableNavigationPreloadScript + kPreloadResponseTestScript,
+      "text/javascript");
+
+  RegisterMonitorRequestHandler();
+  StartServerAndNavigateToSetup();
+  SetupForNavigationPreloadTest(page_url, worker_url);
 
   const base::string16 title = base::ASCIIToUTF16("REJECTED");
   TitleWatcher title_watcher(shell()->web_contents(), title);
