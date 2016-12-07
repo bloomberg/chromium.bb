@@ -136,8 +136,28 @@ int OverlayScrollBar::GetContentOverlapSize() const {
   return kThumbThickness;
 }
 
+void OverlayScrollBar::Layout() {
+  gfx::Rect thumb_bounds = GetTrackBounds();
+  BaseScrollBarThumb* thumb = GetThumb();
+  if (IsHorizontal()) {
+    thumb_bounds.set_x(thumb->x());
+    thumb_bounds.set_width(thumb->width());
+  } else {
+    thumb_bounds.set_y(thumb->y());
+    thumb_bounds.set_height(thumb->height());
+  }
+  thumb->SetBoundsRect(thumb_bounds);
+}
+
+bool OverlayScrollBar::CanAcceptEvent(const ui::Event& event) {
+  return layer()->opacity() > 0 && BaseScrollBar::CanAcceptEvent(event);
+}
+
 void OverlayScrollBar::OnMouseEntered(const ui::MouseEvent& event) {
-  Show();
+  // Note that events are only accepted when the scrollbar is already visible
+  // (due to a change in the scroll value). Don't let the scrollbar vanish from
+  // under the mouse pointer.
+  hide_timer_.Stop();
 }
 
 void OverlayScrollBar::OnMouseExited(const ui::MouseEvent& event) {
@@ -161,19 +181,6 @@ void OverlayScrollBar::StartHideCountdown() {
   hide_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(1),
       base::Bind(&OverlayScrollBar::Hide, base::Unretained(this)));
-}
-
-void OverlayScrollBar::Layout() {
-  gfx::Rect thumb_bounds = GetTrackBounds();
-  BaseScrollBarThumb* thumb = GetThumb();
-  if (IsHorizontal()) {
-    thumb_bounds.set_x(thumb->x());
-    thumb_bounds.set_width(thumb->width());
-  } else {
-    thumb_bounds.set_y(thumb->y());
-    thumb_bounds.set_height(thumb->height());
-  }
-  thumb->SetBoundsRect(thumb_bounds);
 }
 
 }  // namespace views
