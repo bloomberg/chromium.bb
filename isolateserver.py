@@ -1476,8 +1476,9 @@ class IsolatedBundle(object):
 
     Modifies self.files.
     """
-    logging.debug('fetch_files(%s)', isolated.obj_hash)
-    for filepath, properties in isolated.data.get('files', {}).iteritems():
+    files = isolated.data.get('files', {})
+    logging.debug('fetch_files(%s, %d)', isolated.obj_hash, len(files))
+    for filepath, properties in files.iteritems():
       # Root isolated has priority on the files being mapped. In particular,
       # overridden files must not be fetched.
       if filepath not in self.files:
@@ -1490,7 +1491,6 @@ class IsolatedBundle(object):
 
         # Preemptively request hashed files.
         if 'h' in properties:
-          logging.debug('fetching %s', filepath)
           fetch_queue.add(
               properties['h'], properties['s'], threading_utils.PRIORITY_MED)
 
