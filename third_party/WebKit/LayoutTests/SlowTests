@@ -387,3 +387,8 @@ crbug.com/660468 [ Linux ] storage/indexeddb/observer-frame.html [ Slow ]
 crbug.com/660468 [ Linux ] storage/indexeddb/observer-workers.html [ Slow ]
 
 crbug.com/660492 [ Linux ] storage/indexeddb/structured-clone.html [ Slow ]
+
+# These tests were timing out on the MSAN builder.
+crbug.com/671158 [ Linux ] imported/wpt/encoding/textdecoder-labels.html [ Slow ]
+crbug.com/671158 [ Linux ] http/tests/streams/writable-streams/write.https.html [ Slow ]
+crbug.com/671158 [ Linux ] virtual/mojo-loading/http/tests/streams/writable-streams/write.https.html [ Slow ]

@@ -36,10 +36,6 @@ crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-a
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Timeout ]
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.html [ Timeout ]
 
-crbug.com/671158 [ Linux ] http/tests/streams/writable-streams/write.https.html [ Timeout Pass ]
-crbug.com/671158 [ Linux ] imported/wpt/encoding/textdecoder-labels.html [ Timeout Pass ]
-crbug.com/671158 [ Linux ] virtual/mojo-loading/http/tests/streams/writable-streams/write.https.html [ Timeout Pass ]
-
 crbug.com/671556 [ Linux ] virtual/mojo-loading/http/tests/security/xssAuditor/report-script-tag-replace-state.html [ Timeout Pass ]
 crbug.com/671556 [ Linux ] virtual/mojo-loading/http/tests/security/xssAuditor/report-script-tag.html [ Timeout Pass ]
 
