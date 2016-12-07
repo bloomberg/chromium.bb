@@ -4,119 +4,21 @@
 
 #import "chrome/browser/chrome_browser_application_mac.h"
 
-#include <AvailabilityMacros.h>
-#include <objc/objc-exception.h>
-
-#import "base/auto_reset.h"
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
-#include "base/debug/stack_trace.h"
-#import "base/logging.h"
+#include "base/logging.h"
 #include "base/mac/call_with_eh_frame.h"
-#import "base/mac/scoped_nsobject.h"
-#import "base/mac/scoped_objc_class_swizzler.h"
-#include "base/macros.h"
-#import "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#import "base/strings/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#import "chrome/browser/mac/exception_processor.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #import "components/crash/core/common/objc_zombie.h"
 #include "content/public/browser/browser_accessibility_state.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
 
 namespace chrome_browser_application_mac {
-
-// Maximum number of known named exceptions we'll support.  There is
-// no central registration, but I only find about 75 possibilities in
-// the system frameworks, and many of them are probably not
-// interesting to track in aggregate (those relating to distributed
-// objects, for instance).
-const size_t kKnownNSExceptionCount = 25;
-
-const size_t kUnknownNSException = kKnownNSExceptionCount;
-
-size_t BinForException(NSException* exception) {
-  // A list of common known exceptions.  The list position will
-  // determine where they live in the histogram, so never move them
-  // around, only add to the end.
-  static NSString* const kKnownNSExceptionNames[] = {
-    // Grab-bag exception, not very common.  CFArray (or other
-    // container) mutated while being enumerated is one case seen in
-    // production.
-    NSGenericException,
-
-    // Out-of-range on NSString or NSArray.  Quite common.
-    NSRangeException,
-
-    // Invalid arg to method, unrecognized selector.  Quite common.
-    NSInvalidArgumentException,
-
-    // malloc() returned null in object creation, I think.  Turns out
-    // to be very uncommon in production, because of the OOM killer.
-    NSMallocException,
-
-    // This contains things like windowserver errors, trying to draw
-    // views which aren't in windows, unable to read nib files.  By
-    // far the most common exception seen on the crash server.
-    NSInternalInconsistencyException,
-
-    nil
-  };
-
-  // Make sure our array hasn't outgrown our abilities to track it.
-  DCHECK_LE(arraysize(kKnownNSExceptionNames), kKnownNSExceptionCount);
-
-  NSString* name = [exception name];
-  for (int i = 0; kKnownNSExceptionNames[i]; ++i) {
-    if (name == kKnownNSExceptionNames[i]) {
-      return i;
-    }
-  }
-  return kUnknownNSException;
-}
-
-void RecordExceptionWithUma(NSException* exception) {
-  UMA_HISTOGRAM_ENUMERATION("OSX.NSException",
-      BinForException(exception), kUnknownNSException);
-}
-
-namespace {
-
-objc_exception_preprocessor g_next_preprocessor = nullptr;
-
-id ExceptionPreprocessor(id exception) {
-  static bool seen_first_exception = false;
-
-  RecordExceptionWithUma(exception);
-
-  const char* const kExceptionKey =
-      seen_first_exception ? crash_keys::mac::kLastNSException
-                           : crash_keys::mac::kFirstNSException;
-  NSString* value = [NSString stringWithFormat:@"%@ reason %@",
-      [exception name], [exception reason]];
-  base::debug::SetCrashKeyValue(kExceptionKey, [value UTF8String]);
-
-  const char* const kExceptionTraceKey =
-      seen_first_exception ? crash_keys::mac::kLastNSExceptionTrace
-                           : crash_keys::mac::kFirstNSExceptionTrace;
-  // This exception preprocessor runs prior to the one in libobjc, which sets
-  // the -[NSException callStackReturnAddresses].
-  base::debug::SetCrashKeyToStackTrace(kExceptionTraceKey,
-                                       base::debug::StackTrace());
-
-  seen_first_exception = true;
-
-  // Forward to the original version.
-  if (g_next_preprocessor)
-    return g_next_preprocessor(exception);
-  return exception;
-}
-
-}  // namespace
 
 void RegisterBrowserCrApp() {
   [BrowserCrApplication sharedApplication];
@@ -145,11 +47,7 @@ void CancelTerminate() {
   // the most recent 10,000 of them on the treadmill.
   ObjcEvilDoers::ZombieEnable(true, 10000);
 
-  if (!chrome_browser_application_mac::g_next_preprocessor) {
-    chrome_browser_application_mac::g_next_preprocessor =
-        objc_setExceptionPreprocessor(
-            &chrome_browser_application_mac::ExceptionPreprocessor);
-  }
+  chrome::InstallObjcExceptionPreprocessor();
 }
 
 - (id)init {
@@ -339,7 +237,11 @@ void CancelTerminate() {
       aTarget);
   base::debug::ScopedCrashKey key(crash_keys::mac::kSendAction, value);
 
-  return [super sendAction:anAction to:aTarget from:sender];
+  __block BOOL rv;
+  base::mac::CallWithEHFrame(^{
+    rv = [super sendAction:anAction to:aTarget from:sender];
+  });
+  return rv;
 }
 
 - (BOOL)isHandlingSendEvent {

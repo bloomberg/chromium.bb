@@ -505,6 +505,8 @@ split_static_library("browser") {
     "mac/bluetooth_utility.mm",
     "mac/dock.h",
     "mac/dock.mm",
+    "mac/exception_processor.h",
+    "mac/exception_processor.mm",
     "mac/install_from_dmg.h",
     "mac/install_from_dmg.mm",
     "mac/keystone_glue.h",

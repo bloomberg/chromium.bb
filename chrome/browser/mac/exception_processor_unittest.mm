@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/chrome_browser_application_mac.h"
+#import "chrome/browser/mac/exception_processor.h"
 
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
+#include <sys/wait.h>
 
-#include <memory>
-
+#include "base/mac/os_crash_dumps.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -18,7 +18,7 @@ using base::HistogramBase;
 using base::HistogramSamples;
 using base::StatisticsRecorder;
 
-namespace chrome_browser_application_mac {
+namespace chrome {
 
 // Generate an NSException with the given name.
 NSException* ExceptionNamed(NSString* name) {
@@ -32,7 +32,7 @@ size_t BinForExceptionNamed(NSString* name) {
   return BinForException(ExceptionNamed(name));
 }
 
-TEST(ChromeApplicationMacTest, ExceptionBinning) {
+TEST(ExceptionProcessorTest, ExceptionBinning) {
   // These exceptions must be in this order.
   EXPECT_EQ(BinForExceptionNamed(NSGenericException), 0U);
   EXPECT_EQ(BinForExceptionNamed(NSRangeException), 1U);
@@ -46,7 +46,7 @@ TEST(ChromeApplicationMacTest, ExceptionBinning) {
   EXPECT_EQ(BinForException(nil), kUnknownNSException);
 }
 
-TEST(ChromeApplicationMacTest, RecordException) {
+TEST(ExceptionProcessorTest, RecordException) {
   // Start up a histogram recorder.
   // TODO(rtenneti): Leaks StatisticsRecorder and will update suppressions.
   base::StatisticsRecorder::Initialize();
@@ -91,4 +91,92 @@ TEST(ChromeApplicationMacTest, RecordException) {
   EXPECT_EQ(4, samples->GetCount(kUnknownNSException));
 }
 
-}  // chrome_browser_application_mac
+void RaiseExceptionInRunLoop() {
+  CFRunLoopRef run_loop = CFRunLoopGetCurrent();
+
+  CFRunLoopPerformBlock(run_loop, kCFRunLoopCommonModes, ^{
+    [NSException raise:@"ThrowExceptionInRunLoop" format:nil];
+  });
+  CFRunLoopPerformBlock(run_loop, kCFRunLoopCommonModes, ^{
+    CFRunLoopStop(run_loop);
+  });
+  CFRunLoopRun();
+}
+
+void ThrowExceptionInRunLoop() {
+  base::mac::DisableOSCrashDumps();
+  chrome::InstallObjcExceptionPreprocessor();
+
+  RaiseExceptionInRunLoop();
+
+  fprintf(stderr, "TEST FAILED\n");
+  exit(1);
+}
+
+// Tests that when the preprocessor is installed, exceptions thrown from
+// a runloop callout are made fatal, so that the stack trace is useful.
+TEST(ExceptionProcessorTest, ThrowExceptionInRunLoop) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_DEATH(ThrowExceptionInRunLoop(),
+               ".*FATAL:exception_processor\\.mm.*"
+               "Terminating from Objective-C exception:.*");
+}
+
+void ThrowAndCatchExceptionInRunLoop() {
+  base::mac::DisableOSCrashDumps();
+  chrome::InstallObjcExceptionPreprocessor();
+
+  CFRunLoopRef run_loop = CFRunLoopGetCurrent();
+  CFRunLoopPerformBlock(run_loop, kCFRunLoopCommonModes, ^{
+    @try {
+      [NSException raise:@"ObjcExceptionPreprocessCaught" format:nil];
+    } @catch (id exception) {
+    }
+  });
+
+  CFRunLoopPerformBlock(run_loop, kCFRunLoopCommonModes, ^{
+    CFRunLoopStop(run_loop);
+  });
+
+  CFRunLoopRun();
+
+  fprintf(stderr, "TEST PASS\n");
+  exit(0);
+}
+
+// Tests that exceptions can still be caught when the preprocessor is enabled.
+TEST(ExceptionProcessorTest, ThrowAndCatchExceptionInRunLoop) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_EXIT(ThrowAndCatchExceptionInRunLoop(),
+              [](int exit_code) -> bool {
+                return WEXITSTATUS(exit_code) == 0;
+              },
+              ".*TEST PASS.*");
+}
+
+void ThrowExceptionInRunLoopWithoutProcessor() {
+  base::mac::DisableOSCrashDumps();
+  chrome::UninstallObjcExceptionPreprocessor();
+
+  @try {
+    RaiseExceptionInRunLoop();
+  } @catch (id exception) {
+    fprintf(stderr, "TEST PASS\n");
+    exit(0);
+  }
+
+  fprintf(stderr, "TEST FAILED\n");
+  exit(1);
+}
+
+// Tests basic exception handling when the preprocessor is disabled.
+TEST(ExceptionProcessorTest, ThrowExceptionInRunLoopWithoutProcessor) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_EXIT(ThrowExceptionInRunLoopWithoutProcessor(),
+              [](int exit_code) -> bool {
+                return WEXITSTATUS(exit_code) == 0;
+              },
+              ".*TEST PASS.*");
+}
+
+}  // namespace chrome
