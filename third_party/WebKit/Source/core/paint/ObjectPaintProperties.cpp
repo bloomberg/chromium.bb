@@ -14,6 +14,9 @@ ObjectPaintProperties::contentsProperties() const {
   if (scrollTranslation())
     propertiesWithOffset.propertyTreeState.setTransform(scrollTranslation());
 
+  if (scroll())
+    propertiesWithOffset.propertyTreeState.setScroll(scroll());
+
   if (overflowClip())
     propertiesWithOffset.propertyTreeState.setClip(overflowClip());
   else if (cssClip())

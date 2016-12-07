@@ -600,7 +600,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool isInTopLayer() const;
 
-  bool scrollsWithViewport() const;
+  bool sticksToViewport() const;
   bool scrollsWithRespectTo(const PaintLayer*) const;
 
   void addLayerHitTestRects(LayerHitTestRects&) const;

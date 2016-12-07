@@ -338,16 +338,42 @@ void PaintLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus() {
   }
 }
 
-bool PaintLayer::scrollsWithViewport() const {
+bool PaintLayer::sticksToViewport() const {
+  if (layoutObject()->style()->position() != FixedPosition &&
+      layoutObject()->style()->position() != StickyPosition)
+    return false;
+
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    const ScrollPaintPropertyNode* ancestorTargetScrollNode;
+    if (layoutObject()->style()->position() == FixedPosition) {
+      ancestorTargetScrollNode = layoutObject()
+                                     ->view()
+                                     ->paintProperties()
+                                     ->localBorderBoxProperties()
+                                     ->propertyTreeState.scroll();
+    } else {
+      ancestorTargetScrollNode = layoutObject()
+                                     ->view()
+                                     ->paintProperties()
+                                     ->contentsProperties()
+                                     .propertyTreeState.scroll();
+    }
+
+    return layoutObject()
+               ->paintProperties()
+               ->localBorderBoxProperties()
+               ->propertyTreeState.scroll() == ancestorTargetScrollNode;
+  }
+
   return (layoutObject()->style()->position() == FixedPosition &&
           layoutObject()->containerForFixedPosition() ==
               layoutObject()->view()) ||
          (layoutObject()->style()->position() == StickyPosition &&
-          !ancestorScrollingLayer());
+          (!ancestorScrollingLayer() || ancestorScrollingLayer() == root()));
 }
 
 bool PaintLayer::scrollsWithRespectTo(const PaintLayer* other) const {
-  if (scrollsWithViewport() != other->scrollsWithViewport())
+  if (sticksToViewport() != other->sticksToViewport())
     return true;
   return ancestorScrollingLayer() != other->ancestorScrollingLayer();
 }

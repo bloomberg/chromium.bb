@@ -194,7 +194,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
   // Don't promote fixed position elements that are descendants of a non-view
   // container, e.g. transformed elements.  They will stay fixed wrt the
   // container rather than the enclosing frame.
-  if (layer->scrollsWithViewport())
+  if (layer->sticksToViewport())
     return m_layoutView.frameView()->isScrollable();
   return layer->layoutObject()->style()->position() == StickyPosition &&
          layer->ancestorOverflowLayer()->scrollsOverflow();

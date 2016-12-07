@@ -682,10 +682,10 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect,
     }
   }
 
-  // If we are fixed-position and scroll with the viewport, it is useless to
+  // If we are fixed-position and stick to the viewport, it is useless to
   // scroll the parent.
-  if (style()->position() == FixedPosition && hasLayer() &&
-      layer()->scrollsWithViewport()) {
+  if (style()->position() == FixedPosition &&
+      containerForFixedPosition() == view()) {
     return;
   }
 
@@ -1036,7 +1036,7 @@ LayoutBox* LayoutBox::findAutoscrollable(LayoutObject* layoutObject) {
       !(layoutObject->isBox() && toLayoutBox(layoutObject)->canAutoscroll())) {
     // Do not start autoscroll when the node is inside a fixed-position element.
     if (layoutObject->isBox() && toLayoutBox(layoutObject)->hasLayer() &&
-        toLayoutBox(layoutObject)->layer()->scrollsWithViewport()) {
+        toLayoutBox(layoutObject)->layer()->sticksToViewport()) {
       return nullptr;
     }
 

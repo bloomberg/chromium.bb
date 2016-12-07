@@ -1114,10 +1114,10 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(
            layoutObject->style()->position() == StickyPosition);
     PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
 
-    // Whether the Layer scrolls with the viewport is a tree-depenent
+    // Whether the Layer sticks to the viewport is a tree-depenent
     // property and our viewportConstrainedObjects collection is maintained
     // with only LayoutObject-level information.
-    if (!layer->scrollsWithViewport())
+    if (!layer->sticksToViewport())
       continue;
 
     // If the whole subtree is invisible, there's no reason to scroll on

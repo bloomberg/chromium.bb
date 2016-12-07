@@ -77,6 +77,8 @@ void AutoscrollController::startAutoscrollForSelection(
   // it's already active.
   if (m_autoscrollType != NoAutoscroll)
     return;
+  if (layoutObject)
+    layoutObject->frameView()->updateAllLifecyclePhasesExceptPaint();
   LayoutBox* scrollable = LayoutBox::findAutoscrollable(layoutObject);
   if (!scrollable)
     scrollable =
@@ -162,6 +164,10 @@ void AutoscrollController::updateDragAndDrop(Node* dropTargetNode,
       m_autoscrollLayoutObject->frame() !=
           dropTargetNode->layoutObject()->frame())
     return;
+
+  dropTargetNode->layoutObject()
+      ->frameView()
+      ->updateAllLifecyclePhasesExceptPaint();
 
   LayoutBox* scrollable =
       LayoutBox::findAutoscrollable(dropTargetNode->layoutObject());

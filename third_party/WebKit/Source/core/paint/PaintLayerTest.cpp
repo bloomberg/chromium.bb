@@ -8,16 +8,37 @@
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 
 namespace blink {
 
-class PaintLayerTest : public RenderingTest {
+typedef std::pair<bool, bool> SlimmingPaintAndRootLayerScrolling;
+class PaintLayerTest
+    : public ::testing::WithParamInterface<SlimmingPaintAndRootLayerScrolling>,
+      private ScopedSlimmingPaintV2ForTest,
+      private ScopedRootLayerScrollingForTest,
+      public RenderingTest {
  public:
-  PaintLayerTest() : RenderingTest(SingleChildFrameLoaderClient::create()) {}
+  PaintLayerTest()
+      : ScopedSlimmingPaintV2ForTest(GetParam().first),
+        ScopedRootLayerScrollingForTest(GetParam().second),
+        RenderingTest(SingleChildFrameLoaderClient::create()) {}
 };
 
-TEST_F(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
+SlimmingPaintAndRootLayerScrolling foo[] = {
+    SlimmingPaintAndRootLayerScrolling(false, false),
+    SlimmingPaintAndRootLayerScrolling(true, false),
+    SlimmingPaintAndRootLayerScrolling(false, true),
+    SlimmingPaintAndRootLayerScrolling(true, true)};
+
+INSTANTIATE_TEST_CASE_P(All, PaintLayerTest, ::testing::ValuesIn(foo));
+
+TEST_P(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
+  // TODO(chrishtr): fix this test for SPv2
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
   setBodyInnerHTML(
       " <div id='parent'><div id='absposparent'><div id='absposchild'>"
       " </div></div></div>"
@@ -37,7 +58,7 @@ TEST_F(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
             parentLayer->boundingBoxForCompositing());
 }
 
-TEST_F(PaintLayerTest, PaintingExtentReflection) {
+TEST_P(PaintLayerTest, PaintingExtentReflection) {
   setBodyInnerHTML(
       "<div id='target' style='background-color: blue; position: absolute;"
       "    width: 110px; height: 120px; top: 40px; left: 60px;"
@@ -51,7 +72,7 @@ TEST_F(PaintLayerTest, PaintingExtentReflection) {
       layer->paintingExtent(document().layoutView()->layer(), LayoutSize(), 0));
 }
 
-TEST_F(PaintLayerTest, PaintingExtentReflectionWithTransform) {
+TEST_P(PaintLayerTest, PaintingExtentReflectionWithTransform) {
   setBodyInnerHTML(
       "<div id='target' style='background-color: blue; position: absolute;"
       "    width: 110px; height: 120px; top: 40px; left: 60px;"
@@ -65,7 +86,94 @@ TEST_F(PaintLayerTest, PaintingExtentReflectionWithTransform) {
       layer->paintingExtent(document().layoutView()->layer(), LayoutSize(), 0));
 }
 
-TEST_F(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
+TEST_P(PaintLayerTest, ScrollsWithViewportRelativePosition) {
+  setBodyInnerHTML("<div id='target' style='position: relative'></div>");
+
+  PaintLayer* layer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+  EXPECT_FALSE(layer->sticksToViewport());
+}
+
+TEST_P(PaintLayerTest, ScrollsWithViewportFixedPosition) {
+  setBodyInnerHTML("<div id='target' style='position: fixed'></div>");
+
+  PaintLayer* layer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+  EXPECT_TRUE(layer->sticksToViewport());
+}
+
+TEST_P(PaintLayerTest, ScrollsWithViewportFixedPositionInsideTransform) {
+  // We don't intend to launch SPv2 without root layer scrolling, so skip this
+  // test in that configuration because it's broken.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      !RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    return;
+  setBodyInnerHTML(
+      "<div style='transform: translateZ(0)'>"
+      "  <div id='target' style='position: fixed'></div>"
+      "</div>"
+      "<div style='width: 10px; height: 1000px'></div>");
+  PaintLayer* layer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+  EXPECT_FALSE(layer->sticksToViewport());
+}
+
+TEST_P(PaintLayerTest,
+       ScrollsWithViewportFixedPositionInsideTransformNoScroll) {
+  setBodyInnerHTML(
+      "<div style='transform: translateZ(0)'>"
+      "  <div id='target' style='position: fixed'></div>"
+      "</div>");
+  PaintLayer* layer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+
+  // In SPv2 mode, we correctly determine that the frame doesn't scroll at all,
+  // and so return true.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    EXPECT_TRUE(layer->sticksToViewport());
+  else
+    EXPECT_FALSE(layer->sticksToViewport());
+}
+
+TEST_P(PaintLayerTest, ScrollsWithViewportStickyPosition) {
+  setBodyInnerHTML(
+      "<div style='transform: translateZ(0)'>"
+      "  <div id='target' style='position: sticky'></div>"
+      "</div>"
+      "<div style='width: 10px; height: 1000px'></div>");
+
+  PaintLayer* layer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+  EXPECT_TRUE(layer->sticksToViewport());
+}
+
+TEST_P(PaintLayerTest, ScrollsWithViewportStickyPositionNoScroll) {
+  setBodyInnerHTML(
+      "<div style='transform: translateZ(0)'>"
+      "  <div id='target' style='position: sticky'></div>"
+      "</div>");
+
+  PaintLayer* layer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+  EXPECT_TRUE(layer->sticksToViewport());
+}
+
+TEST_P(PaintLayerTest, ScrollsWithViewportStickyPositionInsideScroller) {
+  setBodyInnerHTML(
+      "<div style='overflow:scroll; width: 100px; height: 100px;'>"
+      "  <div id='target' style='position: sticky'></div>"
+      "  <div style='width: 50px; height: 1000px;'></div>"
+      "</div>");
+
+  PaintLayer* layer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+  EXPECT_FALSE(layer->sticksToViewport());
+}
+
+TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
   enableCompositing();
   setBodyInnerHTML(
       "<div id='scroll' style='width: 100px; height: 100px; overflow: scroll;"
@@ -92,7 +200,7 @@ TEST_F(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
   document().view()->updateAllLifecyclePhases();
 }
 
-TEST_F(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
+TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
   setBodyInnerHTML(
       "<div id='scroll' style='width: 100px; height: 100px; overflow: scroll'>"
       "  <div id='content' style='position: relative; background: blue;"
@@ -117,7 +225,7 @@ TEST_F(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
   document().view()->updateAllLifecyclePhases();
 }
 
-TEST_F(PaintLayerTest, HasNonIsolatedDescendantWithBlendMode) {
+TEST_P(PaintLayerTest, HasNonIsolatedDescendantWithBlendMode) {
   setBodyInnerHTML(
       "<div id='stacking-grandparent' style='isolation: isolate'>"
       "  <div id='stacking-parent' style='isolation: isolate'>"
@@ -145,7 +253,7 @@ TEST_F(PaintLayerTest, HasNonIsolatedDescendantWithBlendMode) {
   EXPECT_TRUE(parent->hasVisibleDescendant());
 }
 
-TEST_F(PaintLayerTest, HasDescendantWithClipPath) {
+TEST_P(PaintLayerTest, HasDescendantWithClipPath) {
   setBodyInnerHTML(
       "<div id='parent' style='position:relative'>"
       "  <div id='clip-path' style='clip-path: circle(50px at 0 100px)'>"
@@ -163,7 +271,7 @@ TEST_F(PaintLayerTest, HasDescendantWithClipPath) {
   EXPECT_TRUE(parent->hasVisibleDescendant());
 }
 
-TEST_F(PaintLayerTest, HasVisibleDescendant) {
+TEST_P(PaintLayerTest, HasVisibleDescendant) {
   enableCompositing();
   setBodyInnerHTML(
       "<div id='invisible' style='position:relative'>"
@@ -182,7 +290,7 @@ TEST_F(PaintLayerTest, HasVisibleDescendant) {
   EXPECT_FALSE(invisible->hasDescendantWithClipPath());
 }
 
-TEST_F(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
+TEST_P(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
   enableCompositing();
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"

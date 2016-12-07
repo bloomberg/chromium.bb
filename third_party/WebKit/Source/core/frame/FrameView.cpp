@@ -2878,8 +2878,11 @@ void FrameView::updateLifecyclePhasesInternal(
       if (targetState >= DocumentLifecycle::PrePaintClean) {
         if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
           invalidateTreeIfNeededRecursive();
-        if (view.compositor()->inCompositingMode())
-          scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
+
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+          if (view.compositor()->inCompositingMode())
+            scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
+        }
 
         updateCompositedSelectionIfNeeded();
       }
