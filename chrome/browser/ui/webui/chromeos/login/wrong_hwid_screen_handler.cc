@@ -27,9 +27,6 @@ WrongHWIDScreenHandler::~WrongHWIDScreenHandler() {
     delegate_->OnActorDestroyed(this);
 }
 
-void WrongHWIDScreenHandler::PrepareToShow() {
-}
-
 void WrongHWIDScreenHandler::Show() {
   if (!page_is_ready()) {
     show_on_init_ = true;

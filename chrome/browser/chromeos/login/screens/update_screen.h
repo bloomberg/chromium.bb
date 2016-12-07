@@ -42,7 +42,6 @@ class UpdateScreen : public UpdateModel,
   static UpdateScreen* Get(ScreenManager* manager);
 
   // UpdateModel:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void Initialize(::login::ScreenContext* context) override;

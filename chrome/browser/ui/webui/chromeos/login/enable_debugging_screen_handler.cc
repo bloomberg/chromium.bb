@@ -46,9 +46,6 @@ EnableDebuggingScreenHandler::~EnableDebuggingScreenHandler() {
     delegate_->OnActorDestroyed(this);
 }
 
-void EnableDebuggingScreenHandler::PrepareToShow() {
-}
-
 void EnableDebuggingScreenHandler::ShowWithParams() {
   ShowScreen(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
 

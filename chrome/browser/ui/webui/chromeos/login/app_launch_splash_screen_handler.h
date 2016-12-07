@@ -37,7 +37,6 @@ class AppLaunchSplashScreenHandler
 
   // AppLaunchSplashScreenActor implementation:
   void Show(const std::string& app_id) override;
-  void PrepareToShow() override;
   void Hide() override;
   void ToggleNetworkConfig(bool visible) override;
   void UpdateAppLaunchState(AppLaunchState state) override;

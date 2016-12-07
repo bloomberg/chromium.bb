@@ -39,7 +39,6 @@ class MockNetworkErrorView : public NetworkErrorView {
   void Bind(NetworkErrorModel& model) override;
   void Unbind() override;
 
-  MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD1(MockBind, void(NetworkErrorModel& model));

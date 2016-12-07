@@ -34,9 +34,6 @@ ErrorScreenHandler::~ErrorScreenHandler() {
     model_->OnViewDestroyed(this);
 }
 
-void ErrorScreenHandler::PrepareToShow() {
-}
-
 void ErrorScreenHandler::Show() {
   if (!page_is_ready()) {
     show_on_init_ = true;

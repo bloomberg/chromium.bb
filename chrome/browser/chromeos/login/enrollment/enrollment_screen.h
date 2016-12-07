@@ -54,7 +54,6 @@ class EnrollmentScreen
       pairing_chromeos::ControllerPairingController* shark_controller);
 
   // BaseScreen implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   std::string GetName() const override;

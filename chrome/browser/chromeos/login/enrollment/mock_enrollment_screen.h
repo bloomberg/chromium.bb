@@ -29,7 +29,6 @@ class MockEnrollmentScreenActor
 
   MOCK_METHOD2(SetParameters,
                void(Controller*, const policy::EnrollmentConfig& config));
-  MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD0(ShowSigninScreen, void());

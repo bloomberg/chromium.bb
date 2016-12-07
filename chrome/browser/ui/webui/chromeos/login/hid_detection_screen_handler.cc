@@ -71,9 +71,6 @@ void HIDDetectionScreenHandler::Unbind() {
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
-void HIDDetectionScreenHandler::PrepareToShow() {
-}
-
 void HIDDetectionScreenHandler::CheckIsScreenRequired(
       const base::Callback<void(bool)>& on_check_done) {
   model_->CheckIsScreenRequired(on_check_done);

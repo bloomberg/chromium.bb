@@ -79,11 +79,6 @@ NetworkScreen::~NetworkScreen() {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkScreen, NetworkModel implementation:
 
-void NetworkScreen::PrepareToShow() {
-  if (view_)
-    view_->PrepareToShow();
-}
-
 void NetworkScreen::Show() {
   Refresh();
 

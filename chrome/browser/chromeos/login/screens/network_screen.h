@@ -62,7 +62,6 @@ class NetworkScreen : public NetworkModel,
   static NetworkScreen* Get(ScreenManager* manager);
 
   // NetworkModel implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void Initialize(::login::ScreenContext* context) override;

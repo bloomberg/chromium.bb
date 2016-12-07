@@ -24,11 +24,6 @@ EnableDebuggingScreen::~EnableDebuggingScreen() {
     actor_->SetDelegate(NULL);
 }
 
-void EnableDebuggingScreen::PrepareToShow() {
-  if (actor_)
-    actor_->PrepareToShow();
-}
-
 void EnableDebuggingScreen::Show() {
   if (actor_)
     actor_->Show();

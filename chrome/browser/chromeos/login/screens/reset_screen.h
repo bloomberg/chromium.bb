@@ -30,7 +30,6 @@ class ResetScreen : public ResetModel,
   ~ResetScreen() override;
 
   // ResetModel implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void OnViewDestroyed(ResetView* view) override;

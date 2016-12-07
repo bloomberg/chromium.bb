@@ -33,8 +33,6 @@ class BaseScreen {
 
   // ---- Old implementation ----
 
-  virtual void PrepareToShow() = 0;
-
   // Makes wizard screen visible.
   virtual void Show() = 0;
 

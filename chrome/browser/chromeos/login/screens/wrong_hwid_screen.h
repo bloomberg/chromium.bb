@@ -24,7 +24,6 @@ class WrongHWIDScreen : public BaseScreen,
   ~WrongHWIDScreen() override;
 
   // BaseScreen implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   std::string GetName() const override;

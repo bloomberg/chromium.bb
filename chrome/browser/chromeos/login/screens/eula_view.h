@@ -18,7 +18,6 @@ class EulaView {
  public:
   virtual ~EulaView() {}
 
-  virtual void PrepareToShow() = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;
   virtual void Bind(EulaModel& model) = 0;

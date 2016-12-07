@@ -20,7 +20,6 @@ class HIDDetectionView {
  public:
   virtual ~HIDDetectionView() {}
 
-  virtual void PrepareToShow() = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;
   virtual void Bind(HIDDetectionModel& model) = 0;

@@ -17,7 +17,6 @@ class ResetView {
 
   virtual void Bind(ResetModel& model) = 0;
   virtual void Unbind() = 0;
-  virtual void PrepareToShow() = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;
 };

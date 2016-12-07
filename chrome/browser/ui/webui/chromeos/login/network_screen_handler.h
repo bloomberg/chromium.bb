@@ -30,7 +30,6 @@ class NetworkScreenHandler : public NetworkView, public BaseScreenHandler {
 
  private:
   // NetworkView implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void Bind(NetworkModel& model) override;

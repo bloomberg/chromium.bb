@@ -89,9 +89,6 @@ void UserImageScreenHandler::Show() {
 void UserImageScreenHandler::Hide() {
 }
 
-void UserImageScreenHandler::PrepareToShow() {
-}
-
 void UserImageScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("userImageScreenTitle", IDS_USER_IMAGE_SCREEN_TITLE);

@@ -49,7 +49,6 @@ class HostPairingScreen
   void CommitContextChanges();
 
   // Overridden from BaseScreen:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   std::string GetName() const override;

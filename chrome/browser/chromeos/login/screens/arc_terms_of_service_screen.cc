@@ -28,8 +28,6 @@ ArcTermsOfServiceScreen::~ArcTermsOfServiceScreen() {
     actor_->SetDelegate(nullptr);
 }
 
-void ArcTermsOfServiceScreen::PrepareToShow() {}
-
 void ArcTermsOfServiceScreen::Show() {
   if (!actor_)
     return;

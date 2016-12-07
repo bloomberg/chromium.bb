@@ -23,7 +23,6 @@ class ErrorScreenHandler : public BaseScreenHandler,
   ~ErrorScreenHandler() override;
 
   // ErrorView:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void Bind(NetworkErrorModel& model) override;

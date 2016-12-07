@@ -36,11 +36,6 @@ EulaScreen::~EulaScreen() {
     view_->Unbind();
 }
 
-void EulaScreen::PrepareToShow() {
-  if (view_)
-    view_->PrepareToShow();
-}
-
 void EulaScreen::Show() {
   // Command to own the TPM.
   DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(

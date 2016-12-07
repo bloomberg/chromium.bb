@@ -29,7 +29,6 @@ class HIDDetectionScreenHandler
   ~HIDDetectionScreenHandler() override;
 
   // HIDDetectionView implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void Bind(HIDDetectionModel& model) override;

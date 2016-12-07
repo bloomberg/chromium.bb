@@ -321,13 +321,6 @@ void UpdateScreen::StartNetworkCheck() {
   network_portal_detector::GetInstance()->AddAndFireObserver(this);
 }
 
-void UpdateScreen::PrepareToShow() {
-  if (!view_)
-    return;
-
-  view_->PrepareToShow();
-}
-
 void UpdateScreen::Show() {
   is_shown_ = true;
   histogram_helper_->OnScreenShow();

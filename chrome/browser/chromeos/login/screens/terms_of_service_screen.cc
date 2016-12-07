@@ -40,9 +40,6 @@ TermsOfServiceScreen::~TermsOfServiceScreen() {
     actor_->SetDelegate(NULL);
 }
 
-void TermsOfServiceScreen::PrepareToShow() {
-}
-
 void TermsOfServiceScreen::Show() {
   if (!actor_)
     return;

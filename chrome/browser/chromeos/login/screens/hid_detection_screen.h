@@ -48,7 +48,6 @@ class HIDDetectionScreen : public HIDDetectionModel,
   ~HIDDetectionScreen() override;
 
   // HIDDetectionModel implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void Initialize(::login::ScreenContext* context) override;

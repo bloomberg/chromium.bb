@@ -47,7 +47,6 @@ class UserImageScreen : public UserImageModel,
   static UserImageScreen* Get(ScreenManager* manager);
 
   // BaseScreen implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
 

@@ -44,7 +44,6 @@ class ControllerPairingScreen
   bool ExpectStageIs(Stage stage) const;
 
   // Overridden from BaseScreen:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   std::string GetName() const override;

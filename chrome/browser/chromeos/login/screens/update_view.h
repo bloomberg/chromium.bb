@@ -17,9 +17,6 @@ class UpdateView {
  public:
   virtual ~UpdateView() {}
 
-  // Prepare the contents to showing.
-  virtual void PrepareToShow() = 0;
-
   // Shows the contents of the screen.
   virtual void Show() = 0;
 

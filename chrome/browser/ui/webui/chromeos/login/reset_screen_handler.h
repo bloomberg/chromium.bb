@@ -25,7 +25,6 @@ class ResetScreenHandler : public ResetView,
   // ResetView implementation:
   void Bind(ResetModel& model) override;
   void Unbind() override;
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
 

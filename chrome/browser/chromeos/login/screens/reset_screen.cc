@@ -49,11 +49,6 @@ ResetScreen::~ResetScreen() {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
 }
 
-void ResetScreen::PrepareToShow() {
-  if (view_)
-    view_->PrepareToShow();
-}
-
 void ResetScreen::Show() {
   if (view_)
     view_->Show();

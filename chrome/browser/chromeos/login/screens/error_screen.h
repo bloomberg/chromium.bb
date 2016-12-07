@@ -33,7 +33,6 @@ class ErrorScreen : public NetworkErrorModel, public LoginPerformer::Delegate {
   ~ErrorScreen() override;
 
   // NetworkErrorModel:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void OnShow() override;

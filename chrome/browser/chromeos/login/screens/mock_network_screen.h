@@ -33,7 +33,6 @@ class MockNetworkView : public NetworkView {
 
   MOCK_METHOD1(MockBind, void(NetworkModel& model));
   MOCK_METHOD0(MockUnbind, void());
-  MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD1(ShowError, void(const base::string16& message));

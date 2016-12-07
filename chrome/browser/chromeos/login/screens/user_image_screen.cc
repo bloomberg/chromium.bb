@@ -216,12 +216,6 @@ void UserImageScreen::OnImageAccepted() {
   ExitScreen();
 }
 
-
-void UserImageScreen::PrepareToShow() {
-  if (view_)
-    view_->PrepareToShow();
-}
-
 const user_manager::User* UserImageScreen::GetUser() {
   return user_manager::UserManager::Get()->GetActiveUser();
 }

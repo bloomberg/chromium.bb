@@ -20,7 +20,6 @@ class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
   ~UpdateScreenHandler() override;
 
   // UpdateView:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void Bind(UpdateModel& model) override;

@@ -110,9 +110,6 @@ void AppLaunchSplashScreenHandler::RegisterMessages() {
               &AppLaunchSplashScreenHandler::HandleNetworkConfigRequested);
 }
 
-void AppLaunchSplashScreenHandler::PrepareToShow() {
-}
-
 void AppLaunchSplashScreenHandler::Hide() {
 }
 

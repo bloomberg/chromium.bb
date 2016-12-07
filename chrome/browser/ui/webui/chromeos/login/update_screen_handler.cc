@@ -65,9 +65,6 @@ void UpdateScreenHandler::Initialize() {
   }
 }
 
-void UpdateScreenHandler::PrepareToShow() {
-}
-
 void UpdateScreenHandler::Show() {
   if (!page_is_ready()) {
     show_on_init_ = true;

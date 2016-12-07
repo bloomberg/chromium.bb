@@ -25,7 +25,6 @@ class EnableDebuggingScreenHandler : public EnableDebuggingScreenActor,
   ~EnableDebuggingScreenHandler() override;
 
   // EnableDebuggingScreenActor implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void SetDelegate(Delegate* delegate) override;

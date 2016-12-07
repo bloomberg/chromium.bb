@@ -48,7 +48,6 @@ class AutoEnrollmentCheckScreen
   }
 
   // BaseScreen implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   std::string GetName() const override;

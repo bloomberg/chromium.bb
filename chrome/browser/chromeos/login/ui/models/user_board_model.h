@@ -28,7 +28,6 @@ class UserBoardModel : public BaseScreen {
   std::string GetName() const override;
 
   // Temorary unused methods:
-  void PrepareToShow() override{};
   void Show() override{};
   void Hide() override{};
 };

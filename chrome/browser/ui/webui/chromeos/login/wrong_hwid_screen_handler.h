@@ -21,7 +21,6 @@ class WrongHWIDScreenHandler : public WrongHWIDScreenActor,
   ~WrongHWIDScreenHandler() override;
 
   // WrongHWIDScreenActor implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void SetDelegate(Delegate* delegate) override;

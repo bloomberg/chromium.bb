@@ -36,7 +36,6 @@ class EulaScreen : public EulaModel, public TpmPasswordFetcherDelegate {
   ~EulaScreen() override;
 
   // EulaModel implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   GURL GetOemEulaUrl() const override;

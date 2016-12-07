@@ -47,9 +47,6 @@ void HostPairingScreen::CommitContextChanges() {
     actor_->OnContextChanged(diff);
 }
 
-void HostPairingScreen::PrepareToShow() {
-}
-
 void HostPairingScreen::Show() {
   if (actor_)
     actor_->Show();

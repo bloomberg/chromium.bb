@@ -128,11 +128,6 @@ SupervisedUserCreationScreen::~SupervisedUserCreationScreen() {
   network_portal_detector::GetInstance()->RemoveObserver(this);
 }
 
-void SupervisedUserCreationScreen::PrepareToShow() {
-  if (actor_)
-    actor_->PrepareToShow();
-}
-
 void SupervisedUserCreationScreen::Show() {
   CameraPresenceNotifier::GetInstance()->AddObserver(this);
   if (actor_) {

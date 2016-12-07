@@ -22,11 +22,6 @@ WrongHWIDScreen::~WrongHWIDScreen() {
     actor_->SetDelegate(NULL);
 }
 
-void WrongHWIDScreen::PrepareToShow() {
-  if (actor_)
-    actor_->PrepareToShow();
-}
-
 void WrongHWIDScreen::Show() {
   if (actor_)
     actor_->Show();

@@ -32,7 +32,6 @@ class EulaScreenHandler : public EulaView,
   ~EulaScreenHandler() override;
 
   // EulaView implementation:
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void Bind(EulaModel& model) override;

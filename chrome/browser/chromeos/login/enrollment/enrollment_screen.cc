@@ -141,10 +141,6 @@ void EnrollmentScreen::OnAuthCleared(const base::Closure& callback) {
   callback.Run();
 }
 
-void EnrollmentScreen::PrepareToShow() {
-  actor_->PrepareToShow();
-}
-
 void EnrollmentScreen::Show() {
   UMA(policy::kMetricEnrollmentTriggered);
   switch (current_auth_) {

@@ -28,7 +28,6 @@ class EnableDebuggingScreenActor {
 
   virtual ~EnableDebuggingScreenActor() {}
 
-  virtual void PrepareToShow() = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;
   virtual void SetDelegate(Delegate* delegate) = 0;

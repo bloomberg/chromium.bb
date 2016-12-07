@@ -187,9 +187,6 @@ void EnrollmentScreenHandler::SetParameters(
   config_ = config;
 }
 
-void EnrollmentScreenHandler::PrepareToShow() {
-}
-
 void EnrollmentScreenHandler::Show() {
   if (!page_is_ready())
     show_on_init_ = true;

@@ -71,11 +71,6 @@ ErrorScreen::~ErrorScreen() {
     view_->Unbind();
 }
 
-void ErrorScreen::PrepareToShow() {
-  if (view_)
-    view_->PrepareToShow();
-}
-
 void ErrorScreen::Show() {
   if (!on_hide_callback_) {
     SetHideCallback(base::Bind(&ErrorScreen::DefaultHideCallback,

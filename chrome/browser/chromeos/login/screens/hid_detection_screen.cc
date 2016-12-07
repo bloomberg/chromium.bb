@@ -78,11 +78,6 @@ HIDDetectionScreen::~HIDDetectionScreen() {
     adapter_->RemoveObserver(this);
 }
 
-void HIDDetectionScreen::PrepareToShow() {
-  if (view_)
-    view_->PrepareToShow();
-}
-
 void HIDDetectionScreen::Show() {
   showing_ = true;
   GetContextEditor().SetBoolean(kContextKeyNumKeysEnteredExpected, false);

@@ -33,9 +33,6 @@ DeviceDisabledScreen::~DeviceDisabledScreen() {
   device_disabling_manager_->RemoveObserver(this);
 }
 
-void DeviceDisabledScreen::PrepareToShow() {
-}
-
 void DeviceDisabledScreen::Show() {
   if (!actor_ || showing_)
     return;

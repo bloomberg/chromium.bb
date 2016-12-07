@@ -219,8 +219,6 @@ void SupervisedUserCreationScreenHandler::RegisterMessages() {
                   HandleCurrentSupervisedUserPage);
 }
 
-void SupervisedUserCreationScreenHandler::PrepareToShow() {}
-
 void SupervisedUserCreationScreenHandler::Show() {
   std::unique_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   std::unique_ptr<base::ListValue> users_list(new base::ListValue());

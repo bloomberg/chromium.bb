@@ -38,9 +38,6 @@ ResetScreenHandler::~ResetScreenHandler() {
     model_->OnViewDestroyed(this);
 }
 
-void ResetScreenHandler::PrepareToShow() {
-}
-
 void ResetScreenHandler::Show() {
   if (!page_is_ready()) {
     show_on_init_ = true;

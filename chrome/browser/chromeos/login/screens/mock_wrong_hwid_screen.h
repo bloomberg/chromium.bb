@@ -27,7 +27,6 @@ class MockWrongHWIDScreenActor : public WrongHWIDScreenActor {
 
   void SetDelegate(Delegate* delegate) override;
 
-  MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD1(MockSetDelegate, void(Delegate*));

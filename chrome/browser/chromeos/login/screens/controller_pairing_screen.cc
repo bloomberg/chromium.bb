@@ -53,9 +53,6 @@ bool ControllerPairingScreen::ExpectStageIs(Stage stage) const {
   return stage == current_stage_;
 }
 
-void ControllerPairingScreen::PrepareToShow() {
-}
-
 void ControllerPairingScreen::Show() {
   if (actor_)
     actor_->Show();

@@ -69,7 +69,6 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
   SupervisedUserCreationScreenHandler();
   ~SupervisedUserCreationScreenHandler() override;
 
-  virtual void PrepareToShow();
   virtual void Show();
   virtual void Hide();
   virtual void SetDelegate(Delegate* delegate);

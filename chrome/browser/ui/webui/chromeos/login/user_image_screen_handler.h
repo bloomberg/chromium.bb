@@ -37,7 +37,6 @@ class UserImageScreenHandler : public UserImageView, public BaseScreenHandler {
   void Unbind() override;
   void Show() override;
   void Hide() override;
-  void PrepareToShow() override;
   void HideCurtain() override;
 
  private:

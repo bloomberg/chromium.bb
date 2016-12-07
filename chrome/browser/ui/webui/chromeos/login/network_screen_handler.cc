@@ -69,9 +69,6 @@ NetworkScreenHandler::~NetworkScreenHandler() {
 
 // NetworkScreenHandler, NetworkScreenActor implementation: --------------------
 
-void NetworkScreenHandler::PrepareToShow() {
-}
-
 void NetworkScreenHandler::Show() {
   if (!page_is_ready()) {
     show_on_init_ = true;

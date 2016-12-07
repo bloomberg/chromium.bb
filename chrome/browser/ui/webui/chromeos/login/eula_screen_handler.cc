@@ -93,9 +93,6 @@ EulaScreenHandler::~EulaScreenHandler() {
     model_->OnViewDestroyed(this);
 }
 
-void EulaScreenHandler::PrepareToShow() {
-}
-
 void EulaScreenHandler::Show() {
   if (!page_is_ready()) {
     show_on_init_ = true;

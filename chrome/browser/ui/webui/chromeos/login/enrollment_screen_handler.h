@@ -40,7 +40,6 @@ class EnrollmentScreenHandler
   // Implements EnrollmentScreenActor:
   void SetParameters(Controller* controller,
                      const policy::EnrollmentConfig& config) override;
-  void PrepareToShow() override;
   void Show() override;
   void Hide() override;
   void ShowSigninScreen() override;
