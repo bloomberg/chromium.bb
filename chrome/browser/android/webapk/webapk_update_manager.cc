@@ -88,7 +88,7 @@ static void UpdateAsync(
   info.best_icon_url = best_icon_url;
   info.manifest_url = web_manifest_url;
 
-  base::android::JavaArrayOfByteArrayToStringVector(
+  base::android::AppendJavaStringArrayToStringVector(
       env, java_icon_urls.obj(), &info.icon_urls);
 
   gfx::JavaBitmap java_bitmap_lock(java_best_icon_bitmap);
