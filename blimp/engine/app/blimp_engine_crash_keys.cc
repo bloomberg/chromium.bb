@@ -27,6 +27,7 @@ size_t RegisterEngineCrashKeys() {
       // browser/:
       { "third-party-modules-loaded", crash_keys::kSmallSize },
       { "third-party-modules-not-loaded", crash_keys::kSmallSize },
+      { "enrolled-to-domain", crash_keys::kSmallSize },
 
       // //content crash keys
       { "bad_message_reason", crash_keys::kSmallSize },

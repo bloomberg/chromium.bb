@@ -59,6 +59,8 @@ constexpr char kInputEventFilterSendFailure[] =
 constexpr char kThirdPartyModulesLoaded[] = "third-party-modules-loaded";
 constexpr char kThirdPartyModulesNotLoaded[] = "third-party-modules-not-loaded";
 
+constexpr char kEnrolledToDomain[] = "enrolled-to-domain";
+
 constexpr char kViewCount[] = "view-count";
 constexpr char kZeroEncodeDetails[] = "zero-encode-details";
 
@@ -104,6 +106,7 @@ size_t RegisterCrashKeysHelper() {
       // browser/:
       {kThirdPartyModulesLoaded, kSmallSize},
       {kThirdPartyModulesNotLoaded, kSmallSize},
+      {kEnrolledToDomain, kSmallSize},
 
       // content/:
       {"bad_message_reason", kSmallSize},
