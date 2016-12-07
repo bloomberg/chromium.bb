@@ -19,7 +19,11 @@ GbmBufferBase::GbmBufferBase(const scoped_refptr<GbmDevice>& drm,
     : drm_(drm), bo_(bo) {
   if (flags & GBM_BO_USE_SCANOUT) {
     DCHECK(bo_);
-    framebuffer_pixel_format_ = format;
+    // The framebuffer format might be different than the format:
+    // drm supports 24 bit color depth and formats with alpha will
+    // be converted to one without it.
+    framebuffer_pixel_format_ =
+        GetFourCCFormatForFramebuffer(GetBufferFormatFromFourCCFormat(format));
 
     // TODO(dcastagna): Add multi-planar support.
     uint32_t handles[4] = {0};
