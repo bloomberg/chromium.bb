@@ -429,6 +429,7 @@ vs-chromium-project.txt
 /third_party/pywebsocket/src
 /third_party/re2/src
 /third_party/requests/src
+/third_party/retrolambda/*.jar
 /third_party/robolectric/lib/*.jar
 /third_party/robolectric/robolectric
 /third_party/scons-2.0.1

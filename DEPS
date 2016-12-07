@@ -684,6 +684,16 @@ hooks = [
     ],
   },
   {
+    'name': 'retrolambda',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/android/update_deps/update_third_party_deps.py',
+               'download',
+               '-b', 'chromium-android-tools/retrolambda',
+               '-l', 'third_party/retrolambda'
+    ],
+  },
+  {
     'name': 'icu4j',
     'pattern': '.',
     'action': ['python',

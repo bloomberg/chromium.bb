@@ -1,0 +1,20 @@
+Name: Retrolambda, backport of Java 8's lambda expressions to Java 7, 6, 5
+Short Name: retrolambda
+URL: https://github.com/orfjackal/retrolambda/
+Version: 2.3.0
+License: Apache 2.0
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+Retrolambda is a Java library used by the build process to transform Java 8's
+bytecode to Java 7's bytecode. It is used to enable Java 8 features such as
+lambda expressions for Chrome on Android without switching from javac to Jack.
+
+Local Modifications:
+None
+
+Source of the .jar:
+Downloaded from Maven Central. Link:
+http://search.maven.org/remotecontent?filepath=net/orfjackal/retrolambda/retrolambda/2.3.0/retrolambda-2.3.0.jar
+
