@@ -132,7 +132,8 @@ bool CSPSource::isSimilar(CSPSource* other) const {
   bool hostsMatch = (m_host == other->m_host) || hostMatches(other->m_host) ||
                     other->hostMatches(m_host);
   bool portsMatch = (other->m_portWildcard == HasWildcard) ||
-                    portMatches(other->m_port, other->m_scheme);
+                    portMatches(other->m_port, other->m_scheme) ||
+                    other->portMatches(m_port, m_scheme);
   bool pathsMatch = pathMatches(other->m_path) || other->pathMatches(m_path);
   if (hostsMatch && portsMatch && pathsMatch)
     return true;
@@ -154,7 +155,11 @@ CSPSource* CSPSource::intersect(CSPSource* other) const {
 
   String host = m_hostWildcard == NoWildcard ? m_host : other->m_host;
   String path = other->pathMatches(m_path) ? m_path : other->m_path;
-  int port = (other->m_portWildcard == HasWildcard || !other->m_port)
+  // Choose this port if the other port is empty, has wildcard or is a port for
+  // a less secure scheme such as "http" whereas scheme of this is "https", in
+  // which case the lengths would differ.
+  int port = (other->m_portWildcard == HasWildcard || !other->m_port ||
+              m_scheme.length() > other->m_scheme.length())
                  ? m_port
                  : other->m_port;
   WildcardDisposition hostWildcard =

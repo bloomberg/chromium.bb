@@ -1200,9 +1200,9 @@ SourceListDirective* CSPDirectiveList::operativeDirective(
       return operativeDirective(m_styleSrc.get());
     // Directives that default to child-src, which defaults to default-src.
     case ContentSecurityPolicy::DirectiveType::FrameSrc:
-      return operativeDirective(m_frameSrc,
+      return operativeDirective(m_frameSrc.get(),
                                 operativeDirective(m_childSrc.get()));
-    // TODO(mkwst): Reevaluate this
+    // TODO(mkwst): Reevaluate this.
     case ContentSecurityPolicy::DirectiveType::WorkerSrc:
       return operativeDirective(m_workerSrc.get(),
                                 operativeDirective(m_childSrc.get()));
