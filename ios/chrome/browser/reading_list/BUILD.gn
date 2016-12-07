@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("reading_list") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "offline_url_utils.cc",
     "offline_url_utils.h",
