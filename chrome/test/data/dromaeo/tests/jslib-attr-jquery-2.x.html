@@ -1,165 +1,51 @@
 <html>
 <head>
 <script src="../htmlrunner.js"></script>
-<script src="../lib/ext-core.js"></script>
+<script src="../lib/jquery.2.0.3.js"></script>
 <script>
 window.onload = function(){
-startTest("cssquery-ext", '5bc05a17');
+startTest("jslib-attr-jquery", 'aeb3b2c1');
 
 // Try to force real results
-var ret, tmp;
+var ret, tmp, div;
 
 var html = document.body.innerHTML;
-var query = Ext.DomQuery.select;
 
 	prep(function(){
-		var div = document.createElement("div");
-		div.innerHTML = html;
-		document.body.appendChild( div );
+		div = jQuery("div");
+		var tmp = document.createElement("div");
+		tmp.innerHTML = html;
+		document.body.appendChild( tmp );
 	});
 
-	test("Ext - *", function(){
-		query("*");
+	test("jQuery - addClass", function(){
+		for ( var i = 0; i < 10; i++ )
+		div.addClass("foo");
 	});
 
-	test("Ext - div:only-child", function(){
-		query("div:only-child");
+	test("jQuery - removeClass", function(){
+		for ( var i = 0; i < 10; i++ )
+		div.removeClass("foo");
 	});
 
-	test("Ext - div:first-child", function(){
-		query("div:first-child");
+	test("jQuery - hasClass x10", function(){
+		for ( var i = 0; i < 100; i++ )
+		ret = div.hasClass("test");
 	});
 
-	test("Ext - div:nth-child(even)", function(){
-		query("div:nth-child(even)");
+	test("jQuery - attr(class) x100", function(){
+		for ( var i = 0; i < 1000; i++ )
+		ret = div.attr("class");
 	});
 
-	test("Ext - div:nth-child(2n)", function(){
-		query("div:nth-child(2n)");
+	test("jQuery - attr(class,test)", function(){
+		for ( var i = 0; i < 10; i++ )
+		div.attr("class","test");
 	});
 
-	test("Ext - div:nth-child(odd)", function(){
-		query("div:nth-child(odd)");
-	});
-
-	test("Ext - div:nth-child(2n+1)", function(){
-		query("div:nth-child(2n+1)");
-	});
-
-	test("Ext - div:nth-child(n)", function(){
-		query("div:nth-child(n)");
-	});
-
-	test("Ext - div:last-child", function(){
-		query("div:last-child");
-	});
-
-	test("Ext - div > div", function(){
-		query("div > div");
-	});
-
-	test("Ext - div + div", function(){
-		query("div + div");
-	});
-
-	test("Ext - div ~ div", function(){
-		query("div ~ div");
-	});
-
-	test("Ext - body", function(){
-		query("body");
-	});
-
-	test("Ext - body div", function(){
-		query("body div");
-	});
-
-	test("Ext - div", function(){
-		query("div");
-	});
-
-	test("Ext - div div", function(){
-		query("div div");
-	});
-
-	test("Ext - div div div", function(){
-		query("div div div");
-	});
-
-	test("Ext - div, div, div", function(){
-		query("div, div, div");
-	});
-
-	test("Ext - div, a, span", function(){
-		query("div, a, span");
-	});
-
-	test("Ext - .dialog", function(){
-		query(".dialog");
-	});
-
-	test("Ext - div.dialog", function(){
-		query("div.dialog");
-	});
-
-	test("Ext - div .dialog", function(){
-		query("div .dialog");
-	});
-
-	test("Ext - div.character, div.dialog", function(){
-		query("div.character, div.dialog");
-	});
-
-	test("Ext - #speech5", function(){
-		query("#speech5");
-	});
-
-	test("Ext - div#speech5", function(){
-		query("div#speech5");
-	});
-
-	test("Ext - div #speech5", function(){
-		query("div #speech5");
-	});
-
-	test("Ext - div.scene div.dialog", function(){
-		query("div.scene div.dialog");
-	});
-
-	test("Ext - div#scene1 div.dialog div", function(){
-		query("div#scene1 div.dialog div");
-	});
-
-	test("Ext - #scene1 #speech1", function(){
-		query("#scene1 #speech1");
-	});
-
-	test("Ext - div[class]", function(){
-		query("div[class]");
-	});
-
-	test("Ext - div[class=dialog]", function(){
-		query("div[class=dialog]");
-	});
-
-	test("Ext - div[class^=dia]", function(){
-		query("div[class^=dia]");
-	});
-
-	test("Ext - div[class$=log]", function(){
-		query("div[class$=log]");
-	});
-
-	test("Ext - div[class*=sce]", function(){
-		query("div[class*=sce]");
-	});
-
-	test("Ext - div[class|=dialog]", function(){
-		query("div[class|=dialog]");
-	});
-
-	test("Ext - div[class~=dialog]", function(){
-		query("div[class~=dialog]");
+	test("jQuery - removeAttribute", function(){
+		for ( var i = 0; i < 10; i++ )
+		div.removeAttr("id");
 	});
 
 endTest();

@@ -4,7 +4,7 @@
 <script src="../lib/prototype.js"></script>
 <script>
 window.onload = function(){
-startTest("jslib-attr-prototype", 'a7983bbe');
+startTest("jslib-attr-prototype", '4fb93c6a');
 
 // Try to force real results
 var ret, tmp, div;
@@ -17,7 +17,7 @@ var html = document.body.innerHTML;
 		tmp.innerHTML = html;
 		document.body.appendChild( tmp );
 	});
-	
+
 	test("Prototype - addClassName", function(){
 		for ( var i = 0; i < 10; i++ )
 		div.invoke("addClassName", "foo");
@@ -304,7 +304,7 @@ endTest();
   non-normative.</p>
 
   <h3><a name=changesFromCSS2></a>1.3. Changes from CSS2</h3>
- 
+
   <p><em>This section is non-normative.</em></p>
 
   <p>The main differences between the selectors in CSS2 and those in
@@ -1487,7 +1487,7 @@ on the presence of the semantic HTML4 <code>selected</code> and
 sometimes in an indeterminate state, neither checked nor unchecked.
 This can be due to an element attribute, or DOM manipulation.</p>
 
-<p>A future version of this specification may introduce an 
+<p>A future version of this specification may introduce an
 <code>:indeterminate</code> pseudo-class that applies to such elements.
 <!--While the <code>:indeterminate</code> pseudo-class is dynamic in
 nature, and is altered by user action, since it can also be based on
@@ -1504,7 +1504,7 @@ are an example of :indeterminate state.--></p>
 <p>Selectors introduces the concept of <dfn>structural
 pseudo-classes</dfn> to permit selection based on extra information that lies in
 the document tree but cannot be represented by other simple selectors or
-combinators. 
+combinators.
 
 <p>Note that standalone pieces of PCDATA (text nodes in the DOM) are
 not counted when calculating the position of an element in the list of
@@ -1696,7 +1696,7 @@ represents an element that is the first child of some other element.
 &lt;div class="note"&gt;
    &lt;p&gt; The first P inside the note.&lt;/p&gt;
 &lt;/div&gt;</pre>but cannot represent the second <code>p</code> in the following
-fragment: 
+fragment:
   <pre>&lt;p&gt; The last P before the note.&lt;/p&gt;
 &lt;div class="note"&gt;
    &lt;h2&gt; Note &lt;/h2&gt;
@@ -1710,7 +1710,7 @@ a:first-child /* Same (assuming a is not the root element) */</pre>
 <h5><a name=last-child-pseudo>:last-child pseudo-class</a></h5>
 
 <p>Same as <code>:nth-last-child(1)</code>. The <code>:last-child</code> pseudo-class
-represents an element that is the last child of some other element. 
+represents an element that is the last child of some other element.
 
 <div class="example">
  <p>Example:</p>
@@ -1723,7 +1723,7 @@ represents an element that is the last child of some other element.
 
 <p>Same as <code>:nth-of-type(1)</code>. The <code>:first-of-type</code> pseudo-class
 represents an element that is the first sibling of its type in the list of
-children of its parent element. 
+children of its parent element.
 
 <div class="example">
 <p>Example:</p>
@@ -1902,11 +1902,11 @@ factors, including the width of the page, the font size, etc.  Thus,
 an ordinary HTML paragraph such as:</p>
 
 <pre>
-&lt;P&gt;This is a somewhat long HTML 
-paragraph that will be broken into several 
+&lt;P&gt;This is a somewhat long HTML
+paragraph that will be broken into several
 lines. The first line will be identified
-by a fictional tag sequence. The other lines 
-will be treated as ordinary lines in the 
+by a fictional tag sequence. The other lines
+will be treated as ordinary lines in the
 paragraph.&lt;/P&gt;
 </pre>
 
@@ -1915,8 +1915,8 @@ paragraph.&lt;/P&gt;
 <pre>
 THIS IS A SOMEWHAT LONG HTML PARAGRAPH THAT
 will be broken into several lines. The first
-line will be identified by a fictional tag 
-sequence. The other lines will be treated as 
+line will be identified by a fictional tag
+sequence. The other lines will be treated as
 ordinary lines in the paragraph.
 </pre>
 
@@ -1925,11 +1925,11 @@ ordinary lines in the paragraph.
 fictional tag sequence helps to show how properties are inherited.</p>
 
 <pre>
-&lt;P&gt;<b>&lt;P::first-line&gt;</b> This is a somewhat long HTML 
+&lt;P&gt;<b>&lt;P::first-line&gt;</b> This is a somewhat long HTML
 paragraph that <b>&lt;/P::first-line&gt;</b> will be broken into several
-lines. The first line will be identified 
-by a fictional tag sequence. The other lines 
-will be treated as ordinary lines in the 
+lines. The first line will be identified
+by a fictional tag sequence. The other lines
+will be treated as ordinary lines in the
 paragraph.&lt;/P&gt;
 </pre>
 
@@ -1942,8 +1942,8 @@ with a <code>span</code> element:</p>
 &lt;P&gt;<b>&lt;SPAN class="test"&gt;</b> This is a somewhat long HTML
 paragraph that will be broken into several
 lines.<b>&lt;/SPAN&gt;</b> The first line will be identified
-by a fictional tag sequence. The other lines 
-will be treated as ordinary lines in the 
+by a fictional tag sequence. The other lines
+will be treated as ordinary lines in the
 paragraph.&lt;/P&gt;
 </pre>
 
@@ -1958,7 +1958,7 @@ paragraph that will <b>&lt;/SPAN&gt;</b>&lt;/P::first-line&gt;<b>&lt;SPAN class=
 broken into several
 lines.<b>&lt;/SPAN&gt;</b> The first line will be identified
 by a fictional tag sequence. The other lines
-will be treated as ordinary lines in the 
+will be treated as ordinary lines in the
 paragraph.&lt;/P&gt;
 </pre>
 
@@ -2096,7 +2096,7 @@ sequence">fictional tag sequence</span> is:</p>
 &lt;P::first-letter&gt;
 T
 &lt;/P::first-letter&gt;he first
-&lt;/SPAN&gt; 
+&lt;/SPAN&gt;
 few words of an article in the Economist.
 &lt;/P&gt;
 </pre>
@@ -2207,11 +2207,11 @@ sequence</span> for this fragment might be:</p>
 
 <pre>&lt;P&gt;
 &lt;P::first-line&gt;
-&lt;P::first-letter&gt; 
-S 
-&lt;/P::first-letter&gt;ome text that 
-&lt;/P::first-line&gt; 
-ends up on two lines 
+&lt;P::first-letter&gt;
+S
+&lt;/P::first-letter&gt;ome text that
+&lt;/P::first-line&gt;
+ends up on two lines
 &lt;/P&gt;</pre>
 
 <p>Note that the <code>::first-letter</code> element is inside the <code>::first-line</code>
@@ -2718,14 +2718,14 @@ all the components of that subset.</p>
   <tr>
     <th>Excludes</th>
     <td>
-      
+
 <p>universal selector<br>attribute selectors<br>:hover and :focus
       pseudo-classes<br>:target pseudo-class<br>:lang() pseudo-class<br>all UI
       element states pseudo-classes<br>all structural
       pseudo-classes<br>negation pseudo-class<br>all
       UI element fragments pseudo-elements<br>::before and ::after
       pseudo-elements<br>child combinators<br>sibling combinators
-      
+
 <p>namespaces</td></tr>
   <tr>
     <th>Extra constraints</th>
@@ -2749,13 +2749,13 @@ all the components of that subset.</p>
   <tr>
     <th>Excludes</th>
     <td>
-      
+
 <p>content selectors<br>substring matching attribute
       selectors<br>:target pseudo-classes<br>all UI element
       states pseudo-classes<br>all structural pseudo-classes other
       than :first-child<br>negation pseudo-class<br>all UI element
       fragments pseudo-elements<br>general sibling combinators
-      
+
 <p>namespaces</td></tr>
   <tr>
     <th>Extra constraints</th>
@@ -2763,10 +2763,10 @@ all the components of that subset.</p>
       constraint) allowed</td></tr></tbody></table>
 
 <p>In CSS, selectors express pattern matching rules that determine which style
-rules apply to elements in the document tree. 
+rules apply to elements in the document tree.
 
 <p>The following selector (CSS level 2) will <b>match</b> all anchors <code>a</code>
-with attribute <code>name</code> set inside a section 1 header <code>h1</code>: 
+with attribute <code>name</code> set inside a section 1 header <code>h1</code>:
 <pre>h1 a[name]</pre>
 
 <p>All CSS declarations attached to such a selector are applied to elements
@@ -2784,11 +2784,11 @@ matching it. </div>
   <tr>
     <th>Accepts</th>
     <td>
-      
+
 <p>type selectors<br>universal selectors<br>attribute selectors<br>class
       selectors<br>ID selectors<br>all structural pseudo-classes<br>
           all combinators
-      
+
 <p>namespaces</td></tr>
   <tr>
     <th>Excludes</th>
@@ -2824,9 +2824,9 @@ matching it. </div>
 <input type="text" name="foo"/>
 <input type="text" name="foo"/>
 </form>
-  
+
 <p>Selectors can be used in STTS 3 in two different
-    manners: 
+    manners:
 <ol>
   <li>a selection mechanism equivalent to CSS selection mechanism: declarations
   attached to a given selector are applied to elements matching that selector,
@@ -2845,7 +2845,7 @@ interactivity) does not imply non-conformance.
 <p>All specifications reusing Selectors must contain a <a
 href="#profiling">Profile</a> listing the
 subset of Selectors it accepts or excludes, and describing the constraints
-it adds to the current specification. 
+it adds to the current specification.
 
 <p>Invalidity is caused by a parsing error, e.g. an unrecognized token or a token
 which is not allowed at the current parsing point.
@@ -2898,7 +2898,7 @@ the final editorial review.</p>
   <dd>(<code><a href="http://www.w3.org/TR/REC-CSS1">http://www.w3.org/TR/REC-CSS1</a></code>)
 
   <dt>[CSS21]
-  <dd><a name=refsCSS21></a> Bert Bos, Tantek &Ccedil;elik, Ian Hickson, H&aring;kon Wium Lie, editors; "<cite>Cascading Style Sheets, level 2 revision 1</cite>", W3C Working Draft, 13 June 2005 
+  <dd><a name=refsCSS21></a> Bert Bos, Tantek &Ccedil;elik, Ian Hickson, H&aring;kon Wium Lie, editors; "<cite>Cascading Style Sheets, level 2 revision 1</cite>", W3C Working Draft, 13 June 2005
   <dd>(<code><a href="http://www.w3.org/TR/CSS21">http://www.w3.org/TR/CSS21</a></code>)
 
   <dt>[CWWW]
@@ -2921,7 +2921,7 @@ the final editorial review.</p>
   <dd>(<a href="http://www.ietf.org/rfc/rfc3066.txt"><code>http://www.ietf.org/rfc/rfc3066.txt</code></a>)
 
   <dt>[STTS]
-  <dd><a name=refsSTTS></a> Daniel Glazman; "<cite>Simple Tree Transformation Sheets 3</cite>", Electricit&eacute; de France, submission to the W3C, 11 November 1998 
+  <dd><a name=refsSTTS></a> Daniel Glazman; "<cite>Simple Tree Transformation Sheets 3</cite>", Electricit&eacute; de France, submission to the W3C, 11 November 1998
   <dd>(<code><a href="http://www.w3.org/TR/NOTE-STTS3">http://www.w3.org/TR/NOTE-STTS3</a></code>)
 
   <dt>[SVG]

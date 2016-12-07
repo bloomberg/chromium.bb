@@ -148,7 +148,7 @@
 		});
 
 		function compute(times, runs){
-			var results = {runs: runs}, num = times.length;
+			var results = {runs: runs}, num = times.length, middle = num/2;
 
 			times = times.sort(function(a,b){
 				return a - b;
@@ -171,8 +171,8 @@
 			
 			// Make Median
 			results.median = num % 2 == 0 ?
-				(times[Math.floor(num/2)] + times[Math.ceil(num/2)]) / 2 :
-				times[Math.round(num/2)];
+				(times[middle-1] + times[middle]) / 2 :
+				times[Math.floor(middle)];
 			
 			// Make Variance
 			results.variance = 0;

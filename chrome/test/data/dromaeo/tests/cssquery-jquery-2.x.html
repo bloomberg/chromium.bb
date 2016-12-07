@@ -1,16 +1,15 @@
 <html>
 <head>
 <script src="../htmlrunner.js"></script>
-<script src="../lib/ext-core.js"></script>
+<script src="../lib/jquery.2.0.3.js"></script>
 <script>
 window.onload = function(){
-startTest("cssquery-ext", '5bc05a17');
+startTest("cssquery-jquery", '5dfe1a12');
 
 // Try to force real results
 var ret, tmp;
 
 var html = document.body.innerHTML;
-var query = Ext.DomQuery.select;
 
 	prep(function(){
 		var div = document.createElement("div");
@@ -18,148 +17,148 @@ var query = Ext.DomQuery.select;
 		document.body.appendChild( div );
 	});
 
-	test("Ext - *", function(){
-		query("*");
+	test("jQuery - *", function(){
+		jQuery("*");
 	});
 
-	test("Ext - div:only-child", function(){
-		query("div:only-child");
+	test("jQuery - div:only-child", function(){
+		jQuery("div:only-child");
 	});
 
-	test("Ext - div:first-child", function(){
-		query("div:first-child");
+	test("jQuery - div:first-child", function(){
+		jQuery("div:first-child");
 	});
 
-	test("Ext - div:nth-child(even)", function(){
-		query("div:nth-child(even)");
+	test("jQuery - div:nth-child(even)", function(){
+		jQuery("div:nth-child(even)");
 	});
 
-	test("Ext - div:nth-child(2n)", function(){
-		query("div:nth-child(2n)");
+	test("jQuery - div:nth-child(2n)", function(){
+		jQuery("div:nth-child(2n)");
 	});
 
-	test("Ext - div:nth-child(odd)", function(){
-		query("div:nth-child(odd)");
+	test("jQuery - div:nth-child(odd)", function(){
+		jQuery("div:nth-child(odd)");
 	});
 
-	test("Ext - div:nth-child(2n+1)", function(){
-		query("div:nth-child(2n+1)");
+	test("jQuery - div:nth-child(2n+1)", function(){
+		jQuery("div:nth-child(2n+1)");
 	});
 
-	test("Ext - div:nth-child(n)", function(){
-		query("div:nth-child(n)");
+	test("jQuery - div:nth-child(n)", function(){
+		jQuery("div:nth-child(n)");
 	});
 
-	test("Ext - div:last-child", function(){
-		query("div:last-child");
+	test("jQuery - div:last-child", function(){
+		jQuery("div:last-child");
 	});
 
-	test("Ext - div > div", function(){
-		query("div > div");
+	test("jQuery - div > div", function(){
+		jQuery("div > div");
 	});
 
-	test("Ext - div + div", function(){
-		query("div + div");
+	test("jQuery - div + div", function(){
+		jQuery("div + div");
 	});
 
-	test("Ext - div ~ div", function(){
-		query("div ~ div");
+	test("jQuery - div ~ div", function(){
+		jQuery("div ~ div");
 	});
 
-	test("Ext - body", function(){
-		query("body");
+	test("jQuery - body", function(){
+		jQuery("body");
 	});
 
-	test("Ext - body div", function(){
-		query("body div");
+	test("jQuery - body div", function(){
+		jQuery("body div");
 	});
 
-	test("Ext - div", function(){
-		query("div");
+	test("jQuery - div", function(){
+		jQuery("div");
 	});
 
-	test("Ext - div div", function(){
-		query("div div");
+	test("jQuery - div div", function(){
+		jQuery("div div");
 	});
 
-	test("Ext - div div div", function(){
-		query("div div div");
+	test("jQuery - div div div", function(){
+		jQuery("div div div");
 	});
 
-	test("Ext - div, div, div", function(){
-		query("div, div, div");
+	test("jQuery - div, div, div", function(){
+		jQuery("div, div, div");
 	});
 
-	test("Ext - div, a, span", function(){
-		query("div, a, span");
+	test("jQuery - div, a, span", function(){
+		jQuery("div, a, span");
 	});
 
-	test("Ext - .dialog", function(){
-		query(".dialog");
+	test("jQuery - .dialog", function(){
+		jQuery(".dialog");
 	});
 
-	test("Ext - div.dialog", function(){
-		query("div.dialog");
+	test("jQuery - div.dialog", function(){
+		jQuery("div.dialog");
 	});
 
-	test("Ext - div .dialog", function(){
-		query("div .dialog");
+	test("jQuery - div .dialog", function(){
+		jQuery("div .dialog");
 	});
 
-	test("Ext - div.character, div.dialog", function(){
-		query("div.character, div.dialog");
+	test("jQuery - div.character, div.dialog", function(){
+		jQuery("div.character, div.dialog");
 	});
 
-	test("Ext - #speech5", function(){
-		query("#speech5");
+	test("jQuery - #speech5", function(){
+		jQuery("#speech5");
 	});
 
-	test("Ext - div#speech5", function(){
-		query("div#speech5");
+	test("jQuery - div#speech5", function(){
+		jQuery("div#speech5");
 	});
 
-	test("Ext - div #speech5", function(){
-		query("div #speech5");
+	test("jQuery - div #speech5", function(){
+		jQuery("div #speech5");
 	});
 
-	test("Ext - div.scene div.dialog", function(){
-		query("div.scene div.dialog");
+	test("jQuery - div.scene div.dialog", function(){
+		jQuery("div.scene div.dialog");
 	});
 
-	test("Ext - div#scene1 div.dialog div", function(){
-		query("div#scene1 div.dialog div");
+	test("jQuery - div#scene1 div.dialog div", function(){
+		jQuery("div#scene1 div.dialog div");
 	});
 
-	test("Ext - #scene1 #speech1", function(){
-		query("#scene1 #speech1");
+	test("jQuery - #scene1 #speech1", function(){
+		jQuery("#scene1 #speech1");
 	});
 
-	test("Ext - div[class]", function(){
-		query("div[class]");
+	test("jQuery - div[class]", function(){
+		jQuery("div[class]");
 	});
 
-	test("Ext - div[class=dialog]", function(){
-		query("div[class=dialog]");
+	test("jQuery - div[class=dialog]", function(){
+		jQuery("div[class=dialog]");
 	});
 
-	test("Ext - div[class^=dia]", function(){
-		query("div[class^=dia]");
+	test("jQuery - div[class^=dia]", function(){
+		jQuery("div[class^=dia]");
 	});
 
-	test("Ext - div[class$=log]", function(){
-		query("div[class$=log]");
+	test("jQuery - div[class$=log]", function(){
+		jQuery("div[class$=log]");
 	});
 
-	test("Ext - div[class*=sce]", function(){
-		query("div[class*=sce]");
+	test("jQuery - div[class*=sce]", function(){
+		jQuery("div[class*=sce]");
 	});
 
-	test("Ext - div[class|=dialog]", function(){
-		query("div[class|=dialog]");
+	test("jQuery - div[class|=dialog]", function(){
+		jQuery("div[class|=dialog]");
 	});
 
-	test("Ext - div[class~=dialog]", function(){
-		query("div[class~=dialog]");
+	test("jQuery - div[class~=dialog]", function(){
+		jQuery("div[class~=dialog]");
 	});
 
 endTest();
