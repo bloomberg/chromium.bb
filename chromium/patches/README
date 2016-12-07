@@ -3,6 +3,7 @@ Upstream cherry-picks, most recent cherry-picks at end of list:
   acc163c6ab52d2235767852262c64c7f6b273d1c lavc/flacdsp_template: Fix undefined shift in flac_decorrelate_indep_c
   83a75bf6c31b3c0ce2ca7e1426d1f2e3df634239 lavc/flacdec: Fix signed integer overflow in decode_subframe_fixed()
   afcf15b0dbb4b6429be5083e50b296cdca61875e lavf/oggparsespeex: Check frames_per_packet and packet_size
+  90da187f1d334422477886a19eca3c1da29c59a7 lavf/utils update_stream_timings() fix for start/end out of range
 
 
 Autorename:
