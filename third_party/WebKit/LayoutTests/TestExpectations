@@ -1276,9 +1276,6 @@ crbug.com/509025 [ Mac10.10 ] fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/short-scrollbar.html [ Failure ]
 
-crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
-crbug.com/464736 virtual/mojo-loading/http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
-
 crbug.com/621772 fast/forms/color/color-suggestion-picker-with-scrollbar-appearance.html [ Pass Failure ]
 crbug.com/652995 fast/forms/text/input-text-scroll-left-on-blur.html [ Pass Failure ]
 
