@@ -25,6 +25,8 @@
 
 #include "modules/speech/SpeechSynthesisUtterance.h"
 
+#include "core/dom/ExecutionContext.h"
+
 namespace blink {
 
 SpeechSynthesisUtterance* SpeechSynthesisUtterance::create(
@@ -35,7 +37,7 @@ SpeechSynthesisUtterance* SpeechSynthesisUtterance::create(
 
 SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context,
                                                    const String& text)
-    : ContextLifecycleObserver(context),
+    : m_executionContext(context),
       m_platformUtterance(PlatformSpeechSynthesisUtterance::create(this)) {
   m_platformUtterance->setText(text);
 }
@@ -43,7 +45,7 @@ SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context,
 SpeechSynthesisUtterance::~SpeechSynthesisUtterance() {}
 
 ExecutionContext* SpeechSynthesisUtterance::getExecutionContext() const {
-  return ContextLifecycleObserver::getExecutionContext();
+  return m_executionContext;
 }
 
 const AtomicString& SpeechSynthesisUtterance::interfaceName() const {
@@ -65,10 +67,10 @@ void SpeechSynthesisUtterance::setVoice(SpeechSynthesisVoice* voice) {
 }
 
 DEFINE_TRACE(SpeechSynthesisUtterance) {
+  visitor->trace(m_executionContext);
   visitor->trace(m_platformUtterance);
   visitor->trace(m_voice);
   EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink
