@@ -1230,7 +1230,7 @@ void UseCounter::count(CSSParserMode cssParserMode, CSSPropertyID property) {
     // https://github.com/HTTPArchive/httparchive/issues/59
     int sampleId = mapCSSPropertyIdToCSSSampleIdForHistogram(property);
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
-                 "CSSFeatureFirstUsed", "feature", sampleId);
+                 "CSSFirstUsed", "feature", sampleId);
     cssHistogram().count(sampleId);
     m_CSSRecorded.quickSet(property);
   }
