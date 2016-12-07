@@ -13,7 +13,6 @@
 #include "third_party/skia/include/core/SkPixmap.h"
 
 struct SkIRect;
-struct SkPoint;
 struct SkRect;
 class SkCanvas;
 class SkMatrix;

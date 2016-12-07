@@ -16,7 +16,6 @@
 namespace nacl_io {
 
 class TcpEventEmitter;
-class Node;
 
 typedef sdk_util::ScopedRef<TcpEventEmitter> ScopedTcpEventEmitter;
 

@@ -21,10 +21,6 @@ namespace base {
 class Clock;
 }
 
-namespace net {
-class StreamSocket;
-}
-
 namespace gcm {
 
 // MCS Message tags.

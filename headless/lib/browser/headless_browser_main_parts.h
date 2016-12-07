@@ -12,7 +12,6 @@
 
 namespace headless {
 
-class HeadlessBrowserContextImpl;
 class HeadlessBrowserImpl;
 
 class HeadlessBrowserMainParts : public content::BrowserMainParts {

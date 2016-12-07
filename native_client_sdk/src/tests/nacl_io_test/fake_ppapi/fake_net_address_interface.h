@@ -10,7 +10,6 @@
 #include "nacl_io/pepper_interface.h"
 #include "sdk_util/macros.h"
 
-class FakeVarManager;
 class FakePepperInterface;
 
 class FakeNetAddressInterface : public nacl_io::NetAddressInterface {

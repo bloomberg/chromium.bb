@@ -14,9 +14,6 @@
 
 namespace aura {
 class WindowTreeClient;
-namespace client {
-class CaptureClient;
-}
 }
 
 namespace ui {

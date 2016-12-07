@@ -14,8 +14,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
-class SkRegion;
-
 namespace extensions {
 class NativeAppWindow;
 }

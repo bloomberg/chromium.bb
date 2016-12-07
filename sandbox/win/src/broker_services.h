@@ -29,8 +29,6 @@ struct JobTracker;
 
 namespace sandbox {
 
-class PolicyBase;
-
 // BrokerServicesBase ---------------------------------------------------------
 // Broker implementation version 0
 //

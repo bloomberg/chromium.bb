@@ -21,7 +21,6 @@ namespace mojo {
 
 namespace edk {
 class NodeController;
-class PlatformSupport;
 
 class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
  public:

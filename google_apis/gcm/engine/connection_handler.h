@@ -26,9 +26,6 @@ class LoginRequest;
 
 namespace gcm {
 
-class SocketInputStream;
-class SocketOutputStream;
-
 // Handles performing the protocol handshake and sending/receiving protobuf
 // messages. Note that no retrying or queueing is enforced at this layer.
 // Once a connection error is encountered, the ConnectionHandler will disconnect

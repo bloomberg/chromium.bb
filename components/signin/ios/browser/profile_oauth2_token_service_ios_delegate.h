@@ -15,6 +15,7 @@
 
 class AccountTrackerService;
 class ProfileOAuth2TokenServiceIOSProvider;
+class SigninClient;
 
 class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
  public:

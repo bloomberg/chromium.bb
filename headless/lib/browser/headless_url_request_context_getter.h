@@ -19,18 +19,9 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 
-namespace base {
-class MessageLoop;
-}
-
 namespace net {
 class HostResolver;
-class MappedHostResolver;
-class NetworkDelegate;
-class NetLog;
 class ProxyConfigService;
-class ProxyService;
-class URLRequestContextStorage;
 }
 
 namespace headless {

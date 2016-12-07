@@ -9,11 +9,6 @@
 #include "headless/public/util/in_memory_protocol_handler.h"
 #include "net/url_request/url_request_job.h"
 
-namespace net {
-class StringIOBuffer;
-class DrainableIOBuffer;
-}
-
 namespace headless {
 class InMemoryRequestJob : public net::URLRequestJob {
  public:

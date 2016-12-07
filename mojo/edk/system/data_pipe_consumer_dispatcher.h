@@ -24,7 +24,6 @@
 namespace mojo {
 namespace edk {
 
-struct DataPipeControlMessage;
 class NodeController;
 
 // This is the Dispatcher implementation for the consumer handle for data

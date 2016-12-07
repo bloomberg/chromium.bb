@@ -16,7 +16,6 @@
 
 namespace courgette {
 
-class AssemblyProgram;
 class InstructionReceptor;
 
 class DisassemblerElf32X86 : public DisassemblerElf32 {

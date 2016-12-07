@@ -19,8 +19,6 @@ class PickleIterator;
 
 namespace IPC {
 
-class Message;
-
 // HandleWin is a wrapper around a Windows HANDLE that can be transported
 // across Chrome IPC channels that support attachment brokering. The HANDLE will
 // be duplicated into the destination process.

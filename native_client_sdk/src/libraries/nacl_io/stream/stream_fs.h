@@ -17,7 +17,6 @@ namespace nacl_io {
 // a background thread for dispatching completion callbacks.
 
 class StreamFs;
-class StreamNode;
 
 class StreamFs : public Filesystem {
  public:

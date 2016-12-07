@@ -17,7 +17,6 @@
 namespace headless {
 class HeadlessBrowserImpl;
 class HeadlessBrowserContext;
-class HeadlessWebContentsImpl;
 
 class HeadlessDevToolsManagerDelegate
     : public content::DevToolsManagerDelegate {

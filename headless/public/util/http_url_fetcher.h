@@ -10,7 +10,6 @@
 
 namespace net {
 class URLRequestContext;
-class URLRequestJobFactory;
 }  // namespace
 
 namespace headless {

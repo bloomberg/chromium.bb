@@ -15,7 +15,6 @@
 
 namespace base {
 namespace trace_event {
-class MemoryAllocatorDump;
 class ProcessMemoryDump;
 }
 }

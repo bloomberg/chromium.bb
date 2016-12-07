@@ -17,7 +17,6 @@
 #include "third_party/skia/include/core/SkTypes.h"
 
 class SkMatrix;
-class SkPath;
 
 namespace skia {
 

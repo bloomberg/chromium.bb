@@ -10,8 +10,6 @@
 namespace headless {
 
 class HeadlessBrowserImpl;
-class HeadlessBrowserMainParts;
-class HeadlessDevToolsManagerDelegate;
 
 class HeadlessContentBrowserClient : public content::ContentBrowserClient {
  public:

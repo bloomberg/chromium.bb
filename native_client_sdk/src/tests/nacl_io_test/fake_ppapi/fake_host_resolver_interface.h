@@ -15,7 +15,6 @@
 #include "sdk_util/macros.h"
 
 class FakePepperInterface;
-class FakeVarManager;
 
 class FakeHostResolverInterface : public nacl_io::HostResolverInterface {
  public:

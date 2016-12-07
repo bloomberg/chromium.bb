@@ -63,7 +63,6 @@ enum ExecutableType {
 class SinkStream;
 class SinkStreamSet;
 class SourceStream;
-class SourceStreamSet;
 
 class AssemblyProgram;
 class EncodedProgram;

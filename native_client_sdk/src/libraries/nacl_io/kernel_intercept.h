@@ -28,8 +28,6 @@ class KernelProxy;
 }
 #endif
 
-struct fuse_operations;
-
 /*
  * The kernel intercept module provides a C->C++ thunk between the libc
  * kernel calls and the KernelProxy singleton.

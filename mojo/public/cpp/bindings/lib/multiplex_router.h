@@ -37,8 +37,6 @@ class SingleThreadTaskRunner;
 
 namespace mojo {
 
-class AssociatedGroup;
-
 namespace internal {
 
 // MultiplexRouter supports routing messages for multiple interfaces over a

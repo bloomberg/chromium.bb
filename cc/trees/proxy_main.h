@@ -13,7 +13,6 @@
 
 namespace cc {
 
-class BeginFrameSource;
 class MutatorEvents;
 class CompletionEvent;
 class CompositorFrameSink;

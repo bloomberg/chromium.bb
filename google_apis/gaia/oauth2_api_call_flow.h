@@ -13,9 +13,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-class GoogleServiceAuthError;
-class OAuth2MintTokenFlowTest;
-
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;

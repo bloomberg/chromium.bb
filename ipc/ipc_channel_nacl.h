@@ -19,6 +19,8 @@
 
 namespace IPC {
 
+class MessageAttachment;
+
 // Contains the results from one call to imc_recvmsg (data and file
 // descriptors).
 struct MessageContents;

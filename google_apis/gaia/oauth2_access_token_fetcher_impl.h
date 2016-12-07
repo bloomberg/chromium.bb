@@ -25,7 +25,6 @@ class Time;
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
-class URLRequestStatus;
 }
 
 // Abstracts the details to get OAuth2 access token token from

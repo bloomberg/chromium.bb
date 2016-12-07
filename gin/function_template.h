@@ -17,8 +17,6 @@
 
 namespace gin {
 
-class PerIsolateData;
-
 enum CreateFunctionTemplateFlags {
   HolderIsFirstArgument = 1 << 0,
 };

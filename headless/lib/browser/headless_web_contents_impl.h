@@ -20,7 +20,6 @@ class Window;
 }
 
 namespace content {
-class BrowserContext;
 class DevToolsAgentHost;
 class WebContents;
 }
@@ -30,7 +29,6 @@ class Size;
 }
 
 namespace headless {
-class HeadlessDevToolsHostImpl;
 class HeadlessBrowserImpl;
 class WebContentsObserverAdapter;
 

@@ -30,7 +30,6 @@ class ChannelReader;
 //------------------------------------------------------------------------------
 
 struct LogData;
-class MessageAttachment;
 class MessageAttachmentSet;
 
 class IPC_EXPORT Message : public base::Pickle {

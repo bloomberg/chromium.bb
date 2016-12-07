@@ -28,10 +28,6 @@ class SingleThreadTaskRunner;
 class TaskRunner;
 }
 
-namespace tracked_objects {
-class Location;
-}
-
 namespace dbus {
 
 class ExportedObject;

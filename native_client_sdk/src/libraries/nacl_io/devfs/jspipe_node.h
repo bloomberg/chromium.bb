@@ -13,12 +13,6 @@
 
 namespace nacl_io {
 
-class MessagingInterface;
-class VarInterface;
-class VarArrayInterface;
-class VarArrayBufferInterface;
-class VarDictionaryInterface;
-
 /**
  * JSPipeNode represents a two-way channel for communicating with JavaScript
  * via calls to PostMessage.  In order to use these some amount of logic on

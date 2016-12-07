@@ -26,10 +26,6 @@ namespace content {
 class URLFetcher;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 // IssueAdvice: messages to show to the user to get a user's approval.
 // The structure is as follows:
 // * Description 1

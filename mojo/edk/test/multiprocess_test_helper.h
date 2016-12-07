@@ -19,7 +19,6 @@
 namespace mojo {
 
 namespace edk {
-class PlatformChannelPair;
 
 namespace test {
 

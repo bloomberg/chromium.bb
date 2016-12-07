@@ -21,7 +21,6 @@
 #include "webrtc/libjingle/xmpp/xmppengine.h"
 
 namespace buzz {
-class XmppClient;
 class XmppClientSettings;
 class XmppTaskParentInterface;
 }  // namespace buzz

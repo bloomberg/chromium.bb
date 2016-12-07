@@ -16,14 +16,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 
-namespace net {
-class URLRequestJob;
-}  // namespace net
-
-namespace htmlrender_webkit_headless_proto {
-class Resource;
-}  // htmlrender_webkit_headless_proto net
-
 namespace headless {
 
 class MockGenericURLRequestJobDelegate : public GenericURLRequestJob::Delegate {

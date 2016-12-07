@@ -17,7 +17,6 @@ class URLRequestJobFactory;
 
 namespace headless {
 class DeterministicDispatcher;
-class HeadlessBrowserContext;
 
 // A deterministic protocol handler.  Requests made to this protocol handler
 // will return in order of creation, regardless of what order the network

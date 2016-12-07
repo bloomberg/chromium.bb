@@ -30,7 +30,6 @@ class NetLog;
 
 namespace gcm {
 
-class ConnectionHandlerImpl;
 class GCMStatsRecorder;
 
 class GCM_EXPORT ConnectionFactoryImpl :

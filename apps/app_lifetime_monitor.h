@@ -14,10 +14,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 
-namespace extensions {
-class Extension;
-}
-
 class Profile;
 
 namespace apps {

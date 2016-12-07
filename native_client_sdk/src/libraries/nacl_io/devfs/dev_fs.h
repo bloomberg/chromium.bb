@@ -10,8 +10,6 @@
 
 namespace nacl_io {
 
-class Node;
-
 class DevFs : public Filesystem {
  public:
   virtual Error OpenWithMode(const Path& path, int open_flags, mode_t mode,

@@ -14,10 +14,6 @@
 #include "printing/backend/cups_printer.h"
 #include "printing/printing_context.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace printing {
 
 class PRINTING_EXPORT PrintingContextChromeos : public PrintingContext {

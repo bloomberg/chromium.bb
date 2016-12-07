@@ -25,10 +25,6 @@ class GLInProcessContext;
 class GpuMemoryBufferManager;
 class ImageFactory;
 struct SharedMemoryLimits;
-class SyncPointManager;
-namespace gles2 {
-class MailboxManager;
-}
 }
 
 namespace skia_bindings {

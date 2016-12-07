@@ -14,7 +14,6 @@
 namespace mojo {
 namespace internal {
 
-class Buffer;
 class ValidationContext;
 
 class MOJO_CPP_BINDINGS_EXPORT NativeStruct_Data {

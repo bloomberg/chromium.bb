@@ -12,10 +12,6 @@
 #include "content/public/app/content_main_delegate.h"
 #include "headless/lib/headless_content_client.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace headless {
 
 class HeadlessBrowserImpl;

@@ -13,8 +13,6 @@
 
 namespace nacl_io {
 
-class PepperInterface;
-
 class FsFactory {
  public:
   virtual ~FsFactory() {}

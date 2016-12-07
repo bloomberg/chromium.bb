@@ -26,8 +26,6 @@
 namespace IPC {
 namespace internal {
 
-class AsyncHandleWaiter;
-
 // A helper class to handle bytestream directly over mojo::MessagePipe
 // in template-method pattern. MessagePipeReader manages the lifetime
 // of given MessagePipe and participates the event loop, and

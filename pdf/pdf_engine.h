@@ -42,8 +42,6 @@ class VarDictionary;
 
 namespace chrome_pdf {
 
-class Stream;
-
 // Do one time initialization of the SDK.
 bool InitializeSDK();
 // Tells the SDK that we're shutting down.

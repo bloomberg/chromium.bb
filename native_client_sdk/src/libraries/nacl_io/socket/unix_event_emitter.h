@@ -15,7 +15,6 @@
 namespace nacl_io {
 
 class UnixEventEmitter;
-class Node;
 
 typedef sdk_util::ScopedRef<UnixEventEmitter> ScopedUnixEventEmitter;
 

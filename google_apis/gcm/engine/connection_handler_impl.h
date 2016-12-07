@@ -21,6 +21,9 @@ class LoginRequest;
 
 namespace gcm {
 
+class SocketInputStream;
+class SocketOutputStream;
+
 class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
  public:
   // |read_callback| will be invoked with the contents of any received protobuf

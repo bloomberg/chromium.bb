@@ -16,7 +16,6 @@
 
 namespace courgette {
 
-class AssemblyProgram;
 class InstructionReceptor;
 
 enum ARM_RVA {

@@ -17,7 +17,6 @@
 #include "rlz/lib/rlz_value_store.h"
 
 namespace base {
-class ListValue;
 class SequencedTaskRunner;
 class Value;
 }

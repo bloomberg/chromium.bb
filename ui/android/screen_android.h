@@ -8,10 +8,6 @@
 #include <jni.h>
 #include "ui/android/ui_android_export.h"
 
-namespace display {
-class Screen;
-}
-
 namespace ui {
 
 bool RegisterScreenAndroid(JNIEnv* env);
