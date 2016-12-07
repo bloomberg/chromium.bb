@@ -4,14 +4,13 @@
 
 module cc.mojom;
 
-import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/quads.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/transform.mojom";
 
 // See cc/quads/render_pass.h.
 struct RenderPass {
-  RenderPassId id;
+  int32 id;
   gfx.mojom.Rect output_rect;
   gfx.mojom.Rect damage_rect;
   gfx.mojom.Transform transform_to_root_target;

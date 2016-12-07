@@ -196,15 +196,12 @@ class OverlayOutputSurface : public OutputSurface {
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {
-  RenderPassId id(1, 0);
+  int render_pass_id = 1;
   gfx::Rect output_rect(0, 0, 256, 256);
   bool has_transparent_background = true;
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
-  pass->SetAll(id,
-               output_rect,
-               output_rect,
-               gfx::Transform(),
+  pass->SetAll(render_pass_id, output_rect, output_rect, gfx::Transform(),
                has_transparent_background);
 
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
@@ -1771,8 +1768,7 @@ class CALayerOverlayRPDQTest : public CALayerOverlayTest {
     CALayerOverlayTest::SetUp();
     pass_ = CreateRenderPass();
     quad_ = pass_->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-    render_pass_id_.layer_id = 3;
-    render_pass_id_.index = 17;
+    render_pass_id_ = 3;
   }
 
   void ProcessForOverlays() {
@@ -1784,7 +1780,7 @@ class CALayerOverlayRPDQTest : public CALayerOverlayTest {
   }
   std::unique_ptr<RenderPass> pass_;
   RenderPassDrawQuad* quad_;
-  RenderPassId render_pass_id_;
+  int render_pass_id_;
   FilterOperations filters_;
   FilterOperations background_filters_;
   CALayerOverlayList ca_layer_list_;

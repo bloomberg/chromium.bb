@@ -23,11 +23,11 @@
 namespace cc {
 
 RenderPass* AddRenderPass(RenderPassList* pass_list,
-                          RenderPassId id,
+                          int render_pass_id,
                           const gfx::Rect& output_rect,
                           const gfx::Transform& root_transform) {
   std::unique_ptr<RenderPass> pass(RenderPass::Create());
-  pass->SetNew(id, output_rect, output_rect, root_transform);
+  pass->SetNew(render_pass_id, output_rect, output_rect, root_transform);
   RenderPass* saved = pass.get();
   pass_list->push_back(std::move(pass));
   return saved;
@@ -113,7 +113,7 @@ static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
 
 void AddOneOfEveryQuadType(RenderPass* to_pass,
                            ResourceProvider* resource_provider,
-                           RenderPassId child_pass,
+                           int child_pass_id,
                            gpu::SyncToken* sync_token_for_mailbox_tebxture) {
   gfx::Rect rect(0, 0, 100, 100);
   gfx::Rect opaque_rect(10, 10, 80, 80);
@@ -173,11 +173,11 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
       to_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
   debug_border_quad->SetNew(shared_state, rect, visible_rect, SK_ColorRED, 1);
 
-  if (child_pass.layer_id) {
+  if (child_pass_id) {
     RenderPassDrawQuad* render_pass_quad =
         to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     render_pass_quad->SetNew(
-        shared_state, rect, visible_rect, child_pass, resource5,
+        shared_state, rect, visible_rect, child_pass_id, resource5,
         gfx::Vector2dF(1.f, 1.f), resource5_size, FilterOperations(),
         gfx::Vector2dF(), gfx::PointF(), FilterOperations());
   }

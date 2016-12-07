@@ -5,7 +5,6 @@
 module cc.mojom;
 
 import "cc/ipc/filter_operations.mojom";
-import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -20,7 +19,7 @@ struct DebugBorderQuadState {
 };
 
 struct RenderPassQuadState {
-  cc.mojom.RenderPassId render_pass_id;
+  int32 render_pass_id;
 
   // If nonzero, resource id of mask to use when drawing this pass.
   uint32 mask_resource_id;

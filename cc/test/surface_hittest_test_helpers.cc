@@ -36,7 +36,7 @@ void CreateRenderPassDrawQuad(RenderPass* pass,
                               const gfx::Transform& transform,
                               const gfx::Rect& root_rect,
                               const gfx::Rect& quad_rect,
-                              const RenderPassId& render_pass_id) {
+                              int render_pass_id) {
   CreateSharedQuadState(pass, transform, root_rect);
   RenderPassDrawQuad* render_pass_quad =
       pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
@@ -58,7 +58,7 @@ void CreateSurfaceDrawQuad(RenderPass* pass,
                        quad_rect, surface_id);
 }
 
-void CreateRenderPass(const RenderPassId& render_pass_id,
+void CreateRenderPass(int render_pass_id,
                       const gfx::Rect& rect,
                       const gfx::Transform& transform_to_root_target,
                       RenderPassList* render_pass_list) {
@@ -70,7 +70,7 @@ void CreateRenderPass(const RenderPassId& render_pass_id,
 CompositorFrame CreateCompositorFrame(const gfx::Rect& root_rect,
                                       RenderPass** render_pass) {
   CompositorFrame root_frame;
-  RenderPassId root_id(1, 1);
+  int root_id = 1;
   CreateRenderPass(root_id, root_rect, gfx::Transform(),
                    &root_frame.render_pass_list);
   *render_pass = root_frame.render_pass_list.back().get();

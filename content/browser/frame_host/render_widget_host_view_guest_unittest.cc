@@ -250,8 +250,7 @@ cc::CompositorFrame CreateDelegatedFrame(float scale_factor,
   frame.metadata.device_scale_factor = scale_factor;
 
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
-  pass->SetNew(cc::RenderPassId(1, 1), gfx::Rect(size), damage,
-               gfx::Transform());
+  pass->SetNew(1, gfx::Rect(size), damage, gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   return frame;
 }

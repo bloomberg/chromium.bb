@@ -15,11 +15,15 @@ bool StructTraits<cc::mojom::RenderPassDataView,
     Read(cc::mojom::RenderPassDataView data,
          std::unique_ptr<cc::RenderPass>* out) {
   *out = cc::RenderPass::Create();
-  if (!data.ReadId(&(*out)->id) || !data.ReadOutputRect(&(*out)->output_rect) ||
+  if (!data.ReadOutputRect(&(*out)->output_rect) ||
       !data.ReadDamageRect(&(*out)->damage_rect) ||
       !data.ReadTransformToRootTarget(&(*out)->transform_to_root_target)) {
     return false;
   }
+  (*out)->id = data.id();
+  // RenderPass ids are never zero.
+  if (!(*out)->id)
+    return false;
   (*out)->has_transparent_background = data.has_transparent_background();
 
   mojo::ArrayDataView<cc::mojom::DrawQuadDataView> quads;

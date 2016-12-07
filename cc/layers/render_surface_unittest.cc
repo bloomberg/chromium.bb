@@ -184,7 +184,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   ASSERT_EQ(1u, pass_sink.RenderPasses().size());
   RenderPass* pass = pass_sink.RenderPasses()[0].get();
 
-  EXPECT_EQ(RenderPassId(2, 0), pass->id);
+  EXPECT_EQ(2, pass->id);
   EXPECT_EQ(content_rect, pass->output_rect);
   EXPECT_EQ(origin, pass->transform_to_root_target);
 }

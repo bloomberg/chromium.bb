@@ -188,7 +188,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   frame.metadata.device_scale_factor = 1.0f;
 
   const gfx::Rect bounds(m_width, m_height);
-  const cc::RenderPassId renderPassId(1, 1);
+  const int renderPassId = 1;
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetAll(renderPassId, bounds, bounds, gfx::Transform(), false);
 

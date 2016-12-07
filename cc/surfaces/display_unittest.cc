@@ -202,7 +202,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->output_rect = gfx::Rect(0, 0, 100, 100);
   pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-  pass->id = RenderPassId(1, 1);
+  pass->id = 1;
   pass_list.push_back(std::move(pass));
 
   scheduler_->ResetDamageForTest();
@@ -225,7 +225,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-    pass->id = RenderPassId(1, 1);
+    pass->id = 1;
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
@@ -248,7 +248,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
-    pass->id = RenderPassId(1, 1);
+    pass->id = 1;
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
@@ -268,7 +268,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 99, 99);
     pass->damage_rect = gfx::Rect(10, 10, 10, 10);
-    pass->id = RenderPassId(1, 1);
+    pass->id = 1;
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
@@ -288,7 +288,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
-    pass->id = RenderPassId(1, 1);
+    pass->id = 1;
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
@@ -313,7 +313,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     bool copy_called = false;
     pass->copy_requests.push_back(CopyOutputRequest::CreateRequest(
         base::Bind(&CopyCallback, &copy_called)));
-    pass->id = RenderPassId(1, 1);
+    pass->id = 1;
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
@@ -335,7 +335,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
-    pass->id = RenderPassId(1, 1);
+    pass->id = 1;
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
@@ -366,7 +366,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 200, 200);
     pass->damage_rect = gfx::Rect(10, 10, 10, 10);
-    pass->id = RenderPassId(1, 1);
+    pass->id = 1;
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
@@ -394,7 +394,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 99, 99);
     pass->damage_rect = gfx::Rect(0, 0, 99, 99);
-    pass->id = RenderPassId(1, 1);
+    pass->id = 1;
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
@@ -445,7 +445,7 @@ TEST_F(DisplayTest, Finish) {
     std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-    pass->id = RenderPassId(1, 1);
+    pass->id = 1;
     pass_list.push_back(std::move(pass));
 
     SubmitCompositorFrame(&pass_list, local_frame_id);
@@ -471,7 +471,7 @@ TEST_F(DisplayTest, Finish) {
     std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 200, 200);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-    pass->id = RenderPassId(1, 1);
+    pass->id = 1;
     pass_list.push_back(std::move(pass));
 
     SubmitCompositorFrame(&pass_list, local_frame_id);

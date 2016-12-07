@@ -757,8 +757,7 @@ static void AppendQuadsToFillScreen(const gfx::Rect& root_scroll_layer_rect,
   }
 }
 
-static RenderPass* FindRenderPassById(const RenderPassList& list,
-                                      RenderPassId id) {
+static RenderPass* FindRenderPassById(const RenderPassList& list, int id) {
   auto it = std::find_if(
       list.begin(), list.end(),
       [id](const std::unique_ptr<RenderPass>& p) { return p->id == id; });
@@ -867,7 +866,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   for (LayerIterator it =
            LayerIterator::Begin(frame->render_surface_layer_list);
        it != end; ++it) {
-    RenderPassId target_render_pass_id =
+    auto target_render_pass_id =
         it.target_render_surface_layer()->render_surface()->GetRenderPassId();
     RenderPass* target_render_pass =
         FindRenderPassById(frame->render_passes, target_render_pass_id);
@@ -1105,11 +1104,10 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
   DCHECK_GE(frame->render_passes.size(), 1u);
 
   // A set of RenderPasses that we have seen.
-  std::set<RenderPassId> pass_exists;
+  std::set<int> pass_exists;
   // A set of RenderPassDrawQuads that we have seen (stored by the RenderPasses
   // they refer to).
-  base::SmallMap<std::unordered_map<RenderPassId, int, RenderPassIdHash>>
-      pass_references;
+  base::SmallMap<std::unordered_map<int, int>> pass_references;
 
   // Iterate RenderPasses in draw order, removing empty render passes (except
   // the root RenderPass).

@@ -432,7 +432,7 @@ TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
 
 TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  RenderPassId render_pass_id(22, 64);
+  int render_pass_id = 61;
   ResourceId mask_resource_id = 78;
   gfx::Vector2dF mask_uv_scale(33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
@@ -444,7 +444,7 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   background_filters.Append(
       FilterOperation::CreateGrayscaleFilter(1.f));
 
-  RenderPassId copied_render_pass_id(235, 11);
+  int copied_render_pass_id = 235;
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_NEW_RP(RenderPassDrawQuad, visible_rect, render_pass_id,
@@ -753,7 +753,7 @@ TEST_F(DrawQuadIteratorTest, DebugBorderDrawQuad) {
 
 TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  RenderPassId render_pass_id(22, 64);
+  int render_pass_id = 61;
   ResourceId mask_resource_id = 78;
   gfx::Vector2dF mask_uv_scale(33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
@@ -765,7 +765,7 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   background_filters.Append(
       FilterOperation::CreateGrayscaleFilter(1.f));
 
-  RenderPassId copied_render_pass_id(235, 11);
+  int copied_render_pass_id = 235;
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_NEW_RP(RenderPassDrawQuad, visible_rect, render_pass_id,

@@ -118,8 +118,7 @@ void Surface::RequestCopyOfOutput(
 }
 
 void Surface::TakeCopyOutputRequests(
-    std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>*
-        copy_requests) {
+    std::multimap<int, std::unique_ptr<CopyOutputRequest>>* copy_requests) {
   DCHECK(copy_requests->empty());
   if (current_frame_) {
     for (const auto& render_pass : current_frame_->render_pass_list) {

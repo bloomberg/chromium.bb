@@ -119,8 +119,7 @@ std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
       new cc::CompositorFrame);
   std::unique_ptr<cc::RenderPass> root_pass(cc::RenderPass::Create());
   gfx::Rect viewport(browser_view_renderer_->size());
-  root_pass->SetNew(cc::RenderPassId(1, 1), viewport, viewport,
-                    gfx::Transform());
+  root_pass->SetNew(1, viewport, viewport, gfx::Transform());
   compositor_frame->render_pass_list.push_back(std::move(root_pass));
   return compositor_frame;
 }

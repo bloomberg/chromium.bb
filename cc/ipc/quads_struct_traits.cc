@@ -67,8 +67,11 @@ bool StructTraits<cc::mojom::RenderPassQuadStateDataView, cc::DrawQuad>::Read(
   quad->resources.ids[cc::RenderPassDrawQuad::kMaskResourceIdIndex] =
       data.mask_resource_id();
   quad->resources.count = data.mask_resource_id() ? 1 : 0;
-  return data.ReadRenderPassId(&quad->render_pass_id) &&
-         data.ReadMaskUvScale(&quad->mask_uv_scale) &&
+  quad->render_pass_id = data.render_pass_id();
+  // RenderPass ids are never zero.
+  if (!quad->render_pass_id)
+    return false;
+  return data.ReadMaskUvScale(&quad->mask_uv_scale) &&
          data.ReadMaskTextureSize(&quad->mask_texture_size) &&
          data.ReadFilters(&quad->filters) &&
          data.ReadFiltersScale(&quad->filters_scale) &&

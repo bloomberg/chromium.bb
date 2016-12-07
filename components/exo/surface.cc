@@ -792,8 +792,9 @@ void Surface::UpdateSurface(bool full_damage) {
                               ? gfx::Rect(contents_surface_size)
                               : gfx::SkIRectToRect(pending_damage_.getBounds());
 
+  const int kRenderPassId = 1;
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->SetAll(cc::RenderPassId(1, 1), gfx::Rect(contents_surface_size),
+  render_pass->SetAll(kRenderPassId, gfx::Rect(contents_surface_size),
                       damage_rect, gfx::Transform(), true);
 
   gfx::Rect quad_rect = gfx::Rect(contents_surface_size);

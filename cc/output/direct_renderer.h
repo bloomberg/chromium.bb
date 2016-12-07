@@ -28,7 +28,6 @@ namespace cc {
 class DrawPolygon;
 class OutputSurface;
 class RenderPass;
-class RenderPassId;
 class RendererSettings;
 class ResourceProvider;
 class ScopedResource;
@@ -51,7 +50,7 @@ class CC_EXPORT DirectRenderer {
   void SetVisible(bool visible);
   void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order);
-  bool HasAllocatedResourcesForTesting(RenderPassId id) const;
+  bool HasAllocatedResourcesForTesting(int render_pass_id) const;
   void DrawFrame(RenderPassList* render_passes_in_draw_order,
                  float device_scale_factor,
                  const gfx::ColorSpace& device_color_space,
@@ -186,12 +185,9 @@ class CC_EXPORT DirectRenderer {
   bool use_partial_swap_;
 
   // TODO(danakj): Just use a vector of pairs here? Hash map is way overkill.
-  std::unordered_map<RenderPassId,
-                     std::unique_ptr<ScopedResource>,
-                     RenderPassIdHash>
+  std::unordered_map<int, std::unique_ptr<ScopedResource>>
       render_pass_textures_;
-  std::unordered_map<RenderPassId, TileDrawQuad, RenderPassIdHash>
-      render_pass_bypass_quads_;
+  std::unordered_map<int, TileDrawQuad> render_pass_bypass_quads_;
 
   bool visible_ = false;
 

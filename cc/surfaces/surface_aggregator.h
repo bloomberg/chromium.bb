@@ -65,7 +65,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   struct RenderPassInfo {
     // This is the id the pass is mapped to.
-    RenderPassId id;
+    int id;
     // This is true if the pass was used in the last aggregated frame.
     bool in_use = true;
   };
@@ -74,8 +74,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                              const ClipData& quad_clip,
                              const gfx::Transform& target_transform);
 
-  RenderPassId RemapPassId(RenderPassId surface_local_pass_id,
-                           const SurfaceId& surface_id);
+  int RemapPassId(int surface_local_pass_id, const SurfaceId& surface_id);
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                          const gfx::Transform& target_transform,
@@ -95,7 +94,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
       const SurfaceId& surface_id);
   gfx::Rect PrewalkTree(const SurfaceId& surface_id,
                         bool in_moved_pixel_pass,
-                        RenderPassId parent_pass,
+                        int parent_pass,
                         PrewalkResult* result);
   void CopyUndrawnSurfaces(PrewalkResult* prewalk);
   void CopyPasses(const CompositorFrame& frame, Surface* surface);
@@ -117,11 +116,11 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   ResourceProvider* provider_;
 
   // Every Surface has its own RenderPass ID namespace. This structure maps
-  // each source RenderPassID to a unified ID namespace that's used in the
-  // aggregated frame. An entry is removed from the map if it's not used
-  // for one output frame.
+  // each source (SurfaceId, RenderPass id) to a unified ID namespace that's
+  // used in the aggregated frame. An entry is removed from the map if it's not
+  // used for one output frame.
   using RenderPassIdAllocatorMap =
-      std::map<std::pair<SurfaceId, RenderPassId>, RenderPassInfo>;
+      std::map<std::pair<SurfaceId, int>, RenderPassInfo>;
   RenderPassIdAllocatorMap render_pass_allocator_map_;
   int next_render_pass_id_;
   const bool aggregate_only_damaged_;
@@ -153,18 +152,15 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   // This is the set of aggregated pass ids that are affected by filters that
   // move pixels.
-  std::unordered_set<RenderPassId, RenderPassIdHash> moved_pixel_passes_;
+  std::unordered_set<int> moved_pixel_passes_;
 
   // This is the set of aggregated pass ids that are drawn by copy requests, so
   // should not have their damage rects clipped to the root damage rect.
-  std::unordered_set<RenderPassId, RenderPassIdHash> copy_request_passes_;
+  std::unordered_set<int> copy_request_passes_;
 
   // This maps each aggregated pass id to the set of (aggregated) pass ids
   // that its RenderPassDrawQuads depend on
-  std::unordered_map<RenderPassId,
-                     std::unordered_set<RenderPassId, RenderPassIdHash>,
-                     RenderPassIdHash>
-      render_pass_dependencies_;
+  std::unordered_map<int, std::unordered_set<int>> render_pass_dependencies_;
 
   // The root damage rect of the currently-aggregating frame.
   gfx::Rect root_damage_rect_;

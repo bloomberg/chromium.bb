@@ -19,7 +19,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/quads/render_pass_id.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id.h"
@@ -56,10 +55,9 @@ class CC_SURFACES_EXPORT Surface {
   void EvictFrame();
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
   // Adds each CopyOutputRequest in the current frame to copy_requests. The
-  // caller takes ownership of them.
+  // caller takes ownership of them. |copy_requests| is keyed by RenderPass ids.
   void TakeCopyOutputRequests(
-      std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>*
-          copy_requests);
+      std::multimap<int, std::unique_ptr<CopyOutputRequest>>* copy_requests);
 
   // Returns the most recent frame that is eligible to be rendered.
   // You must check whether HasFrame() returns true before calling this method.

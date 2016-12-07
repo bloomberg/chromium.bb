@@ -64,7 +64,7 @@ SharedQuadState* CreateAndAppendTestSharedQuadState(
 // Draws a very simple frame with no surface references.
 TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   gfx::Rect rect(device_viewport_size_);
-  RenderPassId id(1, 1);
+  int id = 1;
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetNew(id, rect, rect, gfx::Transform());
 
@@ -112,7 +112,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
 
   {
     gfx::Rect rect(device_viewport_size_);
-    RenderPassId id(1, 1);
+    int id = 1;
     std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
@@ -144,7 +144,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
 
   {
     gfx::Rect rect(child_size);
-    RenderPassId id(1, 1);
+    int id = 1;
     std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
@@ -203,7 +203,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
 
   {
     gfx::Rect rect(device_viewport_size_);
-    RenderPassId id(1, 1);
+    int id = 1;
     std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
@@ -238,7 +238,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
 
   {
     gfx::Rect rect(child_size);
-    RenderPassId id(1, 1);
+    int id = 1;
     std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
@@ -272,7 +272,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
 
   {
     gfx::Rect rect(child_size);
-    RenderPassId id(1, 1);
+    int id = 1;
     std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 

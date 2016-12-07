@@ -9,7 +9,6 @@ traits_headers = [
   "//cc/ipc/compositor_frame_struct_traits.h",
   "//cc/ipc/filter_operation_struct_traits.h",
   "//cc/ipc/filter_operations_struct_traits.h",
-  "//cc/ipc/render_pass_id_struct_traits.h",
   "//cc/ipc/render_pass_struct_traits.h",
   "//cc/ipc/selection_struct_traits.h",
   "//cc/ipc/shared_quad_state_struct_traits.h",

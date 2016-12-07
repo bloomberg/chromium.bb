@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "cc/quads/draw_quad.h"
-#include "cc/quads/render_pass_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
@@ -40,7 +39,7 @@ struct Quad {
     return quad;
   }
 
-  static Quad RenderPassQuad(RenderPassId id) {
+  static Quad RenderPassQuad(int id) {
     Quad quad;
     quad.material = DrawQuad::RENDER_PASS;
     quad.render_pass_id = id;
@@ -54,21 +53,20 @@ struct Quad {
   // Set when material==DrawQuad::SOLID_COLOR.
   SkColor color;
   // Set when material==DrawQuad::RENDER_PASS.
-  RenderPassId render_pass_id;
+  int render_pass_id;
 
  private:
   Quad() : material(DrawQuad::INVALID), opacity(1.f), color(SK_ColorWHITE) {}
 };
 
 struct Pass {
-  Pass(Quad* quads, size_t quad_count, RenderPassId id)
+  Pass(Quad* quads, size_t quad_count, int id)
       : quads(quads), quad_count(quad_count), id(id) {}
-  Pass(Quad* quads, size_t quad_count)
-      : quads(quads), quad_count(quad_count), id(1, 1) {}
+  Pass(Quad* quads, size_t quad_count) : quads(quads), quad_count(quad_count) {}
 
   Quad* quads;
   size_t quad_count;
-  RenderPassId id;
+  int id = 1;
 };
 
 void AddSurfaceQuad(TestRenderPass* pass,

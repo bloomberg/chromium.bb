@@ -6969,14 +6969,13 @@ class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
                                    DrawResult draw_result) override {
     frame->render_passes.clear();
 
-    RenderPass* child_pass =
-        AddRenderPass(&frame->render_passes, RenderPassId(2, 1),
-                      gfx::Rect(3, 3, 10, 10), gfx::Transform());
+    RenderPass* child_pass = AddRenderPass(
+        &frame->render_passes, 2, gfx::Rect(3, 3, 10, 10), gfx::Transform());
     gpu::SyncToken mailbox_sync_token;
-    AddOneOfEveryQuadType(child_pass, host_impl->resource_provider(),
-                          RenderPassId(0, 0), &mailbox_sync_token);
+    AddOneOfEveryQuadType(child_pass, host_impl->resource_provider(), 0,
+                          &mailbox_sync_token);
 
-    RenderPass* pass = AddRenderPass(&frame->render_passes, RenderPassId(1, 1),
+    RenderPass* pass = AddRenderPass(&frame->render_passes, 1,
                                      gfx::Rect(3, 3, 10, 10), gfx::Transform());
     AddOneOfEveryQuadType(pass, host_impl->resource_provider(), child_pass->id,
                           &mailbox_sync_token);

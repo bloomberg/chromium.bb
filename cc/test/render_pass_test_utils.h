@@ -25,7 +25,7 @@ class RenderPass;
 // Adds a new render pass with the provided properties to the given
 // render pass list.
 RenderPass* AddRenderPass(RenderPassList* pass_list,
-                          RenderPassId id,
+                          int render_pass_id,
                           const gfx::Rect& output_rect,
                           const gfx::Transform& root_transform);
 
@@ -58,7 +58,7 @@ void AddRenderPassQuad(RenderPass* to_pass,
 
 void AddOneOfEveryQuadType(RenderPass* to_pass,
                            ResourceProvider* resource_provider,
-                           RenderPassId child_pass,
+                           int child_pass_id,
                            gpu::SyncToken* sync_token_for_mailbox_texture);
 
 }  // namespace cc

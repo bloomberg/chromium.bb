@@ -125,7 +125,7 @@ void FrameGenerator::WillDrawSurface() {
 
 cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
     const gfx::Rect& output_rect) {
-  const cc::RenderPassId render_pass_id(1, 1);
+  const int render_pass_id = 1;
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetNew(render_pass_id, output_rect, output_rect,
                       gfx::Transform());
@@ -136,8 +136,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
   frame.render_pass_list.push_back(std::move(render_pass));
   if (delegate_->IsInHighContrastMode()) {
     std::unique_ptr<cc::RenderPass> invert_pass = cc::RenderPass::Create();
-    invert_pass->SetNew(cc::RenderPassId(2, 0), output_rect, output_rect,
-                        gfx::Transform());
+    invert_pass->SetNew(2, output_rect, output_rect, gfx::Transform());
     cc::SharedQuadState* shared_state =
         invert_pass->CreateAndAppendSharedQuadState();
     shared_state->SetAll(gfx::Transform(), output_rect.size(), output_rect,

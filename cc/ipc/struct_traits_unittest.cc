@@ -8,7 +8,6 @@
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/render_pass_id.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
@@ -66,11 +65,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   void EchoRenderPass(std::unique_ptr<RenderPass> r,
                       const EchoRenderPassCallback& callback) override {
     callback.Run(std::move(r));
-  }
-
-  void EchoRenderPassId(const RenderPassId& r,
-                        const EchoRenderPassIdCallback& callback) override {
-    callback.Run(r);
   }
 
   void EchoReturnedResource(
@@ -146,6 +140,7 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
 // RenderPass, and QuadListBasic unit tests.
 TEST_F(StructTraitsTest, CompositorFrame) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  render_pass->SetNew(1, gfx::Rect(5, 6), gfx::Rect(2, 3), gfx::Transform());
 
   // SharedQuadState.
   const gfx::Transform sqs_quad_to_target_transform(
@@ -420,8 +415,7 @@ TEST_F(StructTraitsTest, FilterOperations) {
 
 TEST_F(StructTraitsTest, QuadListBasic) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-  render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
-                      gfx::Transform());
+  render_pass->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
 
   SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
 
@@ -449,7 +443,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
 
   const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
   const ResourceId resource_id4(1337);
-  const RenderPassId render_pass_id(1234, 5678);
+  const int render_pass_id = 1234;
   const gfx::Vector2dF mask_uv_scale(1337.1f, 1234.2f);
   const gfx::Size mask_texture_size(1234, 5678);
   FilterOperations filters;
@@ -576,7 +570,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
 }
 
 TEST_F(StructTraitsTest, RenderPass) {
-  const RenderPassId id(3, 2);
+  const int id = 3;
   const gfx::Rect output_rect(45, 22, 120, 13);
   const gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
@@ -685,7 +679,7 @@ TEST_F(StructTraitsTest, RenderPass) {
 }
 
 TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
-  const RenderPassId id(3, 2);
+  const int id = 3;
   const gfx::Rect output_rect(45, 22, 120, 13);
   const gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
@@ -709,17 +703,6 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
-}
-
-TEST_F(StructTraitsTest, RenderPassId) {
-  const int layer_id = 1337;
-  const uint32_t index = 0xdeadbeef;
-  RenderPassId input(layer_id, index);
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  RenderPassId output;
-  proxy->EchoRenderPassId(input, &output);
-  EXPECT_EQ(layer_id, output.layer_id);
-  EXPECT_EQ(index, output.index);
 }
 
 TEST_F(StructTraitsTest, ReturnedResource) {
@@ -890,8 +873,7 @@ TEST_F(StructTraitsTest, TransferableResource) {
 
 TEST_F(StructTraitsTest, YUVDrawQuad) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-  render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
-                      gfx::Transform());
+  render_pass->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
 
   const DrawQuad::Material material = DrawQuad::YUV_VIDEO_CONTENT;
   const gfx::Rect rect(1234, 4321, 1357, 7531);

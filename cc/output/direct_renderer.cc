@@ -167,8 +167,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
     const RenderPassList& render_passes_in_draw_order) {
   render_pass_bypass_quads_.clear();
 
-  std::unordered_map<RenderPassId, gfx::Size, RenderPassIdHash>
-      render_passes_in_frame;
+  std::unordered_map<int, gfx::Size> render_passes_in_frame;
   RenderPass* root_render_pass = render_passes_in_draw_order.back().get();
   for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i) {
     RenderPass* pass = render_passes_in_draw_order[i].get();
@@ -178,11 +177,11 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
         continue;
       }
     }
-    render_passes_in_frame.insert(std::pair<RenderPassId, gfx::Size>(
-        pass->id, RenderPassTextureSize(pass)));
+    render_passes_in_frame.insert(
+        std::pair<int, gfx::Size>(pass->id, RenderPassTextureSize(pass)));
   }
 
-  std::vector<RenderPassId> passes_to_delete;
+  std::vector<int> passes_to_delete;
   for (auto pass_iter = render_pass_textures_.begin();
        pass_iter != render_pass_textures_.end(); ++pass_iter) {
     auto it = render_passes_in_frame.find(pass_iter->first);
@@ -568,8 +567,8 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   return false;
 }
 
-bool DirectRenderer::HasAllocatedResourcesForTesting(RenderPassId id) const {
-  auto iter = render_pass_textures_.find(id);
+bool DirectRenderer::HasAllocatedResourcesForTesting(int render_pass_id) const {
+  auto iter = render_pass_textures_.find(render_pass_id);
   return iter != render_pass_textures_.end() && iter->second->id();
 }
 

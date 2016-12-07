@@ -293,11 +293,9 @@ TEST(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
   CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
 
   // Create a RenderPassDrawQuad to a non-existant RenderPass.
-  CreateRenderPassDrawQuad(root_pass,
-                           gfx::Transform(),
-                           root_rect,
-                           root_rect,
-                           RenderPassId(1337, 1337));
+  int invalid_render_pass_id = 1337;
+  CreateRenderPassDrawQuad(root_pass, gfx::Transform(), root_rect, root_rect,
+                           invalid_render_pass_id);
 
   // Add a reference to the child surface on the root surface.
   SurfaceIdAllocator child_allocator;
@@ -396,7 +394,7 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
   RenderPassList& render_pass_list = root_frame.render_pass_list;
 
   // Create a child RenderPass.
-  RenderPassId child_render_pass_id(1, 3);
+  int child_render_pass_id = 3;
   gfx::Transform transform_to_root_target(1.0f, 0.0f, 0.0f, 50.0f,
                                           0.0f, 1.0f, 0.0f, 50.0f,
                                           0.0f, 0.0f, 1.0f, 0.0f,
@@ -407,7 +405,7 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
                    &render_pass_list);
 
   // Create the root RenderPass.
-  RenderPassId root_render_pass_id(1, 2);
+  int root_render_pass_id = 2;
   CreateRenderPass(root_render_pass_id, root_rect, gfx::Transform(),
                    &render_pass_list);
 

@@ -11,7 +11,6 @@ import "cc/ipc/filter_operation.mojom";
 import "cc/ipc/filter_operations.mojom";
 import "cc/ipc/quads.mojom";
 import "cc/ipc/render_pass.mojom";
-import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/selection.mojom";
 import "cc/ipc/shared_quad_state.mojom";
@@ -41,9 +40,6 @@ interface TraitsTestService {
 
   [Sync]
   EchoRenderPass(RenderPass r) => (RenderPass pass);
-
-  [Sync]
-  EchoRenderPassId(RenderPassId r) => (RenderPassId pass);
 
   [Sync]
   EchoReturnedResource(ReturnedResource r) => (ReturnedResource pass);

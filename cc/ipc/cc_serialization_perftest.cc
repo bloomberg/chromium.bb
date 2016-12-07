@@ -201,8 +201,7 @@ class CCSerializationPerfTest : public testing::Test {
 
     for (uint32_t i = 0; i < num_passes; ++i) {
       std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-      render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
-                          gfx::Transform());
+      render_pass->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
       for (uint32_t j = 0; j < num_quads; ++j) {
         if (j == 0 || single_sqs == UseSingleSharedQuadState::NO)
           render_pass->CreateAndAppendSharedQuadState();

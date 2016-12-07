@@ -28,7 +28,6 @@ using cc::FilterOperation;
 using cc::FilterOperations;
 using cc::PictureDrawQuad;
 using cc::RenderPass;
-using cc::RenderPassId;
 using cc::RenderPassDrawQuad;
 using cc::ResourceId;
 using cc::ResourceProvider;
@@ -268,8 +267,8 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       YUVVideoDrawQuad::REC_601;
   gfx::ColorSpace arbitrary_video_color_space = gfx::ColorSpace::CreateREC601();
 
-  RenderPassId child_id(30, 5);
-  RenderPassId root_id(10, 14);
+  int child_id = 30;
+  int root_id = 14;
 
   FilterOperations arbitrary_filters1;
   arbitrary_filters1.Append(
@@ -477,8 +476,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
 
 TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
   std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
-  pass_in->SetAll(RenderPassId(1, 1), gfx::Rect(100, 100), gfx::Rect(),
-                  gfx::Transform(), false);
+  pass_in->SetAll(1, gfx::Rect(100, 100), gfx::Rect(), gfx::Transform(), false);
 
   // The first SharedQuadState is used.
   SharedQuadState* shared_state1_in = pass_in->CreateAndAppendSharedQuadState();
@@ -583,8 +581,7 @@ TEST_F(CCParamTraitsTest, Resources) {
   arbitrary_resource2.is_overlay_candidate = false;
 
   std::unique_ptr<RenderPass> renderpass_in = RenderPass::Create();
-  renderpass_in->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
-                        gfx::Transform());
+  renderpass_in->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
 
   CompositorFrame frame_in;
   frame_in.resource_list.push_back(arbitrary_resource1);

@@ -68,7 +68,7 @@ void MusBrowserCompositorOutputSurface::SwapBuffers(
   ui_frame.metadata.latency_info = std::move(frame.latency_info);
   // Reset latency_info to known empty state after moving contents.
   frame.latency_info.clear();
-  const cc::RenderPassId render_pass_id(1, 1);
+  const int render_pass_id = 1;
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   const bool has_transparent_background = true;
   pass->SetAll(render_pass_id, bounds, bounds, gfx::Transform(),

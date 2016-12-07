@@ -27,7 +27,6 @@ namespace cc {
 class DamageTracker;
 class FilterOperations;
 class Occlusion;
-class RenderPassId;
 class RenderPassSink;
 class LayerImpl;
 class LayerIterator;
@@ -145,7 +144,7 @@ class CC_EXPORT RenderSurfaceImpl {
 
   DamageTracker* damage_tracker() const { return damage_tracker_.get(); }
 
-  RenderPassId GetRenderPassId();
+  int GetRenderPassId();
 
   void AppendRenderPasses(RenderPassSink* pass_sink);
   void AppendQuads(RenderPass* render_pass, AppendQuadsData* append_quads_data);

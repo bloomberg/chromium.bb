@@ -114,8 +114,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   // Create a frame with a single SurfaceDrawQuad referencing the child
   // Surface and transformed using the given transform.
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->SetAll(cc::RenderPassId(1, 1), gfx::Rect(viewport), clip,
-                      gfx::Transform(), false);
+  render_pass->SetAll(1, gfx::Rect(viewport), clip, gfx::Transform(), false);
 
   cc::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();

@@ -25,7 +25,7 @@ RenderPassDrawQuad::~RenderPassDrawQuad() {
 void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 const gfx::Rect& rect,
                                 const gfx::Rect& visible_rect,
-                                RenderPassId render_pass_id,
+                                int render_pass_id,
                                 ResourceId mask_resource_id,
                                 const gfx::Vector2dF& mask_uv_scale,
                                 const gfx::Size& mask_texture_size,
@@ -33,7 +33,7 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 const gfx::Vector2dF& filters_scale,
                                 const gfx::PointF& filters_origin,
                                 const FilterOperations& background_filters) {
-  DCHECK(render_pass_id.IsValid());
+  DCHECK(render_pass_id);
 
   gfx::Rect opaque_rect;
   bool needs_blending = false;
@@ -47,7 +47,7 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 const gfx::Rect& opaque_rect,
                                 const gfx::Rect& visible_rect,
                                 bool needs_blending,
-                                RenderPassId render_pass_id,
+                                int render_pass_id,
                                 ResourceId mask_resource_id,
                                 const gfx::Vector2dF& mask_uv_scale,
                                 const gfx::Size& mask_texture_size,
@@ -55,7 +55,7 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 const gfx::Vector2dF& filters_scale,
                                 const gfx::PointF& filters_origin,
                                 const FilterOperations& background_filters) {
-  DCHECK(render_pass_id.IsValid());
+  DCHECK(render_pass_id);
 
   DrawQuad::SetAll(shared_quad_state, DrawQuad::RENDER_PASS, rect, opaque_rect,
                    visible_rect, needs_blending);
@@ -82,7 +82,8 @@ const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(
 
 void RenderPassDrawQuad::ExtendValue(
     base::trace_event::TracedValue* value) const {
-  TracedValue::SetIDRef(render_pass_id.AsTracingId(), value, "render_pass_id");
+  TracedValue::SetIDRef(reinterpret_cast<void*>(render_pass_id), value,
+                        "render_pass_id");
   value->SetInteger("mask_resource_id", resources.ids[kMaskResourceIdIndex]);
   MathUtil::AddToTracedValue("mask_texture_size", mask_texture_size, value);
   MathUtil::AddToTracedValue("mask_uv_scale", mask_uv_scale, value);

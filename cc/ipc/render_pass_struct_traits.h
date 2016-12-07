@@ -5,9 +5,9 @@
 #ifndef CC_IPC_RENDER_PASS_STRUCT_TRAITS_H_
 #define CC_IPC_RENDER_PASS_STRUCT_TRAITS_H_
 
+#include "base/logging.h"
 #include "cc/ipc/quads_struct_traits.h"
 #include "cc/ipc/render_pass.mojom-shared.h"
-#include "cc/ipc/render_pass_id_struct_traits.h"
 #include "cc/quads/render_pass.h"
 #include "ui/gfx/mojo/transform_struct_traits.h"
 
@@ -16,8 +16,8 @@ namespace mojo {
 template <>
 struct StructTraits<cc::mojom::RenderPassDataView,
                     std::unique_ptr<cc::RenderPass>> {
-  static const cc::RenderPassId& id(
-      const std::unique_ptr<cc::RenderPass>& input) {
+  static int32_t id(const std::unique_ptr<cc::RenderPass>& input) {
+    DCHECK(input->id);
     return input->id;
   }
 

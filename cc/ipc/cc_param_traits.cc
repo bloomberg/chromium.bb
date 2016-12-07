@@ -423,7 +423,7 @@ static cc::DrawQuad* ReadDrawQuad(const base::Pickle* m,
 bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
                                        base::PickleIterator* iter,
                                        param_type* p) {
-  cc::RenderPassId id;
+  int id;
   gfx::Rect output_rect;
   gfx::Rect damage_rect;
   gfx::Transform transform_to_root_target;
@@ -703,7 +703,7 @@ bool ParamTraits<cc::CompositorFrame>::Read(const base::Pickle* m,
   const size_t kMaxSharedQuadStateListSize = 100000;
   const size_t kMaxQuadListSize = 1000000;
 
-  std::set<cc::RenderPassId> pass_set;
+  std::set<int> pass_id_set;
 
   uint32_t num_render_passes;
   if (!ReadParam(m, iter, &p->resource_list) ||
@@ -730,10 +730,10 @@ bool ParamTraits<cc::CompositorFrame>::Read(const base::Pickle* m,
         continue;
       const cc::RenderPassDrawQuad* rpdq =
           cc::RenderPassDrawQuad::MaterialCast(quad);
-      if (!pass_set.count(rpdq->render_pass_id))
+      if (!pass_id_set.count(rpdq->render_pass_id))
         return false;
     }
-    pass_set.insert(render_pass->id);
+    pass_id_set.insert(render_pass->id);
     p->render_pass_list.push_back(std::move(render_pass));
   }
 

@@ -5,10 +5,10 @@
 #ifndef CC_IPC_QUADS_STRUCT_TRAITS_H_
 #define CC_IPC_QUADS_STRUCT_TRAITS_H_
 
+#include "base/logging.h"
 #include "cc/ipc/filter_operation_struct_traits.h"
 #include "cc/ipc/filter_operations_struct_traits.h"
 #include "cc/ipc/quads.mojom-shared.h"
-#include "cc/ipc/render_pass_id_struct_traits.h"
 #include "cc/ipc/shared_quad_state_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -134,9 +134,10 @@ struct StructTraits<cc::mojom::DebugBorderQuadStateDataView, cc::DrawQuad> {
 
 template <>
 struct StructTraits<cc::mojom::RenderPassQuadStateDataView, cc::DrawQuad> {
-  static const cc::RenderPassId& render_pass_id(const cc::DrawQuad& input) {
+  static int32_t render_pass_id(const cc::DrawQuad& input) {
     const cc::RenderPassDrawQuad* quad =
         cc::RenderPassDrawQuad::MaterialCast(&input);
+    DCHECK(quad->render_pass_id);
     return quad->render_pass_id;
   }
 
@@ -468,12 +469,12 @@ struct ArrayTraits<cc::QuadList> {
     return ConstIterator(input.begin());
   }
 
-  static void AdvanceIterator(ConstIterator& iterator) {
+  static void AdvanceIterator(ConstIterator& iterator) {  // NOLINT
     iterator.last_shared_quad_state = (*iterator.it)->shared_quad_state;
     ++iterator.it;
   }
 
-  static Element GetValue(ConstIterator& iterator) {
+  static Element GetValue(ConstIterator& iterator) {  // NOLINT
     DrawQuadWithSharedQuadState dq = {*iterator.it, nullptr};
     // Only serialize the SharedQuadState if we haven't seen it before and
     // therefore have not already serialized it.

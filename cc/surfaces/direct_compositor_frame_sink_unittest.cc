@@ -74,8 +74,7 @@ class DirectCompositorFrameSinkTest : public testing::Test {
 
   void SwapBuffersWithDamage(const gfx::Rect& damage_rect) {
     std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
-    render_pass->SetNew(RenderPassId(1, 1), display_rect_, damage_rect,
-                        gfx::Transform());
+    render_pass->SetNew(1, display_rect_, damage_rect, gfx::Transform());
 
     CompositorFrame frame;
     frame.render_pass_list.push_back(std::move(render_pass));

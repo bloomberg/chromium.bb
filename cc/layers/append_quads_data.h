@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include "cc/quads/render_pass_id.h"
-
 namespace cc {
 
 // Set by the layer appending quads.

@@ -279,7 +279,7 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
 
     // The embedding RenderPass covers the entire Display's area.
     const auto& embed_render_pass = embed_frame.render_pass_list.back();
-    embed_render_pass->SetAll(cc::RenderPassId(1, 1), gfx::Rect(display_size),
+    embed_render_pass->SetAll(1, gfx::Rect(display_size),
                               gfx::Rect(display_size), gfx::Transform(), false);
 
     // The RenderPass has a single SurfaceDrawQuad (and SharedQuadState for it).
