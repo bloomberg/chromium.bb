@@ -26,6 +26,8 @@ bool MediaListDirective::allows(const String& type) {
 }
 
 void MediaListDirective::parse(const UChar* begin, const UChar* end) {
+  // TODO(amalika): Revisit parsing algorithm. Right now plugin types are not
+  // validated when they are added to m_pluginTypes.
   const UChar* position = begin;
 
   // 'plugin-types ____;' OR 'plugin-types;'
@@ -79,6 +81,39 @@ void MediaListDirective::parse(const UChar* begin, const UChar* end) {
 
     ASSERT(position == end || isASCIISpace(*position));
   }
+}
+
+bool MediaListDirective::subsumes(
+    const std::vector<MediaListDirective*>& other) {
+  if (!other.size())
+    return false;
+
+  // Find the effective set of plugins allowed by `other`.
+  HashSet<String> normalizedB = other[0]->m_pluginTypes;
+  for (size_t i = 1; i < other.size(); i++)
+    normalizedB = other[i]->getIntersect(normalizedB);
+
+  // Empty list of plugins is equivalent to no plugins being allowed.
+  if (!m_pluginTypes.size())
+    return !normalizedB.size();
+
+  // Check that each element of `normalizedB` is allowed by `m_pluginTypes`.
+  for (auto it = normalizedB.begin(); it != normalizedB.end(); ++it) {
+    if (!allows(*it))
+      return false;
+  }
+
+  return true;
+}
+
+HashSet<String> MediaListDirective::getIntersect(const HashSet<String>& other) {
+  HashSet<String> normalized;
+  for (const auto& type : m_pluginTypes) {
+    if (other.contains(type))
+      normalized.add(type);
+  }
+
+  return normalized;
 }
 
 }  // namespace blink
