@@ -1281,12 +1281,12 @@ if (is_win) {
       } else {
         common_optimize_on_ldflags += [ "/LTCG" ]  # Link-time code generation.
       }
-    }
-    if (full_wpo_on_official) {
-      if (use_incremental_wpo) {
-        arflags = [ "/LTCG:INCREMENTAL" ]
-      } else {
-        arflags = [ "/LTCG" ]
+      if (full_wpo_on_official) {
+        if (use_incremental_wpo) {
+          arflags = [ "/LTCG:INCREMENTAL" ]
+        } else {
+          arflags = [ "/LTCG" ]
+        }
       }
     }
   }
