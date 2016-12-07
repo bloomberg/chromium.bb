@@ -24,11 +24,11 @@
 #ifndef LayoutFieldset_h
 #define LayoutFieldset_h
 
-#include "core/layout/LayoutFlexibleBox.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
-class LayoutFieldset final : public LayoutFlexibleBox {
+class LayoutFieldset final : public LayoutBlockFlow {
  public:
   explicit LayoutFieldset(Element*);
 
@@ -37,39 +37,19 @@ class LayoutFieldset final : public LayoutFlexibleBox {
   const char* name() const override { return "LayoutFieldset"; }
 
  private:
-  void addChild(LayoutObject* newChild,
-                LayoutObject* beforeChild = nullptr) override;
-  bool avoidsFloats() const override { return true; }
-
-  // We override the two baseline functions because we want our baseline to be
-  // the bottom of our margin box.
-  int baselinePosition(FontBaseline,
-                       bool firstLine,
-                       LineDirectionMode,
-                       LinePositionMode) const override;
-  int inlineBlockBaseline(LineDirectionMode) const override { return -1; }
-
-  void computeIntrinsicLogicalWidths(
-      LayoutUnit& minLogicalWidth,
-      LayoutUnit& maxLogicalWidth) const override;
-  bool createsAnonymousWrapper() const override { return true; }
   bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectFieldset || LayoutFlexibleBox::isOfType(type);
+    return type == LayoutObjectFieldset || LayoutBlockFlow::isOfType(type);
   }
+
   LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren,
                                            SubtreeLayoutScope&) override;
+
+  void computePreferredLogicalWidths() override;
+  bool avoidsFloats() const override { return true; }
+
   void paintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint&) const override;
   void paintMask(const PaintInfo&, const LayoutPoint&) const override;
-  void updateAnonymousChildStyle(const LayoutObject& child,
-                                 ComputedStyle& childStyle) const override;
-
-  void createInnerBlock();
-  void setLogicalLeftForChild(LayoutBox& child, LayoutUnit logicalLeft);
-  void setLogicalTopForChild(LayoutBox& child, LayoutUnit logicalTop);
-  void removeChild(LayoutObject*) override;
-
-  LayoutBlock* m_innerBlock;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFieldset, isFieldset());

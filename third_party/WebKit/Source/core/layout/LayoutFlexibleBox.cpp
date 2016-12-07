@@ -937,11 +937,6 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren,
   PaintLayerScrollableArea::PreventRelayoutScope preventRelayoutScope(
       layoutScope);
 
-  // Fieldsets need to find their legend and position it inside the border of
-  // the object. The legend then gets skipped during normal layout. It
-  // doesn't get included in the normal layout process but is instead skipped.
-  LayoutObject* childToExclude =
-      layoutSpecialExcludedChild(relayoutChildren, layoutScope);
 
   // Set up our master list of flex items. All of the rest of the algorithm
   // should work off this list of a subset.
@@ -951,9 +946,6 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren,
   m_orderIterator.first();
   for (LayoutBox* child = m_orderIterator.currentChild(); child;
        child = m_orderIterator.next()) {
-    if (childToExclude == child)
-      continue;  // Skip this child, since it will be positioned by the
-                 // specialized subclass (fieldsets runs).
 
     if (child->isOutOfFlowPositioned()) {
       // Out-of-flow children are not flex items, so we skip them here.

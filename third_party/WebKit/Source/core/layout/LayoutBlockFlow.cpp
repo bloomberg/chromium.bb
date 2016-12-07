@@ -1421,6 +1421,11 @@ void LayoutBlockFlow::layoutBlockChildren(bool relayoutChildren,
   BlockChildrenLayoutInfo layoutInfo(this, beforeEdge, afterEdge);
   MarginInfo& marginInfo = layoutInfo.marginInfo();
 
+  // Fieldsets need to find their legend and position it inside the border of
+  // the object.
+  // The legend then gets skipped during normal layout. The same is true for
+  // ruby text.
+  // It doesn't get included in the normal layout process but is instead skipped
   LayoutObject* childToExclude =
       layoutSpecialExcludedChild(relayoutChildren, layoutScope);
 
@@ -1442,7 +1447,7 @@ void LayoutBlockFlow::layoutBlockChildren(bool relayoutChildren,
 
     if (childToExclude == child)
       continue;  // Skip this child, since it will be positioned by the
-                 // specialized subclass (ruby runs).
+                 // specialized subclass (fieldsets and ruby runs).
 
     updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, *child);
 
@@ -2964,7 +2969,7 @@ void LayoutBlockFlow::addChild(LayoutObject* newChild,
   LayoutBox::addChild(newChild, beforeChild);
 
   if (madeBoxesNonInline && parent() && isAnonymousBlock() &&
-      parent()->isLayoutBlock() && !parent()->createsAnonymousWrapper()) {
+      parent()->isLayoutBlock()) {
     toLayoutBlock(parent())->removeLeftoverAnonymousBlock(this);
     // |this| may be dead now.
   }
@@ -4246,6 +4251,12 @@ void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(
   // insertion of the flow thread. The flow thread needs to be a direct child of
   // the multicol block (|this|).
   if (isRuby())
+    return;
+
+  // Fieldsets look for a legend special child (layoutSpecialExcludedChild()).
+  // We currently only support one special child per layout object, and the
+  // flow thread would make for a second one.
+  if (isFieldset())
     return;
 
   // Form controls are replaced content, and are therefore not supposed to

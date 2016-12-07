@@ -1950,6 +1950,19 @@ Bug(dpranke) imported/wpt/service-workers/service-worker/register-closed-window.
 # Added 2016-11-30
 crbug.com/669911 [ Win7 Win10 ] virtual/threaded/animations/zoom-responsive-transform-animation.html [ Pass Failure Timeout ]
 
+crbug.com/670837 fast/css/fieldset-display-row.html [ NeedsRebaseline ]
+crbug.com/670837 fast/forms/006.html [ NeedsRebaseline ]
+crbug.com/670837 fast/forms/007.html [ NeedsRebaseline ]
+crbug.com/670837 fast/forms/fieldset/fieldset-align.html [ NeedsRebaseline ]
+crbug.com/670837 fast/forms/fieldset/fieldset-legend-padding-unclipped-fieldset-border.html [ NeedsRebaseline ]
+crbug.com/670837 fast/forms/fieldset/fieldset-with-float.html [ NeedsRebaseline ]
+crbug.com/670837 fast/forms/fieldset/float-before-fieldset.html [ NeedsRebaseline ]
+crbug.com/670837 fast/ruby/rubyDOM-remove-text2.html [ NeedsRebaseline ]
+crbug.com/670837 fast/text/whitespace/normal-after-nowrap-breaking.html [ NeedsRebaseline ]
+crbug.com/670837 fast/writing-mode/fieldsets.html [ NeedsRebaseline ]
+crbug.com/670837 paint/masks/fieldset-mask.html [ NeedsRebaseline ]
+crbug.com/670837 svg/custom/inline-svg-in-xhtml.xml [ NeedsRebaseline ]
+
 # Added 2015-12-06
 crbug.com/671618 http/tests/websocket/workers/worker-reload.html [ Pass Timeout ]
 crbug.com/671618 virtual/mojo-loading/http/tests/websocket/workers/worker-reload.html [ Pass Timeout ]

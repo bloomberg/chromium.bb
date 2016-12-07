@@ -362,9 +362,6 @@ void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child) {
   if (child->continuation())
     return;
 
-  if (isFieldset())
-    return;
-
   // Promote all the leftover anonymous block's children (to become children of
   // this block instead). We still want to keep the leftover block in the tree
   // for a moment, for notification purposes done further below (flow threads
@@ -1990,9 +1987,6 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentAndDisplay(
   if (display == EDisplay::Flex || display == EDisplay::InlineFlex) {
     newBox = LayoutFlexibleBox::createAnonymous(&parent->document());
     newDisplay = EDisplay::Flex;
-  } else if (display == EDisplay::Grid || display == EDisplay::InlineGrid) {
-    newBox = LayoutGrid::createAnonymous(&parent->document());
-    newDisplay = EDisplay::Grid;
   } else {
     newBox = LayoutBlockFlow::createAnonymous(&parent->document());
     newDisplay = EDisplay::Block;
