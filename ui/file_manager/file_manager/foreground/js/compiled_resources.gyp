@@ -154,7 +154,6 @@
           './ui/multi_profile_share_dialog.js',
           './ui/progress_center_panel.js',
           './ui/providers_menu.js',
-          './ui/scrollbar.js',
           './ui/search_box.js',
           './ui/share_dialog.js',
           './ui/single_file_details.js',
