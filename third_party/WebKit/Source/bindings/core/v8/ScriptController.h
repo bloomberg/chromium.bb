@@ -50,7 +50,6 @@ class DOMWrapperWorld;
 class Element;
 class HTMLDocument;
 class KURL;
-class ScriptState;
 class ScriptSourceCode;
 class SecurityOrigin;
 class WindowProxy;
@@ -123,9 +122,6 @@ class CORE_EXPORT ScriptController final
 
   void enableEval();
   void disableEval(const String& errorMessage);
-
-  void collectIsolatedContexts(
-      Vector<std::pair<ScriptState*, SecurityOrigin*>>&);
 
   bool canExecuteScripts(ReasonForCallingCanExecuteScripts);
 

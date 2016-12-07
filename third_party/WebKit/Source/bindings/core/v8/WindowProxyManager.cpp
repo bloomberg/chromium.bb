@@ -48,6 +48,19 @@ void WindowProxyManager::clearForNavigation() {
     entry.value->clearForNavigation();
 }
 
+void WindowProxyManager::updateSecurityOrigin(SecurityOrigin* securityOrigin) {
+  m_windowProxy->updateSecurityOrigin(securityOrigin);
+
+  for (auto& entry : m_isolatedWorlds) {
+    WindowProxy* isolatedWindowProxy = entry.value.get();
+    if (!isolatedWindowProxy->isContextInitialized())
+      continue;
+    SecurityOrigin* isolatedSecurityOrigin =
+        isolatedWindowProxy->world().isolatedWorldSecurityOrigin();
+    isolatedWindowProxy->updateSecurityOrigin(isolatedSecurityOrigin);
+  }
+}
+
 WindowProxy* WindowProxyManager::existingWindowProxy(DOMWrapperWorld& world) {
   if (world.isMainWorld())
     return m_windowProxy->isContextInitialized() ? m_windowProxy.get()
@@ -57,19 +70,6 @@ WindowProxy* WindowProxyManager::existingWindowProxy(DOMWrapperWorld& world) {
   if (iter == m_isolatedWorlds.end())
     return nullptr;
   return iter->value->isContextInitialized() ? iter->value.get() : nullptr;
-}
-
-void WindowProxyManager::collectIsolatedContexts(
-    Vector<std::pair<ScriptState*, SecurityOrigin*>>& result) {
-  for (auto& entry : m_isolatedWorlds) {
-    WindowProxy* isolatedWorldWindowProxy = entry.value.get();
-    SecurityOrigin* origin =
-        isolatedWorldWindowProxy->world().isolatedWorldSecurityOrigin();
-    if (!isolatedWorldWindowProxy->isContextInitialized())
-      continue;
-    result.append(
-        std::make_pair(isolatedWorldWindowProxy->getScriptState(), origin));
-  }
 }
 
 void WindowProxyManager::releaseGlobals(

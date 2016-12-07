@@ -89,13 +89,8 @@ void ScriptController::clearForClose() {
   MainThreadDebugger::instance()->didClearContextsForFrame(frame());
 }
 
-void ScriptController::updateSecurityOrigin(SecurityOrigin* origin) {
-  m_windowProxyManager->mainWorldProxy()->updateSecurityOrigin(origin);
-  Vector<std::pair<ScriptState*, SecurityOrigin*>> isolatedContexts;
-  m_windowProxyManager->collectIsolatedContexts(isolatedContexts);
-  for (auto isolatedContext : isolatedContexts)
-    m_windowProxyManager->windowProxy(isolatedContext.first->world())
-        ->updateSecurityOrigin(isolatedContext.second);
+void ScriptController::updateSecurityOrigin(SecurityOrigin* securityOrigin) {
+  m_windowProxyManager->updateSecurityOrigin(securityOrigin);
 }
 
 v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(
@@ -250,11 +245,6 @@ void ScriptController::clearWindowProxy() {
   // frame is loading a new page. This creates a new context for the new page.
   m_windowProxyManager->clearForNavigation();
   MainThreadDebugger::instance()->didClearContextsForFrame(frame());
-}
-
-void ScriptController::collectIsolatedContexts(
-    Vector<std::pair<ScriptState*, SecurityOrigin*>>& result) {
-  m_windowProxyManager->collectIsolatedContexts(result);
 }
 
 void ScriptController::updateDocument() {

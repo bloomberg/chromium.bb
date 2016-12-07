@@ -15,7 +15,6 @@ namespace blink {
 
 class DOMWrapperWorld;
 class Frame;
-class ScriptState;
 class SecurityOrigin;
 class WindowProxy;
 
@@ -35,10 +34,12 @@ class CORE_EXPORT WindowProxyManager final
   void clearForClose();
   void clearForNavigation();
 
+  // Sets the given security origin to the main world's context.  Also updates
+  // the security origin of the context for each isolated world.
+  void updateSecurityOrigin(SecurityOrigin*);
+
   // For devtools:
   WindowProxy* existingWindowProxy(DOMWrapperWorld&);
-  void collectIsolatedContexts(
-      Vector<std::pair<ScriptState*, SecurityOrigin*>>&);
 
   void releaseGlobals(HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>&);
   void setGlobals(const HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>&);
