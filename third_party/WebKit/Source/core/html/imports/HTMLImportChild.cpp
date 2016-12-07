@@ -47,14 +47,19 @@ namespace blink {
 HTMLImportChild::HTMLImportChild(const KURL& url,
                                  HTMLImportLoader* loader,
                                  SyncMode sync)
-    : HTMLImport(sync), m_url(url), m_loader(loader), m_client(nullptr) {}
+    : HTMLImport(sync), m_url(url), m_loader(loader), m_client(nullptr) {
+  DCHECK(loader);
+}
 
 HTMLImportChild::~HTMLImportChild() {}
 
 void HTMLImportChild::ownerInserted() {
   if (!m_loader->isDone())
     return;
-  document()->styleEngine().htmlImportAddedOrRemoved();
+
+  DCHECK(root());
+  DCHECK(root()->document());
+  root()->document()->styleEngine().htmlImportAddedOrRemoved();
   // TODO(rune@opera.com): resolverChanged() can be removed once stylesheet
   // updates are async. https://crbug.com/567021
   root()->document()->styleEngine().resolverChanged(AnalyzedStyleUpdate);
