@@ -1950,3 +1950,6 @@ crbug.com/669911 [ Win7 Win10 ] virtual/threaded/animations/zoom-responsive-tran
 crbug.com/671618 http/tests/websocket/workers/worker-reload.html [ Pass Timeout ]
 crbug.com/671618 virtual/mojo-loading/http/tests/websocket/workers/worker-reload.html [ Pass Timeout ]
 crbug.com/671618 virtual/mojo-loading/http/tests/websocket/workers/worker-shutdown-race.html [ Pass Timeout ]
+
+crbug.com/554077 fast/block/basic/fieldset-stretch-to-legend.html [ NeedsRebaseline ]
+crbug.com/554077 fast/borders/fieldsetBorderRadius.html [ NeedsRebaseline ]
