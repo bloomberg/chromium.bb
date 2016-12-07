@@ -14,7 +14,7 @@
 #include "ash/common/devtools/ash_devtools_dom_agent.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
-#include "ash/common/new_window_client_proxy.h"
+#include "ash/common/new_window_controller.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
@@ -253,8 +253,7 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
       immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
       locale_notification_controller_(
           base::MakeUnique<LocaleNotificationController>()),
-      new_window_client_(base::MakeUnique<NewWindowClientProxy>(
-          delegate_->GetShellConnector())),
+      new_window_controller_(base::MakeUnique<NewWindowController>()),
       shelf_controller_(base::MakeUnique<ShelfController>()),
       shutdown_controller_(base::MakeUnique<ShutdownController>()),
       system_tray_controller_(base::MakeUnique<SystemTrayController>()),

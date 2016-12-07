@@ -54,6 +54,7 @@ class KeyboardUI;
 class LocaleNotificationController;
 class MaximizeModeController;
 class MruWindowTracker;
+class NewWindowController;
 class PaletteDelegate;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionStateDelegate;
@@ -82,10 +83,6 @@ class WorkspaceEventHandler;
 
 enum class LoginStatus;
 enum class TaskSwitchSource;
-
-namespace mojom {
-class NewWindowClient;
-}
 
 namespace wm {
 class MaximizeModeEventHandler;
@@ -145,8 +142,8 @@ class ASH_EXPORT WmShell {
 
   MediaDelegate* media_delegate() { return media_delegate_.get(); }
 
-  mojom::NewWindowClient* new_window_client() {
-    return new_window_client_.get();
+  NewWindowController* new_window_controller() {
+    return new_window_controller_.get();
   }
 
   // NOTE: Prefer ScopedRootWindowForNewWindows when setting temporarily.
@@ -492,7 +489,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
   std::unique_ptr<MediaDelegate> media_delegate_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
-  std::unique_ptr<mojom::NewWindowClient> new_window_client_;
+  std::unique_ptr<NewWindowController> new_window_controller_;
   std::unique_ptr<PaletteDelegate> palette_delegate_;
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;

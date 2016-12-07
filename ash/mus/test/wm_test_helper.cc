@@ -6,7 +6,6 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/test/material_design_controller_test_api.h"
-#include "ash/common/test/test_new_window_client.h"
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/test/wm_shell_test_api.h"
 #include "ash/common/wm_shell.h"
@@ -116,7 +115,6 @@ void WmTestHelper::Init() {
   // create the various test delegates.
   WmShellTestApi().SetSystemTrayDelegate(
       base::MakeUnique<test::TestSystemTrayDelegate>());
-  WmShellTestApi().SetNewWindowClient(base::MakeUnique<TestNewWindowClient>());
 
   aura::WindowTreeClient* window_tree_client =
       window_manager_app_->window_manager()->window_tree_client();

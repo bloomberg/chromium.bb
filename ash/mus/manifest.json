@@ -10,6 +10,7 @@
           "ash::mojom::AcceleratorController",
           "ash::mojom::CastConfig",
           "ash::mojom::LocaleNotificationController",
+          "ash::mojom::NewWindowController",
           "ash::mojom::ShelfController",
           "ash::mojom::ShutdownController",
           "ash::mojom::SystemTray",

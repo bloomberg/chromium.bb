@@ -21,9 +21,4 @@ void WmShellTestApi::SetSystemTrayDelegate(
   WmShell::Get()->SetSystemTrayDelegate(std::move(delegate));
 }
 
-void WmShellTestApi::SetNewWindowClient(
-    std::unique_ptr<mojom::NewWindowClient> client) {
-  WmShell::Get()->new_window_client_ = std::move(client);
-}
-
 }  // namespace ash

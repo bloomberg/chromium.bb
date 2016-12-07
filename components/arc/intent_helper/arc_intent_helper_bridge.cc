@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "ash/common/new_window_controller.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/public/interfaces/new_window.mojom.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
@@ -68,7 +68,7 @@ void ArcIntentHelperBridge::OnOpenDownloads() {
   // downloads by default, which is what we want.  However if it is open it will
   // simply be brought to the forgeground without forcibly being navigated to
   // downloads, which is probably not ideal.
-  ash::WmShell::Get()->new_window_client()->OpenFileManager();
+  ash::WmShell::Get()->new_window_controller()->OpenFileManager();
 }
 
 void ArcIntentHelperBridge::OnOpenUrl(const std::string& url) {

@@ -13,10 +13,6 @@ namespace ash {
 
 class SystemTrayDelegate;
 
-namespace mojom {
-class NewWindowClient;
-}
-
 // Test API to access the internal state of the singleton WmShell.
 class WmShellTestApi {
  public:
@@ -24,8 +20,6 @@ class WmShellTestApi {
   ~WmShellTestApi();
 
   void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
-
-  void SetNewWindowClient(std::unique_ptr<mojom::NewWindowClient> client);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WmShellTestApi);

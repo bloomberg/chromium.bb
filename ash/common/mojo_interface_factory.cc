@@ -8,6 +8,7 @@
 
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/cast_config_controller.h"
+#include "ash/common/new_window_controller.h"
 #include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/shutdown_controller.h"
 #include "ash/common/system/locale/locale_notification_controller.h"
@@ -39,6 +40,11 @@ void BindLocaleNotificationControllerOnMainThread(
     mojom::LocaleNotificationControllerRequest request) {
   WmShell::Get()->locale_notification_controller()->BindRequest(
       std::move(request));
+}
+
+void BindNewWindowControllerRequestOnMainThread(
+    mojom::NewWindowControllerRequest request) {
+  WmShell::Get()->new_window_controller()->BindRequest(std::move(request));
 }
 
 void BindShelfRequestOnMainThread(mojom::ShelfControllerRequest request) {
@@ -83,6 +89,9 @@ void RegisterInterfaces(
                          main_thread_task_runner);
   registry->AddInterface(
       base::Bind(&BindLocaleNotificationControllerOnMainThread),
+      main_thread_task_runner);
+  registry->AddInterface(
+      base::Bind(&BindNewWindowControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindShelfRequestOnMainThread),
                          main_thread_task_runner);

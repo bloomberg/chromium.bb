@@ -9,6 +9,7 @@
 
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 class ChromeNewWindowClient : public ash::mojom::NewWindowClient {
  public:
@@ -30,6 +31,11 @@ class ChromeNewWindowClient : public ash::mojom::NewWindowClient {
   class TabRestoreHelper;
 
   std::unique_ptr<TabRestoreHelper> tab_restore_helper_;
+
+  ash::mojom::NewWindowControllerPtr new_window_controller_;
+
+  // Binds this object to the client interface.
+  mojo::AssociatedBinding<ash::mojom::NewWindowClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNewWindowClient);
 };

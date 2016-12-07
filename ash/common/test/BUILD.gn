@@ -10,8 +10,6 @@ static_library("test_support") {
     "ash_test_impl.h",
     "material_design_controller_test_api.cc",
     "material_design_controller_test_api.h",
-    "test_new_window_client.cc",
-    "test_new_window_client.h",
     "test_palette_delegate.cc",
     "test_palette_delegate.h",
     "test_session_state_delegate.cc",

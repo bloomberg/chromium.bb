@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/cast_config_client_media_router.h"
+#include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 #include "chrome/browser/ui/views/ash/tab_scrubber.h"
 #include "chrome/browser/ui/views/frame/immersive_context_mus.h"
@@ -48,9 +49,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #if defined(OS_CHROMEOS)
   // Must be available at login screen, so initialize before profile.
   system_tray_client_ = base::MakeUnique<SystemTrayClient>();
-
+  new_window_client_ = base::MakeUnique<ChromeNewWindowClient>();
   volume_controller_ = base::MakeUnique<VolumeController>();
-
   vpn_list_forwarder_ = base::MakeUnique<VpnListForwarder>();
 
   // For OS_CHROMEOS, virtual keyboard needs to be initialized before profile
@@ -89,6 +89,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 #if defined(OS_CHROMEOS)
   vpn_list_forwarder_.reset();
   volume_controller_.reset();
+  new_window_client_.reset();
   system_tray_client_.reset();
   cast_config_client_media_router_.reset();
 #endif

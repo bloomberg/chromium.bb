@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -27,8 +28,11 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace {
@@ -41,7 +45,18 @@ void RestoreTabUsingProfile(Profile* profile) {
 
 }  // namespace
 
-ChromeNewWindowClient::ChromeNewWindowClient() {}
+ChromeNewWindowClient::ChromeNewWindowClient() : binding_(this) {
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->ConnectToInterface(ash_util::GetAshServiceName(),
+                                &new_window_controller_);
+
+  // Register this object as the client interface implementation.
+  ash::mojom::NewWindowClientAssociatedPtrInfo ptr_info;
+  binding_.Bind(&ptr_info, new_window_controller_.associated_group());
+  new_window_controller_->SetClient(std::move(ptr_info));
+}
+
 ChromeNewWindowClient::~ChromeNewWindowClient() {}
 
 // TabRestoreHelper is used to restore a tab. In particular when the user
