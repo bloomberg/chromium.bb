@@ -458,8 +458,6 @@ crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progr
 
 crbug.com/109362 inspector/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
 
-crbug.com/522647 http/tests/notifications/close-dispatch-asynchronous.html [ Failure Pass ]
-crbug.com/522647 virtual/mojo-loading/http/tests/notifications/close-dispatch-asynchronous.html [ Failure Pass ]
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/521858 [ Win7 ] http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
 crbug.com/521858 [ Win7 ] virtual/mojo-loading/http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
@@ -494,7 +492,6 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touc
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518883 crbug.com/390452 virtual/mojo-loading/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
-crbug.com/518987 virtual/mojo-loading/http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518988 [ Win7 ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass ]
 crbug.com/518989 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-002.xht [ Failure Pass Timeout ]
 crbug.com/518998 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
@@ -528,8 +525,6 @@ crbug.com/248938 virtual/threaded/transitions/start-transform-transition.html [ 
 crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/transition-and-animation-3.html [ Pass Timeout ]
-crbug.com/446385 [ Linux Mac ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Pass Timeout ]
-crbug.com/446385 [ Linux Mac ] virtual/mojo-loading/http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Pass Timeout ]
 crbug.com/446385 [ Win7 Debug ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
 crbug.com/446385 [ Win7 Debug ] virtual/mojo-loading/http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.html [ Pass Failure ]
@@ -537,7 +532,6 @@ crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ P
 crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/248938 [ Mac ] virtual/threaded/transitions/transition-end-event-unprefixed-01.html [ Pass Failure ]
-crbug.com/513143 virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/display-none-terminates-animation.html [ Pass Failure ]
 crbug.com/638693 virtual/threaded/animations/display-inline-style-adjust.html [ Pass Crash Failure ]
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
@@ -545,7 +539,6 @@ crbug.com/248938 [ Mac Win ] virtual/threaded/transitions/transition-end-event-t
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-rendering.html [ Pass Timeout ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/unprefixed-perspective-origin.html [ Pass Timeout ]
-crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-not-interpolable.html [ Pass Timeout ]
 crbug.com/248938 [ Mac ] virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/fill-mode-multiple-keyframes.html [ Pass Failure ]
 
@@ -942,7 +935,6 @@ crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
 crbug.com/613887 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/613887 virtual/mojo-loading/http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/564403 [ Win Debug ] http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass Timeout ]
-crbug.com/564403 [ Win Debug ] virtual/mojo-loading/http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass Timeout ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
@@ -1027,9 +1019,6 @@ crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scro
 
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Pass Failure ]
 crbug.com/480769 virtual/mojo-loading/http/tests/inspector/service-workers/service-workers-redundant.html [ Pass Failure ]
-
-crbug.com/569901 [ Debug ] http/tests/serviceworker/navigation-redirect.html [ Pass Failure ]
-crbug.com/569901 [ Debug ] virtual/mojo-loading/http/tests/serviceworker/navigation-redirect.html [ Pass Failure ]
 
 crbug.com/599670 [ Win Linux ] http/tests/inspector/resource-parameters-ipv6.html [ Failure Pass ]
 crbug.com/599670 [ Win Linux ] virtual/mojo-loading/http/tests/inspector/resource-parameters-ipv6.html [ Failure Pass ]
@@ -1208,8 +1197,6 @@ crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 # We paint in an incorrect order when layers are present
 crbug.com/370604 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-paint-ordering-002.xhtml [ Failure ]
 
-crbug.com/658311 virtual/threaded/fast/compositorworker/basic-plumbing-main-to-worker.html [ Failure Pass ]
-
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-15.html [ Failure ]
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-16.html [ Pass Failure ]
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-17.html [ Pass Failure ]
@@ -1339,8 +1326,6 @@ crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure 
 
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
 
-crbug.com/532643 [ Mac ] fast/events/hit-test-cache-scrollbar-no-crash.html [ Pass Failure ]
-
 # Win7 does not support the needed DirectWrite APIs for font fallback
 crbug.com/459056 [ Win7 ] fast/text/font-fallback-win.html [ Failure ]
 
@@ -1385,7 +1370,6 @@ crbug.com/564109 [ Win7 ]  virtual/mojo-loading/http/tests/webfont/font-display-
 crbug.com/575766 http/tests/inspector/resource-tree/resource-tree-frame-add.html [ Timeout Pass ]
 crbug.com/575766 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-frame-add.html [ Timeout Pass ]
 crbug.com/581468 http/tests/inspector/resource-tree/resource-tree-non-unique-url.html [ Pass Failure ]
-crbug.com/581468 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-non-unique-url.html [ Pass Failure ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 crbug.com/399951 virtual/mojo-loading/http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
@@ -1423,7 +1407,6 @@ crbug.com/600261 imported/wpt/mediacapture-streams/GUM-deny.https.html [ Failure
 crbug.com/600261 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Failure ]
 
 crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
-crbug.com/605525 [ Win ] virtual/mojo-loading/http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
 crbug.com/600248 imported/wpt/web-animations/interfaces/AnimationEffectTiming/endDelay.html [ Pass Failure ]
 crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/constructor.html [ Failure Timeout ]
@@ -1597,8 +1580,6 @@ crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseli
 crbug.com/652187 [ Win7 Debug ] http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
 crbug.com/652187 [ Win7 Debug ] virtual/mojo-loading/http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
 
-crbug.com/658414 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Failure Pass ]
-
 crbug.com/655458 imported/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/baseurl/alpha/worker.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/interfaces/SharedWorkerGlobalScope/onconnect.html [ Failure ]
@@ -1688,8 +1669,6 @@ crbug.com/664873 http/tests/xmlhttprequest/small-chunks-response-text.html [ Fai
 crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
 
 crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
-
-crbug.com/660308 [ Mac ] fast/css-grid-layout/grid-auto-repeat-intrinsic.html [ Pass Failure Timeout Crash ]
 
 crbug.com/657968 storage/indexeddb/idbdatabase-createObjectStore-exception-order.html [ Pass Failure ]
 crbug.com/657968 storage/indexeddb/idbdatabase-deleteObjectStore-exception-order.html [ Pass Failure ]
@@ -1796,9 +1775,6 @@ crbug.com/666991 imported/wpt/service-workers/cache-storage/serviceworker/cache-
 crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/callback-idle-periods.html [ Timeout ]
 crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/callback-timeout-with-raf.html [ Timeout ]
 crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/basic.html [ Timeout ]
-
-# Flaky on Linux dbg
-crbug.com/667953 [ Linux Debug ] virtual/android/media/mediadocument/media-document-with-download-button.html [ Pass Failure ]
 
 # [css-ui] Imported tests from W3C suite.
 crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-014.html [ Failure ]
@@ -1967,11 +1943,6 @@ crbug.com/670837 fast/text/whitespace/normal-after-nowrap-breaking.html [ NeedsR
 crbug.com/670837 fast/writing-mode/fieldsets.html [ NeedsRebaseline ]
 crbug.com/670837 paint/masks/fieldset-mask.html [ NeedsRebaseline ]
 crbug.com/670837 svg/custom/inline-svg-in-xhtml.xml [ NeedsRebaseline ]
-
-# Added 2015-12-06
-crbug.com/671618 http/tests/websocket/workers/worker-reload.html [ Pass Timeout ]
-crbug.com/671618 virtual/mojo-loading/http/tests/websocket/workers/worker-reload.html [ Pass Timeout ]
-crbug.com/671618 virtual/mojo-loading/http/tests/websocket/workers/worker-shutdown-race.html [ Pass Timeout ]
 
 crbug.com/554077 fast/block/basic/fieldset-stretch-to-legend.html [ NeedsRebaseline ]
 crbug.com/554077 fast/borders/fieldsetBorderRadius.html [ NeedsRebaseline ]
