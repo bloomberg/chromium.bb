@@ -397,8 +397,8 @@ void VrShell::UpdateControllerOnGL(const gvr::Vec3f& forward_vector) {
       gesture->timeStampSeconds =
           (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
       gesture->type = WebInputEvent::GestureTapDown;
-      gesture->data.tapDown.width = 0;
-      gesture->data.tapDown.height = 0;
+      gesture->x = 0;
+      gesture->y = 0;
       SendGestureOnGL(CONTENT, std::move(gesture));
     }
 
@@ -515,8 +515,8 @@ void VrShell::SendEventsToTargetOnGL(InputTarget input_target,
   if (gesture->type == WebInputEvent::GestureScrollEnd) {
     CHECK(gesture_list.size() == 2);
     if (gesture_list.back()->type == WebInputEvent::GestureTapDown) {
-      gesture_list.back()->data.tapDown.width = pixel_x;
-      gesture_list.back()->data.tapDown.height = pixel_y;
+      gesture_list.back()->x = pixel_x;
+      gesture_list.back()->y = pixel_y;
       if (input_target != NONE)
         SendGestureOnGL(input_target, std::move(gesture_list.back()));
     } else if (gesture_list.back()->type == WebInputEvent::GestureFlingStart) {
@@ -552,8 +552,8 @@ void VrShell::SendEventsToTargetOnGL(InputTarget input_target,
           (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
     }
     event->type = WebInputEvent::GestureTapDown;
-    event->data.tapDown.width = pixel_x;
-    event->data.tapDown.height = pixel_y;
+    event->x = pixel_x;
+    event->y = pixel_y;
     SendGestureOnGL(current_input_target_, std::move(event));
   }
 }

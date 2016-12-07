@@ -199,8 +199,8 @@ std::vector<std::unique_ptr<WebGestureEvent>> VrController::DetectGestures() {
   if (gesture->type == WebInputEvent::Undefined &&
       ButtonUpHappened(gvr::kControllerButtonClick)) {
     gesture->type = WebInputEvent::GestureTapDown;
-    gesture->data.tapDown.width = 0;
-    gesture->data.tapDown.height = 0;
+    gesture->x = 0;
+    gesture->y = 0;
   }
   gesture->sourceDevice = blink::WebGestureDeviceTouchpad;
   gesture_list.push_back(std::move(gesture));

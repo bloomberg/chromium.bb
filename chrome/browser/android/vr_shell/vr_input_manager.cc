@@ -56,9 +56,9 @@ void VrInputManager::SendGesture(const WebGestureEvent& gesture) {
     ForwardGestureEvent(gesture);
 
     // Generate and forward Tap
-    WebGestureEvent tap_event = MakeGestureEvent(
-        WebInputEvent::GestureTap, gesture.timeStampSeconds,
-        gesture.data.tapDown.width, gesture.data.tapDown.height);
+    WebGestureEvent tap_event =
+        MakeGestureEvent(WebInputEvent::GestureTap, gesture.timeStampSeconds,
+                         gesture.x, gesture.y);
     tap_event.data.tap.tapCount = 1;
     ForwardGestureEvent(tap_event);
   } else {
