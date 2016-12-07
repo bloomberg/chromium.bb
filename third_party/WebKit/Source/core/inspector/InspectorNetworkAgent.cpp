@@ -1311,7 +1311,7 @@ Response InspectorNetworkAgent::replayXHR(const String& requestId) {
     return Response::Error("Given id does not correspond to XHR");
 
   ExecutionContext* executionContext = xhrReplayData->getExecutionContext();
-  if (!executionContext) {
+  if (executionContext->isContextDestroyed()) {
     m_resourcesData->setXHRReplayData(requestId, 0);
     return Response::Error("Document is already detached");
   }

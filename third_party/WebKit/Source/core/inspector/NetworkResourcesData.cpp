@@ -61,7 +61,7 @@ XHRReplayData::XHRReplayData(ExecutionContext* executionContext,
                              bool async,
                              PassRefPtr<EncodedFormData> formData,
                              bool includeCredentials)
-    : ContextLifecycleObserver(executionContext),
+    : m_executionContext(executionContext),
       m_method(method),
       m_url(url),
       m_async(async),
@@ -69,7 +69,7 @@ XHRReplayData::XHRReplayData(ExecutionContext* executionContext,
       m_includeCredentials(includeCredentials) {}
 
 DEFINE_TRACE(XHRReplayData) {
-  ContextLifecycleObserver::trace(visitor);
+  visitor->trace(m_executionContext);
 }
 
 // ResourceData

@@ -29,7 +29,6 @@
 #ifndef NetworkResourcesData_h
 #define NetworkResourcesData_h
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "platform/blob/BlobData.h"
@@ -50,10 +49,7 @@ class ResourceResponse;
 class SharedBuffer;
 class TextResourceDecoder;
 
-class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData>,
-                            public ContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(XHRReplayData);
-
+class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
  public:
   static XHRReplayData* create(ExecutionContext*,
                                const AtomicString& method,
@@ -69,6 +65,7 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData>,
   PassRefPtr<EncodedFormData> formData() const { return m_formData; }
   const HTTPHeaderMap& headers() const { return m_headers; }
   bool includeCredentials() const { return m_includeCredentials; }
+  ExecutionContext* getExecutionContext() const { return m_executionContext; }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -80,6 +77,7 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData>,
                 PassRefPtr<EncodedFormData>,
                 bool includeCredentials);
 
+  Member<ExecutionContext> m_executionContext;
   AtomicString m_method;
   KURL m_url;
   bool m_async;
