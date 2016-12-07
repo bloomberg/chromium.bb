@@ -79,7 +79,8 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
 
   // If permission for notification's origin is not "granted", reject the
   // promise with a TypeError exception, and terminate these substeps.
-  if (NotificationManager::from(executionContext)->permissionStatus() !=
+  if (NotificationManager::from(executionContext)
+          ->permissionStatus(executionContext) !=
       mojom::blink::PermissionStatus::GRANTED)
     return ScriptPromise::reject(
         scriptState,

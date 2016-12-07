@@ -28,7 +28,7 @@ NotificationManager* NotificationManager::from(
   NotificationManager* manager = static_cast<NotificationManager*>(
       Supplement<ExecutionContext>::from(executionContext, supplementName()));
   if (!manager) {
-    manager = new NotificationManager(executionContext);
+    manager = new NotificationManager();
     Supplement<ExecutionContext>::provideTo(*executionContext, supplementName(),
                                             manager);
   }
@@ -41,20 +41,19 @@ const char* NotificationManager::supplementName() {
   return "NotificationManager";
 }
 
-NotificationManager::NotificationManager(ExecutionContext* executionContext)
-    : ContextLifecycleObserver(executionContext) {}
+NotificationManager::NotificationManager() {}
 
 NotificationManager::~NotificationManager() {}
 
-mojom::blink::PermissionStatus NotificationManager::permissionStatus() {
+mojom::blink::PermissionStatus NotificationManager::permissionStatus(
+    ExecutionContext* executionContext) {
   if (!m_notificationService)
     Platform::current()->interfaceProvider()->getInterface(
         mojo::GetProxy(&m_notificationService));
 
   mojom::blink::PermissionStatus permissionStatus;
   const bool result = m_notificationService->GetPermissionStatus(
-      getExecutionContext()->getSecurityOrigin()->toString(),
-      &permissionStatus);
+      executionContext->getSecurityOrigin()->toString(), &permissionStatus);
   DCHECK(result);
 
   return permissionStatus;
@@ -87,11 +86,6 @@ ScriptPromise NotificationManager::requestPermission(
   return promise;
 }
 
-void NotificationManager::contextDestroyed() {
-  m_notificationService.reset();
-  m_permissionService.reset();
-}
-
 void NotificationManager::onPermissionRequestComplete(
     ScriptPromiseResolver* resolver,
     NotificationPermissionCallback* deprecatedCallback,
@@ -112,7 +106,6 @@ void NotificationManager::onPermissionServiceConnectionError() {
 }
 
 DEFINE_TRACE(NotificationManager) {
-  ContextLifecycleObserver::trace(visitor);
   Supplement<ExecutionContext>::trace(visitor);
 }
 

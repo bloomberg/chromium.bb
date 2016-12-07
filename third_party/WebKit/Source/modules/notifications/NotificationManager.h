@@ -5,7 +5,6 @@
 #ifndef NotificationManager_h
 #define NotificationManager_h
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "public/platform/modules/notifications/notification_service.mojom-blink.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
@@ -25,7 +24,6 @@ class ScriptState;
 // TODO(peter): Make the NotificationManager responsible for resource loading.
 class NotificationManager final
     : public GarbageCollectedFinalized<NotificationManager>,
-      public ContextLifecycleObserver,
       public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(NotificationManager);
   WTF_MAKE_NONCOPYABLE(NotificationManager);
@@ -38,19 +36,16 @@ class NotificationManager final
 
   // Returns the notification permission status of the current origin. This
   // method is synchronous to support the Notification.permission getter.
-  mojom::blink::PermissionStatus permissionStatus();
+  mojom::blink::PermissionStatus permissionStatus(ExecutionContext*);
 
   ScriptPromise requestPermission(
       ScriptState*,
       NotificationPermissionCallback* deprecatedCallback);
 
-  // ContextLifecycleObserver interface.
-  void contextDestroyed() override;
-
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit NotificationManager(ExecutionContext*);
+  NotificationManager();
 
   void onPermissionRequestComplete(ScriptPromiseResolver*,
                                    NotificationPermissionCallback*,

@@ -155,7 +155,8 @@ void Notification::schedulePrepareShow() {
 
 void Notification::prepareShow() {
   DCHECK_EQ(m_state, State::Loading);
-  if (NotificationManager::from(getExecutionContext())->permissionStatus() !=
+  if (NotificationManager::from(getExecutionContext())
+          ->permissionStatus(getExecutionContext()) !=
       mojom::blink::PermissionStatus::GRANTED) {
     dispatchErrorEvent();
     return;
@@ -355,7 +356,7 @@ String Notification::permissionString(
 
 String Notification::permission(ExecutionContext* context) {
   return permissionString(
-      NotificationManager::from(context)->permissionStatus());
+      NotificationManager::from(context)->permissionStatus(context));
 }
 
 ScriptPromise Notification::requestPermission(
