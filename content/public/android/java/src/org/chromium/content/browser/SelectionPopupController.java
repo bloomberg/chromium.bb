@@ -305,7 +305,12 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      */
     @Override
     public void finishActionMode() {
-        if (isActionModeValid()) mActionMode.finish();
+        if (isActionModeValid()) {
+            mActionMode.finish();
+
+            // Should be nulled out in case #onDestroyActionMode() is not invoked in response.
+            mActionMode = null;
+        }
     }
 
     /**
