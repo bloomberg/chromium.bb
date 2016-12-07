@@ -26,7 +26,7 @@
 #ifndef MediaStream_h
 #define MediaStream_h
 
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/html/URLRegistry.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
@@ -40,8 +40,7 @@ class ExceptionState;
 
 class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
                                          public URLRegistrable,
-                                         public MediaStreamDescriptorClient,
-                                         public ContextLifecycleObserver {
+                                         public MediaStreamDescriptorClient {
   USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -79,7 +78,9 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
 
   // EventTarget
   const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  ExecutionContext* getExecutionContext() const override {
+    return m_executionContext;
+  }
 
   // URLRegistrable
   URLRegistry& registry() const override;
@@ -98,9 +99,6 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
               const MediaStreamTrackVector& audioTracks,
               const MediaStreamTrackVector& videoTracks);
 
-  // ContextLifecycleObserver
-  void contextDestroyed() override;
-
   // MediaStreamDescriptorClient
   void addRemoteTrack(MediaStreamComponent*) override;
   void removeRemoteTrack(MediaStreamComponent*) override;
@@ -110,14 +108,13 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
   void scheduleDispatchEvent(Event*);
   void scheduledEventTimerFired(TimerBase*);
 
-  bool m_stopped;
-
   MediaStreamTrackVector m_audioTracks;
   MediaStreamTrackVector m_videoTracks;
   Member<MediaStreamDescriptor> m_descriptor;
 
   Timer<MediaStream> m_scheduledEventTimer;
   HeapVector<Member<Event>> m_scheduledEvents;
+  Member<ExecutionContext> m_executionContext;
 };
 
 typedef HeapVector<Member<MediaStream>> MediaStreamVector;
