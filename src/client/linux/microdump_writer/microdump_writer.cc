@@ -166,6 +166,7 @@ class MicrodumpWriter {
   void Dump() {
     CaptureResult stack_capture_result = CaptureCrashingThreadStack(-1);
     if (stack_capture_result == CAPTURE_UNINTERESTING) {
+      LogLine("Microdump skipped (uninteresting)");
       return;
     }
 
