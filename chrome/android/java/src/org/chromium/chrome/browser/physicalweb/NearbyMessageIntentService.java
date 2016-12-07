@@ -8,30 +8,15 @@ import android.app.IntentService;
 import android.content.Intent;
 
 import com.google.android.gms.nearby.Nearby;
-import com.google.android.gms.nearby.messages.Message;
 import com.google.android.gms.nearby.messages.MessageListener;
 
 /**
  * Service that handles intents from Nearby.
  */
 public class NearbyMessageIntentService extends IntentService {
-    private static final MessageListener MESSAGE_LISTENER = new MessageListener() {
-        @Override
-        public void onFound(Message message) {
-            String url = PhysicalWebBleClient.getInstance().getUrlFromMessage(message);
-            if (url != null) {
-                UrlManager.getInstance().addUrl(new UrlInfo(url));
-            }
-        }
+    private static final MessageListener MESSAGE_LISTENER =
+            PhysicalWebBleClient.getInstance().createBackgroundMessageListener();
 
-        @Override
-        public void onLost(Message message) {
-            String url = PhysicalWebBleClient.getInstance().getUrlFromMessage(message);
-            if (url != null) {
-                UrlManager.getInstance().removeUrl(new UrlInfo(url));
-            }
-        }
-    };
 
     public NearbyMessageIntentService() {
         super(NearbyMessageIntentService.class.getSimpleName());

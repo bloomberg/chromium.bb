@@ -34,6 +34,24 @@ public class PhysicalWebBleClient {
         public void onFound(Message message) {}
     }
 
+    protected static class BackgroundMessageListener extends MessageListener {
+        @Override
+        public void onFound(Message message) {
+            String url = PhysicalWebBleClient.getInstance().getUrlFromMessage(message);
+            if (url != null) {
+                UrlManager.getInstance().addUrl(new UrlInfo(url));
+            }
+        }
+
+        @Override
+        public void onLost(Message message) {
+            String url = PhysicalWebBleClient.getInstance().getUrlFromMessage(message);
+            if (url != null) {
+                UrlManager.getInstance().removeUrl(new UrlInfo(url));
+            }
+        }
+    };
+
     /**
      * Get a singleton instance of this class.
      * @return an instance of this class (or subclass).
@@ -86,6 +104,14 @@ public class PhysicalWebBleClient {
      */
     void backgroundUnsubscribe() {
         backgroundUnsubscribe(null);
+    }
+
+    /**
+     * Create a MessageListener that listens during a background scan.
+     * @return the MessageListener.
+     */
+    MessageListener createBackgroundMessageListener() {
+        return new BackgroundMessageListener();
     }
 
     /**
