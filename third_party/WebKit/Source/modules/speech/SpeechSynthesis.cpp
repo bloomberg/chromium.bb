@@ -37,7 +37,7 @@ SpeechSynthesis* SpeechSynthesis::create(ExecutionContext* context) {
 }
 
 SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
-    : ContextLifecycleObserver(context),
+    : m_executionContext(context),
       m_platformSpeechSynthesizer(PlatformSpeechSynthesizer::create(this)),
       m_isPaused(false) {}
 
@@ -46,13 +46,9 @@ void SpeechSynthesis::setPlatformSynthesizer(
   m_platformSpeechSynthesizer = synthesizer;
 }
 
-ExecutionContext* SpeechSynthesis::getExecutionContext() const {
-  return ContextLifecycleObserver::getExecutionContext();
-}
-
 void SpeechSynthesis::voicesDidChange() {
   m_voiceList.clear();
-  if (getExecutionContext() && !getExecutionContext()->isContextDestroyed())
+  if (!m_executionContext->isContextDestroyed())
     dispatchEvent(Event::create(EventTypeNames::voiceschanged));
 }
 
@@ -130,7 +126,7 @@ void SpeechSynthesis::fireEvent(const AtomicString& type,
                                 SpeechSynthesisUtterance* utterance,
                                 unsigned long charIndex,
                                 const String& name) {
-  if (getExecutionContext() && !getExecutionContext()->isContextDestroyed()) {
+  if (!m_executionContext->isContextDestroyed()) {
     double elapsedTimeMillis =
         (monotonicallyIncreasingTime() - utterance->startTime()) * 1000.0;
     utterance->dispatchEvent(SpeechSynthesisEvent::create(
@@ -238,12 +234,12 @@ const AtomicString& SpeechSynthesis::interfaceName() const {
 }
 
 DEFINE_TRACE(SpeechSynthesis) {
+  visitor->trace(m_executionContext);
   visitor->trace(m_platformSpeechSynthesizer);
   visitor->trace(m_voiceList);
   visitor->trace(m_utteranceQueue);
   PlatformSpeechSynthesizerClient::trace(visitor);
   EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink
