@@ -20,7 +20,10 @@ Polymer({
 
 <if expr="chromeos">
     /** @private */
-    hasCheckedForUpdates_: Boolean,
+    hasCheckedForUpdates_: {
+      type: Boolean,
+      value: false,
+    },
 
     /** @private {!BrowserChannel} */
     currentChannel_: String,
@@ -42,7 +45,50 @@ Polymer({
         };
       },
     },
+
+    /** @private */
+    showUpdateStatus_: Boolean,
+
+    /** @private */
+    showButtonContainer_: Boolean,
+
+    /** @private */
+    showRelaunch_: Boolean,
+
+<if expr="chromeos">
+    /** @private */
+    showRelaunchAndPowerwash_: {
+      type: Boolean,
+      computed: 'computeShowRelaunchAndPowerwash_(' +
+          'currentUpdateStatusEvent_, targetChannel_)',
+    },
+
+    /** @private */
+    showCheckUpdates_: {
+      type: Boolean,
+      computed: 'computeShowCheckUpdates_(currentUpdateStatusEvent_)',
+    },
+</if>
   },
+
+  observers: [
+<if expr="not chromeos">
+    'updateShowUpdateStatus_(' +
+        'obsoleteSystemInfo_, currentUpdateStatusEvent_)',
+    'updateShowRelaunch_(currentUpdateStatusEvent_)',
+    'updateShowButtonContainer_(showRelaunch_)',
+</if>
+
+<if expr="chromeos">
+    'updateShowUpdateStatus_(' +
+        'obsoleteSystemInfo_, currentUpdateStatusEvent_,' +
+        'hasCheckedForUpdates_)',
+    'updateShowRelaunch_(currentUpdateStatusEvent_, targetChannel_)',
+    'updateShowButtonContainer_(' +
+        'showRelaunch_, showRelaunchAndPowerwash_, showCheckUpdates_)',
+</if>
+  ],
+
 
   /** @private {?settings.AboutPageBrowserProxy} */
   aboutBrowserProxy_: null,
@@ -112,38 +158,45 @@ Polymer({
     this.lifetimeBrowserProxy_.relaunch();
   },
 
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowUpdateStatusMessage_: function() {
-    return this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED &&
+  /** @private */
+  updateShowUpdateStatus_: function() {
+<if expr="chromeos">
+    // Assume the "updated" status is stale if we haven't checked yet.
+    if (this.currentUpdateStatusEvent_.status == UpdateStatus.UPDATED &&
+        !this.hasCheckedForUpdates_) {
+      this.showUpdateStatus_ = false;
+      return;
+    }
+</if>
+    this.showUpdateStatus_ =
+        this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED &&
         !this.obsoleteSystemInfo_.endOfLine;
   },
 
   /**
-   * @return {boolean}
+   * Hide the button container if all buttons are hidden, otherwise the
+   * container displayes an unwanted border (see secondary-action class).
    * @private
    */
-  shouldShowUpdateStatusIcon_: function() {
-    return this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED ||
-        this.obsoleteSystemInfo_.endOfLine;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowRelaunch_: function() {
-    var shouldShow = false;
+  updateShowButtonContainer_: function() {
 <if expr="not chromeos">
-    shouldShow = this.checkStatus_(UpdateStatus.NEARLY_UPDATED);
+    this.showButtonContainer_ = this.showRelaunch_;
 </if>
 <if expr="chromeos">
-    shouldShow = this.checkStatus_(UpdateStatus.NEARLY_UPDATED) &&
+    this.showButtonContainer_ = this.showRelaunch_ ||
+        this.showRelaunchAndPowerwash_ || this.showCheckUpdates_;
+</if>
+  },
+
+  /** @private */
+  updateShowRelaunch_: function() {
+<if expr="not chromeos">
+    this.showRelaunch_ = this.checkStatus_(UpdateStatus.NEARLY_UPDATED);
+</if>
+<if expr="chromeos">
+    this.showRelaunch_ = this.checkStatus_(UpdateStatus.NEARLY_UPDATED) &&
         !this.isTargetChannelMoreStable_();
 </if>
-    return shouldShow;
   },
 
   /**
@@ -265,7 +318,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowRelaunchAndPowerwash_: function() {
+  computeShowRelaunchAndPowerwash_: function() {
     return this.checkStatus_(UpdateStatus.NEARLY_UPDATED) &&
         this.isTargetChannelMoreStable_();
   },
@@ -280,7 +333,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowCheckUpdates_: function() {
+  computeShowCheckUpdates_: function() {
     return !this.hasCheckedForUpdates_ ||
         this.checkStatus_(UpdateStatus.FAILED);
   },

@@ -82,17 +82,14 @@
             </div>
             <div class="settings-box two-line">
               <iron-icon
-                  hidden="[[!shouldShowUpdateStatusIcon_(
-                      obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
+                  hidden="[[!showUpdateStatus_]]"
                   icon$="[[getIcon_(
                       obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
                   src="[[getIconSrc_(
                       obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
               </iron-icon>
               <div class="start">
-                <div id="updateStatusMessage"
-                    hidden="[[!shouldShowUpdateStatusMessage_(
-                        obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
+                <div id="updateStatusMessage" hidden="[[!showUpdateStatus_]]"
 <if expr="not chromeos">
                     inner-h-t-m-l="[[getUpdateStatusMessage_(
                         currentUpdateStatusEvent_)]]">
@@ -111,29 +108,20 @@
                 </span>
                 <div class="secondary copyable">$i18n{aboutBrowserVersion}</div>
               </div>
-              <span id="relaunchContainer"
-<if expr="not chromeos">
-                  hidden="[[!shouldShowRelaunch_(currentUpdateStatusEvent_)]]"
-</if>
-<if expr="chromeos">
-                  hidden="[[!shouldShowRelaunch_(
-                      currentUpdateStatusEvent_, targetChannel_)]]"
-</if>
-                  class="secondary-action">
+              <span id="buttonContainer" class="secondary-action"
+                  hidden="[[!showButtonContainer_]]">
                 <paper-button id="relaunch" class="secondary-button"
-                    on-tap="onRelaunchTap_">
+                    hidden="[[!showRelaunch_]]" on-tap="onRelaunchTap_">
                   $i18n{aboutRelaunch}
                 </paper-button>
 <if expr="chromeos">
                 <paper-button id="relaunchAndPowerwash" class="secondary-button"
-                    hidden="[[!shouldShowRelaunchAndPowerwash_(
-                        currentUpdateStatusEvent_, targetChannel_)]]"
+                    hidden="[[!showRelaunchAndPowerwash_]]"
                     on-tap="onRelaunchAndPowerwashTap_">
                   $i18n{aboutRelaunchAndPowerwash}
                 </paper-button>
                 <paper-button id="checkForUpdates" class="secondary-button"
-                    hidden="[[!shouldShowCheckUpdates_(
-                        currentUpdateStatusEvent_)]]"
+                    hidden="[[!showCheckUpdates_]]"
                     on-tap="onCheckUpdatesTap_">
                   $i18n{aboutCheckForUpdates}
                 </paper-button>

@@ -257,7 +257,9 @@ cr.define('settings_about_page', function() {
           assertTrue(!!page.$.deprecationWarning);
 
           assertFalse(page.$.deprecationWarning.hidden);
-          assertFalse(page.$.updateStatusMessage.hidden);
+          // Update status message should be hidden before user has checked for
+          // updates, on ChromeOS.
+          assertEquals(cr.isChromeOS, page.$.updateStatusMessage.hidden);
 
           fireStatusChanged(UpdateStatus.CHECKING);
           assertEquals(SPINNER_ICON, icon.src);
@@ -318,12 +320,12 @@ cr.define('settings_about_page', function() {
       });
 
       test('Relaunch', function() {
-        var relaunchContainer = page.$.relaunchContainer;
-        assertTrue(!!relaunchContainer);
-        assertTrue(relaunchContainer.hidden);
+        var relaunch = page.$.relaunch;
+        assertTrue(!!relaunch);
+        assertTrue(relaunch.hidden);
 
         fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
-        assertFalse(relaunchContainer.hidden);
+        assertFalse(relaunch.hidden);
 
         var relaunch = page.$.relaunch;
         assertTrue(!!relaunch);
@@ -338,25 +340,28 @@ cr.define('settings_about_page', function() {
          * channel are the same.
          */
         test('ButtonsUpdate_SameChannel', function() {
-          var relaunchContainer = page.$.relaunchContainer;
+          var relaunch = page.$.relaunch;
           var checkForUpdates = page.$.checkForUpdates;
           var relaunchAndPowerwash = page.$.relaunchAndPowerwash;
 
-          assertTrue(!!relaunchContainer);
+          assertTrue(!!relaunch);
           assertTrue(!!relaunchAndPowerwash);
           assertTrue(!!checkForUpdates);
 
           function assertAllHidden() {
             assertTrue(checkForUpdates.hidden);
-            assertTrue(relaunchContainer.hidden);
+            assertTrue(relaunch.hidden);
             assertTrue(relaunchAndPowerwash.hidden);
+            // Ensure that when all buttons are hidden, the container is also
+            // hidden.
+            assertTrue(page.$.buttonContainer.hidden);
           }
 
           // Check that |UPDATED| status is ignored if the user has not
           // explicitly checked for updates yet.
           fireStatusChanged(UpdateStatus.UPDATED);
           assertFalse(checkForUpdates.hidden);
-          assertTrue(relaunchContainer.hidden);
+          assertTrue(relaunch.hidden);
           assertTrue(relaunchAndPowerwash.hidden);
 
           fireStatusChanged(UpdateStatus.CHECKING);
@@ -367,7 +372,7 @@ cr.define('settings_about_page', function() {
 
           fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
           assertTrue(checkForUpdates.hidden);
-          assertFalse(relaunchContainer.hidden);
+          assertFalse(relaunch.hidden);
           assertTrue(relaunchAndPowerwash.hidden);
 
           fireStatusChanged(UpdateStatus.UPDATED);
@@ -375,7 +380,7 @@ cr.define('settings_about_page', function() {
 
           fireStatusChanged(UpdateStatus.FAILED);
           assertFalse(checkForUpdates.hidden);
-          assertTrue(relaunchContainer.hidden);
+          assertTrue(relaunch.hidden);
           assertTrue(relaunchAndPowerwash.hidden);
 
           fireStatusChanged(UpdateStatus.DISABLED);
@@ -396,10 +401,10 @@ cr.define('settings_about_page', function() {
           aboutBrowserProxy.setUpdateStatus(UpdateStatus.NEARLY_UPDATED);
 
           return initNewPage().then(function() {
-            assertTrue(!!page.$.relaunchContainer);
+            assertTrue(!!page.$.relaunch);
             assertTrue(!!page.$.relaunchAndPowerwash);
 
-            assertTrue(page.$.relaunchContainer.hidden);
+            assertTrue(page.$.relaunch.hidden);
             assertFalse(page.$.relaunchAndPowerwash.hidden);
 
             MockInteractions.tap(page.$.relaunchAndPowerwash);
@@ -418,10 +423,10 @@ cr.define('settings_about_page', function() {
           aboutBrowserProxy.setUpdateStatus(UpdateStatus.NEARLY_UPDATED);
 
           return initNewPage().then(function() {
-            assertTrue(!!page.$.relaunchContainer);
+            assertTrue(!!page.$.relaunch);
             assertTrue(!!page.$.relaunchAndPowerwash);
 
-            assertFalse(page.$.relaunchContainer.hidden);
+            assertFalse(page.$.relaunch.hidden);
             assertTrue(page.$.relaunchAndPowerwash.hidden);
 
             MockInteractions.tap(page.$.relaunch);
@@ -440,15 +445,15 @@ cr.define('settings_about_page', function() {
           aboutBrowserProxy.setUpdateStatus(UpdateStatus.NEARLY_UPDATED);
 
           return initNewPage().then(function() {
-            assertFalse(page.$.relaunchContainer.hidden);
+            assertFalse(page.$.relaunch.hidden);
             assertTrue(page.$.relaunchAndPowerwash.hidden);
 
             page.fire('target-channel-changed', BrowserChannel.DEV);
-            assertFalse(page.$.relaunchContainer.hidden);
+            assertFalse(page.$.relaunch.hidden);
             assertTrue(page.$.relaunchAndPowerwash.hidden);
 
             page.fire('target-channel-changed', BrowserChannel.STABLE);
-            assertTrue(page.$.relaunchContainer.hidden);
+            assertTrue(page.$.relaunch.hidden);
             assertFalse(page.$.relaunchAndPowerwash.hidden);
           });
         });
@@ -494,29 +499,29 @@ cr.define('settings_about_page', function() {
          * 'update-status-changed' events.
          */
         test('ButtonsUpdate', function() {
-          var relaunchContainer = page.$.relaunchContainer;
-          assertTrue(!!relaunchContainer);
+          var relaunch = page.$.relaunch;
+          assertTrue(!!relaunch);
 
           fireStatusChanged(UpdateStatus.CHECKING);
-          assertTrue(relaunchContainer.hidden);
+          assertTrue(relaunch.hidden);
 
           fireStatusChanged(UpdateStatus.UPDATING);
-          assertTrue(relaunchContainer.hidden);
+          assertTrue(relaunch.hidden);
 
           fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
-          assertFalse(relaunchContainer.hidden);
+          assertFalse(relaunch.hidden);
 
           fireStatusChanged(UpdateStatus.UPDATED);
-          assertTrue(relaunchContainer.hidden);
+          assertTrue(relaunch.hidden);
 
           fireStatusChanged(UpdateStatus.FAILED);
-          assertTrue(relaunchContainer.hidden);
+          assertTrue(relaunch.hidden);
 
           fireStatusChanged(UpdateStatus.DISABLED);
-          assertTrue(relaunchContainer.hidden);
+          assertTrue(relaunch.hidden);
 
           fireStatusChanged(UpdateStatus.DISABLED_BY_ADMIN);
-          assertTrue(relaunchContainer.hidden);
+          assertTrue(relaunch.hidden);
         });
       }
 
