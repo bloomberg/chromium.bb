@@ -12,6 +12,7 @@
 #include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "build/build_config.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
@@ -178,11 +179,12 @@ void LauncherContextMenu::AddPinMenu() {
 }
 
 void LauncherContextMenu::AddShelfOptionsMenu() {
-  // In fullscreen, the launcher is either hidden or autohidden depending
-  // on thethe type of fullscreen. Do not show the auto-hide menu item while in
-  // while in fullscreen because it is confusing when the preference appears
+  // In fullscreen, the launcher is either hidden or auto hidden depending
+  // on the type of fullscreen. Do not show the auto-hide menu item while in
+  // fullscreen per display because it is confusing when the preference appears
   // not to apply.
-  if (!IsFullScreenMode() &&
+  int64_t display_id = wm_shelf_->GetWindow()->GetDisplayNearestWindow().id();
+  if (!IsFullScreenMode(display_id) &&
       CanUserModifyShelfAutoHideBehavior(controller_->profile())) {
     AddCheckItemWithStringId(MENU_AUTO_HIDE,
                              IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);

@@ -85,6 +85,8 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
                            ArcLauncherContextMenuItemCheck);
   FRIEND_TEST_ALL_PREFIXES(LauncherContextMenuTest,
                            DesktopShellLauncherContextMenuVerifyCloseItem);
+  FRIEND_TEST_ALL_PREFIXES(LauncherContextMenuTest,
+                           AutohideShelfOptionOnExternalDisplay);
   FRIEND_TEST_ALL_PREFIXES(ShelfAppBrowserTest,
                            LauncherContextMenuVerifyCloseItemAppearance);
 

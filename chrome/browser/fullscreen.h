@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_FULLSCREEN_H_
 #define CHROME_BROWSER_FULLSCREEN_H_
 
+#include <stdint.h>
+
 #include "build/build_config.h"
 
-bool IsFullScreenMode();
+// |display_id| is used in USE_ASH build config only, ignored otherwise.
+bool IsFullScreenMode(int64_t display_id);
 
 #endif  // CHROME_BROWSER_FULLSCREEN_H_

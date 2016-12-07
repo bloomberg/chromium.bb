@@ -5,17 +5,26 @@
 #include "chrome/browser/fullscreen.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
-bool IsFullScreenMode() {
+bool IsFullScreenMode(int64_t display_id) {
   if (chrome::IsRunningInMash()) {
     // TODO: http://crbug.com/640390.
     NOTIMPLEMENTED();
     return false;
   }
-  // TODO(oshima): Fullscreen is per display state. Investigate
-  // and fix if necessary.
-  ash::RootWindowController* controller =
-      ash::RootWindowController::ForTargetRootWindow();
-  return controller && controller->GetWindowForFullscreenMode();
+
+  for (ash::RootWindowController* controller :
+       ash::Shell::GetInstance()->GetAllRootWindowControllers()) {
+    if (display::Screen::GetScreen()
+            ->GetDisplayNearestWindow(controller->GetRootWindow())
+            .id() == display_id) {
+      return controller && controller->GetWindowForFullscreenMode();
+    }
+  }
+
+  return false;
 }

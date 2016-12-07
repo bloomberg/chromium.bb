@@ -11,10 +11,6 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 
-#if defined(USE_ASH)
-#include "ash/root_window_controller.h"
-#endif
-
 static bool IsPlatformFullScreenMode() {
   // SHQueryUserNotificationState is only available for Vista and above.
 #if defined(NTDDI_VERSION) && (NTDDI_VERSION >= NTDDI_VISTA)
@@ -100,14 +96,8 @@ static bool IsFullScreenConsoleMode() {
   return (modes & (CONSOLE_FULLSCREEN | CONSOLE_FULLSCREEN_HARDWARE)) != 0;
 }
 
-bool IsFullScreenMode() {
-#if defined(USE_ASH)
-  ash::RootWindowController* controller =
-      ash::RootWindowController::ForTargetRootWindow();
-  return controller && controller->GetWindowForFullscreenMode();
-#else
+bool IsFullScreenMode(int64_t display_id) {
   return IsPlatformFullScreenMode() ||
          IsFullScreenWindowMode() ||
          IsFullScreenConsoleMode();
-#endif  // USE_ASH
 }

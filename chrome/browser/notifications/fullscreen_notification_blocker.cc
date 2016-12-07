@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/fullscreen.h"
 #include "content/public/browser/notification_service.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/message_center/notifier_settings.h"
 
 #if defined(USE_ASH)
@@ -45,8 +46,8 @@ bool DoesFullscreenModeBlockNotifications() {
         ->hide_shelf_when_fullscreen();
   }
 #endif
-
-  return IsFullScreenMode();
+  // Fullscreen is global state on platforms other than chromeos.
+  return IsFullScreenMode(display::kInvalidDisplayId);
 }
 
 }  // namespace

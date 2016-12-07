@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 
-bool IsFullScreenMode() {
+bool IsFullScreenMode(int64_t display_id) {
   NSApplicationPresentationOptions options =
       [NSApp currentSystemPresentationOptions];
 

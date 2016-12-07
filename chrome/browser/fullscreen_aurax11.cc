@@ -6,17 +6,11 @@
 
 #include <vector>
 
-#include "ash/root_window_controller.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #include "ui/views/widget/widget.h"
 
-bool IsFullScreenMode() {
-#if defined(USE_ASH)
-  ash::RootWindowController* controller =
-      ash::RootWindowController::ForTargetRootWindow();
-  return controller && controller->GetWindowForFullscreenMode();
-#else
+bool IsFullScreenMode(int64_t display_id) {
   std::vector<aura::Window*> all_windows =
       views::DesktopWindowTreeHostX11::GetAllOpenWindows();
   // Only the topmost window is checked. This works fine in the most cases, but
@@ -28,5 +22,4 @@ bool IsFullScreenMode() {
   views::Widget* widget =
       views::Widget::GetWidgetForNativeWindow(all_windows[0]);
   return widget && widget->IsFullscreen();
-#endif  // USE_ASH
 }
