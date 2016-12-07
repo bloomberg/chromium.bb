@@ -13,6 +13,7 @@ from distutils.version import LooseVersion
 from multiprocessing.pool import ThreadPool
 import base64
 import collections
+import fnmatch
 import httplib
 import json
 import logging
@@ -22,6 +23,7 @@ import os
 import re
 import stat
 import sys
+import tempfile
 import textwrap
 import traceback
 import urllib
@@ -1037,6 +1039,129 @@ def ShouldGenerateGitNumberFooters():
   keyvals = gclient_utils.ParseCodereviewSettingsContent(
       cr_settings_file.read())
   return keyvals.get('GENERATE_GIT_NUMBER_FOOTERS', '').lower() == 'true'
+
+
+class _GitNumbererState(object):
+  KNOWN_PROJECTS_WHITELIST = [
+      'chromium/src',
+      'external/webrtc',
+      'v8/v8',
+  ]
+
+  @classmethod
+  def load(cls, remote_url, remote_ref):
+    """Figures out the state by fetching special refs from remote repo.
+    """
+    assert remote_ref and remote_ref.startswith('refs/'), remote_ref
+    url_parts = urlparse.urlparse(remote_url)
+    project_name = url_parts.path.lstrip('/').rstrip('git./')
+    for known in cls.KNOWN_PROJECTS_WHITELIST:
+      if project_name.endswith(known):
+        break
+    else:
+      # Early exit to avoid extra fetches for repos that aren't using gnumbd.
+      return cls(cls._get_pending_prefix_fallback(), None)
+
+    # This pollutes local ref space, but the amount of objects is neglible.
+    error, _ = cls._run_git_with_code([
+        'fetch', remote_url,
+        '+refs/meta/config:refs/git_cl/meta/config',
+        '+refs/gnumbd-config/main:refs/git_cl/gnumbd-config/main'])
+    if error:
+      # Some ref doesn't exist or isn't accessible to current user.
+      # This shouldn't happen on production KNOWN_PROJECTS_WHITELIST
+      # with git-numberer.
+      cls._warn('failed to fetch gnumbd and project config for %s: %s',
+                remote_url, error)
+      return cls(cls._get_pending_prefix_fallback(), None)
+    return cls(cls._get_pending_prefix(remote_ref),
+               cls._is_validator_enabled(remote_ref))
+
+  @classmethod
+  def _get_pending_prefix(cls, ref):
+    error, gnumbd_config_data = cls._run_git_with_code(
+        ['show', 'refs/git_cl/gnumbd-config/main:config.json'])
+    if error:
+      cls._warn('gnumbd config file not found')
+      return cls._get_pending_prefix_fallback()
+
+    try:
+      config = json.loads(gnumbd_config_data)
+      if cls.match_refglobs(ref, config['enabled_refglobs']):
+        return config['pending_ref_prefix']
+      return None
+    except KeyboardInterrupt:
+      raise
+    except Exception as e:
+      cls._warn('failed to parse gnumbd config: %s', e)
+      return cls._get_pending_prefix_fallback()
+
+  @staticmethod
+  def _get_pending_prefix_fallback():
+    global settings
+    if not settings:
+      settings = Settings()
+    return settings.GetPendingRefPrefix()
+
+  @classmethod
+  def _is_validator_enabled(cls, ref):
+    error, project_config_data = cls._run_git_with_code(
+        ['show', 'refs/git_cl/meta/config:project.config'])
+    if error:
+      cls._warn('project.config file not found')
+      return False
+    # Gerrit's project.config is really a git config file.
+    # So, parse it as such.
+    with tempfile.NamedTemporaryFile(prefix='git_cl_proj_config') as f:
+      f.write(project_config_data)
+      # Make sure OS sees this, but don't close the file just yet,
+      # as NamedTemporaryFile deletes it on closing.
+      f.flush()
+
+      def get_opts(x):
+        code, out = cls._run_git_with_code(
+            ['config', '-f', f.name, '--get-all',
+             'plugin.git-numberer.validate-%s-refglob' % x])
+        if code == 0:
+          return out.strip().splitlines()
+        return []
+      enabled, disabled = map(get_opts, ['enabled', 'disabled'])
+
+    if cls.match_refglobs(ref, disabled):
+      return False
+    return cls.match_refglobs(ref, enabled)
+
+  @staticmethod
+  def match_refglobs(ref, refglobs):
+    for refglob in refglobs:
+      if ref == refglob or fnmatch.fnmatch(ref, refglob):
+        return True
+    return False
+
+  @staticmethod
+  def _run_git_with_code(*args, **kwargs):
+    # The only reason for this wrapper is easy porting of this code to CQ
+    # codebase, which forked git_cl.py and checkouts.py long time ago.
+    return RunGitWithCode(*args, **kwargs)
+
+  @staticmethod
+  def _warn(msg, *args):
+    if args:
+      msg = msg % args
+    print('WARNING: %s' % msg)
+
+  def __init__(self, pending_prefix, validator_enabled):
+    # TODO(tandrii): remove pending_prefix after gnumbd is no more.
+    self._pending_prefix = pending_prefix or None
+    self._validator_enabled = validator_enabled or False
+
+  @property
+  def pending_prefix(self):
+    return self._pending_prefix
+
+  @property
+  def should_git_number(self):
+    return self._validator_enabled and self._pending_prefix is None
 
 
 def ShortBranchName(branch):

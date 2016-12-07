@@ -5,6 +5,7 @@
 
 """Unit tests for git_cl.py."""
 
+import contextlib
 import json
 import os
 import StringIO
@@ -1164,6 +1165,108 @@ class TestGitCl(TestCase):
 
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: None)
     self.assertFalse(git_cl.ShouldGenerateGitNumberFooters())
+
+  def test_GitNumbererState_not_whitelisted_repo(self):
+    self.calls = [
+        ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+        ((['git', 'config', 'rietveld.pending-ref-prefix'],), CERR1),
+    ]
+    res = git_cl._GitNumbererState.load(
+        remote_url='https://chromium.googlesource.com/chromium/tools/build',
+        remote_ref='refs/whatever')
+    self.assertEqual(res.pending_prefix, None)
+    self.assertEqual(res.should_git_number, False)
+
+  def test_GitNumbererState_fail_fetch(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+    self.calls = [
+        ((['git', 'fetch', 'https://chromium.googlesource.com/chromium/src',
+           '+refs/meta/config:refs/git_cl/meta/config',
+           '+refs/gnumbd-config/main:refs/git_cl/gnumbd-config/main'],), CERR1),
+        ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+        ((['git', 'config', 'rietveld.pending-ref-prefix'],),
+         'refs/pending-prefix'),
+    ]
+    res = git_cl._GitNumbererState.load(
+        remote_url='https://chromium.googlesource.com/chromium/src',
+        remote_ref='refs/whatever')
+    self.assertEqual(res.pending_prefix, 'refs/pending-prefix')
+    self.assertEqual(res.should_git_number, False)
+
+  def test_GitNumbererState_fail_gnumbd_and_validator(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+    self.calls = [
+        ((['git', 'fetch', 'https://chromium.googlesource.com/chromium/src',
+           '+refs/meta/config:refs/git_cl/meta/config',
+           '+refs/gnumbd-config/main:refs/git_cl/gnumbd-config/main'],), ''),
+        ((['git', 'show', 'refs/git_cl/gnumbd-config/main:config.json'],),
+         'ba d conig'),
+        ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+        ((['git', 'config', 'rietveld.pending-ref-prefix'],), CERR1),
+        ((['git', 'show', 'refs/git_cl/meta/config:project.config'],), CERR1),
+    ]
+    res = git_cl._GitNumbererState.load(
+        remote_url='https://chromium.googlesource.com/chromium/src',
+        remote_ref='refs/whatever')
+    self.assertEqual(res.pending_prefix, None)
+    self.assertEqual(res.should_git_number, False)
+
+  def test_GitNumbererState_valid_configs(self):
+    class NamedTempFileStab(StringIO.StringIO):
+      @classmethod
+      @contextlib.contextmanager
+      def create(cls, *_, **__):
+        yield cls()
+      name = 'tempfile'
+    self.mock(git_cl.tempfile, 'NamedTemporaryFile', NamedTempFileStab.create)
+    self.calls = [
+        ((['git', 'fetch', 'https://chromium.googlesource.com/chromium/src',
+           '+refs/meta/config:refs/git_cl/meta/config',
+           '+refs/gnumbd-config/main:refs/git_cl/gnumbd-config/main'],), ''),
+        ((['git', 'show', 'refs/git_cl/gnumbd-config/main:config.json'],),
+         '''{
+              "pending_tag_prefix": "refs/pending-tags",
+              "pending_ref_prefix": "refs/pending",
+              "enabled_refglobs": [
+                "refs/heads/m*"
+              ]
+            }
+         '''),
+        ((['git', 'show', 'refs/git_cl/meta/config:project.config'],),
+         '''
+          [plugin "git-numberer"]
+            validate-enabled-refglob = refs/else/*
+            validate-enabled-refglob = refs/heads/*
+            validate-disabled-refglob = refs/heads/disabled
+            validate-disabled-refglob = refs/branch-heads/*
+         '''),
+        ((['git', 'config', '-f', 'tempfile', '--get-all',
+           'plugin.git-numberer.validate-enabled-refglob'],),
+         'refs/else/*\n'
+         'refs/heads/*\n'),
+        ((['git', 'config', '-f', 'tempfile', '--get-all',
+           'plugin.git-numberer.validate-disabled-refglob'],),
+         'refs/heads/disabled\n'
+         'refs/branch-heads/*\n'),
+    ] * 3  # 3 tests below have exactly same IO.
+
+    res = git_cl._GitNumbererState.load(
+        remote_url='https://chromium.googlesource.com/chromium/src',
+        remote_ref='refs/heads/master')
+    self.assertEqual(res.pending_prefix, 'refs/pending')
+    self.assertEqual(res.should_git_number, False)
+
+    res = git_cl._GitNumbererState.load(
+        remote_url='https://chromium.googlesource.com/chromium/src',
+        remote_ref='refs/heads/test')
+    self.assertEqual(res.pending_prefix, None)
+    self.assertEqual(res.should_git_number, True)
+
+    res = git_cl._GitNumbererState.load(
+        remote_url='https://chromium.googlesource.com/chromium/src',
+        remote_ref='refs/heads/disabled')
+    self.assertEqual(res.pending_prefix, None)
+    self.assertEqual(res.should_git_number, False)
 
   @classmethod
   def _gerrit_ensure_auth_calls(cls, issue=None, skip_auth_check=False):
