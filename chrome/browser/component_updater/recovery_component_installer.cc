@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
+#include "base/task_scheduler/post_task.h"
 #if defined(OS_MACOSX)
 #include "base/mac/authorization_util.h"
 #include "base/mac/scoped_authorizationref.h"
@@ -27,7 +28,6 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
-#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -224,17 +224,23 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
   }
   base::Process process = base::Process::Open(pid);
 #endif
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&WaitForElevatedInstallToComplete, base::Passed(&process)),
-      true);
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithWait(),
+      base::Bind(&WaitForElevatedInstallToComplete, base::Passed(&process)));
 }
 
 void ElevatedInstallRecoveryComponent(const base::FilePath& installer_path) {
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&DoElevatedInstallRecoveryComponent, installer_path),
-      true);
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithFileIO(),
+      base::Bind(&DoElevatedInstallRecoveryComponent, installer_path));
 }
 #endif  // defined(OS_WIN)
 
@@ -365,11 +371,14 @@ bool RecoveryComponentInstaller::RunInstallCommand(
     return false;
 
   // Let worker pool thread wait for us so we don't block Chrome shutdown.
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&WaitForInstallToComplete,
-                 base::Passed(&process), installer_folder, prefs_),
-      true);
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithWait(),
+      base::Bind(&WaitForInstallToComplete, base::Passed(&process),
+                 installer_folder, prefs_));
 
   // Returns true regardless of install result since from updater service
   // perspective the install is done, even we may need to do elevated
