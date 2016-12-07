@@ -310,10 +310,14 @@ PanelNodeMenu.prototype = {
         var range = cursors.Range.fromNode(node);
         output.withSpeech(range, range, Output.EventType.NAVIGATE);
         var label = output.toString();
-        this.addMenuItem(label, '', '', function() {
-          chrome.extension.getBackgroundPage().ChromeVoxState
-              .instance['navigateToRange'](cursors.Range.fromNode(node));
-        });
+        this.addMenuItem(label, '', '', (function() {
+          var savedNode = node;
+          return function() {
+            chrome.extension.getBackgroundPage().ChromeVoxState
+                .instance['navigateToRange'](cursors.Range.fromNode(savedNode));
+          };
+        }()));
+
         if (this.selectNext_) {
           this.activateItem(this.items_.length - 1);
           this.selectNext_ = false;
