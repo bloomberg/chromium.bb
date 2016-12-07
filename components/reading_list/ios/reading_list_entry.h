@@ -72,6 +72,10 @@ class ReadingListEntry {
   // Jan 1st 1970.
   int64_t CreationTime() const;
 
+  // The time when the entry was read for the first time. The value is in
+  // microseconds since Jan 1st 1970.
+  int64_t FirstReadTime() const;
+
   // Set the update time to now.
   void MarkEntryUpdated();
 
@@ -120,6 +124,7 @@ class ReadingListEntry {
                    const std::string& title,
                    State state,
                    int64_t creation_time,
+                   int64_t first_read_time,
                    int64_t update_time,
                    ReadingListEntry::DistillationState distilled_state,
                    const base::FilePath& distilled_path,
@@ -138,6 +143,7 @@ class ReadingListEntry {
   // sorting the entries from the database. They are kept in int64_t to avoid
   // conversion on each save/read event.
   int64_t creation_time_us_;
+  int64_t first_read_time_us_;
   int64_t update_time_us_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListEntry);

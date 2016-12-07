@@ -49,6 +49,7 @@ ReadingListEntry::ReadingListEntry(const GURL& url,
                        UNSEEN,
                        0,
                        0,
+                       0,
                        WAITING,
                        base::FilePath(),
                        0,
@@ -59,6 +60,7 @@ ReadingListEntry::ReadingListEntry(
     const std::string& title,
     State state,
     int64_t creation_time,
+    int64_t first_read_time,
     int64_t update_time,
     ReadingListEntry::DistillationState distilled_state,
     const base::FilePath& distilled_path,
@@ -71,6 +73,7 @@ ReadingListEntry::ReadingListEntry(
       distilled_state_(distilled_state),
       failed_download_counter_(failed_download_counter),
       creation_time_us_(creation_time),
+      first_read_time_us_(first_read_time),
       update_time_us_(update_time) {
   if (backoff) {
     backoff_ = std::move(backoff);
@@ -96,6 +99,7 @@ ReadingListEntry::ReadingListEntry(ReadingListEntry&& entry)
       backoff_(std::move(entry.backoff_)),
       failed_download_counter_(std::move(entry.failed_download_counter_)),
       creation_time_us_(std::move(entry.creation_time_us_)),
+      first_read_time_us_(std::move(entry.first_read_time_us_)),
       update_time_us_(std::move(entry.update_time_us_)) {}
 
 ReadingListEntry::~ReadingListEntry() {}
@@ -133,6 +137,7 @@ ReadingListEntry& ReadingListEntry::operator=(ReadingListEntry&& other) {
   state_ = std::move(other.state_);
   failed_download_counter_ = std::move(other.failed_download_counter_);
   creation_time_us_ = std::move(other.creation_time_us_);
+  first_read_time_us_ = std::move(other.first_read_time_us_);
   update_time_us_ = std::move(other.update_time_us_);
   return *this;
 }
@@ -147,6 +152,10 @@ void ReadingListEntry::SetTitle(const std::string& title) {
 
 void ReadingListEntry::SetRead(bool read) {
   state_ = read ? READ : UNREAD;
+  if (FirstReadTime() == 0 && read) {
+    first_read_time_us_ =
+        (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
+  }
   MarkEntryUpdated();
 }
 
@@ -189,6 +198,10 @@ int64_t ReadingListEntry::CreationTime() const {
   return creation_time_us_;
 }
 
+int64_t ReadingListEntry::FirstReadTime() const {
+  return first_read_time_us_;
+}
+
 void ReadingListEntry::MarkEntryUpdated() {
   update_time_us_ =
       (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
@@ -212,6 +225,11 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
   int64_t creation_time_us = 0;
   if (pb_entry.has_creation_time_us()) {
     creation_time_us = pb_entry.creation_time_us();
+  }
+
+  int64_t first_read_time_us = 0;
+  if (pb_entry.has_first_read_time_us()) {
+    first_read_time_us = pb_entry.first_read_time_us();
   }
 
   int64_t update_time_us = 0;
@@ -278,8 +296,9 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
   }
 
   return base::WrapUnique<ReadingListEntry>(new ReadingListEntry(
-      url, title, state, creation_time_us, update_time_us, distillation_state,
-      distilled_path, failed_download_counter, std::move(backoff)));
+      url, title, state, creation_time_us, first_read_time_us, update_time_us,
+      distillation_state, distilled_path, failed_download_counter,
+      std::move(backoff)));
 }
 
 // static
@@ -302,6 +321,11 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
     creation_time_us = pb_entry.creation_time_us();
   }
 
+  int64_t first_read_time_us = 0;
+  if (pb_entry.has_first_read_time_us()) {
+    creation_time_us = pb_entry.first_read_time_us();
+  }
+
   int64_t update_time_us = 0;
   if (pb_entry.has_update_time_us()) {
     update_time_us = pb_entry.update_time_us();
@@ -322,9 +346,9 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
     }
   }
 
-  return base::WrapUnique<ReadingListEntry>(
-      new ReadingListEntry(url, title, state, creation_time_us, update_time_us,
-                           WAITING, base::FilePath(), 0, nullptr));
+  return base::WrapUnique<ReadingListEntry>(new ReadingListEntry(
+      url, title, state, creation_time_us, first_read_time_us, update_time_us,
+      WAITING, base::FilePath(), 0, nullptr));
 }
 
 void ReadingListEntry::MergeLocalStateFrom(ReadingListEntry& other) {
@@ -345,6 +369,7 @@ ReadingListEntry::AsReadingListLocal() const {
   pb_entry->set_title(Title());
   pb_entry->set_url(URL().spec());
   pb_entry->set_creation_time_us(CreationTime());
+  pb_entry->set_first_read_time_us(FirstReadTime());
   pb_entry->set_update_time_us(UpdateTime());
 
   switch (state_) {
@@ -407,6 +432,7 @@ ReadingListEntry::AsReadingListSpecifics() const {
   pb_entry->set_title(Title());
   pb_entry->set_url(URL().spec());
   pb_entry->set_creation_time_us(CreationTime());
+  pb_entry->set_first_read_time_us(FirstReadTime());
   pb_entry->set_update_time_us(UpdateTime());
 
   switch (state_) {
