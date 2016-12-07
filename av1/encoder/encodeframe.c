@@ -266,8 +266,6 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
   MACROBLOCKD *const xd = &x->e_mbd;
   const int mi_width = mi_size_wide[bsize];
   const int mi_height = mi_size_high[bsize];
-  const int bwl = b_width_log2_lookup[AOMMAX(bsize, BLOCK_8X8)];
-  const int bhl = b_height_log2_lookup[AOMMAX(bsize, BLOCK_8X8)];
 
   set_skip_context(xd, mi_row, mi_col);
 
@@ -290,7 +288,7 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
   x->mv_row_max = (cm->mi_rows - mi_row) * MI_SIZE + AOM_INTERP_EXTEND;
   x->mv_col_max = (cm->mi_cols - mi_col) * MI_SIZE + AOM_INTERP_EXTEND;
 
-  set_plane_n4(xd, mi_width, mi_height, bwl, bhl);
+  set_plane_n4(xd, mi_width, mi_height);
 
   // Set up distance of MB to edge of frame in 1/8th pel units.
   assert(!(mi_col & (mi_width - 1)) && !(mi_row & (mi_height - 1)));

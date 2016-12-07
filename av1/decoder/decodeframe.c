@@ -601,8 +601,7 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 
 static MB_MODE_INFO *set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  BLOCK_SIZE bsize, int mi_row, int mi_col,
-                                 int bw, int bh, int x_mis, int y_mis, int bwl,
-                                 int bhl) {
+                                 int bw, int bh, int x_mis, int y_mis) {
   const int offset = mi_row * cm->mi_stride + mi_col;
   int x, y;
   const TileInfo *const tile = &xd->tile;
@@ -619,7 +618,7 @@ static MB_MODE_INFO *set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   for (y = 0; y < y_mis; ++y)
     for (x = !y; x < x_mis; ++x) xd->mi[y * cm->mi_stride + x] = xd->mi[0];
 
-  set_plane_n4(xd, bw, bh, bwl, bhl);
+  set_plane_n4(xd, bw, bh);
   set_skip_context(xd, mi_row, mi_col);
 
 #if CONFIG_VAR_TX
@@ -647,8 +646,6 @@ static MB_MODE_INFO *set_offsets_extend(AV1_COMMON *const cm,
   const int bw = num_8x8_blocks_wide_lookup[bsize_pred];
   const int bh = num_8x8_blocks_high_lookup[bsize_pred];
   const int offset = mi_row_ori * cm->mi_stride + mi_col_ori;
-  const int bwl = b_width_log2_lookup[bsize_pred];
-  const int bhl = b_height_log2_lookup[bsize_pred];
   xd->mi = cm->mi_grid_visible + offset;
   xd->mi[0] = cm->mi + offset;
   set_mi_row_col(xd, tile, mi_row_pred, bh, mi_col_pred, bw, cm->mi_rows,
@@ -657,7 +654,7 @@ static MB_MODE_INFO *set_offsets_extend(AV1_COMMON *const cm,
   xd->up_available = (mi_row_ori > tile->mi_row_start);
   xd->left_available = (mi_col_ori > tile->mi_col_start);
 
-  set_plane_n4(xd, bw, bh, bwl, bhl);
+  set_plane_n4(xd, bw, bh);
 
   return &xd->mi[0]->mbmi;
 }
@@ -685,13 +682,11 @@ static void set_offsets_topblock(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const int bw = num_8x8_blocks_wide_lookup[bsize];
   const int bh = num_8x8_blocks_high_lookup[bsize];
   const int offset = mi_row * cm->mi_stride + mi_col;
-  const int bwl = b_width_log2_lookup[bsize];
-  const int bhl = b_height_log2_lookup[bsize];
 
   xd->mi = cm->mi_grid_visible + offset;
   xd->mi[0] = cm->mi + offset;
 
-  set_plane_n4(xd, bw, bh, bwl, bhl);
+  set_plane_n4(xd, bw, bh);
 
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
 
@@ -1360,7 +1355,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_EXT_PARTITION_TYPES
                          PARTITION_TYPE partition,
 #endif  // CONFIG_EXT_PARTITION_TYPES
-                         BLOCK_SIZE bsize, int bwl, int bhl) {
+                         BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
@@ -1375,16 +1370,14 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   if (supertx_enabled) {
     mbmi = set_mb_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
   } else {
-    mbmi = set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis, bwl,
-                       bhl);
+    mbmi = set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
   }
 #if CONFIG_EXT_PARTITION_TYPES
   xd->mi[0]->mbmi.partition = partition;
 #endif
   av1_read_mode_info(pbi, xd, supertx_enabled, mi_row, mi_col, r, x_mis, y_mis);
 #else
-  mbmi = set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis, bwl,
-                     bhl);
+  mbmi = set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
 #if CONFIG_EXT_PARTITION_TYPES
   xd->mi[0]->mbmi.partition = partition;
 #endif
@@ -1814,7 +1807,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_EXT_PARTITION_TYPES
                  partition,
 #endif  // CONFIG_EXT_PARTITION_TYPES
-                 subsize, 1, 1);
+                 subsize);
   } else {
     switch (partition) {
       case PARTITION_NONE:
@@ -1826,7 +1819,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_EXT_PARTITION_TYPES
                      partition,
 #endif  // CONFIG_EXT_PARTITION_TYPES
-                     subsize, n4x4_l2, n4x4_l2);
+                     subsize);
         break;
       case PARTITION_HORZ:
         decode_block(pbi, xd,
@@ -1837,7 +1830,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_EXT_PARTITION_TYPES
                      partition,
 #endif  // CONFIG_EXT_PARTITION_TYPES
-                     subsize, n4x4_l2, n8x8_l2);
+                     subsize);
         if (has_rows)
           decode_block(pbi, xd,
 #if CONFIG_SUPERTX
@@ -1847,7 +1840,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_EXT_PARTITION_TYPES
                        partition,
 #endif  // CONFIG_EXT_PARTITION_TYPES
-                       subsize, n4x4_l2, n8x8_l2);
+                       subsize);
         break;
       case PARTITION_VERT:
         decode_block(pbi, xd,
@@ -1858,7 +1851,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_EXT_PARTITION_TYPES
                      partition,
 #endif  // CONFIG_EXT_PARTITION_TYPES
-                     subsize, n8x8_l2, n4x4_l2);
+                     subsize);
         if (has_cols)
           decode_block(pbi, xd,
 #if CONFIG_SUPERTX
@@ -1868,7 +1861,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_EXT_PARTITION_TYPES
                        partition,
 #endif  // CONFIG_EXT_PARTITION_TYPES
-                       subsize, n8x8_l2, n4x4_l2);
+                       subsize);
         break;
       case PARTITION_SPLIT:
         decode_partition(pbi, xd,
@@ -1898,76 +1891,68 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row, mi_col, r, partition, bsize2, n8x8_l2, n8x8_l2);
+                     mi_row, mi_col, r, partition, bsize2);
         decode_block(pbi, xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row, mi_col + hbs, r, partition, bsize2, n8x8_l2,
-                     n8x8_l2);
+                     mi_row, mi_col + hbs, r, partition, bsize2);
         decode_block(pbi, xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row + hbs, mi_col, r, partition, subsize, n4x4_l2,
-                     n8x8_l2);
+                     mi_row + hbs, mi_col, r, partition, subsize);
         break;
       case PARTITION_HORZ_B:
         decode_block(pbi, xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row, mi_col, r, partition, subsize, n4x4_l2, n8x8_l2);
+                     mi_row, mi_col, r, partition, subsize);
         decode_block(pbi, xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row + hbs, mi_col, r, partition, bsize2, n8x8_l2,
-                     n8x8_l2);
+                     mi_row + hbs, mi_col, r, partition, bsize2);
         decode_block(pbi, xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row + hbs, mi_col + hbs, r, partition, bsize2, n8x8_l2,
-                     n8x8_l2);
+                     mi_row + hbs, mi_col + hbs, r, partition, bsize2);
         break;
       case PARTITION_VERT_A:
         decode_block(pbi, xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row, mi_col, r, partition, bsize2, n8x8_l2, n8x8_l2);
+                     mi_row, mi_col, r, partition, bsize2);
         decode_block(pbi, xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row + hbs, mi_col, r, partition, bsize2, n8x8_l2,
-                     n8x8_l2);
+                     mi_row + hbs, mi_col, r, partition, bsize2);
         decode_block(pbi, xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row, mi_col + hbs, r, partition, subsize, n8x8_l2,
-                     n4x4_l2);
+                     mi_row, mi_col + hbs, r, partition, subsize);
         break;
       case PARTITION_VERT_B:
         decode_block(pbi, xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row, mi_col, r, partition, subsize, n8x8_l2, n4x4_l2);
+                     mi_row, mi_col, r, partition, subsize);
         decode_block(pbi, xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row, mi_col + hbs, r, partition, bsize2, n8x8_l2,
-                     n8x8_l2);
+                     mi_row, mi_col + hbs, r, partition, bsize2);
         decode_block(pbi, xd,
 #if CONFIG_SUPERTX
                      supertx_enabled,
 #endif
-                     mi_row + hbs, mi_col + hbs, r, partition, bsize2, n8x8_l2,
-                     n8x8_l2);
+                     mi_row + hbs, mi_col + hbs, r, partition, bsize2);
         break;
 #endif
       default: assert(0 && "Invalid partition type");
