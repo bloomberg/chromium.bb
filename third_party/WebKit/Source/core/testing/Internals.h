@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -78,18 +77,15 @@ template <typename NodeType>
 class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
 
-class Internals final : public GarbageCollectedFinalized<Internals>,
+class Internals final : public GarbageCollected<Internals>,
                         public ScriptWrappable,
-                        public ContextLifecycleObserver,
                         public ValueIterable<int> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Internals);
 
  public:
   static Internals* create(ExecutionContext* context) {
     return new Internals(context);
   }
-  virtual ~Internals();
 
   static void resetToConsistentState(Page*);
 
@@ -543,6 +539,7 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
                            unsigned index,
                            ExceptionState&);
   Member<InternalRuntimeFlags> m_runtimeFlags;
+  Member<Document> m_document;
 
   IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 };

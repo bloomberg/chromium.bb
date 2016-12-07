@@ -218,8 +218,6 @@ static ScrollableArea* scrollableAreaForNode(Node* node) {
   return toLayoutBox(layoutObject)->getScrollableArea();
 }
 
-Internals::~Internals() {}
-
 static RuntimeEnabledFeatures::Backup* sFeaturesBackup = nullptr;
 
 void Internals::resetToConsistentState(Page* page) {
@@ -252,26 +250,21 @@ void Internals::resetToConsistentState(Page* page) {
 }
 
 Internals::Internals(ExecutionContext* context)
-    : ContextLifecycleObserver(context),
-      m_runtimeFlags(InternalRuntimeFlags::create()) {
-  contextDocument()->fetcher()->enableIsPreloadedForTest();
-}
-
-Document* Internals::contextDocument() const {
-  return toDocument(getExecutionContext());
+    : m_runtimeFlags(InternalRuntimeFlags::create()),
+      m_document(toDocument(context)) {
+  m_document->fetcher()->enableIsPreloadedForTest();
 }
 
 LocalFrame* Internals::frame() const {
-  if (!contextDocument())
-    return 0;
-  return contextDocument()->frame();
+  if (!m_document)
+    return nullptr;
+  return m_document->frame();
 }
 
 InternalSettings* Internals::settings() const {
-  Document* document = contextDocument();
-  if (!document)
+  if (!m_document)
     return 0;
-  Page* page = document->page();
+  Page* page = m_document->page();
   if (!page)
     return 0;
   return InternalSettings::from(*page);
@@ -306,16 +299,15 @@ GCObservation* Internals::observeGC(ScriptValue scriptValue) {
 
 unsigned Internals::updateStyleAndReturnAffectedElementCount(
     ExceptionState& exceptionState) const {
-  Document* document = contextDocument();
-  if (!document) {
+  if (!m_document) {
     exceptionState.throwDOMException(InvalidAccessError,
                                      "No context document is available.");
     return 0;
   }
 
-  unsigned beforeCount = document->styleEngine().styleForElementCount();
-  document->updateStyleAndLayoutTree();
-  return document->styleEngine().styleForElementCount() - beforeCount;
+  unsigned beforeCount = m_document->styleEngine().styleForElementCount();
+  m_document->updateStyleAndLayoutTree();
+  return m_document->styleEngine().styleForElementCount() - beforeCount;
 }
 
 unsigned Internals::needsLayoutCount(ExceptionState& exceptionState) const {
@@ -398,7 +390,7 @@ void Internals::clearHitTestCache(Document* doc,
 }
 
 bool Internals::isPreloaded(const String& url) {
-  return isPreloadedBy(url, contextDocument());
+  return isPreloadedBy(url, m_document);
 }
 
 bool Internals::isPreloadedBy(const String& url, Document* document) {
@@ -408,24 +400,22 @@ bool Internals::isPreloadedBy(const String& url, Document* document) {
 }
 
 bool Internals::isLoading(const String& url) {
-  if (!contextDocument())
+  if (!m_document)
     return false;
-  const String cacheIdentifier =
-      contextDocument()->fetcher()->getCacheIdentifier();
+  const String cacheIdentifier = m_document->fetcher()->getCacheIdentifier();
   Resource* resource = memoryCache()->resourceForURL(
-      contextDocument()->completeURL(url), cacheIdentifier);
+      m_document->completeURL(url), cacheIdentifier);
   // We check loader() here instead of isLoading(), because a multipart
   // ImageResource lies isLoading() == false after the first part is loaded.
   return resource && resource->loader();
 }
 
 bool Internals::isLoadingFromMemoryCache(const String& url) {
-  if (!contextDocument())
+  if (!m_document)
     return false;
-  const String cacheIdentifier =
-      contextDocument()->fetcher()->getCacheIdentifier();
+  const String cacheIdentifier = m_document->fetcher()->getCacheIdentifier();
   Resource* resource = memoryCache()->resourceForURL(
-      contextDocument()->completeURL(url), cacheIdentifier);
+      m_document->completeURL(url), cacheIdentifier);
   return resource && resource->getStatus() == Resource::Cached;
 }
 
@@ -861,7 +851,7 @@ void Internals::endColorChooser(Element* element) {
 
 bool Internals::hasAutofocusRequest(Document* document) {
   if (!document)
-    document = contextDocument();
+    document = m_document;
   return document->autofocusElement();
 }
 
@@ -898,27 +888,22 @@ void Internals::setFormControlStateOfHistoryItem(
 }
 
 DOMWindow* Internals::pagePopupWindow() const {
-  Document* document = contextDocument();
-  if (!document)
+  if (!m_document)
     return nullptr;
-  if (Page* page = document->page())
+  if (Page* page = m_document->page())
     return page->chromeClient().pagePopupWindowForTesting();
   return nullptr;
 }
 
 ClientRect* Internals::absoluteCaretBounds(ExceptionState& exceptionState) {
-  Document* document = contextDocument();
-  if (!document || !document->frame()) {
+  if (!frame()) {
     exceptionState.throwDOMException(
-        InvalidAccessError, document
-                                ? "The document's frame cannot be retrieved."
-                                : "No context document can be obtained.");
+        InvalidAccessError, "The document's frame cannot be retrieved.");
     return ClientRect::create();
   }
 
-  document->updateStyleAndLayoutIgnorePendingStylesheets();
-  return ClientRect::create(
-      document->frame()->selection().absoluteCaretBounds());
+  m_document->updateStyleAndLayoutIgnorePendingStylesheets();
+  return ClientRect::create(frame()->selection().absoluteCaretBounds());
 }
 
 ClientRect* Internals::boundingBox(Element* element) {
@@ -1722,7 +1707,7 @@ LayerRectList* Internals::touchEventTargetLayerRects(
     Document* document,
     ExceptionState& exceptionState) {
   ASSERT(document);
-  if (!document->view() || !document->page() || document != contextDocument()) {
+  if (!document->view() || !document->page() || document != m_document) {
     exceptionState.throwDOMException(InvalidAccessError,
                                      "The document provided is invalid.");
     return nullptr;
@@ -1861,16 +1846,15 @@ bool Internals::hasSpellingMarker(Document* document,
 
 void Internals::setSpellCheckingEnabled(bool enabled,
                                         ExceptionState& exceptionState) {
-  if (!contextDocument() || !contextDocument()->frame()) {
+  if (!frame()) {
     exceptionState.throwDOMException(
         InvalidAccessError,
         "No frame can be obtained from the provided document.");
     return;
   }
 
-  if (enabled !=
-      contextDocument()->frame()->spellChecker().isSpellCheckingEnabled())
-    contextDocument()->frame()->spellChecker().toggleSpellCheckingEnabled();
+  if (enabled != frame()->spellChecker().isSpellCheckingEnabled())
+    frame()->spellChecker().toggleSpellCheckingEnabled();
 }
 
 void Internals::replaceMisspelled(Document* document,
@@ -2195,15 +2179,12 @@ String Internals::pageSizeAndMarginsInPixels(
 }
 
 float Internals::pageScaleFactor(ExceptionState& exceptionState) {
-  Document* document = contextDocument();
-  if (!document || !document->page()) {
+  if (!m_document->page()) {
     exceptionState.throwDOMException(
-        InvalidAccessError, document
-                                ? "The document's page cannot be retrieved."
-                                : "No context document can be obtained.");
+        InvalidAccessError, "The document's page cannot be retrieved.");
     return 0;
   }
-  Page* page = document->page();
+  Page* page = m_document->page();
   return page->frameHost().visualViewport().pageScale();
 }
 
@@ -2211,31 +2192,25 @@ void Internals::setPageScaleFactor(float scaleFactor,
                                    ExceptionState& exceptionState) {
   if (scaleFactor <= 0)
     return;
-  Document* document = contextDocument();
-  if (!document || !document->page()) {
+  if (!m_document->page()) {
     exceptionState.throwDOMException(
-        InvalidAccessError, document
-                                ? "The document's page cannot be retrieved."
-                                : "No context document can be obtained.");
+        InvalidAccessError, "The document's page cannot be retrieved.");
     return;
   }
-  Page* page = document->page();
+  Page* page = m_document->page();
   page->frameHost().visualViewport().setScale(scaleFactor);
 }
 
 void Internals::setPageScaleFactorLimits(float minScaleFactor,
                                          float maxScaleFactor,
                                          ExceptionState& exceptionState) {
-  Document* document = contextDocument();
-  if (!document || !document->page()) {
+  if (!m_document->page()) {
     exceptionState.throwDOMException(
-        InvalidAccessError, document
-                                ? "The document's page cannot be retrieved."
-                                : "No context document can be obtained.");
+        InvalidAccessError, "The document's page cannot be retrieved.");
     return;
   }
 
-  Page* page = document->page();
+  Page* page = m_document->page();
   page->frameHost().setDefaultPageScaleLimits(minScaleFactor, maxScaleFactor);
 }
 
@@ -2375,7 +2350,7 @@ void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(
     ExceptionState& exceptionState) {
   Document* document = nullptr;
   if (!node) {
-    document = contextDocument();
+    document = m_document;
   } else if (node->isDocumentNode()) {
     document = toDocument(node);
   } else if (isHTMLIFrameElement(*node)) {
@@ -2595,16 +2570,13 @@ void Internals::forceReload(bool bypassCache) {
 }
 
 ClientRect* Internals::selectionBounds(ExceptionState& exceptionState) {
-  Document* document = contextDocument();
-  if (!document || !document->frame()) {
+  if (!frame()) {
     exceptionState.throwDOMException(
-        InvalidAccessError, document
-                                ? "The document's frame cannot be retrieved."
-                                : "No context document can be obtained.");
+        InvalidAccessError, "The document's frame cannot be retrieved.");
     return nullptr;
   }
 
-  return ClientRect::create(FloatRect(document->frame()->selection().bounds()));
+  return ClientRect::create(FloatRect(frame()->selection().bounds()));
 }
 
 String Internals::markerTextForListItem(Element* element) {
@@ -2817,7 +2789,7 @@ ScriptPromise Internals::promiseCheckOverload(ScriptState* scriptState,
 
 DEFINE_TRACE(Internals) {
   visitor->trace(m_runtimeFlags);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->trace(m_document);
 }
 
 void Internals::setValueForUser(HTMLInputElement* element,
@@ -3052,14 +3024,7 @@ bool Internals::setScrollbarVisibilityInScrollableArea(Node* node,
 double Internals::monotonicTimeToZeroBasedDocumentTime(
     double platformTime,
     ExceptionState& exceptionState) {
-  Document* document = contextDocument();
-  if (!document) {
-    exceptionState.throwDOMException(InvalidAccessError,
-                                     "No context document is available.");
-    return 0;
-  }
-
-  return document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(
+  return m_document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(
       platformTime);
 }
 
