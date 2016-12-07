@@ -125,29 +125,16 @@ class RenderFrameTestObserver : public RenderFrameObserver {
   bool visible_;
 };
 
-#if defined(OS_ANDROID)
-// See https://crbug.com/472717
-#define MAYBE_SubframeWidget DISABLED_SubframeWidget
-#define MAYBE_FrameResize DISABLED_FrameResize
-#define MAYBE_FrameWasShown DISABLED_FrameWasShown
-#define MAYBE_FrameWasShownAfterWidgetClose DISABLED_FrameWasShownAfterWidgetClose
-#else
-#define MAYBE_SubframeWidget SubframeWidget
-#define MAYBE_FrameResize FrameResize
-#define MAYBE_FrameWasShown FrameWasShown
-#define MAYBE_FrameWasShownAfterWidgetClose FrameWasShownAfterWidgetClose
-#endif
-
 // Verify that a frame with a RenderFrameProxy as a parent has its own
 // RenderWidget.
-TEST_F(RenderFrameImplTest, MAYBE_SubframeWidget) {
+TEST_F(RenderFrameImplTest, SubframeWidget) {
   EXPECT_TRUE(frame_widget());
   EXPECT_NE(frame_widget(), static_cast<RenderViewImpl*>(view_)->GetWidget());
 }
 
 // Verify a subframe RenderWidget properly processes its viewport being
 // resized.
-TEST_F(RenderFrameImplTest, MAYBE_FrameResize) {
+TEST_F(RenderFrameImplTest, FrameResize) {
   ResizeParams resize_params;
   gfx::Size size(200, 200);
   resize_params.screen_info = ScreenInfo();
@@ -164,7 +151,7 @@ TEST_F(RenderFrameImplTest, MAYBE_FrameResize) {
 }
 
 // Verify a subframe RenderWidget properly processes a WasShown message.
-TEST_F(RenderFrameImplTest, MAYBE_FrameWasShown) {
+TEST_F(RenderFrameImplTest, FrameWasShown) {
   RenderFrameTestObserver observer(frame());
 
   ViewMsg_WasShown was_shown_message(0, true, ui::LatencyInfo());
@@ -176,7 +163,7 @@ TEST_F(RenderFrameImplTest, MAYBE_FrameWasShown) {
 
 // Ensure that a RenderFrameImpl does not crash if the RenderView receives
 // a WasShown message after the frame's widget has been closed.
-TEST_F(RenderFrameImplTest, MAYBE_FrameWasShownAfterWidgetClose) {
+TEST_F(RenderFrameImplTest, FrameWasShownAfterWidgetClose) {
   RenderFrameTestObserver observer(frame());
 
   ViewMsg_Close close_message(0);
