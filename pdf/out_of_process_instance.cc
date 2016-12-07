@@ -949,8 +949,24 @@ void OutOfProcessInstance::OnPaint(
 }
 
 void OutOfProcessInstance::DidOpen(int32_t result) {
-  if (result != PP_OK || !engine_->HandleDocumentLoad(embed_loader_))
+  if (result == PP_OK) {
+    if (!engine_->HandleDocumentLoad(embed_loader_)) {
+      document_load_state_ = LOAD_STATE_LOADING;
+      DocumentLoadFailed();
+    }
+  } else if (result != PP_ERROR_ABORTED) { // Can happen in tests.
+    NOTREACHED();
     DocumentLoadFailed();
+  }
+
+  // If it's a progressive load, cancel the stream URL request so that requests
+  // can be made on the original URL.
+  // TODO(raymes): Make this clearer once the in-process plugin is deleted.
+  if (engine_->IsProgressiveLoad()) {
+    pp::VarDictionary message;
+    message.Set(kType, kJSCancelStreamUrlType);
+    PostMessage(message);
+  }
 }
 
 void OutOfProcessInstance::DidOpenPreview(int32_t result) {
@@ -1578,12 +1594,6 @@ bool OutOfProcessInstance::IsPrintPreview() {
 
 uint32_t OutOfProcessInstance::GetBackgroundColor() {
   return background_color_;
-}
-
-void OutOfProcessInstance::CancelBrowserDownload() {
-  pp::VarDictionary message;
-  message.Set(kType, kJSCancelStreamUrlType);
-  PostMessage(message);
 }
 
 void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
