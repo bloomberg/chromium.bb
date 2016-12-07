@@ -63,28 +63,28 @@ class LayoutGrid final : public LayoutBlock {
   Vector<LayoutUnit> trackSizesForComputedStyle(GridTrackSizingDirection) const;
 
   const Vector<LayoutUnit>& columnPositions() const {
-    ASSERT(!m_gridIsDirty);
+    DCHECK(!m_grid.needsItemsPlacement());
     return m_columnPositions;
   }
 
   const Vector<LayoutUnit>& rowPositions() const {
-    ASSERT(!m_gridIsDirty);
+    DCHECK(!m_grid.needsItemsPlacement());
     return m_rowPositions;
   }
 
   typedef Vector<LayoutBox*, 1> GridCell;
   const GridCell& gridCell(int row, int column) const {
-    SECURITY_DCHECK(!m_gridIsDirty);
+    SECURITY_DCHECK(!m_grid.needsItemsPlacement());
     return m_grid.cell(row, column);
   }
 
   const Vector<LayoutBox*>& itemsOverflowingGridArea() const {
-    SECURITY_DCHECK(!m_gridIsDirty);
+    SECURITY_DCHECK(!m_grid.needsItemsPlacement());
     return m_gridItemsOverflowingGridArea;
   }
 
   int paintIndexForGridItem(const LayoutBox* layoutBox) const {
-    SECURITY_DCHECK(!m_gridIsDirty);
+    SECURITY_DCHECK(!m_grid.needsItemsPlacement());
     return m_grid.gridItemPaintOrder(*layoutBox);
   }
 
@@ -116,6 +116,7 @@ class LayoutGrid final : public LayoutBlock {
   bool explicitGridDidResize(const ComputedStyle&) const;
   bool namedGridLinesDefinitionDidChange(const ComputedStyle&) const;
 
+  class Grid;
   class GridIterator;
   struct GridSizingData;
   enum SizingOperation { TrackSizing, IntrinsicSizeComputation };
@@ -144,12 +145,13 @@ class LayoutGrid final : public LayoutBlock {
 
   typedef ListHashSet<size_t> OrderedTrackIndexSet;
   std::unique_ptr<OrderedTrackIndexSet> computeEmptyTracksForAutoRepeat(
+      Grid&,
       GridTrackSizingDirection) const;
 
-  class Grid;
   void placeItemsOnGrid(Grid&, SizingOperation);
   void populateExplicitGridAndOrderIterator(Grid&) const;
   std::unique_ptr<GridArea> createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
+      const Grid&,
       const LayoutBox&,
       GridTrackSizingDirection,
       const GridSpan& specifiedPositions) const;
@@ -337,7 +339,7 @@ class LayoutGrid final : public LayoutBlock {
 
   bool cachedHasDefiniteLogicalHeight() const;
 
-  size_t numTracks(GridTrackSizingDirection) const;
+  size_t numTracks(GridTrackSizingDirection, const Grid&) const;
 
   // TODO(svillar): move into this class once GridIterator is added.
   typedef Vector<Vector<GridCell>> GridAsMatrix;
@@ -387,8 +389,8 @@ class LayoutGrid final : public LayoutBlock {
 
     OrderIterator& orderIterator() { return m_orderIterator; }
 
-    void shrinkToFit() { m_grid.shrinkToFit(); }
-    void clear();
+    void setNeedsItemsPlacement(bool);
+    bool needsItemsPlacement() const { return m_needsItemsPlacement; };
 
 #if ENABLE(ASSERT)
     bool hasAnyGridItemPaintOrder() const;
@@ -406,6 +408,8 @@ class LayoutGrid final : public LayoutBlock {
     size_t m_autoRepeatRows{0};
 
     bool m_hasAnyOrthogonalGridItem{false};
+    bool m_needsItemsPlacement{true};
+
     GridAsMatrix m_grid;
 
     HashMap<const LayoutBox*, GridArea> m_gridItemArea;
@@ -416,7 +420,6 @@ class LayoutGrid final : public LayoutBlock {
   };
   Grid m_grid;
 
-  bool m_gridIsDirty;
   Vector<LayoutUnit> m_rowPositions;
   Vector<LayoutUnit> m_columnPositions;
   LayoutUnit m_offsetBetweenColumns;

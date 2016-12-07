@@ -164,7 +164,14 @@ void LayoutGrid::Grid::setHasAnyOrthogonalGridItem(
   m_hasAnyOrthogonalGridItem = hasAnyOrthogonalGridItem;
 }
 
-void LayoutGrid::Grid::clear() {
+void LayoutGrid::Grid::setNeedsItemsPlacement(bool needsItemsPlacement) {
+  m_needsItemsPlacement = needsItemsPlacement;
+
+  if (!needsItemsPlacement) {
+    m_grid.shrinkToFit();
+    return;
+  }
+
   m_grid.resize(0);
   m_gridItemArea.clear();
   m_gridItemsIndexesMap.clear();
@@ -462,8 +469,7 @@ struct GridItemsSpanGroupRange {
   Vector<GridItemWithSpan>::iterator rangeEnd;
 };
 
-LayoutGrid::LayoutGrid(Element* element)
-    : LayoutBlock(element), m_grid(this), m_gridIsDirty(true) {
+LayoutGrid::LayoutGrid(Element* element) : LayoutBlock(element), m_grid(this) {
   ASSERT(!childrenInline());
   if (!isAnonymous())
     UseCounter::count(document(), UseCounter::CSSGridLayout);
@@ -594,7 +600,8 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
 
   // We cannot perform a simplifiedLayout() on a dirty grid that
   // has positioned items to be laid out.
-  if (!relayoutChildren && (!m_gridIsDirty || !posChildNeedsLayout()) &&
+  if (!relayoutChildren &&
+      (!m_grid.needsItemsPlacement() || !posChildNeedsLayout()) &&
       simplifiedLayout())
     return;
 
@@ -637,7 +644,8 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
       dirtyGrid();
     placeItemsOnGrid(m_grid, TrackSizing);
 
-    GridSizingData sizingData(numTracks(ForColumns), numTracks(ForRows));
+    GridSizingData sizingData(numTracks(ForColumns, m_grid),
+                              numTracks(ForRows, m_grid));
 
     // 1- First, the track sizing algorithm is used to resolve the sizes of the
     // grid columns.
@@ -796,7 +804,8 @@ void LayoutGrid::computeIntrinsicLogicalWidths(
   const_cast<LayoutGrid*>(this)->placeItemsOnGrid(const_cast<Grid&>(m_grid),
                                                   IntrinsicSizeComputation);
 
-  GridSizingData sizingData(numTracks(ForColumns), numTracks(ForRows));
+  GridSizingData sizingData(numTracks(ForColumns, m_grid),
+                            numTracks(ForRows, m_grid));
   computeTrackSizesForIndefiniteSize(ForColumns, sizingData, minLogicalWidth,
                                      maxLogicalWidth);
 
@@ -2019,6 +2028,7 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(
 
 std::unique_ptr<LayoutGrid::OrderedTrackIndexSet>
 LayoutGrid::computeEmptyTracksForAutoRepeat(
+    Grid& grid,
     GridTrackSizingDirection direction) const {
   bool isRowAxis = direction == ForColumns;
   if ((isRowAxis && styleRef().gridAutoRepeatColumnsType() != AutoFit) ||
@@ -2030,9 +2040,9 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
                               ? styleRef().gridAutoRepeatColumnsInsertionPoint()
                               : styleRef().gridAutoRepeatRowsInsertionPoint();
   size_t firstAutoRepeatTrack =
-      insertionPoint + std::abs(m_grid.smallestTrackStart(direction));
+      insertionPoint + std::abs(grid.smallestTrackStart(direction));
   size_t lastAutoRepeatTrack =
-      firstAutoRepeatTrack + autoRepeatCountForDirection(direction);
+      firstAutoRepeatTrack + grid.autoRepeatTracks(direction);
 
   if (!m_grid.hasGridItems()) {
     emptyTrackIndexes = wrapUnique(new OrderedTrackIndexSet);
@@ -2042,7 +2052,7 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
   } else {
     for (size_t trackIndex = firstAutoRepeatTrack;
          trackIndex < lastAutoRepeatTrack; ++trackIndex) {
-      GridIterator iterator(m_grid, direction, trackIndex);
+      GridIterator iterator(grid, direction, trackIndex);
       if (!iterator.nextGridItem()) {
         if (!emptyTrackIndexes)
           emptyTrackIndexes = wrapUnique(new OrderedTrackIndexSet);
@@ -2055,7 +2065,7 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
 
 void LayoutGrid::placeItemsOnGrid(LayoutGrid::Grid& grid,
                                   SizingOperation sizingOperation) {
-  if (!m_gridIsDirty)
+  if (!grid.needsItemsPlacement())
     return;
 
   DCHECK(!grid.hasGridItems());
@@ -2073,16 +2083,13 @@ void LayoutGrid::placeItemsOnGrid(LayoutGrid::Grid& grid,
 
   populateExplicitGridAndOrderIterator(grid);
 
-  // We clear the dirty bit here as the grid sizes have been updated.
-  m_gridIsDirty = false;
-  bool hasAnyOrthogonalGridItem = false;
-
   Vector<LayoutBox*> autoMajorAxisAutoGridItems;
   Vector<LayoutBox*> specifiedMajorAxisAutoGridItems;
 #if ENABLE(ASSERT)
   DCHECK(!grid.hasAnyGridItemPaintOrder());
 #endif
   DCHECK(!grid.hasAnyOrthogonalGridItem());
+  bool hasAnyOrthogonalGridItem = false;
   size_t childIndex = 0;
   for (LayoutBox* child = grid.orderIterator().first(); child;
        child = grid.orderIterator().next()) {
@@ -2112,7 +2119,7 @@ void LayoutGrid::placeItemsOnGrid(LayoutGrid::Grid& grid,
     }
     grid.insert(*child, area);
   }
-  m_grid.setHasAnyOrthogonalGridItem(hasAnyOrthogonalGridItem);
+  grid.setHasAnyOrthogonalGridItem(hasAnyOrthogonalGridItem);
 
 #if ENABLE(ASSERT)
   if (grid.hasGridItems()) {
@@ -2128,11 +2135,12 @@ void LayoutGrid::placeItemsOnGrid(LayoutGrid::Grid& grid,
   placeSpecifiedMajorAxisItemsOnGrid(grid, specifiedMajorAxisAutoGridItems);
   placeAutoMajorAxisItemsOnGrid(grid, autoMajorAxisAutoGridItems);
 
-  grid.shrinkToFit();
-
   // Compute collapsable tracks for auto-fit.
-  grid.setAutoRepeatEmptyColumns(computeEmptyTracksForAutoRepeat(ForColumns));
-  grid.setAutoRepeatEmptyRows(computeEmptyTracksForAutoRepeat(ForRows));
+  grid.setAutoRepeatEmptyColumns(
+      computeEmptyTracksForAutoRepeat(grid, ForColumns));
+  grid.setAutoRepeatEmptyRows(computeEmptyTracksForAutoRepeat(grid, ForRows));
+
+  grid.setNeedsItemsPlacement(false);
 
 #if ENABLE(ASSERT)
   for (LayoutBox* child = grid.orderIterator().first(); child;
@@ -2208,12 +2216,13 @@ void LayoutGrid::populateExplicitGridAndOrderIterator(Grid& grid) const {
 
 std::unique_ptr<GridArea>
 LayoutGrid::createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
+    const Grid& grid,
     const LayoutBox& gridItem,
     GridTrackSizingDirection specifiedDirection,
     const GridSpan& specifiedPositions) const {
   GridTrackSizingDirection crossDirection =
       specifiedDirection == ForColumns ? ForRows : ForColumns;
-  const size_t endOfCrossDirection = m_grid.numTracks(crossDirection);
+  const size_t endOfCrossDirection = grid.numTracks(crossDirection);
   size_t crossDirectionSpanSize =
       GridPositionsResolver::spanSizeForAutoPlacedItem(*style(), gridItem,
                                                        crossDirection);
@@ -2256,9 +2265,11 @@ void LayoutGrid::placeSpecifiedMajorAxisItemsOnGrid(
                             : minorAxisCursors.get(majorAxisInitialPosition));
     std::unique_ptr<GridArea> emptyGridArea = iterator.nextEmptyGridArea(
         majorAxisPositions.integerSpan(), minorAxisSpanSize);
-    if (!emptyGridArea)
+    if (!emptyGridArea) {
       emptyGridArea = createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
-          *autoGridItem, autoPlacementMajorAxisDirection(), majorAxisPositions);
+          grid, *autoGridItem, autoPlacementMajorAxisDirection(),
+          majorAxisPositions);
+    }
 
     grid.insert(*autoGridItem, *emptyGridArea);
 
@@ -2323,9 +2334,11 @@ void LayoutGrid::placeAutoMajorAxisItemOnGrid(
           minorAxisPositions.integerSpan(), majorAxisSpanSize);
     }
 
-    if (!emptyGridArea)
+    if (!emptyGridArea) {
       emptyGridArea = createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
-          gridItem, autoPlacementMinorAxisDirection(), minorAxisPositions);
+          grid, gridItem, autoPlacementMinorAxisDirection(),
+          minorAxisPositions);
+    }
   } else {
     size_t minorAxisSpanSize = GridPositionsResolver::spanSizeForAutoPlacedItem(
         *style(), gridItem, autoPlacementMinorAxisDirection());
@@ -2363,7 +2376,7 @@ void LayoutGrid::placeAutoMajorAxisItemOnGrid(
 
     if (!emptyGridArea)
       emptyGridArea = createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
-          gridItem, autoPlacementMinorAxisDirection(),
+          grid, gridItem, autoPlacementMinorAxisDirection(),
           GridSpan::translatedDefiniteGridSpan(0, minorAxisSpanSize));
   }
 
@@ -2382,12 +2395,11 @@ GridTrackSizingDirection LayoutGrid::autoPlacementMinorAxisDirection() const {
 }
 
 void LayoutGrid::dirtyGrid() {
-  if (m_gridIsDirty)
+  if (m_grid.needsItemsPlacement())
     return;
 
-  m_grid.clear();
+  m_grid.setNeedsItemsPlacement(true);
   m_gridItemsOverflowingGridArea.resize(0);
-  m_gridIsDirty = true;
 }
 
 Vector<LayoutUnit> LayoutGrid::trackSizesForComputedStyle(
@@ -2632,7 +2644,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(
                                             : child.style()->gridRowStart();
   GridPosition endPosition = isForColumns ? child.style()->gridColumnEnd()
                                           : child.style()->gridRowEnd();
-  int lastLine = numTracks(direction);
+  int lastLine = numTracks(direction, m_grid);
 
   bool startIsAuto =
       startPosition.isAuto() ||
@@ -3575,7 +3587,8 @@ bool LayoutGrid::cachedHasDefiniteLogicalHeight() const {
   return m_hasDefiniteLogicalHeight.value();
 }
 
-size_t LayoutGrid::numTracks(GridTrackSizingDirection direction) const {
+size_t LayoutGrid::numTracks(GridTrackSizingDirection direction,
+                             const Grid& grid) const {
   // Due to limitations in our internal representation, we cannot know the
   // number of columns from m_grid *if* there is no row (because m_grid would be
   // empty). That's why in that case we need to get it from the style. Note that
@@ -3583,12 +3596,12 @@ size_t LayoutGrid::numTracks(GridTrackSizingDirection direction) const {
   // rows implies that there are no "normal" children (out-of-flow children are
   // not stored in m_grid).
   if (direction == ForRows)
-    return m_grid.numTracks(ForRows);
+    return grid.numTracks(ForRows);
 
-  return m_grid.numTracks(ForRows)
-             ? m_grid.numTracks(ForColumns)
+  return grid.numTracks(ForRows)
+             ? grid.numTracks(ForColumns)
              : GridPositionsResolver::explicitGridColumnCount(
-                   styleRef(), m_grid.autoRepeatTracks(ForColumns));
+                   styleRef(), grid.autoRepeatTracks(ForColumns));
 }
 
 }  // namespace blink
