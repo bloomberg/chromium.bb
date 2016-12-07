@@ -59,6 +59,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "//base",
       "//cc",
       "//components/rappor",
+      "//components/security_state/core",
       "//content/public/browser",
       "//content/public/common",
       "//device/vr",
@@ -94,7 +95,9 @@ if (enable_webvr) {
       ":vr_common",
       "//base/test:run_all_unittests",
       "//base/test:test_support",
+      "//chrome/browser",
       "//testing/gtest",
+      "//third_party/WebKit/public:blink",
       "//ui/gfx/geometry",
     ]
   }

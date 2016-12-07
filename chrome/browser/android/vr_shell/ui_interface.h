@@ -35,8 +35,8 @@ class UiInterface {
   bool GetMenuMode() { return menu_mode_; }
   void SetFullscreen(bool enabled);
   bool GetFullscreen() { return fullscreen_; }
-
-  void SetSecureOrigin(bool secure);
+  void SetSecurityLevel(int level);
+  void SetWebVRSecureOrigin(bool secure);
   void SetLoading(bool loading);
   void SetURL(const GURL& url);
 

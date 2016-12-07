@@ -984,7 +984,8 @@ void VrShell::SetWebVrModeOnUI(JNIEnv* env,
 }
 
 void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
-  html_interface_->SetSecureOrigin(secure_origin);
+  // TODO(cjgrant): Align this state with the logic that drives the omnibox.
+  html_interface_->SetWebVRSecureOrigin(secure_origin);
 }
 
 void VrShell::SubmitWebVRFrame() {}

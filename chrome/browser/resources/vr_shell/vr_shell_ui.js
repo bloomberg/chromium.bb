@@ -229,15 +229,15 @@ var vrShellUi = (function() {
       this.updateState();
     }
 
-    setSecureOrigin(secure) {
-      this.isSecureOrigin = secure;
+    setSecure(secure) {
+      this.secure = secure;
       this.updateState();
     }
 
     updateState() {
       /** @const */ var TRANSIENT_TIMEOUT_MS = 30000;
 
-      let visible = (this.enabled && !this.isSecureOrigin);
+      let visible = (this.enabled && !this.secure);
       if (this.secureOriginTimer) {
         clearInterval(this.secureOriginTimer);
         this.secureOriginTimer = null;
@@ -269,12 +269,10 @@ var vrShellUi = (function() {
 
   class Omnibox {
     constructor(contentQuadId) {
-      /** @const */ var VISIBILITY_TIMEOUT_MS = 3000;
-
       this.domUiElement = new DomUiElement('#omni-container');
       this.enabled = false;
-      this.secure = false;
-      this.visibilityTimeout = VISIBILITY_TIMEOUT_MS;
+      this.level = 0;
+      this.visibilityTimeout = 0;
       this.visibilityTimer = null;
       this.nativeState = {};
 
@@ -310,8 +308,8 @@ var vrShellUi = (function() {
       this.updateState();
     }
 
-    setSecureOrigin(secure) {
-      this.secure = secure;
+    setSecurityLevel(level) {
+      this.level = level;
       this.resetVisibilityTimer();
       this.updateState();
     }
@@ -349,11 +347,11 @@ var vrShellUi = (function() {
         this.setNativeVisibility(false);
         return;
       }
-
+      let secure = this.level == 2 || this.level == 3;
       document.querySelector('#omni-secure-icon').style.display =
-          (this.secure ? 'block' : 'none');
+          (secure ? 'block' : 'none');
       document.querySelector('#omni-insecure-icon').style.display =
-          (this.secure ? 'none' : 'block');
+          (secure ? 'none' : 'block');
 
       let state = 'idle';
       this.visibleAfterTransition = true;
@@ -395,6 +393,8 @@ var vrShellUi = (function() {
     }
 
     setMode(mode, menuMode, fullscreen) {
+      /** @const */ var OMNIBOX_VISIBILITY_TIMEOUT_MS = 5000;
+
       this.mode = mode;
       this.menuMode = menuMode;
       this.fullscreen = fullscreen;
@@ -405,15 +405,22 @@ var vrShellUi = (function() {
       // TODO(amp): Don't show controls in fullscreen once MENU mode lands.
       this.controls.setEnabled(mode == api.Mode.STANDARD && !menuMode);
       this.omnibox.setEnabled(mode == api.Mode.STANDARD && !menuMode);
+      // TODO(amp): Don't show controls in CINEMA mode once MENU mode lands.
+      this.omnibox.setVisibilityTimeout(
+          mode == api.Mode.STANDARD && !menuMode ?
+          0 : OMNIBOX_VISIBILITY_TIMEOUT_MS);
       this.secureOriginWarnings.setEnabled(mode == api.Mode.WEB_VR);
 
       api.setUiCssSize(uiRootElement.clientWidth, uiRootElement.clientHeight,
           UI_DPR);
     }
 
-    setSecureOrigin(secure) {
-      this.secureOriginWarnings.setSecureOrigin(secure);
-      this.omnibox.setSecureOrigin(secure);
+    setSecurityLevel(level) {
+      this.omnibox.setSecurityLevel(level);
+    }
+
+    setWebVRSecureOrigin(secure) {
+      this.secureOriginWarnings.setSecure(secure);
     }
 
     setReloadUiEnabled(enabled) {
@@ -432,8 +439,11 @@ var vrShellUi = (function() {
     if ('mode' in dict) {
       sceneManager.setMode(dict['mode'], dict['menuMode'], dict['fullscreen']);
     }
-    if ('secureOrigin' in dict) {
-      sceneManager.setSecureOrigin(dict['secureOrigin']);
+    if ('securityLevel' in dict) {
+      sceneManager.setSecurityLevel(dict['securityLevel']);
+    }
+    if ('webVRSecureOrigin' in dict) {
+      sceneManager.setWebVRSecureOrigin(dict['webVRSecureOrigin']);
     }
     if ('enableReloadUi' in dict) {
       sceneManager.setReloadUiEnabled(dict['enableReloadUi']);

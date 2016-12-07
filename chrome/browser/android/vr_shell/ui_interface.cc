@@ -38,8 +38,13 @@ void UiInterface::FlushModeState() {
   FlushUpdates();
 }
 
-void UiInterface::SetSecureOrigin(bool secure) {
-  updates_.SetBoolean("secureOrigin", secure);
+void UiInterface::SetSecurityLevel(int level) {
+  updates_.SetInteger("securityLevel", level);
+  FlushUpdates();
+}
+
+void UiInterface::SetWebVRSecureOrigin(bool secure) {
+  updates_.SetBoolean("webVRSecureOrigin", secure);
   FlushUpdates();
 }
 

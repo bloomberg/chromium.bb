@@ -6,6 +6,8 @@
 
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace vr_shell {
@@ -15,7 +17,10 @@ VrWebContentsObserver::VrWebContentsObserver(content::WebContents* web_contents,
                                              VrShell* vr_shell)
     : WebContentsObserver(web_contents),
       ui_interface_(ui_interface),
-      vr_shell_(vr_shell) {}
+      vr_shell_(vr_shell) {
+  ui_interface_->SetURL(web_contents->GetVisibleURL());
+  SetSecurityLevel();
+}
 
 VrWebContentsObserver::~VrWebContentsObserver() {}
 
@@ -33,17 +38,34 @@ void VrWebContentsObserver::DidStopLoading() {
 
 void VrWebContentsObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  ui_interface_->SetURL(navigation_handle->GetURL());
+  if (navigation_handle->IsInMainFrame()) {
+    ui_interface_->SetURL(navigation_handle->GetURL());
+    SetSecurityLevel();
+  }
 }
 
 void VrWebContentsObserver::DidRedirectNavigation(
     content::NavigationHandle* navigation_handle) {
-  ui_interface_->SetURL(navigation_handle->GetURL());
+  if (navigation_handle->IsInMainFrame()) {
+    ui_interface_->SetURL(navigation_handle->GetURL());
+    SetSecurityLevel();
+  }
 }
 
 void VrWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  ui_interface_->SetURL(navigation_handle->GetURL());
+  if (navigation_handle->IsInMainFrame()) {
+    ui_interface_->SetURL(navigation_handle->GetURL());
+    SetSecurityLevel();
+  }
+}
+
+void VrWebContentsObserver::SetSecurityLevel() {
+  const auto* helper = SecurityStateTabHelper::FromWebContents(web_contents());
+  DCHECK(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  ui_interface_->SetSecurityLevel(security_info.security_level);
 }
 
 void VrWebContentsObserver::DidToggleFullscreenModeForTab(
