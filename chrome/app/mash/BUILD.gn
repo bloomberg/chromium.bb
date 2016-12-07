@@ -43,7 +43,6 @@ service_manifest("mash_manifest") {
   source = "chrome_mash_manifest.json"
   deps = [
     "//ash/autoclick/mus:manifest",
-    "//ash/mus:manifest",
     "//ash/touch_hud/mus:manifest",
     "//mash/catalog_viewer:manifest",
     "//mash/quick_launch:manifest",
@@ -54,7 +53,6 @@ service_manifest("mash_manifest") {
   ]
   packaged_services = [
     "accessibility_autoclick",
-    "ash",
     "catalog_viewer",
     "mash_session",
     "quick_launch",
@@ -63,6 +61,11 @@ service_manifest("mash_manifest") {
     "touch_hud",
     "ui",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//ash/mus:manifest" ]
+    packaged_services += [ "ash" ]
+  }
 
   if (is_linux && !is_android) {
     deps += [ "//components/font_service:manifest" ]

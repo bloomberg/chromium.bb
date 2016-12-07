@@ -4,9 +4,6 @@
 
 #include "mash/package/mash_packaged_service.h"
 
-#include "ash/autoclick/mus/autoclick_application.h"
-#include "ash/mus/window_manager_application.h"
-#include "ash/touch_hud/mus/touch_hud_application.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -18,10 +15,17 @@
 #include "mash/session/session.h"
 #include "mash/task_viewer/public/interfaces/constants.mojom.h"
 #include "mash/task_viewer/task_viewer.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/ime/test_ime_driver/test_ime_application.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/service.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/autoclick/mus/autoclick_application.h"
+#include "ash/mus/window_manager_application.h"
+#include "ash/touch_hud/mus/touch_hud_application.h"
+#endif
 
 #if defined(OS_LINUX)
 #include "components/font_service/font_service_app.h"
@@ -77,14 +81,17 @@ std::unique_ptr<service_manager::Service> MashPackagedService::CreateService(
       base::debug::WaitForDebugger(120, true);
     }
   }
+
+#if defined(OS_CHROMEOS)
   if (name == "ash")
     return base::WrapUnique(new ash::mus::WindowManagerApplication);
   if (name == "accessibility_autoclick")
     return base::WrapUnique(new ash::autoclick::AutoclickApplication);
-  if (name == catalog_viewer::mojom::kServiceName)
-    return base::WrapUnique(new mash::catalog_viewer::CatalogViewer);
   if (name == "touch_hud")
     return base::WrapUnique(new ash::touch_hud::TouchHudApplication);
+#endif
+  if (name == catalog_viewer::mojom::kServiceName)
+    return base::WrapUnique(new mash::catalog_viewer::CatalogViewer);
   if (name == session::mojom::kServiceName)
     return base::WrapUnique(new mash::session::Session);
   if (name == ui::mojom::kServiceName)

@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
+#include "content/public/common/service_names.mojom.h"
 #include "mash/browser/debug_view.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "services/navigation/public/cpp/view.h"
@@ -865,7 +866,8 @@ void Browser::RemoveWindow(views::Widget* window) {
 
 std::unique_ptr<navigation::View> Browser::CreateView() {
   navigation::mojom::ViewFactoryPtr factory;
-  context()->connector()->ConnectToInterface("navigation", &factory);
+  context()->connector()->ConnectToInterface(
+      content::mojom::kBrowserServiceName, &factory);
   return base::MakeUnique<navigation::View>(std::move(factory));
 }
 

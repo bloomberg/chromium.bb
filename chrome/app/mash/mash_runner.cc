@@ -187,6 +187,8 @@ int MashRunner::RunChild() {
   // because it wouldn't be visible to the service's dynamic library.
   // https://crbug.com/664996
 
+  service_manager::WaitForDebuggerIfNecessary();
+
   base::FilePath path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kChildProcess);

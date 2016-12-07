@@ -9,9 +9,6 @@ source_set("package") {
   ]
 
   deps = [
-    "//ash/autoclick/mus:lib",
-    "//ash/mus:lib",
-    "//ash/touch_hud/mus:lib",
     "//mash/catalog_viewer:lib",
     "//mash/catalog_viewer/public/interfaces:constants",
     "//mash/public/interfaces",
@@ -26,6 +23,14 @@ source_set("package") {
     "//services/ui:lib",
     "//services/ui/ime/test_ime_driver:lib",
   ]
+
+  if (is_chromeos) {
+    deps += [
+      "//ash/autoclick/mus:lib",
+      "//ash/mus:lib",
+      "//ash/touch_hud/mus:lib",
+    ]
+  }
 
   if (is_linux && !is_android) {
     deps += [ "//components/font_service:lib" ]
