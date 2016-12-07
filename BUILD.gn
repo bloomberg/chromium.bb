@@ -642,10 +642,6 @@ group("both_gn_and_gyp") {
       if (!is_debug && !is_component_build) {
         deps += [ "//chrome/tools/service_discovery_sniffer" ]
       }
-
-      if (is_clang) {
-        deps += [ "//build/sanitizers:copy_llvm_symbolizer" ]
-      }
     }
 
     if (use_x11) {
@@ -1043,9 +1039,6 @@ if (!is_ios && !is_android && !is_chromecast) {
         "//third_party/pdfium/samples:pdfium_test",
         "//v8:v8_shell($v8_snapshot_toolchain)",
       ]
-    }
-    if (is_clang) {
-      deps += [ "//build/sanitizers:copy_llvm_symbolizer" ]
     }
     if (is_win && symbol_level == 2 && target_cpu == "x86" && is_syzyasan) {
       deps += [
