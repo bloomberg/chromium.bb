@@ -161,8 +161,11 @@ void LayoutSVGRoot::layout() {
   // content may have been exposed, so mark the entire subtree as needing paint
   // invalidation checking. (It is only somewhat by coincidence that this
   // condition happens to be the same as the one for viewport changes.)
-  if (viewportMayHaveChanged)
+  if (viewportMayHaveChanged) {
     setMayNeedPaintInvalidationSubtree();
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+      setNeedsPaintPropertyUpdate();
+  }
 
   SVGSVGElement* svg = toSVGSVGElement(node());
   ASSERT(svg);

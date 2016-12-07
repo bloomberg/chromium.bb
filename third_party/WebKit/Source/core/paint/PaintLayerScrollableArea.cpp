@@ -444,6 +444,18 @@ void PaintLayerScrollableArea::updateScrollOffset(const ScrollOffset& newOffset,
     box().setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
   }
 
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    // The scrollOffsetTranslation paint property depends on the scroll offset.
+    // (see: PaintPropertyTreeBuilder.updateProperties(FrameView&,...) and
+    // PaintPropertyTreeBuilder.updateScrollAndScrollTranslation).
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+        layer()->isRootLayer()) {
+      frameView->setNeedsPaintPropertyUpdate();
+    } else {
+      box().setNeedsPaintPropertyUpdate();
+    }
+  }
+
   // Schedule the scroll DOM event.
   if (box().node())
     box().node()->document().enqueueScrollEventForNode(box().node());
@@ -1672,6 +1684,12 @@ void PaintLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow) {
   m_scrollsOverflow = hasOverflow && isVisibleToHitTest;
   if (didScrollOverflow == scrollsOverflow())
     return;
+
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    // The scroll and scroll offset properties depend on |scrollsOverflow| (see:
+    // PaintPropertyTreeBuilder::updateScrollAndScrollTranslation).
+    box().setNeedsPaintPropertyUpdate();
+  }
 
   if (m_scrollsOverflow) {
     DCHECK(canHaveOverflowScrollbars(box()));

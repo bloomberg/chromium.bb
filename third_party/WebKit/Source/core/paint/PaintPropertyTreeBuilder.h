@@ -96,6 +96,11 @@ class PaintPropertyTreeBuilder {
   // date.
   void updateProperties(FrameView&, PaintPropertyTreeBuilderContext&);
 
+  // Update the context to account for positioning. This can affect the
+  // current paint offset, for example, but no paint properties are updated.
+  void updateContextForBoxPosition(const LayoutObject&,
+                                   PaintPropertyTreeBuilderContext&);
+
   // Update the paint properties that affect this object (e.g., properties like
   // paint offset translation) and ensure the context is up to date.
   void updatePropertiesForSelf(const LayoutObject&,

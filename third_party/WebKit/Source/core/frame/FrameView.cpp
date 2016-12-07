@@ -3798,11 +3798,6 @@ void FrameView::didChangeScrollOffset() {
   frame().loader().client()->didChangeScrollOffset();
   if (frame().isMainFrame())
     frame().host()->chromeClient().mainFrameScrollOffsetChanged();
-
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-    // The scroll translation paint property depends on scroll offset.
-    setNeedsPaintPropertyUpdate();
-  }
 }
 
 void FrameView::clearScrollAnchor() {

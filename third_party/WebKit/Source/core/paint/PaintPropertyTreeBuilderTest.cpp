@@ -3059,4 +3059,83 @@ TEST_P(PaintPropertyTreeBuilderTest, BuildingStopsAtThrottledFrames) {
   EXPECT_FALSE(iframeTransform->descendantNeedsPaintPropertyUpdate());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ClipChangesUpdateOverflowClip) {
+  setBodyInnerHTML(
+      "<style>"
+      "  body { margin:0 }"
+      "  #div { overflow:hidden; height:0px; }"
+      "</style>"
+      "<div id='div'></div>");
+  auto* div = document().getElementById("div");
+  div->setAttribute(HTMLNames::styleAttr, "display:inline-block; width:7px;");
+  document().view()->updateAllLifecyclePhases();
+  auto* clipProperties = div->layoutObject()->paintProperties()->overflowClip();
+  EXPECT_EQ(FloatRect(0, 0, 7, 0), clipProperties->clipRect().rect());
+
+  // Width changes should update the overflow clip.
+  div->setAttribute(HTMLNames::styleAttr, "display:inline-block; width:7px;");
+  document().view()->updateAllLifecyclePhases();
+  clipProperties = div->layoutObject()->paintProperties()->overflowClip();
+  EXPECT_EQ(FloatRect(0, 0, 7, 0), clipProperties->clipRect().rect());
+  div->setAttribute(HTMLNames::styleAttr, "display:inline-block; width:9px;");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(FloatRect(0, 0, 9, 0), clipProperties->clipRect().rect());
+
+  // An inline block's overflow clip should be updated when padding changes,
+  // even if the border box remains unchanged.
+  div->setAttribute(HTMLNames::styleAttr,
+                    "display:inline-block; width:7px; padding-right:3px;");
+  document().view()->updateAllLifecyclePhases();
+  clipProperties = div->layoutObject()->paintProperties()->overflowClip();
+  EXPECT_EQ(FloatRect(0, 0, 10, 0), clipProperties->clipRect().rect());
+  div->setAttribute(HTMLNames::styleAttr,
+                    "display:inline-block; width:8px; padding-right:2px;");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(FloatRect(0, 0, 10, 0), clipProperties->clipRect().rect());
+  div->setAttribute(HTMLNames::styleAttr,
+                    "display:inline-block; width:8px;"
+                    "padding-right:1px; padding-left:1px;");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(FloatRect(0, 0, 10, 0), clipProperties->clipRect().rect());
+
+  // An block's overflow clip should be updated when borders change.
+  div->setAttribute(HTMLNames::styleAttr, "border-right:3px solid red;");
+  document().view()->updateAllLifecyclePhases();
+  clipProperties = div->layoutObject()->paintProperties()->overflowClip();
+  EXPECT_EQ(FloatRect(0, 0, 797, 0), clipProperties->clipRect().rect());
+  div->setAttribute(HTMLNames::styleAttr, "border-right:5px solid red;");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(FloatRect(0, 0, 795, 0), clipProperties->clipRect().rect());
+
+  // Removing overflow clip should remove the property.
+  div->setAttribute(HTMLNames::styleAttr, "overflow:hidden;");
+  document().view()->updateAllLifecyclePhases();
+  clipProperties = div->layoutObject()->paintProperties()->overflowClip();
+  EXPECT_EQ(FloatRect(0, 0, 800, 0), clipProperties->clipRect().rect());
+  div->setAttribute(HTMLNames::styleAttr, "overflow:visible;");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_TRUE(!div->layoutObject()->paintProperties() ||
+              !div->layoutObject()->paintProperties()->overflowClip());
+}
+
+// crbug.com:645667: Contain paint changes fail to update paint properties.
+TEST_P(PaintPropertyTreeBuilderTest,
+       DISABLED_ContainPaintChangesUpdateOverflowClip) {
+  setBodyInnerHTML(
+      "<style>"
+      "  body { margin:0 }"
+      "  #div { will-change:transform; width:7px; height:6px; }"
+      "</style>"
+      "<div id='div' style='contain:paint;'></div>");
+  document().view()->updateAllLifecyclePhases();
+  auto* div = document().getElementById("div");
+  auto* properties = div->layoutObject()->paintProperties()->overflowClip();
+  EXPECT_EQ(FloatRect(0, 0, 7, 6), properties->clipRect().rect());
+
+  div->setAttribute(HTMLNames::styleAttr, "");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_TRUE(!div->layoutObject()->paintProperties() ||
+              !div->layoutObject()->paintProperties()->overflowClip());
+}
+
 }  // namespace blink

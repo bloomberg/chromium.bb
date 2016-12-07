@@ -2153,6 +2153,10 @@ Bug(none) fast/overflow/003.xml [ Failure ]
 Bug(none) fast/overflow/overflow-float-stacking.html [ Failure ]
 Bug(none) fast/overflow/overflow-stacking.html [ Failure ]
 
+# Paint property under-invalidation for clip changes needs investigation.
+crbug.com/645667 compositing/clip-change.html [ Failure ]
+crbug.com/645667 compositing/layer-creation/iframe-clip-removed.html [ Failure ]
+
 # Notes about rebaselined tests:
 #
 # Rebaselined for small pixel differences.

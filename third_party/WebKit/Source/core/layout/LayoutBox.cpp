@@ -325,6 +325,15 @@ void LayoutBox::styleDidChange(StyleDifference diff,
     updateScrollSnapMappingAfterStyleChange(&newStyle, oldStyle);
   }
 
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    if (hasOverflowClip() || styleRef().containsPaint() || hasControlClip()) {
+      // The overflow clip paint property depends on border sizes through
+      // overflowClipRect() so we update properties on border size changes.
+      if (oldStyle && !oldStyle->border().sizeEquals(newStyle.border()))
+        setNeedsPaintPropertyUpdate();
+    }
+  }
+
   // Non-atomic inlines should be LayoutInline or LayoutText, not LayoutBox.
   DCHECK(!isInline() || isAtomicInlineLevel());
 }
@@ -1692,6 +1701,14 @@ void LayoutBox::frameRectChanged() {
   // Should check this object for paint invalidation.
   if (!needsLayout())
     setMayNeedPaintInvalidation();
+
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    // The overflow clip paint property depends on the border box rect through
+    // overflowClipRect(). The border box rect's size equals the frame rect's
+    // size, so we trigger a paint property update when the framerect changes.
+    if (hasOverflowClip() || styleRef().containsPaint() || hasControlClip())
+      setNeedsPaintPropertyUpdate();
+  }
 }
 
 bool LayoutBox::intersectsVisibleViewport() const {

@@ -64,36 +64,7 @@ bool PrePaintTreeWalk::walk(FrameView& frameView,
 
 bool PrePaintTreeWalk::walk(const LayoutObject& object,
                             const PrePaintTreeWalkContext& context) {
-  // Early out from the treewalk if possible.
-  if (!object.needsPaintPropertyUpdate() &&
-      !object.descendantNeedsPaintPropertyUpdate() &&
-      !context.treeBuilderContext.forceSubtreeUpdate &&
-      !context.paintInvalidatorContext.forcedSubtreeInvalidationFlags &&
-      !object
-           .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState()) {
-    // Even though the subtree was not walked, we know that a walk will not
-    // change anything and can return true as if the subtree was fully updated.
-    return true;
-  }
-
   PrePaintTreeWalkContext localContext(context);
-
-  // TODO(pdr): These should be removable once paint offset changes mark an
-  // object as needing a paint property update. Below, we temporarily re-use
-  // paint invalidation flags to detect paint offset changes.
-  if (localContext.paintInvalidatorContext.forcedSubtreeInvalidationFlags) {
-    // forcedSubtreeInvalidationFlags will be true if locations have changed
-    // which will affect paint properties (e.g., PaintOffset).
-    localContext.treeBuilderContext.forceSubtreeUpdate = true;
-  } else if (object.shouldDoFullPaintInvalidation()) {
-    // shouldDoFullPaintInvalidation will be true when locations or overflow
-    // changes which will affect paint properties (e.g., PaintOffset, scroll).
-    object.getMutableForPainting().setNeedsPaintPropertyUpdate();
-  } else if (object.mayNeedPaintInvalidation()) {
-    // mayNeedpaintInvalidation will be true when locations change which will
-    // affect paint properties (e.g., PaintOffset).
-    object.getMutableForPainting().setNeedsPaintPropertyUpdate();
-  }
 
   // TODO(pdr): Ensure multi column works with incremental property tree
   // construction.
@@ -103,10 +74,9 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
     // positioned descendants if their containers are between the multi-column
     // container and the spanner. See PaintPropertyTreeBuilder for details.
     localContext.treeBuilderContext.isUnderMultiColumnSpanner = true;
+    const auto& placeholder = toLayoutMultiColumnSpannerPlaceholder(object);
     bool descendantsFullyUpdated =
-        walk(*toLayoutMultiColumnSpannerPlaceholder(object)
-                  .layoutObjectInFlowThread(),
-             localContext);
+        walk(*placeholder.layoutObjectInFlowThread(), localContext);
     if (descendantsFullyUpdated) {
       // If descendants were not fully updated, do not clear flags. During the
       // next PrePaintTreeWalk, these flags will be used again.
@@ -115,6 +85,30 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
       object.getMutableForPainting().clearDescendantNeedsPaintPropertyUpdate();
     }
     return descendantsFullyUpdated;
+  }
+
+  // Ensure the current context takes into account the box position. This can
+  // change the current context's paint offset so it must proceed the paint
+  // offset property update check.
+  m_propertyTreeBuilder.updateContextForBoxPosition(
+      object, localContext.treeBuilderContext);
+  // Many paint properties depend on paint offset so we force an update of
+  // properties if the paint offset changes.
+  if (object.previousPaintOffset() !=
+      localContext.treeBuilderContext.current.paintOffset) {
+    object.getMutableForPainting().setNeedsPaintPropertyUpdate();
+  }
+
+  // Early out from the treewalk if possible.
+  if (!object.needsPaintPropertyUpdate() &&
+      !object.descendantNeedsPaintPropertyUpdate() &&
+      !localContext.treeBuilderContext.forceSubtreeUpdate &&
+      !localContext.paintInvalidatorContext.forcedSubtreeInvalidationFlags &&
+      !object
+           .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState()) {
+    // Even though the subtree was not walked, we know that a walk will not
+    // change anything and can return true as if the subtree was fully updated.
+    return true;
   }
 
   m_propertyTreeBuilder.updatePropertiesForSelf(

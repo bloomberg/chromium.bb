@@ -68,9 +68,10 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
     // SVGImage::draw() does a view layout prior to painting,
     // and we need that layout to know of the new size otherwise
     // the layout may be incorrectly using the old size.
-    if (m_containerSize != containerSize)
+    if (m_containerSize != containerSize) {
       setNeedsLayoutAndFullPaintInvalidation(
           LayoutInvalidationReason::SizeChanged);
+    }
     m_containerSize = containerSize;
   }
 

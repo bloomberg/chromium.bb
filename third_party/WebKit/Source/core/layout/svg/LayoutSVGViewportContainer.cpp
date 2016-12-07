@@ -66,6 +66,11 @@ void LayoutSVGViewportContainer::calcViewport() {
 
 void LayoutSVGViewportContainer::setNeedsTransformUpdate() {
   setMayNeedPaintInvalidationSubtree();
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    // The transform paint property relies on the SVG transform being up-to-date
+    // (see: PaintPropertyTreeBuilder::updateTransformForNonRootSVG).
+    setNeedsPaintPropertyUpdate();
+  }
   m_needsTransformUpdate = true;
 }
 

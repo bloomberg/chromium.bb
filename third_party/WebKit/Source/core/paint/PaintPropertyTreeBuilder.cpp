@@ -796,14 +796,13 @@ static void overrideContaineringBlockContextFromRealContainingBlock(
   context.scroll = properties->propertyTreeState.scroll();
 }
 
-static void deriveBorderBoxFromContainerContext(
+void PaintPropertyTreeBuilder::updateContextForBoxPosition(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
   if (!object.isBoxModelObject())
     return;
 
   const LayoutBoxModelObject& boxModelObject = toLayoutBoxModelObject(object);
-
   switch (object.styleRef().position()) {
     case StaticPosition:
       break;
@@ -888,8 +887,6 @@ void PaintPropertyTreeBuilder::updatePropertiesForSelf(
 #if DCHECK_IS_ON()
   FindObjectPropertiesNeedingUpdateScope checkNeedsUpdateScope(object, context);
 #endif
-
-  deriveBorderBoxFromContainerContext(object, context);
 
   updatePaintOffsetTranslation(object, context);
   updateTransform(object, context);
