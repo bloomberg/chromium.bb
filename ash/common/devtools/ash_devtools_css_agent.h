@@ -27,6 +27,12 @@ class ASH_EXPORT AshDevToolsCSSAgent
       int node_id,
       ui::devtools::protocol::Maybe<ui::devtools::protocol::CSS::CSSStyle>*
           inline_style) override;
+  ui::devtools::protocol::Response setStyleTexts(
+      std::unique_ptr<ui::devtools::protocol::Array<
+          ui::devtools::protocol::CSS::StyleDeclarationEdit>> edits,
+      std::unique_ptr<
+          ui::devtools::protocol::Array<ui::devtools::protocol::CSS::CSSStyle>>*
+          result) override;
 
   // AshDevToolsDOMAgentObserver
   void OnWindowBoundsChanged(WmWindow* window) override;
@@ -37,6 +43,8 @@ class ASH_EXPORT AshDevToolsCSSAgent
   std::unique_ptr<ui::devtools::protocol::CSS::CSSStyle> GetStylesForNode(
       int node_id);
   void InvalidateStyleSheet(int node_id);
+  bool GetBoundsForNodeId(int node_id, gfx::Rect* bounds);
+  bool UpdateBounds(int node_id, const gfx::Rect& bounds);
 
   AshDevToolsDOMAgent* dom_agent_;
 

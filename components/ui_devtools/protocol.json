@@ -224,6 +224,30 @@
                             "name": "inlineStyle",
                             "optional": true
                         }
+
+                    ]
+                },
+                {
+                    "description": "Applies specified style edits one after another in the given order.",
+                    "name": "setStyleTexts",
+                    "parameters": [
+                        {
+                            "items": {
+                                "$ref": "StyleDeclarationEdit"
+                            },
+                            "type": "array",
+                            "name": "edits"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "items": {
+                                "$ref": "CSSStyle"
+                            },
+                            "type": "array",
+                            "name": "styles",
+                            "description": "The resulting styles after modification."
+                        }
                     ]
                 }
             ],
@@ -246,6 +270,50 @@
                      "type": "string"
                 },
                 {
+                    "description": "Text range within a resource. All numbers are zero-based.",
+                    "type": "object",
+                    "id": "SourceRange",
+                    "properties": [
+                        {
+                            "type": "integer",
+                            "name": "startLine",
+                            "description": "Start line of range."
+                        },
+                        {
+                            "type": "integer",
+                            "name": "startColumn",
+                            "description": "Start column of range (inclusive)."
+                        },
+                        {
+                            "type": "integer",
+                            "name": "endLine",
+                            "description": "End line of range"
+                        },
+                        {
+                            "type": "integer",
+                            "name": "endColumn",
+                            "description": "End column of range (exclusive)."
+                        }
+                    ]
+                },
+                {
+                    "description": "A descriptor of operation to mutate style declaration text.",
+                    "type": "object",
+                    "id": "StyleDeclarationEdit",
+                    "properties": [
+                        {
+                            "description": "The css style sheet identifier (same as NodeId for UI DevTools).",
+                            "name": "styleSheetId",
+                            "$ref": "StyleSheetId"
+                        },
+                        {
+                            "type": "string",
+                            "name": "text",
+                            "description": "New style text."
+                        }
+                    ]
+                },
+                {
                     "id": "CSSProperty",
                     "properties": [
                         {
@@ -257,6 +325,12 @@
                             "description": "The property value.",
                             "name": "value",
                             "type": "string"
+                        },
+                        { 
+                            "name": "range", 
+                            "$ref": "SourceRange", 
+                            "optional": true, 
+                            "description": "The entire property range in the enclosing style declaration (if available)."  
                         }
                     ],
                     "type": "object"
@@ -286,6 +360,12 @@
                             },
                             "name": "shorthandEntries",
                             "type": "array"
+                        },
+                        {
+                            "description": "Style declaration range in the enclosing stylesheet (if available).",
+                            "optional": true,
+                            "name": "range",
+                            "$ref": "SourceRange"
                         }
                     ],
                     "type": "object"
