@@ -208,19 +208,20 @@ static void accumulateArrayBuffersForAllWorlds(
   }
 }
 
-void SerializedScriptValue::transferImageBitmaps(
+std::unique_ptr<ImageBitmapContentsArray>
+SerializedScriptValue::transferImageBitmapContents(
     v8::Isolate* isolate,
     const ImageBitmapArray& imageBitmaps,
     ExceptionState& exceptionState) {
   if (!imageBitmaps.size())
-    return;
+    return nullptr;
 
   for (size_t i = 0; i < imageBitmaps.size(); ++i) {
     if (imageBitmaps[i]->isNeutered()) {
       exceptionState.throwDOMException(
           DataCloneError, "ImageBitmap at index " + String::number(i) +
                               " is already detached.");
-      return;
+      return nullptr;
     }
   }
 
@@ -233,6 +234,15 @@ void SerializedScriptValue::transferImageBitmaps(
     visited.add(imageBitmaps[i]);
     contents->append(imageBitmaps[i]->transfer());
   }
+  return contents;
+}
+
+void SerializedScriptValue::transferImageBitmaps(
+    v8::Isolate* isolate,
+    const ImageBitmapArray& imageBitmaps,
+    ExceptionState& exceptionState) {
+  std::unique_ptr<ImageBitmapContentsArray> contents =
+      transferImageBitmapContents(isolate, imageBitmaps, exceptionState);
   m_imageBitmapContentsArray = std::move(contents);
 }
 

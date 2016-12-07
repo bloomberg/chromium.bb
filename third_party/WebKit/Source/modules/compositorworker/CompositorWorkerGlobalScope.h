@@ -38,7 +38,7 @@ class MODULES_EXPORT CompositorWorkerGlobalScope final
                    PassRefPtr<SerializedScriptValue>,
                    const MessagePortArray&,
                    ExceptionState&);
-  static bool canTransferArrayBuffer() { return true; }
+  static bool canTransferArrayBuffersAndImageBitmaps() { return true; }
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
   int requestAnimationFrame(FrameRequestCallback*);

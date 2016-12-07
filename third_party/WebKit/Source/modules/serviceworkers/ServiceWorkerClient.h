@@ -43,7 +43,7 @@ class MODULES_EXPORT ServiceWorkerClient
                    const MessagePortArray&,
                    ExceptionState&);
 
-  static bool canTransferArrayBuffer() { return false; }
+  static bool canTransferArrayBuffersAndImageBitmaps() { return false; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

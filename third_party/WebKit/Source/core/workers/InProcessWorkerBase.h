@@ -34,7 +34,7 @@ class CORE_EXPORT InProcessWorkerBase : public AbstractWorker,
                    PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
-  static bool canTransferArrayBuffer() { return true; }
+  static bool canTransferArrayBuffersAndImageBitmaps() { return true; }
   void terminate();
 
   // ActiveDOMObject

@@ -123,6 +123,11 @@ class CORE_EXPORT SerializedScriptValue
       const ArrayBufferArray&,
       ExceptionState&);
 
+  static std::unique_ptr<ImageBitmapContentsArray> transferImageBitmapContents(
+      v8::Isolate*,
+      const ImageBitmapArray&,
+      ExceptionState&);
+
   // Informs the V8 about external memory allocated and owned by this object.
   // Large values should contribute to GC counters to eventually trigger a GC,
   // otherwise flood of postMessage() can cause OOM.

@@ -71,6 +71,7 @@
 #include "core/dom/TagCollection.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
 #include "core/frame/Deprecation.h"
+#include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCollection.h"
@@ -10245,28 +10246,34 @@ static void postMessageImpl(const char* interfaceName, TestObject* instance, con
   }
 
   RefPtr<SerializedScriptValue> message;
-  if (instance->canTransferArrayBuffer()) {
+  if (instance->canTransferArrayBuffersAndImageBitmaps()) {
     // This instance supports sending array buffers by move semantics.
     message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
     if (exceptionState.hadException())
       return;
   } else {
-    // This instance doesn't support sending array buffers by move
-    // semantics. Emulate it by copy-and-neuter semantics that sends array
-    // buffers by copy semantics and then neuters the original array
-    // buffers.
+    // This instance doesn't support sending array buffers and image bitmaps
+    // by move semantics. Emulate it by copy-and-neuter semantics that sends
+    // array buffers and image bitmaps via structured clone and then neuters
+    // the original objects
 
-    // Clear references to array buffers from transferables so that the
-    // serializer can consider the array buffers as non-transferable and
-    // copy them into the message.
+    // Clear references to array buffers and image bitmaps from transferables
+    // so that the serializer can consider the array buffers as
+    // non-transferable and serialize them into the message.
     ArrayBufferArray transferableArrayBuffers = transferables.arrayBuffers;
     transferables.arrayBuffers.clear();
+    ImageBitmapArray transferableImageBitmaps = transferables.imageBitmaps;
+    transferables.imageBitmaps.clear();
     message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
     if (exceptionState.hadException())
       return;
 
     // Neuter the original array buffers on the sender context.
     SerializedScriptValue::transferArrayBufferContents(info.GetIsolate(), transferableArrayBuffers, exceptionState);
+    if (exceptionState.hadException())
+      return;
+    // Neuter the original image bitmaps on the sender context.
+    SerializedScriptValue::transferImageBitmapContents(info.GetIsolate(), transferableImageBitmaps, exceptionState);
     if (exceptionState.hadException())
       return;
   }
