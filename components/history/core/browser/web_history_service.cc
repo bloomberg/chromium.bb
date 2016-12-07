@@ -360,7 +360,7 @@ std::unique_ptr<base::DictionaryValue> WebHistoryService::ReadResponse(
   if (request->GetResponseCode() == net::HTTP_OK) {
     std::unique_ptr<base::Value> value =
         base::JSONReader::Read(request->GetResponseBody());
-    if (value.get() && value.get()->IsType(base::Value::TYPE_DICTIONARY))
+    if (value.get() && value.get()->IsType(base::Value::Type::DICTIONARY))
       result.reset(static_cast<base::DictionaryValue*>(value.release()));
     else
       DLOG(WARNING) << "Non-JSON response received from history server.";

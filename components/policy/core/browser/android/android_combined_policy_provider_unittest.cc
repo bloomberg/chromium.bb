@@ -77,7 +77,7 @@ TEST_F(AndroidCombinedPolicyProviderTest, FlushPolices) {
   const PolicyMap& map = bundle.Get(ns);
   const base::Value* value = map.GetValue("TestPolicy");
   ASSERT_NE(nullptr, value);
-  EXPECT_EQ(base::Value::TYPE_STRING, value->GetType());
+  EXPECT_EQ(base::Value::Type::STRING, value->GetType());
   std::string out_value;
   EXPECT_TRUE(value->GetAsString(&out_value));
   EXPECT_EQ("TestValue", out_value);

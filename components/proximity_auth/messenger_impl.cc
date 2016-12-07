@@ -200,7 +200,7 @@ void MessengerImpl::OnMessageDecoded(const std::string& decoded_message) {
   // The decoded message should be a JSON string.
   std::unique_ptr<base::Value> message_value =
       base::JSONReader::Read(decoded_message);
-  if (!message_value || !message_value->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (!message_value || !message_value->IsType(base::Value::Type::DICTIONARY)) {
     PA_LOG(ERROR) << "Unable to parse message as JSON:\n" << decoded_message;
     return;
   }

@@ -16,7 +16,8 @@
 namespace policy {
 
 DiskCacheDirPolicyHandler::DiskCacheDirPolicyHandler()
-    : TypeCheckingPolicyHandler(key::kDiskCacheDir, base::Value::TYPE_STRING) {}
+    : TypeCheckingPolicyHandler(key::kDiskCacheDir, base::Value::Type::STRING) {
+}
 
 DiskCacheDirPolicyHandler::~DiskCacheDirPolicyHandler() {}
 

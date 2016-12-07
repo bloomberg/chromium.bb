@@ -46,7 +46,7 @@ void KeysAndDigestsToProtobuf(
   for (base::DictionaryValue::Iterator iter(keys_and_digests); !iter.IsAtEnd();
        iter.Advance()) {
     uint32_t digest = 0;
-    if (iter.value().GetType() != base::Value::TYPE_STRING ||
+    if (iter.value().GetType() != base::Value::Type::STRING ||
         !iter.value().GetAsString(&digest_value) ||
         !base::StringToUint(digest_value, &digest)) {
       NOTREACHED();

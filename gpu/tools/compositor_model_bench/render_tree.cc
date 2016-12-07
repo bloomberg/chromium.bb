@@ -119,21 +119,21 @@ std::unique_ptr<RenderNode> InterpretNode(const base::DictionaryValue& node);
 
 std::string ValueTypeAsString(Value::Type type) {
   switch (type) {
-    case Value::TYPE_NULL:
+    case Value::Type::NONE:
       return "NULL";
-    case Value::TYPE_BOOLEAN:
+    case Value::Type::BOOLEAN:
       return "BOOLEAN";
-    case Value::TYPE_INTEGER:
+    case Value::Type::INTEGER:
       return "INTEGER";
-    case Value::TYPE_DOUBLE:
+    case Value::Type::DOUBLE:
       return "DOUBLE";
-    case Value::TYPE_STRING:
+    case Value::Type::STRING:
       return "STRING";
-    case Value::TYPE_BINARY:
+    case Value::Type::BINARY:
       return "BINARY";
-    case Value::TYPE_DICTIONARY:
+    case Value::Type::DICTIONARY:
       return "DICTIONARY";
-    case Value::TYPE_LIST:
+    case Value::Type::LIST:
       return "LIST";
     default:
       return "(UNKNOWN TYPE)";
@@ -180,12 +180,12 @@ bool VerifyListEntry(const base::ListValue& l,
 }
 
 bool InterpretCommonContents(const base::DictionaryValue& node, RenderNode* c) {
-  if (!VerifyDictionaryEntry(node, "layerID", Value::TYPE_INTEGER) ||
-      !VerifyDictionaryEntry(node, "width", Value::TYPE_INTEGER) ||
-      !VerifyDictionaryEntry(node, "height", Value::TYPE_INTEGER) ||
-      !VerifyDictionaryEntry(node, "drawsContent", Value::TYPE_BOOLEAN) ||
-      !VerifyDictionaryEntry(node, "targetSurfaceID", Value::TYPE_INTEGER) ||
-      !VerifyDictionaryEntry(node, "transform", Value::TYPE_LIST)) {
+  if (!VerifyDictionaryEntry(node, "layerID", Value::Type::INTEGER) ||
+      !VerifyDictionaryEntry(node, "width", Value::Type::INTEGER) ||
+      !VerifyDictionaryEntry(node, "height", Value::Type::INTEGER) ||
+      !VerifyDictionaryEntry(node, "drawsContent", Value::Type::BOOLEAN) ||
+      !VerifyDictionaryEntry(node, "targetSurfaceID", Value::Type::INTEGER) ||
+      !VerifyDictionaryEntry(node, "transform", Value::Type::LIST)) {
     return false;
   }
 
@@ -213,7 +213,7 @@ bool InterpretCommonContents(const base::DictionaryValue& node, RenderNode* c) {
   }
   float transform_mat[16];
   for (int i = 0; i < 16; ++i) {
-    if (!VerifyListEntry(*transform, i, Value::TYPE_DOUBLE, "Transform"))
+    if (!VerifyListEntry(*transform, i, Value::Type::DOUBLE, "Transform"))
       return false;
     double el;
     transform->GetDouble(i, &el);
@@ -224,16 +224,16 @@ bool InterpretCommonContents(const base::DictionaryValue& node, RenderNode* c) {
   if (!node.HasKey("tiles"))
     return true;
 
-  if (!VerifyDictionaryEntry(node, "tiles", Value::TYPE_DICTIONARY))
+  if (!VerifyDictionaryEntry(node, "tiles", Value::Type::DICTIONARY))
     return false;
   const base::DictionaryValue* tiles_dict;
   node.GetDictionary("tiles", &tiles_dict);
-  if (!VerifyDictionaryEntry(*tiles_dict, "dim", Value::TYPE_LIST))
+  if (!VerifyDictionaryEntry(*tiles_dict, "dim", Value::Type::LIST))
     return false;
   const base::ListValue* dim;
   tiles_dict->GetList("dim", &dim);
-  if (!VerifyListEntry(*dim, 0, Value::TYPE_INTEGER, "Tile dimension") ||
-      !VerifyListEntry(*dim, 1, Value::TYPE_INTEGER, "Tile dimension")) {
+  if (!VerifyListEntry(*dim, 0, Value::Type::INTEGER, "Tile dimension") ||
+      !VerifyListEntry(*dim, 1, Value::Type::INTEGER, "Tile dimension")) {
     return false;
   }
   int tile_width;
@@ -243,25 +243,25 @@ bool InterpretCommonContents(const base::DictionaryValue& node, RenderNode* c) {
   dim->GetInteger(1, &tile_height);
   c->set_tile_height(tile_height);
 
-  if (!VerifyDictionaryEntry(*tiles_dict, "info", Value::TYPE_LIST))
+  if (!VerifyDictionaryEntry(*tiles_dict, "info", Value::Type::LIST))
     return false;
   const base::ListValue* tiles;
   tiles_dict->GetList("info", &tiles);
   for (unsigned int i = 0; i < tiles->GetSize(); ++i) {
-    if (!VerifyListEntry(*tiles, i, Value::TYPE_DICTIONARY, "Tile info"))
+    if (!VerifyListEntry(*tiles, i, Value::Type::DICTIONARY, "Tile info"))
       return false;
     const base::DictionaryValue* tdict;
     tiles->GetDictionary(i, &tdict);
 
-    if (!VerifyDictionaryEntry(*tdict, "x", Value::TYPE_INTEGER) ||
-        !VerifyDictionaryEntry(*tdict, "y", Value::TYPE_INTEGER)) {
+    if (!VerifyDictionaryEntry(*tdict, "x", Value::Type::INTEGER) ||
+        !VerifyDictionaryEntry(*tdict, "y", Value::Type::INTEGER)) {
       return false;
     }
     Tile t;
     tdict->GetInteger("x", &t.x);
     tdict->GetInteger("y", &t.y);
     if (tdict->HasKey("texID")) {
-      if (!VerifyDictionaryEntry(*tdict, "texID", Value::TYPE_INTEGER))
+      if (!VerifyDictionaryEntry(*tdict, "texID", Value::Type::INTEGER))
         return false;
       tdict->GetInteger("texID", &t.texID);
     } else {
@@ -273,9 +273,9 @@ bool InterpretCommonContents(const base::DictionaryValue& node, RenderNode* c) {
 }
 
 bool InterpretCCData(const base::DictionaryValue& node, CCNode* c) {
-  if (!VerifyDictionaryEntry(node, "vertex_shader", Value::TYPE_STRING) ||
-      !VerifyDictionaryEntry(node, "fragment_shader", Value::TYPE_STRING) ||
-      !VerifyDictionaryEntry(node, "textures", Value::TYPE_LIST)) {
+  if (!VerifyDictionaryEntry(node, "vertex_shader", Value::Type::STRING) ||
+      !VerifyDictionaryEntry(node, "fragment_shader", Value::Type::STRING) ||
+      !VerifyDictionaryEntry(node, "textures", Value::Type::LIST)) {
     return false;
   }
   std::string vertex_shader_name, fragment_shader_name;
@@ -287,15 +287,15 @@ bool InterpretCCData(const base::DictionaryValue& node, CCNode* c) {
   const base::ListValue* textures;
   node.GetList("textures", &textures);
   for (unsigned int i = 0; i < textures->GetSize(); ++i) {
-    if (!VerifyListEntry(*textures, i, Value::TYPE_DICTIONARY, "Tex list"))
+    if (!VerifyListEntry(*textures, i, Value::Type::DICTIONARY, "Tex list"))
       return false;
     const base::DictionaryValue* tex;
     textures->GetDictionary(i, &tex);
 
-    if (!VerifyDictionaryEntry(*tex, "texID", Value::TYPE_INTEGER) ||
-        !VerifyDictionaryEntry(*tex, "height", Value::TYPE_INTEGER) ||
-        !VerifyDictionaryEntry(*tex, "width", Value::TYPE_INTEGER) ||
-        !VerifyDictionaryEntry(*tex, "format", Value::TYPE_STRING)) {
+    if (!VerifyDictionaryEntry(*tex, "texID", Value::Type::INTEGER) ||
+        !VerifyDictionaryEntry(*tex, "height", Value::Type::INTEGER) ||
+        !VerifyDictionaryEntry(*tex, "width", Value::Type::INTEGER) ||
+        !VerifyDictionaryEntry(*tex, "format", Value::Type::STRING)) {
       return false;
     }
     Texture t;
@@ -338,9 +338,9 @@ std::unique_ptr<RenderNode> InterpretContentLayer(
   if (!InterpretCommonContents(node, n.get()))
     return nullptr;
 
-  if (!VerifyDictionaryEntry(node, "type", Value::TYPE_STRING) ||
-      !VerifyDictionaryEntry(node, "skipsDraw", Value::TYPE_BOOLEAN) ||
-      !VerifyDictionaryEntry(node, "children", Value::TYPE_LIST)) {
+  if (!VerifyDictionaryEntry(node, "type", Value::Type::STRING) ||
+      !VerifyDictionaryEntry(node, "skipsDraw", Value::Type::BOOLEAN) ||
+      !VerifyDictionaryEntry(node, "children", Value::Type::LIST)) {
     return nullptr;
   }
 
@@ -371,7 +371,7 @@ std::unique_ptr<RenderNode> InterpretCanvasLayer(
   if (!InterpretCommonContents(node, n.get()))
     return nullptr;
 
-  if (!VerifyDictionaryEntry(node, "type", Value::TYPE_STRING))
+  if (!VerifyDictionaryEntry(node, "type", Value::Type::STRING))
     return nullptr;
 
   std::string type;
@@ -390,7 +390,7 @@ std::unique_ptr<RenderNode> InterpretVideoLayer(
   if (!InterpretCommonContents(node, n.get()))
     return nullptr;
 
-  if (!VerifyDictionaryEntry(node, "type", Value::TYPE_STRING))
+  if (!VerifyDictionaryEntry(node, "type", Value::Type::STRING))
     return nullptr;
 
   std::string type;
@@ -409,7 +409,7 @@ std::unique_ptr<RenderNode> InterpretImageLayer(
   if (!InterpretCommonContents(node, n.get()))
     return nullptr;
 
-  if (!VerifyDictionaryEntry(node, "type", Value::TYPE_STRING))
+  if (!VerifyDictionaryEntry(node, "type", Value::Type::STRING))
     return nullptr;
 
   std::string type;
@@ -423,7 +423,7 @@ std::unique_ptr<RenderNode> InterpretImageLayer(
 }
 
 std::unique_ptr<RenderNode> InterpretNode(const base::DictionaryValue& node) {
-  if (!VerifyDictionaryEntry(node, "type", Value::TYPE_STRING))
+  if (!VerifyDictionaryEntry(node, "type", Value::Type::STRING))
     return nullptr;
 
   std::string type;

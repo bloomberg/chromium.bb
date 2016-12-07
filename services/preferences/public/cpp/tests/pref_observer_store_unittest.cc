@@ -267,7 +267,7 @@ TEST_F(PrefObserverStoreTest, WriteToNestedPrefs) {
   // Change an item within the nested dictionary
   base::Value* result = nullptr;
   store()->GetMutableValue(key1, &result);
-  EXPECT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, result->GetType());
   EXPECT_TRUE(result->Equals(&sub_dictionary1));
 
   base::DictionaryValue* dictionary_result = nullptr;

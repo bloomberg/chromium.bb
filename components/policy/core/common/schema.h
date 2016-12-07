@@ -113,7 +113,7 @@ class POLICY_EXPORT Schema {
                  std::string* error,
                  bool* changed) const;
 
-  // Used to iterate over the known properties of TYPE_DICTIONARY schemas.
+  // Used to iterate over the known properties of Type::DICTIONARY schemas.
   class POLICY_EXPORT Iterator {
    public:
     Iterator(const scoped_refptr<const InternalStorage>& storage,
@@ -141,7 +141,7 @@ class POLICY_EXPORT Schema {
     const internal::PropertyNode* end_;
   };
 
-  // These methods should be called only if type() == TYPE_DICTIONARY,
+  // These methods should be called only if type() == Type::DICTIONARY,
   // otherwise invalid memory will be read. A CHECK is currently enforcing this.
 
   // Returns an iterator that goes over the named properties of this schema.
@@ -172,7 +172,7 @@ class POLICY_EXPORT Schema {
   SchemaList GetMatchingProperties(const std::string& key) const;
 
   // Returns the Schema for items of an array.
-  // This method should be called only if type() == TYPE_LIST,
+  // This method should be called only if type() == Type::LIST,
   // otherwise invalid memory will be read. A CHECK is currently enforcing this.
   Schema GetItems() const;
 

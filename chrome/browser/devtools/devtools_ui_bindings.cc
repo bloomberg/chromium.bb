@@ -691,7 +691,7 @@ void DevToolsUIBindings::SetWhitelistedShortcuts(const std::string& message) {
 void DevToolsUIBindings::ShowCertificateViewer(const std::string& cert_chain) {
   std::unique_ptr<base::Value> value =
       base::JSONReader::Read(cert_chain);
-  if (!value || value->GetType() != base::Value::TYPE_LIST) {
+  if (!value || value->GetType() != base::Value::Type::LIST) {
     NOTREACHED();
     return;
   }
@@ -701,7 +701,7 @@ void DevToolsUIBindings::ShowCertificateViewer(const std::string& cert_chain) {
   std::vector<std::string> decoded;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     base::Value* item;
-    if (!list->Get(i, &item) || item->GetType() != base::Value::TYPE_STRING) {
+    if (!list->Get(i, &item) || item->GetType() != base::Value::Type::STRING) {
       NOTREACHED();
       return;
     }

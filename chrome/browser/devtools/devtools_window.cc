@@ -101,7 +101,7 @@ void SetPreferencesFromJson(Profile* profile, const std::string& json) {
     return;
   DictionaryPrefUpdate update(profile->GetPrefs(), prefs::kDevToolsPreferences);
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    if (!it.value().IsType(base::Value::TYPE_STRING))
+    if (!it.value().IsType(base::Value::Type::STRING))
       continue;
     update.Get()->SetWithoutPathExpansion(
         it.key(), it.value().CreateDeepCopy());

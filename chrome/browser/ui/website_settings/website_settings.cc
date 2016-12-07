@@ -709,7 +709,7 @@ void WebsiteSettings::PresentSitePermissions() {
     std::unique_ptr<base::Value> value = content_settings_->GetWebsiteSetting(
         site_url_, site_url_, permission_info.type, std::string(), &info);
     DCHECK(value.get());
-    if (value->GetType() == base::Value::TYPE_INTEGER) {
+    if (value->GetType() == base::Value::Type::INTEGER) {
       permission_info.setting =
           content_settings::ValueToContentSetting(value.get());
     } else {

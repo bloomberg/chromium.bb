@@ -71,13 +71,13 @@ bool SchemaTypeToValueType(const std::string& type_string,
     const char* schema_type;
     base::Value::Type value_type;
   } kSchemaToValueTypeMap[] = {
-    { schema::kArray,        base::Value::TYPE_LIST       },
-    { schema::kBoolean,      base::Value::TYPE_BOOLEAN    },
-    { schema::kInteger,      base::Value::TYPE_INTEGER    },
-    { schema::kNull,         base::Value::TYPE_NULL       },
-    { schema::kNumber,       base::Value::TYPE_DOUBLE     },
-    { schema::kObject,       base::Value::TYPE_DICTIONARY },
-    { schema::kString,       base::Value::TYPE_STRING     },
+    { schema::kArray,        base::Value::Type::LIST       },
+    { schema::kBoolean,      base::Value::Type::BOOLEAN    },
+    { schema::kInteger,      base::Value::Type::INTEGER    },
+    { schema::kNull,         base::Value::Type::NONE       },
+    { schema::kNumber,       base::Value::Type::DOUBLE     },
+    { schema::kObject,       base::Value::Type::DICTIONARY },
+    { schema::kString,       base::Value::Type::STRING     },
   };
   for (size_t i = 0; i < arraysize(kSchemaToValueTypeMap); ++i) {
     if (kSchemaToValueTypeMap[i].schema_type == type_string) {
@@ -366,7 +366,7 @@ void Schema::InternalStorage::DetermineStorageSizes(
   }
 
   std::string type_string;
-  base::Value::Type type = base::Value::TYPE_NULL;
+  base::Value::Type type = base::Value::Type::NONE;
   if (!schema.GetString(schema::kType, &type_string) ||
       !SchemaTypeToValueType(type_string, &type)) {
     // This schema is invalid.
@@ -375,11 +375,11 @@ void Schema::InternalStorage::DetermineStorageSizes(
 
   sizes->schema_nodes++;
 
-  if (type == base::Value::TYPE_LIST) {
+  if (type == base::Value::Type::LIST) {
     const base::DictionaryValue* items = NULL;
     if (schema.GetDictionary(schema::kItems, &items))
       DetermineStorageSizes(*items, sizes);
-  } else if (type == base::Value::TYPE_DICTIONARY) {
+  } else if (type == base::Value::Type::DICTIONARY) {
     sizes->properties_nodes++;
 
     const base::DictionaryValue* dict = NULL;
@@ -411,18 +411,18 @@ void Schema::InternalStorage::DetermineStorageSizes(
   } else if (schema.HasKey(schema::kEnum)) {
     const base::ListValue* possible_values = NULL;
     if (schema.GetList(schema::kEnum, &possible_values)) {
-      if (type == base::Value::TYPE_INTEGER) {
+      if (type == base::Value::Type::INTEGER) {
         sizes->int_enums += possible_values->GetSize();
-      } else if (type == base::Value::TYPE_STRING) {
+      } else if (type == base::Value::Type::STRING) {
         sizes->string_enums += possible_values->GetSize();
         sizes->strings += possible_values->GetSize();
       }
       sizes->restriction_nodes++;
     }
-  } else if (type == base::Value::TYPE_INTEGER) {
+  } else if (type == base::Value::Type::INTEGER) {
     if (schema.HasKey(schema::kMinimum) || schema.HasKey(schema::kMaximum))
       sizes->restriction_nodes++;
-  } else if (type == base::Value::TYPE_STRING) {
+  } else if (type == base::Value::Type::STRING) {
     if (schema.HasKey(schema::kPattern)) {
       sizes->strings++;
       sizes->string_enums++;
@@ -453,7 +453,7 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
     return false;
   }
 
-  base::Value::Type type = base::Value::TYPE_NULL;
+  base::Value::Type type = base::Value::Type::NONE;
   if (!SchemaTypeToValueType(type_string, &type)) {
     *error = "Type not supported: " + type_string;
     return false;
@@ -465,10 +465,10 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
   schema_node->type = type;
   schema_node->extra = kInvalid;
 
-  if (type == base::Value::TYPE_DICTIONARY) {
+  if (type == base::Value::Type::DICTIONARY) {
     if (!ParseDictionary(schema, schema_node, id_map, reference_list, error))
       return false;
-  } else if (type == base::Value::TYPE_LIST) {
+  } else if (type == base::Value::Type::LIST) {
     if (!ParseList(schema, schema_node, id_map, reference_list, error))
       return false;
   } else if (schema.HasKey(schema::kEnum)) {
@@ -479,7 +479,7 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
       return false;
   } else if (schema.HasKey(schema::kMinimum) ||
              schema.HasKey(schema::kMaximum)) {
-    if (type != base::Value::TYPE_INTEGER) {
+    if (type != base::Value::Type::INTEGER) {
       *error = "Only integers can have minimum and maximum";
       return false;
     }
@@ -614,7 +614,7 @@ bool Schema::InternalStorage::ParseEnum(const base::DictionaryValue& schema,
   }
   int offset_begin;
   int offset_end;
-  if (type == base::Value::TYPE_INTEGER) {
+  if (type == base::Value::Type::INTEGER) {
     offset_begin = static_cast<int>(int_enums_.size());
     int value;
     for (base::ListValue::const_iterator it = possible_values->begin();
@@ -626,7 +626,7 @@ bool Schema::InternalStorage::ParseEnum(const base::DictionaryValue& schema,
       int_enums_.push_back(value);
     }
     offset_end = static_cast<int>(int_enums_.size());
-  } else if (type == base::Value::TYPE_STRING) {
+  } else if (type == base::Value::Type::STRING) {
     offset_begin = static_cast<int>(string_enums_.size());
     std::string value;
     for (base::ListValue::const_iterator it = possible_values->begin();
@@ -785,8 +785,8 @@ bool Schema::Validate(const base::Value& value,
   if (!value.IsType(type())) {
     // Allow the integer to double promotion. Note that range restriction on
     // double is not supported now.
-    if (value.IsType(base::Value::TYPE_INTEGER) &&
-        type() == base::Value::TYPE_DOUBLE) {
+    if (value.IsType(base::Value::Type::INTEGER) &&
+        type() == base::Value::Type::DOUBLE) {
       return true;
     }
 
@@ -867,8 +867,8 @@ bool Schema::Normalize(base::Value* value,
   if (!value->IsType(type())) {
     // Allow the integer to double promotion. Note that range restriction on
     // double is not supported now.
-    if (value->IsType(base::Value::TYPE_INTEGER) &&
-        type() == base::Value::TYPE_DOUBLE) {
+    if (value->IsType(base::Value::Type::INTEGER) &&
+        type() == base::Value::Type::DOUBLE) {
       return true;
     }
 
@@ -993,7 +993,7 @@ base::Value::Type Schema::type() const {
 
 Schema::Iterator Schema::GetPropertiesIterator() const {
   CHECK(valid());
-  CHECK_EQ(base::Value::TYPE_DICTIONARY, type());
+  CHECK_EQ(base::Value::Type::DICTIONARY, type());
   return Iterator(storage_, storage_->properties(node_->extra));
 }
 
@@ -1007,7 +1007,7 @@ bool CompareKeys(const PropertyNode& node, const std::string& key) {
 
 Schema Schema::GetKnownProperty(const std::string& key) const {
   CHECK(valid());
-  CHECK_EQ(base::Value::TYPE_DICTIONARY, type());
+  CHECK_EQ(base::Value::Type::DICTIONARY, type());
   const PropertiesNode* node = storage_->properties(node_->extra);
   const PropertyNode* begin = storage_->property(node->begin);
   const PropertyNode* end = storage_->property(node->end);
@@ -1019,7 +1019,7 @@ Schema Schema::GetKnownProperty(const std::string& key) const {
 
 Schema Schema::GetAdditionalProperties() const {
   CHECK(valid());
-  CHECK_EQ(base::Value::TYPE_DICTIONARY, type());
+  CHECK_EQ(base::Value::Type::DICTIONARY, type());
   const PropertiesNode* node = storage_->properties(node_->extra);
   if (node->additional == kInvalid)
     return Schema();
@@ -1028,7 +1028,7 @@ Schema Schema::GetAdditionalProperties() const {
 
 SchemaList Schema::GetPatternProperties(const std::string& key) const {
   CHECK(valid());
-  CHECK_EQ(base::Value::TYPE_DICTIONARY, type());
+  CHECK_EQ(base::Value::Type::DICTIONARY, type());
   const PropertiesNode* node = storage_->properties(node_->extra);
   const PropertyNode* begin = storage_->property(node->end);
   const PropertyNode* end = storage_->property(node->pattern_end);
@@ -1071,7 +1071,7 @@ SchemaList Schema::GetMatchingProperties(const std::string& key) const {
 
 Schema Schema::GetItems() const {
   CHECK(valid());
-  CHECK_EQ(base::Value::TYPE_LIST, type());
+  CHECK_EQ(base::Value::Type::LIST, type());
   if (node_->extra == kInvalid)
     return Schema();
   return Schema(storage_, storage_->schema(node_->extra));

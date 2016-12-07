@@ -32,15 +32,15 @@ bool NetworkPredictionPolicyHandler::CheckPolicySettings(
       policies.GetValue(key::kNetworkPredictionOptions);
 
   if (network_prediction_enabled &&
-      !network_prediction_enabled->IsType(base::Value::TYPE_BOOLEAN)) {
+      !network_prediction_enabled->IsType(base::Value::Type::BOOLEAN)) {
     errors->AddError(key::kDnsPrefetchingEnabled, IDS_POLICY_TYPE_ERROR,
-                     base::Value::GetTypeName(base::Value::TYPE_BOOLEAN));
+                     base::Value::GetTypeName(base::Value::Type::BOOLEAN));
   }
 
   if (network_prediction_options &&
-      !network_prediction_options->IsType(base::Value::TYPE_INTEGER)) {
+      !network_prediction_options->IsType(base::Value::Type::INTEGER)) {
     errors->AddError(key::kNetworkPredictionOptions, IDS_POLICY_TYPE_ERROR,
-                     base::Value::GetTypeName(base::Value::TYPE_INTEGER));
+                     base::Value::GetTypeName(base::Value::Type::INTEGER));
   }
 
   if (network_prediction_enabled && network_prediction_options) {

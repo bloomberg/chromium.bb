@@ -47,14 +47,13 @@ std::unique_ptr<base::DictionaryValue> LoadSchemaDictionary(
 
   // Tracking down http://crbug.com/121424
   char buf[128];
-  base::snprintf(buf, arraysize(buf), "%s: (%d) '%s'",
-      name.c_str(),
-      result.get() ? result->GetType() : -1,
-      error_message.c_str());
+  base::snprintf(buf, arraysize(buf), "%s: (%d) '%s'", name.c_str(),
+                 result.get() ? static_cast<int>(result->GetType()) : -1,
+                 error_message.c_str());
 
   CHECK(result.get()) << error_message << " for schema " << schema;
-  CHECK(result->IsType(base::Value::TYPE_DICTIONARY)) << " for schema "
-                                                      << schema;
+  CHECK(result->IsType(base::Value::Type::DICTIONARY)) << " for schema "
+                                                       << schema;
   return base::DictionaryValue::From(std::move(result));
 }
 

@@ -18,7 +18,7 @@ namespace policy {
 
 RestoreOnStartupPolicyHandler::RestoreOnStartupPolicyHandler()
     : TypeCheckingPolicyHandler(key::kRestoreOnStartup,
-                                base::Value::TYPE_INTEGER) {}
+                                base::Value::Type::INTEGER) {}
 
 RestoreOnStartupPolicyHandler::~RestoreOnStartupPolicyHandler() {
 }

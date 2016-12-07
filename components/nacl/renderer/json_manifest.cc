@@ -200,7 +200,7 @@ bool IsValidUrlSpec(const base::Value& url_spec,
   // URL was already verified above by IsValidDictionary to be required.
   url_dict->GetWithoutPathExpansion(kUrlKey, &url);
   DCHECK(url);
-  if (!url->IsType(base::Value::TYPE_STRING)) {
+  if (!url->IsType(base::Value::Type::STRING)) {
     std::stringstream error_stream;
     error_stream << parent_key << " property '" << container_key
                  << "' has non-string value '" << *url << "' for key '"
@@ -212,7 +212,7 @@ bool IsValidUrlSpec(const base::Value& url_spec,
     const base::Value* opt_level = nullptr;
     url_dict->GetWithoutPathExpansion(kOptLevelKey, &opt_level);
     DCHECK(opt_level);
-    if (!opt_level->IsType(base::Value::TYPE_INTEGER)) {
+    if (!opt_level->IsType(base::Value::Type::INTEGER)) {
       std::stringstream error_stream;
       error_stream << parent_key << " property '" << container_key
                    << "' has non-numeric value '" << *opt_level << "' for key '"

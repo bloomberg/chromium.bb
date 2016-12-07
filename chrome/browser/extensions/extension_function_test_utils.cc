@@ -59,13 +59,13 @@ base::ListValue* ParseList(const std::string& data) {
 
 base::DictionaryValue* ToDictionary(base::Value* val) {
   EXPECT_TRUE(val);
-  EXPECT_EQ(base::Value::TYPE_DICTIONARY, val->GetType());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, val->GetType());
   return static_cast<base::DictionaryValue*>(val);
 }
 
 base::ListValue* ToList(base::Value* val) {
   EXPECT_TRUE(val);
-  EXPECT_EQ(base::Value::TYPE_LIST, val->GetType());
+  EXPECT_EQ(base::Value::Type::LIST, val->GetType());
   return static_cast<base::ListValue*>(val);
 }
 

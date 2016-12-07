@@ -17,54 +17,54 @@ TEST(WebViewJsUtilsTest, ValueResultFromUndefinedWKResult) {
   EXPECT_FALSE(ValueResultFromWKResult(nil));
 }
 
-// Tests that ValueResultFromWKResult converts string to Value::TYPE_STRING.
+// Tests that ValueResultFromWKResult converts string to Value::Type::STRING.
 TEST(WebViewJsUtilsTest, ValueResultFromStringWKResult) {
   std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@"test"));
   EXPECT_TRUE(value);
-  EXPECT_EQ(base::Value::TYPE_STRING, value->GetType());
+  EXPECT_EQ(base::Value::Type::STRING, value->GetType());
   std::string converted_result;
   value->GetAsString(&converted_result);
   EXPECT_EQ("test", converted_result);
 }
 
-// Tests that ValueResultFromWKResult converts inetger to Value::TYPE_DOUBLE.
+// Tests that ValueResultFromWKResult converts inetger to Value::Type::DOUBLE.
 // NOTE: WKWebView API returns all numbers as kCFNumberFloat64Type, so there is
 // no way to tell if the result is integer or double.
 TEST(WebViewJsUtilsTest, ValueResultFromIntegerWKResult) {
   std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@1));
   EXPECT_TRUE(value);
-  EXPECT_EQ(base::Value::TYPE_DOUBLE, value->GetType());
+  EXPECT_EQ(base::Value::Type::DOUBLE, value->GetType());
   double converted_result = 0;
   value->GetAsDouble(&converted_result);
   EXPECT_EQ(1, converted_result);
 }
 
-// Tests that ValueResultFromWKResult converts double to Value::TYPE_DOUBLE.
+// Tests that ValueResultFromWKResult converts double to Value::Type::DOUBLE.
 TEST(WebViewJsUtilsTest, ValueResultFromDoubleWKResult) {
   std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@3.14));
   EXPECT_TRUE(value);
-  EXPECT_EQ(base::Value::TYPE_DOUBLE, value->GetType());
+  EXPECT_EQ(base::Value::Type::DOUBLE, value->GetType());
   double converted_result = 0;
   value->GetAsDouble(&converted_result);
   EXPECT_EQ(3.14, converted_result);
 }
 
-// Tests that ValueResultFromWKResult converts bool to Value::TYPE_BOOLEAN.
+// Tests that ValueResultFromWKResult converts bool to Value::Type::BOOLEAN.
 TEST(WebViewJsUtilsTest, ValueResultFromBoolWKResult) {
   std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@YES));
   EXPECT_TRUE(value);
-  EXPECT_EQ(base::Value::TYPE_BOOLEAN, value->GetType());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, value->GetType());
   bool converted_result = false;
   value->GetAsBoolean(&converted_result);
   EXPECT_TRUE(converted_result);
 }
 
-// Tests that ValueResultFromWKResult converts null to Value::TYPE_NULL.
+// Tests that ValueResultFromWKResult converts null to Value::Type::NONE.
 TEST(WebViewJsUtilsTest, ValueResultFromNullWKResult) {
   std::unique_ptr<base::Value> value(
       web::ValueResultFromWKResult([NSNull null]));
   EXPECT_TRUE(value);
-  EXPECT_EQ(base::Value::TYPE_NULL, value->GetType());
+  EXPECT_EQ(base::Value::Type::NONE, value->GetType());
 }
 
 // Tests that ValueResultFromWKResult converts NSDictionaries to properly

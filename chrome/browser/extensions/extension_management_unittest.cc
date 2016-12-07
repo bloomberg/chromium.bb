@@ -153,7 +153,7 @@ class ExtensionManagementServiceTest : public testing::Test {
     std::unique_ptr<base::Value> parsed = base::JSONReader::ReadAndReturnError(
         kExampleDictPreference,
         base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL, &error_msg);
-    ASSERT_TRUE(parsed && parsed->IsType(base::Value::TYPE_DICTIONARY))
+    ASSERT_TRUE(parsed && parsed->IsType(base::Value::Type::DICTIONARY))
         << error_msg;
     SetPref(true, pref_names::kExtensionManagement, parsed.release());
   }

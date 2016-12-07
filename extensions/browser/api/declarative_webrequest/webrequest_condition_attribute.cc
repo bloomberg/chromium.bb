@@ -507,7 +507,7 @@ HeaderMatcher::HeaderMatchTest::Create(const base::DictionaryValue* tests) {
     std::vector<std::unique_ptr<const StringMatchTest>>* tests =
         is_name ? &name_match : &value_match;
     switch (content->GetType()) {
-      case base::Value::TYPE_LIST: {
+      case base::Value::Type::LIST: {
         const base::ListValue* list = NULL;
         CHECK(content->GetAsList(&list));
         for (const auto& it : *list) {
@@ -515,7 +515,7 @@ HeaderMatcher::HeaderMatchTest::Create(const base::DictionaryValue* tests) {
         }
         break;
       }
-      case base::Value::TYPE_STRING: {
+      case base::Value::Type::STRING: {
         tests->push_back(
             StringMatchTest::Create(*content, match_type, !is_name));
         break;

@@ -354,7 +354,7 @@ void AppBannerSettingsHelper::RecordBannerCouldShowEvent(
   // the times are converted to local dates.
   base::Time date = BucketTimeToResolution(time, gMinimumMinutesBetweenVisits);
   for (auto it = could_show_list->begin(); it != could_show_list->end();) {
-    if ((*it)->IsType(base::Value::TYPE_DICTIONARY)) {
+    if ((*it)->IsType(base::Value::Type::DICTIONARY)) {
       base::DictionaryValue* internal_value;
       double internal_date;
       (*it)->GetAsDictionary(&internal_value);
@@ -496,7 +496,7 @@ AppBannerSettingsHelper::GetCouldShowBannerEvents(
     return result;
 
   for (const auto& value : *could_show_list) {
-    if (value->IsType(base::Value::TYPE_DICTIONARY)) {
+    if (value->IsType(base::Value::Type::DICTIONARY)) {
       base::DictionaryValue* internal_value;
       double internal_date = 0;
       value->GetAsDictionary(&internal_value);
@@ -581,7 +581,7 @@ bool AppBannerSettingsHelper::WasLaunchedRecently(Profile* profile,
   // homescreen recently, return true.
   for (base::DictionaryValue::Iterator it(*origin_dict); !it.IsAtEnd();
        it.Advance()) {
-    if (it.value().IsType(base::Value::TYPE_DICTIONARY)) {
+    if (it.value().IsType(base::Value::Type::DICTIONARY)) {
       const base::DictionaryValue* value;
       it.value().GetAsDictionary(&value);
 

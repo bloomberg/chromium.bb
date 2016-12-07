@@ -113,10 +113,10 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
 
     base::Value* roots = NULL;
     if (!Write(kHeader) ||
-        bookmarks_->GetType() != base::Value::TYPE_DICTIONARY ||
+        bookmarks_->GetType() != base::Value::Type::DICTIONARY ||
         !static_cast<base::DictionaryValue*>(bookmarks_.get())->Get(
             BookmarkCodec::kRootsKey, &roots) ||
-        roots->GetType() != base::Value::TYPE_DICTIONARY) {
+        roots->GetType() != base::Value::Type::DICTIONARY) {
       NOTREACHED();
       return;
     }
@@ -128,13 +128,13 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     base::Value* mobile_folder_value = NULL;
     if (!roots_d_value->Get(BookmarkCodec::kRootFolderNameKey,
                             &root_folder_value) ||
-        root_folder_value->GetType() != base::Value::TYPE_DICTIONARY ||
+        root_folder_value->GetType() != base::Value::Type::DICTIONARY ||
         !roots_d_value->Get(BookmarkCodec::kOtherBookmarkFolderNameKey,
                             &other_folder_value) ||
-        other_folder_value->GetType() != base::Value::TYPE_DICTIONARY ||
+        other_folder_value->GetType() != base::Value::Type::DICTIONARY ||
         !roots_d_value->Get(BookmarkCodec::kMobileBookmarkFolderNameKey,
                             &mobile_folder_value) ||
-        mobile_folder_value->GetType() != base::Value::TYPE_DICTIONARY) {
+        mobile_folder_value->GetType() != base::Value::Type::DICTIONARY) {
       NOTREACHED();
       return;  // Invalid type for root folder and/or other folder.
     }
@@ -306,7 +306,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     if (!value.GetString(BookmarkCodec::kDateModifiedKey,
                          &last_modified_date) ||
         !value.Get(BookmarkCodec::kChildrenKey, &child_values) ||
-        child_values->GetType() != base::Value::TYPE_LIST) {
+        child_values->GetType() != base::Value::Type::LIST) {
       NOTREACHED();
       return false;
     }
@@ -346,7 +346,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     for (size_t i = 0; i < children->GetSize(); ++i) {
       const base::Value* child_value;
       if (!children->Get(i, &child_value) ||
-          child_value->GetType() != base::Value::TYPE_DICTIONARY) {
+          child_value->GetType() != base::Value::Type::DICTIONARY) {
         NOTREACHED();
         return false;
       }

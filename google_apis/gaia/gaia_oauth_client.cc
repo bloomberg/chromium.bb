@@ -271,7 +271,7 @@ void GaiaOAuthClient::Core::HandleResponse(
     source->GetResponseAsString(&data);
     std::unique_ptr<base::Value> message_value = base::JSONReader::Read(data);
     if (message_value.get() &&
-        message_value->IsType(base::Value::TYPE_DICTIONARY)) {
+        message_value->IsType(base::Value::Type::DICTIONARY)) {
       response_dict.reset(
           static_cast<base::DictionaryValue*>(message_value.release()));
     }

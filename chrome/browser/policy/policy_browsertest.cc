@@ -468,7 +468,7 @@ bool IsJavascriptEnabled(content::WebContents* contents) {
       content::ExecuteScriptAndGetValue(contents->GetMainFrame(), "123");
   int result = 0;
   if (!value->GetAsInteger(&result))
-    EXPECT_EQ(base::Value::TYPE_NULL, value->GetType());
+    EXPECT_EQ(base::Value::Type::NONE, value->GetType());
   return result == 123;
 }
 

@@ -41,29 +41,29 @@ PP_Var PPB_X509Certificate_Fields::GetFieldAsPPVar(
   }
 
   switch (value->GetType()) {
-    case base::Value::TYPE_NULL:
+    case base::Value::Type::NONE:
       return PP_MakeNull();
-    case base::Value::TYPE_BOOLEAN: {
+    case base::Value::Type::BOOLEAN: {
       bool val;
       value->GetAsBoolean(&val);
       return PP_MakeBool(PP_FromBool(val));
     }
-    case base::Value::TYPE_INTEGER: {
+    case base::Value::Type::INTEGER: {
       int val;
       value->GetAsInteger(&val);
       return PP_MakeInt32(val);
     }
-    case base::Value::TYPE_DOUBLE: {
+    case base::Value::Type::DOUBLE: {
       double val;
       value->GetAsDouble(&val);
       return PP_MakeDouble(val);
     }
-    case base::Value::TYPE_STRING: {
+    case base::Value::Type::STRING: {
       std::string val;
       value->GetAsString(&val);
       return StringVar::StringToPPVar(val);
     }
-    case base::Value::TYPE_BINARY: {
+    case base::Value::Type::BINARY: {
       const base::BinaryValue* binary =
           static_cast<const base::BinaryValue*>(value);
       uint32_t size = static_cast<uint32_t>(binary->GetSize());
@@ -73,8 +73,8 @@ PP_Var PPB_X509Certificate_Fields::GetFieldAsPPVar(
                                                                      buffer);
       return array_buffer;
     }
-    case base::Value::TYPE_DICTIONARY:
-    case base::Value::TYPE_LIST:
+    case base::Value::Type::DICTIONARY:
+    case base::Value::Type::LIST:
       // Not handled.
       break;
   }

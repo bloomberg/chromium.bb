@@ -222,7 +222,7 @@ class COMPONENTS_PREFS_EXPORT PrefService : public base::NonThreadSafe {
 
   // Int64 helper methods that actually store the given value as a string.
   // Note that if obtaining the named value via GetDictionary or GetList, the
-  // Value type will be TYPE_STRING.
+  // Value type will be Type::STRING.
   void SetInt64(const std::string& path, int64_t value);
   int64_t GetInt64(const std::string& path) const;
 
@@ -365,7 +365,7 @@ class COMPONENTS_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // This will create a dictionary or list if one does not exist in the user
   // pref store. This method returns NULL only if you're requesting an
   // unregistered pref or a non-dict/non-list pref.
-  // |type| may only be Values::TYPE_DICTIONARY or Values::TYPE_LIST and
+  // |type| may only be Values::Type::DICTIONARY or Values::Type::LIST and
   // |path| must point to a registered preference of type |type|.
   // Ownership of the returned value remains at the user pref store.
   base::Value* GetMutableUserPref(const std::string& path,

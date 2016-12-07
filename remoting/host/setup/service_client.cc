@@ -151,7 +151,7 @@ void ServiceClient::Core::HandleResponse(const net::URLFetcher* source) {
           base::DictionaryValue *dict;
           std::string code;
           if (message_value.get() &&
-              message_value->IsType(base::Value::TYPE_DICTIONARY) &&
+              message_value->IsType(base::Value::Type::DICTIONARY) &&
               message_value->GetAsDictionary(&dict) &&
               dict->GetString("data.authorizationCode", &code)) {
             delegate_->OnHostRegistered(code);

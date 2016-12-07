@@ -81,9 +81,9 @@ class AbstractPreferenceMergeTest : public testing::Test {
         pref_service_->FindPreference(pref_name.c_str());
     ASSERT_TRUE(pref);
     base::Value::Type type = pref->GetType();
-    if (type == base::Value::TYPE_DICTIONARY)
+    if (type == base::Value::Type::DICTIONARY)
       empty_value.reset(new base::DictionaryValue);
-    else if (type == base::Value::TYPE_LIST)
+    else if (type == base::Value::Type::LIST)
       empty_value.reset(new base::ListValue);
     else
       FAIL();

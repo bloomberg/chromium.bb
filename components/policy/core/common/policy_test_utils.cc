@@ -57,17 +57,17 @@ bool PolicyServiceIsEmpty(const PolicyService* service) {
 #if defined(OS_IOS) || defined(OS_MACOSX)
 CFPropertyListRef ValueToProperty(const base::Value& value) {
   switch (value.GetType()) {
-    case base::Value::TYPE_NULL:
+    case base::Value::Type::NONE:
       return kCFNull;
 
-    case base::Value::TYPE_BOOLEAN: {
+    case base::Value::Type::BOOLEAN: {
       bool bool_value;
       if (value.GetAsBoolean(&bool_value))
         return bool_value ? kCFBooleanTrue : kCFBooleanFalse;
       break;
     }
 
-    case base::Value::TYPE_INTEGER: {
+    case base::Value::Type::INTEGER: {
       int int_value;
       if (value.GetAsInteger(&int_value)) {
         return CFNumberCreate(
@@ -76,7 +76,7 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
       break;
     }
 
-    case base::Value::TYPE_DOUBLE: {
+    case base::Value::Type::DOUBLE: {
       double double_value;
       if (value.GetAsDouble(&double_value)) {
         return CFNumberCreate(
@@ -85,14 +85,14 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
       break;
     }
 
-    case base::Value::TYPE_STRING: {
+    case base::Value::Type::STRING: {
       std::string string_value;
       if (value.GetAsString(&string_value))
         return base::SysUTF8ToCFStringRef(string_value);
       break;
     }
 
-    case base::Value::TYPE_DICTIONARY: {
+    case base::Value::Type::DICTIONARY: {
       const base::DictionaryValue* dict_value;
       if (value.GetAsDictionary(&dict_value)) {
         // |dict| is owned by the caller.
@@ -117,7 +117,7 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
       break;
     }
 
-    case base::Value::TYPE_LIST: {
+    case base::Value::Type::LIST: {
       const base::ListValue* list;
       if (value.GetAsList(&list)) {
         CFMutableArrayRef array =
@@ -135,7 +135,7 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
       break;
     }
 
-    case base::Value::TYPE_BINARY:
+    case base::Value::Type::BINARY:
       // This type isn't converted (though it can be represented as CFData)
       // because there's no equivalent JSON type, and policy values can only
       // take valid JSON values.

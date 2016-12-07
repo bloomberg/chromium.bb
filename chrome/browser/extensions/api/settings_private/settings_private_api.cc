@@ -99,7 +99,7 @@ ExtensionFunction::ResponseAction SettingsPrivateGetPrefFunction::Run() {
     return RespondNow(Error(kDelegateIsNull));
 
   std::unique_ptr<base::Value> value = delegate->GetPref(parameters->name);
-  if (value->IsType(base::Value::TYPE_NULL))
+  if (value->IsType(base::Value::Type::NONE))
     return RespondNow(Error("Pref * does not exist", parameters->name));
   else
     return RespondNow(OneArgument(std::move(value)));

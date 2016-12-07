@@ -14,7 +14,7 @@ namespace policy {
 
 AutofillPolicyHandler::AutofillPolicyHandler()
     : TypeCheckingPolicyHandler(key::kAutoFillEnabled,
-                                base::Value::TYPE_BOOLEAN) {}
+                                base::Value::Type::BOOLEAN) {}
 
 AutofillPolicyHandler::~AutofillPolicyHandler() {
 }

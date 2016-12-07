@@ -302,11 +302,11 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
   }
 
   switch (value->GetType()) {
-    case base::Value::TYPE_BOOLEAN:
-    case base::Value::TYPE_INTEGER:
-    case base::Value::TYPE_DOUBLE:
-    case base::Value::TYPE_STRING:
-    case base::Value::TYPE_LIST:
+    case base::Value::Type::BOOLEAN:
+    case base::Value::Type::INTEGER:
+    case base::Value::Type::DOUBLE:
+    case base::Value::Type::STRING:
+    case base::Value::Type::LIST:
       pref_service->Set(pref_name, *value);
       break;
 
@@ -333,7 +333,7 @@ void CoreOptionsHandler::ProcessUserMetric(const base::Value* value,
     return;
 
   std::string metric_string = metric;
-  if (value->IsType(base::Value::TYPE_BOOLEAN)) {
+  if (value->IsType(base::Value::Type::BOOLEAN)) {
     bool bool_value;
     CHECK(value->GetAsBoolean(&bool_value));
     metric_string += bool_value ? "_Enable" : "_Disable";
@@ -447,7 +447,7 @@ void CoreOptionsHandler::HandleFetchPrefs(const base::ListValue* args) {
 
   // Get callback JS function name.
   const base::Value* callback;
-  if (!args->Get(0, &callback) || !callback->IsType(base::Value::TYPE_STRING))
+  if (!args->Get(0, &callback) || !callback->IsType(base::Value::Type::STRING))
     return;
 
   base::string16 callback_function;
@@ -462,7 +462,7 @@ void CoreOptionsHandler::HandleFetchPrefs(const base::ListValue* args) {
     if (!args->Get(i, &list_member))
       break;
 
-    if (!list_member->IsType(base::Value::TYPE_STRING))
+    if (!list_member->IsType(base::Value::Type::STRING))
       continue;
 
     std::string pref_name;
@@ -493,7 +493,7 @@ void CoreOptionsHandler::HandleObservePrefs(const base::ListValue* args) {
 
     // Just ignore bad pref identifiers for now.
     std::string pref_name;
-    if (!list_member->IsType(base::Value::TYPE_STRING) ||
+    if (!list_member->IsType(base::Value::Type::STRING) ||
         !list_member->GetAsString(&pref_name))
       continue;
 
@@ -545,7 +545,7 @@ void CoreOptionsHandler::HandleSetPref(const base::ListValue* args,
 
   switch (type) {
     case TYPE_BOOLEAN:
-      if (!value->IsType(base::Value::TYPE_BOOLEAN)) {
+      if (!value->IsType(base::Value::Type::BOOLEAN)) {
         NOTREACHED();
         return;
       }
@@ -563,13 +563,13 @@ void CoreOptionsHandler::HandleSetPref(const base::ListValue* args,
       break;
     }
     case TYPE_DOUBLE:
-      if (!value->IsType(base::Value::TYPE_DOUBLE)) {
+      if (!value->IsType(base::Value::Type::DOUBLE)) {
         NOTREACHED();
         return;
       }
       break;
     case TYPE_STRING:
-      if (!value->IsType(base::Value::TYPE_STRING)) {
+      if (!value->IsType(base::Value::Type::STRING)) {
         NOTREACHED();
         return;
       }
@@ -594,7 +594,7 @@ void CoreOptionsHandler::HandleSetPref(const base::ListValue* args,
       }
       temp_value = base::JSONReader::Read(json_string);
       value = temp_value.get();
-      if (!value || !value->IsType(base::Value::TYPE_LIST)) {
+      if (!value || !value->IsType(base::Value::Type::LIST)) {
         NOTREACHED();
         return;
       }

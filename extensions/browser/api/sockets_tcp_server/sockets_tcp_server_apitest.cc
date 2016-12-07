@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPCreateGood) {
   std::unique_ptr<base::Value> result(
       api_test_utils::RunFunctionAndReturnSingleResult(
           socket_create_function.get(), "[]", browser_context()));
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, result->GetType());
   std::unique_ptr<base::DictionaryValue> value =
       base::DictionaryValue::From(std::move(result));
   int socketId = -1;

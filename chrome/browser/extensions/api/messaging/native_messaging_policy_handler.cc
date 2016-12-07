@@ -21,7 +21,7 @@ NativeMessagingHostListPolicyHandler::NativeMessagingHostListPolicyHandler(
     const char* policy_name,
     const char* pref_path,
     bool allow_wildcards)
-    : policy::TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_LIST),
+    : policy::TypeCheckingPolicyHandler(policy_name, base::Value::Type::LIST),
       pref_path_(pref_path),
       allow_wildcards_(allow_wildcards) {}
 
@@ -71,7 +71,7 @@ bool NativeMessagingHostListPolicyHandler::CheckAndGetList(
     if (!(*entry)->GetAsString(&name)) {
       errors->AddError(policy_name(), entry - list_value->begin(),
                        IDS_POLICY_TYPE_ERROR,
-                       base::Value::GetTypeName(base::Value::TYPE_STRING));
+                       base::Value::GetTypeName(base::Value::Type::STRING));
       continue;
     }
     if (!(allow_wildcards_ && name == "*") &&

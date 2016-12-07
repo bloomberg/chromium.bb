@@ -349,7 +349,7 @@ base::string16 AccessibilityTreeFormatterWin::ToString(
       continue;
 
     switch (value->GetType()) {
-      case base::Value::TYPE_STRING: {
+      case base::Value::Type::STRING: {
         base::string16 string_value;
         value->GetAsString(&string_value);
         WriteAttribute(false,
@@ -359,7 +359,7 @@ base::string16 AccessibilityTreeFormatterWin::ToString(
                        &line);
         break;
       }
-      case base::Value::TYPE_INTEGER: {
+      case base::Value::Type::INTEGER: {
         int int_value = 0;
         value->GetAsInteger(&int_value);
         WriteAttribute(false,
@@ -370,7 +370,7 @@ base::string16 AccessibilityTreeFormatterWin::ToString(
                        &line);
         break;
       }
-      case base::Value::TYPE_DOUBLE: {
+      case base::Value::Type::DOUBLE: {
         double double_value = 0.0;
         value->GetAsDouble(&double_value);
         WriteAttribute(false,
@@ -381,7 +381,7 @@ base::string16 AccessibilityTreeFormatterWin::ToString(
                        &line);
         break;
       }
-      case base::Value::TYPE_LIST: {
+      case base::Value::Type::LIST: {
         // Currently all list values are string and are written without
         // attribute names.
         const base::ListValue* list_value;
@@ -395,7 +395,7 @@ base::string16 AccessibilityTreeFormatterWin::ToString(
         }
         break;
       }
-      case base::Value::TYPE_DICTIONARY: {
+      case base::Value::Type::DICTIONARY: {
         // Currently all dictionary values are coordinates.
         // Revisit this if that changes.
         const base::DictionaryValue* dict_value;

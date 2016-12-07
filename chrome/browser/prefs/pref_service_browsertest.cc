@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(PreferenceServiceTest, Test) {
   std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
 
   ASSERT_TRUE(root.get());
-  ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));
+  ASSERT_TRUE(root->IsType(base::Value::Type::DICTIONARY));
 
   base::DictionaryValue* root_dict =
       static_cast<base::DictionaryValue*>(root.get());

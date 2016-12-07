@@ -264,7 +264,7 @@ Status FindElement(int interval_ms,
     if (status.IsError())
       return status;
 
-    if (!temp->IsType(base::Value::TYPE_NULL)) {
+    if (!temp->IsType(base::Value::Type::NONE)) {
       if (only_one) {
         value->reset(temp.release());
         return Status(kOk);

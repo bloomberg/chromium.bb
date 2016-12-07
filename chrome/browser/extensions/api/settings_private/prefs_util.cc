@@ -358,17 +358,17 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
 settings_private::PrefType PrefsUtil::GetType(const std::string& name,
                                               base::Value::Type type) {
   switch (type) {
-    case base::Value::Type::TYPE_BOOLEAN:
+    case base::Value::Type::BOOLEAN:
       return settings_private::PrefType::PREF_TYPE_BOOLEAN;
-    case base::Value::Type::TYPE_INTEGER:
-    case base::Value::Type::TYPE_DOUBLE:
+    case base::Value::Type::INTEGER:
+    case base::Value::Type::DOUBLE:
       return settings_private::PrefType::PREF_TYPE_NUMBER;
-    case base::Value::Type::TYPE_STRING:
+    case base::Value::Type::STRING:
       return IsPrefTypeURL(name) ? settings_private::PrefType::PREF_TYPE_URL
                                  : settings_private::PrefType::PREF_TYPE_STRING;
-    case base::Value::Type::TYPE_LIST:
+    case base::Value::Type::LIST:
       return settings_private::PrefType::PREF_TYPE_LIST;
-    case base::Value::Type::TYPE_DICTIONARY:
+    case base::Value::Type::DICTIONARY:
       return settings_private::PrefType::PREF_TYPE_DICTIONARY;
     default:
       return settings_private::PrefType::PREF_TYPE_NONE;
@@ -503,13 +503,13 @@ PrefsUtil::SetPrefResult PrefsUtil::SetPref(const std::string& pref_name,
   DCHECK_EQ(pref->GetType(), value->GetType());
 
   switch (pref->GetType()) {
-    case base::Value::TYPE_BOOLEAN:
-    case base::Value::TYPE_DOUBLE:
-    case base::Value::TYPE_LIST:
-    case base::Value::TYPE_DICTIONARY:
+    case base::Value::Type::BOOLEAN:
+    case base::Value::Type::DOUBLE:
+    case base::Value::Type::LIST:
+    case base::Value::Type::DICTIONARY:
       pref_service->Set(pref_name, *value);
       break;
-    case base::Value::TYPE_INTEGER: {
+    case base::Value::Type::INTEGER: {
       // In JS all numbers are doubles.
       double double_value;
       if (!value->GetAsDouble(&double_value))
@@ -518,7 +518,7 @@ PrefsUtil::SetPrefResult PrefsUtil::SetPref(const std::string& pref_name,
       pref_service->SetInteger(pref_name, static_cast<int>(double_value));
       break;
     }
-    case base::Value::TYPE_STRING: {
+    case base::Value::Type::STRING: {
       std::string string_value;
       if (!value->GetAsString(&string_value))
         return PREF_TYPE_MISMATCH;

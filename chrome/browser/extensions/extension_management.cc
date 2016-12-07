@@ -250,26 +250,26 @@ void ExtensionManagement::Refresh() {
   // Load all extension management settings preferences.
   const base::ListValue* allowed_list_pref =
       static_cast<const base::ListValue*>(LoadPreference(
-          pref_names::kInstallAllowList, true, base::Value::TYPE_LIST));
+          pref_names::kInstallAllowList, true, base::Value::Type::LIST));
   // Allow user to use preference to block certain extensions. Note that policy
   // managed forcelist or whitelist will always override this.
   const base::ListValue* denied_list_pref =
       static_cast<const base::ListValue*>(LoadPreference(
-          pref_names::kInstallDenyList, false, base::Value::TYPE_LIST));
+          pref_names::kInstallDenyList, false, base::Value::Type::LIST));
   const base::DictionaryValue* forced_list_pref =
       static_cast<const base::DictionaryValue*>(LoadPreference(
-          pref_names::kInstallForceList, true, base::Value::TYPE_DICTIONARY));
+          pref_names::kInstallForceList, true, base::Value::Type::DICTIONARY));
   const base::ListValue* install_sources_pref =
       static_cast<const base::ListValue*>(LoadPreference(
-          pref_names::kAllowedInstallSites, true, base::Value::TYPE_LIST));
+          pref_names::kAllowedInstallSites, true, base::Value::Type::LIST));
   const base::ListValue* allowed_types_pref =
       static_cast<const base::ListValue*>(LoadPreference(
-          pref_names::kAllowedTypes, true, base::Value::TYPE_LIST));
+          pref_names::kAllowedTypes, true, base::Value::Type::LIST));
   const base::DictionaryValue* dict_pref =
       static_cast<const base::DictionaryValue*>(
           LoadPreference(pref_names::kExtensionManagement,
                          true,
-                         base::Value::TYPE_DICTIONARY));
+                         base::Value::Type::DICTIONARY));
 
   // Reset all settings.
   global_settings_.reset(new internal::GlobalSettings());

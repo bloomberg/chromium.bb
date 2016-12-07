@@ -346,7 +346,7 @@ bool ManagementGetPermissionWarningsByManifestFunction::RunAsync() {
 
 void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
     std::unique_ptr<base::Value> value) {
-  if (!value->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (!value->IsType(base::Value::Type::DICTIONARY)) {
     OnParseFailure(keys::kManifestParseError);
     return;
   }

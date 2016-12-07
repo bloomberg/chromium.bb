@@ -14,7 +14,7 @@ namespace policy {
 
 FileSelectionDialogsPolicyHandler::FileSelectionDialogsPolicyHandler()
     : TypeCheckingPolicyHandler(key::kAllowFileSelectionDialogs,
-                                base::Value::TYPE_BOOLEAN) {}
+                                base::Value::Type::BOOLEAN) {}
 
 FileSelectionDialogsPolicyHandler::~FileSelectionDialogsPolicyHandler() {}
 

@@ -48,7 +48,7 @@ WebsiteSettingsInfo::WebsiteSettingsInfo(
   // TODO(raymes): We should migrate the underlying pref to be a dictionary
   // rather than an int.
   DCHECK(!initial_default_value_ ||
-         initial_default_value_->IsType(base::Value::TYPE_INTEGER));
+         initial_default_value_->IsType(base::Value::Type::INTEGER));
 }
 
 WebsiteSettingsInfo::~WebsiteSettingsInfo() {}

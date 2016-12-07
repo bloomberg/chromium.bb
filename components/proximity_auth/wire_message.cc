@@ -88,7 +88,7 @@ std::unique_ptr<WireMessage> WireMessage::Deserialize(
 
   std::unique_ptr<base::Value> body_value =
       base::JSONReader::Read(serialized_message.substr(kHeaderLength));
-  if (!body_value || !body_value->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (!body_value || !body_value->IsType(base::Value::Type::DICTIONARY)) {
     PA_LOG(WARNING) << "Error: Unable to parse message as JSON.";
     return std::unique_ptr<WireMessage>();
   }

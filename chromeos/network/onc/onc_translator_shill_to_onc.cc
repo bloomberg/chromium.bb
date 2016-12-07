@@ -32,7 +32,7 @@ namespace {
 std::unique_ptr<base::Value> ConvertStringToValue(const std::string& str,
                                                   base::Value::Type type) {
   std::unique_ptr<base::Value> value;
-  if (type == base::Value::TYPE_STRING) {
+  if (type == base::Value::Type::STRING) {
     value.reset(new base::StringValue(str));
   } else {
     value = base::JSONReader::Read(str);
@@ -672,10 +672,10 @@ void ShillToONCTranslator::TranslateAndAddListOfObjects(
     const base::ListValue& list) {
   const OncFieldSignature* field_signature =
       GetFieldSignature(*onc_signature_, onc_field_name);
-  if (field_signature->value_signature->onc_type != base::Value::TYPE_LIST) {
+  if (field_signature->value_signature->onc_type != base::Value::Type::LIST) {
     LOG(ERROR) << "ONC Field name: '" << onc_field_name << "' has type '"
                << field_signature->value_signature->onc_type
-               << "', expected: base::Value::TYPE_LIST: " << GetName();
+               << "', expected: base::Value::Type::LIST: " << GetName();
     return;
   }
   DCHECK(field_signature->value_signature->onc_array_entry_signature);

@@ -78,9 +78,9 @@ bool PluginPolicyHandler::CheckPolicySettings(const policy::PolicyMap& policies,
   bool ok = true;
   for (size_t i = 0; i < arraysize(checked_policies); ++i) {
     const base::Value* value = policies.GetValue(checked_policies[i]);
-    if (value && !value->IsType(base::Value::TYPE_LIST)) {
+    if (value && !value->IsType(base::Value::Type::LIST)) {
       errors->AddError(checked_policies[i], IDS_POLICY_TYPE_ERROR,
-                       base::Value::GetTypeName(base::Value::TYPE_LIST));
+                       base::Value::GetTypeName(base::Value::Type::LIST));
       ok = false;
     }
   }

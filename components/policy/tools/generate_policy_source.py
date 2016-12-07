@@ -38,23 +38,23 @@ class PolicyDetails:
   # TODO(joaodasilva): refactor the 'dict' type into a more generic 'json' type
   # that can also be used to represent lists of other JSON objects.
   TYPE_MAP = {
-    'dict':             ('TYPE_DICTIONARY',   'string',       'String',
+    'dict':             ('Type::DICTIONARY',  'string',       'String',
                         'string'),
     'external':         ('TYPE_EXTERNAL',     'string',       'String',
                         'invalid'),
-    'int':              ('TYPE_INTEGER',      'int64',        'Integer',
+    'int':              ('Type::INTEGER',     'int64',        'Integer',
                         'integer'),
-    'int-enum':         ('TYPE_INTEGER',      'int64',        'Integer',
+    'int-enum':         ('Type::INTEGER',     'int64',        'Integer',
                         'choice'),
-    'list':             ('TYPE_LIST',         'StringList',   'StringList',
+    'list':             ('Type::LIST',        'StringList',   'StringList',
                         'string'),
-    'main':             ('TYPE_BOOLEAN',      'bool',         'Boolean',
+    'main':             ('Type::BOOLEAN',     'bool',         'Boolean',
                         'bool'),
-    'string':           ('TYPE_STRING',       'string',       'String',
+    'string':           ('Type::STRING',      'string',       'String',
                         'string'),
-    'string-enum':      ('TYPE_STRING',       'string',       'String',
+    'string-enum':      ('Type::STRING',      'string',       'String',
                         'choice'),
-    'string-enum-list': ('TYPE_LIST',         'StringList',   'StringList',
+    'string-enum-list': ('Type::LIST',        'StringList',   'StringList',
                         'multi-select'),
   }
 
@@ -348,11 +348,11 @@ def _WritePolicyConstantHeader(policies, os, f, riskTags):
 
 # A mapping of the simple schema types to base::Value::Types.
 SIMPLE_SCHEMA_NAME_MAP = {
-  'boolean': 'TYPE_BOOLEAN',
-  'integer': 'TYPE_INTEGER',
-  'null'   : 'TYPE_NULL',
-  'number' : 'TYPE_DOUBLE',
-  'string' : 'TYPE_STRING',
+  'boolean': 'Type::BOOLEAN',
+  'integer': 'Type::INTEGER',
+  'null'   : 'Type::NONE',
+  'number' : 'Type::DOUBLE',
+  'string' : 'Type::STRING',
 }
 
 class SchemaNodesGenerator:
@@ -412,7 +412,7 @@ class SchemaNodesGenerator:
   def GetStringList(self):
     if self.stringlist_type == None:
       self.stringlist_type = self.AppendSchema(
-          'TYPE_LIST',
+          'Type::LIST',
           self.GetSimpleType('string'),
           'simple type: stringlist')
     return self.stringlist_type
@@ -431,12 +431,12 @@ class SchemaNodesGenerator:
     possible_values = schema['enum']
     if self.IsConsecutiveInterval(possible_values):
       index = self.AppendRestriction(max(possible_values), min(possible_values))
-      return self.AppendSchema('TYPE_INTEGER', index,
+      return self.AppendSchema('Type::INTEGER', index,
           'integer with enumeration restriction (use range instead): %s' % name)
     offset_begin = len(self.int_enums)
     self.int_enums += possible_values
     offset_end = len(self.int_enums)
-    return self.AppendSchema('TYPE_INTEGER',
+    return self.AppendSchema('Type::INTEGER',
         self.AppendRestriction(offset_begin, offset_end),
         'integer with enumeration restriction: %s' % name)
 
@@ -445,7 +445,7 @@ class SchemaNodesGenerator:
     offset_begin = len(self.string_enums)
     self.string_enums += schema['enum']
     offset_end = len(self.string_enums)
-    return self.AppendSchema('TYPE_STRING',
+    return self.AppendSchema('Type::STRING',
         self.AppendRestriction(offset_begin, offset_end),
         'string with enumeration restriction: %s' % name)
 
@@ -469,7 +469,7 @@ class SchemaNodesGenerator:
     re.compile(pattern)
     index = len(self.string_enums);
     self.string_enums.append(pattern);
-    return self.AppendSchema('TYPE_STRING',
+    return self.AppendSchema('Type::STRING',
         self.AppendRestriction(index, index),
         'string with pattern restriction: %s' % name);
 
@@ -488,7 +488,7 @@ class SchemaNodesGenerator:
     index = self.AppendRestriction(
         str(max_value) if max_value_set else 'INT_MAX',
         str(min_value) if min_value_set else 'INT_MIN')
-    return self.AppendSchema('TYPE_INTEGER',
+    return self.AppendSchema('Type::INTEGER',
         index,
         'integer with ranged restriction: %s' % name)
 
@@ -519,13 +519,13 @@ class SchemaNodesGenerator:
       # The 'type' may be missing if the schema has a '$ref' attribute.
       if schema['items'].get('type', '') == 'string':
         return self.GetStringList()
-      return self.AppendSchema('TYPE_LIST',
+      return self.AppendSchema('Type::LIST',
           self.GenerateAndCollectID(schema['items'], 'items of ' + name))
     elif schema['type'] == 'object':
       # Reserve an index first, so that dictionaries come before their
       # properties. This makes sure that the root node is the first in the
       # SchemaNodes array.
-      index = self.AppendSchema('TYPE_DICTIONARY', -1)
+      index = self.AppendSchema('Type::DICTIONARY', -1)
 
       if 'additionalProperties' in schema:
         additionalProperties = self.GenerateAndCollectID(
@@ -563,7 +563,7 @@ class SchemaNodesGenerator:
           additionalProperties, name))
 
       # Set the right data at |index| now.
-      self.schema_nodes[index] = ('TYPE_DICTIONARY', extra, name)
+      self.schema_nodes[index] = ('Type::DICTIONARY', extra, name)
       return index
     else:
       assert False
@@ -737,13 +737,13 @@ def _WritePolicyConstantSource(policies, os, f, riskTags):
 
   for policy in policies:
     if policy.has_enterprise_default:
-      if policy.policy_type == 'TYPE_BOOLEAN':
+      if policy.policy_type == 'Type::BOOLEAN':
         creation_expression = 'new base::FundamentalValue(%s)' %\
                               ('true' if policy.enterprise_default else 'false')
-      elif policy.policy_type == 'TYPE_INTEGER':
+      elif policy.policy_type == 'Type::INTEGER':
         creation_expression = 'new base::FundamentalValue(%s)' %\
                               policy.enterprise_default
-      elif policy.policy_type == 'TYPE_STRING':
+      elif policy.policy_type == 'Type::STRING':
         creation_expression = 'new base::StringValue("%s")' %\
                               policy.enterprise_default
       else:
@@ -955,7 +955,7 @@ def _WritePolicyProto(f, policy, fields):
     _OutputComment(f, '\nValid values:')
     for item in policy.items:
       _OutputComment(f, '  %s: %s' % (str(item.value), item.caption))
-  if policy.policy_type == 'TYPE_DICTIONARY':
+  if policy.policy_type == 'Type::DICTIONARY':
     _OutputComment(f, '\nValue schema:\n%s' %
                    json.dumps(policy.schema, sort_keys=True, indent=4,
                               separators=(',', ': ')))
@@ -1073,15 +1073,15 @@ CPP_FOOT = '''}
 
 
 def _CreateValue(type, arg):
-  if type == 'TYPE_BOOLEAN':
+  if type == 'Type::BOOLEAN':
     return 'new base::FundamentalValue(%s)' % arg
-  elif type == 'TYPE_INTEGER':
+  elif type == 'Type::INTEGER':
     return 'DecodeIntegerValue(%s)' % arg
-  elif type == 'TYPE_STRING':
+  elif type == 'Type::STRING':
     return 'new base::StringValue(%s)' % arg
-  elif type == 'TYPE_LIST':
+  elif type == 'Type::LIST':
     return 'DecodeStringList(%s)' % arg
-  elif type == 'TYPE_DICTIONARY' or type == 'TYPE_EXTERNAL':
+  elif type == 'Type::DICTIONARY' or type == 'TYPE_EXTERNAL':
     return 'DecodeJson(%s)' % arg
   else:
     raise NotImplementedError('Unknown type %s' % type)

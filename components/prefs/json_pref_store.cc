@@ -89,7 +89,7 @@ PersistentPrefStore::PrefReadError HandleReadErrors(
                            : PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE;
     }
   }
-  if (!value->IsType(base::Value::TYPE_DICTIONARY))
+  if (!value->IsType(base::Value::Type::DICTIONARY))
     return PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE;
   return PersistentPrefStore::PREF_READ_ERROR_NONE;
 }

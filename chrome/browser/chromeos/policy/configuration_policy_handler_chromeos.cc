@@ -124,8 +124,7 @@ std::unique_ptr<base::Value> GetAction(const base::DictionaryValue* dict,
 }  // namespace
 
 ExternalDataPolicyHandler::ExternalDataPolicyHandler(const char* policy_name)
-    : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_DICTIONARY) {
-}
+    : TypeCheckingPolicyHandler(policy_name, base::Value::Type::DICTIONARY) {}
 
 ExternalDataPolicyHandler::~ExternalDataPolicyHandler() {
 }
@@ -277,10 +276,9 @@ NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
     const char* policy_name,
     onc::ONCSource onc_source,
     const char* pref_path)
-    : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_STRING),
+    : TypeCheckingPolicyHandler(policy_name, base::Value::Type::STRING),
       onc_source_(onc_source),
-      pref_path_(pref_path) {
-}
+      pref_path_(pref_path) {}
 
 // static
 std::unique_ptr<base::Value>

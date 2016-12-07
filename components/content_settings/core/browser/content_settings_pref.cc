@@ -50,7 +50,7 @@ bool IsValueAllowedForType(const base::Value* value, ContentSettingsType type) {
 
   // TODO(raymes): We should permit different types of base::Value for
   // website settings.
-  return value->GetType() == base::Value::TYPE_DICTIONARY;
+  return value->GetType() == base::Value::Type::DICTIONARY;
 }
 
 }  // namespace

@@ -53,7 +53,7 @@ bool ExtractOAuth2TokenPairResponse(const std::string& data,
   DCHECK(expires_in_secs);
 
   std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
-  if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
+  if (!value.get() || value->GetType() != base::Value::Type::DICTIONARY)
     return false;
 
   base::DictionaryValue* dict =
@@ -481,7 +481,7 @@ bool GaiaAuthFetcher::ParseListIdpSessionsResponse(const std::string& data,
   DCHECK(login_hint);
 
   std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
-  if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
+  if (!value.get() || value->GetType() != base::Value::Type::DICTIONARY)
     return false;
 
   base::DictionaryValue* dict =

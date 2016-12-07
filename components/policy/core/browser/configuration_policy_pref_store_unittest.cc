@@ -47,7 +47,7 @@ class ConfigurationPolicyPrefStoreListTest
   void SetUp() override {
     handler_list_.AddHandler(
         base::WrapUnique<ConfigurationPolicyHandler>(new SimplePolicyHandler(
-            kTestPolicy, kTestPref, base::Value::TYPE_LIST)));
+            kTestPolicy, kTestPref, base::Value::Type::LIST)));
   }
 };
 
@@ -75,7 +75,7 @@ class ConfigurationPolicyPrefStoreStringTest
   void SetUp() override {
     handler_list_.AddHandler(
         base::WrapUnique<ConfigurationPolicyHandler>(new SimplePolicyHandler(
-            kTestPolicy, kTestPref, base::Value::TYPE_STRING)));
+            kTestPolicy, kTestPref, base::Value::Type::STRING)));
   }
 };
 
@@ -102,7 +102,7 @@ class ConfigurationPolicyPrefStoreBooleanTest
   void SetUp() override {
     handler_list_.AddHandler(
         base::WrapUnique<ConfigurationPolicyHandler>(new SimplePolicyHandler(
-            kTestPolicy, kTestPref, base::Value::TYPE_BOOLEAN)));
+            kTestPolicy, kTestPref, base::Value::Type::BOOLEAN)));
   }
 };
 
@@ -142,7 +142,7 @@ class ConfigurationPolicyPrefStoreIntegerTest
   void SetUp() override {
     handler_list_.AddHandler(
         base::WrapUnique<ConfigurationPolicyHandler>(new SimplePolicyHandler(
-            kTestPolicy, kTestPref, base::Value::TYPE_INTEGER)));
+            kTestPolicy, kTestPref, base::Value::Type::INTEGER)));
   }
 };
 
@@ -170,7 +170,7 @@ class ConfigurationPolicyPrefStoreRefreshTest
     store_->AddObserver(&observer_);
     handler_list_.AddHandler(
         base::WrapUnique<ConfigurationPolicyHandler>(new SimplePolicyHandler(
-            kTestPolicy, kTestPref, base::Value::TYPE_STRING)));
+            kTestPolicy, kTestPref, base::Value::Type::STRING)));
   }
 
   void TearDown() override {

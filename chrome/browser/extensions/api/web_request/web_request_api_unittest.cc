@@ -598,7 +598,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   std::unique_ptr<const base::Value> form_data =
       base::JSONReader::Read(kFormData);
   ASSERT_TRUE(form_data.get() != NULL);
-  ASSERT_TRUE(form_data->GetType() == base::Value::TYPE_DICTIONARY);
+  ASSERT_TRUE(form_data->GetType() == base::Value::Type::DICTIONARY);
   // Contents of raw.
   base::ListValue raw;
   extensions::subtle::AppendKeyValuePair(

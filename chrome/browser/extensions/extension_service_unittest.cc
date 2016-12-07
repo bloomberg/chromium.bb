@@ -494,7 +494,7 @@ class MockProviderVisitor
     std::unique_ptr<base::Value> json_value =
         deserializer.Deserialize(NULL, NULL);
 
-    if (!json_value || !json_value->IsType(base::Value::TYPE_DICTIONARY)) {
+    if (!json_value || !json_value->IsType(base::Value::Type::DICTIONARY)) {
       ADD_FAILURE() << "Unable to deserialize json data";
       return std::unique_ptr<base::DictionaryValue>();
     } else {

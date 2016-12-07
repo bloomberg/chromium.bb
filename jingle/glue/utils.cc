@@ -72,7 +72,7 @@ bool DeserializeP2PCandidate(const std::string& candidate_str,
                              cricket::Candidate* candidate) {
   std::unique_ptr<base::Value> value(
       base::JSONReader::Read(candidate_str, base::JSON_ALLOW_TRAILING_COMMAS));
-  if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (!value.get() || !value->IsType(base::Value::Type::DICTIONARY)) {
     return false;
   }
 

@@ -126,7 +126,7 @@ bool BackgroundInfo::LoadBackgroundScripts(const Extension* extension,
     return true;
 
   CHECK(background_scripts_value);
-  if (background_scripts_value->GetType() != base::Value::TYPE_LIST) {
+  if (background_scripts_value->GetType() != base::Value::Type::LIST) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundScripts);
     return false;
   }
@@ -233,7 +233,7 @@ bool BackgroundInfo::LoadAllowJSAccess(const Extension* extension,
                                   &allow_js_access))
     return true;
 
-  if (!allow_js_access->IsType(base::Value::TYPE_BOOLEAN) ||
+  if (!allow_js_access->IsType(base::Value::Type::BOOLEAN) ||
       !allow_js_access->GetAsBoolean(&allow_js_access_)) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundAllowJsAccess);
     return false;

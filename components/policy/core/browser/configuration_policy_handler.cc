@@ -85,7 +85,7 @@ IntRangePolicyHandlerBase::IntRangePolicyHandlerBase(
     int min,
     int max,
     bool clamp)
-    : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_INTEGER),
+    : TypeCheckingPolicyHandler(policy_name, base::Value::Type::INTEGER),
       min_(min),
       max_(max),
       clamp_(clamp) {
@@ -145,7 +145,7 @@ StringMappingListPolicyHandler::StringMappingListPolicyHandler(
     const char* policy_name,
     const char* pref_path,
     const GenerateMapCallback& callback)
-    : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_LIST),
+    : TypeCheckingPolicyHandler(policy_name, base::Value::Type::LIST),
       pref_path_(pref_path),
       map_getter_(callback) {}
 
@@ -188,7 +188,7 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
       if (errors) {
         errors->AddError(policy_name(), entry - list_value->begin(),
                          IDS_POLICY_TYPE_ERROR,
-                         base::Value::GetTypeName(base::Value::TYPE_STRING));
+                         base::Value::GetTypeName(base::Value::Type::STRING));
       }
       continue;
     }

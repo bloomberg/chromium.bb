@@ -46,7 +46,7 @@ void ExpectFrameTreeNodeSnapshot(const trace_analyzer::TraceEvent* event) {
   ExpectFrameTreeNodeObject(event);
   EXPECT_TRUE(event->HasArg("snapshot"));
   EXPECT_TRUE(event->arg_values.at("snapshot")
-                  ->IsType(base::Value::Type::TYPE_DICTIONARY));
+                  ->IsType(base::Value::Type::DICTIONARY));
 }
 
 std::string GetParentNodeID(const trace_analyzer::TraceEvent* event) {

@@ -14,7 +14,7 @@ namespace policy {
 
 ContextualSearchPolicyHandlerAndroid::ContextualSearchPolicyHandlerAndroid()
     : TypeCheckingPolicyHandler(key::kContextualSearchEnabled,
-                                base::Value::TYPE_BOOLEAN) {}
+                                base::Value::Type::BOOLEAN) {}
 
 ContextualSearchPolicyHandlerAndroid::~ContextualSearchPolicyHandlerAndroid() {
 }

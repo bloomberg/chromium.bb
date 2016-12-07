@@ -131,7 +131,7 @@ void WebUIDataSourceImpl::AddLocalizedStrings(
 
   for (base::DictionaryValue::Iterator it(localized_strings); !it.IsAtEnd();
        it.Advance()) {
-    if (it.value().IsType(base::Value::TYPE_STRING)) {
+    if (it.value().IsType(base::Value::Type::STRING)) {
       std::string value;
       it.value().GetAsString(&value);
       replacements_[it.key()] = value;

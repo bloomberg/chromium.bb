@@ -26,13 +26,13 @@ std::unique_ptr<base::Value> Mapper::MapValue(
     bool* error) {
   std::unique_ptr<base::Value> result_value;
   switch (onc_value.GetType()) {
-    case base::Value::TYPE_DICTIONARY: {
+    case base::Value::Type::DICTIONARY: {
       const base::DictionaryValue* dict = NULL;
       onc_value.GetAsDictionary(&dict);
       result_value = MapObject(signature, *dict, error);
       break;
     }
-    case base::Value::TYPE_LIST: {
+    case base::Value::Type::LIST: {
       const base::ListValue* list = NULL;
       onc_value.GetAsList(&list);
       result_value = MapArray(signature, *list, error);

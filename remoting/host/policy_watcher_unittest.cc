@@ -674,14 +674,14 @@ TEST_F(PolicyWatcherTest, SchemaTypeCheck) {
   const policy::Schema string_schema =
       schema->GetKnownProperty("RemoteAccessHostDomain");
   EXPECT_TRUE(string_schema.valid());
-  EXPECT_EQ(string_schema.type(), base::Value::Type::TYPE_STRING);
+  EXPECT_EQ(string_schema.type(), base::Value::Type::STRING);
 
   // And check one, random "boolean" policy to see if the type propagated
   // correctly from policy_templates.json file.
   const policy::Schema boolean_schema =
       schema->GetKnownProperty("RemoteAccessHostRequireCurtain");
   EXPECT_TRUE(boolean_schema.valid());
-  EXPECT_EQ(boolean_schema.type(), base::Value::Type::TYPE_BOOLEAN);
+  EXPECT_EQ(boolean_schema.type(), base::Value::Type::BOOLEAN);
 }
 
 }  // namespace remoting

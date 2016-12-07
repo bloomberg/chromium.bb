@@ -900,13 +900,13 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
   void SetProxyPref(const std::string& name, const base::Value& value) {
     std::string type;
     switch (value.GetType()) {
-      case base::Value::TYPE_BOOLEAN:
+      case base::Value::Type::BOOLEAN:
         type = "Boolean";
         break;
-      case base::Value::TYPE_INTEGER:
+      case base::Value::Type::INTEGER:
         type = "Integer";
         break;
-      case base::Value::TYPE_STRING:
+      case base::Value::Type::STRING:
         type = "String";
         break;
       default:

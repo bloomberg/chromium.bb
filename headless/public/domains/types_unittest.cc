@@ -204,11 +204,11 @@ TEST(TypesTest, AnyProperty) {
           .SetValue(std::move(value))
           .Build());
   EXPECT_TRUE(object);
-  EXPECT_EQ(base::Value::TYPE_INTEGER, object->GetValue()->GetType());
+  EXPECT_EQ(base::Value::Type::INTEGER, object->GetValue()->GetType());
 
   std::unique_ptr<accessibility::AXValue> clone(object->Clone());
   EXPECT_TRUE(clone);
-  EXPECT_EQ(base::Value::TYPE_INTEGER, clone->GetValue()->GetType());
+  EXPECT_EQ(base::Value::Type::INTEGER, clone->GetValue()->GetType());
 
   int clone_value;
   EXPECT_TRUE(clone->GetValue()->GetAsInteger(&clone_value));

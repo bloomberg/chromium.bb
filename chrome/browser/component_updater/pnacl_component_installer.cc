@@ -133,7 +133,7 @@ base::DictionaryValue* ReadJSONManifest(const base::FilePath& manifest_path) {
   std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, &error);
   if (!root.get())
     return NULL;
-  if (!root->IsType(base::Value::TYPE_DICTIONARY))
+  if (!root->IsType(base::Value::Type::DICTIONARY))
     return NULL;
   return static_cast<base::DictionaryValue*>(root.release());
 }

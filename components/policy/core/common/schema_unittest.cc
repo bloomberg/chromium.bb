@@ -272,11 +272,11 @@ TEST(SchemaTest, Ownership) {
       "  }"
       "}", &error);
   ASSERT_TRUE(schema.valid()) << error;
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
   schema = schema.GetKnownProperty("sub");
   ASSERT_TRUE(schema.valid());
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
   {
     Schema::Iterator it = schema.GetPropertiesIterator();
@@ -289,7 +289,7 @@ TEST(SchemaTest, Ownership) {
   }
 
   ASSERT_TRUE(schema.valid());
-  EXPECT_EQ(base::Value::TYPE_STRING, schema.type());
+  EXPECT_EQ(base::Value::Type::STRING, schema.type());
 
   // This test shouldn't leak nor use invalid memory.
 }
@@ -299,120 +299,120 @@ TEST(SchemaTest, ValidSchema) {
   Schema schema = Schema::Parse(kTestSchema, &error);
   ASSERT_TRUE(schema.valid()) << error;
 
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
   EXPECT_FALSE(schema.GetProperty("invalid").valid());
 
   Schema sub = schema.GetProperty("Boolean");
   ASSERT_TRUE(sub.valid());
-  EXPECT_EQ(base::Value::TYPE_BOOLEAN, sub.type());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, sub.type());
 
   sub = schema.GetProperty("Integer");
   ASSERT_TRUE(sub.valid());
-  EXPECT_EQ(base::Value::TYPE_INTEGER, sub.type());
+  EXPECT_EQ(base::Value::Type::INTEGER, sub.type());
 
   sub = schema.GetProperty("Null");
   ASSERT_TRUE(sub.valid());
-  EXPECT_EQ(base::Value::TYPE_NULL, sub.type());
+  EXPECT_EQ(base::Value::Type::NONE, sub.type());
 
   sub = schema.GetProperty("Number");
   ASSERT_TRUE(sub.valid());
-  EXPECT_EQ(base::Value::TYPE_DOUBLE, sub.type());
+  EXPECT_EQ(base::Value::Type::DOUBLE, sub.type());
 
   sub = schema.GetProperty("String");
   ASSERT_TRUE(sub.valid());
-  EXPECT_EQ(base::Value::TYPE_STRING, sub.type());
+  EXPECT_EQ(base::Value::Type::STRING, sub.type());
 
   sub = schema.GetProperty("Array");
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_LIST, sub.type());
+  ASSERT_EQ(base::Value::Type::LIST, sub.type());
   sub = sub.GetItems();
   ASSERT_TRUE(sub.valid());
-  EXPECT_EQ(base::Value::TYPE_STRING, sub.type());
+  EXPECT_EQ(base::Value::Type::STRING, sub.type());
 
   sub = schema.GetProperty("ArrayOfObjects");
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_LIST, sub.type());
+  ASSERT_EQ(base::Value::Type::LIST, sub.type());
   sub = sub.GetItems();
   ASSERT_TRUE(sub.valid());
-  EXPECT_EQ(base::Value::TYPE_DICTIONARY, sub.type());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, sub.type());
   Schema subsub = sub.GetProperty("one");
   ASSERT_TRUE(subsub.valid());
-  EXPECT_EQ(base::Value::TYPE_STRING, subsub.type());
+  EXPECT_EQ(base::Value::Type::STRING, subsub.type());
   subsub = sub.GetProperty("two");
   ASSERT_TRUE(subsub.valid());
-  EXPECT_EQ(base::Value::TYPE_INTEGER, subsub.type());
+  EXPECT_EQ(base::Value::Type::INTEGER, subsub.type());
   subsub = sub.GetProperty("invalid");
   EXPECT_FALSE(subsub.valid());
 
   sub = schema.GetProperty("ArrayOfArray");
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_LIST, sub.type());
+  ASSERT_EQ(base::Value::Type::LIST, sub.type());
   sub = sub.GetItems();
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_LIST, sub.type());
+  ASSERT_EQ(base::Value::Type::LIST, sub.type());
   sub = sub.GetItems();
   ASSERT_TRUE(sub.valid());
-  EXPECT_EQ(base::Value::TYPE_STRING, sub.type());
+  EXPECT_EQ(base::Value::Type::STRING, sub.type());
 
   sub = schema.GetProperty("Object");
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, sub.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, sub.type());
   subsub = sub.GetProperty("one");
   ASSERT_TRUE(subsub.valid());
-  EXPECT_EQ(base::Value::TYPE_BOOLEAN, subsub.type());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, subsub.type());
   subsub = sub.GetProperty("two");
   ASSERT_TRUE(subsub.valid());
-  EXPECT_EQ(base::Value::TYPE_INTEGER, subsub.type());
+  EXPECT_EQ(base::Value::Type::INTEGER, subsub.type());
   subsub = sub.GetProperty("undeclared");
   ASSERT_TRUE(subsub.valid());
-  EXPECT_EQ(base::Value::TYPE_STRING, subsub.type());
+  EXPECT_EQ(base::Value::Type::STRING, subsub.type());
 
   sub = schema.GetProperty("IntegerWithEnums");
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_INTEGER, sub.type());
+  ASSERT_EQ(base::Value::Type::INTEGER, sub.type());
 
   sub = schema.GetProperty("IntegerWithEnumsGaps");
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_INTEGER, sub.type());
+  ASSERT_EQ(base::Value::Type::INTEGER, sub.type());
 
   sub = schema.GetProperty("StringWithEnums");
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_STRING, sub.type());
+  ASSERT_EQ(base::Value::Type::STRING, sub.type());
 
   sub = schema.GetProperty("IntegerWithRange");
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_INTEGER, sub.type());
+  ASSERT_EQ(base::Value::Type::INTEGER, sub.type());
 
   sub = schema.GetProperty("StringWithPattern");
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_STRING, sub.type());
+  ASSERT_EQ(base::Value::Type::STRING, sub.type());
 
   sub = schema.GetProperty("ObjectWithPatternProperties");
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, sub.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, sub.type());
 
   struct {
     const char* expected_key;
     base::Value::Type expected_type;
   } kExpectedProperties[] = {
-    { "Array",                       base::Value::TYPE_LIST },
-    { "ArrayOfArray",                base::Value::TYPE_LIST },
-    { "ArrayOfObjectOfArray",        base::Value::TYPE_LIST },
-    { "ArrayOfObjects",              base::Value::TYPE_LIST },
-    { "Boolean",                     base::Value::TYPE_BOOLEAN },
-    { "Integer",                     base::Value::TYPE_INTEGER },
-    { "IntegerWithEnums",            base::Value::TYPE_INTEGER },
-    { "IntegerWithEnumsGaps",        base::Value::TYPE_INTEGER },
-    { "IntegerWithRange",            base::Value::TYPE_INTEGER },
-    { "Null",                        base::Value::TYPE_NULL },
-    { "Number",                      base::Value::TYPE_DOUBLE },
-    { "Object",                      base::Value::TYPE_DICTIONARY },
-    { "ObjectOfArray",               base::Value::TYPE_DICTIONARY },
-    { "ObjectOfObject",              base::Value::TYPE_DICTIONARY },
-    { "ObjectWithPatternProperties", base::Value::TYPE_DICTIONARY },
-    { "String",                      base::Value::TYPE_STRING },
-    { "StringWithEnums",             base::Value::TYPE_STRING },
-    { "StringWithPattern",           base::Value::TYPE_STRING },
+    { "Array",                       base::Value::Type::LIST },
+    { "ArrayOfArray",                base::Value::Type::LIST },
+    { "ArrayOfObjectOfArray",        base::Value::Type::LIST },
+    { "ArrayOfObjects",              base::Value::Type::LIST },
+    { "Boolean",                     base::Value::Type::BOOLEAN },
+    { "Integer",                     base::Value::Type::INTEGER },
+    { "IntegerWithEnums",            base::Value::Type::INTEGER },
+    { "IntegerWithEnumsGaps",        base::Value::Type::INTEGER },
+    { "IntegerWithRange",            base::Value::Type::INTEGER },
+    { "Null",                        base::Value::Type::NONE },
+    { "Number",                      base::Value::Type::DOUBLE },
+    { "Object",                      base::Value::Type::DICTIONARY },
+    { "ObjectOfArray",               base::Value::Type::DICTIONARY },
+    { "ObjectOfObject",              base::Value::Type::DICTIONARY },
+    { "ObjectWithPatternProperties", base::Value::Type::DICTIONARY },
+    { "String",                      base::Value::Type::STRING },
+    { "StringWithEnums",             base::Value::Type::STRING },
+    { "StringWithPattern",           base::Value::Type::STRING },
   };
   Schema::Iterator it = schema.GetPropertiesIterator();
   for (size_t i = 0; i < arraysize(kExpectedProperties); ++i) {
@@ -430,7 +430,7 @@ TEST(SchemaTest, Lookups) {
 
   Schema schema = Schema::Parse("{ \"type\": \"object\" }", &error);
   ASSERT_TRUE(schema.valid()) << error;
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
   // This empty schema should never find named properties.
   EXPECT_FALSE(schema.GetKnownProperty("").valid());
@@ -445,7 +445,7 @@ TEST(SchemaTest, Lookups) {
       "  }"
       "}", &error);
   ASSERT_TRUE(schema.valid()) << error;
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
   EXPECT_FALSE(schema.GetKnownProperty("").valid());
   EXPECT_FALSE(schema.GetKnownProperty("xyz").valid());
@@ -463,7 +463,7 @@ TEST(SchemaTest, Lookups) {
       "  }"
       "}", &error);
   ASSERT_TRUE(schema.valid()) << error;
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
   EXPECT_FALSE(schema.GetKnownProperty("").valid());
   EXPECT_FALSE(schema.GetKnownProperty("xyz").valid());
@@ -472,11 +472,11 @@ TEST(SchemaTest, Lookups) {
     const char* expected_key;
     base::Value::Type expected_type;
   } kExpectedKeys[] = {
-    { "aa",     base::Value::TYPE_BOOLEAN },
-    { "ab",     base::Value::TYPE_DOUBLE },
-    { "aba",    base::Value::TYPE_INTEGER },
-    { "abab",   base::Value::TYPE_STRING },
-    { "bb",     base::Value::TYPE_NULL },
+    { "aa",     base::Value::Type::BOOLEAN },
+    { "ab",     base::Value::Type::DOUBLE },
+    { "aba",    base::Value::Type::INTEGER },
+    { "abab",   base::Value::Type::STRING },
+    { "bb",     base::Value::Type::NONE },
   };
   for (size_t i = 0; i < arraysize(kExpectedKeys); ++i) {
     Schema sub = schema.GetKnownProperty(kExpectedKeys[i].expected_key);
@@ -487,17 +487,17 @@ TEST(SchemaTest, Lookups) {
 
 TEST(SchemaTest, Wrap) {
   const internal::SchemaNode kSchemas[] = {
-    { base::Value::TYPE_DICTIONARY,   0 },    //  0: root node
-    { base::Value::TYPE_BOOLEAN,      -1 },   //  1
-    { base::Value::TYPE_INTEGER,      -1 },   //  2
-    { base::Value::TYPE_DOUBLE,       -1 },   //  3
-    { base::Value::TYPE_STRING,       -1 },   //  4
-    { base::Value::TYPE_LIST,         4 },    //  5: list of strings.
-    { base::Value::TYPE_LIST,         5 },    //  6: list of lists of strings.
-    { base::Value::TYPE_INTEGER,      0 },    //  7: integer enumerations.
-    { base::Value::TYPE_INTEGER,      1 },    //  8: ranged integers.
-    { base::Value::TYPE_STRING,       2 },    //  9: string enumerations.
-    { base::Value::TYPE_STRING,       3 },    // 10: string with pattern.
+    { base::Value::Type::DICTIONARY,   0 },    //  0: root node
+    { base::Value::Type::BOOLEAN,      -1 },   //  1
+    { base::Value::Type::INTEGER,      -1 },   //  2
+    { base::Value::Type::DOUBLE,       -1 },   //  3
+    { base::Value::Type::STRING,       -1 },   //  4
+    { base::Value::Type::LIST,         4 },    //  5: list of strings.
+    { base::Value::Type::LIST,         5 },    //  6: list of lists of strings.
+    { base::Value::Type::INTEGER,      0 },    //  7: integer enumerations.
+    { base::Value::Type::INTEGER,      1 },    //  8: ranged integers.
+    { base::Value::Type::STRING,       2 },    //  9: string enumerations.
+    { base::Value::Type::STRING,       3 },    // 10: string with pattern.
   };
 
   const internal::PropertyNode kPropertyNodes[] = {
@@ -546,21 +546,21 @@ TEST(SchemaTest, Wrap) {
 
   Schema schema = Schema::Wrap(&kData);
   ASSERT_TRUE(schema.valid());
-  EXPECT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
   struct {
     const char* key;
     base::Value::Type type;
   } kExpectedProperties[] = {
-    { "Boolean", base::Value::TYPE_BOOLEAN },
-    { "Integer", base::Value::TYPE_INTEGER },
-    { "Number", base::Value::TYPE_DOUBLE },
-    { "String", base::Value::TYPE_STRING },
-    { "List", base::Value::TYPE_LIST },
-    { "IntEnum", base::Value::TYPE_INTEGER },
-    { "RangedInt", base::Value::TYPE_INTEGER },
-    { "StrEnum", base::Value::TYPE_STRING },
-    { "StrPat", base::Value::TYPE_STRING },
+    { "Boolean", base::Value::Type::BOOLEAN },
+    { "Integer", base::Value::Type::INTEGER },
+    { "Number", base::Value::Type::DOUBLE },
+    { "String", base::Value::Type::STRING },
+    { "List", base::Value::Type::LIST },
+    { "IntEnum", base::Value::Type::INTEGER },
+    { "RangedInt", base::Value::Type::INTEGER },
+    { "StrEnum", base::Value::Type::STRING },
+    { "StrPat", base::Value::Type::STRING },
   };
 
   Schema::Iterator it = schema.GetPropertiesIterator();
@@ -571,10 +571,10 @@ TEST(SchemaTest, Wrap) {
     ASSERT_TRUE(sub.valid());
     EXPECT_EQ(kExpectedProperties[i].type, sub.type());
 
-    if (sub.type() == base::Value::TYPE_LIST) {
+    if (sub.type() == base::Value::Type::LIST) {
       Schema items = sub.GetItems();
       ASSERT_TRUE(items.valid());
-      EXPECT_EQ(base::Value::TYPE_STRING, items.type());
+      EXPECT_EQ(base::Value::Type::STRING, items.type());
     }
 
     it.Advance();
@@ -583,19 +583,19 @@ TEST(SchemaTest, Wrap) {
 
   Schema sub = schema.GetAdditionalProperties();
   ASSERT_TRUE(sub.valid());
-  ASSERT_EQ(base::Value::TYPE_LIST, sub.type());
+  ASSERT_EQ(base::Value::Type::LIST, sub.type());
   Schema subsub = sub.GetItems();
   ASSERT_TRUE(subsub.valid());
-  ASSERT_EQ(base::Value::TYPE_LIST, subsub.type());
+  ASSERT_EQ(base::Value::Type::LIST, subsub.type());
   Schema subsubsub = subsub.GetItems();
   ASSERT_TRUE(subsubsub.valid());
-  ASSERT_EQ(base::Value::TYPE_STRING, subsubsub.type());
+  ASSERT_EQ(base::Value::Type::STRING, subsubsub.type());
 
   SchemaList schema_list = schema.GetPatternProperties("barr");
   ASSERT_EQ(1u, schema_list.size());
   sub = schema_list[0];
   ASSERT_TRUE(sub.valid());
-  EXPECT_EQ(base::Value::TYPE_STRING, sub.type());
+  EXPECT_EQ(base::Value::Type::STRING, sub.type());
 
   EXPECT_TRUE(schema.GetPatternProperties("ba").empty());
   EXPECT_TRUE(schema.GetPatternProperties("bar+$").empty());
@@ -1001,29 +1001,29 @@ TEST(SchemaTest, RecursiveReferences) {
       "  }"
       "}", &error);
   ASSERT_TRUE(schema.valid()) << error;
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
   Schema parent = schema.GetKnownProperty("bookmarks");
   ASSERT_TRUE(parent.valid());
-  ASSERT_EQ(base::Value::TYPE_LIST, parent.type());
+  ASSERT_EQ(base::Value::Type::LIST, parent.type());
 
   // Check the recursive type a number of times.
   for (int i = 0; i < 10; ++i) {
     Schema items = parent.GetItems();
     ASSERT_TRUE(items.valid());
-    ASSERT_EQ(base::Value::TYPE_DICTIONARY, items.type());
+    ASSERT_EQ(base::Value::Type::DICTIONARY, items.type());
 
     Schema prop = items.GetKnownProperty("name");
     ASSERT_TRUE(prop.valid());
-    ASSERT_EQ(base::Value::TYPE_STRING, prop.type());
+    ASSERT_EQ(base::Value::Type::STRING, prop.type());
 
     prop = items.GetKnownProperty("url");
     ASSERT_TRUE(prop.valid());
-    ASSERT_EQ(base::Value::TYPE_STRING, prop.type());
+    ASSERT_EQ(base::Value::Type::STRING, prop.type());
 
     prop = items.GetKnownProperty("children");
     ASSERT_TRUE(prop.valid());
-    ASSERT_EQ(base::Value::TYPE_LIST, prop.type());
+    ASSERT_EQ(base::Value::Type::LIST, prop.type());
 
     parent = prop;
   }
@@ -1051,12 +1051,12 @@ TEST(SchemaTest, UnorderedReferences) {
       "  }"
       "}", &error);
   ASSERT_TRUE(schema.valid()) << error;
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
   for (char c = 'a'; c <= 'i'; ++c) {
     Schema sub = schema.GetKnownProperty(std::string(1, c));
     ASSERT_TRUE(sub.valid()) << c;
-    ASSERT_EQ(base::Value::TYPE_BOOLEAN, sub.type()) << c;
+    ASSERT_EQ(base::Value::Type::BOOLEAN, sub.type()) << c;
   }
 }
 
@@ -1080,23 +1080,23 @@ TEST(SchemaTest, AdditionalPropertiesReference) {
       "  }"
       "}", &error);
   ASSERT_TRUE(schema.valid()) << error;
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
   Schema policy = schema.GetKnownProperty("policy");
   ASSERT_TRUE(policy.valid());
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, policy.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, policy.type());
 
   Schema foo = policy.GetKnownProperty("foo");
   ASSERT_TRUE(foo.valid());
-  EXPECT_EQ(base::Value::TYPE_BOOLEAN, foo.type());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, foo.type());
 
   Schema additional = policy.GetAdditionalProperties();
   ASSERT_TRUE(additional.valid());
-  EXPECT_EQ(base::Value::TYPE_BOOLEAN, additional.type());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, additional.type());
 
   Schema x = policy.GetProperty("x");
   ASSERT_TRUE(x.valid());
-  EXPECT_EQ(base::Value::TYPE_BOOLEAN, x.type());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, x.type());
 }
 
 TEST(SchemaTest, ItemsReference) {
@@ -1117,19 +1117,19 @@ TEST(SchemaTest, ItemsReference) {
       "  }"
       "}", &error);
   ASSERT_TRUE(schema.valid()) << error;
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
   Schema foo = schema.GetKnownProperty("foo");
   ASSERT_TRUE(foo.valid());
-  EXPECT_EQ(base::Value::TYPE_BOOLEAN, foo.type());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, foo.type());
 
   Schema list = schema.GetKnownProperty("list");
   ASSERT_TRUE(list.valid());
-  ASSERT_EQ(base::Value::TYPE_LIST, list.type());
+  ASSERT_EQ(base::Value::Type::LIST, list.type());
 
   Schema items = list.GetItems();
   ASSERT_TRUE(items.valid());
-  ASSERT_EQ(base::Value::TYPE_BOOLEAN, items.type());
+  ASSERT_EQ(base::Value::Type::BOOLEAN, items.type());
 }
 
 TEST(SchemaTest, EnumerationRestriction) {

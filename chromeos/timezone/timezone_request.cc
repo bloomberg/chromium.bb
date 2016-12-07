@@ -188,10 +188,12 @@ bool ParseServerResponse(const GURL& server_url,
 
   const base::DictionaryValue* response_object = NULL;
   if (!response_value->GetAsDictionary(&response_object)) {
-    PrintTimeZoneError(server_url,
-                       "Unexpected response type : " +
-                           base::StringPrintf("%u", response_value->GetType()),
-                       timezone);
+    PrintTimeZoneError(
+        server_url,
+        "Unexpected response type : " +
+            base::StringPrintf(
+                "%u", static_cast<unsigned int>(response_value->GetType())),
+        timezone);
     RecordUmaEvent(TIMEZONE_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;
   }

@@ -225,7 +225,7 @@ ProfileStatisticsAggregator::ProfileStatValue
       const PrefService::Preference* pref = pref_service->
                                                 FindPreference(it.key());
       // Skip all dictionaries (which must be empty by the function call above).
-      if (it.value().GetType() != base::Value::TYPE_DICTIONARY &&
+      if (it.value().GetType() != base::Value::Type::DICTIONARY &&
         pref && pref->IsUserControlled() && !pref->IsDefaultValue()) {
         ++count;
       }

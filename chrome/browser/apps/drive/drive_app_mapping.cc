@@ -84,7 +84,7 @@ std::string DriveAppMapping::GetDriveApp(
        it.Advance()) {
     const base::DictionaryValue* info_dict;
     std::string value_string;
-    DCHECK(it.value().IsType(base::Value::TYPE_DICTIONARY));
+    DCHECK(it.value().IsType(base::Value::Type::DICTIONARY));
     if (it.value().GetAsDictionary(&info_dict) &&
         info_dict->GetStringWithoutPathExpansion(kKeyChromeApp,
                                                  &value_string) &&
@@ -104,7 +104,7 @@ bool DriveAppMapping::IsChromeAppGenerated(
     const base::DictionaryValue* info_dict;
     std::string value_string;
     bool generated = false;
-    DCHECK(it.value().IsType(base::Value::TYPE_DICTIONARY));
+    DCHECK(it.value().IsType(base::Value::Type::DICTIONARY));
     if (it.value().GetAsDictionary(&info_dict) &&
         info_dict->GetStringWithoutPathExpansion(kKeyChromeApp,
                                                  &value_string) &&

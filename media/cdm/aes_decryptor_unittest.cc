@@ -49,7 +49,7 @@ MATCHER(NotEmpty, "") {
 MATCHER(IsJSONDictionary, "") {
   std::string result(arg.begin(), arg.end());
   std::unique_ptr<base::Value> root(base::JSONReader().ReadToValue(result));
-  return (root.get() && root->GetType() == base::Value::TYPE_DICTIONARY);
+  return (root.get() && root->GetType() == base::Value::Type::DICTIONARY);
 }
 
 namespace media {

@@ -93,7 +93,7 @@ bool DevToolsProtocol::ParseNotification(
     std::string* method,
     std::unique_ptr<base::DictionaryValue>* params) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
-  if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
+  if (!value || !value->IsType(base::Value::Type::DICTIONARY))
     return false;
 
   std::unique_ptr<base::DictionaryValue> dict(
@@ -104,7 +104,7 @@ bool DevToolsProtocol::ParseNotification(
 
   std::unique_ptr<base::Value> params_value;
   dict->Remove(kParamsParam, &params_value);
-  if (params_value && params_value->IsType(base::Value::TYPE_DICTIONARY))
+  if (params_value && params_value->IsType(base::Value::Type::DICTIONARY))
     params->reset(static_cast<base::DictionaryValue*>(params_value.release()));
 
   return true;
@@ -115,7 +115,7 @@ bool DevToolsProtocol::ParseResponse(const std::string& json,
                                      int* command_id,
                                      int* error_code) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
-  if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
+  if (!value || !value->IsType(base::Value::Type::DICTIONARY))
     return false;
 
   std::unique_ptr<base::DictionaryValue> dict(

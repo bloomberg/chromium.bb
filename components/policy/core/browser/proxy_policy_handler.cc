@@ -227,8 +227,8 @@ const base::Value* ProxyPolicyHandler::GetProxyPolicyValue(
   const base::Value* policy_value = NULL;
   std::string tmp;
   if (!settings->Get(policy_name, &policy_value) ||
-      policy_value->IsType(base::Value::TYPE_NULL) ||
-      (policy_value->IsType(base::Value::TYPE_STRING) &&
+      policy_value->IsType(base::Value::Type::NONE) ||
+      (policy_value->IsType(base::Value::Type::STRING) &&
        policy_value->GetAsString(&tmp) &&
        tmp.empty())) {
     return NULL;
@@ -257,7 +257,7 @@ bool ProxyPolicyHandler::CheckProxyModeAndServerMode(const PolicyMap& policies,
     if (!mode->GetAsString(mode_value)) {
       errors->AddError(key::kProxySettings, key::kProxyMode,
                        IDS_POLICY_TYPE_ERROR,
-                       base::Value::GetTypeName(base::Value::TYPE_BOOLEAN));
+                       base::Value::GetTypeName(base::Value::Type::BOOLEAN));
       return false;
     }
 
@@ -286,7 +286,7 @@ bool ProxyPolicyHandler::CheckProxyModeAndServerMode(const PolicyMap& policies,
     if (!server_mode->GetAsInteger(&server_mode_value)) {
       errors->AddError(key::kProxySettings, key::kProxyServerMode,
                        IDS_POLICY_TYPE_ERROR,
-                       base::Value::GetTypeName(base::Value::TYPE_INTEGER));
+                       base::Value::GetTypeName(base::Value::Type::INTEGER));
       return false;
     }
 

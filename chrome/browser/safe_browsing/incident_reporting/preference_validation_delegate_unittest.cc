@@ -130,24 +130,24 @@ class PreferenceValidationDelegateValues
   static std::unique_ptr<base::Value> MakeValue(base::Value::Type value_type) {
     using base::Value;
     switch (value_type) {
-      case Value::TYPE_NULL:
+      case Value::Type::NONE:
         return Value::CreateNullValue();
-      case Value::TYPE_BOOLEAN:
+      case Value::Type::BOOLEAN:
         return std::unique_ptr<Value>(new base::FundamentalValue(false));
-      case Value::TYPE_INTEGER:
+      case Value::Type::INTEGER:
         return std::unique_ptr<Value>(new base::FundamentalValue(47));
-      case Value::TYPE_DOUBLE:
+      case Value::Type::DOUBLE:
         return std::unique_ptr<Value>(new base::FundamentalValue(0.47));
-      case Value::TYPE_STRING:
+      case Value::Type::STRING:
         return std::unique_ptr<Value>(new base::StringValue("i have a spleen"));
-      case Value::TYPE_DICTIONARY: {
+      case Value::Type::DICTIONARY: {
         std::unique_ptr<base::DictionaryValue> value(
             new base::DictionaryValue());
         value->SetInteger("twenty-two", 22);
         value->SetInteger("forty-seven", 47);
         return std::move(value);
       }
-      case Value::TYPE_LIST: {
+      case Value::Type::LIST: {
         std::unique_ptr<base::ListValue> value(new base::ListValue());
         value->AppendInteger(22);
         value->AppendInteger(47);
@@ -182,19 +182,19 @@ INSTANTIATE_TEST_CASE_P(
     // testing/gtest/include/gtest/internal/gtest-tuple.h:246:48:
     //   error: array used as initializer
     testing::Values(
-        std::tr1::make_tuple(base::Value::TYPE_NULL,
+        std::tr1::make_tuple(base::Value::Type::NONE,
                              const_cast<char*>("null")),
-        std::tr1::make_tuple(base::Value::TYPE_BOOLEAN,
+        std::tr1::make_tuple(base::Value::Type::BOOLEAN,
                              const_cast<char*>("false")),
-        std::tr1::make_tuple(base::Value::TYPE_INTEGER,
+        std::tr1::make_tuple(base::Value::Type::INTEGER,
                              const_cast<char*>("47")),
-        std::tr1::make_tuple(base::Value::TYPE_DOUBLE,
+        std::tr1::make_tuple(base::Value::Type::DOUBLE,
                              const_cast<char*>("0.47")),
-        std::tr1::make_tuple(base::Value::TYPE_STRING,
+        std::tr1::make_tuple(base::Value::Type::STRING,
                              const_cast<char*>("i have a spleen")),
-        std::tr1::make_tuple(base::Value::TYPE_DICTIONARY,
+        std::tr1::make_tuple(base::Value::Type::DICTIONARY,
             const_cast<char*>("{\"forty-seven\":47,\"twenty-two\":22}")),
-        std::tr1::make_tuple(base::Value::TYPE_LIST,
+        std::tr1::make_tuple(base::Value::Type::LIST,
                              const_cast<char*>("[22,47]"))));
 
 // Tests that no incidents are reported for relevant combinations of ValueState.

@@ -111,15 +111,15 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   list_value->AppendInteger(100);
   list_value->AppendDouble(1.0);
 
-  ASSERT_EQ(base::Value::TYPE_NULL, null_value->GetType());
-  ASSERT_EQ(base::Value::TYPE_BOOLEAN, bool_value->GetType());
-  ASSERT_EQ(base::Value::TYPE_INTEGER, int_value->GetType());
-  ASSERT_EQ(base::Value::TYPE_DOUBLE, double_value->GetType());
-  ASSERT_EQ(base::Value::TYPE_STRING, string_value->GetType());
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, dict_value->GetType());
-  ASSERT_EQ(base::Value::TYPE_LIST, list_value->GetType());
+  ASSERT_EQ(base::Value::Type::NONE, null_value->GetType());
+  ASSERT_EQ(base::Value::Type::BOOLEAN, bool_value->GetType());
+  ASSERT_EQ(base::Value::Type::INTEGER, int_value->GetType());
+  ASSERT_EQ(base::Value::Type::DOUBLE, double_value->GetType());
+  ASSERT_EQ(base::Value::Type::STRING, string_value->GetType());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, dict_value->GetType());
+  ASSERT_EQ(base::Value::Type::LIST, list_value->GetType());
 
-  // Test every value type independently. Intentionally omits TYPE_BINARY which
+  // Test every value type independently. Intentionally omits Type::BINARY which
   // isn't even allowed in JSONWriter's input.
   static const char kExpectedNullValue[] =
       "82A9F3BBC7F9FF84C76B033C854E79EEB162783FA7B3E99FF9372FA8E12C44F7";

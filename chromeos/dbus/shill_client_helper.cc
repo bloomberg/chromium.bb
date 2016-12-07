@@ -442,7 +442,7 @@ void AppendValueDataAsVariantInternal(dbus::MessageWriter* writer,
                                       DictionaryType dictionary_type) {
   // Support basic types and string-to-string dictionary.
   switch (value.GetType()) {
-    case base::Value::TYPE_DICTIONARY: {
+    case base::Value::Type::DICTIONARY: {
       const base::DictionaryValue* dictionary = NULL;
       value.GetAsDictionary(&dictionary);
       if (dictionary_type == DICTIONARY_TYPE_STRING) {
@@ -456,7 +456,7 @@ void AppendValueDataAsVariantInternal(dbus::MessageWriter* writer,
       }
       break;
     }
-    case base::Value::TYPE_LIST: {
+    case base::Value::Type::LIST: {
       const base::ListValue* list = NULL;
       value.GetAsList(&list);
       dbus::MessageWriter variant_writer(NULL);
@@ -475,10 +475,10 @@ void AppendValueDataAsVariantInternal(dbus::MessageWriter* writer,
       writer->CloseContainer(&variant_writer);
       break;
     }
-    case base::Value::TYPE_BOOLEAN:
-    case base::Value::TYPE_INTEGER:
-    case base::Value::TYPE_DOUBLE:
-    case base::Value::TYPE_STRING:
+    case base::Value::Type::BOOLEAN:
+    case base::Value::Type::INTEGER:
+    case base::Value::Type::DOUBLE:
+    case base::Value::Type::STRING:
       dbus::AppendBasicTypeValueDataAsVariant(writer, value);
       break;
     default:

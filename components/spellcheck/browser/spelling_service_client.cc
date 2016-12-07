@@ -196,7 +196,7 @@ bool SpellingServiceClient::ParseResponse(
       static_cast<base::DictionaryValue*>(
           base::JSONReader::Read(data, base::JSON_ALLOW_TRAILING_COMMAS)
               .release()));
-  if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
+  if (!value.get() || !value->IsType(base::Value::Type::DICTIONARY))
     return false;
 
   // Check for errors from spelling service.

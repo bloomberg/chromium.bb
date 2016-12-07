@@ -257,7 +257,7 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
     std::string proxy_servers;
     for (size_t i = 0; i < arraysize(proxy_servers_options); ++i) {
       if (!proxy_dict->Get(proxy_servers_options[i][0], &option_value) ||
-          option_value->IsType(base::Value::TYPE_NULL)) {
+          option_value->IsType(base::Value::Type::NONE)) {
         continue;
       }
       std::string value;
@@ -277,7 +277,7 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
 
     std::string proxy_bypass_list;
     if (proxy_dict->Get("noProxy", &option_value) &&
-        !option_value->IsType(base::Value::TYPE_NULL)) {
+        !option_value->IsType(base::Value::Type::NONE)) {
       if (!option_value->GetAsString(&proxy_bypass_list))
         return Status(kUnknownError, "'noProxy' must be a string");
     }

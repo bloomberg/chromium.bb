@@ -48,7 +48,7 @@ FilesystemJsonPrefStore::ReadResult::~ReadResult() {}
 namespace {
 
 PersistentPrefStore::PrefReadError HandleReadErrors(const base::Value* value) {
-  if (!value->IsType(base::Value::TYPE_DICTIONARY))
+  if (!value->IsType(base::Value::Type::DICTIONARY))
     return PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE;
   return PersistentPrefStore::PREF_READ_ERROR_NONE;
 }

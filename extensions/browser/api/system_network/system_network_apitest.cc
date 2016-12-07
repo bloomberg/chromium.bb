@@ -36,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkApiTest, GetNetworkInterfaces) {
 
   std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       socket_function.get(), "[]", browser_context()));
-  ASSERT_EQ(base::Value::TYPE_LIST, result->GetType());
+  ASSERT_EQ(base::Value::Type::LIST, result->GetType());
 
   // All we can confirm is that we have at least one address, but not what it
   // is.

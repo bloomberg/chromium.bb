@@ -160,7 +160,7 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   EXPECT_EQ("sync.confirmation.setUserImageURL",
             web_ui()->call_data()[0]->function_name());
   EXPECT_TRUE(
-      web_ui()->call_data()[0]->arg1()->IsType(base::Value::TYPE_STRING));
+      web_ui()->call_data()[0]->arg1()->IsType(base::Value::Type::STRING));
   std::string passed_picture_url;
   EXPECT_TRUE(
       web_ui()->call_data()[0]->arg1()->GetAsString(&passed_picture_url));
@@ -204,7 +204,7 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
   EXPECT_EQ("sync.confirmation.setUserImageURL",
             web_ui()->call_data()[1]->function_name());
   EXPECT_TRUE(
-      web_ui()->call_data()[1]->arg1()->IsType(base::Value::TYPE_STRING));
+      web_ui()->call_data()[1]->arg1()->IsType(base::Value::Type::STRING));
   std::string passed_picture_url;
   EXPECT_TRUE(
       web_ui()->call_data()[1]->arg1()->GetAsString(&passed_picture_url));

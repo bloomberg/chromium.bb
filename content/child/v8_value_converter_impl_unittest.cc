@@ -131,7 +131,7 @@ class V8ValueConverterImplTest : public testing::Test {
       ADD_FAILURE();
       return false;
     }
-    return child->GetType() == base::Value::TYPE_NULL;
+    return child->GetType() == base::Value::Type::NONE;
   }
 
   bool IsNull(v8::Local<v8::Object> value, const std::string& key) {
@@ -150,7 +150,7 @@ class V8ValueConverterImplTest : public testing::Test {
       ADD_FAILURE();
       return false;
     }
-    return child->GetType() == base::Value::TYPE_NULL;
+    return child->GetType() == base::Value::Type::NONE;
   }
 
   bool IsNull(v8::Local<v8::Array> value, uint32_t index) {
@@ -208,7 +208,7 @@ class V8ValueConverterImplTest : public testing::Test {
       // types into null.
       base::Value* temp = NULL;
       ASSERT_TRUE(list->Get(0, &temp));
-      EXPECT_EQ(base::Value::TYPE_NULL, temp->GetType());
+      EXPECT_EQ(base::Value::Type::NONE, temp->GetType());
     }
   }
 
@@ -403,21 +403,21 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
 
   V8ValueConverterImpl converter;
   TestWeirdType(converter, v8::Undefined(isolate_),
-                base::Value::TYPE_NULL,  // Arbitrary type, result is NULL.
+                base::Value::Type::NONE,  // Arbitrary type, result is NULL.
                 std::unique_ptr<base::Value>());
   TestWeirdType(converter, v8::Date::New(isolate_, 1000),
-                base::Value::TYPE_DICTIONARY,
+                base::Value::Type::DICTIONARY,
                 std::unique_ptr<base::Value>(new base::DictionaryValue()));
-  TestWeirdType(converter, regex, base::Value::TYPE_DICTIONARY,
+  TestWeirdType(converter, regex, base::Value::Type::DICTIONARY,
                 std::unique_ptr<base::Value>(new base::DictionaryValue()));
 
   converter.SetDateAllowed(true);
   TestWeirdType(converter, v8::Date::New(isolate_, 1000),
-                base::Value::TYPE_DOUBLE,
+                base::Value::Type::DOUBLE,
                 std::unique_ptr<base::Value>(new base::FundamentalValue(1.0)));
 
   converter.SetRegExpAllowed(true);
-  TestWeirdType(converter, regex, base::Value::TYPE_STRING,
+  TestWeirdType(converter, regex, base::Value::Type::STRING,
                 std::unique_ptr<base::Value>(new base::StringValue("/./")));
 }
 

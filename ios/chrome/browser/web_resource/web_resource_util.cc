@@ -49,7 +49,7 @@ void ParseJSONOnBackgroundThread(
     return;
   }
 
-  if (!value->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (!value->IsType(base::Value::Type::DICTIONARY)) {
     PostErrorTask(task_runner, error_callback, kUnexpectedJSONFormatError);
     return;
   }

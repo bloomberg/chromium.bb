@@ -2241,7 +2241,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
 
   if (filter.get()) {
     // Try to automatically select a client certificate.
-    if (filter->IsType(base::Value::TYPE_DICTIONARY)) {
+    if (filter->IsType(base::Value::Type::DICTIONARY)) {
       base::DictionaryValue* filter_dict =
           static_cast<base::DictionaryValue*>(filter.get());
 

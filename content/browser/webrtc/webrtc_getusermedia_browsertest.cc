@@ -234,7 +234,7 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
         &error_message);
 
     ASSERT_TRUE(value.get() != NULL) << error_message;
-    EXPECT_EQ(value->GetType(), base::Value::TYPE_LIST);
+    EXPECT_EQ(value->GetType(), base::Value::Type::LIST);
 
     base::ListValue* values;
     ASSERT_TRUE(value->GetAsList(&values));

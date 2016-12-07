@@ -46,7 +46,7 @@ std::unique_ptr<base::Value> SettingsPrivateDelegate::GetAllPrefs() {
   const TypedPrefMap& keys = prefs_util_->GetWhitelistedKeys();
   for (const auto& it : keys) {
     std::unique_ptr<base::Value> pref = GetPref(it.first);
-    if (!pref->IsType(base::Value::TYPE_NULL))
+    if (!pref->IsType(base::Value::Type::NONE))
       prefs->Append(std::move(pref));
   }
 

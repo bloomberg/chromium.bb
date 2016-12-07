@@ -63,7 +63,7 @@ base::DictionaryValue* ParseDistributionPreferences(
     LOG(WARNING) << "Failed to parse master prefs file: " << error;
     return NULL;
   }
-  if (!root->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (!root->IsType(base::Value::Type::DICTIONARY)) {
     LOG(WARNING) << "Failed to parse master prefs file: "
                  << "Root item must be a dictionary.";
     return NULL;

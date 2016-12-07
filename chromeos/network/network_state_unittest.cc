@@ -25,9 +25,7 @@ namespace {
 class TestStringValue : public base::Value {
  public:
   explicit TestStringValue(const std::string& in_value)
-      : base::Value(TYPE_STRING),
-        value_(in_value) {
-  }
+      : base::Value(Type::STRING), value_(in_value) {}
 
   ~TestStringValue() override {}
 

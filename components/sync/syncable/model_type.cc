@@ -615,11 +615,11 @@ base::StringValue* ModelTypeToValue(ModelType model_type) {
 }
 
 ModelType ModelTypeFromValue(const base::Value& value) {
-  if (value.IsType(base::Value::TYPE_STRING)) {
+  if (value.IsType(base::Value::Type::STRING)) {
     std::string result;
     CHECK(value.GetAsString(&result));
     return ModelTypeFromString(result);
-  } else if (value.IsType(base::Value::TYPE_INTEGER)) {
+  } else if (value.IsType(base::Value::Type::INTEGER)) {
     int result;
     CHECK(value.GetAsInteger(&result));
     return ModelTypeFromInt(result);

@@ -332,9 +332,9 @@ T* ExtensionPrefs::ScopedUpdate<T, type_enum_value>::Create() {
 
 // Explicit instantiations for Dictionary and List value types.
 template class ExtensionPrefs::ScopedUpdate<base::DictionaryValue,
-                                            base::Value::TYPE_DICTIONARY>;
+                                            base::Value::Type::DICTIONARY>;
 template class ExtensionPrefs::ScopedUpdate<base::ListValue,
-                                            base::Value::TYPE_LIST>;
+                                            base::Value::Type::LIST>;
 
 //
 // ExtensionPrefs
@@ -818,7 +818,7 @@ std::set<std::string> ExtensionPrefs::GetBlacklistedExtensions() const {
 
   for (base::DictionaryValue::Iterator it(*extensions);
        !it.IsAtEnd(); it.Advance()) {
-    if (!it.value().IsType(base::Value::TYPE_DICTIONARY)) {
+    if (!it.value().IsType(base::Value::Type::DICTIONARY)) {
       NOTREACHED() << "Invalid pref for extension " << it.key();
       continue;
     }

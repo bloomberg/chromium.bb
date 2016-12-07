@@ -89,8 +89,8 @@ struct DictionaryIdComparator {
 
   bool operator()(const std::unique_ptr<base::Value>& a,
                   const std::unique_ptr<base::Value>& b) const {
-    DCHECK(a->GetType() == base::Value::TYPE_DICTIONARY);
-    DCHECK(b->GetType() == base::Value::TYPE_DICTIONARY);
+    DCHECK(a->GetType() == base::Value::Type::DICTIONARY);
+    DCHECK(b->GetType() == base::Value::Type::DICTIONARY);
     const base::DictionaryValue* a_dict;
     bool a_is_dictionary = a->GetAsDictionary(&a_dict);
     DCHECK(a_is_dictionary);

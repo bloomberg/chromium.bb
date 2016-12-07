@@ -157,7 +157,7 @@ TEST(EvaluateScriptAndGetValue, Undefined) {
   Status status =
       internal::EvaluateScriptAndGetValue(&client, 0, std::string(), &result);
   ASSERT_EQ(kOk, status.code());
-  ASSERT_TRUE(result && result->IsType(base::Value::TYPE_NULL));
+  ASSERT_TRUE(result && result->IsType(base::Value::Type::NONE));
 }
 
 TEST(EvaluateScriptAndGetValue, Ok) {

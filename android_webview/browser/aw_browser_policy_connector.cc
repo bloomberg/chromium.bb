@@ -39,21 +39,21 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
   // URL Filtering
   handlers->AddHandler(base::MakeUnique<policy::SimplePolicyHandler>(
       policy::key::kURLWhitelist, policy::policy_prefs::kUrlWhitelist,
-      base::Value::TYPE_LIST));
+      base::Value::Type::LIST));
   handlers->AddHandler(base::MakeUnique<policy::URLBlacklistPolicyHandler>());
 
   // HTTP Negotiate authentication
   handlers->AddHandler(base::MakeUnique<policy::SimplePolicyHandler>(
       policy::key::kAuthServerWhitelist, prefs::kAuthServerWhitelist,
-      base::Value::TYPE_STRING));
+      base::Value::Type::STRING));
   handlers->AddHandler(base::MakeUnique<policy::SimplePolicyHandler>(
       policy::key::kAuthAndroidNegotiateAccountType,
-      prefs::kAuthAndroidNegotiateAccountType, base::Value::TYPE_STRING));
+      prefs::kAuthAndroidNegotiateAccountType, base::Value::Type::STRING));
 
   // Web restrictions
   handlers->AddHandler(base::WrapUnique(new policy::SimplePolicyHandler(
       policy::key::kWebRestrictionsAuthority, prefs::kWebRestrictionsAuthority,
-      base::Value::TYPE_STRING)));
+      base::Value::Type::STRING)));
 
   return handlers;
 }

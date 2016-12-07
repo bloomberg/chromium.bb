@@ -128,7 +128,7 @@ std::vector<std::string> JsonArrayToVectorOfStrings(
     const std::string& json_array) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(json_array);
   EXPECT_TRUE(value);
-  EXPECT_TRUE(value->IsType(base::Value::TYPE_LIST));
+  EXPECT_TRUE(value->IsType(base::Value::Type::LIST));
   std::unique_ptr<base::ListValue> list =
       base::ListValue::From(std::move(value));
   std::vector<std::string> vector;
@@ -136,7 +136,7 @@ std::vector<std::string> JsonArrayToVectorOfStrings(
   for (size_t i = 0; i < list->GetSize(); ++i) {
     base::Value* item;
     EXPECT_TRUE(list->Get(i, &item));
-    EXPECT_TRUE(item->IsType(base::Value::TYPE_STRING));
+    EXPECT_TRUE(item->IsType(base::Value::Type::STRING));
     std::string item_str;
     EXPECT_TRUE(item->GetAsString(&item_str));
     vector.push_back(std::move(item_str));

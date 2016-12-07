@@ -14,7 +14,7 @@ namespace syncer {
 
 SyncPolicyHandler::SyncPolicyHandler()
     : policy::TypeCheckingPolicyHandler(policy::key::kSyncDisabled,
-                                        base::Value::TYPE_BOOLEAN) {}
+                                        base::Value::Type::BOOLEAN) {}
 
 SyncPolicyHandler::~SyncPolicyHandler() {}
 

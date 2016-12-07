@@ -18,26 +18,26 @@ namespace policy {
 TEST(PolicyMacUtilTest, PropertyToValue) {
   base::DictionaryValue root;
 
-  // base::Value::TYPE_NULL
+  // base::Value::Type::NONE
   root.Set("null", base::Value::CreateNullValue());
 
-  // base::Value::TYPE_BOOLEAN
+  // base::Value::Type::BOOLEAN
   root.SetBoolean("false", false);
   root.SetBoolean("true", true);
 
-  // base::Value::TYPE_INTEGER
+  // base::Value::Type::INTEGER
   root.SetInteger("int", 123);
   root.SetInteger("zero", 0);
 
-  // base::Value::TYPE_DOUBLE
+  // base::Value::Type::DOUBLE
   root.SetDouble("double", 123.456);
   root.SetDouble("zerod", 0.0);
 
-  // base::Value::TYPE_STRING
+  // base::Value::Type::STRING
   root.SetString("string", "the fox jumps over something");
   root.SetString("empty", "");
 
-  // base::Value::TYPE_LIST
+  // base::Value::Type::LIST
   base::ListValue list;
   root.Set("emptyl", list.DeepCopy());
   for (base::DictionaryValue::Iterator it(root); !it.IsAtEnd(); it.Advance())
@@ -46,7 +46,7 @@ TEST(PolicyMacUtilTest, PropertyToValue) {
   list.Append(root.DeepCopy());
   root.Set("list", list.DeepCopy());
 
-  // base::Value::TYPE_DICTIONARY
+  // base::Value::Type::DICTIONARY
   base::DictionaryValue dict;
   root.Set("emptyd", dict.DeepCopy());
   // Very meta.

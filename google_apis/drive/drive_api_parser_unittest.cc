@@ -19,7 +19,7 @@ TEST(DriveAPIParserTest, AboutResourceParser) {
       test_util::LoadJSONFile("drive/about.json");
   ASSERT_TRUE(document.get());
 
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, document->GetType());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, document->GetType());
   std::unique_ptr<AboutResource> resource(new AboutResource());
   EXPECT_TRUE(resource->Parse(*document));
 
@@ -36,7 +36,7 @@ TEST(DriveAPIParserTest, AppListParser) {
       test_util::LoadJSONFile("drive/applist.json");
   ASSERT_TRUE(document.get());
 
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, document->GetType());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, document->GetType());
   std::unique_ptr<AppList> applist(new AppList);
   EXPECT_TRUE(applist->Parse(*document));
 
@@ -114,7 +114,7 @@ TEST(DriveAPIParserTest, FileListParser) {
       test_util::LoadJSONFile("drive/filelist.json");
   ASSERT_TRUE(document.get());
 
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, document->GetType());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, document->GetType());
   std::unique_ptr<FileList> filelist(new FileList);
   EXPECT_TRUE(filelist->Parse(*document));
 
@@ -216,7 +216,7 @@ TEST(DriveAPIParserTest, ChangeListParser) {
       test_util::LoadJSONFile("drive/changelist.json");
   ASSERT_TRUE(document.get());
 
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, document->GetType());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, document->GetType());
   std::unique_ptr<ChangeList> changelist(new ChangeList);
   EXPECT_TRUE(changelist->Parse(*document));
 

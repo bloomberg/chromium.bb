@@ -75,10 +75,10 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
   std::string string_value;
   int int_value = 0;
   switch (schema.type()) {
-    case base::Value::TYPE_NULL: {
+    case base::Value::Type::NONE: {
       return base::Value::CreateNullValue();
     }
-    case base::Value::TYPE_BOOLEAN: {
+    case base::Value::Type::BOOLEAN: {
       // Accept booleans encoded as either string or integer.
       if (value.GetAsInteger(&int_value) ||
           (value.GetAsString(&string_value) &&
@@ -88,7 +88,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
       }
       break;
     }
-    case base::Value::TYPE_INTEGER: {
+    case base::Value::Type::INTEGER: {
       // Integers may be string-encoded.
       if (value.GetAsString(&string_value) &&
           base::StringToInt(string_value, &int_value)) {
@@ -97,7 +97,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
       }
       break;
     }
-    case base::Value::TYPE_DOUBLE: {
+    case base::Value::Type::DOUBLE: {
       // Doubles may be string-encoded or integer-encoded.
       double double_value = 0;
       if (value.GetAsDouble(&double_value) ||
@@ -108,7 +108,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
       }
       break;
     }
-    case base::Value::TYPE_LIST: {
+    case base::Value::Type::LIST: {
       // Lists are encoded as subkeys with numbered value in the registry
       // (non-numerical keys are ignored).
       const base::DictionaryValue* dict = nullptr;
@@ -127,7 +127,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
       }
       // Fall through in order to accept lists encoded as JSON strings.
     }
-    case base::Value::TYPE_DICTIONARY: {
+    case base::Value::Type::DICTIONARY: {
       // Dictionaries may be encoded as JSON strings.
       if (value.GetAsString(&string_value)) {
         std::unique_ptr<base::Value> result =
@@ -137,8 +137,8 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
       }
       break;
     }
-    case base::Value::TYPE_STRING:
-    case base::Value::TYPE_BINARY:
+    case base::Value::Type::STRING:
+    case base::Value::Type::BINARY:
       // No conversion possible.
       break;
   }
@@ -307,9 +307,9 @@ void RegistryDict::ReadRegistry(HKEY hive, const base::string16& root) {
 std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
     const Schema& schema) const {
   base::Value::Type type =
-      schema.valid() ? schema.type() : base::Value::TYPE_DICTIONARY;
+      schema.valid() ? schema.type() : base::Value::Type::DICTIONARY;
   switch (type) {
-    case base::Value::TYPE_DICTIONARY: {
+    case base::Value::Type::DICTIONARY: {
       std::unique_ptr<base::DictionaryValue> result(
           new base::DictionaryValue());
       for (RegistryDict::ValueMap::const_iterator entry(values_.begin());
@@ -332,7 +332,7 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
       }
       return std::move(result);
     }
-    case base::Value::TYPE_LIST: {
+    case base::Value::Type::LIST: {
       std::unique_ptr<base::ListValue> result(new base::ListValue());
       Schema item_schema = schema.valid() ? schema.GetItems() : Schema();
       for (RegistryDict::KeyMap::const_iterator entry(keys_.begin());

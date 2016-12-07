@@ -47,7 +47,7 @@ void JSONResponseFetcher::Stop() {
 
 void JSONResponseFetcher::OnJsonParseSuccess(
     std::unique_ptr<base::Value> parsed_json) {
-  if (!parsed_json->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (!parsed_json->IsType(base::Value::Type::DICTIONARY)) {
     OnJsonParseError(kBadResponse);
     return;
   }

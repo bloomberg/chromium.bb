@@ -34,7 +34,7 @@ base::ListValue* ReadCommands(const base::FilePath& unpack_path) {
   JSONFileValueDeserializer deserializer(commands);
   std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
 
-  return (root.get() && root->IsType(base::Value::TYPE_LIST))
+  return (root.get() && root->IsType(base::Value::Type::LIST))
              ? static_cast<base::ListValue*>(root.release())
              : NULL;
 }

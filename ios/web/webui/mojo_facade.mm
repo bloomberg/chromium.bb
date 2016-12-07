@@ -25,7 +25,7 @@ namespace web {
 
 namespace {
 
-// Wraps an integer into |base::Value| as |TYPE_INTEGER|.
+// Wraps an integer into |base::Value| as |Type::INTEGER|.
 template <typename IntegerT>
 std::unique_ptr<base::Value> ValueFromInteger(IntegerT handle) {
   return std::unique_ptr<base::Value>(
@@ -136,14 +136,14 @@ std::unique_ptr<base::Value> MojoFacade::HandleCoreCreateMessagePipe(
   const base::Value* options_as_value = nullptr;
   CHECK(args->Get("optionsDict", &options_as_value));
 
-  if (options_as_value->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (options_as_value->IsType(base::Value::Type::DICTIONARY)) {
     // There are no options defined for CreateMessagePipe yet.
     const base::DictionaryValue* options_as_dict;
     options_as_value->GetAsDictionary(&options_as_dict);
     CHECK(options_as_dict->empty());
   }
 
-  CHECK(options_as_value->IsType(base::Value::TYPE_NULL));
+  CHECK(options_as_value->IsType(base::Value::Type::NONE));
 
   mojo::MessagePipe message_pipe;
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);

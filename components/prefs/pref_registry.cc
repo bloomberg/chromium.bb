@@ -54,8 +54,8 @@ void PrefRegistry::RegisterPreference(const std::string& path,
                                       base::Value* default_value,
                                       uint32_t flags) {
   base::Value::Type orig_type = default_value->GetType();
-  DCHECK(orig_type != base::Value::TYPE_NULL &&
-         orig_type != base::Value::TYPE_BINARY) <<
+  DCHECK(orig_type != base::Value::Type::NONE &&
+         orig_type != base::Value::Type::BINARY) <<
          "invalid preference type: " << orig_type;
   DCHECK(!defaults_->GetValue(path, NULL)) <<
       "Trying to register a previously registered pref: " << path;

@@ -103,7 +103,7 @@ base::Value* ProxyPrefTransformer::ExtensionToBrowserPref(
   // When ExtensionToBrowserPref is called, the format of |extension_pref|
   // has been verified already by the extension API to match the schema
   // defined in the extension API JSON.
-  CHECK(extension_pref->IsType(base::Value::TYPE_DICTIONARY));
+  CHECK(extension_pref->IsType(base::Value::Type::DICTIONARY));
   const base::DictionaryValue* config =
       static_cast<const base::DictionaryValue*>(extension_pref);
 
@@ -140,7 +140,7 @@ base::Value* ProxyPrefTransformer::ExtensionToBrowserPref(
 
 base::Value* ProxyPrefTransformer::BrowserToExtensionPref(
     const base::Value* browser_pref) {
-  CHECK(browser_pref->IsType(base::Value::TYPE_DICTIONARY));
+  CHECK(browser_pref->IsType(base::Value::Type::DICTIONARY));
 
   // This is a dictionary wrapper that exposes the proxy configuration stored in
   // the browser preferences.

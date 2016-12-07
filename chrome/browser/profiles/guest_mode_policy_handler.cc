@@ -14,7 +14,7 @@ namespace policy {
 
 GuestModePolicyHandler::GuestModePolicyHandler()
     : TypeCheckingPolicyHandler(key::kBrowserGuestModeEnabled,
-                                base::Value::TYPE_BOOLEAN) {}
+                                base::Value::Type::BOOLEAN) {}
 
 GuestModePolicyHandler::~GuestModePolicyHandler() {}
 

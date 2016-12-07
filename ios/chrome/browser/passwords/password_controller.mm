@@ -455,7 +455,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   std::string errorMessage;
   std::unique_ptr<base::Value> jsonData(base::JSONReader::ReadAndReturnError(
       JSONString, false, &errorCode, &errorMessage));
-  if (errorCode || !jsonData || !jsonData->IsType(base::Value::TYPE_LIST)) {
+  if (errorCode || !jsonData || !jsonData->IsType(base::Value::Type::LIST)) {
     VLOG(1) << "JSON parse error " << errorMessage
             << " JSON string: " << JSONString;
     return;
@@ -528,7 +528,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     return NO;
   }
 
-  if (errorCode || !JSONData->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (errorCode || !JSONData->IsType(base::Value::Type::DICTIONARY)) {
     VLOG(1) << "JSON parse error " << errorMessage
             << " JSON string: " << JSONString;
     return NO;

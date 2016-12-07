@@ -31,9 +31,9 @@ bool IsSameSchema(Schema a, Schema b) {
     return true;
   if (a.type() != b.type())
     return false;
-  if (a.type() == base::Value::TYPE_LIST)
+  if (a.type() == base::Value::Type::LIST)
     return IsSameSchema(a.GetItems(), b.GetItems());
-  if (a.type() != base::Value::TYPE_DICTIONARY)
+  if (a.type() != base::Value::Type::DICTIONARY)
     return true;
   Schema::Iterator a_it = a.GetPropertiesIterator();
   Schema::Iterator b_it = b.GetPropertiesIterator();
@@ -58,7 +58,7 @@ bool IsSameSchema(Schema a, Schema b) {
 TEST(GeneratePolicySource, ChromeSchemaData) {
   Schema schema = Schema::Wrap(GetChromeSchemaData());
   ASSERT_TRUE(schema.valid());
-  EXPECT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
   Schema subschema = schema.GetAdditionalProperties();
   EXPECT_FALSE(subschema.valid());
@@ -68,26 +68,26 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
 
   subschema = schema.GetProperty(key::kSearchSuggestEnabled);
   ASSERT_TRUE(subschema.valid());
-  EXPECT_EQ(base::Value::TYPE_BOOLEAN, subschema.type());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, subschema.type());
 
   subschema = schema.GetProperty(key::kDefaultCookiesSetting);
   ASSERT_TRUE(subschema.valid());
-  EXPECT_EQ(base::Value::TYPE_INTEGER, subschema.type());
+  EXPECT_EQ(base::Value::Type::INTEGER, subschema.type());
 
   subschema = schema.GetProperty(key::kProxyMode);
   ASSERT_TRUE(subschema.valid());
-  EXPECT_EQ(base::Value::TYPE_STRING, subschema.type());
+  EXPECT_EQ(base::Value::Type::STRING, subschema.type());
 
   subschema = schema.GetProperty(key::kURLBlacklist);
   ASSERT_TRUE(subschema.valid());
-  EXPECT_EQ(base::Value::TYPE_LIST, subschema.type());
+  EXPECT_EQ(base::Value::Type::LIST, subschema.type());
   ASSERT_TRUE(subschema.GetItems().valid());
-  EXPECT_EQ(base::Value::TYPE_STRING, subschema.GetItems().type());
+  EXPECT_EQ(base::Value::Type::STRING, subschema.GetItems().type());
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   subschema = schema.GetProperty(key::kExtensionSettings);
   ASSERT_TRUE(subschema.valid());
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, subschema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, subschema.type());
   EXPECT_FALSE(subschema.GetAdditionalProperties().valid());
   EXPECT_FALSE(subschema.GetProperty("no such extension id exists").valid());
   EXPECT_TRUE(subschema.GetPatternProperties("*").empty());
@@ -102,22 +102,22 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
   ASSERT_EQ(1u, schema_list.size());
   subschema = schema_list[0];
   ASSERT_TRUE(subschema.valid());
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, subschema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, subschema.type());
   subschema = subschema.GetProperty("installation_mode");
   ASSERT_TRUE(subschema.valid());
-  ASSERT_EQ(base::Value::TYPE_STRING, subschema.type());
+  ASSERT_EQ(base::Value::Type::STRING, subschema.type());
 
   subschema = schema.GetProperty(key::kExtensionSettings).GetProperty("*");
   ASSERT_TRUE(subschema.valid());
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, subschema.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, subschema.type());
   subschema = subschema.GetProperty("installation_mode");
   ASSERT_TRUE(subschema.valid());
-  ASSERT_EQ(base::Value::TYPE_STRING, subschema.type());
+  ASSERT_EQ(base::Value::Type::STRING, subschema.type());
 #endif
 
   subschema = schema.GetProperty(key::kProxySettings);
   ASSERT_TRUE(subschema.valid());
-  EXPECT_EQ(base::Value::TYPE_DICTIONARY, subschema.type());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, subschema.type());
   EXPECT_FALSE(subschema.GetAdditionalProperties().valid());
   EXPECT_FALSE(subschema.GetProperty("no such proxy key exists").valid());
   ASSERT_TRUE(subschema.GetProperty(key::kProxyMode).valid());
@@ -149,7 +149,7 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
     ASSERT_TRUE(*next != NULL);
     EXPECT_STREQ(*next, it.key());
     ASSERT_TRUE(it.schema().valid());
-    EXPECT_EQ(base::Value::TYPE_STRING, it.schema().type());
+    EXPECT_EQ(base::Value::Type::STRING, it.schema().type());
   }
   EXPECT_TRUE(*next == NULL);
 

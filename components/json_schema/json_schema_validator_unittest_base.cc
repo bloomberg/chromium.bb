@@ -58,12 +58,12 @@ base::Value* LoadValue(const std::string& filename, base::Value::Type type) {
 
 base::ListValue* LoadList(const std::string& filename) {
   return static_cast<base::ListValue*>(
-      LoadValue(filename, base::Value::TYPE_LIST));
+      LoadValue(filename, base::Value::Type::LIST));
 }
 
 base::DictionaryValue* LoadDictionary(const std::string& filename) {
   return static_cast<base::DictionaryValue*>(
-      LoadValue(filename, base::Value::TYPE_DICTIONARY));
+      LoadValue(filename, base::Value::Type::DICTIONARY));
 }
 
 }  // namespace

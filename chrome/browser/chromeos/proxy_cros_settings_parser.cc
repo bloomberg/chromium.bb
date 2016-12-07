@@ -261,7 +261,7 @@ void SetProxyPrefValue(const std::string& network_guid,
     }
   } else if (path == kProxyIgnoreList) {
     net::ProxyBypassRules bypass_rules;
-    if (in_value->GetType() == base::Value::TYPE_LIST) {
+    if (in_value->GetType() == base::Value::Type::LIST) {
       const base::ListValue* list_value =
           static_cast<const base::ListValue*>(in_value);
       for (size_t x = 0; x < list_value->GetSize(); x++) {

@@ -288,7 +288,7 @@ const base::DictionaryValue* PrefService::GetDictionary(
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
     return NULL;
   }
-  if (value->GetType() != base::Value::TYPE_DICTIONARY) {
+  if (value->GetType() != base::Value::Type::DICTIONARY) {
     NOTREACHED();
     return NULL;
   }
@@ -345,7 +345,7 @@ const base::ListValue* PrefService::GetList(const std::string& path) const {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
     return NULL;
   }
-  if (value->GetType() != base::Value::TYPE_LIST) {
+  if (value->GetType() != base::Value::Type::LIST) {
     NOTREACHED();
     return NULL;
   }
@@ -453,7 +453,8 @@ uint64_t PrefService::GetUint64(const std::string& path) const {
 
 base::Value* PrefService::GetMutableUserPref(const std::string& path,
                                              base::Value::Type type) {
-  CHECK(type == base::Value::TYPE_DICTIONARY || type == base::Value::TYPE_LIST);
+  CHECK(type == base::Value::Type::DICTIONARY ||
+        type == base::Value::Type::LIST);
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -471,9 +472,9 @@ base::Value* PrefService::GetMutableUserPref(const std::string& path,
   base::Value* value = NULL;
   if (!user_pref_store_->GetMutableValue(path, &value) ||
       !value->IsType(type)) {
-    if (type == base::Value::TYPE_DICTIONARY) {
+    if (type == base::Value::Type::DICTIONARY) {
       value = new base::DictionaryValue;
-    } else if (type == base::Value::TYPE_LIST) {
+    } else if (type == base::Value::Type::LIST) {
       value = new base::ListValue;
     } else {
       NOTREACHED();

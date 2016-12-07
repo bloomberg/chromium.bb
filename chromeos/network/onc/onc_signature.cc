@@ -13,25 +13,19 @@ namespace chromeos {
 namespace onc {
 namespace {
 
-const OncValueSignature kBoolSignature = {base::Value::TYPE_BOOLEAN, NULL};
-const OncValueSignature kStringSignature = {base::Value::TYPE_STRING, NULL};
-const OncValueSignature kIntegerSignature = {base::Value::TYPE_INTEGER, NULL};
-const OncValueSignature kStringListSignature = {base::Value::TYPE_LIST,
-                                                NULL,
+const OncValueSignature kBoolSignature = {base::Value::Type::BOOLEAN, NULL};
+const OncValueSignature kStringSignature = {base::Value::Type::STRING, NULL};
+const OncValueSignature kIntegerSignature = {base::Value::Type::INTEGER, NULL};
+const OncValueSignature kStringListSignature = {base::Value::Type::LIST, NULL,
                                                 &kStringSignature};
-const OncValueSignature kIntegerListSignature = {base::Value::TYPE_LIST,
-                                                 NULL,
+const OncValueSignature kIntegerListSignature = {base::Value::Type::LIST, NULL,
                                                  &kIntegerSignature};
-const OncValueSignature kIPConfigListSignature = {base::Value::TYPE_LIST,
-                                                  NULL,
+const OncValueSignature kIPConfigListSignature = {base::Value::Type::LIST, NULL,
                                                   &kIPConfigSignature};
-const OncValueSignature kCellularApnListSignature = {base::Value::TYPE_LIST,
-                                                     NULL,
-                                                     &kCellularApnSignature};
+const OncValueSignature kCellularApnListSignature = {
+    base::Value::Type::LIST, NULL, &kCellularApnSignature};
 const OncValueSignature kCellularFoundNetworkListSignature = {
-    base::Value::TYPE_LIST,
-    NULL,
-    &kCellularFoundNetworkSignature};
+    base::Value::Type::LIST, NULL, &kCellularFoundNetworkSignature};
 
 const OncFieldSignature issuer_subject_pattern_fields[] = {
     {::onc::client_cert::kCommonName, &kStringSignature},
@@ -374,133 +368,84 @@ const OncFieldSignature toplevel_configuration_fields[] = {
 
 }  // namespace
 
-const OncValueSignature kRecommendedSignature = {base::Value::TYPE_LIST,
-                                                 NULL,
+const OncValueSignature kRecommendedSignature = {base::Value::Type::LIST, NULL,
                                                  &kStringSignature};
-const OncValueSignature kEAPSignature = {base::Value::TYPE_DICTIONARY,
-                                         eap_fields,
-                                         NULL};
+const OncValueSignature kEAPSignature = {base::Value::Type::DICTIONARY,
+                                         eap_fields, NULL};
 const OncValueSignature kIssuerSubjectPatternSignature = {
-    base::Value::TYPE_DICTIONARY,
-    issuer_subject_pattern_fields,
-    NULL};
+    base::Value::Type::DICTIONARY, issuer_subject_pattern_fields, NULL};
 const OncValueSignature kCertificatePatternSignature = {
-    base::Value::TYPE_DICTIONARY,
-    certificate_pattern_fields,
-    NULL};
-const OncValueSignature kIPsecSignature = {base::Value::TYPE_DICTIONARY,
-                                           ipsec_fields,
-                                           NULL};
-const OncValueSignature kXAUTHSignature = {base::Value::TYPE_DICTIONARY,
-                                           xauth_fields,
-                                           NULL};
-const OncValueSignature kL2TPSignature = {base::Value::TYPE_DICTIONARY,
-                                          l2tp_fields,
-                                          NULL};
-const OncValueSignature kOpenVPNSignature = {base::Value::TYPE_DICTIONARY,
-                                             openvpn_fields,
-                                             NULL};
-const OncValueSignature kThirdPartyVPNSignature = {base::Value::TYPE_DICTIONARY,
-                                                   third_party_vpn_fields,
-                                                   NULL};
-const OncValueSignature kVerifyX509Signature = {base::Value::TYPE_DICTIONARY,
-                                                verify_x509_fields,
-                                                NULL};
-const OncValueSignature kVPNSignature = {base::Value::TYPE_DICTIONARY,
-                                         vpn_fields,
-                                         NULL};
-const OncValueSignature kEthernetSignature = {base::Value::TYPE_DICTIONARY,
-                                              ethernet_fields,
-                                              NULL};
-const OncValueSignature kIPConfigSignature = {base::Value::TYPE_DICTIONARY,
-                                              ipconfig_fields,
-                                              NULL};
-const OncValueSignature kSavedIPConfigSignature = {base::Value::TYPE_DICTIONARY,
-                                                   ipconfig_fields,
-                                                   NULL};
+    base::Value::Type::DICTIONARY, certificate_pattern_fields, NULL};
+const OncValueSignature kIPsecSignature = {base::Value::Type::DICTIONARY,
+                                           ipsec_fields, NULL};
+const OncValueSignature kXAUTHSignature = {base::Value::Type::DICTIONARY,
+                                           xauth_fields, NULL};
+const OncValueSignature kL2TPSignature = {base::Value::Type::DICTIONARY,
+                                          l2tp_fields, NULL};
+const OncValueSignature kOpenVPNSignature = {base::Value::Type::DICTIONARY,
+                                             openvpn_fields, NULL};
+const OncValueSignature kThirdPartyVPNSignature = {
+    base::Value::Type::DICTIONARY, third_party_vpn_fields, NULL};
+const OncValueSignature kVerifyX509Signature = {base::Value::Type::DICTIONARY,
+                                                verify_x509_fields, NULL};
+const OncValueSignature kVPNSignature = {base::Value::Type::DICTIONARY,
+                                         vpn_fields, NULL};
+const OncValueSignature kEthernetSignature = {base::Value::Type::DICTIONARY,
+                                              ethernet_fields, NULL};
+const OncValueSignature kIPConfigSignature = {base::Value::Type::DICTIONARY,
+                                              ipconfig_fields, NULL};
+const OncValueSignature kSavedIPConfigSignature = {
+    base::Value::Type::DICTIONARY, ipconfig_fields, NULL};
 const OncValueSignature kStaticIPConfigSignature = {
-    base::Value::TYPE_DICTIONARY,
-    ipconfig_fields,
-    NULL};
-const OncValueSignature kProxyLocationSignature = {base::Value::TYPE_DICTIONARY,
-                                                   proxy_location_fields,
-                                                   NULL};
-const OncValueSignature kProxyManualSignature = {base::Value::TYPE_DICTIONARY,
-                                                 proxy_manual_fields,
-                                                 NULL};
-const OncValueSignature kProxySettingsSignature = {base::Value::TYPE_DICTIONARY,
-                                                   proxy_settings_fields,
-                                                   NULL};
-const OncValueSignature kWiFiSignature = {base::Value::TYPE_DICTIONARY,
-                                          wifi_fields,
-                                          NULL};
-const OncValueSignature kWiMAXSignature = {base::Value::TYPE_DICTIONARY,
-                                           wimax_fields,
-                                           NULL};
-const OncValueSignature kCertificateSignature = {base::Value::TYPE_DICTIONARY,
-                                                 certificate_fields,
-                                                 NULL};
+    base::Value::Type::DICTIONARY, ipconfig_fields, NULL};
+const OncValueSignature kProxyLocationSignature = {
+    base::Value::Type::DICTIONARY, proxy_location_fields, NULL};
+const OncValueSignature kProxyManualSignature = {base::Value::Type::DICTIONARY,
+                                                 proxy_manual_fields, NULL};
+const OncValueSignature kProxySettingsSignature = {
+    base::Value::Type::DICTIONARY, proxy_settings_fields, NULL};
+const OncValueSignature kWiFiSignature = {base::Value::Type::DICTIONARY,
+                                          wifi_fields, NULL};
+const OncValueSignature kWiMAXSignature = {base::Value::Type::DICTIONARY,
+                                           wimax_fields, NULL};
+const OncValueSignature kCertificateSignature = {base::Value::Type::DICTIONARY,
+                                                 certificate_fields, NULL};
 const OncValueSignature kNetworkConfigurationSignature = {
-    base::Value::TYPE_DICTIONARY,
-    network_configuration_fields,
-    NULL};
+    base::Value::Type::DICTIONARY, network_configuration_fields, NULL};
 const OncValueSignature kGlobalNetworkConfigurationSignature = {
-    base::Value::TYPE_DICTIONARY,
-    global_network_configuration_fields,
-    NULL};
-const OncValueSignature kCertificateListSignature = {base::Value::TYPE_LIST,
-                                                     NULL,
-                                                     &kCertificateSignature};
+    base::Value::Type::DICTIONARY, global_network_configuration_fields, NULL};
+const OncValueSignature kCertificateListSignature = {
+    base::Value::Type::LIST, NULL, &kCertificateSignature};
 const OncValueSignature kNetworkConfigurationListSignature = {
-    base::Value::TYPE_LIST,
-    NULL,
-    &kNetworkConfigurationSignature};
+    base::Value::Type::LIST, NULL, &kNetworkConfigurationSignature};
 const OncValueSignature kToplevelConfigurationSignature = {
-    base::Value::TYPE_DICTIONARY,
-    toplevel_configuration_fields,
-    NULL};
+    base::Value::Type::DICTIONARY, toplevel_configuration_fields, NULL};
 
 // Derived "ONC with State" signatures.
 const OncValueSignature kNetworkWithStateSignature = {
-    base::Value::TYPE_DICTIONARY,
-    network_with_state_fields,
-    NULL,
+    base::Value::Type::DICTIONARY, network_with_state_fields, NULL,
     &kNetworkConfigurationSignature};
-const OncValueSignature kWiFiWithStateSignature = {base::Value::TYPE_DICTIONARY,
-                                                   wifi_with_state_fields,
-                                                   NULL,
-                                                   &kWiFiSignature};
+const OncValueSignature kWiFiWithStateSignature = {
+    base::Value::Type::DICTIONARY, wifi_with_state_fields, NULL,
+    &kWiFiSignature};
 const OncValueSignature kWiMAXWithStateSignature = {
-    base::Value::TYPE_DICTIONARY,
-    wimax_with_state_fields,
-    NULL,
+    base::Value::Type::DICTIONARY, wimax_with_state_fields, NULL,
     &kWiMAXSignature};
-const OncValueSignature kCellularSignature = {base::Value::TYPE_DICTIONARY,
-                                              cellular_fields,
-                                              NULL};
+const OncValueSignature kCellularSignature = {base::Value::Type::DICTIONARY,
+                                              cellular_fields, NULL};
 const OncValueSignature kCellularWithStateSignature = {
-    base::Value::TYPE_DICTIONARY,
-    cellular_with_state_fields,
-    NULL,
+    base::Value::Type::DICTIONARY, cellular_with_state_fields, NULL,
     &kCellularSignature};
 const OncValueSignature kCellularPaymentPortalSignature = {
-    base::Value::TYPE_DICTIONARY,
-    cellular_payment_portal_fields,
-    NULL};
+    base::Value::Type::DICTIONARY, cellular_payment_portal_fields, NULL};
 const OncValueSignature kCellularProviderSignature = {
-    base::Value::TYPE_DICTIONARY,
-    cellular_provider_fields,
-    NULL};
-const OncValueSignature kCellularApnSignature = {base::Value::TYPE_DICTIONARY,
-                                                 cellular_apn_fields,
-                                                 NULL};
+    base::Value::Type::DICTIONARY, cellular_provider_fields, NULL};
+const OncValueSignature kCellularApnSignature = {base::Value::Type::DICTIONARY,
+                                                 cellular_apn_fields, NULL};
 const OncValueSignature kCellularFoundNetworkSignature = {
-    base::Value::TYPE_DICTIONARY,
-    cellular_found_network_fields,
-    NULL};
-const OncValueSignature kSIMLockStatusSignature = {base::Value::TYPE_DICTIONARY,
-                                                   sim_lock_status_fields,
-                                                   NULL};
+    base::Value::Type::DICTIONARY, cellular_found_network_fields, NULL};
+const OncValueSignature kSIMLockStatusSignature = {
+    base::Value::Type::DICTIONARY, sim_lock_status_fields, NULL};
 
 const OncFieldSignature* GetFieldSignature(const OncValueSignature& signature,
                                            const std::string& onc_field_name) {

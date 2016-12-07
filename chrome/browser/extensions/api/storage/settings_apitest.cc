@@ -442,37 +442,37 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ExtensionsSchemas) {
   ASSERT_TRUE(schema);
 
   ASSERT_TRUE(schema->valid());
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema->type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, schema->type());
   ASSERT_TRUE(schema->GetKnownProperty("string-policy").valid());
-  EXPECT_EQ(base::Value::TYPE_STRING,
+  EXPECT_EQ(base::Value::Type::STRING,
             schema->GetKnownProperty("string-policy").type());
   ASSERT_TRUE(schema->GetKnownProperty("int-policy").valid());
-  EXPECT_EQ(base::Value::TYPE_INTEGER,
+  EXPECT_EQ(base::Value::Type::INTEGER,
             schema->GetKnownProperty("int-policy").type());
   ASSERT_TRUE(schema->GetKnownProperty("double-policy").valid());
-  EXPECT_EQ(base::Value::TYPE_DOUBLE,
+  EXPECT_EQ(base::Value::Type::DOUBLE,
             schema->GetKnownProperty("double-policy").type());
   ASSERT_TRUE(schema->GetKnownProperty("boolean-policy").valid());
-  EXPECT_EQ(base::Value::TYPE_BOOLEAN,
+  EXPECT_EQ(base::Value::Type::BOOLEAN,
             schema->GetKnownProperty("boolean-policy").type());
 
   policy::Schema list = schema->GetKnownProperty("list-policy");
   ASSERT_TRUE(list.valid());
-  ASSERT_EQ(base::Value::TYPE_LIST, list.type());
+  ASSERT_EQ(base::Value::Type::LIST, list.type());
   ASSERT_TRUE(list.GetItems().valid());
-  EXPECT_EQ(base::Value::TYPE_STRING, list.GetItems().type());
+  EXPECT_EQ(base::Value::Type::STRING, list.GetItems().type());
 
   policy::Schema dict = schema->GetKnownProperty("dict-policy");
   ASSERT_TRUE(dict.valid());
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, dict.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, dict.type());
   list = dict.GetKnownProperty("list");
   ASSERT_TRUE(list.valid());
-  ASSERT_EQ(base::Value::TYPE_LIST, list.type());
+  ASSERT_EQ(base::Value::Type::LIST, list.type());
   dict = list.GetItems();
   ASSERT_TRUE(dict.valid());
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, dict.type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, dict.type());
   ASSERT_TRUE(dict.GetProperty("anything").valid());
-  EXPECT_EQ(base::Value::TYPE_INTEGER, dict.GetProperty("anything").type());
+  EXPECT_EQ(base::Value::Type::INTEGER, dict.GetProperty("anything").type());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {

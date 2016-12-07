@@ -164,7 +164,7 @@ std::unique_ptr<base::DictionaryValue> Unpacker::ReadManifest(
     return nullptr;
   }
 
-  if (!root->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (!root->IsType(base::Value::Type::DICTIONARY)) {
     *error = errors::kInvalidManifest;
     return nullptr;
   }

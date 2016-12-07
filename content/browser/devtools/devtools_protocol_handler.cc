@@ -94,7 +94,7 @@ bool DevToolsProtocolHandler::PassCommandToDelegate(
 std::unique_ptr<base::DictionaryValue> DevToolsProtocolHandler::ParseCommand(
     int session_id,
     std::unique_ptr<base::Value> value) {
-  if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (!value || !value->IsType(base::Value::Type::DICTIONARY)) {
     client_.SendError(
         DevToolsCommandId(DevToolsCommandId::kNoId, session_id),
         Response(kStatusParseError, "Message must be in JSON format"));

@@ -101,9 +101,9 @@ class ScopedUserPrefUpdate : public subtle::ScopedUserPrefUpdateBase {
 };
 
 typedef ScopedUserPrefUpdate<base::DictionaryValue,
-                             base::Value::TYPE_DICTIONARY>
+                             base::Value::Type::DICTIONARY>
     DictionaryPrefUpdate;
-typedef ScopedUserPrefUpdate<base::ListValue, base::Value::TYPE_LIST>
+typedef ScopedUserPrefUpdate<base::ListValue, base::Value::Type::LIST>
     ListPrefUpdate;
 
 #endif  // COMPONENTS_PREFS_SCOPED_USER_PREF_UPDATE_H_

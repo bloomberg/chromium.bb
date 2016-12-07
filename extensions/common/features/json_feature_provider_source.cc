@@ -31,7 +31,7 @@ void JSONFeatureProviderSource::LoadJSON(int resource_id) {
 
   std::unique_ptr<base::DictionaryValue> value_as_dict;
   if (value) {
-    CHECK(value->IsType(base::Value::TYPE_DICTIONARY)) << name_;
+    CHECK(value->IsType(base::Value::Type::DICTIONARY)) << name_;
     value_as_dict = base::DictionaryValue::From(std::move(value));
   } else {
     // There was some error loading the features file.

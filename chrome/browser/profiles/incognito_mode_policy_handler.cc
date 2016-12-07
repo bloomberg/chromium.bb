@@ -29,7 +29,7 @@ bool IncognitoModePolicyHandler::CheckPolicySettings(const PolicyMap& policies,
     int int_value = IncognitoModePrefs::ENABLED;
     if (!availability->GetAsInteger(&int_value)) {
       errors->AddError(key::kIncognitoModeAvailability, IDS_POLICY_TYPE_ERROR,
-                       base::Value::GetTypeName(base::Value::TYPE_INTEGER));
+                       base::Value::GetTypeName(base::Value::Type::INTEGER));
       return false;
     }
     IncognitoModePrefs::Availability availability_enum_value;
@@ -46,9 +46,9 @@ bool IncognitoModePolicyHandler::CheckPolicySettings(const PolicyMap& policies,
   const base::Value* deprecated_enabled =
       policies.GetValue(key::kIncognitoEnabled);
   if (deprecated_enabled &&
-      !deprecated_enabled->IsType(base::Value::TYPE_BOOLEAN)) {
+      !deprecated_enabled->IsType(base::Value::Type::BOOLEAN)) {
     errors->AddError(key::kIncognitoEnabled, IDS_POLICY_TYPE_ERROR,
-                     base::Value::GetTypeName(base::Value::TYPE_BOOLEAN));
+                     base::Value::GetTypeName(base::Value::Type::BOOLEAN));
     return false;
   }
   return true;

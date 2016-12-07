@@ -308,7 +308,8 @@ bool TranslateLanguageList::SetSupportedLanguages(
   std::unique_ptr<base::Value> json_value =
       base::JSONReader::Read(language_list, base::JSON_ALLOW_TRAILING_COMMAS);
 
-  if (json_value == NULL || !json_value->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (json_value == NULL ||
+      !json_value->IsType(base::Value::Type::DICTIONARY)) {
     NotifyEvent(__LINE__, "Language list is invalid");
     NOTREACHED();
     return false;

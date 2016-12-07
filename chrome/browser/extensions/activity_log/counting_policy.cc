@@ -499,7 +499,7 @@ std::unique_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
     if (query.ColumnType(4) != sql::COLUMN_TYPE_NULL) {
       std::unique_ptr<base::Value> parsed_value =
           base::JSONReader::Read(query.ColumnString(4));
-      if (parsed_value && parsed_value->IsType(base::Value::TYPE_LIST)) {
+      if (parsed_value && parsed_value->IsType(base::Value::Type::LIST)) {
         action->set_args(base::WrapUnique(
             static_cast<base::ListValue*>(parsed_value.release())));
       }
@@ -512,7 +512,7 @@ std::unique_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
     if (query.ColumnType(8) != sql::COLUMN_TYPE_NULL) {
       std::unique_ptr<base::Value> parsed_value =
           base::JSONReader::Read(query.ColumnString(8));
-      if (parsed_value && parsed_value->IsType(base::Value::TYPE_DICTIONARY)) {
+      if (parsed_value && parsed_value->IsType(base::Value::Type::DICTIONARY)) {
         action->set_other(base::WrapUnique(
             static_cast<base::DictionaryValue*>(parsed_value.release())));
       }

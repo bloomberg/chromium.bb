@@ -372,21 +372,21 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
     return true;
 
   switch (first_arg->GetType()) {
-    case base::Value::TYPE_INTEGER:
+    case base::Value::Type::INTEGER:
       CHECK(first_arg->GetAsInteger(&tab_id_));
       break;
 
-    case base::Value::TYPE_DICTIONARY: {
+    case base::Value::Type::DICTIONARY: {
       // Found the details argument.
       details_ = static_cast<base::DictionaryValue*>(first_arg);
       // Still need to check for the tabId within details.
       base::Value* tab_id_value = NULL;
       if (details_->Get("tabId", &tab_id_value)) {
         switch (tab_id_value->GetType()) {
-          case base::Value::TYPE_NULL:
+          case base::Value::Type::NONE:
             // OK; tabId is optional, leave it default.
             return true;
-          case base::Value::TYPE_INTEGER:
+          case base::Value::Type::INTEGER:
             CHECK(tab_id_value->GetAsInteger(&tab_id_));
             return true;
           default:
@@ -398,7 +398,7 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
       break;
     }
 
-    case base::Value::TYPE_NULL:
+    case base::Value::Type::NONE:
       // The tabId might be an optional argument.
       break;
 
@@ -502,7 +502,7 @@ ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
   base::Value* color_value = NULL;
   EXTENSION_FUNCTION_VALIDATE(details_->Get("color", &color_value));
   SkColor color = 0;
-  if (color_value->IsType(base::Value::TYPE_LIST)) {
+  if (color_value->IsType(base::Value::Type::LIST)) {
     base::ListValue* list = NULL;
     EXTENSION_FUNCTION_VALIDATE(details_->GetList("color", &list));
     EXTENSION_FUNCTION_VALIDATE(list->GetSize() == 4);
@@ -514,7 +514,7 @@ ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
 
     color = SkColorSetARGB(color_array[3], color_array[0],
                            color_array[1], color_array[2]);
-  } else if (color_value->IsType(base::Value::TYPE_STRING)) {
+  } else if (color_value->IsType(base::Value::Type::STRING)) {
     std::string color_string;
     EXTENSION_FUNCTION_VALIDATE(details_->GetString("color", &color_string));
     if (!image_util::ParseCssColorString(color_string, &color))

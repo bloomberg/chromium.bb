@@ -114,10 +114,10 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
     return value;
 
   switch (schema.type()) {
-    case base::Value::TYPE_NULL:
+    case base::Value::Type::NONE:
       return base::Value::CreateNullValue();
 
-    case base::Value::TYPE_BOOLEAN: {
+    case base::Value::Type::BOOLEAN: {
       std::string string_value;
       if (value->GetAsString(&string_value)) {
         if (string_value.compare("true") == 0)
@@ -135,7 +135,7 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
       return value;
     }
 
-    case base::Value::TYPE_INTEGER: {
+    case base::Value::Type::INTEGER: {
       std::string string_value;
       if (value->GetAsString(&string_value)) {
         int int_value = 0;
@@ -145,7 +145,7 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
       return value;
     }
 
-    case base::Value::TYPE_DOUBLE: {
+    case base::Value::Type::DOUBLE: {
       std::string string_value;
       if (value->GetAsString(&string_value)) {
         double double_value = 0;
@@ -156,19 +156,19 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
     }
 
     // String can't be converted from other types.
-    case base::Value::TYPE_STRING: {
+    case base::Value::Type::STRING: {
       return value;
     }
 
     // Binary is not a valid schema type.
-    case base::Value::TYPE_BINARY: {
+    case base::Value::Type::BINARY: {
       NOTREACHED();
       return std::unique_ptr<base::Value>();
     }
 
     // Complex types have to be deserialized from JSON.
-    case base::Value::TYPE_DICTIONARY:
-    case base::Value::TYPE_LIST: {
+    case base::Value::Type::DICTIONARY:
+    case base::Value::Type::LIST: {
       std::string string_value;
       if (value->GetAsString(&string_value)) {
         std::unique_ptr<base::Value> decoded_value =

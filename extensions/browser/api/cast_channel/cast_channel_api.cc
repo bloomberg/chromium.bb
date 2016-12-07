@@ -379,8 +379,8 @@ bool CastChannelSendFunction::Prepare() {
     return false;
   }
   switch (params_->message.data->GetType()) {
-    case base::Value::TYPE_STRING:
-    case base::Value::TYPE_BINARY:
+    case base::Value::Type::STRING:
+    case base::Value::Type::BINARY:
       break;
     default:
       SetError("Invalid type of message_info.data");

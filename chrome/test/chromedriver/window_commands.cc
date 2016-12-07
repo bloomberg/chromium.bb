@@ -349,7 +349,7 @@ Status ExecuteSwitchToFrame(Session* session,
   if (!params.Get("id", &id))
     return Status(kUnknownError, "missing 'id'");
 
-  if (id->IsType(base::Value::TYPE_NULL)) {
+  if (id->IsType(base::Value::Type::NONE)) {
     session->SwitchToTopFrame();
     return Status(kOk);
   }

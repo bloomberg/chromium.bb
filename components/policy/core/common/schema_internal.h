@@ -20,15 +20,15 @@ struct POLICY_EXPORT SchemaNode {
   // The policy type.
   base::Value::Type type;
 
-  // If |type| is TYPE_DICTIONARY then |extra| is an offset into
+  // If |type| is Type::DICTIONARY then |extra| is an offset into
   // SchemaData::properties_nodes that indexes the PropertiesNode describing
   // the entries of this dictionary.
   //
-  // If |type| is TYPE_LIST then |extra| is an offset into
+  // If |type| is Type::LIST then |extra| is an offset into
   // SchemaData::schema_nodes that indexes the SchemaNode describing the items
   // of this list.
   //
-  // If |type| is TYPE_INTEGER or TYPE_STRING, and contains corresponding
+  // If |type| is Type::INTEGER or Type::STRING, and contains corresponding
   // restriction (enumeration of possible values, or range for integer), then
   // |extra| is an offset into SchemaData::restriction_nodes that indexes the
   // RestrictionNode describing the restriction on the value.
@@ -78,7 +78,7 @@ struct POLICY_EXPORT PropertiesNode {
   int additional;
 };
 
-// Represents the restriction on TYPE_INTEGER or TYPE_STRING instance of
+// Represents the restriction on Type::INTEGER or Type::STRING instance of
 // base::Value.
 union POLICY_EXPORT RestrictionNode {
   // Offsets into SchemaData::int_enums or SchemaData::string_enums, the

@@ -40,7 +40,7 @@ class TestingJsonParserTest : public testing::Test {
     test->did_success_ = true;
     quit_closure.Run();
 
-    ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
+    ASSERT_TRUE(value->IsType(base::Value::Type::DICTIONARY));
     base::DictionaryValue* dict;
     ASSERT_TRUE(value->GetAsDictionary(&dict));
     int key_value = 0;

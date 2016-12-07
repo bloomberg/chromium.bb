@@ -385,7 +385,7 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryFromArray(
       if (!dictionary->GetWithoutPathExpansion(*name, &entry))
         return std::unique_ptr<base::DictionaryValue>();
       switch (entry->GetType()) {
-        case base::Value::TYPE_STRING:
+        case base::Value::Type::STRING:
           // Replace the present string with a list.
           list = new base::ListValue;
           // Ignoring return value, we already verified the entry is there.
@@ -394,7 +394,7 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryFromArray(
           list->AppendString(*value);
           dictionary->SetWithoutPathExpansion(*name, base::WrapUnique(list));
           break;
-        case base::Value::TYPE_LIST:  // Just append to the list.
+        case base::Value::Type::LIST:  // Just append to the list.
           CHECK(entry->GetAsList(&list));
           list->AppendString(*value);
           break;

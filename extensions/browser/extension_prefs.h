@@ -117,9 +117,9 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
     DISALLOW_COPY_AND_ASSIGN(ScopedUpdate);
   };
-  typedef ScopedUpdate<base::DictionaryValue, base::Value::TYPE_DICTIONARY>
+  typedef ScopedUpdate<base::DictionaryValue, base::Value::Type::DICTIONARY>
       ScopedDictionaryUpdate;
-  typedef ScopedUpdate<base::ListValue, base::Value::TYPE_LIST>
+  typedef ScopedUpdate<base::ListValue, base::Value::Type::LIST>
       ScopedListUpdate;
 
   // Creates an ExtensionPrefs object.

@@ -258,7 +258,7 @@ bool Validator::ValidateRecommendedField(
       found_error = true;
       error_cause = "unknown";
     } else if (field_signature->value_signature->onc_type ==
-               base::Value::TYPE_DICTIONARY) {
+               base::Value::Type::DICTIONARY) {
       found_error = true;
       error_cause = "dictionary-typed";
     }

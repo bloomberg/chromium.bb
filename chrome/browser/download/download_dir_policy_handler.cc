@@ -40,7 +40,7 @@ const base::FilePath::CharType* kRootRelativeToDriveMount =
 
 DownloadDirPolicyHandler::DownloadDirPolicyHandler()
     : TypeCheckingPolicyHandler(policy::key::kDownloadDirectory,
-                                base::Value::TYPE_STRING) {}
+                                base::Value::Type::STRING) {}
 
 DownloadDirPolicyHandler::~DownloadDirPolicyHandler() {}
 
