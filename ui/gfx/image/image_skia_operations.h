@@ -6,6 +6,9 @@
 #define UI_GFX_IMAGE_IMAGE_SKIA_OPERATIONS_H_
 
 #include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkDrawLooper.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRRect.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/shadow_value.h"
@@ -87,10 +90,16 @@ class GFX_EXPORT ImageSkiaOperations {
   static ImageSkia CreateImageWithDropShadow(const ImageSkia& source,
                                              const ShadowValues& shadows);
 
+  // Creates an image with the given shadows painted around a round rect with
+  // the given corner radius. The image will be just large enough to paint the
+  // shadows appropriately with a 1px square region reserved for "content".
+  static ImageSkia CreateShadowNinebox(const ShadowValues& shadows,
+                                       float corner_radius);
+
   // Creates an image that is 1dp wide, suitable for tiling horizontally to
   // create a drop shadow effect. The purpose of tiling a static image is to
   // avoid repeatedly asking Skia to draw a shadow.
-  static gfx::ImageSkia CreateHorizontalShadow(
+  static ImageSkia CreateHorizontalShadow(
       const std::vector<ShadowValue>& shadows,
       bool fades_down);
 

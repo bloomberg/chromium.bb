@@ -256,11 +256,7 @@ void BrowserHeaderPainterAsh::PaintFrameImages(gfx::Canvas* canvas,
   if (alpha == 0)
     return;
 
-  int corner_radius =
-      (frame_->IsMaximized() || frame_->IsFullscreen())
-          ? 0
-          : ash::HeaderPainterUtil::GetTopCornerRadiusWhenRestored();
-
+  bool round_corners = !frame_->IsMaximized() && !frame_->IsFullscreen();
   gfx::ImageSkia frame_image = view_->GetFrameImage(active);
   gfx::ImageSkia frame_overlay_image = view_->GetFrameOverlayImage(active);
 
@@ -268,9 +264,12 @@ void BrowserHeaderPainterAsh::PaintFrameImages(gfx::Canvas* canvas,
   paint.setBlendMode(SkBlendMode::kPlus);
   paint.setAlpha(alpha);
   paint.setColor(SkColorSetA(view_->GetFrameColor(active), alpha));
+  paint.setAntiAlias(round_corners);
   PaintFrameImagesInRoundRect(
       canvas, frame_image, frame_overlay_image, paint, GetPaintedBounds(),
-      corner_radius, ash::HeaderPainterUtil::GetThemeBackgroundXInset());
+      round_corners ? ash::HeaderPainterUtil::GetTopCornerRadiusWhenRestored()
+                    : 0,
+      ash::HeaderPainterUtil::GetThemeBackgroundXInset());
 }
 
 void BrowserHeaderPainterAsh::PaintTitleBar(gfx::Canvas* canvas) {

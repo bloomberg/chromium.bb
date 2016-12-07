@@ -69,8 +69,13 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   // |content_bounds_|.
   void UpdateLayerBounds();
 
+  // Returns the "elevation" for |style_|, which dictates the shadow's display
+  // characteristics. The elevation is proportional to the size of the blur and
+  // its offset.
+  int ElevationForStyle();
+
   // The current style, set when the transition animation starts.
-  Style style_;
+  Style style_ = STYLE_ACTIVE;
 
   // The parent layer of the shadow layer. It serves as a container accessible
   // from the outside to control the visibility of the shadow.
@@ -79,15 +84,8 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   // The actual shadow layer corresponding to a cc::NinePatchLayer.
   std::unique_ptr<ui::Layer> shadow_layer_;
 
-  // Size of the current shadow image.
-  gfx::Size image_size_;
-
   // Bounds of the content that the shadow encloses.
   gfx::Rect content_bounds_;
-
-  // The interior inset of the shadow images. The content bounds of the image
-  // grid should be set to |content_bounds_| inset by this amount.
-  int interior_inset_;
 
   DISALLOW_COPY_AND_ASSIGN(Shadow);
 };

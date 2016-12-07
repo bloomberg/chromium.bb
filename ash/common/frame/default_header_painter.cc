@@ -143,7 +143,7 @@ void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
   int active_alpha = activation_animation_->CurrentValueBetween(0, 255);
   paint.setColor(color_utils::AlphaBlend(active_frame_color_,
                                          inactive_frame_color_, active_alpha));
-
+  paint.setAntiAlias(true);
   TileRoundRect(canvas, paint, GetLocalBounds(), corner_radius);
 
   if (!frame_->IsMaximized() && !frame_->IsFullscreen() &&

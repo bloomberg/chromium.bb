@@ -41,6 +41,13 @@ class GFX_EXPORT ShadowValue {
   // are negative because shadow margins are outside a boundary.
   static Insets GetMargin(const ShadowValues& shadows);
 
+  // Gets the area inside a rectangle that would be affected by shadow blur.
+  // This is similar to the margin except it's positive (the blur region is
+  // inside a hypothetical rectangle) and it accounts for the blur both inside
+  // and outside the bounding box. The region inside the "blur region" would be
+  // a uniform color.
+  static Insets GetBlurRegion(const ShadowValues& shadows);
+
  private:
   gfx::Vector2d offset_;
 
