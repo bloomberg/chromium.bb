@@ -17,7 +17,7 @@ namespace blink {
 ScriptPromisePropertyBase::ScriptPromisePropertyBase(
     ExecutionContext* executionContext,
     Name name)
-    : m_executionContext(executionContext),
+    : ContextLifecycleObserver(executionContext),
       m_isolate(toIsolate(executionContext)),
       m_name(name),
       m_state(Pending) {}
@@ -26,23 +26,19 @@ ScriptPromisePropertyBase::~ScriptPromisePropertyBase() {
   clearWrappers();
 }
 
-ExecutionContext* ScriptPromisePropertyBase::getExecutionContext() const {
-  return m_executionContext;
-}
-
 ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world) {
-  if (m_executionContext->isContextDestroyed())
+  if (!getExecutionContext())
     return ScriptPromise();
 
   v8::HandleScope handleScope(m_isolate);
-  v8::Local<v8::Context> context = toV8Context(m_executionContext, world);
+  v8::Local<v8::Context> context = toV8Context(getExecutionContext(), world);
   if (context.IsEmpty())
     return ScriptPromise();
   ScriptState* scriptState = ScriptState::from(context);
   ScriptState::Scope scope(scriptState);
 
   v8::Local<v8::Object> wrapper = ensureHolderWrapper(scriptState);
-  DCHECK(wrapper->CreationContext() == context);
+  ASSERT(wrapper->CreationContext() == context);
 
   v8::Local<v8::Value> cachedPromise =
       V8HiddenValue::getHiddenValue(scriptState, wrapper, promiseName());
@@ -72,9 +68,9 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world) {
 }
 
 void ScriptPromisePropertyBase::resolveOrReject(State targetState) {
-  DCHECK(!m_executionContext->isContextDestroyed());
-  DCHECK(m_state == Pending);
-  DCHECK(targetState == Resolved || targetState == Rejected);
+  ASSERT(getExecutionContext());
+  ASSERT(m_state == Pending);
+  ASSERT(targetState == Resolved || targetState == Rejected);
 
   m_state = targetState;
 
@@ -211,7 +207,7 @@ v8::Local<v8::String> ScriptPromisePropertyBase::resolverName() {
 }
 
 DEFINE_TRACE(ScriptPromisePropertyBase) {
-  visitor->trace(m_executionContext);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink
