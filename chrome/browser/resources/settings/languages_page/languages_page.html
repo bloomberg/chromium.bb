@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
@@ -70,7 +71,8 @@
     </settings-languages>
     <settings-animated-pages id="pages" section="languages">
       <neon-animatable route-path="default">
-        <div class$="settings-box first [[getLanguageListTwoLine_()]]">
+        <div class$="settings-box first [[getLanguageListTwoLine_()]]"
+            actionable on-tap="toggleExpandButton_">
           <div class="start">
             <div>$i18n{languagesListTitle}</div>
 <if expr="chromeos or is_win">
@@ -125,13 +127,14 @@
               </div>
             </template>
             <div class="list-item list-button" on-tap="onAddLanguagesTap_">
-              $i18n{addLanguages}
+              <a is="action-link">$i18n{addLanguages}</a>
             </div>
           </div>
         </iron-collapse>
 <if expr="chromeos">
         <div id="manage-input-methods-subpage-trigger"
-              class="settings-box two-line">
+            class="settings-box two-line" actionable
+            on-tap="toggleExpandButton_">
           <div class="start">
             <div>$i18n{inputMethodsListTitle}</div>
             <div class="secondary">
@@ -149,7 +152,8 @@
                 items="[[languages.inputMethods.enabled]]">
               <div class$="list-item [[getInputMethodItemClass_(
                       item.id, languages.inputMethods.currentId)]]"
-                  on-tap="onInputMethodTap_" actionable>
+                  on-tap="onInputMethodTap_" on-keypress="onInputMethodTap_"
+                  actionable tabindex="0">
                 <div class="start">
                   <div>[[item.displayName]]</div>
                   <div class="explain-selected"
@@ -166,13 +170,14 @@
             </template>
             <div class="list-item list-button"
                 on-tap="onManageInputMethodsTap_">
-              $i18n{manageInputMethods}
+              <a is="action-link">$i18n{manageInputMethods}</a>
             </div>
           </div>
         </iron-collapse>
 </if>
 <if expr="not is_macosx">
-        <div id="spellcheck-subpage-trigger" class="settings-box two-line">
+        <div id="spellcheck-subpage-trigger" class="settings-box two-line"
+            actionable on-tap="toggleExpandButton_">
           <div class="start">
             <div>$i18n{spellCheckListTitle}</div>
             <div class="secondary">
@@ -196,7 +201,7 @@
               </label>
             </template>
             <div class="list-item list-button" on-tap="onEditDictionaryTap_">
-              $i18n{manageSpellCheck}
+              <a is="action-link">$i18n{manageSpellCheck}</a>
             </div>
           </div>
         </iron-collapse>

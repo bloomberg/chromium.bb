@@ -36,7 +36,8 @@
           <template>
             <paper-checkbox class="list-item" checked="[[willAdd_(item.code)]]"
                 title$="[[item.nativeDisplayName]]"
-                on-change="onLanguageCheckboxChange_">
+                on-change="onLanguageCheckboxChange_"
+                tabindex$="[[tabIndex]]">
               [[item.displayName]]
             </paper-checkbox>
           </template>

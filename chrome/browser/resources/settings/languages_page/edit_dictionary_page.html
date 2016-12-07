@@ -53,7 +53,8 @@
           <template>
             <div class="list-item">
               <div class="word text-elide">[[item]]</div>
-              <paper-icon-button icon="cr:clear" on-tap="onRemoveWordTap_">
+              <paper-icon-button icon="cr:clear" on-tap="onRemoveWordTap_"
+                  tabindex$="[[tabIndex]]">
               </paper-icon-button>
             </div>
           </template>

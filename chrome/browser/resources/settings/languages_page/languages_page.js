@@ -52,22 +52,6 @@ Polymer({
   },
 
   /**
-   * Handler for clicking a language on the main page, which selects the
-   * language as the prospective UI language on Chrome OS and Windows.
-   * @param {!Event} e The tap event.
-   */
-  onLanguageTap_: function(e) {
-    // Only change the UI language on platforms that allow it.
-    if ((!cr.isChromeOS && !cr.isWindows) || loadTimeData.getBoolean('isGuest'))
-      return;
-
-    // Set the prospective UI language. This won't take effect until a restart.
-    var tapEvent = /** @type {!{model: !{item: !LanguageState}}} */(e);
-    if (tapEvent.model.item.language.supportsUI)
-      this.languageHelper.setUILanguage(tapEvent.model.item.language.code);
-  },
-
-  /**
    * Handler for enabling or disabling spell check.
    * @param {!{target: Element, model: !{item: !LanguageState}}} e
    */
@@ -276,16 +260,22 @@ Polymer({
   },
 
   /**
-   * Handler for clicking an input method on the main page, which sets it as
-   * the current input method.
+   * Handler for tap and <Enter> events on an input method on the main page,
+   * which sets it as the current input method.
    * @param {!{model: !{item: !chrome.languageSettingsPrivate.InputMethod},
-   *           target: !{tagName: string}}} e
+   *           target: !{tagName: string},
+   *           type: string,
+   *           key: (string|undefined)}} e
    */
   onInputMethodTap_: function(e) {
     assert(cr.isChromeOS);
 
     // Taps on the paper-icon-button are handled in onInputMethodOptionsTap_.
     if (e.target.tagName == 'PAPER-ICON-BUTTON')
+      return;
+
+    // Ignore key presses other than <Enter>.
+    if (e.type == 'keypress' && e.key != 'Enter')
       return;
 
     // Set the input method.
@@ -508,6 +498,23 @@ Polymer({
 <if expr="not chromeos">
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
 </if>
+  },
+
+  /**
+   * Toggles the expand button within the element being listened to.
+   * @param {!Event} e
+   * @private
+   */
+  toggleExpandButton_: function(e) {
+    // The expand button handles toggling itself.
+    var expandButtonTag = 'CR-EXPAND-BUTTON';
+    if (e.target.tagName == expandButtonTag)
+      return;
+
+    /** @type {!CrExpandButtonElement} */
+    var expandButton = e.currentTarget.querySelector(expandButtonTag);
+    assert(expandButton);
+    expandButton.expanded = !expandButton.expanded;
   },
 });
 })();
