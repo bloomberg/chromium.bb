@@ -28,6 +28,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ScriptLoader.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
@@ -37,10 +38,8 @@ namespace blink {
 
 ScriptRunner::ScriptRunner(Document* document)
     : m_document(document),
-      m_taskRunner(Platform::current()
-                       ->currentThread()
-                       ->scheduler()
-                       ->loadingTaskRunner()),
+      m_taskRunner(
+          TaskRunnerHelper::get(TaskType::Networking, document)->clone()),
       m_numberOfInOrderScriptsWithPendingNotification(0),
       m_isSuspended(false) {
   DCHECK(document);

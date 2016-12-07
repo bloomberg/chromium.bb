@@ -39,7 +39,8 @@ class Document;
 class ScriptLoader;
 class WebTaskRunner;
 
-class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner> {
+class CORE_EXPORT ScriptRunner final
+    : public GarbageCollectedFinalized<ScriptRunner> {
   WTF_MAKE_NONCOPYABLE(ScriptRunner);
 
  public:
@@ -90,7 +91,7 @@ class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner> {
   HeapDeque<Member<ScriptLoader>> m_asyncScriptsToExecuteSoon;
   HeapDeque<Member<ScriptLoader>> m_inOrderScriptsToExecuteSoon;
 
-  WebTaskRunner* m_taskRunner;
+  std::unique_ptr<WebTaskRunner> m_taskRunner;
 
   int m_numberOfInOrderScriptsWithPendingNotification;
 
