@@ -779,6 +779,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // exactly at a page or column boundary.
   enum PageBoundaryRule { AssociateWithFormerPage, AssociateWithLatterPage };
   LayoutUnit pageLogicalHeightForOffset(LayoutUnit) const;
+  bool isPageLogicalHeightKnown() const;
   LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit,
                                                  PageBoundaryRule) const;
 

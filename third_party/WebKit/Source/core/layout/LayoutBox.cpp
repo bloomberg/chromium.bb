@@ -5533,6 +5533,12 @@ LayoutUnit LayoutBox::pageLogicalHeightForOffset(LayoutUnit offset) const {
       offset + offsetFromLogicalTopOfFirstPage());
 }
 
+bool LayoutBox::isPageLogicalHeightKnown() const {
+  if (const LayoutFlowThread* flowThread = flowThreadContainingBlock())
+    return flowThread->isPageLogicalHeightKnown();
+  return view()->pageLogicalHeight();
+}
+
 LayoutUnit LayoutBox::pageRemainingLogicalHeightForOffset(
     LayoutUnit offset,
     PageBoundaryRule pageBoundaryRule) const {

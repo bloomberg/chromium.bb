@@ -507,10 +507,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   bool widthAvailableToChildrenHasChanged();
 
  protected:
-  bool isPageLogicalHeightKnown() const {
-    return pageLogicalHeightForOffset(LayoutUnit());
-  }
-
   // Paginated content inside this block was laid out.
   // |logicalBottomOffsetAfterPagination| is the logical bottom offset of the
   // child content after applying any forced or unforced breaks as needed.
