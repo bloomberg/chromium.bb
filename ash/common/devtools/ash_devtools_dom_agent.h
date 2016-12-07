@@ -35,13 +35,18 @@ class ASH_EXPORT AshDevToolsDOMAgent
       public views::WidgetRemovalsObserver,
       public views::ViewObserver {
  public:
-  explicit AshDevToolsDOMAgent(ash::WmShell* shell);
+  AshDevToolsDOMAgent(ash::WmShell* shell);
   ~AshDevToolsDOMAgent() override;
 
   // DOM::Backend
   ui::devtools::protocol::Response disable() override;
   ui::devtools::protocol::Response getDocument(
       std::unique_ptr<ui::devtools::protocol::DOM::Node>* out_root) override;
+  ui::devtools::protocol::Response highlightNode(
+      std::unique_ptr<ui::devtools::protocol::DOM::HighlightConfig>
+          highlight_config,
+      ui::devtools::protocol::Maybe<int> node_id) override;
+  ui::devtools::protocol::Response hideHighlight() override;
 
   // WindowObserver
   void OnWindowTreeChanging(WmWindow* window,
@@ -107,9 +112,23 @@ class ASH_EXPORT AshDevToolsDOMAgent
                       views::View* parent,
                       bool remove_observer);
 
+  void DestroyHighlightingWidget();
   void RemoveObservers();
   void Reset();
 
+  using WindowAndBoundsPair = std::pair<WmWindow*, gfx::Rect>;
+  WindowAndBoundsPair GetNodeWindowAndBounds(int node_id);
+  void InitializeHighlightingWidget();
+  void UpdateHighlight(const WindowAndBoundsPair& window_and_bounds,
+                       SkColor background,
+                       SkColor border);
+  ui::devtools::protocol::Response HighlightNode(
+      std::unique_ptr<ui::devtools::protocol::DOM::HighlightConfig>
+          highlight_config,
+      int node_id);
+  bool IsHighlightingWindow(WmWindow* window);
+
+  std::unique_ptr<views::Widget> widget_for_highlighting_;
   ash::WmShell* shell_;
 
   using WindowToNodeIdMap = std::unordered_map<WmWindow*, int>;

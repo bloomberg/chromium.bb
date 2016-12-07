@@ -20,7 +20,29 @@
                             "name": "root"
                         }
                     ]
+                },
+                {
+                    "name": "highlightNode",
+                    "parameters": [
+                        { 
+                            "name": "highlightConfig", 
+                            "$ref": "HighlightConfig",  
+                            "description": "A descriptor for the highlight appearance."  
+                        },
+                        {
+                            "description": "Identifier of the node to highlight.",
+                            "optional": true,
+                            "name": "nodeId",
+                            "$ref": "NodeId"
+                        }
+                    ],
+                    "description": "Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified."
+                },
+                {
+                    "name": "hideHighlight",
+                    "description": "Hides DOM node highlight."
                 }
+
             ],
             "events": [
                 {
@@ -126,7 +148,54 @@
                         }
                     ],
                     "type": "object"
-                }
+                },
+                {
+                    "id": "RGBA",
+                    "type": "object",
+                    "properties": [
+                        { 
+                            "name": "r",
+                            "type": "integer",
+                            "description": "The red component, in the [0-255] range."
+                        },
+                        { 
+                            "name": "g", 
+                            "type": "integer", 
+                            "description": "The green component, in the [0-255] range." 
+                        },
+                        {
+                            "name": "b", 
+                            "type": "integer", 
+                            "description": "The blue component, in the [0-255] range." 
+                        },
+                        { 
+                            "name": "a", 
+                            "type": "number", 
+                            "optional": true, 
+                            "description": "The alpha component, in the [0-1] range (default: 1)." 
+                        }
+                    ],
+                    "description": "A structure holding an RGBA color."
+                },
+                {
+                    "id": "HighlightConfig",
+                    "type": "object",
+                    "properties": [
+                        { 
+                            "name": "contentColor", 
+                            "$ref": "RGBA", 
+                            "optional": true, 
+                            "description": "The content box highlight fill color (default: transparent)." 
+                        },
+                        { 
+                            "name": "borderColor", 
+                            "$ref": "RGBA", 
+                            "optional": true, 
+                            "description": "The border highlight fill color (default: transparent)." 
+                        }
+                    ],
+                    "description": "Configuration data for the highlighting of page elements."
+                } 
             ]
         },
         {

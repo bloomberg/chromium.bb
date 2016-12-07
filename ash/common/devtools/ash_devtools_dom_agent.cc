@@ -5,8 +5,14 @@
 #include "ash/common/devtools/ash_devtools_dom_agent.h"
 
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "components/ui_devtools/devtools_server.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/display/display.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
 
 namespace ash {
 namespace devtools {
@@ -79,6 +85,20 @@ views::View* FindPreviousSibling(views::View* view) {
   return view_index == 0 ? nullptr : parent->child_at(view_index - 1);
 }
 
+int MaskColor(int value) {
+  return value & 0xff;
+}
+
+SkColor RGBAToSkColor(DOM::RGBA* rgba) {
+  if (!rgba)
+    return SkColorSetARGB(0, 0, 0, 0);
+  // Default alpha value is 0 (not visible) and need to convert alpha decimal
+  // percentage value to hex
+  return SkColorSetARGB(MaskColor(static_cast<int>(rgba->getA(0) * 255)),
+                        MaskColor(rgba->getR()), MaskColor(rgba->getG()),
+                        MaskColor(rgba->getB()));
+}
+
 }  // namespace
 
 AshDevToolsDOMAgent::AshDevToolsDOMAgent(ash::WmShell* shell) : shell_(shell) {
@@ -97,6 +117,19 @@ ui::devtools::protocol::Response AshDevToolsDOMAgent::disable() {
 ui::devtools::protocol::Response AshDevToolsDOMAgent::getDocument(
     std::unique_ptr<ui::devtools::protocol::DOM::Node>* out_root) {
   *out_root = BuildInitialTree();
+  return ui::devtools::protocol::Response::OK();
+}
+
+ui::devtools::protocol::Response AshDevToolsDOMAgent::highlightNode(
+    std::unique_ptr<ui::devtools::protocol::DOM::HighlightConfig>
+        highlight_config,
+    ui::devtools::protocol::Maybe<int> node_id) {
+  return HighlightNode(std::move(highlight_config), node_id.fromJust());
+}
+
+ui::devtools::protocol::Response AshDevToolsDOMAgent::hideHighlight() {
+  if (widget_for_highlighting_ && widget_for_highlighting_->IsVisible())
+    widget_for_highlighting_->Hide();
   return ui::devtools::protocol::Response::OK();
 }
 
@@ -223,8 +256,10 @@ std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForWindow(
   views::Widget* widget = window->GetInternalWidget();
   if (widget)
     children->addItem(BuildTreeForRootWidget(widget));
-  for (ash::WmWindow* child : window->GetChildren())
-    children->addItem(BuildTreeForWindow(child));
+  for (ash::WmWindow* child : window->GetChildren()) {
+    if (!IsHighlightingWindow(child))
+      children->addItem(BuildTreeForWindow(child));
+  }
 
   std::unique_ptr<ui::devtools::protocol::DOM::Node> node =
       BuildNode("Window", GetAttributes(window), std::move(children));
@@ -265,6 +300,9 @@ std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForView(
 }
 
 void AshDevToolsDOMAgent::AddWindowTree(WmWindow* window) {
+  if (IsHighlightingWindow(window))
+    return;
+
   DCHECK(window_to_node_id_map_.count(window->GetParent()));
   WmWindow* prev_sibling = FindPreviousSibling(window);
   frontend()->childNodeInserted(
@@ -276,6 +314,9 @@ void AshDevToolsDOMAgent::AddWindowTree(WmWindow* window) {
 void AshDevToolsDOMAgent::RemoveWindowTree(WmWindow* window,
                                            bool remove_observer) {
   DCHECK(window);
+  if (IsHighlightingWindow(window))
+    return;
+
   if (window->GetInternalWidget())
     RemoveWidgetTree(window->GetInternalWidget(), remove_observer);
 
@@ -391,6 +432,7 @@ void AshDevToolsDOMAgent::RemoveObservers() {
 
 void AshDevToolsDOMAgent::Reset() {
   RemoveObservers();
+  widget_for_highlighting_.reset();
   window_to_node_id_map_.clear();
   widget_to_node_id_map_.clear();
   view_to_node_id_map_.clear();
@@ -398,6 +440,91 @@ void AshDevToolsDOMAgent::Reset() {
   node_id_to_widget_map_.clear();
   node_id_to_view_map_.clear();
   node_ids = 1;
+}
+
+AshDevToolsDOMAgent::WindowAndBoundsPair
+AshDevToolsDOMAgent::GetNodeWindowAndBounds(int node_id) {
+  WmWindow* window = GetWindowFromNodeId(node_id);
+  if (window)
+    return std::make_pair(window, window->GetBoundsInScreen());
+
+  views::Widget* widget = GetWidgetFromNodeId(node_id);
+  if (widget) {
+    return std::make_pair(WmLookup::Get()->GetWindowForWidget(widget),
+                          widget->GetWindowBoundsInScreen());
+  }
+
+  views::View* view = GetViewFromNodeId(node_id);
+  if (view) {
+    gfx::Rect bounds = view->GetBoundsInScreen();
+    return std::make_pair(
+        WmLookup::Get()->GetWindowForWidget(view->GetWidget()), bounds);
+  }
+
+  return std::make_pair(nullptr, gfx::Rect());
+}
+
+void AshDevToolsDOMAgent::InitializeHighlightingWidget() {
+  DCHECK(!widget_for_highlighting_);
+  widget_for_highlighting_.reset(new views::Widget);
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.opacity = views::Widget::InitParams::WindowOpacity::TRANSLUCENT_WINDOW;
+  params.name = "HighlightingWidget";
+  shell_->GetPrimaryRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(widget_for_highlighting_.get(),
+                                              kShellWindowId_OverlayContainer,
+                                              &params);
+  params.keep_on_top = true;
+  params.accept_events = false;
+  widget_for_highlighting_->Init(params);
+}
+
+void AshDevToolsDOMAgent::UpdateHighlight(
+    const WindowAndBoundsPair& window_and_bounds,
+    SkColor background,
+    SkColor border) {
+  constexpr int kBorderThickness = 1;
+  views::View* root_view = widget_for_highlighting_->GetRootView();
+  root_view->SetBorder(views::CreateSolidBorder(kBorderThickness, border));
+  root_view->set_background(
+      views::Background::CreateSolidBackground(background));
+  WmLookup::Get()
+      ->GetWindowForWidget(widget_for_highlighting_.get())
+      ->SetBoundsInScreen(window_and_bounds.second,
+                          window_and_bounds.first->GetDisplayNearestWindow());
+}
+
+ui::devtools::protocol::Response AshDevToolsDOMAgent::HighlightNode(
+    std::unique_ptr<ui::devtools::protocol::DOM::HighlightConfig>
+        highlight_config,
+    int node_id) {
+  if (!widget_for_highlighting_)
+    InitializeHighlightingWidget();
+
+  WindowAndBoundsPair window_and_bounds(GetNodeWindowAndBounds(node_id));
+
+  if (!window_and_bounds.first)
+    return ui::devtools::protocol::Response::Error(
+        "No node found with that id");
+
+  SkColor border_color =
+      RGBAToSkColor(highlight_config->getBorderColor(nullptr));
+  SkColor content_color =
+      RGBAToSkColor(highlight_config->getContentColor(nullptr));
+  UpdateHighlight(window_and_bounds, content_color, border_color);
+
+  if (!widget_for_highlighting_->IsVisible())
+    widget_for_highlighting_->Show();
+
+  return ui::devtools::protocol::Response::OK();
+}
+
+bool AshDevToolsDOMAgent::IsHighlightingWindow(WmWindow* window) {
+  return widget_for_highlighting_ &&
+         window->GetInternalWidget() == widget_for_highlighting_.get();
 }
 
 }  // namespace devtools
