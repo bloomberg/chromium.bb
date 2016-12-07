@@ -302,7 +302,8 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    public void triggerWebAppBanner(String url, String expectedTitle) throws Exception {
+    public void triggerWebAppBanner(String url, String expectedTitle, boolean installApp)
+            throws Exception {
         // Visit the site in a new tab.
         loadUrlInNewTab("about:blank");
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(url);
@@ -316,6 +317,11 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         });
         waitUntilNoInfoBarsExist();
 
+        // Add the animation listener in.
+        InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
+        final InfobarListener listener = new InfobarListener();
+        container.setAnimationListener(listener);
+
         // Indicate a day has passed, then revisit the page to show the banner.
         AppBannerManager.setTimeDeltaForTesting(1);
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(url);
@@ -327,6 +333,20 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             }
         });
         waitUntilAppBannerInfoBarAppears(expectedTitle);
+
+        if (!installApp) return;
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return listener.mDoneAnimating;
+            }
+        });
+
+        // Click the button to trigger the adding of the shortcut.
+        InfoBar infobar = container.getInfoBarsForTesting().get(0);
+        final Button button = (Button) infobar.getView().findViewById(R.id.button_primary);
+        TouchCommon.singleClickView(button);
     }
 
     @SmallTest
@@ -462,7 +482,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     @Feature({"AppBanners"})
     @RetryOnFailure
     public void testWebAppBannerAppears() throws Exception {
-        triggerWebAppBanner(mWebAppUrl, WEB_APP_TITLE);
+        triggerWebAppBanner(mWebAppUrl, WEB_APP_TITLE, false);
     }
 
     @SmallTest
@@ -471,7 +491,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     public void testBannerFallsBackToShortName() throws Exception {
         triggerWebAppBanner(WebappTestPage.urlOfPageWithServiceWorkerAndManifest(
                                     mTestServer, WEB_APP_SHORT_TITLE_MANIFEST),
-                WEB_APP_SHORT_TITLE);
+                WEB_APP_SHORT_TITLE, false);
     }
 
     @SmallTest
@@ -482,47 +502,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
         WebappDataStorage.setFactoryForTests(dataStorageFactory);
 
-        // Visit the site in a new tab.
-        loadUrlInNewTab("about:blank");
-        new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mWebAppUrl);
-
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
-                return !manager.isActiveForTesting();
-            }
-        });
-        waitUntilNoInfoBarsExist();
-
-        // Add the animation listener in.
-        InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
-        final InfobarListener listener = new InfobarListener();
-        container.setAnimationListener(listener);
-
-        // Indicate a day has passed, then revisit the page to show the banner.
-        AppBannerManager.setTimeDeltaForTesting(1);
-        new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mWebAppUrl);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
-                return !manager.isActiveForTesting();
-            }
-        });
-        waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return listener.mDoneAnimating;
-            }
-        });
-
-        // Click the button to trigger the adding of the shortcut.
-        InfoBar infobar = container.getInfoBarsForTesting().get(0);
-        final Button button =
-                (Button) infobar.getView().findViewById(R.id.button_primary);
-        TouchCommon.singleClickView(button);
+        triggerWebAppBanner(mWebAppUrl, WEB_APP_TITLE, true);
 
         // Make sure that the splash screen icon was downloaded.
         CriteriaHelper.pollUiThread(new Criteria() {
