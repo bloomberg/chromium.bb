@@ -40,7 +40,8 @@ ChromeDataUseAscriber::ChromeDataUseAscriber() {
 
 ChromeDataUseAscriber::~ChromeDataUseAscriber() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK_EQ(0u, data_use_recorders_.size());
+  DCHECK(subframe_to_mainframe_map_.empty());
+  DCHECK(data_use_recorders_.empty());
 }
 
 ChromeDataUseRecorder* ChromeDataUseAscriber::GetDataUseRecorder(
@@ -96,8 +97,13 @@ ChromeDataUseAscriber::GetDataUseRecorderEntry(net::URLRequest* request,
     // URLRequests racing the frame create events.
     // TODO(kundaji): Add UMA.
     RenderFrameHostID frame_key(render_process_id, render_frame_id);
-    auto frame_iter = render_frame_data_use_map_.find(frame_key);
-    if (frame_iter == render_frame_data_use_map_.end()) {
+    auto main_frame_key_iter = subframe_to_mainframe_map_.find(frame_key);
+    if (main_frame_key_iter == subframe_to_mainframe_map_.end()) {
+      return data_use_recorders_.end();
+    }
+    auto frame_iter =
+        main_render_frame_data_use_map_.find(main_frame_key_iter->second);
+    if (frame_iter == main_render_frame_data_use_map_.end()) {
       return data_use_recorders_.end();
     }
 
@@ -119,7 +125,7 @@ ChromeDataUseAscriber::GetDataUseRecorderEntry(net::URLRequest* request,
       return new_entry;
     }
 
-    DCHECK(frame_iter != render_frame_data_use_map_.end());
+    DCHECK(frame_iter != main_render_frame_data_use_map_.end());
     auto entry = frame_iter->second;
     request->SetUserData(DataUseRecorderEntryAsUserData::kUserDataKey,
                          new DataUseRecorderEntryAsUserData(entry));
@@ -134,60 +140,6 @@ ChromeDataUseAscriber::GetDataUseRecorderEntry(net::URLRequest* request,
   return entry;
 }
 
-void ChromeDataUseAscriber::OnBeforeUrlRequest(net::URLRequest* request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DataUseAscriber::OnBeforeUrlRequest(request);
-
-  // TODO(kundaji): Handle PlzNavigate.
-  if (content::IsBrowserSideNavigationEnabled())
-    return;
-
-  auto service = static_cast<DataUseUserData*>(
-      request->GetUserData(DataUseUserData::kUserDataKey));
-  if (service)
-    return;
-
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(request);
-  content::ResourceType resource_type = request_info
-                                            ? request_info->GetResourceType()
-                                            : content::RESOURCE_TYPE_LAST_TYPE;
-
-  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
-    return;
-
-  int render_process_id = -1;
-  int render_frame_id = -1;
-  bool has_valid_render_frame_id =
-      content::ResourceRequestInfo::GetRenderFrameForRequest(
-          request, &render_process_id, &render_frame_id);
-  DCHECK(has_valid_render_frame_id);
-  // Browser tests may not set up DataUseWebContentsObservers in which case
-  // this class never sees navigation and frame events so DataUseRecorders
-  // will never be destroyed. To avoid this, we ignore requests whose
-  // render frames don't have a record. However, this can also be caused by
-  // URLRequests racing the frame create events.
-  // TODO(kundaji): Add UMA.
-  if (render_frame_data_use_map_.find(
-          RenderFrameHostID(render_process_id, render_frame_id)) ==
-      render_frame_data_use_map_.end()) {
-    return;
-  }
-
-  // If this request is already being tracked, do not create a new entry.
-  auto user_data = static_cast<DataUseRecorderEntryAsUserData*>(
-      request->GetUserData(DataUseRecorderEntryAsUserData::kUserDataKey));
-  if (user_data)
-    return;
-
-  DataUseRecorderEntry entry = data_use_recorders_.emplace(
-      data_use_recorders_.end());
-  request->SetUserData(DataUseRecorderEntryAsUserData::kUserDataKey,
-                       new DataUseRecorderEntryAsUserData(entry));
-  pending_navigation_data_use_map_.insert(
-      std::make_pair(request_info->GetGlobalRequestID(), entry));
-}
-
 void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -199,9 +151,9 @@ void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
   DataUseRecorder* recorder = &(*entry);
 
   RenderFrameHostID frame_key = entry->main_frame_id();
-  auto frame_iter = render_frame_data_use_map_.find(frame_key);
+  auto frame_iter = main_render_frame_data_use_map_.find(frame_key);
   bool is_in_render_frame_map =
-      frame_iter != render_frame_data_use_map_.end() &&
+      frame_iter != main_render_frame_data_use_map_.end() &&
       frame_iter->second->HasPendingURLRequest(request);
 
   const content::ResourceRequestInfo* request_info =
@@ -238,60 +190,55 @@ void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
 
 void ChromeDataUseAscriber::RenderFrameCreated(int render_process_id,
                                                int render_frame_id,
-                                               int parent_render_process_id,
-                                               int parent_render_frame_id) {
+                                               int main_render_process_id,
+                                               int main_render_frame_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (content::IsBrowserSideNavigationEnabled())
     return;
 
-  if (parent_render_process_id != -1 && parent_render_frame_id != -1) {
-    // Create an entry in |render_frame_data_use_map_| for this frame with
-    // the same DataUseRecorderEntry as its parent frame.
-    auto frame_iter = render_frame_data_use_map_.find(
-        RenderFrameHostID(parent_render_process_id, parent_render_frame_id));
-
-    DCHECK(frame_iter != render_frame_data_use_map_.end());
-
-    DataUseRecorderEntry entry = frame_iter->second;
-    render_frame_data_use_map_.insert(std::make_pair(
-        RenderFrameHostID(render_process_id, render_frame_id), entry));
+  if (main_render_process_id != -1 && main_render_frame_id != -1) {
+    // Create an entry in |subframe_to_mainframe_map_| for this frame mapped to
+    // it's parent frame.
+    subframe_to_mainframe_map_.insert(std::make_pair(
+        RenderFrameHostID(render_process_id, render_frame_id),
+        RenderFrameHostID(main_render_process_id, main_render_frame_id)));
   } else {
-    auto frame_iter = render_frame_data_use_map_.find(
+    subframe_to_mainframe_map_.insert(
+        std::make_pair(RenderFrameHostID(render_process_id, render_frame_id),
+                       RenderFrameHostID(render_process_id, render_frame_id)));
+    auto frame_iter = main_render_frame_data_use_map_.find(
         RenderFrameHostID(render_process_id, render_frame_id));
-    DCHECK(frame_iter == render_frame_data_use_map_.end());
+    DCHECK(frame_iter == main_render_frame_data_use_map_.end());
     DataUseRecorderEntry entry = CreateNewDataUseRecorder(nullptr);
     entry->set_main_frame_id(
         RenderFrameHostID(render_process_id, render_frame_id));
-    render_frame_data_use_map_.insert(std::make_pair(
+    main_render_frame_data_use_map_.insert(std::make_pair(
         RenderFrameHostID(render_process_id, render_frame_id), entry));
   }
 }
 
 void ChromeDataUseAscriber::RenderFrameDeleted(int render_process_id,
                                                int render_frame_id,
-                                               int parent_render_process_id,
-                                               int parent_render_frame_id) {
+                                               int main_render_process_id,
+                                               int main_render_frame_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (content::IsBrowserSideNavigationEnabled())
     return;
 
   RenderFrameHostID key(render_process_id, render_frame_id);
-  auto frame_iter = render_frame_data_use_map_.find(key);
 
-  DCHECK(frame_iter != render_frame_data_use_map_.end());
-
-  DataUseRecorderEntry entry = frame_iter->second;
-  DataUseRecorder* recorder = &(*entry);
-
-  if (parent_render_process_id == -1 && parent_render_frame_id == -1 &&
-      recorder->IsDataUseComplete()) {
-    OnDataUseCompleted(entry);
-    data_use_recorders_.erase(entry);
+  if (main_render_process_id == -1 && main_render_frame_id == -1) {
+    auto frame_iter = main_render_frame_data_use_map_.find(key);
+    DataUseRecorderEntry entry = frame_iter->second;
+    if (entry->IsDataUseComplete()) {
+      OnDataUseCompleted(entry);
+      data_use_recorders_.erase(entry);
+    }
+    main_render_frame_data_use_map_.erase(frame_iter);
   }
-
-  render_frame_data_use_map_.erase(frame_iter);
+  subframe_to_mainframe_map_.erase(key);
 }
 
 void ChromeDataUseAscriber::DidStartMainFrameNavigation(
@@ -312,7 +259,7 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // Find the DataUseRecorderEntry the frame is associated with
-  auto frame_it = render_frame_data_use_map_.find(
+  auto frame_it = main_render_frame_data_use_map_.find(
       RenderFrameHostID(render_process_id, render_frame_id));
 
   // Find the pending navigation entry.
@@ -323,9 +270,9 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
   if (navigation_iter == pending_navigation_data_use_map_.end()) {
     // No pending navigation entry to worry about. However, the old frame entry
     // must be removed from frame map, and possibly marked complete and deleted.
-    if (frame_it != render_frame_data_use_map_.end()) {
+    if (frame_it != main_render_frame_data_use_map_.end()) {
       DataUseRecorderEntry old_frame_entry = frame_it->second;
-      render_frame_data_use_map_.erase(frame_it);
+      main_render_frame_data_use_map_.erase(frame_it);
       if (old_frame_entry->IsDataUseComplete()) {
         OnDataUseCompleted(old_frame_entry);
         data_use_recorders_.erase(old_frame_entry);
@@ -337,7 +284,7 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
       std::pair<int, int> frame_key =
           RenderFrameHostID(render_process_id, render_frame_id);
       entry->set_main_frame_id(frame_key);
-      render_frame_data_use_map_.insert(std::make_pair(frame_key, entry));
+      main_render_frame_data_use_map_.insert(std::make_pair(frame_key, entry));
     }
     return;
   }
@@ -349,7 +296,7 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
 
   // If the frame has already been deleted then mark this navigation as having
   // completed its data use.
-  if (frame_it == render_frame_data_use_map_.end()) {
+  if (frame_it == main_render_frame_data_use_map_.end()) {
     if (entry->IsDataUseComplete()) {
       OnDataUseCompleted(entry);
       data_use_recorders_.erase(entry);
@@ -372,8 +319,8 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
     data_use_recorders_.erase(entry);
   } else {
     // Navigation is not same page, so remove old entry from
-    // |render_frame_data_use_map_|, possibly marking it complete.
-    render_frame_data_use_map_.erase(frame_it);
+    // |main_render_frame_data_use_map_|, possibly marking it complete.
+    main_render_frame_data_use_map_.erase(frame_it);
     if (old_frame_entry->IsDataUseComplete()) {
       OnDataUseCompleted(old_frame_entry);
       data_use_recorders_.erase(old_frame_entry);
@@ -389,7 +336,7 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
       data_use.set_url(gurl);
     }
 
-    render_frame_data_use_map_.insert(std::make_pair(
+    main_render_frame_data_use_map_.insert(std::make_pair(
         RenderFrameHostID(render_process_id, render_frame_id), entry));
   }
 }

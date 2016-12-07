@@ -57,22 +57,23 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   // DataUseAscriber implementation:
   ChromeDataUseRecorder* GetDataUseRecorder(net::URLRequest* request,
                                             bool can_create_new) override;
-  void OnBeforeUrlRequest(net::URLRequest* request) override;
   void OnUrlRequestDestroyed(net::URLRequest* request) override;
   std::unique_ptr<URLRequestClassifier> CreateURLRequestClassifier()
       const override;
 
-  // Called when a render frame host is created.
+  // Called when a render frame host is created. When the render frame is a main
+  // frame, |main_render_process_id| and |main_render_frame_id| should be -1.
   void RenderFrameCreated(int render_process_id,
                           int render_frame_id,
-                          int parent_render_process_id,
-                          int parent_render_frame_id);
+                          int main_render_process_id,
+                          int main_render_frame_id);
 
-  // Called when a render frame host is deleted.
+  // Called when a render frame host is deleted. When the render frame is a main
+  // frame, |main_render_process_id| and |main_render_frame_id| should be -1.
   void RenderFrameDeleted(int render_process_id,
                           int render_frame_id,
-                          int parent_render_process_id,
-                          int parent_render_frame_id);
+                          int main_render_process_id,
+                          int main_render_frame_id);
 
   // Called when a main frame navigation is started.
   void DidStartMainFrameNavigation(GURL gurl,
@@ -138,9 +139,15 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   DataUseRecorderList data_use_recorders_;
 
   // Map from RenderFrameHost to the DataUseRecorderEntry in
-  // |data_use_recorders_| that the frame ascribe data use to.
+  // |data_use_recorders_| that the main frame ascribes data use to.
   base::hash_map<RenderFrameHostID, DataUseRecorderEntry>
-      render_frame_data_use_map_;
+      main_render_frame_data_use_map_;
+
+  // Maps subframe IDs to the mainframe ID, so the mainframe lifetime can have
+  // ownership over the lifetime of entries in |data_use_recorders_|. Mainframes
+  // are mapped to themselves.
+  base::hash_map<RenderFrameHostID, RenderFrameHostID>
+      subframe_to_mainframe_map_;
 
   // Map from pending navigations to the DataUseRecorderEntry in
   // |data_use_recorders_| that the navigation ascribes data use to.

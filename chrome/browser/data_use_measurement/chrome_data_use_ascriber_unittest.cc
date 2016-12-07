@@ -97,6 +97,8 @@ TEST_F(ChromeDataUseAscriberTest, NoRecorderWithoutFrame) {
   // Request should cause a recorder to be created.
   ascriber()->OnBeforeUrlRequest(request.get());
   EXPECT_EQ(2u, recorders().size());
+
+  ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
 }
 
 }  // namespace data_use_measurement
