@@ -1467,7 +1467,7 @@ StyleDifference LayoutObject::adjustStyleDifference(
       diff.setNeedsFullLayout();
   }
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     // Text nodes share style with their parents but the checked styles don't
     // apply to them, hence the !isText() check.
     if (!isText() && (diff.transformChanged() || diff.opacityChanged() ||
@@ -1477,13 +1477,16 @@ StyleDifference LayoutObject::adjustStyleDifference(
       // property or paint order change. Mark the painting layer needing repaint
       // for changed paint property or paint order. Raster invalidation will be
       // issued if needed during paint.
-      ObjectPaintInvalidator(*this).slowSetPaintingLayerNeedsRepaint();
+      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        ObjectPaintInvalidator(*this).slowSetPaintingLayerNeedsRepaint();
 
       // When transform, opacity, etc. change, paint properties will also change
       // so we need to mark this object as needing an update.
       getMutableForPainting().setNeedsPaintPropertyUpdate();
     }
-  } else {
+  }
+
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     // If transform changed, and the layer does not paint into its own separate
     // backing, then we need to invalidate paints.
     if (diff.transformChanged()) {
