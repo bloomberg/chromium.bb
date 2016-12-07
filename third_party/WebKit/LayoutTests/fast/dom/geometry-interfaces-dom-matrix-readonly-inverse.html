@@ -19,7 +19,7 @@ test(function() {
 test(function() {
   var matrix3d = new DOMMatrixReadOnly([10, 20, 30, 40, 40, 40, 30, 20, 10, 20, 40, 30, 20, 40, 50, 100]);
   var inverse = matrix3d.inverse();
-  assert_3d_matrix_equals(inverse, [-1.6, 0.05, 0.6, 0.45, 2.05, -0.025, -0.8, -0.575, -0.4, 0, 0.2, 0.1, -0.3, 0, 0.1, 0.1]);
+  assert_matrix_almost_equals(inverse, new DOMMatrix([-1.6, 0.05, 0.6, 0.45, 2.05, -0.025, -0.8, -0.575, -0.4, 0, 0.2, 0.1, -0.3, 0, 0.1, 0.1]));
 }, "DOMMatrix inverse() - invertible - 3D matrix");
 
 test(function() {
