@@ -20,9 +20,11 @@ namespace net {
 class IOBuffer;
 }
 
-namespace proximity_auth {
-
+namespace cryptauth {
 struct RemoteDevice;
+}
+
+namespace proximity_auth {
 
 // Represents a Bluetooth connection with a remote device. The connection is a
 // persistent bidirectional channel for sending and receiving wire messages.
@@ -32,7 +34,7 @@ class BluetoothConnection : public Connection,
   // Constructs a Bluetooth connection to the service with |uuid| on the
   // |remote_device|. The |remote_device| must already be known to the system
   // Bluetooth daemon.
-  BluetoothConnection(const RemoteDevice& remote_device,
+  BluetoothConnection(const cryptauth::RemoteDevice& remote_device,
                       const device::BluetoothUUID& uuid);
   ~BluetoothConnection() override;
 

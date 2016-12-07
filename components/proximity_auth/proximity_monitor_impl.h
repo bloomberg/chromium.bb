@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/proximity_monitor.h"
-#include "components/proximity_auth/remote_device.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace base {
@@ -32,7 +32,7 @@ class ProximityMonitorObserver;
 class ProximityMonitorImpl : public ProximityMonitor {
  public:
   // The |observer| is not owned, and must outlive |this| instance.
-  ProximityMonitorImpl(const RemoteDevice& remote_device,
+  ProximityMonitorImpl(const cryptauth::RemoteDevice& remote_device,
                        std::unique_ptr<base::TickClock> clock);
   ~ProximityMonitorImpl() override;
 
@@ -104,7 +104,7 @@ class ProximityMonitorImpl : public ProximityMonitor {
   void CheckForProximityStateChange();
 
   // The remote device being monitored.
-  const RemoteDevice remote_device_;
+  const cryptauth::RemoteDevice remote_device_;
 
   // The observers attached to the ProximityMonitor.
   base::ObserverList<ProximityMonitorObserver> observers_;

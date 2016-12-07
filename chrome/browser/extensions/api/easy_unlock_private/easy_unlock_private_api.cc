@@ -33,6 +33,7 @@
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
@@ -40,7 +41,6 @@
 #include "components/proximity_auth/bluetooth_util.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_client.h"
-#include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/screenlock_state.h"
 #include "components/proximity_auth/switches.h"
@@ -1090,7 +1090,7 @@ bool EasyUnlockPrivateFindSetupConnectionFunction::RunAsync() {
   // |params->setup_service_uuid|.
   connection_finder_.reset(
       new proximity_auth::BluetoothLowEnergyConnectionFinder(
-          proximity_auth::RemoteDevice(), params->setup_service_uuid,
+          cryptauth::RemoteDevice(), params->setup_service_uuid,
           proximity_auth::BluetoothLowEnergyConnectionFinder::FIND_ANY_DEVICE,
           nullptr, bluetooth_throttler_.get(), 3));
 

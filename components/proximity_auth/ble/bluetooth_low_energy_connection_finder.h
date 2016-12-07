@@ -13,10 +13,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/connection_finder.h"
 #include "components/proximity_auth/connection_observer.h"
-#include "components/proximity_auth/remote_device.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -53,7 +53,7 @@ class BluetoothLowEnergyConnectionFinder
   // TODO(sacomoto): Remove |device_whitelist| when ProximityAuthBleSystem is
   // not needed anymore.
   BluetoothLowEnergyConnectionFinder(
-      const RemoteDevice remote_device,
+      const cryptauth::RemoteDevice remote_device,
       const std::string& remote_service_uuid,
       const FinderStrategy finder_strategy,
       const BluetoothLowEnergyDeviceWhitelist* device_whitelist,
@@ -125,7 +125,7 @@ class BluetoothLowEnergyConnectionFinder
   // The remote BLE device being searched. It maybe empty, in this case the
   // remote device should advertise |remote_service_uuid_| and
   // |advertised_name_|.
-  RemoteDevice remote_device_;
+  cryptauth::RemoteDevice remote_device_;
 
   // The uuid of the service it looks for to establish a GattConnection.
   device::BluetoothUUID remote_service_uuid_;

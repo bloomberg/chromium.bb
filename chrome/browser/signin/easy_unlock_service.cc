@@ -844,7 +844,7 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
 
 void EasyUnlockService::SetProximityAuthDevices(
     const AccountId& account_id,
-    const proximity_auth::RemoteDeviceList& remote_devices) {
+    const cryptauth::RemoteDeviceList& remote_devices) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery))
     return;

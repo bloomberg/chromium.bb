@@ -14,11 +14,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/bluetooth_throttler.h"
 #include "components/proximity_auth/connection_finder.h"
 #include "components/proximity_auth/connection_observer.h"
 #include "components/proximity_auth/proximity_auth_test_util.h"
-#include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -301,7 +301,7 @@ class TestBluetoothLowEnergyWeaveClientConnection
     : public BluetoothLowEnergyWeaveClientConnection {
  public:
   TestBluetoothLowEnergyWeaveClientConnection(
-      const RemoteDevice& remote_device,
+      const cryptauth::RemoteDevice& remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
       BluetoothThrottler* bluetooth_throttler,
@@ -579,7 +579,7 @@ class ProximityAuthBluetoothLowEnergyWeaveClientConnectionTest
 
  protected:
   scoped_refptr<device::MockBluetoothAdapter> adapter_;
-  RemoteDevice remote_device_;
+  cryptauth::RemoteDevice remote_device_;
   device::BluetoothUUID service_uuid_;
   device::BluetoothUUID tx_characteristic_uuid_;
   device::BluetoothUUID rx_characteristic_uuid_;

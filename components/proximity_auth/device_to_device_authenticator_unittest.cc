@@ -63,7 +63,7 @@ void SaveValidateHelloMessageResult(bool* validated_out,
 // Connection implementation for testing.
 class FakeConnection : public Connection {
  public:
-  FakeConnection(const RemoteDevice& remote_device)
+  FakeConnection(const cryptauth::RemoteDevice& remote_device)
       : Connection(remote_device), connection_blocked_(false) {}
   ~FakeConnection() override {}
 
@@ -222,7 +222,7 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
   MOCK_METHOD1(OnAuthenticationResultProxy, void(Authenticator::Result result));
 
   // Contains information about the remote device.
-  const RemoteDevice remote_device_;
+  const cryptauth::RemoteDevice remote_device_;
 
   // Simulates the connection to the remote device.
   FakeConnection connection_;

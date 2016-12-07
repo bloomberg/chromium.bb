@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/proximity_auth/remote_device.h"
+#include "components/cryptauth/remote_device.h"
 
 namespace cryptauth {
 class SecureMessageDelegate;
@@ -43,7 +43,8 @@ class RemoteDeviceLoader {
   ~RemoteDeviceLoader();
 
   // Loads the RemoteDevice objects. |callback| will be invoked upon completion.
-  typedef base::Callback<void(const RemoteDeviceList&)> RemoteDeviceCallback;
+  typedef base::Callback<void(const cryptauth::RemoteDeviceList&)>
+      RemoteDeviceCallback;
   void Load(const RemoteDeviceCallback& callback);
 
  private:
@@ -71,7 +72,7 @@ class RemoteDeviceLoader {
   RemoteDeviceCallback callback_;
 
   // The collection of RemoteDevices to return.
-  RemoteDeviceList remote_devices_;
+  cryptauth::RemoteDeviceList remote_devices_;
 
   base::WeakPtrFactory<RemoteDeviceLoader> weak_ptr_factory_;
 

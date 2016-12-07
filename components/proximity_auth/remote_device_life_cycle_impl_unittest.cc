@@ -61,7 +61,7 @@ class StubSecureContext : public SecureContext {
 
 class FakeConnectionFinder : public ConnectionFinder {
  public:
-  FakeConnectionFinder(const RemoteDevice& remote_device)
+  FakeConnectionFinder(const cryptauth::RemoteDevice& remote_device)
       : remote_device_(remote_device), connection_(nullptr) {}
   ~FakeConnectionFinder() override {}
 
@@ -82,7 +82,7 @@ class FakeConnectionFinder : public ConnectionFinder {
     connection_callback_ = connection_callback;
   }
 
-  const RemoteDevice remote_device_;
+  const cryptauth::RemoteDevice remote_device_;
 
   FakeConnection* connection_;
 
@@ -127,7 +127,8 @@ class FakeAuthenticator : public Authenticator {
 // Subclass of RemoteDeviceLifeCycleImpl to make it testable.
 class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
  public:
-  TestableRemoteDeviceLifeCycleImpl(const RemoteDevice& remote_device)
+  TestableRemoteDeviceLifeCycleImpl(
+      const cryptauth::RemoteDevice& remote_device)
       : RemoteDeviceLifeCycleImpl(remote_device, nullptr),
         remote_device_(remote_device) {}
 
@@ -152,7 +153,7 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
     return std::move(scoped_authenticator);
   }
 
-  const RemoteDevice remote_device_;
+  const cryptauth::RemoteDevice remote_device_;
   FakeConnectionFinder* connection_finder_;
   FakeAuthenticator* authenticator_;
 
@@ -239,8 +240,9 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
 };
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, GetRemoteDevice) {
-  RemoteDevice expected_remote_device = CreateClassicRemoteDeviceForTest();
-  RemoteDevice remote_device = life_cycle_.GetRemoteDevice();
+  cryptauth::RemoteDevice expected_remote_device =
+      CreateClassicRemoteDeviceForTest();
+  cryptauth::RemoteDevice remote_device = life_cycle_.GetRemoteDevice();
   EXPECT_EQ(expected_remote_device.user_id, remote_device.user_id);
   EXPECT_EQ(expected_remote_device.name, remote_device.name);
   EXPECT_EQ(expected_remote_device.public_key, remote_device.public_key);

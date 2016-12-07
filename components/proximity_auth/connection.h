@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "components/proximity_auth/remote_device.h"
+#include "components/cryptauth/remote_device.h"
 
 namespace proximity_auth {
 
@@ -28,7 +28,7 @@ class Connection {
   };
 
   // Constructs a connection to the given |remote_device|.
-  explicit Connection(const RemoteDevice& remote_device);
+  explicit Connection(const cryptauth::RemoteDevice& remote_device);
   virtual ~Connection();
 
   // Returns true iff the connection's status is CONNECTED.
@@ -45,7 +45,9 @@ class Connection {
   void AddObserver(ConnectionObserver* observer);
   void RemoveObserver(ConnectionObserver* observer);
 
-  const RemoteDevice& remote_device() const { return remote_device_; }
+  const cryptauth::RemoteDevice& remote_device() const {
+    return remote_device_;
+  }
 
   // Abstract methods that subclasses should implement:
 
@@ -92,7 +94,7 @@ class Connection {
 
  private:
   // The remote device corresponding to this connection.
-  const RemoteDevice remote_device_;
+  const cryptauth::RemoteDevice remote_device_;
 
   // The current status of the connection.
   Status status_;

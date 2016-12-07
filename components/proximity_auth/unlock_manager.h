@@ -63,7 +63,7 @@ class UnlockManager : public MessengerObserver,
   // Creates a ProximityMonitor instance for the given |remote_device|.
   // Exposed for testing.
   virtual std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
-      const RemoteDevice& remote_device);
+      const cryptauth::RemoteDevice& remote_device);
 
  private:
   // The possible lock screen states for the remote device.

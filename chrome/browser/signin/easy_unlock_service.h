@@ -18,8 +18,8 @@
 #include "chrome/browser/signin/easy_unlock_auth_attempt.h"
 #include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/screenlock_state.h"
 
 #if defined(OS_CHROMEOS)
@@ -303,7 +303,7 @@ class EasyUnlockService : public KeyedService {
   // are loaded for |account_id|.
   void SetProximityAuthDevices(
       const AccountId& account_id,
-      const proximity_auth::RemoteDeviceList& remote_devices);
+      const cryptauth::RemoteDeviceList& remote_devices);
 
  private:
   // A class to detect whether a bluetooth adapter is present.

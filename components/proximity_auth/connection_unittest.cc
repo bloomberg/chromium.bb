@@ -6,8 +6,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/connection_observer.h"
-#include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +24,7 @@ namespace {
 
 class MockConnection : public Connection {
  public:
-  MockConnection() : Connection(RemoteDevice()) {}
+  MockConnection() : Connection(cryptauth::RemoteDevice()) {}
   ~MockConnection() {}
 
   MOCK_METHOD1(SetPaused, void(bool paused));

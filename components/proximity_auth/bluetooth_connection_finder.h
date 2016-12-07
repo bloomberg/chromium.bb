@@ -12,10 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/bluetooth_util.h"
 #include "components/proximity_auth/connection_finder.h"
 #include "components/proximity_auth/connection_observer.h"
-#include "components/proximity_auth/remote_device.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -27,7 +27,7 @@ class BluetoothConnectionFinder : public ConnectionFinder,
                                   public ConnectionObserver,
                                   public device::BluetoothAdapter::Observer {
  public:
-  BluetoothConnectionFinder(const RemoteDevice& remote_device,
+  BluetoothConnectionFinder(const cryptauth::RemoteDevice& remote_device,
                             const device::BluetoothUUID& uuid,
                             const base::TimeDelta& polling_interval);
   ~BluetoothConnectionFinder() override;
@@ -86,7 +86,7 @@ class BluetoothConnectionFinder : public ConnectionFinder,
   void InvokeCallbackAsync();
 
   // The remote device to connect to.
-  const RemoteDevice remote_device_;
+  const cryptauth::RemoteDevice remote_device_;
 
   // The UUID of the service on the remote device.
   const device::BluetoothUUID uuid_;

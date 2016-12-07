@@ -41,7 +41,7 @@ const int kAuthenticationRecoveryTimeSeconds = 10;
 }  // namespace
 
 RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
-    const RemoteDevice& remote_device,
+    const cryptauth::RemoteDevice& remote_device,
     ProximityAuthClient* proximity_auth_client)
     : remote_device_(remote_device),
       proximity_auth_client_(proximity_auth_client),
@@ -60,7 +60,7 @@ void RemoteDeviceLifeCycleImpl::Start() {
   FindConnection();
 }
 
-RemoteDevice RemoteDeviceLifeCycleImpl::GetRemoteDevice() const {
+cryptauth::RemoteDevice RemoteDeviceLifeCycleImpl::GetRemoteDevice() const {
   return remote_device_;
 }
 
@@ -82,7 +82,7 @@ void RemoteDeviceLifeCycleImpl::RemoveObserver(Observer* observer) {
 
 std::unique_ptr<ConnectionFinder>
 RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
-  if (remote_device_.bluetooth_type == RemoteDevice::BLUETOOTH_LE) {
+  if (remote_device_.bluetooth_type == cryptauth::RemoteDevice::BLUETOOTH_LE) {
     return base::MakeUnique<BluetoothLowEnergyConnectionFinder>(
         remote_device_, kBLESmartLockServiceUUID,
         BluetoothLowEnergyConnectionFinder::FinderStrategy::FIND_PAIRED_DEVICE,

@@ -33,7 +33,7 @@ const int kRssiThreshold = -5;
 const double kRssiSampleWeight = 0.3;
 
 ProximityMonitorImpl::ProximityMonitorImpl(
-    const RemoteDevice& remote_device,
+    const cryptauth::RemoteDevice& remote_device,
     std::unique_ptr<base::TickClock> clock)
     : remote_device_(remote_device),
       strategy_(Strategy::NONE),

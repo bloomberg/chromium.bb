@@ -88,7 +88,7 @@ class BluetoothLowEnergyWeaveClientConnection
   // pass through |gatt_connection|. A subsequent call to Connect() must be
   // made.
   BluetoothLowEnergyWeaveClientConnection(
-      const RemoteDevice& remote_device,
+      const cryptauth::RemoteDevice& remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
       BluetoothThrottler* bluetooth_throttler,

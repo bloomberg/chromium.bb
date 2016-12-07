@@ -11,10 +11,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/bluetooth_connection_finder.h"
 #include "components/proximity_auth/bluetooth_throttler.h"
 #include "components/proximity_auth/fake_connection.h"
-#include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,13 +52,14 @@ class FakeBluetoothConnectionFinder : public BluetoothConnectionFinder {
  public:
   FakeBluetoothConnectionFinder()
       : BluetoothConnectionFinder(
-            RemoteDevice(),
+            cryptauth::RemoteDevice(),
             device::BluetoothUUID(kUuid),
             base::TimeDelta::FromSeconds(kPollingIntervalSeconds)) {}
   ~FakeBluetoothConnectionFinder() override {}
 
   void Find(const ConnectionCallback& connection_callback) override {
-    connection_callback.Run(base::MakeUnique<FakeConnection>(RemoteDevice()));
+    connection_callback.Run(
+        base::MakeUnique<FakeConnection>(cryptauth::RemoteDevice()));
   }
 
  private:

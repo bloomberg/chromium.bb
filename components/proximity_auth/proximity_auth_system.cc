@@ -56,7 +56,7 @@ void ProximityAuthSystem::Stop() {
 
 void ProximityAuthSystem::SetRemoteDevicesForUser(
     const AccountId& account_id,
-    const RemoteDeviceList& remote_devices) {
+    const cryptauth::RemoteDeviceList& remote_devices) {
   remote_devices_map_[account_id] = remote_devices;
   if (started_) {
     const AccountId& focused_account_id =
@@ -66,10 +66,10 @@ void ProximityAuthSystem::SetRemoteDevicesForUser(
   }
 }
 
-RemoteDeviceList ProximityAuthSystem::GetRemoteDevicesForUser(
+cryptauth::RemoteDeviceList ProximityAuthSystem::GetRemoteDevicesForUser(
     const AccountId& account_id) const {
   if (remote_devices_map_.find(account_id) == remote_devices_map_.end())
-    return RemoteDeviceList();
+    return cryptauth::RemoteDeviceList();
   return remote_devices_map_.at(account_id);
 }
 
@@ -153,7 +153,7 @@ void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
 
   // TODO(tengs): We currently assume each user has only one RemoteDevice, so we
   // can simply take the first item in the list.
-  RemoteDevice remote_device = remote_devices_map_[account_id][0];
+  cryptauth::RemoteDevice remote_device = remote_devices_map_[account_id][0];
   if (!suspended_) {
     PA_LOG(INFO) << "Creating RemoteDeviceLifeCycle for focused user: "
                  << account_id.Serialize();

@@ -69,9 +69,10 @@ void RemoteDeviceLoader::OnPSKDerived(
 
   // TODO(tengs): We assume that devices without a |bluetooth_address| field are
   // BLE devices. Ideally, we should have a separate field for this information.
-  RemoteDevice::BluetoothType bluetooth_type =
-      unlock_key.bluetooth_address().empty() ? RemoteDevice::BLUETOOTH_LE
-                                             : RemoteDevice::BLUETOOTH_CLASSIC;
+  cryptauth::RemoteDevice::BluetoothType bluetooth_type =
+      unlock_key.bluetooth_address().empty()
+          ? cryptauth::RemoteDevice::BLUETOOTH_LE
+          : cryptauth::RemoteDevice::BLUETOOTH_CLASSIC;
 
   std::string bluetooth_address = unlock_key.bluetooth_address();
   if (bluetooth_address.empty() && pref_manager_) {
@@ -84,7 +85,7 @@ void RemoteDeviceLoader::OnPSKDerived(
                  << " is " << bluetooth_address;
   }
 
-  remote_devices_.push_back(RemoteDevice(
+  remote_devices_.push_back(cryptauth::RemoteDevice(
       user_id_, unlock_key.friendly_device_name(), unlock_key.public_key(),
       bluetooth_type, bluetooth_address, psk, std::string()));
 

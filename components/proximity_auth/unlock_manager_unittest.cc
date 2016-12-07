@@ -62,7 +62,7 @@ class MockRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
   ~MockRemoteDeviceLifeCycle() override {}
 
   MOCK_METHOD0(Start, void());
-  MOCK_CONST_METHOD0(GetRemoteDevice, RemoteDevice());
+  MOCK_CONST_METHOD0(GetRemoteDevice, cryptauth::RemoteDevice());
   MOCK_CONST_METHOD0(GetState, State());
   MOCK_METHOD0(GetMessenger, Messenger*());
   MOCK_METHOD1(AddObserver, void(Observer*));
@@ -159,7 +159,7 @@ class TestUnlockManager : public UnlockManager {
 
  private:
   std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
-      const RemoteDevice& remote_device) override {
+      const cryptauth::RemoteDevice& remote_device) override {
     EXPECT_EQ(kTestRemoteDevicePublicKey, remote_device.public_key);
     std::unique_ptr<MockProximityMonitor> proximity_monitor(
         new NiceMock<MockProximityMonitor>());
@@ -253,7 +253,7 @@ class ProximityAuthUnlockManagerTest : public testing::Test {
   }
 
  protected:
-  RemoteDevice remote_device_;
+  cryptauth::RemoteDevice remote_device_;
 
   // Mock used for verifying interactions with the Bluetooth subsystem.
   scoped_refptr<device::MockBluetoothAdapter> bluetooth_adapter_;

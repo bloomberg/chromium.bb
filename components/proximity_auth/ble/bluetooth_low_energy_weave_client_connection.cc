@@ -40,7 +40,7 @@ const char kRXCharacteristicUUID[] = "00000100-0004-1000-8000-001A11000102";
 
 BluetoothLowEnergyWeaveClientConnection::
     BluetoothLowEnergyWeaveClientConnection(
-        const RemoteDevice& device,
+        const cryptauth::RemoteDevice& device,
         scoped_refptr<device::BluetoothAdapter> adapter,
         const BluetoothUUID remote_service_uuid,
         BluetoothThrottler* bluetooth_throttler,

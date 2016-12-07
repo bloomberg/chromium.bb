@@ -53,7 +53,7 @@ const int kMaxChunkSize = 500;
 }  // namespace
 
 BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
-    const RemoteDevice& device,
+    const cryptauth::RemoteDevice& device,
     scoped_refptr<device::BluetoothAdapter> adapter,
     const BluetoothUUID remote_service_uuid,
     BluetoothThrottler* bluetooth_throttler,

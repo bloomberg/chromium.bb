@@ -471,7 +471,7 @@ ProximityAuthWebUIHandler::GetUnlockKeysList() {
 }
 
 void ProximityAuthWebUIHandler::OnRemoteDevicesLoaded(
-    const std::vector<RemoteDevice>& remote_devices) {
+    const std::vector<cryptauth::RemoteDevice>& remote_devices) {
   if (remote_devices[0].persistent_symmetric_key.empty()) {
     PA_LOG(ERROR) << "Failed to derive PSK.";
     return;
@@ -571,7 +571,7 @@ void ProximityAuthWebUIHandler::CleanUpRemoteDeviceLifeCycle() {
   PA_LOG(INFO) << "Cleaning up connection to " << selected_remote_device_.name
                << " [" << selected_remote_device_.bluetooth_address << "]";
   life_cycle_.reset();
-  selected_remote_device_ = RemoteDevice();
+  selected_remote_device_ = cryptauth::RemoteDevice();
   last_remote_status_update_.reset();
   web_ui()->CallJavascriptFunctionUnsafe(
       "LocalStateInterface.onUnlockKeysChanged", *GetUnlockKeysList());

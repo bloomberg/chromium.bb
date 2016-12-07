@@ -44,7 +44,7 @@ class ProximityAuthBluetoothThrottlerImplTest : public testing::Test {
 
   void PerformConnectionStateTransition(Connection::Status old_status,
                                         Connection::Status new_status) {
-    FakeConnection connection((RemoteDevice()));
+    FakeConnection connection((cryptauth::RemoteDevice()));
     throttler_.OnConnection(&connection);
     static_cast<ConnectionObserver*>(&throttler_)
         ->OnConnectionStatusChanged(&connection, old_status, new_status);

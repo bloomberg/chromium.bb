@@ -20,15 +20,14 @@ using device::BluetoothAdapter;
 namespace proximity_auth {
 
 BluetoothConnectionFinder::BluetoothConnectionFinder(
-    const RemoteDevice& remote_device,
+    const cryptauth::RemoteDevice& remote_device,
     const device::BluetoothUUID& uuid,
     const base::TimeDelta& polling_interval)
     : remote_device_(remote_device),
       uuid_(uuid),
       polling_interval_(polling_interval),
       has_delayed_poll_scheduled_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 BluetoothConnectionFinder::~BluetoothConnectionFinder() {
   UnregisterAsObserver();

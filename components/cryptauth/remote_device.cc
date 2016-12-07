@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/remote_device.h"
+#include "components/cryptauth/remote_device.h"
 
-namespace proximity_auth {
+namespace cryptauth {
 
 RemoteDevice::RemoteDevice() : bluetooth_type(BLUETOOTH_CLASSIC) {}
 
@@ -27,4 +27,4 @@ RemoteDevice::RemoteDevice(const RemoteDevice& other) = default;
 
 RemoteDevice::~RemoteDevice() {}
 
-}  // namespace
+}  // namespace cryptauth

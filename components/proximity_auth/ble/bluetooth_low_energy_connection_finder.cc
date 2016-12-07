@@ -37,7 +37,7 @@ const int kMinDiscoveryRSSI = -90;
 class BluetoothThrottler;
 
 BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
-    const RemoteDevice remote_device,
+    const cryptauth::RemoteDevice remote_device,
     const std::string& remote_service_uuid,
     FinderStrategy finder_strategy,
     const BluetoothLowEnergyDeviceWhitelist* device_whitelist,

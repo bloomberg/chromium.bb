@@ -30,6 +30,7 @@ static_library("ble") {
 
   deps = [
     "//base",
+    "//components/cryptauth",
     "//components/prefs",
     "//components/proximity_auth/logging",
 
@@ -63,6 +64,7 @@ source_set("unit_tests") {
   deps = [
     ":ble",
     "//base/test:test_support",
+    "//components/cryptauth",
     "//components/prefs:test_support",
     "//components/proximity_auth:test_support",
     "//device/bluetooth:mocks",

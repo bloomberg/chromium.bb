@@ -104,7 +104,7 @@ EasyUnlockServiceRegular::GetProximityAuthPrefManager() {
 
 void EasyUnlockServiceRegular::LoadRemoteDevices() {
   if (device_manager_->unlock_keys().empty()) {
-    SetProximityAuthDevices(GetAccountId(), proximity_auth::RemoteDeviceList());
+    SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceList());
     return;
   }
 
@@ -119,7 +119,7 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
 }
 
 void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
-    const proximity_auth::RemoteDeviceList& remote_devices) {
+    const cryptauth::RemoteDeviceList& remote_devices) {
   SetProximityAuthDevices(GetAccountId(), remote_devices);
 
 #if defined(OS_CHROMEOS)

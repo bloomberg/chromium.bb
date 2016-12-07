@@ -15,9 +15,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_monitor_observer.h"
-#include "components/proximity_auth/remote_device.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,8 +40,9 @@ const char kPersistentSymmetricKey[] = "PSK";
 
 class TestProximityMonitorImpl : public ProximityMonitorImpl {
  public:
-  explicit TestProximityMonitorImpl(const RemoteDevice& remote_device,
-                                    std::unique_ptr<base::TickClock> clock)
+  explicit TestProximityMonitorImpl(
+      const cryptauth::RemoteDevice& remote_device,
+      std::unique_ptr<base::TickClock> clock)
       : ProximityMonitorImpl(remote_device, std::move(clock)) {}
   ~TestProximityMonitorImpl() override {}
 
@@ -85,14 +86,15 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
                                  kBluetoothAddress,
                                  false /* paired */,
                                  true /* connected */),
-        monitor_(RemoteDevice(kRemoteDeviceUserId,
-                              kRemoteDeviceName,
-                              kRemoteDevicePublicKey,
-                              RemoteDevice::BLUETOOTH_CLASSIC,
-                              kBluetoothAddress,
-                              kPersistentSymmetricKey,
-                              std::string()),
-                 base::WrapUnique(clock_)),
+        monitor_(
+            cryptauth::RemoteDevice(kRemoteDeviceUserId,
+                                    kRemoteDeviceName,
+                                    kRemoteDevicePublicKey,
+                                    cryptauth::RemoteDevice::BLUETOOTH_CLASSIC,
+                                    kBluetoothAddress,
+                                    kPersistentSymmetricKey,
+                                    std::string()),
+            base::WrapUnique(clock_)),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {
     ON_CALL(*bluetooth_adapter_, GetDevice(kBluetoothAddress))
@@ -540,9 +542,9 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
        RecordProximityMetricsOnAuthSuccess_UnknownValues) {
   // Note: A device without a recorded name will have its Bluetooth address as
   // its name.
-  RemoteDevice unnamed_remote_device(
+  cryptauth::RemoteDevice unnamed_remote_device(
       kRemoteDeviceUserId, kBluetoothAddress, kRemoteDevicePublicKey,
-      RemoteDevice::BLUETOOTH_CLASSIC, kBluetoothAddress,
+      cryptauth::RemoteDevice::BLUETOOTH_CLASSIC, kBluetoothAddress,
       kPersistentSymmetricKey, std::string());
 
   std::unique_ptr<base::TickClock> clock(new base::SimpleTestTickClock());

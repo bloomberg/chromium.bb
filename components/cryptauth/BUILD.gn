@@ -31,6 +31,8 @@ static_library("cryptauth") {
     "cryptauth_gcm_manager_impl.h",
     "pref_names.cc",
     "pref_names.h",
+    "remote_device.cc",
+    "remote_device.h",
     "secure_message_delegate.cc",
     "secure_message_delegate.h",
     "switches.cc",

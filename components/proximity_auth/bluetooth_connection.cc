@@ -11,8 +11,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -23,10 +23,10 @@ namespace {
 const int kReceiveBufferSizeBytes = 1024;
 }
 
-BluetoothConnection::BluetoothConnection(const RemoteDevice& remote_device,
-                                         const device::BluetoothUUID& uuid)
-    : Connection(remote_device), uuid_(uuid), weak_ptr_factory_(this) {
-}
+BluetoothConnection::BluetoothConnection(
+    const cryptauth::RemoteDevice& remote_device,
+    const device::BluetoothUUID& uuid)
+    : Connection(remote_device), uuid_(uuid), weak_ptr_factory_(this) {}
 
 BluetoothConnection::~BluetoothConnection() {
   if (status() != DISCONNECTED)

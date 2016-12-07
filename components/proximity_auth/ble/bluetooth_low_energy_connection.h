@@ -87,12 +87,11 @@ class BluetoothLowEnergyConnection : public Connection,
   // initaalized and ready. The GATT connection may alreaady be established and
   // pass through |gatt_connection|. A subsequent call to Connect() must be
   // made.
-  BluetoothLowEnergyConnection(
-      const RemoteDevice& remote_device,
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      const device::BluetoothUUID remote_service_uuid,
-      BluetoothThrottler* bluetooth_throttler,
-      int max_number_of_write_attempts);
+  BluetoothLowEnergyConnection(const cryptauth::RemoteDevice& remote_device,
+                               scoped_refptr<device::BluetoothAdapter> adapter,
+                               const device::BluetoothUUID remote_service_uuid,
+                               BluetoothThrottler* bluetooth_throttler,
+                               int max_number_of_write_attempts);
 
   ~BluetoothLowEnergyConnection() override;
 

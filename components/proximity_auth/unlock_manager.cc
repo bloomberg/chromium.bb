@@ -12,12 +12,12 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/messenger.h"
 #include "components/proximity_auth/metrics.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 #include "components/proximity_auth/proximity_monitor_impl.h"
-#include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/secure_context.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
@@ -320,7 +320,7 @@ void UnlockManager::OnAuthAttempted(
 }
 
 std::unique_ptr<ProximityMonitor> UnlockManager::CreateProximityMonitor(
-    const RemoteDevice& remote_device) {
+    const cryptauth::RemoteDevice& remote_device) {
   return base::MakeUnique<ProximityMonitorImpl>(
       remote_device, base::WrapUnique(new base::DefaultTickClock()));
 }
@@ -331,7 +331,7 @@ void UnlockManager::SendSignInChallenge() {
     return;
   }
 
-  RemoteDevice remote_device = life_cycle_->GetRemoteDevice();
+  cryptauth::RemoteDevice remote_device = life_cycle_->GetRemoteDevice();
   proximity_auth_client_->GetChallengeForUserAndDevice(
       remote_device.user_id, remote_device.public_key,
       GetMessenger()->GetSecureContext()->GetChannelBindingData(),

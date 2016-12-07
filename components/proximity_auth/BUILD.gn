@@ -46,8 +46,6 @@ static_library("proximity_auth") {
     "proximity_monitor_impl.cc",
     "proximity_monitor_impl.h",
     "proximity_monitor_observer.h",
-    "remote_device.cc",
-    "remote_device.h",
     "remote_device_life_cycle.h",
     "remote_device_life_cycle_impl.cc",
     "remote_device_life_cycle_impl.h",

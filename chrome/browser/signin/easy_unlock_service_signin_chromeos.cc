@@ -428,7 +428,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   if (devices.empty())
     return;
 
-  proximity_auth::RemoteDeviceList remote_devices;
+  cryptauth::RemoteDeviceList remote_devices;
   for (const auto& device : devices) {
     std::string decoded_public_key, decoded_psk, decoded_challenge;
     if (!base::Base64UrlDecode(device.public_key,
@@ -444,11 +444,11 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
                     << device.public_key;
       continue;
     }
-    proximity_auth::RemoteDevice::BluetoothType bluetooth_type =
+    cryptauth::RemoteDevice::BluetoothType bluetooth_type =
         device.bluetooth_type == chromeos::EasyUnlockDeviceKeyData::BLUETOOTH_LE
-            ? proximity_auth::RemoteDevice::BLUETOOTH_LE
-            : proximity_auth::RemoteDevice::BLUETOOTH_CLASSIC;
-    proximity_auth::RemoteDevice remote_device(
+            ? cryptauth::RemoteDevice::BLUETOOTH_LE
+            : cryptauth::RemoteDevice::BLUETOOTH_CLASSIC;
+    cryptauth::RemoteDevice remote_device(
         account_id.GetUserEmail(), std::string(), decoded_public_key,
         bluetooth_type, device.bluetooth_address, decoded_psk,
         decoded_challenge);

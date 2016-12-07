@@ -11,7 +11,7 @@
 
 namespace proximity_auth {
 
-FakeConnection::FakeConnection(const RemoteDevice& remote_device)
+FakeConnection::FakeConnection(const cryptauth::RemoteDevice& remote_device)
     : Connection(remote_device) {
   Connect();
 }

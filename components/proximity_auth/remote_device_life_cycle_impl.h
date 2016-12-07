@@ -11,9 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/authenticator.h"
 #include "components/proximity_auth/messenger_observer.h"
-#include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/remote_device_life_cycle.h"
 
 namespace proximity_auth {
@@ -31,13 +31,13 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
  public:
   // Creates the life cycle for controlling the given |remote_device|.
   // |proximity_auth_client| is not owned.
-  RemoteDeviceLifeCycleImpl(const RemoteDevice& remote_device,
+  RemoteDeviceLifeCycleImpl(const cryptauth::RemoteDevice& remote_device,
                             ProximityAuthClient* proximity_auth_client);
   ~RemoteDeviceLifeCycleImpl() override;
 
   // RemoteDeviceLifeCycle:
   void Start() override;
-  RemoteDevice GetRemoteDevice() const override;
+  cryptauth::RemoteDevice GetRemoteDevice() const override;
   RemoteDeviceLifeCycle::State GetState() const override;
   Messenger* GetMessenger() override;
   void AddObserver(Observer* observer) override;
@@ -74,7 +74,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   void OnDisconnected() override;
 
   // The remote device being controlled.
-  const RemoteDevice remote_device_;
+  const cryptauth::RemoteDevice remote_device_;
 
   // Used to grab dependencies in chrome. Not owned.
   ProximityAuthClient* proximity_auth_client_;

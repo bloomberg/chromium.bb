@@ -13,7 +13,7 @@ namespace proximity_auth {
 // A fake implementation of Connection to use in tests.
 class FakeConnection : public Connection {
  public:
-  FakeConnection(const RemoteDevice& remote_device);
+  FakeConnection(const cryptauth::RemoteDevice& remote_device);
   ~FakeConnection() override;
 
   // Connection:
