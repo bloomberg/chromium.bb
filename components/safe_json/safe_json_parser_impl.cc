@@ -56,8 +56,9 @@ void SafeJsonParserImpl::OnConnectionError() {
   mojo_json_parser_.reset();
 
   caller_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SafeJsonParserImpl::ReportResults,
-                            base::Unretained(this), nullptr, "Json error"));
+      FROM_HERE,
+      base::Bind(&SafeJsonParserImpl::ReportResults, base::Unretained(this),
+                 nullptr, "Connection error with the json parser process."));
 }
 
 void SafeJsonParserImpl::OnParseDone(const base::ListValue& wrapper,
