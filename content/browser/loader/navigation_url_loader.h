@@ -12,6 +12,7 @@
 
 namespace content {
 
+class AppCacheNavigationHandle;
 class BrowserContext;
 class NavigationUIData;
 class NavigationURLLoaderDelegate;
@@ -38,6 +39,7 @@ class CONTENT_EXPORT NavigationURLLoader {
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       ServiceWorkerNavigationHandle* service_worker_handle,
+      AppCacheNavigationHandle* appcache_handle,
       NavigationURLLoaderDelegate* delegate);
 
   // For testing purposes; sets the factory for use in testing.

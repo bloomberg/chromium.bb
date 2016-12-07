@@ -1773,10 +1773,8 @@ class AppCacheStorageImplTest : public testing::Test {
       request_ = service()->request_context()->CreateRequest(
           manifest_url, net::DEFAULT_PRIORITY, &request_delegate_);
       AppCacheInterceptor::SetExtraRequestInfo(
-          request_.get(), service_.get(),
-          backend_->process_id(), host2->host_id(),
-          RESOURCE_TYPE_MAIN_FRAME,
-          false);
+          request_.get(), service_.get(), backend_->process_id(),
+          host2->host_id(), RESOURCE_TYPE_MAIN_FRAME, false);
       request_->Start();
     }
 

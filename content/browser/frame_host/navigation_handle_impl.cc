@@ -6,6 +6,8 @@
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
+#include "content/browser/appcache/appcache_navigation_handle.h"
+#include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/browsing_data/clear_site_data_throttle.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
@@ -404,6 +406,12 @@ void NavigationHandleImpl::InitServiceWorkerHandle(
   DCHECK(IsBrowserSideNavigationEnabled());
   service_worker_handle_.reset(
       new ServiceWorkerNavigationHandle(service_worker_context));
+}
+
+void NavigationHandleImpl::InitAppCacheHandle(
+    ChromeAppCacheService* appcache_service) {
+  DCHECK(IsBrowserSideNavigationEnabled());
+  appcache_handle_.reset(new AppCacheNavigationHandle(appcache_service));
 }
 
 void NavigationHandleImpl::WillStartRequest(

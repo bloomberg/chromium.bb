@@ -34,6 +34,7 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/timer/timer.h"
 #include "content/browser/appcache/appcache_interceptor.h"
+#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -2112,7 +2113,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     const NavigationRequestInfo& info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     NavigationURLLoaderImplCore* loader,
-    ServiceWorkerNavigationHandleCore* service_worker_handle_core) {
+    ServiceWorkerNavigationHandleCore* service_worker_handle_core,
+    AppCacheNavigationHandleCore* appcache_handle_core) {
   // PlzNavigate: BeginNavigationRequest currently should only be used for the
   // browser-side navigations project.
   CHECK(IsBrowserSideNavigationEnabled());
@@ -2268,21 +2270,25 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       info.begin_params.request_context_type, frame_type,
       info.are_ancestors_secure, info.common_params.post_data);
 
-  // TODO(davidben): Attach AppCacheInterceptor.
+  // Have the appcache associate its extra info with the request.
+  if (appcache_handle_core) {
+    AppCacheInterceptor::SetExtraRequestInfoForHost(
+        new_request.get(), appcache_handle_core->host(), resource_type, false);
+  }
 
   std::unique_ptr<ResourceHandler> handler(
       new NavigationResourceHandler(new_request.get(), loader, delegate()));
 
-  // TODO(davidben): Pass in the appropriate appcache_service. Also fix the
-  // dependency on child_id/route_id. Those are used by the ResourceScheduler;
-  // currently it's a no-op.
-  handler =
-      AddStandardHandlers(new_request.get(), resource_type, resource_context,
-                          info.begin_params.request_context_type,
-                          nullptr,  // appcache_service
-                          -1,       // child_id
-                          -1,       // route_id
-                          std::move(handler));
+  // TODO(davidben): Fix the dependency on child_id/route_id. Those are used
+  // by the ResourceScheduler. currently it's a no-op.
+  handler = AddStandardHandlers(
+      new_request.get(), resource_type, resource_context,
+      info.begin_params.request_context_type,
+      appcache_handle_core ? appcache_handle_core->GetAppCacheService()
+                           : nullptr,
+      -1,  // child_id
+      -1,  // route_id
+      std::move(handler));
 
   BeginRequestInternal(std::move(new_request), std::move(handler));
 }

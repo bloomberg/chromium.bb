@@ -23,7 +23,8 @@ class WebApplicationCacheHostImpl
   static WebApplicationCacheHostImpl* FromId(int id);
 
   WebApplicationCacheHostImpl(blink::WebApplicationCacheHostClient* client,
-                              AppCacheBackend* backend);
+                              AppCacheBackend* backend,
+                              int appcache_host_id);
   ~WebApplicationCacheHostImpl() override;
 
   int host_id() const { return host_id_; }

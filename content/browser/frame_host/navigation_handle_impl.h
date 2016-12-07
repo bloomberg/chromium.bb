@@ -32,6 +32,8 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
 
+class AppCacheNavigationHandle;
+class ChromeAppCacheService;
 class NavigationUIData;
 class NavigatorDelegate;
 class ResourceRequestBodyImpl;
@@ -194,6 +196,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       ServiceWorkerContextWrapper* service_worker_context);
   ServiceWorkerNavigationHandle* service_worker_handle() const {
     return service_worker_handle_.get();
+  }
+
+  // PlzNavigate
+  void InitAppCacheHandle(ChromeAppCacheService* appcache_service);
+  AppCacheNavigationHandle* appcache_handle() const {
+    return appcache_handle_.get();
   }
 
   typedef base::Callback<void(NavigationThrottle::ThrottleCheckResult)>
@@ -394,6 +402,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
   // corresponding ServiceWorkerNetworkProvider is created in the renderer.
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
+
+  // PlzNavigate
+  // Manages the lifetime of a pre-created AppCacheHost until a browser side
+  // navigation is ready to be committed, i.e we have a renderer process ready
+  // to service the navigation request.
+  std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
 
   // Embedder data from the IO thread tied to this navigation.
   std::unique_ptr<NavigationData> navigation_data_;

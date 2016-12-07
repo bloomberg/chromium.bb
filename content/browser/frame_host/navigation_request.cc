@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "content/browser/appcache/appcache_navigation_handle.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -20,6 +22,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/appcache_interfaces.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -29,6 +32,7 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
+#include "content/public/common/appcache_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_response.h"
@@ -404,6 +408,11 @@ void NavigationRequest::OnResponseStarted(
                 ->service_worker_provider_host_id()
           : kInvalidServiceWorkerProviderId;
 
+  request_params_.appcache_host_id =
+      navigation_handle_->appcache_handle()
+          ? navigation_handle_->appcache_handle()->appcache_host_id()
+          : kAppCacheNoHostId;
+
   // Update the lofi state of the request.
   if (response->head.is_using_lofi)
     common_params_.lofi_state = LOFI_ON;
@@ -509,6 +518,11 @@ void NavigationRequest::OnStartChecksComplete(
     navigation_handle_->InitServiceWorkerHandle(service_worker_context);
   }
 
+  if (IsSchemeSupportedForAppCache(common_params_.url)) {
+    navigation_handle_->InitAppCacheHandle(
+        static_cast<ChromeAppCacheService*>(partition->GetAppCacheService()));
+  }
+
   // Mark the fetch_start (Navigation Timing API).
   request_params_.navigation_timing.fetch_start = base::TimeTicks::Now();
 
@@ -544,7 +558,8 @@ void NavigationRequest::OnStartChecksComplete(
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
           report_raw_headers),
       std::move(navigation_ui_data),
-      navigation_handle_->service_worker_handle(), this);
+      navigation_handle_->service_worker_handle(),
+      navigation_handle_->appcache_handle(), this);
 }
 
 void NavigationRequest::OnRedirectChecksComplete(

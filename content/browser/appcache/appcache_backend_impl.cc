@@ -8,6 +8,8 @@
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_service_impl.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 
 namespace content {
 
@@ -164,6 +166,19 @@ void AppCacheBackendImpl::TransferHostIn(int new_host_id,
 
   host->CompleteTransfer(new_host_id, frontend_);
   found->second = std::move(host);
+}
+
+void AppCacheBackendImpl::RegisterPrecreatedHost(
+    std::unique_ptr<AppCacheHost> host) {
+  DCHECK(IsBrowserSideNavigationEnabled());
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(host.get());
+  DCHECK(hosts_.find(host->host_id()) == hosts_.end());
+  // Switch the frontend proxy so that the host can make IPC calls from
+  // here on.
+  host->set_frontend(frontend_);
+  hosts_[host->host_id()] = std::move(host);
 }
 
 }  // namespace content

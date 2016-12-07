@@ -19,6 +19,7 @@ struct RedirectInfo;
 
 namespace content {
 
+class AppCacheNavigationHandle;
 class NavigationURLLoaderImplCore;
 class NavigationData;
 class ServiceWorkerNavigationHandle;
@@ -34,6 +35,7 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
                           std::unique_ptr<NavigationRequestInfo> request_info,
                           std::unique_ptr<NavigationUIData> navigation_ui_data,
                           ServiceWorkerNavigationHandle* service_worker_handle,
+                          AppCacheNavigationHandle* appcache_handle,
                           NavigationURLLoaderDelegate* delegate);
   ~NavigationURLLoaderImpl() override;
 

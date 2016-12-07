@@ -163,9 +163,17 @@ class CONTENT_EXPORT AppCacheHost
   }
 
   int host_id() const { return host_id_; }
+
   AppCacheServiceImpl* service() const { return service_; }
   AppCacheStorage* storage() const { return storage_; }
   AppCacheFrontend* frontend() const { return frontend_; }
+
+  // PlzNavigate:
+  // The AppCacheHost instance is created with a dummy AppCacheFrontend
+  // pointer when the navigation starts. We need to switch it to the
+  // actual frontend when the navigation commits.
+  void set_frontend(AppCacheFrontend* frontend) { frontend_ = frontend; }
+
   AppCache* associated_cache() const { return associated_cache_.get(); }
 
   void enable_cache_selection(bool enable) {

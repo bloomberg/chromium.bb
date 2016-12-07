@@ -19,6 +19,7 @@ class URLRequest;
 }
 
 namespace content {
+class AppCacheHost;
 class AppCacheRequestHandler;
 class AppCacheServiceImpl;
 class ResourceRequesterInfo;
@@ -34,6 +35,13 @@ class CONTENT_EXPORT AppCacheInterceptor : public net::URLRequestInterceptor {
                                   int host_id,
                                   ResourceType resource_type,
                                   bool should_reset_appcache);
+
+  // PlzNavigate
+  // Must be called to make a request eligible for retrieval from an appcache.
+  static void SetExtraRequestInfoForHost(net::URLRequest* request,
+                                         AppCacheHost* host,
+                                         ResourceType resource_type,
+                                         bool should_reset_appcache);
 
   // May be called after response headers are complete to retrieve extra
   // info about the response.

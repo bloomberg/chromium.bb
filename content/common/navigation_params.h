@@ -325,6 +325,10 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // it will always be equal to kInvalidServiceWorkerProviderId.
   int service_worker_provider_id;
 
+  // PlzNavigate
+  // The AppCache host id to be used to identify this navigation.
+  int appcache_host_id;
+
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for
   // implementing LoadDataWithBaseUrl API method to circumvent the restriction

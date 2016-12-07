@@ -1093,7 +1093,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
       std::unique_ptr<NavigationURLLoader> test_loader =
           NavigationURLLoader::Create(browser_context_.get(),
                                       std::move(request_info), nullptr, nullptr,
-                                      &delegate);
+                                      nullptr, &delegate);
 
       // The navigation should fail with the expected error code.
       delegate.WaitForRequestFailed();
@@ -2649,7 +2649,7 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
                                   -1, false, false));
     std::unique_ptr<NavigationURLLoader> loader = NavigationURLLoader::Create(
         browser_context_.get(), std::move(request_info), nullptr, nullptr,
-        &delegate);
+        nullptr, &delegate);
 
     // Wait until a response has been received and proceed with the response.
     KickOffRequest();

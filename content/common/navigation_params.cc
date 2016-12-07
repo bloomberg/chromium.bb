@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/appcache_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
@@ -134,7 +135,8 @@ RequestNavigationParams::RequestNavigationParams()
       is_view_source(false),
       should_clear_history_list(false),
       should_create_service_worker(false),
-      service_worker_provider_id(kInvalidServiceWorkerProviderId) {}
+      service_worker_provider_id(kInvalidServiceWorkerProviderId),
+      appcache_host_id(kAppCacheNoHostId) {}
 
 RequestNavigationParams::RequestNavigationParams(
     bool is_overriding_user_agent,
@@ -168,7 +170,8 @@ RequestNavigationParams::RequestNavigationParams(
       is_view_source(is_view_source),
       should_clear_history_list(should_clear_history_list),
       should_create_service_worker(false),
-      service_worker_provider_id(kInvalidServiceWorkerProviderId) {}
+      service_worker_provider_id(kInvalidServiceWorkerProviderId),
+      appcache_host_id(kAppCacheNoHostId) {}
 
 RequestNavigationParams::RequestNavigationParams(
     const RequestNavigationParams& other) = default;

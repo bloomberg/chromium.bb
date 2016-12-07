@@ -62,7 +62,6 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
   void StartUpdateCallback(bool result, void* param);
   void SwapCacheCallback(bool result, void* param);
 
-
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   AppCacheFrontendProxy frontend_proxy_;
   AppCacheBackendImpl backend_impl_;

@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/appcache/appcache_navigation_handle.h"
+#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/navigation_url_loader_impl_core.h"
@@ -27,6 +29,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     std::unique_ptr<NavigationRequestInfo> request_info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     ServiceWorkerNavigationHandle* service_worker_handle,
+    AppCacheNavigationHandle* appcache_handle,
     NavigationURLLoaderDelegate* delegate)
     : delegate_(delegate), weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -43,11 +46,14 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       "FrameTreeNode id", request_info->frame_tree_node_id);
   ServiceWorkerNavigationHandleCore* service_worker_handle_core =
       service_worker_handle ? service_worker_handle->core() : nullptr;
+  AppCacheNavigationHandleCore* appcache_handle_core =
+      appcache_handle ? appcache_handle->core() : nullptr;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NavigationURLLoaderImplCore::Start, base::Unretained(core_),
                  browser_context->GetResourceContext(),
-                 service_worker_handle_core, base::Passed(&request_info),
+                 service_worker_handle_core, appcache_handle_core,
+                 base::Passed(&request_info),
                  base::Passed(&navigation_ui_data)));
 }
 

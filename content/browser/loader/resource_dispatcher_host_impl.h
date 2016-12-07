@@ -54,6 +54,7 @@ class ShareableFileReference;
 }
 
 namespace content {
+class AppCacheNavigationHandleCore;
 class AppCacheService;
 class AsyncRevalidationManager;
 class LoaderDelegate;
@@ -277,7 +278,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const NavigationRequestInfo& info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       NavigationURLLoaderImplCore* loader,
-      ServiceWorkerNavigationHandleCore* service_worker_handle_core);
+      ServiceWorkerNavigationHandleCore* service_worker_handle_core,
+      AppCacheNavigationHandleCore* appcache_handle_core);
 
   int num_in_flight_requests_for_testing() const {
     return num_in_flight_requests_;

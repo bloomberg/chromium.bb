@@ -18,6 +18,7 @@
 #include "content/child/shared_worker_devtools_agent.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
+#include "content/public/common/appcache_info.h"
 #include "content/public/common/origin_util.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
@@ -40,10 +41,10 @@ class SharedWorkerWebApplicationCacheHostImpl
  public:
   SharedWorkerWebApplicationCacheHostImpl(
       blink::WebApplicationCacheHostClient* client)
-      : WebApplicationCacheHostImpl(client,
-                                    RenderThreadImpl::current()
-                                        ->appcache_dispatcher()
-                                        ->backend_proxy()) {}
+      : WebApplicationCacheHostImpl(
+            client,
+            RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy(),
+            kAppCacheNoHostId) {}
 
   // Main resource loading is different for workers. The main resource is
   // loaded by the worker using WorkerScriptLoader.

@@ -117,7 +117,7 @@ class NavigationURLLoaderTest : public testing::Test {
 
     return NavigationURLLoader::Create(browser_context_.get(),
                                        std::move(request_info), nullptr,
-                                       nullptr, delegate);
+                                       nullptr, nullptr, delegate);
   }
 
   // Helper function for fetching the body of a URL to a string.

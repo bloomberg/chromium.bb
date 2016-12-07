@@ -42,6 +42,7 @@ NavigationURLLoaderImplCore::~NavigationURLLoaderImplCore() {
 void NavigationURLLoaderImplCore::Start(
     ResourceContext* resource_context,
     ServiceWorkerNavigationHandleCore* service_worker_handle_core,
+    AppCacheNavigationHandleCore* appcache_handle_core,
     std::unique_ptr<NavigationRequestInfo> request_info,
     std::unique_ptr<NavigationUIData> navigation_ui_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -55,7 +56,7 @@ void NavigationURLLoaderImplCore::Start(
   if (ResourceDispatcherHostImpl::Get()) {
     ResourceDispatcherHostImpl::Get()->BeginNavigationRequest(
         resource_context, *request_info, std::move(navigation_ui_data), this,
-        service_worker_handle_core);
+        service_worker_handle_core, appcache_handle_core);
   }
 }
 

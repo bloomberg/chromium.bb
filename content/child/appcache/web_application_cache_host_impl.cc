@@ -10,6 +10,7 @@
 #include "base/id_map.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -57,16 +58,25 @@ WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
 
 WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
     WebApplicationCacheHostClient* client,
-    AppCacheBackend* backend)
+    AppCacheBackend* backend,
+    int appcache_host_id)
     : client_(client),
       backend_(backend),
-      host_id_(all_hosts()->Add(this)),
       status_(APPCACHE_STATUS_UNCACHED),
       is_scheme_supported_(false),
       is_get_method_(false),
       is_new_master_entry_(MAYBE),
       was_select_cache_called_(false) {
-  DCHECK(client && backend && (host_id_ != kAppCacheNoHostId));
+  DCHECK(client && backend);
+  // PlzNavigate: The browser passes the ID to be used.
+  if (appcache_host_id != kAppCacheNoHostId) {
+    DCHECK(IsBrowserSideNavigationEnabled());
+    all_hosts()->AddWithID(this, appcache_host_id);
+    host_id_ = appcache_host_id;
+  } else {
+    host_id_ = all_hosts()->Add(this);
+  }
+  DCHECK(host_id_ != kAppCacheNoHostId);
 
   backend_->RegisterHost(host_id_);
 }

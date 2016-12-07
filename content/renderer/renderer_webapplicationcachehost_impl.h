@@ -15,7 +15,8 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
   RendererWebApplicationCacheHostImpl(
       RenderViewImpl* render_view,
       blink::WebApplicationCacheHostClient* client,
-      AppCacheBackend* backend);
+      AppCacheBackend* backend,
+      int appcache_host_id);
 
   // WebApplicationCacheHostImpl:
   void OnLogMessage(AppCacheLogLevel log_level,

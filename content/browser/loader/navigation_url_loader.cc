@@ -20,6 +20,7 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     std::unique_ptr<NavigationRequestInfo> request_info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     ServiceWorkerNavigationHandle* service_worker_handle,
+    AppCacheNavigationHandle* appcache_handle,
     NavigationURLLoaderDelegate* delegate) {
   if (g_factory) {
     return g_factory->CreateLoader(browser_context, std::move(request_info),
@@ -28,7 +29,7 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
   }
   return std::unique_ptr<NavigationURLLoader>(new NavigationURLLoaderImpl(
       browser_context, std::move(request_info), std::move(navigation_ui_data),
-      service_worker_handle, delegate));
+      service_worker_handle, appcache_handle, delegate));
 }
 
 void NavigationURLLoader::SetFactoryForTesting(

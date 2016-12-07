@@ -4,12 +4,15 @@
 
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 
+#include <map>
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/bad_message.h"
 #include "content/common/appcache_messages.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 
 namespace content {
 
@@ -24,19 +27,17 @@ AppCacheDispatcherHost::AppCacheDispatcherHost(
 }
 
 void AppCacheDispatcherHost::OnChannelConnected(int32_t peer_pid) {
-  if (appcache_service_.get()) {
-    backend_impl_.Initialize(
-        appcache_service_.get(), &frontend_proxy_, process_id_);
-    get_status_callback_ =
-        base::Bind(&AppCacheDispatcherHost::GetStatusCallback,
-                    weak_factory_.GetWeakPtr());
-    start_update_callback_ =
-        base::Bind(&AppCacheDispatcherHost::StartUpdateCallback,
-                    weak_factory_.GetWeakPtr());
-    swap_cache_callback_ =
-        base::Bind(&AppCacheDispatcherHost::SwapCacheCallback,
-                    weak_factory_.GetWeakPtr());
-  }
+  if (!appcache_service_.get())
+    return;
+
+  backend_impl_.Initialize(appcache_service_.get(), &frontend_proxy_,
+                           process_id_);
+  get_status_callback_ = base::Bind(&AppCacheDispatcherHost::GetStatusCallback,
+                                    weak_factory_.GetWeakPtr());
+  start_update_callback_ = base::Bind(
+      &AppCacheDispatcherHost::StartUpdateCallback, weak_factory_.GetWeakPtr());
+  swap_cache_callback_ = base::Bind(&AppCacheDispatcherHost::SwapCacheCallback,
+                                    weak_factory_.GetWeakPtr());
 }
 
 bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message) {
@@ -62,10 +63,22 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-AppCacheDispatcherHost::~AppCacheDispatcherHost() {}
+AppCacheDispatcherHost::~AppCacheDispatcherHost() {
+}
 
 void AppCacheDispatcherHost::OnRegisterHost(int host_id) {
   if (appcache_service_.get()) {
+    // PlzNavigate
+    // The AppCacheHost could have been precreated in which case we want to
+    // register it with the backend here.
+    if (IsBrowserSideNavigationEnabled()) {
+      std::unique_ptr<AppCacheHost> host =
+          AppCacheNavigationHandleCore::GetPrecreatedHost(host_id);
+      if (host.get()) {
+        backend_impl_.RegisterPrecreatedHost(std::move(host));
+        return;
+      }
+    }
     if (!backend_impl_.RegisterHost(host_id)) {
       bad_message::ReceivedBadMessage(this, bad_message::ACDH_REGISTER);
     }
@@ -94,8 +107,7 @@ void AppCacheDispatcherHost::OnSelectCache(
     int64_t cache_document_was_loaded_from,
     const GURL& opt_manifest_url) {
   if (appcache_service_.get()) {
-    if (!backend_impl_.SelectCache(host_id,
-                                   document_url,
+    if (!backend_impl_.SelectCache(host_id, document_url,
                                    cache_document_was_loaded_from,
                                    opt_manifest_url)) {
       bad_message::ReceivedBadMessage(this, bad_message::ACDH_SELECT_CACHE);
@@ -108,8 +120,8 @@ void AppCacheDispatcherHost::OnSelectCache(
 void AppCacheDispatcherHost::OnSelectCacheForWorker(
     int host_id, int parent_process_id, int parent_host_id) {
   if (appcache_service_.get()) {
-    if (!backend_impl_.SelectCacheForWorker(
-            host_id, parent_process_id, parent_host_id)) {
+    if (!backend_impl_.SelectCacheForWorker(host_id, parent_process_id,
+                                            parent_host_id)) {
       bad_message::ReceivedBadMessage(
           this, bad_message::ACDH_SELECT_CACHE_FOR_WORKER);
     }
@@ -134,8 +146,8 @@ void AppCacheDispatcherHost::OnMarkAsForeignEntry(
     const GURL& document_url,
     int64_t cache_document_was_loaded_from) {
   if (appcache_service_.get()) {
-    if (!backend_impl_.MarkAsForeignEntry(
-            host_id, document_url, cache_document_was_loaded_from)) {
+    if (!backend_impl_.MarkAsForeignEntry(host_id, document_url,
+                                          cache_document_was_loaded_from)) {
       bad_message::ReceivedBadMessage(this,
                                       bad_message::ACDH_MARK_AS_FOREIGN_ENTRY);
     }
@@ -158,8 +170,8 @@ void AppCacheDispatcherHost::OnGetStatus(int host_id, IPC::Message* reply_msg) {
 
   pending_reply_msg_.reset(reply_msg);
   if (appcache_service_.get()) {
-    if (!backend_impl_.GetStatusWithCallback(
-            host_id, get_status_callback_, reply_msg)) {
+    if (!backend_impl_.GetStatusWithCallback(host_id, get_status_callback_,
+                                             reply_msg)) {
       bad_message::ReceivedBadMessage(this, bad_message::ACDH_GET_STATUS);
     }
     return;
@@ -179,8 +191,8 @@ void AppCacheDispatcherHost::OnStartUpdate(int host_id,
 
   pending_reply_msg_.reset(reply_msg);
   if (appcache_service_.get()) {
-    if (!backend_impl_.StartUpdateWithCallback(
-            host_id, start_update_callback_, reply_msg)) {
+    if (!backend_impl_.StartUpdateWithCallback(host_id, start_update_callback_,
+                                               reply_msg)) {
       bad_message::ReceivedBadMessage(this, bad_message::ACDH_START_UPDATE);
     }
     return;
@@ -199,8 +211,8 @@ void AppCacheDispatcherHost::OnSwapCache(int host_id, IPC::Message* reply_msg) {
 
   pending_reply_msg_.reset(reply_msg);
   if (appcache_service_.get()) {
-    if (!backend_impl_.SwapCacheWithCallback(
-            host_id, swap_cache_callback_, reply_msg)) {
+    if (!backend_impl_.SwapCacheWithCallback(host_id, swap_cache_callback_,
+                                             reply_msg)) {
       bad_message::ReceivedBadMessage(this, bad_message::ACDH_SWAP_CACHE);
     }
     return;

@@ -18,8 +18,9 @@ namespace content {
 RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
     RenderViewImpl* render_view,
     WebApplicationCacheHostClient* client,
-    AppCacheBackend* backend)
-    : WebApplicationCacheHostImpl(client, backend),
+    AppCacheBackend* backend,
+    int appcache_host_id)
+    : WebApplicationCacheHostImpl(client, backend, appcache_host_id),
       routing_id_(render_view->GetRoutingID()) {}
 
 void RendererWebApplicationCacheHostImpl::OnLogMessage(

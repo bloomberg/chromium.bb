@@ -67,6 +67,7 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/appcache_info.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -2891,9 +2892,19 @@ blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
     blink::WebApplicationCacheHostClient* client) {
   if (!frame_ || !frame_->view())
     return NULL;
+
+  DocumentState* document_state =
+      frame_->provisionalDataSource()
+          ? DocumentState::FromDataSource(frame_->provisionalDataSource())
+          : DocumentState::FromDataSource(frame_->dataSource());
+
+  NavigationStateImpl* navigation_state =
+      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+
   return new RendererWebApplicationCacheHostImpl(
       RenderViewImpl::FromWebView(frame_->view()), client,
-      RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy());
+      RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy(),
+      navigation_state->request_params().appcache_host_id);
 }
 
 blink::WebWorkerContentSettingsClientProxy*
@@ -5041,6 +5052,7 @@ void RenderFrameImpl::OnCommitNavigation(
 
   NavigateInternal(common_params, StartNavigationParams(), request_params,
                    std::move(stream_override));
+
   browser_side_navigation_pending_ = false;
 }
 
