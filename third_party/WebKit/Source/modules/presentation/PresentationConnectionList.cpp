@@ -13,14 +13,10 @@ namespace blink {
 
 PresentationConnectionList::PresentationConnectionList(
     ExecutionContext* context)
-    : ContextLifecycleObserver(context) {}
+    : m_executionContext(context) {}
 
 const AtomicString& PresentationConnectionList::interfaceName() const {
   return EventTargetNames::PresentationConnectionList;
-}
-
-ExecutionContext* PresentationConnectionList::getExecutionContext() const {
-  return ContextLifecycleObserver::getExecutionContext();
 }
 
 const HeapVector<Member<PresentationConnection>>&
@@ -55,7 +51,7 @@ bool PresentationConnectionList::isEmpty() {
 
 DEFINE_TRACE(PresentationConnectionList) {
   visitor->trace(m_connections);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->trace(m_executionContext);
   EventTargetWithInlineData::trace(visitor);
 }
 

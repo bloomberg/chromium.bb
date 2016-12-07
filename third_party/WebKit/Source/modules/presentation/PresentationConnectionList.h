@@ -5,7 +5,6 @@
 #ifndef PresentationConnectionList_h
 #define PresentationConnectionList_h
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "modules/presentation/PresentationConnection.h"
@@ -18,9 +17,7 @@ namespace blink {
 // from which represents set of presentation connections in the set of
 // presentation controllers.
 class MODULES_EXPORT PresentationConnectionList final
-    : public EventTargetWithInlineData,
-      public ContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(PresentationConnectionList);
+    : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -29,7 +26,9 @@ class MODULES_EXPORT PresentationConnectionList final
 
   // EventTarget implementation.
   const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  ExecutionContext* getExecutionContext() const override {
+    return m_executionContext;
+  }
 
   // PresentationConnectionList.idl implementation.
   const HeapVector<Member<PresentationConnection>>& connections() const;
@@ -50,6 +49,7 @@ class MODULES_EXPORT PresentationConnectionList final
   friend class PresentationReceiverTest;
 
   HeapVector<Member<PresentationConnection>> m_connections;
+  Member<ExecutionContext> m_executionContext;
 };
 
 }  // namespace blink
