@@ -110,11 +110,7 @@ class MicrodumpInfo {
   MicrodumpInfo()
       : microdump_build_fingerprint_(nullptr),
         microdump_product_info_(nullptr),
-        microdump_gpu_fingerprint_(nullptr),
-        microdump_process_type_(nullptr),
-        interest_range_start_(0ul),
-        interest_range_end_(0ul),
-        suppress_microdump_based_on_interest_range_(false) {}
+        microdump_gpu_fingerprint_(nullptr) {}
 
   // The order in which SetGpuFingerprint and Initialize are called
   // may be dependent on the timing of the availability of GPU
@@ -130,7 +126,6 @@ class MicrodumpInfo {
   // which a microdump is generated, then the GPU fingerprint will be
   // UNKNOWN.
   void SetGpuFingerprint(const std::string& gpu_fingerprint);
-  void SetMicrodumpInterestRange(uintptr_t start, uintptr_t end);
   void Initialize(const std::string& process_type,
                   const char* product_name,
                   const char* product_version,
@@ -142,9 +137,6 @@ class MicrodumpInfo {
   const char* microdump_product_info_;
   const char* microdump_gpu_fingerprint_;
   const char* microdump_process_type_;
-  uintptr_t interest_range_start_;
-  uintptr_t interest_range_end_;
-  bool suppress_microdump_based_on_interest_range_;
 };
 
 base::LazyInstance<MicrodumpInfo> g_microdump_info =
@@ -880,22 +872,6 @@ void MicrodumpInfo::SetGpuFingerprint(const std::string& gpu_fingerprint) {
   }
 }
 
-void MicrodumpInfo::SetMicrodumpInterestRange(uintptr_t start, uintptr_t end) {
-  interest_range_start_ = start;
-  interest_range_end_ = end;
-  suppress_microdump_based_on_interest_range_ = true;
-
-  if (g_microdump) {
-    MinidumpDescriptor descriptor(g_microdump->minidump_descriptor());
-    google_breakpad::MicrodumpExtraInfo* microdump_extra_info =
-        descriptor.microdump_extra_info();
-    microdump_extra_info->interest_range_start = interest_range_start_;
-    microdump_extra_info->interest_range_end = interest_range_end_;
-    microdump_extra_info->suppress_microdump_based_on_interest_range = true;
-    g_microdump->set_minidump_descriptor(descriptor);
-  }
-}
-
 void MicrodumpInfo::Initialize(const std::string& process_type,
                                const char* product_name,
                                const char* product_version,
@@ -910,35 +886,30 @@ void MicrodumpInfo::Initialize(const std::string& process_type,
                             process_type == kBrowserProcessType;
 
   MinidumpDescriptor descriptor(MinidumpDescriptor::kMicrodumpOnConsole);
-  google_breakpad::MicrodumpExtraInfo* microdump_extra_info =
-      descriptor.microdump_extra_info();
 
   if (product_name && product_version) {
     microdump_product_info_ =
         strdup((product_name + std::string(":") + product_version).c_str());
     ANNOTATE_LEAKING_OBJECT_PTR(microdump_product_info_);
-    microdump_extra_info->product_info = microdump_product_info_;
+    descriptor.microdump_extra_info()->product_info = microdump_product_info_;
   }
 
   microdump_process_type_ =
       strdup(process_type.empty() ? kBrowserProcessType : process_type.c_str());
   ANNOTATE_LEAKING_OBJECT_PTR(microdump_process_type_);
-  microdump_extra_info->process_type = microdump_process_type_;
+  descriptor.microdump_extra_info()->process_type = microdump_process_type_;
 
   if (android_build_fp) {
     microdump_build_fingerprint_ = strdup(android_build_fp);
     ANNOTATE_LEAKING_OBJECT_PTR(microdump_build_fingerprint_);
-    microdump_extra_info->build_fingerprint = microdump_build_fingerprint_;
+    descriptor.microdump_extra_info()->build_fingerprint =
+        microdump_build_fingerprint_;
   }
 
   if (microdump_gpu_fingerprint_) {
-    microdump_extra_info->gpu_fingerprint = microdump_gpu_fingerprint_;
+    descriptor.microdump_extra_info()->gpu_fingerprint =
+        microdump_gpu_fingerprint_;
   }
-
-  microdump_extra_info->interest_range_start = interest_range_start_;
-  microdump_extra_info->interest_range_end = interest_range_end_;
-  microdump_extra_info->suppress_microdump_based_on_interest_range =
-      suppress_microdump_based_on_interest_range_;
 
   g_microdump =
       new ExceptionHandler(descriptor, nullptr, MicrodumpCrashDone,
@@ -1962,10 +1933,6 @@ void InitMicrodumpCrashHandlerIfNecessary(const std::string& process_type) {
 void AddGpuFingerprintToMicrodumpCrashHandler(
     const std::string& gpu_fingerprint) {
   g_microdump_info.Get().SetGpuFingerprint(gpu_fingerprint);
-}
-
-void SetNativeCodeTextAddrRange(uintptr_t start, uintptr_t end) {
-  g_microdump_info.Get().SetMicrodumpInterestRange(start, end);
 }
 #endif  // OS_ANDROID
 

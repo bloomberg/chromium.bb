@@ -46,15 +46,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
-// These declarations just provide the addresses determined by the
-// linker to this source file in order to determine the extent of the
-// webview text section. The declared types are irrelevant - only the
-// symbol names and the addresses they reference are important.
-extern "C" {
-extern char __executable_start;
-extern char __etext;
-}
-
 namespace android_webview {
 
 namespace {
@@ -218,11 +209,7 @@ int AwMainDelegate::RunProcess(
     // crash handler on the same thread as the crash handler was initialized.
     crash_reporter::AddGpuFingerprintToMicrodumpCrashHandler(
         content_client_.gpu_fingerprint());
-#if !defined(COMPONENT_BUILD)
-    crash_reporter::SetWebViewTextAddrRange(
-        reinterpret_cast<uintptr_t>(&__executable_start),
-        reinterpret_cast<uintptr_t>(&__etext));
-#endif
+
     g_allow_wait_in_ui_thread.Get().reset(
         new ScopedAllowWaitForLegacyWebViewApi);
 
