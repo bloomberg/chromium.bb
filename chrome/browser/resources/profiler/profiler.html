@@ -106,12 +106,22 @@ table.results-table,
 </style>
 </head>
 <body>
-  <b>Save:</b><button id=save-snapshots-button>Save</button>
-  <b>Restore:</b> <input type=file id=snapshot-file-loader>
-  <span id=file-load-error hidden class=errormsg></span>
-
+  <table width=100%>
+    <tr>
+      <td>
+        <b>Save:</b><button id=save-snapshots-button>Save</button>
+        <b>Restore:</b> <input type=file id=snapshot-file-loader>
+        <span id=file-load-error hidden class=errormsg></span>
+      </td>
+      <td align=right>
+        <a target="_blank"
+          href="https://sites.google.com/a/chromium.org/dev/developers/threaded-task-tracking">
+          Profiler Documentation
+        </a>
+      </td>
+    </tr>
+  </table>
   <hr>
-
   <table width=100%>
     <tr>
       <td>
