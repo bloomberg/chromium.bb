@@ -1266,6 +1266,7 @@ test("browser_tests") {
       "//ui/file_manager/integration_tests/",
       "//third_party/analytics/",
       "//third_party/polymer/v1_0/components-chromium/polymer/",
+      "$root_gen_dir/ui/login/login_resources.pak",
       "$root_out_dir/chromevox_test_data/",
       "$root_out_dir/content_shell.pak",
       "$root_out_dir/locales/",
@@ -2233,11 +2234,9 @@ test("browser_tests") {
         "../browser/chromeos/login/mixin_based_browser_test.cc",
         "../browser/chromeos/login/mixin_based_browser_test.h",
         "../browser/chromeos/login/oobe_localization_browsertest.cc",
-
-        # TODO(nkostylev) Re-enable ResourceLoaderBrowserTest.
-        #"browser/chromeos/login/resource_loader_browsertest.cc",
         "../browser/chromeos/login/proxy_auth_dialog_browsertest.cc",
         "../browser/chromeos/login/reset_browsertest.cc",
+        "../browser/chromeos/login/resource_loader_browsertest.cc",
         "../browser/chromeos/login/saml/saml_browsertest.cc",
         "../browser/chromeos/login/screens/hid_detection_screen_browsertest.cc",
         "../browser/chromeos/login/screens/mock_base_screen_delegate.cc",

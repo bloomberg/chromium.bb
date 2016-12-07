@@ -4,19 +4,22 @@
 
 #include <string>
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/path_service.h"
+#include "base/strings/string_piece.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_details.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/scale_factor.h"
 #include "ui/login/grit/login_resources.h"
 #include "url/gurl.h"
 
@@ -35,14 +38,21 @@ class ResourceLoaderBrowserTest : public InProcessBrowserTest {
   ResourceLoaderBrowserTest() {}
 
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Needed to load file:// URLs in XHRs.
-    command_line->AppendSwitch(switches::kDisableWebSecurity);
-  }
-
   void SetUpOnMainThread() override {
+    // Load the data pack containing resource_loader.js.
+    base::FilePath resources_pack_path;
+    ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &resources_pack_path));
+    resources_pack_path =
+        resources_pack_path.AppendASCII("gen/ui/login/login_resources.pak");
+    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+        resources_pack_path, ui::SCALE_FACTOR_NONE);
+    const base::StringPiece resource_loader_js =
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_OOBE_RESOURCE_LOADER_JS);
+    EXPECT_FALSE(resource_loader_js.empty());
+
     // Create the root page containing resource_loader.js.
-    std::string root_page =
+    const std::string root_page =
         "<html>"
         "<head>"
         "<script>"
@@ -52,10 +62,8 @@ class ResourceLoaderBrowserTest : public InProcessBrowserTest {
         "  };"
         "  $ = document.getElementById.bind(document);"
         "</script>"
-        "<script>";
-    ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_OOBE_RESOURCE_LOADER_JS).AppendToString(&root_page);
-    root_page +=
+        "<script>" +
+        resource_loader_js.as_string() +
         "</script>"
         "</head>"
         "<body>"
