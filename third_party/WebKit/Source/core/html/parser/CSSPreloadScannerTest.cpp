@@ -19,49 +19,62 @@
 
 namespace blink {
 
-class PreloadSuppressingCSSPreloaderResourceClient final
+namespace {
+
+class MockHTMLResourcePreloader : public HTMLResourcePreloader {
+  WTF_MAKE_NONCOPYABLE(MockHTMLResourcePreloader);
+
+ public:
+  MockHTMLResourcePreloader(Document& document)
+      : HTMLResourcePreloader(document) {}
+
+  void preload(std::unique_ptr<PreloadRequest> preloadRequest,
+               const NetworkHintsInterface&) override {}
+};
+
+class PreloadRecordingCSSPreloaderResourceClient final
     : public CSSPreloaderResourceClient {
  public:
-  PreloadSuppressingCSSPreloaderResourceClient(Resource* resource,
-                                               HTMLResourcePreloader* preloader)
+  PreloadRecordingCSSPreloaderResourceClient(Resource* resource,
+                                             HTMLResourcePreloader* preloader)
       : CSSPreloaderResourceClient(resource, preloader) {}
+
   void fetchPreloads(PreloadRequestStream& preloads) override {
-    PreloadRequestStream movedPreloads;
-    movedPreloads.swap(preloads);
-    for (PreloadRequestStream::iterator it = movedPreloads.begin();
-         it != movedPreloads.end(); ++it) {
-      m_preloads.append(std::move(*it));
-    }
+    for (const auto& it : preloads)
+      m_preloadUrls.append(it->resourceURL());
+    CSSPreloaderResourceClient::fetchPreloads(preloads);
   }
 
-  PreloadRequestStream m_preloads;
+  Vector<String> m_preloadUrls;
 };
 
 class CSSPreloadScannerTest : public ::testing::Test {};
+
+}  // namespace
 
 TEST_F(CSSPreloadScannerTest, ScanFromResourceClient) {
   std::unique_ptr<DummyPageHolder> dummyPageHolder =
       DummyPageHolder::create(IntSize(500, 500));
   dummyPageHolder->document().settings()->setCSSExternalScannerNoPreload(true);
 
-  HTMLResourcePreloader* preloader =
-      HTMLResourcePreloader::create(dummyPageHolder->document());
+  MockHTMLResourcePreloader* preloader =
+      new MockHTMLResourcePreloader(dummyPageHolder->document());
 
   KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
   CSSStyleSheetResource* resource =
       CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
   resource->setStatus(Resource::Pending);
 
-  PreloadSuppressingCSSPreloaderResourceClient* resourceClient =
-      new PreloadSuppressingCSSPreloaderResourceClient(resource, preloader);
+  PreloadRecordingCSSPreloaderResourceClient* resourceClient =
+      new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
 
   const char* data = "@import url('http://127.0.0.1/preload.css');";
   resource->appendData(data, strlen(data));
 
   EXPECT_EQ(Resource::PreloadNotReferenced, resource->getPreloadResult());
-  EXPECT_EQ(1u, resourceClient->m_preloads.size());
+  EXPECT_EQ(1u, resourceClient->m_preloadUrls.size());
   EXPECT_EQ("http://127.0.0.1/preload.css",
-            resourceClient->m_preloads.front()->resourceURL());
+            resourceClient->m_preloadUrls.front());
 }
 
 // Regression test for crbug.com/608310 where the client is destroyed but was
@@ -71,15 +84,15 @@ TEST_F(CSSPreloadScannerTest, DestroyClientBeforeDataSent) {
       DummyPageHolder::create(IntSize(500, 500));
   dummyPageHolder->document().settings()->setCSSExternalScannerNoPreload(true);
 
-  Persistent<HTMLResourcePreloader> preloader =
-      HTMLResourcePreloader::create(dummyPageHolder->document());
+  Persistent<MockHTMLResourcePreloader> preloader =
+      new MockHTMLResourcePreloader(dummyPageHolder->document());
 
   KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
   Persistent<CSSStyleSheetResource> resource =
       CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
   resource->setStatus(Resource::Pending);
 
-  new PreloadSuppressingCSSPreloaderResourceClient(resource, preloader);
+  new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
 
   // Destroys the resourceClient.
   ThreadState::current()->collectAllGarbage();
@@ -96,8 +109,8 @@ TEST_F(CSSPreloadScannerTest, DontReadFromClearedData) {
       DummyPageHolder::create(IntSize(500, 500));
   dummyPageHolder->document().settings()->setCSSExternalScannerNoPreload(true);
 
-  HTMLResourcePreloader* preloader =
-      HTMLResourcePreloader::create(dummyPageHolder->document());
+  MockHTMLResourcePreloader* preloader =
+      new MockHTMLResourcePreloader(dummyPageHolder->document());
 
   KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
   CSSStyleSheetResource* resource =
@@ -109,10 +122,10 @@ TEST_F(CSSPreloadScannerTest, DontReadFromClearedData) {
   resource->error(error);
 
   // Should not crash.
-  PreloadSuppressingCSSPreloaderResourceClient* resourceClient =
-      new PreloadSuppressingCSSPreloaderResourceClient(resource, preloader);
+  PreloadRecordingCSSPreloaderResourceClient* resourceClient =
+      new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
 
-  EXPECT_EQ(0u, resourceClient->m_preloads.size());
+  EXPECT_EQ(0u, resourceClient->m_preloadUrls.size());
 }
 
 // Regression test for crbug.com/645331, where a resource client gets callbacks
@@ -122,25 +135,25 @@ TEST_F(CSSPreloadScannerTest, DoNotExpectValidDocument) {
       DummyPageHolder::create(IntSize(500, 500));
   dummyPageHolder->document().settings()->setCSSExternalScannerNoPreload(true);
 
-  HTMLResourcePreloader* preloader =
-      HTMLResourcePreloader::create(dummyPageHolder->document());
+  MockHTMLResourcePreloader* preloader =
+      new MockHTMLResourcePreloader(dummyPageHolder->document());
 
   KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
   CSSStyleSheetResource* resource =
       CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
   resource->setStatus(Resource::Pending);
 
-  PreloadSuppressingCSSPreloaderResourceClient* resourceClient =
-      new PreloadSuppressingCSSPreloaderResourceClient(resource, preloader);
+  PreloadRecordingCSSPreloaderResourceClient* resourceClient =
+      new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
 
   dummyPageHolder->document().shutdown();
 
   const char* data = "@import url('http://127.0.0.1/preload.css');";
   resource->appendData(data, strlen(data));
 
-  EXPECT_EQ(1u, resourceClient->m_preloads.size());
-  EXPECT_EQ("http://127.0.0.1/preload.css",
-            resourceClient->m_preloads.front()->resourceURL());
+  // Do not expect to gather any preloads, as the document loader is invalid,
+  // which means we can't notify WebLoadingBehaviorData of the preloads.
+  EXPECT_EQ(0u, resourceClient->m_preloadUrls.size());
 }
 
 }  // namespace blink

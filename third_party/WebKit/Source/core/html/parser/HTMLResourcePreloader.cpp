@@ -38,7 +38,7 @@
 
 namespace blink {
 
-inline HTMLResourcePreloader::HTMLResourcePreloader(Document& document)
+HTMLResourcePreloader::HTMLResourcePreloader(Document& document)
     : m_document(document) {}
 
 HTMLResourcePreloader* HTMLResourcePreloader::create(Document& document) {

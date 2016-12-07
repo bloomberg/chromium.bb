@@ -282,6 +282,12 @@ void CSSPreloaderResourceClient::didAppendFirstData(
 void CSSPreloaderResourceClient::scanCSS(
     const CSSStyleSheetResource* resource) {
   DCHECK(m_preloader);
+
+  // Early abort if there is no document loader. Do this early to ensure that
+  // scan histograms and preload histograms do not count different quantities.
+  if (!m_preloader->document()->loader())
+    return;
+
   // Passing an empty SegmentedString here results in PreloadRequest with no
   // file/line information.
   // TODO(csharrison): If this becomes an issue the CSSPreloadScanner may be
