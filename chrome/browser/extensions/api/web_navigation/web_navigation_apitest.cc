@@ -37,7 +37,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
@@ -94,7 +93,7 @@ class TestNavigationListener
     WeakThrottleList::const_iterator it;
     for (it = throttles_.begin(); it != throttles_.end(); ++it) {
       if (it->get())
-        (*it)->Resume();
+        (*it)->ResumeHandler();
     }
     throttles_.clear();
   }
@@ -110,7 +109,7 @@ class TestNavigationListener
     WeakThrottleList::iterator it;
     for (it = throttles_.begin(); it != throttles_.end(); ++it) {
       if (it->get() && it->get()->url() == url) {
-        (*it)->Resume();
+        (*it)->ResumeHandler();
         throttles_.erase(it);
         break;
       }
@@ -141,9 +140,7 @@ class TestNavigationListener
   class Throttle : public content::ResourceThrottle,
                    public base::SupportsWeakPtr<Throttle> {
    public:
-    void Resume() {
-      controller()->Resume();
-    }
+    void ResumeHandler() { Resume(); }
 
     // content::ResourceThrottle implementation.
     void WillStartRequest(bool* defer) override { *defer = true; }

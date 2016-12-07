@@ -46,15 +46,11 @@ class PrerenderResourceThrottle
 
   // Called by the PrerenderContents when a prerender becomes visible.
   // May only be called if currently throttling the resource.
-  void Resume();
+  void ResumeHandler();
 
   static void OverridePrerenderContentsForTesting(PrerenderContents* contents);
 
  private:
-  // Helper method to cancel the request. May only be called if currently
-  // throttling the resource.
-  void Cancel();
-
   static void WillStartRequestOnUI(
       const base::WeakPtr<PrerenderResourceThrottle>& throttle,
       const std::string& method,

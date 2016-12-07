@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/base/request_priority.h"
@@ -29,7 +28,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::ResourceController;
 using content::ResourceThrottle;
 
 namespace extensions {
@@ -40,16 +38,15 @@ const char kMatchingUrl[] = "http://google.com/";
 const char kNotMatchingUrl[] = "http://example.com/";
 const char kTestData[] = "Hello, World!";
 
-class ThrottleController : public base::SupportsUserData::Data,
-                           public ResourceController {
+class ThrottleDelegate : public base::SupportsUserData::Data,
+                         public ResourceThrottle::Delegate {
  public:
-  ThrottleController(net::URLRequest* request, ResourceThrottle* throttle)
-      : request_(request),
-        throttle_(throttle) {
-    throttle_->set_controller_for_testing(this);
+  ThrottleDelegate(net::URLRequest* request, ResourceThrottle* throttle)
+      : request_(request), throttle_(throttle) {
+    throttle_->set_delegate_for_testing(this);
   }
 
-  // ResourceController implementation:
+  // ResourceThrottle::Delegate implementation:
   void Resume() override { request_->Start(); }
   void Cancel() override { NOTREACHED(); }
   void CancelAndIgnore() override { NOTREACHED(); }
@@ -166,8 +163,8 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
 
     bool defer = false;
     if (throttle) {
-      request->SetUserData(NULL,
-                           new ThrottleController(request.get(), throttle));
+      request->SetUserData(nullptr,
+                           new ThrottleDelegate(request.get(), throttle));
 
       throttle->WillStartRequest(&defer);
     }
@@ -334,7 +331,7 @@ TEST_F(UserScriptListenerTest, ResumeBeforeStart) {
   ResourceThrottle* throttle =
       listener_->CreateResourceThrottle(url, content::RESOURCE_TYPE_MAIN_FRAME);
   ASSERT_TRUE(throttle);
-  request->SetUserData(NULL, new ThrottleController(request.get(), throttle));
+  request->SetUserData(nullptr, new ThrottleDelegate(request.get(), throttle));
 
   ASSERT_FALSE(request->is_pending());
 

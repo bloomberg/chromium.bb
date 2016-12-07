@@ -8,7 +8,6 @@
 #include "chrome/browser/chromeos/login/signin/merge_session_xhr_request_waiter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
@@ -77,5 +76,5 @@ const char* MergeSessionResourceThrottle::GetNameForLogging() const {
 
 void MergeSessionResourceThrottle::OnBlockingPageComplete() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  controller()->Resume();
+  Resume();
 }

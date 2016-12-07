@@ -18,7 +18,6 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/web_restrictions/browser/web_restrictions_resource_throttle.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
@@ -176,13 +175,13 @@ void IoThreadClientThrottle::OnIoThreadClientReady(int new_render_process_id,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!MaybeBlockRequest()) {
-    controller()->Resume();
+    Resume();
   }
 }
 
 bool IoThreadClientThrottle::MaybeBlockRequest() {
   if (ShouldBlockRequest()) {
-    controller()->CancelWithError(net::ERR_ACCESS_DENIED);
+    CancelWithError(net::ERR_ACCESS_DENIED);
     return true;
   }
   return false;

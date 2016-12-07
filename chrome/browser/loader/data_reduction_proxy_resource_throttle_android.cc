@@ -12,7 +12,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
@@ -81,7 +80,7 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
     return;
 
   if (request_->load_flags() & net::LOAD_PREFETCH) {
-    controller()->Cancel();
+    Cancel();
     return;
   }
   const content::ResourceRequestInfo* info =
@@ -147,7 +146,7 @@ void DataReductionProxyResourceThrottle::OnBlockingPageComplete(bool proceed) {
   if (proceed)
     ResumeRequest();
   else
-    controller()->Cancel();
+    Cancel();
 }
 
 SBThreatType DataReductionProxyResourceThrottle::CheckUrl() {
@@ -178,5 +177,5 @@ void DataReductionProxyResourceThrottle::ResumeRequest() {
 
   // Inject the header before resuming the request.
   request_->SetExtraRequestHeaderByName(kUnsafeUrlProceedHeader, "1", true);
-  controller()->Resume();
+  Resume();
 }

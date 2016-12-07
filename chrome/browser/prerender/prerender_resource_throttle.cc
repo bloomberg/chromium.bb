@@ -13,7 +13,6 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_response_headers.h"
@@ -140,12 +139,8 @@ const char* PrerenderResourceThrottle::GetNameForLogging() const {
   return "PrerenderResourceThrottle";
 }
 
-void PrerenderResourceThrottle::Resume() {
-  controller()->Resume();
-}
-
-void PrerenderResourceThrottle::Cancel() {
-  controller()->Cancel();
+void PrerenderResourceThrottle::ResumeHandler() {
+  Resume();
 }
 
 // static
@@ -194,7 +189,7 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(cancel ? &PrerenderResourceThrottle::Cancel
-                        : &PrerenderResourceThrottle::Resume,
+                        : &PrerenderResourceThrottle::ResumeHandler,
                  throttle));
 }
 
@@ -241,7 +236,7 @@ void PrerenderResourceThrottle::WillRedirectRequestOnUI(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(cancel ? &PrerenderResourceThrottle::Cancel
-                        : &PrerenderResourceThrottle::Resume,
+                        : &PrerenderResourceThrottle::ResumeHandler,
                  throttle));
 }
 

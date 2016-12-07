@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_controller.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/download_controller_base.h"
@@ -130,7 +129,7 @@ void DownloadResourceThrottle::WillDownload(bool* defer) {
   }
 
   if (!request_allowed_)
-    controller()->Cancel();
+    Cancel();
 }
 
 void DownloadResourceThrottle::ContinueDownload(bool allow) {
@@ -149,9 +148,9 @@ void DownloadResourceThrottle::ContinueDownload(bool allow) {
   if (request_deferred_) {
     request_deferred_ = false;
     if (allow) {
-      controller()->Resume();
+      Resume();
     } else {
-      controller()->Cancel();
+      Cancel();
     }
   }
 }

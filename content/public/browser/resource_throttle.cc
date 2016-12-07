@@ -10,4 +10,20 @@ bool ResourceThrottle::MustProcessResponseBeforeReadingBody() {
   return false;
 }
 
+void ResourceThrottle::Cancel() {
+  delegate_->Cancel();
+}
+
+void ResourceThrottle::CancelAndIgnore() {
+  delegate_->CancelAndIgnore();
+}
+
+void ResourceThrottle::CancelWithError(int error_code) {
+  delegate_->CancelWithError(error_code);
+}
+
+void ResourceThrottle::Resume() {
+  delegate_->Resume();
+}
+
 }  // namespace content

@@ -14,7 +14,6 @@
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -48,7 +47,7 @@ const int kBackgroundRouteId = 43;
 const char kPrioritySupportedRequestsDelayable[] =
     "PrioritySupportedRequestsDelayable";
 
-class TestRequest : public ResourceController {
+class TestRequest : public ResourceThrottle::Delegate {
  public:
   TestRequest(std::unique_ptr<net::URLRequest> url_request,
               std::unique_ptr<ResourceThrottle> throttle,
@@ -57,7 +56,7 @@ class TestRequest : public ResourceController {
         url_request_(std::move(url_request)),
         throttle_(std::move(throttle)),
         scheduler_(scheduler) {
-    throttle_->set_controller_for_testing(this);
+    throttle_->set_delegate_for_testing(this);
   }
   ~TestRequest() override {
     // The URLRequest must still be valid when the ScheduledResourceRequest is
@@ -86,7 +85,7 @@ class TestRequest : public ResourceController {
   const net::URLRequest* url_request() const { return url_request_.get(); }
 
  protected:
-  // ResourceController interface:
+  // ResourceThrottle::Delegate interface:
   void CancelAndIgnore() override {}
   void CancelWithError(int error_code) override {}
   void Resume() override { started_ = true; }

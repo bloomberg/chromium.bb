@@ -12,7 +12,6 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
@@ -108,7 +107,7 @@ class TestResourceDispatcherHostDelegate
       *defer = true;
       base::Closure resume_request_on_io_thread = base::Bind(
           base::IgnoreResult(&BrowserThread::PostTask), BrowserThread::IO,
-          FROM_HERE, base::Bind(&CallbackRunningResourceThrottle::Resume,
+          FROM_HERE, base::Bind(&CallbackRunningResourceThrottle::MarkAndResume,
                                 weak_factory_.GetWeakPtr()));
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
@@ -132,9 +131,9 @@ class TestResourceDispatcherHostDelegate
     }
 
    private:
-    void Resume() {
+    void MarkAndResume() {
       resumed_ = true;
-      controller()->Resume();
+      Resume();
     }
 
     bool resumed_;

@@ -45,7 +45,7 @@ AsyncRevalidationDriver::AsyncRevalidationDriver(
       completion_callback_(completion_callback),
       weak_ptr_factory_(this) {
   request_->set_delegate(this);
-  throttle_->set_controller(this);
+  throttle_->set_delegate(this);
 }
 
 AsyncRevalidationDriver::~AsyncRevalidationDriver() {}

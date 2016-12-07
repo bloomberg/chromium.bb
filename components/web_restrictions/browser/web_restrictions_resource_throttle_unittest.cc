@@ -7,7 +7,7 @@
 #include "components/web_restrictions/browser/mock_web_restrictions_client.h"
 #include "components/web_restrictions/browser/web_restrictions_client.h"
 #include "components/web_restrictions/browser/web_restrictions_resource_throttle.h"
-#include "content/public/browser/resource_controller.h"
+#include "content/public/browser/resource_throttle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
@@ -17,9 +17,10 @@ namespace web_restrictions {
 
 namespace {
 
-class TestResourceController : public content::ResourceController {
+class TestResourceThrottleDelegate
+    : public content::ResourceThrottle::Delegate {
  public:
-  TestResourceController(const base::Closure& quit_closure)
+  TestResourceThrottleDelegate(const base::Closure& quit_closure)
       : resume_called_(false),
         cancel_with_error_called_(false),
         error_code_(0),
@@ -56,8 +57,8 @@ class WebRestrictionsResourceThrottleTest : public testing::Test {
  protected:
   WebRestrictionsResourceThrottleTest()
       : throttle_(&provider_, GURL("http://example.com"), true),
-        controller_(run_loop_.QuitClosure()) {
-    throttle_.set_controller_for_testing(&controller_);
+        delegate_(run_loop_.QuitClosure()) {
+    throttle_.set_delegate_for_testing(&delegate_);
   }
 
   void SetAuthority(std::string authority) {
@@ -78,7 +79,7 @@ class WebRestrictionsResourceThrottleTest : public testing::Test {
   WebRestrictionsClient provider_;
   WebRestrictionsResourceThrottle throttle_;
   base::RunLoop run_loop_;
-  TestResourceController controller_;
+  TestResourceThrottleDelegate delegate_;
 };
 
 TEST_F(WebRestrictionsResourceThrottleTest, WillStartRequest_NoAuthority) {
@@ -98,8 +99,8 @@ TEST_F(WebRestrictionsResourceThrottleTest, WillStartRequest_DeferredAllow) {
   throttle_.WillStartRequest(&defer);
   EXPECT_TRUE(defer);
   run_loop_.Run();
-  EXPECT_TRUE(controller_.ResumeCalled());
-  EXPECT_FALSE(controller_.CancelWithErrorCalled());
+  EXPECT_TRUE(delegate_.ResumeCalled());
+  EXPECT_FALSE(delegate_.CancelWithErrorCalled());
 }
 
 TEST_F(WebRestrictionsResourceThrottleTest, WillStartRequest_DeferredForbid) {
@@ -108,14 +109,14 @@ TEST_F(WebRestrictionsResourceThrottleTest, WillStartRequest_DeferredForbid) {
   throttle_.WillStartRequest(&defer);
   EXPECT_TRUE(defer);
   run_loop_.Run();
-  EXPECT_FALSE(controller_.ResumeCalled());
-  EXPECT_TRUE(controller_.CancelWithErrorCalled());
-  EXPECT_EQ(net::ERR_BLOCKED_BY_ADMINISTRATOR, controller_.GetErrorCode());
+  EXPECT_FALSE(delegate_.ResumeCalled());
+  EXPECT_TRUE(delegate_.CancelWithErrorCalled());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_ADMINISTRATOR, delegate_.GetErrorCode());
 }
 
 TEST_F(WebRestrictionsResourceThrottleTest, WillStartRequest_Subresource) {
   // Only the main frame should be deferred.
-  // Initialization of the controller is asynchronous, and this will only work
+  // Initialization of the delegate is asynchronous, and this will only work
   // correctly if the provider is initialized. Run a main frame through this
   // first to ensure that everything is initialized.
   StartProvider();
@@ -123,8 +124,8 @@ TEST_F(WebRestrictionsResourceThrottleTest, WillStartRequest_Subresource) {
   WebRestrictionsResourceThrottle throttle(
       &provider_, GURL("http://example.com/sub"), false);
   base::RunLoop test_run_loop;
-  TestResourceController test_controller(test_run_loop.QuitClosure());
-  throttle.set_controller_for_testing(&test_controller);
+  TestResourceThrottleDelegate test_delegate(test_run_loop.QuitClosure());
+  throttle.set_delegate_for_testing(&test_delegate);
   bool defer;
   throttle.WillStartRequest(&defer);
   ASSERT_FALSE(defer);
@@ -148,8 +149,8 @@ TEST_F(WebRestrictionsResourceThrottleTest, WillRedirectRequest_NewUrl) {
   net::RedirectInfo redirect;
   redirect.new_url = GURL("http://example.com/2");
   base::RunLoop test_run_loop;
-  TestResourceController test_controller(test_run_loop.QuitClosure());
-  throttle_.set_controller_for_testing(&test_controller);
+  TestResourceThrottleDelegate test_delegate(test_run_loop.QuitClosure());
+  throttle_.set_delegate_for_testing(&test_delegate);
   bool defer;
   throttle_.WillRedirectRequest(redirect, &defer);
   ASSERT_TRUE(defer);

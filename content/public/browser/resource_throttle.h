@@ -24,6 +24,25 @@ class ThrottlingResourceHandler;
 // time.
 class CONTENT_EXPORT ResourceThrottle {
  public:
+  // An interface to get notified when the throttle implementation considers
+  // it's ready to resume the deferred resource load. The throttle
+  // implementation may also tell the delegate to cancel the resource loading.
+  class CONTENT_EXPORT Delegate {
+   public:
+    // Cancels the resource load.
+    virtual void Cancel() = 0;
+    // Marks the resource load as ignored by the resource handler, and then
+    // cancels the resource load.
+    virtual void CancelAndIgnore() = 0;
+    // Cancels the resource load with the specified error code.
+    virtual void CancelWithError(int error_code) = 0;
+    // Tells the delegate to resume the deferred resource load.
+    virtual void Resume() = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
   virtual ~ResourceThrottle() {}
 
   // Called before the resource request is started.
@@ -51,20 +70,25 @@ class CONTENT_EXPORT ResourceThrottle {
   // WillProcessResponse.
   virtual bool MustProcessResponseBeforeReadingBody();
 
-  void set_controller_for_testing(ResourceController* c) {
-    controller_ = c;
-  }
+  void set_delegate_for_testing(Delegate* delegate) { delegate_ = delegate; }
 
  protected:
-  ResourceThrottle() : controller_(nullptr) {}
-  ResourceController* controller() { return controller_; }
+  ResourceThrottle() : delegate_(nullptr) {}
+
+  // Helper methods for subclasses. When these methods are called, methods with
+  // the same name on |delegate_| are called.
+  void Cancel();
+  void CancelAndIgnore();
+  void CancelWithError(int error_code);
+  void Resume();
 
  private:
   friend class AsyncRevalidationDriver;
   friend class ThrottlingResourceHandler;
-  void set_controller(ResourceController* c) { controller_ = c; }
 
-  ResourceController* controller_;
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+
+  Delegate* delegate_;
 };
 
 }  // namespace content

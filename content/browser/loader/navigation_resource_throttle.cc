@@ -21,7 +21,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/ssl_status.h"
@@ -340,13 +339,13 @@ void NavigationResourceThrottle::OnUIChecksPerformed(
   }
 
   if (result == NavigationThrottle::CANCEL_AND_IGNORE) {
-    controller()->CancelAndIgnore();
+    CancelAndIgnore();
   } else if (result == NavigationThrottle::CANCEL) {
-    controller()->Cancel();
+    Cancel();
   } else if (result == NavigationThrottle::BLOCK_REQUEST) {
-    controller()->CancelWithError(net::ERR_BLOCKED_BY_CLIENT);
+    CancelWithError(net::ERR_BLOCKED_BY_CLIENT);
   } else {
-    controller()->Resume();
+    Resume();
   }
 }
 

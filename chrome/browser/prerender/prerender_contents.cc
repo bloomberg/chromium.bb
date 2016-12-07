@@ -70,7 +70,7 @@ void ResumeThrottles(
     std::vector<base::WeakPtr<PrerenderResourceThrottle> > throttles) {
   for (size_t i = 0; i < throttles.size(); i++) {
     if (throttles[i])
-      throttles[i]->Resume();
+      throttles[i]->ResumeHandler();
   }
 }
 

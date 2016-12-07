@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"
 #include "content/common/resource_messages.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
 #include "net/base/host_port_pair.h"
@@ -218,7 +217,7 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
         return;
       }
       deferred_ = false;
-      controller()->Resume();
+      Resume();
     }
 
     ready_ = true;

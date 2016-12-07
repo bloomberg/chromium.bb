@@ -5,7 +5,6 @@
 #include "extensions/browser/extension_request_limiting_throttle.h"
 
 #include "base/logging.h"
-#include "content/public/browser/resource_controller.h"
 #include "extensions/browser/extension_throttle_entry.h"
 #include "extensions/browser/extension_throttle_manager.h"
 #include "net/base/net_errors.h"
@@ -27,7 +26,7 @@ ExtensionRequestLimitingThrottle::~ExtensionRequestLimitingThrottle() {
 void ExtensionRequestLimitingThrottle::WillStartRequest(bool* defer) {
   throttling_entry_ = manager_->RegisterRequestUrl(request_->url());
   if (throttling_entry_->ShouldRejectRequest(*request_))
-    controller()->CancelWithError(net::ERR_TEMPORARILY_THROTTLED);
+    CancelWithError(net::ERR_TEMPORARILY_THROTTLED);
 }
 
 void ExtensionRequestLimitingThrottle::WillRedirectRequest(
@@ -40,7 +39,7 @@ void ExtensionRequestLimitingThrottle::WillRedirectRequest(
 
   throttling_entry_ = manager_->RegisterRequestUrl(redirect_info.new_url);
   if (throttling_entry_->ShouldRejectRequest(*request_))
-    controller()->CancelWithError(net::ERR_TEMPORARILY_THROTTLED);
+    CancelWithError(net::ERR_TEMPORARILY_THROTTLED);
 }
 
 void ExtensionRequestLimitingThrottle::WillProcessResponse(bool* defer) {

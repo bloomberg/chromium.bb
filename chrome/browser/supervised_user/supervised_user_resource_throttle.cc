@@ -11,7 +11,6 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
@@ -206,13 +205,13 @@ void SupervisedUserResourceThrottle::OnCheckDone(
   if (behavior == SupervisedUserURLFilter::BLOCK)
     ShowInterstitial(url, reason);
   else if (deferred_)
-    controller()->Resume();
+    Resume();
 }
 
 void SupervisedUserResourceThrottle::OnInterstitialResult(
     bool continue_request) {
   if (continue_request)
-    controller()->Resume();
+    Resume();
   else
-    controller()->Cancel();
+    Cancel();
 }

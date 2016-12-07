@@ -134,10 +134,6 @@ class SafeBrowsingResourceThrottle
       scoped_refptr<safe_browsing::SafeBrowsingUIManager> ui_manager,
       const security_interstitials::UnsafeResource& resource);
 
-  // Called on the IO thread if the request turned out to be for a prerendered
-  // page.
-  void Cancel();
-
   // Resumes the request, by continuing the deferred action (either starting the
   // request, or following a redirect).
   void ResumeRequest();

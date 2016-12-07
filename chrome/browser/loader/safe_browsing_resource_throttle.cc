@@ -21,7 +21,6 @@
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
@@ -270,7 +269,7 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
 
   if (request_->load_flags() & net::LOAD_PREFETCH) {
     // Don't prefetch resources that fail safe browsing, disallow them.
-    controller()->Cancel();
+    Cancel();
     UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.UnsafePrefetchCanceled",
                               resource_type_, content::RESOURCE_TYPE_LAST_TYPE);
     return;
@@ -352,10 +351,6 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
       base::Bind(&SafeBrowsingResourceThrottle::Cancel, throttle));
 }
 
-void SafeBrowsingResourceThrottle::Cancel() {
-  controller()->Cancel();
-}
-
 // SafeBrowsingService::UrlCheckCallback implementation, called on the IO
 // thread when the user has decided to proceed with the current request, or
 // go back.
@@ -369,7 +364,7 @@ void SafeBrowsingResourceThrottle::OnBlockingPageComplete(bool proceed) {
       ResumeRequest();
     }
   } else {
-    controller()->Cancel();
+    Cancel();
   }
 }
 
@@ -442,6 +437,6 @@ void SafeBrowsingResourceThrottle::ResumeRequest() {
 
   if (resume) {
     defer_state_ = DEFERRED_NONE;
-    controller()->Resume();
+    Resume();
   }
 }

@@ -19,7 +19,6 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/download_test_observer.h"
 #include "extensions/browser/event_router.h"
@@ -37,7 +36,6 @@ using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::DownloadUrlParameters;
-using content::ResourceController;
 using content::WebContents;
 using extensions::Event;
 using extensions::ExtensionSystem;

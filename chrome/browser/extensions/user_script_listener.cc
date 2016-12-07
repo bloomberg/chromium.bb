@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -33,14 +32,14 @@ class UserScriptListener::Throttle
   Throttle() : should_defer_(true), did_defer_(false) {
   }
 
-  void Resume() {
+  void ResumeIfDeferred() {
     DCHECK(should_defer_);
     should_defer_ = false;
     // Only resume the request if |this| has deferred it.
     if (did_defer_) {
       UMA_HISTOGRAM_TIMES("Extensions.ThrottledNetworkRequestDelay",
                           timer_->Elapsed());
-      controller()->Resume();
+      Resume();
     }
   }
 
@@ -146,7 +145,7 @@ void UserScriptListener::StartDelayedRequests() {
   WeakThrottleList::const_iterator it;
   for (it = throttles_.begin(); it != throttles_.end(); ++it) {
     if (it->get())
-      (*it)->Resume();
+      (*it)->ResumeIfDeferred();
   }
   throttles_.clear();
 }

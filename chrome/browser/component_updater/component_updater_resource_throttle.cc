@@ -8,7 +8,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
 
 using content::BrowserThread;
@@ -76,7 +75,7 @@ const char* CUResourceThrottle::GetNameForLogging() const {
 void CUResourceThrottle::Unblock() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ == BLOCKED)
-    controller()->Resume();
+    Resume();
   state_ = UNBLOCKED;
 }
 

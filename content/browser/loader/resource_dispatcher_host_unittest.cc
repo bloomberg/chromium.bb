@@ -672,9 +672,9 @@ class GenericResourceThrottle : public ResourceThrottle {
 
     if (flags_ & CANCEL_BEFORE_START) {
       if (error_code_for_cancellation_ == USE_DEFAULT_CANCEL_ERROR_CODE) {
-        controller()->Cancel();
+        Cancel();
       } else {
-        controller()->CancelWithError(error_code_for_cancellation_);
+        CancelWithError(error_code_for_cancellation_);
       }
     }
   }
@@ -688,9 +688,9 @@ class GenericResourceThrottle : public ResourceThrottle {
 
     if (flags_ & CANCEL_PROCESSING_RESPONSE) {
       if (error_code_for_cancellation_ == USE_DEFAULT_CANCEL_ERROR_CODE) {
-        controller()->Cancel();
+        Cancel();
       } else {
-        controller()->CancelWithError(error_code_for_cancellation_);
+        CancelWithError(error_code_for_cancellation_);
       }
     }
   }
@@ -699,10 +699,10 @@ class GenericResourceThrottle : public ResourceThrottle {
     return "GenericResourceThrottle";
   }
 
-  void Resume() {
+  void AssertAndResume() {
     ASSERT_TRUE(this == active_throttle_);
     active_throttle_ = NULL;
-    controller()->Resume();
+    ResourceThrottle::Resume();
   }
 
   static GenericResourceThrottle* active_throttle() {
@@ -1779,7 +1779,7 @@ TEST_P(ResourceDispatcherHostTest, DetachWhileStartIsDeferred) {
   GenericResourceThrottle* throttle =
       GenericResourceThrottle::active_throttle();
   ASSERT_TRUE(throttle);
-  throttle->Resume();
+  throttle->AssertAndResume();
 
   // Now, the request completes.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -1843,12 +1843,12 @@ TEST_P(ResourceDispatcherHostTest, ThrottleAndResumeTwice) {
   GenericResourceThrottle* first_throttle =
       GenericResourceThrottle::active_throttle();
   ASSERT_TRUE(first_throttle);
-  first_throttle->Resume();
+  first_throttle->AssertAndResume();
 
   // Make sure the second throttle blocked the request, and then resume.
   ASSERT_TRUE(GenericResourceThrottle::active_throttle());
   ASSERT_NE(first_throttle, GenericResourceThrottle::active_throttle());
-  GenericResourceThrottle::active_throttle()->Resume();
+  GenericResourceThrottle::active_throttle()->AssertAndResume();
 
   ASSERT_FALSE(GenericResourceThrottle::active_throttle());
 

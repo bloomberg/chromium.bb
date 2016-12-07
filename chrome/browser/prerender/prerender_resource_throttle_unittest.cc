@@ -16,8 +16,8 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/resource_throttle.h"
 #include "content/public/test/test_browser_thread.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
@@ -91,7 +91,7 @@ class TestPrerenderManager : public PrerenderManager {
 };
 
 class DeferredRedirectDelegate : public net::URLRequest::Delegate,
-                                 public content::ResourceController {
+                                 public content::ResourceThrottle::Delegate {
  public:
   DeferredRedirectDelegate()
       : throttle_(NULL),
@@ -102,7 +102,7 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
 
   void SetThrottle(PrerenderResourceThrottle* throttle) {
     throttle_ = throttle;
-    throttle_->set_controller_for_testing(this);
+    throttle_->set_delegate_for_testing(this);
   }
 
   void Run() {
@@ -128,7 +128,7 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
   void OnResponseStarted(net::URLRequest* request, int net_error) override {}
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override {}
 
-  // content::ResourceController implementation:
+  // content::ResourceThrottle::Delegate implementation:
   void Cancel() override {
     EXPECT_FALSE(cancel_called_);
     EXPECT_FALSE(resume_called_);
