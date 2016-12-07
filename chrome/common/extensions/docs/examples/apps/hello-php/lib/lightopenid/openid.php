@@ -104,7 +104,7 @@ class LightOpenID
         case 'identity':
             # We return claimed_id instead of identity,
             # because the developer should see the claimed identifier,
-            # i.e. what he set as identity, not the op-local identifier (which is what we verify)
+            # i.e. what they set as identity, not the op-local identifier (which is what we verify)
             return $this->claimed_id;
         case 'trustRoot':
         case 'realm':

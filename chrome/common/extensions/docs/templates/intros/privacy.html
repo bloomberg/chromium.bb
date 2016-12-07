@@ -40,8 +40,8 @@
 <p>
   Changing the value of a setting is a little bit more complex, simply because
   you first must verify that your extension can control the setting. The user
-  won't see any change to her settings if your extension toggles a setting that
-  is either locked to a specific value by enterprise policies
+  won't see any change to their settings if your extension toggles a setting
+  that is either locked to a specific value by enterprise policies
   (<code>levelOfControl</code> will be set to "not_controllable"), or if another
   extension is controlling the value (<code>levelOfControl</code> will be set to
   "controlled_by_other_extensions"). The <code>set()</code> call will succeed,
