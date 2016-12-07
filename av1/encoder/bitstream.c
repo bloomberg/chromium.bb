@@ -110,7 +110,9 @@ static struct av1_token ext_tx_encodings[TX_TYPES];
 static struct av1_token global_motion_types_encodings[GLOBAL_TRANS_TYPES];
 #endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
 static struct av1_token intra_filter_encodings[INTRA_FILTERS];
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_EXT_INTER
 static struct av1_token interintra_mode_encodings[INTERINTRA_MODES];
@@ -155,7 +157,9 @@ void av1_encode_token_init(void) {
 #endif  // CONFIG_PALETTE
 
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
   av1_tokens_from_tree(intra_filter_encodings, av1_intra_filter_tree);
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_EXT_INTER
   av1_tokens_from_tree(interintra_mode_encodings, av1_interintra_mode_tree);
@@ -1031,20 +1035,25 @@ static void write_intra_angle_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                    aom_writer *w) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
+#if CONFIG_INTRA_INTERP
   const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
   int p_angle;
+#endif  // CONFIG_INTRA_INTERP
 
+  (void)cm;
   if (bsize < BLOCK_8X8) return;
 
   if (mbmi->mode != DC_PRED && mbmi->mode != TM_PRED) {
     write_uniform(w, 2 * MAX_ANGLE_DELTAS + 1,
                   MAX_ANGLE_DELTAS + mbmi->angle_delta[0]);
+#if CONFIG_INTRA_INTERP
     p_angle = mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
     if (av1_is_intra_filter_switchable(p_angle)) {
       av1_write_token(w, av1_intra_filter_tree,
                       cm->fc->intra_filter_probs[intra_filter_ctx],
                       &intra_filter_encodings[mbmi->intra_filter]);
     }
+#endif  // CONFIG_INTRA_INTERP
   }
 
   if (mbmi->uv_mode != DC_PRED && mbmi->uv_mode != TM_PRED) {
@@ -4201,9 +4210,11 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_EC_ADAPT, CONFIG_DAALA_EC
 
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
   for (i = 0; i < INTRA_FILTERS + 1; ++i)
     prob_diff_update(av1_intra_filter_tree, fc->intra_filter_probs[i],
                      counts->intra_filter[i], INTRA_FILTERS, probwt, header_bc);
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #endif  // CONFIG_EC_ADAPT, CONFIG_DAALA_EC
   if (frame_is_intra_only(cm)) {

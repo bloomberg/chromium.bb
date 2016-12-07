@@ -152,7 +152,9 @@ typedef struct frame_contexts {
 #endif  // CONFIG_SUPERTX
   struct segmentation_probs seg;
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
   aom_prob intra_filter_probs[INTRA_FILTERS + 1][INTRA_FILTERS - 1];
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   aom_prob filter_intra_probs[PLANE_TYPES];
@@ -271,7 +273,9 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_SUPERTX
   struct seg_counts seg;
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
   unsigned int intra_filter[INTRA_FILTERS + 1][INTRA_FILTERS];
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   unsigned int filter_intra[PLANE_TYPES][2];
@@ -328,7 +332,9 @@ extern const aom_tree_index av1_palette_color_tree[PALETTE_MAX_SIZE - 1]
 #endif  // CONFIG_PALETTE
 extern const aom_tree_index av1_tx_size_tree[MAX_TX_DEPTH][TREE_SIZE(TX_SIZES)];
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
 extern const aom_tree_index av1_intra_filter_tree[TREE_SIZE(INTRA_FILTERS)];
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_EXT_TX
 extern const aom_tree_index av1_ext_tx_inter_tree[EXT_TX_SETS_INTER]

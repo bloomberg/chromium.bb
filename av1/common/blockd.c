@@ -223,6 +223,7 @@ const int16_t dr_intra_derivative[90] = {
   54,   49,    45,   40,   35,   31,   26,   22,   17,   13,   8,    4,
 };
 
+#if CONFIG_INTRA_INTERP
 int av1_is_intra_filter_switchable(int angle) {
   assert(angle > 0 && angle < 270);
   if (angle % 45 == 0) return 0;
@@ -234,4 +235,5 @@ int av1_is_intra_filter_switchable(int angle) {
             0xFF) > 0;
   }
 }
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA

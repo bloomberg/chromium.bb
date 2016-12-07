@@ -5493,6 +5493,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       }
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
       if (mbmi->mode != DC_PRED && mbmi->mode != TM_PRED) {
         int p_angle;
         const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
@@ -5501,6 +5502,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
         if (av1_is_intra_filter_switchable(p_angle))
           ++counts->intra_filter[intra_filter_ctx][mbmi->intra_filter];
       }
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
     }
 

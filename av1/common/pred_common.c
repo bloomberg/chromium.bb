@@ -96,6 +96,7 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd) {
 #endif
 
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
 // Obtain the reference filter type from the above/left neighbor blocks.
 static INTRA_FILTER get_ref_intra_filter(const MB_MODE_INFO *ref_mbmi) {
   INTRA_FILTER ref_type = INTRA_FILTERS;
@@ -143,6 +144,7 @@ int av1_get_pred_context_intra_interp(const MACROBLOCKD *xd) {
   else
     return INTRA_FILTERS;
 }
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
 // The mode info data structure has a one element border above and to the

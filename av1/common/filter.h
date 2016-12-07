@@ -64,6 +64,7 @@ extern "C" {
 typedef uint8_t InterpFilter;
 
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
 typedef enum {
   INTRA_FILTER_LINEAR,
   INTRA_FILTER_8TAP,
@@ -73,6 +74,7 @@ typedef enum {
 } INTRA_FILTER;
 
 extern const InterpKernel *av1_intra_filter_kernels[INTRA_FILTERS];
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
 typedef struct InterpFilterParams {

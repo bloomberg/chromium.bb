@@ -653,14 +653,18 @@ static void read_intra_angle_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                   aom_reader *r) {
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
+#if CONFIG_INTRA_INTERP
   const int ctx = av1_get_pred_context_intra_interp(xd);
   int p_angle;
+#endif  // CONFIG_INTRA_INTERP
 
+  (void)cm;
   if (bsize < BLOCK_8X8) return;
 
   if (mbmi->mode != DC_PRED && mbmi->mode != TM_PRED) {
     mbmi->angle_delta[0] =
         read_uniform(r, 2 * MAX_ANGLE_DELTAS + 1) - MAX_ANGLE_DELTAS;
+#if CONFIG_INTRA_INTERP
     p_angle = mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
     if (av1_is_intra_filter_switchable(p_angle)) {
       FRAME_COUNTS *counts = xd->counts;
@@ -670,6 +674,7 @@ static void read_intra_angle_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     } else {
       mbmi->intra_filter = INTRA_FILTER_LINEAR;
     }
+#endif  // CONFIG_INTRA_INTERP
   }
 
   if (mbmi->uv_mode != DC_PRED && mbmi->uv_mode != TM_PRED) {
@@ -1786,7 +1791,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_EXT_INTRA
       mbmi->angle_delta[0] = 0;
       mbmi->angle_delta[1] = 0;
+#if CONFIG_INTRA_INTERP
       mbmi->intra_filter = INTRA_FILTER_LINEAR;
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
       mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;

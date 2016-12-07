@@ -148,9 +148,11 @@ static void fill_mode_costs(AV1_COMP *cpi) {
   }
 #endif  // CONFIG_EXT_TX
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
   for (i = 0; i < INTRA_FILTERS + 1; ++i)
     av1_cost_tokens(cpi->intra_filter_cost[i], fc->intra_filter_probs[i],
                     av1_intra_filter_tree);
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_LOOP_RESTORATION
   av1_cost_tokens(cpi->switchable_restore_cost, fc->switchable_restore_prob,

@@ -4237,9 +4237,11 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_EXT_PARTITION_TYPES
 #endif  // EC_ADAPT, DAALA_EC
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
   for (i = 0; i < INTRA_FILTERS + 1; ++i)
     for (j = 0; j < INTRA_FILTERS - 1; ++j)
       av1_diff_update_prob(&r, &fc->intra_filter_probs[i][j], ACCT_STR);
+#endif  // CONFIG_INTRA_INTERP
 #endif  // EC_ADAPT, DAALA_EC
 
   if (frame_is_intra_only(cm)) {

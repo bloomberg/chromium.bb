@@ -194,12 +194,14 @@ DECLARE_ALIGNED(256, static const InterpKernel,
 #endif  // CONFIG_EXT_INTERP
 
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
 const InterpKernel *av1_intra_filter_kernels[INTRA_FILTERS] = {
   bilinear_filters,         // INTRA_FILTER_LINEAR
   sub_pel_filters_8,        // INTRA_FILTER_8TAP
   sub_pel_filters_8sharp,   // INTRA_FILTER_8TAP_SHARP
   sub_pel_filters_8smooth,  // INTRA_FILTER_8TAP_SMOOTH
 };
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_EXT_INTERP

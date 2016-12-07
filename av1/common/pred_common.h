@@ -74,7 +74,9 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd);
 #endif
 
 #if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
 int av1_get_pred_context_intra_interp(const MACROBLOCKD *xd);
+#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
 int av1_get_intra_inter_context(const MACROBLOCKD *xd);
