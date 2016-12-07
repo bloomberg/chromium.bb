@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.media.ui;
 
 import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
 
 /**
  * The callback when an image is downloaded. This class is different with
@@ -13,7 +14,8 @@ import android.graphics.Bitmap;
 public interface MediaImageCallback {
     /**
      * Called when image downloading is complete.
-     * @param bitmap The downloaded image.
+     * @param bitmap The downloaded image. |null| indicates there is no available src for download
+     * or image download failed.
      */
-    void onImageDownloaded(Bitmap image);
+    void onImageDownloaded(@Nullable Bitmap image);
 }

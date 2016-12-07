@@ -124,7 +124,11 @@ public class MediaImageManager implements ImageDownloadCallback {
 
         mCallback = callback;
         MediaImage image = selectImage(images);
-        if (image == null) return;
+        if (image == null) {
+            mCallback.onImageDownloaded(null);
+            clearRequests();
+            return;
+        }
 
         mRequestId = mWebContents.downloadImage(
             image.getSrc(), false, 8 * mIdealSize, false, this);
@@ -163,7 +167,7 @@ public class MediaImageManager implements ImageDownloadCallback {
                 bestScore = newScore;
             }
         }
-        if (bestBitmap != null) mCallback.onImageDownloaded(bestBitmap);
+        mCallback.onImageDownloaded(bestBitmap);
         clearRequests();
     }
 

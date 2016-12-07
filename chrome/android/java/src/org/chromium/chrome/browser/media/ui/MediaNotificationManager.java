@@ -476,10 +476,11 @@ public class MediaNotificationManager {
 
     /**
      * Scale a given bitmap to a proper size for display.
-     * @param icon The bitmap to be resized.
+     * @param icon The bitmap to be resized, can be null.
      * @return A scaled icon to be used in media notification. Returns null if |icon| is null.
      */
-    public static Bitmap scaleIconForDisplay(Bitmap icon) {
+    @Nullable
+    public static Bitmap scaleIconForDisplay(@Nullable Bitmap icon) {
         if (icon == null) return null;
 
         int largeIconSizePx = getMaximumLargeIconSize();
