@@ -256,6 +256,9 @@ MON_REPO_SYNC_RETRY_COUNT = 'chromeos/cbuildbot/repo/sync_retry_count'
 MON_GIT_FETCH_COUNT = 'chromeos/cbuildbot/git/fetch_count'
 MON_GIT_FETCH_RETRY_COUNT = 'chromeos/cbuildbot/git/fetch_retry_count'
 
+MON_BB_RETRY_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
+                            'retry_build_count')
+
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they
 # can pass to the target cbuildbot (since it may not have that

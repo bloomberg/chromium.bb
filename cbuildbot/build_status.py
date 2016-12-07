@@ -13,6 +13,7 @@ from chromite.cbuildbot import buildbucket_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
+from chromite.lib import metrics
 
 
 # Namedtupe to store buildbucket related info.
@@ -338,6 +339,12 @@ class SlaveStatus(object):
         logging.info('Going to retry build %s buildbucket_id %s '
                      'with retry # %d',
                      build, buildbucket_id, build_retry + 1)
+
+        if not self.dry_run:
+          fields = {'build_type': self.config.build_type,
+                    'build_name': self.config.name}
+          metrics.Counter(constants.MON_BB_RETRY_BUILD_COUNT).increment(
+              fields=fields)
 
         content = self.buildbucket_client.RetryBuildRequest(
             buildbucket_id, dryrun=self.dry_run)
