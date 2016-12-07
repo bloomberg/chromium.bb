@@ -283,6 +283,21 @@ class DefaultBrowserActionRecorder : public win::SettingsAppMonitor::Delegate {
     }
   }
 
+  void OnPromoFocused() override {
+    base::RecordAction(
+        base::UserMetricsAction("SettingsAppMonitor.PromoFocused"));
+  }
+
+  void OnPromoChoiceMade(bool accept_promo) override {
+    if (accept_promo) {
+      base::RecordAction(
+          base::UserMetricsAction("SettingsAppMonitor.CheckItOut"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("SettingsAppMonitor.SwitchAnyway"));
+    }
+  }
+
   // A closure to be run once initialization completes.
   base::Closure continuation_;
 

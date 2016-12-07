@@ -42,6 +42,12 @@ class SettingsAppMonitor {
 
     // Invoked when the user has chosen a particular Web browser.
     virtual void OnBrowserChosen(const base::string16& browser_name) = 0;
+
+    // Invoked when the Edge promo has received keyboard focus.
+    virtual void OnPromoFocused() = 0;
+
+    // Invoked when the user interacts with the Edge promo.
+    virtual void OnPromoChoiceMade(bool accept_promo) = 0;
   };
 
   // |delegate| must outlive the monitor.
@@ -56,6 +62,8 @@ class SettingsAppMonitor {
   void OnAppFocused();
   void OnChooserInvoked();
   void OnBrowserChosen(const base::string16& browser_name);
+  void OnPromoFocused();
+  void OnPromoChoiceMade(bool accept_promo);
 
   base::ThreadChecker thread_checker_;
   Delegate* delegate_;

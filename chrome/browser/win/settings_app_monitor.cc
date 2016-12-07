@@ -34,6 +34,21 @@
 namespace shell_integration {
 namespace win {
 
+// Each item represent one UI element in the Settings App.
+enum class ElementType {
+  // The "Web browser" element in the "Default apps" pane.
+  DEFAULT_BROWSER,
+  // The element representing a browser in the "Choose an app" popup.
+  BROWSER_BUTTON,
+  // The button labeled "Check it out" that leaves Edge as the default browser.
+  CHECK_IT_OUT,
+  // The button labeled "Switch Anyway" that dismisses the Edge promo.
+  SWITCH_ANYWAY,
+  // Any other element.
+  UNKNOWN,
+};
+
+
 // SettingsAppMonitor::Context -------------------------------------------------
 
 // The guts of the monitor which runs on a dedicated thread in the
@@ -78,6 +93,9 @@ class SettingsAppMonitor::Context {
   // Handles the invocation of an element in the browser chooser.
   void HandleBrowserChosen(const base::string16& browser_name);
 
+  // Handles the invocation of an element in the Edge promo.
+  void HandlePromoChoiceMade(bool accept_promo);
+
   // Returns an event handler for all event types of interest.
   base::win::ScopedComPtr<IUnknown> GetEventHandler();
 
@@ -107,8 +125,8 @@ class SettingsAppMonitor::Context {
   // The event handler.
   base::win::ScopedComPtr<IUnknown> event_handler_;
 
-  // State to suppress duplicate OnAppFocused notifications.
-  bool observed_app_focused_ = false;
+  // State to suppress duplicate "focus changed" events.
+  ElementType last_focused_element_ = ElementType::UNKNOWN;
 
   // Weak pointers to the context are given to event handlers.
   base::WeakPtrFactory<Context> weak_ptr_factory_;
@@ -136,7 +154,8 @@ class SettingsAppMonitor::Context::EventHandler
   // Initializes the object. Events will be dispatched back to |context| via
   // |context_runner|.
   void Initialize(scoped_refptr<base::SingleThreadTaskRunner> context_runner,
-                  const base::WeakPtr<SettingsAppMonitor::Context>& context);
+                  const base::WeakPtr<SettingsAppMonitor::Context>& context,
+                  base::win::ScopedComPtr<IUIAutomation> automation);
 
   // IUIAutomationEventHandler:
   STDMETHOD(HandleAutomationEvent)(IUIAutomationElement *sender,
@@ -151,6 +170,8 @@ class SettingsAppMonitor::Context::EventHandler
 
   // The monitor context that owns this event handler.
   base::WeakPtr<SettingsAppMonitor::Context> context_;
+
+  base::win::ScopedComPtr<IUIAutomation> automation_;
 
   DISALLOW_COPY_AND_ASSIGN(EventHandler);
 };
@@ -176,45 +197,83 @@ base::string16 GetCachedBstrValue(IUIAutomationElement* element,
   return base::string16(V_BSTR(var.ptr()));
 }
 
-enum class ElementType {
-  // The "Web browser" element in the "Default apps" pane.
-  DEFAULT_BROWSER,
-  // The element representing a browser in the "Choose an app" popup.
-  BROWSER_BUTTON,
-  // Any other element.
-  UNKNOWN,
-};
-
-ElementType DetectElementType(IUIAutomationElement* sender) {
-  base::string16 aid(GetCachedBstrValue(sender, UIA_AutomationIdPropertyId));
-  if (aid == L"SystemSettings_DefaultApps_Browser_Button")
-    return ElementType::DEFAULT_BROWSER;
-  if (base::MatchPattern(aid, L"SystemSettings_DefaultApps_Browser_*_Button"))
-    return ElementType::BROWSER_BUTTON;
-  return ElementType::UNKNOWN;
-}
-
 // Configures a cache request so that it includes all properties needed by
 // DetectElementType() to detect the elements of interest.
 void ConfigureCacheRequest(IUIAutomationCacheRequest* cache_request) {
   DCHECK(cache_request);
   cache_request->AddProperty(UIA_AutomationIdPropertyId);
   cache_request->AddProperty(UIA_NamePropertyId);
-#if ENABLE_DLOG
   cache_request->AddProperty(UIA_ClassNamePropertyId);
+#if DCHECK_IS_ON()
   cache_request->AddProperty(UIA_ControlTypePropertyId);
   cache_request->AddProperty(UIA_IsPeripheralPropertyId);
   cache_request->AddProperty(UIA_ProcessIdPropertyId);
   cache_request->AddProperty(UIA_ValueValuePropertyId);
   cache_request->AddProperty(UIA_RuntimeIdPropertyId);
-#endif  // ENABLE_DLOG
+#endif  // DCHECK_IS_ON()
+}
+
+// Helper function to get the parent element with class name "Flyout". Used to
+// determine the |element|'s type.
+base::string16 GetFlyoutParentAutomationId(IUIAutomation* automation,
+                                           IUIAutomationElement* element) {
+  // Create a condition that will include only elements with the right class
+  // name in the tree view.
+  base::win::ScopedVariant class_name(L"Flyout");
+  base::win::ScopedComPtr<IUIAutomationCondition> condition;
+  HRESULT result = automation->CreatePropertyCondition(
+      UIA_ClassNamePropertyId, class_name, condition.Receive());
+  if (FAILED(result))
+    return base::string16();
+
+  base::win::ScopedComPtr<IUIAutomationTreeWalker> tree_walker;
+  result = automation->CreateTreeWalker(condition.get(), tree_walker.Receive());
+  if (FAILED(result))
+    return base::string16();
+
+  base::win::ScopedComPtr<IUIAutomationCacheRequest> cache_request;
+  result = automation->CreateCacheRequest(cache_request.Receive());
+  if (FAILED(result))
+    return base::string16();
+  ConfigureCacheRequest(cache_request.get());
+
+  // From MSDN, NormalizeElementBuildCache() "Retrieves the ancestor element
+  // nearest to the specified Microsoft UI Automation element in the tree view".
+  IUIAutomationElement* flyout_element = nullptr;
+  result = tree_walker->NormalizeElementBuildCache(element, cache_request.get(),
+                                                   &flyout_element);
+  if (FAILED(result) || !flyout_element)
+    return base::string16();
+
+  return GetCachedBstrValue(flyout_element, UIA_AutomationIdPropertyId);
+}
+
+ElementType DetectElementType(IUIAutomation* automation,
+                              IUIAutomationElement* sender) {
+  DCHECK(automation);
+  DCHECK(sender);
+  base::string16 aid(GetCachedBstrValue(sender, UIA_AutomationIdPropertyId));
+  if (aid == L"SystemSettings_DefaultApps_Browser_Button")
+    return ElementType::DEFAULT_BROWSER;
+  if (aid == L"SystemSettings_DefaultApps_Browser_App0_HyperlinkButton")
+    return ElementType::SWITCH_ANYWAY;
+  if (base::MatchPattern(aid, L"SystemSettings_DefaultApps_Browser_*_Button")) {
+    // This element type depends on the automation id of one of its ancestors.
+    base::string16 automation_id =
+        GetFlyoutParentAutomationId(automation, sender);
+    if (automation_id == L"settingsFlyout")
+      return ElementType::CHECK_IT_OUT;
+    else if (automation_id == L"DefaultAppsFlyoutPresenter")
+      return ElementType::BROWSER_BUTTON;
+  }
+  return ElementType::UNKNOWN;
 }
 
 
 // Debug logging utility functions ---------------------------------------------
 
 bool GetCachedBoolValue(IUIAutomationElement* element, PROPERTYID property_id) {
-#if ENABLE_DLOG
+#if DCHECK_IS_ON()
   base::win::ScopedVariant var;
 
   if (FAILED(element->GetCachedPropertyValueEx(property_id, TRUE,
@@ -229,14 +288,14 @@ bool GetCachedBoolValue(IUIAutomationElement* element, PROPERTYID property_id) {
   }
 
   return V_BOOL(var.ptr()) != 0;
-#else   // ENABLE_DLOG
+#else   // DCHECK_IS_ON()
   return false;
-#endif  // !ENABLE_DLOG
+#endif  // !DCHECK_IS_ON()
 }
 
 int32_t GetCachedInt32Value(IUIAutomationElement* element,
                             PROPERTYID property_id) {
-#if ENABLE_DLOG
+#if DCHECK_IS_ON()
   base::win::ScopedVariant var;
 
   if (FAILED(element->GetCachedPropertyValueEx(property_id, TRUE,
@@ -251,15 +310,15 @@ int32_t GetCachedInt32Value(IUIAutomationElement* element,
   }
 
   return V_I4(var.ptr());
-#else   // ENABLE_DLOG
+#else   // DCHECK_IS_ON()
   return 0;
-#endif  // !ENABLE_DLOG
+#endif  // !DCHECK_IS_ON()
 }
 
 std::vector<int32_t> GetCachedInt32ArrayValue(IUIAutomationElement* element,
                                               PROPERTYID property_id) {
   std::vector<int32_t> values;
-#if ENABLE_DLOG
+#if DCHECK_IS_ON()
   base::win::ScopedVariant var;
 
   if (FAILED(element->GetCachedPropertyValueEx(property_id, TRUE,
@@ -286,23 +345,23 @@ std::vector<int32_t> GetCachedInt32ArrayValue(IUIAutomationElement* element,
   SafeArrayAccessData(array, reinterpret_cast<void**>(&data));
   values.assign(data, data + upper_bound + 1);
   SafeArrayUnaccessData(array);
-#endif  // ENABLE_DLOG
+#endif  // DCHECK_IS_ON()
   return values;
 }
 
 std::string IntArrayToString(const std::vector<int32_t>& values) {
-#if ENABLE_DLOG
+#if DCHECK_IS_ON()
   std::vector<std::string> value_strings;
   std::transform(values.begin(), values.end(),
                  std::back_inserter(value_strings), &base::IntToString);
   return base::JoinString(value_strings, ", ");
-#else   // ENABLE_DLOG
+#else   // DCHECK_IS_ON()
   return std::string();
-#endif  // !ENABLE_DLOG
+#endif  // !DCHECK_IS_ON()
 }
 
 const char* GetEventName(EVENTID event_id) {
-#if ENABLE_DLOG
+#if DCHECK_IS_ON()
   switch (event_id) {
     case UIA_ToolTipOpenedEventId:
       return "UIA_ToolTipOpenedEventId";
@@ -373,12 +432,12 @@ const char* GetEventName(EVENTID event_id) {
     case UIA_TextEdit_ConversionTargetChangedEventId:
       return "UIA_TextEdit_ConversionTargetChangedEventId";
   }
-#endif  // ENABLE_DLOG
+#endif  // DCHECK_IS_ON()
   return "";
 }
 
 const char* GetControlType(long control_type) {
-#if ENABLE_DLOG
+#if DCHECK_IS_ON()
   switch (control_type) {
     case UIA_ButtonControlTypeId:
       return "UIA_ButtonControlTypeId";
@@ -463,7 +522,7 @@ const char* GetControlType(long control_type) {
     case UIA_AppBarControlTypeId:
       return "UIA_AppBarControlTypeId";
   }
-#endif  // ENABLE_DLOG
+#endif  // DCHECK_IS_ON()
   return "";
 }
 
@@ -476,9 +535,11 @@ SettingsAppMonitor::Context::EventHandler::~EventHandler() = default;
 
 void SettingsAppMonitor::Context::EventHandler::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> context_runner,
-    const base::WeakPtr<SettingsAppMonitor::Context>& context) {
+    const base::WeakPtr<SettingsAppMonitor::Context>& context,
+    base::win::ScopedComPtr<IUIAutomation> automation) {
   context_runner_ = std::move(context_runner);
   context_ = context;
+  automation_ = automation;
 }
 
 HRESULT SettingsAppMonitor::Context::EventHandler::HandleAutomationEvent(
@@ -499,7 +560,7 @@ HRESULT SettingsAppMonitor::Context::EventHandler::HandleAutomationEvent(
            << ", runtime id: " << IntArrayToString(GetCachedInt32ArrayValue(
                                       sender, UIA_RuntimeIdPropertyId));
 
-  switch (DetectElementType(sender)) {
+  switch (DetectElementType(automation_.get(), sender)) {
     case ElementType::DEFAULT_BROWSER:
       context_runner_->PostTask(
           FROM_HERE,
@@ -517,6 +578,18 @@ HRESULT SettingsAppMonitor::Context::EventHandler::HandleAutomationEvent(
       }
       break;
     }
+    case ElementType::SWITCH_ANYWAY:
+      context_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&SettingsAppMonitor::Context::HandlePromoChoiceMade,
+                     context_, false));
+      break;
+    case ElementType::CHECK_IT_OUT:
+      context_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&SettingsAppMonitor::Context::HandlePromoChoiceMade,
+                     context_, true));
+      break;
     case ElementType::UNKNOWN:
       break;
   }
@@ -548,6 +621,7 @@ HRESULT SettingsAppMonitor::Context::EventHandler::HandleFocusChangedEvent(
 
   return S_OK;
 }
+
 
 // SettingsAppMonitor::Context -------------------------------------------------
 
@@ -604,14 +678,18 @@ void SettingsAppMonitor::Context::HandleFocusChangedEvent(
     base::win::ScopedComPtr<IUIAutomationElement> sender) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (DetectElementType(sender.get()) == ElementType::DEFAULT_BROWSER) {
-    if (!observed_app_focused_) {
-      observed_app_focused_ = true;
-      monitor_runner_->PostTask(
-          FROM_HERE, base::Bind(&SettingsAppMonitor::OnAppFocused, monitor_));
-    }
-  } else {
-    observed_app_focused_ = false;
+  // Duplicate focus changed events are suppressed.
+  ElementType element_type = DetectElementType(automation_.get(), sender.get());
+  if (last_focused_element_ == element_type)
+    return;
+  last_focused_element_ = element_type;
+
+  if (element_type == ElementType::DEFAULT_BROWSER) {
+    monitor_runner_->PostTask(
+        FROM_HERE, base::Bind(&SettingsAppMonitor::OnAppFocused, monitor_));
+  } else if (element_type == ElementType::CHECK_IT_OUT) {
+    monitor_runner_->PostTask(
+        FROM_HERE, base::Bind(&SettingsAppMonitor::OnPromoFocused, monitor_));
   }
 }
 
@@ -629,6 +707,13 @@ void SettingsAppMonitor::Context::HandleBrowserChosen(
       base::Bind(&SettingsAppMonitor::OnBrowserChosen, monitor_, browser_name));
 }
 
+void SettingsAppMonitor::Context::HandlePromoChoiceMade(bool accept_promo) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  monitor_runner_->PostTask(
+      FROM_HERE, base::Bind(&SettingsAppMonitor::OnPromoChoiceMade, monitor_,
+                            accept_promo));
+}
+
 base::win::ScopedComPtr<IUnknown>
 SettingsAppMonitor::Context::GetEventHandler() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -636,7 +721,8 @@ SettingsAppMonitor::Context::GetEventHandler() {
     ATL::CComObject<EventHandler>* obj = nullptr;
     HRESULT result = ATL::CComObject<EventHandler>::CreateInstance(&obj);
     if (SUCCEEDED(result)) {
-      obj->Initialize(task_runner_, weak_ptr_factory_.GetWeakPtr());
+      obj->Initialize(task_runner_, weak_ptr_factory_.GetWeakPtr(),
+                      automation_);
       obj->QueryInterface(event_handler_.Receive());
     }
   }
@@ -740,6 +826,16 @@ void SettingsAppMonitor::OnChooserInvoked() {
 void SettingsAppMonitor::OnBrowserChosen(const base::string16& browser_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   delegate_->OnBrowserChosen(browser_name);
+}
+
+void SettingsAppMonitor::OnPromoFocused() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  delegate_->OnPromoFocused();
+}
+
+void SettingsAppMonitor::OnPromoChoiceMade(bool accept_promo) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  delegate_->OnPromoChoiceMade(accept_promo);
 }
 
 }  // namespace win

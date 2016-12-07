@@ -13853,6 +13853,14 @@ should be able to be added at any place in this file.
   <description>The Windows Settings app became focused.</description>
 </action>
 
+<action name="SettingsAppMonitor.CheckItOut">
+  <owner>grt@chromium.org</owner>
+  <owner>pmonette@chromium.org</owner>
+  <description>
+    The user clicked the &quot;Check it out&quot; button in the Edge promo.
+  </description>
+</action>
+
 <action name="SettingsAppMonitor.ChooserInvoked">
   <owner>grt@chromium.org</owner>
   <description>
@@ -13881,6 +13889,20 @@ should be able to be added at any place in this file.
   <description>
     The user selected a different browser from the Windows Settings app's
     browser chooser.
+  </description>
+</action>
+
+<action name="SettingsAppMonitor.PromoFocused">
+  <owner>grt@chromium.org</owner>
+  <owner>pmonette@chromium.org</owner>
+  <description>The Edge promo became focused.</description>
+</action>
+
+<action name="SettingsAppMonitor.SwitchAnyway">
+  <owner>grt@chromium.org</owner>
+  <owner>pmonette@chromium.org</owner>
+  <description>
+    The user clicked the &quot;Switch Anyway&quot; button in the Edge promo.
   </description>
 </action>
 
