@@ -64,7 +64,6 @@ class ScriptWrappableVisitorVerifier : public WrapperVisitor {
     return false;
   }
   void markWrappersInAllWorlds(const ScriptWrappable*) const override {}
-  void markWrappersInAllWorlds(const void*) const override {}
 
  private:
   mutable WTF::HashSet<HeapObjectHeader*> m_visitedHeaders;

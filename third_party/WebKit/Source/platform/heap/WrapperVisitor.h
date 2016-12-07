@@ -163,8 +163,14 @@ class PLATFORM_EXPORT WrapperVisitor {
   }
 
   virtual bool markWrapperHeader(HeapObjectHeader*) const = 0;
+
   virtual void markWrappersInAllWorlds(const ScriptWrappable*) const = 0;
-  virtual void markWrappersInAllWorlds(const void*) const = 0;
+
+  void markWrappersInAllWorlds(const void*) const {
+    // Empty handler used for WRAPPER_VISITOR_SPECIAL_CLASSES. These types
+    // don't require marking wrappers in all worlds, so just nop on those.
+  }
+
   virtual void pushToMarkingDeque(
       void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
       HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
