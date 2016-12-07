@@ -136,6 +136,12 @@ LayoutUnit LayoutMedia::computePanelWidth(const LayoutRect& mediaRect) const {
   if (document().page()->mainFrame()->isRemoteFrame())
     return mediaRect.width();
 
+  // TODO(foolip): when going fullscreen, the animation sometimes does not clear
+  // up properly and the last `absoluteXOffset` received is incorrect. This is
+  // a shortcut that we could ideally avoid. See https://crbug.com/663680
+  if (mediaElement() && mediaElement()->isFullscreen())
+    return mediaRect.width();
+
   FrameHost* frameHost = document().frameHost();
   LocalFrame* mainFrame = document().page()->deprecatedLocalMainFrame();
   FrameView* pageView = mainFrame ? mainFrame->view() : nullptr;
