@@ -614,6 +614,12 @@ LoadState SSLClientSocketPool::GetLoadState(
   return base_.GetLoadState(group_name, handle);
 }
 
+void SSLClientSocketPool::DumpMemoryStats(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& parent_dump_absolute_name) const {
+  base_.DumpMemoryStats(pmd, parent_dump_absolute_name);
+}
+
 std::unique_ptr<base::DictionaryValue> SSLClientSocketPool::GetInfoAsValue(
     const std::string& name,
     const std::string& type,

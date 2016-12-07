@@ -22,8 +22,11 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "crypto/ec_private_key.h"
@@ -802,6 +805,50 @@ void SSLClientSocketImpl::GetConnectionAttempts(ConnectionAttempts* out) const {
 
 int64_t SSLClientSocketImpl::GetTotalReceivedBytes() const {
   return transport_->socket()->GetTotalReceivedBytes();
+}
+
+void SSLClientSocketImpl::DumpMemoryStats(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& parent_dump_absolute_name) const {
+  size_t total_size = 0;
+  base::trace_event::MemoryAllocatorDump* socket_dump =
+      pmd->CreateAllocatorDump(base::StringPrintf(
+          "%s/ssl_socket_%p", parent_dump_absolute_name.c_str(), this));
+  if (transport_adapter_) {
+    size_t bio_buffers_size = transport_adapter_->GetAllocationSize();
+    socket_dump->AddScalar("buffer_size",
+                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                           bio_buffers_size);
+    total_size += bio_buffers_size;
+  }
+  size_t total_cert_size = 0;
+  size_t certs_count = 0;
+  if (server_cert_chain_) {
+    certs_count = server_cert_chain_->size();
+    for (size_t i = 0; i < certs_count; ++i) {
+      X509* cert = server_cert_chain_->Get(i);
+      total_cert_size += i2d_X509(cert, nullptr);
+    }
+  }
+  total_size += total_cert_size;
+  // This measures the lower bound of the serialized certificate. It doesn't
+  // measure the actual memory used, which is 4x this amount (see
+  // crbug.com/671420 for more details).
+  socket_dump->AddScalar("serialized_cert_size",
+                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                         total_cert_size);
+  socket_dump->AddScalar("cert_count",
+                         base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                         certs_count);
+  socket_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                         total_size);
+}
+
+// static
+void SSLClientSocketImpl::DumpSSLClientSessionMemoryStats(
+    base::trace_event::ProcessMemoryDump* pmd) {
+  SSLContext::GetInstance()->session_cache()->DumpMemoryStats(pmd);
 }
 
 int SSLClientSocketImpl::Read(IOBuffer* buf,

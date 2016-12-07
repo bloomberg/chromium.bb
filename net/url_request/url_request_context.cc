@@ -15,6 +15,7 @@
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/socket/ssl_client_socket_impl.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
 
@@ -127,6 +128,13 @@ bool URLRequestContext::OnMemoryDump(
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
                   base::trace_event::MemoryAllocatorDump::kUnitsObjects,
                   url_requests_->size());
+  HttpTransactionFactory* transaction_factory = http_transaction_factory();
+  if (transaction_factory) {
+    HttpNetworkSession* network_session = transaction_factory->GetSession();
+    if (network_session)
+      network_session->DumpMemoryStats(pmd, dump->absolute_name());
+  }
+  SSLClientSocketImpl::DumpSSLClientSessionMemoryStats(pmd);
   return true;
 }
 
