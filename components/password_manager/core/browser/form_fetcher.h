@@ -60,7 +60,7 @@ class FormFetcher {
   virtual State GetState() const = 0;
 
   // Statistics for recent password bubble usage.
-  virtual const std::vector<const InteractionsStats*>& GetInteractionsStats()
+  virtual const std::vector<InteractionsStats>& GetInteractionsStats()
       const = 0;
 
   // Federated matches obtained from the backend. Valid only if GetState()

@@ -353,11 +353,11 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleSuppressed) {
   CreateSmartBubbleFieldTrial();
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
-  password_manager::InteractionsStats stats;
-  stats.origin_domain = test_local_form().origin.GetOrigin();
-  stats.username_value = test_local_form().username_value;
-  stats.dismissal_count = kGreatDissmisalCount;
-  fetcher().set_stats({&stats});
+  std::vector<password_manager::InteractionsStats> stats(1);
+  stats[0].origin_domain = test_local_form().origin.GetOrigin();
+  stats[0].username_value = test_local_form().username_value;
+  stats[0].dismissal_count = kGreatDissmisalCount;
+  fetcher().set_stats(stats);
   test_form_manager->ProvisionallySave(
       test_local_form(),
       password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
@@ -367,7 +367,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleSuppressed) {
             controller()->GetState());
   EXPECT_FALSE(controller()->opened_bubble());
   ASSERT_TRUE(controller()->GetCurrentInteractionStats());
-  EXPECT_EQ(stats, *controller()->GetCurrentInteractionStats());
+  EXPECT_EQ(stats[0], *controller()->GetCurrentInteractionStats());
 
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
   variations::testing::ClearAllVariationParams();
@@ -377,11 +377,11 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleNotSuppressed) {
   CreateSmartBubbleFieldTrial();
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
-  password_manager::InteractionsStats stats;
-  stats.origin_domain = test_local_form().origin.GetOrigin();
-  stats.username_value = base::ASCIIToUTF16("not my username");
-  stats.dismissal_count = kGreatDissmisalCount;
-  fetcher().set_stats({&stats});
+  std::vector<password_manager::InteractionsStats> stats(1);
+  stats[0].origin_domain = test_local_form().origin.GetOrigin();
+  stats[0].username_value = base::ASCIIToUTF16("not my username");
+  stats[0].dismissal_count = kGreatDissmisalCount;
+  fetcher().set_stats(stats);
   test_form_manager->ProvisionallySave(
       test_local_form(),
       password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);

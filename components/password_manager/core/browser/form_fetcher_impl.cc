@@ -75,9 +75,9 @@ FormFetcherImpl::State FormFetcherImpl::GetState() const {
   return state_;
 }
 
-const std::vector<const InteractionsStats*>&
-FormFetcherImpl::GetInteractionsStats() const {
-  return weak_interactions_stats_;
+const std::vector<InteractionsStats>& FormFetcherImpl::GetInteractionsStats()
+    const {
+  return interactions_stats_;
 }
 
 const std::vector<const autofill::PasswordForm*>&
@@ -123,11 +123,10 @@ void FormFetcherImpl::OnGetPasswordStoreResults(
 }
 
 void FormFetcherImpl::OnGetSiteStatistics(
-    std::vector<std::unique_ptr<InteractionsStats>> stats) {
+    std::vector<InteractionsStats> stats) {
   // On Windows the password request may be resolved after the statistics due to
   // importing from IE.
   interactions_stats_ = std::move(stats);
-  weak_interactions_stats_ = MakeWeakCopies(interactions_stats_);
 }
 
 void FormFetcherImpl::Fetch() {

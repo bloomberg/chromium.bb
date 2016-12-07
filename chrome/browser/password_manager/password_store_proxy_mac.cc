@@ -215,7 +215,7 @@ void PasswordStoreProxyMac::RemoveSiteStatsImpl(const GURL& origin_domain) {
   GetBackend()->RemoveSiteStatsImpl(origin_domain);
 }
 
-std::vector<std::unique_ptr<password_manager::InteractionsStats>>
+std::vector<password_manager::InteractionsStats>
 PasswordStoreProxyMac::GetSiteStatsImpl(const GURL& origin_domain) {
   return GetBackend()->GetSiteStatsImpl(origin_domain);
 }

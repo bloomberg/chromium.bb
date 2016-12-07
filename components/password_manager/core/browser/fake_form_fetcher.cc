@@ -23,8 +23,8 @@ FormFetcher::State FakeFormFetcher::GetState() const {
   return state_;
 }
 
-const std::vector<const InteractionsStats*>&
-FakeFormFetcher::GetInteractionsStats() const {
+const std::vector<InteractionsStats>& FakeFormFetcher::GetInteractionsStats()
+    const {
   return stats_;
 }
 

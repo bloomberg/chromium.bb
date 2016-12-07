@@ -122,7 +122,7 @@ class PasswordManagerTest : public testing::Test {
 
     EXPECT_CALL(client_, GetPasswordStore())
         .WillRepeatedly(Return(store_.get()));
-    EXPECT_CALL(*store_, GetSiteStatsMock(_)).Times(AnyNumber());
+    EXPECT_CALL(*store_, GetSiteStatsImpl(_)).Times(AnyNumber());
     EXPECT_CALL(client_, GetDriver()).WillRepeatedly(Return(&driver_));
 
     manager_.reset(new PasswordManager(&client_));

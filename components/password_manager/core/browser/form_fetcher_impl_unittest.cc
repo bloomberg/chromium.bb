@@ -151,8 +151,8 @@ class FormFetcherImplTest : public testing::Test {
   // A wrapper around form_fetcher_.Fetch(), adding the call expectations.
   void Fetch() {
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
-    EXPECT_CALL(*mock_store_, GetSiteStatsMock(_))
-        .WillOnce(Return(std::vector<InteractionsStats*>()));
+    EXPECT_CALL(*mock_store_, GetSiteStatsImpl(_))
+        .WillOnce(Return(std::vector<InteractionsStats>()));
 #endif
     EXPECT_CALL(*mock_store_, GetLogins(form_digest_, form_fetcher_.get()));
     form_fetcher_->Fetch();
@@ -291,8 +291,7 @@ TEST_F(FormFetcherImplTest, Filtered) {
 TEST_F(FormFetcherImplTest, Stats) {
   Fetch();
   form_fetcher_->AddConsumer(&consumer_);
-  std::vector<std::unique_ptr<InteractionsStats>> stats;
-  stats.push_back(base::MakeUnique<InteractionsStats>());
+  std::vector<InteractionsStats> stats(1);
   form_fetcher_->OnGetSiteStatistics(std::move(stats));
   EXPECT_EQ(1u, form_fetcher_->GetInteractionsStats().size());
 }
@@ -344,21 +343,20 @@ TEST_F(FormFetcherImplTest, FetchStatistics) {
   stats.origin_domain = form_digest_.origin.GetOrigin();
   stats.username_value = ASCIIToUTF16("some username");
   stats.dismissal_count = 5;
-  std::vector<InteractionsStats*> db_stats;
-  db_stats.push_back(new InteractionsStats(stats));
+  std::vector<InteractionsStats> db_stats = {stats};
   EXPECT_CALL(*mock_store_, GetLogins(form_digest_, form_fetcher_.get()));
-  EXPECT_CALL(*mock_store_, GetSiteStatsMock(stats.origin_domain))
+  EXPECT_CALL(*mock_store_, GetSiteStatsImpl(stats.origin_domain))
       .WillOnce(Return(db_stats));
   form_fetcher_->Fetch();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(form_fetcher_->GetInteractionsStats(),
-              UnorderedElementsAre(Pointee(stats)));
+              UnorderedElementsAre(stats));
 }
 #else
 TEST_F(FormFetcherImplTest, DontFetchStatistics) {
   EXPECT_CALL(*mock_store_, GetLogins(form_digest_, form_fetcher_.get()));
-  EXPECT_CALL(*mock_store_, GetSiteStatsMock(_)).Times(0);
+  EXPECT_CALL(*mock_store_, GetSiteStatsImpl(_)).Times(0);
   form_fetcher_->Fetch();
   base::RunLoop().RunUntilIdle();
 }

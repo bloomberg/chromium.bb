@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -37,10 +38,9 @@ class FakeFormFetcher : public FormFetcher {
   State GetState() const override;
 
   // Statistics for recent password bubble usage.
-  const std::vector<const InteractionsStats*>& GetInteractionsStats()
-      const override;
+  const std::vector<InteractionsStats>& GetInteractionsStats() const override;
 
-  void set_stats(const std::vector<const InteractionsStats*>& stats) {
+  void set_stats(const std::vector<InteractionsStats>& stats) {
     state_ = State::NOT_WAITING;
     stats_ = stats;
   }
@@ -64,7 +64,7 @@ class FakeFormFetcher : public FormFetcher {
  private:
   std::set<Consumer*> consumers_;
   State state_ = State::NOT_WAITING;
-  std::vector<const InteractionsStats*> stats_;
+  std::vector<InteractionsStats> stats_;
   std::vector<const autofill::PasswordForm*> federated_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFormFetcher);

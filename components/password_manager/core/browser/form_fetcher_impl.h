@@ -32,8 +32,7 @@ class FormFetcherImpl : public FormFetcher, public PasswordStoreConsumer {
   // FormFetcher:
   void AddConsumer(Consumer* consumer) override;
   State GetState() const override;
-  const std::vector<const InteractionsStats*>& GetInteractionsStats()
-      const override;
+  const std::vector<InteractionsStats>& GetInteractionsStats() const override;
   const std::vector<const autofill::PasswordForm*>& GetFederatedMatches()
       const override;
   void Fetch() override;
@@ -41,8 +40,7 @@ class FormFetcherImpl : public FormFetcher, public PasswordStoreConsumer {
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
-  void OnGetSiteStatistics(
-      std::vector<std::unique_ptr<InteractionsStats>> stats) override;
+  void OnGetSiteStatistics(std::vector<InteractionsStats> stats) override;
 
  private:
   // PasswordStore results will be fetched for this description.
@@ -57,12 +55,11 @@ class FormFetcherImpl : public FormFetcher, public PasswordStoreConsumer {
   std::vector<std::unique_ptr<autofill::PasswordForm>> federated_;
 
   // Statistics for the current domain.
-  std::vector<std::unique_ptr<InteractionsStats>> interactions_stats_;
+  std::vector<InteractionsStats> interactions_stats_;
 
   // Non-owning copies of the vectors above.
   std::vector<const autofill::PasswordForm*> weak_non_federated_;
   std::vector<const autofill::PasswordForm*> weak_federated_;
-  std::vector<const InteractionsStats*> weak_interactions_stats_;
 
   // Consumers of the fetcher, all are assumed to outlive |this|.
   std::set<Consumer*> consumers_;

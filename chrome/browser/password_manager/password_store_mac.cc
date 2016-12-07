@@ -1345,13 +1345,12 @@ void PasswordStoreMac::RemoveSiteStatsImpl(const GURL& origin_domain) {
     login_metadata_db_->stats_table().RemoveRow(origin_domain);
 }
 
-std::vector<std::unique_ptr<password_manager::InteractionsStats>>
+std::vector<password_manager::InteractionsStats>
 PasswordStoreMac::GetSiteStatsImpl(const GURL& origin_domain) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_metadata_db_
              ? login_metadata_db_->stats_table().GetRows(origin_domain)
-             : std::vector<
-                   std::unique_ptr<password_manager::InteractionsStats>>();
+             : std::vector<password_manager::InteractionsStats>();
 }
 
 bool PasswordStoreMac::AddToKeychainIfNecessary(const PasswordForm& form) {
