@@ -158,6 +158,7 @@ Polymer({
     }
     this.maxModeIndex_ = this.selectedDisplay.modes.length - 1;
     this.selectedModeIndex_ = this.getSelectedModeIndex_(this.selectedDisplay);
+    this.immediateSelectedModeIndex_ = this.selectedModeIndex_;
   },
 
   /**
@@ -243,21 +244,25 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
-   * @param {number} immediateSelectedModeIndex
    * @return {string}
    * @private
    */
-  getResolutionText_: function(selectedDisplay, immediateSelectedModeIndex) {
+  getResolutionText_: function() {
     if (this.selectedDisplay.modes.length == 0) {
-      var widthStr = selectedDisplay.bounds.width.toString();
-      var heightStr = selectedDisplay.bounds.height.toString();
+      var widthStr = this.selectedDisplay.bounds.width.toString();
+      var heightStr = this.selectedDisplay.bounds.height.toString();
       return this.i18n('displayResolutionText', widthStr, heightStr);
     }
-    if (isNaN(immediateSelectedModeIndex))
-      immediateSelectedModeIndex = this.getSelectedModeIndex_(selectedDisplay);
-    var mode = selectedDisplay.modes[immediateSelectedModeIndex];
-    var best = selectedDisplay.isInternal ? mode.uiScale == 1.0 : mode.isNative;
+    // immediateSelectedModeIndex_ is bound to paper-slider.immediate-value
+    // which may not be valid, or may not have updated yet when this is called.
+    if (isNaN(this.immediateSelectedModeIndex_) ||
+        this.immediateSelectedModeIndex_ >= this.selectedDisplay.modes.length) {
+      this.immediateSelectedModeIndex_ =
+          this.getSelectedModeIndex_(this.selectedDisplay);
+    }
+    var mode = this.selectedDisplay.modes[this.immediateSelectedModeIndex_];
+    var best =
+        this.selectedDisplay.isInternal ? mode.uiScale == 1.0 : mode.isNative;
     var widthStr = mode.width.toString();
     var heightStr = mode.height.toString();
     if (best)
