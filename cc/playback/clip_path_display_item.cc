@@ -17,11 +17,13 @@ namespace cc {
 
 ClipPathDisplayItem::ClipPathDisplayItem(const SkPath& clip_path,
                                          SkClipOp clip_op,
-                                         bool antialias) {
+                                         bool antialias)
+    : DisplayItem(CLIP_PATH) {
   SetNew(clip_path, clip_op, antialias);
 }
 
-ClipPathDisplayItem::ClipPathDisplayItem(const proto::DisplayItem& proto) {
+ClipPathDisplayItem::ClipPathDisplayItem(const proto::DisplayItem& proto)
+    : DisplayItem(CLIP_PATH) {
   DCHECK_EQ(proto::DisplayItem::Type_ClipPath, proto.type());
 
   const proto::ClipPathDisplayItem& details = proto.clip_path_item();
@@ -79,16 +81,10 @@ void ClipPathDisplayItem::AsValueInto(
       clip_path_.countPoints(), visual_rect.ToString().c_str()));
 }
 
-size_t ClipPathDisplayItem::ExternalMemoryUsage() const {
-  // The size of SkPath's external storage is not currently accounted for (and
-  // may well be shared anyway).
-  return 0;
-}
+EndClipPathDisplayItem::EndClipPathDisplayItem() : DisplayItem(END_CLIP_PATH) {}
 
-EndClipPathDisplayItem::EndClipPathDisplayItem() {}
-
-EndClipPathDisplayItem::EndClipPathDisplayItem(
-    const proto::DisplayItem& proto) {
+EndClipPathDisplayItem::EndClipPathDisplayItem(const proto::DisplayItem& proto)
+    : DisplayItem(END_CLIP_PATH) {
   DCHECK_EQ(proto::DisplayItem::Type_EndClipPath, proto.type());
 }
 
@@ -111,10 +107,6 @@ void EndClipPathDisplayItem::AsValueInto(
   array->AppendString(
       base::StringPrintf("EndClipPathDisplayItem visualRect: [%s]",
                          visual_rect.ToString().c_str()));
-}
-
-size_t EndClipPathDisplayItem::ExternalMemoryUsage() const {
-  return 0;
 }
 
 }  // namespace cc

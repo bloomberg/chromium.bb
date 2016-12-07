@@ -32,8 +32,10 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
-  size_t ExternalMemoryUsage() const override;
 
+  size_t ExternalMemoryUsage() const {
+    return rounded_clip_rects_.capacity() * sizeof(rounded_clip_rects_[0]);
+  }
   int ApproximateOpCount() const { return 1; }
 
  private:
@@ -57,7 +59,6 @@ class CC_EXPORT EndClipDisplayItem : public DisplayItem {
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
-  size_t ExternalMemoryUsage() const override;
 
   int ApproximateOpCount() const { return 0; }
 };

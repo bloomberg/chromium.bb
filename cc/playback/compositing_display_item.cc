@@ -27,13 +27,14 @@ CompositingDisplayItem::CompositingDisplayItem(
     SkBlendMode xfermode,
     SkRect* bounds,
     sk_sp<SkColorFilter> cf,
-    bool lcd_text_requires_opaque_layer) {
+    bool lcd_text_requires_opaque_layer)
+    : DisplayItem(COMPOSITING) {
   SetNew(alpha, xfermode, bounds, std::move(cf),
          lcd_text_requires_opaque_layer);
 }
 
-CompositingDisplayItem::CompositingDisplayItem(
-    const proto::DisplayItem& proto) {
+CompositingDisplayItem::CompositingDisplayItem(const proto::DisplayItem& proto)
+    : DisplayItem(COMPOSITING) {
   DCHECK_EQ(proto::DisplayItem::Type_Compositing, proto.type());
 
   const proto::CompositingDisplayItem& details = proto.compositing_item();
@@ -124,15 +125,12 @@ void CompositingDisplayItem::AsValueInto(
   array->AppendString(info);
 }
 
-size_t CompositingDisplayItem::ExternalMemoryUsage() const {
-  // TODO(pdr): Include color_filter's memory here.
-  return 0;
-}
-
-EndCompositingDisplayItem::EndCompositingDisplayItem() {}
+EndCompositingDisplayItem::EndCompositingDisplayItem()
+    : DisplayItem(END_COMPOSITING) {}
 
 EndCompositingDisplayItem::EndCompositingDisplayItem(
-    const proto::DisplayItem& proto) {
+    const proto::DisplayItem& proto)
+    : DisplayItem(END_COMPOSITING) {
   DCHECK_EQ(proto::DisplayItem::Type_EndCompositing, proto.type());
 }
 
@@ -155,10 +153,6 @@ void EndCompositingDisplayItem::AsValueInto(
   array->AppendString(
       base::StringPrintf("EndCompositingDisplayItem visualRect: [%s]",
                          visual_rect.ToString().c_str()));
-}
-
-size_t EndCompositingDisplayItem::ExternalMemoryUsage() const {
-  return 0;
 }
 
 }  // namespace cc

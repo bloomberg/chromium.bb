@@ -29,8 +29,8 @@ class CC_EXPORT TransformDisplayItem : public DisplayItem {
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
-  size_t ExternalMemoryUsage() const override;
 
+  size_t ExternalMemoryUsage() const { return 0; }
   int ApproximateOpCount() const { return 1; }
 
  private:
@@ -54,7 +54,6 @@ class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
-  size_t ExternalMemoryUsage() const override;
 
   int ApproximateOpCount() const { return 0; }
 };

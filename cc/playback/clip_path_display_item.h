@@ -30,8 +30,12 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
-  size_t ExternalMemoryUsage() const override;
 
+  size_t ExternalMemoryUsage() const {
+    // The size of SkPath's external storage is not currently accounted for (and
+    // may well be shared anyway).
+    return 0;
+  }
   int ApproximateOpCount() const { return 1; }
 
  private:
@@ -57,7 +61,6 @@ class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
-  size_t ExternalMemoryUsage() const override;
 
   int ApproximateOpCount() const { return 0; }
 };

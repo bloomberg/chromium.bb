@@ -16,10 +16,16 @@
 #include "cc/debug/picture_debug_util.h"
 #include "cc/debug/traced_display_item_list.h"
 #include "cc/debug/traced_value.h"
+#include "cc/playback/clip_display_item.h"
+#include "cc/playback/clip_path_display_item.h"
+#include "cc/playback/compositing_display_item.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/display_item_proto_factory.h"
 #include "cc/playback/drawing_display_item.h"
+#include "cc/playback/filter_display_item.h"
+#include "cc/playback/float_clip_display_item.h"
 #include "cc/playback/largest_display_item.h"
+#include "cc/playback/transform_display_item.h"
 #include "cc/proto/display_item.pb.h"
 #include "cc/proto/gfx_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -183,7 +189,6 @@ int DisplayItemList::ApproximateOpCount() const {
   return approximate_op_count_;
 }
 
-DISABLE_CFI_PERF
 size_t DisplayItemList::ApproximateMemoryUsage() const {
   size_t memory_usage = sizeof(*this);
 
@@ -191,7 +196,44 @@ size_t DisplayItemList::ApproximateMemoryUsage() const {
   // Warning: this double-counts SkPicture data if use_cached_picture is
   // also true.
   for (const auto& item : inputs_.items) {
-    external_memory_usage += item.ExternalMemoryUsage();
+    size_t bytes = 0;
+    switch (item.type()) {
+      case DisplayItem::CLIP:
+        bytes = static_cast<const ClipDisplayItem&>(item).ExternalMemoryUsage();
+        break;
+      case DisplayItem::CLIP_PATH:
+        bytes =
+            static_cast<const ClipPathDisplayItem&>(item).ExternalMemoryUsage();
+        break;
+      case DisplayItem::COMPOSITING:
+        bytes = static_cast<const CompositingDisplayItem&>(item)
+                    .ExternalMemoryUsage();
+        break;
+      case DisplayItem::DRAWING:
+        bytes =
+            static_cast<const DrawingDisplayItem&>(item).ExternalMemoryUsage();
+        break;
+      case DisplayItem::FLOAT_CLIP:
+        bytes = static_cast<const FloatClipDisplayItem&>(item)
+                    .ExternalMemoryUsage();
+        break;
+      case DisplayItem::FILTER:
+        bytes =
+            static_cast<const FilterDisplayItem&>(item).ExternalMemoryUsage();
+        break;
+      case DisplayItem::TRANSFORM:
+        bytes = static_cast<const TransformDisplayItem&>(item)
+                    .ExternalMemoryUsage();
+        break;
+      case DisplayItem::END_CLIP:
+      case DisplayItem::END_CLIP_PATH:
+      case DisplayItem::END_COMPOSITING:
+      case DisplayItem::END_FLOAT_CLIP:
+      case DisplayItem::END_FILTER:
+      case DisplayItem::END_TRANSFORM:
+        break;
+    }
+    external_memory_usage += bytes;
   }
 
   // Memory outside this class due to |items_|.

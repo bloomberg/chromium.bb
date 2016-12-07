@@ -37,8 +37,11 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
-  size_t ExternalMemoryUsage() const override;
 
+  size_t ExternalMemoryUsage() const {
+    // TODO(pdr): Include color_filter's memory here.
+    return 0;
+  }
   int ApproximateOpCount() const { return 1; }
 
  private:
@@ -71,7 +74,6 @@ class CC_EXPORT EndCompositingDisplayItem : public DisplayItem {
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
-  size_t ExternalMemoryUsage() const override;
 
   int ApproximateOpCount() const { return 0; }
 };

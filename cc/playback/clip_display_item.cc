@@ -22,11 +22,13 @@ class ImageSerializationProcessor;
 
 ClipDisplayItem::ClipDisplayItem(const gfx::Rect& clip_rect,
                                  const std::vector<SkRRect>& rounded_clip_rects,
-                                 bool antialias) {
+                                 bool antialias)
+    : DisplayItem(CLIP) {
   SetNew(clip_rect, rounded_clip_rects, antialias);
 }
 
-ClipDisplayItem::ClipDisplayItem(const proto::DisplayItem& proto) {
+ClipDisplayItem::ClipDisplayItem(const proto::DisplayItem& proto)
+    : DisplayItem(CLIP) {
   DCHECK_EQ(proto::DisplayItem::Type_Clip, proto.type());
 
   const proto::ClipDisplayItem& details = proto.clip_item();
@@ -103,13 +105,10 @@ void ClipDisplayItem::AsValueInto(const gfx::Rect& visual_rect,
   array->AppendString(value);
 }
 
-size_t ClipDisplayItem::ExternalMemoryUsage() const {
-  return rounded_clip_rects_.capacity() * sizeof(rounded_clip_rects_[0]);
-}
+EndClipDisplayItem::EndClipDisplayItem() : DisplayItem(END_CLIP) {}
 
-EndClipDisplayItem::EndClipDisplayItem() {}
-
-EndClipDisplayItem::EndClipDisplayItem(const proto::DisplayItem& proto) {
+EndClipDisplayItem::EndClipDisplayItem(const proto::DisplayItem& proto)
+    : DisplayItem(END_CLIP) {
   DCHECK_EQ(proto::DisplayItem::Type_EndClip, proto.type());
 }
 
@@ -130,10 +129,6 @@ void EndClipDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf("EndClipDisplayItem visualRect: [%s]",
                                          visual_rect.ToString().c_str()));
-}
-
-size_t EndClipDisplayItem::ExternalMemoryUsage() const {
-  return 0;
 }
 
 }  // namespace cc

@@ -37,8 +37,8 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
                    base::trace_event::TracedValue* array) const override;
-  size_t ExternalMemoryUsage() const override;
 
+  size_t ExternalMemoryUsage() const;
   int ApproximateOpCount() const;
 
   void CloneTo(DrawingDisplayItem* item) const;

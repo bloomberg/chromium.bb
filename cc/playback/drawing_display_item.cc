@@ -26,16 +26,18 @@
 
 namespace cc {
 
-DrawingDisplayItem::DrawingDisplayItem() {}
+DrawingDisplayItem::DrawingDisplayItem() : DisplayItem(DRAWING) {}
 
-DrawingDisplayItem::DrawingDisplayItem(sk_sp<const SkPicture> picture) {
+DrawingDisplayItem::DrawingDisplayItem(sk_sp<const SkPicture> picture)
+    : DisplayItem(DRAWING) {
   SetNew(std::move(picture));
 }
 
 DrawingDisplayItem::DrawingDisplayItem(
     const proto::DisplayItem& proto,
     ClientPictureCache* client_picture_cache,
-    std::vector<uint32_t>* used_engine_picture_ids) {
+    std::vector<uint32_t>* used_engine_picture_ids)
+    : DisplayItem(DRAWING) {
   DCHECK_EQ(proto::DisplayItem::Type_Drawing, proto.type());
   DCHECK(client_picture_cache);
 
@@ -52,7 +54,8 @@ DrawingDisplayItem::DrawingDisplayItem(
   SetNew(std::move(picture));
 }
 
-DrawingDisplayItem::DrawingDisplayItem(const DrawingDisplayItem& item) {
+DrawingDisplayItem::DrawingDisplayItem(const DrawingDisplayItem& item)
+    : DisplayItem(DRAWING) {
   item.CloneTo(this);
 }
 

@@ -15,11 +15,12 @@
 namespace cc {
 
 TransformDisplayItem::TransformDisplayItem(const gfx::Transform& transform)
-    : transform_(gfx::Transform::kSkipInitialization) {
+    : DisplayItem(TRANSFORM), transform_(gfx::Transform::kSkipInitialization) {
   SetNew(transform);
 }
 
-TransformDisplayItem::TransformDisplayItem(const proto::DisplayItem& proto) {
+TransformDisplayItem::TransformDisplayItem(const proto::DisplayItem& proto)
+    : DisplayItem(TRANSFORM) {
   DCHECK_EQ(proto::DisplayItem::Type_Transform, proto.type());
 
   const proto::TransformDisplayItem& details = proto.transform_item();
@@ -57,14 +58,12 @@ void TransformDisplayItem::AsValueInto(
       transform_.ToString().c_str(), visual_rect.ToString().c_str()));
 }
 
-size_t TransformDisplayItem::ExternalMemoryUsage() const {
-  return 0;
-}
-
-EndTransformDisplayItem::EndTransformDisplayItem() {}
+EndTransformDisplayItem::EndTransformDisplayItem()
+    : DisplayItem(END_TRANSFORM) {}
 
 EndTransformDisplayItem::EndTransformDisplayItem(
-    const proto::DisplayItem& proto) {
+    const proto::DisplayItem& proto)
+    : DisplayItem(END_TRANSFORM) {
   DCHECK_EQ(proto::DisplayItem::Type_EndTransform, proto.type());
 }
 
@@ -87,10 +86,6 @@ void EndTransformDisplayItem::AsValueInto(
   array->AppendString(
       base::StringPrintf("EndTransformDisplayItem visualRect: [%s]",
                          visual_rect.ToString().c_str()));
-}
-
-size_t EndTransformDisplayItem::ExternalMemoryUsage() const {
-  return 0;
 }
 
 }  // namespace cc
