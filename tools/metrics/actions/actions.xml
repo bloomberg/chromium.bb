@@ -13684,6 +13684,16 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ScreenOrientationChange">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <description>
+    The use rotates the device triggering a screen orientation change. This
+    action is Android-specific.
+  </description>
+</action>
+
 <action name="Screenshot_Annotate">
   <owner>derat@chromium.org</owner>
   <owner>jdufault@chromium.org</owner>
