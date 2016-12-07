@@ -1645,42 +1645,11 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   xd->corrupted |= aom_reader_has_error(r);
 }
 
-static INLINE int dec_partition_plane_context(const MACROBLOCKD *xd, int mi_row,
-                                              int mi_col, int bsl) {
-  const PARTITION_CONTEXT *above_ctx = xd->above_seg_context + mi_col;
-  const PARTITION_CONTEXT *left_ctx =
-      xd->left_seg_context + (mi_row & MAX_MIB_MASK);
-  int above = (*above_ctx >> bsl) & 1, left = (*left_ctx >> bsl) & 1;
-
-  //  assert(bsl >= 0);
-
-  return (left * 2 + above) + bsl * PARTITION_PLOFFSET;
-}
-
-#if !CONFIG_EXT_PARTITION_TYPES
-static INLINE void dec_update_partition_context(MACROBLOCKD *xd, int mi_row,
-                                                int mi_col, BLOCK_SIZE subsize,
-                                                int bw) {
-  PARTITION_CONTEXT *const above_ctx = xd->above_seg_context + mi_col;
-  PARTITION_CONTEXT *const left_ctx =
-      xd->left_seg_context + (mi_row & MAX_MIB_MASK);
-
-  // update the partition context at the end notes. set partition bits
-  // of block sizes larger than the current one to be one, and partition
-  // bits of smaller block sizes to be zero.
-  memset(above_ctx, partition_context_lookup[subsize].above, bw);
-  memset(left_ctx, partition_context_lookup[subsize].left, bw);
-}
-#endif  // !CONFIG_EXT_PARTITION_TYPES
-
 static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int mi_row, int mi_col, aom_reader *r,
                                      int has_rows, int has_cols,
-#if CONFIG_EXT_PARTITION_TYPES
-                                     BLOCK_SIZE bsize,
-#endif
-                                     int bsl) {
-  const int ctx = dec_partition_plane_context(xd, mi_row, mi_col, bsl);
+                                     BLOCK_SIZE bsize) {
+  const int ctx = partition_plane_context(xd, mi_row, mi_col, bsize);
   const aom_prob *const probs = cm->fc->partition_prob[ctx];
   FRAME_COUNTS *counts = xd->counts;
   PARTITION_TYPE p;
@@ -1771,11 +1740,8 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
-  partition = read_partition(cm, xd, mi_row, mi_col, r, has_rows, has_cols,
-#if CONFIG_EXT_PARTITION_TYPES
-                             bsize,
-#endif
-                             n8x8_l2);
+  partition =
+      read_partition(cm, xd, mi_row, mi_col, r, has_rows, has_cols, bsize);
   subsize = subsize_lookup[partition][bsize];  // get_subsize(bsize, partition);
 
 #if CONFIG_PVQ
@@ -2072,7 +2038,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   // update partition context
   if (bsize >= BLOCK_8X8 &&
       (bsize == BLOCK_8X8 || partition != PARTITION_SPLIT))
-    dec_update_partition_context(xd, mi_row, mi_col, subsize, num_8x8_wh);
+    update_partition_context(xd, mi_row, mi_col, subsize, bsize);
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_DERING
