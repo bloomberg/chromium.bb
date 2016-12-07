@@ -81,7 +81,6 @@
 #include <cmath>
 #include <limits>
 
-#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 
@@ -197,10 +196,9 @@ void SincResampler::InitializeKernel() {
 
       // Compute the sinc with offset, then window the sinc() function and store
       // at the correct offset.
-      kernel_storage_[idx] = static_cast<float>(window *
-          ((pre_sinc == 0) ?
-              sinc_scale_factor :
-              (sin(sinc_scale_factor * pre_sinc) / pre_sinc)));
+      kernel_storage_[idx] = static_cast<float>(
+          window * (pre_sinc ? sin(sinc_scale_factor * pre_sinc) / pre_sinc
+                             : sinc_scale_factor));
     }
   }
 }
@@ -223,10 +221,9 @@ void SincResampler::SetRatio(double io_sample_rate_ratio) {
       const float window = kernel_window_storage_[idx];
       const float pre_sinc = kernel_pre_sinc_storage_[idx];
 
-      kernel_storage_[idx] = static_cast<float>(window *
-          ((pre_sinc == 0) ?
-              sinc_scale_factor :
-              (sin(sinc_scale_factor * pre_sinc) / pre_sinc)));
+      kernel_storage_[idx] = static_cast<float>(
+          window * (pre_sinc ? sin(sinc_scale_factor * pre_sinc) / pre_sinc
+                             : sinc_scale_factor));
     }
   }
 }
@@ -240,33 +237,20 @@ void SincResampler::Resample(int frames, float* destination) {
     buffer_primed_ = true;
   }
 
-  // TODO(dalecurtis): Temporary debugging for http://crbug.com/663814
-  const double starting_idx = virtual_source_idx_;
-  CHECK(!std::isnan(virtual_source_idx_));
-
-  // Step (2) -- Resample!  const what we can outside of the loop for speed.  It
-  // actually has an impact on ARM performance.  See inner loop comment below.
-  const double current_io_ratio = io_sample_rate_ratio_;
-  const float* const kernel_ptr = kernel_storage_.get();
+  // Step (2) -- Resample!
   while (remaining_frames) {
-    // Note: The loop construct here can severely impact performance on ARM
-    // or when built with clang.  See https://codereview.chromium.org/18566009/
-    int source_idx = static_cast<int>(virtual_source_idx_);
-    // TODO(dalecurtis): Temporary debugging for http://crbug.com/663814
-    CHECK_GE(source_idx, 0);
-    while (source_idx < block_size_) {
+    while (virtual_source_idx_ < block_size_) {
       // |virtual_source_idx_| lies in between two kernel offsets so figure out
       // what they are.
-      const double subsample_remainder = virtual_source_idx_ - source_idx;
-
+      const int source_idx = static_cast<int>(virtual_source_idx_);
       const double virtual_offset_idx =
-          subsample_remainder * kKernelOffsetCount;
+          (virtual_source_idx_ - source_idx) * kKernelOffsetCount;
       const int offset_idx = static_cast<int>(virtual_offset_idx);
 
       // We'll compute "convolutions" for the two kernels which straddle
       // |virtual_source_idx_|.
-      const float* const k1 = kernel_ptr + offset_idx * kKernelSize;
-      const float* const k2 = k1 + kKernelSize;
+      const float* k1 = kernel_storage_.get() + offset_idx * kKernelSize;
+      const float* k2 = k1 + kKernelSize;
 
       // Ensure |k1|, |k2| are 16-byte aligned for SIMD usage.  Should always be
       // true so long as kKernelSize is a multiple of 16.
@@ -274,22 +258,16 @@ void SincResampler::Resample(int frames, float* destination) {
       DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k2) & 0x0F);
 
       // Initialize input pointer based on quantized |virtual_source_idx_|.
-      const float* const input_ptr = r1_ + source_idx;
+      const float* input_ptr = r1_ + source_idx;
 
       // Figure out how much to weight each kernel's "convolution".
       const double kernel_interpolation_factor =
           virtual_offset_idx - offset_idx;
-      *destination++ = CONVOLVE_FUNC(
-          input_ptr, k1, k2, kernel_interpolation_factor);
+      *destination++ =
+          CONVOLVE_FUNC(input_ptr, k1, k2, kernel_interpolation_factor);
 
       // Advance the virtual index.
-      virtual_source_idx_ += current_io_ratio;
-      source_idx = static_cast<int>(virtual_source_idx_);
-
-      // TODO(dalecurtis): Temporary debugging for http://crbug.com/663814
-      base::debug::Alias(&starting_idx);
-      CHECK(!std::isnan(virtual_source_idx_));
-      CHECK_GE(source_idx, 0);
+      virtual_source_idx_ += io_sample_rate_ratio_;
       if (!--remaining_frames)
         return;
     }
@@ -297,10 +275,6 @@ void SincResampler::Resample(int frames, float* destination) {
     // Wrap back around to the start.
     DCHECK_GE(virtual_source_idx_, block_size_);
     virtual_source_idx_ -= block_size_;
-
-    // TODO(dalecurtis): Temporary debugging for http://crbug.com/663814
-    base::debug::Alias(&starting_idx);
-    CHECK(!std::isnan(virtual_source_idx_));
 
     // Step (3) -- Copy r3_, r4_ to r1_, r2_.
     // This wraps the last input frames back to the start of the buffer.
@@ -332,11 +306,7 @@ void SincResampler::Flush() {
 }
 
 double SincResampler::BufferedFrames() const {
-  if (buffer_primed_) {
-    return request_frames_ - virtual_source_idx_;
-  } else {
-    return 0.0;
-  }
+  return buffer_primed_ ? request_frames_ - virtual_source_idx_ : 0;
 }
 
 float SincResampler::Convolve_C(const float* input_ptr, const float* k1,
