@@ -122,10 +122,6 @@ QUIC_FLAG(bool, FLAGS_quic_limit_uncompressed_headers, false)
 // stream.
 QUIC_FLAG(bool, FLAGS_quic_headers_stream_release_sequencer_buffer, false)
 
-// Default enable QUIC's Cubic in bytes implementation instead of
-// Cubic in packets.
-QUIC_FLAG(bool, FLAGS_quic_default_enable_cubic_bytes, true)
-
 // Set the retransmission alarm only when there are unacked
 // retransmittable packets.
 QUIC_FLAG(bool, FLAGS_quic_more_conservative_retransmission_alarm, true)

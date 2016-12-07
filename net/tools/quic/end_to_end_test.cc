@@ -1331,8 +1331,7 @@ TEST_P(EndToEndTest, NegotiateCongestionControl) {
       expected_congestion_control_type = kBBR;
       break;
     case kQBIC:
-      expected_congestion_control_type =
-          FLAGS_quic_default_enable_cubic_bytes ? kCubicBytes : kCubic;
+      expected_congestion_control_type = kCubicBytes;
       break;
     default:
       DLOG(FATAL) << "Unexpected congestion control tag";

@@ -485,7 +485,7 @@ TEST_P(QuicCryptoServerStreamTest, NoTokenBindingWithoutClientSupport) {
 
 class FailingProofSource : public ProofSource {
  public:
-  bool GetProof(const QuicIpAddress& server_ip,
+  bool GetProof(const QuicSocketAddress& server_address,
                 const string& hostname,
                 const string& server_config,
                 QuicVersion quic_version,
@@ -496,7 +496,7 @@ class FailingProofSource : public ProofSource {
     return false;
   }
 
-  void GetProof(const QuicIpAddress& server_ip,
+  void GetProof(const QuicSocketAddress& server_address,
                 const string& hostname,
                 const string& server_config,
                 QuicVersion quic_version,

@@ -52,7 +52,7 @@ class FakeProofSource : public net::ProofSource {
   explicit FakeProofSource(bool success) : success_(success) {}
 
   // ProofSource override.
-  bool GetProof(const QuicIpAddress& server_ip,
+  bool GetProof(const QuicSocketAddress& server_ip,
                 const std::string& hostname,
                 const std::string& server_config,
                 net::QuicVersion quic_version,
@@ -70,7 +70,7 @@ class FakeProofSource : public net::ProofSource {
     return success_;
   }
 
-  void GetProof(const QuicIpAddress& server_ip,
+  void GetProof(const QuicSocketAddress& server_ip,
                 const std::string& hostname,
                 const std::string& server_config,
                 net::QuicVersion quic_version,

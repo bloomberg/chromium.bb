@@ -1873,6 +1873,7 @@
       'quic/core/congestion_control/pacing_sender_test.cc',
       'quic/core/congestion_control/prr_sender_test.cc',
       'quic/core/congestion_control/rtt_stats_test.cc',
+      'quic/core/congestion_control/send_algorithm_test.cc',
       'quic/core/congestion_control/tcp_cubic_sender_bytes_test.cc',
       'quic/core/congestion_control/tcp_cubic_sender_packets_test.cc',
       'quic/core/congestion_control/windowed_filter_test.cc',
@@ -2183,6 +2184,7 @@
     'net_linux_test_sources': [
       'tools/quic/chlo_extractor_test.cc',
       'tools/quic/platform/impl/quic_epoll_clock_test.cc',
+      "tools/quic/platform/impl/quic_socket_utils_test.cc",
       'tools/quic/end_to_end_test.cc',
       'tools/quic/quic_client_session_test.cc',
       'tools/quic/quic_client_test.cc',
