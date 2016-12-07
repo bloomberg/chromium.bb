@@ -40,7 +40,7 @@ declare_args() {
   # Turn on memory profiling in the task profiler when the heap shim is
   # available, except for official builds for now.
   enable_memory_task_profiler =
-      use_experimental_allocator_shim && !is_official_build
+      use_experimental_allocator_shim && (!is_official_build || is_syzyasan)
 }
 
 if (is_android) {
