@@ -28,6 +28,8 @@ function test()
             function onNetworkTab(sourceFrame)
             {
                 networkSourceFrame = sourceFrame;
+                networkSourceFrame.setSelection(new Common.TextRange(2, 0, 2, 5));
+                networkSourceFrame.scrollToLine(2);
                 dumpSourceFrame(networkSourceFrame);
                 next();
             }
@@ -48,8 +50,6 @@ function test()
             function onFileSystemTab(sourceFrame)
             {
                 fileSystemSourceFrame = sourceFrame;
-                fileSystemSourceFrame.setSelection(new Common.TextRange(2, 0, 2, 5));
-                fileSystemSourceFrame.scrollToLine(2);
                 dumpSourceFrame(fileSystemSourceFrame);
                 dumpEditorTabs();
                 next();
@@ -64,7 +64,7 @@ function test()
             function onBindingCreated()
             {
                 dumpEditorTabs();
-                dumpSourceFrame(networkSourceFrame);
+                dumpSourceFrame(fileSystemSourceFrame);
                 next();
             }
         },

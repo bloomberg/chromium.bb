@@ -30,9 +30,9 @@ function test()
             InspectorTest.waitForBinding('foo.js').then(next);
         },
 
-        function setBreakpointInNetworkUISourceCode(next)
+        function setBreakpointInFileSystemUISourceCode(next)
         {
-            InspectorTest.waitForUISourceCode('foo.js', Workspace.projectTypes.Network)
+            InspectorTest.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem)
                 .then(sourceCode => InspectorTest.showUISourceCodePromise(sourceCode))
                 .then(onSourceFrame);
 

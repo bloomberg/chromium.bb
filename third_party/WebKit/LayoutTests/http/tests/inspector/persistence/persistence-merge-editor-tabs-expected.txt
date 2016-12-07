@@ -5,14 +5,14 @@ Running: addFileSystem
 
 Running: openNetworkTab
 SourceFrame: http://127.0.0.1:8000/inspector/persistence/resources/foo.js
-    selection: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":0}
-    firstVisibleLine: 0
+    selection: {"startLine":2,"startColumn":0,"endLine":2,"endColumn":5}
+    firstVisibleLine: 2
     isDirty: false
 
 Running: openFileSystemTab
 SourceFrame: file:///var/www/inspector/persistence/resources/foo.js
-    selection: {"startLine":2,"startColumn":0,"endLine":2,"endColumn":5}
-    firstVisibleLine: 2
+    selection: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":0}
+    firstVisibleLine: 0
     isDirty: true
 Opened tabs: 
     file:///var/www/inspector/persistence/resources/foo.js
@@ -20,8 +20,8 @@ Opened tabs:
 
 Running: addFileMapping
 Opened tabs: 
-    http://127.0.0.1:8000/inspector/persistence/resources/foo.js
-SourceFrame: http://127.0.0.1:8000/inspector/persistence/resources/foo.js
+    file:///var/www/inspector/persistence/resources/foo.js
+SourceFrame: file:///var/www/inspector/persistence/resources/foo.js
     selection: {"startLine":2,"startColumn":0,"endLine":2,"endColumn":5}
     firstVisibleLine: 2
     isDirty: true
@@ -29,7 +29,6 @@ SourceFrame: http://127.0.0.1:8000/inspector/persistence/resources/foo.js
 Running: removeFileMapping
 Opened tabs: 
     file:///var/www/inspector/persistence/resources/foo.js
-    http://127.0.0.1:8000/inspector/persistence/resources/foo.js
 SourceFrame: file:///var/www/inspector/persistence/resources/foo.js
     selection: {"startLine":2,"startColumn":0,"endLine":2,"endColumn":5}
     firstVisibleLine: 2

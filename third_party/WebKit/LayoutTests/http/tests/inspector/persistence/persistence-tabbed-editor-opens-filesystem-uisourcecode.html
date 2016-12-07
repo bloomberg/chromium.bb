@@ -20,7 +20,7 @@ function test()
         InspectorTest.addResult("Binding created: " + binding);
         dumpEditorTabs("Opened tabs before opening any UISourceCodes:");
         InspectorTest.addResult("request open uiSourceCode: " + binding.fileSystem.url());
-        UI.panels.sources.showUISourceCode(binding.fileSystem, 0, 0);
+        UI.panels.sources.showUISourceCode(binding.network, 0, 0);
         dumpEditorTabs("Opened tabs after opening UISourceCode:");
         InspectorTest.completeTest();
     }
@@ -38,6 +38,6 @@ function test()
 </script>
 </head>
 <body onload="runTest()">
-<p>Verify that for a fileSystem UISourceCode with network binding TabbedEditorContainer opens network UISourceCode.</p>
+<p>Verify that for a fileSystem UISourceCode with persistence binding TabbedEditorContainer opens filesystem UISourceCode.</p>
 </body>
 </html>
