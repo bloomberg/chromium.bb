@@ -9,9 +9,6 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
-#include "modules/shapedetection/FaceDetectorOptions.h"
-#include "public/platform/modules/shapedetection/barcodedetection.mojom-blink.h"
-#include "public/platform/modules/shapedetection/facedetection.mojom-blink.h"
 
 namespace blink {
 
@@ -20,55 +17,25 @@ class LocalFrame;
 class MODULES_EXPORT ShapeDetector
     : public GarbageCollectedFinalized<ShapeDetector> {
  public:
-  enum class DetectorType {
-    Face,
-    Barcode
-    // TODO(mcasas): Implement TextDetector after
-    // https://github.com/WICG/shape-detection-api/issues/6
-  };
+  // TODO(mcasas): Implement TextDetector after
+  // https://github.com/WICG/shape-detection-api/issues/6
   explicit ShapeDetector(LocalFrame&);
-  ShapeDetector(LocalFrame&, const FaceDetectorOptions&);
   virtual ~ShapeDetector() = default;
 
-  ScriptPromise detectShapes(ScriptState*,
-                             DetectorType,
-                             const CanvasImageSourceUnion&);
-  DECLARE_VIRTUAL_TRACE();
+  ScriptPromise detect(ScriptState*, const CanvasImageSourceUnion&);
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  private:
-  ScriptPromise detectShapesOnImageElement(DetectorType,
-                                           ScriptPromiseResolver*,
+  ScriptPromise detectShapesOnImageElement(ScriptPromiseResolver*,
                                            const HTMLImageElement*);
-  ScriptPromise detectShapesOnImageBitmap(DetectorType,
-                                          ScriptPromiseResolver*,
-                                          ImageBitmap*);
-  ScriptPromise detectShapesOnVideoElement(DetectorType,
-                                           ScriptPromiseResolver*,
+  ScriptPromise detectShapesOnImageBitmap(ScriptPromiseResolver*, ImageBitmap*);
+  ScriptPromise detectShapesOnVideoElement(ScriptPromiseResolver*,
                                            const HTMLVideoElement*);
 
-  ScriptPromise detectShapesOnData(DetectorType,
-                                   ScriptPromiseResolver*,
-                                   uint8_t* data,
-                                   int size,
-                                   int width,
-                                   int height);
-  void onDetectFaces(ScriptPromiseResolver*,
-                     mojom::blink::FaceDetectionResultPtr);
-  void onDetectBarcodes(ScriptPromiseResolver*,
-                        Vector<mojom::blink::BarcodeDetectionResultPtr>);
-
-  // Error handlers for use if mojo service doesn't connect.
-  void onFaceServiceConnectionError();
-  void onBarcodeServiceConnectionError();
-
-  mojom::blink::FaceDetectionPtr m_faceService;
-  mojom::blink::BarcodeDetectionPtr m_barcodeService;
-
-  HeapHashSet<Member<ScriptPromiseResolver>> m_faceServiceRequests;
-  HeapHashSet<Member<ScriptPromiseResolver>> m_barcodeServiceRequests;
-
- protected:
-  mojom::blink::FaceDetectorOptionsPtr m_faceDetectorOptions;
+  virtual ScriptPromise doDetect(ScriptPromiseResolver*,
+                                 mojo::ScopedSharedBufferHandle,
+                                 int imageWidth,
+                                 int imageHeight) = 0;
 };
 
 }  // namespace blink

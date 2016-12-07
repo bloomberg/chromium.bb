@@ -9,14 +9,11 @@
 #include "core/dom/Document.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/ImageBitmap.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
-#include "modules/shapedetection/DetectedBarcode.h"
 #include "platform/graphics/Image.h"
-#include "public/platform/InterfaceProvider.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "wtf/CheckedNumeric.h"
@@ -25,55 +22,49 @@ namespace blink {
 
 namespace {
 
-static CanvasImageSource* toImageSourceInternal(
-    const CanvasImageSourceUnion& value) {
-  if (value.isHTMLImageElement())
-    return value.getAsHTMLImageElement();
+mojo::ScopedSharedBufferHandle getSharedBufferOnData(
+    ScriptPromiseResolver* resolver,
+    uint8_t* data,
+    int size) {
+  DCHECK(data);
+  DCHECK(size);
+  ScriptPromise promise = resolver->promise();
 
-  if (value.isImageBitmap() &&
-      !static_cast<ImageBitmap*>(value.getAsImageBitmap())->isNeutered()) {
-    return value.getAsImageBitmap();
+  mojo::ScopedSharedBufferHandle sharedBufferHandle =
+      mojo::SharedBufferHandle::Create(size);
+  if (!sharedBufferHandle->is_valid()) {
+    resolver->reject(
+        DOMException::create(InvalidStateError, "Internal allocation error"));
+    return sharedBufferHandle;
   }
 
-  if (value.isHTMLVideoElement())
-    return value.getAsHTMLVideoElement();
+  const mojo::ScopedSharedBufferMapping mappedBuffer =
+      sharedBufferHandle->Map(size);
+  DCHECK(mappedBuffer.get());
+  memcpy(mappedBuffer.get(), data, size);
 
-  return nullptr;
+  return sharedBufferHandle;
 }
 
 }  // anonymous namespace
 
 ShapeDetector::ShapeDetector(LocalFrame& frame) {
-  DCHECK(!m_faceService.is_bound());
-  DCHECK(!m_barcodeService.is_bound());
   DCHECK(frame.interfaceProvider());
-  frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_faceService));
-  frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_barcodeService));
-  m_faceService.set_connection_error_handler(convertToBaseCallback(WTF::bind(
-      &ShapeDetector::onFaceServiceConnectionError, wrapWeakPersistent(this))));
-  m_barcodeService.set_connection_error_handler(convertToBaseCallback(
-      WTF::bind(&ShapeDetector::onBarcodeServiceConnectionError,
-                wrapWeakPersistent(this))));
 }
 
-ShapeDetector::ShapeDetector(LocalFrame& frame,
-                             const FaceDetectorOptions& options)
-    : ShapeDetector(frame) {
-  m_faceDetectorOptions = mojom::blink::FaceDetectorOptions::New();
-  m_faceDetectorOptions->max_detected_faces = options.maxDetectedFaces();
-  m_faceDetectorOptions->fast_mode = options.fastMode();
-}
-
-ScriptPromise ShapeDetector::detectShapes(
-    ScriptState* scriptState,
-    DetectorType detectorType,
-    const CanvasImageSourceUnion& imageSource) {
-  CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
-
+ScriptPromise ShapeDetector::detect(ScriptState* scriptState,
+                                    const CanvasImageSourceUnion& imageSource) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  if (!imageSourceInternal) {
+  CanvasImageSource* canvasImageSource;
+  if (imageSource.isHTMLImageElement()) {
+    canvasImageSource = imageSource.getAsHTMLImageElement();
+  } else if (imageSource.isImageBitmap()) {
+    canvasImageSource = imageSource.getAsImageBitmap();
+  } else if (imageSource.isHTMLVideoElement()) {
+    canvasImageSource = imageSource.getAsHTMLVideoElement();
+  } else {
     // TODO(mcasas): Implement more CanvasImageSources, https://crbug.com/659138
     NOTIMPLEMENTED() << "Unsupported CanvasImageSource";
     resolver->reject(
@@ -81,7 +72,7 @@ ScriptPromise ShapeDetector::detectShapes(
     return promise;
   }
 
-  if (imageSourceInternal->wouldTaintOrigin(
+  if (canvasImageSource->wouldTaintOrigin(
           scriptState->getExecutionContext()->getSecurityOrigin())) {
     resolver->reject(
         DOMException::create(SecurityError, "Source would taint origin."));
@@ -89,18 +80,13 @@ ScriptPromise ShapeDetector::detectShapes(
   }
 
   if (imageSource.isHTMLImageElement()) {
-    return detectShapesOnImageElement(
-        detectorType, resolver,
-        static_cast<HTMLImageElement*>(imageSourceInternal));
-  }
-  if (imageSourceInternal->isImageBitmap()) {
-    return detectShapesOnImageBitmap(
-        detectorType, resolver, static_cast<ImageBitmap*>(imageSourceInternal));
-  }
-  if (imageSourceInternal->isVideoElement()) {
-    return detectShapesOnVideoElement(
-        detectorType, resolver,
-        static_cast<HTMLVideoElement*>(imageSourceInternal));
+    return detectShapesOnImageElement(resolver,
+                                      imageSource.getAsHTMLImageElement());
+  } else if (imageSource.isImageBitmap()) {
+    return detectShapesOnImageBitmap(resolver, imageSource.getAsImageBitmap());
+  } else if (imageSource.isHTMLVideoElement()) {
+    return detectShapesOnVideoElement(resolver,
+                                      imageSource.getAsHTMLVideoElement());
   }
 
   NOTREACHED();
@@ -108,10 +94,10 @@ ScriptPromise ShapeDetector::detectShapes(
 }
 
 ScriptPromise ShapeDetector::detectShapesOnImageElement(
-    DetectorType detectorType,
     ScriptPromiseResolver* resolver,
     const HTMLImageElement* img) {
   ScriptPromise promise = resolver->promise();
+
   if (img->bitmapSourceSize().isZero()) {
     resolver->resolve(HeapVector<Member<DOMRect>>());
     return promise;
@@ -170,46 +156,18 @@ ScriptPromise ShapeDetector::detectShapesOnImageElement(
     return promise;
   }
 
-  if (detectorType == DetectorType::Face) {
-    if (!m_faceService) {
-      resolver->reject(DOMException::create(
-          NotSupportedError, "Face detection service unavailable."));
-      return promise;
-    }
-    m_faceServiceRequests.add(resolver);
-    m_faceService->Detect(std::move(sharedBufferHandle), img->naturalWidth(),
-                          img->naturalHeight(), m_faceDetectorOptions.Clone(),
-                          convertToBaseCallback(WTF::bind(
-                              &ShapeDetector::onDetectFaces,
-                              wrapPersistent(this), wrapPersistent(resolver))));
-  } else if (detectorType == DetectorType::Barcode) {
-    if (!m_barcodeService) {
-      resolver->reject(DOMException::create(
-          NotSupportedError, "Barcode detection service unavailable."));
-      return promise;
-    }
-    m_barcodeServiceRequests.add(resolver);
-    m_barcodeService->Detect(
-        std::move(sharedBufferHandle), img->naturalWidth(),
-        img->naturalHeight(),
-        convertToBaseCallback(WTF::bind(&ShapeDetector::onDetectBarcodes,
-                                        wrapPersistent(this),
-                                        wrapPersistent(resolver))));
-  } else {
-    NOTREACHED() << "Unsupported detector type";
-  }
-
-  return promise;
+  return doDetect(resolver, std::move(sharedBufferHandle), img->naturalWidth(),
+                  img->naturalHeight());
 }
 
 ScriptPromise ShapeDetector::detectShapesOnImageBitmap(
-    DetectorType detectorType,
     ScriptPromiseResolver* resolver,
     ImageBitmap* imageBitmap) {
   ScriptPromise promise = resolver->promise();
-  if (!imageBitmap->originClean()) {
+
+  if (imageBitmap->isNeutered()) {
     resolver->reject(
-        DOMException::create(SecurityError, "ImageBitmap is not origin clean"));
+        DOMException::create(InvalidStateError, "Neutered ImageBitmap."));
     return promise;
   }
 
@@ -237,17 +195,19 @@ ScriptPromise ShapeDetector::detectShapesOnImageBitmap(
     allocationSize = imageBitmap->size().area() * 4 /* bytes per pixel */;
   }
 
-  return detectShapesOnData(detectorType, resolver, pixelDataPtr,
-                            allocationSize.ValueOrDefault(0),
-                            imageBitmap->width(), imageBitmap->height());
+  mojo::ScopedSharedBufferHandle sharedBufferHandle = getSharedBufferOnData(
+      resolver, pixelDataPtr, allocationSize.ValueOrDefault(0));
+  if (!sharedBufferHandle->is_valid())
+    return promise;
+
+  return doDetect(resolver, std::move(sharedBufferHandle), imageBitmap->width(),
+                  imageBitmap->height());
 }
 
 ScriptPromise ShapeDetector::detectShapesOnVideoElement(
-    DetectorType detectorType,
     ScriptPromiseResolver* resolver,
     const HTMLVideoElement* video) {
   ScriptPromise promise = resolver->promise();
-
   // TODO(mcasas): Check if |video| is actually playing a MediaStream by using
   // HTMLMediaElement::isMediaStreamURL(video->currentSrc().getString()); if
   // there is a local WebCam associated, there might be sophisticated ways to
@@ -285,121 +245,13 @@ ScriptPromise ShapeDetector::detectShapesOnVideoElement(
     return promise;
   }
 
-  return detectShapesOnData(detectorType, resolver, pixelDataPtr,
-                            allocationSize.ValueOrDefault(0), image->width(),
-                            image->height());
-}
-
-ScriptPromise ShapeDetector::detectShapesOnData(DetectorType detectorType,
-                                                ScriptPromiseResolver* resolver,
-                                                uint8_t* data,
-                                                int size,
-                                                int width,
-                                                int height) {
-  DCHECK(data);
-  DCHECK(size);
-  ScriptPromise promise = resolver->promise();
-
-  mojo::ScopedSharedBufferHandle sharedBufferHandle =
-      mojo::SharedBufferHandle::Create(size);
-  if (!sharedBufferHandle->is_valid()) {
-    resolver->reject(
-        DOMException::create(InvalidStateError, "Internal allocation error"));
+  mojo::ScopedSharedBufferHandle sharedBufferHandle = getSharedBufferOnData(
+      resolver, pixelDataPtr, allocationSize.ValueOrDefault(0));
+  if (!sharedBufferHandle->is_valid())
     return promise;
-  }
 
-  const mojo::ScopedSharedBufferMapping mappedBuffer =
-      sharedBufferHandle->Map(size);
-  DCHECK(mappedBuffer.get());
-
-  memcpy(mappedBuffer.get(), data, size);
-
-  if (detectorType == DetectorType::Face) {
-    if (!m_faceService) {
-      resolver->reject(DOMException::create(
-          NotSupportedError, "Face detection service unavailable."));
-      return promise;
-    }
-    m_faceServiceRequests.add(resolver);
-    m_faceService->Detect(std::move(sharedBufferHandle), width, height,
-                          m_faceDetectorOptions.Clone(),
-                          convertToBaseCallback(WTF::bind(
-                              &ShapeDetector::onDetectFaces,
-                              wrapPersistent(this), wrapPersistent(resolver))));
-  } else if (detectorType == DetectorType::Barcode) {
-    if (!m_barcodeService) {
-      resolver->reject(DOMException::create(
-          NotSupportedError, "Barcode detection service unavailable."));
-      return promise;
-    }
-    m_barcodeServiceRequests.add(resolver);
-    m_barcodeService->Detect(
-        std::move(sharedBufferHandle), width, height,
-        convertToBaseCallback(WTF::bind(&ShapeDetector::onDetectBarcodes,
-                                        wrapPersistent(this),
-                                        wrapPersistent(resolver))));
-  } else {
-    NOTREACHED() << "Unsupported detector type";
-  }
-  sharedBufferHandle.reset();
-  return promise;
-}
-
-void ShapeDetector::onDetectFaces(
-    ScriptPromiseResolver* resolver,
-    mojom::blink::FaceDetectionResultPtr faceDetectionResult) {
-  DCHECK(m_faceServiceRequests.contains(resolver));
-  m_faceServiceRequests.remove(resolver);
-
-  HeapVector<Member<DOMRect>> detectedFaces;
-  for (const auto& boundingBox : faceDetectionResult->bounding_boxes) {
-    detectedFaces.append(DOMRect::create(boundingBox->x, boundingBox->y,
-                                         boundingBox->width,
-                                         boundingBox->height));
-  }
-
-  resolver->resolve(detectedFaces);
-}
-
-void ShapeDetector::onDetectBarcodes(
-    ScriptPromiseResolver* resolver,
-    Vector<mojom::blink::BarcodeDetectionResultPtr> barcodeDetectionResults) {
-  DCHECK(m_barcodeServiceRequests.contains(resolver));
-  m_barcodeServiceRequests.remove(resolver);
-
-  HeapVector<Member<DetectedBarcode>> detectedBarcodes;
-  for (const auto& barcode : barcodeDetectionResults) {
-    detectedBarcodes.append(DetectedBarcode::create(
-        barcode->raw_value,
-        DOMRect::create(barcode->bounding_box->x, barcode->bounding_box->y,
-                        barcode->bounding_box->width,
-                        barcode->bounding_box->height)));
-  }
-
-  resolver->resolve(detectedBarcodes);
-}
-
-void ShapeDetector::onFaceServiceConnectionError() {
-  for (const auto& request : m_faceServiceRequests) {
-    request->reject(DOMException::create(NotSupportedError,
-                                         "Face Detection not implemented."));
-  }
-  m_faceServiceRequests.clear();
-  m_faceService.reset();
-}
-
-void ShapeDetector::onBarcodeServiceConnectionError() {
-  for (const auto& request : m_barcodeServiceRequests) {
-    request->reject(DOMException::create(NotSupportedError,
-                                         "Barcode Detection not implemented."));
-  }
-  m_barcodeServiceRequests.clear();
-  m_barcodeService.reset();
-}
-
-DEFINE_TRACE(ShapeDetector) {
-  visitor->trace(m_faceServiceRequests);
-  visitor->trace(m_barcodeServiceRequests);
+  return doDetect(resolver, std::move(sharedBufferHandle), image->width(),
+                  image->height());
 }
 
 }  // namespace blink
