@@ -79,8 +79,6 @@ declare_args() {
 
 # Additional dependent variables -----------------------------------------------
 
-enable_web_speech = !is_android && !is_ios
-
 enable_task_manager = !is_ios && !is_android
 
 enable_themes = !is_android && !is_ios

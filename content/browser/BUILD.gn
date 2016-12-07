@@ -1297,27 +1297,11 @@ source_set("browser") {
     "shared_worker/worker_storage_partition.h",
     "site_instance_impl.cc",
     "site_instance_impl.h",
-    "speech/audio_buffer.cc",
-    "speech/audio_buffer.h",
-    "speech/audio_encoder.cc",
-    "speech/audio_encoder.h",
-    "speech/chunked_byte_buffer.cc",
-    "speech/chunked_byte_buffer.h",
-    "speech/endpointer/endpointer.cc",
-    "speech/endpointer/endpointer.h",
-    "speech/endpointer/energy_endpointer.cc",
-    "speech/endpointer/energy_endpointer.h",
-    "speech/endpointer/energy_endpointer_params.cc",
-    "speech/endpointer/energy_endpointer_params.h",
     "speech/speech_recognition_dispatcher_host.cc",
     "speech/speech_recognition_dispatcher_host.h",
-    "speech/speech_recognition_engine.cc",
-    "speech/speech_recognition_engine.h",
     "speech/speech_recognition_manager_impl.cc",
     "speech/speech_recognition_manager_impl.h",
     "speech/speech_recognizer.h",
-    "speech/speech_recognizer_impl.cc",
-    "speech/speech_recognizer_impl.h",
     "speech/speech_recognizer_impl_android.cc",
     "speech/speech_recognizer_impl_android.h",
     "ssl/ssl_client_auth_handler.cc",
@@ -1768,8 +1752,22 @@ source_set("browser") {
       "media/session/audio_focus_manager.h",
       "tracing/tracing_ui.cc",
       "tracing/tracing_ui.h",
-
-      # Android skips most, but not all, of the speech code.
+    ]
+    deps -= [ "//device/battery" ]
+    deps += [
+      "//content/public/android:jni",
+      "//media",
+      "//media/capture/content/android",
+      "//media/capture/video/android",
+      "//mojo/android:libsystem_java",
+      "//ui/android",
+    ]
+    defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
+    libs += [ "jnigraphics" ]
+  } else {
+    # Not Android.
+    sources += [
+      # Most speech code is non-Android.
       "speech/audio_buffer.cc",
       "speech/audio_buffer.h",
       "speech/audio_encoder.cc",
@@ -1787,17 +1785,7 @@ source_set("browser") {
       "speech/speech_recognizer_impl.cc",
       "speech/speech_recognizer_impl.h",
     ]
-    deps -= [ "//device/battery" ]
-    deps += [
-      "//content/public/android:jni",
-      "//media",
-      "//media/capture/content/android",
-      "//media/capture/video/android",
-      "//mojo/android:libsystem_java",
-      "//ui/android",
-    ]
-    defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
-    libs += [ "jnigraphics" ]
+    deps += [ "//third_party/flac" ]
   }
 
   if (is_mac) {
@@ -1939,10 +1927,6 @@ source_set("browser") {
       ]
     }
     deps += [ "//ui/compositor" ]
-  }
-
-  if (enable_web_speech) {
-    deps += [ "//third_party/flac" ]
   }
 
   if (is_linux && use_dbus) {

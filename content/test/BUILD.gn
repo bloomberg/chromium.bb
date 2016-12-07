@@ -824,6 +824,9 @@ test("content_browsertests") {
         "${target_gen_dir}/content_browsertests_manifest/AndroidManifest.xml"
     android_manifest_dep = ":content_browsertests_manifest"
     use_default_launcher = false
+  } else {
+    # Non-Android.
+    sources += [ "../browser/speech/speech_recognition_browsertest.cc" ]
   }
 
   if (is_mac) {
@@ -884,10 +887,6 @@ test("content_browsertests") {
     ]
     deps += [ "//ppapi/proxy:test_support" ]
     data_deps += [ "//ppapi:ppapi_tests" ]
-  }
-
-  if (enable_web_speech) {
-    sources += [ "../browser/speech/speech_recognition_browsertest.cc" ]
   }
 
   if (!is_chrome_branded) {
@@ -1583,15 +1582,6 @@ test("content_unittests") {
     ]
   }
 
-  if (enable_web_speech) {
-    sources += [
-      "../browser/speech/chunked_byte_buffer_unittest.cc",
-      "../browser/speech/endpointer/endpointer_unittest.cc",
-      "../browser/speech/speech_recognition_engine_unittest.cc",
-      "../browser/speech/speech_recognizer_impl_unittest.cc",
-    ]
-  }
-
   if (is_linux) {
     if (use_dbus) {
       deps += [ "//dbus:test_support" ]
@@ -1639,8 +1629,14 @@ test("content_unittests") {
     ]
 
     defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
-  }
-  if (!is_android) {
+  } else {
+    # Non-Android.
+    sources += [
+      "../browser/speech/chunked_byte_buffer_unittest.cc",
+      "../browser/speech/endpointer/endpointer_unittest.cc",
+      "../browser/speech/speech_recognition_engine_unittest.cc",
+      "../browser/speech/speech_recognizer_impl_unittest.cc",
+    ]
     deps += [ "//third_party/libvpx" ]
   }
 
