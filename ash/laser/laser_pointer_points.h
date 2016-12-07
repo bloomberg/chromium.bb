@@ -26,7 +26,7 @@ class ASH_EXPORT LaserPointerPoints {
     gfx::Point location;
     // age is a value between [0,1] where 0 means the point was just added and 1
     // means that the point is just about to be removed.
-    double age = 0.0;
+    float age = 0.0f;
   };
 
   // Constructor with a parameter to choose the fade out time of the points in

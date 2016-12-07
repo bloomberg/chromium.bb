@@ -977,6 +977,8 @@ component("ash") {
       "laser/laser_pointer_points.h",
       "laser/laser_pointer_view.cc",
       "laser/laser_pointer_view.h",
+      "laser/laser_segment_utils.cc",
+      "laser/laser_segment_utils.h",
       "magnifier/partial_magnification_controller.cc",
       "magnifier/partial_magnification_controller.h",
     ]
@@ -1430,6 +1432,7 @@ test("ash_unittests") {
     sources += [
       "first_run/first_run_helper_unittest.cc",
       "laser/laser_pointer_controller_unittest.cc",
+      "laser/laser_segment_utils_unittest.cc",
       "magnifier/partial_magnification_controller_unittest.cc",
     ]
     deps += [
