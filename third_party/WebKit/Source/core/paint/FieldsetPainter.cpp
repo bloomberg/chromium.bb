@@ -31,18 +31,16 @@ void FieldsetPainter::paintBoxDecorationBackground(
   // https://bugs.webkit.org/show_bug.cgi?id=47236
   if (m_layoutFieldset.style()->isHorizontalWritingMode()) {
     LayoutUnit yOff =
-        (legend->location().y() +
-         (legend->size().height() - m_layoutFieldset.borderTop()) / 2)
-            .clampNegativeToZero();
-
+        (legend->location().y() > 0)
+            ? LayoutUnit()
+            : (legend->size().height() - m_layoutFieldset.borderTop()) / 2;
     paintRect.setHeight(paintRect.height() - yOff);
     paintRect.setY(paintRect.y() + yOff);
   } else {
     LayoutUnit xOff =
-        (legend->location().x() +
-         (legend->size().width() - m_layoutFieldset.borderLeft()) / 2)
-            .clampNegativeToZero();
-
+        (legend->location().x() > 0)
+            ? LayoutUnit()
+            : (legend->size().width() - m_layoutFieldset.borderLeft()) / 2;
     paintRect.setWidth(paintRect.width() - xOff);
     paintRect.setX(paintRect.x() + xOff);
   }
@@ -113,18 +111,16 @@ void FieldsetPainter::paintMask(const PaintInfo& paintInfo,
   // https://bugs.webkit.org/show_bug.cgi?id=47236
   if (m_layoutFieldset.style()->isHorizontalWritingMode()) {
     LayoutUnit yOff =
-        (legend->location().y() +
-         (legend->size().height() - m_layoutFieldset.borderTop()) / 2)
-            .clampNegativeToZero();
-
+        (legend->location().y() > LayoutUnit())
+            ? LayoutUnit()
+            : (legend->size().height() - m_layoutFieldset.borderTop()) / 2;
     paintRect.expand(LayoutUnit(), -yOff);
     paintRect.move(LayoutUnit(), yOff);
   } else {
     LayoutUnit xOff =
-        (legend->location().x() +
-         (legend->size().width() - m_layoutFieldset.borderLeft()) / 2)
-            .clampNegativeToZero();
-
+        (legend->location().x() > LayoutUnit())
+            ? LayoutUnit()
+            : (legend->size().width() - m_layoutFieldset.borderLeft()) / 2;
     paintRect.expand(-xOff, LayoutUnit());
     paintRect.move(xOff, LayoutUnit());
   }
