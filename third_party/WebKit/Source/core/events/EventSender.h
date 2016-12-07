@@ -85,15 +85,13 @@ template <typename T>
 void EventSender<T>::cancelEvent(T* sender) {
   // Remove instances of this sender from both lists.
   // Use loops because we allow multiple instances to get into the lists.
-  size_t size = m_dispatchSoonList.size();
-  for (size_t i = 0; i < size; ++i) {
-    if (m_dispatchSoonList[i] == sender)
-      m_dispatchSoonList[i] = nullptr;
+  for (auto& senderInList : m_dispatchSoonList) {
+    if (senderInList == sender)
+      senderInList = nullptr;
   }
-  size = m_dispatchingList.size();
-  for (size_t i = 0; i < size; ++i) {
-    if (m_dispatchingList[i] == sender)
-      m_dispatchingList[i] = nullptr;
+  for (auto& senderInList : m_dispatchingList) {
+    if (senderInList == sender)
+      senderInList = nullptr;
   }
 }
 
@@ -108,10 +106,9 @@ void EventSender<T>::dispatchPendingEvents() {
   m_timer.stop();
 
   m_dispatchingList.swap(m_dispatchSoonList);
-  size_t size = m_dispatchingList.size();
-  for (size_t i = 0; i < size; ++i) {
-    if (T* sender = m_dispatchingList[i]) {
-      m_dispatchingList[i] = nullptr;
+  for (auto& senderInList : m_dispatchingList) {
+    if (T* sender = senderInList) {
+      senderInList = nullptr;
       sender->dispatchPendingEvent(this);
     }
   }

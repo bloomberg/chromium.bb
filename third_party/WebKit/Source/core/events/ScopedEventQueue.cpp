@@ -66,8 +66,8 @@ void ScopedEventQueue::dispatchAllEvents() {
   HeapVector<Member<EventDispatchMediator>> queuedEventDispatchMediators;
   queuedEventDispatchMediators.swap(m_queuedEventDispatchMediators);
 
-  for (size_t i = 0; i < queuedEventDispatchMediators.size(); i++)
-    dispatchEvent(queuedEventDispatchMediators[i].release());
+  for (auto& mediator : queuedEventDispatchMediators)
+    dispatchEvent(mediator.release());
 }
 
 void ScopedEventQueue::dispatchEvent(EventDispatchMediator* mediator) const {

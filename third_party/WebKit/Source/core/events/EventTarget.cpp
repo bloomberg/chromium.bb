@@ -367,8 +367,7 @@ bool EventTarget::removeEventListenerInternal(
   // Notify firing events planning to invoke the listener at 'index' that
   // they have one less listener to invoke.
   if (d->firingEventIterators) {
-    for (size_t i = 0; i < d->firingEventIterators->size(); ++i) {
-      FiringEventIterator& firingIterator = d->firingEventIterators->at(i);
+    for (const auto& firingIterator : *d->firingEventIterators) {
       if (eventType != firingIterator.eventType)
         continue;
 
@@ -750,9 +749,9 @@ void EventTarget::removeAllEventListeners() {
   // Notify firing events planning to invoke the listener at 'index' that
   // they have one less listener to invoke.
   if (d->firingEventIterators) {
-    for (size_t i = 0; i < d->firingEventIterators->size(); ++i) {
-      d->firingEventIterators->at(i).iterator = 0;
-      d->firingEventIterators->at(i).end = 0;
+    for (const auto& iterator : *d->firingEventIterators) {
+      iterator.iterator = 0;
+      iterator.end = 0;
     }
   }
 }

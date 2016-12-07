@@ -129,9 +129,9 @@ bool UIEventWithKeyState::getModifierState(const String& keyIdentifier) const {
       {"NumLock", PlatformEvent::NumLockOn},
       {"Symbol", PlatformEvent::SymbolKey},
   };
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kIdentifiers); ++i) {
-    if (keyIdentifier == kIdentifiers[i].identifier)
-      return m_modifiers & kIdentifiers[i].mask;
+  for (const auto& identifier : kIdentifiers) {
+    if (keyIdentifier == identifier.identifier)
+      return m_modifiers & identifier.mask;
   }
   return false;
 }

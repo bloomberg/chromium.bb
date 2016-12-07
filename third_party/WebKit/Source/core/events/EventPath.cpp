@@ -238,15 +238,15 @@ void EventPath::calculateAdjustedTargets() {
   TreeScopeEventContextMap treeScopeEventContextMap;
   TreeScopeEventContext* lastTreeScopeEventContext = nullptr;
 
-  for (size_t i = 0; i < size(); ++i) {
-    Node* currentNode = at(i).node();
+  for (auto& context : m_nodeEventContexts) {
+    Node* currentNode = context.node();
     TreeScope& currentTreeScope = currentNode->treeScope();
     if (lastTreeScope != &currentTreeScope) {
       lastTreeScopeEventContext = ensureTreeScopeEventContext(
           currentNode, &currentTreeScope, treeScopeEventContextMap);
     }
     DCHECK(lastTreeScopeEventContext);
-    at(i).setTreeScopeEventContext(lastTreeScopeEventContext);
+    context.setTreeScopeEventContext(lastTreeScopeEventContext);
     lastTreeScope = &currentTreeScope;
   }
   m_treeScopeEventContexts.appendRange(
@@ -258,10 +258,8 @@ void EventPath::buildRelatedNodeMap(const Node& relatedNode,
                                     RelatedTargetMap& relatedTargetMap) {
   EventPath* relatedTargetEventPath =
       new EventPath(const_cast<Node&>(relatedNode));
-  for (size_t i = 0;
-       i < relatedTargetEventPath->m_treeScopeEventContexts.size(); ++i) {
-    TreeScopeEventContext* treeScopeEventContext =
-        relatedTargetEventPath->m_treeScopeEventContexts[i].get();
+  for (const auto& treeScopeEventContext :
+       relatedTargetEventPath->m_treeScopeEventContexts) {
     relatedTargetMap.add(&treeScopeEventContext->treeScope(),
                          treeScopeEventContext->target());
   }
