@@ -8,43 +8,55 @@
 #include <stdint.h>
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 
 namespace content {
 
 class PepperPlayerDelegate;
-class WebContentsImpl;
+class RenderFrameHost;
+class WebContents;
 
 // Class observing Pepper playback changes from WebContents, and update
-// MediaSession accordingly. Can only be a member of WebContentsImpl and must be
-// destroyed in ~WebContentsImpl().
+// MediaSession accordingly. Can only be a member of WebContents and must be
+// destroyed in ~WebContents().
 class PepperPlaybackObserver {
  public:
-  explicit PepperPlaybackObserver(WebContentsImpl* contents);
+  explicit PepperPlaybackObserver(WebContents* contents);
   virtual ~PepperPlaybackObserver();
 
-  void PepperInstanceCreated(int32_t pp_instance);
-  void PepperInstanceDeleted(int32_t pp_instance);
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host);
+
+  void PepperInstanceCreated(RenderFrameHost* render_frame_host,
+                             int32_t pp_instance);
+  void PepperInstanceDeleted(RenderFrameHost* render_frame_host,
+                             int32_t pp_instance);
   // This method is called when a Pepper instance starts making sound.
-  void PepperStartsPlayback(int32_t pp_instance);
+  void PepperStartsPlayback(RenderFrameHost* render_frame_host,
+                            int32_t pp_instance);
   // This method is called when a Pepper instance stops making sound.
-  void PepperStopsPlayback(int32_t pp_instance);
+  void PepperStopsPlayback(RenderFrameHost* render_frame_host,
+                           int32_t pp_instance);
 
  private:
+  using PlayerId = std::pair<RenderFrameHost*, int32_t>;
+
   // Owning PepperPlayerDelegates.
-  using PlayersMap =
-      std::map<int32_t, std::unique_ptr<PepperPlayerDelegate>>;
+  using PlayersMap = std::map<PlayerId, std::unique_ptr<PepperPlayerDelegate>>;
   PlayersMap players_map_;
 
   // Map for whether Pepper players have ever played sound.
   // Used for recording UMA.
-  using PlayersPlayedSoundMap =
-      std::map<int32_t, bool>;
+  //
+  // The mapped player ids must be a super-set of player ids in |players_map_|,
+  // and the map is also used for cleaning up when RenderFrame is deleted or
+  // WebContents is destructed.
+  using PlayersPlayedSoundMap = std::map<PlayerId, bool>;
   PlayersPlayedSoundMap players_played_sound_map_;
 
   // Weak reference to WebContents.
-  WebContentsImpl* contents_;
+  WebContents* contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlaybackObserver);
 };

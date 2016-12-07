@@ -3759,13 +3759,15 @@ void WebContentsImpl::OnWebUISend(const GURL& source_url,
 void WebContentsImpl::OnPepperInstanceCreated(int32_t pp_instance) {
   for (auto& observer : observers_)
     observer.PepperInstanceCreated();
-  pepper_playback_observer_->PepperInstanceCreated(pp_instance);
+  pepper_playback_observer_->PepperInstanceCreated(
+      render_frame_message_source_, pp_instance);
 }
 
 void WebContentsImpl::OnPepperInstanceDeleted(int32_t pp_instance) {
   for (auto& observer : observers_)
     observer.PepperInstanceDeleted();
-  pepper_playback_observer_->PepperInstanceDeleted(pp_instance);
+  pepper_playback_observer_->PepperInstanceDeleted(
+      render_frame_message_source_, pp_instance);
 }
 
 void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
@@ -3778,11 +3780,13 @@ void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
 }
 
 void WebContentsImpl::OnPepperStartsPlayback(int32_t pp_instance) {
-  pepper_playback_observer_->PepperStartsPlayback(pp_instance);
+  pepper_playback_observer_->PepperStartsPlayback(
+      render_frame_message_source_, pp_instance);
 }
 
 void WebContentsImpl::OnPepperStopsPlayback(int32_t pp_instance) {
-  pepper_playback_observer_->PepperStopsPlayback(pp_instance);
+  pepper_playback_observer_->PepperStopsPlayback(
+      render_frame_message_source_, pp_instance);
 }
 
 void WebContentsImpl::OnPluginCrashed(const base::FilePath& plugin_path,
@@ -4083,6 +4087,9 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
 void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   for (auto& observer : observers_)
     observer.RenderFrameDeleted(render_frame_host);
+#if BUILDFLAG(ENABLE_PLUGINS)
+  pepper_playback_observer_->RenderFrameDeleted(render_frame_host);
+#endif
 }
 
 void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,

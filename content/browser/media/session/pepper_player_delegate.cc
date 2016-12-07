@@ -6,7 +6,6 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/session/pepper_playback_observer.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "media/base/media_switches.h"
 
@@ -27,8 +26,8 @@ bool ShouldDuckFlash() {
 const int PepperPlayerDelegate::kPlayerId = 0;
 
 PepperPlayerDelegate::PepperPlayerDelegate(
-    WebContentsImpl* contents, int32_t pp_instance)
-    : contents_(contents),
+    RenderFrameHost* render_frame_host, int32_t pp_instance)
+    : render_frame_host_(render_frame_host),
       pp_instance_(pp_instance) {}
 
 PepperPlayerDelegate::~PepperPlayerDelegate() = default;
@@ -60,13 +59,12 @@ void PepperPlayerDelegate::OnSetVolumeMultiplier(int player_id,
 }
 
 RenderFrameHost* PepperPlayerDelegate::GetRenderFrameHost() const {
-  // TODO(zqzhang): Pepper player should be associated to a RenderFrameHost.
-  return nullptr;
+  return render_frame_host_;
 }
 
 void PepperPlayerDelegate::SetVolume(int player_id, double volume) {
-  contents_->Send(new FrameMsg_SetPepperVolume(
-      contents_->GetMainFrame()->routing_id(), pp_instance_, volume));
+  render_frame_host_->Send(new FrameMsg_SetPepperVolume(
+      render_frame_host_->GetRoutingID(), pp_instance_, volume));
 }
 
 }  // namespace content

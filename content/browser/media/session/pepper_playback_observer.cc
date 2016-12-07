@@ -4,7 +4,7 @@
 
 #include "content/browser/media/session/pepper_playback_observer.h"
 
-#include "base/feature_list.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/pepper_player_delegate.h"
@@ -25,7 +25,7 @@ bool ShouldDuckFlash() {
 
 }  // anonymous namespace
 
-PepperPlaybackObserver::PepperPlaybackObserver(WebContentsImpl *contents)
+PepperPlaybackObserver::PepperPlaybackObserver(WebContents* contents)
     : contents_(contents) {}
 
 PepperPlaybackObserver::~PepperPlaybackObserver() {
@@ -33,49 +33,73 @@ PepperPlaybackObserver::~PepperPlaybackObserver() {
   // call this. MediaSession may decide to send further IPC messages
   // through PepperPlayerDelegates, which might be declined if the
   // RenderViewHost has been destroyed.
-  for (PlayersMap::iterator iter = players_map_.begin();
-       iter != players_map_.end();) {
-    MediaSessionImpl::Get(contents_)->RemovePlayer(
-        iter->second.get(), PepperPlayerDelegate::kPlayerId);
-    iter = players_map_.erase(iter);
+  for (auto it = players_played_sound_map_.begin();
+       it != players_played_sound_map_.end();) {
+    const PlayerId& id = (it++)->first;
+    PepperInstanceDeleted(id.first, id.second);
   }
 }
 
-void PepperPlaybackObserver::PepperInstanceCreated(int32_t pp_instance) {
-  players_played_sound_map_[pp_instance] = false;
+void PepperPlaybackObserver::RenderFrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  std::vector<PlayerId> players_to_remove;
+  for (auto it = players_played_sound_map_.begin();
+       it != players_played_sound_map_.end();) {
+    const PlayerId& id = (it++)->first;
+    if (id.first == render_frame_host)
+      PepperInstanceDeleted(id.first, id.second);
+  }
 }
 
-void PepperPlaybackObserver::PepperInstanceDeleted(int32_t pp_instance) {
-  UMA_HISTOGRAM_BOOLEAN("Media.Pepper.PlayedSound",
-                        players_played_sound_map_[pp_instance]);
-  players_played_sound_map_.erase(pp_instance);
-
-  PepperStopsPlayback(pp_instance);
+void PepperPlaybackObserver::PepperInstanceCreated(
+    RenderFrameHost* render_frame_host, int32_t pp_instance) {
+  PlayerId id(render_frame_host, pp_instance);
+  players_played_sound_map_[id] = false;
 }
 
-void PepperPlaybackObserver::PepperStartsPlayback(int32_t pp_instance) {
-  players_played_sound_map_[pp_instance] = true;
+void PepperPlaybackObserver::PepperInstanceDeleted(
+    RenderFrameHost* render_frame_host, int32_t pp_instance) {
+  PlayerId id(render_frame_host, pp_instance);
 
-  if (players_map_.count(pp_instance))
+  auto iter = players_played_sound_map_.find(id);
+  if (iter == players_played_sound_map_.end())
     return;
 
-  players_map_[pp_instance].reset(new PepperPlayerDelegate(
-      contents_, pp_instance));
+  UMA_HISTOGRAM_BOOLEAN("Media.Pepper.PlayedSound", iter->second);
+  players_played_sound_map_.erase(iter);
+
+  PepperStopsPlayback(render_frame_host, pp_instance);
+}
+
+void PepperPlaybackObserver::PepperStartsPlayback(
+    RenderFrameHost* render_frame_host, int32_t pp_instance) {
+  PlayerId id(render_frame_host, pp_instance);
+
+  players_played_sound_map_[id] = true;
+
+  if (players_map_.count(id))
+    return;
+
+  players_map_[id].reset(new PepperPlayerDelegate(
+      render_frame_host, pp_instance));
 
   MediaSessionImpl::Get(contents_)->AddPlayer(
-      players_map_[pp_instance].get(), PepperPlayerDelegate::kPlayerId,
+      players_map_[id].get(), PepperPlayerDelegate::kPlayerId,
       ShouldDuckFlash() ? media::MediaContentType::Pepper
                         : media::MediaContentType::OneShot);
 }
 
-void PepperPlaybackObserver::PepperStopsPlayback(int32_t pp_instance) {
-  if (!players_map_.count(pp_instance))
+void PepperPlaybackObserver::PepperStopsPlayback(
+    RenderFrameHost* render_frame_host, int32_t pp_instance) {
+  PlayerId id(render_frame_host, pp_instance);
+
+  if (!players_map_.count(id))
     return;
 
   MediaSessionImpl::Get(contents_)->RemovePlayer(
-      players_map_[pp_instance].get(), PepperPlayerDelegate::kPlayerId);
+      players_map_[id].get(), PepperPlayerDelegate::kPlayerId);
 
-  players_map_.erase(pp_instance);
+  players_map_.erase(id);
 }
 
 }  // namespace content

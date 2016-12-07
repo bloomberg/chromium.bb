@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_MEDIA_SESSION_PEPPER_PLAYER_DELEGATE_H_
 #define CONTENT_BROWSER_MEDIA_SESSION_PEPPER_PLAYER_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "content/browser/media/session/media_session_player_observer.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 
 namespace content {
+
+class RenderFrameHost;
 
 class PepperPlayerDelegate : public MediaSessionPlayerObserver {
  public:
@@ -17,8 +20,7 @@ class PepperPlayerDelegate : public MediaSessionPlayerObserver {
   // it can be used elsewhere.
   static const int kPlayerId;
 
-  PepperPlayerDelegate(
-      WebContentsImpl* contents, int32_t pp_instance);
+  PepperPlayerDelegate(RenderFrameHost* render_frame_host, int32_t pp_instance);
   ~PepperPlayerDelegate() override;
 
   // MediaSessionPlayerObserver implementation.
@@ -31,7 +33,7 @@ class PepperPlayerDelegate : public MediaSessionPlayerObserver {
  private:
   void SetVolume(int player_id, double volume);
 
-  WebContentsImpl* contents_;
+  RenderFrameHost* render_frame_host_;
   int32_t pp_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlayerDelegate);
