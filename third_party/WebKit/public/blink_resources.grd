@@ -49,7 +49,7 @@
         <include name="IDR_LIST_PICKER_JS" file="../Source/web/resources/listPicker.js" type="BINDATA"/>
       </if>
       <if expr="use_concatenated_impulse_responses">
-        <include name="IDR_AUDIO_SPATIALIZATION_COMPOSITE" file="../Source/platform/audio/resources/Composite.wav" type="BINDATA"/>
+        <include name="IDR_AUDIO_SPATIALIZATION_COMPOSITE" file="../Source/platform/audio/resources/Composite.flac" type="BINDATA"/>
       </if>
       <if expr="not use_concatenated_impulse_responses">
         <include name="IDR_AUDIO_SPATIALIZATION_T000_P000" file="..\Source\platform\audio\resources\IRC_Composite_C_R0195_T000_P000.wav" type="BINDATA"/>

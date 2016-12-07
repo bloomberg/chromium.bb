@@ -851,7 +851,7 @@ window.Audit = (function () {
       let message = '< [' + this._label + '] ';
 
       if (this._result) {
-        message += 'All assertion passed. (total ' + this._totalAssertions
+        message += 'All assertions passed. (total ' + this._totalAssertions
           + ' assertions)';
         _logPassed(message);
       } else {
