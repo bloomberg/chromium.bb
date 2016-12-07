@@ -177,7 +177,7 @@ TEST_P(BlendA64MaskTest8B, ExtremeValues) {
 }
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(SSE4_1_C_COMPARE, BlendA64MaskTest8B,
+INSTANTIATE_TEST_CASE_P(SSE4_1, BlendA64MaskTest8B,
                         ::testing::Values(TestFuncs(
                             aom_blend_a64_mask_c, aom_blend_a64_mask_sse4_1)));
 #endif  // HAVE_SSE4_1
@@ -262,7 +262,7 @@ TEST_P(BlendA64MaskTestHBD, ExtremeValues) {
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(
-    SSE4_1_C_COMPARE, BlendA64MaskTestHBD,
+    SSE4_1, BlendA64MaskTestHBD,
     ::testing::Values(TestFuncsHBD(aom_highbd_blend_a64_mask_c,
                                    aom_highbd_blend_a64_mask_sse4_1)));
 #endif  // HAVE_SSE4_1

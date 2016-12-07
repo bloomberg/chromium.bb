@@ -105,7 +105,7 @@ const ObmcSadTest::ParamType sse4_functions[] = {
   TestFuncs(aom_obmc_sad4x4_c, aom_obmc_sad4x4_sse4_1)
 };
 
-INSTANTIATE_TEST_CASE_P(SSE4_1_C_COMPARE, ObmcSadTest,
+INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcSadTest,
                         ::testing::ValuesIn(sse4_functions));
 #endif  // HAVE_SSE4_1
 
@@ -188,7 +188,7 @@ ObmcSadHBDTest::ParamType sse4_functions_hbd[] = {
   TestFuncs(aom_highbd_obmc_sad4x4_c, aom_highbd_obmc_sad4x4_sse4_1)
 };
 
-INSTANTIATE_TEST_CASE_P(SSE4_1_C_COMPARE, ObmcSadHBDTest,
+INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcSadHBDTest,
                         ::testing::ValuesIn(sse4_functions_hbd));
 #endif  // HAVE_SSE4_1
 #endif  // CONFIG_AOM_HIGHBITDEPTH

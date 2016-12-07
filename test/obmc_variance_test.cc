@@ -114,7 +114,7 @@ const ObmcVarianceTest::ParamType sse4_functions[] = {
   TestFuncs(aom_obmc_variance4x4_c, aom_obmc_variance4x4_sse4_1)
 };
 
-INSTANTIATE_TEST_CASE_P(SSE4_1_C_COMPARE, ObmcVarianceTest,
+INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcVarianceTest,
                         ::testing::ValuesIn(sse4_functions));
 #endif  // HAVE_SSE4_1
 
@@ -286,7 +286,7 @@ ObmcVarianceHBDTest::ParamType sse4_functions_hbd[] = {
             aom_highbd_12_obmc_variance4x4_sse4_1, 12)
 };
 
-INSTANTIATE_TEST_CASE_P(SSE4_1_C_COMPARE, ObmcVarianceHBDTest,
+INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcVarianceHBDTest,
                         ::testing::ValuesIn(sse4_functions_hbd));
 #endif  // HAVE_SSE4_1
 #endif  // CONFIG_AOM_HIGHBITDEPTH
