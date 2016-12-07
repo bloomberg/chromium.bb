@@ -965,7 +965,7 @@ inline ContainerNode* Node::parentNode() const {
 }
 
 inline void Node::lazyReattachIfAttached() {
-  if (getStyleChangeType() == NeedsReattachStyleChange)
+  if (needsAttach())
     return;
   if (!inActiveDocument())
     return;

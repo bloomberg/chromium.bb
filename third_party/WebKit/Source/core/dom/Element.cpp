@@ -1664,7 +1664,7 @@ void Element::attachLayoutTree(const AttachContext& context) {
 
   // We've already been through detach when doing an attach, but we might
   // need to clear any state that's been added since then.
-  if (hasRareData() && getStyleChangeType() == NeedsReattachStyleChange) {
+  if (hasRareData() && needsAttach()) {
     ElementRareData* data = elementRareData();
     data->clearComputedStyle();
   }
