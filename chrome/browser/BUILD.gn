@@ -781,6 +781,8 @@ split_static_library("browser") {
     "page_load_metrics/page_load_metrics_util.h",
     "page_load_metrics/page_load_tracker.cc",
     "page_load_metrics/page_load_tracker.h",
+    "page_load_metrics/user_input_tracker.cc",
+    "page_load_metrics/user_input_tracker.h",
     "password_manager/chrome_password_manager_client.cc",
     "password_manager/chrome_password_manager_client.h",
     "password_manager/password_manager_setting_migrator_service_factory.cc",
