@@ -4,6 +4,7 @@ Upstream cherry-picks, most recent cherry-picks at end of list:
   83a75bf6c31b3c0ce2ca7e1426d1f2e3df634239 lavc/flacdec: Fix signed integer overflow in decode_subframe_fixed()
   afcf15b0dbb4b6429be5083e50b296cdca61875e lavf/oggparsespeex: Check frames_per_packet and packet_size
   90da187f1d334422477886a19eca3c1da29c59a7 lavf/utils update_stream_timings() fix for start/end out of range
+  c72fa432349881d5a445cd110abf698cc94d490d lavc/get_bits: Fix get_sbits_long(x, 0)
 
 
 Autorename:
