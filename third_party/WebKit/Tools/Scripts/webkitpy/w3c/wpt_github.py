@@ -7,18 +7,11 @@ import json
 import logging
 import os
 import sys
+import urllib2
 
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.webkit_finder import WebKitFinder
 
-# httplib2 is part of the hermetic depot_tools install,
-# but we first need to find a path to it.
-# TODO(dglazkov): libhttp2 needs to be imported into thirdparty dir.
-# See http://crbug.com/670987 for details.
-_DEPOT_TOOLS_ROOT = WebKitFinder(FileSystem()).depot_tools_base()
-sys.path.append(os.path.join(_DEPOT_TOOLS_ROOT, 'third_party'))
-
-import httplib2
 
 _log = logging.getLogger(__name__)
 API_BASE = 'https://api.github.com'
@@ -35,7 +28,7 @@ class WPTGitHub(object):
         assert self.user and self.token, 'must have GH_USER and GH_TOKEN env vars'
 
     def auth_token(self):
-        return base64.encodestring('{}:{}'.format(self.user, self.token))
+        return base64.encodestring('{}:{}'.format(self.user, self.token)).strip()
 
     def create_pr(self, local_branch_name, desc_title, body):
         """Creates a PR on GitHub.
@@ -53,11 +46,7 @@ class WPTGitHub(object):
 
         # TODO(jeffcarp): CC foolip and qyearsley on all PRs for now
         # TODO(jeffcarp): add HTTP to Host and use that here
-        conn = httplib2.Http()
-        headers = {
-            "Accept": "application/vnd.github.v3+json",
-            "Authorization": "Basic " + self.auth_token()
-        }
+        path = '/repos/w3c/web-platform-tests/pulls'
         body = {
             "title": desc_title,
             "body": body,
@@ -65,39 +54,34 @@ class WPTGitHub(object):
             "base": 'master',
             "labels": [EXPORT_LABEL]
         }
-        resp, content = conn.request("https://api.github.com/repos/w3c/web-platform-tests/pulls",
-                                     "POST", body=json.JSONEncoder().encode(body), headers=headers)
-        _log.info("GitHub response: %s", content)
-        if resp["status"] != "201":
+        data, status_code = self.request(path, body)
+
+        if status_code != 201:
             return None
-        return json.loads(content)
+
+        return data
 
     def in_flight_pull_requests(self):
         url_encoded_label = EXPORT_LABEL.replace(' ', '%20')
         path = '/search/issues?q=repo:w3c/web-platform-tests%20is:open%20type:pr%20labels:{}'.format(url_encoded_label)
-        response, content = self.request(path)
-        if response['status'] == '200':
-            data = json.loads(content)
+        data, status_code = self.request(path)
+        if status_code == 200:
             return data['items']
         else:
-            raise Exception('Non-200 status code (%s): %s' % (response['status'], content))
+            raise Exception('Non-200 status code (%s): %s' % (status_code, data))
 
     def request(self, path, body=None):
         assert path.startswith('/')
 
-        # Not used yet since only hitting public API
-        # headers = {
-        #     "Accept": "application/vnd.github.v3+json",
-        #     "Authorization": "Basic " + self.auth_token()
-        # }
-
         if body:
-            json_body = json.dumps(body)
-        else:
-            json_body = None
+            body = json.dumps(body)
 
-        conn = httplib2.Http()
-        return conn.request(API_BASE + path, body=json_body)
+        req = urllib2.Request(url=API_BASE + path, data=body)
+        req.add_header('Accept', 'application/vnd.github.v3+json')
+        req.add_header('Authorization', 'Basic {}'.format(self.auth_token()))
+        res = urllib2.urlopen(req)
+        status_code = res.getcode()
+        return json.load(res), status_code
 
     def merge_pull_request(self, pull_request_number):
         path = '/repos/w3c/web-platform-tests/pulls/%d/merge' % pull_request_number

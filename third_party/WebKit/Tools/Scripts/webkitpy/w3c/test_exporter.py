@@ -92,7 +92,9 @@ class TestExporter(object):
 
         local_branch_name = local_wpt.create_branch_with_patch(message, patch)
 
-        self.wpt_github.create_pr(
+        response_data = self.wpt_github.create_pr(
             local_branch_name=local_branch_name,
             desc_title=outbound_commit.subject(),
             body=outbound_commit.body())
+
+        _log.info('Create PR response: %s', response_data)

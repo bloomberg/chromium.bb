@@ -38,5 +38,5 @@ class WPTGitHubTest(unittest.TestCase):
         self.assertEqual(self.wpt_github.token, 'deadbeefcafe')
 
     def test_auth_token(self):
-        expected = base64.encodestring('rutabaga:deadbeefcafe')
+        expected = base64.encodestring('rutabaga:deadbeefcafe').strip()
         self.assertEqual(self.wpt_github.auth_token(), expected)
