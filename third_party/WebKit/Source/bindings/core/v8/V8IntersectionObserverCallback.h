@@ -28,8 +28,9 @@ class V8IntersectionObserverCallback final
 
   void handleEvent(const HeapVector<Member<IntersectionObserverEntry>>&,
                    IntersectionObserver&) override;
+
   ExecutionContext* getExecutionContext() const override {
-    return ContextLifecycleObserver::getExecutionContext();
+    return m_scriptState->getExecutionContext();
   }
 
  private:

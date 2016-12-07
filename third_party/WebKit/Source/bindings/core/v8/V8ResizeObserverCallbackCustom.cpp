@@ -43,7 +43,7 @@ void V8ResizeObserverCallback::handleEvent(
   v8::TryCatch exceptionCatcher(m_scriptState->isolate());
   exceptionCatcher.SetVerbose(true);
   V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
-                               getExecutionContext(), thisObject,
+                               m_scriptState->getExecutionContext(), thisObject,
                                WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 

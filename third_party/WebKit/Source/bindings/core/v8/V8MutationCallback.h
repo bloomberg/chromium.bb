@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ActiveDOMCallback.h"
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/MutationCallback.h"
 #include "wtf/RefPtr.h"
 #include <v8.h>
@@ -35,7 +36,6 @@
 namespace blink {
 
 class ExecutionContext;
-class ScriptState;
 
 class V8MutationCallback final : public MutationCallback,
                                  public ActiveDOMCallback {
@@ -51,8 +51,9 @@ class V8MutationCallback final : public MutationCallback,
 
   void call(const HeapVector<Member<MutationRecord>>&,
             MutationObserver*) override;
+
   ExecutionContext* getExecutionContext() const override {
-    return ContextLifecycleObserver::getExecutionContext();
+    return m_scriptState->getExecutionContext();
   }
 
   DECLARE_VIRTUAL_TRACE();
