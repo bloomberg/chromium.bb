@@ -9,6 +9,8 @@ import android.support.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
@@ -20,6 +22,7 @@ import org.chromium.ui.base.PageTransition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Records UMA stats for which actions the user takes on the NTP in the
@@ -88,6 +91,16 @@ public final class NewTabPageUma {
     public static final int NTP_LAYOUT_FITS_WITH_FIELD_TRIAL = 4;
     /** The number of possible results for the NewTabPageLayout calculations. */
     public static final int NUM_NTP_LAYOUT_RESULTS = 5;
+
+    // The NTP was loaded in a cold startup.
+    private static final int LOAD_TYPE_COLD_START = 0;
+    // The NTP was loaded in a warm startup.
+    private static final int LOAD_TYPE_WARM_START = 1;
+    // The NTP was loaded at some other time after activity creation and the user interacted with
+    // the activity in the meantime.
+    private static final int LOAD_TYPE_OTHER = 2;
+    // The number of load types.
+    private static final int LOAD_TYPE_COUNT = 3;
 
     /**
      * Records an action taken by the user on the NTP.
@@ -180,6 +193,46 @@ public final class NewTabPageUma {
      */
     public static void monitorContentSuggestionVisit(Tab tab, int category) {
         tab.addObserver(new SnippetVisitRecorder(category));
+    }
+
+    /**
+     * Records the type of load for the ntp, such as cold or warm start.
+     */
+    public static void recordLoadType(ChromeActivity activity) {
+        if (activity.getLastUserInteractionTime() > 0) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "NewTabPage.LoadType", LOAD_TYPE_OTHER, LOAD_TYPE_COUNT);
+            return;
+        }
+
+        if (activity.hadWarmStart()) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "NewTabPage.LoadType", LOAD_TYPE_WARM_START, LOAD_TYPE_COUNT);
+            return;
+        }
+
+        RecordHistogram.recordEnumeratedHistogram(
+                "NewTabPage.LoadType", LOAD_TYPE_COLD_START, LOAD_TYPE_COUNT);
+    }
+
+    /**
+     * Records how much time elapsed from start until the search box became available to the user.
+     */
+    public static void recordSearchAvailableLoadTime(ChromeActivity activity) {
+        // Log the time it took for the search box to be displayed at startup, based on the
+        // timestamp on the intent for the activity. If the user has interacted with the
+        // activity already, it's not a startup, and the timestamp on the activity would not be
+        // relevant either.
+        if (activity.getLastUserInteractionTime() != 0) return;
+        long timeFromIntent = SystemClock.elapsedRealtime()
+                - IntentHandler.getTimestampFromIntent(activity.getIntent());
+        if (activity.hadWarmStart()) {
+            RecordHistogram.recordTimesHistogram("NewTabPage.SearchAvailableLoadTime.WarmStart",
+                    timeFromIntent, TimeUnit.MILLISECONDS);
+        } else {
+            RecordHistogram.recordTimesHistogram("NewTabPage.SearchAvailableLoadTime.ColdStart",
+                    timeFromIntent, TimeUnit.MILLISECONDS);
+        }
     }
 
     /**

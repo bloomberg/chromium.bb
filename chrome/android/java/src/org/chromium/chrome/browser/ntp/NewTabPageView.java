@@ -42,6 +42,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -106,6 +107,7 @@ public class NewTabPageView extends FrameLayout
 
     private OnSearchBoxScrollListener mSearchBoxScrollListener;
 
+    private ChromeActivity mActivity;
     private NewTabPageManager mManager;
     private UiConfig mUiConfig;
     private MostVisitedDesign mMostVisitedDesign;
@@ -320,6 +322,7 @@ public class NewTabPageView extends FrameLayout
      */
     public void initialize(
             NewTabPageManager manager, Tab tab, boolean searchProviderHasLogo, int scrollPosition) {
+        mActivity = tab.getActivity();
         mManager = manager;
         mUiConfig = new UiConfig(this);
         ViewStub stub = (ViewStub) findViewById(R.id.new_tab_page_layout_stub);
@@ -870,6 +873,7 @@ public class NewTabPageView extends FrameLayout
         if (mFirstShow) {
             loadTaskCompleted();
             mFirstShow = false;
+            NewTabPageUma.recordSearchAvailableLoadTime(mActivity);
         } else {
             // Trigger a scroll update when reattaching the window to signal the toolbar that
             // it needs to reset the NTP state.

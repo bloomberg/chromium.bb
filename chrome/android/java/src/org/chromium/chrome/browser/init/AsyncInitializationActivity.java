@@ -27,6 +27,7 @@ import android.view.WindowManager;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
@@ -61,6 +62,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     private MemoryUma mMemoryUma;
     private long mLastUserInteractionTime;
     private boolean mIsTablet;
+    private boolean mHadWarmStart;
 
     public AsyncInitializationActivity() {
         mHandler = new Handler();
@@ -95,6 +97,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
 
     @Override
     public void preInflationStartup() {
+        mHadWarmStart = LibraryLoader.isInitialized();
         // On some devices, OEM modifications have been made to the resource loader that cause the
         // DeviceFormFactor calculation of whether a device is using tablet resources to be
         // incorrect. Check which resources were actually loaded and set the DeviceFormFactor
@@ -395,6 +398,14 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      */
     public boolean isTablet() {
         return mIsTablet;
+    }
+
+    /**
+     * @return Whether the activity had a warm start because the native library was already fully
+     *     loaded and initialized.
+     */
+    public boolean hadWarmStart() {
+        return mHadWarmStart;
     }
 
     @Override

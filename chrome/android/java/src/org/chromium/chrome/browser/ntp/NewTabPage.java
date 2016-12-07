@@ -757,6 +757,7 @@ public class NewTabPage
 
         RecordHistogram.recordBooleanHistogram(
                 "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());
+        NewTabPageUma.recordLoadType(mActivity);
     }
 
     private static MostVisitedSites buildMostVisitedSites(Profile profile) {

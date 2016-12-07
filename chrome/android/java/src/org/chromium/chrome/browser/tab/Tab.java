@@ -845,7 +845,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return {@link ChromeActivity} that currently contains this {@link Tab} in its
      *         {@link TabModel}.
      */
-    ChromeActivity getActivity() {
+    public ChromeActivity getActivity() {
         if (getWindowAndroid() == null) return null;
         Activity activity = WindowAndroid.activityFromContext(
                 getWindowAndroid().getContext().get());
