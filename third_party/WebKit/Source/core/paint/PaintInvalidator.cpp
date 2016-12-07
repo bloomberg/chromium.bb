@@ -71,7 +71,10 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     // In SPv2, visual rects are in the space of their local transform node.
-    rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
+    // For SVG, the input rect is in local SVG coordinates in which paint
+    // offset doesn't apply.
+    if (!object.isSVG() || object.isSVGRoot())
+      rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
     // Use enclosingIntRect to ensure the final visual rect will cover the
     // rect in source coordinates no matter if the painting will use pixel
     // snapping.
@@ -86,8 +89,10 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
   } else if (object == context.paintInvalidationContainer) {
     result = LayoutRect(rect);
   } else {
-    rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
-    if ((!object.isSVG() || object.isSVGRoot()) && !rect.isEmpty()) {
+    // For non-root SVG, the input rect is in local SVG coordinates in which
+    // paint offset doesn't apply.
+    if (!object.isSVG() || object.isSVGRoot()) {
+      rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
       // Use enclosingIntRect to ensure the final visual rect will cover the
       // rect in source coordinates no matter if the painting will use pixel
       // snapping.
