@@ -157,9 +157,8 @@ TEST_F(PpdCacheTest, StoreAndRetrieveAvailablePrinters) {
   auto cache = CreateTestCache();
 
   // Nothing stored, so should miss in the cache.
-  const PpdProvider::AvailablePrintersMap* result =
-      cache->FindAvailablePrinters();
-  EXPECT_EQ(nullptr, result);
+  auto result = cache->FindAvailablePrinters();
+  EXPECT_FALSE(result);
 
   // Create something to store.
   auto a = base::MakeUnique<PpdProvider::AvailablePrintersMap>();
@@ -171,9 +170,9 @@ TEST_F(PpdCacheTest, StoreAndRetrieveAvailablePrinters) {
   // Store it, get it back.
   cache->StoreAvailablePrinters(std::move(a));
   result = cache->FindAvailablePrinters();
-  ASSERT_NE(nullptr, result);
+  ASSERT_TRUE(result);
 
-  EXPECT_EQ(original, *result);
+  EXPECT_EQ(original, result.value());
 }
 
 // When an entry is too old, we shouldn't return it.
@@ -188,7 +187,7 @@ TEST_F(PpdCacheTest, ExpireStaleAvailablePrinters) {
       base::MakeUnique<PpdProvider::AvailablePrintersMap>());
 
   // Should *miss* in the cache because the entry is already expired.
-  EXPECT_EQ(nullptr, cache->FindAvailablePrinters());
+  EXPECT_FALSE(cache->FindAvailablePrinters());
 }
 
 }  // namespace

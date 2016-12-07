@@ -29,6 +29,8 @@ class PpdCache;
 // CUPS-PostScript Printer Description (PPD) files.  It provides PPDs that a
 // user previously identified for use, and falls back to querying quirksserver
 // based on manufacturer/model of the printer.
+//
+// This class can be accessed from any thread.
 class CHROMEOS_EXPORT PpdProvider {
  public:
   // Possible result codes of a Resolve() or QueryAvailable() call.
@@ -94,8 +96,6 @@ class CHROMEOS_EXPORT PpdProvider {
   // base::SequencedTaskRunnerHandle::IsSet() must be true).
   //
   // |cb| will only be called after the task invoking Resolve() is finished.
-  //
-  // Only one Resolve() call may be outstanding at a time.
   virtual void Resolve(const Printer::PpdReference& ppd_reference,
                        const ResolveCallback& cb) = 0;
 
@@ -106,8 +106,6 @@ class CHROMEOS_EXPORT PpdProvider {
   //
   // |cb| will only be called after the task invoking QueryAvailable() is
   // finished.
-  //
-  // Only one QueryAvailable() call may be outstanding at a time.
   virtual void QueryAvailable(const QueryAvailableCallback& cb) = 0;
 
   // Most of the time, the cache is just an invisible backend to the Provider,

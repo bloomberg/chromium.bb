@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -49,6 +50,7 @@ class PpdCacheImpl : public PpdCache {
   // Public API functions.
   base::Optional<base::FilePath> Find(
       const Printer::PpdReference& reference) const override {
+    base::AutoLock l(lock_);
     base::ThreadRestrictions::AssertIOAllowed();
     base::Optional<base::FilePath> ret;
 
@@ -69,6 +71,7 @@ class PpdCacheImpl : public PpdCache {
       const Printer::PpdReference& reference,
       const std::string& ppd_contents) override {
     base::ThreadRestrictions::AssertIOAllowed();
+    base::AutoLock l(lock_);
     if (!EnsureCacheDirectoryExists()) {
       return base::nullopt;
     }
@@ -96,23 +99,25 @@ class PpdCacheImpl : public PpdCache {
     return ret;
   }
 
-  const PpdProvider::AvailablePrintersMap* FindAvailablePrinters() override {
+  base::Optional<PpdProvider::AvailablePrintersMap> FindAvailablePrinters()
+      override {
     base::ThreadRestrictions::AssertIOAllowed();
+    base::AutoLock l(lock_);
     if (available_printers_ != nullptr &&
         base::Time::Now() - available_printers_timestamp_ <
             options_.max_available_list_staleness) {
       // Satisfy from memory cache.
-      return available_printers_.get();
+      return *available_printers_;
     }
     std::string buf;
     if (!MaybeReadAvailablePrintersCache(&buf)) {
       // Disk cache miss.
-      return nullptr;
+      return base::nullopt;
     }
     auto dict = base::DictionaryValue::From(base::JSONReader::Read(buf));
     if (dict == nullptr) {
       LOG(ERROR) << "Failed to deserialize available printers cache";
-      return nullptr;
+      return base::nullopt;
     }
     // Note if we got here, we've already set available_printers_timestamp_ to
     // the mtime of the file we read from.
@@ -136,7 +141,7 @@ class PpdCacheImpl : public PpdCache {
         }
       }
     }
-    return available_printers_.get();
+    return *available_printers_;
   }
 
   // Note we throw up our hands and fail (gracefully) to store if we encounter
@@ -146,6 +151,7 @@ class PpdCacheImpl : public PpdCache {
   void StoreAvailablePrinters(std::unique_ptr<PpdProvider::AvailablePrintersMap>
                                   available_printers) override {
     base::ThreadRestrictions::AssertIOAllowed();
+    base::AutoLock l(lock_);
     if (!EnsureCacheDirectoryExists()) {
       return;
     }
@@ -285,6 +291,8 @@ class PpdCacheImpl : public PpdCache {
   const base::FilePath cache_base_dir_;
   const base::FilePath available_printers_file_;
   const PpdCache::Options options_;
+
+  mutable base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(PpdCacheImpl);
 };
