@@ -440,7 +440,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetMutableProperties(uint32_t properties);
   uint32_t mutable_properties() const { return inputs_.mutable_properties; }
 
-  bool HasActiveAnimationForTesting() const;
+  bool HasTickingAnimationForTesting() const;
 
   void SetHasWillChangeTransformHint(bool has_will_change);
   bool has_will_change_transform_hint() const {

@@ -213,8 +213,8 @@ void WebLayerImpl::setBackgroundFilters(const cc::FilterOperations& filters) {
   layer_->SetBackgroundFilters(filters);
 }
 
-bool WebLayerImpl::hasActiveAnimationForTesting() {
-  return layer_->HasActiveAnimationForTesting();
+bool WebLayerImpl::hasTickingAnimationForTesting() {
+  return layer_->HasTickingAnimationForTesting();
 }
 
 void WebLayerImpl::setScrollPositionDouble(blink::WebDoublePoint position) {

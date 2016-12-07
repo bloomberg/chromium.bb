@@ -95,10 +95,10 @@ class CC_ANIMATION_EXPORT AnimationHost
   void PushPropertiesTo(MutatorHost* host_impl) override;
 
   void SetSupportsScrollAnimations(bool supports_scroll_animations) override;
-  bool NeedsAnimateLayers() const override;
+  bool NeedsTickAnimations() const override;
 
   bool ActivateAnimations() override;
-  bool AnimateLayers(base::TimeTicks monotonic_time) override;
+  bool TickAnimations(base::TimeTicks monotonic_time) override;
   bool UpdateAnimationState(bool start_ready_animations,
                             MutatorEvents* events) override;
 
@@ -153,7 +153,7 @@ class CC_ANIMATION_EXPORT AnimationHost
                            float* start_scale) const override;
 
   bool HasAnyAnimation(ElementId element_id) const override;
-  bool HasActiveAnimationForTesting(ElementId element_id) const override;
+  bool HasTickingAnimationForTesting(ElementId element_id) const override;
 
   void ImplOnlyScrollAnimationCreate(ElementId element_id,
                                      const gfx::ScrollOffset& target_offset,
@@ -171,16 +171,16 @@ class CC_ANIMATION_EXPORT AnimationHost
   // This should only be called from the main thread.
   ScrollOffsetAnimations& scroll_offset_animations() const;
 
-  // Registers the given animation player as active. An active animation
-  // player is one that has a running animation that needs to be ticked.
-  void ActivateAnimationPlayer(scoped_refptr<AnimationPlayer> player);
+  // Registers the given animation player as ticking. A ticking animation
+  // player is one that has a running animation.
+  void AddToTicking(scoped_refptr<AnimationPlayer> player);
 
   // Unregisters the given animation player. When this happens, the
-  // animation player will no longer be ticked (since it's not active).
-  void DeactivateAnimationPlayer(scoped_refptr<AnimationPlayer> player);
+  // animation player will no longer be ticked.
+  void RemoveFromTicking(scoped_refptr<AnimationPlayer> player);
 
-  const PlayersList& active_players_for_testing() const;
-  const ElementToAnimationsMap& all_element_animations_for_testing() const;
+  const PlayersList& ticking_players_for_testing() const;
+  const ElementToAnimationsMap& element_animations_for_testing() const;
 
  private:
   explicit AnimationHost(ThreadInstance thread_instance);
@@ -192,7 +192,7 @@ class CC_ANIMATION_EXPORT AnimationHost
   void EraseTimeline(scoped_refptr<AnimationTimeline> timeline);
 
   ElementToAnimationsMap element_to_animations_map_;
-  PlayersList active_players_;
+  PlayersList ticking_players_;
 
   // A list of all timelines which this host owns.
   using IdToTimelineMap =

@@ -102,7 +102,7 @@ class AnimationPlayerForTesting : public CompositorAnimationPlayerClient {
 };
 
 TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
-  ASSERT_FALSE(m_platformLayer->hasActiveAnimationForTesting());
+  ASSERT_FALSE(m_platformLayer->hasTickingAnimationForTesting());
 
   std::unique_ptr<CompositorFloatAnimationCurve> curve =
       CompositorFloatAnimationCurve::create();
@@ -129,23 +129,23 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
 
   player.compositorPlayer()->addAnimation(std::move(floatAnimation));
 
-  ASSERT_TRUE(m_platformLayer->hasActiveAnimationForTesting());
+  ASSERT_TRUE(m_platformLayer->hasTickingAnimationForTesting());
 
   m_graphicsLayer->setShouldFlattenTransform(false);
 
   m_platformLayer = m_graphicsLayer->platformLayer();
   ASSERT_TRUE(m_platformLayer);
 
-  ASSERT_TRUE(m_platformLayer->hasActiveAnimationForTesting());
+  ASSERT_TRUE(m_platformLayer->hasTickingAnimationForTesting());
   player.compositorPlayer()->removeAnimation(animationId);
-  ASSERT_FALSE(m_platformLayer->hasActiveAnimationForTesting());
+  ASSERT_FALSE(m_platformLayer->hasTickingAnimationForTesting());
 
   m_graphicsLayer->setShouldFlattenTransform(true);
 
   m_platformLayer = m_graphicsLayer->platformLayer();
   ASSERT_TRUE(m_platformLayer);
 
-  ASSERT_FALSE(m_platformLayer->hasActiveAnimationForTesting());
+  ASSERT_FALSE(m_platformLayer->hasTickingAnimationForTesting());
 
   player.compositorPlayer()->detachElement();
   ASSERT_FALSE(player.compositorPlayer()->isElementAttached());

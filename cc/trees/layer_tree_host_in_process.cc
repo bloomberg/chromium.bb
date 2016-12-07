@@ -789,7 +789,7 @@ void LayerTreeHostInProcess::AnimateLayers(base::TimeTicks monotonic_time) {
   MutatorHost* mutator_host = layer_tree_->mutator_host();
   std::unique_ptr<MutatorEvents> events = mutator_host->CreateEvents();
 
-  if (mutator_host->AnimateLayers(monotonic_time))
+  if (mutator_host->TickAnimations(monotonic_time))
     mutator_host->UpdateAnimationState(true, events.get());
 
   if (!events->IsEmpty())

@@ -2632,7 +2632,7 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
   Layer layer;
   root_1.Add(&layer);
   LayerAnimator* animator = layer.GetAnimator();
-  EXPECT_FALSE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
+  EXPECT_FALSE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
 
   double target_opacity = 1.0;
   base::TimeDelta time_delta = base::TimeDelta::FromSeconds(1);
@@ -2641,12 +2641,12 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
       LayerAnimationElement::CreateOpacityElement(target_opacity, time_delta)));
   EXPECT_TRUE(compositor_1->layer_animator_collection()->HasActiveAnimators());
   EXPECT_FALSE(compositor_2->layer_animator_collection()->HasActiveAnimators());
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
 
   root_2.Add(&layer);
   EXPECT_FALSE(compositor_1->layer_animator_collection()->HasActiveAnimators());
   EXPECT_TRUE(compositor_2->layer_animator_collection()->HasActiveAnimators());
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
 
   host_2.reset();
   host_1.reset();
@@ -2676,13 +2676,13 @@ TEST(LayerAnimatorTest, ThreadedAnimationSurvivesIfLayerRemovedAdded) {
 
   animator->ScheduleAnimation(new LayerAnimationSequence(
       LayerAnimationElement::CreateOpacityElement(target_opacity, time_delta)));
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
 
   root.Remove(&layer);
-  EXPECT_FALSE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
+  EXPECT_FALSE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
 
   root.Add(&layer);
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
 
   host.reset();
   TerminateContextFactoryForTests();

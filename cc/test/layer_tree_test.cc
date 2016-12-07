@@ -239,8 +239,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   void UpdateAnimationState(bool start_ready_animations) override {
     LayerTreeHostImpl::UpdateAnimationState(start_ready_animations);
     bool has_unfinished_animation = false;
-    for (const auto& it : animation_host()->active_players_for_testing()) {
-      if (it->HasActiveAnimation()) {
+    for (const auto& it : animation_host()->ticking_players_for_testing()) {
+      if (it->HasTickingAnimation()) {
         has_unfinished_animation = true;
         break;
       }

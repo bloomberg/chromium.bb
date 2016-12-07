@@ -47,7 +47,7 @@ void ElementAnimations::InitAffectedElementTypes() {
   DCHECK(element_id_);
   DCHECK(animation_host_);
 
-  UpdateActivation(ActivationType::FORCE);
+  UpdatePlayersTickingState(UpdateTickingType::FORCE);
 
   DCHECK(animation_host_->mutator_host_client());
   if (animation_host_->mutator_host_client()->IsElementInList(
@@ -90,7 +90,7 @@ void ElementAnimations::ClearAffectedElementTypes() {
   }
   set_has_element_in_pending_list(false);
 
-  Deactivate();
+  RemovePlayersFromTicking();
 }
 
 void ElementAnimations::ElementRegistered(ElementId element_id,
@@ -98,7 +98,7 @@ void ElementAnimations::ElementRegistered(ElementId element_id,
   DCHECK_EQ(element_id_, element_id);
 
   if (!has_element_in_any_list())
-    UpdateActivation(ActivationType::FORCE);
+    UpdatePlayersTickingState(UpdateTickingType::FORCE);
 
   if (list_type == ElementListType::ACTIVE)
     set_has_element_in_active_list(true);
@@ -115,7 +115,7 @@ void ElementAnimations::ElementUnregistered(ElementId element_id,
     set_has_element_in_pending_list(false);
 
   if (!has_element_in_any_list())
-    Deactivate();
+    RemovePlayersFromTicking();
 }
 
 void ElementAnimations::AddPlayer(AnimationPlayer* player) {
@@ -148,14 +148,15 @@ void ElementAnimations::PushPropertiesTo(
   needs_update_impl_client_state_ = false;
 }
 
-void ElementAnimations::UpdateActivation(ActivationType activation_type) const {
+void ElementAnimations::UpdatePlayersTickingState(
+    UpdateTickingType update_ticking_type) const {
   for (auto& player : players_list_)
-    player.UpdateActivation(activation_type);
+    player.UpdateTickingState(update_ticking_type);
 }
 
-void ElementAnimations::Deactivate() const {
+void ElementAnimations::RemovePlayersFromTicking() const {
   for (auto& player : players_list_)
-    player.Deactivate();
+    player.RemoveFromTicking();
 }
 
 void ElementAnimations::NotifyAnimationStarted(const AnimationEvent& event) {
@@ -395,9 +396,9 @@ void ElementAnimations::UpdateClientAnimationState() {
   }
 }
 
-bool ElementAnimations::HasActiveAnimation() const {
+bool ElementAnimations::HasTickingAnimation() const {
   for (auto& player : players_list_) {
-    if (player.HasActiveAnimation())
+    if (player.HasTickingAnimation())
       return true;
   }
 

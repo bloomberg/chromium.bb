@@ -167,11 +167,11 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
 
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
-  AnimateLayersTransferEvents(time, 3u);
+  TickAnimationsTransferEvents(time, 3u);
   EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
 
   time += base::TimeDelta::FromSecondsD(duration);
-  AnimateLayersTransferEvents(time, 3u);
+  TickAnimationsTransferEvents(time, 3u);
   EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
@@ -248,7 +248,7 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
 
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
-  AnimateLayersTransferEvents(time, 2u);
+  TickAnimationsTransferEvents(time, 2u);
 
   EXPECT_TRUE(delegate1.started());
   EXPECT_FALSE(delegate1.finished());
@@ -260,7 +260,7 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   EXPECT_FALSE(player2->needs_push_properties());
 
   time += base::TimeDelta::FromSecondsD(duration);
-  AnimateLayersTransferEvents(time, 2u);
+  TickAnimationsTransferEvents(time, 2u);
 
   EXPECT_TRUE(delegate1.finished());
   EXPECT_TRUE(delegate2.finished());
@@ -333,10 +333,10 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
 
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
-  AnimateLayersTransferEvents(time, 1u);
+  TickAnimationsTransferEvents(time, 1u);
 
   time += base::TimeDelta::FromSecondsD(duration);
-  AnimateLayersTransferEvents(time, 1u);
+  TickAnimationsTransferEvents(time, 1u);
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
                                        end_opacity);

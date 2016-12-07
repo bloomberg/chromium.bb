@@ -251,7 +251,7 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
   void AnimateLayers(LayerTreeHostImpl* host_impl,
                      base::TimeTicks monotonic_time) override {
     bool have_animations =
-        !GetImplAnimationHost(host_impl)->active_players_for_testing().empty();
+        !GetImplAnimationHost(host_impl)->ticking_players_for_testing().empty();
     if (!started_animating_ && have_animations) {
       started_animating_ = true;
       return;
@@ -1259,7 +1259,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
             player_->element_animations()->has_element_in_active_list());
         EXPECT_FALSE(
             player_->element_animations()->has_element_in_pending_list());
-        EXPECT_TRUE(animation_host()->NeedsAnimateLayers());
+        EXPECT_TRUE(animation_host()->NeedsTickAnimations());
         break;
       case 1:
         layer_->RemoveFromParent();
@@ -1267,7 +1267,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
             player_->element_animations()->has_element_in_active_list());
         EXPECT_FALSE(
             player_->element_animations()->has_element_in_pending_list());
-        EXPECT_FALSE(animation_host()->NeedsAnimateLayers());
+        EXPECT_FALSE(animation_host()->NeedsTickAnimations());
         break;
       case 2:
         layer_tree()->root_layer()->AddChild(layer_);
@@ -1275,7 +1275,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
             player_->element_animations()->has_element_in_active_list());
         EXPECT_FALSE(
             player_->element_animations()->has_element_in_pending_list());
-        EXPECT_TRUE(animation_host()->NeedsAnimateLayers());
+        EXPECT_TRUE(animation_host()->NeedsTickAnimations());
         break;
     }
   }
@@ -1290,17 +1290,17 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
       case 0:
         EXPECT_TRUE(
             player_impl->element_animations()->has_element_in_active_list());
-        EXPECT_TRUE(GetImplAnimationHost(host_impl)->NeedsAnimateLayers());
+        EXPECT_TRUE(GetImplAnimationHost(host_impl)->NeedsTickAnimations());
         break;
       case 1:
         EXPECT_FALSE(
             player_impl->element_animations()->has_element_in_active_list());
-        EXPECT_FALSE(GetImplAnimationHost(host_impl)->NeedsAnimateLayers());
+        EXPECT_FALSE(GetImplAnimationHost(host_impl)->NeedsTickAnimations());
         break;
       case 2:
         EXPECT_TRUE(
             player_impl->element_animations()->has_element_in_active_list());
-        EXPECT_TRUE(GetImplAnimationHost(host_impl)->NeedsAnimateLayers());
+        EXPECT_TRUE(GetImplAnimationHost(host_impl)->NeedsTickAnimations());
         EndTest();
         break;
     }
@@ -1367,7 +1367,7 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
 
     EXPECT_EQ(
         2u,
-        GetImplAnimationHost(host_impl)->active_players_for_testing().size());
+        GetImplAnimationHost(host_impl)->ticking_players_for_testing().size());
 
     Animation* root_anim =
         player_impl_->GetAnimation(TargetProperty::TRANSFORM);

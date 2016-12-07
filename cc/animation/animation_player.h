@@ -76,11 +76,11 @@ class CC_ANIMATION_EXPORT AnimationPlayer
 
   void PushPropertiesTo(AnimationPlayer* player_impl);
 
-  void Animate(base::TimeTicks monotonic_time);
+  void Tick(base::TimeTicks monotonic_time);
   void UpdateState(bool start_ready_animations, AnimationEvents* events);
 
-  void UpdateActivation(ActivationType type);
-  void Deactivate();
+  void UpdateTickingState(UpdateTickingType type);
+  void RemoveFromTicking();
 
   // AnimationDelegate routing.
   bool NotifyAnimationStarted(const AnimationEvent& event);
@@ -92,7 +92,7 @@ class CC_ANIMATION_EXPORT AnimationPlayer
 
   // Returns true if there are any animations that have neither finished nor
   // aborted.
-  bool HasActiveAnimation() const;
+  bool HasTickingAnimation() const;
 
   // Returns true if there are any animations at all to process.
   bool has_any_animation() const { return !animations_.empty(); }
@@ -149,11 +149,11 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   bool HasElementInActiveList() const;
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
 
-  // Returns the active animation animating the given property that is either
+  // Returns the animation animating the given property that is either
   // running, or is next to run, if such an animation exists.
   Animation* GetAnimation(TargetProperty::Type target_property) const;
 
-  // Returns the active animation for the given unique animation id.
+  // Returns animation for the given unique animation id.
   Animation* GetAnimationById(int animation_id) const;
 
   void GetPropertyAnimationState(PropertyAnimationState* pending_state,
@@ -214,7 +214,7 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   bool needs_to_start_animations_;
 
   // This is used to ensure that we don't spam the animation host.
-  bool is_active_;
+  bool is_ticking_;
 
   bool scroll_offset_animation_was_interrupted_;
 

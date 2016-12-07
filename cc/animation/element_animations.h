@@ -30,7 +30,7 @@ class FilterOperations;
 enum class ElementListType;
 struct AnimationEvent;
 
-enum class ActivationType { NORMAL, FORCE };
+enum class UpdateTickingType { NORMAL, FORCE };
 
 // An ElementAnimations owns a list of all AnimationPlayers, attached to
 // the element.
@@ -70,7 +70,7 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   // Returns true if there are any animations that have neither finished nor
   // aborted.
-  bool HasActiveAnimation() const;
+  bool HasTickingAnimation() const;
 
   // Returns true if there are any animations at all to process.
   bool HasAnyAnimation() const;
@@ -175,8 +175,8 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   static TargetProperties GetPropertiesMaskForAnimationState();
 
-  void UpdateActivation(ActivationType activation_type) const;
-  void Deactivate() const;
+  void UpdatePlayersTickingState(UpdateTickingType update_ticking_type) const;
+  void RemovePlayersFromTicking() const;
 
   PlayersList players_list_;
   AnimationHost* animation_host_;

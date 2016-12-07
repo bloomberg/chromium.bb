@@ -1531,9 +1531,9 @@ void Layer::OnIsAnimatingChanged(const PropertyAnimationState& mask,
   }
 }
 
-bool Layer::HasActiveAnimationForTesting() const {
+bool Layer::HasTickingAnimationForTesting() const {
   return layer_tree_host_
-             ? GetMutatorHost()->HasActiveAnimationForTesting(element_id())
+             ? GetMutatorHost()->HasTickingAnimationForTesting(element_id())
              : false;
 }
 

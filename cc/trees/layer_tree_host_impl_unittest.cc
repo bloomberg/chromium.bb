@@ -10522,7 +10522,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
 
   // The instant scroll should have marked the smooth scroll animation as
   // aborted.
-  EXPECT_FALSE(GetImplAnimationHost()->HasActiveAnimationForTesting(
+  EXPECT_FALSE(GetImplAnimationHost()->HasTickingAnimationForTesting(
       scrolling_layer->element_id()));
 
   EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(0, y + 50),
@@ -10581,7 +10581,7 @@ TEST_F(LayerTreeHostImplTimelinesTest,
 
   // Aborting with the needs completion param should have marked the smooth
   // scroll animation as finished.
-  EXPECT_FALSE(GetImplAnimationHost()->HasActiveAnimationForTesting(
+  EXPECT_FALSE(GetImplAnimationHost()->HasTickingAnimationForTesting(
       scrolling_layer->element_id()));
   EXPECT_TRUE(y > 1 && y < 49);
   EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());

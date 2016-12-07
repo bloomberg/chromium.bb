@@ -424,18 +424,18 @@ void AnimationTimelinesTest::ReleaseRefPtrs() {
   timeline_impl_ = nullptr;
 }
 
-void AnimationTimelinesTest::AnimateLayersTransferEvents(
+void AnimationTimelinesTest::TickAnimationsTransferEvents(
     base::TimeTicks time,
     unsigned expect_events) {
   std::unique_ptr<MutatorEvents> events = host_->CreateEvents();
 
-  host_impl_->AnimateLayers(time);
+  host_impl_->TickAnimations(time);
   host_impl_->UpdateAnimationState(true, events.get());
 
   auto animation_events = static_cast<const AnimationEvents*>(events.get());
   EXPECT_EQ(expect_events, animation_events->events_.size());
 
-  host_->AnimateLayers(time);
+  host_->TickAnimations(time);
   host_->UpdateAnimationState(true, nullptr);
   host_->SetAnimationEvents(std::move(events));
 }
