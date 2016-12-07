@@ -18,19 +18,18 @@
 
 namespace ui {
 
-class GpuServiceInternal;
 class MusGpuMemoryBufferManager;
 
 namespace ws {
 
 class GpuServiceProxyDelegate;
 
-// The proxy implementation that relays requests from clients to the real
-// service implementation in the GPU process over mojom.GpuServiceInternal.
-class GpuServiceProxy : public mojom::GpuService {
+// Sets up connection from clients to the real service implementation in the GPU
+// process.
+class GpuServiceProxy {
  public:
   explicit GpuServiceProxy(GpuServiceProxyDelegate* delegate);
-  ~GpuServiceProxy() override;
+  ~GpuServiceProxy();
 
   void Add(mojom::GpuServiceRequest request);
 
@@ -40,28 +39,11 @@ class GpuServiceProxy : public mojom::GpuService {
 
  private:
   void OnInitialized(const gpu::GPUInfo& gpu_info);
-  void OnGpuChannelEstablished(const EstablishGpuChannelCallback& callback,
-                               int32_t client_id,
-                               mojo::ScopedMessagePipeHandle channel_handle);
-
-  // mojom::GpuService overrides:
-  void EstablishGpuChannel(
-      const EstablishGpuChannelCallback& callback) override;
-  void CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      gfx::BufferUsage usage,
-      const mojom::GpuService::CreateGpuMemoryBufferCallback& callback)
-      override;
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              const gpu::SyncToken& sync_token) override;
 
   GpuServiceProxyDelegate* const delegate_;
   int32_t next_client_id_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   mojom::GpuServiceInternalPtr gpu_service_;
-  mojo::BindingSet<mojom::GpuService> bindings_;
   gpu::GPUInfo gpu_info_;
   std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 

@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connection.h"
@@ -24,6 +25,73 @@ namespace {
 
 // The client Id 1 is reserved for the display compositor.
 const int32_t kInternalGpuChannelClientId = 2;
+
+// The implementation that relays requests from clients to the real
+// service implementation in the GPU process over mojom.GpuServiceInternal.
+class GpuServiceImpl : public mojom::GpuService {
+ public:
+  GpuServiceImpl(int client_id,
+                 gpu::GPUInfo* gpu_info,
+                 MusGpuMemoryBufferManager* gpu_memory_buffer_manager,
+                 mojom::GpuServiceInternal* gpu_service_internal)
+      : client_id_(client_id),
+        gpu_info_(gpu_info),
+        gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+        gpu_service_internal_(gpu_service_internal) {
+    DCHECK(gpu_memory_buffer_manager_);
+    DCHECK(gpu_service_internal_);
+  }
+  ~GpuServiceImpl() override {
+    gpu_memory_buffer_manager_->DestroyAllGpuMemoryBufferForClient(client_id_);
+  }
+
+ private:
+  void OnGpuChannelEstablished(const EstablishGpuChannelCallback& callback,
+                               mojo::ScopedMessagePipeHandle channel_handle) {
+    callback.Run(client_id_, std::move(channel_handle), *gpu_info_);
+  }
+
+  // mojom::GpuService overrides:
+  void EstablishGpuChannel(
+      const EstablishGpuChannelCallback& callback) override {
+    // TODO(sad): crbug.com/617415 figure out how to generate a meaningful
+    // tracing id.
+    const uint64_t client_tracing_id = 0;
+    constexpr bool is_gpu_host = false;
+    gpu_service_internal_->EstablishGpuChannel(
+        client_id_, client_tracing_id, is_gpu_host,
+        base::Bind(&GpuServiceImpl::OnGpuChannelEstablished,
+                   base::Unretained(this), callback));
+  }
+
+  void CreateGpuMemoryBuffer(
+      gfx::GpuMemoryBufferId id,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
+      const mojom::GpuService::CreateGpuMemoryBufferCallback& callback)
+      override {
+    auto handle = gpu_memory_buffer_manager_->CreateGpuMemoryBufferHandle(
+        id, client_id_, size, format, usage, gpu::kNullSurfaceHandle);
+    callback.Run(handle);
+  }
+
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                              const gpu::SyncToken& sync_token) override {
+    gpu_memory_buffer_manager_->DestroyGpuMemoryBuffer(id, client_id_,
+                                                       sync_token);
+  }
+
+  const int client_id_;
+
+  // The objects these pointers refer to are owned by the GpuServiceProxy
+  // object.
+  const gpu::GPUInfo* gpu_info_;
+  MusGpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  mojom::GpuServiceInternal* gpu_service_internal_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuServiceImpl);
+};
 
 }  // namespace
 
@@ -46,7 +114,11 @@ GpuServiceProxy::~GpuServiceProxy() {
 }
 
 void GpuServiceProxy::Add(mojom::GpuServiceRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<GpuServiceImpl>(next_client_id_++, &gpu_info_,
+                                       gpu_memory_buffer_manager_.get(),
+                                       gpu_service_.get()),
+      std::move(request));
 }
 
 void GpuServiceProxy::CreateDisplayCompositor(
@@ -57,50 +129,7 @@ void GpuServiceProxy::CreateDisplayCompositor(
 
 void GpuServiceProxy::OnInitialized(const gpu::GPUInfo& gpu_info) {
   gpu_info_ = gpu_info;
-
   delegate_->OnGpuServiceInitialized();
-}
-
-void GpuServiceProxy::OnGpuChannelEstablished(
-    const EstablishGpuChannelCallback& callback,
-    int32_t client_id,
-    mojo::ScopedMessagePipeHandle channel_handle) {
-  callback.Run(client_id, std::move(channel_handle), gpu_info_);
-}
-
-void GpuServiceProxy::EstablishGpuChannel(
-    const EstablishGpuChannelCallback& callback) {
-  const int client_id = next_client_id_++;
-  // TODO(sad): crbug.com/617415 figure out how to generate a meaningful tracing
-  // id.
-  const uint64_t client_tracing_id = 0;
-  constexpr bool is_gpu_host = false;
-  gpu_service_->EstablishGpuChannel(
-      client_id, client_tracing_id, is_gpu_host,
-      base::Bind(&GpuServiceProxy::OnGpuChannelEstablished,
-                 base::Unretained(this), callback, client_id));
-}
-
-void GpuServiceProxy::CreateGpuMemoryBuffer(
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage,
-    const mojom::GpuService::CreateGpuMemoryBufferCallback& callback) {
-  // TODO(sad): Check to see if native gpu memory buffer can be used first.
-  if (!gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage) ||
-      !gpu::GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(size,
-                                                                  format)) {
-    callback.Run(gfx::GpuMemoryBufferHandle());
-    return;
-  }
-  callback.Run(gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
-      id, size, format));
-}
-
-void GpuServiceProxy::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                             const gpu::SyncToken& sync_token) {
-  //  NOTIMPLEMENTED();
 }
 
 }  // namespace ws

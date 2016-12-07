@@ -19,34 +19,49 @@ MusGpuMemoryBufferManager::MusGpuMemoryBufferManager(
 
 MusGpuMemoryBufferManager::~MusGpuMemoryBufferManager() {}
 
+gfx::GpuMemoryBufferHandle
+MusGpuMemoryBufferManager::CreateGpuMemoryBufferHandle(
+    gfx::GpuMemoryBufferId id,
+    int client_id,
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    gpu::SurfaceHandle surface_handle) {
+  DCHECK(CalledOnValidThread());
+  if (gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER) {
+    const bool is_native =
+        gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
+    if (is_native) {
+      gfx::GpuMemoryBufferHandle handle;
+      gpu_service_->CreateGpuMemoryBuffer(id, size, format, usage, client_id,
+                                          surface_handle, &handle);
+      if (!handle.is_null())
+        native_buffers_[client_id].insert(handle.id);
+      return handle;
+    }
+  }
+
+  DCHECK(gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage))
+      << static_cast<int>(usage);
+  return gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(id, size,
+                                                                     format);
+}
+
 std::unique_ptr<gfx::GpuMemoryBuffer>
 MusGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     gpu::SurfaceHandle surface_handle) {
-  DCHECK(CalledOnValidThread());
   gfx::GpuMemoryBufferId id(next_gpu_memory_id_++);
-  const bool is_native =
-      gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
-  if (is_native) {
-    gfx::GpuMemoryBufferHandle handle;
-    gpu_service_->CreateGpuMemoryBuffer(id, size, format, usage, client_id_,
-                                        surface_handle, &handle);
-    if (handle.is_null())
-      return nullptr;
-    return gpu::GpuMemoryBufferImpl::CreateFromHandle(
-        handle, size, format, usage,
-        base::Bind(&MusGpuMemoryBufferManager::DestroyGpuMemoryBuffer,
-                   weak_factory_.GetWeakPtr(), id, client_id_, is_native));
-  }
-
-  DCHECK(gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage))
-      << static_cast<int>(usage);
-  return gpu::GpuMemoryBufferImplSharedMemory::Create(
-      id, size, format,
+  gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBufferHandle(
+      id, client_id_, size, format, usage, surface_handle);
+  if (handle.is_null())
+    return nullptr;
+  return gpu::GpuMemoryBufferImpl::CreateFromHandle(
+      handle, size, format, usage,
       base::Bind(&MusGpuMemoryBufferManager::DestroyGpuMemoryBuffer,
-                 weak_factory_.GetWeakPtr(), id, client_id_, is_native));
+                 weak_factory_.GetWeakPtr(), id, client_id_));
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
@@ -69,12 +84,18 @@ void MusGpuMemoryBufferManager::SetDestructionSyncToken(
 void MusGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id,
-    bool is_native,
     const gpu::SyncToken& sync_token) {
   DCHECK(CalledOnValidThread());
-  if (is_native) {
+  if (native_buffers_[client_id].erase(id))
     gpu_service_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
-  }
+}
+
+void MusGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
+    int client_id) {
+  DCHECK(CalledOnValidThread());
+  for (gfx::GpuMemoryBufferId id : native_buffers_[client_id])
+    gpu_service_->DestroyGpuMemoryBuffer(id, client_id, gpu::SyncToken());
+  native_buffers_.erase(client_id);
 }
 
 }  // namespace ui

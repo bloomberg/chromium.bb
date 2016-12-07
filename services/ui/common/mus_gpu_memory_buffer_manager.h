@@ -24,6 +24,20 @@ class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager,
                             int client_id);
   ~MusGpuMemoryBufferManager() override;
 
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                              int client_id,
+                              const gpu::SyncToken& sync_token);
+
+  void DestroyAllGpuMemoryBufferForClient(int client_id);
+
+  gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
+      gfx::GpuMemoryBufferId id,
+      int client_id,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
+      gpu::SurfaceHandle surface_handle);
+
   // Overridden from gpu::GpuMemoryBufferManager:
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
@@ -38,15 +52,15 @@ class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager,
                                const gpu::SyncToken& sync_token) override;
 
  private:
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              int client_id,
-                              bool is_native,
-                              const gpu::SyncToken& sync_token);
-
   mojom::GpuServiceInternal* gpu_service_;
-
   const int client_id_;
   int next_gpu_memory_id_ = 1;
+
+  using NativeBuffers =
+      std::unordered_set<gfx::GpuMemoryBufferId,
+                         BASE_HASH_NAMESPACE::hash<gfx::GpuMemoryBufferId>>;
+  std::unordered_map<int, NativeBuffers> native_buffers_;
+
   base::WeakPtrFactory<MusGpuMemoryBufferManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MusGpuMemoryBufferManager);
