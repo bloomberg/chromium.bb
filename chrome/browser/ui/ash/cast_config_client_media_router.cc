@@ -24,7 +24,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
@@ -148,16 +147,9 @@ CastConfigClientMediaRouter::CastConfigClientMediaRouter() : binding_(this) {
 
   // When starting up, we need to connect to ash and set ourselves as the
   // client.
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  // Connect to the CastClient interface in ash. Under mash the CastClient
-  // interface is in the ash process. In classic ash we provide it to ourself.
-  if (chrome::IsRunningInMash()) {
-    connector->ConnectToInterface("ash", &cast_config_);
-  } else {
-    connector->ConnectToInterface(content::mojom::kBrowserServiceName,
-                                  &cast_config_);
-  }
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->ConnectToInterface(ash_util::GetAshServiceName(), &cast_config_);
 
   // Register this object as the client interface implementation.
   ash::mojom::CastConfigClientAssociatedPtrInfo ptr_info;

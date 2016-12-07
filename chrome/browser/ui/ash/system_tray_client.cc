@@ -33,7 +33,6 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "extensions/browser/api/vpn_provider/vpn_service.h"
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "net/base/escape.h"
@@ -63,16 +62,9 @@ void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
 }  // namespace
 
 SystemTrayClient::SystemTrayClient() : binding_(this) {
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  // Connect to the SystemTray interface in ash. Under mash the SystemTray
-  // interface is in the ash process. In classic ash we provide it to ourself.
-  if (chrome::IsRunningInMash()) {
-    connector->ConnectToInterface("ash", &system_tray_);
-  } else {
-    connector->ConnectToInterface(content::mojom::kBrowserServiceName,
-                                  &system_tray_);
-  }
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->ConnectToInterface(ash_util::GetAshServiceName(), &system_tray_);
   // Register this object as the client interface implementation.
   system_tray_->SetClient(binding_.CreateInterfacePtrAndBind());
 

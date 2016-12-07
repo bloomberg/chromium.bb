@@ -44,14 +44,9 @@ Profile* GetProfileForPrimaryUser() {
 // Connects to the VpnList mojo interface in ash.
 ash::mojom::VpnListPtr ConnectToVpnList() {
   ash::mojom::VpnListPtr vpn_list;
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  // Under mash the VpnList interface is in the ash process. In classic ash
-  // we provide it to ourself.
-  if (chrome::IsRunningInMash())
-    connector->ConnectToInterface("ash", &vpn_list);
-  else
-    connector->ConnectToInterface("content_browser", &vpn_list);
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->ConnectToInterface(ash_util::GetAshServiceName(), &vpn_list);
   return vpn_list;
 }
 

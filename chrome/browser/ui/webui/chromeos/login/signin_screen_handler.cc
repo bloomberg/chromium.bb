@@ -94,7 +94,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -296,15 +295,10 @@ SigninScreenHandler::SigninScreenHandler(
   if (keyboard)
     keyboard->AddObserver(this);
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  if (!chrome::IsRunningInMash()) {
-    connector->ConnectToInterface(content::mojom::kBrowserServiceName,
-                                  &touch_view_manager_ptr_);
-  } else {
-    connector->ConnectToInterface("ash", &touch_view_manager_ptr_);
-  }
-
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->ConnectToInterface(ash_util::GetAshServiceName(),
+                           &touch_view_manager_ptr_);
   touch_view_manager_ptr_->AddObserver(
       touch_view_binding_.CreateInterfacePtrAndBind());
 }
