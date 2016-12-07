@@ -59,7 +59,8 @@ if (is_win) {
   executable("remote_security_key") {
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-    defines = host_predefines + [ "BINARY=BINARY_REMOTE_SECURITY_KEY" ]
+    defines =
+        host_predefines + [ "REMOTING_HOST_BINARY=BINARY_REMOTE_SECURITY_KEY" ]
 
     deps = [
       "//build/win:default_exe_manifest",

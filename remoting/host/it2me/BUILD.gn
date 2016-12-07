@@ -79,7 +79,8 @@ if (!is_chromeos && enable_remoting_host) {
         "it2me_native_messaging_host_entry_point.cc",
       ]
 
-      defines = host_predefines + [ "BINARY=BINARY_REMOTE_ASSISTANCE_HOST" ]
+      defines = host_predefines +
+                [ "REMOTING_HOST_BINARY=BINARY_REMOTE_ASSISTANCE_HOST" ]
 
       ldflags = [
         # "/NODEFAULTLIB", TODO(zijiehe): Why IgnoreAllDefaultLibraries: true in
@@ -102,7 +103,8 @@ if (!is_chromeos && enable_remoting_host) {
         "it2me_native_messaging_host_entry_point.cc",
       ]
 
-      defines = host_predefines + [ "BINARY=BINARY_HOST_IT2ME_UIACCESS" ]
+      defines = host_predefines +
+                [ "REMOTING_HOST_BINARY=BINARY_HOST_IT2ME_UIACCESS" ]
 
       ldflags = [
         # "/NODEFAULTLIB", TODO(zijiehe): Why IgnoreAllDefaultLibraries: true in

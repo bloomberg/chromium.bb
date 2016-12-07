@@ -14,7 +14,7 @@
 
 LANGUAGE {{ lang | GetPrimaryLanguage }}, {{ lang | GetSublanguage }}
 
-#if (BINARY == BINARY_CORE)
+#if (REMOTING_HOST_BINARY == BINARY_CORE)
 
 STRINGTABLE
 BEGIN
@@ -29,7 +29,7 @@ END
 
 IDI_CHROME_REMOTE_DESKTOP      ICON    "remoting/resources/chromoting.ico"
 
-#endif  // (BINARY == BINARY_CORE)
+#endif  // (REMOTING_HOST_BINARY == BINARY_CORE)
 
 IDD_DISCONNECT DIALOGEX 0, 0, 145, 24
 STYLE DS_SETFONT | WS_POPUP

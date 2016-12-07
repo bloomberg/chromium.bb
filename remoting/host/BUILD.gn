@@ -605,7 +605,8 @@ if (enable_remoting_host) {
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
     if (is_win) {
-      defines = host_predefines + [ "BINARY=BINARY_REMOTING_START_HOST" ]
+      defines = host_predefines +
+                [ "REMOTING_HOST_BINARY=BINARY_REMOTING_START_HOST" ]
 
       deps += [
         "//build/win:default_exe_manifest",

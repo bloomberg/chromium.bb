@@ -4,7 +4,7 @@
 # GN config is always executed after defines, so if we would like to generate
 # defines ordered as
 # #define BINARY_CORE=1
-# #define BINARY=BINARY_CORE
+# #define REMOTING_HOST_BINARY=BINARY_CORE
 # we need to set these predefines as a list, and append others after it.
 
 assert(is_win)

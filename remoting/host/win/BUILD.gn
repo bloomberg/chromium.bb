@@ -263,7 +263,7 @@ message_compiler("messages") {
 executable("remoting_console") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  defines = host_predefines + [ "BINARY=BINARY_HOST_ME2ME" ]
+  defines = host_predefines + [ "REMOTING_HOST_BINARY=BINARY_HOST_ME2ME" ]
 
   deps = [
     ":dpi_aware_exe_manifest",
@@ -289,7 +289,7 @@ executable("remoting_me2me_host") {
     "//remoting/build/config:remoting_me2me_host",
   ]
 
-  defines = host_predefines + [ "BINARY=BINARY_HOST_ME2ME" ]
+  defines = host_predefines + [ "REMOTING_HOST_BINARY=BINARY_HOST_ME2ME" ]
 
   deps = [
     ":dpi_aware_exe_manifest",
@@ -315,7 +315,7 @@ shared_library("remoting_core") {
               "_ATL_CSTRING_EXPLICIT_CONSTRUCTORS",
               "_ATL_NO_AUTOMATIC_NAMESPACE",
               "_ATL_NO_EXCEPTIONS",
-              "BINARY=BINARY_CORE",
+              "REMOTING_HOST_BINARY=BINARY_CORE",
               "DAEMON_CONTROLLER_CLSID=\"$daemon_controller_clsid\"",
               "RDP_DESKTOP_SESSION_CLSID=\"$rdp_desktop_session_clsid\"",
               "HOST_IMPLEMENTATION",
@@ -422,7 +422,7 @@ executable("remoting_desktop") {
     "//build/config/win:windowed",
   ]
 
-  defines = host_predefines + [ "BINARY=BINARY_DESKTOP" ]
+  defines = host_predefines + [ "REMOTING_HOST_BINARY=BINARY_DESKTOP" ]
 
   deps = [
     ":remoting_core",
@@ -449,7 +449,8 @@ executable("remoting_desktop") {
 executable("remoting_native_messaging_host") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  defines = host_predefines + [ "BINARY=BINARY_NATIVE_MESSAGING_HOST" ]
+  defines =
+      host_predefines + [ "REMOTING_HOST_BINARY=BINARY_NATIVE_MESSAGING_HOST" ]
 
   deps = [
     ":remoting_core",

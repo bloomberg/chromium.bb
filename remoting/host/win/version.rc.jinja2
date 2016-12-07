@@ -29,7 +29,7 @@ VS_VERSION_INFO VERSIONINFO
  FILEFLAGS 0x0L
 #endif
  FILEOS 0x4L
-#if (BINARY == BINARY_CORE)
+#if (REMOTING_HOST_BINARY == BINARY_CORE)
  FILETYPE VFT_DLL
 #else
  FILETYPE VFT_APP
@@ -47,41 +47,41 @@ BEGIN
       VALUE "ProductVersion", "{{ MAJOR }}.{{ REMOTING_PATCH }}.{{ BUILD }}.{{ PATCH }}"
       VALUE "LastChange", "{{ LASTCHANGE }}"
       VALUE "Official Build", "{{ official_build }}"
-#if (BINARY == BINARY_CORE)
+#if (REMOTING_HOST_BINARY == BINARY_CORE)
       VALUE "FileDescription", "{% trans %}REMOTING_CORE_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remoting_core.dll"
       VALUE "OriginalFilename", "remoting_core.dll"
-#elif (BINARY == BINARY_DESKTOP)
+#elif (REMOTING_HOST_BINARY == BINARY_DESKTOP)
       VALUE "FileDescription", "{% trans %}REMOTING_DESKTOP_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remoting_desktop.exe"
       VALUE "OriginalFilename", "remoting_desktop.exe"
-#elif (BINARY == BINARY_HOST_ME2ME)
+#elif (REMOTING_HOST_BINARY == BINARY_HOST_ME2ME)
       VALUE "FileDescription", "{% trans %}REMOTING_HOST_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remoting_host.exe"
       VALUE "OriginalFilename", "remoting_host.exe"
-#elif (BINARY == BINARY_NATIVE_MESSAGING_HOST)
+#elif (REMOTING_HOST_BINARY == BINARY_NATIVE_MESSAGING_HOST)
       VALUE "FileDescription", "{% trans %}REMOTING_NATIVE_MESSAGING_HOST_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remoting_native_messaging_host.exe"
       VALUE "OriginalFilename", "remoting_native_messaging_host.exe"
-#elif (BINARY == BINARY_REMOTE_ASSISTANCE_HOST)
+#elif (REMOTING_HOST_BINARY == BINARY_REMOTE_ASSISTANCE_HOST)
       VALUE "FileDescription", "{% trans %}REMOTING_REMOTE_ASSISTANCE_HOST_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remote_assistance_host.exe"
       VALUE "OriginalFilename", "remote_assistance_host.exe"
-#elif (BINARY == BINARY_HOST_IT2ME_UIACCESS)
+#elif (REMOTING_HOST_BINARY == BINARY_HOST_IT2ME_UIACCESS)
       // Intentionally reuse the description for 'BINARY_REMOTE_ASSISTANCE_HOST'
       VALUE "FileDescription", "{% trans %}REMOTING_REMOTE_ASSISTANCE_HOST_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remote_assistance_host_uiaccess.exe"
       VALUE "OriginalFilename", "remote_assistance_host_uiaccess.exe"
-#elif (BINARY == BINARY_REMOTE_SECURITY_KEY)
+#elif (REMOTING_HOST_BINARY == BINARY_REMOTE_SECURITY_KEY)
       VALUE "FileDescription", "{% trans %}REMOTING_REMOTE_SECURITY_KEY_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remote_security_key.exe"
       VALUE "OriginalFilename", "remote_security_key.exe"
-#elif (BINARY == BINARY_REMOTING_START_HOST)
+#elif (REMOTING_HOST_BINARY == BINARY_REMOTING_START_HOST)
       VALUE "FileDescription", "{% trans %}REMOTING_START_HOST_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remoting_start_host.exe"
       VALUE "OriginalFilename", "remoting_start_host.exe"
 #else
-#error BINARY must be set to one of BINARY_XXX values.
+#error REMOTING_HOST_BINARY must be set to one of BINARY_XXX values.
 #endif
     END
   END
