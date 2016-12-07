@@ -1075,8 +1075,8 @@ VectorType toImplSequence(v8::Isolate* isolate,
     }
     if (doneBoolean->Value())
       break;
-    result.append(NativeValueTraits<ValueType>::nativeValue(isolate, element,
-                                                            exceptionState));
+    result.push_back(NativeValueTraits<ValueType>::nativeValue(isolate, element,
+                                                               exceptionState));
   }
   return result;
 }

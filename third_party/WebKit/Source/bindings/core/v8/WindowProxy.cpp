@@ -331,7 +331,7 @@ void WindowProxy::createContext() {
               extension->name(), extensionGroup, worldId))
         continue;
 
-      extensionNames.append(extension->name());
+      extensionNames.push_back(extension->name());
     }
   }
   v8::ExtensionConfiguration extensionConfiguration(extensionNames.size(),

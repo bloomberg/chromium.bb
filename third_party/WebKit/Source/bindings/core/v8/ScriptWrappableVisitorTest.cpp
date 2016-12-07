@@ -170,7 +170,7 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsHeadersWhenObjectDied) {
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
   auto header = HeapObjectHeader::fromPayload(object);
-  visitor->getHeadersToUnmark()->append(header);
+  visitor->getHeadersToUnmark()->push_back(header);
 
   preciselyCollectGarbage();
 

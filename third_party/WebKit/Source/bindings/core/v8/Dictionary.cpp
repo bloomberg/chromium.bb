@@ -196,7 +196,7 @@ Vector<String> Dictionary::getPropertyNames(
     if (!stringKey.prepare(isolate(), exceptionState))
       return Vector<String>();
 
-    names.append(stringKey);
+    names.push_back(stringKey);
   }
 
   return names;

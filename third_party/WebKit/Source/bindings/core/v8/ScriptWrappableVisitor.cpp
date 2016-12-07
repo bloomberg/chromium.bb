@@ -204,7 +204,7 @@ bool ScriptWrappableVisitor::markWrapperHeader(HeapObjectHeader* header) const {
     return false;
 
   header->markWrapperHeader();
-  m_headersToUnmark.append(header);
+  m_headersToUnmark.push_back(header);
   return true;
 }
 

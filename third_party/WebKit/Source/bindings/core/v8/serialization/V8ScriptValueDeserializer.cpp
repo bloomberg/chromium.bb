@@ -97,7 +97,7 @@ void V8ScriptValueDeserializer::transfer() {
     m_transferredImageBitmaps.reserveInitialCapacity(
         imageBitmapContents->size());
     for (const auto& image : *imageBitmapContents)
-      m_transferredImageBitmaps.append(ImageBitmap::create(image));
+      m_transferredImageBitmaps.push_back(ImageBitmap::create(image));
   }
 }
 

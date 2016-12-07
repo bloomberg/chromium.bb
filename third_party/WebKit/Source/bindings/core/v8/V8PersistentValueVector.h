@@ -44,7 +44,7 @@ class WTFVectorPersistentValueVectorTraits {
  public:
   typedef Vector<v8::PersistentContainerValue> Impl;
   static void Append(Impl* impl, v8::PersistentContainerValue value) {
-    impl->append(value);
+    impl->push_back(value);
   }
   static bool IsEmpty(const Impl* impl) { return impl->isEmpty(); }
   static size_t Size(const Impl* impl) { return impl->size(); }

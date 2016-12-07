@@ -155,60 +155,60 @@ TEST(ToV8Test, scriptValue) {
 TEST(ToV8Test, stringVectors) {
   V8TestingScope scope;
   Vector<String> stringVector;
-  stringVector.append("foo");
-  stringVector.append("bar");
+  stringVector.push_back("foo");
+  stringVector.push_back("bar");
   TEST_TOV8("foo,bar", stringVector);
 
   Vector<AtomicString> atomicStringVector;
-  atomicStringVector.append("quux");
-  atomicStringVector.append("bar");
+  atomicStringVector.push_back("quux");
+  atomicStringVector.push_back("bar");
   TEST_TOV8("quux,bar", atomicStringVector);
 }
 
 TEST(ToV8Test, basicTypeVectors) {
   V8TestingScope scope;
   Vector<int> intVector;
-  intVector.append(42);
-  intVector.append(23);
+  intVector.push_back(42);
+  intVector.push_back(23);
   TEST_TOV8("42,23", intVector);
 
   Vector<long> longVector;
-  longVector.append(31773);
-  longVector.append(404);
+  longVector.push_back(31773);
+  longVector.push_back(404);
   TEST_TOV8("31773,404", longVector);
 
   Vector<unsigned> unsignedVector;
-  unsignedVector.append(1);
-  unsignedVector.append(2);
+  unsignedVector.push_back(1);
+  unsignedVector.push_back(2);
   TEST_TOV8("1,2", unsignedVector);
 
   Vector<unsigned long> unsignedLongVector;
-  unsignedLongVector.append(1001);
-  unsignedLongVector.append(2002);
+  unsignedLongVector.push_back(1001);
+  unsignedLongVector.push_back(2002);
   TEST_TOV8("1001,2002", unsignedLongVector);
 
   Vector<float> floatVector;
-  floatVector.append(0.125);
-  floatVector.append(1.);
+  floatVector.push_back(0.125);
+  floatVector.push_back(1.);
   TEST_TOV8("0.125,1", floatVector);
 
   Vector<double> doubleVector;
-  doubleVector.append(2.3);
-  doubleVector.append(4.2);
+  doubleVector.push_back(2.3);
+  doubleVector.push_back(4.2);
   TEST_TOV8("2.3,4.2", doubleVector);
 
   Vector<bool> boolVector;
-  boolVector.append(true);
-  boolVector.append(true);
-  boolVector.append(false);
+  boolVector.push_back(true);
+  boolVector.push_back(true);
+  boolVector.push_back(false);
   TEST_TOV8("true,true,false", boolVector);
 }
 
 TEST(ToV8Test, dictionaryVector) {
   V8TestingScope scope;
   Vector<std::pair<String, int>> dictionary;
-  dictionary.append(std::make_pair("one", 1));
-  dictionary.append(std::make_pair("two", 2));
+  dictionary.push_back(std::make_pair("one", 1));
+  dictionary.push_back(std::make_pair("two", 2));
   TEST_TOV8("[object Object]", dictionary);
   v8::Local<v8::Context> context = scope.getScriptState()->context();
   v8::Local<v8::Object> result =
@@ -226,9 +226,9 @@ TEST(ToV8Test, dictionaryVector) {
 TEST(ToV8Test, heapVector) {
   V8TestingScope scope;
   HeapVector<Member<GarbageCollectedScriptWrappable>> v;
-  v.append(new GarbageCollectedScriptWrappable("hoge"));
-  v.append(new GarbageCollectedScriptWrappable("fuga"));
-  v.append(nullptr);
+  v.push_back(new GarbageCollectedScriptWrappable("hoge"));
+  v.push_back(new GarbageCollectedScriptWrappable("fuga"));
+  v.push_back(nullptr);
 
   TEST_TOV8("hoge,fuga,", v);
 }

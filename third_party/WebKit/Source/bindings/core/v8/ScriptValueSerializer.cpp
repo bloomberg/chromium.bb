@@ -1149,7 +1149,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFileList(
     if (appendFileInfo(file, &blobIndex)) {
       ASSERT(!i || blobIndex > 0);
       ASSERT(blobIndex >= 0);
-      blobIndices.append(blobIndex);
+      blobIndices.push_back(blobIndex);
     }
   }
   if (!blobIndices.isEmpty())
@@ -1397,7 +1397,7 @@ bool ScriptValueSerializer::appendBlobInfo(const String& uuid,
   if (!m_blobInfo)
     return false;
   *index = m_blobInfo->size();
-  m_blobInfo->append(WebBlobInfo(uuid, type, size));
+  m_blobInfo->push_back(WebBlobInfo(uuid, type, size));
   return true;
 }
 
@@ -1411,8 +1411,8 @@ bool ScriptValueSerializer::appendFileInfo(const File* file, int* index) {
   *index = m_blobInfo->size();
   // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
   double lastModified = lastModifiedMS / msPerSecond;
-  m_blobInfo->append(WebBlobInfo(file->uuid(), file->path(), file->name(),
-                                 file->type(), lastModified, size));
+  m_blobInfo->push_back(WebBlobInfo(file->uuid(), file->path(), file->name(),
+                                    file->type(), lastModified, size));
   return true;
 }
 
@@ -2475,7 +2475,7 @@ bool ScriptValueDeserializer::completeSet(uint32_t length,
 
 void ScriptValueDeserializer::pushObjectReference(
     const v8::Local<v8::Value>& object) {
-  m_objectPool.append(object);
+  m_objectPool.push_back(object);
 }
 
 bool ScriptValueDeserializer::tryGetTransferredMessagePort(
@@ -2641,8 +2641,8 @@ v8::Local<v8::Value> ScriptValueDeserializer::element(unsigned index) {
 void ScriptValueDeserializer::openComposite(
     const v8::Local<v8::Value>& object) {
   uint32_t newObjectReference = m_objectPool.size();
-  m_openCompositeReferenceStack.append(newObjectReference);
-  m_objectPool.append(object);
+  m_openCompositeReferenceStack.push_back(newObjectReference);
+  m_objectPool.push_back(object);
 }
 
 bool ScriptValueDeserializer::closeComposite(v8::Local<v8::Value>* object) {

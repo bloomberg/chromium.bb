@@ -200,7 +200,7 @@ class MajorGCWrapperVisitor : public v8::PersistentHandleVisitor {
       m_isolate->SetObjectGroupId(
           *value, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
       if (m_constructRetainedObjectInfos)
-        m_groupsWhichNeedRetainerInfo.append(root);
+        m_groupsWhichNeedRetainerInfo.push_back(root);
     } else if (classId == WrapperTypeInfo::ObjectClassId) {
       if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
         type->visitDOMWrapper(m_isolate, toScriptWrappable(wrapper),

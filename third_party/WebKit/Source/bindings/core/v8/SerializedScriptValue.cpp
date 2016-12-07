@@ -198,13 +198,13 @@ static void accumulateArrayBuffersForAllWorlds(
       v8::Local<v8::Object> wrapper =
           worlds[i]->domDataStore().get(object, isolate);
       if (!wrapper.IsEmpty())
-        buffers.append(v8::Local<v8::ArrayBuffer>::Cast(wrapper));
+        buffers.push_back(v8::Local<v8::ArrayBuffer>::Cast(wrapper));
     }
   } else {
     v8::Local<v8::Object> wrapper =
         DOMWrapperWorld::current(isolate).domDataStore().get(object, isolate);
     if (!wrapper.IsEmpty())
-      buffers.append(v8::Local<v8::ArrayBuffer>::Cast(wrapper));
+      buffers.push_back(v8::Local<v8::ArrayBuffer>::Cast(wrapper));
   }
 }
 
@@ -232,7 +232,7 @@ SerializedScriptValue::transferImageBitmapContents(
     if (visited.contains(imageBitmaps[i]))
       continue;
     visited.add(imageBitmaps[i]);
-    contents->append(imageBitmaps[i]->transfer());
+    contents->push_back(imageBitmaps[i]->transfer());
   }
   return contents;
 }
@@ -342,7 +342,7 @@ bool SerializedScriptValue::extractTransferables(
                                 " is a duplicate of an earlier port.");
         return false;
       }
-      transferables.messagePorts.append(port);
+      transferables.messagePorts.push_back(port);
     } else if (transferableObject->IsArrayBuffer()) {
       DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(
           v8::Local<v8::Object>::Cast(transferableObject));
@@ -352,7 +352,7 @@ bool SerializedScriptValue::extractTransferables(
                                 " is a duplicate of an earlier ArrayBuffer.");
         return false;
       }
-      transferables.arrayBuffers.append(arrayBuffer);
+      transferables.arrayBuffers.push_back(arrayBuffer);
     } else if (transferableObject->IsSharedArrayBuffer()) {
       DOMSharedArrayBuffer* sharedArrayBuffer = V8SharedArrayBuffer::toImpl(
           v8::Local<v8::Object>::Cast(transferableObject));
@@ -363,7 +363,7 @@ bool SerializedScriptValue::extractTransferables(
                 " is a duplicate of an earlier SharedArrayBuffer.");
         return false;
       }
-      transferables.arrayBuffers.append(sharedArrayBuffer);
+      transferables.arrayBuffers.push_back(sharedArrayBuffer);
     } else if (V8ImageBitmap::hasInstance(transferableObject, isolate)) {
       ImageBitmap* imageBitmap = V8ImageBitmap::toImpl(
           v8::Local<v8::Object>::Cast(transferableObject));
@@ -373,7 +373,7 @@ bool SerializedScriptValue::extractTransferables(
                                 " is a duplicate of an earlier ImageBitmap.");
         return false;
       }
-      transferables.imageBitmaps.append(imageBitmap);
+      transferables.imageBitmaps.push_back(imageBitmap);
     } else if (V8OffscreenCanvas::hasInstance(transferableObject, isolate)) {
       OffscreenCanvas* offscreenCanvas = V8OffscreenCanvas::toImpl(
           v8::Local<v8::Object>::Cast(transferableObject));
@@ -384,7 +384,7 @@ bool SerializedScriptValue::extractTransferables(
                 " is a duplicate of an earlier OffscreenCanvas.");
         return false;
       }
-      transferables.offscreenCanvases.append(offscreenCanvas);
+      transferables.offscreenCanvases.push_back(offscreenCanvas);
     } else {
       exceptionState.throwTypeError("Value at index " + String::number(i) +
                                     " does not have a transferable type.");

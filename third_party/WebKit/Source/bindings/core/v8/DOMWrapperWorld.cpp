@@ -140,11 +140,11 @@ static WorldMap& isolatedWorldMap() {
 void DOMWrapperWorld::allWorldsInMainThread(
     Vector<RefPtr<DOMWrapperWorld>>& worlds) {
   ASSERT(isMainThread());
-  worlds.append(&mainWorld());
+  worlds.push_back(&mainWorld());
   WorldMap& isolatedWorlds = isolatedWorldMap();
   for (WorldMap::iterator it = isolatedWorlds.begin();
        it != isolatedWorlds.end(); ++it)
-    worlds.append(it->value);
+    worlds.push_back(it->value);
 }
 
 void DOMWrapperWorld::markWrappersInAllWorlds(

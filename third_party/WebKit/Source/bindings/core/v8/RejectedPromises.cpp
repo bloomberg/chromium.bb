@@ -269,7 +269,7 @@ void RejectedPromises::processQueueNow(std::unique_ptr<MessageQueue> queue) {
     if (!message->hasHandler()) {
       message->report();
       message->makePromiseWeak();
-      m_reportedAsErrors.append(std::move(message));
+      m_reportedAsErrors.push_back(std::move(message));
       if (m_reportedAsErrors.size() > maxReportedHandlersPendingResolution)
         m_reportedAsErrors.remove(0, maxReportedHandlersPendingResolution / 10);
     }

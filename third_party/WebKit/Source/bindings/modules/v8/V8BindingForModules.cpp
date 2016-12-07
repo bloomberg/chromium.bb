@@ -218,7 +218,7 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate,
       return nullptr;
     if (stack.size() >= maximumDepth)
       return nullptr;
-    stack.append(array);
+    stack.push_back(array);
 
     IDBKey::KeyArray subkeys;
     uint32_t length = array->Length();
@@ -235,9 +235,9 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate,
       IDBKey* subkey = createIDBKeyFromValue(
           isolate, item, stack, exceptionState, allowExperimentalTypes);
       if (!subkey)
-        subkeys.append(IDBKey::createInvalid());
+        subkeys.push_back(IDBKey::createInvalid());
       else
-        subkeys.append(subkey);
+        subkeys.push_back(subkey);
     }
 
     stack.pop_back();
@@ -376,7 +376,7 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(
           isolate, value, array[i], exceptionState, allowExperimentalTypes);
       if (!key)
         return nullptr;
-      result.append(key);
+      result.push_back(key);
     }
     return IDBKey::createArray(result);
   }

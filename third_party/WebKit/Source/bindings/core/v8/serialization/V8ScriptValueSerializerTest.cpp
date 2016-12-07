@@ -211,7 +211,7 @@ TEST(V8ScriptValueSerializerTest, NeuteringHappensAfterSerialization) {
   ASSERT_FALSE(arrayBuffer->isNeutered());
   v8::Local<v8::Value> object = eval("({ get a() { throw 'party'; }})", scope);
   Transferables transferables;
-  transferables.arrayBuffers.append(arrayBuffer);
+  transferables.arrayBuffers.push_back(arrayBuffer);
 
   roundTrip(object, scope, &exceptionState, &transferables);
   ASSERT_TRUE(exceptionState.hadException());
@@ -289,7 +289,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripMessagePort) {
       makeMessagePort(scope.getExecutionContext(), &unownedChannel);
   v8::Local<v8::Value> wrapper = toV8(port, scope.getScriptState());
   Transferables transferables;
-  transferables.messagePorts.append(port);
+  transferables.messagePorts.push_back(port);
 
   v8::Local<v8::Value> result =
       roundTrip(wrapper, scope, nullptr, &transferables);
@@ -311,7 +311,7 @@ TEST(V8ScriptValueSerializerTest, NeuteredMessagePortThrowsDataCloneError) {
   EXPECT_TRUE(port->isNeutered());
   v8::Local<v8::Value> wrapper = toV8(port, scope.getScriptState());
   Transferables transferables;
-  transferables.messagePorts.append(port);
+  transferables.messagePorts.push_back(port);
 
   roundTrip(wrapper, scope, &exceptionState, &transferables);
   ASSERT_TRUE(hadDOMException("DataCloneError", scope.getScriptState(),
@@ -356,15 +356,15 @@ TEST(V8ScriptValueSerializerTest, OutOfRangeMessagePortIndex) {
   }
   {
     MessagePortArray* ports = new MessagePortArray;
-    ports->append(port1);
+    ports->push_back(port1);
     V8ScriptValueDeserializer deserializer(scriptState, input);
     deserializer.setTransferredMessagePorts(ports);
     ASSERT_TRUE(deserializer.deserialize()->IsNull());
   }
   {
     MessagePortArray* ports = new MessagePortArray;
-    ports->append(port1);
-    ports->append(port2);
+    ports->push_back(port1);
+    ports->push_back(port2);
     V8ScriptValueDeserializer deserializer(scriptState, input);
     deserializer.setTransferredMessagePorts(ports);
     v8::Local<v8::Value> result = deserializer.deserialize();
@@ -489,7 +489,7 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
 
   v8::Local<v8::Value> wrapper = toV8(imageBitmap, scope.getScriptState());
   Transferables transferables;
-  transferables.imageBitmaps.append(imageBitmap);
+  transferables.imageBitmaps.push_back(imageBitmap);
   v8::Local<v8::Value> result =
       roundTrip(wrapper, scope, nullptr, &transferables);
   ASSERT_TRUE(V8ImageBitmap::hasInstance(result, scope.isolate()));
@@ -518,7 +518,7 @@ TEST(V8ScriptValueSerializerTest, TransferOffscreenCanvas) {
   canvas->setPlaceholderCanvasId(519);
   v8::Local<v8::Value> wrapper = toV8(canvas, scope.getScriptState());
   Transferables transferables;
-  transferables.offscreenCanvases.append(canvas);
+  transferables.offscreenCanvases.push_back(canvas);
   v8::Local<v8::Value> result =
       roundTrip(wrapper, scope, nullptr, &transferables);
   ASSERT_TRUE(V8OffscreenCanvas::hasInstance(result, scope.isolate()));

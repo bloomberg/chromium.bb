@@ -312,10 +312,10 @@ TEST(ScriptPromiseTest, allWithResolvedPromises) {
   ScriptValue onFulfilled, onRejected;
 
   Vector<ScriptPromise> promises;
-  promises.append(ScriptPromise::cast(scope.getScriptState(),
-                                      v8String(scope.isolate(), "hello")));
-  promises.append(ScriptPromise::cast(scope.getScriptState(),
-                                      v8String(scope.isolate(), "world")));
+  promises.push_back(ScriptPromise::cast(scope.getScriptState(),
+                                         v8String(scope.isolate(), "hello")));
+  promises.push_back(ScriptPromise::cast(scope.getScriptState(),
+                                         v8String(scope.isolate(), "world")));
 
   ScriptPromise promise = ScriptPromise::all(scope.getScriptState(), promises);
   ASSERT_FALSE(promise.isEmpty());
@@ -341,10 +341,10 @@ TEST(ScriptPromiseTest, allWithRejectedPromise) {
   ScriptValue onFulfilled, onRejected;
 
   Vector<ScriptPromise> promises;
-  promises.append(ScriptPromise::cast(scope.getScriptState(),
-                                      v8String(scope.isolate(), "hello")));
-  promises.append(ScriptPromise::reject(scope.getScriptState(),
-                                        v8String(scope.isolate(), "world")));
+  promises.push_back(ScriptPromise::cast(scope.getScriptState(),
+                                         v8String(scope.isolate(), "hello")));
+  promises.push_back(ScriptPromise::reject(scope.getScriptState(),
+                                           v8String(scope.isolate(), "world")));
 
   ScriptPromise promise = ScriptPromise::all(scope.getScriptState(), promises);
   ASSERT_FALSE(promise.isEmpty());

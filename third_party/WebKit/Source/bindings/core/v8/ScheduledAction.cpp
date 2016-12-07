@@ -179,7 +179,7 @@ void ScheduledAction::createLocalHandlesForArgs(
     Vector<v8::Local<v8::Value>>* handles) {
   handles->reserveCapacity(m_info.Size());
   for (size_t i = 0; i < m_info.Size(); ++i)
-    handles->append(m_info.Get(i));
+    handles->push_back(m_info.Get(i));
 }
 
 }  // namespace blink

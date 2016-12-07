@@ -15,12 +15,12 @@ TEST(TraceWrapperMemberTest, HeapVectorSwap) {
   HeapVector<Wrapper> vector1;
   DeathAwareScriptWrappable* parent1 = DeathAwareScriptWrappable::create();
   DeathAwareScriptWrappable* child1 = DeathAwareScriptWrappable::create();
-  vector1.append(Wrapper(parent1, child1));
+  vector1.push_back(Wrapper(parent1, child1));
 
   HeapVector<Wrapper> vector2;
   DeathAwareScriptWrappable* parent2 = DeathAwareScriptWrappable::create();
   DeathAwareScriptWrappable* child2 = DeathAwareScriptWrappable::create();
-  vector2.append(Wrapper(parent2, child2));
+  vector2.push_back(Wrapper(parent2, child2));
 
   swap(vector1, vector2, parent1, parent2);
   EXPECT_EQ(parent1, vector1.front().parent());
@@ -33,11 +33,11 @@ TEST(TraceWrapperMemberTest, HeapVectorSwap2) {
   HeapVector<Wrapper> vector1;
   DeathAwareScriptWrappable* parent1 = DeathAwareScriptWrappable::create();
   DeathAwareScriptWrappable* child1 = DeathAwareScriptWrappable::create();
-  vector1.append(Wrapper(parent1, child1));
+  vector1.push_back(Wrapper(parent1, child1));
 
   HeapVector<Member<DeathAwareScriptWrappable>> vector2;
   DeathAwareScriptWrappable* child2 = DeathAwareScriptWrappable::create();
-  vector2.append(child2);
+  vector2.push_back(child2);
 
   swap(vector1, vector2, parent1);
   EXPECT_EQ(1u, vector1.size());

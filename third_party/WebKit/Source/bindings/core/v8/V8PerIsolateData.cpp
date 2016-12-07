@@ -365,7 +365,7 @@ v8::Local<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(
 }
 
 void V8PerIsolateData::addEndOfScopeTask(std::unique_ptr<EndOfScopeTask> task) {
-  m_endOfScopeTasks.append(std::move(task));
+  m_endOfScopeTasks.push_back(std::move(task));
 }
 
 void V8PerIsolateData::runEndOfScopeTasks() {

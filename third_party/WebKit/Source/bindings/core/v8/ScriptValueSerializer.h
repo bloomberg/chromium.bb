@@ -656,7 +656,7 @@ class CORE_EXPORT ScriptValueDeserializer {
                         uint32_t numProperties,
                         v8::Local<v8::Value>*);
   bool doDeserialize();
-  void push(v8::Local<v8::Value> value) { m_stack.append(value); };
+  void push(v8::Local<v8::Value> value) { m_stack.push_back(value); };
   void pop(unsigned length) {
     ASSERT(length <= m_stack.size());
     m_stack.shrink(m_stack.size() - length);

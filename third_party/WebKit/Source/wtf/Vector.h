@@ -945,6 +945,8 @@ class Vector
   void append(const U*, size_t);
   template <typename U>
   void append(U&&);
+  template <typename U>
+  void push_back(U&&);
   template <typename... Args>
   T& emplace_back(Args&&...);
   template <typename U>
@@ -1378,6 +1380,12 @@ void Vector<T, inlineCapacity, Allocator>::append(const U* data,
   VectorCopier<VectorTraits<T>::canCopyWithMemcpy, T>::uninitializedCopy(
       data, &data[dataSize], dest);
   m_size = newSize;
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename U>
+ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::push_back(U&& val) {
+  return append(std::forward<U>(val));
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>

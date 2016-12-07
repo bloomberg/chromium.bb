@@ -237,7 +237,7 @@ void ScriptController::registerExtensionIfNeeded(v8::Extension* extension) {
       return;
   }
   v8::RegisterExtension(extension);
-  registeredExtensions().append(extension);
+  registeredExtensions().push_back(extension);
 }
 
 void ScriptController::clearWindowProxy() {
@@ -447,7 +447,7 @@ void ScriptController::executeScriptInIsolatedWorld(
       v8::Local<v8::Value> value;
       if (!resultArray->Get(scriptState->context(), i).ToLocal(&value))
         return;
-      results->append(value);
+      results->push_back(value);
     }
   }
 }

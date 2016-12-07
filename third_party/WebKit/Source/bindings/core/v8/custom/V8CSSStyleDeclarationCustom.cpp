@@ -158,7 +158,7 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(
     for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
       CSSPropertyID propertyId = static_cast<CSSPropertyID>(id);
       if (CSSPropertyMetadata::isEnabledProperty(propertyId))
-        propertyNames.append(getJSPropertyName(propertyId));
+        propertyNames.push_back(getJSPropertyName(propertyId));
     }
     std::sort(propertyNames.begin(), propertyNames.end(),
               codePointCompareLessThan);

@@ -94,17 +94,17 @@ void swap(HeapVector<TraceWrapperMember<T>>& a,
   HeapVector<TraceWrapperMember<T>> temp;
   temp.reserveCapacity(a.size());
   for (auto item : a) {
-    temp.append(TraceWrapperMember<T>(parentForB, item.get()));
+    temp.push_back(TraceWrapperMember<T>(parentForB, item.get()));
   }
   a.clear();
   a.reserveCapacity(b.size());
   for (auto item : b) {
-    a.append(TraceWrapperMember<T>(parentForA, item.get()));
+    a.push_back(TraceWrapperMember<T>(parentForA, item.get()));
   }
   b.clear();
   b.reserveCapacity(temp.size());
   for (auto item : temp) {
-    b.append(TraceWrapperMember<T>(parentForB, item.get()));
+    b.push_back(TraceWrapperMember<T>(parentForB, item.get()));
   }
 }
 
@@ -121,17 +121,17 @@ void swap(HeapVector<TraceWrapperMember<T>>& a,
   HeapVector<TraceWrapperMember<T>> temp;
   temp.reserveCapacity(a.size());
   for (auto item : a) {
-    temp.append(TraceWrapperMember<T>(nullptr, item.get()));
+    temp.push_back(TraceWrapperMember<T>(nullptr, item.get()));
   }
   a.clear();
   a.reserveCapacity(b.size());
   for (auto item : b) {
-    a.append(TraceWrapperMember<T>(parentForA, item.get()));
+    a.push_back(TraceWrapperMember<T>(parentForA, item.get()));
   }
   b.clear();
   b.reserveCapacity(temp.size());
   for (auto item : temp) {
-    b.append(item.get());
+    b.push_back(item.get());
   }
 }
 

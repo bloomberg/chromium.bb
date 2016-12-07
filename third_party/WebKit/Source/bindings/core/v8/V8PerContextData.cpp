@@ -172,7 +172,7 @@ v8::Local<v8::Object> V8PerContextData::prototypeForType(
 
 void V8PerContextData::addCustomElementBinding(
     std::unique_ptr<V0CustomElementBinding> binding) {
-  m_customElementBindings.append(std::move(binding));
+  m_customElementBindings.push_back(std::move(binding));
 }
 
 v8::Local<v8::Value> V8PerContextData::compiledPrivateScript(String className) {

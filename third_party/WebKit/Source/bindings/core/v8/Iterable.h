@@ -123,9 +123,9 @@ class Iterable {
       v8::Isolate* isolate = scriptState->isolate();
 
       Vector<ScriptValue, 2> entry;
-      entry.append(
+      entry.push_back(
           ScriptValue(scriptState, toV8(key, creationContext, isolate)));
-      entry.append(
+      entry.push_back(
           ScriptValue(scriptState, toV8(value, creationContext, isolate)));
       return entry;
     }

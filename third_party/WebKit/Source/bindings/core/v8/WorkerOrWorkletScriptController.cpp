@@ -163,7 +163,7 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded() {
       const V8Extensions& extensions = ScriptController::registeredExtensions();
       extensionNames.reserveInitialCapacity(extensions.size());
       for (const auto* extension : extensions)
-        extensionNames.append(extension->name());
+        extensionNames.push_back(extension->name());
     }
     v8::ExtensionConfiguration extensionConfiguration(extensionNames.size(),
                                                       extensionNames.data());
