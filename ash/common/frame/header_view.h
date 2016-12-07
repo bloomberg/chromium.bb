@@ -47,10 +47,10 @@ class ASH_EXPORT HeaderView : public views::View,
   void ResetWindowControls();
 
   // Returns the amount of the view's pixels which should be on screen.
-  int GetPreferredOnScreenHeight() const;
+  int GetPreferredOnScreenHeight();
 
   // Returns the view's preferred height.
-  int GetPreferredHeight() const;
+  int GetPreferredHeight();
 
   // Returns the view's minimum width.
   int GetMinimumWidth() const;
@@ -105,6 +105,8 @@ class ASH_EXPORT HeaderView : public views::View,
 
   // Has this instance been set as the ImmersiveFullscreenControllerDelegate?
   bool is_immersive_delegate_ = true;
+
+  bool did_layout_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(HeaderView);
 };

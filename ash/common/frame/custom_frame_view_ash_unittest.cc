@@ -117,6 +117,13 @@ class CustomFrameViewAshTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshTest);
 };
 
+// Verifies the client view is not placed at a y location of 0.
+TEST_F(CustomFrameViewAshTest, ClientViewCorrectlyPlaced) {
+  std::unique_ptr<views::Widget> widget(CreateWidget(new TestWidgetDelegate));
+  widget->Show();
+  EXPECT_NE(0, widget->client_view()->bounds().y());
+}
+
 // Test that the height of the header is correct upon initially displaying
 // the widget.
 TEST_F(CustomFrameViewAshTest, HeaderHeight) {

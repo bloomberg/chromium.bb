@@ -44,7 +44,7 @@ void HeaderView::ResetWindowControls() {
   caption_button_container_->ResetWindowControls();
 }
 
-int HeaderView::GetPreferredOnScreenHeight() const {
+int HeaderView::GetPreferredOnScreenHeight() {
   if (is_immersive_delegate_ && target_widget_->IsFullscreen()) {
     return static_cast<int>(GetPreferredHeight() *
                             fullscreen_visible_fraction_);
@@ -52,7 +52,10 @@ int HeaderView::GetPreferredOnScreenHeight() const {
   return GetPreferredHeight();
 }
 
-int HeaderView::GetPreferredHeight() const {
+int HeaderView::GetPreferredHeight() {
+  // Calculating the preferred height requires at least one Layout().
+  if (!did_layout_)
+    Layout();
   return header_painter_->GetHeaderHeightForPainting();
 }
 
@@ -105,6 +108,7 @@ SkColor HeaderView::GetInactiveFrameColor() const {
 // HeaderView, views::View overrides:
 
 void HeaderView::Layout() {
+  did_layout_ = true;
   header_painter_->LayoutHeader();
 }
 
