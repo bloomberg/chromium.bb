@@ -57,6 +57,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             return
 
         builds = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
+
         if options.trigger_jobs:
             if self.trigger_jobs_for_missing_builds(builds):
                 _log.info('Please re-run webkit-patch rebaseline-cl once all pending try jobs have finished.')
@@ -64,13 +65,20 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         if not builds:
             _log.info('No builds to download baselines from.')
 
+        _log.debug('Getting results for Rietveld issue %d.', issue_number)
+        builds_to_results = self._fetch_results(builds)
+        if builds_to_results is None:
+            return
+
+        test_prefix_list = {}
         if args:
-            test_prefix_list = {}
             for test in args:
                 test_prefix_list[test] = {b: BASELINE_SUFFIX_LIST for b in builds}
         else:
             test_prefix_list = self._test_prefix_list(
-                issue_number, only_changed_tests=options.only_changed_tests)
+                issue_number,
+                builds_to_results,
+                only_changed_tests=options.only_changed_tests)
 
         self._log_test_prefix_list(test_prefix_list)
 
@@ -124,11 +132,44 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         return bool(builders_with_pending_builds or builders_without_builds)
 
-    def _test_prefix_list(self, issue_number, only_changed_tests):
-        """Returns a collection of test, builder and file extensions to get new baselines for.
+    def _try_bots(self):
+        """Returns a collection of try bot builders to fetch results for."""
+        return self._tool.builders.all_try_builder_names()
+
+    def _fetch_results(self, builds):
+        """Fetches results for each build.
+
+        There should be a one-to-one correspondence between Builds, supported
+        platforms, and try bots. If not all of the builds can be fetched, then
+        continuing with rebaselining may yield incorrect results, when the new
+        baselines are deduped, an old baseline may be kept for the platform
+        that's missing results.
+
+        Returns:
+            A dict mapping Build to LayoutTestResults, or None if any results
+            were not available.
+        """
+        buildbot = self._tool.buildbot
+        results = {}
+        for build in builds:
+            results_url = buildbot.results_url(build.builder_name, build.build_number)
+            layout_test_results = buildbot.fetch_results(build)
+            if layout_test_results is None:
+                _log.error(
+                    'Failed to fetch results from "%s".\n'
+                    'Try starting a new job for %s by running :\n'
+                    '  git cl try -b %s',
+                    results_url, build.builder_name, build.builder_name)
+                return None
+            results[build] = layout_test_results
+        return results
+
+    def _test_prefix_list(self, issue_number, builds_to_results, only_changed_tests):
+        """Returns a collection of tests, builders and file extensions to get new baselines for.
 
         Args:
             issue_number: The CL number of the change which needs new baselines.
+            builds_to_results: A dict mapping Builds to LayoutTestResults.
             only_changed_tests: Whether to only include baselines for tests that
                are changed in this CL. If False, all new baselines for failing
                tests will be downloaded, even for tests that were not modified.
@@ -136,7 +177,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         Returns:
             A dict containing information about which new baselines to download.
         """
-        builds_to_tests = self._builds_to_tests(issue_number)
+        builds_to_tests = {}
+        for build, results in builds_to_results.iteritems():
+            builds_to_tests[build] = self._tests_to_rebaseline(build, results)
         if only_changed_tests:
             files_in_cl = self.rietveld.changed_files(issue_number)
             # Note, in the changed files list from Rietveld, paths always
@@ -154,28 +197,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 result[test][build] = BASELINE_SUFFIX_LIST
         return result
 
-    def _builds_to_tests(self, issue_number):
-        """Fetches a list of try bots, and for each, fetches tests with new baselines."""
-        _log.debug('Getting results for Rietveld issue %d.', issue_number)
-        builds = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
-        if not builds:
-            _log.debug('No try job results for builders in: %r.', self._try_bots())
-        return {build: self._tests_to_rebaseline(build) for build in builds}
-
-    def _try_bots(self):
-        """Returns a collection of try bot builders to fetch results for."""
-        return self._tool.builders.all_try_builder_names()
-
-    def _tests_to_rebaseline(self, build):
-        """Fetches a list of tests that should be rebaselined."""
-        buildbot = self._tool.buildbot
-        results_url = buildbot.results_url(build.builder_name, build.build_number)
-
-        layout_test_results = buildbot.fetch_layout_test_results(results_url)
-        if layout_test_results is None:
-            _log.warning('Failed to request layout test results from "%s".', results_url)
-            return []
-
+    def _tests_to_rebaseline(self, build, layout_test_results):
+        """Fetches a list of tests that should be rebaselined for some build ."""
         unexpected_results = layout_test_results.didnt_run_as_expected_results()
         tests = sorted(r.test_name() for r in unexpected_results
                        if r.is_missing_baseline() or r.has_mismatch_result())
@@ -197,7 +220,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             retry_summary = json.loads(content)
             return retry_summary['failures']
         except (ValueError, KeyError):
-            _log.warning('Unexepected retry summary content:\n%s', content)
+            _log.warning('Unexpected retry summary content:\n%s', content)
             return None
 
     @staticmethod

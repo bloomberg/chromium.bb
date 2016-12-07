@@ -51,8 +51,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 "is_try_builder": True,
             },
             "MOCK Try Linux": {
-                "port_name": "test-mac-mac10.10",
-                "specifiers": ["Mac10.10", "Release"],
+                "port_name": "test-linux-trusty",
+                "specifiers": ["Trusty", "Release"],
                 "is_try_builder": True,
             },
         })
@@ -236,4 +236,14 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'INFO:   MOCK Try Linux\n',
             'INFO: Triggering try jobs for:\n',
             'INFO:   MOCK Try Win\n',
+        ])
+
+    def test_bails_when_one_build_is_missing_results(self):
+        self.tool.buildbot.set_results(Build("MOCK Try Win", 5000), None)
+        self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        self.assertLog([
+            'ERROR: Failed to fetch results from '
+            '"https://storage.googleapis.com/chromium-layout-test-archives/MOCK_Try_Win/5000/layout-test-results".\n'
+            'Try starting a new job for MOCK Try Win by running :\n'
+            '  git cl try -b MOCK Try Win\n'
         ])
