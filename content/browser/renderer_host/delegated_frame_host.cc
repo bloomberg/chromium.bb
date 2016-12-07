@@ -79,11 +79,13 @@ DelegatedFrameHost::DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
   id_allocator_.reset(new cc::SurfaceIdAllocator());
-  factory->GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
-  factory->GetSurfaceManager()->RegisterSurfaceFactoryClient(frame_sink_id_,
-                                                             this);
+  factory->GetContextFactory()->GetSurfaceManager()->RegisterFrameSinkId(
+      frame_sink_id_);
+  factory->GetContextFactory()
+      ->GetSurfaceManager()
+      ->RegisterSurfaceFactoryClient(frame_sink_id_, this);
   surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
-      frame_sink_id_, factory->GetSurfaceManager(), this);
+      frame_sink_id_, factory->GetContextFactory()->GetSurfaceManager(), this);
 }
 
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
@@ -475,7 +477,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
     EvictDelegatedFrame();
   } else {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    cc::SurfaceManager* manager = factory->GetSurfaceManager();
+    cc::SurfaceManager* manager =
+        factory->GetContextFactory()->GetSurfaceManager();
     bool allocated_new_local_frame_id = false;
     if (!local_frame_id_.is_valid() || frame_size != current_surface_size_ ||
         frame_size_in_dip != current_frame_size_in_dip_) {
@@ -830,8 +833,11 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->RemoveObserver(this);
   surface_factory_->EvictSurface();
-  factory->GetSurfaceManager()->UnregisterSurfaceFactoryClient(frame_sink_id_);
-  factory->GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
+  factory->GetContextFactory()
+      ->GetSurfaceManager()
+      ->UnregisterSurfaceFactoryClient(frame_sink_id_);
+  factory->GetContextFactory()->GetSurfaceManager()->InvalidateFrameSinkId(
+      frame_sink_id_);
 
   DCHECK(!vsync_manager_.get());
 }

@@ -33,10 +33,6 @@ ui::ContextFactory* NoTransportImageTransportFactory::GetContextFactory() {
   return context_factory_.get();
 }
 
-cc::SurfaceManager* NoTransportImageTransportFactory::GetSurfaceManager() {
-  return surface_manager_.get();
-}
-
 display_compositor::GLHelper* NoTransportImageTransportFactory::GetGLHelper() {
   if (!gl_helper_) {
     context_provider_ = context_factory_->SharedMainThreadContextProvider();

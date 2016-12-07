@@ -1684,7 +1684,8 @@ cc::CompositorFrame MakeDelegatedFrame(float scale_factor,
 TEST_F(RenderWidgetHostViewAuraTest, ResettingCompositorReturnsResources) {
   FakeSurfaceObserver manager_observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  cc::SurfaceManager* manager = factory->GetSurfaceManager();
+  cc::SurfaceManager* manager =
+      factory->GetContextFactory()->GetSurfaceManager();
   manager->AddObserver(&manager_observer);
 
   gfx::Size view_size(100, 100);
@@ -1751,7 +1752,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
 TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   FakeSurfaceObserver manager_observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  cc::SurfaceManager* manager = factory->GetSurfaceManager();
+  cc::SurfaceManager* manager =
+      factory->GetContextFactory()->GetSurfaceManager();
   manager->AddObserver(&manager_observer);
 
   gfx::Size view_size(100, 100);
@@ -1916,7 +1918,8 @@ TEST_F(RenderWidgetHostViewAuraTest, MirrorLayers) {
   cc::SurfaceId id = view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
   if (id.is_valid()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    cc::SurfaceManager* manager = factory->GetSurfaceManager();
+    cc::SurfaceManager* manager =
+        factory->GetContextFactory()->GetSurfaceManager();
     cc::Surface* surface = manager->GetSurfaceForId(id);
     EXPECT_TRUE(surface);
 

@@ -175,7 +175,7 @@ cc::SurfaceManager* GetSurfaceManager() {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   if (factory == NULL)
     return nullptr;
-  return factory->GetSurfaceManager();
+  return factory->GetContextFactory()->GetSurfaceManager();
 #endif
 }
 

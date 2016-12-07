@@ -16,10 +16,6 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace cc {
-class SurfaceManager;
-}
-
 namespace gfx {
 enum class SwapResult;
 }
@@ -63,8 +59,6 @@ class CONTENT_EXPORT ImageTransportFactory {
 
   // Gets the image transport factory as a context factory for the compositor.
   virtual ui::ContextFactory* GetContextFactory() = 0;
-
-  virtual cc::SurfaceManager* GetSurfaceManager() = 0;
 
   // Gets a GLHelper instance, associated with the shared context. This
   // GLHelper will get destroyed whenever the shared context is lost

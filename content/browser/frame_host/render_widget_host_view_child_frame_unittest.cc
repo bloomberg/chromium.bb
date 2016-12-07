@@ -29,6 +29,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/compositor.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/renderer_host/context_provider_factory_impl_android.h"
@@ -181,7 +182,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
   if (id.is_valid()) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    cc::SurfaceManager* manager = factory->GetSurfaceManager();
+    cc::SurfaceManager* manager =
+        factory->GetContextFactory()->GetSurfaceManager();
     cc::Surface* surface = manager->GetSurfaceForId(id);
     EXPECT_TRUE(surface);
     // There should be a SurfaceSequence created by the RWHVChildFrame.
