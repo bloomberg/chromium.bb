@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("device_sharing") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "device_sharing_manager.h",
     "device_sharing_manager.mm",

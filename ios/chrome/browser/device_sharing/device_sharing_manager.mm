@@ -15,6 +15,10 @@
 #include "ios/chrome/browser/prefs/pref_observer_bridge.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface DeviceSharingManager ()<PrefObserverDelegate> {
   ios::ChromeBrowserState* _browserState;  // weak
 
@@ -77,11 +81,11 @@
   }
 
   if (!_handoffManager)
-    _handoffManager.reset([[[self class] createHandoffManager] retain]);
+    _handoffManager.reset([[self class] createHandoffManager]);
 }
 
 + (HandoffManager*)createHandoffManager {
-  return [[[HandoffManager alloc] init] autorelease];
+  return [[HandoffManager alloc] init];
 }
 
 #pragma mark - PrefObserverDelegate
