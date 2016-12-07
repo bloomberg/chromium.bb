@@ -5333,9 +5333,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_EQ(3, controller.GetEntryCount());
-  // TODO(creis): Replicate history length for OOPIFs: https://crbug.com/501116.
-  if (!AreAllSitesIsolatedForTesting())
-    EXPECT_EQ(3, RendererHistoryLength(shell()));
+  EXPECT_EQ(3, RendererHistoryLength(shell()));
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 
   EXPECT_EQ(frame_url_2, frame->current_url());
@@ -5371,9 +5369,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_EQ(2, controller.GetEntryCount());
-  // TODO(creis): Replicate history length for OOPIFs: https://crbug.com/501116.
-  if (!AreAllSitesIsolatedForTesting())
-    EXPECT_EQ(2, RendererHistoryLength(shell()));
+  EXPECT_EQ(2, RendererHistoryLength(shell()));
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
 
   // Go back.
@@ -5470,9 +5466,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   NavigateFrameToURL(frame, frame_url_3);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(4, controller.GetEntryCount());
-  // TODO(creis): Replicate history length for OOPIFs: https://crbug.com/501116.
-  if (!AreAllSitesIsolatedForTesting())
-    EXPECT_EQ(4, RendererHistoryLength(shell()));
+  EXPECT_EQ(4, RendererHistoryLength(shell()));
   EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(frame_url_3, frame->current_url());
 
@@ -5484,9 +5478,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     observer.Wait();
   }
   EXPECT_EQ(4, controller.GetEntryCount());
-  // TODO(creis): Replicate history length for OOPIFs: https://crbug.com/501116.
-  if (!AreAllSitesIsolatedForTesting())
-    EXPECT_EQ(4, RendererHistoryLength(shell()));
+  EXPECT_EQ(4, RendererHistoryLength(shell()));
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(links_url, root->current_url());
 
