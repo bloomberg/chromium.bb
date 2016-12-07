@@ -83,11 +83,6 @@ var tiles = null;
  */
 var queryArgs = {};
 
-/**
- * Url to ping when suggestions have been shown.
- */
-var impressionUrl = null;
-
 
 /**
  * Log an event on the NTP.
@@ -279,11 +274,6 @@ var showTiles = function() {
 
   // Make sure the tiles variable contain the next tileset we may use.
   tiles = document.createElement('div');
-
-  if (impressionUrl) {
-    navigator.sendBeacon(impressionUrl);
-    impressionUrl = null;
-  }
 };
 
 
@@ -383,14 +373,6 @@ var renderTile = function(data) {
   }
   tile.setAttribute('aria-label', data.title);
   tile.title = data.title;
-  if (data.impressionUrl) {
-    impressionUrl = data.impressionUrl;
-  }
-  if (data.pingUrl) {
-    tile.addEventListener('click', function(ev) {
-      navigator.sendBeacon(data.pingUrl);
-    });
-  }
 
   tile.addEventListener('click', function(ev) {
     logMostVisitedNavigation(position, data.tileSource);
