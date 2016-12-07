@@ -29,7 +29,7 @@
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/native_theme/native_theme_mac.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 
@@ -653,7 +653,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
   progressOverlayLabel_.reset([constrained_window::CreateLabel() retain]);
   NSColor* throbberBlueColor = skia::SkColorToCalibratedNSColor(
-      ui::NativeThemeMac::instance()->GetSystemColor(
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_ThrobberSpinningColor));
   [progressOverlayLabel_ setTextColor:throbberBlueColor];
   [progressOverlayView_ addSubview:progressOverlayLabel_];

@@ -443,7 +443,7 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_AlertSeverityHigh: {
       ui::NativeTheme* fallback_theme =
           color_utils::IsDark(GetTextColor(GetEntry(), NORMAL))
-              ? ui::NativeThemeAura::instance()
+              ? ui::NativeTheme::GetInstanceForNativeUi()
               : ui::NativeThemeDarkAura::instance();
       return fallback_theme->GetSystemColor(color_id);
     }

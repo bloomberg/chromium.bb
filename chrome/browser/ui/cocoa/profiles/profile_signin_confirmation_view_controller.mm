@@ -29,7 +29,7 @@
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/native_theme/native_theme_mac.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 
@@ -249,13 +249,13 @@ NSTextField* AddTextField(
   [promptBox_
       setBorderColor:skia::SkColorToCalibratedNSColor(
                          ui::GetSigninConfirmationPromptBarColor(
-                             ui::NativeThemeMac::instance(),
+                             ui::NativeTheme::GetInstanceForNativeUi(),
                              ui::kSigninConfirmationPromptBarBorderAlpha))];
   [promptBox_ setBorderWidth:kDialogAlertBarBorderWidth];
   [promptBox_
       setFillColor:skia::SkColorToCalibratedNSColor(
                        ui::GetSigninConfirmationPromptBarColor(
-                           ui::NativeThemeMac::instance(),
+                           ui::NativeTheme::GetInstanceForNativeUi(),
                            ui::kSigninConfirmationPromptBarBackgroundAlpha))];
   [promptBox_ setBoxType:NSBoxCustom];
   [promptBox_ setTitlePosition:NSNoTitle];

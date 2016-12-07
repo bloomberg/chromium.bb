@@ -52,10 +52,12 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
     LAST
   };
 
-  bool IsThemingActive() const;
-
   // Returns true if a high contrast theme is being used.
-  bool IsUsingHighContrastTheme() const;
+  static bool IsUsingHighContrastTheme();
+
+  // Closes cached theme handles so we can unload the DLL or update our UI
+  // for a theme change.
+  static void CloseHandles();
 
   HRESULT GetThemeColor(ThemeName theme,
                         int part_id,
@@ -84,15 +86,8 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   // consistent visual results.
   void DisableTheming() const;
 
-  // Closes cached theme handles so we can unload the DLL or update our UI
-  // for a theme change.
-  void CloseHandles() const;
-
   // Returns true if classic theme is in use.
   bool IsClassicTheme(ThemeName name) const;
-
-  // Gets our singleton instance.
-  static NativeThemeWin* instance();
 
   HRESULT PaintTextField(HDC hdc,
                          int part_id,
@@ -115,10 +110,17 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   SkColor GetSystemColor(ColorId color_id) const override;
 
  protected:
+  friend class NativeTheme;
+  // Gets our singleton instance.
+  static NativeThemeWin* instance();
+
   NativeThemeWin();
   ~NativeThemeWin() override;
 
  private:
+  bool IsUsingHighContrastThemeInternal();
+  void CloseHandlesInternal();
+
   // gfx::SysColorChangeListener implementation:
   void OnSysColorChange() override;
 
@@ -353,7 +355,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   OpenThemeDataPtr open_theme_;
   CloseThemeDataPtr close_theme_;
   SetThemeAppPropertiesPtr set_theme_properties_;
-  IsThemeActivePtr is_theme_active_;
   GetThemeIntPtr get_theme_int_;
 
   // Handle to uxtheme.dll.

@@ -2146,7 +2146,7 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
 }
 
 void HWNDMessageHandler::OnThemeChanged() {
-  ui::NativeThemeWin::instance()->CloseHandles();
+  ui::NativeThemeWin::CloseHandles();
 }
 
 LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,

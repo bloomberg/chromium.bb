@@ -22,7 +22,6 @@
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/native_theme/native_theme_mac.h"
 
 namespace {
 BOOL g_animations_enabled = false;
@@ -86,7 +85,7 @@ CGFloat kMinWidth = 320.0;
     anchoredToAction_ = anchoredToAction;
     delegate_ = std::move(delegate);
 
-    ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
+    ui::NativeTheme* nativeTheme = ui::NativeTheme::GetInstanceForNativeUi();
     [[self bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
     [[self bubble] setArrowLocation:info_bubble::kTopRight];
     [[self bubble] setBackgroundColor:

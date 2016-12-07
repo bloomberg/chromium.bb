@@ -88,7 +88,6 @@
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/native_theme/native_theme_mac.h"
 
 namespace {
 
@@ -222,7 +221,7 @@ NSTextView* BuildFixedWidthTextViewWithLink(
 // Returns the native dialog background color.
 NSColor* GetDialogBackgroundColor() {
   return skia::SkColorToCalibratedNSColor(
-      ui::NativeThemeMac::instance()->GetSystemColor(
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_DialogBackground));
 }
 

@@ -13,8 +13,6 @@ namespace ui {
 // Android implementation of native theme support.
 class NativeThemeAndroid : public NativeThemeBase {
  public:
-  static NativeThemeAndroid* instance();
-
   // NativeThemeBase:
   gfx::Size GetPartSize(Part part,
                         State state,
@@ -22,6 +20,9 @@ class NativeThemeAndroid : public NativeThemeBase {
   SkColor GetSystemColor(ColorId color_id) const override;
 
  protected:
+  friend class NativeTheme;
+  static NativeThemeAndroid* instance();
+
   // NativeThemeBase:
   void AdjustCheckboxRadioRectForPadding(SkRect* rect) const override;
 

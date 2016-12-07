@@ -26,10 +26,6 @@ class ImageSkia;
 class Rect;
 }
 
-namespace ui {
-class NativeTheme;
-}
-
 namespace views {
 namespace corewm {
 class Tooltip;
@@ -49,9 +45,6 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   static DesktopWindowTreeHost* Create(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
-
-  // Return the NativeTheme to use for |window|. WARNING: |window| may be NULL.
-  static ui::NativeTheme* GetNativeTheme(aura::Window* window);
 
   // Sets up resources needed before the WindowEventDispatcher has been created.
   virtual void Init(aura::Window* content_window,

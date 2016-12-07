@@ -21,7 +21,6 @@ class Rect;
 
 namespace ui {
 class InputMethod;
-class NativeTheme;
 class OSExchangeData;
 }
 
@@ -223,7 +222,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
       const base::TimeDelta& duration) = 0;
   virtual void SetVisibilityAnimationTransition(
       Widget::VisibilityTransition transition) = 0;
-  virtual ui::NativeTheme* GetNativeTheme() const = 0;
   virtual bool IsTranslucentWindowOpacitySupported() const = 0;
   virtual void OnSizeConstraintsChanged() = 0;
 

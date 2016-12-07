@@ -60,6 +60,7 @@
 #endif
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
+#include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #endif
 
@@ -753,14 +754,6 @@ void NativeWidgetAura::SetVisibilityAnimationTransition(
   wm::SetWindowVisibilityAnimationTransition(window_, wm_transition);
 }
 
-ui::NativeTheme* NativeWidgetAura::GetNativeTheme() const {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  return DesktopWindowTreeHost::GetNativeTheme(window_);
-#else
-  return ui::NativeThemeAura::instance();
-#endif
-}
-
 bool NativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
   return true;
 }
@@ -1078,6 +1071,20 @@ bool Widget::ConvertRect(const Widget* source,
                          const Widget* target,
                          gfx::Rect* rect) {
   return false;
+}
+
+const ui::NativeTheme* Widget::GetNativeTheme() const {
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  const LinuxUI* linux_ui = LinuxUI::instance();
+  if (linux_ui) {
+    ui::NativeTheme* native_theme =
+        linux_ui->GetNativeTheme(native_widget_->GetNativeWindow());
+    if (native_theme)
+      return native_theme;
+  }
+#endif
+
+  return ui::NativeTheme::GetInstanceForNativeUi();
 }
 
 namespace internal {

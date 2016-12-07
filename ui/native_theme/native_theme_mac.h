@@ -27,8 +27,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
     COUNT
   };
 
-  static NativeThemeMac* instance();
-
   // Adjusts an SkColor based on the current system control tint. For example,
   // if the current tint is "graphite", this function maps the provided value to
   // an appropriate gray.
@@ -67,6 +65,10 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
                                         bool round_left,
                                         bool round_right,
                                         bool focus);
+
+ protected:
+  friend class NativeTheme;
+  static NativeThemeMac* instance();
 
  private:
   NativeThemeMac();

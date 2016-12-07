@@ -24,8 +24,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_win.h"
-#include "ui/native_theme/native_theme_aura.h"
-#include "ui/native_theme/native_theme_win.h"
 #include "ui/views/corewm/tooltip_win.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_win.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
@@ -103,21 +101,6 @@ aura::Window* DesktopWindowTreeHostWin::GetContentWindowForHWND(HWND hwnd) {
   aura::WindowTreeHost* host =
       aura::WindowTreeHost::GetForAcceleratedWidget(hwnd);
   return host ? host->window()->GetProperty(kContentWindowForRootWindow) : NULL;
-}
-
-// static
-ui::NativeTheme* DesktopWindowTreeHost::GetNativeTheme(aura::Window* window) {
-  // Use NativeThemeWin for windows shown on the desktop, those not on the
-  // desktop come from Ash and get NativeThemeAura.
-  aura::WindowTreeHost* host = window ? window->GetHost() : NULL;
-  if (host) {
-    HWND host_hwnd = host->GetAcceleratedWidget();
-    if (host_hwnd &&
-        DesktopWindowTreeHostWin::GetContentWindowForHWND(host_hwnd)) {
-      return ui::NativeThemeWin::instance();
-    }
-  }
-  return ui::NativeThemeAura::instance();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

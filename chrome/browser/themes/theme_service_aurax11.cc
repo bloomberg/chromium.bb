@@ -46,7 +46,7 @@ SystemThemeX11::SystemThemeX11(PrefService* pref_service)
 void SystemThemeX11::StartUsingTheme() {
   pref_service_->SetBoolean(prefs::kUsesSystemTheme, true);
   // Have the former theme notify its observers of change.
-  ui::NativeThemeAura::instance()->NotifyObservers();
+  ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
 }
 
 void SystemThemeX11::StopUsingTheme() {

@@ -599,10 +599,6 @@ void NativeWidgetMac::SetVisibilityAnimationTransition(
   NOTIMPLEMENTED();
 }
 
-ui::NativeTheme* NativeWidgetMac::GetNativeTheme() const {
-  return ui::NativeThemeMac::instance();
-}
-
 bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
   return false;
 }
@@ -638,6 +634,10 @@ bool Widget::ConvertRect(const Widget* source,
                          const Widget* target,
                          gfx::Rect* rect) {
   return false;
+}
+
+const ui::NativeTheme* Widget::GetNativeTheme() const {
+  return ui::NativeTheme::GetInstanceForNativeUi();
 }
 
 namespace internal {

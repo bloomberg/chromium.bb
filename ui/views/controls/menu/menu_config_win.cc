@@ -16,7 +16,6 @@
 #include "ui/native_theme/native_theme_win.h"
 
 using ui::NativeTheme;
-using ui::NativeThemeWin;
 
 namespace views {
 
@@ -32,7 +31,7 @@ void MenuConfig::Init() {
     font_list = gfx::FontList(gfx::Font(new_font.get()));
   }
   NativeTheme::ExtraParams extra;
-  gfx::Size arrow_size = NativeThemeWin::instance()->GetPartSize(
+  gfx::Size arrow_size = NativeTheme::GetInstanceForNativeUi()->GetPartSize(
       NativeTheme::kMenuPopupArrow, NativeTheme::kNormal, extra);
   if (!arrow_size.IsEmpty()) {
     arrow_width = arrow_size.width();

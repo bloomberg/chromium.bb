@@ -4,8 +4,6 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 
-#include "ui/native_theme/native_theme_aura.h"
-
 namespace views {
 
 // static
@@ -16,11 +14,6 @@ DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
   // DesktopWindowTreeHost so that this is never called.
   NOTREACHED();
   return nullptr;
-}
-
-// static
-ui::NativeTheme* DesktopWindowTreeHost::GetNativeTheme(aura::Window* window) {
-  return ui::NativeThemeAura::instance();
 }
 
 }  // namespace views

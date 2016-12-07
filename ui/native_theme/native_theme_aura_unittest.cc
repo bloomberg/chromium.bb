@@ -11,6 +11,7 @@
 
 namespace ui {
 namespace {
+
 void VerifyPoint(SkPoint a, SkPoint b) {
   EXPECT_EQ(a.x(), b.x());
   EXPECT_EQ(a.y(), b.y());
@@ -22,7 +23,8 @@ void VerifyTriangle(SkPath actualPath, SkPoint p0, SkPoint p1, SkPoint p2) {
   VerifyPoint(p1, actualPath.getPoint(1));
   VerifyPoint(p2, actualPath.getPoint(2));
 }
-}
+
+}  // namespace
 
 class NativeThemeAuraTest : public testing::Test {
  protected:

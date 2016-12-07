@@ -11,7 +11,6 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/theme_provider.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/native_theme/native_theme_mac.h"
 
 namespace {
 const CGFloat kDegrees90               = (M_PI / 2);
@@ -117,9 +116,9 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
   [shapeLayer_ setLineCap:kCALineCapRound];
   [shapeLayer_ setLineDashPattern:@[ @(kArcLength * scaleFactor) ]];
   [shapeLayer_ setFillColor:NULL];
-  ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
-  SkColor throbberBlueColor = nativeTheme->GetSystemColor(
-      ui::NativeTheme::kColorId_ThrobberSpinningColor);
+  SkColor throbberBlueColor =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberSpinningColor);
   CGColorRef blueColor = skia::CGColorCreateFromSkColor(throbberBlueColor);
   [shapeLayer_ setStrokeColor:blueColor];
   CGColorRelease(blueColor);

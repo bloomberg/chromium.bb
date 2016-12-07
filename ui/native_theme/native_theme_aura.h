@@ -12,13 +12,15 @@ namespace ui {
 
 // Aura implementation of native theme support.
 class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
- public:
-  static NativeThemeAura* instance();
-  static NativeThemeAura* web_instance();
-
  protected:
+  friend class NativeTheme;
+  friend class NativeThemeAuraTest;
+
   explicit NativeThemeAura(bool use_overlay_scrollbars);
   ~NativeThemeAura() override;
+
+  static NativeThemeAura* instance();
+  static NativeThemeAura* web_instance();
 
   // Overridden from NativeThemeBase:
   SkColor GetSystemColor(ColorId color_id) const override;

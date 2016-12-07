@@ -14,7 +14,9 @@ namespace views {
 
 #if !defined(OS_WIN)
 void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
-  OnPaintAura(canvas);
+  canvas->FillRect(GetPaintBounds(),
+                   GetNativeTheme()->GetSystemColor(
+                       ui::NativeTheme::kColorId_MenuSeparatorColor));
 }
 #endif
 
@@ -60,12 +62,6 @@ gfx::Rect MenuSeparator::GetPaintBounds() {
   if (menu_config.use_outer_border)
     paint_rect.Inset(1, 0);
   return paint_rect;
-}
-
-void MenuSeparator::OnPaintAura(gfx::Canvas* canvas) {
-  canvas->FillRect(GetPaintBounds(),
-                   GetNativeTheme()->GetSystemColor(
-                       ui::NativeTheme::kColorId_MenuSeparatorColor));
 }
 
 }  // namespace views

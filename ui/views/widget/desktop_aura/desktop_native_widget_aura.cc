@@ -26,7 +26,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/tooltip.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/drag_utils.h"
@@ -938,10 +937,6 @@ void DesktopNativeWidgetAura::SetVisibilityAnimationTransition(
       break;
   }
   wm::SetWindowVisibilityAnimationTransition(content_window_, wm_transition);
-}
-
-ui::NativeTheme* DesktopNativeWidgetAura::GetNativeTheme() const {
-  return DesktopWindowTreeHost::GetNativeTheme(content_window_);
 }
 
 bool DesktopNativeWidgetAura::IsTranslucentWindowOpacitySupported() const {

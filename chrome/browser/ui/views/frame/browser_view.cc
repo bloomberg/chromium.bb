@@ -1917,11 +1917,7 @@ void BrowserView::OnThemeChanged() {
 #if defined(USE_AURA)
     ui::NativeThemeDarkAura::instance()->NotifyObservers();
 #endif
-#if defined(OS_WIN)
-    ui::NativeThemeWin::instance()->NotifyObservers();
-#elif defined(OS_LINUX)
-    ui::NativeThemeAura::instance()->NotifyObservers();
-#endif
+    ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
   }
 
   views::View::OnThemeChanged();

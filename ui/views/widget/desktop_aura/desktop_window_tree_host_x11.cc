@@ -48,8 +48,6 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_x11.h"
-#include "ui/native_theme/native_theme.h"
-#include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
@@ -2346,18 +2344,6 @@ DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
     DesktopNativeWidgetAura* desktop_native_widget_aura) {
   return new DesktopWindowTreeHostX11(native_widget_delegate,
                                       desktop_native_widget_aura);
-}
-
-// static
-ui::NativeTheme* DesktopWindowTreeHost::GetNativeTheme(aura::Window* window) {
-  const LinuxUI* linux_ui = LinuxUI::instance();
-  if (linux_ui) {
-    ui::NativeTheme* native_theme = linux_ui->GetNativeTheme(window);
-    if (native_theme)
-      return native_theme;
-  }
-
-  return ui::NativeThemeAura::instance();
 }
 
 }  // namespace views

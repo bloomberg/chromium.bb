@@ -19,11 +19,6 @@ namespace views {
 
 void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   ui::NativeTheme* native_theme = GetNativeTheme();
-  if (native_theme == ui::NativeThemeAura::instance()) {
-    OnPaintAura(canvas);
-    return;
-  }
-
   gfx::Rect separator_bounds = GetPaintBounds();
 
   // Hack to get the separator to display correctly on Windows where we may

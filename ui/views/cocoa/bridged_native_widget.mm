@@ -878,7 +878,7 @@ void BridgedNativeWidget::OnVisibilityChanged() {
 }
 
 void BridgedNativeWidget::OnSystemControlTintChanged() {
-  ui::NativeThemeMac::instance()->NotifyObservers();
+  ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
 }
 
 void BridgedNativeWidget::OnBackingPropertiesChanged() {

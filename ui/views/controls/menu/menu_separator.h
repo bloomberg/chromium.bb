@@ -24,8 +24,6 @@ class MenuSeparator : public View {
   // Gets the bounds where the separator should be painted.
   gfx::Rect GetPaintBounds();
 
-  void OnPaintAura(gfx::Canvas* canvas);
-
   // The type of the separator.
   const ui::MenuSeparatorType type_;
 

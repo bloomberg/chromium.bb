@@ -56,7 +56,7 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
     return ui::NativeThemeDarkAura::instance();
   }
 
-  return ui::NativeThemeAura::instance();
+  return ui::NativeTheme::GetInstanceForNativeUi();
 }
 
 }  // namespace

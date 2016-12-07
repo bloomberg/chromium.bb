@@ -39,7 +39,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
-#include "ui/native_theme/native_theme_aura.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/views/corewm/tooltip.h"
 #include "ui/views/corewm/tooltip_aura.h"
@@ -1312,10 +1312,6 @@ void NativeWidgetMus::SetVisibilityAnimationDuration(
 void NativeWidgetMus::SetVisibilityAnimationTransition(
     Widget::VisibilityTransition transition) {
   NOTIMPLEMENTED();
-}
-
-ui::NativeTheme* NativeWidgetMus::GetNativeTheme() const {
-  return ui::NativeThemeAura::instance();
 }
 
 bool NativeWidgetMus::IsTranslucentWindowOpacitySupported() const {

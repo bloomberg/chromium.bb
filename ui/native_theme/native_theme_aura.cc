@@ -46,6 +46,9 @@ const SkColor kTrackColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
 
 }  // namespace
 
+////////////////////////////////////////////////////////////////////////////////
+// NativeTheme:
+
 // static
 NativeTheme* NativeTheme::GetInstanceForWeb() {
   return NativeThemeAura::web_instance();
@@ -58,18 +61,8 @@ NativeTheme* NativeTheme::GetInstanceForNativeUi() {
 }
 #endif
 
-// static
-NativeThemeAura* NativeThemeAura::instance() {
-  CR_DEFINE_STATIC_LOCAL(NativeThemeAura, s_native_theme, (false));
-  return &s_native_theme;
-}
-
-// static
-NativeThemeAura* NativeThemeAura::web_instance() {
-  CR_DEFINE_STATIC_LOCAL(NativeThemeAura, s_native_theme_for_web,
-                         (IsOverlayScrollbarEnabled()));
-  return &s_native_theme_for_web;
-}
+////////////////////////////////////////////////////////////////////////////////
+// NativeThemeAura:
 
 NativeThemeAura::NativeThemeAura(bool use_overlay_scrollbars)
     : use_overlay_scrollbars_(use_overlay_scrollbars) {
@@ -91,6 +84,19 @@ NativeThemeAura::NativeThemeAura(bool use_overlay_scrollbars)
 }
 
 NativeThemeAura::~NativeThemeAura() {}
+
+// static
+NativeThemeAura* NativeThemeAura::instance() {
+  CR_DEFINE_STATIC_LOCAL(NativeThemeAura, s_native_theme, (false));
+  return &s_native_theme;
+}
+
+// static
+NativeThemeAura* NativeThemeAura::web_instance() {
+  CR_DEFINE_STATIC_LOCAL(NativeThemeAura, s_native_theme_for_web,
+                         (IsOverlayScrollbarEnabled()));
+  return &s_native_theme_for_web;
+}
 
 // This implementation returns hardcoded colors.
 SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
