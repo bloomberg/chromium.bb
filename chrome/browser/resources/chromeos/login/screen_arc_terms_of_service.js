@@ -285,6 +285,11 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
 
+      // Reload caption image in case it was not loaded during the
+      // initialization phase.
+      $('arc-tos-logo').src =
+        'https://play.google.com/about/images/play_logo.png';
+
       this.hideOverlay();
       this.reloadPlayStore();
     },
