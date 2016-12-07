@@ -1362,8 +1362,8 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif  // CONFIG_EXT_PARTITION_TYPES
                          BLOCK_SIZE bsize, int bwl, int bhl) {
   AV1_COMMON *const cm = &pbi->common;
-  const int bw = 1 << (bwl - 1);
-  const int bh = 1 << (bhl - 1);
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
   const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
   const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
   MB_MODE_INFO *mbmi;

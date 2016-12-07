@@ -770,8 +770,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   const BLOCK_SIZE bsize = mbmi->sb_type;
   int i;
   const int mi_offset = mi_row * cm->mi_cols + mi_col;
-  const int bw = xd->plane[0].n4_w >> 1;
-  const int bh = xd->plane[0].n4_h >> 1;
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
 
   // TODO(slavarnway): move x_mis, y_mis into xd ?????
   const int x_mis = AOMMIN(cm->mi_cols - mi_col, bw);
