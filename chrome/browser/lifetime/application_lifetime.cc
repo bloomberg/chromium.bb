@@ -358,6 +358,10 @@ void NotifyAppTerminating() {
 }
 
 void NotifyAndTerminate(bool fast_path) {
+  NotifyAndTerminate(fast_path, RebootPolicy::kOptionalReboot);
+}
+
+void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
 #if defined(OS_CHROMEOS)
   static bool notified = false;
   // Return if a shutdown request has already been sent.
@@ -376,15 +380,17 @@ void NotifyAndTerminate(bool fast_path) {
   if (base::SysInfo::IsRunningOnChromeOS()) {
     // If we're on a ChromeOS device, reboot if an update has been applied,
     // or else signal the session manager to log out.
-    chromeos::UpdateEngineClient* update_engine_client
-        = chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
+    chromeos::UpdateEngineClient* update_engine_client =
+        chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
     if (update_engine_client->GetLastStatus().status ==
-        chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+            chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT ||
+        reboot_policy == RebootPolicy::kForceReboot) {
       update_engine_client->RebootAfterUpdate();
     } else if (g_send_stop_request_to_session_manager) {
       // Don't ask SessionManager to stop session if the shutdown request comes
       // from session manager.
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
+      chromeos::DBusThreadManager::Get()
+          ->GetSessionManagerClient()
           ->StopSession();
     }
   } else {

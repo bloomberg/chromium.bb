@@ -70,6 +70,10 @@ class SystemTrayDelegateChromeOS
 
   ~SystemTrayDelegateChromeOS() override;
 
+  // Access a global pointer to the single instance of the
+  // SystemTrayDelegateChromeOS class.
+  static SystemTrayDelegateChromeOS* instance();
+
   void InitializeOnAdapterReady(
       scoped_refptr<device::BluetoothAdapter> adapter);
 
@@ -122,6 +126,11 @@ class SystemTrayDelegateChromeOS
   void ActiveUserChanged(const user_manager::User* active_user) override;
 
   void UserChangedChildStatus(user_manager::User* user) override;
+
+  // This notifies the system that a flash update is now available, and so the
+  // user should reboot.
+  void SetFlashUpdateAvailable();
+  bool GetFlashUpdateAvailable();
 
  private:
   ash::SystemTrayNotifier* GetSystemTrayNotifier();
@@ -235,6 +244,7 @@ class SystemTrayDelegateChromeOS
   std::string enterprise_realm_;
   bool should_run_bluetooth_discovery_ = false;
   bool session_started_ = false;
+  bool flash_update_available_ = false;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<device::BluetoothDiscoverySession>

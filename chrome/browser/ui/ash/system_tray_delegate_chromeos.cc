@@ -109,6 +109,9 @@ const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
 // The maximum session length limit that can be set.
 const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
+// A pointer so that callers can access the single class instance.
+SystemTrayDelegateChromeOS* g_instance = nullptr;
+
 void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     const input_method::InputMethodUtil& util,
                     ash::IMEInfo* info) {
@@ -172,6 +175,14 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
                  base::Unretained(this)));
 
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
+
+  DCHECK(!g_instance);
+  g_instance = this;
+}
+
+// static
+SystemTrayDelegateChromeOS* SystemTrayDelegateChromeOS::instance() {
+  return g_instance;
 }
 
 void SystemTrayDelegateChromeOS::Initialize() {
@@ -221,6 +232,9 @@ void SystemTrayDelegateChromeOS::InitializeOnAdapterReady(
 }
 
 SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+
   // Unregister PrefChangeRegistrars.
   local_state_registrar_.reset();
   user_pref_registrar_.reset();
@@ -314,6 +328,10 @@ bool SystemTrayDelegateChromeOS::IsUserChild() const {
 void SystemTrayDelegateChromeOS::GetSystemUpdateInfo(
     ash::UpdateInfo* info) const {
   GetUpdateInfo(UpgradeDetector::GetInstance(), info);
+  // If a flash component update is available, force the tray to show the user
+  // the Restart to Update dialog.
+  if (flash_update_available_)
+    info->update_required = true;
 }
 
 bool SystemTrayDelegateChromeOS::ShouldShowSettings() const {
@@ -604,6 +622,18 @@ void SystemTrayDelegateChromeOS::UserChangedChildStatus(
   // At some point profile is not yet fully initiated.
   if (session_started_ && user_profile && user_profile_ == user_profile)
     ash::WmShell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
+}
+
+void SystemTrayDelegateChromeOS::SetFlashUpdateAvailable() {
+  flash_update_available_ = true;
+
+  ash::UpdateInfo info;
+  GetSystemUpdateInfo(&info);
+  GetSystemTrayNotifier()->NotifyUpdateRecommended(info);
+}
+
+bool SystemTrayDelegateChromeOS::GetFlashUpdateAvailable() {
+  return flash_update_available_;
 }
 
 ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {

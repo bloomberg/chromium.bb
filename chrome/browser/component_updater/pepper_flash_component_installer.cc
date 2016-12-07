@@ -46,6 +46,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -81,12 +82,20 @@ const uint8_t kSha2Hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
 #if defined(OS_CHROMEOS)
 void LogRegistrationResult(chromeos::DBusMethodCallStatus call_status,
                            bool result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "Call to imageloader service failed.";
     return;
   }
-  if (!result)
+  if (!result) {
     LOG(ERROR) << "Component flash registration failed";
+    return;
+  }
+  chromeos::SystemTrayDelegateChromeOS* tray =
+      chromeos::SystemTrayDelegateChromeOS::instance();
+  if (tray) {
+    tray->SetFlashUpdateAvailable();
+  }
 }
 
 void ImageLoaderRegistration(const std::string& version,

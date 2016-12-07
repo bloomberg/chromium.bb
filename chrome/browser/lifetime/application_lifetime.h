@@ -76,7 +76,13 @@ void NotifyAppTerminating();
 
 // Send out notifications.
 // For ChromeOS, also request session manager to end the session.
+// |lifetime| is used to signal whether or not a reboot should be forced. By
+// default, the functions only reboot the system if an update is available. When
+// a component flash update is present, but not a system update, the
+// kForceReboot flag is passed.
+enum class RebootPolicy { kForceReboot, kOptionalReboot };
 void NotifyAndTerminate(bool fast_path);
+void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy);
 
 #if !defined(OS_ANDROID)
 // Called once the application is exiting.

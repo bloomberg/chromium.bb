@@ -22,6 +22,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -316,8 +317,17 @@ void SystemTrayClient::SignOut() {
 }
 
 void SystemTrayClient::RequestRestartForUpdate() {
-  // We expect that UpdateEngine is in "Reboot for update" state now.
-  chrome::NotifyAndTerminate(true /* fast_path */);
+  bool component_update = false;
+  chromeos::SystemTrayDelegateChromeOS* tray =
+      chromeos::SystemTrayDelegateChromeOS::instance();
+  if (tray)
+    component_update = tray->GetFlashUpdateAvailable();
+
+  chrome::RebootPolicy reboot_policy =
+      component_update ? chrome::RebootPolicy::kForceReboot
+                       : chrome::RebootPolicy::kOptionalReboot;
+
+  chrome::NotifyAndTerminate(true /* fast_path */, reboot_policy);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
