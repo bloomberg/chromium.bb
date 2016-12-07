@@ -65,8 +65,8 @@ IdentityProvider* AutofillClientIOS::GetIdentityProvider() {
   return identity_provider_.get();
 }
 
-rappor::RapporService* AutofillClientIOS::GetRapporService() {
-  return GetApplicationContext()->GetRapporService();
+rappor::RapporServiceImpl* AutofillClientIOS::GetRapporServiceImpl() {
+  return GetApplicationContext()->GetRapporServiceImpl();
 }
 
 void AutofillClientIOS::ShowAutofillSettings() {

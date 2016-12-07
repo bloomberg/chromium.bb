@@ -34,7 +34,7 @@ class TimeTicks;
 }
 
 namespace rappor {
-class RapporService;
+class RapporServiceImpl;
 }
 
 namespace autofill {
@@ -75,7 +75,7 @@ class FormStructure {
   // |rappor_service| may be null.
   static void ParseQueryResponse(std::string response,
                                  const std::vector<FormStructure*>& forms,
-                                 rappor::RapporService* rappor_service);
+                                 rappor::RapporServiceImpl* rappor_service);
 
   // Returns predictions using the details from the given |form_structures| and
   // their fields' predicted types.
@@ -129,7 +129,7 @@ class FormStructure {
   void LogQualityMetrics(const base::TimeTicks& load_time,
                          const base::TimeTicks& interaction_time,
                          const base::TimeTicks& submission_time,
-                         rappor::RapporService* rappor_service,
+                         rappor::RapporServiceImpl* rappor_service,
                          bool did_show_suggestions,
                          bool observed_submission) const;
 

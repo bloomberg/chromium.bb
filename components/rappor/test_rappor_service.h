@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "components/rappor/test_log_uploader.h"
 
 namespace rappor {
@@ -51,19 +51,19 @@ class TestSample : public Sample {
 // This class provides a simple instance that can be instantiated by tests
 // and examined to check that metrics were recorded.  It assumes the most
 // permissive settings so that any metric can be recorded.
-class TestRapporService : public RapporService {
+class TestRapporServiceImpl : public RapporServiceImpl {
  public:
-  TestRapporService();
+  TestRapporServiceImpl();
 
-  ~TestRapporService() override;
+  ~TestRapporServiceImpl() override;
 
-  // RapporService:
+  // RapporServiceImpl:
   std::unique_ptr<Sample> CreateSample(RapporType type) override;
-  void RecordSampleObj(const std::string& metric_name,
-                       std::unique_ptr<Sample> sample) override;
   void RecordSample(const std::string& metric_name,
-                    RapporType type,
-                    const std::string& sample) override;
+                    std::unique_ptr<Sample> sample) override;
+  void RecordSampleString(const std::string& metric_name,
+                          RapporType type,
+                          const std::string& sample) override;
 
   // Gets the number of reports that would be uploaded by this service.
   // This also clears the internal map of metrics as a biproduct, so if
@@ -129,7 +129,7 @@ class TestRapporService : public RapporService {
   // Sets this to true to mock incognito state.
   bool is_incognito_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestRapporService);
+  DISALLOW_COPY_AND_ASSIGN(TestRapporServiceImpl);
 };
 
 }  // namespace rappor

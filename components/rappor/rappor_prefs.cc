@@ -11,7 +11,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/byte_vector_utils.h"
-#include "components/rappor/rappor_parameters.h"
+#include "components/rappor/public/rappor_parameters.h"
 #include "components/rappor/rappor_pref_names.h"
 
 namespace rappor {

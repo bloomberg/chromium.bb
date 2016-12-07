@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "components/rappor/rappor_parameters.h"
+#include "components/rappor/public/rappor_parameters.h"
 #include "crypto/hmac.h"
 
 namespace rappor {

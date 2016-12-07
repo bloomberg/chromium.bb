@@ -1,9 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_RAPPOR_SAMPLE_H_
-#define COMPONENTS_RAPPOR_SAMPLE_H_
+#ifndef COMPONENTS_RAPPOR_PUBLIC_SAMPLE_H_
+#define COMPONENTS_RAPPOR_PUBLIC_SAMPLE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,12 +12,12 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/rappor/rappor_parameters.h"
+#include "components/rappor/public/rappor_parameters.h"
 
 namespace rappor {
 
 class RapporReports;
-class RapporService;
+class RapporServiceImpl;
 class TestSamplerFactory;
 
 // Sample is a container for information about a single instance of some event
@@ -60,7 +60,7 @@ class Sample {
 
  private:
   friend class TestSamplerFactory;
-  friend class RapporService;
+  friend class RapporServiceImpl;
   friend class TestSample;
 
   // Constructs a sample.  Instead of calling this directly, call
@@ -89,4 +89,4 @@ class Sample {
 
 }  // namespace rappor
 
-#endif  // COMPONENTS_RAPPOR_SAMPLE_H_
+#endif  // COMPONENTS_RAPPOR_PUBLIC_SAMPLE_H_

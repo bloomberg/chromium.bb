@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,7 +15,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
-#include "components/rappor/rappor_parameters.h"
+#include "components/rappor/public/rappor_parameters.h"
 #include "components/rappor/rappor_pref_names.h"
 #include "components/rappor/test_log_uploader.h"
 #include "components/rappor/test_rappor_service.h"
@@ -23,9 +23,9 @@
 
 namespace rappor {
 
-TEST(RapporServiceTest, Update) {
+TEST(RapporServiceImplTest, Update) {
   // Test rappor service initially has uploading and reporting enabled.
-  TestRapporService rappor_service;
+  TestRapporServiceImpl rappor_service;
   EXPECT_LT(base::TimeDelta(), rappor_service.next_rotation());
   EXPECT_TRUE(rappor_service.test_uploader()->is_running());
 
@@ -47,12 +47,14 @@ TEST(RapporServiceTest, Update) {
 }
 
 // Check that samples can be recorded and exported.
-TEST(RapporServiceTest, RecordAndExportMetrics) {
-  TestRapporService rappor_service;
+TEST(RapporServiceImplTest, RecordAndExportMetrics) {
+  TestRapporServiceImpl rappor_service;
 
   // Multiple samples for the same metric should only generate one report.
-  rappor_service.RecordSample("MyMetric", ETLD_PLUS_ONE_RAPPOR_TYPE, "foo");
-  rappor_service.RecordSample("MyMetric", ETLD_PLUS_ONE_RAPPOR_TYPE, "bar");
+  rappor_service.RecordSampleString("MyMetric", ETLD_PLUS_ONE_RAPPOR_TYPE,
+                                    "foo");
+  rappor_service.RecordSampleString("MyMetric", ETLD_PLUS_ONE_RAPPOR_TYPE,
+                                    "bar");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);
@@ -65,12 +67,12 @@ TEST(RapporServiceTest, RecordAndExportMetrics) {
 }
 
 // Check that the reporting groups are respected.
-TEST(RapporServiceTest, UmaRecordingGroup) {
-  TestRapporService rappor_service;
+TEST(RapporServiceImplTest, UmaRecordingGroup) {
+  TestRapporServiceImpl rappor_service;
   rappor_service.Update(SAFEBROWSING_RAPPOR_GROUP, false);
 
   // Wrong recording group.
-  rappor_service.RecordSample("UmaMetric", UMA_RAPPOR_TYPE, "foo");
+  rappor_service.RecordSampleString("UmaMetric", UMA_RAPPOR_TYPE, "foo");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);
@@ -78,12 +80,13 @@ TEST(RapporServiceTest, UmaRecordingGroup) {
 }
 
 // Check that the reporting groups are respected.
-TEST(RapporServiceTest, SafeBrowsingRecordingGroup) {
-  TestRapporService rappor_service;
+TEST(RapporServiceImplTest, SafeBrowsingRecordingGroup) {
+  TestRapporServiceImpl rappor_service;
   rappor_service.Update(UMA_RAPPOR_GROUP, false);
 
   // Wrong recording group.
-  rappor_service.RecordSample("SbMetric", SAFEBROWSING_RAPPOR_TYPE, "foo");
+  rappor_service.RecordSampleString("SbMetric", SAFEBROWSING_RAPPOR_TYPE,
+                                    "foo");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);
@@ -91,12 +94,14 @@ TEST(RapporServiceTest, SafeBrowsingRecordingGroup) {
 }
 
 // Check that GetRecordedSampleForMetric works as expected.
-TEST(RapporServiceTest, GetRecordedSampleForMetric) {
-  TestRapporService rappor_service;
+TEST(RapporServiceImplTest, GetRecordedSampleForMetric) {
+  TestRapporServiceImpl rappor_service;
 
   // Multiple samples for the same metric; only the latest is remembered.
-  rappor_service.RecordSample("MyMetric", ETLD_PLUS_ONE_RAPPOR_TYPE, "foo");
-  rappor_service.RecordSample("MyMetric", ETLD_PLUS_ONE_RAPPOR_TYPE, "bar");
+  rappor_service.RecordSampleString("MyMetric", ETLD_PLUS_ONE_RAPPOR_TYPE,
+                                    "foo");
+  rappor_service.RecordSampleString("MyMetric", ETLD_PLUS_ONE_RAPPOR_TYPE,
+                                    "bar");
 
   std::string sample;
   RapporType type;
@@ -109,11 +114,12 @@ TEST(RapporServiceTest, GetRecordedSampleForMetric) {
 }
 
 // Check that the incognito is respected.
-TEST(RapporServiceTest, Incognito) {
-  TestRapporService rappor_service;
+TEST(RapporServiceImplTest, Incognito) {
+  TestRapporServiceImpl rappor_service;
   rappor_service.set_is_incognito(true);
 
-  rappor_service.RecordSample("MyMetric", SAFEBROWSING_RAPPOR_TYPE, "foo");
+  rappor_service.RecordSampleString("MyMetric", SAFEBROWSING_RAPPOR_TYPE,
+                                    "foo");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);
@@ -121,13 +127,13 @@ TEST(RapporServiceTest, Incognito) {
 }
 
 // Check that Sample objects record correctly.
-TEST(RapporServiceTest, RecordSample) {
-  TestRapporService rappor_service;
+TEST(RapporServiceImplTest, RecordSample) {
+  TestRapporServiceImpl rappor_service;
   std::unique_ptr<Sample> sample =
       rappor_service.CreateSample(SAFEBROWSING_RAPPOR_TYPE);
   sample->SetStringField("Url", "example.com");
   sample->SetFlagsField("Flags1", 0xbcd, 12);
-  rappor_service.RecordSampleObj("ObjMetric", std::move(sample));
+  rappor_service.RecordSample("ObjMetric", std::move(sample));
   uint64_t url_hash = base::HashMetricName("ObjMetric.Url");
   uint64_t flags_hash = base::HashMetricName("ObjMetric.Flags1");
   RapporReports reports;

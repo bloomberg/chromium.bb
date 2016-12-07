@@ -8,7 +8,7 @@
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/test_rappor_service.h"
 
 namespace {
@@ -28,10 +28,10 @@ class CorePageLoadMetricsObserverTest
 
   void SetUp() override {
     page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
-    TestingBrowserProcess::GetGlobal()->SetRapporService(&rappor_tester_);
+    TestingBrowserProcess::GetGlobal()->SetRapporServiceImpl(&rappor_tester_);
   }
 
-  rappor::TestRapporService rappor_tester_;
+  rappor::TestRapporServiceImpl rappor_tester_;
 };
 
 TEST_F(CorePageLoadMetricsObserverTest, NoMetrics) {

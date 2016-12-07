@@ -80,6 +80,10 @@ class URLRequest;
 class URLRequestContext;
 }
 
+namespace rappor {
+class RapporService;
+}
+
 namespace sandbox {
 class TargetPolicy;
 }
@@ -791,6 +795,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void CreateMediaRemoter(RenderFrameHost* render_frame_host,
                                   media::mojom::RemotingSourcePtr source,
                                   media::mojom::RemoterRequest request) {}
+
+  // Returns the RapporService from the browser process.
+  virtual ::rappor::RapporService* GetRapporService();
 };
 
 }  // namespace content

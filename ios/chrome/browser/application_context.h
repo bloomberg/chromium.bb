@@ -46,7 +46,7 @@ class PhysicalWebDataSource;
 }
 
 namespace rappor {
-class RapporService;
+class RapporServiceImpl;
 }
 
 namespace variations {
@@ -102,8 +102,8 @@ class ApplicationContext {
   // Gets the VariationsService used by this application.
   virtual variations::VariationsService* GetVariationsService() = 0;
 
-  // Gets the RapporService. May return null.
-  virtual rappor::RapporService* GetRapporService() = 0;
+  // Gets the RapporServiceImpl. May return null.
+  virtual rappor::RapporServiceImpl* GetRapporServiceImpl() = 0;
 
   // Gets the ChromeNetLog.
   virtual net_log::ChromeNetLog* GetNetLog() = 0;

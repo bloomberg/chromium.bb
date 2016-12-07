@@ -6,7 +6,7 @@
 
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -27,8 +27,8 @@ IOSChromeMetricsHelper::IOSChromeMetricsHelper(
               ios::ChromeBrowserState::FromBrowserState(
                   web_state->GetBrowserState()),
               ServiceAccessType::EXPLICIT_ACCESS),
-          GetApplicationContext()->GetRapporService()
-              ? GetApplicationContext()->GetRapporService()->AsWeakPtr()
+          GetApplicationContext()->GetRapporServiceImpl()
+              ? GetApplicationContext()->GetRapporServiceImpl()->AsWeakPtr()
               : base::WeakPtr<rappor::RapporService>()) {}
 
 IOSChromeMetricsHelper::~IOSChromeMetricsHelper() {}

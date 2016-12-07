@@ -10,8 +10,8 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "components/rappor/rappor_service.h"
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/page_transition_types.h"
 
@@ -616,7 +616,8 @@ void CorePageLoadMetricsObserver::RecordRappor(
   // IsShuttingDown() first.
   if (g_browser_process->IsShuttingDown())
     return;
-  rappor::RapporService* rappor_service = g_browser_process->rappor_service();
+  rappor::RapporServiceImpl* rappor_service =
+      g_browser_process->rappor_service();
   if (!rappor_service)
     return;
   if (info.committed_url.is_empty())
@@ -638,8 +639,8 @@ void CorePageLoadMetricsObserver::RecordRappor(
     // was > 10s.
     sample->SetFlagsField(
         "IsSlow", timing.first_contentful_paint.value().InSecondsF() >= 10, 1);
-    rappor_service->RecordSampleObj(internal::kRapporMetricsNameCoarseTiming,
-                                    std::move(sample));
+    rappor_service->RecordSample(internal::kRapporMetricsNameCoarseTiming,
+                                 std::move(sample));
   }
 
   // Log the eTLD+1 of sites that did not report first meaningful paint.

@@ -98,7 +98,8 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
@@ -534,9 +535,9 @@ metrics::MetricsService* BrowserProcessImpl::metrics_service() {
   return GetMetricsServicesManager()->GetMetricsService();
 }
 
-rappor::RapporService* BrowserProcessImpl::rappor_service() {
+rappor::RapporServiceImpl* BrowserProcessImpl::rappor_service() {
   DCHECK(CalledOnValidThread());
-  return GetMetricsServicesManager()->GetRapporService();
+  return GetMetricsServicesManager()->GetRapporServiceImpl();
 }
 
 IOThread* BrowserProcessImpl::io_thread() {

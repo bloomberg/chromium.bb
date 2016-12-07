@@ -33,8 +33,8 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/rappor/rappor_service.h"
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "components/rappor/rappor_service_impl.h"
 
 namespace autofill {
 namespace {
@@ -442,9 +442,10 @@ bool FormStructure::EncodeQueryRequest(
 }
 
 // static
-void FormStructure::ParseQueryResponse(std::string payload,
-                                       const std::vector<FormStructure*>& forms,
-                                       rappor::RapporService* rappor_service) {
+void FormStructure::ParseQueryResponse(
+    std::string payload,
+    const std::vector<FormStructure*>& forms,
+    rappor::RapporServiceImpl* rappor_service) {
   AutofillMetrics::LogServerQueryMetric(
       AutofillMetrics::QUERY_RESPONSE_RECEIVED);
 
@@ -669,7 +670,7 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
 void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
                                       const base::TimeTicks& interaction_time,
                                       const base::TimeTicks& submission_time,
-                                      rappor::RapporService* rappor_service,
+                                      rappor::RapporServiceImpl* rappor_service,
                                       bool did_show_suggestions,
                                       bool observed_submission) const {
   size_t num_detected_field_types = 0;

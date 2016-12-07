@@ -25,7 +25,7 @@ IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest, TestMetrics) {
       content::WebContentsUserData<NavigationMetricsRecorder>::FromWebContents(
           web_contents);
   ASSERT_TRUE(recorder);
-  rappor::TestRapporService rappor_service;
+  rappor::TestRapporServiceImpl rappor_service;
   recorder->set_rappor_service_for_testing(&rappor_service);
 
   base::HistogramTester histograms;

@@ -42,7 +42,7 @@
 using base::ASCIIToUTF16;
 using base::Bucket;
 using base::TimeTicks;
-using rappor::TestRapporService;
+using rappor::TestRapporServiceImpl;
 using ::testing::ElementsAre;
 
 namespace autofill {
@@ -4035,7 +4035,7 @@ class AutofillMetricsParseQueryResponseTest : public testing::Test {
   }
 
  protected:
-  TestRapporService rappor_service_;
+  TestRapporServiceImpl rappor_service_;
   std::vector<std::unique_ptr<FormStructure>> owned_forms_;
   std::vector<FormStructure*> forms_;
 };

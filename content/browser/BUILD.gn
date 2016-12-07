@@ -46,6 +46,7 @@ source_set("browser") {
     "//components/link_header_util",
     "//components/mime_util",
     "//components/payments:payment_app",
+    "//components/rappor",
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//components/url_formatter",

@@ -10,8 +10,8 @@
 #include "chrome/browser/tab_contents/origins_seen_service_factory.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/navigation_metrics/origins_seen_service.h"
-#include "components/rappor/rappor_service.h"
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -38,7 +38,7 @@ NavigationMetricsRecorder::~NavigationMetricsRecorder() {
 }
 
 void NavigationMetricsRecorder::set_rappor_service_for_testing(
-    rappor::RapporService* service) {
+    rappor::RapporServiceImpl* service) {
   rappor_service_ = service;
 }
 

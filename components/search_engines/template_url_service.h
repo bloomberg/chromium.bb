@@ -41,7 +41,7 @@ class TemplateURLServiceObserver;
 struct TemplateURLData;
 
 namespace rappor {
-class RapporService;
+class RapporServiceImpl;
 }
 
 namespace syncer {
@@ -109,7 +109,7 @@ class TemplateURLService : public WebDataServiceConsumer,
       const scoped_refptr<KeywordWebDataService>& web_data_service,
       std::unique_ptr<TemplateURLServiceClient> client,
       GoogleURLTracker* google_url_tracker,
-      rappor::RapporService* rappor_service,
+      rappor::RapporServiceImpl* rappor_service,
       const base::Closure& dsp_change_callback);
   // The following is for testing.
   TemplateURLService(const Initializer* initializers, const int count);
@@ -728,7 +728,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   GoogleURLTracker* google_url_tracker_;
 
   // ---------- Metrics related members ---------------------------------------
-  rappor::RapporService* rappor_service_;
+  rappor::RapporServiceImpl* rappor_service_;
 
   // This closure is run when the default search provider is set to Google.
   base::Closure dsp_change_callback_;

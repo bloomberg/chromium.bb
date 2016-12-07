@@ -11,7 +11,7 @@ namespace autofill {
 TestAutofillClient::TestAutofillClient()
     : token_service_(new FakeOAuth2TokenService()),
       identity_provider_(new FakeIdentityProvider(token_service_.get())),
-      rappor_service_(new rappor::TestRapporService()) {}
+      rappor_service_(new rappor::TestRapporServiceImpl()) {}
 
 TestAutofillClient::~TestAutofillClient() {
 }
@@ -36,7 +36,7 @@ IdentityProvider* TestAutofillClient::GetIdentityProvider() {
   return identity_provider_.get();
 }
 
-rappor::RapporService* TestAutofillClient::GetRapporService() {
+rappor::RapporServiceImpl* TestAutofillClient::GetRapporServiceImpl() {
   return rappor_service_.get();
 }
 

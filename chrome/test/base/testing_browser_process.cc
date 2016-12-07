@@ -111,7 +111,7 @@ metrics::MetricsService* TestingBrowserProcess::metrics_service() {
   return nullptr;
 }
 
-rappor::RapporService* TestingBrowserProcess::rappor_service() {
+rappor::RapporServiceImpl* TestingBrowserProcess::rappor_service() {
   return rappor_service_;
 }
 
@@ -445,8 +445,8 @@ void TestingBrowserProcess::SetRulesetService(
   subresource_filter_ruleset_service_.swap(ruleset_service);
 }
 
-void TestingBrowserProcess::SetRapporService(
-    rappor::RapporService* rappor_service) {
+void TestingBrowserProcess::SetRapporServiceImpl(
+    rappor::RapporServiceImpl* rappor_service) {
   rappor_service_ = rappor_service;
 }
 

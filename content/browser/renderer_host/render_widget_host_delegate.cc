@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 
 #include "build/build_config.h"
+#include "components/rappor/public/sample.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -89,6 +90,12 @@ RenderWidgetHostImpl* RenderWidgetHostDelegate::GetFullscreenRenderWidgetHost()
 }
 
 bool RenderWidgetHostDelegate::OnUpdateDragCursor() {
+  return false;
+}
+
+bool RenderWidgetHostDelegate::AddDomainInfoToRapporSample(
+    rappor::Sample* sample) {
+  sample->SetStringField("Domain", "Unknown");
   return false;
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_RAPPOR_RAPPOR_SERVICE_H_
-#define COMPONENTS_RAPPOR_RAPPOR_SERVICE_H_
+#ifndef COMPONENTS_RAPPOR_RAPPOR_SERVICE_IMPL_H_
+#define COMPONENTS_RAPPOR_RAPPOR_SERVICE_IMPL_H_
 
 #include <stdint.h>
 
@@ -13,12 +13,12 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "components/metrics/daily_event.h"
-#include "components/rappor/rappor_parameters.h"
-#include "components/rappor/sample.h"
+#include "components/rappor/public/rappor_parameters.h"
+#include "components/rappor/public/rappor_service.h"
+#include "components/rappor/public/sample.h"
 #include "components/rappor/sampler.h"
 
 class PrefRegistrySimple;
@@ -36,15 +36,15 @@ class RapporReports;
 
 // This class provides an interface for recording samples for rappor metrics,
 // and periodically generates and uploads reports based on the collected data.
-class RapporService : public base::SupportsWeakPtr<RapporService> {
+class RapporServiceImpl : public RapporService {
  public:
-  // Constructs a RapporService.
+  // Constructs a RapporServiceImpl.
   // Calling code is responsible for ensuring that the lifetime of
-  // |pref_service| is longer than the lifetime of RapporService.
+  // |pref_service| is longer than the lifetime of RapporServiceImpl.
   // |is_incognito_callback| will be called to test if incognito mode is active.
-  RapporService(PrefService* pref_service,
-                const base::Callback<bool(void)> is_incognito_callback);
-  virtual ~RapporService();
+  RapporServiceImpl(PrefService* pref_service,
+                    const base::Callback<bool(void)> is_incognito_callback);
+  virtual ~RapporServiceImpl();
 
   // Add an observer for collecting daily metrics.
   void AddDailyObserver(
@@ -55,7 +55,7 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
   void Initialize(net::URLRequestContextGetter* context);
 
   // Updates the settings for metric recording and uploading.
-  // The RapporService must be initialized before this method is called.
+  // The RapporServiceImpl must be initialized before this method is called.
   // |recording_groups| should be set of flags, e.g.
   //    UMA_RECORDING_GROUP | SAFEBROWSING_RECORDING_GROUP
   // If it contains any enabled groups, periodic reports will be
@@ -64,12 +64,9 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
   void Update(int recording_groups, bool may_upload);
 
   // Constructs a Sample object for the caller to record fields in.
-  virtual std::unique_ptr<Sample> CreateSample(RapporType);
+  std::unique_ptr<Sample> CreateSample(RapporType) override;
 
   // Records a Sample of rappor metric specified by |metric_name|.
-  //
-  // TODO(holte): Rename RecordSample to RecordString and then rename this
-  // to RecordSample.
   //
   // example:
   // std::unique_ptr<Sample> sample =
@@ -81,21 +78,21 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
   // This will result in a report setting two metrics "MyMetric.Field1" and
   // "MyMetric.Field2", and they will both be generated from the same sample,
   // to allow for correlations to be computed.
-  virtual void RecordSampleObj(const std::string& metric_name,
-                               std::unique_ptr<Sample> sample);
+  void RecordSample(const std::string& metric_name,
+                    std::unique_ptr<Sample> sample) override;
 
   // Records a sample of the rappor metric specified by |metric_name|.
   // Creates and initializes the metric, if it doesn't yet exist.
-  virtual void RecordSample(const std::string& metric_name,
-                            RapporType type,
-                            const std::string& sample);
+  void RecordSampleString(const std::string& metric_name,
+                          RapporType type,
+                          const std::string& sample) override;
 
-  // Registers the names of all of the preferences used by RapporService in the
-  // provided PrefRegistry. This should be called before calling Start().
+  // Registers the names of all of the preferences used by RapporServiceImpl in
+  // the provided PrefRegistry. This should be called before calling Start().
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  protected:
-  // Initializes the state of the RapporService.
+  // Initializes the state of the RapporServiceImpl.
   void InitializeInternal(std::unique_ptr<LogUploaderInterface> uploader,
                           int32_t cohort,
                           const std::string& secret);
@@ -168,9 +165,9 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
 
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(RapporService);
+  DISALLOW_COPY_AND_ASSIGN(RapporServiceImpl);
 };
 
 }  // namespace rappor
 
-#endif  // COMPONENTS_RAPPOR_RAPPOR_SERVICE_H_
+#endif  // COMPONENTS_RAPPOR_RAPPOR_SERVICE_IMPL_H_

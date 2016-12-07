@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "components/rappor/bloom_filter.h"
 #include "components/rappor/byte_vector_utils.h"
-#include "components/rappor/rappor_parameters.h"
+#include "components/rappor/public/rappor_parameters.h"
 
 namespace rappor {
 
@@ -20,7 +20,7 @@ namespace rappor {
 // and generates randomized reports about the collected data.
 //
 // This class should not be used directly by metrics clients.  Record metrics
-// using RapporService::RecordSample instead.
+// using RapporServiceImpl::RecordSample or RapporService::RecordSample instead.
 //
 // For a full description of the rappor metrics, see
 // http://www.chromium.org/developers/design-documents/rappor

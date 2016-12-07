@@ -22,8 +22,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/rappor_service.h"
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/origin_util.h"
 #include "url/gurl.h"
@@ -97,14 +97,15 @@ void RecordPermissionRequest(PermissionType permission,
                              const GURL& requesting_origin,
                              const GURL& embedding_origin,
                              Profile* profile) {
-  rappor::RapporService* rappor_service = g_browser_process->rappor_service();
+  rappor::RapporServiceImpl* rappor_service =
+      g_browser_process->rappor_service();
   if (rappor_service) {
     if (permission == PermissionType::GEOLOCATION) {
       // TODO(dominickn): remove this deprecated metric - crbug.com/605836.
       rappor::SampleDomainAndRegistryFromGURL(
           rappor_service, "ContentSettings.PermissionRequested.Geolocation.Url",
           requesting_origin);
-      rappor_service->RecordSample(
+      rappor_service->RecordSampleString(
           "ContentSettings.PermissionRequested.Geolocation.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
@@ -114,7 +115,7 @@ void RecordPermissionRequest(PermissionType permission,
           rappor_service,
           "ContentSettings.PermissionRequested.Notifications.Url",
           requesting_origin);
-      rappor_service->RecordSample(
+      rappor_service->RecordSampleString(
           "ContentSettings.PermissionRequested.Notifications.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
@@ -124,12 +125,12 @@ void RecordPermissionRequest(PermissionType permission,
       rappor::SampleDomainAndRegistryFromGURL(
           rappor_service, "ContentSettings.PermissionRequested.Midi.Url",
           requesting_origin);
-      rappor_service->RecordSample(
+      rappor_service->RecordSampleString(
           "ContentSettings.PermissionRequested.Midi.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
     } else if (permission == PermissionType::PROTECTED_MEDIA_IDENTIFIER) {
-      rappor_service->RecordSample(
+      rappor_service->RecordSampleString(
           "ContentSettings.PermissionRequested.ProtectedMedia.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
@@ -710,13 +711,14 @@ void PermissionUmaUtil::RecordPermissionAction(
   // TODO(dominickn): remove the deprecated metric and replace it solely with
   // the new one in GetRapporMetric - crbug.com/605836.
   const std::string deprecated_metric = GetRapporMetric(permission, action);
-  rappor::RapporService* rappor_service = g_browser_process->rappor_service();
+  rappor::RapporServiceImpl* rappor_service =
+      g_browser_process->rappor_service();
   if (!deprecated_metric.empty() && rappor_service) {
     rappor::SampleDomainAndRegistryFromGURL(rappor_service, deprecated_metric,
                                             requesting_origin);
 
     std::string rappor_metric = deprecated_metric + "2";
-    rappor_service->RecordSample(
+    rappor_service->RecordSampleString(
         rappor_metric, rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
         rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
   }

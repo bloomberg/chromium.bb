@@ -14,7 +14,7 @@
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
@@ -219,11 +219,12 @@ void ChromeExtensionWebContentsObserver::SetExtensionIsolationTrial(
       }
     }
 
-    if (rappor::RapporService* rappor = g_browser_process->rappor_service()) {
+    if (rappor::RapporServiceImpl* rappor =
+            g_browser_process->rappor_service()) {
       const std::string& extension_id =
           parent_is_extension ? parent_url.host() : frame_url.host();
-      rappor->RecordSample("Extensions.AffectedByIsolateExtensions",
-                           rappor::UMA_RAPPOR_TYPE, extension_id);
+      rappor->RecordSampleString("Extensions.AffectedByIsolateExtensions",
+                                 rappor::UMA_RAPPOR_TYPE, extension_id);
     }
   }
 }

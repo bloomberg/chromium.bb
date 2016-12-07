@@ -8,7 +8,8 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_sync_parameters.h"
 
@@ -109,7 +110,7 @@ void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
     return;
 
   rappor::SampleDomainAndRegistryFromGURL(
-      GetRapporService(), "BackgroundSync.Register.Origin", origin);
+      GetRapporServiceImpl(), "BackgroundSync.Register.Origin", origin);
 }
 
 void BackgroundSyncControllerImpl::RunInBackground(bool enabled,
@@ -126,6 +127,7 @@ void BackgroundSyncControllerImpl::RunInBackground(bool enabled,
 #endif
 }
 
-rappor::RapporService* BackgroundSyncControllerImpl::GetRapporService() {
+rappor::RapporServiceImpl*
+BackgroundSyncControllerImpl::GetRapporServiceImpl() {
   return g_browser_process->rappor_service();
 }

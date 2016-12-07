@@ -30,6 +30,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/mime_util/mime_util.h"
+#include "components/rappor/public/rappor_utils.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -5282,6 +5283,13 @@ void WebContentsImpl::RemoveBindingSet(const std::string& interface_name) {
   auto it = binding_sets_.find(interface_name);
   if (it != binding_sets_.end())
     binding_sets_.erase(it);
+}
+
+bool WebContentsImpl::AddDomainInfoToRapporSample(rappor::Sample* sample) {
+  sample->SetStringField("Domain", ::rappor::GetDomainAndRegistrySampleFromGURL(
+                                       GetLastCommittedURL()));
+
+  return true;
 }
 
 }  // namespace content

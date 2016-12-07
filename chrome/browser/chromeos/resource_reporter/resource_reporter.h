@@ -19,7 +19,7 @@
 #include "chrome/browser/task_manager/task_manager_observer.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/rappor/sample.h"
+#include "components/rappor/public/sample.h"
 
 namespace chromeos {
 
@@ -140,7 +140,7 @@ class ResourceReporter : public task_manager::TaskManagerObserver,
 
   // Creates a Rappor sample for the given |task_record|.
   static std::unique_ptr<rappor::Sample> CreateRapporSample(
-      rappor::RapporService* rappor_service,
+      rappor::RapporServiceImpl* rappor_service,
       const TaskRecord& task_record);
 
   // Gets the CPU/memory usage ranges given the |cpu| / |memory_in_bytes|

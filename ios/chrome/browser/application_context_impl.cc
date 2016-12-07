@@ -227,9 +227,9 @@ variations::VariationsService* ApplicationContextImpl::GetVariationsService() {
   return GetMetricsServicesManager()->GetVariationsService();
 }
 
-rappor::RapporService* ApplicationContextImpl::GetRapporService() {
+rappor::RapporServiceImpl* ApplicationContextImpl::GetRapporServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return GetMetricsServicesManager()->GetRapporService();
+  return GetMetricsServicesManager()->GetRapporServiceImpl();
 }
 
 net_log::ChromeNetLog* ApplicationContextImpl::GetNetLog() {

@@ -12,16 +12,16 @@ class GURL;
 
 namespace rappor {
 
-class RapporService;
+class RapporServiceImpl;
 
 // Records aggregate, privacy-preserving samples from the renderers.
 // See https://www.chromium.org/developers/design-documents/rappor
 class RapporRecorderImpl : public mojom::RapporRecorder {
  public:
-  explicit RapporRecorderImpl(RapporService* rappor_service);
+  explicit RapporRecorderImpl(RapporServiceImpl* rappor_service);
   ~RapporRecorderImpl() override;
 
-  static void Create(RapporService* rappor_service,
+  static void Create(RapporServiceImpl* rappor_service,
                      mojom::RapporRecorderRequest request);
 
  private:
@@ -30,7 +30,7 @@ class RapporRecorderImpl : public mojom::RapporRecorder {
                     const std::string& sample) override;
   void RecordRapporURL(const std::string& metric, const GURL& sample) override;
 
-  RapporService* rappor_service_;
+  RapporServiceImpl* rappor_service_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(RapporRecorderImpl);

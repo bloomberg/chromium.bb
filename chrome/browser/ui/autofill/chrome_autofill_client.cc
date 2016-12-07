@@ -156,7 +156,7 @@ IdentityProvider* ChromeAutofillClient::GetIdentityProvider() {
   return identity_provider_.get();
 }
 
-rappor::RapporService* ChromeAutofillClient::GetRapporService() {
+rappor::RapporServiceImpl* ChromeAutofillClient::GetRapporServiceImpl() {
   return g_browser_process->rappor_service();
 }
 

@@ -38,7 +38,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
@@ -119,7 +119,8 @@ void ReportMetrics(const std::string& mime_type,
 
   if (chrome::IsIncognitoSessionActive())
     return;
-  rappor::RapporService* rappor_service = g_browser_process->rappor_service();
+  rappor::RapporServiceImpl* rappor_service =
+      g_browser_process->rappor_service();
   if (!rappor_service)
     return;
   if (main_frame_origin.unique())
@@ -127,16 +128,15 @@ void ReportMetrics(const std::string& mime_type,
 
   if (mime_type == content::kFlashPluginSwfMimeType ||
       mime_type == content::kFlashPluginSplMimeType) {
-    rappor_service->RecordSample(
+    rappor_service->RecordSampleString(
         "Plugins.FlashOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
         net::registry_controlled_domains::GetDomainAndRegistry(
             main_frame_origin.GetURL(),
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-    rappor_service->RecordSample(
+    rappor_service->RecordSampleString(
         "Plugins.FlashUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
         net::registry_controlled_domains::GetDomainAndRegistry(
-            url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+            url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
   }
 }
 

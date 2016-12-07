@@ -136,8 +136,9 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_recorder_impl.h"
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
@@ -2783,6 +2784,10 @@ void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(
     std::vector<storage::URLRequestAutoMountHandler>* handlers) {
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->GetURLRequestAutoMountHandlers(handlers);
+}
+
+::rappor::RapporService* ChromeContentBrowserClient::GetRapporService() {
+  return g_browser_process->rappor_service();
 }
 
 void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(

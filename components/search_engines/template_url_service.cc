@@ -24,7 +24,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_host_to_urls_map.h"
 #include "components/search_engines/search_terms_data.h"
@@ -230,7 +230,7 @@ TemplateURLService::TemplateURLService(
     const scoped_refptr<KeywordWebDataService>& web_data_service,
     std::unique_ptr<TemplateURLServiceClient> client,
     GoogleURLTracker* google_url_tracker,
-    rappor::RapporService* rappor_service,
+    rappor::RapporServiceImpl* rappor_service,
     const base::Closure& dsp_change_callback)
     : prefs_(prefs),
       search_terms_data_(std::move(search_terms_data)),
@@ -870,9 +870,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
         SEARCH_ENGINE_MAX);
 
     if (rappor_service_) {
-      rappor_service_->RecordSample(
-          "Search.DefaultSearchProvider",
-          rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+      rappor_service_->RecordSampleString(
+          "Search.DefaultSearchProvider", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
           net::registry_controlled_domains::GetDomainAndRegistry(
               default_search_provider_->url_ref().GetHost(search_terms_data()),
               net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));

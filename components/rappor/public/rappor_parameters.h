@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_RAPPOR_RAPPOR_PARAMETERS_H_
-#define COMPONENTS_RAPPOR_RAPPOR_PARAMETERS_H_
+#ifndef COMPONENTS_RAPPOR_PUBLIC_RAPPOR_PARAMETERS_H_
+#define COMPONENTS_RAPPOR_PUBLIC_RAPPOR_PARAMETERS_H_
 
 #include <string>
 
@@ -40,23 +40,21 @@ enum RapporType {
 };
 
 enum Probability {
-  PROBABILITY_100,   // 100%
-  PROBABILITY_75,    // 75%
-  PROBABILITY_50,    // 50%
-  PROBABILITY_25,    // 25%
-  PROBABILITY_0,     // 0%
+  PROBABILITY_100,  // 100%
+  PROBABILITY_75,   // 75%
+  PROBABILITY_50,   // 50%
+  PROBABILITY_25,   // 25%
+  PROBABILITY_0,    // 0%
 };
 
-
 // A metric is reported when its reporting group is in the set of groups
-// passed in to RapporService::Start()
+// passed in to RapporServiceImpl::Start()
 enum RecordingGroup {
   // Metrics for UMA users.
   UMA_RAPPOR_GROUP = 1 << 0,
   // Metrics related to SafeBrowsing, for SafeBrowsing users.
   SAFEBROWSING_RAPPOR_GROUP = 1 << 1,
 };
-
 
 // An object describing noise probabilities for a noise level
 struct NoiseParameters {
@@ -106,68 +104,80 @@ namespace internal {
 const NoiseParameters kNoiseParametersForLevel[NUM_NOISE_LEVELS] = {
     // NO_NOISE
     {
-     rappor::PROBABILITY_0 /* Fake data probability */,
-     rappor::PROBABILITY_0 /* Fake one probability */,
-     rappor::PROBABILITY_100 /* One coin probability */,
-     rappor::PROBABILITY_0 /* Zero coin probability */,
+        rappor::PROBABILITY_0 /* Fake data probability */,
+        rappor::PROBABILITY_0 /* Fake one probability */,
+        rappor::PROBABILITY_100 /* One coin probability */,
+        rappor::PROBABILITY_0 /* Zero coin probability */,
     },
     // NORMAL_NOISE
     {
-     rappor::PROBABILITY_50 /* Fake data probability */,
-     rappor::PROBABILITY_50 /* Fake one probability */,
-     rappor::PROBABILITY_75 /* One coin probability */,
-     rappor::PROBABILITY_25 /* Zero coin probability */,
+        rappor::PROBABILITY_50 /* Fake data probability */,
+        rappor::PROBABILITY_50 /* Fake one probability */,
+        rappor::PROBABILITY_75 /* One coin probability */,
+        rappor::PROBABILITY_25 /* Zero coin probability */,
     },
     // SPARSE_NOISE
     {
-     rappor::PROBABILITY_25 /* Fake data probability */,
-     rappor::PROBABILITY_50 /* Fake one probability */,
-     rappor::PROBABILITY_75 /* One coin probability */,
-     rappor::PROBABILITY_25 /* Zero coin probability */,
+        rappor::PROBABILITY_25 /* Fake data probability */,
+        rappor::PROBABILITY_50 /* Fake one probability */,
+        rappor::PROBABILITY_75 /* One coin probability */,
+        rappor::PROBABILITY_25 /* Zero coin probability */,
     },
 };
 
 const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
     // UMA_RAPPOR_TYPE
-    {128 /* Num cohorts */,
-     4 /* Bloom filter size bytes */,
-     2 /* Bloom filter hash count */,
-     rappor::NORMAL_NOISE /* Noise level */,
-     UMA_RAPPOR_GROUP /* Recording group */},
+    {
+        128 /* Num cohorts */,
+        4 /* Bloom filter size bytes */,
+        2 /* Bloom filter hash count */,
+        rappor::NORMAL_NOISE /* Noise level */,
+        UMA_RAPPOR_GROUP /* Recording group */
+    },
     // SAFEBROWSING_RAPPOR_TYPE
-    {128 /* Num cohorts */,
-     1 /* Bloom filter size bytes */,
-     2 /* Bloom filter hash count */,
-     rappor::NORMAL_NOISE /* Noise level */,
-     SAFEBROWSING_RAPPOR_GROUP /* Recording group */},
+    {
+        128 /* Num cohorts */,
+        1 /* Bloom filter size bytes */,
+        2 /* Bloom filter hash count */,
+        rappor::NORMAL_NOISE /* Noise level */,
+        SAFEBROWSING_RAPPOR_GROUP /* Recording group */
+    },
     // ETLD_PLUS_ONE_RAPPOR_TYPE
-    {128 /* Num cohorts */,
-     16 /* Bloom filter size bytes */,
-     2 /* Bloom filter hash count */,
-     rappor::NORMAL_NOISE /* Noise level */,
-     UMA_RAPPOR_GROUP /* Recording group */},
+    {
+        128 /* Num cohorts */,
+        16 /* Bloom filter size bytes */,
+        2 /* Bloom filter hash count */,
+        rappor::NORMAL_NOISE /* Noise level */,
+        UMA_RAPPOR_GROUP /* Recording group */
+    },
     // LOW_FREQUENCY_UMA_RAPPOR_TYPE
-    {128 /* Num cohorts */,
-     4 /* Bloom filter size bytes */,
-     2 /* Bloom filter hash count */,
-     rappor::SPARSE_NOISE /* Noise level */,
-     UMA_RAPPOR_GROUP /* Recording group */},
+    {
+        128 /* Num cohorts */,
+        4 /* Bloom filter size bytes */,
+        2 /* Bloom filter hash count */,
+        rappor::SPARSE_NOISE /* Noise level */,
+        UMA_RAPPOR_GROUP /* Recording group */
+    },
     // LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE
-    {128 /* Num cohorts */,
-     1 /* Bloom filter size bytes */,
-     2 /* Bloom filter hash count */,
-     rappor::SPARSE_NOISE /* Noise level */,
-     SAFEBROWSING_RAPPOR_GROUP /* Recording group */},
+    {
+        128 /* Num cohorts */,
+        1 /* Bloom filter size bytes */,
+        2 /* Bloom filter hash count */,
+        rappor::SPARSE_NOISE /* Noise level */,
+        SAFEBROWSING_RAPPOR_GROUP /* Recording group */
+    },
     // LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE
-    {128 /* Num cohorts */,
-     16 /* Bloom filter size bytes */,
-     2 /* Bloom filter hash count */,
-     rappor::SPARSE_NOISE /* Noise level */,
-     UMA_RAPPOR_GROUP /* Recording group */},
+    {
+        128 /* Num cohorts */,
+        16 /* Bloom filter size bytes */,
+        2 /* Bloom filter hash count */,
+        rappor::SPARSE_NOISE /* Noise level */,
+        UMA_RAPPOR_GROUP /* Recording group */
+    },
 };
 
 }  // namespace internal
 
 }  // namespace rappor
 
-#endif  // COMPONENTS_RAPPOR_RAPPOR_PARAMETERS_H_
+#endif  // COMPONENTS_RAPPOR_PUBLIC_RAPPOR_PARAMETERS_H_

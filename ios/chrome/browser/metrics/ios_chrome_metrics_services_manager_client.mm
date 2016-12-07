@@ -10,7 +10,7 @@
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "components/variations/service/variations_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_switches.h"
@@ -58,10 +58,10 @@ IOSChromeMetricsServicesManagerClient::IOSChromeMetricsServicesManagerClient(
 IOSChromeMetricsServicesManagerClient::
     ~IOSChromeMetricsServicesManagerClient() = default;
 
-std::unique_ptr<rappor::RapporService>
-IOSChromeMetricsServicesManagerClient::CreateRapporService() {
+std::unique_ptr<rappor::RapporServiceImpl>
+IOSChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return base::MakeUnique<rappor::RapporService>(
+  return base::MakeUnique<rappor::RapporServiceImpl>(
       local_state_, base::Bind(&::IsOffTheRecordSessionActive));
 }
 

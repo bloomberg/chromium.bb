@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -225,7 +225,7 @@ ResourceReporter::ResourceReporter()
 
 // static
 std::unique_ptr<rappor::Sample> ResourceReporter::CreateRapporSample(
-    rappor::RapporService* rappor_service,
+    rappor::RapporServiceImpl* rappor_service,
     const ResourceReporter::TaskRecord& task_record) {
   std::unique_ptr<rappor::Sample> sample(
       rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE));
@@ -372,7 +372,7 @@ void ResourceReporter::ReportSamples() {
         kRapporUsageRangeFlagsField,
         GET_ENUM_VAL(GetCpuUsageRange(sampled_cpu_task->cpu_percent)),
         GET_ENUM_VAL(CpuUsageRange::NUM_RANGES));
-    rappor_service->RecordSampleObj(kCpuRapporMetric, std::move(cpu_sample));
+    rappor_service->RecordSample(kCpuRapporMetric, std::move(cpu_sample));
   }
 
   // Use weighted random sampling to select a task to report in the memory
@@ -385,8 +385,7 @@ void ResourceReporter::ReportSamples() {
         kRapporUsageRangeFlagsField,
         GET_ENUM_VAL(GetMemoryUsageRange(sampled_memory_task->memory_bytes)),
         GET_ENUM_VAL(MemoryUsageRange::NUM_RANGES));
-    rappor_service->RecordSampleObj(kMemoryRapporMetric,
-                                    std::move(memory_sample));
+    rappor_service->RecordSample(kMemoryRapporMetric, std::move(memory_sample));
   }
 }
 

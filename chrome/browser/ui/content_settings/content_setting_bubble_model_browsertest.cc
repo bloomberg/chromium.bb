@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsMixedScriptIgnoreCertErrorsTest,
   replace_host.SetHostStr("example.test");
   url = url.ReplaceComponents(replace_host);
 
-  rappor::TestRapporService rappor_service;
+  rappor::TestRapporServiceImpl rappor_service;
   EXPECT_EQ(0, rappor_service.GetReportsCount());
   base::HistogramTester histograms;
   histograms.ExpectTotalCount("ContentSettings.MixedScript", 0);
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsMixedScriptIgnoreCertErrorsTest,
           browser()->content_setting_bubble_model_delegate(),
           browser()->tab_strip_model()->GetActiveWebContents(),
           browser()->profile(), CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
-  model->SetRapporServiceForTesting(&rappor_service);
+  model->SetRapporServiceImplForTesting(&rappor_service);
   model->OnCustomLinkClicked();
 
   // Wait for reload

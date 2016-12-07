@@ -41,7 +41,7 @@ class TestingApplicationContext : public ApplicationContext {
       override;
   metrics::MetricsService* GetMetricsService() override;
   variations::VariationsService* GetVariationsService() override;
-  rappor::RapporService* GetRapporService() override;
+  rappor::RapporServiceImpl* GetRapporServiceImpl() override;
   net_log::ChromeNetLog* GetNetLog() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   IOSChromeIOThread* GetIOSChromeIOThread() override;

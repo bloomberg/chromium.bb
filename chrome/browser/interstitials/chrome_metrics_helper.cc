@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/features.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/features/features.h"
 

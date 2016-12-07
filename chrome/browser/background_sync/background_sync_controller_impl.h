@@ -18,7 +18,7 @@ struct BackgroundSyncParameters;
 }
 
 namespace rappor {
-class RapporService;
+class RapporServiceImpl;
 }
 
 class Profile;
@@ -45,7 +45,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
 
  protected:
   // Virtual for testing.
-  virtual rappor::RapporService* GetRapporService();
+  virtual rappor::RapporServiceImpl* GetRapporServiceImpl();
 
  private:
   Profile* profile_;  // This object is owned by profile_.

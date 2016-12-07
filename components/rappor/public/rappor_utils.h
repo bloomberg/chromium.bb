@@ -1,19 +1,17 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_RAPPOR_RAPPOR_UTILS_H_
-#define COMPONENTS_RAPPOR_RAPPOR_UTILS_H_
+#ifndef COMPONENTS_RAPPOR_PUBLIC_RAPPOR_UTILS_H_
+#define COMPONENTS_RAPPOR_PUBLIC_RAPPOR_UTILS_H_
 
 #include <string>
 
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/public/rappor_service.h"
 
 class GURL;
 
 namespace rappor {
-
-class RapporService;
 
 // Records a string to a Rappor metric.
 // If |rappor_service| is NULL, this call does nothing.
@@ -40,4 +38,4 @@ void SetDefaultServiceAccessor(RapporService* (*getDefaultService)());
 
 }  // namespace rappor
 
-#endif  // COMPONENTS_RAPPOR_RAPPOR_UTILS_H_
+#endif  // COMPONENTS_RAPPOR_PUBLIC_RAPPOR_UTILS_H_

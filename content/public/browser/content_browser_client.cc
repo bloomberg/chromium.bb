@@ -434,4 +434,8 @@ ContentBrowserClient::GetMemoryCoordinatorDelegate() {
   return std::unique_ptr<MemoryCoordinatorDelegate>();
 }
 
+::rappor::RapporService* ContentBrowserClient::GetRapporService() {
+  return nullptr;
+}
+
 }  // namespace content

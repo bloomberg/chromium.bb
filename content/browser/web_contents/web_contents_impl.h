@@ -667,6 +667,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnFirstPaintAfterLoad(RenderWidgetHostImpl* render_widget_host) override;
   TextInputManager* GetTextInputManager() override;
   bool OnUpdateDragCursor() override;
+  bool AddDomainInfoToRapporSample(rappor::Sample* sample) override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 

@@ -8,7 +8,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "components/rappor/byte_vector_utils.h"
-#include "components/rappor/rappor_parameters.h"
+#include "components/rappor/public/rappor_parameters.h"
 
 namespace rappor {
 

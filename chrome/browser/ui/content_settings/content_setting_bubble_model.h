@@ -33,7 +33,7 @@ class WebContents;
 }
 
 namespace rappor {
-class RapporService;
+class RapporServiceImpl;
 }
 
 // The hierarchy of bubble models:
@@ -176,7 +176,8 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   AsSubresourceFilterBubbleModel();
 
   // Sets the Rappor service used for testing.
-  void SetRapporServiceForTesting(rappor::RapporService* rappor_service) {
+  void SetRapporServiceImplForTesting(
+      rappor::RapporServiceImpl* rappor_service) {
     rappor_service_ = rappor_service;
   }
 
@@ -233,7 +234,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   void set_setting_is_managed(bool managed) {
     setting_is_managed_ = managed;
   }
-  rappor::RapporService* rappor_service() const { return rappor_service_; }
+  rappor::RapporServiceImpl* rappor_service() const { return rappor_service_; }
 
  private:
   virtual void SetTitle() = 0;
@@ -249,7 +250,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   // controlled by the user.
   bool setting_is_managed_;
   // The service used to record Rappor metrics. Can be set for testing.
-  rappor::RapporService* rappor_service_;
+  rappor::RapporServiceImpl* rappor_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleModel);
 };

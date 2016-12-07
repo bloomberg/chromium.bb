@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 
 #include <utility>
 
@@ -41,8 +41,7 @@ const char kDefaultServerUrl[] = "https://clients4.google.com/rappor";
 
 GURL GetServerUrl() {
   std::string server_url = variations::GetVariationParamValue(
-      kRapporRolloutFieldTrialName,
-      kRapporRolloutServerUrlParam);
+      kRapporRolloutFieldTrialName, kRapporRolloutServerUrlParam);
   if (!server_url.empty())
     return GURL(server_url);
   else
@@ -51,7 +50,7 @@ GURL GetServerUrl() {
 
 }  // namespace
 
-RapporService::RapporService(
+RapporServiceImpl::RapporServiceImpl(
     PrefService* pref_service,
     const base::Callback<bool(void)> is_incognito_callback)
     : pref_service_(pref_service),
@@ -60,33 +59,32 @@ RapporService::RapporService(
       daily_event_(pref_service,
                    prefs::kRapporLastDailySample,
                    kRapporDailyEventHistogram),
-      recording_groups_(0) {
-}
+      recording_groups_(0) {}
 
-RapporService::~RapporService() {
-}
+RapporServiceImpl::~RapporServiceImpl() {}
 
-void RapporService::AddDailyObserver(
+void RapporServiceImpl::AddDailyObserver(
     std::unique_ptr<metrics::DailyEvent::Observer> observer) {
   daily_event_.AddObserver(std::move(observer));
 }
 
-void RapporService::Initialize(net::URLRequestContextGetter* request_context) {
+void RapporServiceImpl::Initialize(
+    net::URLRequestContextGetter* request_context) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!IsInitialized());
   const GURL server_url = GetServerUrl();
   if (!server_url.is_valid()) {
     DVLOG(1) << server_url.spec() << " is invalid. "
-             << "RapporService not started.";
+             << "RapporServiceImpl not started.";
     return;
   }
-  DVLOG(1) << "RapporService reporting to " << server_url.spec();
+  DVLOG(1) << "RapporServiceImpl reporting to " << server_url.spec();
   InitializeInternal(
       base::MakeUnique<LogUploader>(server_url, kMimeType, request_context),
       internal::LoadCohort(pref_service_), internal::LoadSecret(pref_service_));
 }
 
-void RapporService::Update(int recording_groups, bool may_upload) {
+void RapporServiceImpl::Update(int recording_groups, bool may_upload) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsInitialized());
   if (recording_groups_ != recording_groups) {
@@ -95,18 +93,18 @@ void RapporService::Update(int recording_groups, bool may_upload) {
       recording_groups_ = 0;
       CancelNextLogRotation();
     } else if (recording_groups_ == 0) {
-      DVLOG(1) << "RapporService started for groups: "
-               << recording_groups;
+      DVLOG(1) << "RapporServiceImpl started for groups: " << recording_groups;
       recording_groups_ = recording_groups;
       ScheduleNextLogRotation(
           base::TimeDelta::FromSeconds(kInitialLogIntervalSeconds));
     } else {
-      DVLOG(1) << "RapporService recording_groups changed:" << recording_groups;
+      DVLOG(1) << "RapporServiceImpl recording_groups changed:"
+               << recording_groups;
       recording_groups_ = recording_groups;
     }
   }
 
-  DVLOG(1) << "RapporService recording_groups=" << recording_groups_
+  DVLOG(1) << "RapporServiceImpl recording_groups=" << recording_groups_
            << " may_upload=" << may_upload;
   if (may_upload) {
     uploader_->Start();
@@ -116,11 +114,11 @@ void RapporService::Update(int recording_groups, bool may_upload) {
 }
 
 // static
-void RapporService::RegisterPrefs(PrefRegistrySimple* registry) {
+void RapporServiceImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   internal::RegisterPrefs(registry);
 }
 
-void RapporService::InitializeInternal(
+void RapporServiceImpl::InitializeInternal(
     std::unique_ptr<LogUploaderInterface> uploader,
     int32_t cohort,
     const std::string& secret) {
@@ -132,37 +130,35 @@ void RapporService::InitializeInternal(
   secret_ = secret;
 }
 
-void RapporService::CancelNextLogRotation() {
+void RapporServiceImpl::CancelNextLogRotation() {
   DCHECK(thread_checker_.CalledOnValidThread());
   metrics_map_.clear();
   log_rotation_timer_.Stop();
 }
 
-void RapporService::ScheduleNextLogRotation(base::TimeDelta interval) {
-  log_rotation_timer_.Start(FROM_HERE,
-                            interval,
-                            this,
-                            &RapporService::OnLogInterval);
+void RapporServiceImpl::ScheduleNextLogRotation(base::TimeDelta interval) {
+  log_rotation_timer_.Start(FROM_HERE, interval, this,
+                            &RapporServiceImpl::OnLogInterval);
 }
 
-void RapporService::OnLogInterval() {
+void RapporServiceImpl::OnLogInterval() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(uploader_);
-  DVLOG(2) << "RapporService::OnLogInterval";
+  DVLOG(2) << "RapporServiceImpl::OnLogInterval";
   daily_event_.CheckInterval();
   RapporReports reports;
   if (ExportMetrics(&reports)) {
     std::string log_text;
     bool success = reports.SerializeToString(&log_text);
     DCHECK(success);
-    DVLOG(1) << "RapporService sending a report of "
+    DVLOG(1) << "RapporServiceImpl sending a report of "
              << reports.report_size() << " value(s).";
     uploader_->QueueLog(log_text);
   }
   ScheduleNextLogRotation(base::TimeDelta::FromSeconds(kLogIntervalSeconds));
 }
 
-bool RapporService::ExportMetrics(RapporReports* reports) {
+bool RapporServiceImpl::ExportMetrics(RapporReports* reports) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GE(cohort_, 0);
   reports->set_cohort(cohort_);
@@ -184,11 +180,11 @@ bool RapporService::ExportMetrics(RapporReports* reports) {
   return reports->report_size() > 0;
 }
 
-bool RapporService::IsInitialized() const {
+bool RapporServiceImpl::IsInitialized() const {
   return cohort_ >= 0;
 }
 
-bool RapporService::RecordingAllowed(const RapporParameters& parameters) {
+bool RapporServiceImpl::RecordingAllowed(const RapporParameters& parameters) {
   // Skip recording in incognito mode.
   if (is_incognito_callback_.Run()) {
     DVLOG(2) << "Metric not logged due to incognito mode.";
@@ -196,31 +192,30 @@ bool RapporService::RecordingAllowed(const RapporParameters& parameters) {
   }
   // Skip this metric if its recording_group is not enabled.
   if (!(recording_groups_ & parameters.recording_group)) {
-    DVLOG(2) << "Metric not logged due to recording_group "
-             << recording_groups_ << " < " << parameters.recording_group;
+    DVLOG(2) << "Metric not logged due to recording_group " << recording_groups_
+             << " < " << parameters.recording_group;
     return false;
   }
   return true;
 }
 
-void RapporService::RecordSample(const std::string& metric_name,
-                                 RapporType type,
-                                 const std::string& sample) {
+void RapporServiceImpl::RecordSampleString(const std::string& metric_name,
+                                           RapporType type,
+                                           const std::string& sample) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Ignore the sample if the service hasn't started yet.
   if (!IsInitialized())
     return;
   DCHECK_LT(type, NUM_RAPPOR_TYPES);
   const RapporParameters& parameters = internal::kRapporParametersForType[type];
-  DVLOG(2) << "Recording sample \"" << sample
-           << "\" for metric \"" << metric_name
-           << "\" of type: " << type;
+  DVLOG(2) << "Recording sample \"" << sample << "\" for metric \""
+           << metric_name << "\" of type: " << type;
   RecordSampleInternal(metric_name, parameters, sample);
 }
 
-void RapporService::RecordSampleInternal(const std::string& metric_name,
-                                         const RapporParameters& parameters,
-                                         const std::string& sample) {
+void RapporServiceImpl::RecordSampleInternal(const std::string& metric_name,
+                                             const RapporParameters& parameters,
+                                             const std::string& sample) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsInitialized());
   if (!RecordingAllowed(parameters))
@@ -229,8 +224,9 @@ void RapporService::RecordSampleInternal(const std::string& metric_name,
   metric->AddSample(sample);
 }
 
-RapporMetric* RapporService::LookUpMetric(const std::string& metric_name,
-                                          const RapporParameters& parameters) {
+RapporMetric* RapporServiceImpl::LookUpMetric(
+    const std::string& metric_name,
+    const RapporParameters& parameters) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsInitialized());
   auto it = metrics_map_.find(metric_name);
@@ -245,15 +241,15 @@ RapporMetric* RapporService::LookUpMetric(const std::string& metric_name,
   return new_metric;
 }
 
-std::unique_ptr<Sample> RapporService::CreateSample(RapporType type) {
+std::unique_ptr<Sample> RapporServiceImpl::CreateSample(RapporType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsInitialized());
   return base::WrapUnique(
       new Sample(cohort_, internal::kRapporParametersForType[type]));
 }
 
-void RapporService::RecordSampleObj(const std::string& metric_name,
-                                    std::unique_ptr<Sample> sample) {
+void RapporServiceImpl::RecordSample(const std::string& metric_name,
+                                     std::unique_ptr<Sample> sample) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!RecordingAllowed(sample->parameters()))
     return;

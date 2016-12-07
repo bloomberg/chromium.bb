@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/public/rappor_utils.h"
 
-#include "components/rappor/rappor_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -17,7 +16,7 @@ void SampleString(RapporService* rappor_service,
                   const std::string& sample) {
   if (!rappor_service)
     return;
-  rappor_service->RecordSample(metric, type, sample);
+  rappor_service->RecordSampleString(metric, type, sample);
 }
 
 std::string GetDomainAndRegistrySampleFromGURL(const GURL& gurl) {
@@ -39,10 +38,8 @@ void SampleDomainAndRegistryFromGURL(RapporService* rappor_service,
                                      const GURL& gurl) {
   if (!rappor_service)
     return;
-  rappor_service->RecordSample(
-      metric,
-      rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-      GetDomainAndRegistrySampleFromGURL(gurl));
+  rappor_service->RecordSampleString(metric, rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+                                     GetDomainAndRegistrySampleFromGURL(gurl));
 }
 
 RapporService* (*g_GetDefaultService)() = nullptr;

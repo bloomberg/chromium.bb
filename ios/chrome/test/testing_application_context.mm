@@ -111,7 +111,7 @@ TestingApplicationContext::GetVariationsService() {
   return nullptr;
 }
 
-rappor::RapporService* TestingApplicationContext::GetRapporService() {
+rappor::RapporServiceImpl* TestingApplicationContext::GetRapporServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }

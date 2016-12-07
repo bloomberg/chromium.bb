@@ -79,7 +79,7 @@ IdentityProvider* AwAutofillClient::GetIdentityProvider() {
   return nullptr;
 }
 
-rappor::RapporService* AwAutofillClient::GetRapporService() {
+rappor::RapporServiceImpl* AwAutofillClient::GetRapporServiceImpl() {
   return nullptr;
 }
 

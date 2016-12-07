@@ -4,19 +4,19 @@
 
 #include "components/rappor/rappor_recorder_impl.h"
 
-#include "components/rappor/rappor_service.h"
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace rappor {
 
-RapporRecorderImpl::RapporRecorderImpl(RapporService* rappor_service)
+RapporRecorderImpl::RapporRecorderImpl(RapporServiceImpl* rappor_service)
     : rappor_service_(rappor_service) {}
 
 RapporRecorderImpl::~RapporRecorderImpl() = default;
 
 // static
-void RapporRecorderImpl::Create(RapporService* rappor_service,
+void RapporRecorderImpl::Create(RapporServiceImpl* rappor_service,
                                 mojom::RapporRecorderRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<RapporRecorderImpl>(rappor_service),
                           std::move(request));

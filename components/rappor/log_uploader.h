@@ -24,9 +24,9 @@ class URLFetcher;
 
 namespace rappor {
 
-// Uploads logs from RapporService.  Logs are passed in via QueueLog(), stored
-// internally, and uploaded one at a time.  A queued log will be uploaded at a
-// fixed interval after the successful upload of the previous logs.  If an
+// Uploads logs from RapporServiceImpl.  Logs are passed in via QueueLog(),
+// stored internally, and uploaded one at a time.  A queued log will be uploaded
+// at a fixed interval after the successful upload of the previous logs.  If an
 // upload fails, the uploader will keep retrying the upload with an exponential
 // backoff interval.
 class LogUploader : public net::URLFetcherDelegate,

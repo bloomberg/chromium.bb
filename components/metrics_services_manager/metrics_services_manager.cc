@@ -11,7 +11,7 @@
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "components/variations/service/variations_service.h"
 
 namespace metrics_services_manager {
@@ -34,10 +34,10 @@ metrics::MetricsService* MetricsServicesManager::GetMetricsService() {
   return GetMetricsServiceClient()->GetMetricsService();
 }
 
-rappor::RapporService* MetricsServicesManager::GetRapporService() {
+rappor::RapporServiceImpl* MetricsServicesManager::GetRapporServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!rappor_service_) {
-    rappor_service_ = client_->CreateRapporService();
+    rappor_service_ = client_->CreateRapporServiceImpl();
     rappor_service_->Initialize(client_->GetURLRequestContext());
   }
   return rappor_service_.get();
@@ -70,7 +70,7 @@ MetricsServicesManager::GetMetricsServiceClient() {
 void MetricsServicesManager::UpdatePermissions(bool may_record,
                                                bool may_upload) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Stash the current permissions so that we can update the RapporService
+  // Stash the current permissions so that we can update the RapporServiceImpl
   // correctly when the Rappor preference changes.  The metrics recording
   // preference partially determines the initial rappor setting, and also
   // controls whether FINE metrics are sent.
@@ -85,7 +85,7 @@ void MetricsServicesManager::UpdateRunningServices() {
 
   if (client_->OnlyDoMetricsRecording()) {
     metrics->StartRecordingForTests();
-    GetRapporService()->Update(
+    GetRapporServiceImpl()->Update(
         rappor::UMA_RAPPOR_GROUP | rappor::SAFEBROWSING_RAPPOR_GROUP, false);
     return;
   }
@@ -119,7 +119,7 @@ void MetricsServicesManager::UpdateRunningServices() {
   if (client_->IsSafeBrowsingEnabled(on_safe_browsing_update_callback))
     recording_groups |= rappor::SAFEBROWSING_RAPPOR_GROUP;
 #endif  // defined(GOOGLE_CHROME_BUILD)
-  GetRapporService()->Update(recording_groups, may_upload_);
+  GetRapporServiceImpl()->Update(recording_groups, may_upload_);
 }
 
 void MetricsServicesManager::UpdateUploadPermissions(bool may_upload) {

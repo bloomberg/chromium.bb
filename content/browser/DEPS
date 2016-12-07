@@ -9,6 +9,7 @@ include_rules = [
   "+components/mime_util",
   "+components/payments",
   "+components/profile_service",
+  "+components/rappor/public",
   "+components/scheduler/common",
   "+components/tracing",
   "+components/url_formatter",

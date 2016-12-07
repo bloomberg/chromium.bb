@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "components/rappor/rappor_parameters.h"
+#include "components/rappor/public/rappor_parameters.h"
 #include "components/rappor/reports.h"
 
 namespace rappor {

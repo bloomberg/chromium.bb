@@ -43,7 +43,7 @@
 #include "components/component_updater/pref_names.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/version_info/version_info.h"
@@ -253,7 +253,7 @@ class UMAHistogramReporter {
       return;
     }
 
-    rappor::RapporService* rappor_service = nullptr;
+    rappor::RapporServiceImpl* rappor_service = nullptr;
     if (use_rappor)
       rappor_service = g_browser_process->rappor_service();
 
@@ -264,9 +264,9 @@ class UMAHistogramReporter {
       if (base::StringToUint(uws_string, &uws_id)) {
         RecordSparseHistogram(kFoundUwsMetricName, uws_id);
         if (rappor_service) {
-          rappor_service->RecordSample(kFoundUwsMetricName,
-                                       rappor::COARSE_RAPPOR_TYPE,
-                                       base::UTF16ToUTF8(uws_string));
+          rappor_service->RecordSampleString(kFoundUwsMetricName,
+                                             rappor::COARSE_RAPPOR_TYPE,
+                                             base::UTF16ToUTF8(uws_string));
         }
       } else {
         parse_error = true;

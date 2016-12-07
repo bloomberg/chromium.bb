@@ -4590,7 +4590,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcUnavailable) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
 
-  rappor::TestRapporService* rappor_service =
+  rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
   EXPECT_EQ(1, rappor_service->GetReportsCount());
   std::string sample;
@@ -4702,7 +4702,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoProfileAvailable) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS, 1);
 
-  rappor::TestRapporService* rappor_service =
+  rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
   EXPECT_EQ(1, rappor_service->GetReportsCount());
   std::string sample;
@@ -4755,7 +4755,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoNameAvailable) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME, 1);
 
-  rappor::TestRapporService* rappor_service =
+  rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
   EXPECT_EQ(1, rappor_service->GetReportsCount());
   std::string sample;
@@ -5022,7 +5022,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NamesHaveToMatch) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES, 1);
 
-  rappor::TestRapporService* rappor_service =
+  rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
   EXPECT_EQ(1, rappor_service->GetReportsCount());
   std::string sample;

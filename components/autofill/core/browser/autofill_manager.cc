@@ -60,7 +60,8 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -967,7 +968,7 @@ void AutofillManager::OnLoadedServerPredictions(
 
   // Parse and store the server predictions.
   FormStructure::ParseQueryResponse(std::move(response), queried_forms,
-                                    client_->GetRapporService());
+                                    client_->GetRapporServiceImpl());
 
   // Will log quality metrics for each FormStructure based on the presence of
   // autocomplete attributes, if available.
@@ -1287,8 +1288,8 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
 
 void AutofillManager::CollectRapportSample(const GURL& source_url,
                                            const char* metric_name) const {
-  if (source_url.is_valid() && client_->GetRapporService()) {
-    rappor::SampleDomainAndRegistryFromGURL(client_->GetRapporService(),
+  if (source_url.is_valid() && client_->GetRapporServiceImpl()) {
+    rappor::SampleDomainAndRegistryFromGURL(client_->GetRapporServiceImpl(),
                                             metric_name, source_url);
   }
 }
@@ -1303,9 +1304,10 @@ void AutofillManager::UploadFormDataAsyncCallback(
     const TimeTicks& interaction_time,
     const TimeTicks& submission_time,
     bool observed_submission) {
-  submitted_form->LogQualityMetrics(
-      load_time, interaction_time, submission_time, client_->GetRapporService(),
-      did_show_suggestions_, observed_submission);
+  submitted_form->LogQualityMetrics(load_time, interaction_time,
+                                    submission_time,
+                                    client_->GetRapporServiceImpl(),
+                                    did_show_suggestions_, observed_submission);
 
   if (submitted_form->ShouldBeCrowdsourced())
     UploadFormData(*submitted_form, observed_submission);

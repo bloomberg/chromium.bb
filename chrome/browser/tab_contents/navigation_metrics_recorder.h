@@ -10,7 +10,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace rappor {
-class RapporService;
+class RapporServiceImpl;
 }
 
 class NavigationMetricsRecorder
@@ -19,7 +19,8 @@ class NavigationMetricsRecorder
  public:
   ~NavigationMetricsRecorder() override;
 
-  void set_rappor_service_for_testing(rappor::RapporService* rappor_service);
+  void set_rappor_service_for_testing(
+      rappor::RapporServiceImpl* rappor_service);
 
  private:
   explicit NavigationMetricsRecorder(content::WebContents* web_contents);
@@ -30,7 +31,7 @@ class NavigationMetricsRecorder
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 
-  rappor::RapporService* rappor_service_;
+  rappor::RapporServiceImpl* rappor_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationMetricsRecorder);
 };

@@ -6,7 +6,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
-#include "components/rappor/rappor_utils.h"
+#include "components/rappor/public/rappor_utils.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace vr_shell {

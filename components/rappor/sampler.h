@@ -11,8 +11,8 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "components/rappor/rappor_parameters.h"
-#include "components/rappor/sample.h"
+#include "components/rappor/public/rappor_parameters.h"
+#include "components/rappor/public/sample.h"
 
 namespace rappor {
 
