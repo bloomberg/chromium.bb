@@ -5985,8 +5985,7 @@
         "boards": [
             "x86-generic",
             "arm-generic",
-            "amd64-generic",
-            "veyron_jaq"
+            "amd64-generic"
         ],
         "build_type": "chroot",
         "builder_class_name": "sdk_builders.ChrootSdkBuilder",
