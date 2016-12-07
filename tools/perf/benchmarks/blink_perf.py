@@ -119,6 +119,17 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     print log
 
 
+class _BlinkPerfMeasurementSlimmingPaintInvalidation(_BlinkPerfMeasurement):
+  """Measures blink perf with the new paint invalidation system (see:
+  https://goo.gl/eQczQW). The benchmarks using this measurement should be
+  removed when slimming paint invalidation ships."""
+  def CustomizeBrowserOptions(self, options):
+    _BlinkPerfMeasurement.CustomizeBrowserOptions(self, options)
+    options.AppendExtraBrowserArgs([
+        '--enable-blink-features=SlimmingPaintInvalidation'
+    ])
+
+
 class _SharedPywebsocketPageState(shared_page_state.SharedPageState):
   """Runs a pywebsocket server."""
 
@@ -267,6 +278,15 @@ class BlinkPerfPaint(perf_benchmark.PerfBenchmark):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/574483
 
 
+class BlinkPerfPaintSlimmingPaintInvalidation(BlinkPerfPaint):
+  tag = 'paint_slimmingpaintinvalidation'
+  test = _BlinkPerfMeasurementSlimmingPaintInvalidation
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.paint_slimmingpaintinvalidation'
+
+
 @benchmark.Disabled('win')  # crbug.com/488493
 class BlinkPerfParser(perf_benchmark.PerfBenchmark):
   tag = 'parser'
@@ -292,6 +312,15 @@ class BlinkPerfSVG(perf_benchmark.PerfBenchmark):
   def CreateStorySet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'SVG')
     return CreateStorySetFromPath(path, SKIPPED_FILE)
+
+
+class BlinkPerfSVGSlimmingPaintInvalidation(BlinkPerfSVG):
+  tag = 'svg_slimmingpaintinvalidation'
+  test = _BlinkPerfMeasurementSlimmingPaintInvalidation
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.svg_slimmingpaintinvalidation'
 
 
 class BlinkPerfShadowDOM(perf_benchmark.PerfBenchmark):
