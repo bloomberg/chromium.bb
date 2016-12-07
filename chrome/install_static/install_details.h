@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/install_static/install_constants.h"
+#include "chrome/install_static/install_modes.h"
 
 namespace install_static {
 
@@ -70,6 +71,13 @@ class InstallDetails {
   // string for a brand's primary install mode.
   const wchar_t* install_suffix() const {
     return payload_->mode->install_suffix;
+  }
+
+  // Returns the full name of the installed product (e.g. "Chrome SxS" for
+  // canary chrome).
+  std::wstring install_full_name() const {
+    return std::wstring(kProductPathName, kProductPathNameLength)
+        .append(install_suffix());
   }
 
   const InstallConstants& mode() const { return *payload_->mode; }

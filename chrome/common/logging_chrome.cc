@@ -61,6 +61,8 @@
 #if defined(OS_WIN)
 #include <initguid.h>
 #include "base/logging_win.h"
+#include "base/syslog_logging.h"
+#include "chrome/install_static/install_details.h"
 #endif
 
 namespace {
@@ -359,6 +361,10 @@ void InitChromeLogging(const base::CommandLine& command_line,
 #if defined(OS_WIN)
   // Enable trace control and transport through event tracing for Windows.
   logging::LogEventProvider::Initialize(kChromeTraceProviderName);
+
+  // Enable logging to the Windows Event Log.
+  logging::SetEventSourceName(base::UTF16ToASCII(
+      install_static::InstallDetails::Get().install_full_name()));
 #endif
 
   base::StatisticsRecorder::InitLogOnShutdown();

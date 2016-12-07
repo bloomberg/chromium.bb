@@ -14,6 +14,7 @@
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/install_static/install_constants.h"
+#include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"

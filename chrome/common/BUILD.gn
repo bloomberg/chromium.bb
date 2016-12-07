@@ -446,6 +446,7 @@ static_library("common") {
 
   if (is_win) {
     public_deps += [
+      "//chrome/install_static:install_static_util",
       "//components/dom_distiller/core",  # Needed by chrome_content_client.cc.
       "//third_party/wtl",
     ]

@@ -23,7 +23,7 @@
 
 #include <string>
 
-#include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_constants.h"
 
 // Include the brand-specific values. Each of these must define:
 // - enum InstallConstantIndex: named indices of the brand's kInstallModes
