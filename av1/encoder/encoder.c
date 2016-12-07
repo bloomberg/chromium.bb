@@ -4655,15 +4655,20 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   {
     /* Non-normative definition of current_frame_id ("frame counter" with
     * wraparound) */
-    int FidLen = FRAME_ID_LENGTH_MINUS7 + 7;
+    const int FidLen = FRAME_ID_LENGTH_MINUS7 + 7;
     if (cm->current_frame_id == -1) {
+      int lsb, msb;
 /* quasi-random initialization of current_frame_id for a key frame */
 #if CONFIG_AOM_HIGHBITDEPTH
-      int lsb = CONVERT_TO_SHORTPTR(cpi->Source->y_buffer)[0] & 0xff;
-      int msb = CONVERT_TO_SHORTPTR(cpi->Source->y_buffer)[1] & 0xff;
-#else
-      int lsb = cpi->Source->y_buffer[0];
-      int msb = cpi->Source->y_buffer[1];
+      if (cpi->Source->flags & YV12_FLAG_HIGHBITDEPTH) {
+        lsb = CONVERT_TO_SHORTPTR(cpi->Source->y_buffer)[0] & 0xff;
+        msb = CONVERT_TO_SHORTPTR(cpi->Source->y_buffer)[1] & 0xff;
+      } else {
+#endif
+        lsb = cpi->Source->y_buffer[0] & 0xff;
+        msb = cpi->Source->y_buffer[1] & 0xff;
+#if CONFIG_AOM_HIGHBITDEPTH
+      }
 #endif
       cm->current_frame_id = ((msb << 8) + lsb) % (1 << FidLen);
     } else {
