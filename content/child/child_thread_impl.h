@@ -51,7 +51,6 @@ class ScopedIPCSupport;
 namespace content {
 class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
-class ChildSharedBitmapManager;
 class FileSystemDispatcher;
 class InProcessChildThreadParams;
 class NotificationDispatcher;
@@ -129,10 +128,6 @@ class CONTENT_EXPORT ChildThreadImpl
   void SetThreadPriority(base::PlatformThreadId id,
                          base::ThreadPriority priority);
 #endif
-
-  ChildSharedBitmapManager* shared_bitmap_manager() const {
-    return shared_bitmap_manager_.get();
-  }
 
   ResourceDispatcher* resource_dispatcher() const {
     return resource_dispatcher_.get();
@@ -315,8 +310,6 @@ class CONTENT_EXPORT ChildThreadImpl
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 
   scoped_refptr<PushDispatcher> push_dispatcher_;
-
-  std::unique_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
 
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 

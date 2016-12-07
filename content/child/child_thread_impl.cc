@@ -36,7 +36,6 @@
 #include "content/child/child_histogram_message_filter.h"
 #include "content/child/child_process.h"
 #include "content/child/child_resource_message_filter.h"
-#include "content/child/child_shared_bitmap_manager.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/memory/child_memory_message_filter.h"
@@ -561,9 +560,6 @@ void ChildThreadImpl::Init(const Options& options) {
 #if defined(OS_ANDROID)
   g_quit_closure.Get().BindToMainThread();
 #endif
-
-  shared_bitmap_manager_.reset(
-      new ChildSharedBitmapManager(thread_safe_sender()));
 }
 
 ChildThreadImpl::~ChildThreadImpl() {

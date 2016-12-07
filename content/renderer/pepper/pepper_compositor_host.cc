@@ -17,12 +17,12 @@
 #include "cc/resources/texture_mailbox.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/child/child_shared_bitmap_manager.h"
-#include "content/child/child_thread_impl.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
+#include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -315,7 +315,7 @@ void PepperCompositorHost::UpdateLayer(
       DCHECK_EQ(desc.stride, desc.size.width * 4);
       DCHECK_EQ(desc.format, PP_IMAGEDATAFORMAT_RGBA_PREMUL);
       std::unique_ptr<cc::SharedBitmap> bitmap =
-          ChildThreadImpl::current()
+          RenderThreadImpl::current()
               ->shared_bitmap_manager()
               ->GetBitmapForSharedMemory(image_shm.get());
 
