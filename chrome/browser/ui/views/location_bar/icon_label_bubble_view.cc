@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
 #include "chrome/browser/ui/layout_constants.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -128,6 +129,10 @@ void IconLabelBubbleView::Layout() {
   const int label_width =
       std::max(0, width() - label_x - bubble_trailing_padding);
   label_->SetBounds(label_x, 0, label_width, height());
+}
+
+void IconLabelBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  label_->GetAccessibleNodeData(node_data);
 }
 
 void IconLabelBubbleView::OnNativeThemeChanged(

@@ -124,6 +124,11 @@ bool LocationIconView::OnActivate(const ui::Event& event) {
   return true;
 }
 
+void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  IconLabelBubbleView::GetAccessibleNodeData(node_data);
+  node_data->role = ui::AX_ROLE_POP_UP_BUTTON;
+}
+
 gfx::Size LocationIconView::GetMinimumSizeForLabelText(
     const base::string16& text) const {
   views::Label label(text, font_list());
