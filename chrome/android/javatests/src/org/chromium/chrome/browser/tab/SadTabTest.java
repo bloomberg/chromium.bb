@@ -8,7 +8,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.widget.Button;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -59,12 +58,14 @@ public class SadTabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     /**
      * Confirm that after a successive refresh of a failed tab that failed to load, change the
-     * button from "Reload" to "Send Feedback".
+     * button from "Reload" to "Send Feedback". If reloaded a third time and it is successful it
+     * reverts from "Send Feedback" to "Reload".
+     * @throws InterruptedException
+     * @throws IllegalArgumentException
      */
     @SmallTest
     @Feature({"SadTab"})
-    @DisabledTest(message = "crbug.com/670920")
-    public void testChangeSadButtonToFeedbackAfterFailedRefresh() {
+    public void testSadTabPageButtonText() throws IllegalArgumentException, InterruptedException {
         final Tab tab = getActivity().getActivityTab();
 
         assertFalse(tab.isShowingSadTab());
@@ -81,30 +82,13 @@ public class SadTabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 "Expected the sad tab button to have the feedback label after the tab button "
                 + "crashes twice in a row.",
                 getActivity().getString(R.string.sad_tab_send_feedback_label), actualText);
-    }
-
-    /**
-     * Confirm after two failures, if we refresh a third time and it's successful, and then we
-     * crash again, we do not show the "Send Feedback" button and instead show the "Reload" tab.
-     */
-    @SmallTest
-    @Feature({"SadTab"})
-    @DisabledTest(message = "crbug.com/670920")
-    public void testSadButtonRevertsBackToReloadAfterSuccessfulLoad() {
-        final Tab tab = getActivity().getActivityTab();
-
+        loadUrl("about:blank");
+        assertFalse("Expected about:blank to destroy the sad tab however the sad tab is still in "
+                + "view", tab.isShowingSadTab());
         simulateRendererKilled(tab, true);
-        reloadSadTab(tab);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.reload(); // Erases the sad tab page
-                tab.didFinishPageLoad(); // Resets the tab counter to 0
-            }
-        });
-        simulateRendererKilled(tab, true);
-        String actualText = getSadTabButton(tab).getText().toString();
-        assertEquals(getActivity().getString(R.string.sad_tab_reload_label), actualText);
+        actualText = getSadTabButton(tab).getText().toString();
+        assertEquals("Expected the sad tab button to have the reload label after a successful load",
+                getActivity().getString(R.string.sad_tab_reload_label), actualText);
     }
 
     /**
