@@ -258,6 +258,8 @@ MON_GIT_FETCH_RETRY_COUNT = 'chromeos/cbuildbot/git/fetch_retry_count'
 
 MON_BB_RETRY_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
                             'retry_build_count')
+MON_BB_CANCEL_BATCH_BUILDS_COUNT = ('chromeos/cbuildbot/buildbucket/'
+                                    'cancel_batch_builds_count')
 
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they

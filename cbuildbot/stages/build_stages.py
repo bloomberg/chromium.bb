@@ -12,15 +12,16 @@ import os
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
-from chromite.lib import config_lib
-from chromite.lib import constants
-from chromite.lib import failures_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import failures_lib
 from chromite.lib import git
+from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
@@ -130,6 +131,13 @@ class CleanUpStage(generic_stages.BuilderStage):
 
       if buildbucket_ids:
         logging.info('Going to cancel buildbucket_ids: %s', buildbucket_ids)
+
+        if not self._run.options.debug:
+          fields = {'build_type': self._run.config.build_type,
+                    'build_name': self._run.config.name}
+          metrics.Counter(constants.MON_BB_CANCEL_BATCH_BUILDS_COUNT).increment(
+              fields=fields)
+
         cancel_content = buildbucket_client.CancelBatchBuildsRequest(
             buildbucket_ids,
             dryrun=self._run.options.debug)
