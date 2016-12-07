@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/printing/ppd_provider.h"
@@ -87,6 +88,20 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   // chromeos::PrinterDiscoverer::Observer override:
   void OnPrintersFound(const std::vector<Printer>& printers) override;
   void OnDiscoveryDone() override;
+
+  // Invokes debugd to add the printer to CUPS.  If |ipp_everywhere| is true,
+  // automatic configuration will be attempted  and |ppd_path| is ignored.
+  // |ppd_path| is the path to a Postscript Printer Description file that will
+  // be used to configure the printer capabilities.  This file must be in
+  // Downloads or the PPD Cache.
+  void AddPrinterToCups(std::unique_ptr<Printer> printer,
+                        const base::FilePath& ppd_path,
+                        bool ipp_everywhere);
+
+  // Callback for PpdProvider::ResolveCallback.
+  void OnPPDResolved(std::unique_ptr<Printer> printer,
+                     printing::PpdProvider::CallbackResultCode result,
+                     base::FilePath ppd_path);
 
   std::unique_ptr<chromeos::PrinterDiscoverer> printer_discoverer_;
   std::unique_ptr<chromeos::printing::PpdProvider> ppd_provider_;

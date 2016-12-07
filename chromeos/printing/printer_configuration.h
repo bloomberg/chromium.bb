@@ -85,6 +85,11 @@ class CHROMEOS_EXPORT Printer {
   const std::string& uuid() const { return uuid_; }
   void set_uuid(const std::string& uuid) { uuid_ = uuid; }
 
+  // Returns true if the printer should be automatically configured using
+  // IPP Everywhere.  Computed using information from |ppd_reference_| and
+  // |uri_|.
+  bool IsIppEverywhere() const;
+
  private:
   // Globally unique identifier. Empty indicates a new printer.
   std::string id_;

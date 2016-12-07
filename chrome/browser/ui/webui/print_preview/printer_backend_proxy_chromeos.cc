@@ -96,12 +96,6 @@ void OnPrinterAddError(const PrinterSetupCallback& cb) {
   PostCallbackError(cb);
 }
 
-bool IsIppEverywhere(const chromeos::Printer& printer) {
-  // TODO(skau): Use uri, effective_make and effective_model to determine if
-  // we should do an IPP Everywhere configuration.
-  return false;
-}
-
 std::string GetPPDPath(const chromeos::Printer& printer) {
   // TODO(skau): Consult the PPD Provider for the correct file path.
   return printer.ppd_reference().user_supplied_ppd_url;
@@ -146,7 +140,7 @@ void ConfigurePrinterAndFetchCapabilities(Profile* profile,
   std::unique_ptr<chromeos::Printer> printer = prefs->GetPrinter(printer_name);
 
   // Check if configuration is viable.
-  bool ipp_everywhere = IsIppEverywhere(*printer);
+  bool ipp_everywhere = printer->IsIppEverywhere();
   std::string ppd_path = GetPPDPath(*printer);
   if (!ipp_everywhere && ppd_path.empty()) {
     HandlePrinterSetup(std::move(printer), PPD_NOT_FOUND, cb);
