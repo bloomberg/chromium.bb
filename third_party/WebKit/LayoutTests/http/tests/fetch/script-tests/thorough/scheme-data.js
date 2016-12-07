@@ -23,10 +23,14 @@ var TEST_TARGETS = [
 // data: requests with non-GET methods.
   [BASE_URL + 'url=' + encodeURIComponent(url) +
    '&mode=same-origin&method=POST',
-   [fetchRejected]],
+   [fetchResolved, noContentLength, hasContentType, noServerHeader, hasBody,
+    typeBasic],
+   [checkJsonpSuccess]],
   [BASE_URL + 'url=' + encodeURIComponent(url) +
    '&mode=same-origin&method=HEAD',
-   [fetchRejected]],
+   [fetchResolved, noContentLength, hasContentType, noServerHeader, hasBody,
+    typeBasic],
+   [checkJsonpSuccess]],
 
 // data: requests with same-origin redirects.
   [REDIRECT_URL + encodeURIComponent(url) + '&mode=same-origin&method=GET',

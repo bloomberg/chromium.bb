@@ -832,14 +832,6 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag,
 void FetchManager::Loader::performDataFetch() {
   ASSERT(m_request->url().protocolIsData());
 
-  // Spec: https://fetch.spec.whatwg.org/#concept-basic-fetch
-  // If |request|'s method is `GET` .... Otherwise, return a network error.
-  if (m_request->method() != HTTPNames::GET) {
-    performNetworkError(
-        "Only 'GET' method is allowed for data URLs in Fetch API.");
-    return;
-  }
-
   ResourceRequest request(m_request->url());
   request.setRequestContext(m_request->context());
   request.setUseStreamOnResponse(true);

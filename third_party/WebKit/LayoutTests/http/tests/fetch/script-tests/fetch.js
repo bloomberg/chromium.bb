@@ -37,6 +37,25 @@ promise_test(function(t) {
   }, 'fetch data: URL');
 
 promise_test(function(t) {
+    return fetch('data:,Foobar',
+                 {
+                   method: 'POST',
+                   body: 'Test'
+                 })
+      .then(function(response) {
+          assert_equals(response.status, 200);
+          assert_equals(response.statusText, 'OK');
+          assert_equals(response.headers.get('Content-Type'),
+                        'text/plain;charset=US-ASCII');
+          assert_equals(size(response.headers), 1);
+          return response.text();
+        })
+      .then(function(text) {
+          assert_equals(text, 'Foobar');
+        });
+  }, 'fetch data: URL with the POST method');
+
+promise_test(function(t) {
     return fetch('data:text/html;charset=utf-8;base64,5paH5a2X')
       .then(function(response) {
           assert_equals(response.status, 200);
