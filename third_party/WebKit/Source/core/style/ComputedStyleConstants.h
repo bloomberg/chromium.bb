@@ -334,7 +334,7 @@ enum class EWhiteSpace : unsigned {
   PreWrap,
   PreLine,
   Nowrap,
-  KhtmlNowrap
+  WebkitNowrap
 };
 
 // The order of this enum must match the order of the text align values in

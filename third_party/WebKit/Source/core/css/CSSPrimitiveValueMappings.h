@@ -2679,7 +2679,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(EWhiteSpace e)
     case EWhiteSpace::Nowrap:
       m_valueID = CSSValueNowrap;
       break;
-    case EWhiteSpace::KhtmlNowrap:
+    case EWhiteSpace::WebkitNowrap:
       m_valueID = CSSValueWebkitNowrap;
       break;
   }
@@ -2689,7 +2689,7 @@ template <>
 inline EWhiteSpace CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueWebkitNowrap:
-      return EWhiteSpace::KhtmlNowrap;
+      return EWhiteSpace::WebkitNowrap;
     case CSSValueNowrap:
       return EWhiteSpace::Nowrap;
     case CSSValuePre:

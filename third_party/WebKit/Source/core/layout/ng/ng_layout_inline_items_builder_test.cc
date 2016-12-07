@@ -59,7 +59,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseSpaces) {
   String collapsed("text text text text");
   TestWhitespaceValue(collapsed, input, EWhiteSpace::Normal);
   TestWhitespaceValue(collapsed, input, EWhiteSpace::Nowrap);
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::KhtmlNowrap);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::WebkitNowrap);
   TestWhitespaceValue(collapsed, input, EWhiteSpace::PreLine);
   TestWhitespaceValue(input, input, EWhiteSpace::Pre);
   TestWhitespaceValue(input, input, EWhiteSpace::PreWrap);
@@ -70,7 +70,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseTabs) {
   String collapsed("text text text text");
   TestWhitespaceValue(collapsed, input, EWhiteSpace::Normal);
   TestWhitespaceValue(collapsed, input, EWhiteSpace::Nowrap);
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::KhtmlNowrap);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::WebkitNowrap);
   TestWhitespaceValue(collapsed, input, EWhiteSpace::PreLine);
   TestWhitespaceValue(input, input, EWhiteSpace::Pre);
   TestWhitespaceValue(input, input, EWhiteSpace::PreWrap);
