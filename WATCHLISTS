@@ -810,6 +810,11 @@
     'push_messaging': {
       'filepath': 'push_messaging'
     },
+    'reading_list': {
+      'filepath': 'components/reading_list|'\
+                  'ios/chrome/browser/reading_list|'\
+                  'ios/chrome/browser/ui/reading_list',
+    },
     'remoting': {
       'filepath': 'remoting/' \
                   '|testing/chromoting'
@@ -1974,6 +1979,7 @@
     'push_messaging': ['harkness+watch@chromium.org',
                        'johnme+watch@chromium.org',
                        'peter@chromium.org'],
+    'reading_list': ['stkhapugin@chromium.org'],
     'remoting': ['chromoting-reviews@chromium.org'],
     'rlz_id': ['alito+watch@chromium.org',
                'gab+watch@chromium.org',
