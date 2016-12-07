@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
 #include "cc/playback/display_item_list.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -100,7 +101,7 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
     }
     SkMatrix matrix;
     matrix.setRectToRect(*src, dst, SkMatrix::kFill_ScaleToFit);
-    matrix.postConcat(ctm);
+    matrix.preConcat(ctm);
     AddImage(sk_ref_sp(image), *src, MapRect(ctm, dst), matrix, paint);
   }
 
@@ -110,6 +111,30 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
                        const SkPaint* paint) override {
     // No cc embedder issues image nine calls.
     NOTREACHED();
+  }
+
+  void onDrawRect(const SkRect& r, const SkPaint& paint) override {
+    AddPaintImage(r, paint);
+  }
+
+  void onDrawPath(const SkPath& path, const SkPaint& paint) override {
+    AddPaintImage(path.getBounds(), paint);
+  }
+
+  void onDrawOval(const SkRect& r, const SkPaint& paint) override {
+    AddPaintImage(r, paint);
+  }
+
+  void onDrawArc(const SkRect& r,
+                 SkScalar start_angle,
+                 SkScalar sweep_angle,
+                 bool use_center,
+                 const SkPaint& paint) override {
+    AddPaintImage(r, paint);
+  }
+
+  void onDrawRRect(const SkRRect& rr, const SkPaint& paint) override {
+    AddPaintImage(rr.rect(), paint);
   }
 
   SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override {
@@ -176,6 +201,26 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
     image_set_->push_back(std::make_pair(
         DrawImage(std::move(image), src_irect, filter_quality, matrix),
         SafeClampPaintRectToSize(paint_rect, canvas_size_)));
+  }
+
+  // Currently this function only handles extracting images from SkImageShaders
+  // embedded in SkPaints. Other embedded image cases, such as SkPictures,
+  // are not yet handled.
+  void AddPaintImage(const SkRect& rect, const SkPaint& paint) {
+    SkShader* shader = paint.getShader();
+    if (shader) {
+      SkMatrix matrix;
+      SkShader::TileMode xy[2];
+      SkImage* image = shader->isAImage(&matrix, xy);
+      if (image) {
+        const SkMatrix& ctm = getTotalMatrix();
+        matrix.postConcat(ctm);
+        // TODO(ericrk): Handle cases where we only need a sub-rect from the
+        // image.
+        AddImage(sk_ref_sp(image), SkRect::MakeFromIRect(image->bounds()),
+                 MapRect(ctm, rect), matrix, &paint);
+      }
+    }
   }
 
   std::vector<std::pair<DrawImage, gfx::Rect>>* image_set_;

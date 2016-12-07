@@ -24,7 +24,6 @@ class ImageHijackCanvas : public SkNWayCanvas {
   void onDrawPicture(const SkPicture* picture,
                      const SkMatrix* matrix,
                      const SkPaint* paint) override;
-
   void onDrawImage(const SkImage* image,
                    SkScalar x,
                    SkScalar y,
@@ -34,6 +33,15 @@ class ImageHijackCanvas : public SkNWayCanvas {
                        const SkRect& dst,
                        const SkPaint* paint,
                        SrcRectConstraint constraint) override;
+  void onDrawRect(const SkRect&, const SkPaint&) override;
+  void onDrawPath(const SkPath& path, const SkPaint& paint) override;
+  void onDrawOval(const SkRect& r, const SkPaint& paint) override;
+  void onDrawArc(const SkRect& r,
+                 SkScalar start_angle,
+                 SkScalar sweep_angle,
+                 bool use_center,
+                 const SkPaint& paint) override;
+  void onDrawRRect(const SkRRect& rr, const SkPaint& paint) override;
   void onDrawImageNine(const SkImage* image,
                        const SkIRect& center,
                        const SkRect& dst,

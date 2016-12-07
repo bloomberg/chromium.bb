@@ -7,6 +7,7 @@
 #include "base/optional.h"
 #include "cc/playback/discardable_image_map.h"
 #include "cc/tiles/image_decode_cache.h"
+#include "third_party/skia/include/core/SkPath.h"
 
 namespace cc {
 namespace {
@@ -38,9 +39,18 @@ class ScopedDecodedImageLock {
     }
   }
 
+  ScopedDecodedImageLock(ScopedDecodedImageLock&& from)
+      : image_decode_cache_(from.image_decode_cache_),
+        draw_image_(std::move(from.draw_image_)),
+        decoded_draw_image_(std::move(from.decoded_draw_image_)),
+        decoded_paint_(std::move(from.decoded_paint_)) {
+    from.image_decode_cache_ = nullptr;
+  }
+
   ~ScopedDecodedImageLock() {
-    image_decode_cache_->DrawWithImageFinished(draw_image_,
-                                               decoded_draw_image_);
+    if (image_decode_cache_)
+      image_decode_cache_->DrawWithImageFinished(draw_image_,
+                                                 decoded_draw_image_);
   }
 
   const DecodedDrawImage& decoded_image() const { return decoded_draw_image_; }
@@ -53,6 +63,59 @@ class ScopedDecodedImageLock {
   DrawImage draw_image_;
   DecodedDrawImage decoded_draw_image_;
   base::Optional<SkPaint> decoded_paint_;
+};
+
+// Encapsulates a ScopedDecodedImageLock and an SkPaint. Use of this class
+// ensures that the ScopedDecodedImageLock outlives the dependent SkPaint.
+class ScopedImagePaint {
+ public:
+  // Tries to create a ScopedImagePaint for the provided SkPaint. If a
+  // the SkPaint does not contain an image that we support replacing,
+  // an empty base::Optional will be returned.
+  static base::Optional<ScopedImagePaint> TryCreate(
+      ImageDecodeCache* image_decode_cache,
+      const SkMatrix& ctm,
+      const SkPaint& paint) {
+    SkShader* shader = paint.getShader();
+    if (!shader)
+      return base::Optional<ScopedImagePaint>();
+
+    SkMatrix matrix;
+    SkShader::TileMode xy[2];
+    SkImage* image = shader->isAImage(&matrix, xy);
+    if (!image)
+      return base::Optional<ScopedImagePaint>();
+
+    SkMatrix total_image_matrix = matrix;
+    total_image_matrix.preConcat(ctm);
+
+    ScopedDecodedImageLock scoped_lock(
+        image_decode_cache, sk_ref_sp(image),
+        SkRect::MakeIWH(image->width(), image->height()), total_image_matrix,
+        &paint);
+    const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
+    if (!decoded_image.image())
+      return base::Optional<ScopedImagePaint>();
+
+    bool need_scale = !decoded_image.is_scale_adjustment_identity();
+    if (need_scale) {
+      matrix.preScale(1.f / decoded_image.scale_adjustment().width(),
+                      1.f / decoded_image.scale_adjustment().height());
+    }
+    SkPaint scratch_paint = paint;
+    scratch_paint.setShader(
+        decoded_image.image()->makeShader(xy[0], xy[1], &matrix));
+    return ScopedImagePaint(std::move(scoped_lock), std::move(scratch_paint));
+  }
+
+  const SkPaint& paint() { return paint_; }
+
+ private:
+  ScopedImagePaint(ScopedDecodedImageLock lock, SkPaint paint)
+      : lock_(std::move(lock)), paint_(std::move(paint)) {}
+
+  ScopedDecodedImageLock lock_;
+  SkPaint paint_;
 };
 
 }  // namespace
@@ -142,6 +205,61 @@ void ImageHijackCanvas::onDrawImageRect(const SkImage* image,
   }
   SkNWayCanvas::onDrawImageRect(decoded_image.image().get(), &adjusted_src, dst,
                                 decoded_paint, constraint);
+}
+
+void ImageHijackCanvas::onDrawRect(const SkRect& r, const SkPaint& paint) {
+  base::Optional<ScopedImagePaint> image_paint =
+      ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
+  if (!image_paint.has_value()) {
+    SkNWayCanvas::onDrawRect(r, paint);
+    return;
+  }
+  SkNWayCanvas::onDrawRect(r, image_paint.value().paint());
+}
+
+void ImageHijackCanvas::onDrawPath(const SkPath& path, const SkPaint& paint) {
+  base::Optional<ScopedImagePaint> image_paint =
+      ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
+  if (!image_paint.has_value()) {
+    SkNWayCanvas::onDrawPath(path, paint);
+    return;
+  }
+  SkNWayCanvas::onDrawPath(path, image_paint.value().paint());
+}
+
+void ImageHijackCanvas::onDrawOval(const SkRect& r, const SkPaint& paint) {
+  base::Optional<ScopedImagePaint> image_paint =
+      ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
+  if (!image_paint.has_value()) {
+    SkNWayCanvas::onDrawOval(r, paint);
+    return;
+  }
+  SkNWayCanvas::onDrawOval(r, image_paint.value().paint());
+}
+
+void ImageHijackCanvas::onDrawArc(const SkRect& r,
+                                  SkScalar start_angle,
+                                  SkScalar sweep_angle,
+                                  bool use_center,
+                                  const SkPaint& paint) {
+  base::Optional<ScopedImagePaint> image_paint =
+      ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
+  if (!image_paint.has_value()) {
+    SkNWayCanvas::onDrawArc(r, start_angle, sweep_angle, use_center, paint);
+    return;
+  }
+  SkNWayCanvas::onDrawArc(r, start_angle, sweep_angle, use_center,
+                          image_paint.value().paint());
+}
+
+void ImageHijackCanvas::onDrawRRect(const SkRRect& rr, const SkPaint& paint) {
+  base::Optional<ScopedImagePaint> image_paint =
+      ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
+  if (!image_paint.has_value()) {
+    SkNWayCanvas::onDrawRRect(rr, paint);
+    return;
+  }
+  SkNWayCanvas::onDrawRRect(rr, image_paint.value().paint());
 }
 
 void ImageHijackCanvas::onDrawImageNine(const SkImage* image,
