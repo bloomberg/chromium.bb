@@ -42,6 +42,7 @@ modules/serviceworkers/ServiceWorkerRegistration
 modules/speech/SpeechRecognition
 modules/speech/SpeechSynthesis
 modules/speech/SpeechSynthesisUtterance
+modules/vr/VRDisplay
 modules/webaudio/AudioContext
 modules/webaudio/AudioNode
 modules/webmidi/MIDIAccess

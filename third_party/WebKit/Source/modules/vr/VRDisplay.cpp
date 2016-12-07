@@ -14,6 +14,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "modules/EventTargetModules.h"
 #include "modules/vr/NavigatorVR.h"
 #include "modules/vr/VRController.h"
 #include "modules/vr/VRDisplayCapabilities.h"
@@ -78,7 +79,9 @@ class VRDisplayFrameRequestCallback : public FrameRequestCallback {
 VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
                      device::mojom::blink::VRDisplayPtr display,
                      device::mojom::blink::VRDisplayClientRequest request)
-    : m_navigatorVR(navigatorVR),
+    : ActiveScriptWrappable(this),
+      ContextLifecycleObserver(navigatorVR->document()),
+      m_navigatorVR(navigatorVR),
       m_isConnected(false),
       m_isPresenting(false),
       m_isValidDeviceForPresenting(true),
@@ -206,7 +209,7 @@ VREyeParameters* VRDisplay::getEyeParameters(const String& whichEye) {
 }
 
 int VRDisplay::requestAnimationFrame(FrameRequestCallback* callback) {
-  Document* doc = m_navigatorVR->document();
+  Document* doc = this->document();
   if (!doc)
     return 0;
 
@@ -240,7 +243,7 @@ void VRDisplay::OnFocus() {
   // frames should be tied to the presenting VR display (e.g. should be serviced
   // by GVR library callbacks on Android), and not the doc frame rate.
   if (!m_animationCallbackRequested) {
-    Document* doc = m_navigatorVR->document();
+    Document* doc = this->document();
     if (!doc)
       return;
     doc->requestAnimationFrame(new VRDisplayFrameRequestCallback(this));
@@ -436,7 +439,7 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* scriptState) {
 }
 
 void VRDisplay::beginPresent() {
-  Document* doc = m_navigatorVR->document();
+  Document* doc = this->document();
   std::unique_ptr<UserGestureIndicator> gestureIndicator;
   if (m_capabilities->hasExternalDisplay()) {
     forceExitPresent();
@@ -591,7 +594,7 @@ void VRDisplay::submitFrame() {
   if (!m_display)
     return;
 
-  Document* doc = m_navigatorVR->document();
+  Document* doc = this->document();
   if (!m_isPresenting) {
     if (doc) {
       doc->addConsoleMessage(ConsoleMessage::create(
@@ -718,7 +721,7 @@ void VRDisplay::onFullscreenCheck(TimerBase*) {
     }
     m_reenteredFullscreen = true;
     auto canvas = m_layer.source();
-    Document* doc = m_navigatorVR->document();
+    Document* doc = this->document();
     std::unique_ptr<UserGestureIndicator> gestureIndicator;
     if (doc) {
       gestureIndicator =
@@ -741,7 +744,27 @@ void VRDisplay::dispose() {
   m_binding.Close();
 }
 
+ExecutionContext* VRDisplay::getExecutionContext() const {
+  return ContextLifecycleObserver::getExecutionContext();
+}
+
+const AtomicString& VRDisplay::interfaceName() const {
+  return EventTargetNames::VRDisplay;
+}
+
+void VRDisplay::contextDestroyed() {
+  forceExitPresent();
+}
+
+bool VRDisplay::hasPendingActivity() const {
+  // Prevent V8 from garbage collecting the wrapper object if there are
+  // event listeners attached to it.
+  return getExecutionContext() && hasEventListeners();
+}
+
 DEFINE_TRACE(VRDisplay) {
+  EventTargetWithInlineData::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
   visitor->trace(m_navigatorVR);
   visitor->trace(m_capabilities);
   visitor->trace(m_stageParameters);
