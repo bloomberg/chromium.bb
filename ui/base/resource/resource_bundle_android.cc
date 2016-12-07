@@ -113,7 +113,7 @@ std::string ResourceBundle::LoadLocaleResources(
     return std::string();
   }
 
-  locale_resources_data_.reset(data_pack.release());
+  locale_resources_data_ = std::move(data_pack);
   return app_locale;
 }
 

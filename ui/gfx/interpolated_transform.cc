@@ -337,7 +337,7 @@ void InterpolatedTransformAboutPivot::Init(const gfx::Point& pivot,
 
   pre_transform->SetChild(xform);
   xform->SetChild(post_transform.release());
-  transform_.reset(pre_transform.release());
+  transform_ = std::move(pre_transform);
 }
 
 InterpolatedMatrixTransform::InterpolatedMatrixTransform(

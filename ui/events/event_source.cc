@@ -62,7 +62,7 @@ EventDispatchDetails EventSource::SendEventToProcessor(Event* event) {
     details = DeliverEventToProcessor(new_event.get());
     if (details.dispatcher_destroyed)
       return details;
-    rewritten_event.reset(new_event.release());
+    rewritten_event = std::move(new_event);
   }
   return EventDispatchDetails();
 }

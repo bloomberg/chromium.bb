@@ -25,7 +25,7 @@ void CompositorThreadEventQueue::Queue(std::unique_ptr<EventWithCallback> event,
 std::unique_ptr<EventWithCallback> CompositorThreadEventQueue::Pop() {
   std::unique_ptr<EventWithCallback> result;
   if (!queue_.empty()) {
-    result.reset(queue_.front().release());
+    result = std::move(queue_.front());
     queue_.pop_front();
   }
   return result;

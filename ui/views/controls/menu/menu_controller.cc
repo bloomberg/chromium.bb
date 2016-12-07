@@ -426,8 +426,7 @@ MenuItemView* MenuController::Run(Widget* parent,
     state_.hot_button = hot_button_;
     hot_button_ = nullptr;
     // We're already showing, push the current state.
-    menu_stack_.push_back(
-        std::make_pair(state_, make_linked_ptr(pressed_lock_.release())));
+    menu_stack_.push_back(std::make_pair(state_, std::move(pressed_lock_)));
 
     // The context menu should be owned by the same parent.
     DCHECK_EQ(owner_, parent);
@@ -856,7 +855,7 @@ void MenuController::ViewHierarchyChanged(
     // removed while a menu is up.
     if (details.child == hot_button_) {
       hot_button_ = nullptr;
-      for (auto nested_state : menu_stack_) {
+      for (auto&& nested_state : menu_stack_) {
         State& state = nested_state.first;
         if (details.child == state.hot_button)
           state.hot_button = nullptr;
@@ -1563,9 +1562,8 @@ bool MenuController::ShowContextMenu(MenuItemView* menu_item,
 }
 
 void MenuController::CloseAllNestedMenus() {
-  for (std::list<NestedState>::iterator i = menu_stack_.begin();
-       i != menu_stack_.end(); ++i) {
-    State& state = i->first;
+  for (auto&& nested_menu : menu_stack_) {
+    State& state = nested_menu.first;
     MenuItemView* last_item = state.item;
     for (MenuItemView* item = last_item; item;
          item = item->GetParentMenuItem()) {
@@ -2614,7 +2612,7 @@ MenuItemView* MenuController::ExitMenuRun() {
   }
 #endif
 
-  linked_ptr<MenuButton::PressedLock> nested_pressed_lock;
+  std::unique_ptr<MenuButton::PressedLock> nested_pressed_lock;
   bool nested_menu = !menu_stack_.empty();
   if (nested_menu) {
     DCHECK(!menu_stack_.empty());
@@ -2623,7 +2621,7 @@ MenuItemView* MenuController::ExitMenuRun() {
     state_ = menu_stack_.back().first;
     pending_state_ = menu_stack_.back().first;
     hot_button_ = state_.hot_button;
-    nested_pressed_lock = menu_stack_.back().second;
+    nested_pressed_lock = std::move(menu_stack_.back().second);
     menu_stack_.pop_back();
     // Even though the menus are nested, there may not be nested delegates.
     if (delegate_stack_.size() > 1) {
@@ -2664,7 +2662,7 @@ MenuItemView* MenuController::ExitMenuRun() {
 
   // Reset our pressed lock and hot-tracked state to the previous state's, if
   // they were active. The lock handles the case if the button was destroyed.
-  pressed_lock_.reset(nested_pressed_lock.release());
+  pressed_lock_ = std::move(nested_pressed_lock);
   if (hot_button_)
     hot_button_->SetHotTracked(true);
 

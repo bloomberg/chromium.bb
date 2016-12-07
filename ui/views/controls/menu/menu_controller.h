@@ -14,7 +14,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "ui/events/event.h"
@@ -593,7 +592,8 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // If not empty, it means we're nested. When Run is invoked from within
   // Run, the current state (state_) is pushed onto menu_stack_. This allows
   // MenuController to restore the state when the nested run returns.
-  typedef std::pair<State, linked_ptr<MenuButton::PressedLock> > NestedState;
+  using NestedState =
+      std::pair<State, std::unique_ptr<MenuButton::PressedLock>>;
   std::list<NestedState> menu_stack_;
 
   // When Run is invoked during an active Run, it may be called from a separate
