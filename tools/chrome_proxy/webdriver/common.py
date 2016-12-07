@@ -32,6 +32,10 @@ def ParseFlags():
   parser.add_argument('--via_header_value', metavar='via_header', nargs=1,
     default='1.1 Chrome-Compression-Proxy', help='What the via should match to '
     'be considered valid')
+  parser.add_argument('--android', help='If given, attempts to run the test on '
+    'Android via adb. Ignores usage of --chrome_exec', action='store_true')
+  parser.add_argument('--android_package', nargs=1,
+    default='com.android.chrome', help='Set the android package for Chrome')
   parser.add_argument('--chrome_exec', nargs=1, type=str, help='The path to '
     'the Chrome or Chromium executable')
   parser.add_argument('chrome_driver', nargs=1, type=str, help='The path to '
@@ -110,16 +114,24 @@ class TestDriver:
 
   def _StartDriver(self):
     """Parses the flags to pass to Chromium, then starts the ChromeDriver.
+
+    If running Android, the Android package name is passed to ChromeDriver here.
     """
     self._OverrideChromeArgs()
-    options = Options()
-    for arg in self._chrome_args:
-      options.add_argument(arg)
-    capabilities = {'loggingPrefs': {'performance': 'INFO'}}
-    if self._flags.chrome_exec:
+    capabilities = {
+      'loggingPrefs': {'performance': 'INFO'},
+      'chromeOptions': {
+        'args': list(self._chrome_args)
+      }
+    }
+    if self._flags.android:
+      capabilities['chromeOptions'].update({
+        'androidPackage': self._flags.android_package,
+      })
+    elif self._flags.chrome_exec:
       capabilities['chrome.binary'] = self._flags.chrome_exec
     driver = webdriver.Chrome(executable_path=self._flags.chrome_driver[0],
-      chrome_options=options, desired_capabilities=capabilities)
+      desired_capabilities=capabilities)
     driver.command_executor._commands.update({
       'getAvailableLogTypes': ('GET', '/session/$sessionId/log/types'),
       'getLog': ('POST', '/session/$sessionId/log')})
