@@ -29,6 +29,8 @@ var ExportView = (function() {
     this.saveStatusText_ = $(ExportView.SAVE_STATUS_TEXT_ID);
 
     this.userCommentsTextArea_ = $(ExportView.USER_COMMENTS_TEXT_AREA_ID);
+    this.enableSaveFileButton_(false);
+    this.userCommentsTextArea_.onkeyup = this.onUserCommentsUpdated_.bind(this);
 
     // Track blob for previous log dump so it can be revoked when a new dump is
     // saved.
@@ -125,10 +127,7 @@ var ExportView = (function() {
      */
     createLogDump_: function(callback) {
       // Get an explanation for the dump file (this is mandatory!)
-      var userComments = this.getNonEmptyUserComments_();
-      if (userComments == undefined) {
-        return;
-      }
+      var userComments = this.userCommentsTextArea_.value;
 
       this.setSaveFileStatus('Preparing data...', true);
 
@@ -154,30 +153,14 @@ var ExportView = (function() {
      */
     setUserComments_: function(userComments) {
       this.userCommentsTextArea_.value = userComments;
+      this.onUserCommentsUpdated_();
     },
 
     /**
-     * Fetches the user comments for this dump. If none were entered, warns the
-     * user and returns undefined. Otherwise returns the comments text.
+     * User comments are updated.
      */
-    getNonEmptyUserComments_: function() {
-      var value = this.userCommentsTextArea_.value;
-
-      // Reset the class name in case we had hilighted it earlier.
-      this.userCommentsTextArea_.className = '';
-
-      // We don't accept empty explanations. We don't care what is entered, as
-      // long as there is something (a single whitespace would work).
-      if (value == '') {
-        // Put a big obnoxious red border around the text area.
-        this.userCommentsTextArea_.className =
-            'export-view-explanation-warning';
-        alert('Please fill in the text field!');
-        this.userCommentsTextArea_.focus();
-        return undefined;
-      }
-
-      return value;
+    onUserCommentsUpdated_: function() {
+      this.enableSaveFileButton_(this.userCommentsTextArea_.value != '');
     },
 
     /**
