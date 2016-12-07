@@ -69,11 +69,6 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
                                                        int speed) {
   AV1_COMMON *const cm = &cpi->common;
 
-  // Limit memory usage for high resolutions
-  if (AOMMIN(cm->width, cm->height) > 1080) {
-    sf->use_upsampled_references = 0;
-  }
-
   if (speed >= 1) {
     if (AOMMIN(cm->width, cm->height) >= 720) {
       sf->disable_split_mask =
@@ -456,8 +451,14 @@ static void set_rt_speed_feature(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed,
 void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi) {
   SPEED_FEATURES *const sf = &cpi->sf;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+  AV1_COMMON *const cm = &cpi->common;
   RD_OPT *const rd = &cpi->rd;
   int i;
+
+  // Limit memory usage for high resolutions
+  if (AOMMIN(cm->width, cm->height) > 1080) {
+    sf->use_upsampled_references = 0;
+  }
 
   if (oxcf->mode == REALTIME) {
     set_rt_speed_feature_framesize_dependent(cpi, sf, oxcf->speed);
