@@ -24,8 +24,6 @@ InspectorTest.setUpTestSuite = function(next)
 
         for (var key in SDK.DOMModel.Events) {
             var eventName = SDK.DOMModel.Events[key];
-            if (eventName === SDK.DOMModel.Events.MarkersChanged || eventName === SDK.DOMModel.Events.DOMMutated)
-                continue;
             InspectorTest.domModel.addEventListener(eventName, InspectorTest.recordEvent.bind(InspectorTest, eventName));
         }
 
@@ -35,7 +33,7 @@ InspectorTest.setUpTestSuite = function(next)
 
 InspectorTest.recordEvent = function(eventName, event)
 {
-    if (!event.data)
+    if (!event.data || event.type === SDK.DOMModel.Events.MarkersChanged || event.type === SDK.DOMModel.Events.DOMMutated)
         return;
     var node = event.data.node || event.data;
     var parent = event.data.parent;

@@ -9,17 +9,17 @@ function createIFrame() {
 }
 
 function test() {
-    function onRequest(eventType, event)
+    function onRequest(event)
     {
         var request = event.data;
         if (request.name() === 'done') {
             InspectorTest.completeTest();
             return;
         }
-        InspectorTest.addResult(eventType + ": " + request.name());
+        InspectorTest.addResult(event.type.toString() + ": " + request.name());
     }
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest.bind(null, "RequestStarted"));
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest.bind(null, "RequestFinished"));
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
 
     InspectorTest.evaluateInPage("createIFrame()");
 }

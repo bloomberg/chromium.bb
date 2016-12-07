@@ -236,8 +236,6 @@ InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
         return this._target;
     }
 
-    setBeforePausedCallback(callback) { }
-
     _targetDisposed() { }
 
     debuggerEnabled()
