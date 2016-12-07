@@ -102,7 +102,7 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolve(
     ASSERT_NOT_REACHED();
     return;
   }
-  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
+  if (getExecutionContext()->isContextDestroyed())
     return;
   m_resolved = value;
   resolveOrReject(Resolved);
@@ -116,7 +116,7 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reject(
     ASSERT_NOT_REACHED();
     return;
   }
-  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
+  if (getExecutionContext()->isContextDestroyed())
     return;
   m_rejected = value;
   resolveOrReject(Rejected);

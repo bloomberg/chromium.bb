@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperties.h"
 #include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/Compiler.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -24,10 +23,7 @@ class ScriptState;
 
 // TODO(yhirano): Remove NEVER_INLINE once we find the cause of crashes.
 class CORE_EXPORT ScriptPromisePropertyBase
-    : public GarbageCollectedFinalized<ScriptPromisePropertyBase>,
-      public ContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptPromisePropertyBase);
-
+    : public GarbageCollectedFinalized<ScriptPromisePropertyBase> {
  public:
   virtual ~ScriptPromisePropertyBase();
 
@@ -43,7 +39,7 @@ class CORE_EXPORT ScriptPromisePropertyBase
     Rejected,
   };
   State getState() const { return m_state; }
-
+  ExecutionContext* getExecutionContext() const;
   ScriptPromise promise(DOMWrapperWorld&);
 
   DECLARE_VIRTUAL_TRACE();
@@ -85,6 +81,7 @@ class CORE_EXPORT ScriptPromisePropertyBase
   v8::Local<v8::String> promiseName();
   v8::Local<v8::String> resolverName();
 
+  Member<ExecutionContext> m_executionContext;
   v8::Isolate* m_isolate;
   Name m_name;
   State m_state;
