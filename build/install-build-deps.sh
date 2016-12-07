@@ -26,6 +26,45 @@ usage() {
   exit 1
 }
 
+# Waits for the user to press 'Y' or 'N'. Either uppercase of lowercase is
+# accepted. Returns 0 for 'Y' and 1 for 'N'. If an optional parameter has
+# been provided to yes_no(), the function also accepts RETURN as a user input.
+# The parameter specifies the exit code that should be returned in that case.
+# The function will echo the user's selection followed by a newline character.
+# Users can abort the function by pressing CTRL-C. This will call "exit 1".
+yes_no() {
+  if [ 0 -ne "${do_default-0}" ] ; then
+    [ $1 -eq 0 ] && echo "Y" || echo "N"
+    return $1
+  fi
+  local c
+  while :; do
+    c="$(trap 'stty echo -iuclc icanon 2>/dev/null' EXIT INT TERM QUIT
+         stty -echo iuclc -icanon 2>/dev/null
+         dd count=1 bs=1 2>/dev/null | od -An -tx1)"
+    case "$c" in
+      " 0a") if [ -n "$1" ]; then
+               [ $1 -eq 0 ] && echo "Y" || echo "N"
+               return $1
+             fi
+             ;;
+      " 79") echo "Y"
+             return 0
+             ;;
+      " 6e") echo "N"
+             return 1
+             ;;
+      "")    echo "Aborted" >&2
+             exit 1
+             ;;
+      *)     # The user pressed an unrecognized key. As we are not echoing
+             # any incorrect user input, alert the user by ringing the bell.
+             (tput bel) 2>/dev/null
+             ;;
+    esac
+  done
+}
+
 # Checks whether a particular package is available in the repos.
 # USAGE: $ package_exists <package name>
 package_exists() {
@@ -152,9 +191,45 @@ fi
 lib32_list="linux-libc-dev:i386"
 
 # arm cross toolchain packages needed to build chrome on armhf
-arm_list="libc6-dev-armhf-cross
-          linux-libc-dev-armhf-cross
-          g++-arm-linux-gnueabihf"
+EM_REPO="deb http://emdebian.org/tools/debian/ jessie main"
+EM_SOURCE=$(cat <<EOF
+# Repo added by Chromium $0
+${EM_REPO}
+# deb-src http://emdebian.org/tools/debian/ jessie main
+EOF
+)
+EM_ARCHIVE_KEY_FINGER="084C6C6F39159EDB67969AA87DE089671804772E"
+GPP_ARM_PACKAGE="g++-arm-linux-gnueabihf"
+case $lsb_release in
+  "jessie")
+    eval $(apt-config shell APT_SOURCESDIR 'Dir::Etc::sourceparts/d')
+    CROSSTOOLS_LIST="${APT_SOURCESDIR}/crosstools.list"
+    arm_list="libc6-dev:armhf
+              linux-libc-dev:armhf"
+    if test "$do_inst_arm" = "1"; then
+      if $(dpkg-query -W ${GPP_ARM_PACKAGE} &>/dev/null); then
+        arm_list+=" ${GPP_ARM_PACKAGE}"
+      else
+        echo "The Debian Cross-toolchains repository is necessary to"
+        echo "cross-compile Chromium for arm."
+        echo -n "Do you want me to add it for you (y/N) "
+        if yes_no 1; then
+          gpg --keyserver pgp.mit.edu --recv-keys ${EM_ARCHIVE_KEY_FINGER}
+          gpg -a --export ${EM_ARCHIVE_KEY_FINGER} | sudo apt-key add -
+          if ! grep "^${EM_REPO}" "${CROSSTOOLS_LIST}" &>/dev/null; then
+            echo "${EM_SOURCE}" | sudo tee -a "${CROSSTOOLS_LIST}" >/dev/null
+          fi
+          arm_list+=" ${GPP_ARM_PACKAGE}"
+        fi
+      fi
+    fi
+    ;;
+  *)
+    arm_list="libc6-dev-armhf-cross
+              linux-libc-dev-armhf-cross
+              ${GPP_ARM_PACKAGE}"
+    ;;
+esac
 
 # Work around for dependency issue Ubuntu/Trusty: http://crbug.com/435056
 case $lsb_release in
@@ -285,45 +360,6 @@ if file -L /sbin/init | grep -q 'ELF 64-bit'; then
   lib32_list="$lib32_list $multilib_package"
 fi
 
-# Waits for the user to press 'Y' or 'N'. Either uppercase of lowercase is
-# accepted. Returns 0 for 'Y' and 1 for 'N'. If an optional parameter has
-# been provided to yes_no(), the function also accepts RETURN as a user input.
-# The parameter specifies the exit code that should be returned in that case.
-# The function will echo the user's selection followed by a newline character.
-# Users can abort the function by pressing CTRL-C. This will call "exit 1".
-yes_no() {
-  if [ 0 -ne "${do_default-0}" ] ; then
-    [ $1 -eq 0 ] && echo "Y" || echo "N"
-    return $1
-  fi
-  local c
-  while :; do
-    c="$(trap 'stty echo -iuclc icanon 2>/dev/null' EXIT INT TERM QUIT
-         stty -echo iuclc -icanon 2>/dev/null
-         dd count=1 bs=1 2>/dev/null | od -An -tx1)"
-    case "$c" in
-      " 0a") if [ -n "$1" ]; then
-               [ $1 -eq 0 ] && echo "Y" || echo "N"
-               return $1
-             fi
-             ;;
-      " 79") echo "Y"
-             return 0
-             ;;
-      " 6e") echo "N"
-             return 1
-             ;;
-      "")    echo "Aborted" >&2
-             exit 1
-             ;;
-      *)     # The user pressed an unrecognized key. As we are not echoing
-             # any incorrect user input, alert the user by ringing the bell.
-             (tput bel) 2>/dev/null
-             ;;
-    esac
-  done
-}
-
 if test "$do_inst_syms" = "" && test 0 -eq ${do_quick_check-0}
 then
   echo "This script installs all tools and libraries needed to build Chromium."
@@ -403,6 +439,9 @@ fi
 if test "$do_inst_lib32" = "1" || test "$do_inst_nacl" = "1"; then
   if [[ ! $lsb_release =~ (precise) ]]; then
     sudo dpkg --add-architecture i386
+  fi
+  if [[ $lsb_release = "jessie" ]]; then
+    sudo dpkg --add-architecture armhf
   fi
 fi
 sudo apt-get update
