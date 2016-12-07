@@ -27,7 +27,6 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Settings.h"
-#include "core/loader/MixedContentChecker.h"
 #include "core/style/StyleFetchedImage.h"
 #include "core/style/StyleInvalidImage.h"
 #include "platform/CrossOriginAttributeValue.h"
@@ -83,25 +82,16 @@ void CSSImageValue::restoreCachedResourceIfNeeded(
     const Document& document) const {
   if (!m_cachedImage || !document.fetcher() || m_absoluteURL.isNull())
     return;
-  if (document.fetcher()->cachedResource(KURL(ParsedURLString, m_absoluteURL)))
-    return;
 
   ImageResource* resource = m_cachedImage->cachedImage();
   if (!resource)
     return;
 
-  FetchRequest request(ResourceRequest(m_absoluteURL),
-                       m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css
-                                                 : m_initiatorName,
-                       resource->options());
-  request.mutableResourceRequest().setRequestContext(
-      WebURLRequest::RequestContextImage);
-  MixedContentChecker::shouldBlockFetch(
-      document.frame(), resource->lastResourceRequest(),
-      resource->lastResourceRequest().url(), MixedContentChecker::SendReport);
-  document.fetcher()->requestLoadStarted(
-      resource->identifier(), resource, request,
-      ResourceFetcher::ResourceLoadingFromCache);
+  document.fetcher()->emulateLoadStartedForInspector(
+      resource, KURL(ParsedURLString, m_absoluteURL),
+      WebURLRequest::RequestContextImage,
+      m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css
+                                : m_initiatorName);
 }
 
 bool CSSImageValue::hasFailedOrCanceledSubresources() const {

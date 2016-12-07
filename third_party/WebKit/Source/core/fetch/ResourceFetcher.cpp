@@ -1597,6 +1597,23 @@ String ResourceFetcher::getCacheIdentifier() const {
   return MemoryCache::defaultCacheIdentifier();
 }
 
+void ResourceFetcher::emulateLoadStartedForInspector(
+    Resource* resource,
+    const KURL& url,
+    WebURLRequest::RequestContext requestContext,
+    const AtomicString& initiatorName) {
+  if (cachedResource(url))
+    return;
+  ResourceRequest resourceRequest(url);
+  resourceRequest.setRequestContext(requestContext);
+  FetchRequest request(resourceRequest, initiatorName, resource->options());
+  context().canRequest(resource->getType(), resource->lastResourceRequest(),
+                       resource->lastResourceRequest().url(), request.options(),
+                       false, request.getOriginRestriction());
+  requestLoadStarted(resource->identifier(), resource, request,
+                     ResourceLoadingFromCache);
+}
+
 ResourceFetcher::DeadResourceStatsRecorder::DeadResourceStatsRecorder()
     : m_useCount(0), m_revalidateCount(0), m_loadCount(0) {}
 

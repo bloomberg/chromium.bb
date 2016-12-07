@@ -32,7 +32,6 @@
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/loader/MixedContentChecker.h"
 #include "core/loader/resource/FontResource.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/fonts/FontCache.h"
@@ -115,21 +114,11 @@ void CSSFontFaceSrcValue::restoreCachedResourceIfNeeded(
   ASSERT(document && document->fetcher());
 
   const String resourceURL = document->completeURL(m_absoluteResource);
-  if (document->fetcher()->cachedResource(KURL(ParsedURLString, resourceURL)))
-    return;
-
-  FetchRequest request(ResourceRequest(resourceURL),
-                       FetchInitiatorTypeNames::css);
-  request.setContentSecurityCheck(m_shouldCheckContentSecurityPolicy);
-  request.mutableResourceRequest().setRequestContext(
-      WebURLRequest::RequestContextFont);
-  MixedContentChecker::shouldBlockFetch(
-      document->frame(), m_fetched->resource()->lastResourceRequest(),
-      m_fetched->resource()->lastResourceRequest().url(),
-      MixedContentChecker::SendReport);
-  document->fetcher()->requestLoadStarted(
-      m_fetched->resource()->identifier(), m_fetched->resource(), request,
-      ResourceFetcher::ResourceLoadingFromCache);
+  DCHECK_EQ(m_shouldCheckContentSecurityPolicy,
+            m_fetched->resource()->options().contentSecurityPolicyOption);
+  document->fetcher()->emulateLoadStartedForInspector(
+      m_fetched->resource(), KURL(ParsedURLString, resourceURL),
+      WebURLRequest::RequestContextFont, FetchInitiatorTypeNames::css);
 }
 
 bool CSSFontFaceSrcValue::equals(const CSSFontFaceSrcValue& other) const {

@@ -139,11 +139,6 @@ class CORE_EXPORT ResourceFetcher
     ResourceLoadingFromNetwork,
     ResourceLoadingFromCache
   };
-  void requestLoadStarted(unsigned long identifier,
-                          Resource*,
-                          const FetchRequest&,
-                          ResourceLoadStartType,
-                          bool isStaticData = false);
   static const ResourceLoaderOptions& defaultResourceOptions();
 
   String getCacheIdentifier() const;
@@ -159,6 +154,13 @@ class CORE_EXPORT ResourceFetcher
 
   // This is only exposed for testing purposes.
   HeapListHashSet<Member<Resource>>* preloads() { return m_preloads.get(); }
+
+  // Workaround for https://crbug.com/666214.
+  // TODO(hiroshige): Remove this hack.
+  void emulateLoadStartedForInspector(Resource*,
+                                      const KURL&,
+                                      WebURLRequest::RequestContext,
+                                      const AtomicString& initiatorName);
 
  private:
   friend class ResourceCacheValidationSuppressor;
@@ -199,6 +201,12 @@ class CORE_EXPORT ResourceFetcher
                        const ResourceResponse&,
                        const ResourceLoaderOptions&);
   bool canAccessResponse(Resource*, const ResourceResponse&) const;
+
+  void requestLoadStarted(unsigned long identifier,
+                          Resource*,
+                          const FetchRequest&,
+                          ResourceLoadStartType,
+                          bool isStaticData = false);
 
   bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
   bool shouldDeferImageLoad(const KURL&) const;
