@@ -40,20 +40,28 @@
     }
 
     .origin-cell {
+      background-color: rgba(230, 230, 230, 0.5);
       min-width: 500px;
     }
 
     .score-cell {
+      background-color: rgba(230, 230, 230, 0.5);
       text-align: right;
     }
 
     .score-input {
-      background-color: transparent;
-      border: none;
+      border: 1px solid #ccc;
+      border-radius: 2px;
       text-align: right;
-      width: 40px;
+      width: 70px;
     }
 
+    .score-input:focus {
+      border: 1px solid rgb(143, 185, 252);
+      box-shadow: 0 0 2px rgb(113, 158, 206);
+      outline: none;
+    }
+    
     table tr:hover {
       background: rgb(255, 255, 187);
     }
