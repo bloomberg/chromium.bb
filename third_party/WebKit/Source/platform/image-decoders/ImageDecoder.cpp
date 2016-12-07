@@ -71,15 +71,8 @@ std::unique_ptr<ImageDecoder> ImageDecoder::create(
     PassRefPtr<SegmentReader> passData,
     bool dataComplete,
     AlphaOption alphaOption,
-    ColorSpaceOption colorOptions,
-    sk_sp<SkColorSpace> targetColorSpace) {
+    const ColorBehavior& colorBehavior) {
   RefPtr<SegmentReader> data = passData;
-
-  // Ensure that the color space options are consistent.
-  if (colorOptions == ColorSpaceTransformed)
-    DCHECK(targetColorSpace);
-  else
-    DCHECK(!targetColorSpace);
 
   // We need at least kLongestSignatureLength bytes to run the signature
   // matcher.
@@ -101,34 +94,28 @@ std::unique_ptr<ImageDecoder> ImageDecoder::create(
   std::unique_ptr<ImageDecoder> decoder;
   switch (sniffResult) {
     case SniffResult::JPEG:
-      decoder.reset(new JPEGImageDecoder(alphaOption, colorOptions,
-                                         std::move(targetColorSpace),
-                                         maxDecodedBytes));
+      decoder.reset(
+          new JPEGImageDecoder(alphaOption, colorBehavior, maxDecodedBytes));
       break;
     case SniffResult::PNG:
-      decoder.reset(new PNGImageDecoder(alphaOption, colorOptions,
-                                        std::move(targetColorSpace),
-                                        maxDecodedBytes));
+      decoder.reset(
+          new PNGImageDecoder(alphaOption, colorBehavior, maxDecodedBytes));
       break;
     case SniffResult::GIF:
-      decoder.reset(new GIFImageDecoder(alphaOption, colorOptions,
-                                        std::move(targetColorSpace),
-                                        maxDecodedBytes));
+      decoder.reset(
+          new GIFImageDecoder(alphaOption, colorBehavior, maxDecodedBytes));
       break;
     case SniffResult::WEBP:
-      decoder.reset(new WEBPImageDecoder(alphaOption, colorOptions,
-                                         std::move(targetColorSpace),
-                                         maxDecodedBytes));
+      decoder.reset(
+          new WEBPImageDecoder(alphaOption, colorBehavior, maxDecodedBytes));
       break;
     case SniffResult::ICO:
-      decoder.reset(new ICOImageDecoder(alphaOption, colorOptions,
-                                        std::move(targetColorSpace),
-                                        maxDecodedBytes));
+      decoder.reset(
+          new ICOImageDecoder(alphaOption, colorBehavior, maxDecodedBytes));
       break;
     case SniffResult::BMP:
-      decoder.reset(new BMPImageDecoder(alphaOption, colorOptions,
-                                        std::move(targetColorSpace),
-                                        maxDecodedBytes));
+      decoder.reset(
+          new BMPImageDecoder(alphaOption, colorBehavior, maxDecodedBytes));
       break;
     case SniffResult::Invalid:
       break;
@@ -509,65 +496,6 @@ size_t ImagePlanes::rowBytes(int i) const {
   return m_rowBytes[i];
 }
 
-namespace {
-
-// The output device color space is global and shared across multiple threads.
-SpinLock gTargetColorSpaceLock;
-SkColorSpace* gTargetColorSpace = nullptr;
-
-}  // namespace
-
-// static
-void ImageDecoder::setGlobalTargetColorProfile(const WebVector<char>& profile) {
-  if (profile.isEmpty())
-    return;
-
-  // Take a lock around initializing and accessing the global device color
-  // profile.
-  SpinLock::Guard guard(gTargetColorSpaceLock);
-
-  // Layout tests expect that only the first call will take effect.
-  if (gTargetColorSpace)
-    return;
-
-  gTargetColorSpace =
-      SkColorSpace::MakeICC(profile.data(), profile.size()).release();
-
-  // UMA statistics.
-  BitmapImageMetrics::countOutputGamma(gTargetColorSpace);
-}
-
-// static
-sk_sp<SkColorSpace> ImageDecoder::globalTargetColorSpace() {
-  // Take a lock around initializing and accessing the global device color
-  // profile.
-  SpinLock::Guard guard(gTargetColorSpaceLock);
-
-  // Initialize the output device profile to sRGB if it has not yet been
-  // initialized.
-  if (!gTargetColorSpace) {
-    gTargetColorSpace =
-        SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named).release();
-  }
-
-  gTargetColorSpace->ref();
-  return sk_sp<SkColorSpace>(gTargetColorSpace);
-}
-
-// static
-sk_sp<SkColorSpace> ImageDecoder::targetColorSpaceForTesting() {
-  return globalTargetColorSpace();
-}
-
-sk_sp<SkColorSpace> ImageDecoder::colorSpaceForSkImages() const {
-  if (m_colorSpaceOption != ColorSpaceTagged)
-    return nullptr;
-
-  if (m_embeddedColorSpace)
-    return m_embeddedColorSpace;
-  return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
-}
-
 void ImageDecoder::setEmbeddedColorProfile(const char* iccData,
                                            unsigned iccLength) {
   sk_sp<SkColorSpace> colorSpace = SkColorSpace::MakeICC(iccData, iccLength);
@@ -590,23 +518,34 @@ SkColorSpaceXform* ImageDecoder::colorTransform() {
   m_sourceToTargetColorTransformNeedsUpdate = false;
   m_sourceToTargetColorTransform = nullptr;
 
-  // With color correct rendering, we do not transform to the output color space
-  // at decode time.  Instead, we tag the raw image pixels and pass the tagged
-  // SkImage to Skia.
-  if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+  if (!m_colorBehavior.isTransformToTargetColorSpace())
     return nullptr;
 
-  if (!m_embeddedColorSpace)
-    return nullptr;
+  sk_sp<SkColorSpace> srcColorSpace = m_embeddedColorSpace;
+  if (!srcColorSpace) {
+    if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+      srcColorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+    else
+      return nullptr;
+  }
 
   if (SkColorSpace::Equals(m_embeddedColorSpace.get(),
-                           m_targetColorSpace.get())) {
+                           m_colorBehavior.targetColorSpace().get())) {
     return nullptr;
   }
 
   m_sourceToTargetColorTransform = SkColorSpaceXform::New(
-      m_embeddedColorSpace.get(), m_targetColorSpace.get());
+      m_embeddedColorSpace.get(), m_colorBehavior.targetColorSpace().get());
   return m_sourceToTargetColorTransform.get();
+}
+
+sk_sp<SkColorSpace> ImageDecoder::colorSpaceForSkImages() const {
+  if (!m_colorBehavior.isTag())
+    return nullptr;
+
+  if (m_embeddedColorSpace)
+    return m_embeddedColorSpace;
+  return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
 }
 
 }  // namespace blink

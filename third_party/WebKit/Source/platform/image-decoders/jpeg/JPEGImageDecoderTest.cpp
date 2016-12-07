@@ -48,8 +48,8 @@ namespace {
 
 std::unique_ptr<ImageDecoder> createDecoder(size_t maxDecodedBytes) {
   return wrapUnique(new JPEGImageDecoder(
-      ImageDecoder::AlphaNotPremultiplied, ImageDecoder::ColorSpaceTransformed,
-      ImageDecoder::targetColorSpaceForTesting(), maxDecodedBytes));
+      ImageDecoder::AlphaNotPremultiplied,
+      ColorBehavior::transformToTargetForTesting(), maxDecodedBytes));
 }
 
 std::unique_ptr<ImageDecoder> createDecoder() {

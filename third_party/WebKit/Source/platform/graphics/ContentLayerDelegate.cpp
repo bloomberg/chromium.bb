@@ -94,7 +94,7 @@ void ContentLayerDelegate::paintContents(
     // TODO(ccameron): This color space should come from the GraphicsLayer.
     // https://crbug.com/667411
     webDisplayItemList->setImpliedColorSpace(gfx::ColorSpace::FromSkColorSpace(
-        ImageDecoder::globalTargetColorSpace()));
+        ColorBehavior::globalTargetColorSpace()));
   }
   paintController.setDisplayItemConstructionIsDisabled(false);
   paintController.setSubsequenceCachingIsDisabled(false);

@@ -46,14 +46,10 @@
 namespace blink {
 
 PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption,
-                                 ColorSpaceOption colorOptions,
-                                 sk_sp<SkColorSpace> targetColorSpace,
+                                 const ColorBehavior& colorBehavior,
                                  size_t maxDecodedBytes,
                                  size_t offset)
-    : ImageDecoder(alphaOption,
-                   colorOptions,
-                   std::move(targetColorSpace),
-                   maxDecodedBytes),
+    : ImageDecoder(alphaOption, colorBehavior, maxDecodedBytes),
       m_offset(offset) {}
 
 PNGImageDecoder::~PNGImageDecoder() {}

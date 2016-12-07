@@ -67,8 +67,7 @@ class MockImageDecoder : public ImageDecoder {
 
   MockImageDecoder(MockImageDecoderClient* client)
       : ImageDecoder(AlphaPremultiplied,
-                     ColorSpaceTransformed,
-                     targetColorSpaceForTesting(),
+                     ColorBehavior::transformToTargetForTesting(),
                      noDecodedImageByteLimit),
         m_client(client) {}
 

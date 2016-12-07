@@ -66,11 +66,9 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   static PassRefPtr<ImageFrameGenerator> create(
       const SkISize& fullSize,
       bool isMultiFrame,
-      ImageDecoder::ColorSpaceOption decoderColorSpaceOption,
-      sk_sp<SkColorSpace> decoderTargetColorSpace) {
+      const ColorBehavior& colorBehavior) {
     return adoptRef(
-        new ImageFrameGenerator(fullSize, isMultiFrame, decoderColorSpaceOption,
-                                std::move(decoderTargetColorSpace)));
+        new ImageFrameGenerator(fullSize, isMultiFrame, colorBehavior));
   }
 
   ~ImageFrameGenerator();
@@ -112,8 +110,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
  private:
   ImageFrameGenerator(const SkISize& fullSize,
                       bool isMultiFrame,
-                      ImageDecoder::ColorSpaceOption decoderColorSpaceOption,
-                      sk_sp<SkColorSpace> decoderTargetColorSpace);
+                      const ColorBehavior&);
 
   friend class ImageFrameGeneratorTest;
   friend class DeferredImageDecoderTest;
@@ -141,8 +138,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   const SkISize m_fullSize;
 
   // Parameters used to create internal ImageDecoder objects.
-  const ImageDecoder::ColorSpaceOption m_decoderColorSpaceOption;
-  const sk_sp<SkColorSpace> m_decoderTargetColorSpace;
+  const ColorBehavior m_decoderColorBehavior;
 
   const bool m_isMultiFrame;
   bool m_decodeFailed;

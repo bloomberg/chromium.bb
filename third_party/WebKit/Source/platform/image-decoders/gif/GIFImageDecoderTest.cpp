@@ -46,10 +46,10 @@ namespace {
 const char layoutTestResourcesDir[] = "LayoutTests/images/resources";
 
 std::unique_ptr<ImageDecoder> createDecoder() {
-  return wrapUnique(new GIFImageDecoder(
-      ImageDecoder::AlphaNotPremultiplied, ImageDecoder::ColorSpaceTransformed,
-      ImageDecoder::targetColorSpaceForTesting(),
-      ImageDecoder::noDecodedImageByteLimit));
+  return wrapUnique(
+      new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied,
+                          ColorBehavior::transformToTargetForTesting(),
+                          ImageDecoder::noDecodedImageByteLimit));
 }
 
 void testRepetitionCount(const char* dir,
@@ -367,15 +367,14 @@ TEST(GIFImageDecoderTest, bitmapAlphaType) {
   RefPtr<SharedBuffer> partialData =
       SharedBuffer::create(fullData->data(), kTruncateSize);
 
-  std::unique_ptr<ImageDecoder> premulDecoder = wrapUnique(new GIFImageDecoder(
-      ImageDecoder::AlphaPremultiplied, ImageDecoder::ColorSpaceTransformed,
-      ImageDecoder::targetColorSpaceForTesting(),
-      ImageDecoder::noDecodedImageByteLimit));
-  std::unique_ptr<ImageDecoder> unpremulDecoder =
-      wrapUnique(new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied,
-                                     ImageDecoder::ColorSpaceTransformed,
-                                     ImageDecoder::targetColorSpaceForTesting(),
-                                     ImageDecoder::noDecodedImageByteLimit));
+  std::unique_ptr<ImageDecoder> premulDecoder = wrapUnique(
+      new GIFImageDecoder(ImageDecoder::AlphaPremultiplied,
+                          ColorBehavior::transformToTargetForTesting(),
+                          ImageDecoder::noDecodedImageByteLimit));
+  std::unique_ptr<ImageDecoder> unpremulDecoder = wrapUnique(
+      new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied,
+                          ColorBehavior::transformToTargetForTesting(),
+                          ImageDecoder::noDecodedImageByteLimit));
 
   // Partially decoded frame => the frame alpha type is unknown and should
   // reflect the requested format.

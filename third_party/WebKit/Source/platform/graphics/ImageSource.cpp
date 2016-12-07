@@ -58,14 +58,13 @@ bool ImageSource::setData(PassRefPtr<SharedBuffer> passData,
   }
 
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-    m_decoder = DeferredImageDecoder::create(
-        data, allDataReceived, ImageDecoder::AlphaPremultiplied,
-        ImageDecoder::ColorSpaceTagged, nullptr);
+    m_decoder = DeferredImageDecoder::create(data, allDataReceived,
+                                             ImageDecoder::AlphaPremultiplied,
+                                             ColorBehavior::tag());
   } else {
     m_decoder = DeferredImageDecoder::create(
         data, allDataReceived, ImageDecoder::AlphaPremultiplied,
-        ImageDecoder::ColorSpaceTransformed,
-        ImageDecoder::globalTargetColorSpace());
+        ColorBehavior::transformToGlobalTarget());
   }
 
   // Insufficient data is not a failure.

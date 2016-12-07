@@ -59,8 +59,8 @@ class ImageFrameGeneratorTest : public ::testing::Test,
  public:
   void SetUp() override {
     ImageDecodingStore::instance().setCacheLimitInBytes(1024 * 1024);
-    m_generator = ImageFrameGenerator::create(
-        fullSize(), false, ImageDecoder::ColorSpaceIgnored, nullptr);
+    m_generator =
+        ImageFrameGenerator::create(fullSize(), false, ColorBehavior::ignore());
     m_data = SharedBuffer::create();
     m_segmentReader = SegmentReader::createFromSharedBuffer(m_data);
     useMockImageDecoderFactory();
@@ -111,8 +111,8 @@ class ImageFrameGeneratorTest : public ::testing::Test,
     m_frameCount = count;
     if (count > 1) {
       m_generator.clear();
-      m_generator = ImageFrameGenerator::create(
-          fullSize(), true, ImageDecoder::ColorSpaceIgnored, nullptr);
+      m_generator = ImageFrameGenerator::create(fullSize(), true,
+                                                ColorBehavior::ignore());
       useMockImageDecoderFactory();
     }
   }

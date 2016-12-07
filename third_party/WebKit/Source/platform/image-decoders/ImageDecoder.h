@@ -31,6 +31,7 @@
 #include "SkColorSpaceXform.h"
 #include "platform/PlatformExport.h"
 #include "platform/SharedBuffer.h"
+#include "platform/graphics/ColorBehavior.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/image-decoders/ImageAnimation.h"
 #include "platform/image-decoders/ImageFrame.h"
@@ -86,23 +87,6 @@ class PLATFORM_EXPORT ImageDecoder {
 
   enum AlphaOption { AlphaPremultiplied, AlphaNotPremultiplied };
 
-  enum ColorSpaceOption {
-    // The embedded color profile is ignored entirely. The hasEmbeddedColorSpace
-    // method will always return false. No transformations are applied to the
-    // pixel data. SkImages created will have no assocated SkColorSpace.
-    ColorSpaceIgnored,
-    // The image will be transformed to the specified target color space. The
-    // hasEmbeddedColorSpace method will return the truth. SkImages created by
-    // this decoder will have no associated SkColorSpace.
-    // TODO(ccameron): This transform is applied only if the image has an
-    // embedded color profile, but should be applied always.
-    ColorSpaceTransformed,
-    // The image will not be transformed (to the extent possible). SkImages
-    // created by this decoder will have the SkColorSpace of the embedded
-    // color profile (or sRGB if there was no embedded color profile).
-    ColorSpaceTagged,
-  };
-
   virtual ~ImageDecoder() {}
 
   // Returns a caller-owned decoder of the appropriate type.  Returns nullptr if
@@ -112,16 +96,14 @@ class PLATFORM_EXPORT ImageDecoder {
   static std::unique_ptr<ImageDecoder> create(PassRefPtr<SegmentReader> data,
                                               bool dataComplete,
                                               AlphaOption,
-                                              ColorSpaceOption,
-                                              sk_sp<SkColorSpace>);
+                                              const ColorBehavior&);
   static std::unique_ptr<ImageDecoder> create(
       PassRefPtr<SharedBuffer> data,
       bool dataComplete,
       AlphaOption alphaoption,
-      ColorSpaceOption colorOptions,
-      sk_sp<SkColorSpace> targetColorSpace) {
+      const ColorBehavior& colorBehavior) {
     return create(SegmentReader::createFromSharedBuffer(std::move(data)),
-                  dataComplete, alphaoption, colorOptions, targetColorSpace);
+                  dataComplete, alphaoption, colorBehavior);
   }
 
   virtual String filenameExtension() const = 0;
@@ -224,20 +206,8 @@ class PLATFORM_EXPORT ImageDecoder {
 
   ImageOrientation orientation() const { return m_orientation; }
 
-  bool ignoresColorSpace() const {
-    return m_colorSpaceOption == ColorSpaceIgnored;
-  }
-  ColorSpaceOption colorSpaceOption() const { return m_colorSpaceOption; }
-  sk_sp<SkColorSpace> targetColorSpace() const { return m_targetColorSpace; }
-
-  // Set the target color profile into which all images with embedded color
-  // profiles should be converted. Note that only the first call to this
-  // function in this process has any effect.
-  static void setGlobalTargetColorProfile(const WebVector<char>&);
-  static sk_sp<SkColorSpace> globalTargetColorSpace();
-
-  // A target color space to be used by tests.
-  static sk_sp<SkColorSpace> targetColorSpaceForTesting();
+  bool ignoresColorSpace() const { return m_colorBehavior.isIgnore(); }
+  const ColorBehavior& colorBehavior() const { return m_colorBehavior; }
 
   // This returns the color space that will be included in the SkImageInfo of
   // SkImages created from this decoder. This will be nullptr unless the
@@ -304,12 +274,10 @@ class PLATFORM_EXPORT ImageDecoder {
 
  protected:
   ImageDecoder(AlphaOption alphaOption,
-               ColorSpaceOption colorOptions,
-               sk_sp<SkColorSpace> targetColorSpace,
+               const ColorBehavior& colorBehavior,
                size_t maxDecodedBytes)
       : m_premultiplyAlpha(alphaOption == AlphaPremultiplied),
-        m_colorSpaceOption(colorOptions),
-        m_targetColorSpace(std::move(targetColorSpace)),
+        m_colorBehavior(colorBehavior),
         m_maxDecodedBytes(maxDecodedBytes),
         m_purgeAggressively(false) {}
 
@@ -385,8 +353,7 @@ class PLATFORM_EXPORT ImageDecoder {
   RefPtr<SegmentReader> m_data;  // The encoded data.
   Vector<ImageFrame, 1> m_frameBufferCache;
   const bool m_premultiplyAlpha;
-  const ColorSpaceOption m_colorSpaceOption;
-  const sk_sp<SkColorSpace> m_targetColorSpace;
+  const ColorBehavior m_colorBehavior;
   ImageOrientation m_orientation;
 
   // The maximum amount of memory a decoded image should require. Ideally,

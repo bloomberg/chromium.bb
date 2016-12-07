@@ -260,9 +260,8 @@ bool decodeImageData(SharedBuffer* data,
                      size_t packetSize) {
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(
       data, true, ImageDecoder::AlphaPremultiplied,
-      colorCorrection ? ImageDecoder::ColorSpaceTransformed
-                      : ImageDecoder::ColorSpaceIgnored,
-      colorCorrection ? ImageDecoder::targetColorSpaceForTesting() : nullptr);
+      colorCorrection ? ColorBehavior::transformToTargetForTesting()
+                      : ColorBehavior::ignore());
   if (!packetSize) {
     bool allDataReceived = true;
     decoder->setData(data, allDataReceived);
@@ -313,7 +312,7 @@ int main(int argc, char* argv[]) {
     applyColorCorrection = (--argc, ++argv, true);
     WebVector<char> profile;
     getScreenColorProfile(&profile);  // Returns a color spin color profile.
-    ImageDecoder::setGlobalTargetColorProfile(profile);
+    ColorBehavior::setGlobalTargetColorProfile(profile);
   }
 
   if (argc < 2) {

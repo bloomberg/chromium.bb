@@ -61,13 +61,11 @@ std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(
     PassRefPtr<SharedBuffer> passData,
     bool dataComplete,
     ImageDecoder::AlphaOption alphaOption,
-    ImageDecoder::ColorSpaceOption colorOptions,
-    sk_sp<SkColorSpace> targetColorSpace) {
+    const ColorBehavior& colorBehavior) {
   RefPtr<SharedBuffer> data = passData;
 
   std::unique_ptr<ImageDecoder> actualDecoder =
-      ImageDecoder::create(data, dataComplete, alphaOption, colorOptions,
-                           std::move(targetColorSpace));
+      ImageDecoder::create(data, dataComplete, alphaOption, colorBehavior);
   if (!actualDecoder)
     return nullptr;
 
@@ -277,8 +275,7 @@ void DeferredImageDecoder::activateLazyDecoding() {
       SkISize::Make(m_actualDecoder->decodedSize().width(),
                     m_actualDecoder->decodedSize().height());
   m_frameGenerator = ImageFrameGenerator::create(
-      decodedSize, !isSingleFrame, m_actualDecoder->colorSpaceOption(),
-      m_actualDecoder->targetColorSpace());
+      decodedSize, !isSingleFrame, m_actualDecoder->colorBehavior());
 }
 
 void DeferredImageDecoder::prepareLazyDecodedFrames() {

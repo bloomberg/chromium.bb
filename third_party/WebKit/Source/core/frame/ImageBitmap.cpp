@@ -275,9 +275,8 @@ bool ImageBitmap::isSourceSizeValid(int sourceWidth,
 static PassRefPtr<StaticBitmapImage> cropImage(
     Image* image,
     const ParsedOptions& parsedOptions,
-    AlphaDisposition imageFormat = PremultiplyAlpha,
-    ImageDecoder::ColorSpaceOption colorSpaceOp =
-        ImageDecoder::ColorSpaceTransformed) {
+    AlphaDisposition imageFormat,
+    ColorBehavior colorBehavior) {
   ASSERT(image);
   IntRect imgRect(IntPoint(), IntSize(image->width(), image->height()));
   const IntRect srcRect = intersection(imgRect, parsedOptions.cropRect);
@@ -307,14 +306,12 @@ static PassRefPtr<StaticBitmapImage> cropImage(
   if ((((!parsedOptions.premultiplyAlpha && !skiaImage->isOpaque()) ||
         !skiaImage) &&
        image->data() && imageFormat == PremultiplyAlpha) ||
-      colorSpaceOp == ImageDecoder::ColorSpaceIgnored) {
+      colorBehavior.isIgnore()) {
     std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(
         image->data(), true,
         parsedOptions.premultiplyAlpha ? ImageDecoder::AlphaPremultiplied
                                        : ImageDecoder::AlphaNotPremultiplied,
-        colorSpaceOp, colorSpaceOp == ImageDecoder::ColorSpaceTransformed
-                          ? ImageDecoder::globalTargetColorSpace()
-                          : nullptr));
+        colorBehavior));
     if (!decoder)
       return nullptr;
     skiaImage = ImageBitmap::getSkImageFromDecoder(std::move(decoder));
@@ -392,10 +389,10 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image,
 
   if (options.colorSpaceConversion() == "none") {
     m_image = cropImage(input.get(), parsedOptions, PremultiplyAlpha,
-                        ImageDecoder::ColorSpaceIgnored);
+                        ColorBehavior::ignore());
   } else {
     m_image = cropImage(input.get(), parsedOptions, PremultiplyAlpha,
-                        ImageDecoder::ColorSpaceTransformed);
+                        ColorBehavior::transformToGlobalTarget());
   }
   if (!m_image)
     return;
@@ -486,7 +483,8 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
     parsedOptions.premultiplyAlpha = true;
     isPremultiplyAlphaReverted = true;
   }
-  m_image = cropImage(input.get(), parsedOptions);
+  m_image = cropImage(input.get(), parsedOptions, PremultiplyAlpha,
+                      ColorBehavior::transformToGlobalTarget());
   if (!m_image)
     return;
   if (isPremultiplyAlphaReverted) {
@@ -697,9 +695,10 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
   if (dstBufferSizeHasOverflow(parsedOptions))
     return;
 
-  m_image = cropImage(input.get(), parsedOptions, bitmap->isPremultiplied()
-                                                      ? PremultiplyAlpha
-                                                      : DontPremultiplyAlpha);
+  m_image = cropImage(
+      input.get(), parsedOptions,
+      bitmap->isPremultiplied() ? PremultiplyAlpha : DontPremultiplyAlpha,
+      ColorBehavior::transformToGlobalTarget());
   if (!m_image)
     return;
   m_image->setOriginClean(bitmap->originClean());
@@ -715,7 +714,8 @@ ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image,
   if (dstBufferSizeHasOverflow(parsedOptions))
     return;
 
-  m_image = cropImage(input.get(), parsedOptions);
+  m_image = cropImage(input.get(), parsedOptions, PremultiplyAlpha,
+                      ColorBehavior::transformToGlobalTarget());
   if (!m_image)
     return;
 

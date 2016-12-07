@@ -117,13 +117,9 @@ void alphaBlendNonPremultiplied(blink::ImageFrame& src,
 namespace blink {
 
 WEBPImageDecoder::WEBPImageDecoder(AlphaOption alphaOption,
-                                   ColorSpaceOption colorOptions,
-                                   sk_sp<SkColorSpace> targetColorSpace,
+                                   const ColorBehavior& colorBehavior,
                                    size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption,
-                   colorOptions,
-                   std::move(targetColorSpace),
-                   maxDecodedBytes),
+    : ImageDecoder(alphaOption, colorBehavior, maxDecodedBytes),
       m_decoder(0),
       m_formatFlags(0),
       m_frameBackgroundHasAlpha(false),

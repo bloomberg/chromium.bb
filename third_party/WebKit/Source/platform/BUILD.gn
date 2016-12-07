@@ -779,6 +779,8 @@ component("platform") {
     "graphics/CanvasSurfaceLayerBridge.h",
     "graphics/Color.cpp",
     "graphics/Color.h",
+    "graphics/ColorBehavior.cpp",
+    "graphics/ColorBehavior.h",
     "graphics/ColorSpace.cpp",
     "graphics/ColorSpace.h",
     "graphics/ColorSpaceProfileData.cpp",

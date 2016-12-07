@@ -53,8 +53,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
       PassRefPtr<SharedBuffer> data,
       bool dataComplete,
       ImageDecoder::AlphaOption,
-      ImageDecoder::ColorSpaceOption,
-      sk_sp<SkColorSpace> targetColorSpace);
+      const ColorBehavior&);
 
   static std::unique_ptr<DeferredImageDecoder> createForTesting(
       std::unique_ptr<ImageDecoder>);

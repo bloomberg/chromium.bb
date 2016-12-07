@@ -47,10 +47,9 @@ namespace {
 
 std::unique_ptr<ImageDecoder> createDecoder(
     ImageDecoder::AlphaOption alphaOption) {
-  return wrapUnique(
-      new WEBPImageDecoder(alphaOption, ImageDecoder::ColorSpaceTransformed,
-                           ImageDecoder::targetColorSpaceForTesting(),
-                           ImageDecoder::noDecodedImageByteLimit));
+  return wrapUnique(new WEBPImageDecoder(
+      alphaOption, ColorBehavior::transformToTargetForTesting(),
+      ImageDecoder::noDecodedImageByteLimit));
 }
 
 std::unique_ptr<ImageDecoder> createDecoder() {

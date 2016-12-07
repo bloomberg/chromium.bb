@@ -2751,9 +2751,8 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha,
     // Attempt to get raw unpremultiplied image data.
     std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(
         m_image->data(), true, ImageDecoder::AlphaNotPremultiplied,
-        ignoreColorSpace ? ImageDecoder::ColorSpaceIgnored
-                         : ImageDecoder::ColorSpaceTransformed,
-        ignoreColorSpace ? nullptr : ImageDecoder::globalTargetColorSpace()));
+        ignoreColorSpace ? ColorBehavior::ignore()
+                         : ColorBehavior::transformToGlobalTarget()));
     if (!decoder || !decoder->frameCount())
       return;
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
