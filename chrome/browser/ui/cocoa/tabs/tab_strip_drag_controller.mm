@@ -17,6 +17,7 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
 
+const CGFloat kHorizontalTearDistance = 10.0; // Using the same value as Views.
 const CGFloat kTearDistance = 36.0;
 const NSTimeInterval kTearDuration = 0.333;
 
@@ -171,9 +172,17 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
   if (draggingWithinTabStrip_) {
     NSPoint thisPoint = [NSEvent mouseLocation];
     CGFloat offset = thisPoint.x - dragOrigin_.x;
-    [sourceController_ insertPlaceholderForTab:[draggedTab_ tabView]
-                                         frame:NSOffsetRect(sourceTabFrame_,
-                                                            offset, 0)];
+    // Only begin dragging the tab horizontally if it's torn out of its dead
+    // zone.
+    if (!outOfTabHorizontalDeadZone_ &&
+        fabs(offset) > kHorizontalTearDistance) {
+      outOfTabHorizontalDeadZone_ = YES;
+    }
+    if (outOfTabHorizontalDeadZone_) {
+      [sourceController_ insertPlaceholderForTab:[draggedTab_ tabView]
+                                           frame:NSOffsetRect(sourceTabFrame_,
+                                                              offset, 0)];
+    }
     // Check that we haven't pulled the tab too far to start a drag. This
     // can include either pulling it too far down, or off the side of the tab
     // strip that would cause it to no longer be fully visible.
@@ -403,6 +412,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
 - (void)endDrag:(NSEvent*)event {
   // Cancel any delayed -continueDrag: requests that may still be pending.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
+  outOfTabHorizontalDeadZone_ = NO;
 
   // Special-case this to keep the logic below simpler.
   if (moveWindowOnDrag_) {
