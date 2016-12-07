@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace leveldb {
 
@@ -183,24 +182,16 @@ void LevelDBMojoProxy::OpenFileHandleImpl(OpaqueDir* dir,
                                           std::string name,
                                           uint32_t open_flags,
                                           base::File* output_file) {
-  mojo::ScopedHandle handle;
+  base::File file;
   filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   bool completed =
-      dir->directory->OpenFileHandle(name, open_flags, &error, &handle);
+      dir->directory->OpenFileHandle(name, open_flags, &error, &file);
   DCHECK(completed);
 
   if (error != filesystem::mojom::FileError::OK) {
     *output_file = base::File(static_cast<base::File::Error>(error));
   } else {
-    base::PlatformFile platform_file;
-    MojoResult unwrap_result = mojo::UnwrapPlatformFile(std::move(handle),
-                                                        &platform_file);
-    if (unwrap_result == MOJO_RESULT_OK) {
-      *output_file = base::File(platform_file);
-    } else {
-      NOTREACHED();
-      *output_file = base::File(base::File::Error::FILE_ERROR_FAILED);
-    }
+    *output_file = std::move(file);
   }
 }
 

@@ -28,18 +28,13 @@ static_assert(
 
 namespace {
 
-mojo::ScopedHandle GetHandleForPath(const base::FilePath& path) {
+base::File GetFileForPath(const base::FilePath& path) {
   if (path.empty())
-    return mojo::ScopedHandle();
+    return base::File();
 
-  mojo::ScopedHandle to_pass;
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!file.IsValid()) {
-    LOG(WARNING) << "file not valid, path=" << path.value();
-    return mojo::ScopedHandle();
-  }
-
-  return mojo::WrapPlatformFile(file.TakePlatformFile());
+  LOG_IF(WARNING, !file.IsValid()) << "file not valid, path=" << path.value();
+  return file;
 }
 
 }  // namespace
@@ -109,12 +104,12 @@ void FontServiceApp::MatchFamilyName(const std::string& family_name,
 
 void FontServiceApp::OpenStream(uint32_t id_number,
                                 const OpenStreamCallback& callback) {
-  mojo::ScopedHandle handle;
+  base::File file;
   if (id_number < static_cast<uint32_t>(paths_.size())) {
-    handle = GetHandleForPath(base::FilePath(paths_[id_number].c_str()));
+    file = GetFileForPath(base::FilePath(paths_[id_number].c_str()));
   }
 
-  callback.Run(std::move(handle));
+  callback.Run(std::move(file));
 }
 
 int FontServiceApp::FindOrAddPath(const SkString& path) {

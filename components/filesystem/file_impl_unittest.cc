@@ -11,7 +11,6 @@
 #include "components/filesystem/files_test_base.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace filesystem {
 namespace {
@@ -663,21 +662,13 @@ TEST_F(FileImplTest, AsHandle) {
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
 
-    // Fetch the handle
+    // Fetch the file.
     error = mojom::FileError::FAILED;
-    mojo::ScopedHandle handle;
-    handled = file1->AsHandle(&error, &handle);
+    base::File raw_file;
+    handled = file1->AsHandle(&error, &raw_file);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
 
-    // Pull a file descriptor out of the scoped handle.
-    base::PlatformFile platform_file;
-    MojoResult unwrap_result = mojo::UnwrapPlatformFile(std::move(handle),
-                                                        &platform_file);
-    EXPECT_EQ(MOJO_RESULT_OK, unwrap_result);
-
-    // Pass this raw file descriptor to a base::File.
-    base::File raw_file(platform_file);
     ASSERT_TRUE(raw_file.IsValid());
     EXPECT_EQ(5, raw_file.WriteAtCurrentPos("hello", 5));
   }

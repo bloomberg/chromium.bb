@@ -4,6 +4,8 @@
 
 module font_service.mojom;
 
+import "mojo/common/common_custom_types.mojom";
+
 enum TypefaceSlant {
   ROMAN = 0,
   ITALIC = 1,
@@ -39,5 +41,5 @@ interface FontService {
       (FontIdentity? identity, string family_name, TypefaceStyle style);
 
   // Returns a handle to the raw font specified by |id_number|.
-  OpenStream(uint32 id_number) => (handle font_handle);
+  OpenStream(uint32 id_number) => (mojo.common.mojom.File? font_handle);
 };

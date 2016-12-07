@@ -17,7 +17,6 @@
 #include "components/filesystem/util.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace filesystem {
 
@@ -92,9 +91,9 @@ void DirectoryImpl::OpenFile(const std::string& raw_path,
 void DirectoryImpl::OpenFileHandle(const std::string& raw_path,
                                    uint32_t open_flags,
                                    const OpenFileHandleCallback& callback) {
-  mojom::FileError error = mojom::FileError::OK;
-  mojo::ScopedHandle handle = OpenFileHandleImpl(raw_path, open_flags, &error);
-  callback.Run(error, std::move(handle));
+  base::File file = OpenFileHandleImpl(raw_path, open_flags);
+  mojom::FileError error = GetError(file);
+  callback.Run(error, std::move(file));
 }
 
 void DirectoryImpl::OpenFileHandles(
@@ -105,8 +104,8 @@ void DirectoryImpl::OpenFileHandles(
   for (const auto& detail : details) {
     mojom::FileOpenResultPtr result(mojom::FileOpenResult::New());
     result->path = detail->path;
-    result->file_handle =
-        OpenFileHandleImpl(detail->path, detail->open_flags, &result->error);
+    result->file_handle = OpenFileHandleImpl(detail->path, detail->open_flags);
+    result->error = GetError(result->file_handle);
     results[i++] = std::move(result);
   }
   callback.Run(std::move(results));
@@ -335,31 +334,21 @@ void DirectoryImpl::WriteFile(const std::string& raw_path,
   callback.Run(mojom::FileError::OK);
 }
 
-mojo::ScopedHandle DirectoryImpl::OpenFileHandleImpl(
-    const std::string& raw_path,
-    uint32_t open_flags,
-    mojom::FileError* error) {
+base::File DirectoryImpl::OpenFileHandleImpl(const std::string& raw_path,
+                                             uint32_t open_flags) {
   base::FilePath path;
-  *error = ValidatePath(raw_path, directory_path_, &path);
-  if (*error != mojom::FileError::OK)
-    return mojo::ScopedHandle();
+  mojom::FileError error = ValidatePath(raw_path, directory_path_, &path);
+  if (error != mojom::FileError::OK)
+    return base::File(static_cast<base::File::Error>(error));
 
   if (base::DirectoryExists(path)) {
     // We must not return directories as files. In the file abstraction, we
     // can fetch raw file descriptors over mojo pipes, and passing a file
     // descriptor to a directory is a sandbox escape on Windows.
-    *error = mojom::FileError::NOT_A_FILE;
-    return mojo::ScopedHandle();
+    return base::File(base::File::FILE_ERROR_NOT_A_FILE);
   }
 
-  base::File base_file(path, open_flags);
-  if (!base_file.IsValid()) {
-    *error = GetError(base_file);
-    return mojo::ScopedHandle();
-  }
-
-  *error = mojom::FileError::OK;
-  return mojo::WrapPlatformFile(base_file.TakePlatformFile());
+  return base::File(path, open_flags);
 }
 
 }  // namespace filesystem

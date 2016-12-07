@@ -64,9 +64,8 @@ class DirectoryImpl : public mojom::Directory {
                  const WriteFileCallback& callback) override;
 
  private:
-  mojo::ScopedHandle OpenFileHandleImpl(const std::string& raw_path,
-                                        uint32_t open_flags,
-                                        mojom::FileError* error);
+  base::File OpenFileHandleImpl(const std::string& raw_path,
+                                uint32_t open_flags);
 
   base::FilePath directory_path_;
   scoped_refptr<SharedTempDir> temp_dir_;

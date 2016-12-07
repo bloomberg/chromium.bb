@@ -3,10 +3,19 @@
 # found in the LICENSE file.
 
 mojom = "//mojo/common/common_custom_types.mojom"
-public_headers = [ "//third_party/WebKit/Source/wtf/text/WTFString.h" ]
-traits_headers = [ "//third_party/WebKit/Source/platform/mojo/CommonCustomTypesStructTraits.h" ]
+public_headers = [
+  "//base/files/file.h",
+  "//third_party/WebKit/Source/wtf/text/WTFString.h",
+]
+traits_headers = [
+  "//mojo/common/common_custom_types_struct_traits.h",
+  "//third_party/WebKit/Source/platform/mojo/CommonCustomTypesStructTraits.h",
+]
 deps = [
+  "//mojo/common:struct_traits",
   "//mojo/public/cpp/bindings",
 ]
-type_mappings =
-    [ "mojo.common.mojom.String16=WTF::String[nullable_is_same_type]" ]
+type_mappings = [
+  "mojo.common.mojom.File=base::File[move_only,nullable_is_same_type]",
+  "mojo.common.mojom.String16=WTF::String[nullable_is_same_type]",
+]

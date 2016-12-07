@@ -18,13 +18,11 @@
 #include "components/filesystem/util.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 static_assert(sizeof(off_t) <= sizeof(int64_t), "off_t too big");
 static_assert(sizeof(size_t) >= sizeof(uint32_t), "size_t too small");
 
 using base::Time;
-using mojo::ScopedHandle;
 
 namespace filesystem {
 namespace {
@@ -327,19 +325,19 @@ void FileImpl::Unlock(const UnlockCallback& callback) {
 
 void FileImpl::AsHandle(const AsHandleCallback& callback) {
   if (!file_.IsValid()) {
-    callback.Run(GetError(file_), ScopedHandle());
+    callback.Run(GetError(file_), base::File());
     return;
   }
 
   base::File new_file = file_.Duplicate();
   if (!new_file.IsValid()) {
-    callback.Run(GetError(new_file), ScopedHandle());
+    callback.Run(GetError(new_file), base::File());
     return;
   }
 
   base::File::Info info;
   if (!new_file.GetInfo(&info)) {
-    callback.Run(mojom::FileError::FAILED, ScopedHandle());
+    callback.Run(mojom::FileError::FAILED, base::File());
     return;
   }
 
@@ -348,12 +346,11 @@ void FileImpl::AsHandle(const AsHandleCallback& callback) {
   // passing a file descriptor to a directory is a sandbox escape on Windows,
   // we should be absolutely paranoid.
   if (info.is_directory) {
-    callback.Run(mojom::FileError::NOT_A_FILE, ScopedHandle());
+    callback.Run(mojom::FileError::NOT_A_FILE, base::File());
     return;
   }
 
-  callback.Run(mojom::FileError::OK,
-               mojo::WrapPlatformFile(new_file.TakePlatformFile()));
+  callback.Run(mojom::FileError::OK, std::move(new_file));
 }
 
 }  // namespace filesystem

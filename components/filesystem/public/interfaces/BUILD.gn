@@ -11,4 +11,7 @@ mojom("interfaces") {
     "file_system.mojom",
     "types.mojom",
   ]
+  public_deps = [
+    "//mojo/common:common_custom_types",
+  ]
 }

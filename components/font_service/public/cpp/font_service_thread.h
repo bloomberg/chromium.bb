@@ -80,7 +80,7 @@ class FontServiceThread : public base::Thread,
                       const uint32_t id_number);
   void OnOpenStreamComplete(base::WaitableEvent* done_event,
                             base::File* output_file,
-                            mojo::ScopedHandle handle);
+                            base::File file);
 
   // Connection to |font_service_| has gone away. Called on the background
   // thread.

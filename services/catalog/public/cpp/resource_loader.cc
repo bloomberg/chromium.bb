@@ -16,18 +16,6 @@
 
 namespace catalog {
 
-namespace {
-
-base::File GetFileFromHandle(mojo::ScopedHandle handle) {
-  CHECK(handle.is_valid());
-  base::PlatformFile platform_file;
-  CHECK_EQ(mojo::UnwrapPlatformFile(std::move(handle), &platform_file),
-           MOJO_RESULT_OK);
-  return base::File(platform_file);
-}
-
-}  // namespace
-
 ResourceLoader::ResourceLoader() {}
 ResourceLoader::~ResourceLoader() {}
 
@@ -50,7 +38,7 @@ bool ResourceLoader::OpenFiles(filesystem::mojom::DirectoryPtr directory,
 
   for (const auto& result : results) {
     resource_map_[result->path].reset(
-        new base::File(GetFileFromHandle(std::move(result->file_handle))));
+        new base::File(std::move(result->file_handle)));
   }
   return true;
 }

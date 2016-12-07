@@ -6,6 +6,7 @@ module filesystem.mojom;
 
 import "components/filesystem/public/interfaces/file.mojom";
 import "components/filesystem/public/interfaces/types.mojom";
+import "mojo/common/common_custom_types.mojom";
 
 struct FileOpenDetails {
   string path;
@@ -15,7 +16,7 @@ struct FileOpenDetails {
 struct FileOpenResult {
   string path;
   FileError error;
-  handle file_handle;
+  mojo.common.mojom.File? file_handle;
 };
 
 // This interface provides access to a directory in a "file system", providing
@@ -46,7 +47,7 @@ interface Directory {
   // native file descriptor wrapped in a MojoHandle.
   [Sync]
   OpenFileHandle(string path, uint32 open_flags)
-      => (FileError error, handle file_handle);
+      => (FileError error, mojo.common.mojom.File? file_handle);
 
   // Like OpenFileHandle, but opens multiple files.
   [Sync]

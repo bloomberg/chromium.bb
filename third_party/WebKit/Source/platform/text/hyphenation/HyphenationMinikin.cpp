@@ -8,7 +8,6 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/metrics/histogram.h"
 #include "base/timer/elapsed_timer.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "platform/LayoutLocale.h"
 #include "platform/text/hyphenation/HyphenatorAOSP.h"
 #include "public/platform/InterfaceProvider.h"
@@ -28,7 +27,7 @@ class HyphenationMinikin : public Hyphenation {
   Vector<size_t, 8> hyphenLocations(const StringView&) const override;
 
  private:
-  static base::PlatformFile openDictionaryFile(const AtomicString& locale);
+  static base::File openDictionaryFile(const AtomicString& locale);
 
   std::vector<uint8_t> hyphenate(const StringView&) const;
 
@@ -49,30 +48,20 @@ static const mojom::blink::HyphenationPtr& getService() {
   return service;
 }
 
-base::PlatformFile HyphenationMinikin::openDictionaryFile(
-    const AtomicString& locale) {
+base::File HyphenationMinikin::openDictionaryFile(const AtomicString& locale) {
   const mojom::blink::HyphenationPtr& service = getService();
-  mojo::ScopedHandle handle;
+  base::File file;
   base::ElapsedTimer timer;
-  service->OpenDictionary(locale, &handle);
+  service->OpenDictionary(locale, &file);
   UMA_HISTOGRAM_TIMES("Hyphenation.Open", timer.Elapsed());
-  if (!handle.is_valid())
-    return base::kInvalidPlatformFile;
-
-  base::PlatformFile file;
-  MojoResult result = mojo::UnwrapPlatformFile(std::move(handle), &file);
-  if (result != MOJO_RESULT_OK) {
-    DLOG(ERROR) << "UnwrapPlatformFile failed";
-    return base::kInvalidPlatformFile;
-  }
   return file;
 }
 
 bool HyphenationMinikin::openDictionary(const AtomicString& locale) {
-  base::PlatformFile file = openDictionaryFile(locale);
-  if (file == base::kInvalidPlatformFile)
+  base::File file = openDictionaryFile(locale);
+  if (!file.IsValid())
     return false;
-  if (!m_file.Initialize(base::File(file))) {
+  if (!m_file.Initialize(std::move(file))) {
     DLOG(ERROR) << "mmap failed";
     return false;
   }
