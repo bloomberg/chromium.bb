@@ -34,7 +34,10 @@ function testExecuteEntryTask(callback) {
         {taskId:'handler-extension-id|file|open', isDefault: false},
         {taskId:'handler-extension-id|file|play', isDefault: true}
       ]), 0);
-    }
+    },
+    onAppsUpdated: {
+      addListener: function() {},
+    },
   };
 
   var fileSystem = new MockFileSystem('volumeId');

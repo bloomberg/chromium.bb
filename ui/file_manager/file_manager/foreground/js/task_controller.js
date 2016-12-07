@@ -97,7 +97,9 @@ function TaskController(
       this.onSelectionChanged_.bind(this));
   this.selectionHandler_.addEventListener(
       FileSelectionHandler.EventType.CHANGE_THROTTLED,
-      this.onSelectionChangeThrottled_.bind(this));
+      this.updateTasks_.bind(this));
+  chrome.fileManagerPrivate.onAppsUpdated.addListener(
+      this.updateTasks_.bind(this));
 }
 
 /**
@@ -277,10 +279,10 @@ TaskController.prototype.onSelectionChanged_ = function() {
 };
 
 /**
- * Handles change of selection asynchronously and updates context menu.
+ * Updates available tasks opened from context menu or the open button.
  * @private
  */
-TaskController.prototype.onSelectionChangeThrottled_ = function() {
+TaskController.prototype.updateTasks_ = function() {
   var selection = this.selectionHandler_.selection;
   if (this.dialogType_ === DialogType.FULL_PAGE &&
       (selection.directoryCount > 0 || selection.fileCount > 0)) {
