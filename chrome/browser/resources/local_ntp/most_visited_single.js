@@ -23,13 +23,15 @@ var LOG_TYPE = {
 
 /**
  * The different sources that an NTP tile can have.
- * Note: Keep in sync with common/ntp_logging_events.h
+ * Note: Keep in sync with components/ntp_tiles/ntp_tile_source.h
  * @enum {number}
  * @const
  */
-var NTPLoggingTileSource = {
-  CLIENT: 0,
-  SERVER: 1,
+var NTPTileSource = {
+  TOP_SITES: 0,
+  SUGGESTIONS_SERVICE: 1,
+  POPULAR: 3,
+  WHITELIST: 4,
 };
 
 
@@ -95,7 +97,7 @@ var logEvent = function(eventType) {
 /**
  * Log impression of an NTP tile.
  * @param {number} tileIndex Position of the tile, >= 0 and < NUMBER_OF_TILES.
- * @param {number} tileSource The source from NTPLoggingTileSource.
+ * @param {number} tileSource The source from NTPTileSource.
  */
 function logMostVisitedImpression(tileIndex, tileSource) {
   chrome.embeddedSearch.newTabPage.logMostVisitedImpression(tileIndex,
@@ -105,7 +107,7 @@ function logMostVisitedImpression(tileIndex, tileSource) {
 /**
  * Log click on an NTP tile.
  * @param {number} tileIndex Position of the tile, >= 0 and < NUMBER_OF_TILES.
- * @param {number} tileSource The source from NTPLoggingTileSource.
+ * @param {number} tileSource The source from NTPTileSource.
  */
 function logMostVisitedNavigation(tileIndex, tileSource) {
   chrome.embeddedSearch.newTabPage.logMostVisitedNavigation(tileIndex,
@@ -292,7 +294,7 @@ var addTile = function(args) {
       return;
 
     data.tid = data.rid;
-    data.tileSource = NTPLoggingTileSource.CLIENT;
+    data.tileSource = NTPTileSource.TOP_SITES;
     if (!data.faviconUrl) {
       data.faviconUrl = 'chrome-search://favicon/size/16@' +
           window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
@@ -300,7 +302,7 @@ var addTile = function(args) {
     tiles.appendChild(renderTile(data));
   } else if (args.url) {
     // If a URL is passed: a server-side suggestion.
-    args.tileSource = NTPLoggingTileSource.SERVER;
+    args.tileSource = NTPTileSource.SUGGESTIONS_SERVICE;
     // check sanity of the arguments
     if (/^javascript:/i.test(args.url) ||
         /^javascript:/i.test(args.thumbnailUrl))
