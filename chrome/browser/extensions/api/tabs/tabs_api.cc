@@ -1158,9 +1158,8 @@ bool TabsUpdateFunction::RunAsync() {
 
   int tab_id = -1;
   WebContents* contents = NULL;
-  Browser* browser;
   if (!params->tab_id.get()) {
-    browser = GetCurrentBrowser();
+    Browser* browser = GetCurrentBrowser();
     if (!browser) {
       error_ = keys::kNoCurrentWindowError;
       return false;
@@ -1177,7 +1176,7 @@ bool TabsUpdateFunction::RunAsync() {
 
   int tab_index = -1;
   TabStripModel* tab_strip = NULL;
-  browser = nullptr;
+  Browser* browser = nullptr;
   if (!GetTabById(tab_id, browser_context(), include_incognito(), &browser,
                   &tab_strip, &contents, &tab_index, &error_)) {
     return false;
