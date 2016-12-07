@@ -234,6 +234,10 @@ void WebRuntimeFeatures::enableSlimmingPaintV2(bool enable) {
   RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(enable);
 }
 
+void WebRuntimeFeatures::enableSlimmingPaintInvalidation(bool enable) {
+  RuntimeEnabledFeatures::setSlimmingPaintInvalidationEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableSpeculativeLaunchServiceWorker(bool enable) {
   RuntimeEnabledFeatures::setSpeculativeLaunchServiceWorkerEnabled(enable);
 }

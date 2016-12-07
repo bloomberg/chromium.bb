@@ -829,6 +829,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_NAME,
      IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kGpuRasterizationMSAASampleCountChoices)},
+    {"enable-slimming-paint-invalidation",
+     IDS_FLAGS_ENABLE_SLIMMING_PAINT_INVALIDATION_NAME,
+     IDS_FLAGS_ENABLE_SLIMMING_PAINT_INVALIDATION_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableSlimmingPaintInvalidation)},
     {"enable-experimental-web-platform-features",
      IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME,
      IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION, kOsAll,
@@ -1984,8 +1988,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kNewAudioRenderingMixingStrategy)},
     {"disable-background-video-track",
      IDS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_NAME,
-     IDS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_DESCRIPTION,
-     kOsAll,
+     IDS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(media::kBackgroundVideoTrackOptimization)},
 #if defined(OS_CHROMEOS)
     {"files-quick-view", IDS_FLAGS_FILES_QUICK_VIEW_NAME,
@@ -2082,8 +2085,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_OFFLINE_PAGES_SVELTE_CONCURRENT_LOADING_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflinePagesSvelteConcurrentLoadingFeature)},
-    {"web-payments-modifiers",
-     IDS_FLAGS_WEB_PAYMENTS_MODIFIERS_NAME,
+    {"web-payments-modifiers", IDS_FLAGS_WEB_PAYMENTS_MODIFIERS_NAME,
      IDS_FLAGS_WEB_PAYMENTS_MODIFIERS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kWebPaymentsModifiers)},
 #endif
