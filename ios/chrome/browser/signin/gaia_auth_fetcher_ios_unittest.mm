@@ -36,7 +36,7 @@ class FakeGaiaAuthFetcherIOSBridge : public GaiaAuthFetcherIOSBridge {
     }
     return mock_web_view_;
   }
-  scoped_nsobject<id> mock_web_view_;
+  base::scoped_nsobject<id> mock_web_view_;
 };
 
 class MockGaiaConsumer : public GaiaAuthConsumer {
