@@ -907,6 +907,12 @@ ALWAYS_INLINE bool BreakingContext::isBreakAtSoftHyphen() const {
              : m_current.previousInSameNode() == softHyphenCharacter;
 }
 
+static ALWAYS_INLINE bool hasVisibleText(LineLayoutText layoutText,
+                                         unsigned offset) {
+  return !layoutText.containsOnlyWhitespace(offset,
+                                            layoutText.textLength() - offset);
+}
+
 inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
                                         bool& hyphenated) {
   if (!m_current.offset())
@@ -955,6 +961,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
   Hyphenation* hyphenation = style.getHyphenation();
   bool disableSoftHyphen = style.getHyphens() == HyphensNone;
   float hyphenWidth = 0;
+  bool isLineEmpty = m_lineInfo.isEmpty();
 
   if (layoutText.isSVGInlineText()) {
     breakWords = false;
@@ -1114,7 +1121,9 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
           midWordBreak = true;
         }
         m_width.addUncommittedWidth(wordMeasurement.width);
-      } else if (hyphenation) {
+      } else if (hyphenation &&
+                 (m_nextObject || isLineEmpty ||
+                  hasVisibleText(layoutText, m_current.offset()))) {
         m_width.addUncommittedWidth(-wordMeasurement.width);
         DCHECK(lastSpace == static_cast<unsigned>(wordMeasurement.startOffset));
         DCHECK(m_current.offset() ==
@@ -1203,6 +1212,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
     prepareForNextCharacter(layoutText, prohibitBreakInside,
                             previousCharacterIsSpace);
     m_atStart = false;
+    isLineEmpty = m_lineInfo.isEmpty();
     nextCharacter(c, lastCharacter, secondToLastCharacter);
   }
 
@@ -1253,7 +1263,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
     m_width.commit();
     m_atEnd = true;
   } else if (!m_width.fitsOnLine()) {
-    if (hyphenation && (m_nextObject || m_lineInfo.isEmpty())) {
+    if (hyphenation && (m_nextObject || isLineEmpty)) {
       m_width.addUncommittedWidth(-wordMeasurement.width);
       DCHECK(lastSpace == static_cast<unsigned>(wordMeasurement.startOffset));
       DCHECK(m_current.offset() ==

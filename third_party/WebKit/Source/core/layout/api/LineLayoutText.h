@@ -79,6 +79,10 @@ class LineLayoutText : public LineLayoutItem {
 
   const String& text() const { return toText()->text(); }
 
+  bool containsOnlyWhitespace(unsigned from, unsigned len) const {
+    return toText()->containsOnlyWhitespace(from, len);
+  }
+
   float width(unsigned from,
               unsigned len,
               const Font& font,

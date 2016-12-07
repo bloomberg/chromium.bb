@@ -128,6 +128,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   unsigned textLength() const {
     return m_text.length();
   }  // non virtual implementation of length()
+  bool containsOnlyWhitespace(unsigned from, unsigned len) const;
   void positionLineBox(InlineBox*);
 
   virtual float width(unsigned from,
@@ -258,7 +259,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   }
 
   void deleteTextBoxes();
-  bool containsOnlyWhitespace(unsigned from, unsigned len) const;
   float widthFromFont(const Font&,
                       int start,
                       int len,
