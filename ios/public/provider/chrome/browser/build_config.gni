@@ -5,11 +5,20 @@
 import("//build/config/chrome_build.gni")
 
 declare_args() {
+  # Label of the target providing application icons.  This target must be a
+  # bundle_data target that copy Icon-*.png files in the application bundle.
+  ios_application_icons_target = "//ios/chrome/app/resources:chromium_icons"
+
   # Label of the target providing image assets for the launchscreen.  This
   # target must be an asset catalog that contains at least two imagesets, one
   # named "launchscreen_app_logo" and one named "launchscreen_brand_name".
   ios_launchscreen_assets_target =
       "//ios/chrome/app/resources:launchscreen_assets"
+
+  # Label of the target providing packed resources (localizable strings,
+  # scalable and unscalable resources).  This target must copy the packed
+  # resources to the application bundle when depended on.
+  ios_packed_resources_target = "//ios/chrome/app/resources:packed_resources"
 
   # Label of the target providing implementation for ChromeBrowserProvider.
   # Overridden when using the Google-internal repository to build Chrome on iOS.

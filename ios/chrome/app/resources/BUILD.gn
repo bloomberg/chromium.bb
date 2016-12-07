@@ -2,9 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
+import("//build/config/ios/rules.gni")
 import("//build/config/locales.gni")
-import("//tools/grit/grit_rule.gni")
 import("//ios/chrome/app/resources/ios_chrome_repack.gni")
+import("//ios/public/provider/chrome/browser/build_config.gni")
+import("//tools/grit/grit_rule.gni")
 
 grit("resources") {
   source = "ios_resources.grd"
@@ -59,6 +62,24 @@ repack("repack_unscaled_resources") {
   copy_data_to_bundle = true
 }
 
+bundle_data("chromium_icons") {
+  sources = [
+    "chromium/Icon-120.png",
+    "chromium/Icon-152.png",
+    "chromium/Icon-167.png",
+    "chromium/Icon-180.png",
+    "chromium/Icon-29.png",
+    "chromium/Icon-40.png",
+    "chromium/Icon-58.png",
+    "chromium/Icon-76.png",
+    "chromium/Icon-80.png",
+    "chromium/Icon-87.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
 bundle_data("launchscreen_assets") {
   sources = [
     "launchscreen_images.xcassets/Contents.json",
@@ -66,6 +87,60 @@ bundle_data("launchscreen_assets") {
     "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo.png",
     "launchscreen_images.xcassets/launchscreen_brand_name.imageset/Contents.json",
     "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
+bundle_data_xib("launchscreen_xib") {
+  source = "LaunchScreen.xib"
+  deps = [
+    ios_launchscreen_assets_target,
+  ]
+}
+
+bundle_data("terms_of_service_bundle") {
+  sources = [
+    "//components/resources/terms/terms_ar.html",
+    "//components/resources/terms/terms_bg.html",
+    "//components/resources/terms/terms_ca.html",
+    "//components/resources/terms/terms_cs.html",
+    "//components/resources/terms/terms_da.html",
+    "//components/resources/terms/terms_de.html",
+    "//components/resources/terms/terms_el.html",
+    "//components/resources/terms/terms_en-GB.html",
+    "//components/resources/terms/terms_en.html",
+    "//components/resources/terms/terms_es-419.html",
+    "//components/resources/terms/terms_es.html",
+    "//components/resources/terms/terms_fa.html",
+    "//components/resources/terms/terms_fi.html",
+    "//components/resources/terms/terms_fr.html",
+    "//components/resources/terms/terms_he.html",
+    "//components/resources/terms/terms_hi.html",
+    "//components/resources/terms/terms_hr.html",
+    "//components/resources/terms/terms_hu.html",
+    "//components/resources/terms/terms_id.html",
+    "//components/resources/terms/terms_it.html",
+    "//components/resources/terms/terms_ja.html",
+    "//components/resources/terms/terms_ko.html",
+    "//components/resources/terms/terms_lt.html",
+    "//components/resources/terms/terms_nb.html",
+    "//components/resources/terms/terms_nl.html",
+    "//components/resources/terms/terms_pl.html",
+    "//components/resources/terms/terms_pt-BR.html",
+    "//components/resources/terms/terms_pt-PT.html",
+    "//components/resources/terms/terms_ro.html",
+    "//components/resources/terms/terms_ru.html",
+    "//components/resources/terms/terms_sk.html",
+    "//components/resources/terms/terms_sr.html",
+    "//components/resources/terms/terms_sv.html",
+    "//components/resources/terms/terms_th.html",
+    "//components/resources/terms/terms_tr.html",
+    "//components/resources/terms/terms_uk.html",
+    "//components/resources/terms/terms_vi.html",
+    "//components/resources/terms/terms_zh-CN.html",
+    "//components/resources/terms/terms_zh-TW.html",
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",
