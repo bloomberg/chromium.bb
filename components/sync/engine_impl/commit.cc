@@ -74,10 +74,12 @@ Commit* Commit::Init(ModelTypeSet requested_types,
 
   // Set extensions activity if bookmark commits are present.
   ExtensionsActivity::Records extensions_activity_buffer;
-  ContributionMap::const_iterator it = contributions.find(BOOKMARKS);
-  if (it != contributions.end() && it->second->GetNumEntries() != 0) {
-    commit_util::AddExtensionsActivityToMessage(
-        extensions_activity, &extensions_activity_buffer, commit_message);
+  if (extensions_activity != nullptr) {
+    ContributionMap::const_iterator it = contributions.find(BOOKMARKS);
+    if (it != contributions.end() && it->second->GetNumEntries() != 0) {
+      commit_util::AddExtensionsActivityToMessage(
+          extensions_activity, &extensions_activity_buffer, commit_message);
+    }
   }
 
   // Set the client config params.
@@ -179,9 +181,10 @@ SyncerError Commit::PostAndProcessResponse(
   }
 
   // Handle bookmarks' special extensions activity stats.
-  if (cycle->status_controller()
-          .model_neutral_state()
-          .num_successful_bookmark_commits == 0) {
+  if (extensions_activity != nullptr &&
+      cycle->status_controller()
+              .model_neutral_state()
+              .num_successful_bookmark_commits == 0) {
     extensions_activity->PutRecords(extensions_activity_buffer_);
   }
 

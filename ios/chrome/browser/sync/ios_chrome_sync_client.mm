@@ -30,7 +30,6 @@
 #include "components/reading_list/ios/reading_list_model.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
@@ -140,7 +139,6 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
     : browser_state_(browser_state),
       sync_sessions_client_(new SyncSessionsClientImpl(browser_state)),
-      dummy_extensions_activity_(new syncer::ExtensionsActivity()),
       weak_ptr_factory_(this) {}
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}
@@ -239,9 +237,7 @@ IOSChromeSyncClient::GetInvalidationService() {
 
 scoped_refptr<syncer::ExtensionsActivity>
 IOSChromeSyncClient::GetExtensionsActivity() {
-  // TODO(crbug.com/562048) Get rid of dummy_extensions_activity_ and return
-  // nullptr.
-  return dummy_extensions_activity_;
+  return nullptr;
 }
 
 sync_sessions::SyncSessionsClient*

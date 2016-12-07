@@ -78,8 +78,6 @@ class IOSChromeSyncClient : public syncer::SyncClient {
 
   std::unique_ptr<sync_sessions::SyncSessionsClient> sync_sessions_client_;
 
-  const scoped_refptr<syncer::ExtensionsActivity> dummy_extensions_activity_;
-
   base::WeakPtrFactory<IOSChromeSyncClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeSyncClient);
