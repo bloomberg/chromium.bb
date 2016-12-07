@@ -39,28 +39,11 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLContentElement.h"
-#include "core/html/HTMLDimension.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include <cstdlib>
 
 namespace blink {
-
-namespace {
-
-String convertHTMLLengthToCSSLength(const String& htmlLength) {
-  HTMLDimension dimension;
-  parseDimensionValue(htmlLength, dimension);
-  if (dimension.isRelative())
-    return String();
-  CSSPrimitiveValue* cssValue = CSSPrimitiveValue::create(
-      dimension.value(), dimension.isPercentage()
-                             ? CSSPrimitiveValue::UnitType::Percentage
-                             : CSSPrimitiveValue::UnitType::Pixels);
-  return cssValue->customCSSText();
-}
-
-}  // namespace
 
 inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     : HTMLElement(HTMLNames::marqueeTag, document) {
@@ -76,8 +59,8 @@ HTMLMarqueeElement* HTMLMarqueeElement::create(Document& document) {
 void HTMLMarqueeElement::didAddUserAgentShadowRoot(ShadowRoot& shadowRoot) {
   Element* style = HTMLStyleElement::create(document(), false);
   style->setTextContent(
-      ":host { display: inline-block; width: -webkit-fill-available; overflow: "
-      "hidden; text-align: initial; white-space: nowrap; }"
+      ":host { display: inline-block; overflow: hidden;"
+      "text-align: initial; white-space: nowrap; }"
       ":host([direction=\"up\"]), :host([direction=\"down\"]) { overflow: "
       "initial; overflow-y: hidden; white-space: initial; }"
       ":host > div { will-change: transform; }");
@@ -90,31 +73,12 @@ void HTMLMarqueeElement::didAddUserAgentShadowRoot(ShadowRoot& shadowRoot) {
   m_mover = mover;
 }
 
-void HTMLMarqueeElement::attributeChanged(const QualifiedName& name,
-                                          const AtomicString& oldValue,
-                                          const AtomicString& newValue,
-                                          AttributeModificationReason reason) {
-  HTMLElement::attributeChanged(name, oldValue, newValue, reason);
-  attributeChangedCallback(name, newValue);
-}
-
 Node::InsertionNotificationRequest HTMLMarqueeElement::insertedInto(
     ContainerNode* insertionPoint) {
   HTMLElement::insertedInto(insertionPoint);
 
-  if (isConnected()) {
-    static const QualifiedName* presentationalAttributes[] = {
-        &HTMLNames::bgcolorAttr, &HTMLNames::heightAttr, &HTMLNames::hspaceAttr,
-        &HTMLNames::vspaceAttr, &HTMLNames::widthAttr};
-    for (const auto* attr : presentationalAttributes) {
-      const AtomicString& value = getAttribute(*attr);
-      if (value.isNull())
-        continue;
-      attributeChangedCallback(*attr, value);
-    }
-
+  if (isConnected())
     start();
-  }
 
   return InsertionDone;
 }
@@ -207,28 +171,34 @@ void HTMLMarqueeElement::stop() {
     m_player->pause();
 }
 
-void HTMLMarqueeElement::attributeChangedCallback(const QualifiedName& attr,
-                                                  const String& newValue) {
+bool HTMLMarqueeElement::isPresentationAttribute(
+    const QualifiedName& attr) const {
+  if (attr == HTMLNames::bgcolorAttr || attr == HTMLNames::heightAttr ||
+      attr == HTMLNames::hspaceAttr || attr == HTMLNames::vspaceAttr ||
+      attr == HTMLNames::widthAttr) {
+    return true;
+  }
+  return HTMLElement::isPresentationAttribute(attr);
+}
+
+void HTMLMarqueeElement::collectStyleForPresentationAttribute(
+    const QualifiedName& attr,
+    const AtomicString& value,
+    MutableStylePropertySet* style) {
   if (attr == HTMLNames::bgcolorAttr) {
-    style()->setProperty("background-color", newValue, String(),
-                         ASSERT_NO_EXCEPTION);
+    addHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
   } else if (attr == HTMLNames::heightAttr) {
-    style()->setProperty("height", convertHTMLLengthToCSSLength(newValue),
-                         String(), ASSERT_NO_EXCEPTION);
+    addHTMLLengthToStyle(style, CSSPropertyHeight, value);
   } else if (attr == HTMLNames::hspaceAttr) {
-    style()->setProperty("margin-left", convertHTMLLengthToCSSLength(newValue),
-                         String(), ASSERT_NO_EXCEPTION);
-    style()->setProperty("margin-right", convertHTMLLengthToCSSLength(newValue),
-                         String(), ASSERT_NO_EXCEPTION);
+    addHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
+    addHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
   } else if (attr == HTMLNames::vspaceAttr) {
-    style()->setProperty("margin-top", convertHTMLLengthToCSSLength(newValue),
-                         String(), ASSERT_NO_EXCEPTION);
-    style()->setProperty("margin-bottom",
-                         convertHTMLLengthToCSSLength(newValue), String(),
-                         ASSERT_NO_EXCEPTION);
+    addHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
+    addHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
   } else if (attr == HTMLNames::widthAttr) {
-    style()->setProperty("width", convertHTMLLengthToCSSLength(newValue),
-                         String(), ASSERT_NO_EXCEPTION);
+    addHTMLLengthToStyle(style, CSSPropertyWidth, value);
+  } else {
+    HTMLElement::collectStyleForPresentationAttribute(attr, value, style);
   }
 }
 

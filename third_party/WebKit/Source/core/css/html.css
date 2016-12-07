@@ -85,6 +85,7 @@ article, aside, footer, header, hgroup, main, nav, section {
 
 marquee {
     display: inline-block;
+    width: -webkit-fill-available;
 }
 
 address {

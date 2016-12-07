@@ -39,10 +39,6 @@ class HTMLMarqueeElement final : public HTMLElement {
 
   static HTMLMarqueeElement* create(Document&);
 
-  void attributeChanged(const QualifiedName&,
-                        const AtomicString& oldValue,
-                        const AtomicString& newValue,
-                        AttributeModificationReason) final;
   InsertionNotificationRequest insertedInto(ContainerNode*) final;
   void removedFrom(ContainerNode*) final;
 
@@ -63,6 +59,11 @@ class HTMLMarqueeElement final : public HTMLElement {
  private:
   explicit HTMLMarqueeElement(Document&);
   void didAddUserAgentShadowRoot(ShadowRoot&) override;
+
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 
   class RequestAnimationFrameCallback final : public FrameRequestCallback {
     WTF_MAKE_NONCOPYABLE(RequestAnimationFrameCallback);
@@ -115,9 +116,6 @@ class HTMLMarqueeElement final : public HTMLElement {
     double marqueeWidth;
     double marqueeHeight;
   };
-
-  void attributeChangedCallback(const QualifiedName& attr,
-                                const String& newValue);
 
   StringKeyframeEffectModel* createEffectModel(AnimationParameters&);
 
