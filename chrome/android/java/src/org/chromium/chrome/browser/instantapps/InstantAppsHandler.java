@@ -77,6 +77,20 @@ public class InstantAppsHandler {
     private static final TimesHistogramSample sInstantAppsApiCallTimes = new TimesHistogramSample(
             "Android.InstantApps.ApiCallDuration2", TimeUnit.MILLISECONDS);
 
+    /**
+     * A histogram to record how long the GMS Core API call took when the instant app was found.
+     */
+    private static final TimesHistogramSample sInstantAppsApiCallTimesHasApp =
+            new TimesHistogramSample("Android.InstantApps.ApiCallDurationWithApp",
+                    TimeUnit.MILLISECONDS);
+
+    /**
+     * A histogram to record how long the GMS Core API call took when the instant app was not found.
+     */
+    private static final TimesHistogramSample sInstantAppsApiCallTimesNoApp =
+            new TimesHistogramSample("Android.InstantApps.ApiCallDurationWithoutApp",
+                    TimeUnit.MILLISECONDS);
+
     /** @return The singleton instance of {@link InstantAppsHandler}. */
     public static InstantAppsHandler getInstance() {
         synchronized (INSTANCE_LOCK) {
@@ -118,6 +132,19 @@ public class InstantAppsHandler {
      */
     protected void recordInstantAppsApiCallTime(long startTime) {
         sInstantAppsApiCallTimes.record(SystemClock.elapsedRealtime() - startTime);
+    }
+
+    /**
+     * Record the amount of time spent in the Instant Apps API call.
+     * @param startTime The time at which we started doing computations.
+     * @param hasApp Whether the API has found an Instant App during the call.
+     */
+    protected void recordInstantAppsApiCallTime(long startTime, boolean hasApp) {
+        if (hasApp) {
+            sInstantAppsApiCallTimesHasApp.record(SystemClock.elapsedRealtime() - startTime);
+        } else {
+            sInstantAppsApiCallTimesNoApp.record(SystemClock.elapsedRealtime() - startTime);
+        }
     }
 
     /**
