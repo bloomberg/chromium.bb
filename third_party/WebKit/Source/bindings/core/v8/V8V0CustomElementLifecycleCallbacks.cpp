@@ -104,7 +104,6 @@ V8V0CustomElementLifecycleCallbacks::V8V0CustomElementLifecycleCallbacks(
     v8::MaybeLocal<v8::Function> attributeChanged)
     : V0CustomElementLifecycleCallbacks(
           flagSet(attached, detached, attributeChanged)),
-      ContextLifecycleObserver(scriptState->getExecutionContext()),
       m_scriptState(scriptState),
       m_prototype(scriptState->isolate(), prototype),
       m_created(scriptState->isolate(), created),
@@ -122,7 +121,7 @@ V8V0CustomElementLifecycleCallbacks::V8V0CustomElementLifecycleCallbacks(
 }
 
 V8PerContextData* V8V0CustomElementLifecycleCallbacks::creationContextData() {
-  if (!getExecutionContext())
+  if (!m_scriptState->contextIsValid())
     return 0;
 
   v8::Local<v8::Context> context = m_scriptState->context();
@@ -151,9 +150,6 @@ void V8V0CustomElementLifecycleCallbacks::created(Element* element) {
   // FIXME: callbacks while paused should be queued up for execution to
   // continue then be delivered in order rather than delivered immediately.
   // Bug 329665 tracks similar behavior for other synchronous events.
-  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
-    return;
-
   if (!m_scriptState->contextIsValid())
     return;
 
@@ -181,8 +177,8 @@ void V8V0CustomElementLifecycleCallbacks::created(Element* element) {
 
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
-  V8ScriptRunner::callFunction(callback, getExecutionContext(), receiver, 0, 0,
-                               isolate);
+  V8ScriptRunner::callFunction(callback, m_scriptState->getExecutionContext(),
+                               receiver, 0, 0, isolate);
 }
 
 void V8V0CustomElementLifecycleCallbacks::attached(Element* element) {
@@ -201,9 +197,6 @@ void V8V0CustomElementLifecycleCallbacks::attributeChanged(
   // FIXME: callbacks while paused should be queued up for execution to
   // continue then be delivered in order rather than delivered immediately.
   // Bug 329665 tracks similar behavior for other synchronous events.
-  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
-    return;
-
   if (!m_scriptState->contextIsValid())
     return;
   ScriptState::Scope scope(m_scriptState.get());
@@ -226,8 +219,8 @@ void V8V0CustomElementLifecycleCallbacks::attributeChanged(
 
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
-  V8ScriptRunner::callFunction(callback, getExecutionContext(), receiver,
-                               WTF_ARRAY_LENGTH(argv), argv, isolate);
+  V8ScriptRunner::callFunction(callback, m_scriptState->getExecutionContext(),
+                               receiver, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
 void V8V0CustomElementLifecycleCallbacks::call(
@@ -236,9 +229,6 @@ void V8V0CustomElementLifecycleCallbacks::call(
   // FIXME: callbacks while paused should be queued up for execution to
   // continue then be delivered in order rather than delivered immediately.
   // Bug 329665 tracks similar behavior for other synchronous events.
-  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
-    return;
-
   if (!m_scriptState->contextIsValid())
     return;
   ScriptState::Scope scope(m_scriptState.get());
@@ -254,13 +244,12 @@ void V8V0CustomElementLifecycleCallbacks::call(
 
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
-  V8ScriptRunner::callFunction(callback, getExecutionContext(), receiver, 0, 0,
-                               isolate);
+  V8ScriptRunner::callFunction(callback, m_scriptState->getExecutionContext(),
+                               receiver, 0, 0, isolate);
 }
 
 DEFINE_TRACE(V8V0CustomElementLifecycleCallbacks) {
   V0CustomElementLifecycleCallbacks::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink
