@@ -380,10 +380,10 @@ TEST(DrawPolygonSplitTest, SlimClip) {
       gfx::Vector3dF(sqrt(2) / 2, -sqrt(2) / 2, 0.000000), 1);
 
   // These are well formed, convex polygons.
-  EXPECT_TRUE(IsPlanarForTesting(*(polygon_a.get())));
-  EXPECT_TRUE(IsConvexForTesting(*(polygon_a.get())));
-  EXPECT_TRUE(IsPlanarForTesting(*(polygon_b.get())));
-  EXPECT_TRUE(IsConvexForTesting(*(polygon_b.get())));
+  EXPECT_TRUE(IsPlanarForTesting(*polygon_a));
+  EXPECT_TRUE(IsConvexForTesting(*polygon_a));
+  EXPECT_TRUE(IsPlanarForTesting(*polygon_b));
+  EXPECT_TRUE(IsConvexForTesting(*polygon_b));
 
   std::unique_ptr<DrawPolygon> front_polygon;
   std::unique_ptr<DrawPolygon> back_polygon;
@@ -435,8 +435,8 @@ TEST(DrawPolygonSplitTest, BasicSplit) {
   test_points_b.push_back(gfx::Point3F(5.0f, 10.0f, -5.0f));
   test_points_b.push_back(gfx::Point3F(5.0f, 0.0f, -5.0f));
   test_points_b.push_back(gfx::Point3F(5.0f, 0.0f, 0.0f));
-  ValidatePoints(*(front_polygon.get()), test_points_a);
-  ValidatePoints(*(back_polygon.get()), test_points_b);
+  ValidatePoints(*front_polygon, test_points_a);
+  ValidatePoints(*back_polygon, test_points_b);
 
   EXPECT_EQ(4u, front_polygon->points().size());
   EXPECT_EQ(4u, back_polygon->points().size());
@@ -482,8 +482,8 @@ TEST(DrawPolygonSplitTest, AngledSplit) {
   test_points_b.push_back(gfx::Point3F(10.0f, 0.0f, 10.0f));
   test_points_b.push_back(gfx::Point3F(10.0f, 0.0f, 9.0f));
 
-  ValidatePointsWithinDeltaOf(*(front_polygon.get()), test_points_a, 1e-6f);
-  ValidatePointsWithinDeltaOf(*(back_polygon.get()), test_points_b, 1e-6f);
+  ValidatePointsWithinDeltaOf(*front_polygon, test_points_a, 1e-6f);
+  ValidatePointsWithinDeltaOf(*back_polygon, test_points_b, 1e-6f);
 }
 
 // In this test we cut the corner of a quad so that it creates a triangle and
