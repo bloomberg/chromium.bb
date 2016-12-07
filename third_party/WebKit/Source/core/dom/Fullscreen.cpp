@@ -87,8 +87,11 @@ bool allowedToRequestFullscreen(Document& document) {
     return true;
 
   //  The algorithm is triggered by a user generated orientation change.
-  if (ScopedOrientationChangeIndicator::processingOrientationChange())
+  if (ScopedOrientationChangeIndicator::processingOrientationChange()) {
+    UseCounter::count(document,
+                      UseCounter::FullscreenAllowedByOrientationChange);
     return true;
+  }
 
   String message = ExceptionMessages::failedToExecute(
       "requestFullscreen", "Element",

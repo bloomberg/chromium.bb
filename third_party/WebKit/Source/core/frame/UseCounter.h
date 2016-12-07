@@ -1386,6 +1386,7 @@ class CORE_EXPORT UseCounter {
     CSSGridLayout = 1693,
     V8BarcodeDetector_Detect_Method = 1694,
     V8FaceDetector_Detect_Method = 1695,
+    FullscreenAllowedByOrientationChange = 1696,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
