@@ -258,22 +258,24 @@ Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const {
   return resource.get();
 }
 
-bool ResourceFetcher::canAccessResponse(
+ResourceRequestBlockedReason ResourceFetcher::canAccessResponse(
     Resource* resource,
     const ResourceResponse& response) const {
   // Redirects can change the response URL different from one of request.
   bool forPreload = resource->isUnusedPreload();
-  if (!context().canRequest(resource->getType(), resource->resourceRequest(),
-                            response.url(), resource->options(), forPreload,
-                            FetchRequest::UseDefaultOriginRestrictionForType))
-    return false;
+  ResourceRequestBlockedReason blockedReason =
+      context().canRequest(resource->getType(), resource->resourceRequest(),
+                           response.url(), resource->options(), forPreload,
+                           FetchRequest::UseDefaultOriginRestrictionForType);
+  if (blockedReason != ResourceRequestBlockedReason::None)
+    return blockedReason;
 
   SecurityOrigin* sourceOrigin = resource->options().securityOrigin.get();
   if (!sourceOrigin)
     sourceOrigin = context().getSecurityOrigin();
 
   if (sourceOrigin->canRequestNoSuborigin(response.url()))
-    return true;
+    return ResourceRequestBlockedReason::None;
 
   // Use the original response instead of the 304 response for a successful
   // revaldiation.
@@ -295,9 +297,9 @@ bool ResourceFetcher::canAccessResponse(
           "' from origin '" + sourceOrigin->toString() +
           "' has been blocked by CORS policy: " + errorDescription);
     }
-    return false;
+    return ResourceRequestBlockedReason::Other;
   }
-  return true;
+  return ResourceRequestBlockedReason::None;
 }
 
 bool ResourceFetcher::isControlledByServiceWorker() const {
@@ -437,10 +439,12 @@ Resource* ResourceFetcher::resourceForStaticData(
 
 Resource* ResourceFetcher::resourceForBlockedRequest(
     const FetchRequest& request,
-    const ResourceFactory& factory) {
+    const ResourceFactory& factory,
+    ResourceRequestBlockedReason blockedReason) {
   Resource* resource = factory.create(request.resourceRequest(),
                                       request.options(), request.charset());
-  resource->error(ResourceError::cancelledDueToAccessCheckError(request.url()));
+  resource->error(ResourceError::cancelledDueToAccessCheckError(request.url(),
+                                                                blockedReason));
   return resource;
 }
 
@@ -513,13 +517,13 @@ Resource* ResourceFetcher::requestResource(
   network_instrumentation::resourcePrioritySet(
       identifier, request.resourceRequest().priority());
 
-  if (!context().canRequest(
-          factory.type(), request.resourceRequest(),
-          MemoryCache::removeFragmentIdentifierIfNeeded(request.url()),
-          request.options(), request.forPreload(),
-          request.getOriginRestriction())) {
+  ResourceRequestBlockedReason blockedReason = context().canRequest(
+      factory.type(), request.resourceRequest(),
+      MemoryCache::removeFragmentIdentifierIfNeeded(request.url()),
+      request.options(), request.forPreload(), request.getOriginRestriction());
+  if (blockedReason != ResourceRequestBlockedReason::None) {
     DCHECK(!substituteData.forceSynchronousLoad());
-    return resourceForBlockedRequest(request, factory);
+    return resourceForBlockedRequest(request, factory, blockedReason);
   }
 
   context().willStartLoadingResource(
@@ -1232,19 +1236,25 @@ void ResourceFetcher::didReceiveResponse(
     // not to load the resources which are forbidden by the page CSP.
     // https://w3c.github.io/webappsec-csp/#should-block-response
     const KURL& originalURL = response.originalURLViaServiceWorker();
-    if (!originalURL.isEmpty() &&
-        !context().allowResponse(resource->getType(),
-                                 resource->resourceRequest(), originalURL,
-                                 resource->options())) {
-      resource->loader()->didFail(
-          ResourceError::cancelledDueToAccessCheckError(originalURL));
+    if (!originalURL.isEmpty()) {
+      ResourceRequestBlockedReason blockedReason = context().allowResponse(
+          resource->getType(), resource->resourceRequest(), originalURL,
+          resource->options());
+      if (blockedReason != ResourceRequestBlockedReason::None) {
+        resource->loader()->didFail(
+            ResourceError::cancelledDueToAccessCheckError(originalURL,
+                                                          blockedReason));
+        return;
+      }
+    }
+  } else if (resource->options().corsEnabled == IsCORSEnabled) {
+    ResourceRequestBlockedReason blockedReason =
+        canAccessResponse(resource, response);
+    if (blockedReason != ResourceRequestBlockedReason::None) {
+      resource->loader()->didFail(ResourceError::cancelledDueToAccessCheckError(
+          response.url(), blockedReason));
       return;
     }
-  } else if (resource->options().corsEnabled == IsCORSEnabled &&
-             !canAccessResponse(resource, response)) {
-    resource->loader()->didFail(
-        ResourceError::cancelledDueToAccessCheckError(response.url()));
-    return;
   }
 
   context().dispatchDidReceiveResponse(
@@ -1363,15 +1373,17 @@ static bool isManualRedirectFetchRequest(const ResourceRequest& request) {
          request.requestContext() == WebURLRequest::RequestContextFetch;
 }
 
-bool ResourceFetcher::willFollowRedirect(
+ResourceRequestBlockedReason ResourceFetcher::willFollowRedirect(
     Resource* resource,
     ResourceRequest& newRequest,
     const ResourceResponse& redirectResponse) {
   if (!isManualRedirectFetchRequest(resource->resourceRequest())) {
-    if (!context().canRequest(resource->getType(), newRequest, newRequest.url(),
-                              resource->options(), resource->isUnusedPreload(),
-                              FetchRequest::UseDefaultOriginRestrictionForType))
-      return false;
+    ResourceRequestBlockedReason blockedReason =
+        context().canRequest(resource->getType(), newRequest, newRequest.url(),
+                             resource->options(), resource->isUnusedPreload(),
+                             FetchRequest::UseDefaultOriginRestrictionForType);
+    if (blockedReason != ResourceRequestBlockedReason::None)
+      return blockedReason;
     if (resource->options().corsEnabled == IsCORSEnabled) {
       RefPtr<SecurityOrigin> sourceOrigin = resource->options().securityOrigin;
       if (!sourceOrigin.get())
@@ -1387,12 +1399,13 @@ bool ResourceFetcher::willFollowRedirect(
               resource->mutableOptions(), errorMessage)) {
         resource->setCORSFailed();
         context().addConsoleMessage(errorMessage);
-        return false;
+        return ResourceRequestBlockedReason::Other;
       }
     }
     if (resource->getType() == Resource::Image &&
-        shouldDeferImageLoad(newRequest.url()))
-      return false;
+        shouldDeferImageLoad(newRequest.url())) {
+      return ResourceRequestBlockedReason::Other;
+    }
   }
 
   ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
@@ -1404,7 +1417,7 @@ bool ResourceFetcher::willFollowRedirect(
                                        AllowStoredCredentials);
   willSendRequest(resource->identifier(), newRequest, redirectResponse,
                   resource->options());
-  return true;
+  return ResourceRequestBlockedReason::None;
 }
 
 void ResourceFetcher::willSendRequest(unsigned long identifier,

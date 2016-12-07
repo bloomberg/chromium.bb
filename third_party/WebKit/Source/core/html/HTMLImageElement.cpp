@@ -94,9 +94,9 @@ HTMLImageElement::HTMLImageElement(Document& document,
       m_imageLoader(HTMLImageLoader::create(this)),
       m_imageDevicePixelRatio(1.0f),
       m_source(nullptr),
+      m_layoutDisposition(LayoutDisposition::PrimaryContent),
       m_formWasSetByParser(false),
       m_elementCreatedByParser(createdByParser),
-      m_useFallbackContent(false),
       m_isFallbackImage(false),
       m_referrerPolicy(ReferrerPolicyDefault) {
   setHasCustomStyleCallbacks();
@@ -340,6 +340,11 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent() {
   return ImageCandidate();
 }
 
+bool HTMLImageElement::layoutObjectIsNeeded(const ComputedStyle& style) {
+  return m_layoutDisposition != LayoutDisposition::Collapsed &&
+         HTMLElement::layoutObjectIsNeeded(style);
+}
+
 LayoutObject* HTMLImageElement::createLayoutObject(const ComputedStyle& style) {
   const ContentData* contentData = style.contentData();
   if (contentData && contentData->isImage()) {
@@ -350,13 +355,20 @@ LayoutObject* HTMLImageElement::createLayoutObject(const ComputedStyle& style) {
       return LayoutObject::createObject(this, style);
   }
 
-  if (m_useFallbackContent)
-    return new LayoutBlockFlow(this);
-
-  LayoutImage* image = new LayoutImage(this);
-  image->setImageResource(LayoutImageResource::create());
-  image->setImageDevicePixelRatio(m_imageDevicePixelRatio);
-  return image;
+  switch (m_layoutDisposition) {
+    case LayoutDisposition::FallbackContent:
+      return new LayoutBlockFlow(this);
+    case LayoutDisposition::PrimaryContent: {
+      LayoutImage* image = new LayoutImage(this);
+      image->setImageResource(LayoutImageResource::create());
+      image->setImageDevicePixelRatio(m_imageDevicePixelRatio);
+      return image;
+    }
+    case LayoutDisposition::Collapsed:  // Falls through.
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 void HTMLImageElement::attachLayoutTree(const AttachContext& context) {
@@ -771,6 +783,7 @@ void HTMLImageElement::selectSourceURL(
         fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr), &document());
     setBestFitURLAndDPRFromImageCandidate(candidate);
   }
+
   imageLoader().updateFromElement(behavior, m_referrerPolicy);
 
   // Images such as data: uri's can return immediately and may already have
@@ -802,7 +815,7 @@ void HTMLImageElement::selectSourceURL(
   if ((imageHasLoaded && imageHasImage) || imageStillLoading || imageIsDocument)
     ensurePrimaryContent();
   else
-    ensureFallbackContent();
+    ensureCollapsedOrFallbackContent();
 }
 
 const KURL& HTMLImageElement::sourceURL() const {
@@ -814,49 +827,62 @@ void HTMLImageElement::didAddUserAgentShadowRoot(ShadowRoot&) {
 }
 
 void HTMLImageElement::ensureFallbackForGeneratedContent() {
-  setUseFallbackContent();
-  reattachFallbackContent();
+  // The special casing for generated content in createLayoutObject breaks the
+  // invariant that the layout object attached to this element will always be
+  // appropriate for |m_layoutDisposition|. Force recreate it.
+  // TODO(engedy): Remove this hack. See: https://crbug.com/671953.
+  setLayoutDisposition(LayoutDisposition::FallbackContent,
+                       true /* forceReattach */);
 }
 
-void HTMLImageElement::ensureFallbackContent() {
-  if (m_useFallbackContent || m_isFallbackImage)
+void HTMLImageElement::ensureCollapsedOrFallbackContent() {
+  if (m_isFallbackImage)
     return;
-  setUseFallbackContent();
-  reattachFallbackContent();
+
+  bool resourceErrorIndicatesElementShouldBeCollapsed =
+      imageLoader().image() &&
+      imageLoader().image()->resourceError().shouldCollapseInitiator();
+  setLayoutDisposition(resourceErrorIndicatesElementShouldBeCollapsed
+                           ? LayoutDisposition::Collapsed
+                           : LayoutDisposition::FallbackContent);
 }
 
 void HTMLImageElement::ensurePrimaryContent() {
-  if (!m_useFallbackContent)
-    return;
-  m_useFallbackContent = false;
-  reattachFallbackContent();
+  setLayoutDisposition(LayoutDisposition::PrimaryContent);
 }
 
-void HTMLImageElement::reattachFallbackContent() {
+void HTMLImageElement::setLayoutDisposition(LayoutDisposition layoutDisposition,
+                                            bool forceReattach) {
+  if (m_layoutDisposition == layoutDisposition && !forceReattach)
+    return;
+
+  m_layoutDisposition = layoutDisposition;
+
   // This can happen inside of attachLayoutTree() in the middle of a recalcStyle
   // so we need to reattach synchronously here.
-  if (document().inStyleRecalc())
+  if (document().inStyleRecalc()) {
     reattachLayoutTree();
-  else
+  } else {
+    if (m_layoutDisposition == LayoutDisposition::FallbackContent) {
+      EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
+      ensureUserAgentShadowRoot();
+    }
     lazyReattachIfAttached();
+  }
 }
 
 PassRefPtr<ComputedStyle> HTMLImageElement::customStyleForLayoutObject() {
-  RefPtr<ComputedStyle> newStyle = originalStyleForLayoutObject();
-
-  if (!m_useFallbackContent)
-    return newStyle;
-
-  RefPtr<ComputedStyle> style = ComputedStyle::clone(*newStyle);
-  return HTMLImageFallbackHelper::customStyleForAltText(*this, style);
-}
-
-void HTMLImageElement::setUseFallbackContent() {
-  m_useFallbackContent = true;
-  if (document().inStyleRecalc())
-    return;
-  EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
-  ensureUserAgentShadowRoot();
+  switch (m_layoutDisposition) {
+    case LayoutDisposition::PrimaryContent:  // Fall through.
+    case LayoutDisposition::Collapsed:
+      return originalStyleForLayoutObject();
+    case LayoutDisposition::FallbackContent:
+      return HTMLImageFallbackHelper::customStyleForAltText(
+          *this, ComputedStyle::clone(*originalStyleForLayoutObject()));
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 bool HTMLImageElement::isOpaque() const {

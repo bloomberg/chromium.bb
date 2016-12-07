@@ -45,14 +45,14 @@ namespace blink {
 
 enum class WebCachePolicy;
 
-enum ResourceRequestBlockedReason {
-  ResourceRequestBlockedReasonCSP,
-  ResourceRequestBlockedReasonMixedContent,
-  ResourceRequestBlockedReasonOrigin,
-  ResourceRequestBlockedReasonInspector,
-  ResourceRequestBlockedReasonSubresourceFilter,
-  ResourceRequestBlockedReasonOther,
-  ResourceRequestBlockedReasonNone
+enum class ResourceRequestBlockedReason {
+  CSP,
+  MixedContent,
+  Origin,
+  Inspector,
+  SubresourceFilter,
+  Other,
+  None
 };
 
 enum InputToLoadPerfMetricReportPolicy {

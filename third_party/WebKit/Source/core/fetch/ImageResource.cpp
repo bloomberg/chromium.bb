@@ -83,12 +83,14 @@ ImageResource* ImageResource::fetch(FetchRequest& request,
   }
   if (fetcher->context().pageDismissalEventBeingDispatched()) {
     KURL requestURL = request.resourceRequest().url();
-    if (requestURL.isValid() &&
-        fetcher->context().canRequest(Resource::Image,
-                                      request.resourceRequest(), requestURL,
-                                      request.options(), request.forPreload(),
-                                      request.getOriginRestriction()))
-      fetcher->context().sendImagePing(requestURL);
+    if (requestURL.isValid()) {
+      ResourceRequestBlockedReason blockReason = fetcher->context().canRequest(
+          Resource::Image, request.resourceRequest(), requestURL,
+          request.options(), request.forPreload(),
+          request.getOriginRestriction());
+      if (blockReason == ResourceRequestBlockedReason::None)
+        fetcher->context().sendImagePing(requestURL);
+    }
     return nullptr;
   }
 

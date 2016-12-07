@@ -43,7 +43,6 @@ class CORE_EXPORT HTMLImageLoader final : public ImageLoader {
  private:
   explicit HTMLImageLoader(Element*);
   void noImageResourceToLoad() override;
-  void ensureFallbackContent();
 };
 
 }  // namespace blink

@@ -112,7 +112,8 @@ class CORE_EXPORT ResourceLoader final
   // Assumes ResourceFetcher and Resource are non-null.
   ResourceLoader(ResourceFetcher*, Resource*);
 
-  void cancelForRedirectAccessCheckError(const KURL&);
+  void cancelForRedirectAccessCheckError(const KURL&,
+                                         ResourceRequestBlockedReason);
   void requestSynchronously(const ResourceRequest&);
 
   std::unique_ptr<WebURLLoader> m_loader;

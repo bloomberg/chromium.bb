@@ -115,7 +115,9 @@ class CORE_EXPORT ResourceFetcher
   void stopFetching();
   bool isFetching() const;
 
-  bool willFollowRedirect(Resource*, ResourceRequest&, const ResourceResponse&);
+  ResourceRequestBlockedReason willFollowRedirect(Resource*,
+                                                  ResourceRequest&,
+                                                  const ResourceResponse&);
   enum DidFinishLoadingReason {
     DidFinishLoading,
     DidFinishFirstPartInMultipart
@@ -180,7 +182,8 @@ class CORE_EXPORT ResourceFetcher
                                   const ResourceFactory&,
                                   const SubstituteData&);
   Resource* resourceForBlockedRequest(const FetchRequest&,
-                                      const ResourceFactory&);
+                                      const ResourceFactory&,
+                                      ResourceRequestBlockedReason);
 
   // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
   enum RevalidationPolicy { Use, Revalidate, Reload, Load };
@@ -200,7 +203,8 @@ class CORE_EXPORT ResourceFetcher
                        ResourceRequest&,
                        const ResourceResponse&,
                        const ResourceLoaderOptions&);
-  bool canAccessResponse(Resource*, const ResourceResponse&) const;
+  ResourceRequestBlockedReason canAccessResponse(Resource*,
+                                                 const ResourceResponse&) const;
 
   void requestLoadStarted(unsigned long identifier,
                           Resource*,

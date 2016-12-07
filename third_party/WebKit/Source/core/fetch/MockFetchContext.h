@@ -38,13 +38,14 @@ class MockFetchContext : public FetchContext {
   bool allowImage(bool imagesEnabled, const KURL&) const override {
     return true;
   }
-  bool canRequest(Resource::Type,
-                  const ResourceRequest&,
-                  const KURL&,
-                  const ResourceLoaderOptions&,
-                  bool forPreload,
-                  FetchRequest::OriginRestriction) const override {
-    return true;
+  ResourceRequestBlockedReason canRequest(
+      Resource::Type,
+      const ResourceRequest&,
+      const KURL&,
+      const ResourceLoaderOptions&,
+      bool forPreload,
+      FetchRequest::OriginRestriction) const override {
+    return ResourceRequestBlockedReason::None;
   }
   bool shouldLoadNewResource(Resource::Type) const override {
     return m_loadPolicy == kShouldLoadNewResource;

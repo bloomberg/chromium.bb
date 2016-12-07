@@ -133,11 +133,15 @@ void ResourceLoader::cancel() {
       ResourceError::cancelledError(m_resource->lastResourceRequest().url()));
 }
 
-void ResourceLoader::cancelForRedirectAccessCheckError(const KURL& newURL) {
+void ResourceLoader::cancelForRedirectAccessCheckError(
+    const KURL& newURL,
+    ResourceRequestBlockedReason blockedReason) {
   m_resource->willNotFollowRedirect();
 
-  if (m_loader)
-    didFail(ResourceError::cancelledDueToAccessCheckError(newURL));
+  if (m_loader) {
+    didFail(
+        ResourceError::cancelledDueToAccessCheckError(newURL, blockedReason));
+  }
 }
 
 bool ResourceLoader::willFollowRedirect(
@@ -161,9 +165,10 @@ bool ResourceLoader::willFollowRedirect(
 
   const KURL originalURL = newRequest.url();
 
-  if (!m_fetcher->willFollowRedirect(m_resource.get(), newRequest,
-                                     redirectResponse)) {
-    cancelForRedirectAccessCheckError(newRequest.url());
+  ResourceRequestBlockedReason blockedReason = m_fetcher->willFollowRedirect(
+      m_resource.get(), newRequest, redirectResponse);
+  if (blockedReason != ResourceRequestBlockedReason::None) {
+    cancelForRedirectAccessCheckError(newRequest.url(), blockedReason);
     return false;
   }
 
@@ -174,12 +179,14 @@ bool ResourceLoader::willFollowRedirect(
   // rewriting but currently we cannot. So, return false to make the
   // redirect fail.
   if (newRequest.url() != originalURL) {
-    cancelForRedirectAccessCheckError(newRequest.url());
+    cancelForRedirectAccessCheckError(newRequest.url(),
+                                      ResourceRequestBlockedReason::Other);
     return false;
   }
 
   if (!m_resource->willFollowRedirect(newRequest, redirectResponse)) {
-    cancelForRedirectAccessCheckError(newRequest.url());
+    cancelForRedirectAccessCheckError(newRequest.url(),
+                                      ResourceRequestBlockedReason::Other);
     return false;
   }
 

@@ -46,7 +46,6 @@ class DocumentLoader;
 class LocalFrame;
 class ResourceError;
 class ResourceResponse;
-class ResourceRequest;
 
 class CORE_EXPORT FrameFetchContext final : public FetchContext {
  public:
@@ -116,16 +115,18 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
 
   void addResourceTiming(const ResourceTimingInfo&) override;
   bool allowImage(bool imagesEnabled, const KURL&) const override;
-  bool canRequest(Resource::Type,
-                  const ResourceRequest&,
-                  const KURL&,
-                  const ResourceLoaderOptions&,
-                  bool forPreload,
-                  FetchRequest::OriginRestriction) const override;
-  bool allowResponse(Resource::Type,
-                     const ResourceRequest&,
-                     const KURL&,
-                     const ResourceLoaderOptions&) const override;
+  ResourceRequestBlockedReason canRequest(
+      Resource::Type,
+      const ResourceRequest&,
+      const KURL&,
+      const ResourceLoaderOptions&,
+      bool forPreload,
+      FetchRequest::OriginRestriction) const override;
+  ResourceRequestBlockedReason allowResponse(
+      Resource::Type,
+      const ResourceRequest&,
+      const KURL&,
+      const ResourceLoaderOptions&) const override;
 
   bool isControlledByServiceWorker() const override;
   int64_t serviceWorkerID() const override;

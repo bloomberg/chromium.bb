@@ -246,19 +246,19 @@ String resourcePriorityJSON(ResourceLoadPriority priority) {
 
 String buildBlockedReason(ResourceRequestBlockedReason reason) {
   switch (reason) {
-    case ResourceRequestBlockedReasonCSP:
+    case ResourceRequestBlockedReason::CSP:
       return protocol::Network::BlockedReasonEnum::Csp;
-    case ResourceRequestBlockedReasonMixedContent:
+    case ResourceRequestBlockedReason::MixedContent:
       return protocol::Network::BlockedReasonEnum::MixedContent;
-    case ResourceRequestBlockedReasonOrigin:
+    case ResourceRequestBlockedReason::Origin:
       return protocol::Network::BlockedReasonEnum::Origin;
-    case ResourceRequestBlockedReasonInspector:
+    case ResourceRequestBlockedReason::Inspector:
       return protocol::Network::BlockedReasonEnum::Inspector;
-    case ResourceRequestBlockedReasonSubresourceFilter:
+    case ResourceRequestBlockedReason::SubresourceFilter:
       return protocol::Network::BlockedReasonEnum::SubresourceFilter;
-    case ResourceRequestBlockedReasonOther:
+    case ResourceRequestBlockedReason::Other:
       return protocol::Network::BlockedReasonEnum::Other;
-    case ResourceRequestBlockedReasonNone:
+    case ResourceRequestBlockedReason::None:
     default:
       NOTREACHED();
       return protocol::Network::BlockedReasonEnum::Other;

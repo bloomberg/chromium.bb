@@ -56,18 +56,16 @@ void HTMLImageLoader::dispatchLoadEvent() {
                                                        : EventTypeNames::load));
 }
 
-static void loadFallbackContentForElement(Element* element) {
-  if (isHTMLImageElement(element))
-    toHTMLImageElement(element)->ensureFallbackContent();
-  else if (isHTMLInputElement(element))
-    toHTMLInputElement(element)->ensureFallbackContent();
-}
-
 void HTMLImageLoader::noImageResourceToLoad() {
   // FIXME: Use fallback content even when there is no alt-text. The only
   // blocker is the large amount of rebaselining it requires.
-  if (!toHTMLElement(element())->altText().isEmpty())
-    loadFallbackContentForElement(element());
+  if (toHTMLElement(element())->altText().isEmpty())
+    return;
+
+  if (isHTMLImageElement(element()))
+    toHTMLImageElement(element())->ensureCollapsedOrFallbackContent();
+  else if (isHTMLInputElement(element()))
+    toHTMLInputElement(element())->ensureFallbackContent();
 }
 
 void HTMLImageLoader::imageNotifyFinished(ImageResource*) {
@@ -78,14 +76,14 @@ void HTMLImageLoader::imageNotifyFinished(ImageResource*) {
   bool loadError = cachedImage->errorOccurred();
   if (isHTMLImageElement(*element)) {
     if (loadError)
-      ensureFallbackContent();
+      toHTMLImageElement(element)->ensureCollapsedOrFallbackContent();
     else
       toHTMLImageElement(element)->ensurePrimaryContent();
   }
 
   if (isHTMLInputElement(*element)) {
     if (loadError)
-      ensureFallbackContent();
+      toHTMLInputElement(element)->ensureFallbackContent();
     else
       toHTMLInputElement(element)->ensurePrimaryContent();
   }
@@ -93,10 +91,6 @@ void HTMLImageLoader::imageNotifyFinished(ImageResource*) {
   if ((loadError || cachedImage->response().httpStatusCode() >= 400) &&
       isHTMLObjectElement(*element))
     toHTMLObjectElement(element)->renderFallbackContent();
-}
-
-void HTMLImageLoader::ensureFallbackContent() {
-  loadFallbackContentForElement(element());
 }
 
 }  // namespace blink

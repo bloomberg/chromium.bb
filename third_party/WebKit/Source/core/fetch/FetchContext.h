@@ -38,6 +38,7 @@
 #include "core/fetch/Resource.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceLoadPriority.h"
+#include "platform/network/ResourceRequest.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -46,7 +47,6 @@ class KURL;
 class MHTMLArchive;
 class ResourceError;
 class ResourceResponse;
-class ResourceRequest;
 class ResourceTimingInfo;
 class WebTaskRunner;
 enum class WebCachePolicy;
@@ -123,19 +123,21 @@ class CORE_EXPORT FetchContext
 
   virtual void addResourceTiming(const ResourceTimingInfo&);
   virtual bool allowImage(bool, const KURL&) const { return false; }
-  virtual bool canRequest(Resource::Type,
-                          const ResourceRequest&,
-                          const KURL&,
-                          const ResourceLoaderOptions&,
-                          bool forPreload,
-                          FetchRequest::OriginRestriction) const {
-    return false;
+  virtual ResourceRequestBlockedReason canRequest(
+      Resource::Type,
+      const ResourceRequest&,
+      const KURL&,
+      const ResourceLoaderOptions&,
+      bool forPreload,
+      FetchRequest::OriginRestriction) const {
+    return ResourceRequestBlockedReason::Other;
   }
-  virtual bool allowResponse(Resource::Type,
-                             const ResourceRequest&,
-                             const KURL&,
-                             const ResourceLoaderOptions&) const {
-    return false;
+  virtual ResourceRequestBlockedReason allowResponse(
+      Resource::Type,
+      const ResourceRequest&,
+      const KURL&,
+      const ResourceLoaderOptions&) const {
+    return ResourceRequestBlockedReason::Other;
   }
 
   virtual bool isControlledByServiceWorker() const { return false; }

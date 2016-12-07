@@ -104,7 +104,7 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement,
 
   HTMLFormElement* formOwner() const override;
   void formRemovedFromTree(const Node& formRoot);
-  virtual void ensureFallbackContent();
+  virtual void ensureCollapsedOrFallbackContent();
   virtual void ensureFallbackForGeneratedContent();
   virtual void ensurePrimaryContent();
 
@@ -125,8 +125,7 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement,
 
   // public so that HTMLPictureElement can call this as well.
   void selectSourceURL(ImageLoader::UpdateFromElementBehavior);
-  void reattachFallbackContent();
-  void setUseFallbackContent();
+
   void setIsFallbackImage() { m_isFallbackImage = true; }
 
   FetchRequest::ResourceWidth getResourceWidth();
@@ -146,12 +145,27 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement,
   void associateWith(HTMLFormElement*) override;
 
  protected:
+  // Controls how an image element appears in the layout. See:
+  // https://html.spec.whatwg.org/multipage/embedded-content.html#image-request
+  enum class LayoutDisposition : uint8_t {
+    // Displayed as a partially or completely loaded image. Corresponds to the
+    // `current request` state being: `unavailable`, `partially available`, or
+    // `completely available`.
+    PrimaryContent,
+    // Showing a broken image icon and 'alt' text, if any. Corresponds to the
+    // `current request` being in the `broken` state.
+    FallbackContent,
+    // No layout object. Corresponds to the `current request` being in the
+    // `broken` state when the resource load failed with an error that has the
+    // |shouldCollapseInitiator| flag set.
+    Collapsed
+  };
+
   explicit HTMLImageElement(Document&,
                             HTMLFormElement* = 0,
                             bool createdByParser = false);
 
   void didMoveToNewDocument(Document& oldDocument) override;
-  virtual bool useFallbackContent() const { return m_useFallbackContent; }
 
   void didAddUserAgentShadowRoot(ShadowRoot&) override;
   PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
@@ -166,8 +180,10 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement,
   void collectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
+  void setLayoutDisposition(LayoutDisposition, bool forceReattach = false);
 
   void attachLayoutTree(const AttachContext& = AttachContext()) override;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override;
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
   bool canStartSelection() const override { return false; }
@@ -198,9 +214,9 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement,
   AtomicString m_bestFitImageURL;
   float m_imageDevicePixelRatio;
   Member<HTMLSourceElement> m_source;
+  LayoutDisposition m_layoutDisposition;
   unsigned m_formWasSetByParser : 1;
   unsigned m_elementCreatedByParser : 1;
-  unsigned m_useFallbackContent : 1;
   unsigned m_isFallbackImage : 1;
 
   ReferrerPolicy m_referrerPolicy;

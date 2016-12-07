@@ -580,43 +580,39 @@ void FrameFetchContext::printAccessDeniedMessage(const KURL& url) const {
       SecurityMessageSource, ErrorMessageLevel, message));
 }
 
-bool FrameFetchContext::canRequest(
+ResourceRequestBlockedReason FrameFetchContext::canRequest(
     Resource::Type type,
     const ResourceRequest& resourceRequest,
     const KURL& url,
     const ResourceLoaderOptions& options,
     bool forPreload,
     FetchRequest::OriginRestriction originRestriction) const {
-  ResourceRequestBlockedReason reason =
+  ResourceRequestBlockedReason blockedReason =
       canRequestInternal(type, resourceRequest, url, options, forPreload,
                          originRestriction, resourceRequest.redirectStatus());
-  if (reason != ResourceRequestBlockedReasonNone) {
-    if (!forPreload) {
-      InspectorInstrumentation::didBlockRequest(frame(), resourceRequest,
-                                                masterDocumentLoader(),
-                                                options.initiatorInfo, reason);
-    }
-    return false;
+  if (blockedReason != ResourceRequestBlockedReason::None && !forPreload) {
+    InspectorInstrumentation::didBlockRequest(
+        frame(), resourceRequest, masterDocumentLoader(), options.initiatorInfo,
+        blockedReason);
   }
-  return true;
+  return blockedReason;
 }
 
-bool FrameFetchContext::allowResponse(
+ResourceRequestBlockedReason FrameFetchContext::allowResponse(
     Resource::Type type,
     const ResourceRequest& resourceRequest,
     const KURL& url,
     const ResourceLoaderOptions& options) const {
-  ResourceRequestBlockedReason reason =
+  ResourceRequestBlockedReason blockedReason =
       canRequestInternal(type, resourceRequest, url, options, false,
                          FetchRequest::UseDefaultOriginRestrictionForType,
                          RedirectStatus::FollowedRedirect);
-  if (reason != ResourceRequestBlockedReasonNone) {
-    InspectorInstrumentation::didBlockRequest(frame(), resourceRequest,
-                                              masterDocumentLoader(),
-                                              options.initiatorInfo, reason);
-    return false;
+  if (blockedReason != ResourceRequestBlockedReason::None) {
+    InspectorInstrumentation::didBlockRequest(
+        frame(), resourceRequest, masterDocumentLoader(), options.initiatorInfo,
+        blockedReason);
   }
-  return true;
+  return blockedReason;
 }
 
 ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
@@ -628,7 +624,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
     FetchRequest::OriginRestriction originRestriction,
     ResourceRequest::RedirectStatus redirectStatus) const {
   if (InspectorInstrumentation::shouldBlockRequest(frame(), resourceRequest))
-    return ResourceRequestBlockedReasonInspector;
+    return ResourceRequestBlockedReason::Inspector;
 
   SecurityOrigin* securityOrigin = options.securityOrigin.get();
   if (!securityOrigin && m_document)
@@ -640,7 +636,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
       FrameLoader::reportLocalLoadFailed(frame(), url.elidedString());
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::requestResource URL was not "
                                  "allowed by SecurityOrigin::canDisplay";
-    return ResourceRequestBlockedReasonOther;
+    return ResourceRequestBlockedReason::Other;
   }
 
   // Some types of resources can be loaded only from the same origin. Other
@@ -663,7 +659,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
       if (originRestriction == FetchRequest::RestrictToSameOrigin &&
           !securityOrigin->canRequest(url)) {
         printAccessDeniedMessage(url);
-        return ResourceRequestBlockedReasonOrigin;
+        return ResourceRequestBlockedReason::Origin;
       }
       break;
     case Resource::XSLStyleSheet:
@@ -671,7 +667,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
     case Resource::SVGDocument:
       if (!securityOrigin->canRequest(url)) {
         printAccessDeniedMessage(url);
-        return ResourceRequestBlockedReasonOrigin;
+        return ResourceRequestBlockedReason::Origin;
       }
       break;
   }
@@ -695,7 +691,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
             resourceRequest.requestContext(), url,
             options.contentSecurityPolicyNonce, options.integrityMetadata,
             options.parserDisposition, redirectStatus, cspReporting))
-      return ResourceRequestBlockedReasonCSP;
+      return ResourceRequestBlockedReason::CSP;
   }
 
   if (type == Resource::Script || type == Resource::ImportResource) {
@@ -706,19 +702,19 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
       frame()->loader().client()->didNotAllowScript();
       // TODO(estark): Use a different ResourceRequestBlockedReason here, since
       // this check has nothing to do with CSP. https://crbug.com/600795
-      return ResourceRequestBlockedReasonCSP;
+      return ResourceRequestBlockedReason::CSP;
     }
   } else if (type == Resource::Media || type == Resource::TextTrack) {
     DCHECK(frame());
     if (!frame()->loader().client()->allowMedia(url))
-      return ResourceRequestBlockedReasonOther;
+      return ResourceRequestBlockedReason::Other;
   }
 
   // SVG Images have unique security rules that prevent all subresource requests
   // except for data urls.
   if (type != Resource::MainResource &&
       frame()->chromeClient().isSVGImageChromeClient() && !url.protocolIsData())
-    return ResourceRequestBlockedReasonOrigin;
+    return ResourceRequestBlockedReason::Origin;
 
   // Measure the number of legacy URL schemes ('ftp://') and the number of
   // embedded-credential ('http://user:password@...') resources embedded as
@@ -747,7 +743,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
                  : MixedContentChecker::SendReport;
   if (MixedContentChecker::shouldBlockFetch(frame(), resourceRequest, url,
                                             mixedContentReporting))
-    return ResourceRequestBlockedReasonMixedContent;
+    return ResourceRequestBlockedReason::MixedContent;
 
   // Let the client have the final say into whether or not the load should
   // proceed.
@@ -756,9 +752,9 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
       type != Resource::MainResource && type != Resource::ImportResource &&
       !documentLoader->subresourceFilter()->allowLoad(
           url, resourceRequest.requestContext()))
-    return ResourceRequestBlockedReasonSubresourceFilter;
+    return ResourceRequestBlockedReason::SubresourceFilter;
 
-  return ResourceRequestBlockedReasonNone;
+  return ResourceRequestBlockedReason::None;
 }
 
 bool FrameFetchContext::isControlledByServiceWorker() const {
