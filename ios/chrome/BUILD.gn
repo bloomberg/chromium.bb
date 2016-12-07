@@ -31,6 +31,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/net:unit_tests",
     "//ios/chrome/browser/passwords:unit_tests",
     "//ios/chrome/browser/reading_list:unit_tests",
+    "//ios/chrome/browser/signin:unit_tests",
     "//ios/chrome/browser/snapshots:unit_tests",
     "//ios/chrome/browser/ssl:unit_tests",
     "//ios/chrome/browser/suggestions:unit_tests",
@@ -51,6 +52,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/common:unit_tests",
     "//ios/chrome/test:unit_tests",
     "//ios/chrome/test/base:unit_tests",
+    "//ios/web/public/image_fetcher:unit_tests",
   ]
 
   assert_no_deps = ios_assert_no_deps
