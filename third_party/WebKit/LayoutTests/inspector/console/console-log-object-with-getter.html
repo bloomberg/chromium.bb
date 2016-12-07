@@ -6,9 +6,14 @@
 var obj = {}
 Object.defineProperty(obj, 'foo', {enumerable: true, get: function() { return {a:1,b:2}; }});
 Object.defineProperty(obj, 'bar', {enumerable: false, set: function(x) { this.baz = x; }});
+
+var arr = [];
+Object.defineProperty(arr, 0, {enumerable: true, get: function() { return 1; }});
+Object.defineProperty(arr, 1, {enumerable: false, set: function(x) { this.baz = x; }});
 function logObject()
 {
     console.log(obj);
+    console.log(arr);
 }
 
 function test()
@@ -16,13 +21,18 @@ function test()
     InspectorTest.evaluateInPage("logObject()", step2);
     function step2()
     {
-        InspectorTest.expandConsoleMessages(step3);
+        InspectorTest.dumpConsoleMessages();
+        step3();
     }
     function step3()
     {
-        InspectorTest.expandGettersInConsoleMessages(step4);
+        InspectorTest.expandConsoleMessages(step4);
     }
     function step4()
+    {
+        InspectorTest.expandGettersInConsoleMessages(step5);
+    }
+    function step5()
     {
         InspectorTest.dumpConsoleMessages();
         InspectorTest.completeTest();
