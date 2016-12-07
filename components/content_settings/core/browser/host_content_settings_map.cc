@@ -431,7 +431,11 @@ content_settings::PatternPair HostContentSettingsMap::GetNarrowestPatterns (
   content_settings::SettingInfo info;
   std::unique_ptr<base::Value> v = GetWebsiteSettingInternal(
       primary_url, secondary_url, type, std::string(), &info);
-  DCHECK_EQ(content_settings::SETTING_SOURCE_USER, info.source);
+  if (info.source != content_settings::SETTING_SOURCE_USER) {
+    // Return an invalid pattern if the current setting is not a user setting
+    // and thus can't be changed.
+    return content_settings::PatternPair();
+  }
 
   content_settings::PatternPair patterns = GetPatternsForContentSettingsType(
       primary_url, secondary_url, type);
