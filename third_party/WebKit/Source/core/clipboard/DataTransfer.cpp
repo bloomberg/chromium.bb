@@ -40,9 +40,9 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/DragImage.h"
-#include "platform/MIMETypeRegistry.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "platform/clipboard/ClipboardUtilities.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include <memory>
 
 namespace blink {

@@ -47,11 +47,11 @@
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/loader/PrerenderHandle.h"
 #include "core/loader/resource/LinkFetchResource.h"
-#include "platform/MIMETypeRegistry.h"
 #include "platform/Prerender.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/LinkHeader.h"
 #include "platform/network/NetworkHints.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "public/platform/WebPrerender.h"
 
 namespace blink {

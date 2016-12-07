@@ -31,11 +31,11 @@
 #include "platform/mhtml/MHTMLArchive.h"
 
 #include "platform/DateComponents.h"
-#include "platform/MIMETypeRegistry.h"
 #include "platform/SerializedResource.h"
 #include "platform/SharedBuffer.h"
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/mhtml/MHTMLParser.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/text/QuotedPrintable.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "wtf/Assertions.h"

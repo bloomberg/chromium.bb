@@ -12,9 +12,9 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
-#include "platform/ContentType.h"
 #include "platform/Histogram.h"
-#include "platform/MIMETypeRegistry.h"
+#include "platform/network/mime/ContentType.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 
 namespace blink {
 

@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
- * Copyright (C) 2009 Google Inc.  All rights reserved.
+ * Copyright (C) 2006 Apple Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,6 +32,7 @@
 
 namespace blink {
 
+// Parses the MIME type and parameter values based on RFC 2231.
 class PLATFORM_EXPORT ContentType {
   STACK_ALLOCATED();
 

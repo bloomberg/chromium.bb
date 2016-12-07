@@ -47,9 +47,9 @@
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/loader/LinkLoader.h"
-#include "platform/ContentType.h"
 #include "platform/Histogram.h"
-#include "platform/MIMETypeRegistry.h"
+#include "platform/network/mime/ContentType.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/tracing/TraceEvent.h"
 #include <memory>
 

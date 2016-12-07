@@ -47,10 +47,10 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginView.h"
 #include "platform/Histogram.h"
-#include "platform/MIMETypeFromURL.h"
-#include "platform/MIMETypeRegistry.h"
 #include "platform/Widget.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/network/mime/MIMETypeFromURL.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/plugins/PluginData.h"
 #include "public/platform/WebURLRequest.h"
 

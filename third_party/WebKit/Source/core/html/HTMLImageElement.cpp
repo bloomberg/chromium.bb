@@ -54,9 +54,9 @@
 #include "core/page/Page.h"
 #include "core/style/ContentData.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
-#include "platform/ContentType.h"
 #include "platform/EventDispatchForbiddenScope.h"
-#include "platform/MIMETypeRegistry.h"
+#include "platform/network/mime/ContentType.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {

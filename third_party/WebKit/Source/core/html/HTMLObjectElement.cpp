@@ -42,8 +42,8 @@
 #include "core/layout/api/LayoutEmbeddedItem.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/plugins/PluginView.h"
-#include "platform/MIMETypeRegistry.h"
 #include "platform/Widget.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 
 namespace blink {
 

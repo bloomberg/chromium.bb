@@ -27,7 +27,6 @@
 #include "platform/graphics/Image.h"
 
 #include "platform/Length.h"
-#include "platform/MIMETypeRegistry.h"
 #include "platform/PlatformInstrumentation.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
@@ -37,6 +36,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"

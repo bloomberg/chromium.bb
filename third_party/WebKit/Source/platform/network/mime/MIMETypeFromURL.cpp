@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2004, 2007, 2008, 2011, 2012 Apple Inc. All rights reserved.
- * Copyright (C) 2012 Research In Motion Limited. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2011, 2012 Apple Inc.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,7 +11,7 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/MIMETypeFromURL.h"
+#include "platform/network/mime/MIMETypeFromURL.h"
 
-#include "platform/MIMETypeRegistry.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 String mimeTypeFromDataURL(const String& url) {
-  ASSERT(protocolIs(url, "data"));
+  DCHECK(protocolIs(url, "data"));
   size_t index = url.find(';');
   if (index == kNotFound)
     index = url.find(',');

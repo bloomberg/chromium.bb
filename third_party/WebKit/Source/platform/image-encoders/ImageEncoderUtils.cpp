@@ -5,7 +5,7 @@
 #include "platform/image-encoders/ImageEncoderUtils.h"
 
 #include "platform/Histogram.h"
-#include "platform/MIMETypeRegistry.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "wtf/Threading.h"
 
 namespace blink {
