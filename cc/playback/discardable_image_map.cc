@@ -216,7 +216,7 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
         const SkMatrix& ctm = getTotalMatrix();
         matrix.postConcat(ctm);
         // TODO(ericrk): Handle cases where we only need a sub-rect from the
-        // image.
+        // image. crbug.com/671821
         AddImage(sk_ref_sp(image), SkRect::MakeFromIRect(image->bounds()),
                  MapRect(ctm, rect), matrix, &paint);
       }
