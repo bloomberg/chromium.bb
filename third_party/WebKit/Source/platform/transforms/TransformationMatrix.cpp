@@ -497,10 +497,12 @@ static bool inverse(const TransformationMatrix::Matrix4& matrix,
   // Calculate the adjoint matrix
   adjoint(matrix, result);
 
+  double rdet = 1 / det;
+
   // Scale the adjoint matrix to get the inverse
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 4; j++)
-      result[i][j] = result[i][j] / det;
+      result[i][j] = result[i][j] * rdet;
 #endif
   return true;
 }
