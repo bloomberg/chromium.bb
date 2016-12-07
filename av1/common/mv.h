@@ -128,6 +128,13 @@ typedef struct {
 #define GM_ALPHA_MIN -GM_ALPHA_MAX
 #define GM_ROW3HOMO_MIN -GM_ROW3HOMO_MAX
 
+// Bits used for different models
+#define GM_IDENTITY_BITS 0
+#define GM_TRANSLATION_BITS ((GM_ABS_TRANS_BITS + 1) * 2)
+#define GM_ROTZOOM_BITS (GM_TRANSLATION_BITS + (GM_ABS_ALPHA_BITS + 1) * 2)
+#define GM_AFFINE_BITS (GM_ROTZOOM_BITS + (GM_ABS_ALPHA_BITS + 1) * 2)
+#define GM_HOMOGRAPHY_BITS (GM_AFFINE_BITS + (GM_ABS_ROW3HOMO_BITS + 1) * 2)
+
 // Convert a global motion translation vector (which may have more bits than a
 // regular motion vector) into a motion vector
 static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,

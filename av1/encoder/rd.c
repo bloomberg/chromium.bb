@@ -156,6 +156,10 @@ static void fill_mode_costs(AV1_COMP *cpi) {
   av1_cost_tokens(cpi->switchable_restore_cost, fc->switchable_restore_prob,
                   av1_switchable_restore_tree);
 #endif  // CONFIG_LOOP_RESTORATION
+#if CONFIG_GLOBAL_MOTION
+  av1_cost_tokens(cpi->gmtype_cost, fc->global_motion_types_prob,
+                  av1_global_motion_types_tree);
+#endif  // CONFIG_GLOBAL_MOTION
 }
 
 void av1_fill_token_costs(av1_coeff_cost *c,

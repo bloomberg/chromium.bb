@@ -4336,35 +4336,22 @@ static int get_interinter_compound_type_bits(BLOCK_SIZE bsize,
 #define GLOBAL_MOTION_COST_AMORTIZATION_BLKS 8
 
 #if GLOBAL_MOTION_COST_AMORTIZATION_BLKS > 0
-static int get_gmbitcost(const WarpedMotionParams *gm, const aom_prob *probs) {
-  int gmtype_cost[TRANS_TYPES];
-  int bits;
-  TransformationType type = gm->wmtype;
-  av1_cost_tokens(gmtype_cost, probs, av1_global_motion_types_tree);
-  switch (type) {
-    case HOMOGRAPHY:
-      bits = (GM_ABS_TRANS_BITS + 1) * 2 + (GM_ABS_ALPHA_BITS + 1) * 4 +
-             (GM_ABS_ROW3HOMO_BITS + 1) * 2;
-      break;
-    case AFFINE:
-      bits = (GM_ABS_TRANS_BITS + 1) * 2 + (GM_ABS_ALPHA_BITS + 1) * 4;
-      break;
-    case ROTZOOM:
-      bits = (GM_ABS_TRANS_BITS + 1) * 2 + (GM_ABS_ALPHA_BITS + 1) * 2;
-      break;
-    case TRANSLATION: bits = (GM_ABS_TRANS_BITS + 1) * 2; break;
-    case IDENTITY: bits = 0; break;
-    default: assert(0); return 0;
-  }
-  assert(type < GLOBAL_TRANS_TYPES);
-  return bits ? (bits << AV1_PROB_COST_SHIFT) + gmtype_cost[type] : 0;
+static int get_gmbitcost(const AV1_COMP *const cpi,
+                         const WarpedMotionParams *gm) {
+  static const int gm_params_cost[TRANS_TYPES] = {
+    GM_IDENTITY_BITS, GM_TRANSLATION_BITS, GM_ROTZOOM_BITS,
+    GM_AFFINE_BITS,   GM_HOMOGRAPHY_BITS,
+  };
+  const int cost = (gm_params_cost[gm->wmtype] << AV1_PROB_COST_SHIFT) +
+                   cpi->gmtype_cost[gm->wmtype];
+  assert(gm->wmtype < GLOBAL_TRANS_TYPES);
+  return cost;
 }
 
 #define GLOBAL_MOTION_RATE(ref)                                         \
   (cpi->global_motion_used[ref] >= GLOBAL_MOTION_COST_AMORTIZATION_BLKS \
        ? 0                                                              \
-       : get_gmbitcost(&cm->global_motion[(ref)],                       \
-                       cm->fc->global_motion_types_prob) /              \
+       : get_gmbitcost(cpi, &cm->global_motion[(ref)]) /                \
              GLOBAL_MOTION_COST_AMORTIZATION_BLKS)
 #else
 #define GLOBAL_MOTION_RATE(ref) 0

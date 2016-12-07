@@ -570,6 +570,9 @@ typedef struct AV1_COMP {
 #if CONFIG_LOOP_RESTORATION
   int switchable_restore_cost[RESTORE_SWITCHABLE_TYPES];
 #endif  // CONFIG_LOOP_RESTORATION
+#if CONFIG_GLOBAL_MOTION
+  int gmtype_cost[TRANS_TYPES];
+#endif  // CONFIG_GLOBAL_MOTION
 
   int multi_arf_allowed;
   int multi_arf_enabled;
