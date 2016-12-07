@@ -85,6 +85,9 @@ class MediaAndroid(perf_benchmark.PerfBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
+    # crbug.com/672059
+    if possible_browser.platform.GetOSName() != "android":
+      return True
     # crbug.com/448092
     if cls.IsSvelte(possible_browser):
         return True
