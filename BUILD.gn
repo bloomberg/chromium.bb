@@ -379,6 +379,10 @@ group("both_gn_and_gyp") {
     ]
   }
 
+  if (use_x11 || ozone_platform_x11) {
+    deps += [ "//tools/xdisplaycheck" ]
+  }
+
   if (enable_configuration_policy) {
     deps += [ "//components/policy:policy_templates" ]
   }
