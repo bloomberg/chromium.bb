@@ -74,6 +74,19 @@ void OffscreenCanvasCompositorFrameSink::EvictFrame() {
   NOTIMPLEMENTED();
 }
 
+void OffscreenCanvasCompositorFrameSink::Require(
+    const cc::LocalFrameId& local_frame_id,
+    const cc::SurfaceSequence& sequence) {
+  // TODO(staraz): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void OffscreenCanvasCompositorFrameSink::Satisfy(
+    const cc::SurfaceSequence& sequence) {
+  // TODO(staraz): Implement this.
+  NOTIMPLEMENTED();
+}
+
 void OffscreenCanvasCompositorFrameSink::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   if (resources.empty())

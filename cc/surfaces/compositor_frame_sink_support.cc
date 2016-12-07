@@ -8,6 +8,7 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 
 namespace cc {
@@ -81,6 +82,22 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     display_->SetLocalFrameId(local_frame_id_,
                               frame.metadata.device_scale_factor);
   }
+}
+
+void CompositorFrameSinkSupport::Require(const LocalFrameId& local_frame_id,
+                                         const SurfaceSequence& sequence) {
+  Surface* surface = surface_manager_->GetSurfaceForId(
+      SurfaceId(frame_sink_id_, local_frame_id));
+  if (!surface) {
+    DLOG(ERROR) << "Attempting to require callback on nonexistent surface";
+    return;
+  }
+  surface->AddDestructionDependency(sequence);
+}
+
+void CompositorFrameSinkSupport::Satisfy(const SurfaceSequence& sequence) {
+  std::vector<uint32_t> sequences = {sequence.sequence};
+  surface_manager_->DidSatisfySequences(sequence.frame_sink_id, &sequences);
 }
 
 void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {

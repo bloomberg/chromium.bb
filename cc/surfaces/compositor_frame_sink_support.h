@@ -39,6 +39,9 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void SetNeedsBeginFrame(bool needs_begin_frame);
   void SubmitCompositorFrame(const LocalFrameId& local_frame_id,
                              CompositorFrame frame);
+  void Require(const LocalFrameId& local_frame_id,
+               const SurfaceSequence& sequence);
+  void Satisfy(const SurfaceSequence& sequence);
   void AddChildFrameSink(const FrameSinkId& child_frame_sink_id);
   void RemoveChildFrameSink(const FrameSinkId& child_frame_sink_id);
 

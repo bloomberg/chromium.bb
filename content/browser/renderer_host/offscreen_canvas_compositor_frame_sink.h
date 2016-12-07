@@ -36,6 +36,9 @@ class OffscreenCanvasCompositorFrameSink
   void RemoveSurfaceReferences(
       const std::vector<cc::SurfaceReference>& references) override;
   void EvictFrame() override;
+  void Require(const cc::LocalFrameId& local_frame_id,
+               const cc::SurfaceSequence& sequence) override;
+  void Satisfy(const cc::SurfaceSequence& sequence) override;
 
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;

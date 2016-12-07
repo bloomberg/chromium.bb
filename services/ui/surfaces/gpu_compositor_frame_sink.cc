@@ -57,6 +57,15 @@ void GpuCompositorFrameSink::RemoveSurfaceReferences(
   display_compositor_->RemoveSurfaceReferences(references);
 }
 
+void GpuCompositorFrameSink::Require(const cc::LocalFrameId& local_frame_id,
+                                     const cc::SurfaceSequence& sequence) {
+  support_.Require(local_frame_id, sequence);
+}
+
+void GpuCompositorFrameSink::Satisfy(const cc::SurfaceSequence& sequence) {
+  support_.Satisfy(sequence);
+}
+
 void GpuCompositorFrameSink::DidReceiveCompositorFrameAck() {
   if (client_)
     client_->DidReceiveCompositorFrameAck();

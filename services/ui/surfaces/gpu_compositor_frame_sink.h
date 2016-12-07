@@ -48,6 +48,9 @@ class GpuCompositorFrameSink
       const std::vector<cc::SurfaceReference>& references) override;
   void RemoveSurfaceReferences(
       const std::vector<cc::SurfaceReference>& references) override;
+  void Require(const cc::LocalFrameId& local_frame_id,
+               const cc::SurfaceSequence& sequence) override;
+  void Satisfy(const cc::SurfaceSequence& sequence) override;
 
   // cc::mojom::MojoCompositorFrameSinkPrivate:
   void AddChildFrameSink(const cc::FrameSinkId& child_frame_sink_id) override;

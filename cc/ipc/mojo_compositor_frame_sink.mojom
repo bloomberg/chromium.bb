@@ -10,6 +10,7 @@ import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_frame_id.mojom";
 import "cc/ipc/surface_reference.mojom";
 import "cc/ipc/returned_resource.mojom";
+import "cc/ipc/surface_sequence.mojom";
 
 // A MojoCompositorFrameSink is an interface for receiving CompositorFrame
 // structs. A CompositorFrame contains the complete output meant for display.
@@ -41,6 +42,16 @@ interface MojoCompositorFrameSink {
   // Notify that the surface is no longer in use (and is okay to be evicted) so
   // that its resources gets returned in time.
   EvictFrame();
+
+  // TODO(staraz): Delete Require() and Satisfy() once surface references
+  // (CL 2541683004) are ready.
+  // Add the provided |sequence| as a destruction dependency of the
+  // surface associated with the provided |local_frame_id|.
+  Require(cc.mojom.LocalFrameId local_frame_id,
+          cc.mojom.SurfaceSequence sequence);
+
+  // Mark the sequence as satisfied and garbage collect surfaces.
+  Satisfy(cc.mojom.SurfaceSequence sequence);
 
   // TODO(fsamuel): ReadbackBitmap API would be useful here.
 };
