@@ -209,7 +209,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     inline bool compareEqualIndependent(const InheritedData& other) const {
       // These must match the properties tagged 'independent' in
       // CSSProperties.in.
-      // TODO(sashab): Generate this function.
+      // TODO(napper): Remove this once all independent properties are
+      // generated and replace with a private function used only in
+      // stylePropagationDiff().
       return (m_pointerEvents == other.m_pointerEvents) &&
              (m_whiteSpace == other.m_whiteSpace);
     }
