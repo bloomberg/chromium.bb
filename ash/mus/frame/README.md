@@ -15,11 +15,11 @@ render the title area of the reveal in the separate window. The client
 does nothing special here.
 
 2. The client takes control of it all (as happens in chrome). To
-enable this the client sets kDisableImmersive_Property on the window. In this
-mode the client creates a separate window for the reveal (similar to
+enable this the client sets kDisableImmersive_InitProperty on the window. In 
+this mode the client creates a separate window for the reveal (similar to
 1). The reveal window is a child of the window going into immersive
 mode. Mash knows to paint window decorations to the reveal window by way of
-the property kRendererParentTitleArea_Property set on the parent
+the property kRenderParentTitleArea_Property set on the parent
 window. The client runs all the immersive logic, including positioning
 of the reveal window.
 

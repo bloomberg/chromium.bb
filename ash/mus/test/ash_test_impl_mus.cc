@@ -91,7 +91,7 @@ void AshTestImplMus::ConfigureWidgetInitParamsForDisplay(
     views::Widget::InitParams* init_params) {
   init_params->context = WmWindowMus::GetAuraWindow(window);
   init_params
-      ->mus_properties[ui::mojom::WindowManager::kInitialDisplayId_Property] =
+      ->mus_properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           window->GetDisplayNearestWindow().id());
 }

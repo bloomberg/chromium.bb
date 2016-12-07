@@ -31,12 +31,12 @@ namespace mus {
 
 using InitProperties = std::map<std::string, std::vector<uint8_t>>;
 
-// Returns the kInitialDisplayId_Property if present, otherwise
+// Returns the kDisplayId_InitProperty if present, otherwise
 // kInvalidDisplayID.
 int64_t GetInitialDisplayId(const InitProperties& properties);
 
-// If |window| has the |kInitialContainerId_Property| set as a property, then
-// the value of |kInitialContainerId_Property| is set in |container_id| and true
+// If |window| has the |kContainerId_InitProperty| set as a property, then
+// the value of |kContainerId_InitProperty| is set in |container_id| and true
 // is returned. Otherwise false is returned.
 bool GetInitialContainerId(const InitProperties& properties, int* container_id);
 

@@ -659,7 +659,7 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
   properties->insert(init_params.mus_properties.begin(),
                      init_params.mus_properties.end());
   if (!init_params.bounds.IsEmpty()) {
-    (*properties)[ui::mojom::WindowManager::kUserSetBounds_Property] =
+    (*properties)[ui::mojom::WindowManager::kBounds_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(init_params.bounds);
   }
   if (!init_params.name.empty()) {
@@ -670,9 +670,9 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<PrimitiveType>(init_params.keep_on_top));
 
-  (*properties)[ui::mojom::WindowManager::kWindowType_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(static_cast<PrimitiveType>(
-          mojo::ConvertTo<ui::mojom::WindowType>(init_params.type)));
+  (*properties)[ui::mojom::WindowManager::kWindowType_InitProperty] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<int32_t>(init_params.type));
 
   if (!Widget::RequiresNonClientView(init_params.type))
     return;

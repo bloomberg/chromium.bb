@@ -1330,6 +1330,10 @@ void WindowTree::SetWindowBounds(uint32_t change_id,
     return;
   }
 
+  DVLOG(3) << "set window bounds client window_id=" << window_id
+           << " global window_id="
+           << (window ? WindowIdToTransportId(window->id()) : 0)
+           << " bounds=" << bounds.ToString();
   // Only the owner of the window can change the bounds.
   bool success = window && access_policy_->CanSetWindowBounds(window);
   if (success) {

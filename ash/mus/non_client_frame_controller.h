@@ -108,7 +108,7 @@ class NonClientFrameController : public views::WidgetDelegateView,
   aura::Window* window_;
 
   // Used if a child window is added that has the
-  // kRendererParentTitleArea_Property set.
+  // kRenderParentTitleArea_Property set.
   DetachedTitleAreaRenderer* detached_title_area_renderer_ = nullptr;
 
   bool did_init_native_widget_ = false;

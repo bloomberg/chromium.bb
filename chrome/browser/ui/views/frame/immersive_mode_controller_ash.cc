@@ -23,6 +23,7 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/mus/mus_util.h"
+#include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
@@ -232,9 +233,9 @@ void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
   mash_reveal_widget_.reset(new views::Widget);
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_POPUP);
   std::map<std::string, std::vector<uint8_t>> window_properties;
-  window_properties
-      [ui::mojom::WindowManager::kRendererParentTitleArea_Property] =
-          mojo::ConvertTo<std::vector<uint8_t>>(true);
+  window_properties[ui::mojom::WindowManager::kRenderParentTitleArea_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<aura::PropertyConverter::PrimitiveType>(true));
   window_properties[ui::mojom::WindowManager::kName_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           std::string("ChromeImmersiveRevealWindow"));

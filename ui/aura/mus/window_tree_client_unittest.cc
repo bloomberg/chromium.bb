@@ -144,7 +144,7 @@ TEST_F(WindowTreeClientWmTest, OnWindowHierarchyChangedWithProperties) {
   const uint8_t server_test_property1_value = 91;
   data->properties[kTestPropertyServerKey1] =
       ConvertToPropertyTransportValue(server_test_property1_value);
-  data->properties[ui::mojom::WindowManager::kWindowType_Property] =
+  data->properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ui::mojom::WindowType::BUBBLE));
   data->parent_id = server_id(root_window());

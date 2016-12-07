@@ -105,7 +105,7 @@ aura::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds,
                                            ui::wm::WindowType window_type) {
   std::map<std::string, std::vector<uint8_t>> properties;
   if (!bounds.IsEmpty()) {
-    properties[ui::mojom::WindowManager::kInitialBounds_Property] =
+    properties[ui::mojom::WindowManager::kBounds_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(bounds);
   }
 
@@ -132,7 +132,7 @@ aura::Window* WmTestBase::CreateFullscreenTestWindow(int64_t display_id) {
           static_cast<aura::PropertyConverter::PrimitiveType>(
               ui::mojom::ShowState::FULLSCREEN));
   if (display_id != display::kInvalidDisplayId) {
-    properties[ui::mojom::WindowManager::kInitialDisplayId_Property] =
+    properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(display_id);
   }
   aura::Window* window =

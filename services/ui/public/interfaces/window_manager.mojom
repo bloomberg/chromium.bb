@@ -23,65 +23,119 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // with WindowTreeClient, further WindowTree requests this interface from
 // WindowTreeClient supplied at the time the WindowTreeHost is created.
 interface WindowManager {
-  // Whether the window is always on top. Type: bool.
-  const string kAlwaysOnTop_Property = "prop:always_on_top";
-  // The application icon; typically larger for shelf icons, etc. Type: SkBitmap
-  const string kAppIcon_Property = "prop:app-icon";
+  // WindowManager defines two sets of distinct properties.
+  // . Properties that are used at creation time only and not persisted.
+  // . Long lived properties. These properties may be changed at any time and
+  //   are mapped to aura::Window properties. aura::PropertyConverter defines
+  //   the mapping between the property defined here and the corresonding
+  //   aura property. For properties defined in PropertyConverter any change to
+  //   to the aura property is mapped to the property defined here and sent to
+  //   all clients that know about the window (which is generally just the owner
+  //   and the window-manager).
+
+  // Properties used only during creation time. --------------------------------
+
+  // Initial bounds to create the window at. If empty the WindowManager decides
+  // the initial bounds. Type: gfx::Rect.
+  const string kBounds_InitProperty = "init:bounds";
+
+  // The window manager will place the window in this container when the window
+  // is created. If not set a container is selected based on the window type.
+  // Type: int32_t.
+  const string kContainerId_InitProperty = "init:container_id";
+
   // Disables the window manager from handling immersive fullscreen for the
   // window. This is typically done if the client wants to handle immersive
   // themselves. Type: bool.
-  const string kDisableImmersive_Property = "prop:disable_immersive";
-  // Used to explicitly control whether a window appears in the most recently
-  // used list of windows. Type: bool.
-  const string kExcludeFromMru_Property = "prop:exclude_from_mru";
-  // Initial bounds to create the window at. If empty the WindowManager decides
-  // the initial bounds.
-  const string kInitialBounds_Property = "prop:initial_bounds";
-  // The window manager will place the window in this container when the window
-  // is created. If not set a container is selected based on the window type.
-  // Type: int
-  const string kInitialContainerId_Property = "prop:initial_container_id";
+  const string kDisableImmersive_InitProperty = "init:disable_immersive";
+
   // The id of the display (display::Display::id()) to create the window on.
   // Type: int64.
-  const string kInitialDisplayId_Property = "prop:initial_display_id";
-  // Internal window name. Useful for debugging. Type: mojom::String
+  const string kDisplayId_InitProperty = "init:display_id";
+
+  // Specifies that the system default caption and icon should not be rendered,
+  // and the client area should be equivalent to the window area. Type: bool
+  const string kRemoveStandardFrame_InitProperty = "init:remove-standard-frame";
+
+  // The window type. This maps to aura::client::kWindowTypeKey as well as
+  // Window::type(). This mapping is only done for top-level windows that are
+  // created by the window manager at the request of a client.
+  // Type: mojom::WindowType (int32_t).
+  const string kWindowType_InitProperty = "init:window-type";
+
+  // End properties used only during creation time. ----------------------------
+
+  // Long lived properties. ----------------------------------------------------
+
+  // All primitive properties are transported as
+  // aura::PropertyConverter::PrimitiveType.
+
+  // Whether the window is always on top. Maps to aura::client::kAlwaysOnTopKey.
+  // Type: bool.
+  const string kAlwaysOnTop_Property = "prop:always_on_top";
+
+  // The application icon; typically larger for shelf icons, etc. Type: SkBitmap
+  // TODO(msw): map to aura::client::kAppIconKey http://crbug.com/663522?
+  const string kAppIcon_Property = "prop:app-icon";
+
+  // The application ID (eg. 'mojo:foo'). Maps to
+  // aura::client::client::kAppIdKey. Type: mojom::String
+  const string kAppID_Property = "prop:app-id";
+
+  // Used to explicitly control whether a window appears in the most recently
+  // used list of windows. Maps to aura::client::kExcludeFromMruKey. Type: bool.
+  const string kExcludeFromMru_Property = "prop:exclude_from_mru";
+
+  // Internal window name. Useful for debugging. Maps to aura::client::kNameKey.
+  // Type: mojom::String
   const string kName_Property = "prop:name";
-  // The window's preferred size as defined by its content. Type: gfx::Size.
+
+  // The window's preferred size as defined by its content. Maps to
+  // aura::client::kPreferredSize_Property. Type: gfx::Size.
   const string kPreferredSize_Property = "prop:preferred-size";
+
   // If true the window manager renders the title area (including frame
   // decorations) of the parent window in this window. This is only checked
   // at the time the window is added to its parent, which must be a top level
-  // window (created by way of WindowTree::NewTopLevelWindow()). Type: bool.
-  const string kRendererParentTitleArea_Property =
+  // window (created by way of WindowTree::NewTopLevelWindow()). This is not
+  // mapped by default, it's up to the window manager (such as ash) to decide
+  // how to handle this. Type: bool.
+  const string kRenderParentTitleArea_Property =
       "render-parent-non-client-area";
-  // The window's resize behavior. Type: ResizeBehavior.
+
+  // The window's resize behavior. Maps to aura::client::kResizeBehaviorKey.
+  // Type: ResizeBehavior.
   const string kResizeBehavior_Property = "prop:resize-behavior";
-  // Bounds the window is restored to. Type: gfx::Rect.
+
+  // Bounds the window is restored to. Maps to client::kRestoreBoundsKey.
+  // Type: gfx::Rect.
   const string kRestoreBounds_Property = "prop:restore-bounds";
-  // Shadow style for the window. Type: mojom::ShadowStyle.
-  const string kShadowStyle_Property = "prop:shadow-style";
-  // The ID of the shelf item corresponding to this window. Type: int
-  const string kShelfId_Property = "prop:shelf-id";
+
   // The type of item to be shown on the shelf for this window. Type: int
   // A few ash::ShelfItemType values are supported; TYPE_UNKNOWN means no item.
   const string kShelfItemType_Property = "prop:shelf-item-type";
-  // The window's show state. Type: ShowState.
+
+  // The window's show state. Maps to aura::client::kShowStateKey.
+  // Type: ShowState.
   const string kShowState_Property = "prop:show-state";
-  // The window bounds as set by user input. Type: gfx::Rect.
-  const string kUserSetBounds_Property = "prop:user-set-bounds";
+
   // The window icon; typically 16x16 for titlebars. Type: SkBitmap
+  // TODO(msw): map to aura::client::kAppIconKey http://crbug.com/663522?
   const string kWindowIcon_Property = "prop:window-icon";
-  // The window type. Type: mojom::WindowType
-  const string kWindowType_Property = "prop:window-type";
-  // The window's title. Type: mojom::String
-  const string kWindowTitle_Property = "prop:window-title";
+
   // A flag controlling the window's presence on the mash shelf. Type: bool
+  // TODO: convert this to a aura::client property; http://crbug.com/671729.
   const string kWindowIgnoredByShelf_Property = "prop:window-ignored-by-shelf";
-  // The application ID (eg. 'mojo:foo'). Type: mojom::String
-  const string kAppID_Property = "prop:app-id";
-  // Specifies that the system default caption and icon should not be rendered,
-  // and the client area should be equivalent to the window area. Type: bool
-  const string kRemoveStandardFrame_Property = "prop:remove-standard-frame";
+
+  // The window's title. Maps to aura::client::kTitleKey. Type: mojom::String
+  const string kWindowTitle_Property = "prop:window-title";
+
+  // End long lived properties. ------------------------------------------------
+
+  // Shadow style for the window. Type: mojom::ShadowStyle.
+  // TODO(sky): this is currently unused, either wire up or nuke:
+  // http://crbug.com/671714.
+  const string kShadowStyle_Property = "prop:shadow-style";
 
   // Called immediately when the WindowManager is obtained.
   OnConnect(uint16 client_id);

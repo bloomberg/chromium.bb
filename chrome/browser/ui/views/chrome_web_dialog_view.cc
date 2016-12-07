@@ -65,7 +65,7 @@ void ShowWebDialogInContainer(int container_id,
   params.delegate = view;
   if (chrome::IsRunningInMash()) {
     using ui::mojom::WindowManager;
-    params.mus_properties[WindowManager::kInitialContainerId_Property] =
+    params.mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(container_id);
   } else {
     params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),

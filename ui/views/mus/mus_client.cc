@@ -89,12 +89,12 @@ MusClient::ConfigurePropertiesFromParams(
       init_params.mus_properties;
 
   // Widget::InitParams::Type matches ui::mojom::WindowType.
-  properties[ui::mojom::WindowManager::kWindowType_Property] =
+  properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(init_params.type));
 
   if (!init_params.bounds.IsEmpty()) {
-    properties[ui::mojom::WindowManager::kInitialBounds_Property] =
+    properties[ui::mojom::WindowManager::kBounds_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(init_params.bounds);
   }
 

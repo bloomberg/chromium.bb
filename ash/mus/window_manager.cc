@@ -85,6 +85,9 @@ WindowManager::WindowManager(service_manager::Connector* connector)
       screen_position_controller_(
           base::MakeUnique<ScreenPositionController>()) {
   property_converter_->RegisterProperty(
+      kRenderTitleAreaProperty,
+      ui::mojom::WindowManager::kRenderParentTitleArea_Property);
+  property_converter_->RegisterProperty(
       kShelfItemTypeKey, ui::mojom::WindowManager::kShelfItemType_Property);
 }
 

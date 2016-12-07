@@ -1133,7 +1133,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
                                  ash::kShellWindowId_LockScreenContainer);
   } else {
     using ui::mojom::WindowManager;
-    params.mus_properties[WindowManager::kInitialContainerId_Property] =
+    params.mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(
             ash::kShellWindowId_LockScreenContainer);
   }

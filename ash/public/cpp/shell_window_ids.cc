@@ -11,7 +11,7 @@ namespace ash {
 // NOTE: this list is ordered by activation order. That is, windows in
 // containers appearing earlier in the list are activated before windows in
 // containers appearing later in the list.
-const int kActivatableShellWindowIds[] = {
+const int32_t kActivatableShellWindowIds[] = {
     kShellWindowId_OverlayContainer, kShellWindowId_LockSystemModalContainer,
     kShellWindowId_SettingBubbleContainer, kShellWindowId_LockScreenContainer,
     kShellWindowId_SystemModalContainer, kShellWindowId_AlwaysOnTopContainer,
@@ -27,7 +27,7 @@ const int kActivatableShellWindowIds[] = {
 const size_t kNumActivatableShellWindowIds =
     arraysize(kActivatableShellWindowIds);
 
-bool IsActivatableShellWindowId(int id) {
+bool IsActivatableShellWindowId(int32_t id) {
   for (size_t i = 0; i < kNumActivatableShellWindowIds; i++) {
     if (id == kActivatableShellWindowIds[i])
       return true;

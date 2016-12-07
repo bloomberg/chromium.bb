@@ -21,7 +21,7 @@ class DetachedTitleAreaRenderer : public views::WidgetDelegate {
   // Used to indicate why this is being created.
   enum class Source {
     // This is being created at the request of a client, specifically because
-    // of kRendererParentTitleArea_Property set on a client owned window.
+    // of kRenderParentTitleArea_Property set on a client owned window.
     CLIENT,
 
     // Mash is creating this class to host an immersive reveal. Note that CLIENT

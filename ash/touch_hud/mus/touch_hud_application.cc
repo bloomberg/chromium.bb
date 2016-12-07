@@ -93,7 +93,7 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
     params.delegate = new TouchHudUI(window_manager_connection_.get(), widget_);
 
     std::map<std::string, std::vector<uint8_t>> properties;
-    properties[ui::mojom::WindowManager::kInitialContainerId_Property] =
+    properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(
             ash::kShellWindowId_OverlayContainer);
     properties[ui::mojom::WindowManager::kShowState_Property] =

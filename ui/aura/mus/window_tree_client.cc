@@ -123,7 +123,7 @@ void SetWindowTypeFromProperties(
     Window* window,
     const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
   auto type_iter =
-      properties.find(ui::mojom::WindowManager::kWindowType_Property);
+      properties.find(ui::mojom::WindowManager::kWindowType_InitProperty);
   if (type_iter == properties.end())
     return;
 
@@ -1353,7 +1353,7 @@ void WindowTreeClient::WmCreateTopLevelWindow(
       mojo::UnorderedMapToMap(transport_properties);
   ui::mojom::WindowType window_type = ui::mojom::WindowType::UNKNOWN;
   auto type_iter =
-      properties.find(ui::mojom::WindowManager::kWindowType_Property);
+      properties.find(ui::mojom::WindowManager::kWindowType_InitProperty);
   if (type_iter != properties.end()) {
     // TODO: validation! http://crbug.com/654924.
     window_type = static_cast<ui::mojom::WindowType>(

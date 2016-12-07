@@ -74,7 +74,7 @@ class WindowDelegateView : public views::WidgetDelegateView {
         (traits & PANEL) != 0 ? views::Widget::InitParams::TYPE_PANEL
                               : views::Widget::InitParams::TYPE_WINDOW);
     if ((traits & PANEL) != 0) {
-      params.mus_properties[ui::mojom::WindowManager::kInitialBounds_Property] =
+      params.mus_properties[ui::mojom::WindowManager::kBounds_InitProperty] =
           mojo::TypeConverter<std::vector<uint8_t>, gfx::Rect>::Convert(
               gfx::Rect(100, 100, 300, 300));
     }

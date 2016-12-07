@@ -10,7 +10,7 @@
 namespace ash {
 namespace mus {
 
-// Maps to ui::mojom::WindowManager::kRendererParentTitleArea_Property.
+// Maps to ui::mojom::WindowManager::kRenderParentTitleArea_Property.
 extern const aura::WindowProperty<bool>* const kRenderTitleAreaProperty;
 
 // Set to true if the window server tells us the window is janky (see

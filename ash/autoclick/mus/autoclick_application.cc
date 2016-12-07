@@ -108,7 +108,7 @@ void AutoclickApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
                                       autoclick_controller_common_.get());
 
     std::map<std::string, std::vector<uint8_t>> properties;
-    properties[ui::mojom::WindowManager::kInitialContainerId_Property] =
+    properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(
             ash::kShellWindowId_OverlayContainer);
     properties[ui::mojom::WindowManager::kShowState_Property] =

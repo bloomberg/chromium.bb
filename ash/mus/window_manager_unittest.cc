@@ -96,7 +96,7 @@ TEST_F(WindowManagerTest, DISABLED_OpenWindow) {
   client.ConnectViaWindowTreeFactory();
   aura::Env::GetInstance()->SetWindowTreeClient(&client);
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[ui::mojom::WindowManager::kWindowType_Property] =
+  properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ui::mojom::WindowType::WINDOW));
   aura::WindowTreeHostMus window_tree_host_mus(&client, &properties);

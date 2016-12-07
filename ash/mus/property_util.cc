@@ -15,7 +15,7 @@ namespace mus {
 
 int64_t GetInitialDisplayId(const InitProperties& properties) {
   auto iter =
-      properties.find(ui::mojom::WindowManager::kInitialDisplayId_Property);
+      properties.find(ui::mojom::WindowManager::kDisplayId_InitProperty);
   return iter == properties.end() ? display::kInvalidDisplayId
                                   : mojo::ConvertTo<int64_t>(iter->second);
 }
@@ -23,7 +23,7 @@ int64_t GetInitialDisplayId(const InitProperties& properties) {
 bool GetInitialContainerId(const InitProperties& properties,
                            int* container_id) {
   auto iter =
-      properties.find(ui::mojom::WindowManager::kInitialContainerId_Property);
+      properties.find(ui::mojom::WindowManager::kContainerId_InitProperty);
   if (iter == properties.end())
     return false;
 
@@ -32,8 +32,7 @@ bool GetInitialContainerId(const InitProperties& properties,
 }
 
 bool GetInitialBounds(const InitProperties& properties, gfx::Rect* bounds) {
-  auto iter =
-      properties.find(ui::mojom::WindowManager::kInitialBounds_Property);
+  auto iter = properties.find(ui::mojom::WindowManager::kBounds_InitProperty);
   if (iter == properties.end())
     return false;
 
@@ -52,14 +51,14 @@ bool GetWindowPreferredSize(const InitProperties& properties, gfx::Size* size) {
 }
 
 bool ShouldRemoveStandardFrame(const InitProperties& properties) {
-  auto iter =
-      properties.find(ui::mojom::WindowManager::kRemoveStandardFrame_Property);
+  auto iter = properties.find(
+      ui::mojom::WindowManager::kRemoveStandardFrame_InitProperty);
   return iter != properties.end() && mojo::ConvertTo<bool>(iter->second);
 }
 
 bool ShouldEnableImmersive(const InitProperties& properties) {
   auto iter =
-      properties.find(ui::mojom::WindowManager::kDisableImmersive_Property);
+      properties.find(ui::mojom::WindowManager::kDisableImmersive_InitProperty);
   return iter == properties.end() || !mojo::ConvertTo<bool>(iter->second);
 }
 
