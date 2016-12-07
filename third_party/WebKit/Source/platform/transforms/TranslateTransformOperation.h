@@ -74,6 +74,7 @@ class PLATFORM_EXPORT TranslateTransformOperation final
 
  private:
   OperationType type() const override { return m_type; }
+  OperationType primitiveType() const final { return Translate3D; }
 
   bool operator==(const TransformOperation& o) const override {
     if (!isSameType(o))

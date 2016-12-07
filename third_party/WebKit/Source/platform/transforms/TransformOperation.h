@@ -83,6 +83,10 @@ class PLATFORM_EXPORT TransformOperation
   virtual PassRefPtr<TransformOperation> zoom(double factor) = 0;
 
   virtual OperationType type() const = 0;
+
+  // https://drafts.csswg.org/css-transforms/#transform-primitives
+  virtual OperationType primitiveType() const { return type(); }
+
   bool isSameType(const TransformOperation& other) const {
     return other.type() == type();
   }

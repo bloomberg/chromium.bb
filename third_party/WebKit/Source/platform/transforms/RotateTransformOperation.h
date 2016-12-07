@@ -66,6 +66,7 @@ class PLATFORM_EXPORT RotateTransformOperation : public TransformOperation {
 
   virtual bool canBlendWith(const TransformOperation& other) const;
   OperationType type() const override { return m_type; }
+  OperationType primitiveType() const final { return Rotate3D; }
 
   void apply(TransformationMatrix& transform,
              const FloatSize& /*borderBoxSize*/) const override {

@@ -65,6 +65,7 @@ class PLATFORM_EXPORT ScaleTransformOperation final
 
  private:
   OperationType type() const override { return m_type; }
+  OperationType primitiveType() const final { return Scale3D; }
 
   bool operator==(const TransformOperation& o) const override {
     if (!isSameType(o))

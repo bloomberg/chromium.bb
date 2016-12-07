@@ -52,14 +52,14 @@ bool TransformOperations::operator==(const TransformOperations& o) const {
 bool TransformOperations::operationsMatch(
     const TransformOperations& other) const {
   size_t numOperations = operations().size();
-  // If the sizes of the function lists don't match, the lists don't match
   if (numOperations != other.operations().size())
     return false;
 
-  // If the types of each function are not the same, the lists don't match
   for (size_t i = 0; i < numOperations; ++i) {
-    if (!operations()[i]->isSameType(*other.operations()[i]))
+    if (operations()[i]->primitiveType() !=
+        other.operations()[i]->primitiveType()) {
       return false;
+    }
   }
   return true;
 }
@@ -115,6 +115,7 @@ TransformOperations::blendByUsingMatrixInterpolation(
   return Matrix3DTransformOperation::create(toTransform);
 }
 
+// https://drafts.csswg.org/css-transforms-1/#interpolation-of-transforms
 TransformOperations TransformOperations::blend(const TransformOperations& from,
                                                double progress) const {
   if (from == *this || (!from.size() && !size()))
