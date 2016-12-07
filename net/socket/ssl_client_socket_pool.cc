@@ -377,9 +377,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
         SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_CipherSuite", cipher_suite);
 
-    const SSL_CIPHER* cipher = SSL_get_cipher_by_value(cipher_suite);
-    bool is_cecpq1 = cipher && SSL_CIPHER_is_CECPQ1(cipher);
-
     if (ssl_info.key_exchange_group != 0) {
       UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_KeyExchange.ECDHE",
                                   ssl_info.key_exchange_group);
@@ -423,27 +420,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
                                    base::TimeDelta::FromMilliseconds(1),
                                    base::TimeDelta::FromMinutes(1),
                                    100);
-
-        // These are hosts that we expect to always offer CECPQ1.  Connections
-        // to them, whether or not this browser is in the experiment group, form
-        // the basis of our comparisons.
-        bool cecpq1_expected_to_be_offered =
-            ssl_info.is_issued_by_known_root &&
-            (host == "play.google.com" || host == "checkout.google.com" ||
-             host == "wallet.google.com");
-        if (cecpq1_expected_to_be_offered) {
-          UMA_HISTOGRAM_CUSTOM_TIMES(
-              "Net.SSL_Connection_Latency_PostQuantumSupported_Full_Handshake",
-              connect_duration, base::TimeDelta::FromMilliseconds(1),
-              base::TimeDelta::FromMinutes(1), 100);
-          if (SSLClientSocket::IsPostQuantumExperimentEnabled()) {
-            // But don't trust that these hosts offer CECPQ1: make sure.  If
-            // we're doing everything right on the server side, |is_cecpq1|
-            // should always be true if we get here, modulo MITM.
-            UMA_HISTOGRAM_BOOLEAN("Net.SSL_Connection_PostQuantum_Negotiated",
-                                  is_cecpq1);
-          }
-        }
       }
     }
   }

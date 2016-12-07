@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -938,27 +939,6 @@ int SSLClientSocketImpl::Init() {
   SSL_set_mode(ssl_.get(), mode.set_mask);
   SSL_clear_mode(ssl_.get(), mode.clear_mask);
 
-  std::string command;
-  if (SSLClientSocket::IsPostQuantumExperimentEnabled()) {
-    // These are experimental, non-standard ciphersuites.  They are part of an
-    // experiment in post-quantum cryptography.  They're not intended to
-    // represent a de-facto standard, and will be removed from BoringSSL in
-    // ~2018.
-    if (EVP_has_aes_hardware()) {
-      command.append(
-          "CECPQ1-RSA-AES256-GCM-SHA384:"
-          "CECPQ1-ECDSA-AES256-GCM-SHA384:");
-    }
-    command.append(
-        "CECPQ1-RSA-CHACHA20-POLY1305-SHA256:"
-        "CECPQ1-ECDSA-CHACHA20-POLY1305-SHA256:");
-    if (!EVP_has_aes_hardware()) {
-      command.append(
-          "CECPQ1-RSA-AES256-GCM-SHA384:"
-          "CECPQ1-ECDSA-AES256-GCM-SHA384:");
-    }
-  }
-
   // Use BoringSSL defaults, but disable HMAC-SHA256 and HMAC-SHA384 ciphers
   // (note that SHA256 and SHA384 only select legacy CBC ciphers). Also disable
   // DHE_RSA_WITH_AES_256_GCM_SHA384. Historically, AES_256_GCM was not
@@ -967,7 +947,8 @@ int SSLClientSocketImpl::Init() {
   //
   // TODO(davidben): Remove the DHE_RSA_WITH_AES_256_GCM_SHA384 exclusion when
   // the DHEEnabled administrative policy expires.
-  command.append("ALL:!SHA256:!SHA384:!DHE-RSA-AES256-GCM-SHA384:!aPSK:!RC4");
+  std::string command(
+      "ALL:!SHA256:!SHA384:!DHE-RSA-AES256-GCM-SHA384:!aPSK:!RC4");
 
   if (ssl_config_.require_ecdhe)
     command.append(":!kRSA:!kDHE");
