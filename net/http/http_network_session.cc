@@ -399,6 +399,8 @@ void HttpNetworkSession::DumpMemoryStats(
   http_network_session_dump = pmd->CreateAllocatorDump(name);
   normal_socket_pool_manager_->DumpMemoryStats(
       pmd, http_network_session_dump->absolute_name());
+  spdy_session_pool_.DumpMemoryStats(
+      pmd, http_network_session_dump->absolute_name());
   pmd->AddOwnershipEdge(pmd->GetAllocatorDump(parent_absolute_name)->guid(),
                         http_network_session_dump->guid());
 }

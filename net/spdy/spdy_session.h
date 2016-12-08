@@ -46,6 +46,12 @@
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+}
+}
+
 namespace net {
 
 namespace test {
@@ -564,6 +570,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // HigherLayeredPool implementation:
   bool CloseOneIdleConnection() override;
+
+  // Dumps memory allocation stats. |parent_dump_absolute_name| is the name
+  // used by the parent MemoryAllocatorDump in the memory dump hierarchy.
+  void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
+                       const std::string& parent_dump_absolute_name) const;
 
  private:
   friend class test::SpdyStreamTest;
