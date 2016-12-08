@@ -17,6 +17,12 @@
             "url": "/fullscreen/api/document-exit-fullscreen-manual.html"
           }
         ],
+        "fullscreen/api/document-exit-fullscreen-timing-manual.html": [
+          {
+            "path": "fullscreen/api/document-exit-fullscreen-timing-manual.html",
+            "url": "/fullscreen/api/document-exit-fullscreen-timing-manual.html"
+          }
+        ],
         "fullscreen/api/document-fullscreen-element-manual.html": [
           {
             "path": "fullscreen/api/document-fullscreen-element-manual.html",
@@ -87,6 +93,12 @@
           {
             "path": "fullscreen/api/element-request-fullscreen-svg-svg-manual.html",
             "url": "/fullscreen/api/element-request-fullscreen-svg-svg-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-timing-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-timing-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-timing-manual.html"
           }
         ],
         "fullscreen/api/element-request-fullscreen-top-manual.html": [
