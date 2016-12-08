@@ -15,6 +15,7 @@
 #include "content/common/cross_site_document_classifier.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -70,7 +71,7 @@ class CONTENT_EXPORT SiteIsolationStatsGatherer {
   // request identified by |request_id|. Any data returned should then be
   // passed to OnReceivedFirstChunk() with the first data chunk.
   static std::unique_ptr<SiteIsolationResponseMetaData> OnReceivedResponse(
-      const GURL& frame_origin,
+      const url::Origin& frame_origin,
       const GURL& response_url,
       ResourceType resource_type,
       int origin_pid,

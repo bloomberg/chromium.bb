@@ -29,6 +29,7 @@
 #include "net/base/request_priority.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace mojo {
 class AssociatedGroup;
@@ -41,10 +42,8 @@ struct RedirectInfo;
 namespace content {
 class RequestPeer;
 class ResourceDispatcherDelegate;
-class ResourceRequestBodyImpl;
 class ResourceSchedulingFilter;
 struct ResourceResponseInfo;
-struct RequestInfo;
 struct ResourceRequest;
 struct ResourceRequestCompletionStatus;
 struct ResourceResponseHead;
@@ -99,7 +98,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       std::unique_ptr<ResourceRequest> request,
       int routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-      const GURL& frame_origin,
+      const url::Origin& frame_origin,
       std::unique_ptr<RequestPeer> peer,
       blink::WebURLRequest::LoadingIPCType ipc_type,
       mojom::URLLoaderFactory* url_loader_factory,
@@ -159,7 +158,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     PendingRequestInfo(std::unique_ptr<RequestPeer> peer,
                        ResourceType resource_type,
                        int origin_pid,
-                       const GURL& frame_origin,
+                       const url::Origin& frame_origin,
                        const GURL& request_url,
                        bool download_to_file);
 
@@ -176,7 +175,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     // Original requested url.
     GURL url;
     // The security origin of the frame that initiates this request.
-    GURL frame_origin;
+    url::Origin frame_origin;
     // The url of the latest response even in case of redirection.
     GURL response_url;
     bool download_to_file;
@@ -258,11 +257,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // ReleaseResourcesInDataMessage and removing them from the queue. Intended
   // for use on deferred message queues that are no longer needed.
   static void ReleaseResourcesInMessageQueue(MessageQueue* queue);
-
-  std::unique_ptr<ResourceRequest> CreateRequest(
-      const RequestInfo& request_info,
-      ResourceRequestBodyImpl* request_body,
-      GURL* frame_origin);
 
   IPC::Sender* message_sender_;
 

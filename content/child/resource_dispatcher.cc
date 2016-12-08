@@ -571,7 +571,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     std::unique_ptr<RequestPeer> peer,
     ResourceType resource_type,
     int origin_pid,
-    const GURL& frame_origin,
+    const url::Origin& frame_origin,
     const GURL& request_url,
     bool download_to_file)
     : peer(std::move(peer)),
@@ -681,7 +681,7 @@ int ResourceDispatcher::StartAsync(
     std::unique_ptr<ResourceRequest> request,
     int routing_id,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-    const GURL& frame_origin,
+    const url::Origin& frame_origin,
     std::unique_ptr<RequestPeer> peer,
     blink::WebURLRequest::LoadingIPCType ipc_type,
     mojom::URLLoaderFactory* url_loader_factory,

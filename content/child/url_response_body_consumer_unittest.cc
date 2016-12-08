@@ -20,6 +20,7 @@
 #include "net/base/request_priority.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -126,7 +127,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test,
   int SetUpRequestPeer(std::unique_ptr<ResourceRequest> request,
                        TestRequestPeer::Context* context) {
     return dispatcher_->StartAsync(
-        std::move(request), 0, nullptr, GURL(),
+        std::move(request), 0, nullptr, url::Origin(),
         base::MakeUnique<TestRequestPeer>(context),
         blink::WebURLRequest::LoadingIPCType::ChromeIPC, nullptr, nullptr);
   }

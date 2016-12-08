@@ -16,6 +16,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "ui/base/page_transition_types.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -44,8 +45,8 @@ class CONTENT_EXPORT RequestExtraData
   void set_is_main_frame(bool is_main_frame) {
     is_main_frame_ = is_main_frame;
   }
-  GURL frame_origin() const { return frame_origin_; }
-  void set_frame_origin(const GURL& frame_origin) {
+  url::Origin frame_origin() const { return frame_origin_; }
+  void set_frame_origin(const url::Origin& frame_origin) {
     frame_origin_ = frame_origin;
   }
   bool parent_is_main_frame() const { return parent_is_main_frame_; }
@@ -154,7 +155,7 @@ class CONTENT_EXPORT RequestExtraData
   blink::WebPageVisibilityState visibility_state_;
   int render_frame_id_;
   bool is_main_frame_;
-  GURL frame_origin_;
+  url::Origin frame_origin_;
   bool parent_is_main_frame_;
   int parent_render_frame_id_;
   bool allow_download_;
