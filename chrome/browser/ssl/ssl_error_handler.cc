@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
@@ -47,6 +46,9 @@ namespace {
 const base::Feature kCaptivePortalInterstitial{
     "CaptivePortalInterstitial", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
+
+const base::Feature kSSLCommonNameMismatchHandling{
+    "SSLCommonNameMismatchHandling", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The delay in milliseconds before displaying the SSL interstitial.
 // This can be changed in tests.
@@ -119,7 +121,7 @@ class CommonNameMismatchRedirectObserver
             "Redirecting navigation %s -> %s because the server presented a "
             "certificate valid for %s but not for %s. To disable such "
             "redirects launch Chrome with the following flag: "
-            "--force-fieldtrials=SSLCommonNameMismatchHandling/Disabled/",
+            "--disable-features=SSLCommonNameMismatchHandling",
             request_url_hostname_.c_str(), suggested_url_hostname_.c_str(),
             suggested_url_hostname_.c_str(), request_url_hostname_.c_str()));
     web_contents_->RemoveUserData(UserDataKey());
@@ -148,8 +150,7 @@ bool IsCaptivePortalInterstitialEnabled() {
 #endif
 
 bool IsSSLCommonNameMismatchHandlingEnabled() {
-  return base::FieldTrialList::FindFullName("SSLCommonNameMismatchHandling") ==
-         "Enabled";
+  return base::FeatureList::IsEnabled(kSSLCommonNameMismatchHandling);
 }
 
 }  // namespace
