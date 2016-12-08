@@ -5,6 +5,7 @@
 #include "core/animation/Keyframe.h"
 
 #include "core/animation/InvalidatableInterpolation.h"
+#include "core/animation/PropertyInterpolationTypesMapping.h"
 
 namespace blink {
 
@@ -14,7 +15,8 @@ Keyframe::PropertySpecificKeyframe::createInterpolation(
     const Keyframe::PropertySpecificKeyframe& end) const {
   // const_cast to take refs.
   return InvalidatableInterpolation::create(
-      propertyHandle, const_cast<PropertySpecificKeyframe*>(this),
+      propertyHandle, PropertyInterpolationTypesMapping::get(propertyHandle),
+      const_cast<PropertySpecificKeyframe*>(this),
       const_cast<PropertySpecificKeyframe*>(&end));
 }
 
