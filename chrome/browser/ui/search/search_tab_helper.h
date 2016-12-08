@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -22,7 +21,6 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "ui/base/window_open_disposition.h"
 
 namespace content {
 class WebContents;
@@ -70,10 +68,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // the notification system and shouldn't call this method.
   void NavigationEntryUpdated();
 
-  // Returns true if the page supports instant. If the instant support state is
-  // not determined or if the page does not support instant returns false.
-  bool SupportsInstant() const;
-
   // Sends the current SearchProvider suggestion to the Instant page if any.
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
 
@@ -91,10 +85,8 @@ class SearchTabHelper : public content::WebContentsObserver,
 
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
-  friend class InstantTabTest;
   friend class SearchIPCRouterPolicyTest;
   friend class SearchIPCRouterTest;
-  friend class SearchTabHelperPrerenderTest;
 
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            DetermineIfPageSupportsInstant_Local);
