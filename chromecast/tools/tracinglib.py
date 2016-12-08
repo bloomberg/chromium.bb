@@ -90,7 +90,10 @@ class TracingBackend(object):
     self._SendRequest(req)
     while self._socket:
       res = self._ReceiveResponse()
-      if 'method' in res and self._HandleResponse(res):
+      has_error = 'error' in res
+      if has_error:
+        logging.error('Tracing error: ' + str(res.get('error')))
+      if has_error or ('method' in res and self._HandleResponse(res)):
         self._tracing_client = None
         result = self._tracing_data
         self._tracing_data = []
