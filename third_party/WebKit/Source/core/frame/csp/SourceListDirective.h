@@ -56,6 +56,8 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectCSPSources);
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest,
                            GetIntersectCSPSourcesSchemes);
+  FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectNonces);
+  FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectHashes);
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, GetSourceVector);
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, OperativeDirectiveGivenType);
 
@@ -97,10 +99,15 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
                              CSPSource*);
 
   bool hasSourceMatchInList(const KURL&, ResourceRequest::RedirectStatus) const;
+  HashSet<String> getIntersectNonces(const HashSet<String>& other) const;
+  HashSet<CSPHashValue> getIntersectHashes(
+      const HashSet<CSPHashValue>& other) const;
   HeapVector<Member<CSPSource>> getIntersectCSPSources(
       const HeapVector<Member<CSPSource>>& other) const;
   HeapHashMap<String, Member<CSPSource>> getIntersectSchemesOnly(
       const HeapVector<Member<CSPSource>>& other) const;
+  bool subsumesNoncesAndHashes(const HashSet<String>& nonces,
+                               const HashSet<CSPHashValue> hashes) const;
 
   Member<ContentSecurityPolicy> m_policy;
   HeapVector<Member<CSPSource>> m_list;

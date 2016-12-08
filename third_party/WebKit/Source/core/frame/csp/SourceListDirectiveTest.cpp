@@ -851,4 +851,204 @@ TEST_F(SourceListDirectiveTest, IsNone) {
   }
 }
 
+TEST_F(SourceListDirectiveTest, GetIntersectNonces) {
+  SourceListDirective listA(
+      "script-src",
+      "http://example.com 'nonce-abc' 'nonce-xyz' 'nonce-' 'unsafe-inline'",
+      csp.get());
+  struct TestCase {
+    String sources;
+    String expected;
+  } cases[] = {
+      {"http:", ""},
+      {"http://example.com", ""},
+      {"example.com", ""},
+      {"'unsafe-inline'", ""},
+      {"'nonce-abc'", "'nonce-abc'"},
+      {"'nonce-xyz'", "'nonce-xyz'"},
+      {"'nonce-123'", ""},
+      {"'nonce-abc' 'nonce-xyz'", "'nonce-abc' 'nonce-xyz'"},
+      {"'nonce-abc' 'nonce-xyz' 'nonce'", "'nonce-abc' 'nonce-xyz'"},
+      {"'nonce-abc' 'nonce-123'", "'nonce-abc'"},
+      {"'nonce-123' 'nonce-123'", ""},
+      {"'nonce-123' 'nonce-abc'", "'nonce-abc'"},
+      {"'nonce-123' 'nonce-xyz'", "'nonce-xyz'"},
+      {"'nonce-123' 'nonce-xyx'", ""},
+  };
+
+  for (const auto& test : cases) {
+    SourceListDirective listB("script-src", test.sources, csp.get());
+    HashSet<String> normalized = listA.getIntersectNonces(listB.m_nonces);
+
+    SourceListDirective expectedList("script-src", test.expected, csp.get());
+    HashSet<String> expected = expectedList.m_nonces;
+    EXPECT_EQ(normalized.size(), expected.size());
+    for (const auto& nonce : normalized) {
+      EXPECT_TRUE(expected.contains(nonce));
+    }
+  }
+}
+
+TEST_F(SourceListDirectiveTest, GetIntersectHashes) {
+  SourceListDirective listA(
+      "script-src",
+      "http://example.com 'sha256-abc123' 'sha384-' 'sha512-321cba' 'self'",
+      csp.get());
+  struct TestCase {
+    String sources;
+    String expected;
+  } cases[] = {
+      {"http:", ""},
+      {"http://example.com", ""},
+      {"example.com", ""},
+      {"'unsafe-inline'", ""},
+      {"'sha384-abc'", ""},
+      {"'sha384-'", ""},
+      {"'sha256-abc123'", "'sha256-abc123'"},
+      {"'sha256-abc123' 'sha384-'", "'sha256-abc123'"},
+      {"'sha256-abc123' 'sha512-321cba'", "'sha512-321cba' 'sha256-abc123'"},
+      {"'sha256-abc123' 'sha384-' 'sha512-321cba'",
+       "'sha256-abc123' 'sha512-321cba' "},
+      {"'sha256-else' 'sha384-' 'sha512-321cba'", "'sha512-321cba' "},
+      {"'hash-123'", ""},
+      {"'sha256-123'", ""},
+  };
+
+  for (const auto& test : cases) {
+    SourceListDirective listB("script-src", test.sources, csp.get());
+    HashSet<CSPHashValue> normalized = listA.getIntersectHashes(listB.m_hashes);
+
+    SourceListDirective expectedList("script-src", test.expected, csp.get());
+    HashSet<CSPHashValue> expected = expectedList.m_hashes;
+    EXPECT_EQ(normalized.size(), expected.size());
+    for (const auto& hash : normalized) {
+      EXPECT_TRUE(expected.contains(hash));
+    }
+  }
+}
+
+TEST_F(SourceListDirectiveTest, SubsumesNoncesAndHashes) {
+  struct TestCase {
+    bool isScriptSrc;
+    String sourcesA;
+    std::vector<String> sourcesB;
+    bool expected;
+  } cases[] = {
+      // Check nonces.
+      {true,
+       "http://example1.com/foo/ 'unsafe-inline' 'nonce-abc'",
+       {"'unsafe-inline'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'nonce-abc'",
+       {"'nonce-abc'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline'",
+       {"'unsafe-inline' 'nonce-yay'", "'nonce-yay'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'nonce-yay'",
+       {"'unsafe-inline' 'nonce-yay'", "'nonce-yay'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'nonce-abc' 'nonce-yay'",
+       {"'unsafe-inline' https://example.test/"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'nonce-abc' 'nonce-yay'",
+       {"'nonce-abc' https://example1.com/foo/"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'nonce-yay' "
+       "'strict-dynamic'",
+       {"https://example.test/ 'nonce-yay'"},
+       false},
+      {false,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'nonce-yay' "
+       "'strict-dynamic'",
+       {"'nonce-yay' https://example1.com/foo/"},
+       true},
+      // Check hashes.
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321cba'",
+       {"http://example1.com/foo/page.html 'strict-dynamic'",
+        "https://example1.com/foo/ 'sha512-321cba'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321cba'",
+       {"http://some-other.com/ 'strict-dynamic' 'sha512-321cba'",
+        "http://example1.com/foo/ 'unsafe-inline' 'sha512-321cba'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321cba'",
+       {"http://example1.com/foo/ 'sha512-321abc' 'sha512-321cba'",
+        "http://example1.com/foo/ 'sha512-321abc' 'sha512-321cba'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321cba'",
+       {"http://example1.com/foo/ 'unsafe-inline'",
+        "http://example1.com/foo/ 'sha512-321cba'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321abc'",
+       {"http://example1.com/foo/ 'unsafe-inline' 'sha512-321abc'",
+        "http://example1.com/foo/ 'sha512-321abc'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321abc'",
+       {"'unsafe-inline' 'sha512-321abc'",
+        "http://example1.com/foo/ 'sha512-321abc'"},
+       true},
+      // Nonces and hashes together.
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321abc' "
+       "'nonce-abc'",
+       {"'unsafe-inline' 'sha512-321abc' 'self'",
+        "'unsafe-inline''sha512-321abc' https://example.test/"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321abc' "
+       "'nonce-abc'",
+       {"'unsafe-inline' 'sha512-321abc' 'self' 'nonce-abc'",
+        "'sha512-321abc' https://example.test/"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321abc' "
+       "'nonce-abc'",
+       {"'unsafe-inline' 'sha512-321abc' 'self'",
+        " 'sha512-321abc' https://example.test/ 'nonce-abc'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321abc' "
+       "'nonce-abc'",
+       {"'unsafe-inline' 'sha512-321abc' 'self' 'nonce-xyz'",
+        "unsafe-inline' 'sha512-321abc' https://example.test/ 'nonce-xyz'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321abc' "
+       "'nonce-abc'",
+       {"'unsafe-inline' 'sha512-321abc' 'self' 'sha512-xyz'",
+        "unsafe-inline' 'sha512-321abc' https://example.test/ 'sha512-xyz'"},
+       false},
+
+  };
+
+  for (const auto& test : cases) {
+    SourceListDirective A(test.isScriptSrc ? "script-src" : "style-src",
+                          test.sourcesA, csp.get());
+    ContentSecurityPolicy* cspB =
+        SetUpWithOrigin("https://another.test/image.png");
+
+    HeapVector<Member<SourceListDirective>> vectorB;
+    for (const auto& sources : test.sourcesB) {
+      SourceListDirective* member = new SourceListDirective(
+          test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
+      vectorB.append(member);
+    }
+
+    EXPECT_EQ(A.subsumes(vectorB), test.expected);
+  }
+}
+
 }  // namespace blink

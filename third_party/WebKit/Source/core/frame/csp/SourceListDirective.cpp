@@ -618,6 +618,8 @@ bool SourceListDirective::subsumes(
   bool allowDynamicOther = other[0]->m_allowDynamic;
   bool allowHashedAttributesOther = other[0]->m_allowHashedAttributes;
   bool isHashOrNoncePresentOther = other[0]->isHashOrNoncePresent();
+  HashSet<String> noncesB = other[0]->m_nonces;
+  HashSet<CSPHashValue> hashesB = other[0]->m_hashes;
 
   for (size_t i = 1; i < other.size(); i++) {
     allowInlineOther = allowInlineOther && other[i]->m_allowInline;
@@ -627,8 +629,13 @@ bool SourceListDirective::subsumes(
         allowHashedAttributesOther && other[i]->m_allowHashedAttributes;
     isHashOrNoncePresentOther =
         isHashOrNoncePresentOther && other[i]->isHashOrNoncePresent();
+    noncesB = other[i]->getIntersectNonces(noncesB);
+    hashesB = other[i]->getIntersectHashes(hashesB);
     normalizedB = other[i]->getIntersectCSPSources(normalizedB);
   }
+
+  if (!subsumesNoncesAndHashes(noncesB, hashesB))
+    return false;
 
   const ContentSecurityPolicy::DirectiveType type =
       ContentSecurityPolicy::getDirectiveType(m_directiveName);
@@ -647,6 +654,49 @@ bool SourceListDirective::subsumes(
   }
 
   return CSPSource::firstSubsumesSecond(normalizedA, normalizedB);
+}
+
+bool SourceListDirective::subsumesNoncesAndHashes(
+    const HashSet<String>& nonces,
+    const HashSet<CSPHashValue> hashes) const {
+  for (const auto& nonce : nonces) {
+    if (!m_nonces.contains(nonce))
+      return false;
+  }
+  for (const auto& hash : hashes) {
+    if (!m_hashes.contains(hash))
+      return false;
+  }
+
+  return true;
+}
+
+HashSet<String> SourceListDirective::getIntersectNonces(
+    const HashSet<String>& other) const {
+  if (!m_nonces.size() || !other.size())
+    return !m_nonces.size() ? m_nonces : other;
+
+  HashSet<String> normalized;
+  for (const auto& nonce : m_nonces) {
+    if (other.contains(nonce))
+      normalized.add(nonce);
+  }
+
+  return normalized;
+}
+
+HashSet<CSPHashValue> SourceListDirective::getIntersectHashes(
+    const HashSet<CSPHashValue>& other) const {
+  if (!m_hashes.size() || !other.size())
+    return !m_hashes.size() ? m_hashes : other;
+
+  HashSet<CSPHashValue> normalized;
+  for (const auto& hash : m_hashes) {
+    if (other.contains(hash))
+      normalized.add(hash);
+  }
+
+  return normalized;
 }
 
 HeapHashMap<String, Member<CSPSource>>
