@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: b47bf6c250c6b825dee1c5fbad9152c2c962e828
+Revision: 32981a3ee9d7c2769fb27afa038fe2e194cfa329
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -35,6 +35,4 @@ $ cd "${CRASHPAD_DIR}"
 $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
-- Have crashpad call ASan's crash handler if present
-- Modified util/file/string_file.cc for compat with base/numerics here:
-  https://codereview.chromium.org/2528243002/
+None.

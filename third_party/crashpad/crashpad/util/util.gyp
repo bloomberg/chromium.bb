@@ -84,6 +84,8 @@
         'mach/task_for_pid.h',
         'mach/task_memory.cc',
         'mach/task_memory.h',
+        'misc/address_sanitizer.h',
+        'misc/arraysize_unsafe.h',
         'misc/clock.h',
         'misc/clock_mac.cc',
         'misc/clock_posix.cc',
@@ -261,8 +263,6 @@
         ['OS=="win"', {
           'link_settings': {
             'libraries': [
-              '-ladvapi32.lib',
-              '-lrpcrt4.lib',
               '-lwinhttp.lib',
             ],
           },

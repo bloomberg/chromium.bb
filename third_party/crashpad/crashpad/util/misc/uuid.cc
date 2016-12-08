@@ -42,23 +42,15 @@ namespace crashpad {
 static_assert(sizeof(UUID) == 16, "UUID must be 16 bytes");
 
 #if CXX_LIBRARY_VERSION >= 2011
-static_assert(std::is_standard_layout<UUID>::value,
-              "UUID must be standard layout");
+static_assert(std::is_pod<UUID>::value, "UUID must be POD");
 #endif
 
-UUID::UUID() : data_1(0), data_2(0), data_3(0), data_4(), data_5() {
-}
-
-UUID::UUID(InitializeWithNewTag) {
-  CHECK(InitializeWithNew());
-}
-
-UUID::UUID(const uint8_t* bytes) {
-  InitializeFromBytes(bytes);
-}
-
 bool UUID::operator==(const UUID& that) const {
-  return memcmp(this, &that, sizeof(UUID)) == 0;
+  return memcmp(this, &that, sizeof(*this)) == 0;
+}
+
+void UUID::InitializeToZero() {
+  memset(this, 0, sizeof(*this));
 }
 
 void UUID::InitializeFromBytes(const uint8_t* bytes) {
@@ -103,17 +95,11 @@ bool UUID::InitializeWithNew() {
   uuid_generate(uuid);
   InitializeFromBytes(uuid);
   return true;
-#elif defined(OS_WIN)
-  ::UUID system_uuid;
-  if (UuidCreate(&system_uuid) != RPC_S_OK) {
-    LOG(ERROR) << "UuidCreate";
-    return false;
-  }
-  InitializeFromSystemUUID(&system_uuid);
-  return true;
-#elif defined(OS_LINUX) || defined(OS_ANDROID)
+#elif defined(OS_WIN) || defined(OS_LINUX) || defined(OS_ANDROID)
   // Linux does not provide a UUID generator in a widely-available system
   // library. uuid_generate() from libuuid is not available everywhere.
+  // On Windows, do not use UuidCreate() to avoid a dependency on rpcrt4, so
+  // that this function is usable early in DllMain().
   base::RandBytes(this, sizeof(*this));
 
   // Set six bits per RFC 4122 §4.4 to identify this as a pseudo-random UUID.
@@ -132,7 +118,7 @@ void UUID::InitializeFromSystemUUID(const ::UUID* system_uuid) {
                 "unexpected system uuid size");
   static_assert(offsetof(::UUID, Data1) == offsetof(UUID, data_1),
                 "unexpected system uuid layout");
-  memcpy(this, system_uuid, sizeof(::UUID));
+  memcpy(this, system_uuid, sizeof(*this));
 }
 #endif  // OS_WIN
 

@@ -15,6 +15,7 @@
 #include "client/crashpad_client.h"
 
 #include <windows.h>
+#include <signal.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -31,6 +32,7 @@
 #include "util/file/file_io.h"
 #include "util/misc/random_string.h"
 #include "util/win/address_types.h"
+#include "util/win/capture_context.h"
 #include "util/win/command_line.h"
 #include "util/win/critical_section_with_debug_info.h"
 #include "util/win/get_function.h"
@@ -108,13 +110,12 @@ StartupState BlockUntilHandlerStartedOrFailed() {
 }
 
 #if defined(ADDRESS_SANITIZER)
-extern "C" LONG
-__asan_unhandled_exception_filter(EXCEPTION_POINTERS* info);
+extern "C" LONG __asan_unhandled_exception_filter(EXCEPTION_POINTERS* info);
 #endif
 
 LONG WINAPI UnhandledExceptionHandler(EXCEPTION_POINTERS* exception_pointers) {
-  // In ASan builds, delegate to the ASan exception filter.
 #if defined(ADDRESS_SANITIZER)
+  // In ASan builds, delegate to the ASan exception filter.
   LONG status = __asan_unhandled_exception_filter(exception_pointers);
   if (status != EXCEPTION_CONTINUE_SEARCH)
     return status;
@@ -173,6 +174,28 @@ LONG WINAPI UnhandledExceptionHandler(EXCEPTION_POINTERS* exception_pointers) {
   TerminateProcess(GetCurrentProcess(), kTerminationCodeCrashNoDump);
 
   return EXCEPTION_CONTINUE_SEARCH;
+}
+
+void HandleAbortSignal(int signum) {
+  DCHECK_EQ(signum, SIGABRT);
+
+  CONTEXT context;
+  CaptureContext(&context);
+
+  EXCEPTION_RECORD record = {};
+  record.ExceptionCode = STATUS_FATAL_APP_EXIT;
+  record.ExceptionFlags = EXCEPTION_NONCONTINUABLE;
+#if defined(ARCH_CPU_64_BITS)
+  record.ExceptionAddress = reinterpret_cast<void*>(context.Rip);
+#else
+  record.ExceptionAddress = reinterpret_cast<void*>(context.Eip);
+#endif  // ARCH_CPU_64_BITS
+
+  EXCEPTION_POINTERS exception_pointers;
+  exception_pointers.ContextRecord = &context;
+  exception_pointers.ExceptionRecord = &record;
+
+  UnhandledExceptionHandler(&exception_pointers);
 }
 
 std::wstring FormatArgumentString(const std::string& name,
@@ -512,6 +535,32 @@ void CommonInProcessInitialization() {
   g_non_crash_dump_lock = new base::Lock();
 }
 
+void RegisterHandlers() {
+  SetUnhandledExceptionFilter(&UnhandledExceptionHandler);
+
+  // The Windows CRT's signal.h lists:
+  // - SIGINT
+  // - SIGILL
+  // - SIGFPE
+  // - SIGSEGV
+  // - SIGTERM
+  // - SIGBREAK
+  // - SIGABRT
+  // SIGILL and SIGTERM are documented as not being generated. SIGBREAK and
+  // SIGINT are for Ctrl-Break and Ctrl-C, and aren't something for which
+  // capturing a dump is warranted. SIGFPE and SIGSEGV are captured as regular
+  // exceptions through the unhandled exception filter. This leaves SIGABRT. In
+  // the standard CRT, abort() is implemented as a synchronous call to the
+  // SIGABRT signal handler if installed, but after doing so, the unhandled
+  // exception filter is not triggered (it instead __fastfail()s). So, register
+  // to handle SIGABRT to catch abort() calls, as client code might use this and
+  // expect it to cause a crash dump. This will only work when the abort()
+  // that's called in client code is the same (or has the same behavior) as the
+  // one in use here.
+  void (*rv)(int) = signal(SIGABRT, HandleAbortSignal);
+  DCHECK_NE(rv, SIG_ERR);
+}
+
 }  // namespace
 
 CrashpadClient::CrashpadClient() : ipc_pipe_(), handler_start_thread_() {}
@@ -548,7 +597,7 @@ bool CrashpadClient::StartHandler(
 
   CommonInProcessInitialization();
 
-  SetUnhandledExceptionFilter(&UnhandledExceptionHandler);
+  RegisterHandlers();
 
   auto data = new BackgroundHandlerStartThreadData(handler,
                                                    database,
@@ -621,7 +670,8 @@ bool CrashpadClient::SetHandlerIPCPipe(const std::wstring& ipc_pipe) {
   }
 
   SetHandlerStartupState(StartupState::kSucceeded);
-  SetUnhandledExceptionFilter(&UnhandledExceptionHandler);
+
+  RegisterHandlers();
 
   // The server returns these already duplicated to be valid in this process.
   g_signal_exception =

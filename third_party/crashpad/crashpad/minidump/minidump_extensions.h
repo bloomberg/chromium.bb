@@ -162,6 +162,16 @@ enum MinidumpCPUArchitecture : uint16_t {
   kMinidumpCPUArchitectureX86Win64 = PROCESSOR_ARCHITECTURE_IA32_ON_WIN64,
 
   kMinidumpCPUArchitectureNeutral = PROCESSOR_ARCHITECTURE_NEUTRAL,
+
+  //! \brief 64-bit ARM.
+  //!
+  //! These systems identify their CPUs generically as “arm64” or “aarch64”, or
+  //! with more specific names such as “armv8”.
+  //!
+  //! \sa #kMinidumpCPUArchitectureARM64Breakpad
+  kMinidumpCPUArchitectureARM64 = PROCESSOR_ARCHITECTURE_ARM64,
+
+  kMinidumpCPUArchitectureARM32Win64 = PROCESSOR_ARCHITECTURE_ARM32_ON_WIN64,
   kMinidumpCPUArchitectureSPARC = 0x8001,
 
   //! \brief 64-bit PowerPC.
@@ -170,11 +180,10 @@ enum MinidumpCPUArchitecture : uint16_t {
   //! specific names such as “ppc970”.
   kMinidumpCPUArchitecturePPC64 = 0x8002,
 
-  //! \brief 64-bit ARM.
+  //! \brief Used by Breakpad for 64-bit ARM.
   //!
-  //! These systems identify their CPUs generically as “arm64” or “aarch64”, or
-  //! with more specific names such as “armv8”.
-  kMinidumpCPUArchitectureARM64 = 0x8003,
+  //! \deprecated Use #kMinidumpCPUArchitectureARM64 instead.
+  kMinidumpCPUArchitectureARM64Breakpad = 0x8003,
 
   //! \brief Unknown CPU architecture.
   kMinidumpCPUArchitectureUnknown = PROCESSOR_ARCHITECTURE_UNKNOWN,
@@ -209,7 +218,7 @@ enum MinidumpOS : uint32_t {
 
   kMinidumpOSUnix = 0x8000,
 
-  //! \brief Mac OS X, Darwin for traditional systems.
+  //! \brief macOS, Darwin for traditional systems.
   kMinidumpOSMacOSX = 0x8101,
 
   //! \brief iOS, Darwin for mobile devices.
@@ -276,7 +285,7 @@ struct ALIGNAS(4) PACKED MinidumpSimpleStringDictionary {
 //! #version, so that newer parsers will be able to determine whether the added
 //! fields are valid or not.
 //!
-//! \sa #MinidumpModuleCrashpadInfoList
+//! \sa MinidumpModuleCrashpadInfoList
 struct ALIGNAS(4) PACKED MinidumpModuleCrashpadInfo {
   //! \brief The structure’s currently-defined version number.
   //!
@@ -423,7 +432,7 @@ struct ALIGNAS(4) PACKED MinidumpCrashpadInfo {
   //! This field is present when #version is at least `1`.
   MINIDUMP_LOCATION_DESCRIPTOR simple_annotations;
 
-  //! \brief A pointer to a #MinidumpModuleCrashpadInfoList structure.
+  //! \brief A pointer to a MinidumpModuleCrashpadInfoList structure.
   //!
   //! This field is present when #version is at least `1`.
   MINIDUMP_LOCATION_DESCRIPTOR module_list;

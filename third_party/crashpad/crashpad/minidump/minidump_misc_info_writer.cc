@@ -26,6 +26,7 @@
 #include "snapshot/process_snapshot.h"
 #include "snapshot/system_snapshot.h"
 #include "util/file/file_writer.h"
+#include "util/misc/arraysize_unsafe.h"
 #include "util/numeric/in_range_cast.h"
 #include "util/numeric/safe_assignment.h"
 
@@ -68,8 +69,8 @@ std::string BuildString(const SystemSnapshot* system_snapshot) {
 #if defined(OS_MACOSX)
 // Converts the value of the MAC_OS_VERSION_MIN_REQUIRED or
 // MAC_OS_X_VERSION_MAX_ALLOWED macro from <AvailabilityMacros.h> to a number
-// identifying the minor Mac OS X version that it represents. For example, with
-// an argument of MAC_OS_X_VERSION_10_6, this function will return 6.
+// identifying the minor macOS version that it represents. For example, with an
+// argument of MAC_OS_X_VERSION_10_6, this function will return 6.
 int AvailabilityVersionToMacOSXMinorVersion(int availability) {
   // Through MAC_OS_X_VERSION_10_9, the minor version is the tens digit.
   if (availability >= 1000 && availability <= 1099) {
@@ -295,7 +296,7 @@ void MinidumpMiscInfoWriter::SetTimeZone(uint32_t time_zone_id,
 
   internal::MinidumpWriterUtil::AssignUTF8ToUTF16(
       misc_info_.TimeZone.StandardName,
-      arraysize(misc_info_.TimeZone.StandardName),
+      ARRAYSIZE_UNSAFE(misc_info_.TimeZone.StandardName),
       standard_name);
 
   misc_info_.TimeZone.StandardDate = standard_date;
@@ -303,7 +304,7 @@ void MinidumpMiscInfoWriter::SetTimeZone(uint32_t time_zone_id,
 
   internal::MinidumpWriterUtil::AssignUTF8ToUTF16(
       misc_info_.TimeZone.DaylightName,
-      arraysize(misc_info_.TimeZone.DaylightName),
+      ARRAYSIZE_UNSAFE(misc_info_.TimeZone.DaylightName),
       daylight_name);
 
   misc_info_.TimeZone.DaylightDate = daylight_date;
@@ -320,10 +321,12 @@ void MinidumpMiscInfoWriter::SetBuildString(
   misc_info_.Flags1 |= MINIDUMP_MISC4_BUILDSTRING;
 
   internal::MinidumpWriterUtil::AssignUTF8ToUTF16(
-      misc_info_.BuildString, arraysize(misc_info_.BuildString), build_string);
+      misc_info_.BuildString,
+      ARRAYSIZE_UNSAFE(misc_info_.BuildString),
+      build_string);
   internal::MinidumpWriterUtil::AssignUTF8ToUTF16(
       misc_info_.DbgBldStr,
-      arraysize(misc_info_.DbgBldStr),
+      ARRAYSIZE_UNSAFE(misc_info_.DbgBldStr),
       debug_build_string);
 }
 

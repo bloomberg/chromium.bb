@@ -33,8 +33,8 @@ class WritePostmortemDumpTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
-    expected_client_id_ = UUID(UUID::InitializeWithNewTag{});
-    expected_report_id_ = UUID(UUID::InitializeWithNewTag{});
+    expected_client_id_.InitializeWithNew();
+    expected_report_id_.InitializeWithNew();
 
     // Create a stability report.
     // TODO(manzagop): flesh out the report once proto is more detailed.

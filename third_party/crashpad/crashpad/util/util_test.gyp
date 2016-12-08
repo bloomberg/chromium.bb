@@ -55,6 +55,7 @@
         'mach/scoped_task_suspend_test.cc',
         'mach/symbolic_constants_mach_test.cc',
         'mach/task_memory_test.cc',
+        'misc/arraysize_unsafe_test.cc',
         'misc/clock_test.cc',
         'misc/initialization_state_dcheck_test.cc',
         'misc/initialization_state_test.cc',
@@ -90,6 +91,7 @@
         'win/handle_test.cc',
         'win/initial_client_data_test.cc',
         'win/process_info_test.cc',
+        'win/registration_protocol_win_test.cc',
         'win/scoped_process_suspend_test.cc',
         'win/time_test.cc',
       ],
@@ -107,6 +109,7 @@
           ],
           'link_settings': {
             'libraries': [
+              '-ladvapi32.lib',
               '-limagehlp.lib',
               '-lrpcrt4.lib',
             ],

@@ -178,8 +178,9 @@ class PostmortemReportCollectorCollectAndSubmitTest : public testing::Test {
     base::FilePath minidump_path = temp_dir_.GetPath().AppendASCII("foo-1.dmp");
     base::File minidump_file(
         minidump_path, base::File::FLAG_CREATE | base::File::File::FLAG_WRITE);
-    crashpad_report_ = {minidump_file.GetPlatformFile(),
-                        crashpad::UUID(UUID::InitializeWithNewTag{}),
+    crashpad::UUID new_report_uuid;
+    new_report_uuid.InitializeWithNew();
+    crashpad_report_ = {minidump_file.GetPlatformFile(), new_report_uuid,
                         minidump_path};
     EXPECT_CALL(database_, PrepareNewCrashReport(_))
         .Times(1)
