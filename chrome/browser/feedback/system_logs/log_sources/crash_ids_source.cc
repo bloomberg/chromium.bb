@@ -58,7 +58,11 @@ void CrashIdsSource::OnUploadListAvailable() {
 
   // The feedback server expects the crash IDs to be a comma-separated list.
   for (const auto& crash_info : crashes) {
-    if (now - crash_info.capture_time < kOneHourTimeDelta) {
+    const base::Time& report_time =
+        crash_info.state == UploadList::UploadInfo::State::Uploaded
+            ? crash_info.upload_time
+            : crash_info.capture_time;
+    if (now - report_time < kOneHourTimeDelta) {
       const std::string& crash_id = crash_info.upload_id;
       crash_ids_list_.append(crash_ids_list_.empty() ? crash_id
                                                      : ", " + crash_id);
