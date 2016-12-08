@@ -1721,7 +1721,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                              BLOCK_SIZE bsize, int n4x4_l2) {
   AV1_COMMON *const cm = &pbi->common;
   const int n8x8_l2 = n4x4_l2 - 1;
-  const int num_8x8_wh = 1 << n8x8_l2;
+  const int num_8x8_wh = mi_size_wide[bsize];
   const int hbs = num_8x8_wh >> 1;
   PARTITION_TYPE partition;
   BLOCK_SIZE subsize;
