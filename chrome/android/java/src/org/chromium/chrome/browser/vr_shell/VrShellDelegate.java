@@ -103,7 +103,7 @@ public class VrShellDelegate {
             public void onContentChanged(Tab tab) {
                 if (tab.getNativePage() != null || tab.isShowingSadTab()) {
                     // For now we don't handle native pages. crbug.com/661609
-                    shutdownVR(true, true);
+                    shutdownVR(false, true);
                 }
             }
 
@@ -197,7 +197,7 @@ public class VrShellDelegate {
         mVrShell.setCloseButtonListenerOnUI(new Runnable() {
             @Override
             public void run() {
-                exitVRIfNecessary(true);
+                exitVRIfNecessary(false);
             }
         });
         // onResume needs to be called on GvrLayout after initialization to make sure DON flow work
@@ -286,13 +286,13 @@ public class VrShellDelegate {
         // TODO(bajones): Once VR Shell can be invoked outside of WebVR this
         // should no longer exit the shell outright. Need a way to determine
         // how VrShell was created.
-        shutdownVR(true, !isVrShellEnabled());
+        shutdownVR(false, !isVrShellEnabled());
         return true;
     }
 
     @CalledByNative
     private void forceExitVr() {
-        shutdownVR(true, true);
+        shutdownVR(false, true);
     }
 
     /**
@@ -334,7 +334,8 @@ public class VrShellDelegate {
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
             }
-        } else if (mLastVRExit + REENTER_VR_TIMEOUT_MS > SystemClock.uptimeMillis()) {
+        } else if (mVrDaydreamApi.isDaydreamCurrentViewer()
+                && mLastVRExit + REENTER_VR_TIMEOUT_MS > SystemClock.uptimeMillis()) {
             enterVRIfNecessary();
         }
     }
@@ -361,17 +362,17 @@ public class VrShellDelegate {
         // TODO(mthiesse): When VR Shell lives in its own activity, and integrates with Daydream
         // home, pause instead of exiting VR here. For now, because VR Apps shouldn't show up in the
         // non-VR recents, and we don't want ChromeTabbedActivity disappearing, exit VR.
-        exitVRIfNecessary(false);
+        exitVRIfNecessary(true);
     }
 
     /**
      * Exits the current VR mode (WebVR or VRShell)
      * @return Whether or not we exited VR.
      */
-    public boolean exitVRIfNecessary(boolean returnTo2D) {
+    public boolean exitVRIfNecessary(boolean isPausing) {
         if (!mVrAvailable) return false;
         if (!mInVr) return false;
-        shutdownVR(returnTo2D, false);
+        shutdownVR(isPausing, false);
         return true;
     }
 
@@ -432,10 +433,10 @@ public class VrShellDelegate {
     /**
      * Exits VR Shell, performing all necessary cleanup.
      */
-    private void shutdownVR(boolean returnTo2D, boolean showTransition) {
+    private void shutdownVR(boolean isPausing, boolean showTransition) {
         if (!mInVr) return;
         mRequestedWebVR = false;
-        if (returnTo2D) {
+        if (!isPausing) {
             if (!showTransition || !mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
                 mVrDaydreamApi.setVrModeEnabled(false);
             }
