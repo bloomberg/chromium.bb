@@ -209,7 +209,9 @@ WebPreferences::WebPreferences()
       progress_bar_completion(ProgressBarCompletion::LOAD_EVENT),
       spellcheck_enabled_by_default(true),
       video_fullscreen_orientation_lock_enabled(false),
-#endif
+#else  // defined(OS_ANDROID)
+      cross_origin_media_playback_requires_user_gesture(false),
+#endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
       default_minimum_page_scale_factor(0.25f),
       default_maximum_page_scale_factor(5.f),

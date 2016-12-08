@@ -71,6 +71,11 @@ CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
 CONTENT_EXPORT extern const base::Feature kWebPayments;
 #endif  // defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+CONTENT_EXPORT extern const base::Feature
+    kCrossOriginMediaPlaybackRequiresUserGesture;
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_WIN)
 CONTENT_EXPORT extern const base::Feature kWinSboxDisableExtensionPoints;
 #endif  // defined(OS_WIN)

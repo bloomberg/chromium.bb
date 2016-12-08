@@ -68,6 +68,7 @@ class WEB_EXPORT WebSettingsImpl final : NON_EXPORTED_BASE(public WebSettings) {
   void setBrowserSideNavigationEnabled(bool) override;
   void setClobberUserAgentInitialScaleQuirk(bool) override;
   void setCookieEnabled(bool) override;
+  void setCrossOriginMediaPlaybackRequiresUserGesture(bool) override;
   void setNavigateOnDragDrop(bool) override;
   void setCursiveFontFamily(const WebString&,
                             UScriptCode = USCRIPT_COMMON) override;

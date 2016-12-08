@@ -1043,7 +1043,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   WebRuntimeFeatures::enableVideoFullscreenOrientationLock(
       prefs.video_fullscreen_orientation_lock_enabled);
-#endif
+#else   // defined(OS_ANDROID)
+  settings->setCrossOriginMediaPlaybackRequiresUserGesture(
+      prefs.cross_origin_media_playback_requires_user_gesture);
+#endif  // defined(OS_ANDROID)
 
   settings->setViewportEnabled(prefs.viewport_enabled);
   settings->setViewportMetaEnabled(prefs.viewport_meta_enabled);

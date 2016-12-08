@@ -5839,6 +5839,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_DESCRIPTION" desc="Description for the flag for gesture requiment for media playback">
         User gesture requirement for playing media elements. Disabling this will allow autoplay to work.
       </message>
+      <if expr="not is_android">
+          <message name="IDS_FLAGS_CROSS_ORIGIN_MEDIA_PLAYBACK_REQUIRES_USER_GESTURE_NAME" desc="Title for the flag for gesture requiment for media playback">
+              Media playback in cross-origin iframes requires user gesture
+          </message>
+          <message name="IDS_FLAGS_CROSS_ORIGIN_MEDIA_PLAYBACK_REQUIRES_USER_GESTURE_DESCRIPTION" desc="Description for the flag for gesture requiment for media playback">
+              Playing media elements in cross-origin iframes requires user gesture. Disabling this will allow autoplay in cross-origin iframes to work.
+          </message>
+      </if>
       <message name="IDS_FLAGS_PASSIVE_DOCUMENT_EVENT_LISTENERS_DESCRIPTION" desc="Description for the flag to adjust the default behaviour for document level passive touch listeners.">
         Forces touchstart, and touchmove event listeners on document level targets (which haven't requested otherwise) to be treated as passive.
       </message>

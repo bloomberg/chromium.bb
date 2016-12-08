@@ -440,7 +440,11 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.progress_bar_completion = GetProgressBarCompletionPolicy();
 
   prefs.use_solid_color_scrollbars = true;
-#endif
+#else  // defined(OS_ANDROID)
+  prefs.cross_origin_media_playback_requires_user_gesture =
+      base::FeatureList::GetInstance()->IsEnabled(
+          features::kCrossOriginMediaPlaybackRequiresUserGesture);
+#endif  // defined(OS_ANDROID)
 
   prefs.device_supports_touch = ui::GetTouchScreensAvailability() ==
                                 ui::TouchScreensAvailability::ENABLED;

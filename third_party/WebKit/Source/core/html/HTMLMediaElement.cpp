@@ -288,6 +288,25 @@ String preloadTypeToString(WebMediaPlayer::Preload preloadType) {
   return String();
 }
 
+bool isDocumentCrossOrigin(Document& document) {
+  const LocalFrame* frame = document.frame();
+  return frame && frame->isCrossOriginSubframe();
+}
+
+// Return true if and only if the document settings specifies media playback
+// requires user gesture.
+bool computeLockedPendingUserGesture(Document& document) {
+  if (!document.settings())
+    return false;
+
+  if (document.settings()->crossOriginMediaPlaybackRequiresUserGesture() &&
+      isDocumentCrossOrigin(document)) {
+    return true;
+  }
+
+  return document.settings()->mediaPlaybackRequiresUserGesture();
+}
+
 }  // anonymous namespace
 
 MIMETypeRegistry::SupportsType HTMLMediaElement::supportsType(
@@ -402,12 +421,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
 
   BLINK_MEDIA_LOG << "HTMLMediaElement(" << (void*)this << ")";
 
-  // If any experiment is enabled, then we want to enable a user gesture by
-  // default, otherwise the experiment does nothing.
-  if ((document.settings() &&
-       document.settings()->mediaPlaybackRequiresUserGesture())) {
-    m_lockedPendingUserGesture = true;
-  }
+  m_lockedPendingUserGesture = computeLockedPendingUserGesture(document);
 
   LocalFrame* frame = document.frame();
   if (frame) {
@@ -451,11 +465,9 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument) {
   // If any experiment is enabled, then we want to enable a user gesture by
   // default, otherwise the experiment does nothing.
   bool oldDocumentRequiresUserGesture =
-      (oldDocument.settings() &&
-       oldDocument.settings()->mediaPlaybackRequiresUserGesture());
+      computeLockedPendingUserGesture(oldDocument);
   bool newDocumentRequiresUserGesture =
-      (document().settings() &&
-       document().settings()->mediaPlaybackRequiresUserGesture());
+      computeLockedPendingUserGesture(document());
   if (newDocumentRequiresUserGesture && !oldDocumentRequiresUserGesture) {
     m_lockedPendingUserGesture = true;
   }

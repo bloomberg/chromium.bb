@@ -1122,6 +1122,14 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_DESCRIPTION, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(
          switches::kDisableGestureRequirementForMediaPlayback)},
+#if !defined(OS_ANDROID)
+    {"cross-origin-media-playback-requires-user-gesture",
+     IDS_FLAGS_CROSS_ORIGIN_MEDIA_PLAYBACK_REQUIRES_USER_GESTURE_NAME,
+     IDS_FLAGS_CROSS_ORIGIN_MEDIA_PLAYBACK_REQUIRES_USER_GESTURE_DESCRIPTION,
+     kOsDesktop, FEATURE_VALUE_TYPE(
+                     features::kCrossOriginMediaPlaybackRequiresUserGesture)},
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
     {"enable-virtual-keyboard", IDS_FLAGS_VIRTUAL_KEYBOARD_NAME,
      IDS_FLAGS_VIRTUAL_KEYBOARD_DESCRIPTION, kOsCrOS,

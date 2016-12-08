@@ -249,7 +249,9 @@ struct CONTENT_EXPORT WebPreferences {
   bool spellcheck_enabled_by_default;
   // If enabled, when a video goes fullscreen, the orientation should be locked.
   bool video_fullscreen_orientation_lock_enabled;
-#endif
+#else  // defined(OS_ANDROID)
+  bool cross_origin_media_playback_requires_user_gesture;
+#endif  // defined(OS_ANDROID)
 
   // Default (used if the page or UA doesn't override these) values for page
   // scale limits. These are set directly on the WebView so there's no analogue

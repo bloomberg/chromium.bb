@@ -649,6 +649,11 @@ void WebSettingsImpl::setCookieEnabled(bool enabled) {
   m_settings->setCookieEnabled(enabled);
 }
 
+void WebSettingsImpl::setCrossOriginMediaPlaybackRequiresUserGesture(
+    bool required) {
+  m_settings->setCrossOriginMediaPlaybackRequiresUserGesture(required);
+}
+
 void WebSettingsImpl::setNavigateOnDragDrop(bool enabled) {
   m_settings->setNavigateOnDragDrop(enabled);
 }
