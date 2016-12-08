@@ -45,7 +45,7 @@ int LayoutDelegate::GetLayoutDistance(LayoutDistanceType type) const {
 
 views::GridLayout::Alignment LayoutDelegate::GetControlLabelGridAlignment()
     const {
-  return views::kControlLabelGridAlignment;
+  return views::GridLayout::TRAILING;
 }
 
 bool LayoutDelegate::UseExtraDialogPadding() const {

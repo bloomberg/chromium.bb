@@ -20,6 +20,7 @@ class HarmonyLayoutDelegate : public LayoutDelegate {
 
   // views::LayoutDelegate:
   int GetLayoutDistance(LayoutDistanceType type) const override;
+  views::GridLayout::Alignment GetControlLabelGridAlignment() const override;
   bool UseExtraDialogPadding() const override;
   bool IsHarmonyMode() const override;
   int GetDialogPreferredWidth(DialogWidthType type) const override;

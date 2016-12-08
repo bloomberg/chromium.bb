@@ -38,6 +38,11 @@ int HarmonyLayoutDelegate::GetLayoutDistance(LayoutDistanceType type) const {
   return 0;
 }
 
+views::GridLayout::Alignment
+HarmonyLayoutDelegate::GetControlLabelGridAlignment() const {
+  return views::GridLayout::LEADING;
+}
+
 bool HarmonyLayoutDelegate::UseExtraDialogPadding() const {
   return false;
 }

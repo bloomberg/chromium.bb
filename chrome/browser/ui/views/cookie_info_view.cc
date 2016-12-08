@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -153,8 +154,9 @@ void CookieInfoView::Init() {
 
   int three_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);
-  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                        0, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(LayoutDelegate::Get()->GetControlLabelGridAlignment(),
+                        views::GridLayout::CENTER, 0,
+                        views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);

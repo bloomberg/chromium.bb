@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/browser/ui/views/sync/bubble_sync_promo_view.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -177,8 +178,8 @@ void BookmarkBubbleView::Init() {
   // buttons at the bottom.
   const int cs_id = 0;
   ColumnSet* cs = layout->AddColumnSet(cs_id);
-  cs->AddColumn(views::kControlLabelGridAlignment, GridLayout::CENTER, 0,
-                GridLayout::USE_PREF, 0, 0);
+  cs->AddColumn(LayoutDelegate::Get()->GetControlLabelGridAlignment(),
+                GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
 
   cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
