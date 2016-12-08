@@ -110,6 +110,7 @@ crbug.com/664841 virtual/mojo-loading/http/tests/workers/worker-document-domain-
 crbug.com/664841 virtual/mojo-loading/http/tests/workers/worker-performance-timeline.html [ Pass Failure ]
 crbug.com/664843 inspector/elements/styles-4/styles-update-from-js.html [ Pass Failure ]
 crbug.com/664842 inspector-protocol/heap-profiler/heap-snapshot-with-active-dom-object.html [ Pass Failure ]
+crbug.com/672204 [ Windows ] media/avtrack/video-track-selected.html [ Pass Failure ]
 crbug.com/664844 media/track/track-cue-rendering-tree-is-removed-properly.html [ Pass Failure ]
 crbug.com/664844 media/track/track-default-attribute.html [ Pass Failure ]
 crbug.com/664844 media/track/track-kind-user-preference.html [ Pass Failure ]
