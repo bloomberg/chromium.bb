@@ -108,14 +108,6 @@ class LayoutUnit {
   double toDouble() const {
     return static_cast<double>(m_value) / kFixedPointDenominator;
   }
-  float ceilToFloat() const {
-    float floatValue = toFloat();
-    if (static_cast<int>(floatValue * kFixedPointDenominator) == m_value)
-      return floatValue;
-    if (floatValue > 0)
-      return nextafterf(floatValue, std::numeric_limits<float>::max());
-    return nextafterf(floatValue, std::numeric_limits<float>::min());
-  }
   unsigned toUnsigned() const {
     REPORT_OVERFLOW(m_value >= 0);
     return toInt();
