@@ -320,4 +320,58 @@ TEST_F(StyleEngineTest, HasViewportDependentMediaQueries) {
   EXPECT_FALSE(document().styleEngine().hasViewportDependentMediaQueries());
 }
 
+TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
+  document().body()->setInnerHTML(
+      "<style id='s1' media='(max-width: 1px)'>#t1 { color: green }</style>"
+      "<div id='t1'>Green</div><div></div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* t1 = document().getElementById("t1");
+  ASSERT_TRUE(t1);
+  ASSERT_TRUE(t1->computedStyle());
+  EXPECT_EQ(makeRGB(0, 0, 0),
+            t1->computedStyle()->visitedDependentColor(CSSPropertyColor));
+
+  unsigned beforeCount = styleEngine().styleForElementCount();
+
+  Element* s1 = document().getElementById("s1");
+  s1->setAttribute(blink::HTMLNames::mediaAttr, "(max-width: 2000px)");
+  document().view()->updateAllLifecyclePhases();
+
+  unsigned afterCount = styleEngine().styleForElementCount();
+  // TODO(rune@opera.com): Should be 1u for ruleset based invalidations.
+  EXPECT_EQ(8u, afterCount - beforeCount);
+
+  ASSERT_TRUE(t1->computedStyle());
+  EXPECT_EQ(makeRGB(0, 128, 0),
+            t1->computedStyle()->visitedDependentColor(CSSPropertyColor));
+}
+
+TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
+  document().body()->setInnerHTML(
+      "<style id='s1' media='(max-width: 1000px)'>#t1 { color: green }</style>"
+      "<div id='t1'>Green</div><div></div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* t1 = document().getElementById("t1");
+  ASSERT_TRUE(t1);
+  ASSERT_TRUE(t1->computedStyle());
+  EXPECT_EQ(makeRGB(0, 128, 0),
+            t1->computedStyle()->visitedDependentColor(CSSPropertyColor));
+
+  unsigned beforeCount = styleEngine().styleForElementCount();
+
+  Element* s1 = document().getElementById("s1");
+  s1->setAttribute(blink::HTMLNames::mediaAttr, "(max-width: 2000px)");
+  document().view()->updateAllLifecyclePhases();
+
+  unsigned afterCount = styleEngine().styleForElementCount();
+  // TODO(rune@opera.com): Should be 0 for ruleset based invalidations.
+  EXPECT_EQ(8u, afterCount - beforeCount);
+
+  ASSERT_TRUE(t1->computedStyle());
+  EXPECT_EQ(makeRGB(0, 128, 0),
+            t1->computedStyle()->visitedDependentColor(CSSPropertyColor));
+}
+
 }  // namespace blink

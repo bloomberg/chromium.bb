@@ -238,6 +238,12 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node& node) {
   resolverChanged(AnalyzedStyleUpdate);
 }
 
+void StyleEngine::mediaQueriesChangedInScope(TreeScope& treeScope) {
+  if (ScopedStyleResolver* resolver = treeScope.scopedStyleResolver())
+    resolver->setNeedsAppendAllSheets();
+  setNeedsActiveStyleUpdate(treeScope);
+}
+
 void StyleEngine::watchedSelectorsChanged() {
   m_globalRuleSet.initWatchedSelectorsRuleSet(document());
   // TODO(rune@opera.com): Should be able to use RuleSetInvalidation here.
