@@ -56,6 +56,8 @@ class UsbServiceImpl :
                        const std::string& device_path) override;
 #endif  // OS_WIN
 
+  void OnUsbContext(scoped_refptr<UsbContext> context);
+
   // Enumerate USB devices from OS and update devices_ map.
   void RefreshDevices();
   void OnDeviceList(libusb_device** platform_devices, size_t device_count);
@@ -84,6 +86,7 @@ class UsbServiceImpl :
                          const base::Closure& refresh_complete);
 
   scoped_refptr<UsbContext> context_;
+  bool usb_unavailable_ = false;
 
   // When available the device list will be updated when new devices are
   // connected instead of only when a full enumeration is requested.

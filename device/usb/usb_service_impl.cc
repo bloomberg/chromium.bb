@@ -80,11 +80,28 @@ bool IsWinUsbInterface(const std::string& device_path) {
 
 #endif  // OS_WIN
 
+void InitializeUsbContextOnBlockingThread(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::Callback<void(scoped_refptr<UsbContext>)>& callback) {
+  scoped_refptr<UsbContext> context;
+  PlatformUsbContext platform_context = nullptr;
+  int rv = libusb_init(&platform_context);
+  if (rv == LIBUSB_SUCCESS && platform_context) {
+    context = new UsbContext(platform_context);
+  } else {
+    USB_LOG(DEBUG) << "Failed to initialize libusb: "
+                   << ConvertPlatformUsbErrorToString(rv);
+  }
+
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(callback, base::Passed(&context)));
+}
+
 void GetDeviceListOnBlockingThread(
     const std::string& new_device_path,
     scoped_refptr<UsbContext> usb_context,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::Callback<void(libusb_device**, size_t)> callback) {
+    const base::Callback<void(libusb_device**, size_t)>& callback) {
 #if defined(OS_WIN)
   if (!new_device_path.empty()) {
     if (!IsWinUsbInterface(new_device_path)) {
@@ -204,33 +221,11 @@ UsbServiceImpl::UsbServiceImpl(
       device_observer_(this),
 #endif
       weak_factory_(this) {
-  PlatformUsbContext platform_context = nullptr;
-  int rv = libusb_init(&platform_context);
-  if (rv != LIBUSB_SUCCESS || !platform_context) {
-    USB_LOG(DEBUG) << "Failed to initialize libusb: "
-                   << ConvertPlatformUsbErrorToString(rv);
-    return;
-  }
-  context_ = new UsbContext(platform_context);
-
-  rv = libusb_hotplug_register_callback(
-      context_->context(),
-      static_cast<libusb_hotplug_event>(LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED |
-                                        LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT),
-      static_cast<libusb_hotplug_flag>(0), LIBUSB_HOTPLUG_MATCH_ANY,
-      LIBUSB_HOTPLUG_MATCH_ANY, LIBUSB_HOTPLUG_MATCH_ANY,
-      &UsbServiceImpl::HotplugCallback, this, &hotplug_handle_);
-  if (rv == LIBUSB_SUCCESS) {
-    hotplug_enabled_ = true;
-  }
-
-  RefreshDevices();
-#if defined(OS_WIN)
-  DeviceMonitorWin* device_monitor = DeviceMonitorWin::GetForAllInterfaces();
-  if (device_monitor) {
-    device_observer_.Add(device_monitor);
-  }
-#endif  // OS_WIN
+  blocking_task_runner->PostTask(
+      FROM_HERE, base::Bind(&InitializeUsbContextOnBlockingThread,
+                            base::ThreadTaskRunnerHandle::Get(),
+                            base::Bind(&UsbServiceImpl::OnUsbContext,
+                                       weak_factory_.GetWeakPtr())));
 }
 
 UsbServiceImpl::~UsbServiceImpl() {
@@ -243,7 +238,7 @@ UsbServiceImpl::~UsbServiceImpl() {
 void UsbServiceImpl::GetDevices(const GetDevicesCallback& callback) {
   DCHECK(CalledOnValidThread());
 
-  if (!context_) {
+  if (usb_unavailable_) {
     task_runner()->PostTask(
         FROM_HERE,
         base::Bind(callback, std::vector<scoped_refptr<UsbDevice>>()));
@@ -284,13 +279,39 @@ void UsbServiceImpl::OnDeviceRemoved(const GUID& class_guid,
 
 #endif  // OS_WIN
 
-void UsbServiceImpl::RefreshDevices() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(context_);
-
-  if (enumeration_in_progress_) {
+void UsbServiceImpl::OnUsbContext(scoped_refptr<UsbContext> context) {
+  if (!context) {
+    usb_unavailable_ = true;
     return;
   }
+
+  context_ = std::move(context);
+
+  int rv = libusb_hotplug_register_callback(
+      context_->context(),
+      static_cast<libusb_hotplug_event>(LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED |
+                                        LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT),
+      static_cast<libusb_hotplug_flag>(0), LIBUSB_HOTPLUG_MATCH_ANY,
+      LIBUSB_HOTPLUG_MATCH_ANY, LIBUSB_HOTPLUG_MATCH_ANY,
+      &UsbServiceImpl::HotplugCallback, this, &hotplug_handle_);
+  if (rv == LIBUSB_SUCCESS)
+    hotplug_enabled_ = true;
+
+  // This will call any enumeration callbacks queued while initializing.
+  RefreshDevices();
+
+#if defined(OS_WIN)
+  DeviceMonitorWin* device_monitor = DeviceMonitorWin::GetForAllInterfaces();
+  if (device_monitor)
+    device_observer_.Add(device_monitor);
+#endif  // OS_WIN
+}
+
+void UsbServiceImpl::RefreshDevices() {
+  DCHECK(CalledOnValidThread());
+
+  if (!context_ || enumeration_in_progress_)
+    return;
 
   enumeration_in_progress_ = true;
   DCHECK(devices_being_enumerated_.empty());
@@ -487,26 +508,19 @@ int LIBUSB_CALL UsbServiceImpl::HotplugCallback(libusb_context* context,
   // and so guarantees that this function will not be called by the event
   // processing thread after it has been deregistered.
   UsbServiceImpl* self = reinterpret_cast<UsbServiceImpl*>(user_data);
+  DCHECK(!self->task_runner()->BelongsToCurrentThread());
   switch (event) {
     case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
       libusb_ref_device(device);  // Released in OnPlatformDeviceAdded.
-      if (self->task_runner()->BelongsToCurrentThread()) {
-        self->OnPlatformDeviceAdded(device);
-      } else {
-        self->task_runner()->PostTask(
-            FROM_HERE, base::Bind(&UsbServiceImpl::OnPlatformDeviceAdded,
-                                  base::Unretained(self), device));
-      }
+      self->task_runner()->PostTask(
+          FROM_HERE, base::Bind(&UsbServiceImpl::OnPlatformDeviceAdded,
+                                base::Unretained(self), device));
       break;
     case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
       libusb_ref_device(device);  // Released in OnPlatformDeviceRemoved.
-      if (self->task_runner()->BelongsToCurrentThread()) {
-        self->OnPlatformDeviceRemoved(device);
-      } else {
-        self->task_runner()->PostTask(
-            FROM_HERE, base::Bind(&UsbServiceImpl::OnPlatformDeviceRemoved,
-                                  base::Unretained(self), device));
-      }
+      self->task_runner()->PostTask(
+          FROM_HERE, base::Bind(&UsbServiceImpl::OnPlatformDeviceRemoved,
+                                base::Unretained(self), device));
       break;
     default:
       NOTREACHED();
