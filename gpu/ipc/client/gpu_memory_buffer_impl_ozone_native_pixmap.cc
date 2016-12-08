@@ -47,22 +47,26 @@ GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
-  DCHECK_EQ(handle.native_pixmap_handle.fds.size(), 1u);
+  DCHECK_LE(handle.native_pixmap_handle.fds.size(), 1u);
 
   // GpuMemoryBufferImpl needs the FD to implement GetHandle() but
   // ui::ClientNativePixmapFactory::ImportFromHandle is expected to take
   // ownership of the FD passed in the handle so we have to dup it here in
   // order to pass a valid FD to the GpuMemoryBufferImpl ctor.
-  base::ScopedFD scoped_fd(
-      HANDLE_EINTR(dup(handle.native_pixmap_handle.fds[0].fd)));
-  if (!scoped_fd.is_valid()) {
-    PLOG(ERROR) << "dup";
-    return nullptr;
+  base::ScopedFD scoped_fd;
+  if (!handle.native_pixmap_handle.fds.empty()) {
+    scoped_fd.reset(HANDLE_EINTR(dup(handle.native_pixmap_handle.fds[0].fd)));
+    if (!scoped_fd.is_valid()) {
+      PLOG(ERROR) << "dup";
+      return nullptr;
+    }
   }
 
   gfx::NativePixmapHandle native_pixmap_handle;
-  native_pixmap_handle.fds.emplace_back(handle.native_pixmap_handle.fds[0].fd,
-                                        true /* auto_close */);
+  if (scoped_fd.is_valid()) {
+    native_pixmap_handle.fds.emplace_back(handle.native_pixmap_handle.fds[0].fd,
+                                          true /* auto_close */);
+  }
   native_pixmap_handle.planes = handle.native_pixmap_handle.planes;
   std::unique_ptr<ui::ClientNativePixmap> native_pixmap =
       ui::ClientNativePixmapFactory::GetInstance()->ImportFromHandle(
@@ -125,8 +129,10 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplOzoneNativePixmap::GetHandle()
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::OZONE_NATIVE_PIXMAP;
   handle.id = id_;
-  handle.native_pixmap_handle.fds.emplace_back(fd_.get(),
-                                               false /* auto_close */);
+  if (fd_.is_valid()) {
+    handle.native_pixmap_handle.fds.emplace_back(fd_.get(),
+                                                 false /* auto_close */);
+  }
   handle.native_pixmap_handle.planes = planes_;
   return handle;
 }
