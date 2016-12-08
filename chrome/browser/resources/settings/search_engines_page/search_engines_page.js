@@ -68,8 +68,12 @@ Polymer({
     this.extensions = searchEnginesInfo['extensions'];
   },
 
-  /** @private */
-  onAddSearchEngineTap_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onAddSearchEngineTap_: function(e) {
+    e.preventDefault();
     this.showAddSearchEngineDialog_ = true;
     this.async(function() {
       var dialog = this.$$('settings-search-engine-dialog');

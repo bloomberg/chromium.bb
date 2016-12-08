@@ -145,12 +145,13 @@ Polymer({
 
   /**
    * Opens the Change PIN dialog.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onChangePinTap_: function(event) {
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
+    event.preventDefault();
     this.error_ = ErrorType.NONE;
     this.$.changePinDialog.showModal();
     this.$.changePinOld.value = '';
@@ -187,10 +188,11 @@ Polymer({
 
   /**
    * Opens the Unlock PIN dialog.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onUnlockPinTap_: function(event) {
+    event.preventDefault();
     this.error_ = ErrorType.NONE;
     this.$.unlockPinDialog.showModal();
     this.$.unlockPin.value = '';

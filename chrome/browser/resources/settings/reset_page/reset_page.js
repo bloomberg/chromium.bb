@@ -62,8 +62,12 @@ Polymer({
   },
 
 <if expr="chromeos">
-  /** @private */
-  onShowPowerwashDialog_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onShowPowerwashDialog_: function(e) {
+    e.preventDefault();
     this.showPowerwashDialog_ = true;
   },
 

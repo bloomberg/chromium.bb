@@ -46,8 +46,12 @@ Polymer({
         this.model.modelIndex);
   },
 
-  /** @private */
-  onEditTap_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onEditTap_: function(e) {
+    e.preventDefault();
     this.$$('dialog[is=cr-action-menu]').close();
     this.fire(settings.EDIT_STARTUP_URL_EVENT, this.model);
   },

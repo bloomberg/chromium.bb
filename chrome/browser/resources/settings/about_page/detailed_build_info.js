@@ -59,8 +59,12 @@ Polymer({
     return version.length > 0;
   },
 
-  /** @private */
-  onChangeChannelTap_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onChangeChannelTap_: function(e) {
+    e.preventDefault();
     this.showChannelSwitcherDialog_ = true;
     // Async to wait for dialog to appear in the DOM.
     this.async(function() {

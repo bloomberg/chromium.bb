@@ -370,8 +370,12 @@ Polymer({
         id, properties, this.setPropertiesCallback_.bind(this));
   },
 
-  /** @private */
-  onOverscanTap_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onOverscanTap_: function(e) {
+    e.preventDefault();
     this.overscanDisplayId = this.selectedDisplay.id;
     this.showOverscanDialog_(true);
   },

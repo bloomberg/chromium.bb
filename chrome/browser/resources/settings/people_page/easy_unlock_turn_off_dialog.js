@@ -6,14 +6,14 @@
  * @fileoverview A dialog allowing the user to turn off the Easy Unlock feature.
  */
 
-(function() {
+cr.exportPath('settings');
 
 /**
  * Possible UI statuses for the EasyUnlockTurnOffDialogElement.
  * See easy_unlock_settings_handler.cc.
  * @enum {string}
  */
-var EasyUnlockTurnOffStatus = {
+settings.EasyUnlockTurnOffStatus = {
   UNKNOWN: 'unknown',
   OFFLINE: 'offline',
   IDLE: 'idle',
@@ -21,16 +21,18 @@ var EasyUnlockTurnOffStatus = {
   SERVER_ERROR: 'server-error',
 };
 
+(function() {
+
 Polymer({
   is: 'easy-unlock-turn-off-dialog',
 
   behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
-    /** @private {!EasyUnlockTurnOffStatus} */
+    /** @private {!settings.EasyUnlockTurnOffStatus} */
     status_: {
       type: String,
-      value: EasyUnlockTurnOffStatus.UNKNOWN,
+      value: settings.EasyUnlockTurnOffStatus.UNKNOWN,
     },
   },
 
@@ -58,13 +60,13 @@ Polymer({
   },
 
   /**
-   * @return {!Promise<!EasyUnlockTurnOffStatus>}
+   * @return {!Promise<!settings.EasyUnlockTurnOffStatus>}
    * @private
    */
   getTurnOffStatus_: function() {
     return navigator.onLine ?
         this.browserProxy_.getTurnOffFlowStatus() :
-        Promise.resolve(EasyUnlockTurnOffStatus.OFFLINE);
+        Promise.resolve(settings.EasyUnlockTurnOffStatus.OFFLINE);
   },
 
   /**
@@ -92,97 +94,97 @@ Polymer({
   },
 
   /**
-   * @param {!EasyUnlockTurnOffStatus} status
+   * @param {!settings.EasyUnlockTurnOffStatus} status
    * @return {string}
    * @private
    */
   getTitleText_: function(status) {
     switch (status) {
-      case EasyUnlockTurnOffStatus.OFFLINE:
+      case settings.EasyUnlockTurnOffStatus.OFFLINE:
         return this.i18n('easyUnlockTurnOffOfflineTitle');
-      case EasyUnlockTurnOffStatus.UNKNOWN:
-      case EasyUnlockTurnOffStatus.IDLE:
-      case EasyUnlockTurnOffStatus.PENDING:
+      case settings.EasyUnlockTurnOffStatus.UNKNOWN:
+      case settings.EasyUnlockTurnOffStatus.IDLE:
+      case settings.EasyUnlockTurnOffStatus.PENDING:
         return this.i18n('easyUnlockTurnOffTitle');
-      case EasyUnlockTurnOffStatus.SERVER_ERROR:
+      case settings.EasyUnlockTurnOffStatus.SERVER_ERROR:
         return this.i18n('easyUnlockTurnOffErrorTitle');
     }
     assertNotReached();
   },
 
   /**
-   * @param {!EasyUnlockTurnOffStatus} status
+   * @param {!settings.EasyUnlockTurnOffStatus} status
    * @return {string}
    * @private
    */
   getDescriptionText_: function(status) {
     switch (status) {
-      case EasyUnlockTurnOffStatus.OFFLINE:
+      case settings.EasyUnlockTurnOffStatus.OFFLINE:
         return this.i18n('easyUnlockTurnOffOfflineMessage');
-      case EasyUnlockTurnOffStatus.UNKNOWN:
-      case EasyUnlockTurnOffStatus.IDLE:
-      case EasyUnlockTurnOffStatus.PENDING:
+      case settings.EasyUnlockTurnOffStatus.UNKNOWN:
+      case settings.EasyUnlockTurnOffStatus.IDLE:
+      case settings.EasyUnlockTurnOffStatus.PENDING:
         return this.i18n('easyUnlockTurnOffDescription');
-      case EasyUnlockTurnOffStatus.SERVER_ERROR:
+      case settings.EasyUnlockTurnOffStatus.SERVER_ERROR:
         return this.i18n('easyUnlockTurnOffErrorMessage');
     }
     assertNotReached();
   },
 
   /**
-   * @param {!EasyUnlockTurnOffStatus} status
+   * @param {!settings.EasyUnlockTurnOffStatus} status
    * @return {string}
    * @private
    */
   getTurnOffButtonText_: function(status) {
     switch (status) {
-      case EasyUnlockTurnOffStatus.OFFLINE:
+      case settings.EasyUnlockTurnOffStatus.OFFLINE:
         return '';
-      case EasyUnlockTurnOffStatus.UNKNOWN:
-      case EasyUnlockTurnOffStatus.IDLE:
-      case EasyUnlockTurnOffStatus.PENDING:
+      case settings.EasyUnlockTurnOffStatus.UNKNOWN:
+      case settings.EasyUnlockTurnOffStatus.IDLE:
+      case settings.EasyUnlockTurnOffStatus.PENDING:
         return this.i18n('easyUnlockTurnOffButton');
-      case EasyUnlockTurnOffStatus.SERVER_ERROR:
+      case settings.EasyUnlockTurnOffStatus.SERVER_ERROR:
         return this.i18n('easyUnlockTurnOffRetryButton');
     }
     assertNotReached();
   },
 
   /**
-   * @param {!EasyUnlockTurnOffStatus} status
+   * @param {!settings.EasyUnlockTurnOffStatus} status
    * @return {boolean}
    * @private
    */
   isButtonBarHidden_: function(status) {
-    return status == EasyUnlockTurnOffStatus.OFFLINE;
+    return status == settings.EasyUnlockTurnOffStatus.OFFLINE;
   },
 
   /**
-   * @param {!EasyUnlockTurnOffStatus} status
+   * @param {!settings.EasyUnlockTurnOffStatus} status
    * @return {boolean}
    * @private
    */
   isSpinnerActive_: function(status) {
-    return status == EasyUnlockTurnOffStatus.PENDING;
+    return status == settings.EasyUnlockTurnOffStatus.PENDING;
   },
 
   /**
-   * @param {!EasyUnlockTurnOffStatus} status
+   * @param {!settings.EasyUnlockTurnOffStatus} status
    * @return {boolean}
    * @private
    */
   isCancelButtonHidden_: function(status) {
-    return status == EasyUnlockTurnOffStatus.SERVER_ERROR;
+    return status == settings.EasyUnlockTurnOffStatus.SERVER_ERROR;
   },
 
   /**
-   * @param {!EasyUnlockTurnOffStatus} status
+   * @param {!settings.EasyUnlockTurnOffStatus} status
    * @return {boolean}
    * @private
    */
   isTurnOffButtonEnabled_: function(status) {
-    return status == EasyUnlockTurnOffStatus.IDLE ||
-        status == EasyUnlockTurnOffStatus.SERVER_ERROR;
+    return status == settings.EasyUnlockTurnOffStatus.IDLE ||
+        status == settings.EasyUnlockTurnOffStatus.SERVER_ERROR;
   },
 });
 

@@ -217,9 +217,11 @@ Polymer({
 
   /**
    * A handler for the Add Site button.
+   * @param {!Event} e
    * @private
    */
-  onAddSiteTap_: function() {
+  onAddSiteTap_: function(e) {
+    e.preventDefault();
     var dialog = document.createElement('add-site-dialog');
     dialog.category = this.category;
     dialog.contentSetting = this.categorySubtype;

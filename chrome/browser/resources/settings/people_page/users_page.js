@@ -55,8 +55,12 @@ Polymer({
     }.bind(this));
   },
 
-  /** @private */
-  openAddUserDialog_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  openAddUserDialog_: function(e) {
+    e.preventDefault();
     this.$.addUserDialog.open();
   },
 

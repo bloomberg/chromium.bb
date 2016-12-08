@@ -75,9 +75,11 @@ Polymer({
 
   /**
    * Shows a dialog to confirm the deletion of multiple sites.
+   * @param {!Event} e
    * @private
    */
-  onConfirmDeleteMultipleSites_: function() {
+  onConfirmDeleteMultipleSites_: function(e) {
+    e.preventDefault();
     this.idToDelete_ = '';  // Delete all.
     this.confirmationDeleteMsg_ = loadTimeData.getString(
         'siteSettingsCookieRemoveMultipleConfirmation');

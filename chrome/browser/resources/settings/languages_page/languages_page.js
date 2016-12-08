@@ -69,9 +69,11 @@ Polymer({
   /**
    * Stamps and opens the Add Languages dialog, registering a listener to
    * disable the dialog's dom-if again on close.
+   * @param {!Event} e
    * @private
    */
-  onAddLanguagesTap_: function() {
+  onAddLanguagesTap_: function(e) {
+    e.preventDefault();
     this.showAddLanguagesDialog_ = true;
     this.async(function() {
       var dialog = this.$$('settings-add-languages-dialog');

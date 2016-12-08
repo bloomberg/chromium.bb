@@ -118,8 +118,12 @@ Polymer({
     return this.i18n('lockScreenSetupPinButton');
   },
 
-  /** @private */
-  onConfigurePin_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onConfigurePin_: function(e) {
+    e.preventDefault();
     this.$.setupPin.open();
   },
 });

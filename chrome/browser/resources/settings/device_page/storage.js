@@ -115,9 +115,11 @@ Polymer({
 
   /**
    * Handler for tapping the "Offline files" item.
+   * @param {!Event} e
    * @private
    */
-  onDriveCacheTap_: function() {
+  onDriveCacheTap_: function(e) {
+    e.preventDefault();
     this.$.storageDriveCache.open();
   },
 

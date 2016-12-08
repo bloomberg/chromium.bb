@@ -83,9 +83,11 @@ Polymer({
 
   /**
    * Confirms the deletion of storage for a site.
+   * @param {!Event} e
    * @private
    */
-  onConfirmClearStorage_: function() {
+  onConfirmClearStorage_: function(e) {
+    e.preventDefault();
     this.confirmationDeleteMsg_ = loadTimeData.getStringF(
         'siteSettingsSiteRemoveConfirmation',
         this.toUrl(this.site.origin).href);

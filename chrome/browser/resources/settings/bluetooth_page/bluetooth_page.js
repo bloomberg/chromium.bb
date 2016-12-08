@@ -374,8 +374,12 @@ Polymer({
     this.pairingEvent_ = e;
   },
 
-  /** @private */
-  onAddDeviceTap_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onAddDeviceTap_: function(e) {
+    e.preventDefault();
     this.openDialog_('addDevice');
   },
 

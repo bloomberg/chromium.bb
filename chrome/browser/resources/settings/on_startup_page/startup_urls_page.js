@@ -51,8 +51,12 @@ Polymer({
     }.bind(this));
   },
 
-  /** @private */
-  onAddPageTap_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onAddPageTap_: function(e) {
+    e.preventDefault();
     this.showStartupUrlDialog_ = true;
   },
 

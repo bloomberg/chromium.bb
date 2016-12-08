@@ -335,8 +335,12 @@ Polymer({
     this.easyUnlockBrowserProxy_.startTurnOnFlow();
   },
 
-  /** @private */
-  onEasyUnlockTurnOffTap_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onEasyUnlockTurnOffTap_: function(e) {
+    e.preventDefault();
     this.showEasyUnlockTurnOffDialog_ = true;
   },
 

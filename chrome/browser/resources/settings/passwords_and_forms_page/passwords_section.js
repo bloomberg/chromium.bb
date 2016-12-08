@@ -92,9 +92,11 @@ Polymer({
 
   /**
    * Shows the edit password dialog.
+   * @param {!Event} e
    * @private
    */
-  onMenuEditPasswordTap_: function() {
+  onMenuEditPasswordTap_: function(e) {
+    e.preventDefault();
     /** @type {CrActionMenuElement} */(this.$.menu).close();
     this.showPasswordEditDialog_ = true;
   },

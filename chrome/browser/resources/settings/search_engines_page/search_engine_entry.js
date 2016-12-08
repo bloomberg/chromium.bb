@@ -88,8 +88,12 @@ Polymer({
             assert(this.$$('paper-icon-button')));
   },
 
-  /** @private */
-  onEditTap_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onEditTap_: function(e) {
+    e.preventDefault();
     this.closePopupMenu_();
 
     this.showEditSearchEngineDialog_ = true;

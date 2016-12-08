@@ -25,9 +25,11 @@ Polymer({
 
   /**
    * Shows a <settings-reset-profile-dialog>.
+   * @param {!Event} e
    * @private
    */
-  showDialog_: function() {
+  showDialog_: function(e) {
+    e.preventDefault();
     this.showResetProfileDialog_ = true;
   },
 
