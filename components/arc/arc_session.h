@@ -44,6 +44,7 @@ class ArcSession {
 
   // Creates a default instance of ArcSession.
   static std::unique_ptr<ArcSession> Create(
+      ArcBridgeService* arc_bridge_service,
       const scoped_refptr<base::TaskRunner>& blocking_task_runner);
   virtual ~ArcSession();
 

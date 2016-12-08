@@ -31,7 +31,7 @@ constexpr int64_t kReconnectDelayInSeconds = 5;
 ArcBridgeServiceImpl::ArcBridgeServiceImpl(
     const scoped_refptr<base::TaskRunner>& blocking_task_runner)
     : session_started_(false),
-      factory_(base::Bind(ArcSession::Create, blocking_task_runner)),
+      factory_(base::Bind(ArcSession::Create, this, blocking_task_runner)),
       weak_factory_(this) {
   DCHECK(!g_arc_bridge_service);
   g_arc_bridge_service = this;

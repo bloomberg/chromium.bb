@@ -199,8 +199,8 @@ class ArcSessionImpl : public ArcSession,
     STOPPED,
   };
 
-  explicit ArcSessionImpl(
-      const scoped_refptr<base::TaskRunner>& blocking_task_runner);
+  ArcSessionImpl(ArcBridgeService* arc_bridge_service,
+                 const scoped_refptr<base::TaskRunner>& blocking_task_runner);
   ~ArcSessionImpl() override;
 
   // ArcSession overrides:
@@ -238,6 +238,9 @@ class ArcSessionImpl : public ArcSession,
   // created.
   base::ThreadChecker thread_checker_;
 
+  // Owned by ArcServiceManager.
+  ArcBridgeService* const arc_bridge_service_;
+
   // Task runner to run a blocking tasks.
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
@@ -262,8 +265,11 @@ class ArcSessionImpl : public ArcSession,
 };
 
 ArcSessionImpl::ArcSessionImpl(
+    ArcBridgeService* arc_bridge_service,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner)
-    : blocking_task_runner_(blocking_task_runner), weak_factory_(this) {
+    : arc_bridge_service_(arc_bridge_service),
+      blocking_task_runner_(blocking_task_runner),
+      weak_factory_(this) {
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   if (client == nullptr)
     return;
@@ -487,7 +493,8 @@ void ArcSessionImpl::OnMojoConnected(mojo::edk::ScopedPlatformHandle fd) {
   mojom::ArcBridgeInstancePtr instance;
   instance.Bind(mojo::InterfacePtrInfo<mojom::ArcBridgeInstance>(
       std::move(server_pipe), 0u));
-  arc_bridge_host_.reset(new ArcBridgeHostImpl(std::move(instance)));
+  arc_bridge_host_ = base::MakeUnique<ArcBridgeHostImpl>(arc_bridge_service_,
+                                                         std::move(instance));
 
   VLOG(2) << "Mojo is connected. ARC is running.";
   state_ = State::RUNNING;
@@ -633,8 +640,10 @@ void ArcSession::RemoveObserver(Observer* observer) {
 
 // static
 std::unique_ptr<ArcSession> ArcSession::Create(
+    ArcBridgeService* arc_bridge_service,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
-  return base::MakeUnique<ArcSessionImpl>(blocking_task_runner);
+  return base::MakeUnique<ArcSessionImpl>(arc_bridge_service,
+                                          blocking_task_runner);
 }
 
 }  // namespace arc
