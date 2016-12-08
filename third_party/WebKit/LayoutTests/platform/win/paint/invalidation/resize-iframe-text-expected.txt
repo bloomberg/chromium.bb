@@ -17,14 +17,34 @@
           "reason": "incremental"
         },
         {
+          "object": "LayoutView #document",
+          "rect": [0, 600, 785, 128],
+          "reason": "incremental"
+        },
+        {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 8, 784, 18],
           "reason": "forced by layout"
         },
         {
+          "object": "LayoutBlockFlow H1",
+          "rect": [8, 700, 600, 28],
+          "reason": "became visible"
+        },
+        {
           "object": "LayoutText #text",
           "rect": [8, 8, 346, 17],
           "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [785, 0, 15, 728],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [785, 0, 15, 600],
+          "reason": "scroll"
         }
       ]
     }
@@ -57,6 +77,26 @@
     {
       "object": "HorizontalScrollbar",
       "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow H1",
+      "reason": "became visible"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "became visible"
     }
   ]
 }
