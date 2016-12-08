@@ -260,6 +260,7 @@ enum drm_output_state_duplicate_mode {
 enum drm_state_apply_mode {
 	DRM_STATE_APPLY_SYNC, /**< state fully processed */
 	DRM_STATE_APPLY_ASYNC, /**< state pending event delivery */
+	DRM_STATE_TEST_ONLY, /**< test if the state can be applied */
 };
 
 struct drm_backend {
@@ -1822,6 +1823,7 @@ drm_pending_state_get_output(struct drm_pending_state *pending_state,
 }
 
 static int drm_pending_state_apply_sync(struct drm_pending_state *state);
+static int drm_pending_state_test(struct drm_pending_state *state);
 
 /**
  * Mark a drm_output_state (the output's last state) as complete. This handles
@@ -2610,9 +2612,20 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
 	case DRM_STATE_APPLY_ASYNC:
 		flags |= DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_ATOMIC_NONBLOCK;
 		break;
+	case DRM_STATE_TEST_ONLY:
+		flags |= DRM_MODE_ATOMIC_TEST_ONLY;
+		break;
 	}
 
 	ret = drmModeAtomicCommit(b->drm.fd, req, flags, b);
+
+	/* Test commits do not take ownership of the state; return
+	 * without freeing here. */
+	if (mode == DRM_STATE_TEST_ONLY) {
+		drmModeAtomicFree(req);
+		return ret;
+	}
+
 	if (ret != 0) {
 		weston_log("atomic: couldn't commit new state: %m\n");
 		goto out;
@@ -2632,6 +2645,40 @@ out:
 	return ret;
 }
 #endif
+
+/**
+ * Tests a pending state, to see if the kernel will accept the update as
+ * constructed.
+ *
+ * Using atomic modesetting, the kernel performs the same checks as it would
+ * on a real commit, returning success or failure without actually modifying
+ * the running state. It does not return -EBUSY if there are pending updates
+ * in flight, so states may be tested at any point, however this means a
+ * state which passed testing may fail on a real commit if the timing is not
+ * respected (e.g. committing before the previous commit has completed).
+ *
+ * Without atomic modesetting, we have no way to check, so we optimistically
+ * claim it will work.
+ *
+ * Unlike drm_pending_state_apply() and drm_pending_state_apply_sync(), this
+ * function does _not_ take ownership of pending_state, nor does it clear
+ * state_invalid.
+ */
+static int
+drm_pending_state_test(struct drm_pending_state *pending_state)
+{
+#ifdef HAVE_DRM_ATOMIC
+	struct drm_backend *b = pending_state->backend;
+
+	if (b->atomic_modeset)
+		return drm_pending_state_apply_atomic(pending_state,
+						      DRM_STATE_TEST_ONLY);
+#endif
+
+	/* We have no way to test state before application on the legacy
+	 * modesetting API, so just claim it succeeded. */
+	return 0;
+}
 
 /**
  * Applies all of a pending_state asynchronously: the primary entry point for
@@ -3271,6 +3318,7 @@ drm_output_propose_state(struct weston_output *output_base,
 	struct weston_view *ev;
 	pixman_region32_t surface_overlap, renderer_region, occluded_region;
 	bool planes_ok = (mode != DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY);
+	int ret;
 
 	assert(!output->state_last);
 	state = drm_output_state_duplicate(output->state_cur,
@@ -3388,7 +3436,16 @@ drm_output_propose_state(struct weston_output *output_base,
 	pixman_region32_fini(&renderer_region);
 	pixman_region32_fini(&occluded_region);
 
+	/* Check to see if this state will actually work. */
+	ret = drm_pending_state_test(state->pending_state);
+	if (ret != 0)
+		goto err;
+
 	return state;
+
+err:
+	drm_output_state_free(state);
+	return NULL;
 }
 
 static void
