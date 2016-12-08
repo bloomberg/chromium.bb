@@ -6,12 +6,10 @@
 #define NGConstraintSpace_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_macros.h"
 #include "core/layout/ng/ng_units.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

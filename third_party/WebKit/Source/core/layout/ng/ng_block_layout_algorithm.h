@@ -7,17 +7,19 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_block_node.h"
-#include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
+#include "core/layout/ng/ng_units.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class ComputedStyle;
-class NGConstraintSpace;
-class NGPhysicalFragmentBase;
 class NGBreakToken;
+class NGConstraintSpace;
+class NGConstraintSpaceBuilder;
+class NGFragment;
+class NGFragmentBuilder;
+class NGPhysicalFragmentBase;
 
 // A class for general block layout (e.g. a <div> with no special style).
 // Lays out the children in sequence.

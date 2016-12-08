@@ -6,15 +6,15 @@
 #define NGInlineLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class ComputedStyle;
-class NGConstraintSpace;
 class NGBreakToken;
+class NGConstraintSpace;
+class NGInlineNode;
 
 // A class for inline layout (e.g. a anonymous block with inline-level children
 // only).

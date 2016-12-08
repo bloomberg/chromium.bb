@@ -3,9 +3,6 @@
 // found in the LICENSE file.
 
 #include "core/layout/ng/ng_physical_fragment.h"
-#include "core/layout/ng/ng_block_layout_algorithm.h"
-#include "core/layout/ng/ng_block_node.h"
-#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

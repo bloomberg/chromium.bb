@@ -4,7 +4,6 @@
 
 #include "core/layout/ng/ng_writing_mode.h"
 
-#include "platform/text/WritingMode.h"
 #include "wtf/Assertions.h"
 
 namespace blink {

@@ -5,7 +5,6 @@
 #include "core/layout/ng/ng_layout_coordinator.h"
 
 #include "core/layout/ng/ng_layout_input_node.h"
-#include "core/layout/ng/ng_physical_fragment_base.h"
 
 namespace blink {
 

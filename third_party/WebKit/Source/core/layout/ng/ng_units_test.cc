@@ -4,8 +4,6 @@
 
 #include "core/layout/ng/ng_units.h"
 
-#include "platform/text/TextDirection.h"
-#include "core/layout/ng/ng_writing_mode.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

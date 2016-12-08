@@ -6,6 +6,7 @@
 
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_inline_node.h"
 
 namespace blink {
 

@@ -31,6 +31,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // TODO(layout-ng): make it private and declare a friend class to use in tests
   explicit NGBlockNode(ComputedStyle*);
 
+  ~NGBlockNode() override;
+
   bool Layout(const NGConstraintSpace*, NGFragmentBase**) override;
   NGBlockNode* NextSibling() override;
 

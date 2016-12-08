@@ -10,7 +10,6 @@
 #include "core/layout/ng/ng_layout_opportunity_tree_node.h"
 #include "core/layout/ng/ng_units.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/WTFString.h"
 #include "wtf/Optional.h"
 #include "wtf/Vector.h"
 

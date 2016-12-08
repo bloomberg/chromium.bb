@@ -6,15 +6,13 @@
 #define NGInlineLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
-class ComputedStyle;
-class NGConstraintSpace;
 class NGBreakToken;
+class NGConstraintSpace;
+class NGInlineNode;
 
 // A class for text layout. This takes a NGInlineNode which consists only
 // non-atomic inlines and produces NGTextFragments.

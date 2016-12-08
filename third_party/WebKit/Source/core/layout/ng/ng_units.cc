@@ -4,8 +4,6 @@
 
 #include "core/layout/ng/ng_units.h"
 
-#include "core/layout/ng/ng_writing_mode.h"
-
 namespace blink {
 
 LayoutUnit MinAndMaxContentSizes::ShrinkToFit(LayoutUnit available_size) const {

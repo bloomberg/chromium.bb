@@ -4,9 +4,6 @@
 
 #include "core/layout/ng/ng_layout_opportunity_tree_node.h"
 
-#include "platform/heap/Handle.h"
-#include "core/layout/ng/ng_constraint_space.h"
-
 namespace blink {
 
 NGLayoutOpportunityTreeNode::NGLayoutOpportunityTreeNode(

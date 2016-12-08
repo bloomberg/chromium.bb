@@ -8,9 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_physical_fragment_base.h"
-#include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #ifndef NGConstraintSpaceBuilder_h
 #define NGConstraintSpaceBuilder_h
 
-#include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_units.h"
 
 namespace blink {

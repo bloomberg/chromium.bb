@@ -4,9 +4,9 @@
 
 #include "core/layout/ng/ng_physical_fragment_base.h"
 
+#include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
-#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

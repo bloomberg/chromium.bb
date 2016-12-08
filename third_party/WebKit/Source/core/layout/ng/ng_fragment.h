@@ -7,13 +7,9 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_fragment_base.h"
-#include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_units.h"
 #include "core/layout/ng/ng_writing_mode.h"
-#include "platform/LayoutUnit.h"
-#include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

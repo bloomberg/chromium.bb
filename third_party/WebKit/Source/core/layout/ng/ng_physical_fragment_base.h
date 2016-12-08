@@ -6,8 +6,6 @@
 #define NGPhysicalFragmentBase_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_break_token.h"
-#include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_units.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
@@ -16,6 +14,7 @@
 namespace blink {
 
 class NGBlockNode;
+class NGBreakToken;
 
 // The NGPhysicalFragmentBase contains the output information from layout. The
 // fragment stores all of its information in the physical coordinate system for

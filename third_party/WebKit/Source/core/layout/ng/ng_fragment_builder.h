@@ -5,10 +5,13 @@
 #ifndef NGFragmentBuilder_h
 #define NGFragmentBuilder_h
 
-#include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_physical_fragment_base.h"
 #include "core/layout/ng/ng_units.h"
 
 namespace blink {
+
+class NGFragmentBase;
+class NGPhysicalFragment;
 
 class CORE_EXPORT NGFragmentBuilder final
     : public GarbageCollectedFinalized<NGFragmentBuilder> {

@@ -11,14 +11,13 @@
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_layout_coordinator.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/text/TextDirection.h"
 
 namespace blink {
 
@@ -34,6 +33,11 @@ NGBlockNode::NGBlockNode(ComputedStyle* style)
       style_(style) {
   DCHECK(style_);
 }
+
+// Need an explicit destructor in the .cc file, or the MSWIN compiler will
+// produce an error when attempting to generate a default one, if the .h file is
+// included from a compilation unit that lacks the ComputedStyle definition.
+NGBlockNode::~NGBlockNode() {}
 
 bool NGBlockNode::Layout(const NGConstraintSpace* constraint_space,
                          NGFragmentBase** out) {

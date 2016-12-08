@@ -8,6 +8,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_inline_node.h"
+#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
