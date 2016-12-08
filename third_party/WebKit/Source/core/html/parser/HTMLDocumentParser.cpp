@@ -39,9 +39,9 @@
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "core/html/parser/BackgroundHTMLParser.h"
 #include "core/html/parser/HTMLParserScheduler.h"
+#include "core/html/parser/HTMLParserScriptRunner.h"
 #include "core/html/parser/HTMLParserThread.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
-#include "core/html/parser/HTMLScriptRunner.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -97,7 +97,8 @@ static HTMLTokenizer::State tokenizerStateForContextElement(
 HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document,
                                        ParserSynchronizationPolicy syncPolicy)
     : HTMLDocumentParser(document, AllowScriptingContent, syncPolicy) {
-  m_scriptRunner = HTMLScriptRunner::create(reentryPermit(), &document, this);
+  m_scriptRunner =
+      HTMLParserScriptRunner::create(reentryPermit(), &document, this);
   m_treeBuilder =
       HTMLTreeBuilder::create(this, document, AllowScriptingContent, m_options);
 }
@@ -174,7 +175,7 @@ DEFINE_TRACE(HTMLDocumentParser) {
   visitor->trace(m_scriptRunner);
   visitor->trace(m_preloader);
   ScriptableDocumentParser::trace(visitor);
-  HTMLScriptRunnerHost::trace(visitor);
+  HTMLParserScriptRunnerHost::trace(visitor);
 }
 
 void HTMLDocumentParser::detach() {
@@ -283,7 +284,7 @@ void HTMLDocumentParser::runScriptsForPausedTreeBuilder() {
       m_treeBuilder->takeScriptToProcess(scriptStartPosition);
   // We will not have a scriptRunner when parsing a DocumentFragment.
   if (m_scriptRunner)
-    m_scriptRunner->execute(scriptElement, scriptStartPosition);
+    m_scriptRunner->processScriptElement(scriptElement, scriptStartPosition);
 }
 
 bool HTMLDocumentParser::canTakeNextToken() {

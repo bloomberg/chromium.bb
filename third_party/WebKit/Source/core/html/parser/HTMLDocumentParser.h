@@ -33,8 +33,8 @@
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLParserReentryPermit.h"
+#include "core/html/parser/HTMLParserScriptRunnerHost.h"
 #include "core/html/parser/HTMLPreloadScanner.h"
-#include "core/html/parser/HTMLScriptRunnerHost.h"
 #include "core/html/parser/HTMLSourceTracker.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLTokenizer.h"
@@ -60,16 +60,16 @@ class DocumentFragment;
 class Element;
 class HTMLDocument;
 class HTMLParserScheduler;
+class HTMLParserScriptRunner;
 class HTMLPreloadScanner;
 class HTMLResourcePreloader;
-class HTMLScriptRunner;
 class HTMLTreeBuilder;
 class SegmentedString;
 class TokenizedChunkQueue;
 class DocumentWriteEvaluator;
 
 class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
-                                       private HTMLScriptRunnerHost {
+                                       private HTMLParserScriptRunnerHost {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);
   USING_PRE_FINALIZER(HTMLDocumentParser, dispose);
 
@@ -95,7 +95,9 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
       ParserContentPolicy = AllowScriptingContent);
 
   // Exposed for testing.
-  HTMLScriptRunnerHost* asHTMLScriptRunnerHostForTesting() { return this; }
+  HTMLParserScriptRunnerHost* asHTMLParserScriptRunnerHostForTesting() {
+    return this;
+  }
 
   HTMLTokenizer* tokenizer() const { return m_tokenizer.get(); }
 
@@ -172,7 +174,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void executeScriptsWaitingForResources() final;
   void documentElementAvailable() override;
 
-  // HTMLScriptRunnerHost
+  // HTMLParserScriptRunnerHost
   void notifyScriptLoaded(Resource*) final;
   HTMLInputStream& inputStream() final { return m_input; }
   bool hasPreloadScanner() const final {
@@ -249,7 +251,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   std::unique_ptr<HTMLToken> m_token;
   std::unique_ptr<HTMLTokenizer> m_tokenizer;
-  Member<HTMLScriptRunner> m_scriptRunner;
+  Member<HTMLParserScriptRunner> m_scriptRunner;
   Member<HTMLTreeBuilder> m_treeBuilder;
 
   std::unique_ptr<HTMLPreloadScanner> m_preloadScanner;

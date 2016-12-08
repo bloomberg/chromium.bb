@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLScriptRunnerHost_h
-#define HTMLScriptRunnerHost_h
+#ifndef HTMLParserScriptRunnerHost_h
+#define HTMLParserScriptRunnerHost_h
 
 #include "core/CoreExport.h"
 #include "wtf/Forward.h"
@@ -34,9 +34,9 @@ namespace blink {
 class HTMLInputStream;
 class Resource;
 
-class CORE_EXPORT HTMLScriptRunnerHost : public GarbageCollectedMixin {
+class CORE_EXPORT HTMLParserScriptRunnerHost : public GarbageCollectedMixin {
  public:
-  virtual ~HTMLScriptRunnerHost() {}
+  virtual ~HTMLParserScriptRunnerHost() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   virtual void notifyScriptLoaded(Resource*) = 0;

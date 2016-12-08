@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLScriptRunner_h
-#define HTMLScriptRunner_h
+#ifndef HTMLParserScriptRunner_h
+#define HTMLParserScriptRunner_h
 
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/PendingScript.h"
@@ -40,31 +40,51 @@ namespace blink {
 class Resource;
 class Document;
 class Element;
-class HTMLScriptRunnerHost;
+class HTMLParserScriptRunnerHost;
 
-class HTMLScriptRunner final
-    : public GarbageCollectedFinalized<HTMLScriptRunner>,
+// HTMLParserScriptRunner is responsible for for arranging the execution of
+// script elements inserted by the parser, according to the rules for
+// 'An end tag whose tag name is "script"':
+// https://html.spec.whatwg.org/multipage/syntax.html#scriptEndTag
+//
+// If a script blocks parsing, this class is responsible for holding it, and
+// executing it when required.
+//
+// An HTMLParserScriptRunner is owned by its host, an HTMLDocumentParser.
+class HTMLParserScriptRunner final
+    : public GarbageCollectedFinalized<HTMLParserScriptRunner>,
       private ScriptResourceClient {
-  WTF_MAKE_NONCOPYABLE(HTMLScriptRunner);
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLScriptRunner);
-  USING_PRE_FINALIZER(HTMLScriptRunner, detach);
+  WTF_MAKE_NONCOPYABLE(HTMLParserScriptRunner);
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLParserScriptRunner);
+  USING_PRE_FINALIZER(HTMLParserScriptRunner, detach);
 
  public:
-  static HTMLScriptRunner* create(HTMLParserReentryPermit* reentryPermit,
-                                  Document* document,
-                                  HTMLScriptRunnerHost* host) {
-    return new HTMLScriptRunner(reentryPermit, document, host);
+  static HTMLParserScriptRunner* create(HTMLParserReentryPermit* reentryPermit,
+                                        Document* document,
+                                        HTMLParserScriptRunnerHost* host) {
+    return new HTMLParserScriptRunner(reentryPermit, document, host);
   }
-  ~HTMLScriptRunner();
+  ~HTMLParserScriptRunner();
 
+  // Prepares this object to be destroyed. Invoked when the parser is detached,
+  // or failing that, as a pre-finalizer.
   void detach();
 
   // Processes the passed in script and any pending scripts if possible.
-  void execute(Element* scriptToProcess,
-               const TextPosition& scriptStartPosition);
+  // This does not necessarily run the script immediately. For instance,
+  // execution may not happen until the script loads from the network, or after
+  // the document finishes parsing.
+  void processScriptElement(Element*, const TextPosition& scriptStartPosition);
 
+  // Invoked when the parsing-blocking script resource has loaded, to execute
+  // parsing-blocking scripts.
   void executeScriptsWaitingForLoad(Resource*);
+
+  // Invoked when all script-blocking resources (e.g., stylesheets) have loaded,
+  // to execute parsing-blocking scripts.
   void executeScriptsWaitingForResources();
+
+  // Invoked when parsing is stopping, to execute any deferred scripts.
   bool executeScriptsWaitingForParsing();
 
   bool hasParserBlockingScript() const;
@@ -74,14 +94,15 @@ class HTMLScriptRunner final
 
   // ResourceClient
   void notifyFinished(Resource*) override;
-  String debugName() const override { return "HTMLScriptRunner"; }
+  String debugName() const override { return "HTMLParserScriptRunner"; }
 
   DECLARE_TRACE();
 
  private:
-  HTMLScriptRunner(HTMLParserReentryPermit*, Document*, HTMLScriptRunnerHost*);
+  HTMLParserScriptRunner(HTMLParserReentryPermit*,
+                         Document*,
+                         HTMLParserScriptRunnerHost*);
 
-  void executeParsingBlockingScript();
   void executePendingScriptAndDispatchEvent(PendingScript*,
                                             ScriptStreamer::Type);
   void executeParsingBlockingScripts();
@@ -90,9 +111,12 @@ class HTMLScriptRunner final
   void requestDeferredScript(Element*);
   bool requestPendingScript(PendingScript*, Element*) const;
 
-  void runScript(Element*, const TextPosition& scriptStartPosition);
+  // Processes the provided script element, but does not execute any
+  // parsing-blocking scripts that may remain after execution.
+  void processScriptElementInternal(Element*,
+                                    const TextPosition& scriptStartPosition);
 
-  bool isPendingScriptReady();
+  bool isParserBlockingScriptReady();
 
   void stopWatchingResourceForLoad(Resource*);
 
@@ -100,7 +124,7 @@ class HTMLScriptRunner final
 
   RefPtr<HTMLParserReentryPermit> m_reentryPermit;
   Member<Document> m_document;
-  Member<HTMLScriptRunnerHost> m_host;
+  Member<HTMLParserScriptRunnerHost> m_host;
   Member<PendingScript> m_parserBlockingScript;
   // http://www.whatwg.org/specs/web-apps/current-work/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
   HeapDeque<Member<PendingScript>> m_scriptsToExecuteAfterParsing;
