@@ -19,7 +19,9 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/env_test_helper.h"
+#include "ui/aura/window.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/test_utils.h"
@@ -71,9 +73,11 @@ class PlatformTestHelperMus : public PlatformTestHelper {
         mus_client_->window_tree_client());
   }
   void SimulateNativeDestroy(Widget* widget) override {
-    // TODO: this should call through to a WindowTreeClientDelegate
-    // function that destroys the WindowTreeHost. http://crbug.com/663868.
-    widget->CloseNow();
+    aura::WindowTreeHostMus* window_tree_host =
+        static_cast<aura::WindowTreeHostMus*>(
+            widget->GetNativeView()->GetHost());
+    static_cast<aura::WindowTreeClientDelegate*>(mus_client_.get())
+        ->OnEmbedRootDestroyed(window_tree_host);
   }
 
  private:
