@@ -43,7 +43,6 @@ void VrWebContentsObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame()) {
     ui_interface_->SetURL(navigation_handle->GetURL());
-    SetSecurityLevel();
   }
 }
 
@@ -51,7 +50,6 @@ void VrWebContentsObserver::DidRedirectNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame()) {
     ui_interface_->SetURL(navigation_handle->GetURL());
-    SetSecurityLevel();
   }
 }
 
@@ -59,8 +57,16 @@ void VrWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame()) {
     ui_interface_->SetURL(navigation_handle->GetURL());
-    SetSecurityLevel();
   }
+}
+
+// TODO(cjgrant): We care about security level, not style. Refactor
+// WebContentsObserver (or equivalent) to expose more general security
+// information, so we can stop abusing this callback.
+void VrWebContentsObserver::SecurityStyleChanged(
+    blink::WebSecurityStyle security_style,
+    const content::SecurityStyleExplanations& explanations) {
+  SetSecurityLevel();
 }
 
 void VrWebContentsObserver::SetSecurityLevel() {
