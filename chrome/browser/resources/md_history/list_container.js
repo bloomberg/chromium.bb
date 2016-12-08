@@ -101,7 +101,7 @@ Polymer({
     this.queryHistory(false);
   },
 
-  /** @return {HTMLElement} */
+  /** @return {Element} */
   getContentScrollTarget: function() {
     return this.getSelectedList_();
   },
@@ -283,10 +283,10 @@ Polymer({
   },
 
   /**
-   * @return {HTMLElement}
+   * @return {Element}
    * @private
    */
-  getSelectedList_: function() { return this.$.content.selectedItem; },
+  getSelectedList_: function() { return this.$$('#' + this.selectedPage_); },
 
   /** @private */
   canDeleteHistory_: function() {
