@@ -17,6 +17,9 @@ namespace ash {
 // to access the |NetworkingConfigService| in order to determine whether the
 // configuration of a network identified by its |service_path| is controlled by
 // an extension.
+// TODO(crbug.com/651157): Eliminate this delegate. Information about extension
+// controlled networks should be provided by a mojo service that caches data at
+// the NetworkState level.
 class NetworkingConfigDelegate {
  public:
   // A struct that provides information about the extension controlling the
