@@ -3560,7 +3560,7 @@ void LayoutBlockFlow::removeFloatingObject(LayoutBox* floatBox) {
 }
 
 void LayoutBlockFlow::removeFloatingObjectsBelow(FloatingObject* lastFloat,
-                                                 int logicalOffset) {
+                                                 LayoutUnit logicalOffset) {
   if (!containsFloats())
     return;
 

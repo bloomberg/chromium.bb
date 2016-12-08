@@ -505,7 +505,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                              LayoutUnit logicalTopOffset) const;
 
   void removeFloatingObject(LayoutBox*);
-  void removeFloatingObjectsBelow(FloatingObject*, int logicalOffset);
+  void removeFloatingObjectsBelow(FloatingObject*, LayoutUnit logicalOffset);
 
   LayoutUnit getClearDelta(LayoutBox* child, LayoutUnit yPos);
 

@@ -1010,8 +1010,7 @@ inline const InlineIterator& LayoutBlockFlow::restartLayoutRunsAndFloatsInRange(
     FloatingObject* lastFloatFromPreviousLine,
     InlineBidiResolver& resolver,
     const InlineIterator& oldEnd) {
-  removeFloatingObjectsBelow(lastFloatFromPreviousLine,
-                             oldLogicalHeight.toInt());
+  removeFloatingObjectsBelow(lastFloatFromPreviousLine, oldLogicalHeight);
   setLogicalHeight(newLogicalHeight);
   resolver.setPositionIgnoringNestedIsolates(oldEnd);
   return oldEnd;
