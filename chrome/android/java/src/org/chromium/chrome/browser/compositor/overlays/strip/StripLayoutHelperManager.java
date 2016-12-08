@@ -282,11 +282,8 @@ public class StripLayoutHelperManager implements SceneOverlay {
         if (incognito == mIsIncognito) return;
         mIsIncognito = incognito;
 
-        if (mIsIncognito) {
-            mIncognitoHelper.tabModelSelected();
-        } else {
-            mNormalHelper.tabModelSelected();
-        }
+        mIncognitoHelper.tabModelSelected(mIsIncognito);
+        mNormalHelper.tabModelSelected(!mIsIncognito);
 
         updateModelSwitcherButton();
 
