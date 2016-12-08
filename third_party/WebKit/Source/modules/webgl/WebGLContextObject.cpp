@@ -30,7 +30,7 @@
 namespace blink {
 
 WebGLContextObject::WebGLContextObject(WebGLRenderingContextBase* context)
-    : WebGLObject(context), m_context(context) {}
+    : WebGLObject(context), m_context(this, context) {}
 
 bool WebGLContextObject::validate(
     const WebGLContextGroup*,
@@ -53,6 +53,11 @@ gpu::gles2::GLES2Interface* WebGLContextObject::getAGLInterface() const {
 DEFINE_TRACE(WebGLContextObject) {
   visitor->trace(m_context);
   WebGLObject::trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(WebGLContextObject) {
+  visitor->traceWrappers(m_context);
+  WebGLObject::traceWrappers(visitor);
 }
 
 }  // namespace blink
