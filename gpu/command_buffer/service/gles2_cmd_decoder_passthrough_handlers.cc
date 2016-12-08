@@ -170,13 +170,13 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveAttrib(
   }
 
   std::string name;
-  error::Error error =
-      DoGetActiveAttrib(program, index, &result->size, &result->type, &name);
+  error::Error error = DoGetActiveAttrib(
+      program, index, &result->size, &result->type, &name, &result->success);
   if (error != error::kNoError) {
+    result->success = 0;
     return error;
   }
 
-  result->success = 1;  // true.
   Bucket* bucket = CreateBucket(name_bucket_id);
   bucket->SetFromString(name.c_str());
   return error::kNoError;
@@ -202,13 +202,13 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveUniform(
   }
 
   std::string name;
-  error::Error error =
-      DoGetActiveUniform(program, index, &result->size, &result->type, &name);
+  error::Error error = DoGetActiveUniform(
+      program, index, &result->size, &result->type, &name, &result->success);
   if (error != error::kNoError) {
+    result->success = 0;
     return error;
   }
 
-  result->success = 1;  // true.
   Bucket* bucket = CreateBucket(name_bucket_id);
   bucket->SetFromString(name.c_str());
   return error::kNoError;
@@ -518,13 +518,13 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetShaderPrecisionFormat(
 
   GLint range[2] = {0, 0};
   GLint precision = 0;
-  error::Error error = DoGetShaderPrecisionFormat(shader_type, precision_type,
-                                                  range, &precision);
+  error::Error error = DoGetShaderPrecisionFormat(
+      shader_type, precision_type, range, &precision, &result->success);
   if (error != error::kNoError) {
+    result->success = 0;
     return error;
   }
 
-  result->success = 1;  // true
   result->min_range = range[0];
   result->max_range = range[1];
   result->precision = precision;
@@ -596,13 +596,13 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetTransformFeedbackVarying(
   GLsizei size = 0;
   GLenum type = 0;
   std::string name;
-  error::Error error =
-      DoGetTransformFeedbackVarying(program, index, &size, &type, &name);
+  error::Error error = DoGetTransformFeedbackVarying(
+      program, index, &size, &type, &name, &result->success);
   if (error != error::kNoError) {
+    result->success = 0;
     return error;
   }
 
-  result->success = 1;  // true.
   result->size = static_cast<int32_t>(size);
   result->type = static_cast<uint32_t>(type);
   Bucket* bucket = CreateBucket(name_bucket_id);
@@ -853,8 +853,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleReadPixels(
 
   GLsizei bufsize = buffer_size;
   GLsizei length = 0;
-  error::Error error =
-      DoReadPixels(x, y, width, height, format, type, bufsize, &length, pixels);
+  int32_t success = 0;
+  error::Error error = DoReadPixels(x, y, width, height, format, type, bufsize,
+                                    &length, pixels, &success);
   if (error != error::kNoError) {
     return error;
   }
@@ -876,7 +877,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleReadPixels(
   }
 
   if (result) {
-    result->success = 1;
+    result->success = success;
     result->row_length = static_cast<uint32_t>(width);
     result->num_rows = static_cast<uint32_t>(height);
   }

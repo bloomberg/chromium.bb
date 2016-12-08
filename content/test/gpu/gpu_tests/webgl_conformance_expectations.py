@@ -274,8 +274,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/limits/gl-line-width.html',
         ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
-    self.Fail('conformance/misc/error-reporting.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance/misc/invalid-passed-params.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/misc/object-deletion-behaviour.html',
@@ -308,10 +306,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/more/functions/vertexAttribPointerBadArgs.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/programs/get-active-test.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance/programs/program-test.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance/reading/read-pixels-test.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/renderbuffers/feedback-loop.html',

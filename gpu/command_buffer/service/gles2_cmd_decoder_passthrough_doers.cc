@@ -838,18 +838,49 @@ error::Error GLES2DecoderPassthroughImpl::DoGetActiveAttrib(GLuint program,
                                                             GLuint index,
                                                             GLint* size,
                                                             GLenum* type,
-                                                            std::string* name) {
-  NOTIMPLEMENTED();
+                                                            std::string* name,
+                                                            int32_t* success) {
+  FlushErrors();
+
+  GLuint service_id = GetProgramServiceID(program, resources_);
+  GLint active_attribute_max_length = 0;
+  glGetProgramiv(service_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH,
+                 &active_attribute_max_length);
+  if (FlushErrors()) {
+    *success = 0;
+    return error::kNoError;
+  }
+
+  std::vector<char> name_buffer(active_attribute_max_length, 0);
+  glGetActiveAttrib(service_id, index, name_buffer.size(), nullptr, size, type,
+                    name_buffer.data());
+  *name = std::string(name_buffer.data());
+  *success = FlushErrors() ? 0 : 1;
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoGetActiveUniform(
-    GLuint program,
-    GLuint index,
-    GLint* size,
-    GLenum* type,
-    std::string* name) {
-  NOTIMPLEMENTED();
+error::Error GLES2DecoderPassthroughImpl::DoGetActiveUniform(GLuint program,
+                                                             GLuint index,
+                                                             GLint* size,
+                                                             GLenum* type,
+                                                             std::string* name,
+                                                             int32_t* success) {
+  FlushErrors();
+
+  GLuint service_id = GetProgramServiceID(program, resources_);
+  GLint active_uniform_max_length = 0;
+  glGetProgramiv(service_id, GL_ACTIVE_UNIFORM_MAX_LENGTH,
+                 &active_uniform_max_length);
+  if (FlushErrors()) {
+    *success = 0;
+    return error::kNoError;
+  }
+
+  std::vector<char> name_buffer(active_uniform_max_length, 0);
+  glGetActiveUniform(service_id, index, name_buffer.size(), nullptr, size, type,
+                     name_buffer.data());
+  *name = std::string(name_buffer.data());
+  *success = FlushErrors() ? 0 : 1;
   return error::kNoError;
 }
 
@@ -1118,8 +1149,11 @@ error::Error GLES2DecoderPassthroughImpl::DoGetShaderPrecisionFormat(
     GLenum shadertype,
     GLenum precisiontype,
     GLint* range,
-    GLint* precision) {
+    GLint* precision,
+    int32_t* success) {
+  FlushErrors();
   glGetShaderPrecisionFormat(shadertype, precisiontype, range, precision);
+  *success = FlushErrors() ? 0 : 1;
   return error::kNoError;
 }
 
@@ -1189,8 +1223,24 @@ error::Error GLES2DecoderPassthroughImpl::DoGetTransformFeedbackVarying(
     GLuint index,
     GLsizei* size,
     GLenum* type,
-    std::string* name) {
-  NOTIMPLEMENTED();
+    std::string* name,
+    int32_t* success) {
+  FlushErrors();
+
+  GLuint service_id = GetProgramServiceID(program, resources_);
+  GLint transform_feedback_varying_max_length = 0;
+  glGetProgramiv(service_id, GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH,
+                 &transform_feedback_varying_max_length);
+  if (FlushErrors()) {
+    *success = 0;
+    return error::kNoError;
+  }
+
+  std::vector<char> name_buffer(transform_feedback_varying_max_length, 0);
+  glGetTransformFeedbackVarying(service_id, index, name_buffer.size(), nullptr,
+                                size, type, name_buffer.data());
+  *name = std::string(name_buffer.data());
+  *success = FlushErrors() ? 0 : 1;
   return error::kNoError;
 }
 
@@ -1451,9 +1501,12 @@ error::Error GLES2DecoderPassthroughImpl::DoReadPixels(GLint x,
                                                        GLenum type,
                                                        GLsizei bufsize,
                                                        GLsizei* length,
-                                                       void* pixels) {
+                                                       void* pixels,
+                                                       int32_t* success) {
+  FlushErrors();
   glReadPixelsRobustANGLE(x, y, width, height, format, type, bufsize, length,
                           pixels);
+  *success = FlushErrors() ? 0 : 1;
   return error::kNoError;
 }
 

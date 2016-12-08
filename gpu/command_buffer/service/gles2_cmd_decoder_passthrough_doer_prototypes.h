@@ -194,12 +194,14 @@ error::Error DoGetActiveAttrib(GLuint program,
                                GLuint index,
                                GLint* size,
                                GLenum* type,
-                               std::string* name);
+                               std::string* name,
+                               int32_t* success);
 error::Error DoGetActiveUniform(GLuint program,
                                 GLuint index,
                                 GLint* size,
                                 GLenum* type,
-                                std::string* name);
+                                std::string* name,
+                                int32_t* success);
 error::Error DoGetActiveUniformBlockiv(GLuint program,
                                        GLuint index,
                                        GLenum pname,
@@ -305,7 +307,8 @@ error::Error DoGetShaderInfoLog(GLuint shader, std::string* infolog);
 error::Error DoGetShaderPrecisionFormat(GLenum shadertype,
                                         GLenum precisiontype,
                                         GLint* range,
-                                        GLint* precision);
+                                        GLint* precision,
+                                        int32_t* success);
 error::Error DoGetShaderSource(GLuint shader, std::string* source);
 error::Error DoGetString(GLenum name, const char** result);
 error::Error DoGetSynciv(GLuint sync,
@@ -327,7 +330,8 @@ error::Error DoGetTransformFeedbackVarying(GLuint program,
                                            GLuint index,
                                            GLsizei* size,
                                            GLenum* type,
-                                           std::string* name);
+                                           std::string* name,
+                                           int32_t* success);
 error::Error DoGetUniformBlockIndex(GLuint program,
                                     const char* name,
                                     GLint* index);
@@ -415,7 +419,8 @@ error::Error DoReadPixels(GLint x,
                           GLenum type,
                           GLsizei bufsize,
                           GLsizei* length,
-                          void* pixels);
+                          void* pixels,
+                          int32_t* success);
 error::Error DoReleaseShaderCompiler();
 error::Error DoRenderbufferStorage(GLenum target,
                                    GLenum internalformat,
