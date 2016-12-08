@@ -100,12 +100,6 @@ HTMLImageElement::HTMLImageElement(Document& document,
       m_isFallbackImage(false),
       m_referrerPolicy(ReferrerPolicyDefault) {
   setHasCustomStyleCallbacks();
-  if (form && form->isConnected()) {
-    m_form = form;
-    m_formWasSetByParser = true;
-    m_form->associate(*this);
-    m_form->didAssociateByParser();
-  }
 }
 
 HTMLImageElement* HTMLImageElement::create(Document& document) {
@@ -918,6 +912,13 @@ IntSize HTMLImageElement::bitmapSourceSize() const {
   return IntSize(lSize.width().toInt(), lSize.height().toInt());
 }
 
-void HTMLImageElement::associateWith(HTMLFormElement*){};
+void HTMLImageElement::associateWith(HTMLFormElement* form) {
+  if (form && form->isConnected()) {
+    m_form = form;
+    m_formWasSetByParser = true;
+    m_form->associate(*this);
+    m_form->didAssociateByParser();
+  }
+};
 
 }  // namespace blink

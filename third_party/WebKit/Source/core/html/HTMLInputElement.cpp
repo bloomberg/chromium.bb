@@ -1476,13 +1476,15 @@ void HTMLInputElement::updateClearButtonVisibility() {
 }
 
 void HTMLInputElement::willChangeForm() {
-  removeFromRadioButtonGroup();
+  if (m_inputType)
+    removeFromRadioButtonGroup();
   TextControlElement::willChangeForm();
 }
 
 void HTMLInputElement::didChangeForm() {
   TextControlElement::didChangeForm();
-  addToRadioButtonGroup();
+  if (m_inputType)
+    addToRadioButtonGroup();
 }
 
 Node::InsertionNotificationRequest HTMLInputElement::insertedInto(

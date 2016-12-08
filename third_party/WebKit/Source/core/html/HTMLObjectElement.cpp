@@ -57,7 +57,6 @@ inline HTMLObjectElement::HTMLObjectElement(Document& document,
                         createdByParser,
                         ShouldNotPreferPlugInsForImages),
       m_useFallbackContent(false) {
-  associateByParser(form);
 }
 
 inline HTMLObjectElement::~HTMLObjectElement() {}
@@ -465,6 +464,8 @@ bool HTMLObjectElement::willUseFallbackContentAtLayout() const {
   return !hasValidClassId() && hasFallbackContent();
 }
 
-void HTMLObjectElement::associateWith(HTMLFormElement*){};
+void HTMLObjectElement::associateWith(HTMLFormElement* form) {
+  associateByParser(form);
+};
 
 }  // namespace blink

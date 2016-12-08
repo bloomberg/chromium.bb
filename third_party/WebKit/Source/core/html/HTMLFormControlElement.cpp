@@ -60,7 +60,6 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName,
       m_validityIsDirty(false),
       m_wasFocusedByMouse(false) {
   setHasCustomStyleCallbacks();
-  associateByParser(form);
 }
 
 HTMLFormControlElement::~HTMLFormControlElement() {}
@@ -627,6 +626,8 @@ void HTMLFormControlElement::copyNonAttributePropertiesFromElement(
   setNeedsValidityCheck();
 }
 
-void HTMLFormControlElement::associateWith(HTMLFormElement*){};
+void HTMLFormControlElement::associateWith(HTMLFormElement* form) {
+  associateByParser(form);
+};
 
 }  // namespace blink
