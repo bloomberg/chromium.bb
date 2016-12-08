@@ -765,6 +765,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void RemoveObserver(RenderFrameObserver* observer);
 
   bool IsLocalRoot() const;
+  const RenderFrameImpl* GetLocalRoot() const;
 
   // Builds and sends DidCommitProvisionalLoad to the host.
   void SendDidCommitProvisionalLoad(blink::WebFrame* frame,

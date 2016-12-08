@@ -1285,9 +1285,7 @@ void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
-  RenderFrameImpl* local_root =
-      RenderFrameImpl::FromWebFrame(frame_->localRoot());
-  return local_root->render_widget_.get();
+  return GetLocalRoot()->render_widget_.get();
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -3836,12 +3834,7 @@ void RenderFrameImpl::runScriptsAtDocumentReady(blink::WebLocalFrame* frame,
     return;
 
   // Do not show error page when DevTools is attached.
-  RenderFrameImpl* localRoot = this;
-  while (localRoot->frame_ && localRoot->frame_->parent() &&
-         localRoot->frame_->parent()->isWebLocalFrame()) {
-    localRoot = RenderFrameImpl::FromWebFrame(localRoot->frame_->parent());
-    DCHECK(localRoot);
-  }
+  const RenderFrameImpl* localRoot = GetLocalRoot();
   if (localRoot->devtools_agent_ && localRoot->devtools_agent_->IsAttached())
     return;
 
@@ -4738,6 +4731,11 @@ bool RenderFrameImpl::IsLocalRoot() const {
   DCHECK_EQ(is_local_root,
             !(frame_->parent() && frame_->parent()->isWebLocalFrame()));
   return is_local_root;
+}
+
+const RenderFrameImpl* RenderFrameImpl::GetLocalRoot() const {
+  return IsLocalRoot() ? this
+                       : RenderFrameImpl::FromWebFrame(frame_->localRoot());
 }
 
 // Tell the embedding application that the URL of the active page has changed.
@@ -6558,8 +6556,7 @@ blink::InterfaceRegistry* RenderFrameImpl::interfaceRegistry() {
 }
 
 blink::WebPageVisibilityState RenderFrameImpl::visibilityState() const {
-  RenderFrameImpl* local_root =
-      RenderFrameImpl::FromWebFrame(frame_->localRoot());
+  const RenderFrameImpl* local_root = GetLocalRoot();
   blink::WebPageVisibilityState current_state =
       local_root->render_widget_->is_hidden()
           ? blink::WebPageVisibilityStateHidden
