@@ -1051,4 +1051,180 @@ TEST_F(SourceListDirectiveTest, SubsumesNoncesAndHashes) {
   }
 }
 
+TEST_F(SourceListDirectiveTest, SubsumesStrictDynamic) {
+  struct TestCase {
+    bool isScriptSrc;
+    String sourcesA;
+    std::vector<String> sourcesB;
+    bool expected;
+  } cases[] = {
+      // Neither A nor effective policy of list B has `strict-dynamic`.
+      {false,
+       "http://example1.com/foo/ 'self' 'nonce-yay' 'strict-dynamic'",
+       {"'strict-dynamic' 'nonce-yay'", "'nonce-yay' 'strict-dynamic'"},
+       true},
+      {false,
+       "http://example1.com/foo/ 'self' 'nonce-yay' 'strict-dynamic'",
+       {"'strict-dynamic' 'nonce-yay'", "'nonce-abc' 'strict-dynamic'"},
+       true},
+      {false,
+       "http://example1.com/foo/ 'self' 'sha512-321abc'",
+       {"'strict-dynamic' 'nonce-yay' 'sha512-321abc'",
+        "'sha512-321abc' 'strict-dynamic'"},
+       true},
+      {false,
+       "http://example1.com/foo/ 'self' 'sha512-321abc'",
+       {"'strict-dynamic' 'nonce-yay' 'sha512-321abc'",
+        "'sha512-321abc' 'strict-dynamic'", "'strict-dynamic'"},
+       true},
+      {false,
+       "http://example1.com/foo/ 'self' 'sha512-321abc'",
+       {"'strict-dynamic' 'nonce-yay' http://example1.com/",
+        "http://example1.com/ 'strict-dynamic'"},
+       false},
+      // A has `strict-dynamic`, effective policy of list B does not.
+      {true,
+       "http://example1.com/foo/ 'self' 'nonce-yay' 'strict-dynamic'",
+       {"'strict-dynamic' 'nonce-yay'", "'nonce-yay'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'sha512-321abc' 'strict-dynamic'",
+       {"'strict-dynamic' 'sha512-321abc'", "'unsafe-inline' 'sha512-321abc'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'sha512-321abc' 'strict-dynamic'",
+       {"'sha512-321abc'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'sha512-321abc' 'strict-dynamic'",
+       {"http://example1.com/foo/ 'sha512-321abc'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'sha512-321abc' 'strict-dynamic'",
+       {"'self' 'sha512-321abc'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic'",
+       {"'strict-dynamic' 'nonce-yay'", "'nonce-yay'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic'",
+       {"http://example1.com/ 'sha512-321abc'",
+        "http://example1.com/ 'sha512-321abc'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'sha512-321abc' 'strict-dynamic'",
+       {"https://example1.com/foo/ 'sha512-321abc'",
+        "http://example1.com/foo/ 'sha512-321abc'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'nonce-yay' 'strict-dynamic'",
+       {"'strict-dynamic' 'nonce-yay'", "'nonce-yay'", "'sha512-321abc'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-hashed-attributes' "
+       "'strict-dynamic'",
+       {"'strict-dynamic' 'unsafe-hashed-attributes'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'nonce-yay' 'strict-dynamic'",
+       {"'strict-dynamic' 'nonce-yay' 'unsafe-hashed-attributes'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-eval' 'strict-dynamic'",
+       {"'strict-dynamic' 'unsafe-eval'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'nonce-yay' 'strict-dynamic'",
+       {"'strict-dynamic' 'nonce-yay' 'unsafe-eval'"},
+       false},
+      // A does not have `strict-dynamic`, but effective policy of list B does.
+      // Note that any subsumption in this set-up should be `false`.
+      {true,
+       "http://example1.com/foo/ 'self' 'nonce-yay'",
+       {"'strict-dynamic' 'nonce-yay'", "'sha512-321abc' 'strict-dynamic'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'sha512-321abc'",
+       {"'strict-dynamic' 'sha512-321abc'", "'strict-dynamic' 'sha512-321abc'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline'",
+       {"'strict-dynamic'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321abc'",
+       {"'strict-dynamic'"},
+       false},
+      // Both A and effective policy of list B has `strict-dynamic`.
+      {true,
+       "'strict-dynamic'",
+       {"'strict-dynamic'", "'strict-dynamic'", "'strict-dynamic'"},
+       true},
+      {true,
+       "'strict-dynamic'",
+       {"'strict-dynamic'", "'strict-dynamic' 'nonce-yay'",
+        "'strict-dynamic' 'nonce-yay'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic'",
+       {"'strict-dynamic' 'nonce-yay'", "'strict-dynamic'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic'",
+       {"'strict-dynamic' http://another.com/",
+        "http://another.com/ 'strict-dynamic'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic'",
+       {"'self' 'sha512-321abc' 'strict-dynamic'",
+        "'self' 'strict-dynamic' 'sha512-321abc'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'sha512-321abc' 'strict-dynamic'",
+       {"'self' 'sha512-321abc' 'strict-dynamic'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'sha512-321abc' 'strict-dynamic'",
+       {"'unsafe-inline' 'strict-dynamic'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'sha512-321abc' 'strict-dynamic'",
+       {"'unsafe-inline' 'sha512-123xyz' 'strict-dynamic'"},
+       false},
+      {true,
+       "'unsafe-eval' 'self' 'sha512-321abc' 'strict-dynamic'",
+       {"'unsafe-eval' 'strict-dynamic'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'sha512-321abc' 'strict-dynamic'",
+       {"'unsafe-eval' 'strict-dynamic'"},
+       false},
+      {true,
+       "'unsafe-hashed-attributes' 'self' 'sha512-321abc' 'strict-dynamic'",
+       {"'unsafe-hashed-attributes' 'strict-dynamic'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'sha512-321abc' 'strict-dynamic'",
+       {"'unsafe-hashed-attributes' 'strict-dynamic'"},
+       false},
+  };
+
+  for (const auto& test : cases) {
+    SourceListDirective A(test.isScriptSrc ? "script-src" : "style-src",
+                          test.sourcesA, csp.get());
+    ContentSecurityPolicy* cspB =
+        SetUpWithOrigin("https://another.test/image.png");
+
+    HeapVector<Member<SourceListDirective>> vectorB;
+    for (const auto& sources : test.sourcesB) {
+      SourceListDirective* member = new SourceListDirective(
+          test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
+      vectorB.append(member);
+    }
+
+    EXPECT_EQ(A.subsumes(vectorB), test.expected);
+  }
+}
+
 }  // namespace blink

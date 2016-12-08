@@ -653,6 +653,19 @@ bool SourceListDirective::subsumes(
       return false;
   }
 
+  if (type == ContentSecurityPolicy::DirectiveType::ScriptSrc &&
+      (m_allowDynamic || allowDynamicOther)) {
+    // If `this` does not allow `strict-dynamic`, then it must be that `other`
+    // does allow, so the result is `false`.
+    if (!m_allowDynamic)
+      return false;
+    // All keyword source expressions have been considered so only CSPSource
+    // subsumption is left. However, `strict-dynamic` ignores all CSPSources so
+    // for subsumption to be true either `other` must allow `strict-dynamic` or
+    // have no allowed CSPSources.
+    return allowDynamicOther || !normalizedB.size();
+  }
+
   return CSPSource::firstSubsumesSecond(normalizedA, normalizedB);
 }
 
@@ -738,7 +751,7 @@ HeapVector<Member<CSPSource>> SourceListDirective::getIntersectCSPSources(
   }
 
   HeapVector<Member<CSPSource>> thisVector = m_list;
-  if (m_allowSelf)
+  if (m_allowSelf && m_policy->getSelfSource())
     thisVector.append(m_policy->getSelfSource());
   for (const auto& sourceA : thisVector) {
     if (schemesMap.contains(sourceA->getScheme()))
