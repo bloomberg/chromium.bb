@@ -59,21 +59,6 @@ const float piOverFourFloat = static_cast<float>(M_PI_4);
 const double twoPiDouble = piDouble * 2.0;
 const float twoPiFloat = piFloat * 2.0f;
 
-#if OS(ANDROID)
-// ANDROID's math.h does not currently supply log2 or log2f.
-inline double log2(double num) {
-  // This constant is roughly M_LN2, which is not provided by default on Windows
-  // and Android.
-  return log(num) / 0.693147180559945309417232121458176568;
-}
-
-inline float log2f(float num) {
-  // This constant is roughly M_LN2, which is not provided by default on Windows
-  // and Android.
-  return logf(num) / 0.693147180559945309417232121458176568f;
-}
-#endif
-
 #if COMPILER(MSVC)
 
 // VS2013 has most of the math functions now, but we still need to work
