@@ -788,8 +788,9 @@ void PresentationServiceDelegateImpl::StartSession(
   if (presentation_urls.empty() ||
       std::find_if_not(presentation_urls.begin(), presentation_urls.end(),
                        IsValidPresentationUrl) != presentation_urls.end()) {
-    error_cb.Run(content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN,
-                                            "Invalid presentation URL."));
+    error_cb.Run(content::PresentationError(
+        content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND,
+        "Invalid presentation URL."));
     return;
   }
 
