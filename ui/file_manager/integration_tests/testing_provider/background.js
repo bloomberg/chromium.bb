@@ -49,7 +49,7 @@ chrome.fileSystemProvider.onUnmountRequested.addListener(
 
 chrome.fileSystemProvider.onGetActionsRequested.addListener(
     function(options, onSuccess, onError) {
-      onSucces([]);
+      onSuccess([]);
     });
 
 // If the manifest for device or file source is used, then mount a fake file
