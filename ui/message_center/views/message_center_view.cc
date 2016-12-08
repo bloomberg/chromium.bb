@@ -104,8 +104,9 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   scroller_->layer()->SetFillsBoundsOpaquely(false);
   scroller_->layer()->SetMasksToBounds(true);
 
-  message_list_view_.reset(new MessageListView(this, top_down));
+  message_list_view_.reset(new MessageListView(top_down));
   message_list_view_->set_owned_by_client();
+  message_list_view_->AddObserver(this);
 
   // We want to swap the contents of the scroll view between the empty list
   // view and the message list view, without constructing them afresh each
@@ -129,6 +130,8 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
 }
 
 MessageCenterView::~MessageCenterView() {
+  message_list_view_->RemoveObserver(this);
+
   if (!is_closing_)
     message_center_->RemoveObserver(this);
 }

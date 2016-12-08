@@ -23,10 +23,8 @@ namespace {
 const int kAnimateClearingNextNotificationDelayMS = 40;
 }  // namespace
 
-MessageListView::MessageListView(MessageCenterView* message_center_view,
-                                 bool top_down)
-    : message_center_view_(message_center_view),
-      reposition_top_(-1),
+MessageListView::MessageListView(bool top_down)
+    : reposition_top_(-1),
       fixed_height_(0),
       has_deferred_task_(false),
       clear_all_started_(false),
@@ -215,10 +213,19 @@ void MessageListView::ClearAllClosableNotifications(
     clearing_all_views_.push_back(child);
   }
   if (clearing_all_views_.empty()) {
-    message_center_view()->OnAllNotificationsCleared();
+    for (auto& observer : observers_)
+      observer.OnAllNotificationsCleared();
   } else {
     DoUpdateIfPossible();
   }
+}
+
+void MessageListView::AddObserver(MessageListView::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MessageListView::RemoveObserver(MessageListView::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void MessageListView::OnBoundsAnimatorProgressed(
@@ -238,7 +245,8 @@ void MessageListView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
 
   if (clear_all_started_) {
     clear_all_started_ = false;
-    message_center_view()->OnAllNotificationsCleared();
+    for (auto& observer : observers_)
+      observer.OnAllNotificationsCleared();
   }
 
   if (has_deferred_task_) {

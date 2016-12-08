@@ -240,6 +240,7 @@ test("message_center_unittests") {
         "views/bounded_label_unittest.cc",
         "views/custom_notification_view_unittest.cc",
         "views/message_center_view_unittest.cc",
+        "views/message_list_view_unittest.cc",
         "views/message_popup_collection_unittest.cc",
         "views/notification_view_unittest.cc",
         "views/notifier_settings_view_unittest.cc",

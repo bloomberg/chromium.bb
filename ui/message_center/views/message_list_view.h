@@ -24,17 +24,21 @@ class Layer;
 
 namespace message_center {
 
-class MessageCenterView;
 class MessageView;
 
 // Displays a list of messages for rich notifications. Functions as an array of
 // MessageViews and animates them on transitions. It also supports
 // repositioning.
-class MessageListView : public views::View,
-                        public views::BoundsAnimatorObserver {
+class MESSAGE_CENTER_EXPORT MessageListView
+    : public views::View,
+      public views::BoundsAnimatorObserver {
  public:
-  explicit MessageListView(MessageCenterView* message_center_view,
-                           bool top_down);
+  class Observer {
+   public:
+    virtual void OnAllNotificationsCleared() = 0;
+  };
+
+  explicit MessageListView(bool top_down);
   ~MessageListView() override;
 
   void AddNotificationAt(MessageView* view, int i);
@@ -44,7 +48,10 @@ class MessageListView : public views::View,
   void ResetRepositionSession();
   void ClearAllClosableNotifications(const gfx::Rect& visible_scroll_rect);
 
-  MESSAGE_CENTER_EXPORT void SetRepositionTargetForTest(
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  void SetRepositionTargetForTest(
       const gfx::Rect& target_rect);
 
  protected:
@@ -61,6 +68,7 @@ class MessageListView : public views::View,
 
  private:
   friend class MessageCenterViewTest;
+  friend class MessageListViewTest;
 
   bool IsValidChild(const views::View* child) const;
   void DoUpdateIfPossible();
@@ -81,11 +89,10 @@ class MessageListView : public views::View,
 
   // Animate clearing one notification.
   void AnimateClearingOneNotification();
-  MessageCenterView* message_center_view() const {
-    return message_center_view_;
-  }
 
-  MessageCenterView* message_center_view_;  // Weak reference.
+  // List of MessageListView::Observer
+  base::ObserverList<Observer> observers_;
+
   // The top position of the reposition target rectangle.
   int reposition_top_;
   int fixed_height_;
@@ -107,4 +114,5 @@ class MessageListView : public views::View,
 };
 
 }  // namespace message_center
+
 #endif  // UI_MESSAGE_CENTER_VIEWS_MESSAGE_LIST_VIEW_H_

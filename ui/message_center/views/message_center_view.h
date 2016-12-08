@@ -13,6 +13,7 @@
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_list_view.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/view.h"
 
@@ -34,10 +35,12 @@ class NotifierSettingsView;
 // button bar, settings view, scrol view, and message list view.  Acts as a
 // controller for the message list view, passing data back and forth to message
 // center.
-class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
-                                                public MessageCenterObserver,
-                                                public MessageCenterController,
-                                                public gfx::AnimationDelegate {
+class MESSAGE_CENTER_EXPORT MessageCenterView
+    : public views::View,
+      public MessageCenterObserver,
+      public MessageCenterController,
+      public MessageListView::Observer,
+      public gfx::AnimationDelegate {
  public:
   MessageCenterView(MessageCenter* message_center,
                     MessageCenterTray* tray,
@@ -49,7 +52,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   void SetNotifications(const NotificationList::Notifications& notifications);
 
   void ClearAllClosableNotifications();
-  void OnAllNotificationsCleared();
 
   size_t NumMessageViewsForTest() const;
 
@@ -85,6 +87,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
   void ClickOnSettingsButton(const std::string& notification_id) override;
+
+  // Overridden from MessageListView::Observer:
+  void OnAllNotificationsCleared() override;
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
