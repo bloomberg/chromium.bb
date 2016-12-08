@@ -64,6 +64,7 @@ public class AwTestContainerView extends FrameLayout {
 
         private boolean mHaveSurface = false;
         private Runnable mReadyToRenderCallback = null;
+        private Runnable mReadyToDetachCallback = null;
 
         private long mDrawGL = 0;
         private long mViewContext = 0;
@@ -112,11 +113,14 @@ public class AwTestContainerView extends FrameLayout {
             mReadyToRenderCallback = runner;
         }
 
+        public void setReadyToDetachCallback(Runnable runner) {
+            mReadyToDetachCallback = runner;
+        }
+
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
-            boolean didHaveSurface = mHaveSurface;
             mHaveSurface = true;
-            if (!didHaveSurface && mReadyToRenderCallback != null) {
+            if (mReadyToRenderCallback != null) {
                 mReadyToRenderCallback.run();
                 mReadyToRenderCallback = null;
             }
@@ -126,6 +130,10 @@ public class AwTestContainerView extends FrameLayout {
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
             mHaveSurface = false;
+            if (mReadyToDetachCallback != null) {
+                mReadyToDetachCallback.run();
+                mReadyToDetachCallback = null;
+            }
             super.surfaceDestroyed(holder);
         }
 
@@ -287,19 +295,37 @@ public class AwTestContainerView extends FrameLayout {
         mAwContents.onConfigurationChanged(newConfig);
     }
 
+    private void attachedContentsInternal() {
+        assert !mAttachedContents;
+        mAwContents.onAttachedToWindow();
+        mAttachedContents = true;
+    }
+
+    private void detachedContentsInternal() {
+        assert mAttachedContents;
+        mAwContents.onDetachedFromWindow();
+        mAttachedContents = false;
+    }
+
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (mHardwareView == null || mHardwareView.isReadyToRender()) {
-            mAwContents.onAttachedToWindow();
-            mAttachedContents = true;
+            attachedContentsInternal();
         } else {
             mHardwareView.setReadyToRenderCallback(new Runnable() {
                 @Override
                 public void run() {
-                    assert !mAttachedContents;
-                    mAwContents.onAttachedToWindow();
-                    mAttachedContents = true;
+                    attachedContentsInternal();
+                }
+            });
+        }
+
+        if (mHardwareView != null) {
+            mHardwareView.setReadyToDetachCallback(new Runnable() {
+                @Override
+                public void run() {
+                    detachedContentsInternal();
                 }
             });
         }
@@ -308,11 +334,14 @@ public class AwTestContainerView extends FrameLayout {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        mAwContents.onDetachedFromWindow();
-        if (mHardwareView != null) {
-            mHardwareView.setReadyToRenderCallback(null);
+        if (mHardwareView == null || mHardwareView.isReadyToRender()) {
+            detachedContentsInternal();
+
+            if (mHardwareView != null) {
+                mHardwareView.setReadyToRenderCallback(null);
+                mHardwareView.setReadyToDetachCallback(null);
+            }
         }
-        mAttachedContents = false;
     }
 
     @Override
