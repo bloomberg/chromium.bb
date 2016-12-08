@@ -12,11 +12,13 @@ namespace ui {
 
 class NativeThemeMacTest : public testing::Test {
  public:
+  NativeThemeMacTest() {}
+
   static void SetUpTestCase() {
     MaterialDesignController::Initialize();
   }
 
- protected:
+ private:
   DISALLOW_COPY_AND_ASSIGN(NativeThemeMacTest);
 };
 
