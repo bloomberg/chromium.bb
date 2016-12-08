@@ -266,6 +266,7 @@ EXPERIMENT_LIST="
     intra_interp
     filter_intra
     ext_inter
+    compound_segment
     ext_interp
     ext_refs
     global_motion

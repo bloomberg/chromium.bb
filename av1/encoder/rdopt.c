@@ -4382,6 +4382,11 @@ static int get_interinter_compound_type_bits(BLOCK_SIZE bsize,
   switch (comp_type) {
     case COMPOUND_AVERAGE: return 0;
     case COMPOUND_WEDGE: return get_interinter_wedge_bits(bsize);
+#if CONFIG_COMPOUND_SEGMENT
+    // TODO(sarahparker) this 0 is just a placeholder, it is possible this will
+    // need to change once this mode is fully implemented
+    case COMPOUND_SEG: return 0;
+#endif  // CONFIG_COMPOUND_SEGMENT
     default: assert(0); return 0;
   }
 }
@@ -7605,6 +7610,9 @@ static int64_t handle_inter_mode(
             }
           }
           break;
+#if CONFIG_COMPOUND_SEGMENT
+        case COMPOUND_SEG: break;
+#endif  // CONFIG_COMPOUND_SEGMENT
         default: assert(0); return 0;
       }
     }
