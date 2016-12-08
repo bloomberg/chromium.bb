@@ -63,6 +63,7 @@
 
 #if CONFIG_PVQ
 #include "av1/decoder/pvq_decoder.h"
+#include "av1/common/pvq.h"
 #include "av1/encoder/encodemb.h"
 
 #include "aom_dsp/entdec.h"
@@ -336,10 +337,7 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
   const int blk_size = tx_size_wide[bs];
   int eob = 0;
   int i;
-  // TODO(yushin) : To enable activity masking,
-  // int use_activity_masking = dec->use_activity_masking;
-  int use_activity_masking = 0;
-
+  int use_activity_masking = dec->use_activity_masking;
   DECLARE_ALIGNED(16, int16_t, dqcoeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
   DECLARE_ALIGNED(16, int16_t, ref_coeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
 
@@ -352,11 +350,13 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
   if (lossless)
     pvq_dc_quant = 1;
   else {
-    // TODO(yushin): Enable this for activity masking,
-    // when pvq_qm_q4 is available in AOM.
-    // pvq_dc_quant = OD_MAXI(1, quant*
-    // dec->state.pvq_qm_q4[pli][od_qm_get_index(bs, 0)] >> 4);
-    pvq_dc_quant = OD_MAXI(1, quant[0] >> quant_shift);
+    if (use_activity_masking)
+      pvq_dc_quant = OD_MAXI(
+          1, (quant[0] >> quant_shift) *
+                     dec->state.pvq_qm_q4[pli][od_qm_get_index(bs, 0)] >>
+                 4);
+    else
+      pvq_dc_quant = OD_MAXI(1, quant[0] >> quant_shift);
   }
 
   off = od_qm_offset(bs, xdec);
@@ -3070,16 +3070,51 @@ static void get_tile_buffers(
 #endif  // CONFIG_EXT_TILE
 
 #if CONFIG_PVQ
-static void daala_dec_init(daala_dec_ctx *daala_dec, od_ec_dec *ec) {
+static void daala_dec_init(AV1_COMMON *const cm, daala_dec_ctx *daala_dec,
+                           od_ec_dec *ec) {
   daala_dec->ec = ec;
   od_adapt_ctx_reset(&daala_dec->state.adapt, 0);
 
-  daala_dec->qm = OD_FLAT_QM;
+  // TODO(yushin) : activity masking info needs be signaled by a bitstream
+  daala_dec->use_activity_masking = AV1_PVQ_ENABLE_ACTIVITY_MASKING;
+
+  if (daala_dec->use_activity_masking)
+    daala_dec->qm = OD_HVS_QM;
+  else
+    daala_dec->qm = OD_FLAT_QM;
 
   od_init_qm(daala_dec->state.qm, daala_dec->state.qm_inv,
              daala_dec->qm == OD_HVS_QM ? OD_QM8_Q4_HVS : OD_QM8_Q4_FLAT);
+
+  if (daala_dec->use_activity_masking) {
+    int pli;
+    int use_masking = daala_dec->use_activity_masking;
+    int segment_id = 0;
+    int qindex = av1_get_qindex(&cm->seg, segment_id, cm->base_qindex);
+
+    for (pli = 0; pli < MAX_MB_PLANE; pli++) {
+      int i;
+      int q;
+
+      q = qindex;
+      if (q <= OD_DEFAULT_QMS[use_masking][0][pli].interp_q << OD_COEFF_SHIFT) {
+        od_interp_qm(&daala_dec->state.pvq_qm_q4[pli][0], q,
+                     &OD_DEFAULT_QMS[use_masking][0][pli], NULL);
+      } else {
+        i = 0;
+        while (OD_DEFAULT_QMS[use_masking][i + 1][pli].qm_q4 != NULL &&
+               q > OD_DEFAULT_QMS[use_masking][i + 1][pli].interp_q
+                       << OD_COEFF_SHIFT) {
+          i++;
+        }
+        od_interp_qm(&daala_dec->state.pvq_qm_q4[pli][0], q,
+                     &OD_DEFAULT_QMS[use_masking][i][pli],
+                     &OD_DEFAULT_QMS[use_masking][i + 1][pli]);
+      }
+    }
+  }
 }
-#endif
+#endif  // #if CONFIG_PVQ
 
 static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                                    const uint8_t *data_end) {
@@ -3182,7 +3217,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #endif
                            td->dqcoeff);
 #if CONFIG_PVQ
-      daala_dec_init(&td->xd.daala_dec, &td->bit_reader.ec);
+      daala_dec_init(cm, &td->xd.daala_dec, &td->bit_reader.ec);
 #endif
 #if CONFIG_PALETTE
       td->xd.plane[0].color_index_map = td->color_index_map[0];
@@ -3510,7 +3545,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
 #endif
                              twd->dqcoeff);
 #if CONFIG_PVQ
-        daala_dec_init(&twd->xd.daala_dec, &twd->bit_reader.ec);
+        daala_dec_init(cm, &twd->xd.daala_dec, &twd->bit_reader.ec);
 #endif
 #if CONFIG_PALETTE
         twd->xd.plane[0].color_index_map = twd->color_index_map[0];

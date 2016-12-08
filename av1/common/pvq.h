@@ -22,6 +22,8 @@ extern const int OD_QM8_Q4_HVS[];
 extern const uint16_t EXP_CDF_TABLE[][16];
 extern const uint16_t LAPLACE_OFFSET[];
 
+#define AV1_PVQ_ENABLE_ACTIVITY_MASKING (0)
+
 # define PVQ_MAX_PARTITIONS (1 + 3*(OD_TXSIZES-1))
 
 # define OD_NOREF_ADAPT_SPEED (4)
@@ -129,6 +131,14 @@ struct od_pvq_adapt_ctx {
   uint16_t        pvq_skip_dir_cdf[2*(OD_TXSIZES-1)][7];
 };
 
+typedef struct od_qm_entry {
+  int interp_q;
+  int scale_q8;
+  const unsigned char *qm_q4;
+} od_qm_entry;
+
+extern const od_qm_entry OD_DEFAULT_QMS[2][3][OD_NPLANES_MAX];
+
 void od_adapt_pvq_ctx_reset(od_pvq_adapt_ctx *state, int is_keyframe);
 int od_pvq_size_ctx(int n);
 int od_pvq_k1_ctx(int n, int orig_size);
@@ -138,6 +148,9 @@ od_val16 od_pvq_cos(od_val32 x);
 #if !defined(OD_FLOAT_PVQ)
 int od_vector_log_mag(const od_coeff *x, int n);
 #endif
+
+void od_interp_qm(unsigned char *out, int q, const od_qm_entry *entry1,
+                  const od_qm_entry *entry2);
 
 int od_qm_get_index(int bs, int band);
 

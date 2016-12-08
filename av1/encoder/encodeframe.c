@@ -56,6 +56,7 @@
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/tokenize.h"
 #if CONFIG_PVQ
+#include "av1/common/pvq.h"
 #include "av1/encoder/pvq_encoder.h"
 #endif
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -4607,9 +4608,14 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 #if CONFIG_PVQ
   td->mb.pvq_q = &this_tile->pvq_q;
 
-  // TODO(yushin)
-  // If activity masking is enabled, change below to OD_HVS_QM
-  td->mb.daala_enc.qm = OD_FLAT_QM;  // Hard coded. Enc/dec required to sync.
+  // TODO(yushin) : activity masking info needs be signaled by a bitstream
+  td->mb.daala_enc.use_activity_masking = AV1_PVQ_ENABLE_ACTIVITY_MASKING;
+
+  if (td->mb.daala_enc.use_activity_masking)
+    td->mb.daala_enc.qm = OD_HVS_QM;  // Hard coded. Enc/dec required to sync.
+  else
+    td->mb.daala_enc.qm = OD_FLAT_QM;  // Hard coded. Enc/dec required to sync.
+
   {
     // FIXME: Multiple segments support
     int segment_id = 0;
@@ -4626,12 +4632,41 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   }
   od_init_qm(td->mb.daala_enc.state.qm, td->mb.daala_enc.state.qm_inv,
              td->mb.daala_enc.qm == OD_HVS_QM ? OD_QM8_Q4_HVS : OD_QM8_Q4_FLAT);
+
+  if (td->mb.daala_enc.use_activity_masking) {
+    int pli;
+    int use_masking = td->mb.daala_enc.use_activity_masking;
+    int segment_id = 0;
+    int qindex = av1_get_qindex(&cm->seg, segment_id, cm->base_qindex);
+
+    for (pli = 0; pli < MAX_MB_PLANE; pli++) {
+      int i;
+      int q;
+
+      q = qindex;
+      if (q <= OD_DEFAULT_QMS[use_masking][0][pli].interp_q << OD_COEFF_SHIFT) {
+        od_interp_qm(&td->mb.daala_enc.state.pvq_qm_q4[pli][0], q,
+                     &OD_DEFAULT_QMS[use_masking][0][pli], NULL);
+      } else {
+        i = 0;
+        while (OD_DEFAULT_QMS[use_masking][i + 1][pli].qm_q4 != NULL &&
+               q > OD_DEFAULT_QMS[use_masking][i + 1][pli].interp_q
+                       << OD_COEFF_SHIFT) {
+          i++;
+        }
+        od_interp_qm(&td->mb.daala_enc.state.pvq_qm_q4[pli][0], q,
+                     &OD_DEFAULT_QMS[use_masking][i][pli],
+                     &OD_DEFAULT_QMS[use_masking][i + 1][pli]);
+      }
+    }
+  }
+
   od_ec_enc_init(&td->mb.daala_enc.ec, 65025);
 
   adapt = &td->mb.daala_enc.state.adapt;
   od_ec_enc_reset(&td->mb.daala_enc.ec);
   od_adapt_ctx_reset(adapt, 0);
-#endif
+#endif  // #if CONFIG_PVQ
 
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->mib_size) {

@@ -800,24 +800,34 @@ int od_pvq_encode(daala_enc_ctx *enc,
   int skip_rest;
   int skip_dir;
   int skip_theta_value;
-  /* const unsigned char *pvq_qm; */
+  const unsigned char *pvq_qm;
   double dc_rate;
+  int use_masking;
 #if !OD_SIGNAL_Q_SCALING
   OD_UNUSED(q_scaling);
   OD_UNUSED(bx);
   OD_UNUSED(by);
 #endif
-  /* TODO(yushin): Enable this for activity masking,
-     when pvq_qm_q4 is available in AOM. */
-  /* pvq_qm = &enc->state.pvq_qm_q4[pli][0]; */
+
+  use_masking = enc->use_activity_masking;
+
+  if (use_masking)
+    pvq_qm = &enc->state.pvq_qm_q4[pli][0];
+  else
+    pvq_qm = 0;
+
   exg = &enc->state.adapt.pvq.pvq_exg[pli][bs][0];
   ext = enc->state.adapt.pvq.pvq_ext + bs*PVQ_MAX_PARTITIONS;
   skip_cdf = enc->state.adapt.skip_cdf[2*bs + (pli != 0)];
   model = enc->state.adapt.pvq.pvq_param_model;
   nb_bands = OD_BAND_OFFSETS[bs][0];
   off = &OD_BAND_OFFSETS[bs][1];
-  /*dc_quant = OD_MAXI(1, q0*pvq_qm[od_qm_get_index(bs, 0)] >> 4);*/
-  dc_quant = OD_MAXI(1, q_dc);
+
+  if (use_masking)
+    dc_quant = OD_MAXI(1, q_dc * pvq_qm[od_qm_get_index(bs, 0)] >> 4);
+  else
+    dc_quant = OD_MAXI(1, q_dc);
+
   tell = 0;
   for (i = 0; i < nb_bands; i++) size[i] = off[i+1] - off[i];
   skip_diff = 0;
@@ -848,10 +858,12 @@ int od_pvq_encode(daala_enc_ctx *enc,
   }
   for (i = 0; i < nb_bands; i++) {
     int q;
-    /* TODO(yushin): Enable this for activity masking,
-       when pvq_qm_q4 is available in AOM. */
-    /*q = OD_MAXI(1, q0*pvq_qm[od_qm_get_index(bs, i + 1)] >> 4);*/
-    q = OD_MAXI(1, q_ac);
+
+    if (use_masking)
+      q = OD_MAXI(1, q_ac * pvq_qm[od_qm_get_index(bs, i + 1)] >> 4);
+    else
+      q = OD_MAXI(1, q_ac);
+
     qg[i] = pvq_theta(out + off[i], in + off[i], ref + off[i], size[i],
      q, y + off[i], &theta[i], &max_theta[i],
      &k[i], beta[i], &skip_diff, robust, is_keyframe, pli, &enc->state.adapt,

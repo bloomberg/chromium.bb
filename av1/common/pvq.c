@@ -88,6 +88,81 @@ const int OD_QM8_Q4_HVS[] = {
 };
 #endif
 
+/* Imported from encode.c in daala */
+/* These are the PVQ equivalent of quantization matrices, except that
+   the values are per-band. */
+#define OD_MASKING_DISABLED 0
+#define OD_MASKING_ENABLED 1
+
+const unsigned char OD_LUMA_QM_Q4[2][OD_QM_SIZE] = {
+/* Flat quantization for PSNR. The DC component isn't 16 because the DC
+   magnitude compensation is done here for inter (Haar DC doesn't need it).
+   Masking disabled: */
+ {
+  16, 16,
+  16, 16, 16, 16,
+  16, 16, 16, 16, 16, 16,
+  16, 16, 16, 16, 16, 16, 16, 16
+ },
+/* The non-flat AC coefficients compensate for the non-linear scaling caused
+   by activity masking. The values are currently hand-tuned so that the rate
+   of each band remains roughly constant when enabling activity masking
+   on intra.
+   Masking enabled: */
+ {
+  16, 16,
+  16, 18, 28, 32,
+  16, 14, 20, 20, 28, 32,
+  16, 11, 14, 14, 17, 17, 22, 28
+ }
+};
+
+const unsigned char OD_CHROMA_QM_Q4[2][OD_QM_SIZE] = {
+/* Chroma quantization is different because of the reduced lapping.
+   FIXME: Use the same matrix as luma for 4:4:4.
+   Masking disabled: */
+ {
+  16, 16,
+  16, 16, 16, 16,
+  16, 16, 16, 16, 16, 16,
+  16, 16, 16, 16, 16, 16, 16, 16
+ },
+/* The AC part is flat for chroma because it has no activity masking.
+   Masking enabled: */
+ {
+  16, 16,
+  16, 16, 16, 16,
+  16, 16, 16, 16, 16, 16,
+  16, 16, 16, 16, 16, 16, 16, 16
+ }
+};
+
+/* No interpolation, always use od_flat_qm_q4, but use a different scale for
+   each plane.
+   FIXME: Add interpolation and properly tune chroma. */
+const od_qm_entry OD_DEFAULT_QMS[2][3][OD_NPLANES_MAX] = {
+ /* Masking disabled */
+ {{{4, 256, OD_LUMA_QM_Q4[OD_MASKING_DISABLED]},
+   {4, 448, OD_CHROMA_QM_Q4[OD_MASKING_DISABLED]},
+   {4, 320, OD_CHROMA_QM_Q4[OD_MASKING_DISABLED]}},
+  {{318, 256, OD_LUMA_QM_Q4[OD_MASKING_DISABLED]},
+   {318, 140, OD_CHROMA_QM_Q4[OD_MASKING_DISABLED]},
+   {318, 100, OD_CHROMA_QM_Q4[OD_MASKING_DISABLED]}},
+  {{0, 0, NULL},
+   {0, 0, NULL},
+   {0, 0, NULL}}},
+ /* Masking enabled */
+ {{{4, 256, OD_LUMA_QM_Q4[OD_MASKING_ENABLED]},
+   {4, 448, OD_CHROMA_QM_Q4[OD_MASKING_ENABLED]},
+   {4, 320, OD_CHROMA_QM_Q4[OD_MASKING_ENABLED]}},
+  {{318, 256, OD_LUMA_QM_Q4[OD_MASKING_ENABLED]},
+   {318, 140, OD_CHROMA_QM_Q4[OD_MASKING_ENABLED]},
+   {318, 100, OD_CHROMA_QM_Q4[OD_MASKING_ENABLED]}},
+  {{0, 0, NULL},
+   {0, 0, NULL},
+   {0, 0, NULL}}}
+};
+
 /* Constants for the beta parameter, which controls how activity masking is
    used.
    beta = 1 / (1 - alpha), so when beta is 1, alpha is 0 and activity
@@ -102,9 +177,6 @@ static const od_val16 OD_PVQ_BETA16_LUMA[7] = {OD_BETA(1.), OD_BETA(1.),
 static const od_val16 OD_PVQ_BETA32_LUMA[10] = {OD_BETA(1.), OD_BETA(1.),
  OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.),
  OD_BETA(1.), OD_BETA(1.)};
-static const od_val16 OD_PVQ_BETA64_LUMA[13] = {OD_BETA(1.), OD_BETA(1.),
- OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.),
- OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.)};
 
 static const od_val16 OD_PVQ_BETA4_LUMA_MASKING[1] = {OD_BETA(1.)};
 static const od_val16 OD_PVQ_BETA8_LUMA_MASKING[4] = {OD_BETA(1.5),
@@ -115,10 +187,6 @@ static const od_val16 OD_PVQ_BETA16_LUMA_MASKING[7] = {OD_BETA(1.5),
 static const od_val16 OD_PVQ_BETA32_LUMA_MASKING[10] = {OD_BETA(1.5),
  OD_BETA(1.5), OD_BETA(1.5), OD_BETA(1.5), OD_BETA(1.5), OD_BETA(1.5),
  OD_BETA(1.5), OD_BETA(1.5), OD_BETA(1.5), OD_BETA(1.5)};
-static const od_val16 OD_PVQ_BETA64_LUMA_MASKING[13] = {OD_BETA(1.5),
- OD_BETA(1.5), OD_BETA(1.5), OD_BETA(1.5), OD_BETA(1.5), OD_BETA(1.5),
- OD_BETA(1.5), OD_BETA(1.5), OD_BETA(1.5), OD_BETA(1.5), OD_BETA(1.5),
- OD_BETA(1.5), OD_BETA(1.5)};
 
 static const od_val16 OD_PVQ_BETA4_CHROMA[1] = {OD_BETA(1.)};
 static const od_val16 OD_PVQ_BETA8_CHROMA[4] = {OD_BETA(1.), OD_BETA(1.),
@@ -128,9 +196,6 @@ static const od_val16 OD_PVQ_BETA16_CHROMA[7] = {OD_BETA(1.), OD_BETA(1.),
 static const od_val16 OD_PVQ_BETA32_CHROMA[10] = {OD_BETA(1.), OD_BETA(1.),
  OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.),
  OD_BETA(1.), OD_BETA(1.)};
-static const od_val16 OD_PVQ_BETA64_CHROMA[13] = {OD_BETA(1.), OD_BETA(1.),
- OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.),
- OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.), OD_BETA(1.)};
 
 const od_val16 *const OD_PVQ_BETA[2][OD_NPLANES_MAX][OD_TXSIZES + 1] = {
  {{OD_PVQ_BETA4_LUMA, OD_PVQ_BETA8_LUMA,
@@ -146,6 +211,46 @@ const od_val16 *const OD_PVQ_BETA[2][OD_NPLANES_MAX][OD_TXSIZES + 1] = {
   {OD_PVQ_BETA4_CHROMA, OD_PVQ_BETA8_CHROMA,
    OD_PVQ_BETA16_CHROMA, OD_PVQ_BETA32_CHROMA}}
 };
+
+
+void od_interp_qm(unsigned char *out, int q, const od_qm_entry *entry1,
+  const od_qm_entry *entry2) {
+  int i;
+  if (entry2 == NULL || entry2->qm_q4 == NULL
+   || q < entry1->interp_q << OD_COEFF_SHIFT) {
+    /* Use entry1. */
+    for (i = 0; i < OD_QM_SIZE; i++) {
+      out[i] = OD_MINI(255, entry1->qm_q4[i]*entry1->scale_q8 >> 8);
+    }
+  }
+  else if (entry1 == NULL || entry1->qm_q4 == NULL
+   || q > entry2->interp_q << OD_COEFF_SHIFT) {
+    /* Use entry2. */
+    for (i = 0; i < OD_QM_SIZE; i++) {
+      out[i] = OD_MINI(255, entry2->qm_q4[i]*entry2->scale_q8 >> 8);
+    }
+  }
+  else {
+    /* Interpolate between entry1 and entry2. The interpolation is linear
+       in terms of log(q) vs log(m*scale). Considering that we're ultimately
+       multiplying the result it makes sense, but we haven't tried other
+       interpolation methods. */
+    double x;
+    const unsigned char *m1;
+    const unsigned char *m2;
+    int q1;
+    int q2;
+    m1 = entry1->qm_q4;
+    m2 = entry2->qm_q4;
+    q1 = entry1->interp_q << OD_COEFF_SHIFT;
+    q2 = entry2->interp_q << OD_COEFF_SHIFT;
+    x = (log(q)-log(q1))/(log(q2)-log(q1));
+    for (i = 0; i < OD_QM_SIZE; i++) {
+      out[i] = OD_MINI(255, (int)floor(.5 + (1./256)*exp(
+       x*log(m2[i]*entry2->scale_q8) + (1 - x)*log(m1[i]*entry1->scale_q8))));
+    }
+  }
+}
 
 void od_adapt_pvq_ctx_reset(od_pvq_adapt_ctx *state, int is_keyframe) {
   od_pvq_codeword_ctx *ctx;
@@ -195,9 +300,9 @@ int od_qm_offset(int bs, int xydec)
 #endif
 
 /* Initialize the quantization matrix. */
-// Note: When varying scan orders for hybrid transform is used by PVQ,
-// since AOM does not use magnitude compensation (i.e. simplay x16 for all coeffs),
-// we don't need seperate qm and qm_inv for each transform type.
+// Note: When hybrid transform and corresponding scan order is used by PVQ,
+// we don't need seperate qm and qm_inv for each transform type,
+// because AOM does not do magnitude compensation (i.e. simplay x16 for all coeffs).
 void od_init_qm(int16_t *x, int16_t *x_inv, const int *qm) {
   int i;
   int j;

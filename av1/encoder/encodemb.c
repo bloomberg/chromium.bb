@@ -1116,13 +1116,9 @@ int av1_pvq_encode_helper(daala_enc_ctx *daala_enc, tran_low_t *const coeff,
                           PVQ_INFO *pvq_info) {
   const int tx_blk_size = tx_size_wide[tx_size];
   int skip;
-  // TODO(yushin): Enable this later, when pvq_qm_q4 is available in AOM.
-  // int pvq_dc_quant = OD_MAXI(1,
-  //  quant * daala_enc->state.pvq_qm_q4[plane][od_qm_get_index(tx_size, 0)] >>
-  //  4);
   int quant_shift = get_tx_scale(tx_size);
-  // DC quantizer for PVQ
-  int pvq_dc_quant = OD_MAXI(1, quant[0] >> quant_shift);
+  int pvq_dc_quant;
+  int use_activity_masking = daala_enc->use_activity_masking;
   int tell;
   int has_dc_skip = 1;
   int i;
@@ -1130,6 +1126,7 @@ int av1_pvq_encode_helper(daala_enc_ctx *daala_enc, tran_low_t *const coeff,
 #if PVQ_CHROMA_RD
   double save_pvq_lambda;
 #endif
+
   DECLARE_ALIGNED(16, int16_t, coeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
   DECLARE_ALIGNED(16, int16_t, ref_coeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
   DECLARE_ALIGNED(16, int16_t, dqcoeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
@@ -1137,6 +1134,16 @@ int av1_pvq_encode_helper(daala_enc_ctx *daala_enc, tran_low_t *const coeff,
   DECLARE_ALIGNED(16, int32_t, in_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
   DECLARE_ALIGNED(16, int32_t, ref_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
   DECLARE_ALIGNED(16, int32_t, out_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
+
+  // DC quantizer for PVQ
+  if (use_activity_masking)
+    pvq_dc_quant = OD_MAXI(
+        1, (quant[0] >> quant_shift) *
+                   daala_enc->state.pvq_qm_q4[plane]
+                                             [od_qm_get_index(tx_size, 0)] >>
+               4);
+  else
+    pvq_dc_quant = OD_MAXI(1, quant[0] >> quant_shift);
 
   *eob = 0;
 
@@ -1166,18 +1173,17 @@ int av1_pvq_encode_helper(daala_enc_ctx *daala_enc, tran_low_t *const coeff,
     out_int32[0] = OD_DIV_R0(in_int32[0] - ref_int32[0], pvq_dc_quant);
   }
 
-  skip = od_pvq_encode(
-      daala_enc, ref_int32, in_int32, out_int32,
-      (int)quant[0] >> quant_shift,  // scale/quantizer
-      (int)quant[1] >> quant_shift,  // scale/quantizer
-      // TODO(yushin): Instead of 0,
-      //   use daala_enc->use_activity_masking for activity masking.
-      plane, tx_size, OD_PVQ_BETA[0][plane][tx_size], OD_ROBUST_STREAM,
-      0,        // is_keyframe,
-      0, 0, 0,  // q_scaling, bx, by,
-      daala_enc->state.qm + off, daala_enc->state.qm_inv + off,
-      speed,  // speed
-      pvq_info);
+  skip = od_pvq_encode(daala_enc, ref_int32, in_int32, out_int32,
+                       (int)quant[0] >> quant_shift,  // scale/quantizer
+                       (int)quant[1] >> quant_shift,  // scale/quantizer
+                       plane, tx_size,
+                       OD_PVQ_BETA[use_activity_masking][plane][tx_size],
+                       OD_ROBUST_STREAM,
+                       0,        // is_keyframe,
+                       0, 0, 0,  // q_scaling, bx, by,
+                       daala_enc->state.qm + off, daala_enc->state.qm_inv + off,
+                       speed,  // speed
+                       pvq_info);
 
   if (skip && pvq_info) assert(pvq_info->ac_dc_coded == 0);
 

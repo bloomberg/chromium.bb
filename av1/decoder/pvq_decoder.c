@@ -314,15 +314,22 @@ void od_pvq_decode(daala_dec_ctx *dec,
   generic_encoder *model;
   int skip_rest[3] = {0};
   cfl_ctx cfl;
-  /* const unsigned char *pvq_qm; */
+  const unsigned char *pvq_qm;
+  int use_masking;
+
   /*Default to skip=1 and noref=0 for all bands.*/
   for (i = 0; i < PVQ_MAX_PARTITIONS; i++) {
     noref[i] = 0;
     skip[i] = 1;
   }
-  /* TODO(yushin): Enable this for activity masking,
-     when pvq_qm_q4 is available in AOM. */
-  /*pvq_qm = &dec->state.pvq_qm_q4[pli][0];*/
+
+  use_masking = dec->use_activity_masking;
+
+  if (use_masking)
+    pvq_qm = &dec->state.pvq_qm_q4[pli][0];
+  else
+    pvq_qm = 0;
+
   exg = &dec->state.adapt.pvq.pvq_exg[pli][bs][0];
   ext = dec->state.adapt.pvq.pvq_ext + bs*PVQ_MAX_PARTITIONS;
   model = dec->state.adapt.pvq.pvq_param_model;
@@ -341,10 +348,12 @@ void od_pvq_decode(daala_dec_ctx *dec,
     cfl.allow_flip = pli != 0 && is_keyframe;
     for (i = 0; i < nb_bands; i++) {
       int q;
-      /* TODO(yushin): Enable this for activity masking,
-         when pvq_qm_q4 is available in AOM. */
-      /*q = OD_MAXI(1, q0*pvq_qm[od_qm_get_index(bs, i + 1)] >> 4);*/
-      q = OD_MAXI(1, q0);
+
+      if (use_masking)
+        q = OD_MAXI(1, q0 * pvq_qm[od_qm_get_index(bs, i + 1)] >> 4);
+      else
+        q = OD_MAXI(1, q0);
+
       pvq_decode_partition(dec->ec, q, size[i],
        model, &dec->state.adapt, exg + i, ext + i, ref + off[i], out + off[i],
        &noref[i], beta[i], robust, is_keyframe, pli,
