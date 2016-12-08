@@ -885,7 +885,7 @@
           "experimental": true,
           "leader_board": false,
           "board_group": "auron",
-          "arch": "UNKNOWN"
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -933,7 +933,7 @@
           "experimental": true,
           "leader_board": false,
           "board_group": "",
-          "arch": "UNKNOWN"
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -1161,7 +1161,7 @@
           "experimental": true,
           "leader_board": false,
           "board_group": "veyron",
-          "arch": "UNKNOWN"
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
