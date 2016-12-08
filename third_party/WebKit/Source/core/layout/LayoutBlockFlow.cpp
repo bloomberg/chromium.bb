@@ -1709,10 +1709,10 @@ LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child,
 
   LayoutObject* prev = child.previousSibling();
   LayoutBlockFlow* previousBlockFlow =
-      prev && prev->isLayoutBlockFlow() ? toLayoutBlockFlow(prev) : nullptr;
-  bool previousBlockFlowCanSelfCollapse =
-      previousBlockFlow &&
-      !previousBlockFlow->isFloatingOrOutOfFlowPositioned();
+      prev && prev->isLayoutBlockFlow() &&
+              !prev->isFloatingOrOutOfFlowPositioned()
+          ? toLayoutBlockFlow(prev)
+          : 0;
   // If the child's previous sibling is a self-collapsing block that cleared a
   // float then its top border edge has been set at the bottom border edge of
   // the float. Since we want to collapse the child's top margin with the self-
@@ -1720,8 +1720,7 @@ LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child,
   // height to match the margin top of the self-collapsing block. If the
   // resulting collapsed margin leaves the child still intruding into the float
   // then we will want to clear it.
-  if (!marginInfo.canCollapseWithMarginBefore() &&
-      previousBlockFlowCanSelfCollapse &&
+  if (!marginInfo.canCollapseWithMarginBefore() && previousBlockFlow &&
       marginInfo.lastChildIsSelfCollapsingBlockWithClearance())
     setLogicalHeight(
         logicalHeight() -
@@ -1802,26 +1801,18 @@ LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child,
     setLogicalHeight(logicalHeight() + (logicalTop - oldLogicalTop));
   }
 
-  // If |child| has moved up into previous siblings it needs to avoid or clear
-  // any floats they contain.
-  LayoutUnit oldLogicalHeight = logicalHeight();
-  setLogicalHeight(logicalTop);
-  while (previousBlockFlow) {
-    auto lowestFloat = previousBlockFlow->logicalTop() +
-                       previousBlockFlow->lowestFloatLogicalBottom();
-    if (lowestFloat > logicalTop)
+  if (previousBlockFlow) {
+    // If |child| is a self-collapsing block it may have collapsed into a
+    // previous sibling and although it hasn't reduced the height of the parent
+    // yet any floats from the parent will now overhang.
+    LayoutUnit oldLogicalHeight = logicalHeight();
+    setLogicalHeight(logicalTop);
+    if (!previousBlockFlow->avoidsFloats() &&
+        (previousBlockFlow->logicalTop() +
+         previousBlockFlow->lowestFloatLogicalBottom()) > logicalTop)
       addOverhangingFloats(previousBlockFlow, false);
-    else
-      break;
-    LayoutObject* prev = previousBlockFlow->previousSibling();
-    if (prev && prev->isLayoutBlockFlow())
-      previousBlockFlow = toLayoutBlockFlow(prev);
-    else
-      previousBlockFlow = nullptr;
-  }
-  setLogicalHeight(oldLogicalHeight);
+    setLogicalHeight(oldLogicalHeight);
 
-  if (previousBlockFlowCanSelfCollapse) {
     // If |child|'s previous sibling is or contains a self-collapsing block that
     // cleared a float and margin collapsing resulted in |child| moving up
     // into the margin area of the self-collapsing block then the float it
