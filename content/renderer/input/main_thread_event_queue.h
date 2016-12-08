@@ -26,12 +26,10 @@ class EventWithDispatchType : public ScopedWebInputEventWithLatencyInfo {
                         const ui::LatencyInfo& latency,
                         InputEventDispatchType dispatch_type);
   ~EventWithDispatchType();
-  bool CanCoalesceWith(const EventWithDispatchType& other) const
-      WARN_UNUSED_RESULT;
   void CoalesceWith(const EventWithDispatchType& other);
 
-  const std::deque<uint32_t>& coalescedEventIds() const {
-    return coalesced_event_ids_;
+  const std::deque<uint32_t>& blockingCoalescedEventIds() const {
+    return blocking_coalesced_event_ids_;
   }
   InputEventDispatchType dispatchType() const { return dispatch_type_; }
   base::TimeTicks creationTimestamp() const { return creation_timestamp_; }
@@ -39,14 +37,20 @@ class EventWithDispatchType : public ScopedWebInputEventWithLatencyInfo {
     return last_coalesced_timestamp_;
   }
 
+  size_t coalescedCount() const {
+    return non_blocking_coalesced_count_ + blocking_coalesced_event_ids_.size();
+  }
+
  private:
   InputEventDispatchType dispatch_type_;
 
-  // |coalesced_event_ids_| contains the unique touch event ids to be acked. If
+  // Contains the unique touch event ids to be acked. If
   // the events are not TouchEvents the values will be 0. More importantly for
   // those cases the deque ends up containing how many additional ACKs
   // need to be sent.
-  std::deque<uint32_t> coalesced_event_ids_;
+  std::deque<uint32_t> blocking_coalesced_event_ids_;
+  // Contains the number of non-blocking events coalesced.
+  size_t non_blocking_coalesced_count_;
   base::TimeTicks creation_timestamp_;
   base::TimeTicks last_coalesced_timestamp_;
 };
@@ -141,7 +145,7 @@ class CONTENT_EXPORT MainThreadEventQueue
                              InputEventDispatchType original_dispatch_type);
 
   bool IsRafAlignedInputDisabled();
-  bool IsRafAlignedEvent(const std::unique_ptr<EventWithDispatchType>& event);
+  bool IsRafAlignedEvent(const blink::WebInputEvent& event);
 
   friend class MainThreadEventQueueTest;
   int routing_id_;

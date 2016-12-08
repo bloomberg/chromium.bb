@@ -85,9 +85,10 @@ class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
     additional_acked_events_.push_back(touch_event_id);
   }
 
-  void HandleEvent(WebInputEvent& event, InputEventAckState ack_result) {
-    queue_->HandleEvent(ui::WebInputEventTraits::Clone(event),
-                        ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING, ack_result);
+  bool HandleEvent(WebInputEvent& event, InputEventAckState ack_result) {
+    return queue_->HandleEvent(ui::WebInputEventTraits::Clone(event),
+                               ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
+                               ack_result);
   }
 
   void NeedsMainFrame(int routing_id) override { needs_main_frame_ = true; }
@@ -428,6 +429,66 @@ TEST_P(MainThreadEventQueueTest, RafAlignedTouchInput) {
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
   EXPECT_FALSE(needs_main_frame_);
   main_task_runner_->RunUntilIdle();
+}
+
+TEST_P(MainThreadEventQueueTest, RafAlignedTouchInputCoalescedMoves) {
+  // Don't run the test when we aren't supporting rAF aligned input.
+  if ((raf_aligned_input_setting_ & kRafAlignedEnabledTouch) == 0)
+    return;
+
+  SyntheticWebTouchEvent kEvents[2];
+  kEvents[0].PressPoint(10, 10);
+  kEvents[0].MovePoint(0, 50, 50);
+  kEvents[1].PressPoint(10, 10);
+  kEvents[1].MovePoint(0, 20, 20);
+  kEvents[0].dispatchType = WebInputEvent::EventNonBlocking;
+
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+
+  // Send a continuous input event (ack required) and then
+  // a discrete event. The events should coalesce together
+  // and a post task should be on the queue at the end.
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1u, event_queue().size());
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_TRUE(needs_main_frame_);
+  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1u, event_queue().size());
+  EXPECT_TRUE(main_task_runner_->HasPendingTask());
+  EXPECT_TRUE(needs_main_frame_);
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_EQ(1u, additional_acked_events_.size());
+  additional_acked_events_.clear();
+
+  // Send a non-cancelable ack required event, and then a non-ack
+  // required event they should be coalesced together.
+  EXPECT_TRUE(HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+  EXPECT_EQ(1u, event_queue().size());
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_TRUE(needs_main_frame_);
+  EXPECT_TRUE(HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING));
+  EXPECT_EQ(1u, event_queue().size());
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_TRUE(needs_main_frame_);
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_EQ(0u, additional_acked_events_.size());
+
+  // Send a non-ack required event, and then a non-cancelable ack
+  // required event they should be coalesced together.
+  EXPECT_TRUE(HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING));
+  EXPECT_EQ(1u, event_queue().size());
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_TRUE(needs_main_frame_);
+  EXPECT_TRUE(HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+  EXPECT_EQ(1u, event_queue().size());
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_TRUE(needs_main_frame_);
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_EQ(0u, additional_acked_events_.size());
 }
 
 TEST_P(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
