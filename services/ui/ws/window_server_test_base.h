@@ -66,9 +66,9 @@ class WindowServerTestBase
   // Cleans up internal state then deletes |client|.
   void DeleteWindowTreeClient(aura::WindowTreeClient* client);
 
-  // Returns the most WindowTreeClient that was created as the result of
+  // Returns the most recent WindowTreeClient that was created as the result of
   // InterfaceFactory<WindowTreeClient> being called. In other words the most
-  // recent WindowTreeClient created for an embed.
+  // recent WindowTreeClient created as the result of a client embedding.
   std::unique_ptr<aura::WindowTreeClient> ReleaseMostRecentClient();
 
   // testing::Test:
