@@ -113,9 +113,9 @@ std::unique_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
     return nullptr;
   }
 
-  return base::MakeUnique<ShellSurface>(surface, nullptr, gfx::Rect(),
-                                        true /* activatable */,
-                                        ash::kShellWindowId_DefaultContainer);
+  return base::MakeUnique<ShellSurface>(
+      surface, nullptr, gfx::Rect(), true /* activatable */,
+      false /* can_minimize */, ash::kShellWindowId_DefaultContainer);
 }
 
 std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
@@ -144,9 +144,9 @@ std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
       &origin);
   gfx::Rect initial_bounds(origin, gfx::Size(1, 1));
 
-  return base::MakeUnique<ShellSurface>(surface, parent, initial_bounds,
-                                        false /* activatable */,
-                                        ash::kShellWindowId_DefaultContainer);
+  return base::MakeUnique<ShellSurface>(
+      surface, parent, initial_bounds, false /* activatable */,
+      false /* can_minimize */, ash::kShellWindowId_DefaultContainer);
 }
 
 std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
@@ -160,8 +160,12 @@ std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
     return nullptr;
   }
 
+  // Remote shell surfaces in system modal container cannot be minimized.
+  bool can_minimize = container != ash::kShellWindowId_SystemModalContainer;
+
   return base::MakeUnique<ShellSurface>(surface, nullptr, gfx::Rect(1, 1),
-                                        true /* activatable */, container);
+                                        true /* activatable */, can_minimize,
+                                        container);
 }
 
 std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,

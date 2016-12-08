@@ -850,37 +850,6 @@ void bind_subcompositor(wl_client* client,
 ////////////////////////////////////////////////////////////////////////////////
 // wl_shell_surface_interface:
 
-class ShellSurfaceSizeObserver : public views::WidgetObserver {
- public:
-  ShellSurfaceSizeObserver(wl_resource* shell_surface_resource,
-                           const gfx::Size& initial_size)
-      : shell_surface_resource_(shell_surface_resource),
-        old_size_(initial_size) {
-    wl_shell_surface_send_configure(shell_surface_resource,
-                                    WL_SHELL_SURFACE_RESIZE_NONE,
-                                    old_size_.width(), old_size_.height());
-  }
-
-  // Overridden from view::WidgetObserver:
-  void OnWidgetDestroyed(views::Widget* widget) override { delete this; }
-  void OnWidgetBoundsChanged(views::Widget* widget,
-                             const gfx::Rect& new_bounds) override {
-    if (old_size_ == new_bounds.size())
-      return;
-
-    wl_shell_surface_send_configure(shell_surface_resource_,
-                                    WL_SHELL_SURFACE_RESIZE_NONE,
-                                    new_bounds.width(), new_bounds.height());
-    old_size_ = new_bounds.size();
-  }
-
- private:
-  wl_resource* shell_surface_resource_;
-  gfx::Size old_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceSizeObserver);
-};
-
 void shell_surface_pong(wl_client* client,
                         wl_resource* resource,
                         uint32_t serial) {
@@ -903,7 +872,13 @@ void shell_surface_resize(wl_client* client,
 }
 
 void shell_surface_set_toplevel(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetEnabled(true);
+  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
+  if (shell_surface->enabled())
+    return;
+
+  shell_surface->SetFrame(true);
+  shell_surface->SetRectangularShadow(true);
+  shell_surface->SetEnabled(true);
 }
 
 void shell_surface_set_transient(wl_client* client,
@@ -928,6 +903,7 @@ void shell_surface_set_transient(wl_client* client,
   }
 
   gfx::Point origin(x, y);
+  ShellSurface* parent_shell_surface = nullptr;
 
   // Set parent if found and it is associated with a shell surface.
   if (parent_widget &&
@@ -938,12 +914,18 @@ void shell_surface_set_transient(wl_client* client,
         &origin);
     // Shell surface widget delegate implementation of GetContentsView()
     // returns a pointer to the shell surface instance.
-    shell_surface->SetParent(static_cast<ShellSurface*>(
-        parent_widget->widget_delegate()->GetContentsView()));
+    parent_shell_surface = static_cast<ShellSurface*>(
+        parent_widget->widget_delegate()->GetContentsView());
   }
 
-  shell_surface->SetOrigin(origin);
-  shell_surface->SetActivatable(!(flags & WL_SHELL_SURFACE_TRANSIENT_INACTIVE));
+  if (flags & WL_SHELL_SURFACE_TRANSIENT_INACTIVE) {
+    shell_surface->SetOrigin(origin);
+    shell_surface->SetContainer(ash::kShellWindowId_SystemModalContainer);
+  } else {
+    shell_surface->SetFrame(true);
+    shell_surface->SetParent(parent_shell_surface);
+  }
+  shell_surface->SetRectangularShadow(true);
   shell_surface->SetEnabled(true);
 }
 
@@ -958,10 +940,6 @@ void shell_surface_set_fullscreen(wl_client* client,
 
   shell_surface->SetEnabled(true);
   shell_surface->SetFullscreen(true);
-
-  views::Widget* widget = shell_surface->GetWidget();
-  widget->AddObserver(new ShellSurfaceSizeObserver(
-      resource, widget->GetWindowBoundsInScreen().size()));
 }
 
 void shell_surface_set_popup(wl_client* client,
@@ -984,10 +962,6 @@ void shell_surface_set_maximized(wl_client* client,
 
   shell_surface->SetEnabled(true);
   shell_surface->Maximize();
-
-  views::Widget* widget = shell_surface->GetWidget();
-  widget->AddObserver(new ShellSurfaceSizeObserver(
-      resource, widget->GetWindowBoundsInScreen().size()));
 }
 
 void shell_surface_set_title(wl_client* client,
@@ -1013,6 +987,27 @@ const struct wl_shell_surface_interface shell_surface_implementation = {
 ////////////////////////////////////////////////////////////////////////////////
 // wl_shell_interface:
 
+void HandleShellSurfaceCloseCallback(wl_resource* resource) {
+  // Shell surface interface doesn't have a close event. Just send a ping event
+  // for now.
+  uint32_t serial = wl_display_next_serial(
+      wl_client_get_display(wl_resource_get_client(resource)));
+  wl_shell_surface_send_ping(resource, serial);
+  wl_client_flush(wl_resource_get_client(resource));
+}
+
+uint32_t HandleShellSurfaceConfigureCallback(
+    wl_resource* resource,
+    const gfx::Size& size,
+    ash::wm::WindowStateType state_type,
+    bool resizing,
+    bool activated) {
+  wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
+                                  size.width(), size.height());
+  wl_client_flush(wl_resource_get_client(resource));
+  return 0;
+}
+
 void shell_get_shell_surface(wl_client* client,
                              wl_resource* resource,
                              uint32_t id,
@@ -1032,6 +1027,14 @@ void shell_get_shell_surface(wl_client* client,
   // Shell surfaces are initially disabled and needs to be explicitly mapped
   // before they are enabled and can become visible.
   shell_surface->SetEnabled(false);
+
+  shell_surface->set_close_callback(
+      base::Bind(&HandleShellSurfaceCloseCallback,
+                 base::Unretained(shell_surface_resource)));
+
+  shell_surface->set_configure_callback(
+      base::Bind(&HandleShellSurfaceConfigureCallback,
+                 base::Unretained(shell_surface_resource)));
 
   shell_surface->set_surface_destroyed_callback(base::Bind(
       &wl_resource_destroy, base::Unretained(shell_surface_resource)));
@@ -1498,8 +1501,11 @@ void remote_surface_set_rectangular_shadow(wl_client* client,
                                            int32_t y,
                                            int32_t width,
                                            int32_t height) {
-  GetUserDataAs<ShellSurface>(resource)->SetRectangularShadow(
-      gfx::Rect(x, y, width, height));
+  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
+  gfx::Rect content_bounds(x, y, width, height);
+
+  shell_surface->SetRectangularShadowContentBounds(content_bounds);
+  shell_surface->SetRectangularShadow(!content_bounds.IsEmpty());
 }
 
 void remote_surface_set_rectangular_shadow_background_opacity(

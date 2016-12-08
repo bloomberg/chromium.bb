@@ -210,7 +210,7 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
   std::unique_ptr<Surface> surface2(new Surface);
   std::unique_ptr<ShellSurface> shell_surface2(
       new ShellSurface(surface2.get(), nullptr, gfx::Rect(0, 0, 5, 5), true,
-                       ash::kShellWindowId_SystemModalContainer));
+                       false, ash::kShellWindowId_SystemModalContainer));
   std::unique_ptr<Buffer> buffer2(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
   surface2->Attach(buffer2.get());
