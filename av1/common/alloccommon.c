@@ -26,8 +26,13 @@ void av1_set_mb_mi(AV1_COMMON *cm, int width, int height) {
   cm->mi_rows = aligned_height >> MI_SIZE_LOG2;
   cm->mi_stride = calc_mi_size(cm->mi_cols);
 
+#if CONFIG_CB4X4
+  cm->mb_cols = (cm->mi_cols + 2) >> 2;
+  cm->mb_rows = (cm->mi_rows + 2) >> 2;
+#else
   cm->mb_cols = (cm->mi_cols + 1) >> 1;
   cm->mb_rows = (cm->mi_rows + 1) >> 1;
+#endif
   cm->MBs = cm->mb_rows * cm->mb_cols;
 }
 
