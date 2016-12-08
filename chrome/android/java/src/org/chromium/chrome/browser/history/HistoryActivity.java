@@ -25,6 +25,7 @@ public class HistoryActivity extends SynchronousInitializationActivity {
     @Override
     protected void onDestroy() {
         mHistoryManager.onDestroyed();
+        mHistoryManager = null;
         super.onDestroy();
     }
 }

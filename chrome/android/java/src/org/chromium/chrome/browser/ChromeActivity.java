@@ -1683,7 +1683,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             WebsiteSettingsPopup.show(
                     this, currentTab, null, WebsiteSettingsPopup.OPENED_FROM_MENU);
         } else if (id == R.id.open_history_menu_id) {
-            if (!HistoryManagerUtils.showHistoryManager(this)) {
+            if (!HistoryManagerUtils.showHistoryManager(this, currentTab)) {
                 currentTab.loadUrl(
                         new LoadUrlParams(UrlConstants.HISTORY_URL, PageTransition.AUTO_TOPLEVEL));
             }

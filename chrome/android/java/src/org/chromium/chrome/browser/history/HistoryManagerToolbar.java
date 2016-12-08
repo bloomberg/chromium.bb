@@ -9,6 +9,7 @@ import android.util.AttributeSet;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.selection.SelectionToolbar;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * The SelectionToolbar for the browsing history UI.
@@ -17,6 +18,10 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem> {
     public HistoryManagerToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
         inflateMenu(R.menu.history_manager_menu);
+
+        if (DeviceFormFactor.isTablet(getContext())) {
+            getMenu().removeItem(R.id.close_menu_id);
+        }
 
         // TODO(twellington): Add content descriptions to the number roll view.
     }
