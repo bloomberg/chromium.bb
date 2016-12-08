@@ -6,11 +6,13 @@
 #include <string>
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_async_file_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -36,11 +38,16 @@ class ArcFileSystemInstanceTestImpl : public FakeFileSystemInstance {
 
 class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
  public:
-  ArcContentFileSystemAsyncFileUtilTest() {
-    fake_arc_bridge_service_.file_system()->SetInstance(&file_system_);
-  }
-
+  ArcContentFileSystemAsyncFileUtilTest() = default;
   ~ArcContentFileSystemAsyncFileUtilTest() override = default;
+
+  void SetUp() override {
+    ArcServiceManager::SetArcBridgeServiceForTesting(
+        base::MakeUnique<FakeArcBridgeService>());
+    arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
+    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
+        &file_system_);
+  }
 
  protected:
   storage::FileSystemURL ExternalFileURLToFileSystemURL(const GURL& url) {
@@ -56,7 +63,7 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  FakeArcBridgeService fake_arc_bridge_service_;
+  std::unique_ptr<ArcServiceManager> arc_service_manager_;
   ArcFileSystemInstanceTestImpl file_system_;
   ArcContentFileSystemAsyncFileUtil async_file_util_;
 

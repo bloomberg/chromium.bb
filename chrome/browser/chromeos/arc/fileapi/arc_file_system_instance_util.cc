@@ -4,7 +4,10 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_instance_util.h"
 
+#include <string>
+
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -17,6 +20,22 @@ namespace {
 constexpr uint32_t kGetFileSizeVersion = 1;
 constexpr uint32_t kOpenFileToReadVersion = 1;
 
+// Returns FileSystemInstance for the given |min_version|, if found.
+// Otherwise, nullptr.
+mojom::FileSystemInstance* GetFileSystemInstance(
+    const std::string& method_name_for_logging,
+    uint32_t min_version) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager) {
+    LOG(ERROR) << "Failed to get ArcServiceManager.";
+    return nullptr;
+  }
+  return arc_service_manager->arc_bridge_service()
+      ->file_system()
+      ->GetInstanceForMethod(method_name_for_logging, min_version);
+}
+
 void OnGetFileSize(const GetFileSizeCallback& callback, int64_t size) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
@@ -26,17 +45,9 @@ void OnGetFileSize(const GetFileSizeCallback& callback, int64_t size) {
 void GetFileSizeOnUIThread(const GURL& arc_url,
                            const GetFileSizeCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* arc_bridge_service = arc::ArcBridgeService::Get();
-  if (!arc_bridge_service) {
-    LOG(ERROR) << "Failed to get ArcBridgeService.";
-    OnGetFileSize(callback, -1);
-    return;
-  }
-  mojom::FileSystemInstance* file_system_instance =
-      arc_bridge_service->file_system()->GetInstanceForMethod(
-          "GetFileSize", kGetFileSizeVersion);
+  auto* file_system_instance =
+      GetFileSystemInstance("GetFileSize", kGetFileSizeVersion);
   if (!file_system_instance) {
-    LOG(ERROR) << "Failed to get FileSystemInstance.";
     OnGetFileSize(callback, -1);
     return;
   }
@@ -54,17 +65,9 @@ void OnOpenFileToRead(const OpenFileToReadCallback& callback,
 void OpenFileToReadOnUIThread(const GURL& arc_url,
                               const OpenFileToReadCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* arc_bridge_service = arc::ArcBridgeService::Get();
-  if (!arc_bridge_service) {
-    LOG(ERROR) << "Failed to get ArcBridgeService.";
-    OnOpenFileToRead(callback, mojo::ScopedHandle());
-    return;
-  }
-  mojom::FileSystemInstance* file_system_instance =
-      arc_bridge_service->file_system()->GetInstanceForMethod(
-          "OpenFileToRead", kOpenFileToReadVersion);
+  auto* file_system_instance =
+      GetFileSystemInstance("OpenFileToRead", kOpenFileToReadVersion);
   if (!file_system_instance) {
-    LOG(ERROR) << "Failed to get FileSystemInstance.";
     OnOpenFileToRead(callback, mojo::ScopedHandle());
     return;
   }

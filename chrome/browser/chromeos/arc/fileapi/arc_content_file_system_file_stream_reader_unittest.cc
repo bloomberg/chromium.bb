@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_file_stream_reader.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -80,15 +83,19 @@ class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
     base::FilePath path = temp_dir_.GetPath().AppendASCII("bar");
     ASSERT_TRUE(base::WriteFile(path, kData, arraysize(kData)));
 
-    file_system_.reset(new ArcFileSystemInstanceTestImpl(path));
+    file_system_ = base::MakeUnique<ArcFileSystemInstanceTestImpl>(path);
 
-    fake_arc_bridge_service_.file_system()->SetInstance(file_system_.get());
+    ArcServiceManager::SetArcBridgeServiceForTesting(
+        base::MakeUnique<FakeArcBridgeService>());
+    arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
+    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
+        file_system_.get());
   }
 
  private:
   base::ScopedTempDir temp_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
-  FakeArcBridgeService fake_arc_bridge_service_;
+  std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcFileSystemInstanceTestImpl> file_system_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcContentFileSystemFileStreamReaderTest);
