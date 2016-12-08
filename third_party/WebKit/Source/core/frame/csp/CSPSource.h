@@ -58,6 +58,7 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, GetSourceVector);
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, OperativeDirectiveGivenType);
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, SubsumesWithSelf);
+  FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetSources);
 
   bool schemeMatches(const String&) const;
   bool hostMatches(const String&) const;

@@ -599,19 +599,32 @@ bool SourceListDirective::allowAllInline() const {
           !m_allowDynamic);
 }
 
+HeapVector<Member<CSPSource>> SourceListDirective::getSources(
+    Member<CSPSource> self) const {
+  HeapVector<Member<CSPSource>> sources = m_list;
+  if (m_allowStar) {
+    sources.append(new CSPSource(m_policy, "ftp", String(), 0, String(),
+                                 CSPSource::NoWildcard, CSPSource::NoWildcard));
+    sources.append(new CSPSource(m_policy, "ws", String(), 0, String(),
+                                 CSPSource::NoWildcard, CSPSource::NoWildcard));
+    sources.append(new CSPSource(m_policy, "http", String(), 0, String(),
+                                 CSPSource::NoWildcard, CSPSource::NoWildcard));
+    if (self) {
+      sources.append(new CSPSource(m_policy, self->getScheme(), String(), 0,
+                                   String(), CSPSource::NoWildcard,
+                                   CSPSource::NoWildcard));
+    }
+  } else if (m_allowSelf && self) {
+    sources.append(self);
+  }
+
+  return sources;
+}
+
 bool SourceListDirective::subsumes(
     const HeapVector<Member<SourceListDirective>>& other) const {
-  // TODO(amalika): Handle here special keywords.
   if (!other.size() || other[0]->isNone())
     return other.size();
-
-  HeapVector<Member<CSPSource>> normalizedA = m_list;
-  if (m_allowSelf && other[0]->m_policy->getSelfSource())
-    normalizedA.append(other[0]->m_policy->getSelfSource());
-
-  HeapVector<Member<CSPSource>> normalizedB = other[0]->m_list;
-  if (other[0]->m_allowSelf && other[0]->m_policy->getSelfSource())
-    normalizedB.append(other[0]->m_policy->getSelfSource());
 
   bool allowInlineOther = other[0]->m_allowInline;
   bool allowEvalOther = other[0]->m_allowEval;
@@ -621,6 +634,8 @@ bool SourceListDirective::subsumes(
   HashSet<String> noncesB = other[0]->m_nonces;
   HashSet<CSPHashValue> hashesB = other[0]->m_hashes;
 
+  HeapVector<Member<CSPSource>> normalizedB =
+      other[0]->getSources(other[0]->m_policy->getSelfSource());
   for (size_t i = 1; i < other.size(); i++) {
     allowInlineOther = allowInlineOther && other[i]->m_allowInline;
     allowEvalOther = allowEvalOther && other[i]->m_allowEval;
@@ -666,6 +681,9 @@ bool SourceListDirective::subsumes(
     return allowDynamicOther || !normalizedB.size();
   }
 
+  // If embedding CSP specifies `self`, `self` refers to the embedee's origin.
+  HeapVector<Member<CSPSource>> normalizedA =
+      getSources(other[0]->m_policy->getSelfSource());
   return CSPSource::firstSubsumesSecond(normalizedA, normalizedB);
 }
 
@@ -750,9 +768,8 @@ HeapVector<Member<CSPSource>> SourceListDirective::getIntersectCSPSources(
     }
   }
 
-  HeapVector<Member<CSPSource>> thisVector = m_list;
-  if (m_allowSelf && m_policy->getSelfSource())
-    thisVector.append(m_policy->getSelfSource());
+  HeapVector<Member<CSPSource>> thisVector =
+      getSources(m_policy->getSelfSource());
   for (const auto& sourceA : thisVector) {
     if (schemesMap.contains(sourceA->getScheme()))
       continue;

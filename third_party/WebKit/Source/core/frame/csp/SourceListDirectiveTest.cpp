@@ -1227,4 +1227,115 @@ TEST_F(SourceListDirectiveTest, SubsumesStrictDynamic) {
   }
 }
 
+TEST_F(SourceListDirectiveTest, SubsumesListWildcard) {
+  struct TestCase {
+    const char* sourcesA;
+    std::vector<const char*> sourcesB;
+    bool expected;
+  } cases[] = {
+      // `A` subsumes `policiesB`..
+      {"*", {""}, true},
+      {"*", {"'none'"}, true},
+      {"*", {"*"}, true},
+      {"*", {"*", "*", "*"}, true},
+      {"*", {"*", "* https: http: ftp: ws: wss:"}, true},
+      {"*", {"*", "https: http: ftp: ws: wss:"}, true},
+      {"https: http: ftp: ws: wss:", {"*", "https: http: ftp: ws: wss:"}, true},
+      {"http: ftp: ws:", {"*", "https: http: ftp: ws: wss:"}, true},
+      {"http: ftp: ws:", {"*", "https: 'strict-dynamic'"}, true},
+      {"http://another.test", {"*", "'self'"}, true},
+      // TODO(amalika): Fix the test below that should have the same behavior as
+      // the test above.
+      // {"http://another.test/", {"*", "'self'"}, true},
+      {"http://another.test", {"https:", "'self'"}, true},
+      {"'self'", {"*", "'self'"}, true},
+      {"'unsafe-eval' * ", {"'unsafe-eval'"}, true},
+      {"'unsafe-hashed-attributes' * ", {"'unsafe-hashed-attributes'"}, true},
+      {"'unsafe-inline' * ", {"'unsafe-inline'"}, true},
+      {"*", {"*", "http://a.com ws://b.com ftp://c.com"}, true},
+      {"*", {"* data: blob:", "http://a.com ws://b.com ftp://c.com"}, true},
+      {"*", {"data: blob:", "http://a.com ws://b.com ftp://c.com"}, true},
+      {"*", {"*", "data://a.com ws://b.com ftp://c.com"}, true},
+      {"* data:",
+       {"data: blob: *", "data://a.com ws://b.com ftp://c.com"},
+       true},
+      {"http://a.com ws://b.com ftp://c.com",
+       {"*", "http://a.com ws://b.com ftp://c.com"},
+       true},
+      // `A` does not subsume `policiesB`..
+      {"*", std::vector<const char*>(), false},
+      {"", {"*"}, false},
+      {"'none'", {"*"}, false},
+      {"*", {"data:"}, false},
+      {"*", {"blob:"}, false},
+      {"http: ftp: ws:",
+       {"* 'strict-dynamic'", "https: 'strict-dynamic'"},
+       false},
+      {"https://another.test", {"*"}, false},
+      {"*", {"* 'unsafe-eval'"}, false},
+      {"*", {"* 'unsafe-hashed-attributes'"}, false},
+      {"*", {"* 'unsafe-inline'"}, false},
+      {"'unsafe-eval'", {"* 'unsafe-eval'"}, false},
+      {"'unsafe-hashed-attributes'", {"* 'unsafe-hashed-attributes'"}, false},
+      {"'unsafe-inline'", {"* 'unsafe-inline'"}, false},
+      {"*", {"data: blob:", "data://a.com ws://b.com ftp://c.com"}, false},
+      {"* data:",
+       {"data: blob:", "blob://a.com ws://b.com ftp://c.com"},
+       false},
+  };
+
+  for (const auto& test : cases) {
+    SourceListDirective A("script-src", test.sourcesA, csp.get());
+    ContentSecurityPolicy* cspB =
+        SetUpWithOrigin("https://another.test/image.png");
+
+    HeapVector<Member<SourceListDirective>> vectorB;
+    for (const auto& sources : test.sourcesB) {
+      SourceListDirective* member =
+          new SourceListDirective("script-src", sources, cspB);
+      vectorB.append(member);
+    }
+
+    EXPECT_EQ(A.subsumes(vectorB), test.expected);
+  }
+}
+
+TEST_F(SourceListDirectiveTest, GetSources) {
+  struct TestCase {
+    const char* sources;
+    const char* expected;
+  } cases[] = {
+      {"", ""},
+      {"*", "ftp: ws: http: https:"},
+      {"* data:", "data: ftp: ws: http: https:"},
+      {"blob: *", "blob: ftp: ws: http: https:"},
+      {"* 'self'", "ftp: ws: http: https:"},
+      {"https: 'self'", "https: https://example.test"},
+      {"https://b.com/bar/", "https://b.com/bar/"},
+      {"'self' http://a.com/foo/ https://b.com/bar/",
+       "http://a.com/foo/ https://b.com/bar/ https://example.test"},
+      {"http://a.com/foo/ https://b.com/bar/ 'self'",
+       "http://a.com/foo/ https://b.com/bar/ https://example.test"},
+  };
+
+  for (const auto& test : cases) {
+    SourceListDirective list("script-src", test.sources, csp.get());
+    HeapVector<Member<CSPSource>> normalized =
+        list.getSources(csp.get()->getSelfSource());
+
+    SourceListDirective expectedList("script-src", test.expected, csp.get());
+    HeapVector<Member<CSPSource>> expected = expectedList.m_list;
+    EXPECT_EQ(normalized.size(), expected.size());
+    for (size_t i = 0; i < expected.size(); i++) {
+      Source a = {expected[i]->m_scheme,       expected[i]->m_host,
+                  expected[i]->m_port,         expected[i]->m_path,
+                  expected[i]->m_hostWildcard, expected[i]->m_portWildcard};
+      Source b = {normalized[i]->m_scheme,       normalized[i]->m_host,
+                  normalized[i]->m_port,         normalized[i]->m_path,
+                  normalized[i]->m_hostWildcard, normalized[i]->m_portWildcard};
+      EXPECT_TRUE(equalSources(a, b));
+    }
+  }
+}
+
 }  // namespace blink
