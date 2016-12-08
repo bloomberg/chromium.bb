@@ -670,6 +670,7 @@ mojom("mojo_bindings") {
   sources = [
     "conflicts/module_database_win.mojom",
     "conflicts/module_event_win.mojom",
+    "field_trial_recorder.mojom",
     "network_diagnostics.mojom",
     "resource_usage_reporter.mojom",
     "shell_handler_win.mojom",

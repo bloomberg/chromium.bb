@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/field_trial_recorder.mojom.h"
 #include "chrome/common/media/media_resource_provider.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
@@ -48,6 +49,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -293,8 +295,10 @@ void ChromeRenderThreadObserver::OnRenderProcessShutdown() {
 void ChromeRenderThreadObserver::OnFieldTrialGroupFinalized(
     const std::string& trial_name,
     const std::string& group_name) {
-  content::RenderThread::Get()->Send(
-      new ChromeViewHostMsg_FieldTrialActivated(trial_name));
+  chrome::mojom::FieldTrialRecorderPtr field_trial_recorder;
+  content::RenderThread::Get()->GetRemoteInterfaces()->GetInterface(
+      &field_trial_recorder);
+  field_trial_recorder->FieldTrialActivated(trial_name);
 }
 
 void ChromeRenderThreadObserver::OnSetIsIncognitoProcess(

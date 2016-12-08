@@ -49,6 +49,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/engagement/site_engagement_eviction_policy.h"
+#include "chrome/browser/field_trial_recorder.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/memory/chrome_memory_coordinator_delegate.h"
@@ -2937,6 +2938,9 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
       ui_task_runner);
   registry->AddInterface(
       base::Bind(&BudgetServiceImpl::Create, render_process_host->GetID()),
+      ui_task_runner);
+  registry->AddInterface(
+      base::Bind(&FieldTrialRecorder::Create),
       ui_task_runner);
   registry->AddInterface(
       base::Bind(&rappor::RapporRecorderImpl::Create,
