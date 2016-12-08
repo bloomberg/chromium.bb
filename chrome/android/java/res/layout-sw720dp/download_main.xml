@@ -13,8 +13,9 @@
         android:layout_width="256dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:orientation="vertical"
         android:background="@android:color/white"
-        android:orientation="vertical" >
+        android:clickable="true" >
 
         <include layout="@layout/download_manager_ui_space_widget" />
 
