@@ -303,16 +303,9 @@ void AppWindow::Init(const GURL& url,
 
   UpdateExtensionAppIcon();
   // Download showInShelf=true window icon.
-  if (window_icon_url_.is_valid()) {
-    image_loader_ptr_factory_.InvalidateWeakPtrs();
-    web_contents()->DownloadImage(
-        window_icon_url_,
-        true,   // is a favicon
-        0,      // no maximum size
-        false,  // normal cache policy
-        base::Bind(&AppWindow::DidDownloadFavicon,
-                   image_loader_ptr_factory_.GetWeakPtr()));
-  }
+  if (window_icon_url_.is_valid())
+    SetAppIconUrl(window_icon_url_);
+
   AppWindowRegistry::Get(browser_context_)->AddAppWindow(this);
 
   if (new_params.hidden) {
@@ -573,9 +566,13 @@ void AppWindow::SetAppIconUrl(const GURL& url) {
   image_loader_ptr_factory_.InvalidateWeakPtrs();
 
   // Reset |app_icon_image_| to abort pending image load (if any).
-  app_icon_image_.reset();
+  if (!show_in_shelf_) {
+    app_icon_image_.reset();
+    app_icon_url_ = url;
+  } else {
+    window_icon_url_ = url;
+  }
 
-  app_icon_url_ = url;
   web_contents()->DownloadImage(
       url,
       true,   // is a favicon
@@ -604,8 +601,20 @@ void AppWindow::UpdateAppIcon(const gfx::Image& image) {
             ? image
             : gfx::Image(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                   IDR_APP_DEFAULT_ICON));
-    app_icon_ = gfx::Image(gfx::ImageSkiaOperations::CreateIconWithBadge(
-        base_image.AsImageSkia(), app_icon_image_->image_skia()));
+    // Scale the icon to EXTENSION_ICON_LARGE.
+    const int large_icon_size = extension_misc::EXTENSION_ICON_LARGE;
+    if (base_image.Width() != large_icon_size ||
+        base_image.Height() != large_icon_size) {
+      gfx::ImageSkia resized_image =
+          gfx::ImageSkiaOperations::CreateResizedImage(
+              base_image.AsImageSkia(), skia::ImageOperations::RESIZE_BEST,
+              gfx::Size(large_icon_size, large_icon_size));
+      app_icon_ = gfx::Image(gfx::ImageSkiaOperations::CreateIconWithBadge(
+          resized_image, app_icon_image_->image_skia()));
+    } else {
+      app_icon_ = gfx::Image(gfx::ImageSkiaOperations::CreateIconWithBadge(
+          base_image.AsImageSkia(), app_icon_image_->image_skia()));
+    }
   } else {
     if (image.IsEmpty())
       return;
@@ -818,7 +827,9 @@ void AppWindow::DidDownloadFavicon(
 void AppWindow::OnExtensionIconImageChanged(IconImage* image) {
   DCHECK_EQ(app_icon_image_.get(), image);
 
-  UpdateAppIcon(gfx::Image(app_icon_image_->image_skia()));
+  // Update app_icon if no valid window icon url is set.
+  if (!window_icon_url_.is_valid())
+    UpdateAppIcon(gfx::Image(app_icon_image_->image_skia()));
 }
 
 void AppWindow::UpdateExtensionAppIcon() {
