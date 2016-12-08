@@ -55,6 +55,13 @@ gfx::Range GetImeListViewRange() {
   return gfx::Range(tray_item_height * min_items, tray_item_height * max_items);
 }
 
+// Returns the minimum with of IME menu.
+int GetMinimumMenuWidth() {
+  return MaterialDesignController::IsSystemTrayMenuMaterial()
+             ? kTrayMenuMinimumWidthMd
+             : kTrayMenuMinimumWidth;
+}
+
 // Shows language and input settings page.
 void ShowIMESettings() {
   WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
@@ -293,6 +300,39 @@ class ImeButtonsView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(ImeButtonsView);
 };
 
+// The list view that contains the selected IME and property items.
+class ImeMenuListView : public ImeListView {
+ public:
+  ImeMenuListView(SystemTrayItem* owner,
+                  bool show_keyboard_toggle,
+                  SingleImeBehavior single_ime_behavior)
+      : ImeListView(owner, show_keyboard_toggle, ImeListView::HIDE_SINGLE_IME) {
+  }
+
+  ~ImeMenuListView() override {}
+
+ protected:
+  void Layout() override {
+    gfx::Range height_range = GetImeListViewRange();
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      scroller()->ClipHeightTo(height_range.start(), height_range.end());
+    } else {
+      uint32_t current_height = scroll_content()->height();
+      int minimum_menu_width = GetMinimumMenuWidth();
+      if (current_height > height_range.end()) {
+        scroller()->SetFixedSize(
+            gfx::Size(minimum_menu_width, height_range.end()));
+      } else if (current_height < height_range.start()) {
+        scroller()->SetFixedSize(
+            gfx::Size(minimum_menu_width, height_range.start()));
+      }
+    }
+    ImeListView::Layout();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ImeMenuListView);
+};
+
 }  // namespace
 
 ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
@@ -324,9 +364,7 @@ ImeMenuTray::~ImeMenuTray() {
 }
 
 void ImeMenuTray::ShowImeMenuBubble() {
-  int minimum_menu_width = MaterialDesignController::IsSystemTrayMenuMaterial()
-                               ? kTrayMenuMinimumWidthMd
-                               : kTrayMenuMinimumWidth;
+  int minimum_menu_width = GetMinimumMenuWidth();
   should_block_shelf_auto_hide_ = true;
   views::TrayBubbleView::InitParams init_params(
       GetAnchorAlignment(), minimum_menu_width, minimum_menu_width);
@@ -347,22 +385,8 @@ void ImeMenuTray::ShowImeMenuBubble() {
   }
 
   // Adds IME list to the bubble.
-  ime_list_view_ = new ImeListView(nullptr, ShouldShowKeyboardToggle(),
-                                   ImeListView::SHOW_SINGLE_IME);
-
-  uint32_t current_height = ime_list_view_->scroll_content()->height();
-  const gfx::Range height_range = GetImeListViewRange();
-
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    ime_list_view_->scroller()->ClipHeightTo(height_range.start(),
-                                             height_range.end());
-  } else if (current_height > height_range.end()) {
-    ime_list_view_->scroller()->SetFixedSize(
-        gfx::Size(minimum_menu_width, height_range.end()));
-  } else if (current_height < height_range.start()) {
-    ime_list_view_->scroller()->SetFixedSize(
-        gfx::Size(minimum_menu_width, height_range.start()));
-  }
+  ime_list_view_ = new ImeMenuListView(nullptr, ShouldShowKeyboardToggle(),
+                                       ImeListView::SHOW_SINGLE_IME);
   bubble_view->AddChildView(ime_list_view_);
 
   // The bottom view that contains buttons are not supported in login/lock
