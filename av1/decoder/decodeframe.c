@@ -2268,11 +2268,9 @@ static void decode_restoration_mode(AV1_COMMON *cm,
   if (aom_rb_read_bit(rb)) {
     if (aom_rb_read_bit(rb))
       rsi->frame_restoration_type =
-          (aom_rb_read_bit(rb) ? RESTORE_WIENER : RESTORE_BILATERAL);
-    else
-      rsi->frame_restoration_type =
           (aom_rb_read_bit(rb) ? RESTORE_DOMAINTXFMRF : RESTORE_SGRPROJ);
-    // rsi->frame_restoration_type = RESTORE_SGRPROJ;
+    else
+      rsi->frame_restoration_type = RESTORE_WIENER;
   } else {
     rsi->frame_restoration_type =
         aom_rb_read_bit(rb) ? RESTORE_SWITCHABLE : RESTORE_NONE;
@@ -2314,20 +2312,6 @@ static void read_domaintxfmrf_filter(DomaintxfmrfInfo *domaintxfmrf_info,
       aom_read_literal(rb, DOMAINTXFMRF_PARAMS_BITS, ACCT_STR);
 }
 
-static void read_bilateral_filter(const AV1_COMMON *cm,
-                                  BilateralInfo *bilateral_info,
-                                  aom_reader *rb) {
-  int s;
-  for (s = 0; s < BILATERAL_SUBTILES; ++s) {
-    if (aom_read(rb, RESTORE_NONE_BILATERAL_PROB, ACCT_STR)) {
-      bilateral_info->level[s] =
-          aom_read_literal(rb, av1_bilateral_level_bits(cm), ACCT_STR);
-    } else {
-      bilateral_info->level[s] = -1;
-    }
-  }
-}
-
 static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
   int i;
   RestorationInfo *rsi = &cm->rst_info;
@@ -2337,9 +2321,6 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
     rsi->restoration_type = (RestorationType *)aom_realloc(
         rsi->restoration_type, sizeof(*rsi->restoration_type) * ntiles);
     if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
-      rsi->bilateral_info = (BilateralInfo *)aom_realloc(
-          rsi->bilateral_info, sizeof(*rsi->bilateral_info) * ntiles);
-      assert(rsi->bilateral_info != NULL);
       rsi->wiener_info = (WienerInfo *)aom_realloc(
           rsi->wiener_info, sizeof(*rsi->wiener_info) * ntiles);
       assert(rsi->wiener_info != NULL);
@@ -2356,13 +2337,6 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
         if (rsi->restoration_type[i] == RESTORE_WIENER) {
           rsi->wiener_info[i].level = 1;
           read_wiener_filter(&rsi->wiener_info[i], rb);
-        } else if (rsi->restoration_type[i] == RESTORE_BILATERAL) {
-#if BILATERAL_SUBTILES == 0
-          rsi->bilateral_info[i].level[0] =
-              aom_read_literal(rb, av1_bilateral_level_bits(cm), ACCT_STR);
-#else
-          read_bilateral_filter(cm, &rsi->bilateral_info[i], rb);
-#endif
         } else if (rsi->restoration_type[i] == RESTORE_SGRPROJ) {
           rsi->sgrproj_info[i].level = 1;
           read_sgrproj_filter(&rsi->sgrproj_info[i], rb);
@@ -2384,14 +2358,6 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
           rsi->wiener_info[i].level = 0;
           rsi->restoration_type[i] = RESTORE_NONE;
         }
-      }
-    } else if (rsi->frame_restoration_type == RESTORE_BILATERAL) {
-      rsi->bilateral_info = (BilateralInfo *)aom_realloc(
-          rsi->bilateral_info, sizeof(*rsi->bilateral_info) * ntiles);
-      assert(rsi->bilateral_info != NULL);
-      for (i = 0; i < ntiles; ++i) {
-        rsi->restoration_type[i] = RESTORE_BILATERAL;
-        read_bilateral_filter(cm, &rsi->bilateral_info[i], rb);
       }
     } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
       rsi->sgrproj_info = (SgrprojInfo *)aom_realloc(

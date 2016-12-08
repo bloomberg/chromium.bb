@@ -34,8 +34,7 @@ typedef double (*search_restore_type)(const YV12_BUFFER_CONFIG *src,
                                       int partial_frame, RestorationInfo *info,
                                       double *best_tile_cost);
 
-// const int frame_level_restore_bits[RESTORE_TYPES] = { 2, 2, 3, 3, 2 };
-const int frame_level_restore_bits[RESTORE_TYPES] = { 2, 3, 3, 3, 3, 2 };
+const int frame_level_restore_bits[RESTORE_TYPES] = { 2, 2, 3, 3, 2 };
 
 static int64_t sse_restoration_tile(const YV12_BUFFER_CONFIG *src,
                                     AV1_COMMON *const cm, int h_start,
@@ -476,7 +475,8 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                                   RestorationInfo *info,
                                   double *best_tile_cost) {
   DomaintxfmrfInfo *domaintxfmrf_info = info->domaintxfmrf_info;
-  double err, cost_norestore, cost_domaintxfmrf;
+  double cost_norestore, cost_domaintxfmrf;
+  int64_t err;
   int bits;
   MACROBLOCK *x = &cpi->td.mb;
   AV1_COMMON *const cm = &cpi->common;
@@ -559,116 +559,6 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
 
   aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
   return cost_domaintxfmrf;
-}
-
-static double search_bilateral(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
-                               int filter_level, int partial_frame,
-                               RestorationInfo *info, double *best_tile_cost) {
-  BilateralInfo *bilateral_info = info->bilateral_info;
-  AV1_COMMON *const cm = &cpi->common;
-  int i, tile_idx, subtile_idx;
-  int64_t err;
-  int bits;
-  double cost, best_cost, cost_bilateral, cost_norestore_subtile;
-  const int bilateral_level_bits = av1_bilateral_level_bits(&cpi->common);
-  const int bilateral_levels = 1 << bilateral_level_bits;
-  MACROBLOCK *x = &cpi->td.mb;
-  RestorationInfo rsi;
-  int tile_width, tile_height, nhtiles, nvtiles;
-  int h_start, h_end, v_start, v_end;
-  const int ntiles = av1_get_rest_ntiles(cm->width, cm->height, &tile_width,
-                                         &tile_height, &nhtiles, &nvtiles);
-
-  //  Make a copy of the unfiltered / processed recon buffer
-  aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_uf);
-  av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, filter_level,
-                        1, partial_frame);
-  aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_db);
-
-  rsi.frame_restoration_type = RESTORE_BILATERAL;
-  rsi.bilateral_info =
-      (BilateralInfo *)aom_malloc(sizeof(*rsi.bilateral_info) * ntiles);
-  assert(rsi.bilateral_info != NULL);
-
-  for (tile_idx = 0; tile_idx < ntiles; ++tile_idx)
-    for (subtile_idx = 0; subtile_idx < BILATERAL_SUBTILES; ++subtile_idx)
-      bilateral_info[tile_idx].level[subtile_idx] =
-          rsi.bilateral_info[tile_idx].level[subtile_idx] = -1;
-
-  // Find best filter for each tile
-  for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
-    for (subtile_idx = 0; subtile_idx < BILATERAL_SUBTILES; ++subtile_idx) {
-      av1_get_rest_tile_limits(tile_idx, subtile_idx, BILATERAL_SUBTILE_BITS,
-                               nhtiles, nvtiles, tile_width, tile_height,
-                               cm->width, cm->height, 0, 0, &h_start, &h_end,
-                               &v_start, &v_end);
-      err = sse_restoration_tile(src, cm, h_start, h_end - h_start, v_start,
-                                 v_end - v_start);
-#if BILATERAL_SUBTILES
-      // #bits when a subtile is not restored
-      bits = av1_cost_bit(RESTORE_NONE_BILATERAL_PROB, 0);
-#else
-      bits = 0;
-#endif
-      cost_norestore_subtile =
-          RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
-      best_cost = cost_norestore_subtile;
-
-      for (i = 0; i < bilateral_levels; ++i) {
-        rsi.bilateral_info[tile_idx].level[subtile_idx] = i;
-        err = try_restoration_tile(src, cpi, &rsi, partial_frame, tile_idx,
-                                   subtile_idx, BILATERAL_SUBTILE_BITS);
-        bits = bilateral_level_bits << AV1_PROB_COST_SHIFT;
-        bits += av1_cost_bit(RESTORE_NONE_BILATERAL_PROB, 1);
-        cost = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
-        if (cost < best_cost) {
-          bilateral_info[tile_idx].level[subtile_idx] = i;
-          best_cost = cost;
-        }
-        rsi.bilateral_info[tile_idx].level[subtile_idx] = -1;
-      }
-    }
-    bits = 0;
-    for (subtile_idx = 0; subtile_idx < BILATERAL_SUBTILES; ++subtile_idx) {
-      rsi.bilateral_info[tile_idx].level[subtile_idx] =
-          bilateral_info[tile_idx].level[subtile_idx];
-      if (rsi.bilateral_info[tile_idx].level[subtile_idx] >= 0)
-        bits += bilateral_level_bits << AV1_PROB_COST_SHIFT;
-#if BILATERAL_SUBTILES
-      bits +=
-          av1_cost_bit(RESTORE_NONE_BILATERAL_PROB,
-                       rsi.bilateral_info[tile_idx].level[subtile_idx] >= 0);
-#endif
-    }
-    err = try_restoration_tile(src, cpi, &rsi, partial_frame, tile_idx, 0, 0);
-    best_tile_cost[tile_idx] = RDCOST_DBL(
-        x->rdmult, x->rddiv,
-        (bits + cpi->switchable_restore_cost[RESTORE_BILATERAL]) >> 4, err);
-  }
-  // Find cost for combined configuration
-  bits = frame_level_restore_bits[rsi.frame_restoration_type]
-         << AV1_PROB_COST_SHIFT;
-  for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
-    for (subtile_idx = 0; subtile_idx < BILATERAL_SUBTILES; ++subtile_idx) {
-      rsi.bilateral_info[tile_idx].level[subtile_idx] =
-          bilateral_info[tile_idx].level[subtile_idx];
-      if (rsi.bilateral_info[tile_idx].level[subtile_idx] >= 0) {
-        bits += bilateral_level_bits << AV1_PROB_COST_SHIFT;
-      }
-#if BILATERAL_SUBTILES
-      bits +=
-          av1_cost_bit(RESTORE_NONE_BILATERAL_PROB,
-                       rsi.bilateral_info[tile_idx].level[subtile_idx] >= 0);
-#endif
-    }
-  }
-  err = try_restoration_frame(src, cpi, &rsi, partial_frame);
-  cost_bilateral = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
-
-  aom_free(rsi.bilateral_info);
-
-  aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
-  return cost_bilateral;
 }
 
 static double find_average(uint8_t *src, int h_start, int h_end, int v_start,
@@ -1173,8 +1063,7 @@ static double search_switchable_restoration(
 void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                                  LPF_PICK_METHOD method) {
   static search_restore_type search_restore_fun[RESTORE_SWITCHABLE_TYPES] = {
-    search_norestore, search_sgrproj,      search_bilateral,
-    search_wiener,    search_domaintxfmrf,
+    search_norestore, search_wiener, search_sgrproj, search_domaintxfmrf,
   };
   AV1_COMMON *const cm = &cpi->common;
   struct loopfilter *const lf = &cm->lf;
@@ -1188,10 +1077,6 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   cm->rst_info.restoration_type = (RestorationType *)aom_realloc(
       cm->rst_info.restoration_type,
       sizeof(*cm->rst_info.restoration_type) * ntiles);
-  cm->rst_info.bilateral_info = (BilateralInfo *)aom_realloc(
-      cm->rst_info.bilateral_info,
-      sizeof(*cm->rst_info.bilateral_info) * ntiles);
-  assert(cm->rst_info.bilateral_info != NULL);
   cm->rst_info.wiener_info = (WienerInfo *)aom_realloc(
       cm->rst_info.wiener_info, sizeof(*cm->rst_info.wiener_info) * ntiles);
   assert(cm->rst_info.wiener_info != NULL);
@@ -1264,10 +1149,10 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   }
   cm->rst_info.frame_restoration_type = best_restore;
   /*
-  printf("Frame %d/%d frame_restore_type %d : %f %f %f %f %f %f\n",
+  printf("Frame %d/%d frame_restore_type %d : %f %f %f %f %f\n",
          cm->current_video_frame, cm->show_frame,
          cm->rst_info.frame_restoration_type, cost_restore[0], cost_restore[1],
-         cost_restore[2], cost_restore[3], cost_restore[4], cost_restore[5]);
+         cost_restore[2], cost_restore[3], cost_restore[4]);
          */
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; r++) aom_free(tile_cost[r]);
 }

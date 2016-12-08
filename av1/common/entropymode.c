@@ -1204,20 +1204,13 @@ static const aom_prob default_tx_size_prob[MAX_TX_DEPTH][TX_SIZE_CONTEXTS]
 #if CONFIG_LOOP_RESTORATION
 const aom_tree_index av1_switchable_restore_tree[TREE_SIZE(
     RESTORE_SWITCHABLE_TYPES)] = {
-  // -RESTORE_NONE, 2, -RESTORE_SGRPROJ, 4, -RESTORE_BILATERAL, -RESTORE_WIENER,
-  -RESTORE_NONE,
-  2,
-  4,
-  6,
-  -RESTORE_SGRPROJ,
-  -RESTORE_DOMAINTXFMRF,
-  -RESTORE_BILATERAL,
-  -RESTORE_WIENER,
+  -RESTORE_NONE, 2, -RESTORE_WIENER, 4, -RESTORE_SGRPROJ, -RESTORE_DOMAINTXFMRF,
 };
 
-static const aom_prob default_switchable_restore_prob[RESTORE_SWITCHABLE_TYPES -
-                                                      1] = { 32, 128, 128,
-                                                             128 };
+static const aom_prob
+    default_switchable_restore_prob[RESTORE_SWITCHABLE_TYPES - 1] = {
+      32, 128, 128,
+    };
 #endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_PALETTE
@@ -2113,14 +2106,6 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
 
   // To force update of the sharpness
   lf->last_sharpness_level = -1;
-#if CONFIG_LOOP_RESTORATION
-  if (cm->rst_info.bilateral_info) {
-    int s;
-    for (i = 0; i < cm->rst_internal.ntiles; ++i)
-      for (s = 0; s < BILATERAL_SUBTILES; ++s)
-        cm->rst_info.bilateral_info[i].level[s] = -1;
-  }
-#endif  // CONFIG_LOOP_RESTORATION
 
   av1_default_coef_probs(cm);
   init_mode_probs(cm->fc);

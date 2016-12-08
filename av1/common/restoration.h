@@ -60,14 +60,6 @@ extern "C" {
 
 #define SGRPROJ_BITS (SGRPROJ_PRJ_BITS * 2 + SGRPROJ_PARAMS_BITS)
 
-#define BILATERAL_LEVEL_BITS_KF 4
-#define BILATERAL_LEVELS_KF (1 << BILATERAL_LEVEL_BITS_KF)
-#define BILATERAL_LEVEL_BITS 3
-#define BILATERAL_LEVELS (1 << BILATERAL_LEVEL_BITS)
-
-#define BILATERAL_SUBTILE_BITS 1
-#define BILATERAL_SUBTILES (1 << (2 * BILATERAL_SUBTILE_BITS))
-
 #define RESTORATION_HALFWIN 3
 #define RESTORATION_HALFWIN1 (RESTORATION_HALFWIN + 1)
 #define RESTORATION_WIN (2 * RESTORATION_HALFWIN + 1)
@@ -93,8 +85,6 @@ extern "C" {
   (WIENER_FILT_TAP1_MINV - 1 + (1 << WIENER_FILT_TAP1_BITS))
 #define WIENER_FILT_TAP2_MAXV \
   (WIENER_FILT_TAP2_MINV - 1 + (1 << WIENER_FILT_TAP2_BITS))
-
-typedef struct { int level[BILATERAL_SUBTILES]; } BilateralInfo;
 
 typedef struct {
   int level;
@@ -122,8 +112,6 @@ typedef struct {
 typedef struct {
   RestorationType frame_restoration_type;
   RestorationType *restoration_type;
-  // Bilateral filter
-  BilateralInfo *bilateral_info;
   // Wiener filter
   WienerInfo *wiener_info;
   // Selfguided proj filter
@@ -210,7 +198,6 @@ void av1_domaintxfmrf_restoration_highbd(uint16_t *dgd, int width, int height,
                                          int stride, int param, int bit_depth);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 void decode_xq(int *xqd, int *xq);
-int av1_bilateral_level_bits(const struct AV1Common *const cm);
 void av1_loop_restoration_init(RestorationInternal *rst, RestorationInfo *rsi,
                                int kf, int width, int height);
 void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
