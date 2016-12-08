@@ -10,42 +10,10 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/media/cma/base/decoder_config_logging.h"
 
 namespace chromecast {
 namespace media {
-
-namespace {
-
-std::ostream& operator<<(std::ostream& stream, AudioCodec codec) {
-  switch (codec) {
-    case kAudioCodecUnknown:
-      return stream << "unknown codec";
-    case kCodecAAC:
-      return stream << "AAC";
-    case kCodecMP3:
-      return stream << "MP3";
-    case kCodecPCM:
-      return stream << "PCM";
-    case kCodecPCM_S16BE:
-      return stream << "PCM_S16BE";
-    case kCodecVorbis:
-      return stream << "Vorbis";
-    case kCodecOpus:
-      return stream << "Opus";
-    case kCodecEAC3:
-      return stream << "EAC3";
-    case kCodecAC3:
-      return stream << "AC3";
-    case kCodecDTS:
-      return stream << "DTS";
-    case kCodecFLAC:
-      return stream << "FLAC";
-  }
-  NOTREACHED();
-  return stream << "UNKNOWN";
-}
-
-}  // namespace
 
 AudioDecoderSoftwareWrapper::AudioDecoderSoftwareWrapper(
     MediaPipelineBackend::AudioDecoder* backend_decoder)
