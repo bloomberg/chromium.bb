@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.physicalweb;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -240,22 +242,24 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         PhysicalWebUma.onUrlSelected(this);
-        PwsResult minPwsResult = mAdapter.getItem(position);
-        String groupId = minPwsResult.groupId;
+        UrlInfo nearestUrlInfo = null;
+        PwsResult nearestPwsResult = mAdapter.getItem(position);
+        String groupId = nearestPwsResult.groupId;
 
         // Make sure the PwsResult corresponds to the closest UrlDevice in the group.
         double minDistance = Double.MAX_VALUE;
         for (PwsResult pwsResult : mPwsResults) {
             if (pwsResult.groupId.equals(groupId)) {
-                double distance = UrlManager.getInstance()
-                        .getUrlInfoByUrl(pwsResult.requestUrl).getDistance();
+                UrlInfo urlInfo = UrlManager.getInstance().getUrlInfoByUrl(pwsResult.requestUrl);
+                double distance = urlInfo.getDistance();
                 if (distance < minDistance) {
                     minDistance = distance;
-                    minPwsResult = pwsResult;
+                    nearestPwsResult = pwsResult;
+                    nearestUrlInfo = urlInfo;
                 }
             }
         }
-        Intent intent = createNavigateToUrlIntent(minPwsResult);
+        Intent intent = createNavigateToUrlIntent(nearestPwsResult, nearestUrlInfo);
         mContext.startActivity(intent);
     }
 
@@ -385,16 +389,28 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
                 .apply();
     }
 
-    private static Intent createNavigateToUrlIntent(PwsResult pwsResult) {
+    private static Intent createNavigateToUrlIntent(PwsResult pwsResult, UrlInfo urlInfo) {
         String url = pwsResult.siteUrl;
         if (url == null) {
             url = pwsResult.requestUrl;
         }
 
-        return new Intent(Intent.ACTION_VIEW)
+        Intent intent = new Intent(Intent.ACTION_VIEW)
                 .addCategory(Intent.CATEGORY_BROWSABLE)
                 .setData(Uri.parse(url))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (urlInfo != null && urlInfo.getDeviceAddress() != null) {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter != null) {
+                try {
+                    intent.putExtra(BluetoothDevice.EXTRA_DEVICE,
+                            bluetoothAdapter.getRemoteDevice(urlInfo.getDeviceAddress()));
+                } catch (IllegalArgumentException e) {
+                    Log.e(TAG, "Invalid device address: " + urlInfo.getDeviceAddress(), e);
+                }
+            }
+        }
+        return intent;
     }
 
     @VisibleForTesting
