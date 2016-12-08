@@ -22,18 +22,19 @@ Are you a Google employee? See
 
 ### Visual Studio
 
-As of March 11, 2016 Chromium requires Visual Studio 2015 to build.
+As of December 8, 2016 Chromium requires Visual Studio 2015, with the 14393
+Windows SDK to build.
 
 Install Visual Studio 2015 Update 3 or later - Community Edition
 should work if its license is appropriate for you. Use the Custom Install option
 and select:
 
 - Visual C++, which will select three sub-categories including MFC
-- Universal Windows Apps Development Tools > Tools
-- Universal Windows Apps Development Tools > Windows 10 SDK (10.0.10586)
+- Universal Windows Apps Development Tools > Tools (1.4.1) and Windows 10 SDK
+  (10.0.14393)
 
-You must have the 10586 SDK installed or else you will hit compile errors such
-as redefined macros.
+You must have the 14393 SDK installed or else you will hit compile errors such
+as undefined or redefined macros.
 
 Install the Windows SDK 10, and choose Debugging Tools For Windows when you
 install this in order to get windbg.
