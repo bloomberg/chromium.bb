@@ -321,7 +321,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   // is no significant advantage in testing all unsafe permissions individually.
   {
     base::ListValue* const permissions = new base::ListValue();
-    permissions->AppendString("audioCapture");
+    permissions->AppendString("experimental");
     base::DictionaryValue values;
     values.Set(extensions::manifest_keys::kPermissions, permissions);
 
@@ -340,7 +340,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   // be installed.
   {
     base::ListValue* const permissions = new base::ListValue();
-    permissions->AppendString("audioCapture");
+    permissions->AppendString("experimental");
     base::DictionaryValue values;
     values.Set(extensions::manifest_keys::kOptionalPermissions, permissions);
 

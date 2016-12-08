@@ -409,9 +409,9 @@ const char* const kSafePermissionStrings[] = {
     // Risk of listening attack.
     // "audio",
 
-    // Need to surface notification to the user. Check what existing UI we have
-    // and whether that's sufficient for PS.
-    // "audioCapture",
+    // User is prompted (allow/deny) when an extension requests audioCapture.
+    // The request is done via the getUserMedia API.
+    "audioCapture",
 
     // Just resource management, probably doesn't even apply to Chrome OS.
     "background",
@@ -651,9 +651,9 @@ const char* const kSafePermissionStrings[] = {
     // Belongs to the USB API.
     "usbDevices",
 
-    // Need to surface notification to the user. Check what existing UI we have
-    // and whether that's sufficient for PS.
-    // "videoCapture",
+    // User is prompted (allow/deny) when an extension requests videoCapture.
+    // The request is done via the getUserMedia API.
+    "videoCapture",
 
     // Admin controls network config anyways.
     "vpnProvider",
