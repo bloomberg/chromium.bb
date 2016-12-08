@@ -164,7 +164,6 @@ if (window.testRunner) {
     }
 
     function scheduleNextRun(scheduler, runner) {
-        PerfTestRunner.gc();
         scheduler(function () {
             try {
                 if (currentTest.setup)
@@ -248,6 +247,9 @@ if (window.testRunner) {
     PerfTestRunner.measureFrameTime = function (test) {
         PerfTestRunner.unit = "ms";
         PerfTestRunner.bufferedLog = true;
+        // Force gc before starting the test to avoid the measured time from
+        // being affected by gc performance. See crbug.com/667811#c16.
+        PerfTestRunner.gc();
         start(test, requestAnimationFrame, measureFrameTimeOnce);
     }
 
@@ -278,6 +280,9 @@ if (window.testRunner) {
     }
 
     function measureTimeOnce() {
+        // Force gc before measuring time to avoid interference between tests.
+        PerfTestRunner.gc();
+
         var start = PerfTestRunner.now();
         var returnValue = currentTest.run();
         var end = PerfTestRunner.now();
@@ -312,6 +317,9 @@ if (window.testRunner) {
     }
 
     function callRunAndMeasureTime(callsPerIteration) {
+        // Force gc before measuring time to avoid interference between tests.
+        PerfTestRunner.gc();
+
         var startTime = PerfTestRunner.now();
         for (var i = 0; i < callsPerIteration; i++)
             currentTest.run();
