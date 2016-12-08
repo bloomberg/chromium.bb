@@ -266,6 +266,15 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(
   if (m_context->is3d()) {
     updateExternallyAllocatedMemory();
   }
+
+  LayoutObject* layoutObject = this->layoutObject();
+  if (layoutObject && m_context->is2d() &&
+      !m_context->creationAttributes().alpha()) {
+    // In the alpha false case, canvas is initially opaque even though there is
+    // no ImageBuffer, so we need to trigger an invalidation.
+    didDraw(FloatRect(0, 0, size().width(), size().height()));
+  }
+
   setNeedsCompositingUpdate();
 
   return m_context.get();
@@ -342,7 +351,7 @@ void HTMLCanvasElement::didFinalizeFrame() {
   if (RuntimeEnabledFeatures::
           enableCanvas2dDynamicRenderingModeSwitchingEnabled() &&
       !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled()) {
-    if (m_context->is2d() && buffer() && buffer()->isAccelerated() &&
+    if (m_context->is2d() && hasImageBuffer() && buffer()->isAccelerated() &&
         m_numFramesSinceLastRenderingModeSwitch >=
             ExpensiveCanvasHeuristicParameters::MinFramesBeforeSwitch &&
         !m_pendingRenderingModeSwitch) {
@@ -387,10 +396,10 @@ void HTMLCanvasElement::doDeferredPaintInvalidation() {
   if (!m_context->is2d()) {
     didFinalizeFrame();
   } else {
-    DCHECK(hasImageBuffer());
     FloatRect srcRect(0, 0, size().width(), size().height());
     m_dirtyRect.intersect(srcRect);
     LayoutBox* lb = layoutBox();
+    FloatRect invalidationRect;
     if (lb) {
       FloatRect mappedDirtyRect =
           mapRect(m_dirtyRect, srcRect, FloatRect(lb->contentBoxRect()));
@@ -399,9 +408,14 @@ void HTMLCanvasElement::doDeferredPaintInvalidation() {
         // to the content box, as opposed to the layout box.
         mappedDirtyRect.move(-lb->contentBoxOffset());
       }
-      m_imageBuffer->finalizeFrame(mappedDirtyRect);
+      invalidationRect = mappedDirtyRect;
     } else {
-      m_imageBuffer->finalizeFrame(m_dirtyRect);
+      invalidationRect = m_dirtyRect;
+    }
+    if (hasImageBuffer()) {
+      m_imageBuffer->finalizeFrame(invalidationRect);
+    } else {
+      didFinalizeFrame();
     }
   }
   DCHECK(m_dirtyRect.isEmpty());
