@@ -167,7 +167,7 @@ PanelMenu.prototype = {
       if (delta >= 0)
         this.activeIndex_ = 0;
       else
-        this.activeIndex_ = this.menus_.length - 1;
+        this.activeIndex_ = this.items_.length - 1;
     }
 
     this.items_[this.activeIndex_].element.focus();
