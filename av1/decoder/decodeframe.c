@@ -4518,7 +4518,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     av1_loop_restoration_init(&cm->rst_internal, &cm->rst_info,
                               cm->frame_type == KEY_FRAME, cm->width,
                               cm->height);
-    av1_loop_restoration_rows(new_fb, cm, 0, cm->mi_rows, 0);
+    av1_loop_restoration_rows(new_fb, cm, 0, cm->mi_rows, 0, NULL);
   }
 #endif  // CONFIG_LOOP_RESTORATION
 

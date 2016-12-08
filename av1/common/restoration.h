@@ -192,19 +192,22 @@ extern const sgr_params_type sgr_params[SGRPROJ_PARAMS];
 void av1_selfguided_restoration(int64_t *dgd, int width, int height, int stride,
                                 int bit_depth, int r, int eps, void *tmpbuf);
 void av1_domaintxfmrf_restoration(uint8_t *dgd, int width, int height,
-                                  int stride, int param);
+                                  int stride, int param, uint8_t *dst,
+                                  int dst_stride);
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_domaintxfmrf_restoration_highbd(uint16_t *dgd, int width, int height,
-                                         int stride, int param, int bit_depth);
+                                         int stride, int param, int bit_depth,
+                                         uint16_t *dst, int dst_stride);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 void decode_xq(int *xqd, int *xq);
 void av1_loop_restoration_init(RestorationInternal *rst, RestorationInfo *rsi,
                                int kf, int width, int height);
 void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                                 RestorationInfo *rsi, int y_only,
-                                int partial_frame);
+                                int partial_frame, YV12_BUFFER_CONFIG *dst);
 void av1_loop_restoration_rows(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
-                               int start_mi_row, int end_mi_row, int y_only);
+                               int start_mi_row, int end_mi_row, int y_only,
+                               YV12_BUFFER_CONFIG *dst);
 void av1_loop_restoration_precal();
 #ifdef __cplusplus
 }  // extern "C"

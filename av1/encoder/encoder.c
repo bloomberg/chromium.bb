@@ -3432,7 +3432,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     av1_loop_restoration_init(&cm->rst_internal, &cm->rst_info,
                               cm->frame_type == KEY_FRAME, cm->width,
                               cm->height);
-    av1_loop_restoration_rows(cm->frame_to_show, cm, 0, cm->mi_rows, 0);
+    av1_loop_restoration_rows(cm->frame_to_show, cm, 0, cm->mi_rows, 0, NULL);
   }
 #endif  // CONFIG_LOOP_RESTORATION
 
