@@ -973,7 +973,7 @@ drm_fb_ref(struct drm_fb *fb)
 
 static struct drm_fb *
 drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
-		   uint32_t format, enum drm_fb_type type)
+		   bool is_opaque, enum drm_fb_type type)
 {
 	struct drm_fb *fb = gbm_bo_get_user_data(bo);
 	uint32_t handles[4] = { 0 }, pitches[4] = { 0 }, offsets[4] = { 0 };
@@ -983,8 +983,6 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 		assert(fb->type == type);
 		return drm_fb_ref(fb);
 	}
-
-	assert(format != 0);
 
 	fb = zalloc(sizeof *fb);
 	if (fb == NULL)
@@ -998,15 +996,20 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 	fb->height = gbm_bo_get_height(bo);
 	fb->stride = gbm_bo_get_stride(bo);
 	fb->handle = gbm_bo_get_handle(bo).u32;
-	fb->format = pixel_format_get_info(format);
+	fb->format = pixel_format_get_info(gbm_bo_get_format(bo));
 	fb->size = fb->stride * fb->height;
 	fb->fd = backend->drm.fd;
 
 	if (!fb->format) {
 		weston_log("couldn't look up format 0x%lx\n",
-			   (unsigned long) format);
+			   (unsigned long) gbm_bo_get_format(bo));
 		goto err_free;
 	}
+
+	/* We can scanout an ARGB buffer if the surface's opaque region covers
+	 * the whole output, but we have to use XRGB as the KMS format code. */
+	if (is_opaque)
+		fb->format = pixel_format_get_opaque_substitute(fb->format);
 
 	if (backend->min_width > fb->width ||
 	    fb->width > backend->max_width ||
@@ -1538,34 +1541,23 @@ drm_view_transform_supported(struct weston_view *ev)
 		(ev->transform.matrix.type < WESTON_MATRIX_TRANSFORM_ROTATE);
 }
 
-static uint32_t
-drm_output_check_scanout_format(struct drm_output *output,
-				struct weston_surface *es, struct gbm_bo *bo)
+static bool
+drm_view_is_opaque(struct weston_view *ev)
 {
-	uint32_t format;
 	pixman_region32_t r;
+	bool ret = false;
 
-	format = gbm_bo_get_format(bo);
+	pixman_region32_init_rect(&r, 0, 0,
+				  ev->surface->width,
+				  ev->surface->height);
+	pixman_region32_subtract(&r, &r, &ev->surface->opaque);
 
-	if (format == GBM_FORMAT_ARGB8888) {
-		/* We can scanout an ARGB buffer if the surface's
-		 * opaque region covers the whole output, but we have
-		 * to use XRGB as the KMS format code. */
-		pixman_region32_init_rect(&r, 0, 0,
-					  output->base.width,
-					  output->base.height);
-		pixman_region32_subtract(&r, &r, &es->opaque);
+	if (!pixman_region32_not_empty(&r))
+		ret = true;
 
-		if (!pixman_region32_not_empty(&r))
-			format = GBM_FORMAT_XRGB8888;
+	pixman_region32_fini(&r);
 
-		pixman_region32_fini(&r);
-	}
-
-	if (output->gbm_format == format)
-		return format;
-
-	return 0;
+	return ret;
 }
 
 static struct weston_plane *
@@ -1579,7 +1571,6 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct gbm_bo *bo;
-	uint32_t format;
 
 	/* Don't import buffers which span multiple outputs. */
 	if (ev->output_mask != (1u << output->base.id))
@@ -1632,17 +1623,19 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	if (!bo)
 		return NULL;
 
-	format = drm_output_check_scanout_format(output, ev->surface, bo);
-	if (format == 0) {
+	state->fb = drm_fb_get_from_bo(bo, b, drm_view_is_opaque(ev),
+				       BUFFER_CLIENT);
+	if (!state->fb) {
 		drm_plane_state_put_back(state);
 		gbm_bo_destroy(bo);
 		return NULL;
 	}
 
-	state->fb = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
-	if (!state->fb) {
+	/* Can't change formats with just a pageflip */
+	if (state->fb->format->format != output->gbm_format) {
+		/* No need to destroy the GBM BO here, as it's now owned
+		 * by the FB. */
 		drm_plane_state_put_back(state);
-		gbm_bo_destroy(bo);
 		return NULL;
 	}
 
@@ -1680,7 +1673,8 @@ drm_output_render_gl(struct drm_output_state *state, pixman_region32_t *damage)
 		return NULL;
 	}
 
-	ret = drm_fb_get_from_bo(bo, b, output->gbm_format, BUFFER_GBM_SURFACE);
+	/* The renderer always produces an opaque image. */
+	ret = drm_fb_get_from_bo(bo, b, true, BUFFER_GBM_SURFACE);
 	if (!ret) {
 		weston_log("failed to get drm_fb for bo\n");
 		gbm_surface_release_buffer(output->gbm_surface, bo);
@@ -2653,35 +2647,6 @@ atomic_flip_handler(int fd, unsigned int frame, unsigned int sec,
 }
 #endif
 
-static uint32_t
-drm_output_check_plane_format(struct drm_plane *p,
-			       struct weston_view *ev, struct gbm_bo *bo)
-{
-	uint32_t i, format;
-
-	format = gbm_bo_get_format(bo);
-
-	if (format == GBM_FORMAT_ARGB8888) {
-		pixman_region32_t r;
-
-		pixman_region32_init_rect(&r, 0, 0,
-					  ev->surface->width,
-					  ev->surface->height);
-		pixman_region32_subtract(&r, &r, &ev->surface->opaque);
-
-		if (!pixman_region32_not_empty(&r))
-			format = GBM_FORMAT_XRGB8888;
-
-		pixman_region32_fini(&r);
-	}
-
-	for (i = 0; i < p->count_formats; i++)
-		if (p->formats[i] == format)
-			return format;
-
-	return 0;
-}
-
 static struct weston_plane *
 drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 				struct weston_view *ev)
@@ -2694,11 +2659,11 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	struct drm_plane *p;
 	struct drm_plane_state *state = NULL;
 	struct linux_dmabuf_buffer *dmabuf;
-	struct gbm_bo *bo;
+	struct gbm_bo *bo = NULL;
 	pixman_region32_t dest_rect, src_rect;
 	pixman_box32_t *box, tbox;
-	uint32_t format;
 	wl_fixed_t sx1, sy1, sx2, sy2;
+	unsigned int i;
 
 	if (b->sprites_are_broken)
 		return NULL;
@@ -2776,7 +2741,7 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 		if (dmabuf->attributes.n_planes != 1 ||
                     dmabuf->attributes.offset[0] != 0 ||
 		    dmabuf->attributes.flags)
-			return NULL;
+			goto err;
 
 		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_FD, &gbm_dmabuf,
 				   GBM_BO_USE_SCANOUT);
@@ -2790,12 +2755,17 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	if (!bo)
 		goto err;
 
-	format = drm_output_check_plane_format(p, ev, bo);
-	if (format == 0)
-		goto err;
-
-	state->fb = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
+	state->fb = drm_fb_get_from_bo(bo, b, drm_view_is_opaque(ev),
+				       BUFFER_CLIENT);
 	if (!state->fb)
+		goto err;
+	bo = NULL;
+
+	/* Check whether the format is supported */
+	for (i = 0; i < p->count_formats; i++)
+		if (p->formats[i] == state->fb->format->format)
+			break;
+	if (i == p->count_formats)
 		goto err;
 
 	drm_fb_set_buffer(state->fb, ev->surface->buffer_ref.buffer);
@@ -2870,9 +2840,11 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	return &p->base;
 
 err:
-	drm_plane_state_put_back(state);
+	/* Destroy the BO as we've allocated it, but it won't yet
+	 * be deallocated by the state. */
 	if (bo)
 		gbm_bo_destroy(bo);
+	drm_plane_state_put_back(state);
 	return NULL;
 }
 
@@ -4062,8 +4034,7 @@ drm_output_init_cursor_egl(struct drm_output *output, struct drm_backend *b)
 			goto err;
 
 		output->gbm_cursor_fb[i] =
-			drm_fb_get_from_bo(bo, b, GBM_FORMAT_ARGB8888,
-					   BUFFER_CURSOR);
+			drm_fb_get_from_bo(bo, b, false, BUFFER_CURSOR);
 		if (!output->gbm_cursor_fb[i]) {
 			gbm_bo_destroy(bo);
 			goto err;
