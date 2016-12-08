@@ -31,14 +31,21 @@ const char kRegressionTestDataPathPrefix[] = "internal/";
 struct RegressionTestData {
   RegressionTestData(const char* filename,
                      PipelineStatus init_status,
-                     PipelineStatus end_status)
+                     PipelineStatus end_status,
+                     base::TimeDelta seek_time)
       : filename(std::string(kRegressionTestDataPathPrefix) + filename),
         init_status(init_status),
-        end_status(end_status) {}
+        end_status(end_status),
+        seek_time(seek_time) {}
 
   std::string filename;
   PipelineStatus init_status;
   PipelineStatus end_status;
+
+  // |seek_time| is the time to seek to at the end of the test if the pipeline
+  // successfully reaches that point in the test. If kNoTimestamp, the actual
+  // seek time will be GetStartTime().
+  base::TimeDelta seek_time;
 };
 
 // Used for tests which just need to run without crashing or tooling errors, but
@@ -61,10 +68,13 @@ class FlakyFFmpegRegressionTest
       public PipelineIntegrationTestBase {
 };
 
+#define FFMPEG_TEST_CASE_SEEKING(name, fn, init_status, end_status, seek_time) \
+  INSTANTIATE_TEST_CASE_P(name, FFmpegRegressionTest,                          \
+                          testing::Values(RegressionTestData(                  \
+                              fn, init_status, end_status, seek_time)));
+
 #define FFMPEG_TEST_CASE(name, fn, init_status, end_status) \
-  INSTANTIATE_TEST_CASE_P(                                  \
-      name, FFmpegRegressionTest,                           \
-      testing::Values(RegressionTestData(fn, init_status, end_status)));
+  FFMPEG_TEST_CASE_SEEKING(name, fn, init_status, end_status, kNoTimestamp)
 
 #define FLAKY_FFMPEG_TEST_CASE(name, fn) \
     INSTANTIATE_TEST_CASE_P(FLAKY_##name, FlakyFFmpegRegressionTest, \
@@ -171,6 +181,16 @@ FFMPEG_TEST_CASE(Cr665305,
                  "crbug665305.flac",
                  PIPELINE_OK,
                  PIPELINE_ERROR_DECODE);
+FFMPEG_TEST_CASE_SEEKING(Cr666770,
+                         "security/666770.mp4",
+                         PIPELINE_OK,
+                         PIPELINE_OK,
+                         base::TimeDelta::FromSecondsD(0.0843));
+FFMPEG_TEST_CASE(Cr666874,
+                 "security/666874.mp3",
+                 DEMUXER_ERROR_COULD_NOT_OPEN,
+                 DEMUXER_ERROR_COULD_NOT_OPEN);
+FFMPEG_TEST_CASE(Cr667063, "security/667063.mp4", PIPELINE_OK, PIPELINE_OK);
 
 // General MP4 test cases.
 FFMPEG_TEST_CASE(MP4_0,
@@ -346,6 +366,10 @@ FLAKY_FFMPEG_TEST_CASE(MP4_4, "security/clockh264aac_301350139.mp4");
 FLAKY_FFMPEG_TEST_CASE(MP4_12, "security/assert1.mov");
 FLAKY_FFMPEG_TEST_CASE(WEBM_3, "security/out.webm.139771.2965");
 
+// Init status flakes between PIPELINE_OK and PIPELINE_ERROR_DECODE, and gives
+// PIPELINE_ERROR_DECODE later if initialization was PIPELINE_OK.
+FLAKY_FFMPEG_TEST_CASE(Cr666794, "security/666794.webm");
+
 // Not really flaky, but can't pass the seek test.
 FLAKY_FFMPEG_TEST_CASE(MP4_10, "security/null1.m4a");
 FLAKY_FFMPEG_TEST_CASE(Cr112670, "security/112670.mp4");
@@ -362,7 +386,8 @@ TEST_P(FFmpegRegressionTest, BasicPlayback) {
       ASSERT_TRUE(ended_);
 
       // Tack a seek on the end to catch any seeking issues.
-      Seek(GetStartTime());
+      Seek(GetParam().seek_time == kNoTimestamp ? GetStartTime()
+                                                : GetParam().seek_time);
     }
   } else {
     // Don't bother checking the exact status as we only care that the
