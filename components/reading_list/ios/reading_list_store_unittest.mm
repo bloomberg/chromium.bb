@@ -255,13 +255,13 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneMerge) {
 TEST_F(ReadingListStoreTest, ApplySyncChangesOneIgnored) {
   // Read entry but with unread URL as it must update the other one.
   ReadingListEntry old_entry(GURL("http://unread.example.com/"),
-                             "unread title");
+                             "old unread title");
   old_entry.SetRead(true);
 
   base::test::ios::SpinRunLoopWithMinDelay(
       base::TimeDelta::FromMilliseconds(10));
   syncer::EntityDataMap remote_input;
-  model_->AddEntry(GURL("http://unread.example.com/"), "unread title");
+  model_->AddEntry(GURL("http://unread.example.com/"), "new unread title");
   AssertCounts(0, 0, 0, 0, 0);
 
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
@@ -275,8 +275,8 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneIgnored) {
       "http://unread.example.com/", data.PassToPtr()));
   syncer::SyncError error = reading_list_store_->ApplySyncChanges(
       reading_list_store_->CreateMetadataChangeList(), add_changes);
-  AssertCounts(1, 0, 0, 0, 0);
-  EXPECT_EQ(sync_merged_.size(), 0u);
+  AssertCounts(1, 0, 0, 0, 1);
+  EXPECT_EQ(sync_merged_.size(), 1u);
 }
 
 TEST_F(ReadingListStoreTest, ApplySyncChangesOneRemove) {
@@ -288,4 +288,75 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneRemove) {
   AssertCounts(0, 0, 0, 1, 0);
   EXPECT_EQ(sync_removed_.size(), 1u);
   EXPECT_EQ(sync_removed_.count("http://read.example.com/"), 1u);
+}
+
+TEST_F(ReadingListStoreTest, CompareEntriesForSync) {
+  sync_pb::ReadingListSpecifics entryA;
+  sync_pb::ReadingListSpecifics entryB;
+  entryA.set_url("http://foo.bar");
+  entryB.set_url("http://foo.bar");
+  entryA.set_title("Foo Bar");
+  entryB.set_title("Foo Bar");
+  entryA.set_status(sync_pb::ReadingListSpecifics::UNREAD);
+  entryB.set_status(sync_pb::ReadingListSpecifics::UNREAD);
+  entryA.set_creation_time_us(10);
+  entryB.set_creation_time_us(10);
+  entryA.set_update_time_us(100);
+  entryB.set_update_time_us(100);
+  // Equal entries can be submitted.
+  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
+  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+
+  // Try to update each field.
+
+  // You cannot change the URL of an entry.
+  entryA.set_url("http://foo.foo");
+  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
+  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  entryA.set_url("http://foo.bar");
+
+  // You can set a title to a title later in alphabetical order.
+  entryA.set_title("");
+  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
+  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  entryA.set_title("Foo Aar");
+  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
+  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  entryA.set_title("Foo Ba");
+  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
+  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  entryA.set_title("Foo Bar");
+
+  entryA.set_creation_time_us(9);
+  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
+  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  entryA.set_creation_time_us(10);
+
+  entryA.set_update_time_us(99);
+  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
+  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  sync_pb::ReadingListSpecifics::ReadingListEntryStatus status_oder[3] = {
+      sync_pb::ReadingListSpecifics::UNSEEN,
+      sync_pb::ReadingListSpecifics::UNREAD,
+      sync_pb::ReadingListSpecifics::READ};
+  for (int index_a = 0; index_a < 3; index_a++) {
+    entryA.set_status(status_oder[index_a]);
+    for (int index_b = 0; index_b < 3; index_b++) {
+      entryB.set_status(status_oder[index_b]);
+      EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
+      EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+    }
+  }
+  entryA.set_update_time_us(100);
+  for (int index_a = 0; index_a < 3; index_a++) {
+    entryA.set_status(status_oder[index_a]);
+    entryB.set_status(status_oder[index_a]);
+    EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
+    EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+    for (int index_b = index_a + 1; index_b < 3; index_b++) {
+      entryB.set_status(status_oder[index_b]);
+      EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
+      EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+    }
+  }
 }

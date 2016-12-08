@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/reading_list/ios/offline_url_utils.h"
 #include "components/reading_list/ios/proto/reading_list.pb.h"
+#include "components/reading_list/ios/reading_list_store.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "net/base/backoff_entry_serializer.h"
 
@@ -351,11 +352,45 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
       WAITING, base::FilePath(), 0, nullptr));
 }
 
-void ReadingListEntry::MergeLocalStateFrom(ReadingListEntry& other) {
-  distilled_path_ = std::move(other.distilled_path_);
-  distilled_state_ = std::move(other.distilled_state_);
-  backoff_ = std::move(other.backoff_);
-  failed_download_counter_ = std::move(other.failed_download_counter_);
+void ReadingListEntry::MergeWithEntry(const ReadingListEntry& other) {
+#if !defined(NDEBUG)
+  // Checks that the result entry respects the sync order.
+  std::unique_ptr<sync_pb::ReadingListSpecifics> old_this_pb(
+      AsReadingListSpecifics());
+  std::unique_ptr<sync_pb::ReadingListSpecifics> other_pb(
+      other.AsReadingListSpecifics());
+#endif
+  DCHECK(url_ == other.url_);
+  if (title_.compare(other.title_) < 0) {
+    // Take the last in alphabetical order or the longer one.
+    // This ensure empty string is replaced.
+    title_ = std::move(other.title_);
+  }
+  if (creation_time_us_ < other.creation_time_us_) {
+    creation_time_us_ = std::move(other.creation_time_us_);
+  }
+  if (state_ == UNSEEN) {
+    state_ = std::move(other.state_);
+  } else if (other.state_ != UNSEEN) {
+    // Both are not UNSEEN, take the newer one.
+    if (update_time_us_ < other.update_time_us_) {
+      state_ = std::move(other.state_);
+    } else if (update_time_us_ == other.update_time_us_) {
+      // Both states are likely the same, but if they are not, READ should win.
+      if (other.state_ == READ) {
+        state_ = std::move(other.state_);
+      }
+    }
+  }
+  if (update_time_us_ < other.update_time_us_) {
+    update_time_us_ = std::move(other.update_time_us_);
+  }
+#if !defined(NDEBUG)
+  std::unique_ptr<sync_pb::ReadingListSpecifics> new_this_pb(
+      AsReadingListSpecifics());
+  DCHECK(ReadingListStore::CompareEntriesForSync(*old_this_pb, *new_this_pb));
+  DCHECK(ReadingListStore::CompareEntriesForSync(*other_pb, *new_this_pb));
+#endif
 }
 
 std::unique_ptr<reading_list::ReadingListLocal>
@@ -448,9 +483,4 @@ ReadingListEntry::AsReadingListSpecifics() const {
   }
 
   return pb_entry;
-}
-
-bool ReadingListEntry::CompareEntryUpdateTime(const ReadingListEntry& lhs,
-                                              const ReadingListEntry& rhs) {
-  return lhs.UpdateTime() > rhs.UpdateTime();
 }

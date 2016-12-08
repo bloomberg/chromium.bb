@@ -94,19 +94,22 @@ class ReadingListEntry {
   static std::unique_ptr<ReadingListEntry> FromReadingListSpecifics(
       const sync_pb::ReadingListSpecifics& pb_entry);
 
-  // Merge the local data from |other| to this.
-  // The local fields (distilled_state_, distilled_url_, backoff_,
-  // failed_download_counter_) of |other| are moved to |this| and must not be
-  // used after this call.
-  void MergeLocalStateFrom(ReadingListEntry& other);
+  // Merge |this| and |other| into this.
+  // Local fields are kept from |this|.
+  // Each field is merged individually keeping the highest value as defined by
+  // the |ReadingListStore.CompareEntriesForSync| function.
+  //
+  // After calling |MergeLocalStateFrom|, the result must verify
+  // ReadingListStore.CompareEntriesForSync(old_this.AsReadingListSpecifics(),
+  //                                        new_this.AsReadingListSpecifics())
+  // and
+  // ReadingListStore.CompareEntriesForSync(other.AsReadingListSpecifics(),
+  //                                        new_this.AsReadingListSpecifics()).
+  void MergeWithEntry(const ReadingListEntry& other);
 
   ReadingListEntry& operator=(ReadingListEntry&& other);
 
   bool operator==(const ReadingListEntry& other) const;
-
-  // Returns whether |lhs| is more recent than |rhs|.
-  static bool CompareEntryUpdateTime(const ReadingListEntry& lhs,
-                                     const ReadingListEntry& rhs);
 
   // Sets the title.
   void SetTitle(const std::string& title);

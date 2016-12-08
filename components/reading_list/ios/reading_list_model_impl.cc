@@ -152,8 +152,6 @@ ReadingListEntry* ReadingListModelImpl::SyncMergeEntry(
   DCHECK(loaded());
   ReadingListEntry* existing_entry = GetMutableEntryFromURL(entry->URL());
   DCHECK(existing_entry);
-  DCHECK(existing_entry->UpdateTime() < entry->UpdateTime());
-
   GURL url = entry->URL();
 
   for (auto& observer : observers_)
@@ -164,10 +162,7 @@ ReadingListEntry* ReadingListModelImpl::SyncMergeEntry(
   } else {
     unread_entry_count_--;
   }
-  // Merge local data in new entry.
-  entry->MergeLocalStateFrom(*existing_entry);
-
-  entries_->find(url)->second = std::move(*entry);
+  existing_entry->MergeWithEntry(*entry);
 
   existing_entry = GetMutableEntryFromURL(url);
   if (existing_entry->IsRead()) {

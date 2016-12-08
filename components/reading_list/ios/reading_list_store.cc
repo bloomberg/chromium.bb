@@ -231,9 +231,8 @@ syncer::SyncError ReadingListStore::MergeSyncData(
 
       // Notify model about updated entry.
       delegate_->SyncAddEntry(std::move(entry));
-    } else if (existing_entry->UpdateTime() < entry->UpdateTime()) {
-      // The entry from sync is more recent.
-      // Merge the local data to it and store it.
+    } else {
+      // Merge the local data and the sync data and store the result.
       ReadingListEntry* merged_entry =
           delegate_->SyncMergeEntry(std::move(entry));
 
@@ -246,6 +245,7 @@ syncer::SyncError ReadingListStore::MergeSyncData(
       // Send to sync
       std::unique_ptr<sync_pb::ReadingListSpecifics> entry_sync_pb =
           merged_entry->AsReadingListSpecifics();
+      DCHECK(CompareEntriesForSync(specifics, *entry_sync_pb));
       auto entity_data = base::MakeUnique<syncer::EntityData>();
       *(entity_data->specifics.mutable_reading_list()) = *entry_sync_pb;
       entity_data->non_unique_name = entry_sync_pb->entry_id();
@@ -255,18 +255,6 @@ syncer::SyncError ReadingListStore::MergeSyncData(
       change_processor()->Put(entry_sync_pb->entry_id(), std::move(entity_data),
                               metadata_change_list.get());
 
-    } else {
-      // The entry from sync is out of date.
-      // Send back the local more recent entry.
-      // No need to update
-      std::unique_ptr<sync_pb::ReadingListSpecifics> entry_pb =
-          existing_entry->AsReadingListSpecifics();
-      auto entity_data = base::MakeUnique<syncer::EntityData>();
-      *(entity_data->specifics.mutable_reading_list()) = *entry_pb;
-      entity_data->non_unique_name = entry_pb->entry_id();
-
-      change_processor()->Put(entry_pb->entry_id(), std::move(entity_data),
-                              metadata_change_list.get());
     }
   }
 
@@ -331,9 +319,8 @@ syncer::SyncError ReadingListStore::ApplySyncChanges(
 
         // Notify model about updated entry.
         delegate_->SyncAddEntry(std::move(entry));
-      } else if (existing_entry->UpdateTime() < entry->UpdateTime()) {
-        // The entry from sync is more recent.
-        // Merge the local data to it and store it.
+      } else {
+        // Merge the local data and the sync data and store the result.
         ReadingListEntry* merged_entry =
             delegate_->SyncMergeEntry(std::move(entry));
 
@@ -346,6 +333,7 @@ syncer::SyncError ReadingListStore::ApplySyncChanges(
         // Send to sync
         std::unique_ptr<sync_pb::ReadingListSpecifics> entry_sync_pb =
             merged_entry->AsReadingListSpecifics();
+        DCHECK(CompareEntriesForSync(specifics, *entry_sync_pb));
         auto entity_data = base::MakeUnique<syncer::EntityData>();
         *(entity_data->specifics.mutable_reading_list()) = *entry_sync_pb;
         entity_data->non_unique_name = entry_sync_pb->entry_id();
@@ -356,18 +344,6 @@ syncer::SyncError ReadingListStore::ApplySyncChanges(
                                 std::move(entity_data),
                                 metadata_change_list.get());
 
-      } else {
-        // The entry from sync is out of date.
-        // Send back the local more recent entry.
-        // No need to update
-        std::unique_ptr<sync_pb::ReadingListSpecifics> entry_pb =
-            existing_entry->AsReadingListSpecifics();
-        auto entity_data = base::MakeUnique<syncer::EntityData>();
-        *(entity_data->specifics.mutable_reading_list()) = *entry_pb;
-        entity_data->non_unique_name = entry_pb->entry_id();
-
-        change_processor()->Put(entry_pb->entry_id(), std::move(entity_data),
-                                metadata_change_list.get());
       }
     }
   }
@@ -438,4 +414,33 @@ std::string ReadingListStore::GetStorageKey(
     const syncer::EntityData& entity_data) {
   DCHECK(CalledOnValidThread());
   return entity_data.specifics.reading_list().entry_id();
+}
+
+bool ReadingListStore::CompareEntriesForSync(
+    const sync_pb::ReadingListSpecifics& lhs,
+    const sync_pb::ReadingListSpecifics& rhs) {
+  DCHECK(lhs.entry_id() == rhs.entry_id());
+  DCHECK(lhs.has_update_time_us());
+  DCHECK(rhs.has_update_time_us());
+  DCHECK(lhs.has_creation_time_us());
+  DCHECK(rhs.has_creation_time_us());
+  DCHECK(lhs.has_url());
+  DCHECK(rhs.has_url());
+  DCHECK(lhs.has_title());
+  DCHECK(rhs.has_title());
+  DCHECK(lhs.has_status());
+  DCHECK(rhs.has_status());
+  if (rhs.url() != lhs.url() || rhs.title().compare(lhs.title()) < 0 ||
+      rhs.creation_time_us() < lhs.creation_time_us() ||
+      rhs.update_time_us() < lhs.update_time_us()) {
+    return false;
+  }
+  if (rhs.update_time_us() == lhs.update_time_us()) {
+    if ((rhs.status() == sync_pb::ReadingListSpecifics::UNSEEN &&
+         lhs.status() != sync_pb::ReadingListSpecifics::UNSEEN) ||
+        (rhs.status() == sync_pb::ReadingListSpecifics::UNREAD &&
+         lhs.status() == sync_pb::ReadingListSpecifics::READ))
+      return false;
+  }
+  return true;
 }

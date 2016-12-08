@@ -72,6 +72,21 @@ class ReadingListStore : public syncer::ModelTypeSyncBridge,
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList entity_changes) override;
 
+  // Returns whether entries respect a strict order for sync and if |rhs| can be
+  // submitted to sync after |lhs| has been received.
+  // The order should ensure that there is no sync loop in sync and should be
+  // submitted to sync in strictly increasing order.
+  // Entries are in increasing order if all the fields respect increasing order.
+  // - URL must be the same.
+  // - title must verify rhs.title.compare(lhs.title) >= 0
+  // - rhs.creation_time_us >= lhs.creation_time_us
+  // - rhs.update_time_us >= lhs.update_time_us
+  // - if rhs.update_time_us > lhs.update_time_us, rhs.state can be anything.
+  // - if rhs.update_time_us == lhs.update_time_us, rhs.state >= lhs.state in
+  //          the order UNSEEN, UNREAD, READ.
+  static bool CompareEntriesForSync(const sync_pb::ReadingListSpecifics& lhs,
+                                    const sync_pb::ReadingListSpecifics& rhs);
+
   // Asynchronously retrieve the corresponding sync data for |storage_keys|.
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;
 
