@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/link_handler_model_impl.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
@@ -130,8 +131,8 @@ ArcIntentHelperBridge::GetIntentHelperInstanceWithErrorCode(
     const std::string& method_name_for_logging,
     uint32_t min_instance_version,
     GetResult* out_error_code) {
-  ArcBridgeService* bridge_service = ArcBridgeService::Get();
-  if (!bridge_service) {
+  auto* arc_service_manager = ArcServiceManager::Get();
+  if (!arc_service_manager) {
     if (!ArcBridgeService::GetEnabled(base::CommandLine::ForCurrentProcess())) {
       VLOG(2) << "ARC bridge is not supported.";
       if (out_error_code)
@@ -144,14 +145,16 @@ ArcIntentHelperBridge::GetIntentHelperInstanceWithErrorCode(
     return nullptr;
   }
 
-  if (!bridge_service->intent_helper()->has_instance()) {
+  auto* intent_helper_holder =
+      arc_service_manager->arc_bridge_service()->intent_helper();
+  if (!intent_helper_holder->has_instance()) {
     VLOG(2) << "ARC intent helper instance is not ready.";
     if (out_error_code)
       *out_error_code = GetResult::FAILED_ARC_NOT_READY;
     return nullptr;
   }
 
-  auto* instance = bridge_service->intent_helper()->GetInstanceForMethod(
+  auto* instance = intent_helper_holder->GetInstanceForMethod(
       method_name_for_logging, min_instance_version);
   if (!instance) {
     if (out_error_code)

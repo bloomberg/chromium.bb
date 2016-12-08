@@ -20,6 +20,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -69,15 +70,15 @@ constexpr char kShowTalkbackSettingsIntent[] =
 // happens.
 arc::mojom::AppInstance* GetAppInstance(uint32_t required_version,
                                         const std::string& service_name) {
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager) {
     VLOG(2) << "Request to " << service_name
             << " when bridge service is not ready.";
     return nullptr;
   }
 
-  return bridge_service->app()->GetInstanceForMethod(service_name.c_str(),
-                                                     required_version);
+  return arc_service_manager->arc_bridge_service()->app()->GetInstanceForMethod(
+      service_name, required_version);
 }
 
 // Helper function which returns the IntentHelperInstance. Create related logs
@@ -85,15 +86,16 @@ arc::mojom::AppInstance* GetAppInstance(uint32_t required_version,
 arc::mojom::IntentHelperInstance* GetIntentHelperInstance(
     uint32_t required_version,
     const std::string& service_name) {
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager) {
     VLOG(2) << "Request to " << service_name
             << " when bridge service is not ready.";
     return nullptr;
   }
 
-  return bridge_service->intent_helper()->GetInstanceForMethod(
-      service_name.c_str(), required_version);
+  return arc_service_manager->arc_bridge_service()
+      ->intent_helper()
+      ->GetInstanceForMethod(service_name, required_version);
 }
 
 void PrioritizeArcInstanceCallback(bool success) {

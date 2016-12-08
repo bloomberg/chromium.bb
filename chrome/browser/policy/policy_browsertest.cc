@@ -4008,7 +4008,7 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
 
   const PrefService* const pref = browser()->profile()->GetPrefs();
   const arc::ArcBridgeService* const arc_bridge_service =
-      arc::ArcBridgeService::Get();
+      arc::ArcServiceManager::Get()->arc_bridge_service();
 
   // ARC is switched off by default.
   EXPECT_TRUE(arc_bridge_service->stopped());

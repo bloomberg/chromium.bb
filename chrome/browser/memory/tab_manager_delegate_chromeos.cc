@@ -36,6 +36,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/exo/shell_surface.h"
 #include "content/public/browser/browser_thread.h"
@@ -545,13 +546,14 @@ TabManagerDelegate::GetSortedCandidates(
 }
 
 bool TabManagerDelegate::KillArcProcess(const int nspid) {
-  auto* arc_bridge_service = arc::ArcBridgeService::Get();
-  if (!arc_bridge_service)
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager)
     return false;
 
   auto* arc_process_instance =
-      arc_bridge_service->process()->GetInstanceForMethod(
-          "KillProcess", kMinVersionForKillProcess);
+      arc_service_manager->arc_bridge_service()
+          ->process()
+          ->GetInstanceForMethod("KillProcess", kMinVersionForKillProcess);
   if (!arc_process_instance)
     return false;
 

@@ -107,12 +107,18 @@ void ArcProcessTask::StartIconLoading() {
 
   if (result == arc::ActivityIconLoader::GetResult::FAILED_ARC_NOT_READY) {
     // Need to retry loading the icon.
-    arc::ArcBridgeService::Get()->intent_helper()->AddObserver(this);
+    arc::ArcServiceManager::Get()
+        ->arc_bridge_service()
+        ->intent_helper()
+        ->AddObserver(this);
   }
 }
 
 ArcProcessTask::~ArcProcessTask() {
-  arc::ArcBridgeService::Get()->intent_helper()->RemoveObserver(this);
+  arc::ArcServiceManager::Get()
+      ->arc_bridge_service()
+      ->intent_helper()
+      ->RemoveObserver(this);
 }
 
 Task::Type ArcProcessTask::GetType() const {
@@ -131,8 +137,10 @@ bool ArcProcessTask::IsKillable() {
 
 void ArcProcessTask::Kill() {
   auto* process_instance =
-      arc::ArcBridgeService::Get()->process()->GetInstanceForMethod(
-          "KillProcess", kKillProcessMinInstanceVersion);
+      arc::ArcServiceManager::Get()
+          ->arc_bridge_service()
+          ->process()
+          ->GetInstanceForMethod("KillProcess", kKillProcessMinInstanceVersion);
   if (!process_instance)
     return;
   process_instance->KillProcess(nspid_, "Killed manually from Task Manager");
@@ -143,7 +151,10 @@ void ArcProcessTask::OnInstanceReady() {
 
   VLOG(2) << "intent_helper instance is ready. Fetching the icon for "
           << package_name_;
-  arc::ArcBridgeService::Get()->intent_helper()->RemoveObserver(this);
+  arc::ArcServiceManager::Get()
+      ->arc_bridge_service()
+      ->intent_helper()
+      ->RemoveObserver(this);
 
   // Instead of calling into StartIconLoading() directly, return to the main
   // loop first to make sure other ArcBridgeService observers are notified.

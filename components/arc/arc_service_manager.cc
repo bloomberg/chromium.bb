@@ -51,7 +51,8 @@ ArcServiceManager::~ArcServiceManager() {
 
 // static
 ArcServiceManager* ArcServiceManager::Get() {
-  DCHECK(g_arc_service_manager);
+  if (!g_arc_service_manager)
+    return nullptr;
   DCHECK(g_arc_service_manager->thread_checker_.CalledOnValidThread());
   return g_arc_service_manager;
 }

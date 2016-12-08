@@ -218,12 +218,17 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
     SetupNetworkEnvironment();
     RunUntilIdle();
 
-    ArcBridgeService::Get()->intent_helper()->SetInstance(
-        fake_intent_helper_instance_.get());
+    ArcServiceManager::Get()
+        ->arc_bridge_service()
+        ->intent_helper()
+        ->SetInstance(fake_intent_helper_instance_.get());
   }
 
   void TearDownOnMainThread() override {
-    ArcBridgeService::Get()->intent_helper()->SetInstance(nullptr);
+    ArcServiceManager::Get()
+        ->arc_bridge_service()
+        ->intent_helper()
+        ->SetInstance(nullptr);
   }
 
   void UpdatePolicy(const policy::PolicyMap& policy) {

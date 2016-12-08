@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "content/public/test/test_utils.h"
@@ -37,15 +36,12 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kEnableArc);
 
-    // A valid |arc_app_list_prefs_| is needed for the Arc bridge service and
-    // the Arc session manager.
     arc_app_list_pref_ = ArcAppListPrefs::Get(profile_);
     if (!arc_app_list_pref_) {
       ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
           profile_);
     }
 
-    DCHECK(ArcBridgeService::Get());
     ArcSessionManager* session_manager = ArcSessionManager::Get();
     DCHECK(session_manager);
     ArcSessionManager::DisableUIForTesting();

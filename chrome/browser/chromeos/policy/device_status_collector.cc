@@ -47,6 +47,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/common/enterprise_reporting.mojom.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -218,10 +219,11 @@ std::vector<em::CPUTempInfo> ReadCPUTempInfo() {
 
 bool ReadAndroidStatus(
     const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver) {
-  auto* const arc_service = arc::ArcBridgeService::Get();
-  if (!arc_service)
+  auto* const arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager)
     return false;
-  auto* const instance_holder = arc_service->enterprise_reporting();
+  auto* const instance_holder =
+      arc_service_manager->arc_bridge_service()->enterprise_reporting();
   if (!instance_holder)
     return false;
   auto* const instance = instance_holder->GetInstanceForMethod("GetStatus", 1);

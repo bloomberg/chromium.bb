@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -29,6 +30,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -70,12 +72,14 @@ class ArcSessionManagerTest : public testing::Test {
     profile_ = profile_builder.Build();
     StartPreferenceSyncing();
 
-    bridge_service_.reset(new FakeArcBridgeService());
-    arc_session_manager_.reset(new ArcSessionManager(bridge_service_.get()));
+    ArcServiceManager::SetArcBridgeServiceForTesting(
+        base::MakeUnique<FakeArcBridgeService>());
+    arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
+    arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
+        arc_service_manager_->arc_bridge_service());
 
     // Check initial conditions.
-    EXPECT_EQ(bridge_service_.get(), ArcBridgeService::Get());
-    EXPECT_TRUE(ArcBridgeService::Get()->stopped());
+    EXPECT_TRUE(bridge_service()->stopped());
 
     const AccountId account_id(
         AccountId::FromUserEmailGaiaId("user@gmail.com", "1234567890"));
@@ -87,6 +91,8 @@ class ArcSessionManagerTest : public testing::Test {
 
   void TearDown() override {
     chromeos::WallpaperManager::Shutdown();
+    arc_session_manager_.reset();
+    arc_service_manager_.reset();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -97,7 +103,10 @@ class ArcSessionManagerTest : public testing::Test {
 
  protected:
   Profile* profile() { return profile_.get(); }
-  FakeArcBridgeService* bridge_service() { return bridge_service_.get(); }
+  FakeArcBridgeService* bridge_service() {
+    return static_cast<FakeArcBridgeService*>(
+        arc_service_manager_->arc_bridge_service());
+  }
   ArcSessionManager* arc_session_manager() {
     return arc_session_manager_.get();
   }
@@ -126,8 +135,8 @@ class ArcSessionManagerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<FakeArcBridgeService> bridge_service_;
   std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
