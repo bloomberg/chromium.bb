@@ -19,11 +19,13 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_response_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/page_transition_types.h"
 
 namespace content {
 
@@ -43,6 +45,14 @@ bool MaybeForwardToServiceWorker(ServiceWorkerURLRequestJob* job,
 
   job->FallbackToNetworkOrRenderer();
   return false;
+}
+
+ui::PageTransition GetPageTransition(net::URLRequest* request) {
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  // ResourceRequestInfo may not be set in some tests.
+  if (!info)
+    return ui::PAGE_TRANSITION_LINK;
+  return info->GetPageTransition();
 }
 
 }  // namespace
@@ -285,9 +295,9 @@ void ServiceWorkerControlleeRequestHandler::
 
   DCHECK_NE(active_version->fetch_handler_existence(),
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
-
   ServiceWorkerMetrics::CountControlledPageLoad(
-      active_version->site_for_uma(), stripped_url_, is_main_frame_load_);
+      active_version->site_for_uma(), stripped_url_, is_main_frame_load_,
+      GetPageTransition(job_->request()), job_->request()->url_chain().size());
 
   bool is_forwarded =
       MaybeForwardToServiceWorker(job_.get(), active_version.get());
@@ -319,7 +329,8 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
   DCHECK_NE(version->fetch_handler_existence(),
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
   ServiceWorkerMetrics::CountControlledPageLoad(
-      version->site_for_uma(), stripped_url_, is_main_frame_load_);
+      version->site_for_uma(), stripped_url_, is_main_frame_load_,
+      GetPageTransition(job_->request()), job_->request()->url_chain().size());
 
   provider_host_->AssociateRegistration(registration,
                                         false /* notify_controllerchange */);

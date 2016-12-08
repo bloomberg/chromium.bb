@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 
@@ -173,7 +174,9 @@ class ServiceWorkerMetrics {
   // Counts the number of page loads controlled by a Service Worker.
   static void CountControlledPageLoad(Site site,
                                       const GURL& url,
-                                      bool is_main_frame_load);
+                                      bool is_main_frame_load,
+                                      ui::PageTransition page_transition,
+                                      size_t redirect_chain_length);
 
   // Records the result of trying to start a worker. |is_installed| indicates
   // whether the version has been installed.
