@@ -15,12 +15,9 @@ public class AuthException extends Exception {
      * A simple constructor that stores all the error handling information and makes it available to
      * the handler.
      * @param isTransientError Whether the error is transient and we can retry.
-     * Thus, a user recoverable error is not transient, since it requires explicit user handling
-     * before retry.
      */
     public AuthException(boolean isTransientError, Exception exception) {
         super(exception);
-        assert !isTransientError;
         mIsTransientError = isTransientError;
     }
 
