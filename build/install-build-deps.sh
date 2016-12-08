@@ -68,7 +68,7 @@ yes_no() {
 # Checks whether a particular package is available in the repos.
 # USAGE: $ package_exists <package name>
 package_exists() {
-  apt-cache pkgnames | grep -x "$1" > /dev/null 2>&1
+  [ ! -z "`apt-cache search --names-only "$1"`" ]
 }
 
 # These default to on because (some) bots need them and it keeps things
@@ -111,12 +111,12 @@ if ! which lsb_release > /dev/null; then
 fi
 
 lsb_release=$(lsb_release --codename --short)
-ubuntu_codenames="(precise|trusty|utopic|vivid|wily|xenial)"
+supported_releases="(precise|trusty|utopic|vivid|wily|xenial|jessie)"
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
-  if [[ ! $lsb_release =~ $ubuntu_codenames ]]; then
+  if [[ ! $lsb_release =~ $supported_releases ]]; then
     echo "ERROR: Only Ubuntu 12.04 (precise), 14.04 (trusty), " \
-      "14.10 (utopic), 15.04 (vivid), 15.10 (wily) and 16.04 (xenial) " \
-      "are currently supported" >&2
+      "14.10 (utopic), 15.04 (vivid), 15.10 (wily) and 16.04 (xenial), " \
+      "and Debian 8 (jessie) are currently supported" >&2
     exit 1
   fi
 
@@ -284,11 +284,6 @@ dev_list="${dev_list} libgbm-dev${mesa_variant}
 nacl_list="${nacl_list} libgl1-mesa-glx${mesa_variant}:i386"
 
 # Some package names have changed over time
-if package_exists ttf-mscorefonts-installer; then
-  dev_list="${dev_list} ttf-mscorefonts-installer"
-else
-  dev_list="${dev_list} msttcorefonts"
-fi
 if package_exists libnspr4-dbg; then
   dbg_list="${dbg_list} libnspr4-dbg libnss3-dbg"
   lib_list="${lib_list} libnspr4 libnss3"
@@ -330,6 +325,14 @@ if package_exists php7.0-cgi; then
   dev_list="${dev_list} php7.0-cgi libapache2-mod-php7.0"
 else
   dev_list="${dev_list} php5-cgi libapache2-mod-php5"
+fi
+# ttf-mscorefonts-installer is in the Debian contrib repo, which has
+# dependencies on non-free software.  Install it only if the user has already
+# enabled contrib.
+if package_exists ttf-mscorefonts-installer; then
+  dev_list="${dev_list} ttf-mscorefonts-installer"
+elif package_exists msttcorefonts; then
+  dev_list="${dev_list} msttcorefonts"
 fi
 # Ubuntu 16.04 has this package deleted.
 if package_exists ttf-kochi-gothic; then
