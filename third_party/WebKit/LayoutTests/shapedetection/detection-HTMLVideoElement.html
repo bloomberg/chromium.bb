@@ -6,10 +6,10 @@
 <script src="resources/mock-facedetection.js"></script>
 <script>
 
-var createTestForVideoElement = function(detectorName, mockReady,
+var createTestForVideoElement = function(createDetector, mockReady,
                                          detectionResultTest) {
   async_test(function(t) {
-    var video = document.createElement('video');
+    var video = document.createElement("video");
     video.src = "../imported/wpt/media/white.webm";
     video.loop = true;
     video.autoplay = true;
@@ -19,11 +19,11 @@ var createTestForVideoElement = function(detectorName, mockReady,
       mockReady()
         .then(mock => {
           theMock = mock;
-          var detector = eval("new " + detectorName + "();");
+          var detector = createDetector();
           return detector;
         })
         .catch(error => {
-          assert_unreached("Error creating MockFaceDetection: " + error);
+          assert_unreached("Error creating Mock Detector: " + error);
         })
         .then(detector => {
           return detector.detect(video);
@@ -61,13 +61,13 @@ function BarcodeDetectorDetectionResultTest(detectionResult, mock) {
 generate_tests(createTestForVideoElement, [
   [
     "Face",
-    "FaceDetector",
+    () => { return new FaceDetector(); },
     () => { return mockFaceDetectionReady; },
     FaceDetectorDetectionResultTest
   ],
   [
     "Barcode",
-    "BarcodeDetector",
+    () => { return new BarcodeDetector(); },
     () => { return mockBarcodeDetectionReady; },
     BarcodeDetectorDetectionResultTest
   ]

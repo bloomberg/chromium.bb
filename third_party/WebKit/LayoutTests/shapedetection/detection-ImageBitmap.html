@@ -6,7 +6,7 @@
 <script src="resources/mock-facedetection.js"></script>
 <script>
 
-var createTestForImageBitmap = function(detectorName, mockReady,
+var createTestForImageBitmap = function(createDetector, mockReady,
                                         detectionResultTest) {
   async_test(function(t) {
     var img = new Image();
@@ -21,15 +21,15 @@ var createTestForImageBitmap = function(detectorName, mockReady,
             return mockReady();
           })
           .catch(error => {
-            assert_unreached('createImageBitmap() error: ' + error);
+            assert_unreached("createImageBitmap() error: " + error);
           })
           .then(mock => {
             theMock = mock;
-            var detector = eval("new " + detectorName + "();");
+            var detector = createDetector();
             return detector;
           })
           .catch(error => {
-            assert_unreached("Error creating MockFaceDetection: " + error);
+            assert_unreached("Error creating Mock Detector: " + error);
           })
           .then(detector => {
             return detector.detect(theImageBitmap);
@@ -42,7 +42,7 @@ var createTestForImageBitmap = function(detectorName, mockReady,
             assert_unreached("Error during detect(img): " + error);
           });
     }
-    img.src = '../media/content/greenbox.png';
+    img.src = "../media/content/greenbox.png";
   }, "Detector detect(ImageBitmap)");
 };
 
@@ -65,13 +65,13 @@ function BarcodeDetectorDetectionResultTest(detectionResult, mock) {
 generate_tests(createTestForImageBitmap, [
   [
     "Face",
-    "FaceDetector",
+    () => { return new FaceDetector(); },
     () => { return mockFaceDetectionReady; },
     FaceDetectorDetectionResultTest
   ],
   [
     "Barcode",
-    "BarcodeDetector",
+    () => { return new BarcodeDetector(); },
     () => { return mockBarcodeDetectionReady; },
     BarcodeDetectorDetectionResultTest
   ]

@@ -28,9 +28,6 @@ class MODULES_EXPORT ShapeDetector
  private:
   ScriptPromise detectShapesOnImageElement(ScriptPromiseResolver*,
                                            const HTMLImageElement*);
-  ScriptPromise detectShapesOnImageBitmap(ScriptPromiseResolver*, ImageBitmap*);
-  ScriptPromise detectShapesOnVideoElement(ScriptPromiseResolver*,
-                                           const HTMLVideoElement*);
 
   virtual ScriptPromise doDetect(ScriptPromiseResolver*,
                                  mojo::ScopedSharedBufferHandle,

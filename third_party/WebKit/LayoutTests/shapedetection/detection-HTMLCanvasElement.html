@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-barcodedetection.js"></script>
+<script src="resources/mock-facedetection.js"></script>
+<script>
+
+var createTestForCanvasElement = function(createDetector,
+                                          createCanvas,
+                                          mockReady,
+                                          detectionResultTest) {
+  async_test(function(t) {
+
+    var img = new Image();
+    img.onload = function() {
+
+      var canvas = createCanvas();
+      canvas.getContext("2d").drawImage(img, 0, 0);
+
+      var theMock = null;
+      mockReady()
+        .then(mock => {
+          theMock = mock;
+          var detector = createDetector();
+          return detector;
+        })
+        .catch(error => {
+          assert_unreached("Error creating Mock Detector: " + error);
+        })
+        .then(detector => {
+          return detector.detect(canvas);
+        })
+        .then(detectionResult => {
+          detectionResultTest(detectionResult, theMock);
+          t.done();
+        })
+        .catch(error => {
+          assert_unreached("Error during detect(canvas): " + error);
+        });
+    }
+
+    img.src = "../media/content/greenbox.png";
+  }, "Detector detect(HTMLCanvasElement)");
+};
+
+function FaceDetectorDetectionResultTest(detectionResult, mock) {
+  const imageReceivedByMock = mock.getFrameData();
+  assert_equals(imageReceivedByMock.byteLength, 180000,"Image length");
+  const GREEN_PIXEL = 0xFF00FF00;
+  assert_equals(imageReceivedByMock[0], GREEN_PIXEL, "Pixel color");
+  assert_equals(detectionResult.length, 3, "Number of faces");
+}
+
+function BarcodeDetectorDetectionResultTest(detectionResult, mock) {
+  assert_equals(detectionResult.length, 2, "Number of barcodes");
+  assert_equals(detectionResult[0].rawValue, "cats", "barcode 1");
+  assert_equals(detectionResult[1].rawValue, "dogs", "barcode 2");
+}
+
+// These tests verify that a Detector's detect() works on an HTMLCanvasElement
+// and on an OffscreenCanvas. Use the mock mojo server implemented in
+// mock-{barcode,face}detection.js.
+generate_tests(createTestForCanvasElement, [
+  [
+    "Face - HTMLCanvasElement",
+    () => { return new FaceDetector(); },
+    () => { return document.createElement("canvas"); },
+    () => { return mockFaceDetectionReady; },
+    FaceDetectorDetectionResultTest
+  ],
+  [
+    "Face - OffscreenCanvas",
+    () => { return new FaceDetector(); },
+    () => { return new OffscreenCanvas(300, 150); },
+    () => { return mockFaceDetectionReady; },
+    FaceDetectorDetectionResultTest
+  ],
+  [
+    "Barcode - HTMLCanvasElement",
+    () => { return new BarcodeDetector(); },
+    () => { return document.createElement("canvas"); },
+    () => { return mockBarcodeDetectionReady; },
+    BarcodeDetectorDetectionResultTest
+  ],
+  [
+    "Barcode - OffscreenCanvas",
+    () => { return new BarcodeDetector(); },
+    () => { return new OffscreenCanvas(300, 150); },
+    () => { return mockBarcodeDetectionReady; },
+    BarcodeDetectorDetectionResultTest
+  ]
+]);
+
+</script>

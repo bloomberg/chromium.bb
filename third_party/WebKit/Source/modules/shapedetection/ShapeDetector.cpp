@@ -64,11 +64,14 @@ ScriptPromise ShapeDetector::detect(ScriptState* scriptState,
     canvasImageSource = imageSource.getAsImageBitmap();
   } else if (imageSource.isHTMLVideoElement()) {
     canvasImageSource = imageSource.getAsHTMLVideoElement();
+  } else if (imageSource.isHTMLCanvasElement()) {
+    canvasImageSource = imageSource.getAsHTMLCanvasElement();
+  } else if (imageSource.isOffscreenCanvas()) {
+    canvasImageSource = imageSource.getAsOffscreenCanvas();
   } else {
-    // TODO(mcasas): Implement more CanvasImageSources, https://crbug.com/659138
-    NOTIMPLEMENTED() << "Unsupported CanvasImageSource";
+    NOTREACHED() << "Unsupported CanvasImageSource";
     resolver->reject(
-        DOMException::create(NotFoundError, "Unsupported source."));
+        DOMException::create(NotSupportedError, "Unsupported source."));
     return promise;
   }
 
@@ -82,15 +85,58 @@ ScriptPromise ShapeDetector::detect(ScriptState* scriptState,
   if (imageSource.isHTMLImageElement()) {
     return detectShapesOnImageElement(resolver,
                                       imageSource.getAsHTMLImageElement());
-  } else if (imageSource.isImageBitmap()) {
-    return detectShapesOnImageBitmap(resolver, imageSource.getAsImageBitmap());
-  } else if (imageSource.isHTMLVideoElement()) {
-    return detectShapesOnVideoElement(resolver,
-                                      imageSource.getAsHTMLVideoElement());
   }
 
-  NOTREACHED();
-  return promise;
+  // TODO(mcasas): Check if |video| is actually playing a MediaStream by using
+  // HTMLMediaElement::isMediaStreamURL(video->currentSrc().getString()); if
+  // there is a local WebCam associated, there might be sophisticated ways to
+  // detect faces on it. Until then, treat as a normal <video> element.
+
+  const FloatSize size(canvasImageSource->sourceWidth(),
+                       canvasImageSource->sourceHeight());
+
+  SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
+  RefPtr<Image> image = canvasImageSource->getSourceImageForCanvas(
+      &sourceImageStatus, PreferNoAcceleration, SnapshotReasonDrawImage, size);
+  if (!image || sourceImageStatus != NormalSourceImageStatus) {
+    resolver->reject(
+        DOMException::create(InvalidStateError, "Invalid element or state."));
+    return promise;
+  }
+
+  SkPixmap pixmap;
+  RefPtr<Uint8Array> pixelData;
+  uint8_t* pixelDataPtr = nullptr;
+  WTF::CheckedNumeric<int> allocationSize = 0;
+
+  sk_sp<SkImage> skImage = image->imageForCurrentFrame();
+  // Use |skImage|'s pixels if it has direct access to them.
+  if (skImage->peekPixels(&pixmap)) {
+    pixelDataPtr = static_cast<uint8_t*>(pixmap.writable_addr());
+    allocationSize = pixmap.getSafeSize();
+  } else if (imageSource.isImageBitmap()) {
+    ImageBitmap* imageBitmap = imageSource.getAsImageBitmap();
+    pixelData = imageBitmap->copyBitmapData(imageBitmap->isPremultiplied()
+                                                ? PremultiplyAlpha
+                                                : DontPremultiplyAlpha,
+                                            N32ColorType);
+    pixelDataPtr = pixelData->data();
+    allocationSize = imageBitmap->size().area() * 4 /* bytes per pixel */;
+  } else {
+    // TODO(mcasas): retrieve the pixels from elsewhere.
+    NOTREACHED();
+    resolver->reject(DOMException::create(
+        InvalidStateError, "Failed to get pixels for current frame."));
+    return promise;
+  }
+
+  mojo::ScopedSharedBufferHandle sharedBufferHandle = getSharedBufferOnData(
+      resolver, pixelDataPtr, allocationSize.ValueOrDefault(0));
+  if (!sharedBufferHandle->is_valid())
+    return promise;
+
+  return doDetect(resolver, std::move(sharedBufferHandle), image->width(),
+                  image->height());
 }
 
 ScriptPromise ShapeDetector::detectShapesOnImageElement(
@@ -158,100 +204,6 @@ ScriptPromise ShapeDetector::detectShapesOnImageElement(
 
   return doDetect(resolver, std::move(sharedBufferHandle), img->naturalWidth(),
                   img->naturalHeight());
-}
-
-ScriptPromise ShapeDetector::detectShapesOnImageBitmap(
-    ScriptPromiseResolver* resolver,
-    ImageBitmap* imageBitmap) {
-  ScriptPromise promise = resolver->promise();
-
-  if (imageBitmap->isNeutered()) {
-    resolver->reject(
-        DOMException::create(InvalidStateError, "Neutered ImageBitmap."));
-    return promise;
-  }
-
-  if (imageBitmap->size().area() == 0) {
-    resolver->resolve(HeapVector<Member<DOMRect>>());
-    return promise;
-  }
-
-  SkPixmap pixmap;
-  RefPtr<Uint8Array> pixelData;
-  uint8_t* pixelDataPtr = nullptr;
-  WTF::CheckedNumeric<int> allocationSize = 0;
-  // Use |skImage|'s pixels if it has direct access to them, otherwise retrieve
-  // them from elsewhere via copyBitmapData().
-  sk_sp<SkImage> skImage = imageBitmap->bitmapImage()->imageForCurrentFrame();
-  if (skImage->peekPixels(&pixmap)) {
-    pixelDataPtr = static_cast<uint8_t*>(pixmap.writable_addr());
-    allocationSize = pixmap.getSafeSize();
-  } else {
-    pixelData = imageBitmap->copyBitmapData(imageBitmap->isPremultiplied()
-                                                ? PremultiplyAlpha
-                                                : DontPremultiplyAlpha,
-                                            N32ColorType);
-    pixelDataPtr = pixelData->data();
-    allocationSize = imageBitmap->size().area() * 4 /* bytes per pixel */;
-  }
-
-  mojo::ScopedSharedBufferHandle sharedBufferHandle = getSharedBufferOnData(
-      resolver, pixelDataPtr, allocationSize.ValueOrDefault(0));
-  if (!sharedBufferHandle->is_valid())
-    return promise;
-
-  return doDetect(resolver, std::move(sharedBufferHandle), imageBitmap->width(),
-                  imageBitmap->height());
-}
-
-ScriptPromise ShapeDetector::detectShapesOnVideoElement(
-    ScriptPromiseResolver* resolver,
-    const HTMLVideoElement* video) {
-  ScriptPromise promise = resolver->promise();
-  // TODO(mcasas): Check if |video| is actually playing a MediaStream by using
-  // HTMLMediaElement::isMediaStreamURL(video->currentSrc().getString()); if
-  // there is a local WebCam associated, there might be sophisticated ways to
-  // detect faces on it. Until then, treat as a normal <video> element.
-
-  // !hasAvailableVideoFrame() is a bundle of invalid states.
-  if (!video->hasAvailableVideoFrame()) {
-    resolver->reject(DOMException::create(
-        InvalidStateError, "Invalid HTMLVideoElement or state."));
-    return promise;
-  }
-
-  const FloatSize videoSize(video->videoWidth(), video->videoHeight());
-  SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
-  RefPtr<Image> image =
-      video->getSourceImageForCanvas(&sourceImageStatus, PreferNoAcceleration,
-                                     SnapshotReasonDrawImage, videoSize);
-
-  DCHECK_EQ(NormalSourceImageStatus, sourceImageStatus);
-
-  SkPixmap pixmap;
-  RefPtr<Uint8Array> pixelData;
-  uint8_t* pixelDataPtr = nullptr;
-  WTF::CheckedNumeric<int> allocationSize = 0;
-  // Use |skImage|'s pixels if it has direct access to them.
-  sk_sp<SkImage> skImage = image->imageForCurrentFrame();
-  if (skImage->peekPixels(&pixmap)) {
-    pixelDataPtr = static_cast<uint8_t*>(pixmap.writable_addr());
-    allocationSize = pixmap.getSafeSize();
-  } else {
-    // TODO(mcasas): retrieve the pixels from elsewhere.
-    NOTREACHED();
-    resolver->reject(DOMException::create(
-        InvalidStateError, "Failed to get pixels for current frame."));
-    return promise;
-  }
-
-  mojo::ScopedSharedBufferHandle sharedBufferHandle = getSharedBufferOnData(
-      resolver, pixelDataPtr, allocationSize.ValueOrDefault(0));
-  if (!sharedBufferHandle->is_valid())
-    return promise;
-
-  return doDetect(resolver, std::move(sharedBufferHandle), image->width(),
-                  image->height());
 }
 
 }  // namespace blink

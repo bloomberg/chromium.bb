@@ -5,11 +5,11 @@
 <script src="resources/mock-barcodedetection.js"></script>
 <script src="resources/mock-facedetection.js"></script>
 <body>
-<img id='img' src='../media/content/greenbox.png'/>
+<img id="img" src="../media/content/greenbox.png"/>
 </body>
 <script>
 
-var createTestForImageElement = function(detectorName, mockReady,
+var createTestForImageElement = function(createDetector, mockReady,
                                          detectionResultTest) {
   async_test(function(t) {
     var img = document.getElementById("img");
@@ -18,11 +18,11 @@ var createTestForImageElement = function(detectorName, mockReady,
     mockReady()
       .then(mock => {
         theMock = mock;
-        var detector = eval("new " + detectorName + "();");
+        var detector = createDetector();
         return detector;
       })
       .catch(error => {
-        assert_unreached("Error creating MockFaceDetection: " + error);
+        assert_unreached("Error creating Mock Detector: " + error);
       })
       .then(detector => {
         return detector.detect(img);
@@ -57,13 +57,13 @@ function BarcodeDetectorDetectionResultTest(detectionResult, mock) {
 generate_tests(createTestForImageElement, [
   [
     "Face",
-    "FaceDetector",
+    () => { return new FaceDetector(); },
     () => { return mockFaceDetectionReady; },
     FaceDetectorDetectionResultTest
   ],
   [
     "Barcode",
-    "BarcodeDetector",
+    () => { return new BarcodeDetector(); },
     () => { return mockBarcodeDetectionReady; },
     BarcodeDetectorDetectionResultTest
   ]
