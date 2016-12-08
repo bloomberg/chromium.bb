@@ -601,8 +601,12 @@ class ColorSpaceToColorSpaceTransform : public ColorTransform {
         case ColorSpace::TransferID::UNSPECIFIED:
         case ColorSpace::TransferID::BT709:
         case ColorSpace::TransferID::SMPTE170M:
-          // See SMPTE 1886
-          from_.transfer_ = ColorSpace::TransferID::GAMMA24;
+          // SMPTE 1886 suggests that we should be using gamma 2.4 for BT709
+          // content. However, most displays actually use a gamma of 2.2, and
+          // user studies shows that users don't really care. Using the same
+          // gamma as the display will let us optimize a lot more, so lets stick
+          // with using the SRGB transfer function.
+          from_.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
           break;
 
         case ColorSpace::TransferID::SMPTEST2084:
