@@ -31,7 +31,11 @@ typedef void filter8_1dfunction(const uint8_t *src_ptr, ptrdiff_t src_pitch,
     (void)x_step_q4;                                                         \
     (void)filter_y;                                                          \
     (void)y_step_q4;                                                         \
-    assert(filter[3] != 128);                                                \
+    if (filter[3] >= 128) {                                                  \
+      aom_convolve8_##name##_c(src, src_stride, dst, dst_stride, filter_x,   \
+                               x_step_q4, filter_y, y_step_q4, w, h);        \
+      return;                                                                \
+    }                                                                        \
     assert(step_q4 == 16);                                                   \
     if (filter[0] | filter[1] | filter[2]) {                                 \
       while (w >= 16) {                                                      \
@@ -89,8 +93,11 @@ typedef void filter8_1dfunction(const uint8_t *src_ptr, ptrdiff_t src_pitch,
       const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,                \
       ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4,          \
       const int16_t *filter_y, int y_step_q4, int w, int h) {                \
-    assert(filter_x[3] != 128);                                              \
-    assert(filter_y[3] != 128);                                              \
+    if (filter_x[3] >= 128 || filter_y[3] >= 128) {                          \
+      aom_convolve8_##avg##c(src, src_stride, dst, dst_stride, filter_x,     \
+                             x_step_q4, filter_y, y_step_q4, w, h);          \
+      return;                                                                \
+    }                                                                        \
     assert(w <= MAX_SB_SIZE);                                                \
     assert(h <= MAX_SB_SIZE);                                                \
     assert(x_step_q4 == 16);                                                 \
