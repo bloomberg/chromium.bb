@@ -82,7 +82,6 @@ class WebRtcGetMediaDevicesBrowserTest
     ASSERT_FALSE(values->empty());
     bool found_audio_input = false;
     bool found_video_input = false;
-    bool found_audio_output = false;
 
     for (base::ListValue::iterator it = values->begin();
          it != values->end(); ++it) {
@@ -110,8 +109,6 @@ class WebRtcGetMediaDevicesBrowserTest
         found_audio_input = true;
       } else if (device.kind == kDeviceKindVideoInput) {
         found_video_input = true;
-      } else {
-        found_audio_output = true;
       }
 
       // enumerateDevices doesn't have group ID support for video input devices.

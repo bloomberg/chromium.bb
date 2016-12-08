@@ -107,7 +107,7 @@ TEST_F(ExtensionMessageBubbleBridgeUnitTest,
 
   EXPECT_EQ(gfx::VectorIconId::VECTOR_ICON_NONE, extra_view_info->resource_id);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_LEARN_MORE), extra_view_info->text);
-  EXPECT_EQ(true, extra_view_info->is_text_linked);
+  EXPECT_TRUE(extra_view_info->is_text_linked);
 
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_EXTENSION_CONTROLLED_RESTORE_SETTINGS),
@@ -139,7 +139,7 @@ TEST_F(ExtensionMessageBubbleBridgeUnitTest,
   EXPECT_EQ(gfx::VectorIconId::BUSINESS, extra_view_info->resource_id);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN),
             extra_view_info->text);
-  EXPECT_EQ(false, extra_view_info->is_text_linked);
+  EXPECT_FALSE(extra_view_info->is_text_linked);
 
   EXPECT_EQ(base::string16(), bridge->GetActionButtonText());
 }
