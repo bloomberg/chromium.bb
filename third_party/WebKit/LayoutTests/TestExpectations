@@ -1748,6 +1748,11 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # ====== New tests from w3c-test-autoroller added here ======
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/upgrade-insecure-requests/image-redirect-upgrade.https.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/upgrade-insecure-requests/websocket-upgrade.https.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/upgrade-insecure-requests/image-upgrade.https.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/upgrade-insecure-requests/iframe-upgrade.https.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Timeout ]
 crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/innerText/getter.html [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]

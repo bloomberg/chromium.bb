@@ -15733,6 +15733,36 @@
             "url": "/uievents/legacy-domevents-tests/submissions/Microsoft/converted/EventListener.dispatch.new.event.html"
           }
         ],
+        "upgrade-insecure-requests/iframe-redirect-upgrade.https.html": [
+          {
+            "path": "upgrade-insecure-requests/iframe-redirect-upgrade.https.html",
+            "url": "/upgrade-insecure-requests/iframe-redirect-upgrade.https.html"
+          }
+        ],
+        "upgrade-insecure-requests/iframe-upgrade.https.html": [
+          {
+            "path": "upgrade-insecure-requests/iframe-upgrade.https.html",
+            "url": "/upgrade-insecure-requests/iframe-upgrade.https.html"
+          }
+        ],
+        "upgrade-insecure-requests/image-redirect-upgrade.https.html": [
+          {
+            "path": "upgrade-insecure-requests/image-redirect-upgrade.https.html",
+            "url": "/upgrade-insecure-requests/image-redirect-upgrade.https.html"
+          }
+        ],
+        "upgrade-insecure-requests/image-upgrade.https.html": [
+          {
+            "path": "upgrade-insecure-requests/image-upgrade.https.html",
+            "url": "/upgrade-insecure-requests/image-upgrade.https.html"
+          }
+        ],
+        "upgrade-insecure-requests/websocket-upgrade.https.html": [
+          {
+            "path": "upgrade-insecure-requests/websocket-upgrade.https.html",
+            "url": "/upgrade-insecure-requests/websocket-upgrade.https.html"
+          }
+        ],
         "user-timing/idlharness.html": [
           {
             "path": "user-timing/idlharness.html",
