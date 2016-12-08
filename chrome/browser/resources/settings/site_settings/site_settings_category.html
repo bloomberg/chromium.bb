@@ -35,7 +35,7 @@
       <div class="settings-box">
         <div class="start">$i18n{deleteDataPostSession}</div>
         <paper-toggle-button checked="{{cookiesSessionOnly_}}"
-            disabled="[[!categoryEnabled]]" id="sessionOnlyCheckbox"
+            disabled="[[!categoryEnabled]]" id="sessionOnlyToggle"
             on-change="onChangePermissionControl_">
         </paper-toggle-button>
       </div>
@@ -48,7 +48,7 @@
           <div class="secondary">$i18n{siteSettingsFlashAskBeforeSubtitle}</div>
         </div>
         <paper-toggle-button checked="{{flashAskFirst_}}"
-            disabled="[[!categoryEnabled]]" id="flashAskCheckbox"
+            disabled="[[!categoryEnabled]]" id="flashAskToggle"
             on-change="onChangePermissionControl_">
         </paper-toggle-button>
       </div>

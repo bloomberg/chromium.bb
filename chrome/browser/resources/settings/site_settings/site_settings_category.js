@@ -21,7 +21,7 @@ Polymer({
     categoryEnabled: Boolean,
 
     /**
-     * The site that was selected by the user in the dropdown list.
+     * The site that is passed down to the site list.
      * @type {SiteException}
      */
     selectedSite: {
@@ -31,6 +31,7 @@ Polymer({
 
     /**
      * The description to be shown next to the slider.
+     * @private
      */
     sliderDescription_: String,
 
@@ -78,7 +79,7 @@ Polymer({
    * A handler for changing the default permission value for a content type.
    * @private
    */
-  onChangePermissionControl_: function(event) {
+  onChangePermissionControl_: function() {
     switch (this.category) {
       case settings.ContentSettingsTypes.BACKGROUND_SYNC:
       case settings.ContentSettingsTypes.IMAGES:
