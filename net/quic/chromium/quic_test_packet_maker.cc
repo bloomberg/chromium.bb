@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/test_tools/quic_test_packet_maker.h"
+#include "net/quic/chromium/quic_test_packet_maker.h"
 
 #include <list>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "net/quic/chromium/quic_http_utils.h"
 #include "net/quic/core/quic_framer.h"
-#include "net/quic/core/quic_http_utils.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-
 
 namespace net {
 namespace test {
@@ -650,13 +649,10 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeSettingsPacket(
         StringPiece(spdy_frame.data(), spdy_frame.size()));
     *offset += spdy_frame.size();
     return MakePacket(header_, QuicFrame(&quic_frame));
-  } else {
-    QuicStreamFrame quic_frame(
-        kHeadersStreamId, false, 0,
-        StringPiece(spdy_frame.data(), spdy_frame.size()));
-    LOG(INFO) << "quic_frame: " << quic_frame;
-    return MakePacket(header_, QuicFrame(&quic_frame));
   }
+  QuicStreamFrame quic_frame(kHeadersStreamId, false, 0,
+                             StringPiece(spdy_frame.data(), spdy_frame.size()));
+  return MakePacket(header_, QuicFrame(&quic_frame));
 }
 
 }  // namespace test

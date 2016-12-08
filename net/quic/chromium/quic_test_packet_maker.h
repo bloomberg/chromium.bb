@@ -4,8 +4,8 @@
 //
 // Provides a simple interface for QUIC tests to create a variety of packets.
 
-#ifndef NET_QUIC_TEST_TOOLS_QUIC_TEST_PACKET_MAKER_H_
-#define NET_QUIC_TEST_TOOLS_QUIC_TEST_PACKET_MAKER_H_
+#ifndef NET_QUIC_CHROMIUM_QUIC_TEST_PACKET_MAKER_H_
+#define NET_QUIC_CHROMIUM_QUIC_TEST_PACKET_MAKER_H_
 
 #include <stddef.h>
 
@@ -240,4 +240,4 @@ class QuicTestPacketMaker {
 }  // namespace test
 }  // namespace net
 
-#endif  // NET_QUIC_TEST_TOOLS_QUIC_TEST_PACKET_MAKER_H_
+#endif  // NET_QUIC_CHROMIUM_QUIC_TEST_PACKET_MAKER_H_

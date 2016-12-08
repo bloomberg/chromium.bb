@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_TEST_TOOLS_MOCK_CRYPTO_CLIENT_STREAM_FACTORY_H_
-#define NET_QUIC_TEST_TOOLS_MOCK_CRYPTO_CLIENT_STREAM_FACTORY_H_
+#ifndef NET_QUIC_CHROMIUM_MOCK_CRYPTO_CLIENT_STREAM_FACTORY_H_
+#define NET_QUIC_CHROMIUM_MOCK_CRYPTO_CLIENT_STREAM_FACTORY_H_
 
 #include <queue>
 #include <string>
 
 #include "base/macros.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
-#include "net/quic/core/quic_crypto_client_stream_factory.h"
+#include "net/quic/chromium/quic_crypto_client_stream_factory.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/test_tools/mock_crypto_client_stream.h"
 
@@ -56,4 +56,4 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory {
 
 }  // namespace net
 
-#endif  // NET_QUIC_TEST_TOOLS_MOCK_CRYPTO_CLIENT_STREAM_FACTORY_H_
+#endif  // NET_QUIC_CHROMIUM_MOCK_CRYPTO_CLIENT_STREAM_FACTORY_H_

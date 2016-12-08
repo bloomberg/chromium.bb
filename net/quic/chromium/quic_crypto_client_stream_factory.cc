@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/core/quic_crypto_client_stream_factory.h"
+#include "net/quic/chromium/quic_crypto_client_stream_factory.h"
 
 #include "base/lazy_instance.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"

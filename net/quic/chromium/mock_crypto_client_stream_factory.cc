@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
+#include "net/quic/chromium/mock_crypto_client_stream_factory.h"
 
 #include "base/lazy_instance.h"
 #include "net/quic/chromium/quic_chromium_client_session.h"
