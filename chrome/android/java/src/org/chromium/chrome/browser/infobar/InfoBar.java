@@ -49,8 +49,7 @@ public abstract class InfoBar implements InfoBarView {
      * @param nativeInfoBarPtr Pointer to the native InfoBarAndroid, not to its subclass.
      */
     @CalledByNative
-    private void setNativeInfoBar(long nativeInfoBarPtr) {
-        assert mNativeInfoBarPtr == 0;
+    private final void setNativeInfoBar(long nativeInfoBarPtr) {
         mNativeInfoBarPtr = nativeInfoBarPtr;
     }
 
