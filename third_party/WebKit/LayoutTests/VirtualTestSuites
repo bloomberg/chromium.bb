@@ -321,6 +321,11 @@
   },
   {
     "prefix": "layout_ng",
+    "base": "css2.1/20110323",
+    "args": ["--enable-blink-features=LayoutNG"]
+  },
+  {
+    "prefix": "layout_ng",
     "base": "fast/block/float",
     "args": ["--enable-blink-features=LayoutNG"]
   },
