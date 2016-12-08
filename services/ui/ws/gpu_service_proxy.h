@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/ui/gpu/gpu_main.h"
+#include "services/ui/gpu/interfaces/gpu_service_host.mojom.h"
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
@@ -26,10 +27,10 @@ class GpuServiceProxyDelegate;
 
 // Sets up connection from clients to the real service implementation in the GPU
 // process.
-class GpuServiceProxy {
+class GpuServiceProxy : public mojom::GpuServiceHost {
  public:
   explicit GpuServiceProxy(GpuServiceProxyDelegate* delegate);
-  ~GpuServiceProxy();
+  ~GpuServiceProxy() override;
 
   void Add(mojom::GpuServiceRequest request);
 
@@ -38,12 +39,23 @@ class GpuServiceProxy {
                                cc::mojom::DisplayCompositorClientPtr client);
 
  private:
-  void OnInitialized(const gpu::GPUInfo& gpu_info);
+  // mojom::GpuServiceHost:
+  void DidInitialize(const gpu::GPUInfo& gpu_info) override;
+  void DidCreateOffscreenContext(const GURL& url) override;
+  void DidDestroyOffscreenContext(const GURL& url) override;
+  void DidDestroyChannel(int32_t client_id) override;
+  void DidLoseContext(bool offscreen,
+                      gpu::error::ContextLostReason reason,
+                      const GURL& active_url) override;
+  void StoreShaderToDisk(int32_t client_id,
+                         const std::string& key,
+                         const std::string& shader) override;
 
   GpuServiceProxyDelegate* const delegate_;
   int32_t next_client_id_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   mojom::GpuServiceInternalPtr gpu_service_;
+  mojo::Binding<mojom::GpuServiceHost> gpu_host_binding_;
   gpu::GPUInfo gpu_info_;
   std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 

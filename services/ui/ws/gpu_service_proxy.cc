@@ -98,14 +98,14 @@ class GpuServiceImpl : public mojom::GpuService {
 GpuServiceProxy::GpuServiceProxy(GpuServiceProxyDelegate* delegate)
     : delegate_(delegate),
       next_client_id_(kInternalGpuChannelClientId + 1),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      gpu_host_binding_(this) {
   gpu_main_impl_ = base::MakeUnique<GpuMain>(GetProxy(&gpu_main_));
   gpu_main_impl_->OnStart();
   // TODO(sad): Once GPU process is split, this would look like:
   //   connector->ConnectToInterface("gpu", &gpu_main_);
-  gpu_main_->CreateGpuService(
-      GetProxy(&gpu_service_),
-      base::Bind(&GpuServiceProxy::OnInitialized, base::Unretained(this)));
+  gpu_main_->CreateGpuService(GetProxy(&gpu_service_),
+                              gpu_host_binding_.CreateInterfacePtrAndBind());
   gpu_memory_buffer_manager_ = base::MakeUnique<MusGpuMemoryBufferManager>(
       gpu_service_.get(), next_client_id_++);
 }
@@ -127,10 +127,24 @@ void GpuServiceProxy::CreateDisplayCompositor(
   gpu_main_->CreateDisplayCompositor(std::move(request), std::move(client));
 }
 
-void GpuServiceProxy::OnInitialized(const gpu::GPUInfo& gpu_info) {
+void GpuServiceProxy::DidInitialize(const gpu::GPUInfo& gpu_info) {
   gpu_info_ = gpu_info;
   delegate_->OnGpuServiceInitialized();
 }
+
+void GpuServiceProxy::DidCreateOffscreenContext(const GURL& url) {}
+
+void GpuServiceProxy::DidDestroyOffscreenContext(const GURL& url) {}
+
+void GpuServiceProxy::DidDestroyChannel(int32_t client_id) {}
+
+void GpuServiceProxy::DidLoseContext(bool offscreen,
+                                     gpu::error::ContextLostReason reason,
+                                     const GURL& active_url) {}
+
+void GpuServiceProxy::StoreShaderToDisk(int32_t client_id,
+                                        const std::string& key,
+                                        const std::string& shader) {}
 
 }  // namespace ws
 }  // namespace ui

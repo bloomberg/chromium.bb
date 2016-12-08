@@ -21,6 +21,7 @@
 #include "gpu/ipc/service/x_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/ui/gpu/interfaces/gpu_service_host.mojom.h"
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -52,6 +53,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 
   ~GpuServiceInternal() override;
 
+  void InitializeWithHost(mojom::GpuServiceHostPtr gpu_host);
   void Bind(mojom::GpuServiceInternalRequest request);
 
  private:
@@ -94,7 +96,6 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
       gpu::SurfaceHandle child_window) override;
 #endif
   void SetActiveURL(const GURL& url) override;
-  void Initialize();
 
   // mojom::GpuServiceInternal:
   void EstablishGpuChannel(
@@ -128,6 +129,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
 
+  mojom::GpuServiceHostPtr gpu_host_;
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
   std::unique_ptr<media::MediaGpuChannelManager> media_gpu_channel_manager_;

@@ -111,14 +111,14 @@ void GpuMain::OnStart() {
 }
 
 void GpuMain::CreateGpuService(mojom::GpuServiceInternalRequest request,
-                               const CreateGpuServiceCallback& callback) {
+                               mojom::GpuServiceHostPtr gpu_host) {
   // |this| will outlive the gpu thread and so it's safe to use
   // base::Unretained here.
   gpu_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&GpuMain::CreateGpuServiceOnGpuThread, base::Unretained(this),
                  base::Passed(std::move(request)),
-                 base::ThreadTaskRunnerHandle::Get(), callback));
+                 base::Passed(gpu_host.PassInterface())));
 }
 
 void GpuMain::CreateDisplayCompositor(
@@ -150,7 +150,6 @@ void GpuMain::InitOnGpuThread(
   gpu_service_internal_ = base::MakeUnique<GpuServiceInternal>(
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(),
       gpu_memory_buffer_factory_.get(), io_runner);
-  gpu_service_internal_->Initialize();
 }
 
 void GpuMain::CreateDisplayCompositorInternal(
@@ -171,7 +170,17 @@ void GpuMain::CreateDisplayCompositorInternal(
   mojom::GpuServiceInternalRequest gpu_service_request =
       mojo::GetProxy(&gpu_service);
 
-  CreateGpuService(std::move(gpu_service_request), CreateGpuServiceCallback());
+  if (gpu_thread_.task_runner()->BelongsToCurrentThread()) {
+    // If the DisplayCompositor creation was delayed because GpuServiceInternal
+    // had not been created yet, then this is called, in gpu thread, right after
+    // GpuServiceInternal is created.
+    BindGpuInternalOnGpuThread(std::move(gpu_service_request));
+  } else {
+    gpu_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&GpuMain::BindGpuInternalOnGpuThread, base::Unretained(this),
+                   base::Passed(std::move(gpu_service_request))));
+  }
 
   compositor_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&GpuMain::CreateDisplayCompositorOnCompositorThread,
@@ -211,8 +220,10 @@ void GpuMain::TearDownOnGpuThread() {
 
 void GpuMain::CreateGpuServiceOnGpuThread(
     mojom::GpuServiceInternalRequest request,
-    scoped_refptr<base::SingleThreadTaskRunner> origin_runner,
-    const CreateGpuServiceCallback& callback) {
+    mojom::GpuServiceHostPtrInfo gpu_host_info) {
+  mojom::GpuServiceHostPtr gpu_host;
+  gpu_host.Bind(std::move(gpu_host_info));
+  gpu_service_internal_->InitializeWithHost(std::move(gpu_host));
   gpu_service_internal_->Bind(std::move(request));
 
   if (pending_display_compositor_request_.is_pending()) {
@@ -220,11 +231,11 @@ void GpuMain::CreateGpuServiceOnGpuThread(
         std::move(pending_display_compositor_request_),
         std::move(pending_display_compositor_client_info_));
   }
+}
 
-  if (!callback.is_null()) {
-    origin_runner->PostTask(
-        FROM_HERE, base::Bind(callback, gpu_service_internal_->gpu_info()));
-  }
+void GpuMain::BindGpuInternalOnGpuThread(
+    mojom::GpuServiceInternalRequest request) {
+  gpu_service_internal_->Bind(std::move(request));
 }
 
 void GpuMain::PreSandboxStartup() {

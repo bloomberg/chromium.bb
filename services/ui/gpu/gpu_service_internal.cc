@@ -61,6 +61,36 @@ GpuServiceInternal::~GpuServiceInternal() {
   shutdown_event_.Signal();
 }
 
+void GpuServiceInternal::InitializeWithHost(mojom::GpuServiceHostPtr gpu_host) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!gpu_host_);
+  gpu_host_ = std::move(gpu_host);
+  gpu_info_.video_decode_accelerator_capabilities =
+      media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_);
+  gpu_info_.video_encode_accelerator_supported_profiles =
+      media::GpuVideoEncodeAccelerator::GetSupportedProfiles(gpu_preferences_);
+  gpu_info_.jpeg_decode_accelerator_supported =
+      media::GpuJpegDecodeAccelerator::IsSupported();
+  gpu_host_->DidInitialize(gpu_info_);
+
+  DCHECK(!owned_sync_point_manager_);
+  const bool allow_threaded_wait = false;
+  owned_sync_point_manager_.reset(
+      new gpu::SyncPointManager(allow_threaded_wait));
+
+  // Defer creation of the render thread. This is to prevent it from handling
+  // IPC messages before the sandbox has been enabled and all other necessary
+  // initialization has succeeded.
+  gpu_channel_manager_.reset(new gpu::GpuChannelManager(
+      gpu_preferences_, this, watchdog_thread_.get(),
+      base::ThreadTaskRunnerHandle::Get().get(), io_runner_.get(),
+      &shutdown_event_, owned_sync_point_manager_.get(),
+      gpu_memory_buffer_factory_));
+
+  media_gpu_channel_manager_.reset(
+      new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
+}
+
 void GpuServiceInternal::Bind(mojom::GpuServiceInternalRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
@@ -88,28 +118,28 @@ void GpuServiceInternal::DestroyGpuMemoryBuffer(
 }
 
 void GpuServiceInternal::DidCreateOffscreenContext(const GURL& active_url) {
-  NOTIMPLEMENTED();
+  gpu_host_->DidCreateOffscreenContext(active_url);
 }
 
 void GpuServiceInternal::DidDestroyChannel(int client_id) {
   media_gpu_channel_manager_->RemoveChannel(client_id);
-  NOTIMPLEMENTED();
+  gpu_host_->DidDestroyChannel(client_id);
 }
 
 void GpuServiceInternal::DidDestroyOffscreenContext(const GURL& active_url) {
-  NOTIMPLEMENTED();
+  gpu_host_->DidDestroyOffscreenContext(active_url);
 }
 
 void GpuServiceInternal::DidLoseContext(bool offscreen,
                                         gpu::error::ContextLostReason reason,
                                         const GURL& active_url) {
-  NOTIMPLEMENTED();
+  gpu_host_->DidLoseContext(offscreen, reason, active_url);
 }
 
 void GpuServiceInternal::StoreShaderToDisk(int client_id,
                                            const std::string& key,
                                            const std::string& shader) {
-  NOTIMPLEMENTED();
+  gpu_host_->StoreShaderToDisk(client_id, key, shader);
 }
 
 #if defined(OS_WIN)
@@ -122,33 +152,6 @@ void GpuServiceInternal::SendAcceleratedSurfaceCreatedChildWindow(
 
 void GpuServiceInternal::SetActiveURL(const GURL& url) {
   // TODO(penghuang): implement this function.
-}
-
-void GpuServiceInternal::Initialize() {
-  DCHECK(CalledOnValidThread());
-  gpu_info_.video_decode_accelerator_capabilities =
-      media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_);
-  gpu_info_.video_encode_accelerator_supported_profiles =
-      media::GpuVideoEncodeAccelerator::GetSupportedProfiles(gpu_preferences_);
-  gpu_info_.jpeg_decode_accelerator_supported =
-      media::GpuJpegDecodeAccelerator::IsSupported();
-
-  DCHECK(!owned_sync_point_manager_);
-  const bool allow_threaded_wait = false;
-  owned_sync_point_manager_.reset(
-      new gpu::SyncPointManager(allow_threaded_wait));
-
-  // Defer creation of the render thread. This is to prevent it from handling
-  // IPC messages before the sandbox has been enabled and all other necessary
-  // initialization has succeeded.
-  gpu_channel_manager_.reset(new gpu::GpuChannelManager(
-      gpu_preferences_, this, watchdog_thread_.get(),
-      base::ThreadTaskRunnerHandle::Get().get(), io_runner_.get(),
-      &shutdown_event_, owned_sync_point_manager_.get(),
-      gpu_memory_buffer_factory_));
-
-  media_gpu_channel_manager_.reset(
-      new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
 }
 
 void GpuServiceInternal::EstablishGpuChannel(
