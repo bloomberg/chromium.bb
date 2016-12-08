@@ -314,6 +314,7 @@ struct drm_fb {
 	uint32_t strides[4];
 	uint32_t offsets[4];
 	const struct pixel_format_info *format;
+	uint64_t modifier;
 	int width, height;
 	int fd;
 	struct weston_buffer_reference buffer_ref;
@@ -883,7 +884,28 @@ drm_fb_destroy_gbm(struct gbm_bo *bo, void *data)
 static int
 drm_fb_addfb(struct drm_fb *fb)
 {
-	int ret;
+	int ret = -EINVAL;
+#ifdef HAVE_DRM_ADDFB2_MODIFIERS
+	uint64_t mods[4] = { };
+	int i;
+#endif
+
+	/* If we have a modifier set, we must only use the WithModifiers
+	 * entrypoint; we cannot import it through legacy ioctls. */
+	if (fb->modifier != DRM_FORMAT_MOD_INVALID) {
+		/* KMS demands that if a modifier is set, it must be the same
+		 * for all planes. */
+#ifdef HAVE_DRM_ADDFB2_MODIFIERS
+		for (i = 0; i < (int) ARRAY_LENGTH(mods) && fb->handles[i]; i++)
+			mods[i] = fb->modifier;
+		ret = drmModeAddFB2WithModifiers(fb->fd, fb->width, fb->height,
+						 fb->format->format,
+						 fb->handles, fb->strides,
+						 fb->offsets, mods, &fb->fb_id,
+						 DRM_MODE_FB_MODIFIERS);
+#endif
+		return ret;
+	}
 
 	ret = drmModeAddFB2(fb->fd, fb->width, fb->height, fb->format->format,
 			    fb->handles, fb->strides, fb->offsets, &fb->fb_id,
@@ -945,6 +967,7 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 		goto err_fb;
 
 	fb->type = BUFFER_PIXMAN_DUMB;
+	fb->modifier = DRM_FORMAT_MOD_INVALID;
 	fb->handles[0] = create_arg.handle;
 	fb->strides[0] = create_arg.pitch;
 	fb->size = create_arg.size;
@@ -1012,6 +1035,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 	fb->strides[0] = gbm_bo_get_stride(bo);
 	fb->handles[0] = gbm_bo_get_handle(bo).u32;
 	fb->format = pixel_format_get_info(gbm_bo_get_format(bo));
+	fb->modifier = DRM_FORMAT_MOD_INVALID;
 	fb->size = fb->strides[0] * fb->height;
 	fb->fd = backend->drm.fd;
 
