@@ -91,7 +91,7 @@ void WaitUntilObserver::willDispatchEvent() {
   // waitUntil() isn't called, that means between willDispatchEvent() and
   // didDispatchEvent().
   if (m_type == NotificationClick)
-    getExecutionContext()->allowWindowInteraction();
+    m_executionContext->allowWindowInteraction();
 
   incrementPendingActivity();
 }
@@ -112,7 +112,7 @@ void WaitUntilObserver::waitUntil(ScriptState* scriptState,
     return;
   }
 
-  if (!getExecutionContext())
+  if (!m_executionContext)
     return;
 
   // When handling a notificationclick event, we want to allow one window to
@@ -133,7 +133,7 @@ void WaitUntilObserver::waitUntil(ScriptState* scriptState,
 WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
                                      EventType type,
                                      int eventID)
-    : ContextLifecycleObserver(context),
+    : m_executionContext(context),
       m_type(type),
       m_eventID(eventID),
       m_consumeWindowInteractionTimer(
@@ -153,11 +153,11 @@ void WaitUntilObserver::incrementPendingActivity() {
 
 void WaitUntilObserver::decrementPendingActivity() {
   ASSERT(m_pendingActivity > 0);
-  if (!getExecutionContext() || (!m_hasError && --m_pendingActivity))
+  if (!m_executionContext || (!m_hasError && --m_pendingActivity))
     return;
 
   ServiceWorkerGlobalScopeClient* client =
-      ServiceWorkerGlobalScopeClient::from(getExecutionContext());
+      ServiceWorkerGlobalScopeClient::from(m_executionContext);
   WebServiceWorkerEventResult result =
       m_hasError ? WebServiceWorkerEventResultRejected
                  : WebServiceWorkerEventResultCompleted;
@@ -196,17 +196,17 @@ void WaitUntilObserver::decrementPendingActivity() {
                                            m_eventDispatchTime);
       break;
   }
-  setContext(nullptr);
+  m_executionContext = nullptr;
 }
 
 void WaitUntilObserver::consumeWindowInteraction(TimerBase*) {
-  if (!getExecutionContext())
+  if (!m_executionContext)
     return;
-  getExecutionContext()->consumeWindowInteraction();
+  m_executionContext->consumeWindowInteraction();
 }
 
 DEFINE_TRACE(WaitUntilObserver) {
-  ContextLifecycleObserver::trace(visitor);
+  visitor->trace(m_executionContext);
 }
 
 }  // namespace blink
