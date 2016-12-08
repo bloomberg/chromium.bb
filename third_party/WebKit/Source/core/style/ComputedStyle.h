@@ -212,8 +212,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       // TODO(napper): Remove this once all independent properties are
       // generated and replace with a private function used only in
       // stylePropagationDiff().
-      return (m_pointerEvents == other.m_pointerEvents) &&
-             (m_whiteSpace == other.m_whiteSpace);
+      return (m_pointerEvents == other.m_pointerEvents);
     }
 
     inline bool compareEqualNonIndependent(const InheritedData& other) const {
@@ -235,7 +234,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                                         // text decoration on this element.
     unsigned m_cursorStyle : 6;     // ECursor
     unsigned m_direction : 1;       // TextDirection
-    unsigned m_whiteSpace : 3;      // EWhiteSpace
     unsigned m_boxDirection : 1;  // EBoxDirection (CSS3 box_direction property,
                                   // flexible box layout module)
     // 32 bits
@@ -347,7 +345,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // - The compareEqual() methods in the corresponding class
     // InheritedFlags
     unsigned m_isPointerEventsInherited : 1;
-    unsigned m_isWhiteSpaceInherited : 1;
 
     // If you add more style bits here, you will also need to update
     // ComputedStyle::copyNonInheritedFromCached() 68 bits
@@ -363,7 +360,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();
-    m_inheritedData.m_whiteSpace = static_cast<unsigned>(initialWhiteSpace());
     m_inheritedData.m_rtlOrdering = static_cast<unsigned>(initialRTLOrdering());
     m_inheritedData.m_boxDirection =
         static_cast<unsigned>(initialBoxDirection());
@@ -404,7 +400,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     // All independently inherited properties default to being inherited.
     m_nonInheritedData.m_isPointerEventsInherited = true;
-    m_nonInheritedData.m_isWhiteSpaceInherited = true;
   }
 
  private:
@@ -2264,18 +2259,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setTextSizeAdjust(TextSizeAdjust sizeAdjust) {
     SET_VAR(m_rareInheritedData, m_textSizeAdjust, sizeAdjust);
-  }
-
-  // white-space inherited
-  static EWhiteSpace initialWhiteSpace() { return EWhiteSpace::Normal; }
-  EWhiteSpace whiteSpace() const {
-    return static_cast<EWhiteSpace>(m_inheritedData.m_whiteSpace);
-  }
-  void setWhiteSpace(EWhiteSpace v) {
-    m_inheritedData.m_whiteSpace = static_cast<unsigned>(v);
-  }
-  void setWhiteSpaceIsInherited(bool isInherited) {
-    m_nonInheritedData.m_isWhiteSpaceInherited = isInherited;
   }
 
   // word-break inherited (aka -epub-word-break)

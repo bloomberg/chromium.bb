@@ -328,15 +328,6 @@ enum QuoteType { OPEN_QUOTE, CLOSE_QUOTE, NO_OPEN_QUOTE, NO_CLOSE_QUOTE };
 
 enum EAnimPlayState { AnimPlayStatePlaying, AnimPlayStatePaused };
 
-enum class EWhiteSpace : unsigned {
-  Normal,
-  Pre,
-  PreWrap,
-  PreLine,
-  Nowrap,
-  WebkitNowrap
-};
-
 // The order of this enum must match the order of the text align values in
 // CSSValueKeywords.in.
 enum class ETextAlign : unsigned {

@@ -77,7 +77,7 @@ struct SameSizeAsComputedStyle : public ComputedStyleBase,
   void* dataRefSvgStyle;
 
   struct InheritedData {
-    unsigned m_bitfields[2];
+    unsigned m_bitfields[1];
   } m_inheritedData;
 
   struct NonInheritedData {
@@ -237,8 +237,6 @@ void ComputedStyle::propagateIndependentInheritedProperties(
   ComputedStyleBase::propagateIndependentInheritedProperties(parentStyle);
   if (m_nonInheritedData.m_isPointerEventsInherited)
     setPointerEvents(parentStyle.pointerEvents());
-  if (m_nonInheritedData.m_isWhiteSpaceInherited)
-    setWhiteSpace(parentStyle.whiteSpace());
 }
 
 StyleSelfAlignmentData resolvedSelfAlignment(
@@ -424,8 +422,6 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   // that share this style.
   m_nonInheritedData.m_isPointerEventsInherited =
       other.m_nonInheritedData.m_isPointerEventsInherited;
-  m_nonInheritedData.m_isWhiteSpaceInherited =
-      other.m_nonInheritedData.m_isWhiteSpaceInherited;
 
   if (m_svgStyle != other.m_svgStyle)
     m_svgStyle.access()->copyNonInheritedFromCached(other.m_svgStyle.get());
@@ -823,7 +819,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
       m_inheritedData.m_textAlign != other.m_inheritedData.m_textAlign ||
       textTransform() != other.textTransform() ||
       m_inheritedData.m_direction != other.m_inheritedData.m_direction ||
-      m_inheritedData.m_whiteSpace != other.m_inheritedData.m_whiteSpace ||
+      whiteSpace() != other.whiteSpace() ||
       m_inheritedData.m_writingMode != other.m_inheritedData.m_writingMode)
     return true;
 
