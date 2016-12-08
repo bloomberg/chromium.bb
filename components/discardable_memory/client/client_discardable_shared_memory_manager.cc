@@ -356,51 +356,47 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
                "ClientDiscardableSharedMemoryManager::"
                "AllocateLockedDiscardableSharedMemory",
                "size", size, "id", id);
-  std::unique_ptr<base::DiscardableSharedMemory> memory;
+  base::SharedMemoryHandle handle;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::ScopedClosureRunner event_signal_runner(
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
   io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ClientDiscardableSharedMemoryManager::AllocateOnIO,
-                            base::Unretained(this), size, id, &memory,
+                            base::Unretained(this), size, id, &handle,
                             base::Passed(&event_signal_runner)));
   // Waiting until IPC has finished on the IO thread.
   event.Wait();
+  auto memory = base::MakeUnique<base::DiscardableSharedMemory>(handle);
+  if (!memory->Map(size))
+    base::TerminateBecauseOutOfMemory(size);
   return memory;
 }
 
 void ClientDiscardableSharedMemoryManager::AllocateOnIO(
     size_t size,
     int32_t id,
-    std::unique_ptr<base::DiscardableSharedMemory>* memory,
+    base::SharedMemoryHandle* handle,
     base::ScopedClosureRunner closure_runner) {
   (*manager_mojo_)
       ->AllocateLockedDiscardableSharedMemory(
           static_cast<uint32_t>(size), id,
           base::Bind(
               &ClientDiscardableSharedMemoryManager::AllocateCompletedOnIO,
-              base::Unretained(this), memory, base::Passed(&closure_runner)));
+              base::Unretained(this), handle, base::Passed(&closure_runner)));
 }
 
 void ClientDiscardableSharedMemoryManager::AllocateCompletedOnIO(
-    std::unique_ptr<base::DiscardableSharedMemory>* memory,
+    base::SharedMemoryHandle* handle,
     base::ScopedClosureRunner closure_runner,
     mojo::ScopedSharedBufferHandle mojo_handle) {
-  if (!mojo_handle.is_valid())
-    return;
-  base::SharedMemoryHandle handle = base::SharedMemory::NULLHandle();
   size_t memory_size = 0;
   bool read_only = false;
-  auto result = mojo::UnwrapSharedMemoryHandle(std::move(mojo_handle), &handle,
-                                               &memory_size, &read_only);
-  if (result != MOJO_RESULT_OK)
+  if (!mojo_handle.is_valid())
     return;
-  auto discardable_shared_memory =
-      base::MakeUnique<base::DiscardableSharedMemory>(handle);
-  if (!discardable_shared_memory->Map(memory_size))
-    base::TerminateBecauseOutOfMemory(memory_size);
-  *memory = std::move(discardable_shared_memory);
+  auto result = mojo::UnwrapSharedMemoryHandle(std::move(mojo_handle), handle,
+                                               &memory_size, &read_only);
+  DCHECK_EQ(result, MOJO_RESULT_OK);
 }
 
 void ClientDiscardableSharedMemoryManager::DeletedDiscardableSharedMemory(

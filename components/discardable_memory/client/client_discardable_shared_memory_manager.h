@@ -67,12 +67,11 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
   AllocateLockedDiscardableSharedMemory(size_t size, int32_t id);
   void AllocateOnIO(size_t size,
                     int32_t id,
-                    std::unique_ptr<base::DiscardableSharedMemory>* memory,
+                    base::SharedMemoryHandle* handle,
                     base::ScopedClosureRunner closure_runner);
-  void AllocateCompletedOnIO(
-      std::unique_ptr<base::DiscardableSharedMemory>* memory,
-      base::ScopedClosureRunner closure_runner,
-      mojo::ScopedSharedBufferHandle mojo_handle);
+  void AllocateCompletedOnIO(base::SharedMemoryHandle* handle,
+                             base::ScopedClosureRunner closure_runner,
+                             mojo::ScopedSharedBufferHandle mojo_handle);
 
   void DeletedDiscardableSharedMemory(int32_t id);
   void MemoryUsageChanged(size_t new_bytes_allocated,
