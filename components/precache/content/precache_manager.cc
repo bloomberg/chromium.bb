@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/precache/core/precache_database.h"
 #include "components/precache/core/precache_switches.h"
@@ -36,6 +37,7 @@ const char kPrecacheFieldTrialEnabledGroup[] = "Enabled";
 const char kPrecacheFieldTrialControlGroup[] = "Control";
 const char kConfigURLParam[] = "config_url";
 const char kManifestURLPrefixParam[] = "manifest_url_prefix";
+const char kDataReductionProxyParam[] = "disable_if_data_reduction_proxy";
 const size_t kNumTopHosts = 100;
 
 }  // namespace
@@ -50,11 +52,14 @@ PrecacheManager::PrecacheManager(
     content::BrowserContext* browser_context,
     const syncer::SyncService* const sync_service,
     const history::HistoryService* const history_service,
+    const data_reduction_proxy::DataReductionProxySettings*
+        data_reduction_proxy_settings,
     const base::FilePath& db_path,
     std::unique_ptr<PrecacheDatabase> precache_database)
     : browser_context_(browser_context),
       sync_service_(sync_service),
       history_service_(history_service),
+      data_reduction_proxy_settings_(data_reduction_proxy_settings),
       is_precaching_(false) {
   precache_database_ = std::move(precache_database);
   BrowserThread::PostTask(
@@ -99,6 +104,13 @@ bool PrecacheManager::IsPrecachingAllowed() const {
 }
 
 PrecacheManager::AllowedType PrecacheManager::PrecachingAllowed() const {
+  bool disable_if_proxy = !variations::GetVariationParamValue(
+      kPrecacheFieldTrialName, kDataReductionProxyParam).empty();
+  if (disable_if_proxy &&
+      (!data_reduction_proxy_settings_ ||
+       data_reduction_proxy_settings_->IsDataReductionProxyEnabled()))
+    return AllowedType::DISALLOWED;
+
   if (!(sync_service_ && sync_service_->IsEngineInitialized()))
     return AllowedType::PENDING;
 

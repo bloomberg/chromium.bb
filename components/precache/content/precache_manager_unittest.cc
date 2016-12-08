@@ -127,14 +127,18 @@ class TestPrecacheCompletionCallback {
 
 class PrecacheManagerUnderTest : public PrecacheManager {
  public:
-  PrecacheManagerUnderTest(content::BrowserContext* browser_context,
-                           const syncer::SyncService* const sync_service,
-                           const history::HistoryService* const history_service,
-                           const base::FilePath& db_path,
-                           std::unique_ptr<PrecacheDatabase> precache_database)
+  PrecacheManagerUnderTest(
+      content::BrowserContext* browser_context,
+      const syncer::SyncService* sync_service,
+      const history::HistoryService* history_service,
+      const data_reduction_proxy::DataReductionProxySettings*
+          data_reduction_proxy_settings,
+      const base::FilePath& db_path,
+      std::unique_ptr<PrecacheDatabase> precache_database)
       : PrecacheManager(browser_context,
                         sync_service,
                         history_service,
+                        data_reduction_proxy_settings,
                         db_path,
                         std::move(precache_database)),
         control_group_(false) {}
@@ -186,10 +190,10 @@ class PrecacheManagerTest : public testing::Test {
     factory_.SetFakeResponse(GURL(kConfigURL), "",
                              net::HTTP_INTERNAL_SERVER_ERROR,
                              net::URLRequestStatus::FAILED);
-    precache_manager_.reset(
-        new PrecacheManagerUnderTest(
-            &browser_context_, nullptr /* sync_service */,
-            &history_service_, db_path, std::move(precache_database)));
+    precache_manager_.reset(new PrecacheManagerUnderTest(
+        &browser_context_, nullptr /* sync_service */, &history_service_,
+        nullptr /* data_reduction_proxy_settings */, db_path,
+        std::move(precache_database)));
     base::RunLoop().RunUntilIdle();
 
     info_.headers = new net::HttpResponseHeaders("");

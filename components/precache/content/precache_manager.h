@@ -33,6 +33,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace data_reduction_proxy {
+class DataReductionProxySettings;
+}
+
 namespace history {
 class HistoryService;
 }
@@ -67,8 +71,10 @@ class PrecacheManager : public KeyedService,
   typedef base::Callback<void(bool)> PrecacheCompletionCallback;
 
   PrecacheManager(content::BrowserContext* browser_context,
-                  const syncer::SyncService* const sync_service,
-                  const history::HistoryService* const history_service,
+                  const syncer::SyncService* sync_service,
+                  const history::HistoryService* history_service,
+                  const data_reduction_proxy::DataReductionProxySettings*
+                      data_reduction_proxy_settings,
                   const base::FilePath& db_path,
                   std::unique_ptr<PrecacheDatabase> precache_database);
   ~PrecacheManager() override;
@@ -187,6 +193,11 @@ class PrecacheManager : public KeyedService,
   // The history service corresponding to the browser context. Used to determine
   // the list of top hosts. May be null.
   const history::HistoryService* const history_service_;
+
+  // The data reduction proxy settings object corresponding to the browser
+  // context. Used to determine if the proxy is enabled.
+  const data_reduction_proxy::DataReductionProxySettings* const
+      data_reduction_proxy_settings_;
 
   // The PrecacheFetcher used to precache resources. Should only be used on the
   // UI thread.

@@ -12,6 +12,7 @@ static_library("content") {
 
   deps = [
     "//base",
+    "//components/data_reduction_proxy/core/browser",
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/precache/core",
