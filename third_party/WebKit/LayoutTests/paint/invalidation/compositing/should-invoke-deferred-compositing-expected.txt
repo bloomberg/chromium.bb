@@ -18,6 +18,11 @@
         {
           "object": "LayoutHTMLCanvas (positioned) CANVAS",
           "rect": [0, 0, 200, 200],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutHTMLCanvas (positioned) CANVAS",
+          "rect": [0, 0, 200, 200],
           "reason": "layoutObject insertion"
         }
       ]

@@ -25,6 +25,11 @@
           "object": "LayoutBlockFlow DIV id='box' class='green box blurry'",
           "rect": [-29, -29, 258, 258],
           "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='box' class='green box blurry'",
+          "rect": [0, 0, 200, 200],
+          "reason": "full"
         }
       ]
     }

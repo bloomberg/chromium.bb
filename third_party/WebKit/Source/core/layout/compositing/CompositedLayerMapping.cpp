@@ -372,16 +372,20 @@ void CompositedLayerMapping::
       backgroundPaintsOntoScrollingContentsLayer()) {
     m_backgroundPaintsOntoScrollingContentsLayer =
         shouldPaintOntoScrollingContentsLayer;
-    // If the background is no longer painted onto the scrolling contents layer
-    // the scrolling contents layer needs to be updated. If it is going to be
-    // painted onto the scrolling contents layer this update will be triggered
-    // by LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect
-    if (hasScrollingLayer() && !shouldPaintOntoScrollingContentsLayer)
+    // The scrolling contents layer needs to be updated for changed
+    // m_backgroundPaintsOntoScrollingContentsLayer.
+    if (hasScrollingLayer())
       m_scrollingContentsLayer->setNeedsDisplay();
   }
-  m_backgroundPaintsOntoGraphicsLayer =
+  bool shouldPaintOntoGraphicsLayer =
       !m_backgroundPaintsOntoScrollingContentsLayer ||
       paintLocation & BackgroundPaintInGraphicsLayer;
+  if (shouldPaintOntoGraphicsLayer != !!m_backgroundPaintsOntoGraphicsLayer) {
+    m_backgroundPaintsOntoGraphicsLayer = shouldPaintOntoGraphicsLayer;
+    // The graphics layer needs to be updated for changed
+    // m_backgroundPaintsOntoGraphicsLayer.
+    m_graphicsLayer->setNeedsDisplay();
+  }
 }
 
 void CompositedLayerMapping::updateContentsOpaque() {
