@@ -209,11 +209,8 @@ ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
 }
 
 void WindowTreeHost::Show() {
-  // Ensure that compositor has been properly initialized, see InitCompositor()
-  // and InitHost().
-  DCHECK(compositor());
-  DCHECK_EQ(compositor()->root_layer(), window()->layer());
-  compositor()->SetVisible(true);
+  if (compositor())
+    compositor()->SetVisible(true);
   ShowImpl();
 }
 
