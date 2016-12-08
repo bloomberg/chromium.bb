@@ -274,10 +274,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool shouldPlaceVerticalScrollbarOnLeft() const = 0;
 
   // Convenience functions
-  float scrollOffset(ScrollbarOrientation orientation) {
-    return orientation == HorizontalScrollbar ? scrollOffsetInt().width()
-                                              : scrollOffsetInt().height();
-  }
   float minimumScrollOffset(ScrollbarOrientation orientation) {
     return orientation == HorizontalScrollbar ? minimumScrollOffset().width()
                                               : minimumScrollOffset().height();
