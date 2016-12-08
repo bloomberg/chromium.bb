@@ -134,6 +134,21 @@ def get_fyi_waterfall_config():
       }
     ],
     use_whitelist=True)
+  waterfall = add_tester(
+    waterfall, 'Android Swarming N5X Tester',
+    'fyi-android-swarming-n5x', 'android',
+    swarming=[
+      {
+       'os': 'Android',
+       'device_ids': [
+           'build245-m4--device1', 'build245-m4--device2',
+           'build245-m4--device3', 'build245-m4--device4',
+           'build245-m4--device5', 'build245-m4--device6',
+           'build245-m4--device7'
+        ]
+      }
+    ],
+    use_whitelist=True)
   return waterfall
 
 
