@@ -564,9 +564,8 @@ void UserCardView::AddUserContentMd(views::BoxLayout* layout,
   auto user_email = new views::Label();
   base::string16 user_email_string;
   if (login_status != LoginStatus::GUEST) {
-    SystemTrayDelegate* tray_delegate = WmShell::Get()->system_tray_delegate();
     user_email_string =
-        tray_delegate->IsUserSupervised()
+        WmShell::Get()->system_tray_delegate()->IsUserSupervised()
             ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL)
             : base::UTF8ToUTF16(
                   delegate->GetUserInfo(user_index_)->GetDisplayEmail());
@@ -574,6 +573,8 @@ void UserCardView::AddUserContentMd(views::BoxLayout* layout,
   user_email->SetText(user_email_string);
   user_email->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   user_email_style.SetupLabel(user_email);
+  user_email->SetVisible(!user_email_string.empty());
+  user_email->set_collapse_when_hidden(true);
 
   views::View* stack_of_labels = new views::View;
   AddChildView(stack_of_labels);
