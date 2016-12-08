@@ -442,6 +442,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_showing_(!widget_host->is_hidden()),
       is_window_visible_(true),
       is_window_activity_started_(true),
+      is_showing_overscroll_glow_(true),
       content_view_core_(nullptr),
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
@@ -1521,7 +1522,7 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   bool needs_animate = false;
-  if (overscroll_controller_) {
+  if (overscroll_controller_ && is_showing_overscroll_glow_) {
     needs_animate |= overscroll_controller_->Animate(
         frame_time, content_view_core_->GetViewAndroid()->GetLayer());
   }
@@ -1736,6 +1737,10 @@ SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
   return cached_background_color_;
 }
 
+void RenderWidgetHostViewAndroid::SetShowingOverscrollGlow(bool showing_glow) {
+  is_showing_overscroll_glow_ = showing_glow;
+}
+
 void RenderWidgetHostViewAndroid::DidOverscroll(
     const ui::DidOverscrollParams& params) {
   if (sync_compositor_)
@@ -1820,6 +1825,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
       view_.GetWindowAndroid()->GetCompositor()) {
     overscroll_controller_ = CreateOverscrollController(
         content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
+    is_showing_overscroll_glow_ = true;
   }
 }
 

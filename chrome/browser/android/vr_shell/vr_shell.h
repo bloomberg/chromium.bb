@@ -153,6 +153,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
  private:
   ~VrShell() override;
   void LoadUIContentOnUI();
+  void SetShowingOverscrollGlowOnUI(bool showing_glow);
   void DrawVrShellOnGL(const gvr::Mat4f& head_pose, gvr::Frame &frame);
   void DrawUiViewOnGL(const gvr::Mat4f* head_pose,
                       const std::vector<const ContentRectangle*>& elements,

@@ -64,6 +64,9 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Retrieves the last known scroll position.
   virtual gfx::Vector2dF GetLastScrollOffset() const = 0;
 
+  // Tells the renderer whether to show the overscroll glow.
+  virtual void SetShowingOverscrollGlow(bool showing) = 0;
+
   // Coordinate points received from a renderer process need to be transformed
   // to the top-level frame's coordinate space. For coordinates received from
   // the top-level frame's renderer this is a no-op as they are already

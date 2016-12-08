@@ -161,6 +161,10 @@ ui::TextInputClient* RenderWidgetHostViewBase::GetTextInputClient() {
   return NULL;
 }
 
+void RenderWidgetHostViewBase::SetShowingOverscrollGlow(bool showing) {
+  NOTIMPLEMENTED();
+}
+
 bool RenderWidgetHostViewBase::IsShowingContextMenu() const {
   return showing_context_menu_;
 }

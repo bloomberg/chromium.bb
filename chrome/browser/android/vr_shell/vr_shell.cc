@@ -188,6 +188,8 @@ VrShell::VrShell(JNIEnv* env,
   ui_input_manager_.reset(new VrInputManager(ui_contents_));
   weak_content_input_manager_ = content_input_manager_->GetWeakPtr();
   weak_ui_input_manager_ = ui_input_manager_->GetWeakPtr();
+
+  SetShowingOverscrollGlowOnUI(false);
 }
 
 void VrShell::UpdateCompositorLayersOnUI(JNIEnv* env,
@@ -937,6 +939,7 @@ void VrShell::OnPauseOnUI(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   // TODO(mthiesse): Clean up threading here.
   controller_->OnPause();
   gvr_api_->PauseTracking();
+  SetShowingOverscrollGlowOnUI(true);
 
   // exit vr session
   metrics_helper_->SetVRActive(false);
@@ -950,9 +953,15 @@ void VrShell::OnResumeOnUI(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   gvr_api_->RefreshViewerProfile();
   gvr_api_->ResumeTracking();
   controller_->OnResume();
+  SetShowingOverscrollGlowOnUI(false);
 
   // exit vr session
   metrics_helper_->SetVRActive(true);
+}
+
+void VrShell::SetShowingOverscrollGlowOnUI(bool showing_glow) {
+  main_contents_->GetRenderWidgetHostView()->SetShowingOverscrollGlow(
+      showing_glow);
 }
 
 base::WeakPtr<VrShell> VrShell::GetWeakPtrOnUI(

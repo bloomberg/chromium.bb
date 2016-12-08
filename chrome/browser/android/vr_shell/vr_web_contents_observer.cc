@@ -9,6 +9,9 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 
 namespace vr_shell {
 
@@ -79,6 +82,12 @@ void VrWebContentsObserver::WebContentsDestroyed() {
 
 void VrWebContentsObserver::WasHidden() {
   vr_shell_->ContentWasHiddenOnUI();
+}
+
+void VrWebContentsObserver::RenderViewHostChanged(
+    content::RenderViewHost* old_host,
+    content::RenderViewHost* new_host) {
+  new_host->GetWidget()->GetView()->SetShowingOverscrollGlow(false);
 }
 
 }  // namespace vr_shell

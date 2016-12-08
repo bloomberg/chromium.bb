@@ -41,6 +41,8 @@ class CONTENT_EXPORT VrWebContentsObserver
       bool entered_fullscreen, bool will_cause_resize) override;
   void WebContentsDestroyed() override;
   void WasHidden() override;
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override;
 
   void SetSecurityLevel();
 
