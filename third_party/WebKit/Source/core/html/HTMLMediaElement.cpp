@@ -4037,7 +4037,7 @@ void HTMLMediaElement::checkViewportIntersectionChanged() {
   // TODO(xjz): Early return if we not in tab mirroring.
 
   IntersectionGeometry geometry(
-      &document(), this, Vector<Length>(),
+      document().frame()->localFrameRoot()->document(), this, Vector<Length>(),
       IntersectionGeometry::ReportRootBounds::kShouldReportRootBounds);
   geometry.computeGeometry();
   IntRect intersectRect = geometry.intersectionIntRect();
