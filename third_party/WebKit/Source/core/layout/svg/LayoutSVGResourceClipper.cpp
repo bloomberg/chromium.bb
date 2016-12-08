@@ -36,58 +36,58 @@ namespace blink {
 
 namespace {
 
-bool requiresMask(const LayoutObject& layoutObject) {
-  // Only basic shapes or paths are supported for direct clipping. We need to
-  // fallback to masking for texts.
-  if (layoutObject.isSVGText())
-    return true;
-  // Current shape in clip-path gets clipped too. Fallback to masking.
-  return layoutObject.styleRef().clipPath();
+enum class ClipStrategy { None, Mask, Path };
+
+ClipStrategy modifyStrategyForClipPath(const ComputedStyle& style,
+                                       ClipStrategy strategy) {
+  // If the shape in the clip-path gets clipped too then fallback to masking.
+  if (strategy != ClipStrategy::Path || !style.clipPath())
+    return strategy;
+  return ClipStrategy::Mask;
 }
 
-bool requiresMask(const SVGElement& element) {
-  const LayoutObject* layoutObject = element.layoutObject();
-  DCHECK(layoutObject);
-  if (isSVGUseElement(element)) {
-    if (layoutObject->styleRef().clipPath())
-      return true;
-    const SVGGraphicsElement* clippingElement =
-        toSVGUseElement(element).visibleTargetGraphicsElementForClipping();
-    DCHECK(clippingElement);
-    layoutObject = clippingElement->layoutObject();
-  }
-  return requiresMask(*layoutObject);
-}
-
-bool contributesToClip(const SVGGraphicsElement& element) {
+ClipStrategy determineClipStrategy(const SVGGraphicsElement& element) {
   const LayoutObject* layoutObject = element.layoutObject();
   if (!layoutObject)
-    return false;
+    return ClipStrategy::None;
   const ComputedStyle& style = layoutObject->styleRef();
   if (style.display() == EDisplay::None ||
       style.visibility() != EVisibility::Visible)
-    return false;
+    return ClipStrategy::None;
+  ClipStrategy strategy = ClipStrategy::None;
   // Only shapes, paths and texts are allowed for clipping.
-  return layoutObject->isSVGShape() || layoutObject->isSVGText();
+  if (layoutObject->isSVGShape()) {
+    strategy = ClipStrategy::Path;
+  } else if (layoutObject->isSVGText()) {
+    // Text requires masking.
+    strategy = ClipStrategy::Mask;
+  }
+  return modifyStrategyForClipPath(style, strategy);
 }
 
-bool contributesToClip(const SVGElement& element) {
+ClipStrategy determineClipStrategy(const SVGElement& element) {
   // <use> within <clipPath> have a restricted content model.
   // (https://drafts.fxtf.org/css-masking-1/#ClipPathElement)
   if (isSVGUseElement(element)) {
     const LayoutObject* useLayoutObject = element.layoutObject();
     if (!useLayoutObject ||
         useLayoutObject->styleRef().display() == EDisplay::None)
-      return false;
-    const SVGGraphicsElement* clippingElement =
+      return ClipStrategy::None;
+    const SVGGraphicsElement* shapeElement =
         toSVGUseElement(element).visibleTargetGraphicsElementForClipping();
-    if (!clippingElement)
-      return false;
-    return contributesToClip(*clippingElement);
+    if (!shapeElement)
+      return ClipStrategy::None;
+    ClipStrategy shapeStrategy = determineClipStrategy(*shapeElement);
+    return modifyStrategyForClipPath(useLayoutObject->styleRef(),
+                                     shapeStrategy);
   }
   if (!element.isSVGGraphicsElement())
-    return false;
-  return contributesToClip(toSVGGraphicsElement(element));
+    return ClipStrategy::None;
+  return determineClipStrategy(toSVGGraphicsElement(element));
+}
+
+bool contributesToClip(const SVGElement& element) {
+  return determineClipStrategy(element) != ClipStrategy::None;
 }
 
 void pathFromElement(const SVGElement& element, Path& clipPath) {
@@ -137,10 +137,10 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded() {
 
   for (const SVGElement& childElement :
        Traversal<SVGElement>::childrenOf(*element())) {
-    if (!contributesToClip(childElement))
+    ClipStrategy strategy = determineClipStrategy(childElement);
+    if (strategy == ClipStrategy::None)
       continue;
-
-    if (requiresMask(childElement)) {
+    if (strategy == ClipStrategy::Mask) {
       m_clipContentPath.clear();
       return false;
     }
