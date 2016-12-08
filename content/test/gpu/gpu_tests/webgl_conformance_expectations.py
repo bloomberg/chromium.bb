@@ -284,10 +284,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=1635) # angle bug ID
     self.Fail('conformance/misc/webgl-specific.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/more/conformance/quickCheckAPI-B2.html',
-        ['win', 'passthrough', 'd3d11'], bug=665518)
-    self.Fail('conformance/more/conformance/quickCheckAPI-D_G.html',
-        ['win', 'passthrough', 'd3d11'], bug=665518)
     self.Fail('conformance/more/functions/copyTexImage2D.html',
         ['win', 'passthrough', 'd3d11'], bug=665518)
     self.Fail('conformance/more/functions/copyTexImage2DBadArgs.html',
@@ -330,8 +326,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=665518)
     self.Fail('conformance/textures/misc/tex-input-validation.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/textures/misc/texture-active-bind-2.html',
-        ['win', 'passthrough', 'd3d11'], bug=665518)
     self.Fail('conformance/textures/misc/texture-attachment-formats.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance/textures/misc/texture-copying-feedback-loops.html',

@@ -288,15 +288,17 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
   DCHECK(bound_textures_[target].size() > active_texture_unit_);
   bound_textures_[target][active_texture_unit_] = texture;
 
-  // Create a new texture object to track this texture
-  auto texture_object_iter = resources_->texture_object_map.find(texture);
-  if (texture_object_iter == resources_->texture_object_map.end()) {
-    resources_->texture_object_map.insert(
-        std::make_pair(texture, new TexturePassthrough(service_id, target)));
-  } else {
-    // Shouldn't be possible to get here if this texture has a different
-    // target than the one it was just bound to
-    DCHECK(texture_object_iter->second->target() == target);
+  if (service_id != 0) {
+    // Create a new texture object to track this texture
+    auto texture_object_iter = resources_->texture_object_map.find(texture);
+    if (texture_object_iter == resources_->texture_object_map.end()) {
+      resources_->texture_object_map.insert(
+          std::make_pair(texture, new TexturePassthrough(service_id, target)));
+    } else {
+      // Shouldn't be possible to get here if this texture has a different
+      // target than the one it was just bound to
+      DCHECK(texture_object_iter->second->target() == target);
+    }
   }
 
   return error::kNoError;
