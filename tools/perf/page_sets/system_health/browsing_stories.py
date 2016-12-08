@@ -234,6 +234,62 @@ class WashingtonPostMobileStory(_NewsBrowsingStory):
 
 
 ##############################################################################
+# Search browsing stories.
+##############################################################################
+
+
+class GoogleDesktopStory(_NewsBrowsingStory):
+  """
+  A typical google search story:
+    _ Start at https://www.google.com/search?q=flower
+    _ Click on the wikipedia link & navigate to
+      https://en.wikipedia.org/wiki/Flower
+    _ Scroll down the wikipedia page about flower.
+    _ Back to the search main page.
+    _ Refine the search query to 'flower delivery'.
+    _ Scroll down the page.
+    _ Click the next page result of 'flower delivery'.
+    _ Scroll the search page.
+
+  """
+  NAME = 'browse:search:google'
+  URL = 'https://www.google.com/search?q=flower'
+  _SEARCH_BOX_SELECTOR = 'input[aria-label="Search"]'
+  _SEARCH_PAGE_2_SELECTOR = 'a[aria-label=\'Page 2\']'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+  def _DidLoadDocument(self, action_runner):
+    # Click on flower Wikipedia link.
+    action_runner.Wait(2)
+    action_runner.ClickElement(text='Flower - Wikipedia')
+    action_runner.WaitForNavigate()
+
+    # Scroll the flower Wikipedia page, then navigate back.
+    action_runner.Wait(2)
+    action_runner.ScrollPage()
+    action_runner.Wait(2)
+    action_runner.NavigateBack()
+
+    # Click on the search box.
+    action_runner.WaitForElement(selector=self._SEARCH_BOX_SELECTOR)
+    action_runner.ClickElement(selector=self._SEARCH_BOX_SELECTOR)
+    action_runner.Wait(2)
+
+    # Submit search query.
+    action_runner.EnterText(' delivery')
+    action_runner.Wait(0.5)
+    action_runner.PressKey('Return')
+
+    # Scroll down & click next search result page.
+    action_runner.Wait(2)
+    action_runner.ScrollPageToElement(selector=self._SEARCH_PAGE_2_SELECTOR)
+    action_runner.Wait(2)
+    action_runner.ClickElement(selector=self._SEARCH_PAGE_2_SELECTOR)
+    action_runner.Wait(2)
+    action_runner.ScrollPage()
+
+
+##############################################################################
 # Media browsing stories.
 ##############################################################################
 
