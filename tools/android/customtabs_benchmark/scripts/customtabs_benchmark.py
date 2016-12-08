@@ -41,7 +41,7 @@ _INVALID_VALUE = -1
 
 
 # Command line arguments for Chrome.
-CHROME_ARGS = [
+_CHROME_ARGS = [
     # Disable backgound network requests that may pollute WPR archive, pollute
     # HTTP cache generation, and introduce noise in loading performance.
     '--disable-background-networking',
@@ -183,7 +183,12 @@ def LoopOnDevice(device, configs, output_filename, wpr_archive_path=None,
         config = configs[random.randint(0, len(configs) - 1)]
         chrome_args = _CHROME_ARGS + wpr_attributes.chrome_args
         if config['speculation_mode'] == 'no_state_prefetch':
-          chrome_args.append('--prerender=prefetch')
+          # NoStatePrefetch is enabled through an experiment.
+          chrome_args.extend([
+              '--force-fieldtrials=trial/group',
+              '--force-fieldtrial-params=trial.group:mode/no_state_prefetch',
+              '--enable-features="NoStatePrefetch<trial"'])
+
         result = RunOnce(device, config['url'], config['warmup'],
                          config['speculation_mode'],
                          config['delay_to_may_launch_url'],
