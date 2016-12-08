@@ -486,7 +486,8 @@ void SyncBackendHostCore::DoInitialProcessControlTypes() {
 
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop,
-             js_backend_, debug_info_listener_,
+             registrar_->GetLastConfiguredTypes(), js_backend_,
+             debug_info_listener_,
              base::Passed(sync_manager_->GetModelTypeConnectorProxy()),
              sync_manager_->cache_guid());
 

@@ -52,15 +52,15 @@ using bookmarks::BookmarkModel;
 using sync_bookmarks::BookmarkChangeProcessor;
 using sync_bookmarks::BookmarkDataTypeController;
 using sync_bookmarks::BookmarkModelAssociator;
+using sync_sessions::SessionDataTypeController;
+using syncer::AsyncDirectoryTypeController;
 using syncer::DataTypeController;
 using syncer::DataTypeManager;
 using syncer::DataTypeManagerImpl;
 using syncer::DataTypeManagerObserver;
 using syncer::DeviceInfoDataTypeController;
-using syncer::ProxyDataTypeController;
 using syncer::ModelTypeController;
-using syncer::AsyncDirectoryTypeController;
-using sync_sessions::SessionDataTypeController;
+using syncer::ProxyDataTypeController;
 
 namespace browser_sync {
 
@@ -297,14 +297,16 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
 }
 
 DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
+    syncer::ModelTypeSet initial_types,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
     const DataTypeController::TypeMap* controllers,
     const syncer::DataTypeEncryptionHandler* encryption_handler,
-    syncer::SyncEngine* engine,
+    syncer::ModelTypeConfigurer* configurer,
     DataTypeManagerObserver* observer) {
-  return new DataTypeManagerImpl(debug_info_listener, controllers,
-                                 encryption_handler, engine, observer);
+  return new DataTypeManagerImpl(initial_types, debug_info_listener,
+                                 controllers, encryption_handler, configurer,
+                                 observer);
 }
 
 syncer::SyncEngine* ProfileSyncComponentsFactoryImpl::CreateSyncEngine(

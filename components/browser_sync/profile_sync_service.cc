@@ -964,49 +964,8 @@ void ProfileSyncService::UpdateEngineInitUMA(bool success) {
   }
 }
 
-void ProfileSyncService::PostEngineInitialization() {
-  if (protocol_event_observers_.might_have_observers()) {
-    engine_->RequestBufferedProtocolEventsAndEnableForwarding();
-  }
-
-  if (type_debug_info_observers_.might_have_observers()) {
-    engine_->EnableDirectoryTypeDebugInfoForwarding();
-  }
-
-  // If we have a cached passphrase use it to decrypt/encrypt data now that the
-  // engine is initialized. We want to call this before notifying observers in
-  // case this operation affects the "passphrase required" status.
-  ConsumeCachedPassphraseIfPossible();
-
-  // The very first time the engine initializes is effectively the first time
-  // we can say we successfully "synced".  LastSyncedTime will only be null in
-  // this case, because the pref wasn't restored on StartUp.
-  if (sync_prefs_.GetLastSyncedTime().is_null()) {
-    UpdateLastSyncedTime();
-  }
-
-  // Auto-start means IsFirstSetupComplete gets set automatically.
-  if (start_behavior_ == AUTO_START && !IsFirstSetupComplete()) {
-    // This will trigger a configure if it completes setup.
-    SetFirstSetupComplete();
-  } else if (CanConfigureDataTypes()) {
-    ConfigureDataTypeManager();
-  }
-
-  // Check for a cookie jar mismatch.
-  std::vector<gaia::ListedAccount> accounts;
-  std::vector<gaia::ListedAccount> signed_out_accounts;
-  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
-  if (gaia_cookie_manager_service_ &&
-      gaia_cookie_manager_service_->ListAccounts(
-          &accounts, &signed_out_accounts, "ChromiumProfileSyncService")) {
-    OnGaiaAccountsInCookieUpdated(accounts, signed_out_accounts, error);
-  }
-
-  NotifyObservers();
-}
-
 void ProfileSyncService::OnEngineInitialized(
+    ModelTypeSet initial_types,
     const syncer::WeakHandle<syncer::JsBackend>& js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
@@ -1047,7 +1006,50 @@ void ProfileSyncService::OnEngineInitialized(
   local_device_->Initialize(cache_guid, signin_scoped_device_id,
                             blocking_pool_);
 
-  PostEngineInitialization();
+  if (protocol_event_observers_.might_have_observers()) {
+    engine_->RequestBufferedProtocolEventsAndEnableForwarding();
+  }
+
+  if (type_debug_info_observers_.might_have_observers()) {
+    engine_->EnableDirectoryTypeDebugInfoForwarding();
+  }
+
+  // If we have a cached passphrase use it to decrypt/encrypt data now that the
+  // backend is initialized. We want to call this before notifying observers in
+  // case this operation affects the "passphrase required" status.
+  ConsumeCachedPassphraseIfPossible();
+
+  // The very first time the backend initializes is effectively the first time
+  // we can say we successfully "synced".  LastSyncedTime will only be null in
+  // this case, because the pref wasn't restored on StartUp.
+  if (sync_prefs_.GetLastSyncedTime().is_null()) {
+    UpdateLastSyncedTime();
+  }
+
+  data_type_manager_.reset(
+      sync_client_->GetSyncApiComponentFactory()->CreateDataTypeManager(
+          initial_types, debug_info_listener_, &data_type_controllers_, this,
+          engine_.get(), this));
+
+  // Auto-start means IsFirstSetupComplete gets set automatically.
+  if (start_behavior_ == AUTO_START && !IsFirstSetupComplete()) {
+    // This will trigger a configure if it completes setup.
+    SetFirstSetupComplete();
+  } else if (CanConfigureDataTypes()) {
+    ConfigureDataTypeManager();
+  }
+
+  // Check for a cookie jar mismatch.
+  std::vector<gaia::ListedAccount> accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+  if (gaia_cookie_manager_service_ &&
+      gaia_cookie_manager_service_->ListAccounts(
+          &accounts, &signed_out_accounts, "ChromiumProfileSyncService")) {
+    OnGaiaAccountsInCookieUpdated(accounts, signed_out_accounts, error);
+  }
+
+  NotifyObservers();
 }
 
 void ProfileSyncService::OnSyncCycleCompleted() {
@@ -1831,12 +1833,8 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   }
 
   bool restart = false;
-  if (!data_type_manager_) {
+  if (!migrator_) {
     restart = true;
-    data_type_manager_.reset(
-        sync_client_->GetSyncApiComponentFactory()->CreateDataTypeManager(
-            debug_info_listener_, &data_type_controllers_, this, engine_.get(),
-            this));
 
     // We create the migrator at the same time.
     migrator_ = base::MakeUnique<BackendMigrator>(

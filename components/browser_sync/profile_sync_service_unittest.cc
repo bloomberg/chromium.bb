@@ -310,7 +310,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void ExpectDataTypeManagerCreation(
       int times,
       const FakeDataTypeManager::ConfigureCalled& callback) {
-    EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
+    EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _, _))
         .Times(times)
         .WillRepeatedly(ReturnNewDataTypeManager(callback));
   }

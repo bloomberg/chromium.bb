@@ -44,10 +44,11 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
       SyncService* sync_service,
       const RegisterDataTypesMethod& register_platform_types_method) override {}
   DataTypeManager* CreateDataTypeManager(
+      ModelTypeSet initial_types,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const DataTypeController::TypeMap* controllers,
       const DataTypeEncryptionHandler* encryption_handler,
-      SyncEngine* engine,
+      ModelTypeConfigurer* configurer,
       DataTypeManagerObserver* observer) override {
     return nullptr;
   }

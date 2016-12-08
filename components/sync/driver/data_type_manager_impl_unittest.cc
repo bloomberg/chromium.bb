@@ -217,12 +217,14 @@ ModelTypeSet FakeDataTypeEncryptionHandler::GetEncryptedDataTypes() const {
 class TestDataTypeManager : public DataTypeManagerImpl {
  public:
   TestDataTypeManager(
+      ModelTypeSet initial_types,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       ModelTypeConfigurer* configurer,
       const DataTypeController::TypeMap* controllers,
       const DataTypeEncryptionHandler* encryption_handler,
       DataTypeManagerObserver* observer)
-      : DataTypeManagerImpl(debug_info_listener,
+      : DataTypeManagerImpl(initial_types,
+                            debug_info_listener,
                             controllers,
                             encryption_handler,
                             configurer,
@@ -263,8 +265,8 @@ class SyncDataTypeManagerImplTest : public testing::Test {
  protected:
   void SetUp() override {
     dtm_ = base::MakeUnique<TestDataTypeManager>(
-        WeakHandle<DataTypeDebugInfoListener>(), &configurer_, &controllers_,
-        &encryption_handler_, &observer_);
+        ModelTypeSet(), WeakHandle<DataTypeDebugInfoListener>(), &configurer_,
+        &controllers_, &encryption_handler_, &observer_);
   }
 
   void SetConfigureStartExpectation() { observer_.ExpectStart(); }

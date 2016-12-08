@@ -80,10 +80,11 @@ class SyncApiComponentFactory {
 
   // Creates a DataTypeManager; the return pointer is owned by the caller.
   virtual DataTypeManager* CreateDataTypeManager(
+      ModelTypeSet initial_types,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const DataTypeController::TypeMap* controllers,
       const DataTypeEncryptionHandler* encryption_handler,
-      SyncEngine* engine,
+      ModelTypeConfigurer* configurer,
       DataTypeManagerObserver* observer) = 0;
 
   // Creating this in the factory helps us mock it out in testing.

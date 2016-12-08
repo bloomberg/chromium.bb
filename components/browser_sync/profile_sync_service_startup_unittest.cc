@@ -131,7 +131,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   DataTypeManagerMock* SetUpDataTypeManager() {
     DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
-    EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
+    EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _, _))
         .WillOnce(Return(data_type_manager));
     return data_type_manager;
   }
@@ -213,7 +213,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
 
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
-  EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
+  EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   sync_service_->Initialize();
@@ -275,7 +275,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
 }
 
 TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
-  EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
+  EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _)).Times(0);
   pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
@@ -389,7 +389,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
 
   // Disable sync through policy.
   pref_service()->SetBoolean(syncer::prefs::kSyncManaged, true);
-  EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
+  EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
@@ -424,7 +424,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   // not start automatically because IsFirstSetupComplete() will be false.
   // A new DataTypeManager should not be created.
   Mock::VerifyAndClearExpectations(data_type_manager);
-  EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
+  EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
   pref_service()->ClearPref(syncer::prefs::kSyncManaged);
   EXPECT_FALSE(sync_service_->IsEngineInitialized());

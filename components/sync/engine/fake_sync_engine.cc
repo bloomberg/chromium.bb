@@ -29,7 +29,7 @@ void FakeSyncEngine::Initialize(
     const base::Closure& report_unrecoverable_error_function,
     const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
     std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state) {
-  host->OnEngineInitialized(WeakHandle<JsBackend>(),
+  host->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                             WeakHandle<DataTypeDebugInfoListener>(),
                             kTestCacheGuid, !fail_initial_download_);
 }

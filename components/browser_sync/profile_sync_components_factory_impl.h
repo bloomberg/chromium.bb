@@ -65,11 +65,12 @@ class ProfileSyncComponentsFactoryImpl
       syncer::SyncService* sync_service,
       const RegisterDataTypesMethod& register_platform_types_method) override;
   syncer::DataTypeManager* CreateDataTypeManager(
+      syncer::ModelTypeSet initial_types,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
       const syncer::DataTypeController::TypeMap* controllers,
       const syncer::DataTypeEncryptionHandler* encryption_handler,
-      syncer::SyncEngine* engine,
+      syncer::ModelTypeConfigurer* configurer,
       syncer::DataTypeManagerObserver* observer) override;
   syncer::SyncEngine* CreateSyncEngine(
       const std::string& name,

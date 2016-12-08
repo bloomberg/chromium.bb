@@ -61,7 +61,7 @@ const char kDummySavingBrowserHistoryDisabled[] = "dummyPref";
 static const int EXPIRED_VISIT = -1;
 
 ACTION(ReturnNewDataTypeManager) {
-  return new syncer::DataTypeManagerImpl(arg0, arg1, arg2, arg3, arg4);
+  return new syncer::DataTypeManagerImpl(arg0, arg1, arg2, arg3, arg4, arg5);
 }
 
 class HistoryBackendMock : public HistoryBackend {
@@ -249,7 +249,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       signin->SetAuthenticatedAccountInfo("gaia_id", "test");
       CreateSyncService(std::move(sync_client_), callback);
       EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
-                  CreateDataTypeManager(_, _, _, _, _))
+                  CreateDataTypeManager(_, _, _, _, _, _))
           .WillOnce(ReturnNewDataTypeManager());
 
       profile_sync_service_bundle()->auth_service()->UpdateCredentials(

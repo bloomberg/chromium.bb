@@ -359,6 +359,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // SyncEngineHost implementation.
   void OnEngineInitialized(
+      syncer::ModelTypeSet initial_types,
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
@@ -715,9 +716,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Update UMA for syncing engine.
   void UpdateEngineInitUMA(bool success);
-
-  // Various setup following engine initialization, mostly for syncing engine.
-  void PostEngineInitialization();
 
   // Whether sync has been authenticated with an account ID.
   bool IsSignedIn() const;

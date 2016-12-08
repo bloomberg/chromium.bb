@@ -33,9 +33,10 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   virtual ~ProfileSyncServiceMock();
 
-  MOCK_METHOD4(
+  MOCK_METHOD5(
       OnEngineInitialized,
-      void(const syncer::WeakHandle<syncer::JsBackend>&,
+      void(syncer::ModelTypeSet initial_types,
+           const syncer::WeakHandle<syncer::JsBackend>&,
            const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
            const std::string&,
            bool));

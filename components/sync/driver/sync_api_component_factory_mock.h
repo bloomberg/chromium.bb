@@ -29,11 +29,12 @@ class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
 
   MOCK_METHOD2(RegisterDataTypes,
                void(SyncService* sync_service, const RegisterDataTypesMethod&));
-  MOCK_METHOD5(CreateDataTypeManager,
-               DataTypeManager*(const WeakHandle<DataTypeDebugInfoListener>&,
+  MOCK_METHOD6(CreateDataTypeManager,
+               DataTypeManager*(ModelTypeSet initial_types,
+                                const WeakHandle<DataTypeDebugInfoListener>&,
                                 const DataTypeController::TypeMap*,
                                 const DataTypeEncryptionHandler*,
-                                SyncEngine*,
+                                ModelTypeConfigurer*,
                                 DataTypeManagerObserver* observer));
   MOCK_METHOD4(CreateSyncEngine,
                SyncEngine*(const std::string& name,

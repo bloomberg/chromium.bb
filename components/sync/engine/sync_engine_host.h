@@ -41,6 +41,7 @@ class SyncEngineHost {
   // |js_backend| is what about:sync interacts with. It is initialized only if
   // |success| is true.
   virtual void OnEngineInitialized(
+      ModelTypeSet initial_types,
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const std::string& cache_guid,

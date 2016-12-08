@@ -539,6 +539,7 @@ void SyncBackendHostImpl::AddExperimentalTypes() {
 }
 
 void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
+    ModelTypeSet initial_types,
     const WeakHandle<JsBackend> js_backend,
     const WeakHandle<DataTypeDebugInfoListener> debug_info_listener,
     std::unique_ptr<ModelTypeConnector> model_type_connector,
@@ -562,12 +563,13 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
   // experimental types to enable. This should be done before we inform
   // the host to ensure they're visible in the customize screen.
   AddExperimentalTypes();
-  host_->OnEngineInitialized(js_backend, debug_info_listener, cache_guid, true);
+  host_->OnEngineInitialized(initial_types, js_backend, debug_info_listener,
+                             cache_guid, true);
 }
 
 void SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  host_->OnEngineInitialized(WeakHandle<JsBackend>(),
+  host_->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                              WeakHandle<DataTypeDebugInfoListener>(), "",
                              false);
 }
