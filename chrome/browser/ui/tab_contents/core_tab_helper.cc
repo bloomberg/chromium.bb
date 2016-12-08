@@ -30,11 +30,10 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "net/base/load_states.h"
-#include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -255,33 +254,6 @@ bool CoreTabHelper::GetStatusTextForWebContents(
 
 void CoreTabHelper::DidStartLoading() {
   UpdateContentRestrictions(0);
-}
-
-void CoreTabHelper::DocumentOnLoadCompletedInMainFrame() {
-  bool allow_localhost = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAllowInsecureLocalhost);
-  if (!allow_localhost)
-    return;
-
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry || !net::IsLocalhost(entry->GetURL().host()))
-    return;
-
-  content::SSLStatus ssl_status = entry->GetSSL();
-  bool is_cert_error = net::IsCertStatusError(ssl_status.cert_status) &&
-                       !net::IsCertStatusMinorError(ssl_status.cert_status);
-  if (!is_cert_error)
-    return;
-
-  web_contents()->GetMainFrame()->AddMessageToConsole(
-      content::CONSOLE_MESSAGE_LEVEL_WARNING,
-      base::StringPrintf(
-          "This site does not have a valid SSL "
-          "certificate! Without SSL, your site's and "
-          "visitors' data is vulnerable to theft and "
-          "tampering. Get a valid SSL certificate before"
-          " releasing your website to the public."));
 }
 
 void CoreTabHelper::WasShown() {

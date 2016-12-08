@@ -107,6 +107,7 @@
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/screen_orientation_provider.h"
 #include "content/public/browser/security_style_explanations.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_binding_set.h"
@@ -4520,6 +4521,8 @@ void WebContentsImpl::DidChangeName(RenderFrameHost* render_frame_host,
 
 void WebContentsImpl::DocumentOnLoadCompleted(
     RenderFrameHost* render_frame_host) {
+  ShowInsecureLocalhostWarningIfNeeded();
+
   for (auto& observer : observers_)
     observer.DocumentOnLoadCompletedInMainFrame();
 
@@ -5297,6 +5300,31 @@ bool WebContentsImpl::AddDomainInfoToRapporSample(rappor::Sample* sample) {
                                        GetLastCommittedURL()));
 
   return true;
+}
+
+void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {
+  bool allow_localhost = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAllowInsecureLocalhost);
+  if (!allow_localhost)
+    return;
+
+  content::NavigationEntry* entry = GetController().GetLastCommittedEntry();
+  if (!entry || !net::IsLocalhost(entry->GetURL().host()))
+    return;
+
+  content::SSLStatus ssl_status = entry->GetSSL();
+  bool is_cert_error = net::IsCertStatusError(ssl_status.cert_status) &&
+                       !net::IsCertStatusMinorError(ssl_status.cert_status);
+  if (!is_cert_error)
+    return;
+
+  GetMainFrame()->AddMessageToConsole(
+      content::CONSOLE_MESSAGE_LEVEL_WARNING,
+      base::StringPrintf("This site does not have a valid SSL "
+                         "certificate! Without SSL, your site's and "
+                         "visitors' data is vulnerable to theft and "
+                         "tampering. Get a valid SSL certificate before"
+                         " releasing your website to the public."));
 }
 
 }  // namespace content

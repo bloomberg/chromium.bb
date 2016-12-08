@@ -31,6 +31,10 @@ const char kAgcStartupMinVolume[] = "agc-startup-min-volume";
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 
+// Enables TLS/SSL errors on localhost to be ignored (no interstitial,
+// no blocking of requests).
+const char kAllowInsecureLocalhost[] = "allow-insecure-localhost";
+
 // Allows loopback interface to be added in network list for peer connection.
 const char kAllowLoopbackInPeerConnection[] =
     "allow-loopback-in-peer-connection";

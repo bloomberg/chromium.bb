@@ -19,6 +19,7 @@ CONTENT_EXPORT extern const char kAcceleratedCanvas2dMSAASampleCount[];
 CONTENT_EXPORT extern const char kAecRefinedAdaptiveFilter[];
 CONTENT_EXPORT extern const char kAgcStartupMinVolume[];
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
+CONTENT_EXPORT extern const char kAllowInsecureLocalhost[];
 CONTENT_EXPORT extern const char kAllowLoopbackInPeerConnection[];
 CONTENT_EXPORT extern const char kAllowNoSandboxJob[];
 CONTENT_EXPORT extern const char kAllowSandboxDebugging[];

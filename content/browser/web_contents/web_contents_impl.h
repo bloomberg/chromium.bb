@@ -1141,6 +1141,10 @@ class CONTENT_EXPORT WebContentsImpl
   // Removes a registered WebContentsBindingSet by interface name.
   void RemoveBindingSet(const std::string& interface_name);
 
+  // Prints a console warning when visiting a localhost site with a bad
+  // certificate via --allow-insecure-localhost.
+  void ShowInsecureLocalhostWarningIfNeeded();
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.

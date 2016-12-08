@@ -36,10 +36,6 @@ const char kAllowFileAccess[]               = "allow-file-access";
 // extension API.
 const char kAllowHttpScreenCapture[] = "allow-http-screen-capture";
 
-// Enables TLS/SSL errors on localhost to be ignored (no interstitial,
-// no blocking of requests).
-const char kAllowInsecureLocalhost[] = "allow-insecure-localhost";
-
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 

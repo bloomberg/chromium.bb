@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -18,6 +19,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/url_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -41,6 +43,18 @@ const char kClientAuthenticationError[] =
 const char kRedirectError[] =
     "The script resource is behind a redirect, which is disallowed.";
 const char kServiceWorkerAllowed[] = "Service-Worker-Allowed";
+
+bool ShouldIgnoreSSLError(net::URLRequest* request) {
+  const net::HttpNetworkSession::Params* session_params =
+      request->context()->GetNetworkSessionParams();
+  if (session_params && session_params->ignore_certificate_errors)
+    return true;
+  bool allow_localhost = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAllowInsecureLocalhost);
+  if (allow_localhost && net::IsLocalhost(request->url().host()))
+    return true;
+  return false;
+}
 
 }  // namespace
 
@@ -252,9 +266,10 @@ void ServiceWorkerWriteToCacheJob::OnSSLCertificateError(
   DCHECK_EQ(net_request_.get(), request);
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerWriteToCacheJob::OnSSLCertificateError");
-  // TODO(michaeln): Pass this thru to our jobs client,
-  // see NotifySSLCertificateError.
-  NotifyStartErrorHelper(net::ERR_INSECURE_RESPONSE, kSSLError);
+  if (ShouldIgnoreSSLError(request))
+    request->ContinueDespiteLastError();
+  else
+    NotifyStartErrorHelper(net::ERR_INSECURE_RESPONSE, kSSLError);
 }
 
 void ServiceWorkerWriteToCacheJob::OnResponseStarted(net::URLRequest* request,
@@ -277,13 +292,10 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(net::URLRequest* request,
   }
   // OnSSLCertificateError is not called when the HTTPS connection is reused.
   // So we check cert_status here.
-  if (net::IsCertStatusError(request->ssl_info().cert_status)) {
-    const net::HttpNetworkSession::Params* session_params =
-        request->context()->GetNetworkSessionParams();
-    if (!session_params || !session_params->ignore_certificate_errors) {
-      NotifyStartErrorHelper(net::ERR_INSECURE_RESPONSE, kSSLError);
-      return;
-    }
+  if (net::IsCertStatusError(request->ssl_info().cert_status) &&
+      !ShouldIgnoreSSLError(request)) {
+    NotifyStartErrorHelper(net::ERR_INSECURE_RESPONSE, kSSLError);
+    return;
   }
 
   if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER) {
