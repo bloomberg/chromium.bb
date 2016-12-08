@@ -3192,6 +3192,8 @@ struct wl_touch_interface {
 #define WL_TOUCH_MOTION	2
 #define WL_TOUCH_FRAME	3
 #define WL_TOUCH_CANCEL	4
+#define WL_TOUCH_SHAPE	5
+#define WL_TOUCH_ORIENTATION	6
 
 /**
  * @ingroup iface_wl_touch
@@ -3213,6 +3215,14 @@ struct wl_touch_interface {
  * @ingroup iface_wl_touch
  */
 #define WL_TOUCH_CANCEL_SINCE_VERSION	1
+/**
+ * @ingroup iface_wl_touch
+ */
+#define WL_TOUCH_SHAPE_SINCE_VERSION	6
+/**
+ * @ingroup iface_wl_touch
+ */
+#define WL_TOUCH_ORIENTATION_SINCE_VERSION	6
 
 /**
  * @ingroup iface_wl_touch
@@ -3280,6 +3290,33 @@ static inline void
 wl_touch_send_cancel(struct wl_resource *resource_)
 {
 	wl_resource_post_event(resource_, WL_TOUCH_CANCEL);
+}
+
+/**
+ * @ingroup iface_wl_touch
+ * Sends an shape event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param id the unique ID of this touch point
+ * @param major length of the major axis in surface local coordinates
+ * @param minor length of the minor axis in surface local coordinates
+ */
+static inline void
+wl_touch_send_shape(struct wl_resource *resource_, int32_t id, wl_fixed_t major, wl_fixed_t minor)
+{
+	wl_resource_post_event(resource_, WL_TOUCH_SHAPE, id, major, minor);
+}
+
+/**
+ * @ingroup iface_wl_touch
+ * Sends an orientation event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param id the unique ID of this touch point
+ * @param orientation angle between major axis and surface y-axis in degrees
+ */
+static inline void
+wl_touch_send_orientation(struct wl_resource *resource_, int32_t id, wl_fixed_t orientation)
+{
+	wl_resource_post_event(resource_, WL_TOUCH_ORIENTATION, id, orientation);
 }
 
 #ifndef WL_OUTPUT_SUBPIXEL_ENUM

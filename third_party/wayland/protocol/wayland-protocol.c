@@ -383,7 +383,7 @@ static const struct wl_message wl_seat_events[] = {
 };
 
 WL_EXPORT const struct wl_interface wl_seat_interface = {
-	"wl_seat", 5,
+	"wl_seat", 6,
 	4, wl_seat_requests,
 	2, wl_seat_events,
 };
@@ -406,7 +406,7 @@ static const struct wl_message wl_pointer_events[] = {
 };
 
 WL_EXPORT const struct wl_interface wl_pointer_interface = {
-	"wl_pointer", 5,
+	"wl_pointer", 6,
 	2, wl_pointer_requests,
 	9, wl_pointer_events,
 };
@@ -425,7 +425,7 @@ static const struct wl_message wl_keyboard_events[] = {
 };
 
 WL_EXPORT const struct wl_interface wl_keyboard_interface = {
-	"wl_keyboard", 5,
+	"wl_keyboard", 6,
 	1, wl_keyboard_requests,
 	6, wl_keyboard_events,
 };
@@ -440,12 +440,14 @@ static const struct wl_message wl_touch_events[] = {
 	{ "motion", "uiff", types + 0 },
 	{ "frame", "", types + 0 },
 	{ "cancel", "", types + 0 },
+	{ "shape", "6iff", types + 0 },
+	{ "orientation", "6if", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface wl_touch_interface = {
-	"wl_touch", 5,
+	"wl_touch", 6,
 	1, wl_touch_requests,
-	5, wl_touch_events,
+	7, wl_touch_events,
 };
 
 static const struct wl_message wl_output_events[] = {

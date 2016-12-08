@@ -4319,7 +4319,13 @@ struct wl_touch_listener {
 	/**
 	 * end of touch frame event
 	 *
-	 * Indicates the end of a contact point list.
+	 * Indicates the end of a contact point list. The wayland
+	 * protocol requires touch point updates to be sent sequentially,
+	 * however all events within a frame should be considered one
+	 * hardware event. A wl_touch.frame terminates at least one event
+	 * but otherwise no guarantee is provided about the set of events
+	 * within a frame. A client must assume that any state not updated
+	 * in a frame is unchanged from the previously known state.
 	 */
 	void (*frame)(void *data,
 		      struct wl_touch *wl_touch);
@@ -4335,6 +4341,65 @@ struct wl_touch_listener {
 	 */
 	void (*cancel)(void *data,
 		       struct wl_touch *wl_touch);
+	/**
+	 * update shape of touch point
+	 *
+	 * Sent when a touchpoint has changed its shape. If the touch
+	 * position or orientation changed at the same time, the
+	 * wl_touch.motion, wl_touch.orientation and wl_touch.shape are
+	 * sent within the same wl_touch.frame. Otherwise, only a
+	 * wl_touch.shape is sent within this wl_touch.frame. The protocol
+	 * does not guarantee specific ordering of wl_touch.orientation,
+	 * wl_touch.shape and wl_touch.motion events.
+	 *
+	 * A touchpoint shape is approximated by an ellipse through the
+	 * major and minor axis length. The major axis length describes the
+	 * longest diameter of the ellipse, while the minor axis length
+	 * describes the shortest diameter. Both are specified in surface
+	 * coordinates. The center of the ellipse is always at the
+	 * touchpoint location as reported by wl_touch.down or
+	 * wl_touch.move.
+	 *
+	 * This event is only sent by the compositor if the touch device
+	 * supports shape reports. The client has to make reasonable
+	 * assumptions about the shape if it did not receive this event.
+	 * @param id the unique ID of this touch point
+	 * @param major length of the major axis in surface local coordinates
+	 * @param minor length of the minor axis in surface local coordinates
+	 * @since 6
+	 */
+	void (*shape)(void *data,
+		      struct wl_touch *wl_touch,
+		      int32_t id,
+		      wl_fixed_t major,
+		      wl_fixed_t minor);
+	/**
+	 * update orientation of touch point
+	 *
+	 * Sent when a touchpoint has changed its orientation. If the
+	 * touch position or shape changed at the same time, the
+	 * wl_touch.motion, wl_touch.orientation and wl_touch.shape are
+	 * sent within the same wl_touch.frame. Otherwise, only a
+	 * wl_touch.orientation is sent within this wl_touch.frame. The
+	 * protocol does not guarantee specific ordering of
+	 * wl_touch.orientation, wl_touch.shape and wl_touch.motion events.
+	 *
+	 * The orientation describes the clockwise angle of touchpoints
+	 * major axis to the surface y-axis and is normalized to the -180
+	 * to +180 degrees range. The granuality of orientation depends on
+	 * the touch device, some devices only support binary rotation
+	 * values between 0 and 90 degrees.
+	 *
+	 * This event is only sent by the compositor if the touch device
+	 * supports orientation reports.
+	 * @param id the unique ID of this touch point
+	 * @param orientation angle between major axis and surface y-axis in degrees
+	 * @since 6
+	 */
+	void (*orientation)(void *data,
+			    struct wl_touch *wl_touch,
+			    int32_t id,
+			    wl_fixed_t orientation);
 };
 
 /**
