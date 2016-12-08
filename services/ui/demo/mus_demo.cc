@@ -109,7 +109,7 @@ void MusDemo::OnUnembed(aura::Window* root) {
   NOTREACHED();
 }
 
-void MusDemo::OnEmbedRootDestroyed(aura::Window* root) {
+void MusDemo::OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) {
   // Not called for the WindowManager.
   NOTREACHED();
 }

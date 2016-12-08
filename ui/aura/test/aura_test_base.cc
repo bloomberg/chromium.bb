@@ -147,7 +147,7 @@ void AuraTestBase::OnEmbed(
 
 void AuraTestBase::OnUnembed(Window* root) {}
 
-void AuraTestBase::OnEmbedRootDestroyed(Window* root) {}
+void AuraTestBase::OnEmbedRootDestroyed(WindowTreeHostMus* window_tree_host) {}
 
 void AuraTestBase::OnLostConnection(WindowTreeClient* client) {}
 

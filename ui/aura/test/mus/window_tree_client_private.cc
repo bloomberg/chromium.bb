@@ -79,4 +79,9 @@ bool WindowTreeClientPrivate::HasPointerWatcher() {
   return tree_client_impl_->has_pointer_watcher_;
 }
 
+Window* WindowTreeClientPrivate::GetWindowByServerId(Id id) {
+  WindowMus* window = tree_client_impl_->GetWindowByServerId(id);
+  return window ? window->GetWindow() : nullptr;
+}
+
 }  // namespace aura

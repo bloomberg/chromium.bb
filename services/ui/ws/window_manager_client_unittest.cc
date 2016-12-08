@@ -10,12 +10,16 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "services/ui/common/util.h"
-#include "services/ui/public/cpp/tests/window_server_test_base.h"
-#include "services/ui/public/cpp/window_observer.h"
-#include "services/ui/public/cpp/window_private.h"
-#include "services/ui/public/cpp/window_tree_client.h"
-#include "services/ui/public/cpp/window_tree_client_delegate.h"
-#include "services/ui/public/cpp/window_tree_client_observer.h"
+#include "services/ui/ws/window_server_test_base.h"
+#include "ui/aura/env.h"
+#include "ui/aura/mus/window_port_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_client_delegate.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/test/mus/window_tree_client_private.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
@@ -23,119 +27,96 @@ namespace ws {
 
 namespace {
 
-Id server_id(ui::Window* window) {
-  return WindowPrivate(window).server_id();
+Id server_id(aura::Window* window) {
+  return aura::WindowMus::Get(window)->server_id();
 }
 
-ui::Window* GetChildWindowByServerId(WindowTreeClient* client, uint32_t id) {
-  return client->GetWindowByServerId(id);
+aura::Window* GetChildWindowByServerId(aura::WindowTreeClient* client,
+                                       aura::Id id) {
+  return aura::WindowTreeClientPrivate(client).GetWindowByServerId(id);
 }
 
-int ValidIndexOf(const Window::Children& windows, Window* window) {
-  Window::Children::const_iterator it =
-      std::find(windows.begin(), windows.end(), window);
-  return (it != windows.end()) ? (it - windows.begin()) : -1;
-}
-
-class TestWindowManagerDelegate : public WindowManagerDelegate {
+class TestWindowManagerDelegate : public aura::WindowManagerDelegate {
  public:
   TestWindowManagerDelegate() {}
   ~TestWindowManagerDelegate() override {}
 
   // WindowManagerDelegate:
-  void SetWindowManagerClient(WindowManagerClient* client) override {}
-  bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override {
+  void SetWindowManagerClient(aura::WindowManagerClient* client) override {}
+  bool OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) override {
     return false;
   }
   bool OnWmSetProperty(
-      Window* window,
+      aura::Window* window,
       const std::string& name,
       std::unique_ptr<std::vector<uint8_t>>* new_data) override {
-    return true;
+    return false;
   }
-  Window* OnWmCreateTopLevelWindow(
+  aura::Window* OnWmCreateTopLevelWindow(
+      ui::mojom::WindowType window_type,
       std::map<std::string, std::vector<uint8_t>>* properties) override {
     return nullptr;
   }
-  void OnWmDisplayRemoved(ui::Window* window) override {}
-  void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
-                                  bool janky) override {}
-  void OnWmNewDisplay(Window* window,
+  void OnWmClientJankinessChanged(const std::set<aura::Window*>& client_windows,
+                                  bool not_responding) override {}
+  void OnWmWillCreateDisplay(const display::Display& display) override {}
+  void OnWmNewDisplay(std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
                       const display::Display& display) override {}
+  void OnWmDisplayRemoved(aura::WindowTreeHostMus* window_tree_host) override {}
   void OnWmDisplayModified(const display::Display& display) override {}
-  void OnWmPerformMoveLoop(Window* window,
+  mojom::EventResult OnAccelerator(uint32_t accelerator_id,
+                                   const ui::Event& event) override {
+    return ui::mojom::EventResult::UNHANDLED;
+  }
+  void OnWmPerformMoveLoop(aura::Window* window,
                            mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,
                            const base::Callback<void(bool)>& on_done) override {
   }
-  void OnWmCancelMoveLoop(Window* window) override {}
+  void OnWmCancelMoveLoop(aura::Window* window) override {}
+  void OnWmSetClientArea(
+      aura::Window* window,
+      const gfx::Insets& insets,
+      const std::vector<gfx::Rect>& additional_client_areas) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWindowManagerDelegate);
 };
 
-class BoundsChangeObserver : public WindowObserver {
+class BoundsChangeObserver : public aura::WindowObserver {
  public:
-  explicit BoundsChangeObserver(Window* window) : window_(window) {
+  explicit BoundsChangeObserver(aura::Window* window) : window_(window) {
     window_->AddObserver(this);
   }
   ~BoundsChangeObserver() override { window_->RemoveObserver(this); }
 
  private:
   // Overridden from WindowObserver:
-  void OnWindowBoundsChanged(Window* window,
+  void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override {
     DCHECK_EQ(window, window_);
     EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
 
-  Window* window_;
+  aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundsChangeObserver);
 };
 
 // Wait until the bounds of the supplied window change; returns false on
 // timeout.
-bool WaitForBoundsToChange(Window* window) {
+bool WaitForBoundsToChange(aura::Window* window) {
   BoundsChangeObserver observer(window);
   return WindowServerTestBase::DoRunLoopWithTimeout();
 }
 
-class ClientAreaChangeObserver : public WindowObserver {
- public:
-  explicit ClientAreaChangeObserver(Window* window) : window_(window) {
-    window_->AddObserver(this);
-  }
-  ~ClientAreaChangeObserver() override { window_->RemoveObserver(this); }
-
- private:
-  // Overridden from WindowObserver:
-  void OnWindowClientAreaChanged(
-      Window* window,
-      const gfx::Insets& old_client_area,
-      const std::vector<gfx::Rect>& old_additional_client_areas) override {
-    DCHECK_EQ(window, window_);
-    EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
-  }
-
-  Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientAreaChangeObserver);
-};
-
-// Wait until the bounds of the supplied window change; returns false on
-// timeout.
-bool WaitForClientAreaToChange(Window* window) {
-  ClientAreaChangeObserver observer(window);
-  return WindowServerTestBase::DoRunLoopWithTimeout();
-}
 
 // Spins a run loop until the tree beginning at |root| has |tree_size| windows
 // (including |root|).
-class TreeSizeMatchesObserver : public WindowObserver {
+class TreeSizeMatchesObserver : public aura::WindowObserver {
  public:
-  TreeSizeMatchesObserver(Window* tree, size_t tree_size)
+  TreeSizeMatchesObserver(aura::Window* tree, size_t tree_size)
       : tree_(tree), tree_size_(tree_size) {
     tree_->AddObserver(this);
   }
@@ -145,20 +126,19 @@ class TreeSizeMatchesObserver : public WindowObserver {
 
  private:
   // Overridden from WindowObserver:
-  void OnTreeChanged(const TreeChangeParams& params) override {
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override {
     if (IsTreeCorrectSize())
       EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
 
-  size_t CountWindows(const Window* window) const {
+  size_t CountWindows(const aura::Window* window) const {
     size_t count = 1;
-    Window::Children::const_iterator it = window->children().begin();
-    for (; it != window->children().end(); ++it)
-      count += CountWindows(*it);
+    for (const aura::Window* child : window->children())
+      count += CountWindows(child);
     return count;
   }
 
-  Window* tree_;
+  aura::Window* tree_;
   size_t tree_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeSizeMatchesObserver);
@@ -167,44 +147,42 @@ class TreeSizeMatchesObserver : public WindowObserver {
 // Wait until |window| has |tree_size| descendants; returns false on timeout.
 // The count includes |window|. For example, if you want to wait for |window| to
 // have a single child, use a |tree_size| of 2.
-bool WaitForTreeSizeToMatch(Window* window, size_t tree_size) {
+bool WaitForTreeSizeToMatch(aura::Window* window, size_t tree_size) {
   TreeSizeMatchesObserver observer(window, tree_size);
   return observer.IsTreeCorrectSize() ||
          WindowServerTestBase::DoRunLoopWithTimeout();
 }
 
-class OrderChangeObserver : public WindowObserver {
+class StackingOrderChangeObserver : public aura::WindowObserver {
  public:
-  OrderChangeObserver(Window* window) : window_(window) {
+  StackingOrderChangeObserver(aura::Window* window) : window_(window) {
     window_->AddObserver(this);
   }
-  ~OrderChangeObserver() override { window_->RemoveObserver(this); }
+  ~StackingOrderChangeObserver() override { window_->RemoveObserver(this); }
 
  private:
-  // Overridden from WindowObserver:
-  void OnWindowReordered(Window* window,
-                         Window* relative_window,
-                         mojom::OrderDirection direction) override {
+  // Overridden from aura::WindowObserver:
+  void OnWindowStackingChanged(aura::Window* window) override {
     DCHECK_EQ(window, window_);
     EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
 
-  Window* window_;
+  aura::Window* window_;
 
-  DISALLOW_COPY_AND_ASSIGN(OrderChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(StackingOrderChangeObserver);
 };
 
 // Wait until |window|'s tree size matches |tree_size|; returns false on
 // timeout.
-bool WaitForOrderChange(WindowTreeClient* client, Window* window) {
-  OrderChangeObserver observer(window);
+bool WaitForStackingOrderChange(aura::Window* window) {
+  StackingOrderChangeObserver observer(window);
   return WindowServerTestBase::DoRunLoopWithTimeout();
 }
 
 // Tracks a window's destruction. Query is_valid() for current state.
-class WindowTracker : public WindowObserver {
+class WindowTracker : public aura::WindowObserver {
  public:
-  explicit WindowTracker(Window* window) : window_(window) {
+  explicit WindowTracker(aura::Window* window) : window_(window) {
     window_->AddObserver(this);
   }
   ~WindowTracker() override {
@@ -216,15 +194,27 @@ class WindowTracker : public WindowObserver {
 
  private:
   // Overridden from WindowObserver:
-  void OnWindowDestroyed(Window* window) override {
+  void OnWindowDestroyed(aura::Window* window) override {
     DCHECK_EQ(window, window_);
     window_ = nullptr;
   }
 
-  Window* window_;
+  aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTracker);
 };
+
+// Creates a new Window parented to |parent| that is made visible.
+aura::Window* NewVisibleWindow(aura::Window* parent,
+                               aura::WindowTreeClient* client) {
+  std::unique_ptr<aura::WindowPortMus> window_port_mus =
+      base::MakeUnique<aura::WindowPortMus>(client, aura::WindowMusType::LOCAL);
+  aura::Window* window = new aura::Window(nullptr, std::move(window_port_mus));
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->Show();
+  parent->AddChild(window);
+  return window;
+}
 
 }  // namespace
 
@@ -232,19 +222,16 @@ class WindowTracker : public WindowObserver {
 // -----------------------------------------------------------------
 
 struct EmbedResult {
-  EmbedResult(WindowTreeClient* client, ClientSpecificId id)
-      : client(client), client_id(id) {}
-  EmbedResult() : client(nullptr), client_id(0) {}
+  bool IsValid() const {
+    return window_tree_client.get() != nullptr &&
+           window_tree_host.get() != nullptr;
+  }
 
-  WindowTreeClient* client;
-
-  // The id supplied to the callback from OnEmbed(). Depending upon the
-  // access policy this may or may not match the client id of
-  // |client|.
-  ClientSpecificId client_id;
+  std::unique_ptr<aura::WindowTreeClient> window_tree_client;
+  std::unique_ptr<aura::WindowTreeHostMus> window_tree_host;
 };
 
-Window* GetFirstRoot(WindowTreeClient* client) {
+aura::Window* GetFirstRoot(aura::WindowTreeClient* client) {
   return client->GetRoots().empty() ? nullptr : *client->GetRoots().begin();
 }
 
@@ -253,31 +240,40 @@ Window* GetFirstRoot(WindowTreeClient* client) {
 
 class WindowServerTest : public WindowServerTestBase {
  public:
+  struct ClientAreaChange {
+    aura::Window* window = nullptr;
+    gfx::Insets insets;
+  };
+
   WindowServerTest() {}
 
-  Window* GetFirstWMRoot() { return GetFirstRoot(window_manager()); }
-
-  Window* NewVisibleWindow(Window* parent, WindowTreeClient* client) {
-    Window* window = client->NewWindow();
-    window->SetVisible(true);
-    parent->AddChild(window);
-    return window;
-  }
+  aura::Window* GetFirstWMRoot() { return GetFirstRoot(window_manager()); }
 
   // Embeds another version of the test app @ window. This runs a run loop until
-  // a response is received, or a timeout. On success the new WindowServer is
-  // returned.
-  EmbedResult Embed(Window* window) {
+  // a response is received, or a timeout. The return value is always non-null,
+  // but if there is an error there is no WindowTreeClient. Always use
+  // ASSERT_EQ(result->IsValid()) on the return value.
+  std::unique_ptr<EmbedResult> Embed(aura::WindowTreeClient* window_tree_client,
+                                     aura::Window* window) {
     DCHECK(!embed_details_);
     embed_details_ = base::MakeUnique<EmbedDetails>();
-    window->Embed(ConnectAndGetWindowServerClient(),
-                  base::Bind(&WindowServerTest::EmbedCallbackImpl,
-                             base::Unretained(this)));
+    window_tree_client->Embed(window, ConnectAndGetWindowServerClient(), 0,
+                              base::Bind(&WindowServerTest::EmbedCallbackImpl,
+                                         base::Unretained(this)));
+    if (embed_details_->callback_run) {
+      // The callback was run immediately, this indicates an immediate failure,
+      // such as |window| has children.
+      EXPECT_FALSE(embed_details_->embed_result);
+      embed_details_.reset();
+      return base::MakeUnique<EmbedResult>();
+    }
+    // Wait for EmbedCallbackImpl() to be called with the result.
     embed_details_->waiting = true;
-    if (!WindowServerTestBase::DoRunLoopWithTimeout())
-      return EmbedResult();
-    const EmbedResult result(embed_details_->client,
-                             embed_details_->client_id);
+    if (!WindowServerTestBase::DoRunLoopWithTimeout()) {
+      embed_details_.reset();
+      return base::MakeUnique<EmbedResult>();
+    }
+    std::unique_ptr<EmbedResult> result = std::move(embed_details_->result);
     embed_details_.reset();
     return result;
   }
@@ -290,52 +286,70 @@ class WindowServerTest : public WindowServerTestBase {
     return client;
   }
 
+  std::unique_ptr<ClientAreaChange> WaitForClientAreaToChange() {
+    client_area_change_ = base::MakeUnique<ClientAreaChange>();
+    // The nested message loop is quit in OnWmSetClientArea(). Client area
+    // changes don't route through the window, only the WindowManagerDelegate.
+    if (!WindowServerTestBase::DoRunLoopWithTimeout()) {
+      client_area_change_.reset();
+      return nullptr;
+    }
+    return std::move(client_area_change_);
+  }
+
   // WindowServerTestBase:
-  void OnEmbed(Window* root) override {
+  void OnEmbed(
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) override {
     if (!embed_details_) {
-      WindowServerTestBase::OnEmbed(root);
+      WindowServerTestBase::OnEmbed(std::move(window_tree_host));
       return;
     }
 
-    embed_details_->client = root->window_tree();
+    embed_details_->result->window_tree_host = std::move(window_tree_host);
+    embed_details_->result->window_tree_client = ReleaseMostRecentClient();
     if (embed_details_->callback_run)
       EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
+  }
+  void OnWmSetClientArea(
+      aura::Window* window,
+      const gfx::Insets& insets,
+      const std::vector<gfx::Rect>& additional_client_areas) override {
+    if (!client_area_change_.get())
+      return;
+
+    client_area_change_->window = window;
+    client_area_change_->insets = insets;
+    EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
 
  private:
   // Used to track the state of a call to window->Embed().
   struct EmbedDetails {
-    EmbedDetails()
-        : callback_run(false),
-          result(false),
-          waiting(false),
-          client(nullptr) {}
+    EmbedDetails() : result(base::MakeUnique<EmbedResult>()) {}
 
-    // The callback supplied to Embed() was received.
-    bool callback_run;
+    // The callback function supplied to Embed() was called.
+    bool callback_run = false;
 
     // The boolean supplied to the Embed() callback.
-    bool result;
+    bool embed_result = false;
 
     // Whether a MessageLoop is running.
-    bool waiting;
+    bool waiting = false;
 
-    // Client id supplied to the Embed() callback.
-    ClientSpecificId client_id;
-
-    // The WindowTreeClient that resulted from the Embed(). null if |result| is
-    // false.
-    WindowTreeClient* client;
+    std::unique_ptr<EmbedResult> result;
   };
 
   void EmbedCallbackImpl(bool result) {
     embed_details_->callback_run = true;
-    embed_details_->result = result;
-    if (embed_details_->waiting && (!result || embed_details_->client))
+    embed_details_->embed_result = result;
+    if (embed_details_->waiting &&
+        (!result || embed_details_->result->window_tree_client))
       EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
 
   std::unique_ptr<EmbedDetails> embed_details_;
+
+  std::unique_ptr<ClientAreaChange> client_area_change_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServerTest);
 };
@@ -346,38 +360,29 @@ TEST_F(WindowServerTest, RootWindow) {
 }
 
 TEST_F(WindowServerTest, Embed) {
-  Window* window = window_manager()->NewWindow();
-  ASSERT_NE(nullptr, window);
-  window->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window);
-  WindowTreeClient* embedded = Embed(window).client;
-  ASSERT_NE(nullptr, embedded);
+  aura::Window* window = NewVisibleWindow(GetFirstWMRoot(), window_manager());
+  std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window);
+  ASSERT_TRUE(embed_result->IsValid());
 
-  Window* window_in_embedded = GetFirstRoot(embedded);
-  ASSERT_NE(nullptr, window_in_embedded);
-  EXPECT_EQ(server_id(window), server_id(window_in_embedded));
-  EXPECT_EQ(nullptr, window_in_embedded->parent());
-  EXPECT_TRUE(window_in_embedded->children().empty());
+  aura::Window* embed_root = embed_result->window_tree_host->window();
+  // WindowTreeHost::window() is the single root of the embed.
+  EXPECT_EQ(1u, embed_result->window_tree_client->GetRoots().size());
+  EXPECT_EQ(embed_root, GetFirstRoot(embed_result->window_tree_client.get()));
+  EXPECT_EQ(server_id(window), server_id(embed_root));
+  EXPECT_EQ(nullptr, embed_root->parent());
+  EXPECT_TRUE(embed_root->children().empty());
 }
 
 // Window manager has two windows, N1 and N11. Embeds A at N1. A should not see
 // N11.
 TEST_F(WindowServerTest, EmbeddedDoesntSeeChild) {
-  Window* window = window_manager()->NewWindow();
-  ASSERT_NE(nullptr, window);
-  window->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window);
-  Window* nested = window_manager()->NewWindow();
-  ASSERT_NE(nullptr, nested);
-  nested->SetVisible(true);
-  window->AddChild(nested);
-
-  WindowTreeClient* embedded = Embed(window).client;
-  ASSERT_NE(nullptr, embedded);
-  Window* window_in_embedded = GetFirstRoot(embedded);
-  EXPECT_EQ(server_id(window), server_id(window_in_embedded));
-  EXPECT_EQ(nullptr, window_in_embedded->parent());
-  EXPECT_TRUE(window_in_embedded->children().empty());
+  aura::Window* window = NewVisibleWindow(GetFirstWMRoot(), window_manager());
+  std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window);
+  ASSERT_TRUE(embed_result->IsValid());
+  aura::Window* embed_root = embed_result->window_tree_host->window();
+  EXPECT_EQ(server_id(window), server_id(embed_root));
+  EXPECT_EQ(nullptr, embed_root->parent());
+  EXPECT_TRUE(embed_root->children().empty());
 }
 
 // TODO(beng): write a replacement test for the one that once existed here:
@@ -395,19 +400,16 @@ TEST_F(WindowServerTest, EmbeddedDoesntSeeChild) {
 // Verifies that bounds changes applied to a window hierarchy in one client
 // are reflected to another.
 TEST_F(WindowServerTest, SetBounds) {
-  Window* window = window_manager()->NewWindow();
-  window->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window);
-  WindowTreeClient* embedded = Embed(window).client;
-  ASSERT_NE(nullptr, embedded);
+  aura::Window* window = NewVisibleWindow(GetFirstWMRoot(), window_manager());
 
-  Window* window_in_embedded =
-      GetChildWindowByServerId(embedded, server_id(window));
-  EXPECT_EQ(window->bounds(), window_in_embedded->bounds());
+  std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window);
+  ASSERT_TRUE(embed_result->IsValid());
+  aura::Window* embed_root = embed_result->window_tree_host->window();
+  EXPECT_EQ(window->bounds(), embed_root->bounds());
 
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
-  ASSERT_TRUE(WaitForBoundsToChange(window_in_embedded));
-  EXPECT_TRUE(window->bounds() == window_in_embedded->bounds());
+  ASSERT_TRUE(WaitForBoundsToChange(embed_root));
+  EXPECT_EQ(window->bounds(), embed_root->bounds());
 }
 
 // Verifies that bounds changes applied to a window owned by a different
@@ -416,96 +418,81 @@ TEST_F(WindowServerTest, SetBoundsSecurity) {
   TestWindowManagerDelegate wm_delegate;
   set_window_manager_delegate(&wm_delegate);
 
-  Window* window = window_manager()->NewWindow();
-  window->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window);
-  WindowTreeClient* embedded = Embed(window).client;
-  ASSERT_NE(nullptr, embedded);
+  aura::Window* window = NewVisibleWindow(GetFirstWMRoot(), window_manager());
 
-  Window* window_in_embedded =
-      GetChildWindowByServerId(embedded, server_id(window));
+  std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window);
+  ASSERT_TRUE(embed_result->IsValid());
+  aura::Window* embed_root = embed_result->window_tree_host->window();
   window->SetBounds(gfx::Rect(0, 0, 800, 600));
-  ASSERT_TRUE(WaitForBoundsToChange(window_in_embedded));
+  ASSERT_TRUE(WaitForBoundsToChange(embed_root));
 
-  window_in_embedded->SetBounds(gfx::Rect(0, 0, 1024, 768));
+  embed_result->window_tree_host->SetBoundsInPixels(gfx::Rect(0, 0, 1024, 768));
   // Bounds change is initially accepted, but the server declines the request.
-  EXPECT_FALSE(window->bounds() == window_in_embedded->bounds());
+  EXPECT_NE(window->bounds(), embed_root->bounds());
 
   // The client is notified when the requested is declined, and updates the
   // local bounds accordingly.
-  ASSERT_TRUE(WaitForBoundsToChange(window_in_embedded));
-  EXPECT_TRUE(window->bounds() == window_in_embedded->bounds());
+  ASSERT_TRUE(WaitForBoundsToChange(embed_root));
+  EXPECT_EQ(window->bounds(), embed_root->bounds());
   set_window_manager_delegate(nullptr);
 }
 
 // Verifies that a root window can always be destroyed.
 TEST_F(WindowServerTest, DestroySecurity) {
-  Window* window = window_manager()->NewWindow();
-  window->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window);
+  aura::Window* window = NewVisibleWindow(GetFirstWMRoot(), window_manager());
 
-  WindowTreeClient* embedded = Embed(window).client;
-  ASSERT_NE(nullptr, embedded);
+  std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window);
+  ASSERT_TRUE(embed_result->IsValid());
+  aura::Window* embed_root = embed_result->window_tree_host->window();
 
   // The root can be destroyed, even though it was not created by the client.
-  Window* embed_root = GetChildWindowByServerId(embedded, server_id(window));
-  WindowTracker tracker1(window);
-  WindowTracker tracker2(embed_root);
-  embed_root->Destroy();
-  EXPECT_FALSE(tracker2.is_valid());
-  EXPECT_TRUE(tracker1.is_valid());
+  aura::WindowTracker tracker;
+  tracker.Add(window);
+  tracker.Add(embed_root);
+  embed_result->window_tree_host.reset();
+  EXPECT_FALSE(tracker.Contains(embed_root));
+  EXPECT_TRUE(tracker.Contains(window));
 
-  window->Destroy();
-  EXPECT_FALSE(tracker1.is_valid());
+  delete window;
+  EXPECT_FALSE(tracker.Contains(window));
 }
 
 TEST_F(WindowServerTest, MultiRoots) {
-  Window* window1 = window_manager()->NewWindow();
-  window1->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window1);
-  Window* window2 = window_manager()->NewWindow();
-  window2->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window2);
-  WindowTreeClient* embedded1 = Embed(window1).client;
-  ASSERT_NE(nullptr, embedded1);
-  WindowTreeClient* embedded2 = Embed(window2).client;
-  ASSERT_NE(nullptr, embedded2);
-  EXPECT_NE(embedded1, embedded2);
+  aura::Window* window1 = NewVisibleWindow(GetFirstWMRoot(), window_manager());
+  aura::Window* window2 = NewVisibleWindow(GetFirstWMRoot(), window_manager());
+  std::unique_ptr<EmbedResult> embed_result1 = Embed(window_manager(), window1);
+  ASSERT_TRUE(embed_result1->IsValid());
+  std::unique_ptr<EmbedResult> embed_result2 = Embed(window_manager(), window2);
+  ASSERT_TRUE(embed_result2->IsValid());
 }
 
 TEST_F(WindowServerTest, Reorder) {
-  Window* window1 = window_manager()->NewWindow();
-  window1->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window1);
+  aura::Window* window1 = NewVisibleWindow(GetFirstWMRoot(), window_manager());
 
-  WindowTreeClient* embedded = Embed(window1).client;
-  ASSERT_NE(nullptr, embedded);
+  std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window1);
+  ASSERT_TRUE(embed_result->IsValid());
+  aura::WindowTreeClient* embedded = embed_result->window_tree_client.get();
+  aura::Window* embed_root = embed_result->window_tree_host->window();
 
-  Window* window11 = embedded->NewWindow();
-  window11->SetVisible(true);
-  GetFirstRoot(embedded)->AddChild(window11);
-  Window* window12 = embedded->NewWindow();
-  window12->SetVisible(true);
-  GetFirstRoot(embedded)->AddChild(window12);
+  aura::Window* window11 = NewVisibleWindow(embed_root, embedded);
+  aura::Window* window12 = NewVisibleWindow(embed_root, embedded);
   ASSERT_TRUE(WaitForTreeSizeToMatch(window1, 3u));
 
-  Window* root_in_embedded = GetFirstRoot(embedded);
 
   {
-    window11->MoveToFront();
+    window11->parent()->StackChildAtTop(window11);
     // The |embedded| tree should be updated immediately.
-    EXPECT_EQ(root_in_embedded->children().front(),
+    EXPECT_EQ(embed_root->children().front(),
               GetChildWindowByServerId(embedded, server_id(window12)));
-    EXPECT_EQ(root_in_embedded->children().back(),
+    EXPECT_EQ(embed_root->children().back(),
               GetChildWindowByServerId(embedded, server_id(window11)));
 
-    // The |window_manager()| tree is still not updated.
+    // The window_manager() tree is still not updated.
     EXPECT_EQ(window1->children().back(),
               GetChildWindowByServerId(window_manager(), server_id(window12)));
 
-    // Wait until |window_manager()| tree is updated.
-    ASSERT_TRUE(WaitForOrderChange(
-        window_manager(),
+    // Wait until window_manager() tree is updated.
+    ASSERT_TRUE(WaitForStackingOrderChange(
         GetChildWindowByServerId(window_manager(), server_id(window11))));
     EXPECT_EQ(window1->children().front(),
               GetChildWindowByServerId(window_manager(), server_id(window12)));
@@ -514,18 +501,17 @@ TEST_F(WindowServerTest, Reorder) {
   }
 
   {
-    window11->MoveToBack();
+    window11->parent()->StackChildAtBottom(window11);
     // |embedded| should be updated immediately.
-    EXPECT_EQ(root_in_embedded->children().front(),
+    EXPECT_EQ(embed_root->children().front(),
               GetChildWindowByServerId(embedded, server_id(window11)));
-    EXPECT_EQ(root_in_embedded->children().back(),
+    EXPECT_EQ(embed_root->children().back(),
               GetChildWindowByServerId(embedded, server_id(window12)));
 
     // |window_manager()| is also eventually updated.
     EXPECT_EQ(window1->children().back(),
               GetChildWindowByServerId(window_manager(), server_id(window11)));
-    ASSERT_TRUE(WaitForOrderChange(
-        window_manager(),
+    ASSERT_TRUE(WaitForStackingOrderChange(
         GetChildWindowByServerId(window_manager(), server_id(window11))));
     EXPECT_EQ(window1->children().front(),
               GetChildWindowByServerId(window_manager(), server_id(window11)));
@@ -536,21 +522,21 @@ TEST_F(WindowServerTest, Reorder) {
 
 namespace {
 
-class VisibilityChangeObserver : public WindowObserver {
+class VisibilityChangeObserver : public aura::WindowObserver {
  public:
-  explicit VisibilityChangeObserver(Window* window) : window_(window) {
+  explicit VisibilityChangeObserver(aura::Window* window) : window_(window) {
     window_->AddObserver(this);
   }
   ~VisibilityChangeObserver() override { window_->RemoveObserver(this); }
 
  private:
   // Overridden from WindowObserver:
-  void OnWindowVisibilityChanged(Window* window, bool visible) override {
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
     EXPECT_EQ(window, window_);
     EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
 
-  Window* window_;
+  aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(VisibilityChangeObserver);
 };
@@ -558,469 +544,67 @@ class VisibilityChangeObserver : public WindowObserver {
 }  // namespace
 
 TEST_F(WindowServerTest, Visible) {
-  Window* window1 = window_manager()->NewWindow();
-  window1->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window1);
+  aura::Window* window1 = NewVisibleWindow(GetFirstWMRoot(), window_manager());
 
   // Embed another app and verify initial state.
-  WindowTreeClient* embedded = Embed(window1).client;
-  ASSERT_NE(nullptr, embedded);
-  ASSERT_NE(nullptr, GetFirstRoot(embedded));
-  Window* embedded_root = GetFirstRoot(embedded);
-  EXPECT_TRUE(embedded_root->visible());
-  EXPECT_TRUE(embedded_root->IsDrawn());
+  std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window1);
+  ASSERT_TRUE(embed_result->IsValid());
+  aura::Window* embed_root = embed_result->window_tree_host->window();
+  EXPECT_TRUE(embed_root->TargetVisibility());
+  EXPECT_TRUE(embed_root->IsVisible());
 
   // Change the visible state from the first client and verify its mirrored
   // correctly to the embedded app.
   {
-    VisibilityChangeObserver observer(embedded_root);
-    window1->SetVisible(false);
+    VisibilityChangeObserver observer(embed_root);
+    window1->Hide();
     ASSERT_TRUE(WindowServerTestBase::DoRunLoopWithTimeout());
   }
 
-  EXPECT_FALSE(window1->visible());
-  EXPECT_FALSE(window1->IsDrawn());
+  EXPECT_FALSE(window1->TargetVisibility());
+  EXPECT_FALSE(window1->IsVisible());
 
-  EXPECT_FALSE(embedded_root->visible());
-  EXPECT_FALSE(embedded_root->IsDrawn());
+  EXPECT_FALSE(embed_root->TargetVisibility());
+  EXPECT_FALSE(embed_root->IsVisible());
 
   // Make the node visible again.
   {
-    VisibilityChangeObserver observer(embedded_root);
-    window1->SetVisible(true);
+    VisibilityChangeObserver observer(embed_root);
+    window1->Show();
     ASSERT_TRUE(WindowServerTestBase::DoRunLoopWithTimeout());
   }
 
-  EXPECT_TRUE(window1->visible());
-  EXPECT_TRUE(window1->IsDrawn());
+  EXPECT_TRUE(window1->TargetVisibility());
+  EXPECT_TRUE(window1->IsVisible());
 
-  EXPECT_TRUE(embedded_root->visible());
-  EXPECT_TRUE(embedded_root->IsDrawn());
-}
-
-namespace {
-
-class DrawnChangeObserver : public WindowObserver {
- public:
-  explicit DrawnChangeObserver(Window* window) : window_(window) {
-    window_->AddObserver(this);
-  }
-  ~DrawnChangeObserver() override { window_->RemoveObserver(this); }
-
- private:
-  // Overridden from WindowObserver:
-  void OnWindowDrawnChanged(Window* window) override {
-    EXPECT_EQ(window, window_);
-    EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
-  }
-
-  Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(DrawnChangeObserver);
-};
-
-}  // namespace
-
-TEST_F(WindowServerTest, Drawn) {
-  Window* window1 = window_manager()->NewWindow();
-  window1->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window1);
-
-  // Embed another app and verify initial state.
-  WindowTreeClient* embedded = Embed(window1).client;
-  ASSERT_NE(nullptr, embedded);
-  ASSERT_NE(nullptr, GetFirstRoot(embedded));
-  Window* embedded_root = GetFirstRoot(embedded);
-  EXPECT_TRUE(embedded_root->visible());
-  EXPECT_TRUE(embedded_root->IsDrawn());
-
-  // Change the visibility of the root, this should propagate a drawn state
-  // change to |embedded|.
-  {
-    DrawnChangeObserver observer(embedded_root);
-    GetFirstWMRoot()->SetVisible(false);
-    ASSERT_TRUE(DoRunLoopWithTimeout());
-  }
-
-  EXPECT_TRUE(window1->visible());
-  EXPECT_FALSE(window1->IsDrawn());
-
-  EXPECT_TRUE(embedded_root->visible());
-  EXPECT_FALSE(embedded_root->IsDrawn());
+  EXPECT_TRUE(embed_root->TargetVisibility());
+  EXPECT_TRUE(embed_root->IsVisible());
 }
 
 // TODO(beng): tests for window event dispatcher.
 // - verify that we see events for all windows.
 
-namespace {
-
-class FocusChangeObserver : public WindowObserver {
- public:
-  explicit FocusChangeObserver(Window* window)
-      : window_(window),
-        last_gained_focus_(nullptr),
-        last_lost_focus_(nullptr),
-        quit_on_change_(true) {
-    window_->AddObserver(this);
-  }
-  ~FocusChangeObserver() override { window_->RemoveObserver(this); }
-
-  void set_quit_on_change(bool value) { quit_on_change_ = value; }
-
-  Window* last_gained_focus() { return last_gained_focus_; }
-
-  Window* last_lost_focus() { return last_lost_focus_; }
-
- private:
-  // Overridden from WindowObserver.
-  void OnWindowFocusChanged(Window* gained_focus, Window* lost_focus) override {
-    EXPECT_TRUE(!gained_focus || gained_focus->HasFocus());
-    EXPECT_FALSE(lost_focus && lost_focus->HasFocus());
-    last_gained_focus_ = gained_focus;
-    last_lost_focus_ = lost_focus;
-    if (quit_on_change_)
-      EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
-  }
-
-  Window* window_;
-  Window* last_gained_focus_;
-  Window* last_lost_focus_;
-  bool quit_on_change_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusChangeObserver);
-};
-
-class NullFocusChangeObserver : public WindowTreeClientObserver {
- public:
-  explicit NullFocusChangeObserver(WindowTreeClient* client)
-      : client_(client) {
-    client_->AddObserver(this);
-  }
-  ~NullFocusChangeObserver() override { client_->RemoveObserver(this); }
-
- private:
-  // Overridden from WindowTreeClientObserver.
-  void OnWindowTreeFocusChanged(Window* gained_focus,
-                                Window* lost_focus) override {
-    if (!gained_focus)
-      EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
-  }
-
-  WindowTreeClient* client_;
-
-  DISALLOW_COPY_AND_ASSIGN(NullFocusChangeObserver);
-};
-
-bool WaitForWindowToHaveFocus(Window* window) {
-  if (window->HasFocus())
-    return true;
-  FocusChangeObserver observer(window);
-  return WindowServerTestBase::DoRunLoopWithTimeout();
-}
-
-bool WaitForNoWindowToHaveFocus(WindowTreeClient* client) {
-  if (!client->GetFocusedWindow())
-    return true;
-  NullFocusChangeObserver observer(client);
-  return WindowServerTestBase::DoRunLoopWithTimeout();
-}
-
-}  // namespace
-
-TEST_F(WindowServerTest, Focus) {
-  Window* window1 = window_manager()->NewWindow();
-  window1->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window1);
-
-  WindowTreeClient* embedded = Embed(window1).client;
-  ASSERT_NE(nullptr, embedded);
-  Window* window11 = embedded->NewWindow();
-  window11->SetVisible(true);
-  GetFirstRoot(embedded)->AddChild(window11);
-
-  {
-    // Focus the embed root in |embedded|.
-    Window* embedded_root = GetFirstRoot(embedded);
-    FocusChangeObserver observer(embedded_root);
-    observer.set_quit_on_change(false);
-    embedded_root->SetFocus();
-    ASSERT_TRUE(embedded_root->HasFocus());
-    ASSERT_NE(nullptr, observer.last_gained_focus());
-    EXPECT_EQ(server_id(embedded_root),
-              server_id(observer.last_gained_focus()));
-
-    // |embedded_root| is the same as |window1|, make sure |window1| got
-    // focus too.
-    ASSERT_TRUE(WaitForWindowToHaveFocus(window1));
-  }
-
-  // Focus a child of GetFirstRoot(embedded).
-  {
-    FocusChangeObserver observer(window11);
-    observer.set_quit_on_change(false);
-    window11->SetFocus();
-    ASSERT_TRUE(window11->HasFocus());
-    ASSERT_NE(nullptr, observer.last_gained_focus());
-    ASSERT_NE(nullptr, observer.last_lost_focus());
-    EXPECT_EQ(server_id(window11), server_id(observer.last_gained_focus()));
-    EXPECT_EQ(server_id(GetFirstRoot(embedded)),
-              server_id(observer.last_lost_focus()));
-  }
-
-  {
-    // Add an observer on the Window that loses focus, and make sure the
-    // observer sees the right values.
-    FocusChangeObserver observer(window11);
-    observer.set_quit_on_change(false);
-    GetFirstRoot(embedded)->SetFocus();
-    ASSERT_NE(nullptr, observer.last_gained_focus());
-    ASSERT_NE(nullptr, observer.last_lost_focus());
-    EXPECT_EQ(server_id(window11), server_id(observer.last_lost_focus()));
-    EXPECT_EQ(server_id(GetFirstRoot(embedded)),
-              server_id(observer.last_gained_focus()));
-  }
-}
-
-TEST_F(WindowServerTest, ClearFocus) {
-  Window* window1 = window_manager()->NewWindow();
-  window1->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window1);
-
-  WindowTreeClient* embedded = Embed(window1).client;
-  ASSERT_NE(nullptr, embedded);
-  Window* window11 = embedded->NewWindow();
-  window11->SetVisible(true);
-  GetFirstRoot(embedded)->AddChild(window11);
-
-  // Focus the embed root in |embedded|.
-  Window* embedded_root = GetFirstRoot(embedded);
-  {
-    FocusChangeObserver observer(embedded_root);
-    observer.set_quit_on_change(false);
-    embedded_root->SetFocus();
-    ASSERT_TRUE(embedded_root->HasFocus());
-    ASSERT_NE(nullptr, observer.last_gained_focus());
-    EXPECT_EQ(server_id(embedded_root),
-              server_id(observer.last_gained_focus()));
-
-    // |embedded_root| is the same as |window1|, make sure |window1| got
-    // focus too.
-    ASSERT_TRUE(WaitForWindowToHaveFocus(window1));
-  }
-
-  {
-    FocusChangeObserver observer(window1);
-    embedded->ClearFocus();
-    ASSERT_FALSE(embedded_root->HasFocus());
-    EXPECT_FALSE(embedded->GetFocusedWindow());
-
-    ASSERT_TRUE(WindowServerTestBase::DoRunLoopWithTimeout());
-    EXPECT_FALSE(window1->HasFocus());
-    EXPECT_FALSE(window_manager()->GetFocusedWindow());
-  }
-}
-
-TEST_F(WindowServerTest, FocusNonFocusableWindow) {
-  Window* window = window_manager()->NewWindow();
-  window->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window);
-
-  WindowTreeClient* client = Embed(window).client;
-  ASSERT_NE(nullptr, client);
-  ASSERT_FALSE(client->GetRoots().empty());
-  Window* client_window = *client->GetRoots().begin();
-  client_window->SetCanFocus(false);
-
-  client_window->SetFocus();
-  ASSERT_TRUE(client_window->HasFocus());
-
-  WaitForNoWindowToHaveFocus(client);
-  ASSERT_FALSE(client_window->HasFocus());
-}
-
-TEST_F(WindowServerTest, Activation) {
-  Window* parent = NewVisibleWindow(GetFirstWMRoot(), window_manager());
-
-  // Allow the child windows to be activated. Do this before we wait, that way
-  // we're guaranteed that when we request focus from a separate client the
-  // requests are processed in order.
-  window_manager_client()->AddActivationParent(parent);
-
-  Window* child1 = NewVisibleWindow(parent, window_manager());
-  Window* child2 = NewVisibleWindow(parent, window_manager());
-  Window* child3 = NewVisibleWindow(parent, window_manager());
-
-  child1->AddTransientWindow(child3);
-
-  WindowTreeClient* embedded1 = Embed(child1).client;
-  ASSERT_NE(nullptr, embedded1);
-  WindowTreeClient* embedded2 = Embed(child2).client;
-  ASSERT_NE(nullptr, embedded2);
-
-  Window* child11 = NewVisibleWindow(GetFirstRoot(embedded1), embedded1);
-  Window* child21 = NewVisibleWindow(GetFirstRoot(embedded2), embedded2);
-
-  WaitForTreeSizeToMatch(parent, 6);
-
-  EXPECT_EQ(0, ValidIndexOf(parent->children(), child1));
-  // NOTE: |child3| is after |child1| as |child3| is a transient child of
-  // |child1|.
-  EXPECT_EQ(1, ValidIndexOf(parent->children(), child3));
-  EXPECT_EQ(2, ValidIndexOf(parent->children(), child2));
-
-  // Set focus on |child11|, order of windows should not change.
-  child11->SetFocus();
-  ASSERT_TRUE(WaitForWindowToHaveFocus(child11));
-  ASSERT_TRUE(WaitForWindowToHaveFocus(
-      GetChildWindowByServerId(window_manager(), server_id(child11))));
-  EXPECT_EQ(server_id(child11),
-            server_id(window_manager()->GetFocusedWindow()));
-  EXPECT_EQ(server_id(child11), server_id(embedded1->GetFocusedWindow()));
-  EXPECT_EQ(nullptr, embedded2->GetFocusedWindow());
-  EXPECT_EQ(0, ValidIndexOf(parent->children(), child1));
-  EXPECT_EQ(1, ValidIndexOf(parent->children(), child3));
-  EXPECT_EQ(2, ValidIndexOf(parent->children(), child2));
-
-  // Set focus on |child21|. This should activate |child2|. Again, order should
-  // not change.
-  child21->SetFocus();
-  ASSERT_TRUE(WaitForWindowToHaveFocus(child21));
-  ASSERT_TRUE(WaitForWindowToHaveFocus(
-      GetChildWindowByServerId(window_manager(), server_id(child21))));
-  EXPECT_EQ(server_id(child21),
-            server_id(window_manager()->GetFocusedWindow()));
-  EXPECT_EQ(server_id(child21), server_id(embedded2->GetFocusedWindow()));
-  EXPECT_TRUE(WaitForNoWindowToHaveFocus(embedded1));
-  EXPECT_EQ(nullptr, embedded1->GetFocusedWindow());
-  EXPECT_EQ(0, ValidIndexOf(parent->children(), child1));
-  EXPECT_EQ(1, ValidIndexOf(parent->children(), child3));
-  EXPECT_EQ(2, ValidIndexOf(parent->children(), child2));
-}
-
-TEST_F(WindowServerTest, ActivationNext) {
-  Window* parent = GetFirstWMRoot();
-  Window* child1 = NewVisibleWindow(parent, window_manager());
-  Window* child2 = NewVisibleWindow(parent, window_manager());
-  Window* child3 = NewVisibleWindow(parent, window_manager());
-
-  WindowTreeClient* embedded1 = Embed(child1).client;
-  ASSERT_NE(nullptr, embedded1);
-  WindowTreeClient* embedded2 = Embed(child2).client;
-  ASSERT_NE(nullptr, embedded2);
-  WindowTreeClient* embedded3 = Embed(child3).client;
-  ASSERT_NE(nullptr, embedded3);
-
-  Window* child11 = NewVisibleWindow(GetFirstRoot(embedded1), embedded1);
-  Window* child21 = NewVisibleWindow(GetFirstRoot(embedded2), embedded2);
-  Window* child31 = NewVisibleWindow(GetFirstRoot(embedded3), embedded3);
-  WaitForTreeSizeToMatch(parent, 7);
-
-  Window* focused[] = { child31, child21, child11, child31, nullptr };
-  for (size_t index = 0; focused[index]; ++index) {
-    window_manager_client()->ActivateNextWindow();
-    WaitForWindowToHaveFocus(focused[index]);
-    EXPECT_TRUE(focused[index]->HasFocus());
-  }
+TEST_F(WindowServerTest, EmbedFailsWithChildren) {
+  aura::Window* window1 = NewVisibleWindow(GetFirstWMRoot(), window_manager());
+  ASSERT_TRUE(NewVisibleWindow(window1, window_manager()));
+  std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window1);
+  // Embed() should fail as |window1| has a child.
+  EXPECT_FALSE(embed_result->IsValid());
 }
 
 namespace {
 
-class DestroyedChangedObserver : public WindowObserver {
+class DestroyObserver : public aura::WindowObserver {
  public:
-  DestroyedChangedObserver(Window* window, bool* got_destroy)
-      : window_(window), got_destroy_(got_destroy) {
-    window_->AddObserver(this);
-  }
-  ~DestroyedChangedObserver() override {
-    if (window_)
-      window_->RemoveObserver(this);
-  }
-
- private:
-  // Overridden from WindowObserver:
-  void OnWindowDestroyed(Window* window) override {
-    EXPECT_EQ(window, window_);
-    window_->RemoveObserver(this);
-    *got_destroy_ = true;
-    window_ = nullptr;
-  }
-
-  Window* window_;
-  bool* got_destroy_;
-
-  DISALLOW_COPY_AND_ASSIGN(DestroyedChangedObserver);
-};
-
-}  // namespace
-
-// Verifies deleting a WindowServer sends the right notifications.
-TEST_F(WindowServerTest, DeleteWindowServer) {
-  Window* window = window_manager()->NewWindow();
-  ASSERT_NE(nullptr, window);
-  window->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window);
-  WindowTreeClient* client = Embed(window).client;
-  ASSERT_TRUE(client);
-  bool got_destroy = false;
-  DestroyedChangedObserver observer(GetFirstRoot(client), &got_destroy);
-  DeleteWindowTreeClient(client);
-  EXPECT_TRUE(got_destroy);
-}
-
-class WindowRemovedFromParentObserver : public WindowObserver {
- public:
-  explicit WindowRemovedFromParentObserver(Window* window)
-      : window_(window), was_removed_(false) {
-    window_->AddObserver(this);
-  }
-  ~WindowRemovedFromParentObserver() override { window_->RemoveObserver(this); }
-
-  bool was_removed() const { return was_removed_; }
-
- private:
-  // Overridden from WindowObserver:
-  void OnTreeChanged(const TreeChangeParams& params) override {
-    if (params.target == window_ && !params.new_parent)
-      was_removed_ = true;
-  }
-
-  Window* window_;
-  bool was_removed_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowRemovedFromParentObserver);
-};
-
-TEST_F(WindowServerTest, EmbedRemovesChildren) {
-  Window* window1 = window_manager()->NewWindow();
-  Window* window2 = window_manager()->NewWindow();
-  GetFirstWMRoot()->AddChild(window1);
-  window1->AddChild(window2);
-
-  WindowRemovedFromParentObserver observer(window2);
-  window1->Embed(ConnectAndGetWindowServerClient());
-  EXPECT_TRUE(observer.was_removed());
-  EXPECT_EQ(nullptr, window2->parent());
-  EXPECT_TRUE(window1->children().empty());
-
-  // Run the message loop so the Embed() call above completes. Without this
-  // we may end up reconnecting to the test and rerunning the test, which is
-  // problematic since the other services don't shut down.
-  ASSERT_TRUE(DoRunLoopWithTimeout());
-}
-
-namespace {
-
-class DestroyObserver : public WindowObserver {
- public:
-  DestroyObserver(WindowTreeClient* client, bool* got_destroy)
+  DestroyObserver(aura::WindowTreeClient* client, bool* got_destroy)
       : got_destroy_(got_destroy) {
     GetFirstRoot(client)->AddObserver(this);
   }
   ~DestroyObserver() override {}
 
  private:
-  // Overridden from WindowObserver:
-  void OnWindowDestroyed(Window* window) override {
+  // Overridden from aura::WindowObserver:
+  void OnWindowDestroyed(aura::Window* window) override {
     *got_destroy_ = true;
     window->RemoveObserver(this);
 
@@ -1038,44 +622,45 @@ class DestroyObserver : public WindowObserver {
 // observers in the right order (OnWindowDestroyed() before
 // OnWindowManagerDestroyed()).
 TEST_F(WindowServerTest, WindowServerDestroyedAfterRootObserver) {
-  Window* embed_window = window_manager()->NewWindow();
-  GetFirstWMRoot()->AddChild(embed_window);
+  aura::Window* window = NewVisibleWindow(GetFirstWMRoot(), window_manager());
 
-  WindowTreeClient* embedded_client = Embed(embed_window).client;
+  std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window);
+  ASSERT_TRUE(embed_result->IsValid());
+  aura::WindowTreeClient* embedded_client =
+      embed_result->window_tree_client.get();
 
   bool got_destroy = false;
   DestroyObserver observer(embedded_client, &got_destroy);
-  // Delete the window |embedded_client| is embedded in. This is async,
-  // but will eventually trigger deleting |embedded_client|.
-  embed_window->Destroy();
+  // Delete the window |embedded_client| is embedded in. |embedded_client| is
+  // asynchronously notified and cleans up.
+  delete window;
   EXPECT_TRUE(DoRunLoopWithTimeout());
-  EXPECT_TRUE(got_destroy);
+  ASSERT_TRUE(got_destroy);
+  // The WindowTreeHost was destroyed as well (by
+  // WindowServerTestBase::OnEmbedRootDestroyed()).
+  embed_result->window_tree_host.release();
+  EXPECT_EQ(0u, embed_result->window_tree_client->GetRoots().size());
 }
 
 TEST_F(WindowServerTest, ClientAreaChanged) {
-  Window* embed_window = window_manager()->NewWindow();
-  GetFirstWMRoot()->AddChild(embed_window);
+  aura::Window* window = NewVisibleWindow(GetFirstWMRoot(), window_manager());
 
-  WindowTreeClient* embedded_client = Embed(embed_window).client;
+  std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window);
+  ASSERT_TRUE(embed_result->IsValid());
 
   // Verify change from embedded makes it to parent.
-  GetFirstRoot(embedded_client)->SetClientArea(gfx::Insets(1, 2, 3, 4));
-  ASSERT_TRUE(WaitForClientAreaToChange(embed_window));
-  EXPECT_TRUE(gfx::Insets(1, 2, 3, 4) == embed_window->client_area());
-
-  // Changing bounds shouldn't effect client area.
-  embed_window->SetBounds(gfx::Rect(21, 22, 23, 24));
-  WaitForBoundsToChange(GetFirstRoot(embedded_client));
-  EXPECT_TRUE(gfx::Rect(21, 22, 23, 24) ==
-              GetFirstRoot(embedded_client)->bounds());
-  EXPECT_TRUE(gfx::Insets(1, 2, 3, 4) ==
-              GetFirstRoot(embedded_client)->client_area());
+  const gfx::Insets insets(1, 2, 3, 4);
+  embed_result->window_tree_host->SetClientArea(insets);
+  std::unique_ptr<ClientAreaChange> client_area_change =
+      WaitForClientAreaToChange();
+  ASSERT_TRUE(client_area_change);
+  EXPECT_EQ(window, client_area_change->window);
+  EXPECT_EQ(insets, client_area_change->insets);
 }
 
 class EstablishConnectionViaFactoryDelegate : public TestWindowManagerDelegate {
  public:
-  explicit EstablishConnectionViaFactoryDelegate(
-      WindowTreeClient* client)
+  explicit EstablishConnectionViaFactoryDelegate(aura::WindowTreeClient* client)
       : client_(client), run_loop_(nullptr), created_window_(nullptr) {}
   ~EstablishConnectionViaFactoryDelegate() override {}
 
@@ -1090,22 +675,22 @@ class EstablishConnectionViaFactoryDelegate : public TestWindowManagerDelegate {
     return created_window_ != nullptr;
   }
 
-  Window* created_window() { return created_window_; }
+  aura::Window* created_window() { return created_window_; }
 
   // WindowManagerDelegate:
-  Window* OnWmCreateTopLevelWindow(
+  aura::Window* OnWmCreateTopLevelWindow(
+      ui::mojom::WindowType window_type,
       std::map<std::string, std::vector<uint8_t>>* properties) override {
-    created_window_ = client_->NewWindow(properties);
-    (*client_->GetRoots().begin())->AddChild(created_window_);
+    created_window_ = NewVisibleWindow((*client_->GetRoots().begin()), client_);
     if (run_loop_)
       run_loop_->Quit();
     return created_window_;
   }
 
  private:
-  WindowTreeClient* client_;
+  aura::WindowTreeClient* client_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  Window* created_window_;
+  aura::Window* created_window_;
 
   DISALLOW_COPY_AND_ASSIGN(EstablishConnectionViaFactoryDelegate);
 };
@@ -1113,21 +698,24 @@ class EstablishConnectionViaFactoryDelegate : public TestWindowManagerDelegate {
 TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
   EstablishConnectionViaFactoryDelegate delegate(window_manager());
   set_window_manager_delegate(&delegate);
-  WindowTreeClient second_client(this, nullptr, nullptr);
-  second_client.ConnectViaWindowTreeFactory(connector());
-  Window* window_in_second_client = second_client.NewTopLevelWindow(nullptr);
-  ASSERT_TRUE(window_in_second_client);
-  ASSERT_TRUE(second_client.GetRoots().count(window_in_second_client) > 0);
+  aura::WindowTreeClient second_client(connector(), this);
+  second_client.ConnectViaWindowTreeFactory();
+  aura::WindowTreeHostMus window_tree_host_in_second_client(&second_client);
+  ASSERT_TRUE(second_client.GetRoots().count(
+                  window_tree_host_in_second_client.window()) > 0);
   // Wait for the window to appear in the wm.
   ASSERT_TRUE(delegate.QuitOnCreate());
 
-  Window* window_in_wm = delegate.created_window();
+  aura::Window* window_in_wm = delegate.created_window();
   ASSERT_TRUE(window_in_wm);
 
   // Change the bounds in the wm, and make sure the child sees it.
-  window_in_wm->SetBounds(gfx::Rect(1, 11, 12, 101));
-  ASSERT_TRUE(WaitForBoundsToChange(window_in_second_client));
-  EXPECT_EQ(gfx::Rect(1, 11, 12, 101), window_in_second_client->bounds());
+  const gfx::Rect window_bounds(1, 11, 12, 101);
+  window_in_wm->SetBounds(window_bounds);
+  ASSERT_TRUE(
+      WaitForBoundsToChange(window_tree_host_in_second_client.window()));
+  EXPECT_EQ(window_bounds,
+            window_tree_host_in_second_client.GetBoundsInPixels());
 }
 
 }  // namespace ws

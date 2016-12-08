@@ -100,6 +100,11 @@ class AURA_EXPORT WindowMus {
   virtual std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
       bool value) = 0;
 
+  // Called when the window on the server has been destroyed and the client code
+  // is going to delete the window. The client may not immediately delete the
+  // window (as compared to DestroyFromServer()).
+  virtual void PrepareForDestroy() = 0;
+
   // See TransientWindowClientObserver::OnWillRestackTransientChildAbove() for
   // details on this and OnTransientRestackDone().
   virtual void PrepareForTransientRestack(WindowMus* window) = 0;

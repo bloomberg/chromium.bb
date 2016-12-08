@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_PUBLIC_CPP_TESTS_WINDOW_SERVER_SHELLTEST_BASE_H_
-#define SERVICES_UI_PUBLIC_CPP_TESTS_WINDOW_SERVER_SHELLTEST_BASE_H_
+#ifndef SERVICES_UI_WS_WINDOW_SERVER_SERVICE_TEST_BASE_H_
+#define SERVICES_UI_WS_WINDOW_SERVER_SERVICE_TEST_BASE_H_
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/connection.h"
@@ -29,4 +29,4 @@ class WindowServerServiceTestBase : public service_manager::test::ServiceTest {
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_PUBLIC_CPP_TESTS_WINDOW_SERVER_SHELLTEST_BASE_H_
+#endif  // SERVICES_UI_WS_WINDOW_SERVER_SERVICE_TEST_BASE_H_

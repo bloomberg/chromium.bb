@@ -342,7 +342,8 @@ void WindowManager::OnEmbed(
   NOTREACHED();
 }
 
-void WindowManager::OnEmbedRootDestroyed(aura::Window* root) {
+void WindowManager::OnEmbedRootDestroyed(
+    aura::WindowTreeHostMus* window_tree_host) {
   // WindowManager should never see this.
   NOTREACHED();
 }

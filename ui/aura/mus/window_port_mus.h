@@ -213,6 +213,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       const gfx::Rect& bounds) override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
       bool value) override;
+  void PrepareForDestroy() override;
   void PrepareForTransientRestack(WindowMus* window) override;
   void OnTransientRestackDone(WindowMus* window) override;
   void NotifyEmbeddedAppDisconnected() override;

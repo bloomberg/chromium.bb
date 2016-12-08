@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/public/cpp/tests/window_server_shelltest_base.h"
+#include "services/ui/ws/window_server_service_test_base.h"
 
 #include <memory>
 

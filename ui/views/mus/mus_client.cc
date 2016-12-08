@@ -212,10 +212,10 @@ void MusClient::OnEmbed(
 
 void MusClient::OnLostConnection(aura::WindowTreeClient* client) {}
 
-void MusClient::OnEmbedRootDestroyed(aura::Window* root) {
-  // Not called for MusClient as WindowTreeClient isn't created by
-  // way of an Embed().
-  NOTREACHED();
+void MusClient::OnEmbedRootDestroyed(
+    aura::WindowTreeHostMus* window_tree_host) {
+  static_cast<DesktopWindowTreeHostMus*>(window_tree_host)
+      ->ServerDestroyedWindow();
 }
 
 void MusClient::OnPointerEventObserved(const ui::PointerEvent& event,

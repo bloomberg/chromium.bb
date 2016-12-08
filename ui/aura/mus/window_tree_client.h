@@ -115,6 +115,7 @@ class AURA_EXPORT WindowTreeClient
                         bool visible,
                         mojo::TextInputStatePtr state);
 
+  // Embeds a new client in |window|.
   void Embed(Window* window,
              ui::mojom::WindowTreeClientPtr client,
              uint32_t flags,

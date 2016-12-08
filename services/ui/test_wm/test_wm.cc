@@ -85,7 +85,8 @@ class TestWM : public service_manager::Service,
     window_tree_host_.reset();
     window_tree_client_.reset();
   }
-  void OnEmbedRootDestroyed(aura::Window* root) override {
+  void OnEmbedRootDestroyed(
+      aura::WindowTreeHostMus* window_tree_host) override {
     // WindowTreeClients configured as the window manager should never get
     // OnEmbedRootDestroyed().
     NOTREACHED();

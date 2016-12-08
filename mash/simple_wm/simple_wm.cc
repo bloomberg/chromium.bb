@@ -114,7 +114,7 @@ void SimpleWM::OnLostConnection(aura::WindowTreeClient* client) {
   window_tree_client_.reset();
 }
 
-void SimpleWM::OnEmbedRootDestroyed(aura::Window* root) {
+void SimpleWM::OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) {
   // WindowTreeClients configured as the window manager should never get
   // OnEmbedRootDestroyed().
   NOTREACHED();

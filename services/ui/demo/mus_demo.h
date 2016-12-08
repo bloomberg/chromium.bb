@@ -64,7 +64,7 @@ class MusDemo : public service_manager::Service,
   void OnEmbed(
       std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) override;
   void OnUnembed(aura::Window* root) override;
-  void OnEmbedRootDestroyed(aura::Window* root) override;
+  void OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) override;
   void OnLostConnection(aura::WindowTreeClient* client) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               aura::Window* target) override;

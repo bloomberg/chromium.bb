@@ -110,7 +110,7 @@ class VIEWS_MUS_EXPORT MusClient
   void OnEmbed(
       std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) override;
   void OnLostConnection(aura::WindowTreeClient* client) override;
-  void OnEmbedRootDestroyed(aura::Window* root) override;
+  void OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               aura::Window* target) override;
   aura::client::CaptureClient* GetCaptureClient() override;

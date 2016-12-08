@@ -43,7 +43,8 @@ class WindowTreeClientDelegate : public aura::WindowTreeClientDelegate {
     window_tree_host_ = std::move(window_tree_host);
     run_loop_.Quit();
   }
-  void OnEmbedRootDestroyed(aura::Window* root) override {}
+  void OnEmbedRootDestroyed(
+      aura::WindowTreeHostMus* window_tree_host) override {}
   void OnLostConnection(aura::WindowTreeClient* client) override {}
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               aura::Window* target) override {}

@@ -167,16 +167,28 @@ static_library("test_support") {
   sources = [
     "test_change_tracker.cc",
     "test_change_tracker.h",
+    "window_server_service_test_base.cc",
+    "window_server_service_test_base.h",
+    "window_server_test_base.cc",
+    "window_server_test_base.h",
   ]
 
   deps = [
     "//base",
+    "//base/test:test_config",
     "//mojo/common",
     "//mojo/public/cpp/bindings:bindings",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp:sources",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
+    "//testing/gtest",
+    "//ui/aura",
+    "//ui/display:test_support",
     "//ui/gfx/geometry/mojo",
+    "//ui/gl",
+    "//ui/wm",
   ]
 }
 
@@ -236,10 +248,11 @@ test("mus_ws_unittests") {
     "//services/ui/common:task_runner_test_base",
     "//services/ui/public/cpp",
     "//services/ui/public/cpp:internal_or_test",
-    "//services/ui/public/cpp/tests:test_support",
     "//services/ui/public/interfaces",
     "//testing/gtest",
     "//third_party/mesa:osmesa",
+    "//ui/aura",
+    "//ui/aura:test_support",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx:test_support",

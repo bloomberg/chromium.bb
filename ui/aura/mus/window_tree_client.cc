@@ -264,6 +264,14 @@ void WindowTreeClient::Embed(
     uint32_t flags,
     const ui::mojom::WindowTree::EmbedCallback& callback) {
   DCHECK(tree_);
+  if (!window->children().empty()) {
+    // The window server removes all children before embedding. In other words,
+    // it's generally an error to Embed() with existing children. So, fail
+    // early.
+    callback.Run(false);
+    return;
+  }
+
   tree_->Embed(WindowMus::Get(window)->server_id(), std::move(client), flags,
                callback);
 }
@@ -595,9 +603,7 @@ void WindowTreeClient::OnWindowMusDestroyed(WindowMus* window, Origin origin) {
   for (auto change_id : in_flight_change_ids_to_remove)
     in_flight_map_.erase(change_id);
 
-  const bool was_root = roots_.erase(window) > 0;
-  if (!in_destructor_ && was_root && roots_.empty() && is_from_embed_)
-    delegate_->OnEmbedRootDestroyed(window->GetWindow());
+  roots_.erase(window);
 }
 
 void WindowTreeClient::OnWindowMusBoundsChanged(WindowMus* window,
@@ -1001,8 +1007,20 @@ void WindowTreeClient::OnWindowReordered(Id window_id,
 
 void WindowTreeClient::OnWindowDeleted(Id window_id) {
   WindowMus* window = GetWindowByServerId(window_id);
-  if (window)
+  if (!window)
+    return;
+
+  if (roots_.count(window)) {
+    // Roots are associated with WindowTreeHosts. The WindowTreeHost owns the
+    // root, so we have to delete the WindowTreeHost to indirectly delete the
+    // Window. Additionally clients may want to do extra processing before the
+    // delete, so call to the delegate to handle it. Let the window know it is
+    // going to be deleted so we don't callback to the server.
+    window->PrepareForDestroy();
+    delegate_->OnEmbedRootDestroyed(GetWindowTreeHostMus(window));
+  } else {
     window->DestroyFromServer();
+  }
 }
 
 void WindowTreeClient::OnWindowVisibilityChanged(Id window_id, bool visible) {

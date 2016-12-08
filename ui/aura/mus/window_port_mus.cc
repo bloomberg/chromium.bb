@@ -332,6 +332,10 @@ WindowPortMus::PrepareForServerVisibilityChange(bool value) {
   return std::move(data);
 }
 
+void WindowPortMus::PrepareForDestroy() {
+  ScheduleChange(ServerChangeType::DESTROY, ServerChangeData());
+}
+
 void WindowPortMus::PrepareForTransientRestack(WindowMus* window) {
   ServerChangeData change_data;
   change_data.child_id = window->server_id();

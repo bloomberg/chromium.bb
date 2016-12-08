@@ -34,6 +34,9 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
       const std::map<std::string, std::vector<uint8_t>>* mus_properties);
   ~DesktopWindowTreeHostMus() override;
 
+  // Called when the window was deleted on the server.
+  void ServerDestroyedWindow() { CloseNow(); }
+
  private:
   bool IsDocked() const;
 

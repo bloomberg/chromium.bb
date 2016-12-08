@@ -140,7 +140,7 @@ class WindowManager : public aura::WindowManagerDelegate,
   // WindowTreeClientDelegate:
   void OnEmbed(
       std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) override;
-  void OnEmbedRootDestroyed(aura::Window* root) override;
+  void OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) override;
   void OnLostConnection(aura::WindowTreeClient* client) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               aura::Window* target) override;

@@ -57,6 +57,8 @@ class WindowTreeClientPrivate {
 
   bool HasPointerWatcher();
 
+  Window* GetWindowByServerId(Id id);
+
  private:
   WindowTreeClient* tree_client_impl_;
   uint16_t next_window_id_ = 1u;
