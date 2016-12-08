@@ -166,13 +166,18 @@ void CSSStyleSheet::didMutate(StyleSheetUpdateType updateType) {
   Document* owner = ownerDocument();
   if (!owner)
     return;
+  if (ownerNode() && ownerNode()->isConnected())
+    owner->styleEngine().setNeedsActiveStyleUpdate(ownerNode()->treeScope());
+
+  // TODO(rune@opera.com): resolverChanged() can be removed once stylesheet
+  // updates are async. https://crbug.com/567021
 
   // Need FullStyleUpdate when insertRule or deleteRule,
   // because StyleSheetCollection::analyzeStyleSheetChange cannot detect partial
   // rule update.
   StyleResolverUpdateMode updateMode =
       updateType != PartialRuleUpdate ? AnalyzedStyleUpdate : FullStyleUpdate;
-  owner->styleEngine().setNeedsActiveStyleUpdate(this, updateMode);
+  owner->styleEngine().resolverChanged(updateMode);
 }
 
 void CSSStyleSheet::reattachChildRuleCSSOMWrappers() {

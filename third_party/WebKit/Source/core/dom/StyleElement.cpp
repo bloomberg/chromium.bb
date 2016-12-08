@@ -82,13 +82,14 @@ void StyleElement::removedFrom(Element& element,
     m_registeredAsCandidate = false;
   }
 
-  StyleSheet* removedSheet = m_sheet.get();
-
-  if (m_sheet)
+  if (m_sheet) {
     clearSheet(element);
-  if (removedSheet)
-    document.styleEngine().setNeedsActiveStyleUpdate(removedSheet,
-                                                     AnalyzedStyleUpdate);
+    if (element.isConnected()) {
+      // TODO(rune@opera.com): resolverChanged() can be removed once stylesheet
+      // updates are async. https://crbug.com/567021
+      document.styleEngine().resolverChanged(AnalyzedStyleUpdate);
+    }
+  }
 }
 
 StyleElement::ProcessingResult StyleElement::childrenChanged(Element& element) {

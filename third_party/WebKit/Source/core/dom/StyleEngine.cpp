@@ -185,23 +185,11 @@ void StyleEngine::removePendingSheet(Node& styleSheetCandidateNode,
   document().didRemoveAllPendingStylesheet();
 }
 
-void StyleEngine::setNeedsActiveStyleUpdate(
-    StyleSheet* sheet,
-    StyleResolverUpdateMode updateMode) {
-  // resolverChanged() is called for inactive non-master documents because
-  // import documents are inactive documents. resolverChanged() for imports
-  // will call resolverChanged() for the master document and update the active
-  // stylesheets including the ones from the import.
+void StyleEngine::setNeedsActiveStyleUpdate(TreeScope& treeScope) {
   if (!document().isActive() && isMaster())
     return;
 
-  if (sheet && document().isActive()) {
-    Node* node = sheet->ownerNode();
-    if (node && node->isConnected())
-      markTreeScopeDirty(node->treeScope());
-  }
-
-  resolverChanged(updateMode);
+  markTreeScopeDirty(treeScope);
 }
 
 void StyleEngine::addStyleSheetCandidateNode(Node& node) {

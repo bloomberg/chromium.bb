@@ -61,7 +61,6 @@ class RuleFeatureSet;
 class ShadowTreeStyleSheetCollection;
 class StyleRuleFontFace;
 class StyleRuleUsageTracker;
-class StyleSheet;
 class StyleSheetContents;
 class ViewportStyleResolver;
 
@@ -103,7 +102,7 @@ class CORE_EXPORT StyleEngine final
   const HeapVector<Member<CSSStyleSheet>> activeStyleSheetsForInspector() const;
 
   bool needsActiveStyleUpdate() const;
-  void setNeedsActiveStyleUpdate(StyleSheet*, StyleResolverUpdateMode);
+  void setNeedsActiveStyleUpdate(TreeScope&);
   void addStyleSheetCandidateNode(Node&);
   void removeStyleSheetCandidateNode(Node&, ContainerNode& insertionPoint);
   void modifiedStyleSheetCandidateNode(Node&);

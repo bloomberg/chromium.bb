@@ -275,7 +275,6 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint) {
                                                            *insertionPoint);
   }
 
-  StyleSheet* removedSheet = m_sheet;
   if (m_sheet) {
     DCHECK_EQ(m_sheet->ownerNode(), this);
     clearSheet();
@@ -284,11 +283,12 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint) {
   // No need to remove pending sheets.
   clearResource();
 
+  // TODO(rune@opera.com): resolverChanged() can be removed once stylesheet
+  // updates are async. https://crbug.com/567021
   // If we're in document teardown, then we don't need to do any notification of
   // our sheet's removal.
   if (document().isActive())
-    document().styleEngine().setNeedsActiveStyleUpdate(removedSheet,
-                                                       FullStyleUpdate);
+    document().styleEngine().resolverChanged(FullStyleUpdate);
 }
 
 void ProcessingInstruction::clearSheet() {
