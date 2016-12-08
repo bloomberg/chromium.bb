@@ -2162,3 +2162,8 @@ Bug(dpranke) imported/wpt/service-workers/service-worker/register-closed-window.
 
 # Added 2016-11-30
 crbug.com/669911 [ Win7 Win10 ] virtual/threaded/animations/zoom-responsive-transform-animation.html [ Pass Failure Timeout ]
+
+# Added 2016-12-06
+crbug.com/671618 http/tests/websocket/workers/worker-reload.html [ Pass Timeout ]
+crbug.com/671618 virtual/mojo-loading/http/tests/websocket/workers/worker-reload.html [ Pass Timeout ]
+crbug.com/671618 virtual/mojo-loading/http/tests/websocket/workers/worker-shutdown-race.html [ Pass Timeout ]
