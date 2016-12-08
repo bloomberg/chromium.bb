@@ -1135,34 +1135,24 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests swiping the overlay open, after an initial long-press that activates the peeking card,
      * followed by closing the panel.
+     * This test also verifies that we don't create any {@link ContentViewCore} or load any URL
+     * until the panel is opened.
      */
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     public void testLongPressSwipeExpand() throws InterruptedException, TimeoutException {
-        longPressNode("intelligence");
+        simulateLongPressSearch("search");
         assertNoContentViewCore();
-
-        // TODO(pedrosimonetti): Long press does not resolve so we shouldn't be faking one.
-        // Consider changing the fake server to create a fake response automatically,
-        // when one is requested by the Manager.
-
-        // Fake a search term resolution response.
-        fakeResponse(false, 200, "Intelligence", "United States Intelligence", "alternate-term",
-                false);
-        assertContainsParameters("Intelligence", "alternate-term");
-
-        waitForPanelToPeek();
         assertLoadedNoUrl();
-        assertNoContentViewCore();
-        flingPanelUp();
-        waitForPanelToExpand();
+
+        tapPeekingBarToExpandAndAssert();
         assertContentViewCoreCreated();
         assertLoadedNormalPriorityUrl();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
 
         // tap the base page to close.
-        tapBasePageToClosePanel();
+        closePanel();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
         assertNoContentViewCore();
     }
