@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.05",
+  "version": "12.06",
   "entries": [
     {
       "id": 1,
@@ -1406,6 +1406,22 @@ LONG_STRING_CONST(
       },
       "features": [
         "webgl2"
+      ]
+    },
+    {
+      "id":129,
+      "description": "Intel drivers are buggy on Linux 2.x",
+      "cr_bugs": [662909],
+      "os": {
+        "type": "linux",
+        "version": {
+          "op": "<",
+          "value": "3.0"
+        }
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "all"
       ]
     }
   ]
