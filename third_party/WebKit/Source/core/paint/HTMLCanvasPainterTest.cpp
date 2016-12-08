@@ -53,7 +53,7 @@ class HTMLCanvasPainterTestForSPv2 : public ::testing::Test,
 
   PassRefPtr<Canvas2DLayerBridge> makeCanvas2DLayerBridge(const IntSize& size) {
     return adoptRef(new Canvas2DLayerBridge(
-        wrapUnique(new FakeWebGraphicsContext3DProvider(&m_gl)), size, 0,
+        WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&m_gl)), size, 0,
         NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
         kN32_SkColorType));
   }
@@ -78,8 +78,8 @@ TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
       element->getCanvasRenderingContext("2d", attributes);
   RefPtr<Canvas2DLayerBridge> bridge =
       makeCanvas2DLayerBridge(IntSize(300, 200));
-  element->createImageBufferUsingSurfaceForTesting(
-      wrapUnique(new Canvas2DImageBufferSurface(bridge, IntSize(300, 200))));
+  element->createImageBufferUsingSurfaceForTesting(WTF::wrapUnique(
+      new Canvas2DImageBufferSurface(bridge, IntSize(300, 200))));
   ASSERT_EQ(context, element->renderingContext());
   ASSERT_TRUE(context->isAccelerated());
 

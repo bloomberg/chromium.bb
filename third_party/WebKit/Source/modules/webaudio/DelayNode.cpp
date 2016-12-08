@@ -46,8 +46,8 @@ DelayNode::DelayNode(BaseAudioContext& context, double maxDelayTime)
                                      maxDelayTime)) {
   setHandler(AudioBasicProcessorHandler::create(
       AudioHandler::NodeTypeDelay, *this, context.sampleRate(),
-      wrapUnique(new DelayProcessor(context.sampleRate(), 1,
-                                    m_delayTime->handler(), maxDelayTime))));
+      WTF::wrapUnique(new DelayProcessor(
+          context.sampleRate(), 1, m_delayTime->handler(), maxDelayTime))));
 }
 
 DelayNode* DelayNode::create(BaseAudioContext& context,

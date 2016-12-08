@@ -70,7 +70,7 @@ std::unique_ptr<FontCustomPlatformData> FontCustomPlatformData::create(
     otsParseMessage = decoder.getErrorString();
     return nullptr;
   }
-  return wrapUnique(
+  return WTF::wrapUnique(
       new FontCustomPlatformData(std::move(typeface), decoder.decodedSize()));
 }
 

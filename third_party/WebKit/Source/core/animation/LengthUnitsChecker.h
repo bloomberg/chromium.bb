@@ -30,7 +30,7 @@ class LengthUnitsChecker : public InterpolationType::ConversionChecker {
     }
     if (!create)
       return nullptr;
-    return wrapUnique(
+    return WTF::wrapUnique(
         new LengthUnitsChecker(std::move(lengthArray), lastIndex));
   }
 

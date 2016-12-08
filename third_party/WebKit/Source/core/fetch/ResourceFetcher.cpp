@@ -1070,7 +1070,7 @@ void ResourceFetcher::preloadStarted(Resource* resource) {
 void ResourceFetcher::enableIsPreloadedForTest() {
   if (m_preloadedURLsForTest)
     return;
-  m_preloadedURLsForTest = wrapUnique(new HashSet<String>);
+  m_preloadedURLsForTest = WTF::wrapUnique(new HashSet<String>);
 
   if (m_preloads) {
     for (const auto& resource : *m_preloads)

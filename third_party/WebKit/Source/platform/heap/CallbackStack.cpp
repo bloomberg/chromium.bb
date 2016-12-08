@@ -113,7 +113,7 @@ bool CallbackStack::Block::hasCallbackForObject(const void* object) {
 #endif
 
 std::unique_ptr<CallbackStack> CallbackStack::create() {
-  return wrapUnique(new CallbackStack());
+  return WTF::wrapUnique(new CallbackStack());
 }
 
 CallbackStack::CallbackStack() : m_first(nullptr), m_last(nullptr) {}

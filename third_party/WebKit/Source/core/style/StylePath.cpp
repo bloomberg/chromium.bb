@@ -34,7 +34,7 @@ StylePath* StylePath::emptyPath() {
 
 const Path& StylePath::path() const {
   if (!m_path) {
-    m_path = wrapUnique(new Path);
+    m_path = WTF::wrapUnique(new Path);
     buildPathFromByteStream(*m_byteStream, *m_path);
   }
   return *m_path;

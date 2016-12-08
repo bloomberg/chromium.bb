@@ -49,9 +49,9 @@ std::unique_ptr<DummyPageHolder> DummyPageHolder::create(
     FrameLoaderClient* frameLoaderClient,
     FrameSettingOverrideFunction settingOverrider,
     InterfaceProvider* interfaceProvider) {
-  return wrapUnique(new DummyPageHolder(initialViewSize, pageClients,
-                                        frameLoaderClient, settingOverrider,
-                                        interfaceProvider));
+  return WTF::wrapUnique(
+      new DummyPageHolder(initialViewSize, pageClients, frameLoaderClient,
+                          settingOverrider, interfaceProvider));
 }
 
 DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize,

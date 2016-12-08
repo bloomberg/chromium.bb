@@ -111,8 +111,8 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     if (s_instance)
       return;
     std::unique_ptr<ClientMessageLoopAdapter> instance =
-        wrapUnique(new ClientMessageLoopAdapter(
-            wrapUnique(client->createClientMessageLoop())));
+        WTF::wrapUnique(new ClientMessageLoopAdapter(
+            WTF::wrapUnique(client->createClientMessageLoop())));
     s_instance = instance.get();
     MainThreadDebugger::instance()->setClientMessageLoop(std::move(instance));
   }
@@ -695,7 +695,7 @@ void WebDevToolsAgent::interruptAndDispatch(int sessionId,
   // WebKit API function.
   MainThreadDebugger::interruptMainThreadAndRun(
       crossThreadBind(WebDevToolsAgentImpl::runDebuggerTask, sessionId,
-                      passed(wrapUnique(rawDescriptor))));
+                      WTF::passed(WTF::wrapUnique(rawDescriptor))));
 }
 
 bool WebDevToolsAgent::shouldInterruptForMethod(const WebString& method) {

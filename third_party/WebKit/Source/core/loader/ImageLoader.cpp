@@ -91,7 +91,7 @@ class ImageLoader::Task {
   static std::unique_ptr<Task> create(ImageLoader* loader,
                                       UpdateFromElementBehavior updateBehavior,
                                       ReferrerPolicy referrerPolicy) {
-    return makeUnique<Task>(loader, updateBehavior, referrerPolicy);
+    return WTF::makeUnique<Task>(loader, updateBehavior, referrerPolicy);
   }
 
   Task(ImageLoader* loader,
@@ -261,7 +261,8 @@ inline void ImageLoader::enqueueImageLoadingMicroTask(
   std::unique_ptr<Task> task =
       Task::create(this, updateBehavior, referrerPolicy);
   m_pendingTask = task->createWeakPtr();
-  Microtask::enqueueMicrotask(WTF::bind(&Task::run, passed(std::move(task))));
+  Microtask::enqueueMicrotask(
+      WTF::bind(&Task::run, WTF::passed(std::move(task))));
   m_loadDelayCounter =
       IncrementLoadEventDelayCount::create(m_element->document());
 }

@@ -104,7 +104,7 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulseResponse,
     bool useDirectConvolver = !stageOffset;
 
     std::unique_ptr<ReverbConvolverStage> stage =
-        wrapUnique(new ReverbConvolverStage(
+        WTF::wrapUnique(new ReverbConvolverStage(
             response, totalResponseLength, reverbTotalLatency, stageOffset,
             stageSize, fftSize, renderPhase, renderSliceSize,
             &m_accumulationBuffer, useDirectConvolver));
@@ -137,7 +137,7 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulseResponse,
   // FIXME: would be better to up the thread priority here.  It doesn't need to
   // be real-time, but higher than the default...
   if (useBackgroundThreads && m_backgroundStages.size() > 0)
-    m_backgroundThread = wrapUnique(Platform::current()->createThread(
+    m_backgroundThread = WTF::wrapUnique(Platform::current()->createThread(
         "Reverb convolution background thread"));
 }
 

@@ -249,7 +249,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   Platform::current()->mainThread()->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,
       crossThreadBind(updatePlaceholderImage, this->createWeakPtr(),
-                      passed(std::move(dispatcherTaskRunner)),
+                      WTF::passed(std::move(dispatcherTaskRunner)),
                       m_placeholderCanvasId, std::move(image), resource.id));
   m_spareResourceLocks.add(m_nextResourceId);
 

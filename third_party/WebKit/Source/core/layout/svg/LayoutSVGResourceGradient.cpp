@@ -81,7 +81,7 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(
   std::unique_ptr<GradientData>& gradientData =
       m_gradientMap.add(&object, nullptr).storedValue->value;
   if (!gradientData)
-    gradientData = wrapUnique(new GradientData);
+    gradientData = WTF::wrapUnique(new GradientData);
 
   // Create gradient object
   if (!gradientData->gradient) {

@@ -133,7 +133,7 @@ class InheritedTransformChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedTransformChecker> create(
       const TransformOperations& inheritedTransform) {
-    return wrapUnique(new InheritedTransformChecker(inheritedTransform));
+    return WTF::wrapUnique(new InheritedTransformChecker(inheritedTransform));
   }
 
   bool isValid(const InterpolationEnvironment& environment,

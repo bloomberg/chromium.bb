@@ -82,8 +82,8 @@ void SkiaTextureHolder::releaseImageThreadSafe() {
     sharedGL->GenSyncTokenCHROMIUM(fenceSync, releaseSyncToken->GetData());
     textureThreadTaskRunner()->postTask(
         BLINK_FROM_HERE,
-        crossThreadBind(&releaseImage, passed(std::move(m_image)),
-                        passed(std::move(releaseSyncToken))));
+        crossThreadBind(&releaseImage, WTF::passed(std::move(m_image)),
+                        WTF::passed(std::move(releaseSyncToken))));
   }
   m_image = nullptr;
   setWasTransferred(false);

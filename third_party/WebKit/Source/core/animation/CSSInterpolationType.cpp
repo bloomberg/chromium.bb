@@ -21,8 +21,8 @@ class ResolvedVariableChecker : public InterpolationType::ConversionChecker {
       CSSPropertyID property,
       const CSSValue* variableReference,
       const CSSValue* resolvedValue) {
-    return wrapUnique(new ResolvedVariableChecker(property, variableReference,
-                                                  resolvedValue));
+    return WTF::wrapUnique(new ResolvedVariableChecker(
+        property, variableReference, resolvedValue));
   }
 
  private:

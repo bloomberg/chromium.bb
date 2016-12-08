@@ -130,7 +130,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(
     sk_sp<SkColorSpace> colorSpace,
     SkColorType colorType)
     : m_contextProvider(std::move(contextProvider)),
-      m_logger(wrapUnique(new Logger)),
+      m_logger(WTF::wrapUnique(new Logger)),
       m_weakPtrFactory(this),
       m_imageBuffer(0),
       m_msaaSampleCount(msaaSampleCount),
@@ -170,7 +170,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge() {
 
 void Canvas2DLayerBridge::startRecording() {
   DCHECK(m_isDeferralEnabled);
-  m_recorder = wrapUnique(new SkPictureRecorder);
+  m_recorder = WTF::wrapUnique(new SkPictureRecorder);
   SkCanvas* canvas =
       m_recorder->beginRecording(m_size.width(), m_size.height(), nullptr);
   // Always save an initial frame, to support resetting the top level matrix
@@ -847,7 +847,7 @@ bool Canvas2DLayerBridge::restoreSurface() {
 
   gpu::gles2::GLES2Interface* sharedGL = nullptr;
   m_layer->clearTexture();
-  m_contextProvider = wrapUnique(
+  m_contextProvider = WTF::wrapUnique(
       Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
   if (m_contextProvider)
     sharedGL = m_contextProvider->contextGL();

@@ -198,7 +198,7 @@ FetchResponseData* FetchResponseData::clone(ScriptState* scriptState) {
   FetchResponseData* newResponse = create();
   newResponse->m_type = m_type;
   if (m_terminationReason) {
-    newResponse->m_terminationReason = wrapUnique(new TerminationReason);
+    newResponse->m_terminationReason = WTF::wrapUnique(new TerminationReason);
     *newResponse->m_terminationReason = *m_terminationReason;
   }
   newResponse->setURLList(m_urlList);

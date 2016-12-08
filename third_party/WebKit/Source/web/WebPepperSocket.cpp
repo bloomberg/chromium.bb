@@ -42,7 +42,7 @@ WebPepperSocket* WebPepperSocket::create(const WebDocument& document,
     return 0;
 
   std::unique_ptr<WebPepperSocketImpl> websocket =
-      makeUnique<WebPepperSocketImpl>(document, client);
+      WTF::makeUnique<WebPepperSocketImpl>(document, client);
   if (websocket && websocket->isNull())
     return 0;
   return websocket.release();

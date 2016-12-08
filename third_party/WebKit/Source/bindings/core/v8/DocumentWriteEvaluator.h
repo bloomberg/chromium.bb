@@ -33,7 +33,7 @@ class CORE_EXPORT DocumentWriteEvaluator {
 
   static std::unique_ptr<DocumentWriteEvaluator> create(
       const Document& document) {
-    return wrapUnique(new DocumentWriteEvaluator(document));
+    return WTF::wrapUnique(new DocumentWriteEvaluator(document));
   }
   virtual ~DocumentWriteEvaluator();
 

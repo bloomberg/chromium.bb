@@ -140,7 +140,7 @@ std::unique_ptr<JPEGImageEncoderState> JPEGImageEncoderState::create(
     return nullptr;
 
   std::unique_ptr<JPEGImageEncoderStateImpl> encoderState =
-      makeUnique<JPEGImageEncoderStateImpl>();
+      WTF::makeUnique<JPEGImageEncoderStateImpl>();
 
   jpeg_compress_struct* cinfo = encoderState->cinfo();
   jpeg_error_mgr* error = encoderState->error();

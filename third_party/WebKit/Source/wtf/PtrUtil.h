@@ -48,8 +48,6 @@ auto makeUnique(size_t size) -> decltype(base::MakeUnique<T>(size)) {
 
 }  // namespace WTF
 
-using WTF::makeUnique;
-using WTF::wrapUnique;
 using WTF::wrapArrayUnique;
 
 #endif  // PtrUtil_h

@@ -65,7 +65,7 @@ void SetSinkIdResolver::timerFired(TimerBase* timer) {
   ExecutionContext* context = getExecutionContext();
   ASSERT(context && context->isDocument());
   std::unique_ptr<SetSinkIdCallbacks> callbacks =
-      wrapUnique(new SetSinkIdCallbacks(this, *m_element, m_sinkId));
+      WTF::wrapUnique(new SetSinkIdCallbacks(this, *m_element, m_sinkId));
   WebMediaPlayer* webMediaPlayer = m_element->webMediaPlayer();
   if (webMediaPlayer) {
     // Using release() to transfer ownership because |webMediaPlayer| is a

@@ -74,7 +74,7 @@ class UnderlyingIndentModeChecker
  public:
   static std::unique_ptr<UnderlyingIndentModeChecker> create(
       const IndentMode& mode) {
-    return wrapUnique(new UnderlyingIndentModeChecker(mode));
+    return WTF::wrapUnique(new UnderlyingIndentModeChecker(mode));
   }
 
   bool isValid(const InterpolationEnvironment&,
@@ -94,7 +94,7 @@ class InheritedIndentModeChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedIndentModeChecker> create(
       const IndentMode& mode) {
-    return wrapUnique(new InheritedIndentModeChecker(mode));
+    return WTF::wrapUnique(new InheritedIndentModeChecker(mode));
   }
 
   bool isValid(const InterpolationEnvironment& environment,

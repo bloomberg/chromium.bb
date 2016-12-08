@@ -208,7 +208,7 @@ void MediaKeySystemAccessInitializer::requestSucceeded(
     return;
 
   m_resolver->resolve(
-      new MediaKeySystemAccess(m_keySystem, wrapUnique(access)));
+      new MediaKeySystemAccess(m_keySystem, WTF::wrapUnique(access)));
   m_resolver.clear();
 }
 

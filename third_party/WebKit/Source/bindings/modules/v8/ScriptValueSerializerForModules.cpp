@@ -408,7 +408,7 @@ bool SerializedScriptValueReaderForModules::readRTCCertificate(
     return false;
 
   std::unique_ptr<WebRTCCertificateGenerator> certificateGenerator =
-      wrapUnique(Platform::current()->createRTCCertificateGenerator());
+      WTF::wrapUnique(Platform::current()->createRTCCertificateGenerator());
 
   std::unique_ptr<WebRTCCertificate> certificate(
       certificateGenerator->fromPEM(pemPrivateKey, pemCertificate));

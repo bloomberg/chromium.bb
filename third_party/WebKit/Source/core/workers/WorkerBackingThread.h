@@ -31,10 +31,11 @@ class CORE_EXPORT WorkerBackingThread final {
   static std::unique_ptr<WorkerBackingThread> create(
       const char* name,
       BlinkGC::ThreadHeapMode threadHeapMode) {
-    return wrapUnique(new WorkerBackingThread(name, false, threadHeapMode));
+    return WTF::wrapUnique(
+        new WorkerBackingThread(name, false, threadHeapMode));
   }
   static std::unique_ptr<WorkerBackingThread> create(WebThread* thread) {
-    return wrapUnique(new WorkerBackingThread(thread, false));
+    return WTF::wrapUnique(new WorkerBackingThread(thread, false));
   }
 
   // These are needed to suppress leak reports. See
@@ -42,10 +43,10 @@ class CORE_EXPORT WorkerBackingThread final {
   static std::unique_ptr<WorkerBackingThread> createForTest(
       const char* name,
       BlinkGC::ThreadHeapMode threadHeapMode) {
-    return wrapUnique(new WorkerBackingThread(name, true, threadHeapMode));
+    return WTF::wrapUnique(new WorkerBackingThread(name, true, threadHeapMode));
   }
   static std::unique_ptr<WorkerBackingThread> createForTest(WebThread* thread) {
-    return wrapUnique(new WorkerBackingThread(thread, true));
+    return WTF::wrapUnique(new WorkerBackingThread(thread, true));
   }
 
   ~WorkerBackingThread();

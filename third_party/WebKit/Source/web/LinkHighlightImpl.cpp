@@ -71,7 +71,7 @@ namespace blink {
 std::unique_ptr<LinkHighlightImpl> LinkHighlightImpl::create(
     Node* node,
     WebViewImpl* owningWebViewImpl) {
-  return wrapUnique(new LinkHighlightImpl(node, owningWebViewImpl));
+  return WTF::wrapUnique(new LinkHighlightImpl(node, owningWebViewImpl));
 }
 
 LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)

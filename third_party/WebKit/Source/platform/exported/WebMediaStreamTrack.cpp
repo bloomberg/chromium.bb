@@ -112,7 +112,7 @@ void WebMediaStreamTrack::setTrackData(TrackData* extraData) {
   ASSERT(!m_private.isNull());
 
   m_private->setTrackData(
-      wrapUnique(new TrackDataContainer(wrapUnique(extraData))));
+      WTF::wrapUnique(new TrackDataContainer(WTF::wrapUnique(extraData))));
 }
 
 void WebMediaStreamTrack::setSourceProvider(WebAudioSourceProvider* provider) {

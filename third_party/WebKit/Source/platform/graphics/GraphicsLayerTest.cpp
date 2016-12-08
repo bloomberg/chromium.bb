@@ -53,15 +53,15 @@ namespace blink {
 class GraphicsLayerTest : public testing::Test {
  public:
   GraphicsLayerTest() {
-    m_clipLayer = wrapUnique(new FakeGraphicsLayer(&m_client));
-    m_scrollElasticityLayer = wrapUnique(new FakeGraphicsLayer(&m_client));
-    m_graphicsLayer = wrapUnique(new FakeGraphicsLayer(&m_client));
+    m_clipLayer = WTF::wrapUnique(new FakeGraphicsLayer(&m_client));
+    m_scrollElasticityLayer = WTF::wrapUnique(new FakeGraphicsLayer(&m_client));
+    m_graphicsLayer = WTF::wrapUnique(new FakeGraphicsLayer(&m_client));
     m_clipLayer->addChild(m_scrollElasticityLayer.get());
     m_scrollElasticityLayer->addChild(m_graphicsLayer.get());
     m_graphicsLayer->platformLayer()->setScrollClipLayer(
         m_clipLayer->platformLayer());
     m_platformLayer = m_graphicsLayer->platformLayer();
-    m_layerTreeView = wrapUnique(new WebLayerTreeViewImplForTesting);
+    m_layerTreeView = WTF::wrapUnique(new WebLayerTreeViewImplForTesting);
     ASSERT(m_layerTreeView);
     m_layerTreeView->setRootLayer(*m_clipLayer->platformLayer());
     m_layerTreeView->registerViewportLayers(

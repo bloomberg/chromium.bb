@@ -210,7 +210,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
   std::unique_ptr<AnimatableValueKeyframeVector>
   createCompositableFloatKeyframeVector(Vector<double>& values) {
     std::unique_ptr<AnimatableValueKeyframeVector> frames =
-        wrapUnique(new AnimatableValueKeyframeVector);
+        WTF::wrapUnique(new AnimatableValueKeyframeVector);
     for (size_t i = 0; i < values.size(); i++) {
       double offset = 1.0 / (values.size() - 1) * i;
       RefPtr<AnimatableDouble> value = AnimatableDouble::create(values[i]);
@@ -225,7 +225,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
   createCompositableTransformKeyframeVector(
       const Vector<TransformOperations>& values) {
     std::unique_ptr<AnimatableValueKeyframeVector> frames =
-        wrapUnique(new AnimatableValueKeyframeVector);
+        WTF::wrapUnique(new AnimatableValueKeyframeVector);
     for (size_t i = 0; i < values.size(); ++i) {
       double offset = 1.0f / (values.size() - 1) * i;
       RefPtr<AnimatableTransform> value =

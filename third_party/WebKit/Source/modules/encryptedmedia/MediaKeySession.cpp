@@ -385,7 +385,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState,
   // initializeNewSession() is called in response to the user calling
   // generateRequest().
   WebContentDecryptionModule* cdm = mediaKeys->contentDecryptionModule();
-  m_session = wrapUnique(cdm->createSession());
+  m_session = WTF::wrapUnique(cdm->createSession());
   m_session->setClientInterface(this);
 
   // From https://w3c.github.io/encrypted-media/#createSession:

@@ -179,25 +179,25 @@ void InvalidationSet::destroy() {
 
 HashSet<AtomicString>& InvalidationSet::ensureClassSet() {
   if (!m_classes)
-    m_classes = wrapUnique(new HashSet<AtomicString>);
+    m_classes = WTF::wrapUnique(new HashSet<AtomicString>);
   return *m_classes;
 }
 
 HashSet<AtomicString>& InvalidationSet::ensureIdSet() {
   if (!m_ids)
-    m_ids = wrapUnique(new HashSet<AtomicString>);
+    m_ids = WTF::wrapUnique(new HashSet<AtomicString>);
   return *m_ids;
 }
 
 HashSet<AtomicString>& InvalidationSet::ensureTagNameSet() {
   if (!m_tagNames)
-    m_tagNames = wrapUnique(new HashSet<AtomicString>);
+    m_tagNames = WTF::wrapUnique(new HashSet<AtomicString>);
   return *m_tagNames;
 }
 
 HashSet<AtomicString>& InvalidationSet::ensureAttributeSet() {
   if (!m_attributes)
-    m_attributes = wrapUnique(new HashSet<AtomicString>);
+    m_attributes = WTF::wrapUnique(new HashSet<AtomicString>);
   return *m_attributes;
 }
 

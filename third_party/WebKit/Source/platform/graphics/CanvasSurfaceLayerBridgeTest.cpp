@@ -70,7 +70,7 @@ void MockOffscreenCanvasSurface::GetSurfaceId(GetSurfaceIdCallback callback) {
 
 void CanvasSurfaceLayerBridgeTest::SetUp() {
   m_surfaceLayerBridge =
-      wrapUnique(new CanvasSurfaceLayerBridge(m_service.GetProxy()));
+      WTF::wrapUnique(new CanvasSurfaceLayerBridge(m_service.GetProxy()));
 }
 
 TEST_F(CanvasSurfaceLayerBridgeTest, SurfaceLayerCreation) {

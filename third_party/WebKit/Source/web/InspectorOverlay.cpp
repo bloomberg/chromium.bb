@@ -208,7 +208,7 @@ void InspectorOverlay::init(v8_inspector::V8InspectorSession* v8Session,
 void InspectorOverlay::invalidate() {
   if (!m_pageOverlay) {
     m_pageOverlay = PageOverlay::create(
-        m_frameImpl, wrapUnique(new InspectorPageOverlayDelegate(*this)));
+        m_frameImpl, WTF::wrapUnique(new InspectorPageOverlayDelegate(*this)));
   }
 
   m_pageOverlay->update();

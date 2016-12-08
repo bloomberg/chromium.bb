@@ -173,7 +173,7 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage) {
       MockTimer::create(controller(),
                         &ImageQualityController::highQualityRepaintTimerFired)
           .release();
-  controller()->setTimer(wrapUnique(mockTimer));
+  controller()->setTimer(WTF::wrapUnique(mockTimer));
   setBodyInnerHTML("<img src='myimage'></img>");
   LayoutImage* img =
       toLayoutImage(document().body()->firstChild()->layoutObject());
@@ -212,7 +212,7 @@ TEST_F(ImageQualityControllerTest,
       MockTimer::create(controller(),
                         &ImageQualityController::highQualityRepaintTimerFired)
           .release();
-  controller()->setTimer(wrapUnique(mockTimer));
+  controller()->setTimer(WTF::wrapUnique(mockTimer));
   setBodyInnerHTML(
       "<img id='myAnimatingImage' src='myimage'></img> <img "
       "id='myNonAnimatingImage' src='myimage2'></img>");
@@ -265,7 +265,7 @@ TEST_F(ImageQualityControllerTest,
       MockTimer::create(controller(),
                         &ImageQualityController::highQualityRepaintTimerFired)
           .release();
-  controller()->setTimer(wrapUnique(mockTimer));
+  controller()->setTimer(WTF::wrapUnique(mockTimer));
   setBodyInnerHTML("<img src='myimage'></img>");
   LayoutImage* img =
       toLayoutImage(document().body()->firstChild()->layoutObject());
@@ -305,7 +305,7 @@ TEST_F(ImageQualityControllerTest, DontRestartTimerUnlessAdvanced) {
       MockTimer::create(controller(),
                         &ImageQualityController::highQualityRepaintTimerFired)
           .release();
-  controller()->setTimer(wrapUnique(mockTimer));
+  controller()->setTimer(WTF::wrapUnique(mockTimer));
   setBodyInnerHTML("<img src='myimage'></img>");
   LayoutImage* img =
       toLayoutImage(document().body()->firstChild()->layoutObject());

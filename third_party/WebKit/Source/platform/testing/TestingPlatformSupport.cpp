@@ -71,7 +71,7 @@ class TestingPlatformSupport::TestingInterfaceProvider
                     mojo::ScopedMessagePipeHandle handle) override {
     if (std::string(name) == mojom::blink::MimeRegistry::Name_) {
       mojo::MakeStrongBinding(
-          makeUnique<MockMimeRegistry>(),
+          WTF::makeUnique<MockMimeRegistry>(),
           mojo::MakeRequest<mojom::blink::MimeRegistry>(std::move(handle)));
       return;
     }
@@ -318,22 +318,22 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   base::test::InitializeICUForTesting();
 
   m_discardableMemoryAllocator =
-      wrapUnique(new base::TestDiscardableMemoryAllocator);
+      WTF::wrapUnique(new base::TestDiscardableMemoryAllocator);
   base::DiscardableMemoryAllocator::SetInstance(
       m_discardableMemoryAllocator.get());
   base::StatisticsRecorder::Initialize();
 
-  m_platform = wrapUnique(new DummyPlatform);
+  m_platform = WTF::wrapUnique(new DummyPlatform);
   Platform::setCurrentPlatformForTesting(m_platform.get());
 
   WTF::Partitions::initialize(nullptr);
   WTF::setTimeFunctionsForTesting(dummyCurrentTime);
   WTF::initialize(nullptr);
 
-  m_compositorSupport = wrapUnique(new cc_blink::WebCompositorSupportImpl);
+  m_compositorSupport = WTF::wrapUnique(new cc_blink::WebCompositorSupportImpl);
   m_testingPlatformConfig.compositorSupport = m_compositorSupport.get();
   m_testingPlatformSupport =
-      makeUnique<TestingPlatformSupport>(m_testingPlatformConfig);
+      WTF::makeUnique<TestingPlatformSupport>(m_testingPlatformConfig);
 
   ProcessHeap::init();
   ThreadState::attachMainThread();

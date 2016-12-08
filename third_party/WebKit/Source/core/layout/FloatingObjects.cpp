@@ -107,7 +107,7 @@ bool FloatingObject::shouldPaintForCompositedLayoutPart() {
 std::unique_ptr<FloatingObject> FloatingObject::create(
     LayoutBox* layoutObject) {
   std::unique_ptr<FloatingObject> newObj =
-      wrapUnique(new FloatingObject(layoutObject));
+      WTF::wrapUnique(new FloatingObject(layoutObject));
 
   // If a layer exists, the float will paint itself. Otherwise someone else
   // will.
@@ -127,7 +127,7 @@ std::unique_ptr<FloatingObject> FloatingObject::copyToNewContainer(
     LayoutSize offset,
     bool shouldPaint,
     bool isDescendant) const {
-  return wrapUnique(new FloatingObject(
+  return WTF::wrapUnique(new FloatingObject(
       layoutObject(), getType(),
       LayoutRect(frameRect().location() - offset, frameRect().size()),
       shouldPaint, isDescendant, isLowestNonOverhangingFloatInChild()));
@@ -135,8 +135,8 @@ std::unique_ptr<FloatingObject> FloatingObject::copyToNewContainer(
 
 std::unique_ptr<FloatingObject> FloatingObject::unsafeClone() const {
   std::unique_ptr<FloatingObject> cloneObject =
-      wrapUnique(new FloatingObject(layoutObject(), getType(), m_frameRect,
-                                    m_shouldPaint, m_isDescendant, false));
+      WTF::wrapUnique(new FloatingObject(layoutObject(), getType(), m_frameRect,
+                                         m_shouldPaint, m_isDescendant, false));
   cloneObject->m_isPlaced = m_isPlaced;
   return cloneObject;
 }
@@ -553,7 +553,7 @@ FloatingObject* FloatingObjects::add(
     std::unique_ptr<FloatingObject> floatingObject) {
   FloatingObject* newObject = floatingObject.release();
   increaseObjectsCount(newObject->getType());
-  m_set.add(wrapUnique(newObject));
+  m_set.add(WTF::wrapUnique(newObject));
   if (newObject->isPlaced())
     addPlacedObject(*newObject);
   markLowestFloatLogicalBottomCacheAsDirty();

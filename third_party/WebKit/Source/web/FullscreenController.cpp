@@ -57,7 +57,7 @@ WebFrameClient& webFrameClient(LocalFrame& frame) {
 
 std::unique_ptr<FullscreenController> FullscreenController::create(
     WebViewImpl* webViewImpl) {
-  return wrapUnique(new FullscreenController(webViewImpl));
+  return WTF::wrapUnique(new FullscreenController(webViewImpl));
 }
 
 FullscreenController::FullscreenController(WebViewImpl* webViewImpl)

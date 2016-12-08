@@ -169,7 +169,7 @@ class CrossThreadPersistentRegion final {
 
  public:
   CrossThreadPersistentRegion()
-      : m_persistentRegion(wrapUnique(new PersistentRegion)) {}
+      : m_persistentRegion(WTF::wrapUnique(new PersistentRegion)) {}
 
   void allocatePersistentNode(PersistentNode*& persistentNode,
                               void* self,

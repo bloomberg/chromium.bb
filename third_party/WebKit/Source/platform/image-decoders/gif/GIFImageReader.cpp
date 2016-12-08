@@ -340,7 +340,7 @@ bool GIFFrameContext::decode(blink::FastSharedBufferReader* reader,
     if (!isDataSizeDefined() || !isHeaderDefined())
       return true;
 
-    m_lzwContext = makeUnique<GIFLZWContext>(client, this);
+    m_lzwContext = WTF::makeUnique<GIFLZWContext>(client, this);
     if (!m_lzwContext->prepareToDecode()) {
       m_lzwContext.reset();
       return false;
@@ -834,7 +834,7 @@ void GIFImageReader::setRemainingBytes(size_t remainingBytes) {
 
 void GIFImageReader::addFrameIfNecessary() {
   if (m_frames.isEmpty() || m_frames.back()->isComplete())
-    m_frames.append(wrapUnique(new GIFFrameContext(m_frames.size())));
+    m_frames.append(WTF::wrapUnique(new GIFFrameContext(m_frames.size())));
 }
 
 // FIXME: Move this method to close to doLZW().

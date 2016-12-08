@@ -111,7 +111,7 @@ WebDataSource::ExtraData* WebDataSourceImpl::getExtraData() const {
 void WebDataSourceImpl::setExtraData(ExtraData* extraData) {
   // extraData can't be a std::unique_ptr because setExtraData is a WebKit API
   // function.
-  m_extraData = wrapUnique(extraData);
+  m_extraData = WTF::wrapUnique(extraData);
 }
 
 void WebDataSourceImpl::setNavigationStartTime(double navigationStart) {

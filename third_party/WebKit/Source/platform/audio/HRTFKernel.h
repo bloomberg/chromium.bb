@@ -59,13 +59,13 @@ class PLATFORM_EXPORT HRTFKernel {
   static std::unique_ptr<HRTFKernel> create(AudioChannel* channel,
                                             size_t fftSize,
                                             float sampleRate) {
-    return wrapUnique(new HRTFKernel(channel, fftSize, sampleRate));
+    return WTF::wrapUnique(new HRTFKernel(channel, fftSize, sampleRate));
   }
 
   static std::unique_ptr<HRTFKernel> create(std::unique_ptr<FFTFrame> fftFrame,
                                             float frameDelay,
                                             float sampleRate) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new HRTFKernel(std::move(fftFrame), frameDelay, sampleRate));
   }
 

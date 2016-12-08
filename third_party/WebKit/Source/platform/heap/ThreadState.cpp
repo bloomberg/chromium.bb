@@ -140,7 +140,7 @@ class ParkThreadsScope final {
 
 ThreadState::ThreadState(BlinkGC::ThreadHeapMode threadHeapMode)
     : m_thread(currentThread()),
-      m_persistentRegion(makeUnique<PersistentRegion>()),
+      m_persistentRegion(WTF::makeUnique<PersistentRegion>()),
 #if OS(WIN) && COMPILER(MSVC)
       m_threadStackSize(0),
 #endif

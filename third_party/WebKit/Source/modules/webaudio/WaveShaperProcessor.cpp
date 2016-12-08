@@ -41,7 +41,7 @@ WaveShaperProcessor::~WaveShaperProcessor() {
 }
 
 std::unique_ptr<AudioDSPKernel> WaveShaperProcessor::createKernel() {
-  return makeUnique<WaveShaperDSPKernel>(this);
+  return WTF::makeUnique<WaveShaperDSPKernel>(this);
 }
 
 void WaveShaperProcessor::setCurve(const float* curveData,
@@ -57,7 +57,7 @@ void WaveShaperProcessor::setCurve(const float* curveData,
   }
 
   // Copy the curve data, if any, to our internal buffer.
-  m_curve = makeUnique<Vector<float>>(curveLength);
+  m_curve = WTF::makeUnique<Vector<float>>(curveLength);
   memcpy(m_curve->data(), curveData, sizeof(float) * curveLength);
 }
 

@@ -90,7 +90,8 @@ class WebEmbeddedWorkerImplTest : public ::testing::Test {
  protected:
   void SetUp() override {
     m_mockClient = new MockServiceWorkerContextClient();
-    m_worker = wrapUnique(WebEmbeddedWorker::create(m_mockClient, nullptr));
+    m_worker =
+        WTF::wrapUnique(WebEmbeddedWorker::create(m_mockClient, nullptr));
 
     WebURL scriptURL = URLTestHelpers::toKURL("https://www.example.com/sw.js");
     WebURLResponse response;

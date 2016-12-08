@@ -500,9 +500,10 @@ bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent) {
         frameView, static_cast<const WebGestureEvent&>(inputEvent));
     float pageScaleFactor = page->pageScaleFactor();
     if (gestureEvent.type() == PlatformEvent::GesturePinchBegin) {
-      m_lastPinchAnchorCss = wrapUnique(new IntPoint(roundedIntPoint(
+      m_lastPinchAnchorCss = WTF::wrapUnique(new IntPoint(roundedIntPoint(
           gestureEvent.position() + frameView->getScrollOffset())));
-      m_lastPinchAnchorDip = wrapUnique(new IntPoint(gestureEvent.position()));
+      m_lastPinchAnchorDip =
+          WTF::wrapUnique(new IntPoint(gestureEvent.position()));
       m_lastPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
     }
     if (gestureEvent.type() == PlatformEvent::GesturePinchUpdate &&

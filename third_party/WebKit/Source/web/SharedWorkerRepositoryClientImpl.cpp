@@ -148,7 +148,7 @@ void SharedWorkerRepositoryClientImpl::connect(
   bool isSecureContext =
       worker->getExecutionContext()->isSecureContext(unusedSecureContextError);
   std::unique_ptr<WebSharedWorkerConnector> webWorkerConnector =
-      wrapUnique(m_client->createSharedWorkerConnector(
+      WTF::wrapUnique(m_client->createSharedWorkerConnector(
           url, name, getId(document), header, headerType,
           worker->getExecutionContext()->securityContext().addressSpace(),
           isSecureContext ? WebSharedWorkerCreationContextTypeSecure

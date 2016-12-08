@@ -38,7 +38,7 @@ static const double animationFrameDelay = 1.0 / 60;
 
 SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
     : m_image(image),
-      m_animationTimer(wrapUnique(new Timer<SVGImageChromeClient>(
+      m_animationTimer(WTF::wrapUnique(new Timer<SVGImageChromeClient>(
           this,
           &SVGImageChromeClient::animationTimerFired))),
       m_timelineState(Running) {}

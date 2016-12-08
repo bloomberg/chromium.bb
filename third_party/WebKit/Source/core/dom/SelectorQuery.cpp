@@ -592,7 +592,7 @@ void SelectorDataList::execute(
 
 std::unique_ptr<SelectorQuery> SelectorQuery::adopt(
     CSSSelectorList selectorList) {
-  return wrapUnique(new SelectorQuery(std::move(selectorList)));
+  return WTF::wrapUnique(new SelectorQuery(std::move(selectorList)));
 }
 
 SelectorQuery::SelectorQuery(CSSSelectorList selectorList) {

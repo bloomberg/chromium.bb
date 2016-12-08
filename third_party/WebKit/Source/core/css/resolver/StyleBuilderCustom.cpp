@@ -798,9 +798,10 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
       if (listStyleIdent != CSSValueNone)
         listStyleType =
             static_cast<EListStyleType>(listStyleIdent - CSSValueDisc);
-      std::unique_ptr<CounterContent> counter = wrapUnique(new CounterContent(
-          AtomicString(counterValue->identifier()), listStyleType,
-          AtomicString(counterValue->separator())));
+      std::unique_ptr<CounterContent> counter =
+          WTF::wrapUnique(new CounterContent(
+              AtomicString(counterValue->identifier()), listStyleType,
+              AtomicString(counterValue->separator())));
       nextContent = ContentData::create(std::move(counter));
     } else if (item->isIdentifierValue()) {
       QuoteType quoteType;

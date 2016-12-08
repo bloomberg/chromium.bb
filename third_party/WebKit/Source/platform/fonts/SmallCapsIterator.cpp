@@ -10,7 +10,7 @@
 namespace blink {
 
 SmallCapsIterator::SmallCapsIterator(const UChar* buffer, unsigned bufferSize)
-    : m_utf16Iterator(makeUnique<UTF16TextIterator>(buffer, bufferSize)),
+    : m_utf16Iterator(WTF::makeUnique<UTF16TextIterator>(buffer, bufferSize)),
       m_bufferSize(bufferSize),
       m_nextUChar32(0),
       m_atEnd(bufferSize == 0),

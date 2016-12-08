@@ -62,7 +62,7 @@ class DummySpellCheckerClient : public EmptySpellCheckerClient {
 void TextControlElementTest::SetUp() {
   Page::PageClients pageClients;
   fillWithEmptyClients(pageClients);
-  m_spellCheckerClient = wrapUnique(new DummySpellCheckerClient);
+  m_spellCheckerClient = WTF::wrapUnique(new DummySpellCheckerClient);
   pageClients.spellCheckerClient = m_spellCheckerClient.get();
   m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
 

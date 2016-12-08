@@ -514,7 +514,7 @@ bool parseAesCbcParams(const Dictionary& raw,
   if (!getBufferSource(raw, "iv", iv, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoAesCbcParams(std::move(iv)));
+  params = WTF::wrapUnique(new WebCryptoAesCbcParams(std::move(iv)));
   return true;
 }
 
@@ -531,7 +531,7 @@ bool parseAesKeyGenParams(const Dictionary& raw,
   if (!getUint16(raw, "length", length, context, error))
     return false;
 
-  params = makeUnique<WebCryptoAesKeyGenParams>(length);
+  params = WTF::makeUnique<WebCryptoAesKeyGenParams>(length);
   return true;
 }
 
@@ -573,7 +573,7 @@ bool parseHmacImportParams(const Dictionary& raw,
   if (!getOptionalUint32(raw, "length", hasLength, length, context, error))
     return false;
 
-  params = makeUnique<WebCryptoHmacImportParams>(hash, hasLength, length);
+  params = WTF::makeUnique<WebCryptoHmacImportParams>(hash, hasLength, length);
   return true;
 }
 
@@ -596,7 +596,7 @@ bool parseHmacKeyGenParams(const Dictionary& raw,
   if (!getOptionalUint32(raw, "length", hasLength, length, context, error))
     return false;
 
-  params = makeUnique<WebCryptoHmacKeyGenParams>(hash, hasLength, length);
+  params = WTF::makeUnique<WebCryptoHmacKeyGenParams>(hash, hasLength, length);
   return true;
 }
 
@@ -614,7 +614,7 @@ bool parseRsaHashedImportParams(
   if (!parseHash(raw, hash, context, error))
     return false;
 
-  params = makeUnique<WebCryptoRsaHashedImportParams>(hash);
+  params = WTF::makeUnique<WebCryptoRsaHashedImportParams>(hash);
   return true;
 }
 
@@ -645,7 +645,7 @@ bool parseRsaHashedKeyGenParams(
   if (!parseHash(raw, hash, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoRsaHashedKeyGenParams(
+  params = WTF::wrapUnique(new WebCryptoRsaHashedKeyGenParams(
       hash, modulusLength, std::move(publicExponent)));
   return true;
 }
@@ -668,7 +668,8 @@ bool parseAesCtrParams(const Dictionary& raw,
   if (!getUint8(raw, "length", length, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoAesCtrParams(length, std::move(counter)));
+  params =
+      WTF::wrapUnique(new WebCryptoAesCtrParams(length, std::move(counter)));
   return true;
 }
 
@@ -699,7 +700,7 @@ bool parseAesGcmParams(const Dictionary& raw,
                         error))
     return false;
 
-  params = wrapUnique(new WebCryptoAesGcmParams(
+  params = WTF::wrapUnique(new WebCryptoAesGcmParams(
       std::move(iv), hasAdditionalData, std::move(additionalData), hasTagLength,
       tagLength));
   return true;
@@ -719,7 +720,8 @@ bool parseRsaOaepParams(const Dictionary& raw,
   if (!getOptionalBufferSource(raw, "label", hasLabel, label, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoRsaOaepParams(hasLabel, std::move(label)));
+  params =
+      WTF::wrapUnique(new WebCryptoRsaOaepParams(hasLabel, std::move(label)));
   return true;
 }
 
@@ -736,7 +738,7 @@ bool parseRsaPssParams(const Dictionary& raw,
   if (!getUint32(raw, "saltLength", saltLengthBytes, context, error))
     return false;
 
-  params = makeUnique<WebCryptoRsaPssParams>(saltLengthBytes);
+  params = WTF::makeUnique<WebCryptoRsaPssParams>(saltLengthBytes);
   return true;
 }
 
@@ -753,7 +755,7 @@ bool parseEcdsaParams(const Dictionary& raw,
   if (!parseHash(raw, hash, context, error))
     return false;
 
-  params = makeUnique<WebCryptoEcdsaParams>(hash);
+  params = WTF::makeUnique<WebCryptoEcdsaParams>(hash);
   return true;
 }
 
@@ -807,7 +809,7 @@ bool parseEcKeyGenParams(const Dictionary& raw,
   if (!parseNamedCurve(raw, namedCurve, context, error))
     return false;
 
-  params = makeUnique<WebCryptoEcKeyGenParams>(namedCurve);
+  params = WTF::makeUnique<WebCryptoEcKeyGenParams>(namedCurve);
   return true;
 }
 
@@ -824,7 +826,7 @@ bool parseEcKeyImportParams(const Dictionary& raw,
   if (!parseNamedCurve(raw, namedCurve, context, error))
     return false;
 
-  params = makeUnique<WebCryptoEcKeyImportParams>(namedCurve);
+  params = WTF::makeUnique<WebCryptoEcKeyImportParams>(namedCurve);
   return true;
 }
 
@@ -851,7 +853,7 @@ bool parseEcdhKeyDeriveParams(const Dictionary& raw,
     return false;
   }
 
-  params = wrapUnique(new WebCryptoEcdhKeyDeriveParams(cryptoKey->key()));
+  params = WTF::wrapUnique(new WebCryptoEcdhKeyDeriveParams(cryptoKey->key()));
   return true;
 }
 
@@ -877,8 +879,8 @@ bool parsePbkdf2Params(const Dictionary& raw,
   WebCryptoAlgorithm hash;
   if (!parseHash(raw, hash, context, error))
     return false;
-  params =
-      wrapUnique(new WebCryptoPbkdf2Params(hash, std::move(salt), iterations));
+  params = WTF::wrapUnique(
+      new WebCryptoPbkdf2Params(hash, std::move(salt), iterations));
   return true;
 }
 
@@ -895,7 +897,7 @@ bool parseAesDerivedKeyParams(const Dictionary& raw,
   if (!getUint16(raw, "length", length, context, error))
     return false;
 
-  params = makeUnique<WebCryptoAesDerivedKeyParams>(length);
+  params = WTF::makeUnique<WebCryptoAesDerivedKeyParams>(length);
   return true;
 }
 
@@ -920,7 +922,7 @@ bool parseHkdfParams(const Dictionary& raw,
   if (!getBufferSource(raw, "info", info, context, error))
     return false;
 
-  params = wrapUnique(
+  params = WTF::wrapUnique(
       new WebCryptoHkdfParams(hash, std::move(salt), std::move(info)));
   return true;
 }

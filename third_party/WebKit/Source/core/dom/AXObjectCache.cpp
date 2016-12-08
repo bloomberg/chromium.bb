@@ -52,7 +52,7 @@ AXObjectCache::~AXObjectCache() {}
 
 std::unique_ptr<ScopedAXObjectCache> ScopedAXObjectCache::create(
     Document& document) {
-  return wrapUnique(new ScopedAXObjectCache(document));
+  return WTF::wrapUnique(new ScopedAXObjectCache(document));
 }
 
 ScopedAXObjectCache::ScopedAXObjectCache(Document& document)

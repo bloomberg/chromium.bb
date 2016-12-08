@@ -4900,8 +4900,10 @@ void LayoutBox::addLayoutOverflow(const LayoutRect& rect) {
       return;
   }
 
-  if (!m_overflow)
-    m_overflow = wrapUnique(new BoxOverflowModel(clientBox, borderBoxRect()));
+  if (!m_overflow) {
+    m_overflow =
+        WTF::wrapUnique(new BoxOverflowModel(clientBox, borderBoxRect()));
+  }
 
   m_overflow->addLayoutOverflow(overflowRect);
 }
@@ -4914,8 +4916,10 @@ void LayoutBox::addSelfVisualOverflow(const LayoutRect& rect) {
   if (borderBox.contains(rect))
     return;
 
-  if (!m_overflow)
-    m_overflow = wrapUnique(new BoxOverflowModel(noOverflowRect(), borderBox));
+  if (!m_overflow) {
+    m_overflow =
+        WTF::wrapUnique(new BoxOverflowModel(noOverflowRect(), borderBox));
+  }
 
   m_overflow->addSelfVisualOverflow(rect);
 }
@@ -4933,8 +4937,10 @@ void LayoutBox::addContentsVisualOverflow(const LayoutRect& rect) {
   if (!hasOverflowClip() && borderBox.contains(rect))
     return;
 
-  if (!m_overflow)
-    m_overflow = wrapUnique(new BoxOverflowModel(noOverflowRect(), borderBox));
+  if (!m_overflow) {
+    m_overflow =
+        WTF::wrapUnique(new BoxOverflowModel(noOverflowRect(), borderBox));
+  }
   m_overflow->addContentsVisualOverflow(rect);
 }
 

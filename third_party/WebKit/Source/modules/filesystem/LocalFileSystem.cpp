@@ -160,7 +160,7 @@ void LocalFileSystem::fileSystemNotAvailable(ExecutionContext* context,
                                              CallbackWrapper* callbacks) {
   context->postTask(
       BLINK_FROM_HERE,
-      createSameThreadTask(&reportFailure, passed(callbacks->release()),
+      createSameThreadTask(&reportFailure, WTF::passed(callbacks->release()),
                            FileError::kAbortErr));
 }
 
@@ -168,7 +168,7 @@ void LocalFileSystem::fileSystemNotAllowedInternal(ExecutionContext* context,
                                                    CallbackWrapper* callbacks) {
   context->postTask(
       BLINK_FROM_HERE,
-      createSameThreadTask(&reportFailure, passed(callbacks->release()),
+      createSameThreadTask(&reportFailure, WTF::passed(callbacks->release()),
                            FileError::kAbortErr));
 }
 

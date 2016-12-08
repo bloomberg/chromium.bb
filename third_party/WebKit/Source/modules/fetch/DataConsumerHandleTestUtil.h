@@ -162,8 +162,8 @@ class DataConsumerHandleTestUtil {
      public:
       ThreadHolder(ThreadingTestBase* test)
           : m_context(test->m_context),
-            m_readingThread(wrapUnique(new Thread("reading thread"))),
-            m_updatingThread(wrapUnique(new Thread("updating thread"))) {
+            m_readingThread(WTF::wrapUnique(new Thread("reading thread"))),
+            m_updatingThread(WTF::wrapUnique(new Thread("updating thread"))) {
         m_context->registerThreadHolder(this);
       }
       ~ThreadHolder() { m_context->unregisterThreadHolder(); }
@@ -211,7 +211,8 @@ class DataConsumerHandleTestUtil {
       static std::unique_ptr<WebDataConsumerHandle> create(
           const String& name,
           PassRefPtr<Context> context) {
-        return wrapUnique(new DataConsumerHandle(name, std::move(context)));
+        return WTF::wrapUnique(
+            new DataConsumerHandle(name, std::move(context)));
       }
 
      private:
@@ -219,7 +220,7 @@ class DataConsumerHandleTestUtil {
           : m_name(name.isolatedCopy()), m_context(context) {}
 
       std::unique_ptr<Reader> obtainReader(Client*) {
-        return makeUnique<ReaderImpl>(m_name, m_context);
+        return WTF::makeUnique<ReaderImpl>(m_name, m_context);
       }
       const char* debugName() const override {
         return "ThreadingTestBase::DataConsumerHandle";
@@ -270,7 +271,7 @@ class DataConsumerHandleTestUtil {
 
     void run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
-      m_waitableEvent = makeUnique<WaitableEvent>();
+      m_waitableEvent = WTF::makeUnique<WaitableEvent>();
       m_handle = std::move(handle);
 
       postTaskToReadingThreadAndWait(
@@ -302,7 +303,7 @@ class DataConsumerHandleTestUtil {
 
     void run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
-      m_waitableEvent = makeUnique<WaitableEvent>();
+      m_waitableEvent = WTF::makeUnique<WaitableEvent>();
       m_handle = std::move(handle);
 
       postTaskToReadingThreadAndWait(
@@ -356,7 +357,7 @@ class DataConsumerHandleTestUtil {
 
    public:
     static std::unique_ptr<ReplayingHandle> create() {
-      return wrapUnique(new ReplayingHandle());
+      return WTF::wrapUnique(new ReplayingHandle());
     }
     ~ReplayingHandle();
 
@@ -475,13 +476,13 @@ class DataConsumerHandleTestUtil {
 
    public:
     explicit HandleReaderRunner(std::unique_ptr<WebDataConsumerHandle> handle)
-        : m_thread(wrapUnique(new Thread("reading thread"))),
-          m_event(makeUnique<WaitableEvent>()),
+        : m_thread(WTF::wrapUnique(new Thread("reading thread"))),
+          m_event(WTF::makeUnique<WaitableEvent>()),
           m_isDone(false) {
-      m_thread->thread()->postTask(BLINK_FROM_HERE,
-                                   crossThreadBind(&HandleReaderRunner::start,
-                                                   crossThreadUnretained(this),
-                                                   passed(std::move(handle))));
+      m_thread->thread()->postTask(
+          BLINK_FROM_HERE, crossThreadBind(&HandleReaderRunner::start,
+                                           crossThreadUnretained(this),
+                                           WTF::passed(std::move(handle))));
     }
     ~HandleReaderRunner() { wait(); }
 
@@ -495,7 +496,7 @@ class DataConsumerHandleTestUtil {
 
    private:
     void start(std::unique_ptr<WebDataConsumerHandle> handle) {
-      m_handleReader = wrapUnique(new T(
+      m_handleReader = WTF::wrapUnique(new T(
           std::move(handle),
           WTF::bind(&HandleReaderRunner::onFinished, WTF::unretained(this))));
     }

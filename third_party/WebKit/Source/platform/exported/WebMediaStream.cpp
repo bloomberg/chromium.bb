@@ -72,7 +72,7 @@ WebMediaStream::ExtraData* WebMediaStream::getExtraData() const {
 
 void WebMediaStream::setExtraData(ExtraData* extraData) {
   m_private->setExtraData(
-      wrapUnique(new ExtraDataContainer(wrapUnique(extraData))));
+      WTF::wrapUnique(new ExtraDataContainer(WTF::wrapUnique(extraData))));
 }
 
 void WebMediaStream::audioTracks(

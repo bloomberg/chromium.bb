@@ -172,7 +172,7 @@ std::unique_ptr<ContextMenu> ContextMenuController::createContextMenu(
 
   m_hitTestResult = result;
 
-  return wrapUnique(new ContextMenu);
+  return WTF::wrapUnique(new ContextMenu);
 }
 
 void ContextMenuController::showContextMenu(Event* event) {

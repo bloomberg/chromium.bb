@@ -94,7 +94,7 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
   };
 
   std::unique_ptr<Reader> obtainReader(Client* client) override {
-    return makeUnique<EmptyDataReader>(client);
+    return WTF::makeUnique<EmptyDataReader>(client);
   }
   const char* debugName() const override { return "EmptyDataHandle"; }
 };
@@ -512,7 +512,8 @@ bool DocumentThreadableLoader::redirectReceived(
     // TODO(horo): If we support any API which expose the internal body, we will
     // have to read the body. And also HTTPCache changes will be needed because
     // it doesn't store the body of redirect responses.
-    responseReceived(resource, redirectResponse, makeUnique<EmptyDataHandle>());
+    responseReceived(resource, redirectResponse,
+                     WTF::makeUnique<EmptyDataHandle>());
 
     if (m_client) {
       DCHECK(m_actualRequest.isNull());
@@ -721,7 +722,7 @@ void DocumentThreadableLoader::handlePreflightResponse(
   }
 
   std::unique_ptr<CrossOriginPreflightResultCacheItem> preflightResult =
-      wrapUnique(
+      WTF::wrapUnique(
           new CrossOriginPreflightResultCacheItem(effectiveAllowCredentials()));
   if (!preflightResult->parse(response, accessControlErrorDescription) ||
       !preflightResult->allowsCrossOriginMethod(

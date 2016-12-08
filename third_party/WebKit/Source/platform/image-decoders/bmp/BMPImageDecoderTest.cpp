@@ -15,7 +15,7 @@ namespace blink {
 namespace {
 
 std::unique_ptr<ImageDecoder> createDecoder() {
-  return wrapUnique(
+  return WTF::wrapUnique(
       new BMPImageDecoder(ImageDecoder::AlphaNotPremultiplied,
                           ColorBehavior::transformToTargetForTesting(),
                           ImageDecoder::noDecodedImageByteLimit));

@@ -21,8 +21,8 @@ IIRFilterNode::IIRFilterNode(BaseAudioContext& context,
     : AudioNode(context) {
   setHandler(AudioBasicProcessorHandler::create(
       AudioHandler::NodeTypeIIRFilter, *this, context.sampleRate(),
-      wrapUnique(new IIRProcessor(context.sampleRate(), 1, feedforwardCoef,
-                                  feedbackCoef))));
+      WTF::wrapUnique(new IIRProcessor(context.sampleRate(), 1, feedforwardCoef,
+                                       feedbackCoef))));
 
   // Histogram of the IIRFilter order.  createIIRFilter ensures that the length
   // of |feedbackCoef| is in the range [1, IIRFilter::kMaxOrder + 1].  The order

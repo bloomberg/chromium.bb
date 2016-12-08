@@ -53,7 +53,7 @@ class CORE_EXPORT InterpolableValue {
 class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
  public:
   static std::unique_ptr<InterpolableNumber> create(double value) {
-    return wrapUnique(new InterpolableNumber(value));
+    return WTF::wrapUnique(new InterpolableNumber(value));
   }
 
   bool isNumber() const final { return true; }
@@ -90,11 +90,11 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
 
   static std::unique_ptr<InterpolableList> create(
       const InterpolableList& other) {
-    return wrapUnique(new InterpolableList(other));
+    return WTF::wrapUnique(new InterpolableList(other));
   }
 
   static std::unique_ptr<InterpolableList> create(size_t size) {
-    return wrapUnique(new InterpolableList(size));
+    return WTF::wrapUnique(new InterpolableList(size));
   }
 
   bool isList() const final { return true; }
@@ -135,7 +135,7 @@ class InterpolableAnimatableValue : public InterpolableValue {
  public:
   static std::unique_ptr<InterpolableAnimatableValue> create(
       PassRefPtr<AnimatableValue> value) {
-    return wrapUnique(new InterpolableAnimatableValue(std::move(value)));
+    return WTF::wrapUnique(new InterpolableAnimatableValue(std::move(value)));
   }
 
   bool isAnimatableValue() const final { return true; }

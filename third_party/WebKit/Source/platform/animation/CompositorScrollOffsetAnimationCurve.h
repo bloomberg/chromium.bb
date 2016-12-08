@@ -33,12 +33,12 @@ class PLATFORM_EXPORT CompositorScrollOffsetAnimationCurve
       FloatPoint targetValue,
       CompositorScrollOffsetAnimationCurve::ScrollDurationBehavior
           durationBehavior) {
-    return wrapUnique(new CompositorScrollOffsetAnimationCurve(
+    return WTF::wrapUnique(new CompositorScrollOffsetAnimationCurve(
         targetValue, durationBehavior));
   }
   static std::unique_ptr<CompositorScrollOffsetAnimationCurve> create(
       cc::ScrollOffsetAnimationCurve* curve) {
-    return wrapUnique(new CompositorScrollOffsetAnimationCurve(curve));
+    return WTF::wrapUnique(new CompositorScrollOffsetAnimationCurve(curve));
   }
 
   ~CompositorScrollOffsetAnimationCurve() override;

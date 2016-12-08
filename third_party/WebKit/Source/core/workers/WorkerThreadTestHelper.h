@@ -140,7 +140,7 @@ class WorkerThreadForTest : public WorkerThread {
   void startWithSourceCode(SecurityOrigin* securityOrigin,
                            const String& source) {
     std::unique_ptr<Vector<CSPHeaderAndType>> headers =
-        makeUnique<Vector<CSPHeaderAndType>>();
+        WTF::makeUnique<Vector<CSPHeaderAndType>>();
     CSPHeaderAndType headerAndType("contentSecurityPolicy",
                                    ContentSecurityPolicyHeaderTypeReport);
     headers->append(headerAndType);
@@ -156,7 +156,7 @@ class WorkerThreadForTest : public WorkerThread {
 
   void waitForInit() {
     std::unique_ptr<WaitableEvent> completionEvent =
-        makeUnique<WaitableEvent>();
+        WTF::makeUnique<WaitableEvent>();
     workerBackingThread().backingThread().postTask(
         BLINK_FROM_HERE,
         crossThreadBind(&WaitableEvent::signal,

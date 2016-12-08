@@ -558,7 +558,7 @@ Document::~Document() {
 
 SelectorQueryCache& Document::selectorQueryCache() {
   if (!m_selectorQueryCache)
-    m_selectorQueryCache = makeUnique<SelectorQueryCache>();
+    m_selectorQueryCache = WTF::makeUnique<SelectorQueryCache>();
   return *m_selectorQueryCache;
 }
 
@@ -4341,7 +4341,7 @@ Document::EventFactorySet& Document::eventFactories() {
 
 const OriginAccessEntry& Document::accessEntryFromURL() {
   if (!m_accessEntryFromURL) {
-    m_accessEntryFromURL = wrapUnique(
+    m_accessEntryFromURL = WTF::wrapUnique(
         new OriginAccessEntry(url().protocol(), url().host(),
                               OriginAccessEntry::AllowRegisterableDomains));
   }

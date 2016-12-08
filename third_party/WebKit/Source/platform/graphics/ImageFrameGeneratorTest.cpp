@@ -186,7 +186,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
   setFrameStatus(ImageFrame::FrameComplete);
   addNewData();
   std::unique_ptr<WebThread> thread =
-      wrapUnique(Platform::current()->createThread("DecodeThread"));
+      WTF::wrapUnique(Platform::current()->createThread("DecodeThread"));
   thread->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,
       crossThreadBind(&decodeThreadMain, m_generator, m_segmentReader));

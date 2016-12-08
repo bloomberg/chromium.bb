@@ -370,14 +370,14 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
         break;
       case WebInputEvent::MouseDown:
         eventType = EventTypeNames::mousedown;
-        gestureIndicator = wrapUnique(
+        gestureIndicator = WTF::wrapUnique(
             new UserGestureIndicator(DocumentUserGestureToken::create(
                 &node->document(), UserGestureToken::NewGesture)));
         m_mouseCaptureGestureToken = gestureIndicator->currentToken();
         break;
       case WebInputEvent::MouseUp:
         eventType = EventTypeNames::mouseup;
-        gestureIndicator = wrapUnique(
+        gestureIndicator = WTF::wrapUnique(
             new UserGestureIndicator(m_mouseCaptureGestureToken.release()));
         break;
       default:

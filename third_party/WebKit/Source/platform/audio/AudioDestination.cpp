@@ -51,7 +51,7 @@ std::unique_ptr<AudioDestination> AudioDestination::create(
     unsigned numberOfOutputChannels,
     float sampleRate,
     PassRefPtr<SecurityOrigin> securityOrigin) {
-  return wrapUnique(new AudioDestination(
+  return WTF::wrapUnique(new AudioDestination(
       callback, inputDeviceId, numberOfInputChannels, numberOfOutputChannels,
       sampleRate, std::move(securityOrigin)));
 }
@@ -108,7 +108,7 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
   if (m_callbackBufferSize + AudioUtilities::kRenderQuantumFrames > fifoSize)
     return;
 
-  m_audioDevice = wrapUnique(Platform::current()->createAudioDevice(
+  m_audioDevice = WTF::wrapUnique(Platform::current()->createAudioDevice(
       m_callbackBufferSize, numberOfInputChannels, numberOfOutputChannels,
       sampleRate, this, inputDeviceId, std::move(securityOrigin)));
   ASSERT(m_audioDevice);
@@ -122,11 +122,12 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
   // contains enough data, the data will be provided directly.
   // Otherwise, the FIFO will call the provider enough times to
   // satisfy the request for data.
-  m_fifo = wrapUnique(new AudioPullFIFO(*this, numberOfOutputChannels, fifoSize,
+  m_fifo =
+      WTF::wrapUnique(new AudioPullFIFO(*this, numberOfOutputChannels, fifoSize,
                                         AudioUtilities::kRenderQuantumFrames));
 
   // Input buffering.
-  m_inputFifo = makeUnique<AudioFIFO>(numberOfInputChannels, fifoSize);
+  m_inputFifo = WTF::makeUnique<AudioFIFO>(numberOfInputChannels, fifoSize);
 
   // If the callback size does not match the render size, then we need to
   // buffer some extra silence for the input. Otherwise, we can over-consume

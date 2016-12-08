@@ -87,7 +87,7 @@ class ScrollbarTestSuite : public testing::Test {
     TestingPlatformSupport::Config config;
     config.compositorSupport = Platform::current()->compositorSupport();
     m_fakePlatform =
-        makeUnique<TestingPlatformSupportWithMockScheduler>(config);
+        WTF::makeUnique<TestingPlatformSupportWithMockScheduler>(config);
   }
 
   void TearDown() override { m_fakePlatform = nullptr; }

@@ -930,7 +930,7 @@ Editor::Editor(LocalFrame& frame)
       // This is off by default, since most editors want this behavior (this
       // matches IE but not FF).
       m_shouldStyleWithCSS(false),
-      m_killRing(wrapUnique(new KillRing)),
+      m_killRing(WTF::wrapUnique(new KillRing)),
       m_areMarkedTextMatchesHighlighted(false),
       m_defaultParagraphSeparator(EditorParagraphSeparatorIsDiv),
       m_overwriteModeEnabled(false) {}

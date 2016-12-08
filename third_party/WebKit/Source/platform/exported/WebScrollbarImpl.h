@@ -43,7 +43,7 @@ class PLATFORM_EXPORT WebScrollbarImpl final : public WebScrollbar {
 
  public:
   static std::unique_ptr<WebScrollbarImpl> create(Scrollbar* scrollbar) {
-    return wrapUnique(new WebScrollbarImpl(scrollbar));
+    return WTF::wrapUnique(new WebScrollbarImpl(scrollbar));
   }
 
   // Implement WebScrollbar methods

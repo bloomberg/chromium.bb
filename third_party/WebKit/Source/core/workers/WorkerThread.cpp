@@ -115,7 +115,7 @@ void WorkerThread::start(std::unique_ptr<WorkerThreadStartupData> startupData) {
   workerBackingThread().backingThread().postTask(
       BLINK_FROM_HERE, crossThreadBind(&WorkerThread::initializeOnWorkerThread,
                                        crossThreadUnretained(this),
-                                       passed(std::move(startupData))));
+                                       WTF::passed(std::move(startupData))));
 }
 
 void WorkerThread::terminate() {
@@ -202,7 +202,7 @@ void WorkerThread::postTask(const WebTraceLocation& location,
   workerBackingThread().backingThread().postTask(
       location, crossThreadBind(&WorkerThread::performTaskOnWorkerThread,
                                 crossThreadUnretained(this),
-                                passed(std::move(task)), isInstrumented));
+                                WTF::passed(std::move(task)), isInstrumented));
 }
 
 void WorkerThread::appendDebuggerTask(
@@ -210,9 +210,9 @@ void WorkerThread::appendDebuggerTask(
   DCHECK(isMainThread());
   if (isInShutdown())
     return;
-  m_inspectorTaskRunner->appendTask(
-      crossThreadBind(&WorkerThread::performDebuggerTaskOnWorkerThread,
-                      crossThreadUnretained(this), passed(std::move(task))));
+  m_inspectorTaskRunner->appendTask(crossThreadBind(
+      &WorkerThread::performDebuggerTaskOnWorkerThread,
+      crossThreadUnretained(this), WTF::passed(std::move(task))));
   {
     MutexLocker lock(m_threadStateMutex);
     if (isolate() && m_threadState != ThreadState::ReadyToShutdown)
@@ -297,10 +297,10 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
                            WorkerReportingProxy& workerReportingProxy)
     : m_workerThreadId(getNextWorkerThreadId()),
       m_forcibleTerminationDelayInMs(kForcibleTerminationDelayInMs),
-      m_inspectorTaskRunner(makeUnique<InspectorTaskRunner>()),
+      m_inspectorTaskRunner(WTF::makeUnique<InspectorTaskRunner>()),
       m_workerLoaderProxy(workerLoaderProxy),
       m_workerReportingProxy(workerReportingProxy),
-      m_shutdownEvent(wrapUnique(
+      m_shutdownEvent(WTF::wrapUnique(
           new WaitableEvent(WaitableEvent::ResetPolicy::Manual,
                             WaitableEvent::InitialState::NonSignaled))),
       m_workerThreadLifecycleContext(new WorkerThreadLifecycleContext) {

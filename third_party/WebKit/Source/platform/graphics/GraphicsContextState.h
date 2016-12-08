@@ -49,12 +49,12 @@ class PLATFORM_EXPORT GraphicsContextState final {
 
  public:
   static std::unique_ptr<GraphicsContextState> create() {
-    return wrapUnique(new GraphicsContextState());
+    return WTF::wrapUnique(new GraphicsContextState());
   }
 
   static std::unique_ptr<GraphicsContextState> createAndCopy(
       const GraphicsContextState& other) {
-    return wrapUnique(new GraphicsContextState(other));
+    return WTF::wrapUnique(new GraphicsContextState(other));
   }
 
   void copy(const GraphicsContextState&);

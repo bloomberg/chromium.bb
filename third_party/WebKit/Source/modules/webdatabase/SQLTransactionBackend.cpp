@@ -598,7 +598,7 @@ SQLTransactionState SQLTransactionBackend::openTransactionAndPreflight() {
     m_database->sqliteDatabase().setMaximumSize(m_database->maximumSize());
 
   ASSERT(!m_sqliteTransaction);
-  m_sqliteTransaction = wrapUnique(
+  m_sqliteTransaction = WTF::wrapUnique(
       new SQLiteTransaction(m_database->sqliteDatabase(), m_readOnly));
 
   m_database->resetDeletes();

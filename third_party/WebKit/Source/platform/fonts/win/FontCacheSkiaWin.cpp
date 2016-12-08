@@ -369,15 +369,16 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
     }
   }
 
-  std::unique_ptr<FontPlatformData> result = wrapUnique(new FontPlatformData(
-      tf, name.data(), fontSize,
-      (fontDescription.weight() >= FontWeight600 && !tf->isBold()) ||
-          fontDescription.isSyntheticBold(),
-      ((fontDescription.style() == FontStyleItalic ||
-        fontDescription.style() == FontStyleOblique) &&
-       !tf->isItalic()) ||
-          fontDescription.isSyntheticItalic(),
-      fontDescription.orientation()));
+  std::unique_ptr<FontPlatformData> result =
+      WTF::wrapUnique(new FontPlatformData(
+          tf, name.data(), fontSize,
+          (fontDescription.weight() >= FontWeight600 && !tf->isBold()) ||
+              fontDescription.isSyntheticBold(),
+          ((fontDescription.style() == FontStyleItalic ||
+            fontDescription.style() == FontStyleOblique) &&
+           !tf->isItalic()) ||
+              fontDescription.isSyntheticItalic(),
+          fontDescription.orientation()));
 
   struct FamilyMinSize {
     const wchar_t* family;

@@ -92,9 +92,9 @@ void LayoutTable::styleDidChange(StyleDifference diff,
     // explicit width is specified on the table. Auto width implies auto table
     // layout.
     if (style()->isFixedTableLayout())
-      m_tableLayout = makeUnique<TableLayoutAlgorithmFixed>(this);
+      m_tableLayout = WTF::makeUnique<TableLayoutAlgorithmFixed>(this);
     else
-      m_tableLayout = makeUnique<TableLayoutAlgorithmAuto>(this);
+      m_tableLayout = WTF::makeUnique<TableLayoutAlgorithmAuto>(this);
   }
 
   // If border was changed, invalidate collapsed borders cache.

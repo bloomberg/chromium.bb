@@ -17,7 +17,7 @@ namespace blink {
 // See: http://webaudio.github.io/web-audio-api/#panning-algorithm
 
 std::unique_ptr<StereoPanner> StereoPanner::create(float sampleRate) {
-  return wrapUnique(new StereoPanner(sampleRate));
+  return WTF::wrapUnique(new StereoPanner(sampleRate));
 }
 
 StereoPanner::StereoPanner(float sampleRate)

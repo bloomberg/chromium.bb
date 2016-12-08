@@ -64,11 +64,11 @@ class PLATFORM_EXPORT TransformationMatrix {
 #endif
 
   static std::unique_ptr<TransformationMatrix> create() {
-    return makeUnique<TransformationMatrix>();
+    return WTF::makeUnique<TransformationMatrix>();
   }
   static std::unique_ptr<TransformationMatrix> create(
       const TransformationMatrix& t) {
-    return makeUnique<TransformationMatrix>(t);
+    return WTF::makeUnique<TransformationMatrix>(t);
   }
   static std::unique_ptr<TransformationMatrix> create(double a,
                                                       double b,
@@ -76,7 +76,7 @@ class PLATFORM_EXPORT TransformationMatrix {
                                                       double d,
                                                       double e,
                                                       double f) {
-    return makeUnique<TransformationMatrix>(a, b, c, d, e, f);
+    return WTF::makeUnique<TransformationMatrix>(a, b, c, d, e, f);
   }
   static std::unique_ptr<TransformationMatrix> create(double m11,
                                                       double m12,
@@ -94,9 +94,9 @@ class PLATFORM_EXPORT TransformationMatrix {
                                                       double m42,
                                                       double m43,
                                                       double m44) {
-    return wrapUnique(new TransformationMatrix(m11, m12, m13, m14, m21, m22,
-                                               m23, m24, m31, m32, m33, m34,
-                                               m41, m42, m43, m44));
+    return WTF::wrapUnique(
+        new TransformationMatrix(m11, m12, m13, m14, m21, m22, m23, m24, m31,
+                                 m32, m33, m34, m41, m42, m43, m44));
   }
 
   TransformationMatrix() {

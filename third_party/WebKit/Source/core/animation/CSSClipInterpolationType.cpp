@@ -61,7 +61,7 @@ class InheritedAutosChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedAutosChecker> create(
       const ClipAutos& inheritedAutos) {
-    return wrapUnique(new InheritedAutosChecker(inheritedAutos));
+    return WTF::wrapUnique(new InheritedAutosChecker(inheritedAutos));
   }
 
  private:
@@ -107,7 +107,7 @@ class UnderlyingAutosChecker : public InterpolationType::ConversionChecker {
 
   static std::unique_ptr<UnderlyingAutosChecker> create(
       const ClipAutos& underlyingAutos) {
-    return wrapUnique(new UnderlyingAutosChecker(underlyingAutos));
+    return WTF::wrapUnique(new UnderlyingAutosChecker(underlyingAutos));
   }
 
   static ClipAutos getUnderlyingAutos(const InterpolationValue& underlying) {

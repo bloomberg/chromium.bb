@@ -53,7 +53,7 @@ void ThreadedWorkletMessagingProxy::initialize() {
   WorkerThreadStartMode startMode =
       workerInspectorProxy()->workerStartMode(document);
   std::unique_ptr<WorkerSettings> workerSettings =
-      wrapUnique(new WorkerSettings(document->settings()));
+      WTF::wrapUnique(new WorkerSettings(document->settings()));
 
   // TODO(ikilpatrick): Decide on sensible a value for referrerPolicy.
   std::unique_ptr<WorkerThreadStartupData> startupData =

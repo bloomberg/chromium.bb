@@ -33,7 +33,7 @@ GyroscopeReading* Gyroscope::reading() const {
 }
 
 std::unique_ptr<SensorReadingFactory> Gyroscope::createSensorReadingFactory() {
-  return makeUnique<SensorReadingFactoryImpl<GyroscopeReading>>();
+  return WTF::makeUnique<SensorReadingFactoryImpl<GyroscopeReading>>();
 }
 
 DEFINE_TRACE(Gyroscope) {

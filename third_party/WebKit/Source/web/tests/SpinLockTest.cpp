@@ -74,9 +74,9 @@ TEST(SpinLockTest, Torture) {
   char sharedBuffer[bufferSize];
 
   std::unique_ptr<WebThread> thread1 =
-      wrapUnique(Platform::current()->createThread("thread1"));
+      WTF::wrapUnique(Platform::current()->createThread("thread1"));
   std::unique_ptr<WebThread> thread2 =
-      wrapUnique(Platform::current()->createThread("thread2"));
+      WTF::wrapUnique(Platform::current()->createThread("thread2"));
 
   thread1->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,

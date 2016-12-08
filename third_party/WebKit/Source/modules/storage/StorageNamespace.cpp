@@ -48,14 +48,14 @@ StorageArea* StorageNamespace::localStorageArea(SecurityOrigin* origin) {
   if (!localStorageNamespace)
     localStorageNamespace = Platform::current()->createLocalStorageNamespace();
   return StorageArea::create(
-      wrapUnique(
+      WTF::wrapUnique(
           localStorageNamespace->createStorageArea(WebSecurityOrigin(origin))),
       LocalStorage);
 }
 
 StorageArea* StorageNamespace::storageArea(SecurityOrigin* origin) {
   return StorageArea::create(
-      wrapUnique(
+      WTF::wrapUnique(
           m_webStorageNamespace->createStorageArea(WebSecurityOrigin(origin))),
       SessionStorage);
 }

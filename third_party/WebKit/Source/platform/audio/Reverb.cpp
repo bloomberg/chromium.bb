@@ -129,7 +129,7 @@ void Reverb::initialize(AudioBus* impulseResponseBuffer,
   for (size_t i = 0; i < numResponseChannels; ++i) {
     AudioChannel* channel = impulseResponseBuffer->channel(i);
 
-    std::unique_ptr<ReverbConvolver> convolver = wrapUnique(
+    std::unique_ptr<ReverbConvolver> convolver = WTF::wrapUnique(
         new ReverbConvolver(channel, renderSliceSize, maxFFTSize,
                             convolverRenderPhase, useBackgroundThreads));
     m_convolvers.append(std::move(convolver));

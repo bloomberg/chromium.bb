@@ -170,7 +170,7 @@ void WebSharedWorkerImpl::willSendRequest(WebLocalFrame* frame,
 void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame) {
   DCHECK(!m_loadingDocument);
   DCHECK(!m_mainScriptLoader);
-  m_networkProvider = wrapUnique(
+  m_networkProvider = WTF::wrapUnique(
       m_client->createServiceWorkerNetworkProvider(frame->dataSource()));
   m_mainScriptLoader = WorkerScriptLoader::create();
   m_mainScriptLoader->setRequestContext(
@@ -322,7 +322,8 @@ void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel) {
   workerThread()->postTask(
       BLINK_FROM_HERE,
       createCrossThreadTask(
-          &connectTask, passed(WebMessagePortChannelUniquePtr(webChannel))));
+          &connectTask,
+          WTF::passed(WebMessagePortChannelUniquePtr(webChannel))));
 }
 
 void WebSharedWorkerImpl::connectTask(WebMessagePortChannelUniquePtr channel,
@@ -380,7 +381,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished() {
   WebSecurityOrigin webSecurityOrigin(m_loadingDocument->getSecurityOrigin());
   provideContentSettingsClientToWorker(
       workerClients,
-      wrapUnique(
+      WTF::wrapUnique(
           m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
   provideIndexedDBClientToWorker(workerClients, IndexedDBClientImpl::create());
   ContentSecurityPolicy* contentSecurityPolicy =
@@ -388,7 +389,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished() {
   WorkerThreadStartMode startMode =
       m_workerInspectorProxy->workerStartMode(document);
   std::unique_ptr<WorkerSettings> workerSettings =
-      wrapUnique(new WorkerSettings(document->settings()));
+      WTF::wrapUnique(new WorkerSettings(document->settings()));
   std::unique_ptr<WorkerThreadStartupData> startupData =
       WorkerThreadStartupData::create(
           m_url, m_loadingDocument->userAgent(), m_mainScriptLoader->script(),

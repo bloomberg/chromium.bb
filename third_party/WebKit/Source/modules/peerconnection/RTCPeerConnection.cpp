@@ -514,8 +514,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
     return;
   }
 
-  m_peerHandler =
-      wrapUnique(Platform::current()->createRTCPeerConnectionHandler(this));
+  m_peerHandler = WTF::wrapUnique(
+      Platform::current()->createRTCPeerConnectionHandler(this));
   if (!m_peerHandler) {
     m_closed = true;
     m_stopped = true;
@@ -924,7 +924,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   DCHECK(!keyParams.isNull());
 
   std::unique_ptr<WebRTCCertificateGenerator> certificateGenerator =
-      wrapUnique(Platform::current()->createRTCCertificateGenerator());
+      WTF::wrapUnique(Platform::current()->createRTCCertificateGenerator());
 
   // |keyParams| was successfully constructed, but does the certificate
   // generator support these parameters?
@@ -1344,7 +1344,7 @@ void RTCPeerConnection::didAddRemoteDataChannel(
     return;
 
   RTCDataChannel* channel =
-      RTCDataChannel::create(getExecutionContext(), wrapUnique(handler));
+      RTCDataChannel::create(getExecutionContext(), WTF::wrapUnique(handler));
   scheduleDispatchEvent(RTCDataChannelEvent::create(EventTypeNames::datachannel,
                                                     false, false, channel));
   m_hasDataChannels = true;

@@ -50,7 +50,8 @@ ScopedEventQueue::~ScopedEventQueue() {
 
 void ScopedEventQueue::initialize() {
   DCHECK(!s_instance);
-  std::unique_ptr<ScopedEventQueue> instance = wrapUnique(new ScopedEventQueue);
+  std::unique_ptr<ScopedEventQueue> instance =
+      WTF::wrapUnique(new ScopedEventQueue);
   s_instance = instance.release();
 }
 

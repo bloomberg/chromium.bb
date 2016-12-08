@@ -524,7 +524,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   PaintLayerScrollableAreaRareData& ensureRareData() {
     if (!m_rareData)
-      m_rareData = makeUnique<PaintLayerScrollableAreaRareData>();
+      m_rareData = WTF::makeUnique<PaintLayerScrollableAreaRareData>();
     return *m_rareData.get();
   }
 

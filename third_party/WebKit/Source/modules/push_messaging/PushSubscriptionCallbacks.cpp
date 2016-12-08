@@ -32,7 +32,7 @@ void PushSubscriptionCallbacks::onSuccess(
     return;
 
   m_resolver->resolve(PushSubscription::take(
-      m_resolver.get(), wrapUnique(webPushSubscription.release()),
+      m_resolver.get(), WTF::wrapUnique(webPushSubscription.release()),
       m_serviceWorkerRegistration));
 }
 

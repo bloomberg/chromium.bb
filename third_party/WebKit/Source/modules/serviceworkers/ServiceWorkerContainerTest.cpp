@@ -174,7 +174,7 @@ class ServiceWorkerContainerTest : public ::testing::Test {
                             const ScriptValueTest& valueTest) {
     // When the registration is rejected, a register call must not reach
     // the provider.
-    provide(makeUnique<NotReachedWebServiceWorkerProvider>());
+    provide(WTF::makeUnique<NotReachedWebServiceWorkerProvider>());
 
     ServiceWorkerContainer* container =
         ServiceWorkerContainer::create(getExecutionContext());
@@ -188,7 +188,7 @@ class ServiceWorkerContainerTest : public ::testing::Test {
 
   void testGetRegistrationRejected(const String& documentURL,
                                    const ScriptValueTest& valueTest) {
-    provide(makeUnique<NotReachedWebServiceWorkerProvider>());
+    provide(WTF::makeUnique<NotReachedWebServiceWorkerProvider>());
 
     ServiceWorkerContainer* container =
         ServiceWorkerContainer::create(getExecutionContext());
@@ -265,7 +265,7 @@ class StubWebServiceWorkerProvider {
   // other methods must not be called after the
   // StubWebServiceWorkerProvider dies.
   std::unique_ptr<WebServiceWorkerProvider> provider() {
-    return wrapUnique(new WebServiceWorkerProviderImpl(*this));
+    return WTF::wrapUnique(new WebServiceWorkerProviderImpl(*this));
   }
 
   size_t registerCallCount() { return m_registerCallCount; }

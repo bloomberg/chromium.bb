@@ -21,7 +21,7 @@ class UnderlyingImageListChecker : public InterpolationType::ConversionChecker {
 
   static std::unique_ptr<UnderlyingImageListChecker> create(
       const InterpolationValue& underlying) {
-    return wrapUnique(new UnderlyingImageListChecker(underlying));
+    return WTF::wrapUnique(new UnderlyingImageListChecker(underlying));
   }
 
  private:
@@ -73,7 +73,7 @@ class InheritedImageListChecker : public InterpolationType::ConversionChecker {
   static std::unique_ptr<InheritedImageListChecker> create(
       CSSPropertyID property,
       const StyleImageList& inheritedImageList) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new InheritedImageListChecker(property, inheritedImageList));
   }
 

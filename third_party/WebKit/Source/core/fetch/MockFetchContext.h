@@ -67,7 +67,7 @@ class MockFetchContext : public FetchContext {
   MockFetchContext(LoadPolicy loadPolicy)
       : m_loadPolicy(loadPolicy),
         m_policy(CachePolicyVerify),
-        m_runner(wrapUnique(new scheduler::FakeWebTaskRunner)),
+        m_runner(WTF::wrapUnique(new scheduler::FakeWebTaskRunner)),
         m_complete(false),
         m_transferSize(-1) {}
 

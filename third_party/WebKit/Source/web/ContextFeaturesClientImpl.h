@@ -40,7 +40,7 @@ namespace blink {
 class ContextFeaturesClientImpl final : public ContextFeaturesClient {
  public:
   static std::unique_ptr<ContextFeaturesClientImpl> create() {
-    return wrapUnique(new ContextFeaturesClientImpl());
+    return WTF::wrapUnique(new ContextFeaturesClientImpl());
   }
 
   bool isEnabled(Document*,

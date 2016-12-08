@@ -42,7 +42,7 @@ void TextCodecUserDefined::registerEncodingNames(
 static std::unique_ptr<TextCodec> newStreamingTextDecoderUserDefined(
     const TextEncoding&,
     const void*) {
-  return wrapUnique(new TextCodecUserDefined);
+  return WTF::wrapUnique(new TextCodecUserDefined);
 }
 
 void TextCodecUserDefined::registerCodecs(TextCodecRegistrar registrar) {

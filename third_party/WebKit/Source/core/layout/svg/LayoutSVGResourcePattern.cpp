@@ -115,7 +115,7 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::buildPatternData(
                           clientBoundingBox.height());
   }
 
-  std::unique_ptr<PatternData> patternData = wrapUnique(new PatternData);
+  std::unique_ptr<PatternData> patternData = WTF::wrapUnique(new PatternData);
   patternData->pattern =
       Pattern::createPicturePattern(asPicture(tileBounds, tileTransform));
 

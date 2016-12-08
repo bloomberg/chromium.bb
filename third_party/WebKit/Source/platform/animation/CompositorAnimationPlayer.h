@@ -29,7 +29,7 @@ class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
 
  public:
   static std::unique_ptr<CompositorAnimationPlayer> create() {
-    return wrapUnique(new CompositorAnimationPlayer());
+    return WTF::wrapUnique(new CompositorAnimationPlayer());
   }
 
   ~CompositorAnimationPlayer();

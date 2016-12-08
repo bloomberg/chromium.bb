@@ -51,7 +51,7 @@ SpeechRecognitionClientProxy::~SpeechRecognitionClientProxy() {}
 
 std::unique_ptr<SpeechRecognitionClientProxy>
 SpeechRecognitionClientProxy::create(WebSpeechRecognizer* recognizer) {
-  return wrapUnique(new SpeechRecognitionClientProxy(recognizer));
+  return WTF::wrapUnique(new SpeechRecognitionClientProxy(recognizer));
 }
 
 void SpeechRecognitionClientProxy::start(SpeechRecognition* recognition,

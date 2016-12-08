@@ -24,15 +24,16 @@ CompositorFloatAnimationCurve::~CompositorFloatAnimationCurve() {}
 std::unique_ptr<CompositorFloatAnimationCurve>
 CompositorFloatAnimationCurve::createForTesting(
     std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve) {
-  return wrapUnique(new CompositorFloatAnimationCurve(std::move(curve)));
+  return WTF::wrapUnique(new CompositorFloatAnimationCurve(std::move(curve)));
 }
 
 CompositorFloatAnimationCurve::Keyframes
 CompositorFloatAnimationCurve::keyframesForTesting() const {
   Keyframes keyframes;
-  for (const auto& ccKeyframe : m_curve->keyframes_for_testing())
+  for (const auto& ccKeyframe : m_curve->keyframes_for_testing()) {
     keyframes.append(
-        wrapUnique(new CompositorFloatKeyframe(ccKeyframe->Clone())));
+        WTF::wrapUnique(new CompositorFloatKeyframe(ccKeyframe->Clone())));
+  }
   return keyframes;
 }
 

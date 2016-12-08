@@ -301,7 +301,7 @@ void WebView::resetVisitedLinkState(bool invalidateVisitedLinkHashes) {
 }
 
 void WebView::willEnterModalLoop() {
-  pageSuspenderStack().append(makeUnique<ScopedPageSuspender>());
+  pageSuspenderStack().append(WTF::makeUnique<ScopedPageSuspender>());
 }
 
 void WebView::didExitModalLoop() {
@@ -383,11 +383,11 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       m_displayMode(WebDisplayModeBrowser),
       m_elasticOverscroll(FloatSize()),
       m_mutator(nullptr),
-      m_scheduler(wrapUnique(Platform::current()
-                                 ->currentThread()
-                                 ->scheduler()
-                                 ->createWebViewScheduler(this, this)
-                                 .release())),
+      m_scheduler(WTF::wrapUnique(Platform::current()
+                                      ->currentThread()
+                                      ->scheduler()
+                                      ->createWebViewScheduler(this, this)
+                                      .release())),
       m_lastFrameTimeMonotonic(0),
       m_overrideCompositorVisibility(false) {
   Page::PageClients pageClients;
@@ -717,7 +717,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       m_flingSourceDevice = event.sourceDevice;
       DCHECK_NE(m_flingSourceDevice, WebGestureDeviceUninitialized);
       std::unique_ptr<WebGestureCurve> flingCurve =
-          wrapUnique(Platform::current()->createFlingAnimationCurve(
+          WTF::wrapUnique(Platform::current()->createFlingAnimationCurve(
               event.sourceDevice,
               WebFloatPoint(event.data.flingStart.velocityX,
                             event.data.flingStart.velocityY),
@@ -965,7 +965,7 @@ void WebViewImpl::transferActiveWheelFlingAnimation(
   m_globalPositionOnFlingStart = parameters.globalPoint;
   m_flingModifier = parameters.modifiers;
   std::unique_ptr<WebGestureCurve> curve =
-      wrapUnique(Platform::current()->createFlingAnimationCurve(
+      WTF::wrapUnique(Platform::current()->createFlingAnimationCurve(
           parameters.sourceDevice, WebFloatPoint(parameters.delta),
           parameters.cumulativeScroll));
   DCHECK(curve);
@@ -2185,14 +2185,14 @@ WebInputEventResult WebViewImpl::handleInputEvent(
         break;
       case WebInputEvent::MouseDown:
         eventType = EventTypeNames::mousedown;
-        gestureIndicator = wrapUnique(
+        gestureIndicator = WTF::wrapUnique(
             new UserGestureIndicator(DocumentUserGestureToken::create(
                 &node->document(), UserGestureToken::NewGesture)));
         m_mouseCaptureGestureToken = gestureIndicator->currentToken();
         break;
       case WebInputEvent::MouseUp:
         eventType = EventTypeNames::mouseup;
-        gestureIndicator = wrapUnique(
+        gestureIndicator = WTF::wrapUnique(
             new UserGestureIndicator(m_mouseCaptureGestureToken.release()));
         break;
       default:
@@ -2590,7 +2590,7 @@ void WebViewImpl::applyReplacementRange(const WebRange& range) {
 
 WebSettingsImpl* WebViewImpl::settingsImpl() {
   if (!m_webSettings)
-    m_webSettings = wrapUnique(
+    m_webSettings = WTF::wrapUnique(
         new WebSettingsImpl(&m_page->settings(), m_devToolsEmulator.get()));
   DCHECK(m_webSettings);
   return m_webSettings.get();
@@ -3740,8 +3740,8 @@ void WebViewImpl::setPageOverlayColor(WebColor color) {
   if (color == Color::transparent)
     return;
 
-  m_pageColorOverlay =
-      PageOverlay::create(mainFrameImpl(), makeUnique<ColorOverlay>(color));
+  m_pageColorOverlay = PageOverlay::create(
+      mainFrameImpl(), WTF::makeUnique<ColorOverlay>(color));
   m_pageColorOverlay->update();
 }
 
@@ -4132,15 +4132,15 @@ void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event) {
       eventType = EventTypeNames::mousedown;
       if (!page() || !page()->pointerLockController().element())
         break;
-      gestureIndicator =
-          wrapUnique(new UserGestureIndicator(DocumentUserGestureToken::create(
+      gestureIndicator = WTF::wrapUnique(
+          new UserGestureIndicator(DocumentUserGestureToken::create(
               &page()->pointerLockController().element()->document(),
               UserGestureToken::NewGesture)));
       m_pointerLockGestureToken = gestureIndicator->currentToken();
       break;
     case WebInputEvent::MouseUp:
       eventType = EventTypeNames::mouseup;
-      gestureIndicator = wrapUnique(
+      gestureIndicator = WTF::wrapUnique(
           new UserGestureIndicator(m_pointerLockGestureToken.release()));
       break;
     case WebInputEvent::MouseMove:

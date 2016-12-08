@@ -277,7 +277,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVector) {
 
   Vector<char> fooVector;
   fooVector.append("foo", 3);
-  channel()->sendBinaryAsCharVector(makeUnique<Vector<char>>(fooVector));
+  channel()->sendBinaryAsCharVector(WTF::makeUnique<Vector<char>>(fooVector));
 
   EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -302,22 +302,22 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorWithNullBytes) {
   {
     Vector<char> v;
     v.append("\0ar", 3);
-    channel()->sendBinaryAsCharVector(makeUnique<Vector<char>>(v));
+    channel()->sendBinaryAsCharVector(WTF::makeUnique<Vector<char>>(v));
   }
   {
     Vector<char> v;
     v.append("b\0z", 3);
-    channel()->sendBinaryAsCharVector(makeUnique<Vector<char>>(v));
+    channel()->sendBinaryAsCharVector(WTF::makeUnique<Vector<char>>(v));
   }
   {
     Vector<char> v;
     v.append("qu\0", 3);
-    channel()->sendBinaryAsCharVector(makeUnique<Vector<char>>(v));
+    channel()->sendBinaryAsCharVector(WTF::makeUnique<Vector<char>>(v));
   }
   {
     Vector<char> v;
     v.append("\0\0\0", 3);
-    channel()->sendBinaryAsCharVector(makeUnique<Vector<char>>(v));
+    channel()->sendBinaryAsCharVector(WTF::makeUnique<Vector<char>>(v));
   }
 
   EXPECT_EQ(12ul, m_sumOfConsumedBufferedAmount);
@@ -333,7 +333,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonLatin1UTF8) {
 
   Vector<char> v;
   v.append("\xe7\x8b\x90", 3);
-  channel()->sendBinaryAsCharVector(makeUnique<Vector<char>>(v));
+  channel()->sendBinaryAsCharVector(WTF::makeUnique<Vector<char>>(v));
 
   EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -348,7 +348,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonUTF8) {
 
   Vector<char> v;
   v.append("\x80\xff\xe7", 3);
-  channel()->sendBinaryAsCharVector(makeUnique<Vector<char>>(v));
+  channel()->sendBinaryAsCharVector(WTF::makeUnique<Vector<char>>(v));
 
   EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -377,7 +377,7 @@ TEST_F(DocumentWebSocketChannelTest,
       "\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b"
       "\x90",
       18);
-  channel()->sendBinaryAsCharVector(makeUnique<Vector<char>>(v));
+  channel()->sendBinaryAsCharVector(WTF::makeUnique<Vector<char>>(v));
   checkpoint.Call(1);
 
   handleClient()->didReceiveFlowControl(handle(), 16);

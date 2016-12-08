@@ -33,7 +33,7 @@ class CORE_EXPORT ObjectPaintProperties {
 
  public:
   static std::unique_ptr<ObjectPaintProperties> create() {
-    return wrapUnique(new ObjectPaintProperties());
+    return WTF::wrapUnique(new ObjectPaintProperties());
   }
 
   // The hierarchy of the transform subtree created by a LayoutObject is as
@@ -137,8 +137,8 @@ class CORE_EXPORT ObjectPaintProperties {
       m_localBorderBoxProperties->propertyTreeState.setEffect(effect);
       m_localBorderBoxProperties->propertyTreeState.setScroll(scroll);
     } else {
-      m_localBorderBoxProperties =
-          wrapUnique(new ObjectPaintProperties::PropertyTreeStateWithOffset(
+      m_localBorderBoxProperties = WTF::wrapUnique(
+          new ObjectPaintProperties::PropertyTreeStateWithOffset(
               paintOffset, PropertyTreeState(transform, clip, effect, scroll)));
     }
   }
@@ -278,7 +278,7 @@ class CORE_EXPORT ObjectPaintProperties {
     if (m_localBorderBoxProperties) {
       auto& state = m_localBorderBoxProperties->propertyTreeState;
       cloned->m_localBorderBoxProperties =
-          wrapUnique(new PropertyTreeStateWithOffset(
+          WTF::wrapUnique(new PropertyTreeStateWithOffset(
               m_localBorderBoxProperties->paintOffset,
               PropertyTreeState(state.transform(), state.clip(), state.effect(),
                                 state.scroll())));

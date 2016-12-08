@@ -469,8 +469,8 @@ void LayoutTableCell::ensureIsReadyForPaintInvalidation() {
   if (!usesCompositedCellDisplayItemClients())
     return;
   if (!m_rowBackgroundDisplayItemClient) {
-    m_rowBackgroundDisplayItemClient =
-        wrapUnique(new LayoutTableCell::RowBackgroundDisplayItemClient(*this));
+    m_rowBackgroundDisplayItemClient = WTF::wrapUnique(
+        new LayoutTableCell::RowBackgroundDisplayItemClient(*this));
   }
 }
 
@@ -1330,7 +1330,7 @@ void LayoutTableCell::collectBorderValues(
     m_collapsedBorderValues = nullptr;
   } else if (!m_collapsedBorderValues) {
     changed = true;
-    m_collapsedBorderValues = wrapUnique(new CollapsedBorderValues(
+    m_collapsedBorderValues = WTF::wrapUnique(new CollapsedBorderValues(
         *table(), newValues.startBorder(), newValues.endBorder(),
         newValues.beforeBorder(), newValues.afterBorder()));
   } else {

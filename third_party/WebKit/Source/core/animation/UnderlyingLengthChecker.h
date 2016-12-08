@@ -16,7 +16,7 @@ class UnderlyingLengthChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<UnderlyingLengthChecker> create(
       size_t underlyingLength) {
-    return wrapUnique(new UnderlyingLengthChecker(underlyingLength));
+    return WTF::wrapUnique(new UnderlyingLengthChecker(underlyingLength));
   }
 
   static size_t getUnderlyingLength(const InterpolationValue& underlying) {

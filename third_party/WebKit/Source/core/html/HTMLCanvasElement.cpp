@@ -848,7 +848,7 @@ class UnacceleratedSurfaceFactory
       OpacityMode opacityMode,
       sk_sp<SkColorSpace> colorSpace,
       SkColorType colorType) {
-    return wrapUnique(new UnacceleratedImageBufferSurface(
+    return WTF::wrapUnique(new UnacceleratedImageBufferSurface(
         size, opacityMode, InitializeImagePixels, colorSpace, colorType));
   }
 
@@ -875,7 +875,7 @@ HTMLCanvasElement::createWebGLImageBufferSurface(const IntSize& deviceSize,
   // If 3d, but the use of the canvas will be for non-accelerated content
   // then make a non-accelerated ImageBuffer. This means copying the internal
   // Image will require a pixel readback, but that is unavoidable in this case.
-  auto surface = wrapUnique(new AcceleratedImageBufferSurface(
+  auto surface = WTF::wrapUnique(new AcceleratedImageBufferSurface(
       deviceSize, opacityMode, m_context->skColorSpace(),
       m_context->colorType()));
   if (surface->isValid())
@@ -909,7 +909,7 @@ HTMLCanvasElement::createAcceleratedImageBufferSurface(
     return nullptr;  // Don't use accelerated canvas with swiftshader.
 
   std::unique_ptr<ImageBufferSurface> surface =
-      wrapUnique(new Canvas2DImageBufferSurface(
+      WTF::wrapUnique(new Canvas2DImageBufferSurface(
           std::move(contextProvider), deviceSize, *msaaSampleCount, opacityMode,
           Canvas2DLayerBridge::EnableAcceleration, m_context->skColorSpace(),
           m_context->colorType()));
@@ -929,9 +929,9 @@ HTMLCanvasElement::createUnacceleratedImageBufferSurface(
     const IntSize& deviceSize,
     OpacityMode opacityMode) {
   if (shouldUseDisplayList(deviceSize)) {
-    auto surface = wrapUnique(new RecordingImageBufferSurface(
-        deviceSize, wrapUnique(new UnacceleratedSurfaceFactory), opacityMode,
-        m_context->skColorSpace(), m_context->colorType()));
+    auto surface = WTF::wrapUnique(new RecordingImageBufferSurface(
+        deviceSize, WTF::wrapUnique(new UnacceleratedSurfaceFactory),
+        opacityMode, m_context->skColorSpace(), m_context->colorType()));
     if (surface->isValid()) {
       CanvasMetrics::countCanvasContextUsage(
           CanvasMetrics::DisplayList2DCanvasImageBufferCreated);
@@ -941,7 +941,7 @@ HTMLCanvasElement::createUnacceleratedImageBufferSurface(
     // here.
   }
 
-  auto surfaceFactory = makeUnique<UnacceleratedSurfaceFactory>();
+  auto surfaceFactory = WTF::makeUnique<UnacceleratedSurfaceFactory>();
   auto surface = surfaceFactory->createSurface(deviceSize, opacityMode,
                                                m_context->skColorSpace(),
                                                m_context->colorType());
@@ -1388,7 +1388,7 @@ bool HTMLCanvasElement::createSurfaceLayer() {
   Platform::current()->interfaceProvider()->getInterface(
       mojo::GetProxy(&service));
   m_surfaceLayerBridge =
-      wrapUnique(new CanvasSurfaceLayerBridge(std::move(service)));
+      WTF::wrapUnique(new CanvasSurfaceLayerBridge(std::move(service)));
   return m_surfaceLayerBridge->createSurfaceLayer(this->width(),
                                                   this->height());
 }

@@ -3707,7 +3707,7 @@ void HTMLMediaElement::setWebLayer(WebLayer* webLayer) {
 
 void HTMLMediaElement::mediaSourceOpened(WebMediaSource* webMediaSource) {
   setShouldDelayLoadEvent(false);
-  m_mediaSource->setWebMediaSourceAndOpen(wrapUnique(webMediaSource));
+  m_mediaSource->setWebMediaSourceAndOpen(WTF::wrapUnique(webMediaSource));
 }
 
 bool HTMLMediaElement::isInteractiveContent() const {

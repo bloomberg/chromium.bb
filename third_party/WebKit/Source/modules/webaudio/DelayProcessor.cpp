@@ -44,7 +44,7 @@ DelayProcessor::~DelayProcessor() {
 }
 
 std::unique_ptr<AudioDSPKernel> DelayProcessor::createKernel() {
-  return makeUnique<DelayDSPKernel>(this);
+  return WTF::makeUnique<DelayDSPKernel>(this);
 }
 
 }  // namespace blink

@@ -236,7 +236,8 @@ void LayoutView::layout() {
   if (pageLogicalHeight() && shouldUsePrintingLayout()) {
     m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = logicalWidth();
     if (!m_fragmentationContext) {
-      m_fragmentationContext = wrapUnique(new ViewFragmentationContext(*this));
+      m_fragmentationContext =
+          WTF::wrapUnique(new ViewFragmentationContext(*this));
       m_paginationStateChanged = true;
     }
   } else if (m_fragmentationContext) {
@@ -943,7 +944,7 @@ bool LayoutView::usesCompositing() const {
 
 PaintLayerCompositor* LayoutView::compositor() {
   if (!m_compositor)
-    m_compositor = wrapUnique(new PaintLayerCompositor(*this));
+    m_compositor = WTF::wrapUnique(new PaintLayerCompositor(*this));
 
   return m_compositor.get();
 }

@@ -90,13 +90,13 @@ class TerminatedArray {
     static PassPtr release(Ptr& ptr) { return ptr.release(); }
 
     static PassPtr create(size_t capacity) {
-      return wrapUnique(
+      return WTF::wrapUnique(
           static_cast<TerminatedArray*>(WTF::Partitions::fastMalloc(
               capacity * sizeof(T), WTF_HEAP_PROFILER_TYPE_NAME(T))));
     }
 
     static PassPtr resize(Ptr ptr, size_t capacity) {
-      return wrapUnique(static_cast<TerminatedArray*>(
+      return WTF::wrapUnique(static_cast<TerminatedArray*>(
           WTF::Partitions::fastRealloc(ptr.release(), capacity * sizeof(T),
                                        WTF_HEAP_PROFILER_TYPE_NAME(T))));
     }

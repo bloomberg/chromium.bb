@@ -281,7 +281,7 @@ void Peer::didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload) {
   m_loaderProxy->postTaskToWorkerGlobalScope(
       BLINK_FROM_HERE,
       createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryMessage, m_bridge,
-                            passed(std::move(payload))));
+                            WTF::passed(std::move(payload))));
 }
 
 static void workerGlobalScopeDidConsumeBufferedAmount(
@@ -409,7 +409,7 @@ bool Bridge::connect(std::unique_ptr<SourceLocation> location,
       BLINK_FROM_HERE,
       createCrossThreadTask(
           &Bridge::connectOnMainThread, wrapCrossThreadPersistent(this),
-          passed(location->clone()),
+          WTF::passed(location->clone()),
           wrapCrossThreadPersistent(
               m_workerGlobalScope->thread()->getWorkerThreadLifecycleContext()),
           url, protocol, crossThreadUnretained(&syncHelper)));
@@ -420,14 +420,15 @@ bool Bridge::connect(std::unique_ptr<SourceLocation> location,
 void Bridge::send(const CString& message) {
   DCHECK(m_peer);
   std::unique_ptr<Vector<char>> data =
-      wrapUnique(new Vector<char>(message.length()));
+      WTF::wrapUnique(new Vector<char>(message.length()));
   if (message.length())
     memcpy(data->data(), static_cast<const char*>(message.data()),
            message.length());
 
   m_loaderProxy->postTaskToLoader(
-      BLINK_FROM_HERE, createCrossThreadTask(&Peer::sendTextAsCharVector,
-                                             m_peer, passed(std::move(data))));
+      BLINK_FROM_HERE,
+      createCrossThreadTask(&Peer::sendTextAsCharVector, m_peer,
+                            WTF::passed(std::move(data))));
 }
 
 void Bridge::send(const DOMArrayBuffer& binaryData,
@@ -436,15 +437,17 @@ void Bridge::send(const DOMArrayBuffer& binaryData,
   DCHECK(m_peer);
   // ArrayBuffer isn't thread-safe, hence the content of ArrayBuffer is copied
   // into Vector<char>.
-  std::unique_ptr<Vector<char>> data = makeUnique<Vector<char>>(byteLength);
+  std::unique_ptr<Vector<char>> data =
+      WTF::makeUnique<Vector<char>>(byteLength);
   if (binaryData.byteLength())
     memcpy(data->data(),
            static_cast<const char*>(binaryData.data()) + byteOffset,
            byteLength);
 
   m_loaderProxy->postTaskToLoader(
-      BLINK_FROM_HERE, createCrossThreadTask(&Peer::sendBinaryAsCharVector,
-                                             m_peer, passed(std::move(data))));
+      BLINK_FROM_HERE,
+      createCrossThreadTask(&Peer::sendBinaryAsCharVector, m_peer,
+                            WTF::passed(std::move(data))));
 }
 
 void Bridge::send(PassRefPtr<BlobDataHandle> data) {
@@ -467,7 +470,7 @@ void Bridge::fail(const String& reason,
   DCHECK(m_peer);
   m_loaderProxy->postTaskToLoader(
       BLINK_FROM_HERE, createCrossThreadTask(&Peer::fail, m_peer, reason, level,
-                                             passed(location->clone())));
+                                             WTF::passed(location->clone())));
 }
 
 void Bridge::disconnect() {

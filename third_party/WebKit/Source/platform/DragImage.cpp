@@ -167,7 +167,8 @@ std::unique_ptr<DragImage> DragImage::create(
       !resizedImage->asLegacyBitmap(&bm, SkImage::kRO_LegacyBitmapMode))
     return nullptr;
 
-  return wrapUnique(new DragImage(bm, deviceScaleFactor, interpolationQuality));
+  return WTF::wrapUnique(
+      new DragImage(bm, deviceScaleFactor, interpolationQuality));
 }
 
 static Font deriveDragLabelFont(int size,

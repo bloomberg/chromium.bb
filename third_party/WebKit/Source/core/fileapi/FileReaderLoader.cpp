@@ -218,9 +218,9 @@ void FileReaderLoader::didReceiveResponse(
     }
 
     if (initialBufferLength < 0)
-      m_rawData = makeUnique<ArrayBufferBuilder>();
+      m_rawData = WTF::makeUnique<ArrayBufferBuilder>();
     else
-      m_rawData = wrapUnique(
+      m_rawData = WTF::wrapUnique(
           new ArrayBufferBuilder(static_cast<unsigned>(initialBufferLength)));
 
     if (!m_rawData || !m_rawData->isValid()) {

@@ -95,7 +95,8 @@ MessagePort::toWebMessagePortChannelArray(
     std::unique_ptr<MessagePortChannelArray> channels) {
   std::unique_ptr<WebMessagePortChannelArray> webChannels;
   if (channels && channels->size()) {
-    webChannels = wrapUnique(new WebMessagePortChannelArray(channels->size()));
+    webChannels =
+        WTF::wrapUnique(new WebMessagePortChannelArray(channels->size()));
     for (size_t i = 0; i < channels->size(); ++i)
       (*webChannels)[i] = (*channels)[i].release();
   }
@@ -107,7 +108,7 @@ MessagePortArray* MessagePort::toMessagePortArray(
     ExecutionContext* context,
     const WebMessagePortChannelArray& webChannels) {
   std::unique_ptr<MessagePortChannelArray> channels =
-      wrapUnique(new MessagePortChannelArray(webChannels.size()));
+      WTF::wrapUnique(new MessagePortChannelArray(webChannels.size()));
   for (size_t i = 0; i < webChannels.size(); ++i)
     (*channels)[i] = WebMessagePortChannelUniquePtr(webChannels[i]);
   return MessagePort::entanglePorts(*context, std::move(channels));
@@ -173,7 +174,7 @@ static bool tryGetMessageFrom(
     return false;
 
   if (webChannels.size()) {
-    channels = wrapUnique(new MessagePortChannelArray(webChannels.size()));
+    channels = WTF::wrapUnique(new MessagePortChannelArray(webChannels.size()));
     for (size_t i = 0; i < webChannels.size(); ++i)
       (*channels)[i] = WebMessagePortChannelUniquePtr(webChannels[i]);
   }
@@ -266,7 +267,7 @@ std::unique_ptr<MessagePortChannelArray> MessagePort::disentanglePorts(
 
   // Passed-in ports passed validity checks, so we can disentangle them.
   std::unique_ptr<MessagePortChannelArray> portArray =
-      wrapUnique(new MessagePortChannelArray(ports.size()));
+      WTF::wrapUnique(new MessagePortChannelArray(ports.size()));
   for (unsigned i = 0; i < ports.size(); ++i)
     (*portArray)[i] = ports[i]->disentangle();
   return portArray;

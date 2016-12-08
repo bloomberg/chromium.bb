@@ -22,7 +22,7 @@ GraphicsContext* SVGFilterRecordingContext::beginContent(
 
   // Create a new context so the contents of the filter can be drawn and cached.
   m_paintController = PaintController::create();
-  m_context = wrapUnique(new GraphicsContext(*m_paintController));
+  m_context = WTF::wrapUnique(new GraphicsContext(*m_paintController));
 
   filterData->m_state = FilterData::RecordingContent;
   return m_context.get();

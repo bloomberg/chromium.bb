@@ -111,7 +111,7 @@ inline LocaleWin::LocaleWin(LCID lcid, bool defaultsForLocale)
 
 std::unique_ptr<LocaleWin> LocaleWin::create(LCID lcid,
                                              bool defaultsForLocale) {
-  return wrapUnique(new LocaleWin(lcid, defaultsForLocale));
+  return WTF::wrapUnique(new LocaleWin(lcid, defaultsForLocale));
 }
 
 LocaleWin::~LocaleWin() {}

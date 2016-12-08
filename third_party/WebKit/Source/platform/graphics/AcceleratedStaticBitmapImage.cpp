@@ -39,7 +39,7 @@ AcceleratedStaticBitmapImage::createFromWebGLContextImage(
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     sk_sp<SkImage> image) {
-  m_textureHolder = wrapUnique(new SkiaTextureHolder(std::move(image)));
+  m_textureHolder = WTF::wrapUnique(new SkiaTextureHolder(std::move(image)));
   m_threadChecker.DetachFromThread();
 }
 
@@ -49,7 +49,7 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     unsigned textureId,
     WeakPtr<WebGraphicsContext3DProviderWrapper> contextProvider,
     IntSize mailboxSize) {
-  m_textureHolder = wrapUnique(new MailboxTextureHolder(
+  m_textureHolder = WTF::wrapUnique(new MailboxTextureHolder(
       mailbox, syncToken, textureId, contextProvider, mailboxSize));
   m_threadChecker.DetachFromThread();
 }
@@ -132,7 +132,7 @@ void AcceleratedStaticBitmapImage::createImageFromMailboxIfNeeded() {
   if (m_textureHolder->isSkiaTextureHolder())
     return;
   m_textureHolder =
-      wrapUnique(new SkiaTextureHolder(std::move(m_textureHolder)));
+      WTF::wrapUnique(new SkiaTextureHolder(std::move(m_textureHolder)));
 }
 
 void AcceleratedStaticBitmapImage::ensureMailbox() {
@@ -140,7 +140,7 @@ void AcceleratedStaticBitmapImage::ensureMailbox() {
     return;
 
   m_textureHolder =
-      wrapUnique(new MailboxTextureHolder(std::move(m_textureHolder)));
+      WTF::wrapUnique(new MailboxTextureHolder(std::move(m_textureHolder)));
 }
 
 void AcceleratedStaticBitmapImage::transfer() {

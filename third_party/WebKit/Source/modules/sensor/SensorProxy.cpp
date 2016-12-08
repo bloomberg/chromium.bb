@@ -73,7 +73,7 @@ void SensorProxy::addConfiguration(
   DCHECK(isInitialized());
   auto wrapper = WTF::bind(&SensorProxy::onAddConfigurationCompleted,
                            wrapWeakPersistent(this), configuration->frequency,
-                           passed(std::move(callback)));
+                           WTF::passed(std::move(callback)));
   m_sensor->AddConfiguration(std::move(configuration),
                              convertToBaseCallback(std::move(wrapper)));
 }

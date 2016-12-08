@@ -46,7 +46,7 @@ namespace {
 const char layoutTestResourcesDir[] = "LayoutTests/images/resources";
 
 std::unique_ptr<ImageDecoder> createDecoder() {
-  return wrapUnique(
+  return WTF::wrapUnique(
       new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied,
                           ColorBehavior::transformToTargetForTesting(),
                           ImageDecoder::noDecodedImageByteLimit));
@@ -367,11 +367,11 @@ TEST(GIFImageDecoderTest, bitmapAlphaType) {
   RefPtr<SharedBuffer> partialData =
       SharedBuffer::create(fullData->data(), kTruncateSize);
 
-  std::unique_ptr<ImageDecoder> premulDecoder = wrapUnique(
+  std::unique_ptr<ImageDecoder> premulDecoder = WTF::wrapUnique(
       new GIFImageDecoder(ImageDecoder::AlphaPremultiplied,
                           ColorBehavior::transformToTargetForTesting(),
                           ImageDecoder::noDecodedImageByteLimit));
-  std::unique_ptr<ImageDecoder> unpremulDecoder = wrapUnique(
+  std::unique_ptr<ImageDecoder> unpremulDecoder = WTF::wrapUnique(
       new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied,
                           ColorBehavior::transformToTargetForTesting(),
                           ImageDecoder::noDecodedImageByteLimit));

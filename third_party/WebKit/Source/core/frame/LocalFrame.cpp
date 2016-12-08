@@ -120,7 +120,7 @@ class DragImageBuilder {
     float pageScaleFactor = m_localFrame->host()->visualViewport().scale();
     m_bounds.setWidth(m_bounds.width() * deviceScaleFactor * pageScaleFactor);
     m_bounds.setHeight(m_bounds.height() * deviceScaleFactor * pageScaleFactor);
-    m_pictureBuilder = wrapUnique(new SkPictureBuilder(
+    m_pictureBuilder = WTF::wrapUnique(new SkPictureBuilder(
         SkRect::MakeIWH(m_bounds.width(), m_bounds.height())));
 
     AffineTransform transform;

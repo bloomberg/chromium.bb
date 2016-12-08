@@ -160,8 +160,8 @@ typedef WTF::Vector<std::unique_ptr<DestructCounter>> OwnPtrVector;
 TEST(VectorTest, OwnPtr) {
   int destructNumber = 0;
   OwnPtrVector vector;
-  vector.append(wrapUnique(new DestructCounter(0, &destructNumber)));
-  vector.append(wrapUnique(new DestructCounter(1, &destructNumber)));
+  vector.append(WTF::wrapUnique(new DestructCounter(0, &destructNumber)));
+  vector.append(WTF::wrapUnique(new DestructCounter(1, &destructNumber)));
   EXPECT_EQ(2u, vector.size());
 
   std::unique_ptr<DestructCounter>& counter0 = vector.front();
@@ -205,7 +205,7 @@ TEST(VectorTest, OwnPtr) {
   size_t count = 1025;
   destructNumber = 0;
   for (size_t i = 0; i < count; i++)
-    vector.prepend(wrapUnique(new DestructCounter(i, &destructNumber)));
+    vector.prepend(WTF::wrapUnique(new DestructCounter(i, &destructNumber)));
 
   // Vector relocation must not destruct std::unique_ptr element.
   EXPECT_EQ(0, destructNumber);

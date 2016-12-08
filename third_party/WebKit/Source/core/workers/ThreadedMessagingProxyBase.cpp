@@ -115,7 +115,7 @@ void ThreadedMessagingProxyBase::parentObjectDestroyed() {
       ->postTask(
           BLINK_FROM_HERE,
           WTF::bind(&ThreadedMessagingProxyBase::parentObjectDestroyedInternal,
-                    unretained(this)));
+                    WTF::unretained(this)));
 }
 
 void ThreadedMessagingProxyBase::parentObjectDestroyedInternal() {

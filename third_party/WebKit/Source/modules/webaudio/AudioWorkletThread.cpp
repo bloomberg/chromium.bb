@@ -27,8 +27,8 @@ std::unique_ptr<AudioWorkletThread> AudioWorkletThread::create(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("audio-worklet"),
                "AudioWorkletThread::create");
   DCHECK(isMainThread());
-  return wrapUnique(new AudioWorkletThread(std::move(workerLoaderProxy),
-                                           workerReportingProxy));
+  return WTF::wrapUnique(new AudioWorkletThread(std::move(workerLoaderProxy),
+                                                workerReportingProxy));
 }
 
 AudioWorkletThread::AudioWorkletThread(

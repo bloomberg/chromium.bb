@@ -81,7 +81,7 @@ void ResourceLoader::start(const ResourceRequest& request,
     return;
   }
 
-  m_loader = wrapUnique(Platform::current()->createURLLoader());
+  m_loader = WTF::wrapUnique(Platform::current()->createURLLoader());
   DCHECK(m_loader);
   m_loader->setDefersLoading(defersLoading);
   m_loader->setLoadingTaskRunner(loadingTaskRunner);

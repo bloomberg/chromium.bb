@@ -100,8 +100,8 @@ int SQLiteStatement::prepare() {
 
   // Need to pass non-stack |const char*| and |sqlite3_stmt*| to avoid race
   // with Oilpan stack scanning.
-  std::unique_ptr<const char*> tail = wrapUnique(new const char*);
-  std::unique_ptr<sqlite3_stmt*> statement = wrapUnique(new sqlite3_stmt*);
+  std::unique_ptr<const char*> tail = WTF::wrapUnique(new const char*);
+  std::unique_ptr<sqlite3_stmt*> statement = WTF::wrapUnique(new sqlite3_stmt*);
   *tail = nullptr;
   *statement = nullptr;
   int error;

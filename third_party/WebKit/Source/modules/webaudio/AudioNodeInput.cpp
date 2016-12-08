@@ -40,7 +40,7 @@ inline AudioNodeInput::AudioNodeInput(AudioHandler& handler)
 }
 
 std::unique_ptr<AudioNodeInput> AudioNodeInput::create(AudioHandler& handler) {
-  return wrapUnique(new AudioNodeInput(handler));
+  return WTF::wrapUnique(new AudioNodeInput(handler));
 }
 
 void AudioNodeInput::connect(AudioNodeOutput& output) {

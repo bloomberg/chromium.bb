@@ -72,7 +72,7 @@ std::unique_ptr<ImageBuffer> ImageBuffer::create(
     std::unique_ptr<ImageBufferSurface> surface) {
   if (!surface->isValid())
     return nullptr;
-  return wrapUnique(new ImageBuffer(std::move(surface)));
+  return WTF::wrapUnique(new ImageBuffer(std::move(surface)));
 }
 
 std::unique_ptr<ImageBuffer> ImageBuffer::create(
@@ -81,11 +81,11 @@ std::unique_ptr<ImageBuffer> ImageBuffer::create(
     ImageInitializationMode initializationMode,
     sk_sp<SkColorSpace> colorSpace) {
   std::unique_ptr<ImageBufferSurface> surface(
-      wrapUnique(new UnacceleratedImageBufferSurface(
+      WTF::wrapUnique(new UnacceleratedImageBufferSurface(
           size, opacityMode, initializationMode, std::move(colorSpace))));
   if (!surface->isValid())
     return nullptr;
-  return wrapUnique(new ImageBuffer(std::move(surface)));
+  return WTF::wrapUnique(new ImageBuffer(std::move(surface)));
 }
 
 ImageBuffer::ImageBuffer(std::unique_ptr<ImageBufferSurface> surface)
@@ -240,7 +240,7 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
   if (!textureInfo || !textureInfo->fID)
     return false;
 
-  std::unique_ptr<WebGraphicsContext3DProvider> provider = wrapUnique(
+  std::unique_ptr<WebGraphicsContext3DProvider> provider = WTF::wrapUnique(
       Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
   if (!provider || !provider->grContext())
     return false;
@@ -301,7 +301,7 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(
     SourceDrawingBuffer sourceBuffer) {
   if (!drawingBuffer || !m_surface->isAccelerated())
     return false;
-  std::unique_ptr<WebGraphicsContext3DProvider> provider = wrapUnique(
+  std::unique_ptr<WebGraphicsContext3DProvider> provider = WTF::wrapUnique(
       Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
   if (!provider)
     return false;
@@ -502,7 +502,7 @@ class UnacceleratedSurfaceFactory
       OpacityMode opacityMode,
       sk_sp<SkColorSpace> colorSpace,
       SkColorType colorType) {
-    return wrapUnique(new UnacceleratedImageBufferSurface(
+    return WTF::wrapUnique(new UnacceleratedImageBufferSurface(
         size, opacityMode, InitializeImagePixels, std::move(colorSpace),
         colorType));
   }
@@ -522,9 +522,9 @@ void ImageBuffer::disableAcceleration() {
 
   // Create and configure a recording (unaccelerated) surface.
   std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory =
-      makeUnique<UnacceleratedSurfaceFactory>();
+      WTF::makeUnique<UnacceleratedSurfaceFactory>();
   std::unique_ptr<ImageBufferSurface> surface =
-      wrapUnique(new RecordingImageBufferSurface(
+      WTF::wrapUnique(new RecordingImageBufferSurface(
           m_surface->size(), std::move(surfaceFactory),
           m_surface->getOpacityMode(), m_surface->colorSpace()));
   surface->canvas()->drawImage(image.get(), 0, 0);

@@ -124,7 +124,7 @@ String EmptyChromeClient::acceptLanguages() {
 
 std::unique_ptr<WebFrameScheduler> EmptyChromeClient::createFrameScheduler(
     BlameContext*) {
-  return makeUnique<EmptyFrameScheduler>();
+  return WTF::makeUnique<EmptyFrameScheduler>();
 }
 
 NavigationPolicy EmptyFrameLoaderClient::decidePolicyForNavigation(

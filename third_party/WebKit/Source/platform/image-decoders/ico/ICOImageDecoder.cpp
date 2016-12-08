@@ -195,8 +195,8 @@ bool ICOImageDecoder::decodeAtIndex(size_t index) {
 
   if (imageType == BMP) {
     if (!m_bmpReaders[index]) {
-      m_bmpReaders[index] =
-          wrapUnique(new BMPImageReader(this, dirEntry.m_imageOffset, 0, true));
+      m_bmpReaders[index] = WTF::wrapUnique(
+          new BMPImageReader(this, dirEntry.m_imageOffset, 0, true));
       m_bmpReaders[index]->setData(m_data.get());
     }
     // Update the pointer to the buffer as it could change after
@@ -211,7 +211,7 @@ bool ICOImageDecoder::decodeAtIndex(size_t index) {
   if (!m_pngDecoders[index]) {
     AlphaOption alphaOption =
         m_premultiplyAlpha ? AlphaPremultiplied : AlphaNotPremultiplied;
-    m_pngDecoders[index] = wrapUnique(
+    m_pngDecoders[index] = WTF::wrapUnique(
         new PNGImageDecoder(alphaOption, m_colorBehavior, m_maxDecodedBytes,
                             dirEntry.m_imageOffset));
     setDataForPNGDecoderAtIndex(index);

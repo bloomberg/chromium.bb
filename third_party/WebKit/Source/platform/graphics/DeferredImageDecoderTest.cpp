@@ -214,7 +214,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
 
   // Create a thread to rasterize SkPicture.
   std::unique_ptr<WebThread> thread =
-      wrapUnique(Platform::current()->createThread("RasterThread"));
+      WTF::wrapUnique(Platform::current()->createThread("RasterThread"));
   thread->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,
       crossThreadBind(&rasterizeMain,

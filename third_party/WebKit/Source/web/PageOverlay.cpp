@@ -49,7 +49,7 @@ namespace blink {
 std::unique_ptr<PageOverlay> PageOverlay::create(
     WebLocalFrameImpl* frameImpl,
     std::unique_ptr<PageOverlay::Delegate> delegate) {
-  return wrapUnique(new PageOverlay(frameImpl, std::move(delegate)));
+  return WTF::wrapUnique(new PageOverlay(frameImpl, std::move(delegate)));
 }
 
 PageOverlay::PageOverlay(WebLocalFrameImpl* frameImpl,

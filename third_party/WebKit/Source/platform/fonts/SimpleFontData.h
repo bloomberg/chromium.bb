@@ -237,7 +237,7 @@ ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const {
 
   boundsResult = platformBoundsForGlyph(glyph);
   if (!m_glyphToBoundsMap)
-    m_glyphToBoundsMap = wrapUnique(new GlyphMetricsMap<FloatRect>);
+    m_glyphToBoundsMap = WTF::wrapUnique(new GlyphMetricsMap<FloatRect>);
   m_glyphToBoundsMap->setMetricsForGlyph(glyph, boundsResult);
 
   return boundsResult;

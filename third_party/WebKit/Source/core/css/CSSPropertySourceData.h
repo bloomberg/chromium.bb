@@ -89,7 +89,7 @@ class CSSStyleSourceData {
 
  public:
   static std::unique_ptr<CSSStyleSourceData> create() {
-    return wrapUnique(new CSSStyleSourceData);
+    return WTF::wrapUnique(new CSSStyleSourceData);
   }
 
   Vector<CSSPropertySourceData> propertyData;
@@ -114,7 +114,7 @@ namespace blink {
 class CSSMediaQuerySourceData {
  public:
   static std::unique_ptr<CSSMediaQuerySourceData> create() {
-    return wrapUnique(new CSSMediaQuerySourceData);
+    return WTF::wrapUnique(new CSSMediaQuerySourceData);
   }
 
   Vector<CSSMediaQueryExpSourceData> expData;
@@ -125,7 +125,7 @@ class CSSMediaSourceData {
 
  public:
   static std::unique_ptr<CSSMediaSourceData> create() {
-    return wrapUnique(new CSSMediaSourceData);
+    return WTF::wrapUnique(new CSSMediaSourceData);
   }
 
   Vector<std::unique_ptr<CSSMediaQuerySourceData>> queryData;

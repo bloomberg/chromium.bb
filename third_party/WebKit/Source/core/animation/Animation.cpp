@@ -295,7 +295,7 @@ bool Animation::preCommit(int compositorGroup, bool startOnCompositor) {
         createCompositorPlayer();
 
       if (maybeStartAnimationOnCompositor())
-        m_compositorState = wrapUnique(new CompositorState(*this));
+        m_compositorState = WTF::wrapUnique(new CompositorState(*this));
       else
         cancelIncompatibleAnimationsOnCompositor();
     }

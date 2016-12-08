@@ -22,7 +22,7 @@ class UnderlyingCompatibilityChecker
  public:
   static std::unique_ptr<UnderlyingCompatibilityChecker> create(
       PassRefPtr<NonInterpolableValue> underlyingNonInterpolableValue) {
-    return wrapUnique(new UnderlyingCompatibilityChecker(
+    return WTF::wrapUnique(new UnderlyingCompatibilityChecker(
         std::move(underlyingNonInterpolableValue)));
   }
 
@@ -45,7 +45,7 @@ class InheritedShapeChecker : public InterpolationType::ConversionChecker {
   static std::unique_ptr<InheritedShapeChecker> create(
       CSSPropertyID property,
       PassRefPtr<BasicShape> inheritedShape) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new InheritedShapeChecker(property, std::move(inheritedShape)));
   }
 

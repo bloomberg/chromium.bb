@@ -52,7 +52,8 @@ MediaStreamCenter& MediaStreamCenter::instance() {
 
 MediaStreamCenter::MediaStreamCenter()
     : m_private(
-          wrapUnique(Platform::current()->createMediaStreamCenter(this))) {}
+          WTF::wrapUnique(Platform::current()->createMediaStreamCenter(this))) {
+}
 
 MediaStreamCenter::~MediaStreamCenter() {}
 
@@ -119,9 +120,10 @@ std::unique_ptr<AudioSourceProvider>
 MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
     MediaStreamComponent* track) {
   DCHECK(track);
-  if (m_private)
-    return MediaStreamWebAudioSource::create(
-        wrapUnique(m_private->createWebAudioSourceFromMediaStreamTrack(track)));
+  if (m_private) {
+    return MediaStreamWebAudioSource::create(WTF::wrapUnique(
+        m_private->createWebAudioSourceFromMediaStreamTrack(track)));
+  }
 
   return nullptr;
 }

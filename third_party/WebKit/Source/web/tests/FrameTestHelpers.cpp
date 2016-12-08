@@ -326,7 +326,7 @@ void TestWebRemoteFrameClient::frameDetached(DetachType type) {
 }
 
 void TestWebViewClient::initializeLayerTreeView() {
-  m_layerTreeView = wrapUnique(new WebLayerTreeViewImplForTesting);
+  m_layerTreeView = WTF::wrapUnique(new WebLayerTreeViewImplForTesting);
 }
 
 void TestWebViewWidgetClient::initializeLayerTreeView() {

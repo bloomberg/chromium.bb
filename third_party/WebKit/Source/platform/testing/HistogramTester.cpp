@@ -10,7 +10,7 @@
 namespace blink {
 
 HistogramTester::HistogramTester()
-    : m_histogramTester(wrapUnique(new base::HistogramTester)) {}
+    : m_histogramTester(WTF::wrapUnique(new base::HistogramTester)) {}
 
 HistogramTester::~HistogramTester() {}
 

@@ -335,7 +335,7 @@ WebCryptoAlgorithm WebCryptoAlgorithm::createNull() {
 WebCryptoAlgorithm WebCryptoAlgorithm::adoptParamsAndCreate(
     WebCryptoAlgorithmId id,
     WebCryptoAlgorithmParams* params) {
-  return WebCryptoAlgorithm(id, wrapUnique(params));
+  return WebCryptoAlgorithm(id, WTF::wrapUnique(params));
 }
 
 const WebCryptoAlgorithmInfo* WebCryptoAlgorithm::lookupAlgorithmInfo(

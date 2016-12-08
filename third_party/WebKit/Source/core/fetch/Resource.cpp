@@ -267,7 +267,7 @@ Resource::ResourceCallback::ResourceCallback() {}
 
 void Resource::ResourceCallback::schedule(Resource* resource) {
   if (!m_taskHandle.isActive()) {
-    // unretained(this) is safe because a posted task is canceled when
+    // WTF::unretained(this) is safe because a posted task is canceled when
     // |m_taskHandle| is destroyed on the dtor of this ResourceCallback.
     m_taskHandle =
         Platform::current()

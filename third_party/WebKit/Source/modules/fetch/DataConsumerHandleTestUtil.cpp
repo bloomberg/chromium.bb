@@ -42,7 +42,7 @@ DataConsumerHandleTestUtil::Thread::Thread(
     : m_thread(
           WebThreadSupportingGC::create(name, BlinkGC::MainThreadHeapMode)),
       m_initializationPolicy(initializationPolicy),
-      m_waitableEvent(makeUnique<WaitableEvent>()) {
+      m_waitableEvent(WTF::makeUnique<WaitableEvent>()) {
   m_thread->postTask(
       BLINK_FROM_HERE,
       crossThreadBind(&Thread::initialize, crossThreadUnretained(this)));
@@ -58,7 +58,7 @@ DataConsumerHandleTestUtil::Thread::~Thread() {
 
 void DataConsumerHandleTestUtil::Thread::initialize() {
   if (m_initializationPolicy >= ScriptExecution) {
-    m_isolateHolder = makeUnique<gin::IsolateHolder>();
+    m_isolateHolder = WTF::makeUnique<gin::IsolateHolder>();
     isolate()->Enter();
   }
   m_thread->initialize();
@@ -195,7 +195,7 @@ DataConsumerHandleTestUtil::ReplayingHandle::Context::Context()
       m_client(nullptr),
       m_result(ShouldWait),
       m_isHandleAttached(true),
-      m_detached(makeUnique<WaitableEvent>()) {}
+      m_detached(WTF::makeUnique<WaitableEvent>()) {}
 
 const DataConsumerHandleTestUtil::Command&
 DataConsumerHandleTestUtil::ReplayingHandle::Context::top() {
@@ -246,7 +246,7 @@ DataConsumerHandleTestUtil::ReplayingHandle::~ReplayingHandle() {
 
 std::unique_ptr<WebDataConsumerHandle::Reader>
 DataConsumerHandleTestUtil::ReplayingHandle::obtainReader(Client* client) {
-  return makeUnique<ReaderImpl>(m_context, client);
+  return WTF::makeUnique<ReaderImpl>(m_context, client);
 }
 
 void DataConsumerHandleTestUtil::ReplayingHandle::add(const Command& command) {
@@ -273,12 +273,12 @@ void DataConsumerHandleTestUtil::HandleReader::didGetReadable() {
     m_data.append(buffer, size);
   }
   std::unique_ptr<HandleReadResult> result =
-      makeUnique<HandleReadResult>(r, m_data);
+      WTF::makeUnique<HandleReadResult>(r, m_data);
   m_data.clear();
   Platform::current()->currentThread()->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,
       WTF::bind(&HandleReader::runOnFinishedReading, WTF::unretained(this),
-                passed(std::move(result))));
+                WTF::passed(std::move(result))));
   m_reader = nullptr;
 }
 
@@ -313,12 +313,12 @@ void DataConsumerHandleTestUtil::HandleTwoPhaseReader::didGetReadable() {
     m_reader->endRead(readSize);
   }
   std::unique_ptr<HandleReadResult> result =
-      makeUnique<HandleReadResult>(r, m_data);
+      WTF::makeUnique<HandleReadResult>(r, m_data);
   m_data.clear();
   Platform::current()->currentThread()->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,
       WTF::bind(&HandleTwoPhaseReader::runOnFinishedReading,
-                WTF::unretained(this), passed(std::move(result))));
+                WTF::unretained(this), WTF::passed(std::move(result))));
   m_reader = nullptr;
 }
 
@@ -332,7 +332,7 @@ void DataConsumerHandleTestUtil::HandleTwoPhaseReader::runOnFinishedReading(
 
 std::unique_ptr<WebDataConsumerHandle>
 DataConsumerHandleTestUtil::createWaitingDataConsumerHandle() {
-  return wrapUnique(new WaitingHandle);
+  return WTF::wrapUnique(new WaitingHandle);
 }
 
 }  // namespace blink

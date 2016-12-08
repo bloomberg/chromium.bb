@@ -34,7 +34,7 @@ namespace {
 class TestAnimationWorkletReportingProxy : public WorkerReportingProxy {
  public:
   static std::unique_ptr<TestAnimationWorkletReportingProxy> create() {
-    return wrapUnique(new TestAnimationWorkletReportingProxy());
+    return WTF::wrapUnique(new TestAnimationWorkletReportingProxy());
   }
 
   // (Empty) WorkerReportingProxy implementation:
@@ -67,7 +67,7 @@ class TestAnimationWorkletReportingProxy : public WorkerReportingProxy {
 class AnimationWorkletTestPlatform : public TestingPlatformSupport {
  public:
   AnimationWorkletTestPlatform()
-      : m_thread(wrapUnique(m_oldPlatform->createThread("Compositor"))) {}
+      : m_thread(WTF::wrapUnique(m_oldPlatform->createThread("Compositor"))) {}
 
   WebThread* compositorThread() const override { return m_thread.get(); }
 
@@ -108,7 +108,7 @@ class AnimationWorkletThreadTest : public ::testing::Test {
 
   // Attempts to run some simple script for |thread|.
   void checkWorkletCanExecuteScript(WorkerThread* thread) {
-    std::unique_ptr<WaitableEvent> waitEvent = makeUnique<WaitableEvent>();
+    std::unique_ptr<WaitableEvent> waitEvent = WTF::makeUnique<WaitableEvent>();
     thread->workerBackingThread().backingThread().postTask(
         BLINK_FROM_HERE,
         crossThreadBind(&AnimationWorkletThreadTest::executeScriptInWorklet,

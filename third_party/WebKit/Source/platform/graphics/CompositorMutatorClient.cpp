@@ -38,7 +38,7 @@ bool CompositorMutatorClient::Mutate(base::TimeTicks monotonicTime,
   TRACE_EVENT0("compositor-worker", "CompositorMutatorClient::Mutate");
   double monotonicTimeNow = (monotonicTime - base::TimeTicks()).InSecondsF();
   if (!m_mutations)
-    m_mutations = wrapUnique(new CompositorMutations);
+    m_mutations = WTF::wrapUnique(new CompositorMutations);
   CompositorMutableStateProvider compositorState(treeImpl, m_mutations.get());
   bool shouldReinvoke = m_mutator->mutate(monotonicTimeNow, &compositorState);
   return shouldReinvoke;

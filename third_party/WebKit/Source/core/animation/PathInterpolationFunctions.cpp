@@ -93,7 +93,7 @@ class UnderlyingPathSegTypesChecker
 
   static std::unique_ptr<UnderlyingPathSegTypesChecker> create(
       const InterpolationValue& underlying) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new UnderlyingPathSegTypesChecker(getPathSegTypes(underlying)));
   }
 

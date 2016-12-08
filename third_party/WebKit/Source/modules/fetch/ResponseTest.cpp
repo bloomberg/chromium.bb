@@ -40,7 +40,7 @@ std::unique_ptr<WebServiceWorkerResponse> createTestWebServiceWorkerResponse() {
   Vector<WebURL> urlList;
   urlList.append(url);
   std::unique_ptr<WebServiceWorkerResponse> webResponse =
-      makeUnique<WebServiceWorkerResponse>();
+      WTF::makeUnique<WebServiceWorkerResponse>();
   webResponse->setURLList(urlList);
   webResponse->setStatus(status);
   webResponse->setStatusText(statusText);

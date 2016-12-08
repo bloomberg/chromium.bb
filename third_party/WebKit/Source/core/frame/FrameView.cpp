@@ -251,7 +251,7 @@ void FrameView::reset() {
   m_safeToPropagateScrollToParent = true;
   m_lastViewportSize = IntSize();
   m_lastZoomFactor = 1.0f;
-  m_trackedObjectPaintInvalidations = wrapUnique(
+  m_trackedObjectPaintInvalidations = WTF::wrapUnique(
       s_initialTrackAllPaintInvalidations ? new Vector<ObjectPaintInvalidation>
                                           : nullptr);
   m_visuallyNonEmptyCharacterCount = 0;
@@ -983,7 +983,7 @@ void FrameView::prepareLayoutAnalyzer() {
     return;
   }
   if (!m_analyzer)
-    m_analyzer = makeUnique<LayoutAnalyzer>();
+    m_analyzer = WTF::makeUnique<LayoutAnalyzer>();
   m_analyzer->reset();
 }
 
@@ -1514,8 +1514,10 @@ void FrameView::removeBackgroundAttachmentFixedObject(LayoutObject* object) {
 }
 
 void FrameView::addViewportConstrainedObject(LayoutObject* object) {
-  if (!m_viewportConstrainedObjects)
-    m_viewportConstrainedObjects = wrapUnique(new ViewportConstrainedObjectSet);
+  if (!m_viewportConstrainedObjects) {
+    m_viewportConstrainedObjects =
+        WTF::wrapUnique(new ViewportConstrainedObjectSet);
+  }
 
   if (!m_viewportConstrainedObjects->contains(object)) {
     m_viewportConstrainedObjects->add(object);
@@ -3432,9 +3434,10 @@ void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations) {
     if (!frame->isLocalFrame())
       continue;
     if (LayoutViewItem layoutView = toLocalFrame(frame)->contentLayoutItem()) {
-      layoutView.frameView()->m_trackedObjectPaintInvalidations = wrapUnique(
-          trackPaintInvalidations ? new Vector<ObjectPaintInvalidation>
-                                  : nullptr);
+      layoutView.frameView()->m_trackedObjectPaintInvalidations =
+          WTF::wrapUnique(trackPaintInvalidations
+                              ? new Vector<ObjectPaintInvalidation>
+                              : nullptr);
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         m_paintController->setTracksRasterInvalidations(
             trackPaintInvalidations);
@@ -3490,7 +3493,7 @@ std::unique_ptr<JSONArray> FrameView::trackedObjectPaintInvalidationsAsJSON()
 
 void FrameView::addResizerArea(LayoutBox& resizerBox) {
   if (!m_resizerAreas)
-    m_resizerAreas = wrapUnique(new ResizerAreaSet);
+    m_resizerAreas = WTF::wrapUnique(new ResizerAreaSet);
   m_resizerAreas->add(&resizerBox);
 }
 

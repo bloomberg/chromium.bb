@@ -94,7 +94,7 @@ struct LayoutBoxRareData {
 
   SnapAreaSet& ensureSnapAreas() {
     if (!m_snapAreas)
-      m_snapAreas = wrapUnique(new SnapAreaSet);
+      m_snapAreas = WTF::wrapUnique(new SnapAreaSet);
 
     return *m_snapAreas;
   }
@@ -1483,7 +1483,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutBoxRareData& ensureRareData() {
     if (!m_rareData)
-      m_rareData = makeUnique<LayoutBoxRareData>();
+      m_rareData = WTF::makeUnique<LayoutBoxRareData>();
     return *m_rareData.get();
   }
 

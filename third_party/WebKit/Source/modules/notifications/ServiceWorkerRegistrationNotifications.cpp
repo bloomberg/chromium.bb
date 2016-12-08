@@ -108,7 +108,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
   ScriptPromise promise = resolver->promise();
 
   std::unique_ptr<WebNotificationShowCallbacks> callbacks =
-      wrapUnique(new CallbackPromiseAdapter<void, void>(resolver));
+      WTF::wrapUnique(new CallbackPromiseAdapter<void, void>(resolver));
   ServiceWorkerRegistrationNotifications::from(executionContext, registration)
       .prepareShow(data, std::move(callbacks));
 
@@ -174,7 +174,7 @@ void ServiceWorkerRegistrationNotifications::prepareShow(
   NotificationResourcesLoader* loader = new NotificationResourcesLoader(
       WTF::bind(&ServiceWorkerRegistrationNotifications::didLoadResources,
                 wrapWeakPersistent(this), origin.release(), data,
-                passed(std::move(callbacks))));
+                WTF::passed(std::move(callbacks))));
   m_loaders.add(loader);
   loader->start(getExecutionContext(), data);
 }

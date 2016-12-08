@@ -30,7 +30,7 @@ class MockProcessorNode final : public AudioNode {
   MockProcessorNode(BaseAudioContext& context) : AudioNode(context) {
     setHandler(AudioBasicProcessorHandler::create(
         AudioHandler::NodeTypeWaveShaper, *this, 48000,
-        makeUnique<MockAudioProcessor>()));
+        WTF::makeUnique<MockAudioProcessor>()));
     handler().initialize();
   }
 };

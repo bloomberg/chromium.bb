@@ -71,7 +71,7 @@ class DOMObjectHolder : public DOMObjectHolderBase {
  public:
   static std::unique_ptr<DOMObjectHolder<T>>
   create(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper) {
-    return wrapUnique(new DOMObjectHolder(isolate, object, wrapper));
+    return WTF::wrapUnique(new DOMObjectHolder(isolate, object, wrapper));
   }
 
  private:
@@ -94,7 +94,8 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
                                  int extensionGroup)
     : m_worldId(worldId),
       m_extensionGroup(extensionGroup),
-      m_domDataStore(wrapUnique(new DOMDataStore(isolate, isMainWorld()))) {}
+      m_domDataStore(
+          WTF::wrapUnique(new DOMDataStore(isolate, isMainWorld()))) {}
 
 DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
   ASSERT(isMainThread());

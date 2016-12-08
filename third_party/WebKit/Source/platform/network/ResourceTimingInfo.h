@@ -53,7 +53,7 @@ class PLATFORM_EXPORT ResourceTimingInfo {
   static std::unique_ptr<ResourceTimingInfo> create(const AtomicString& type,
                                                     const double time,
                                                     bool isMainResource) {
-    return wrapUnique(new ResourceTimingInfo(type, time, isMainResource));
+    return WTF::wrapUnique(new ResourceTimingInfo(type, time, isMainResource));
   }
   static std::unique_ptr<ResourceTimingInfo> adopt(
       std::unique_ptr<CrossThreadResourceTimingInfoData>);
@@ -147,7 +147,7 @@ struct CrossThreadCopier<ResourceTimingInfo> {
   typedef WTF::PassedWrapper<std::unique_ptr<CrossThreadResourceTimingInfoData>>
       Type;
   static Type copy(const ResourceTimingInfo& info) {
-    return passed(info.copyData());
+    return WTF::passed(info.copyData());
   }
 };
 

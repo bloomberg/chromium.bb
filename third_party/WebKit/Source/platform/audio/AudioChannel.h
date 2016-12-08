@@ -55,7 +55,7 @@ class PLATFORM_EXPORT AudioChannel {
   // Manage storage for us.
   explicit AudioChannel(size_t length)
       : m_length(length), m_rawPointer(nullptr), m_silent(true) {
-    m_memBuffer = wrapUnique(new AudioFloatArray(length));
+    m_memBuffer = WTF::wrapUnique(new AudioFloatArray(length));
   }
 
   // A "blank" audio channel -- must call set() before it's useful...

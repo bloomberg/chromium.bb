@@ -65,7 +65,7 @@ void PresentationController::didStartDefaultSession(
     WebPresentationConnectionClient* connectionClient) {
   if (!m_presentation || !m_presentation->defaultRequest())
     return;
-  PresentationConnection::take(this, wrapUnique(connectionClient),
+  PresentationConnection::take(this, WTF::wrapUnique(connectionClient),
                                m_presentation->defaultRequest());
 }
 
@@ -73,7 +73,7 @@ void PresentationController::didChangeSessionState(
     WebPresentationConnectionClient* connectionClient,
     WebPresentationConnectionState state) {
   std::unique_ptr<WebPresentationConnectionClient> client =
-      wrapUnique(connectionClient);
+      WTF::wrapUnique(connectionClient);
 
   PresentationConnection* connection = findConnection(client.get());
   if (!connection)
@@ -86,7 +86,7 @@ void PresentationController::didCloseConnection(
     WebPresentationConnectionCloseReason reason,
     const WebString& message) {
   std::unique_ptr<WebPresentationConnectionClient> client =
-      wrapUnique(connectionClient);
+      WTF::wrapUnique(connectionClient);
 
   PresentationConnection* connection = findConnection(client.get());
   if (!connection)
@@ -98,7 +98,7 @@ void PresentationController::didReceiveSessionTextMessage(
     WebPresentationConnectionClient* connectionClient,
     const WebString& message) {
   std::unique_ptr<WebPresentationConnectionClient> client =
-      wrapUnique(connectionClient);
+      WTF::wrapUnique(connectionClient);
 
   PresentationConnection* connection = findConnection(client.get());
   if (!connection)
@@ -111,7 +111,7 @@ void PresentationController::didReceiveSessionBinaryMessage(
     const uint8_t* data,
     size_t length) {
   std::unique_ptr<WebPresentationConnectionClient> client =
-      wrapUnique(connectionClient);
+      WTF::wrapUnique(connectionClient);
 
   PresentationConnection* connection = findConnection(client.get());
   if (!connection)

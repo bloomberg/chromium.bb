@@ -43,7 +43,7 @@ class StyleResolverStats {
 
  public:
   static std::unique_ptr<StyleResolverStats> create() {
-    return wrapUnique(new StyleResolverStats);
+    return WTF::wrapUnique(new StyleResolverStats);
   }
 
   void reset();

@@ -71,7 +71,7 @@ class CallClosureTask final : public ExecutionContextTask {
  public:
   static std::unique_ptr<CallClosureTask> create(
       std::unique_ptr<Function<T, threadAffinity>> closure) {
-    return wrapUnique(new CallClosureTask(std::move(closure)));
+    return WTF::wrapUnique(new CallClosureTask(std::move(closure)));
   }
 
  private:

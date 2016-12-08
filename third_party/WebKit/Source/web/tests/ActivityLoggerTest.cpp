@@ -74,7 +74,7 @@ class ActivityLoggerTest : public testing::Test {
   ActivityLoggerTest() {
     m_activityLogger = new TestActivityLogger();
     V8DOMActivityLogger::setActivityLogger(isolatedWorldId, String(),
-                                           wrapUnique(m_activityLogger));
+                                           WTF::wrapUnique(m_activityLogger));
     m_webViewHelper.initialize(true);
     m_scriptController =
         &m_webViewHelper.webView()->mainFrameImpl()->frame()->script();

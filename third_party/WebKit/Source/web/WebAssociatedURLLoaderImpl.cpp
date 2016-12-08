@@ -152,7 +152,7 @@ WebAssociatedURLLoaderImpl::ClientAdapter::create(
     WebAssociatedURLLoaderImpl* loader,
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options) {
-  return wrapUnique(new ClientAdapter(loader, client, options));
+  return WTF::wrapUnique(new ClientAdapter(loader, client, options));
 }
 
 WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(

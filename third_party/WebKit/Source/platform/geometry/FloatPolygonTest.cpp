@@ -42,10 +42,11 @@ class FloatPolygonTestValue {
                         WindRule fillRule) {
     ASSERT(!(coordinatesLength % 2));
     std::unique_ptr<Vector<FloatPoint>> vertices =
-        wrapUnique(new Vector<FloatPoint>(coordinatesLength / 2));
+        WTF::wrapUnique(new Vector<FloatPoint>(coordinatesLength / 2));
     for (unsigned i = 0; i < coordinatesLength; i += 2)
       (*vertices)[i / 2] = FloatPoint(coordinates[i], coordinates[i + 1]);
-    m_polygon = wrapUnique(new FloatPolygon(std::move(vertices), fillRule));
+    m_polygon =
+        WTF::wrapUnique(new FloatPolygon(std::move(vertices), fillRule));
   }
 
   const FloatPolygon& polygon() const { return *m_polygon; }

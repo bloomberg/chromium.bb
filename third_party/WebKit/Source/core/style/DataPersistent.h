@@ -33,7 +33,7 @@ class DataPersistent {
 
   DataPersistent(const DataPersistent& other) : m_ownCopy(false) {
     if (other.m_data)
-      m_data = wrapUnique(new Persistent<T>(other.m_data->get()));
+      m_data = WTF::wrapUnique(new Persistent<T>(other.m_data->get()));
 
     // Invalidated, subsequent mutations will happen on a new copy.
     //
@@ -57,7 +57,7 @@ class DataPersistent {
 
   void init() {
     ASSERT(!m_data);
-    m_data = wrapUnique(new Persistent<T>(T::create()));
+    m_data = WTF::wrapUnique(new Persistent<T>(T::create()));
     m_ownCopy = true;
   }
 

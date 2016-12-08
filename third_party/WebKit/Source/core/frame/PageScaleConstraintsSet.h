@@ -49,7 +49,7 @@ class CORE_EXPORT PageScaleConstraintsSet {
 
  public:
   static std::unique_ptr<PageScaleConstraintsSet> create() {
-    return wrapUnique(new PageScaleConstraintsSet);
+    return WTF::wrapUnique(new PageScaleConstraintsSet);
   }
 
   void setDefaultConstraints(const PageScaleConstraints&);

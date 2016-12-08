@@ -30,7 +30,7 @@ SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds,
   m_paintController->setUsage(PaintController::ForSkPictureBuilder);
 #endif
 
-  m_context = wrapUnique(
+  m_context = WTF::wrapUnique(
       new GraphicsContext(*m_paintController, disabledMode, metaData));
 
   if (containingContext) {

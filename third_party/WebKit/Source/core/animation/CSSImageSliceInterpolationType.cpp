@@ -88,7 +88,7 @@ class UnderlyingSliceTypesChecker
  public:
   static std::unique_ptr<UnderlyingSliceTypesChecker> create(
       const SliceTypes& underlyingTypes) {
-    return wrapUnique(new UnderlyingSliceTypesChecker(underlyingTypes));
+    return WTF::wrapUnique(new UnderlyingSliceTypesChecker(underlyingTypes));
   }
 
   static SliceTypes getUnderlyingSliceTypes(
@@ -114,7 +114,8 @@ class InheritedSliceTypesChecker : public InterpolationType::ConversionChecker {
   static std::unique_ptr<InheritedSliceTypesChecker> create(
       CSSPropertyID property,
       const SliceTypes& inheritedTypes) {
-    return wrapUnique(new InheritedSliceTypesChecker(property, inheritedTypes));
+    return WTF::wrapUnique(
+        new InheritedSliceTypesChecker(property, inheritedTypes));
   }
 
  private:

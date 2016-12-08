@@ -11,7 +11,7 @@ namespace blink {
 
 std::unique_ptr<CompositorProxiedPropertySet>
 CompositorProxiedPropertySet::create() {
-  return wrapUnique(new CompositorProxiedPropertySet);
+  return WTF::wrapUnique(new CompositorProxiedPropertySet);
 }
 
 CompositorProxiedPropertySet::CompositorProxiedPropertySet() {

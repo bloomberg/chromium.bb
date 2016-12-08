@@ -67,8 +67,8 @@ class InProcessWorkerMessagingProxyForTest
     workerObjectProxy().m_maxIntervalInSec = kMaxIntervalInSec;
 
     m_mockWorkerLoaderProxyProvider =
-        makeUnique<MockWorkerLoaderProxyProvider>();
-    m_workerThread = wrapUnique(
+        WTF::makeUnique<MockWorkerLoaderProxyProvider>();
+    m_workerThread = WTF::wrapUnique(
         new DedicatedWorkerThreadForTest(m_mockWorkerLoaderProxyProvider.get(),
                                          workerObjectProxy(), threadHeapMode));
     workerThreadCreated();
@@ -160,8 +160,8 @@ class DedicatedWorkerTest
   void SetUp() override {
     m_page = DummyPageHolder::create();
     m_workerMessagingProxy =
-        wrapUnique(new InProcessWorkerMessagingProxyForTest(&m_page->document(),
-                                                            m_threadHeapMode));
+        WTF::wrapUnique(new InProcessWorkerMessagingProxyForTest(
+            &m_page->document(), m_threadHeapMode));
     m_securityOrigin =
         SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
   }
@@ -174,7 +174,7 @@ class DedicatedWorkerTest
 
   void startWithSourceCode(const String& source) {
     std::unique_ptr<Vector<CSPHeaderAndType>> headers =
-        makeUnique<Vector<CSPHeaderAndType>>();
+        WTF::makeUnique<Vector<CSPHeaderAndType>>();
     CSPHeaderAndType headerAndType("contentSecurityPolicy",
                                    ContentSecurityPolicyHeaderTypeReport);
     headers->append(headerAndType);

@@ -16,12 +16,12 @@ namespace blink {
 class CSSAnimationData final : public CSSTimingData {
  public:
   static std::unique_ptr<CSSAnimationData> create() {
-    return wrapUnique(new CSSAnimationData);
+    return WTF::wrapUnique(new CSSAnimationData);
   }
 
   static std::unique_ptr<CSSAnimationData> create(
       const CSSAnimationData& animationData) {
-    return wrapUnique(new CSSAnimationData(animationData));
+    return WTF::wrapUnique(new CSSAnimationData(animationData));
   }
 
   bool animationsMatchForStyleRecalc(const CSSAnimationData& other) const;

@@ -52,7 +52,7 @@ class PreloadRequest {
         protocolIs(resourceURL, "data")) {
       return nullptr;
     }
-    return wrapUnique(new PreloadRequest(
+    return WTF::wrapUnique(new PreloadRequest(
         initiatorName, initiatorPosition, resourceURL, baseURL, resourceType,
         resourceWidth, clientHintsPreferences, requestType, referrerPolicy));
   }

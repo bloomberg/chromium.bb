@@ -80,8 +80,9 @@ static void writeDebugInfo(LayoutObject* layoutObject,
     node = toDocument(node)->documentElement();
   if (!node->isElementNode())
     return;
-  node->document().postTask(BLINK_FROM_HERE, wrapUnique(new WriteDebugInfoTask(
-                                                 toElement(node), output)));
+  node->document().postTask(
+      BLINK_FROM_HERE,
+      WTF::wrapUnique(new WriteDebugInfoTask(toElement(node), output)));
 }
 
 void TextAutosizer::writeClusterDebugInfo(Cluster* cluster) {
@@ -362,7 +363,7 @@ void TextAutosizer::prepareClusterStack(const LayoutObject* layoutObject) {
     m_blocksThatHaveBegunLayout.add(block);
 #endif
     if (Cluster* cluster = maybeCreateCluster(block))
-      m_clusterStack.append(wrapUnique(cluster));
+      m_clusterStack.append(WTF::wrapUnique(cluster));
   }
 }
 
@@ -376,7 +377,7 @@ void TextAutosizer::beginLayout(LayoutBlock* block,
   ASSERT(!m_clusterStack.isEmpty() || block->isLayoutView());
 
   if (Cluster* cluster = maybeCreateCluster(block))
-    m_clusterStack.append(wrapUnique(cluster));
+    m_clusterStack.append(WTF::wrapUnique(cluster));
 
   ASSERT(!m_clusterStack.isEmpty());
 
@@ -815,7 +816,7 @@ TextAutosizer::Supercluster* TextAutosizer::getSupercluster(
     return addResult.storedValue->value.get();
 
   Supercluster* supercluster = new Supercluster(roots);
-  addResult.storedValue->value = wrapUnique(supercluster);
+  addResult.storedValue->value = WTF::wrapUnique(supercluster);
   return supercluster;
 }
 
@@ -1188,7 +1189,7 @@ void TextAutosizer::FingerprintMapper::addTentativeClusterRoot(
   ReverseFingerprintMap::AddResult addResult =
       m_blocksForFingerprint.add(fingerprint, std::unique_ptr<BlockSet>());
   if (addResult.isNewEntry)
-    addResult.storedValue->value = wrapUnique(new BlockSet);
+    addResult.storedValue->value = WTF::wrapUnique(new BlockSet);
   addResult.storedValue->value->add(block);
 #if ENABLE(ASSERT)
   assertMapsAreConsistent();

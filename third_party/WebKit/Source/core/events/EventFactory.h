@@ -52,7 +52,7 @@ class EventFactoryBase {
 class EventFactory final : public EventFactoryBase {
  public:
   static std::unique_ptr<EventFactory> create() {
-    return makeUnique<EventFactory>();
+    return WTF::makeUnique<EventFactory>();
   }
 
   Event* create(ExecutionContext*, const String& eventType) override;

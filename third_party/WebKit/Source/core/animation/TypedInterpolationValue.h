@@ -21,7 +21,7 @@ class TypedInterpolationValue {
       const InterpolationType& type,
       std::unique_ptr<InterpolableValue> interpolableValue,
       PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr) {
-    return wrapUnique(new TypedInterpolationValue(
+    return WTF::wrapUnique(new TypedInterpolationValue(
         type, std::move(interpolableValue), std::move(nonInterpolableValue)));
   }
 

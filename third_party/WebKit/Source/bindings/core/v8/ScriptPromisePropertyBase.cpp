@@ -144,7 +144,7 @@ v8::Local<v8::Object> ScriptPromisePropertyBase::ensureHolderWrapper(
   }
   v8::Local<v8::Object> wrapper = holder(m_isolate, context->Global());
   std::unique_ptr<ScopedPersistent<v8::Object>> weakPersistent =
-      wrapUnique(new ScopedPersistent<v8::Object>);
+      WTF::wrapUnique(new ScopedPersistent<v8::Object>);
   weakPersistent->set(m_isolate, wrapper);
   weakPersistent->setPhantom();
   m_wrappers.push_back(std::move(weakPersistent));

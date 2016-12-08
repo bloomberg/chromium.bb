@@ -226,7 +226,7 @@ SerializedScriptValue::transferImageBitmapContents(
   }
 
   std::unique_ptr<ImageBitmapContentsArray> contents =
-      wrapUnique(new ImageBitmapContentsArray);
+      WTF::wrapUnique(new ImageBitmapContentsArray);
   HeapHashSet<Member<ImageBitmap>> visited;
   for (size_t i = 0; i < imageBitmaps.size(); ++i) {
     if (visited.contains(imageBitmaps[i]))
@@ -414,7 +414,7 @@ SerializedScriptValue::transferArrayBufferContents(
   }
 
   std::unique_ptr<ArrayBufferContentsArray> contents =
-      wrapUnique(new ArrayBufferContentsArray(arrayBuffers.size()));
+      WTF::wrapUnique(new ArrayBufferContentsArray(arrayBuffers.size()));
 
   HeapHashSet<Member<DOMArrayBufferBase>> visited;
   for (auto it = arrayBuffers.begin(); it != arrayBuffers.end(); ++it) {

@@ -94,7 +94,7 @@ class CacheStorage::WithCacheCallbacks final
         m_resolver->getExecutionContext()->isContextDestroyed())
       return;
     Cache* cache = Cache::create(m_cacheStorage->m_scopedFetcher,
-                                 wrapUnique(webCache.release()));
+                                 WTF::wrapUnique(webCache.release()));
     m_resolver->resolve(cache);
     m_resolver.clear();
   }
@@ -226,7 +226,7 @@ class CacheStorage::KeysCallbacks final
 CacheStorage* CacheStorage::create(
     GlobalFetch::ScopedFetcher* fetcher,
     WebServiceWorkerCacheStorage* webCacheStorage) {
-  return new CacheStorage(fetcher, wrapUnique(webCacheStorage));
+  return new CacheStorage(fetcher, WTF::wrapUnique(webCacheStorage));
 }
 
 ScriptPromise CacheStorage::open(ScriptState* scriptState,

@@ -261,7 +261,7 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
   if (frame->frameScheduler())
     frame->frameScheduler()->didStopLoading(m_identifier);
 
-  m_loader = wrapUnique(Platform::current()->createURLLoader());
+  m_loader = WTF::wrapUnique(Platform::current()->createURLLoader());
   DCHECK(m_loader);
   WrappedResourceRequest wrappedRequest(request);
   wrappedRequest.setAllowStoredCredentials(credentialsAllowed ==

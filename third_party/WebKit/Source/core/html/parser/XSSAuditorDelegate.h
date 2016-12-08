@@ -47,8 +47,8 @@ class XSSInfo {
   static std::unique_ptr<XSSInfo> create(const String& originalURL,
                                          bool didBlockEntirePage,
                                          bool didSendXSSProtectionHeader) {
-    return wrapUnique(new XSSInfo(originalURL, didBlockEntirePage,
-                                  didSendXSSProtectionHeader));
+    return WTF::wrapUnique(new XSSInfo(originalURL, didBlockEntirePage,
+                                       didSendXSSProtectionHeader));
   }
 
   String buildConsoleError() const;

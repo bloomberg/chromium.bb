@@ -364,7 +364,8 @@ class BlinkScrollbarPartAnimationTimer {
   if (!self)
     return nil;
 
-  _timer = wrapUnique(new BlinkScrollbarPartAnimationTimer(self, duration));
+  _timer =
+      WTF::wrapUnique(new BlinkScrollbarPartAnimationTimer(self, duration));
   _scrollbar = scrollbar;
   _featureToAnimate = featureToAnimate;
   _startValue = startValue;

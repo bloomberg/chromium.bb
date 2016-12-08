@@ -23,7 +23,7 @@ class PLATFORM_EXPORT CompositorAnimationTimeline {
 
  public:
   static std::unique_ptr<CompositorAnimationTimeline> create() {
-    return wrapUnique(new CompositorAnimationTimeline());
+    return WTF::wrapUnique(new CompositorAnimationTimeline());
   }
 
   ~CompositorAnimationTimeline();

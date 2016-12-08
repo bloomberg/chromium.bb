@@ -43,8 +43,8 @@ std::unique_ptr<StorageNamespace>
 StorageClientImpl::createSessionStorageNamespace() {
   if (!m_webView->client())
     return nullptr;
-  return wrapUnique(new StorageNamespace(
-      wrapUnique(m_webView->client()->createSessionStorageNamespace())));
+  return WTF::wrapUnique(new StorageNamespace(
+      WTF::wrapUnique(m_webView->client()->createSessionStorageNamespace())));
 }
 
 bool StorageClientImpl::canAccessStorage(LocalFrame* frame,

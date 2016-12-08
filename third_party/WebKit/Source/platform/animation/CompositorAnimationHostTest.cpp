@@ -25,7 +25,7 @@ TEST_F(CompositorAnimationHostTest, AnimationHostNullWhenTimelineDetached) {
   EXPECT_TRUE(timeline->compositorAnimationHost().isNull());
 
   std::unique_ptr<WebLayerTreeView> layerTreeHost =
-      wrapUnique(new WebLayerTreeViewImplForTesting);
+      WTF::wrapUnique(new WebLayerTreeViewImplForTesting);
   DCHECK(layerTreeHost);
 
   layerTreeHost->attachCompositorAnimationTimeline(

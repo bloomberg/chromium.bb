@@ -35,7 +35,7 @@ namespace {
 class TestAudioWorkletReportingProxy : public WorkerReportingProxy {
  public:
   static std::unique_ptr<TestAudioWorkletReportingProxy> create() {
-    return wrapUnique(new TestAudioWorkletReportingProxy());
+    return WTF::wrapUnique(new TestAudioWorkletReportingProxy());
   }
 
   // (Empty) WorkerReportingProxy implementation:

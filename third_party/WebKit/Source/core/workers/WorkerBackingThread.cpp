@@ -69,19 +69,19 @@ void WorkerBackingThread::initialize() {
   V8Initializer::initializeWorker(m_isolate);
 
   std::unique_ptr<V8IsolateInterruptor> interruptor =
-      makeUnique<V8IsolateInterruptor>(m_isolate);
+      WTF::makeUnique<V8IsolateInterruptor>(m_isolate);
   ThreadState::current()->addInterruptor(std::move(interruptor));
   ThreadState::current()->registerTraceDOMWrappers(
       m_isolate, V8GCController::traceDOMWrappers, nullptr, nullptr);
   if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
     V8PerIsolateData::enableIdleTasks(
-        m_isolate, wrapUnique(new V8IdleTaskRunner(
+        m_isolate, WTF::wrapUnique(new V8IdleTaskRunner(
                        backingThread().platformThread().scheduler())));
   if (m_isOwningThread)
     Platform::current()->didStartWorkerThread();
 
   V8PerIsolateData::from(m_isolate)->setThreadDebugger(
-      makeUnique<WorkerThreadDebugger>(m_isolate));
+      WTF::makeUnique<WorkerThreadDebugger>(m_isolate));
 }
 
 void WorkerBackingThread::shutdown() {

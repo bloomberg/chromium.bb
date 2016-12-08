@@ -26,7 +26,7 @@ TEST_F(CompositorAnimationTimelineTest,
   EXPECT_FALSE(ccTimeline->animation_host());
 
   std::unique_ptr<WebLayerTreeView> layerTreeHost =
-      wrapUnique(new WebLayerTreeViewImplForTesting);
+      WTF::wrapUnique(new WebLayerTreeViewImplForTesting);
   DCHECK(layerTreeHost);
 
   layerTreeHost->attachCompositorAnimationTimeline(

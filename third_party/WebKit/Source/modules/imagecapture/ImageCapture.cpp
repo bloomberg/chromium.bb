@@ -248,9 +248,10 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* scriptState,
   }
 
   // Create |m_frameGrabber| the first time.
-  if (!m_frameGrabber)
+  if (!m_frameGrabber) {
     m_frameGrabber =
-        wrapUnique(Platform::current()->createImageCaptureFrameGrabber());
+        WTF::wrapUnique(Platform::current()->createImageCaptureFrameGrabber());
+  }
 
   if (!m_frameGrabber) {
     resolver->reject(DOMException::create(

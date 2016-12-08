@@ -32,7 +32,7 @@ class PLATFORM_EXPORT CompositorFloatAnimationCurve
 
  public:
   static std::unique_ptr<CompositorFloatAnimationCurve> create() {
-    return wrapUnique(new CompositorFloatAnimationCurve());
+    return WTF::wrapUnique(new CompositorFloatAnimationCurve());
   }
 
   ~CompositorFloatAnimationCurve() override;

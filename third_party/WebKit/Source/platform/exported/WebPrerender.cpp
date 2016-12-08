@@ -52,7 +52,7 @@ class ExtraDataContainer : public Prerender::ExtraData {
 
  private:
   explicit ExtraDataContainer(WebPrerender::ExtraData* extraData)
-      : m_extraData(wrapUnique(extraData)) {}
+      : m_extraData(WTF::wrapUnique(extraData)) {}
 
   std::unique_ptr<WebPrerender::ExtraData> m_extraData;
 };

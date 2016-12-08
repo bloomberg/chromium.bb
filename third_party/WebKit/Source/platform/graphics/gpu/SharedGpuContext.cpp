@@ -30,8 +30,8 @@ void SharedGpuContext::createContextProviderOnMainThread(
   Platform::ContextAttributes contextAttributes;
   contextAttributes.webGLVersion = 1;  // GLES2
   Platform::GraphicsInfo graphicsInfo;
-  m_contextProvider =
-      wrapUnique(Platform::current()->createOffscreenGraphicsContext3DProvider(
+  m_contextProvider = WTF::wrapUnique(
+      Platform::current()->createOffscreenGraphicsContext3DProvider(
           contextAttributes, WebURL(), nullptr, &graphicsInfo));
   if (waitableEvent)
     waitableEvent->signal();
@@ -50,8 +50,8 @@ void SharedGpuContext::createContextProviderIfNeeded() {
     m_contextProvider = m_contextProviderFactory();
   } else if (isMainThread()) {
     m_contextProvider =
-        wrapUnique(blink::Platform::current()
-                       ->createSharedOffscreenGraphicsContext3DProvider());
+        WTF::wrapUnique(blink::Platform::current()
+                            ->createSharedOffscreenGraphicsContext3DProvider());
   } else {
     // This synchronous round-trip to the main thread is the reason why
     // SharedGpuContext encasulates the context provider: so we only have to do

@@ -44,13 +44,13 @@ namespace blink {
 
 // Factory method
 std::unique_ptr<MIDIAccessor> MIDIAccessor::create(MIDIAccessorClient* client) {
-  return wrapUnique(new MIDIAccessor(client));
+  return WTF::wrapUnique(new MIDIAccessor(client));
 }
 
 MIDIAccessor::MIDIAccessor(MIDIAccessorClient* client) : m_client(client) {
   DCHECK(client);
 
-  m_accessor = wrapUnique(Platform::current()->createMIDIAccessor(this));
+  m_accessor = WTF::wrapUnique(Platform::current()->createMIDIAccessor(this));
 
   DCHECK(m_accessor);
 }

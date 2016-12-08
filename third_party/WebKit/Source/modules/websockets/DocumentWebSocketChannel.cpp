@@ -131,7 +131,7 @@ DocumentWebSocketChannel::DocumentWebSocketChannel(
     WebSocketChannelClient* client,
     std::unique_ptr<SourceLocation> location,
     WebSocketHandle* handle)
-    : m_handle(wrapUnique(handle ? handle : new WebSocketHandleImpl())),
+    : m_handle(WTF::wrapUnique(handle ? handle : new WebSocketHandleImpl())),
       m_client(client),
       m_identifier(createUniqueIdentifier()),
       m_document(document),
@@ -568,7 +568,8 @@ void DocumentWebSocketChannel::didReceiveData(WebSocketHandle* handle,
       m_client->didReceiveTextMessage(message);
     }
   } else {
-    std::unique_ptr<Vector<char>> binaryData = wrapUnique(new Vector<char>);
+    std::unique_ptr<Vector<char>> binaryData =
+        WTF::wrapUnique(new Vector<char>);
     binaryData->swap(m_receivingMessageData);
     m_client->didReceiveBinaryMessage(std::move(binaryData));
   }

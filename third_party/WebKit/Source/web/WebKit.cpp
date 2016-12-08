@@ -71,7 +71,7 @@ static WebThread::TaskObserver* s_endOfTaskRunner = nullptr;
 
 static ModulesInitializer& modulesInitializer() {
   DEFINE_STATIC_LOCAL(std::unique_ptr<ModulesInitializer>, initializer,
-                      (wrapUnique(new ModulesInitializer)));
+                      (WTF::wrapUnique(new ModulesInitializer)));
   return *initializer;
 }
 

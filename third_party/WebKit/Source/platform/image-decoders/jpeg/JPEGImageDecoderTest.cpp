@@ -47,7 +47,7 @@ static const size_t LargeEnoughSize = 1000 * 1000;
 namespace {
 
 std::unique_ptr<ImageDecoder> createDecoder(size_t maxDecodedBytes) {
-  return wrapUnique(new JPEGImageDecoder(
+  return WTF::wrapUnique(new JPEGImageDecoder(
       ImageDecoder::AlphaNotPremultiplied,
       ColorBehavior::transformToTargetForTesting(), maxDecodedBytes));
 }
@@ -89,7 +89,8 @@ void readYUV(size_t maxDecodedBytes,
 
   // Setting a dummy ImagePlanes object signals to the decoder that we want to
   // do YUV decoding.
-  std::unique_ptr<ImagePlanes> dummyImagePlanes = makeUnique<ImagePlanes>();
+  std::unique_ptr<ImagePlanes> dummyImagePlanes =
+      WTF::makeUnique<ImagePlanes>();
   decoder->setImagePlanes(std::move(dummyImagePlanes));
 
   bool sizeIsAvailable = decoder->isSizeAvailable();
@@ -125,7 +126,7 @@ void readYUV(size_t maxDecodedBytes,
   planes[2] = ((char*)planes[1]) + rowBytes[1] * uSize.height();
 
   std::unique_ptr<ImagePlanes> imagePlanes =
-      makeUnique<ImagePlanes>(planes, rowBytes);
+      WTF::makeUnique<ImagePlanes>(planes, rowBytes);
   decoder->setImagePlanes(std::move(imagePlanes));
 
   ASSERT_TRUE(decoder->decodeToYUV());
@@ -261,7 +262,7 @@ TEST(JPEGImageDecoderTest, yuv) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder(230 * 230 * 4);
   decoder->setData(data.get(), true);
 
-  std::unique_ptr<ImagePlanes> imagePlanes = makeUnique<ImagePlanes>();
+  std::unique_ptr<ImagePlanes> imagePlanes = WTF::makeUnique<ImagePlanes>();
   decoder->setImagePlanes(std::move(imagePlanes));
   ASSERT_TRUE(decoder->isSizeAvailable());
   ASSERT_FALSE(decoder->canDecodeToYUV());

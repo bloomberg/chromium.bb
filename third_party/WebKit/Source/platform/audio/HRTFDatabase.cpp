@@ -44,7 +44,7 @@ const unsigned HRTFDatabase::NumberOfTotalElevations =
     NumberOfRawElevations * InterpolationFactor;
 
 std::unique_ptr<HRTFDatabase> HRTFDatabase::create(float sampleRate) {
-  return wrapUnique(new HRTFDatabase(sampleRate));
+  return WTF::wrapUnique(new HRTFDatabase(sampleRate));
 }
 
 HRTFDatabase::HRTFDatabase(float sampleRate)

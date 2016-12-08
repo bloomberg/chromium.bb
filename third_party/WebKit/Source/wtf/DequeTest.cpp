@@ -175,8 +175,8 @@ template <typename OwnPtrDeque>
 void ownPtrTest() {
   int destructNumber = 0;
   OwnPtrDeque deque;
-  deque.append(wrapUnique(new DestructCounter(0, &destructNumber)));
-  deque.append(wrapUnique(new DestructCounter(1, &destructNumber)));
+  deque.append(WTF::wrapUnique(new DestructCounter(0, &destructNumber)));
+  deque.append(WTF::wrapUnique(new DestructCounter(1, &destructNumber)));
   EXPECT_EQ(2u, deque.size());
 
   std::unique_ptr<DestructCounter>& counter0 = deque.first();
@@ -221,7 +221,7 @@ void ownPtrTest() {
   size_t count = 1025;
   destructNumber = 0;
   for (size_t i = 0; i < count; ++i)
-    deque.prepend(wrapUnique(new DestructCounter(i, &destructNumber)));
+    deque.prepend(WTF::wrapUnique(new DestructCounter(i, &destructNumber)));
 
   // Deque relocation must not destruct std::unique_ptr element.
   EXPECT_EQ(0, destructNumber);

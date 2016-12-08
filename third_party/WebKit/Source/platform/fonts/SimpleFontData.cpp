@@ -358,7 +358,7 @@ bool SimpleFontData::isTextOrientationFallbackOf(
 
 std::unique_ptr<SimpleFontData::DerivedFontData>
 SimpleFontData::DerivedFontData::create() {
-  return wrapUnique(new DerivedFontData());
+  return WTF::wrapUnique(new DerivedFontData());
 }
 
 PassRefPtr<SimpleFontData> SimpleFontData::createScaledFontData(

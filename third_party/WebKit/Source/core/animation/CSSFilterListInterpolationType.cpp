@@ -22,7 +22,7 @@ class UnderlyingFilterListChecker
  public:
   static std::unique_ptr<UnderlyingFilterListChecker> create(
       PassRefPtr<NonInterpolableList> nonInterpolableList) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new UnderlyingFilterListChecker(std::move(nonInterpolableList)));
   }
 
@@ -55,7 +55,7 @@ class InheritedFilterListChecker : public InterpolationType::ConversionChecker {
   static std::unique_ptr<InheritedFilterListChecker> create(
       CSSPropertyID property,
       const FilterOperations& filterOperations) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new InheritedFilterListChecker(property, filterOperations));
   }
 

@@ -533,7 +533,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumePseudo(
       DisallowPseudoElementsScope scope(this);
 
       std::unique_ptr<CSSSelectorList> selectorList =
-          makeUnique<CSSSelectorList>();
+          WTF::makeUnique<CSSSelectorList>();
       *selectorList = consumeCompoundSelectorList(block);
       if (!selectorList->isValid() || !block.atEnd())
         return nullptr;

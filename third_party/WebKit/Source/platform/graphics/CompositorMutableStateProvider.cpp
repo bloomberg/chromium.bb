@@ -39,10 +39,10 @@ CompositorMutableStateProvider::getMutableStateFor(uint64_t elementId) {
 
   // Only if this is a new entry do we want to allocate a new mutation.
   if (result.isNewEntry)
-    result.storedValue->value = wrapUnique(new CompositorMutation);
+    result.storedValue->value = WTF::wrapUnique(new CompositorMutation);
 
-  return wrapUnique(new CompositorMutableState(result.storedValue->value.get(),
-                                               mainLayer, scrollLayer));
+  return WTF::wrapUnique(new CompositorMutableState(
+      result.storedValue->value.get(), mainLayer, scrollLayer));
 }
 
 }  // namespace blink

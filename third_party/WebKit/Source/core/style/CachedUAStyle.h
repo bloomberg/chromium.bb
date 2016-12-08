@@ -41,7 +41,7 @@ class CachedUAStyle {
 
  public:
   static std::unique_ptr<CachedUAStyle> create(const ComputedStyle* style) {
-    return wrapUnique(new CachedUAStyle(style));
+    return WTF::wrapUnique(new CachedUAStyle(style));
   }
 
   BorderData border;

@@ -96,7 +96,7 @@ class CreateFileHelper final : public AsyncFileSystemCallbacks {
       const String& name,
       const KURL& url,
       FileSystemType type) {
-    return wrapUnique(static_cast<AsyncFileSystemCallbacks*>(
+    return WTF::wrapUnique(static_cast<AsyncFileSystemCallbacks*>(
         new CreateFileHelper(result, name, url, type)));
   }
 

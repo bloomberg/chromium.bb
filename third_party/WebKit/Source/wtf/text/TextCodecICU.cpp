@@ -53,7 +53,7 @@ static UConverter*& cachedConverterICU() {
 
 std::unique_ptr<TextCodec> TextCodecICU::create(const TextEncoding& encoding,
                                                 const void*) {
-  return wrapUnique(new TextCodecICU(encoding));
+  return WTF::wrapUnique(new TextCodecICU(encoding));
 }
 
 void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar) {

@@ -59,21 +59,21 @@ void ModulesInitializer::initialize() {
 
   // Canvas context types must be registered with the HTMLCanvasElement.
   HTMLCanvasElement::registerRenderingContextFactory(
-      makeUnique<CanvasRenderingContext2D::Factory>());
+      WTF::makeUnique<CanvasRenderingContext2D::Factory>());
   HTMLCanvasElement::registerRenderingContextFactory(
-      makeUnique<WebGLRenderingContext::Factory>());
+      WTF::makeUnique<WebGLRenderingContext::Factory>());
   HTMLCanvasElement::registerRenderingContextFactory(
-      makeUnique<WebGL2RenderingContext::Factory>());
+      WTF::makeUnique<WebGL2RenderingContext::Factory>());
   HTMLCanvasElement::registerRenderingContextFactory(
-      makeUnique<ImageBitmapRenderingContext::Factory>());
+      WTF::makeUnique<ImageBitmapRenderingContext::Factory>());
 
   // OffscreenCanvas context types must be registered with the OffscreenCanvas.
   OffscreenCanvas::registerRenderingContextFactory(
-      makeUnique<OffscreenCanvasRenderingContext2D::Factory>());
+      WTF::makeUnique<OffscreenCanvasRenderingContext2D::Factory>());
   OffscreenCanvas::registerRenderingContextFactory(
-      makeUnique<WebGLRenderingContext::Factory>());
+      WTF::makeUnique<WebGLRenderingContext::Factory>());
   OffscreenCanvas::registerRenderingContextFactory(
-      makeUnique<WebGL2RenderingContext::Factory>());
+      WTF::makeUnique<WebGL2RenderingContext::Factory>());
 
   ASSERT(isInitialized());
 }

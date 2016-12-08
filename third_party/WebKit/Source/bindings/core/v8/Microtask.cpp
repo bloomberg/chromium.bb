@@ -43,7 +43,7 @@ void Microtask::performCheckpoint(v8::Isolate* isolate) {
 
 static void microtaskFunctionCallback(void* data) {
   std::unique_ptr<WTF::Closure> task =
-      wrapUnique(static_cast<WTF::Closure*>(data));
+      WTF::wrapUnique(static_cast<WTF::Closure*>(data));
   (*task)();
 }
 

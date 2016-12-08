@@ -53,7 +53,7 @@ std::unique_ptr<FFTFrame> FFTFrame::createInterpolatedFrame(
     const FFTFrame& frame2,
     double x) {
   std::unique_ptr<FFTFrame> newFrame =
-      wrapUnique(new FFTFrame(frame1.fftSize()));
+      WTF::wrapUnique(new FFTFrame(frame1.fftSize()));
 
   newFrame->interpolateFrequencyComponents(frame1, frame2, x);
 

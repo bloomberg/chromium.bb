@@ -102,7 +102,7 @@ void setDOMActivityLogger(int worldId,
   DCHECK(logger);
   V8DOMActivityLogger::setActivityLogger(
       worldId, extensionId,
-      wrapUnique(new DOMActivityLoggerContainer(wrapUnique(logger))));
+      WTF::wrapUnique(new DOMActivityLoggerContainer(WTF::wrapUnique(logger))));
 }
 
 }  // namespace blink

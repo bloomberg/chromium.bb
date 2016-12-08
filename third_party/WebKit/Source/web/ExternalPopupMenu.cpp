@@ -112,7 +112,7 @@ void ExternalPopupMenu::show() {
 #if OS(MACOSX)
   const WebInputEvent* currentEvent = WebViewImpl::currentInputEvent();
   if (currentEvent && currentEvent->type == WebInputEvent::MouseDown) {
-    m_syntheticEvent = wrapUnique(new WebMouseEvent);
+    m_syntheticEvent = WTF::wrapUnique(new WebMouseEvent);
     *m_syntheticEvent = *static_cast<const WebMouseEvent*>(currentEvent);
     m_syntheticEvent->type = WebInputEvent::MouseUp;
     m_dispatchEventTimer.startOneShot(0, BLINK_FROM_HERE);

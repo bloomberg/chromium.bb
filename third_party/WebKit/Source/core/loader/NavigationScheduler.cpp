@@ -134,7 +134,7 @@ class ScheduledNavigation
   bool replacesCurrentItem() const { return m_replacesCurrentItem; }
   bool isLocationChange() const { return m_isLocationChange; }
   std::unique_ptr<UserGestureIndicator> createUserGestureIndicator() {
-    return makeUnique<UserGestureIndicator>(m_userGestureToken);
+    return WTF::makeUnique<UserGestureIndicator>(m_userGestureToken);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_originDocument); }

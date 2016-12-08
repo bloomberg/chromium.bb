@@ -158,8 +158,10 @@ void PaintLayerStackingNode::rebuildZOrderLists() {
       if (childElement && childElement->isInTopLayer()) {
         PaintLayer* layer = toLayoutBoxModelObject(child)->layer();
         // Create the buffer if it doesn't exist yet.
-        if (!m_posZOrderList)
-          m_posZOrderList = wrapUnique(new Vector<PaintLayerStackingNode*>);
+        if (!m_posZOrderList) {
+          m_posZOrderList =
+              WTF::wrapUnique(new Vector<PaintLayerStackingNode*>);
+        }
         m_posZOrderList->append(layer->stackingNode());
       }
     }
@@ -182,7 +184,7 @@ void PaintLayerStackingNode::collectLayers(
     std::unique_ptr<Vector<PaintLayerStackingNode*>>& buffer =
         (zIndex() >= 0) ? posBuffer : negBuffer;
     if (!buffer)
-      buffer = wrapUnique(new Vector<PaintLayerStackingNode*>);
+      buffer = WTF::wrapUnique(new Vector<PaintLayerStackingNode*>);
     buffer->append(this);
   }
 

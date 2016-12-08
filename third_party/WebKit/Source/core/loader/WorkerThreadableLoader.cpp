@@ -54,7 +54,8 @@ namespace {
 std::unique_ptr<Vector<char>> createVectorFromMemoryRegion(
     const char* data,
     unsigned dataLength) {
-  std::unique_ptr<Vector<char>> buffer = makeUnique<Vector<char>>(dataLength);
+  std::unique_ptr<Vector<char>> buffer =
+      WTF::makeUnique<Vector<char>>(dataLength);
   memcpy(buffer->data(), data, dataLength);
   return buffer;
 }
@@ -523,7 +524,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveResponse(
       BLINK_FROM_HERE,
       createCrossThreadTask(&WorkerThreadableLoader::didReceiveResponse,
                             workerLoader, identifier, response,
-                            passed(std::move(handle))));
+                            WTF::passed(std::move(handle))));
 }
 
 void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveData(
@@ -538,7 +539,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveData(
       BLINK_FROM_HERE,
       createCrossThreadTask(
           &WorkerThreadableLoader::didReceiveData, workerLoader,
-          passed(createVectorFromMemoryRegion(data, dataLength))));
+          WTF::passed(createVectorFromMemoryRegion(data, dataLength))));
 }
 
 void WorkerThreadableLoader::MainThreadLoaderHolder::didDownloadData(
@@ -566,7 +567,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveCachedMetadata(
       BLINK_FROM_HERE,
       createCrossThreadTask(
           &WorkerThreadableLoader::didReceiveCachedMetadata, workerLoader,
-          passed(createVectorFromMemoryRegion(data, dataLength))));
+          WTF::passed(createVectorFromMemoryRegion(data, dataLength))));
 }
 
 void WorkerThreadableLoader::MainThreadLoaderHolder::didFinishLoading(

@@ -54,11 +54,12 @@ class DrawingBufferTest : public Test {
   void SetUp() override {
     IntSize initialSize(InitialWidth, InitialHeight);
     std::unique_ptr<GLES2InterfaceForTests> gl =
-        wrapUnique(new GLES2InterfaceForTests);
+        WTF::wrapUnique(new GLES2InterfaceForTests);
     m_gl = gl.get();
     SetAndSaveRestoreState(false);
     std::unique_ptr<WebGraphicsContext3DProviderForTests> provider =
-        wrapUnique(new WebGraphicsContext3DProviderForTests(std::move(gl)));
+        WTF::wrapUnique(
+            new WebGraphicsContext3DProviderForTests(std::move(gl)));
     m_drawingBuffer = DrawingBufferForTests::create(
         std::move(provider), m_gl, initialSize, DrawingBuffer::Preserve);
     CHECK(m_drawingBuffer);
@@ -347,11 +348,12 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
   void SetUp() override {
     IntSize initialSize(InitialWidth, InitialHeight);
     std::unique_ptr<GLES2InterfaceForTests> gl =
-        wrapUnique(new GLES2InterfaceForTests);
+        WTF::wrapUnique(new GLES2InterfaceForTests);
     m_gl = gl.get();
     SetAndSaveRestoreState(true);
     std::unique_ptr<WebGraphicsContext3DProviderForTests> provider =
-        wrapUnique(new WebGraphicsContext3DProviderForTests(std::move(gl)));
+        WTF::wrapUnique(
+            new WebGraphicsContext3DProviderForTests(std::move(gl)));
     RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
     m_imageId0 = m_gl->nextImageIdToBeCreated();
     EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId0)).Times(1);
@@ -591,10 +593,11 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
     SCOPED_TRACE(cases[i].testCaseName);
     std::unique_ptr<DepthStencilTrackingGLES2Interface> gl =
-        wrapUnique(new DepthStencilTrackingGLES2Interface);
+        WTF::wrapUnique(new DepthStencilTrackingGLES2Interface);
     DepthStencilTrackingGLES2Interface* trackingGL = gl.get();
     std::unique_ptr<WebGraphicsContext3DProviderForTests> provider =
-        wrapUnique(new WebGraphicsContext3DProviderForTests(std::move(gl)));
+        WTF::wrapUnique(
+            new WebGraphicsContext3DProviderForTests(std::move(gl)));
     DrawingBuffer::PreserveDrawingBuffer preserve = DrawingBuffer::Preserve;
 
     bool premultipliedAlpha = false;

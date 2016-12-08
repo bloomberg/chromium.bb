@@ -14,7 +14,7 @@
 namespace blink {
 
 WaitableEvent::WaitableEvent(ResetPolicy policy, InitialState state) {
-  m_impl = wrapUnique(new base::WaitableEvent(
+  m_impl = WTF::wrapUnique(new base::WaitableEvent(
       policy == ResetPolicy::Manual
           ? base::WaitableEvent::ResetPolicy::MANUAL
           : base::WaitableEvent::ResetPolicy::AUTOMATIC,

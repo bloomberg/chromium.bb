@@ -39,10 +39,10 @@ std::unique_ptr<Panner> Panner::create(PanningModel model,
                                        HRTFDatabaseLoader* databaseLoader) {
   switch (model) {
     case PanningModelEqualPower:
-      return makeUnique<EqualPowerPanner>(sampleRate);
+      return WTF::makeUnique<EqualPowerPanner>(sampleRate);
 
     case PanningModelHRTF:
-      return makeUnique<HRTFPanner>(sampleRate, databaseLoader);
+      return WTF::makeUnique<HRTFPanner>(sampleRate, databaseLoader);
 
     default:
       ASSERT_NOT_REACHED();

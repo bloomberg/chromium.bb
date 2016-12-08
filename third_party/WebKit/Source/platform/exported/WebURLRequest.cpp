@@ -59,7 +59,7 @@ class ExtraDataContainer : public ResourceRequest::ExtraData {
 
  private:
   explicit ExtraDataContainer(WebURLRequest::ExtraData* extraData)
-      : m_extraData(wrapUnique(extraData)) {}
+      : m_extraData(WTF::wrapUnique(extraData)) {}
 
   std::unique_ptr<WebURLRequest::ExtraData> m_extraData;
 };

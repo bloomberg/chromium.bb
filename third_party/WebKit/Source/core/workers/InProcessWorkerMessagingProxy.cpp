@@ -122,7 +122,7 @@ void InProcessWorkerMessagingProxy::startWorkerGlobalScope(
   WorkerThreadStartMode startMode =
       workerInspectorProxy()->workerStartMode(document);
   std::unique_ptr<WorkerSettings> workerSettings =
-      wrapUnique(new WorkerSettings(document->settings()));
+      WTF::wrapUnique(new WorkerSettings(document->settings()));
   std::unique_ptr<WorkerThreadStartupData> startupData =
       WorkerThreadStartupData::create(
           scriptURL, userAgent, sourceCode, nullptr, startMode,
@@ -158,7 +158,8 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(
 
   std::unique_ptr<ExecutionContextTask> task = createCrossThreadTask(
       &processMessageOnWorkerGlobalScope, std::move(message),
-      passed(std::move(channels)), crossThreadUnretained(&workerObjectProxy()));
+      WTF::passed(std::move(channels)),
+      crossThreadUnretained(&workerObjectProxy()));
   if (workerThread()) {
     // A message event is an activity and may initiate another activity.
     m_workerGlobalScopeHasPendingActivity = true;

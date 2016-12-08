@@ -95,7 +95,7 @@ class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
     SECURITY_CHECK(!frame || frame == frame->tree().top());
 
     std::unique_ptr<WebCredential> credential =
-        wrapUnique(webCredential.release());
+        WTF::wrapUnique(webCredential.release());
     if (!credential || !frame) {
       m_resolver->resolve();
       return;

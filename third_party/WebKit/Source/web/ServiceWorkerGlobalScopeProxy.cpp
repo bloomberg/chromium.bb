@@ -146,8 +146,9 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(
   String origin;
   if (!sourceOrigin.isUnique())
     origin = sourceOrigin.toString();
-  ServiceWorker* source = ServiceWorker::from(
-      m_workerGlobalScope->getExecutionContext(), wrapUnique(handle.release()));
+  ServiceWorker* source =
+      ServiceWorker::from(m_workerGlobalScope->getExecutionContext(),
+                          WTF::wrapUnique(handle.release()));
   WaitUntilObserver* observer = WaitUntilObserver::create(
       workerGlobalScope(), WaitUntilObserver::Message, eventID);
 

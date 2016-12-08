@@ -35,7 +35,7 @@ bool operator==(const CounterDirectives& a, const CounterDirectives& b) {
 std::unique_ptr<CounterDirectiveMap> clone(
     const CounterDirectiveMap& counterDirectives) {
   std::unique_ptr<CounterDirectiveMap> result =
-      wrapUnique(new CounterDirectiveMap);
+      WTF::wrapUnique(new CounterDirectiveMap);
   *result = counterDirectives;
   return result;
 }

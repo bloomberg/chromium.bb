@@ -116,7 +116,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
   std::unique_ptr<WebAssociatedURLLoader> createAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions options =
           WebAssociatedURLLoaderOptions()) {
-    return wrapUnique(mainFrame()->createAssociatedURLLoader(options));
+    return WTF::wrapUnique(mainFrame()->createAssociatedURLLoader(options));
   }
 
   // WebAssociatedURLLoaderClient implementation.

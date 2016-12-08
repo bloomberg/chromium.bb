@@ -45,7 +45,7 @@ OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(
     AudioBuffer* renderTarget)
     : AudioDestinationHandler(node, renderTarget->sampleRate()),
       m_renderTarget(renderTarget),
-      m_renderThread(wrapUnique(
+      m_renderThread(WTF::wrapUnique(
           Platform::current()->createThread("offline audio renderer"))),
       m_framesProcessed(0),
       m_framesToProcess(0),

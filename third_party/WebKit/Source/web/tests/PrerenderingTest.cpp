@@ -65,7 +65,7 @@ class TestPrerendererClient : public WebPrerendererClient {
 
   void setExtraDataForNextPrerender(WebPrerender::ExtraData* extraData) {
     DCHECK(!m_extraData);
-    m_extraData = wrapUnique(extraData);
+    m_extraData = WTF::wrapUnique(extraData);
   }
 
   WebPrerender releaseWebPrerender() {

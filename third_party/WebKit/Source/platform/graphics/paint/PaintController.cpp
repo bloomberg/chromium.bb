@@ -21,7 +21,7 @@ namespace blink {
 void PaintController::setTracksRasterInvalidations(bool value) {
   if (value) {
     m_paintChunksRasterInvalidationTrackingMap =
-        wrapUnique(new RasterInvalidationTrackingMap<const PaintChunk>);
+        WTF::wrapUnique(new RasterInvalidationTrackingMap<const PaintChunk>);
   } else {
     m_paintChunksRasterInvalidationTrackingMap = nullptr;
   }

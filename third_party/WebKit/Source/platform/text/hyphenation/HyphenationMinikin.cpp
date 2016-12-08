@@ -66,7 +66,7 @@ bool HyphenationMinikin::openDictionary(const AtomicString& locale) {
     return false;
   }
 
-  m_hyphenator = wrapUnique(Hyphenator::loadBinary(m_file.data()));
+  m_hyphenator = WTF::wrapUnique(Hyphenator::loadBinary(m_file.data()));
 
   return true;
 }

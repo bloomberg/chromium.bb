@@ -185,7 +185,7 @@ class ImageResourceTestMockFetchContext : public FetchContext {
 
  private:
   ImageResourceTestMockFetchContext()
-      : m_runner(wrapUnique(new scheduler::FakeWebTaskRunner)) {}
+      : m_runner(WTF::wrapUnique(new scheduler::FakeWebTaskRunner)) {}
 
   std::unique_ptr<scheduler::FakeWebTaskRunner> m_runner;
 };

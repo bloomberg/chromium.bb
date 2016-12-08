@@ -41,8 +41,8 @@ namespace blink {
 std::unique_ptr<ServiceWorkerThread> ServiceWorkerThread::create(
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
     WorkerReportingProxy& workerReportingProxy) {
-  return wrapUnique(new ServiceWorkerThread(std::move(workerLoaderProxy),
-                                            workerReportingProxy));
+  return WTF::wrapUnique(new ServiceWorkerThread(std::move(workerLoaderProxy),
+                                                 workerReportingProxy));
 }
 
 ServiceWorkerThread::ServiceWorkerThread(

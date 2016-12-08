@@ -28,7 +28,7 @@ std::unique_ptr<ResourceTimingInfo> ResourceTimingInfo::adopt(
 std::unique_ptr<CrossThreadResourceTimingInfoData>
 ResourceTimingInfo::copyData() const {
   std::unique_ptr<CrossThreadResourceTimingInfoData> data =
-      wrapUnique(new CrossThreadResourceTimingInfoData);
+      WTF::wrapUnique(new CrossThreadResourceTimingInfoData);
   data->m_type = m_type.getString().isolatedCopy();
   data->m_originalTimingAllowOrigin =
       m_originalTimingAllowOrigin.getString().isolatedCopy();

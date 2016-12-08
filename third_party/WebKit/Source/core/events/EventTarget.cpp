@@ -637,7 +637,7 @@ bool EventTarget::fireEventListeners(Event* event,
   size_t i = 0;
   size_t size = entry.size();
   if (!d->firingEventIterators)
-    d->firingEventIterators = wrapUnique(new FiringEventIteratorVector);
+    d->firingEventIterators = WTF::wrapUnique(new FiringEventIteratorVector);
   d->firingEventIterators->append(FiringEventIterator(event->type(), i, size));
 
   double blockedEventThreshold = blockedEventsWarningThreshold(context, event);

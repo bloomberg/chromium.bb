@@ -43,7 +43,7 @@ class V8IdleTaskAdapter : public WebThread::IdleTask {
   WTF_MAKE_NONCOPYABLE(V8IdleTaskAdapter);
 
  public:
-  V8IdleTaskAdapter(v8::IdleTask* task) : m_task(wrapUnique(task)) {}
+  V8IdleTaskAdapter(v8::IdleTask* task) : m_task(WTF::wrapUnique(task)) {}
   ~V8IdleTaskAdapter() override {}
   void run(double delaySeconds) override { m_task->Run(delaySeconds); }
 

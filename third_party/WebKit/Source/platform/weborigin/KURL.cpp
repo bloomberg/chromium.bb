@@ -256,7 +256,7 @@ KURL::KURL(const KURL& other)
       m_parsed(other.m_parsed),
       m_string(other.m_string) {
   if (other.m_innerURL.get())
-    m_innerURL = wrapUnique(new KURL(other.m_innerURL->copy()));
+    m_innerURL = WTF::wrapUnique(new KURL(other.m_innerURL->copy()));
 }
 
 KURL::~KURL() {}
@@ -267,7 +267,7 @@ KURL& KURL::operator=(const KURL& other) {
   m_parsed = other.m_parsed;
   m_string = other.m_string;
   if (other.m_innerURL)
-    m_innerURL = wrapUnique(new KURL(other.m_innerURL->copy()));
+    m_innerURL = WTF::wrapUnique(new KURL(other.m_innerURL->copy()));
   else
     m_innerURL.reset();
   return *this;
@@ -280,7 +280,7 @@ KURL KURL::copy() const {
   result.m_parsed = m_parsed;
   result.m_string = m_string.isolatedCopy();
   if (m_innerURL)
-    result.m_innerURL = wrapUnique(new KURL(m_innerURL->copy()));
+    result.m_innerURL = WTF::wrapUnique(new KURL(m_innerURL->copy()));
   return result;
 }
 
@@ -778,7 +778,7 @@ void KURL::initInnerURL() {
     return;
   }
   if (url::Parsed* innerParsed = m_parsed.inner_parsed())
-    m_innerURL = wrapUnique(new KURL(
+    m_innerURL = WTF::wrapUnique(new KURL(
         ParsedURLString,
         m_string.substring(innerParsed->scheme.begin,
                            innerParsed->Length() - innerParsed->scheme.begin)));

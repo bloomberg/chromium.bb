@@ -62,7 +62,7 @@ WebCryptoKeyAlgorithm::WebCryptoKeyAlgorithm(
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::adoptParamsAndCreate(
     WebCryptoAlgorithmId id,
     WebCryptoKeyAlgorithmParams* params) {
-  return WebCryptoKeyAlgorithm(id, wrapUnique(params));
+  return WebCryptoKeyAlgorithm(id, WTF::wrapUnique(params));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createAes(
@@ -73,7 +73,7 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createAes(
   if (keyLengthBits != 128 && keyLengthBits != 192 && keyLengthBits != 256)
     return WebCryptoKeyAlgorithm();
   return WebCryptoKeyAlgorithm(
-      id, makeUnique<WebCryptoAesKeyAlgorithmParams>(keyLengthBits));
+      id, WTF::makeUnique<WebCryptoAesKeyAlgorithmParams>(keyLengthBits));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createHmac(
@@ -81,9 +81,10 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createHmac(
     unsigned keyLengthBits) {
   if (!WebCryptoAlgorithm::isHash(hash))
     return WebCryptoKeyAlgorithm();
-  return WebCryptoKeyAlgorithm(WebCryptoAlgorithmIdHmac,
-                               wrapUnique(new WebCryptoHmacKeyAlgorithmParams(
-                                   createHash(hash), keyLengthBits)));
+  return WebCryptoKeyAlgorithm(
+      WebCryptoAlgorithmIdHmac,
+      WTF::wrapUnique(new WebCryptoHmacKeyAlgorithmParams(createHash(hash),
+                                                          keyLengthBits)));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createRsaHashed(
@@ -96,7 +97,7 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createRsaHashed(
   if (!WebCryptoAlgorithm::isHash(hash))
     return WebCryptoKeyAlgorithm();
   return WebCryptoKeyAlgorithm(
-      id, wrapUnique(new WebCryptoRsaHashedKeyAlgorithmParams(
+      id, WTF::wrapUnique(new WebCryptoRsaHashedKeyAlgorithmParams(
               modulusLengthBits, publicExponent, publicExponentSize,
               createHash(hash))));
 }
@@ -105,7 +106,7 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createEc(
     WebCryptoAlgorithmId id,
     WebCryptoNamedCurve namedCurve) {
   return WebCryptoKeyAlgorithm(
-      id, makeUnique<WebCryptoEcKeyAlgorithmParams>(namedCurve));
+      id, WTF::makeUnique<WebCryptoEcKeyAlgorithmParams>(namedCurve));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createWithoutParams(

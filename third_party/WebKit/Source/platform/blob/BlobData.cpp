@@ -74,13 +74,14 @@ void BlobDataItem::detachFromCurrentThread() {
 }
 
 std::unique_ptr<BlobData> BlobData::create() {
-  return wrapUnique(new BlobData(FileCompositionStatus::NO_UNKNOWN_SIZE_FILES));
+  return WTF::wrapUnique(
+      new BlobData(FileCompositionStatus::NO_UNKNOWN_SIZE_FILES));
 }
 
 std::unique_ptr<BlobData> BlobData::createForFileWithUnknownSize(
     const String& path) {
-  std::unique_ptr<BlobData> data =
-      wrapUnique(new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
+  std::unique_ptr<BlobData> data = WTF::wrapUnique(
+      new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
   data->m_items.append(BlobDataItem(path));
   return data;
 }

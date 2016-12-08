@@ -48,9 +48,9 @@ class DrawingBufferSoftwareRenderingTest : public Test {
   void SetUp() override {
     IntSize initialSize(InitialWidth, InitialHeight);
     std::unique_ptr<GLES2InterfaceForTests> gl =
-        wrapUnique(new GLES2InterfaceForTests);
+        WTF::wrapUnique(new GLES2InterfaceForTests);
     std::unique_ptr<WebGraphicsContext3DProviderSoftwareRenderingForTests>
-        provider = wrapUnique(
+        provider = WTF::wrapUnique(
             new WebGraphicsContext3DProviderSoftwareRenderingForTests(
                 std::move(gl)));
     m_drawingBuffer = DrawingBufferForTests::create(

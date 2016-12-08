@@ -360,7 +360,7 @@ void ContentSecurityPolicy::setOverrideURLForSelf(const KURL& url) {
 std::unique_ptr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers()
     const {
   std::unique_ptr<Vector<CSPHeaderAndType>> headers =
-      wrapUnique(new Vector<CSPHeaderAndType>);
+      WTF::wrapUnique(new Vector<CSPHeaderAndType>);
   for (const auto& policy : m_policies) {
     CSPHeaderAndType headerAndType(policy->header(), policy->headerType());
     headers->append(headerAndType);

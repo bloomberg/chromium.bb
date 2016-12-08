@@ -70,7 +70,7 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
   static std::unique_ptr<FileReaderLoader> create(
       ReadType readType,
       FileReaderLoaderClient* client) {
-    return wrapUnique(new FileReaderLoader(readType, client));
+    return WTF::wrapUnique(new FileReaderLoader(readType, client));
   }
 
   ~FileReaderLoader() override;

@@ -84,7 +84,7 @@ TEST_F(SVGImageTest, TimelineSuspendAndResume) {
   SVGImageChromeClient& chromeClient = image().chromeClientForTesting();
   Timer<SVGImageChromeClient>* timer = new Timer<SVGImageChromeClient>(
       &chromeClient, &SVGImageChromeClient::animationTimerFired);
-  chromeClient.setTimer(wrapUnique(timer));
+  chromeClient.setTimer(WTF::wrapUnique(timer));
 
   // Simulate a draw. Cause a frame (timer) to be scheduled.
   pumpFrame();
@@ -112,7 +112,7 @@ TEST_F(SVGImageTest, ResetAnimation) {
   SVGImageChromeClient& chromeClient = image().chromeClientForTesting();
   Timer<SVGImageChromeClient>* timer = new Timer<SVGImageChromeClient>(
       &chromeClient, &SVGImageChromeClient::animationTimerFired);
-  chromeClient.setTimer(wrapUnique(timer));
+  chromeClient.setTimer(WTF::wrapUnique(timer));
 
   // Simulate a draw. Cause a frame (timer) to be scheduled.
   pumpFrame();

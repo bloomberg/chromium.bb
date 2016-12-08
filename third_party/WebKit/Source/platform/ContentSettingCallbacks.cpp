@@ -38,7 +38,7 @@ namespace blink {
 std::unique_ptr<ContentSettingCallbacks> ContentSettingCallbacks::create(
     std::unique_ptr<WTF::Closure> allowed,
     std::unique_ptr<WTF::Closure> denied) {
-  return wrapUnique(
+  return WTF::wrapUnique(
       new ContentSettingCallbacks(std::move(allowed), std::move(denied)));
 }
 

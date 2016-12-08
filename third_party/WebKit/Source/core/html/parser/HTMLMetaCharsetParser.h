@@ -44,7 +44,7 @@ class HTMLMetaCharsetParser {
 
  public:
   static std::unique_ptr<HTMLMetaCharsetParser> create() {
-    return wrapUnique(new HTMLMetaCharsetParser());
+    return WTF::wrapUnique(new HTMLMetaCharsetParser());
   }
 
   ~HTMLMetaCharsetParser();

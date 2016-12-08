@@ -52,7 +52,7 @@ class InheritedShadowListChecker : public InterpolationType::ConversionChecker {
   static std::unique_ptr<InheritedShadowListChecker> create(
       CSSPropertyID property,
       PassRefPtr<ShadowList> shadowList) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new InheritedShadowListChecker(property, std::move(shadowList)));
   }
 

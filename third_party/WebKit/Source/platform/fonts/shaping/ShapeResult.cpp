@@ -168,7 +168,7 @@ ShapeResult::ShapeResult(const ShapeResult& other)
       m_hasVerticalOffsets(other.m_hasVerticalOffsets) {
   m_runs.reserveCapacity(other.m_runs.size());
   for (const auto& run : other.m_runs)
-    m_runs.append(wrapUnique(new ShapeResult::RunInfo(*run)));
+    m_runs.append(WTF::wrapUnique(new ShapeResult::RunInfo(*run)));
 }
 
 ShapeResult::~ShapeResult() {}
@@ -383,7 +383,7 @@ PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(
   // Tab characters are always LTR or RTL, not TTB, even when
   // isVerticalAnyUpright().
   std::unique_ptr<ShapeResult::RunInfo> run =
-      wrapUnique(new ShapeResult::RunInfo(
+      WTF::wrapUnique(new ShapeResult::RunInfo(
           fontData, textRun.rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR,
           HB_SCRIPT_COMMON, 0, count, count));
   float position = textRun.xPos() + positionOffset;

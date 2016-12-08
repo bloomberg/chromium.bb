@@ -51,7 +51,7 @@ IIRProcessor::IIRProcessor(float sampleRate,
     m_feedback[0] = 1;
   }
 
-  m_responseKernel = makeUnique<IIRDSPKernel>(this);
+  m_responseKernel = WTF::makeUnique<IIRDSPKernel>(this);
 }
 
 IIRProcessor::~IIRProcessor() {
@@ -60,7 +60,7 @@ IIRProcessor::~IIRProcessor() {
 }
 
 std::unique_ptr<AudioDSPKernel> IIRProcessor::createKernel() {
-  return makeUnique<IIRDSPKernel>(this);
+  return WTF::makeUnique<IIRDSPKernel>(this);
 }
 
 void IIRProcessor::process(const AudioBus* source,

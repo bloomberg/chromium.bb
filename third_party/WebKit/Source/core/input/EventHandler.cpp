@@ -965,12 +965,12 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(
   if (m_frame->localFrameRoot()
           ->eventHandler()
           .m_lastMouseDownUserGestureToken) {
-    gestureIndicator = wrapUnique(new UserGestureIndicator(
+    gestureIndicator = WTF::wrapUnique(new UserGestureIndicator(
         m_frame->localFrameRoot()
             ->eventHandler()
             .m_lastMouseDownUserGestureToken.release()));
   } else {
-    gestureIndicator = wrapUnique(new UserGestureIndicator(
+    gestureIndicator = WTF::wrapUnique(new UserGestureIndicator(
         DocumentUserGestureToken::create(m_frame->document())));
   }
 

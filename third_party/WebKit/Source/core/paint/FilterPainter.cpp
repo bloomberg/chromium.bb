@@ -54,7 +54,7 @@ FilterPainter::FilterPainter(PaintLayer& layer,
   DCHECK(m_layoutObject);
 
   if (clipRect.rect() != paintingInfo.paintDirtyRect || clipRect.hasRadius())
-    m_clipRecorder = wrapUnique(new LayerClipRecorder(
+    m_clipRecorder = WTF::wrapUnique(new LayerClipRecorder(
         context, *layer.layoutObject(), DisplayItem::kClipLayerFilter, clipRect,
         &paintingInfo, LayoutPoint(), paintFlags));
 

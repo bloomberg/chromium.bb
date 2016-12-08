@@ -159,7 +159,7 @@ class RootInlineBox : public InlineFlowBox {
     if (m_floats)
       m_floats->append(floatingBox);
     else
-      m_floats = wrapUnique(new Vector<LayoutBox*>(1, floatingBox));
+      m_floats = WTF::wrapUnique(new Vector<LayoutBox*>(1, floatingBox));
   }
 
   Vector<LayoutBox*>* floatsPtr() {

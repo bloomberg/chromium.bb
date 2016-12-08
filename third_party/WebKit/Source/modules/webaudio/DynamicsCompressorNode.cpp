@@ -102,7 +102,7 @@ void DynamicsCompressorHandler::initialize() {
     return;
 
   AudioHandler::initialize();
-  m_dynamicsCompressor = wrapUnique(
+  m_dynamicsCompressor = WTF::wrapUnique(
       new DynamicsCompressor(sampleRate(), defaultNumberOfOutputChannels));
 }
 

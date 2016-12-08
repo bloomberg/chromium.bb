@@ -16,12 +16,12 @@ namespace blink {
 
 std::unique_ptr<SharedContextRateLimiter> SharedContextRateLimiter::create(
     unsigned maxPendingTicks) {
-  return wrapUnique(new SharedContextRateLimiter(maxPendingTicks));
+  return WTF::wrapUnique(new SharedContextRateLimiter(maxPendingTicks));
 }
 
 SharedContextRateLimiter::SharedContextRateLimiter(unsigned maxPendingTicks)
     : m_maxPendingTicks(maxPendingTicks), m_canUseSyncQueries(false) {
-  m_contextProvider = wrapUnique(
+  m_contextProvider = WTF::wrapUnique(
       Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
   if (!m_contextProvider)
     return;

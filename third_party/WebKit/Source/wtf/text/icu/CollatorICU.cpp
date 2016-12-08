@@ -55,7 +55,7 @@ Collator::Collator(const char* locale)
 }
 
 std::unique_ptr<Collator> Collator::userDefault() {
-  return wrapUnique(new Collator(0));
+  return WTF::wrapUnique(new Collator(0));
 }
 
 Collator::~Collator() {

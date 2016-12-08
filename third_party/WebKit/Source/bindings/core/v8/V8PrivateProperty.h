@@ -125,7 +125,7 @@ class CORE_EXPORT V8PrivateProperty {
   };
 
   static std::unique_ptr<V8PrivateProperty> create() {
-    return wrapUnique(new V8PrivateProperty());
+    return WTF::wrapUnique(new V8PrivateProperty());
   }
 
 #define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)              \

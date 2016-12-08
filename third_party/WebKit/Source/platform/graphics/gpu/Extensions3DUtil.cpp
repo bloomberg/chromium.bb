@@ -25,7 +25,8 @@ void splitStringHelper(const String& str, HashSet<String>& set) {
 
 std::unique_ptr<Extensions3DUtil> Extensions3DUtil::create(
     gpu::gles2::GLES2Interface* gl) {
-  std::unique_ptr<Extensions3DUtil> out = wrapUnique(new Extensions3DUtil(gl));
+  std::unique_ptr<Extensions3DUtil> out =
+      WTF::wrapUnique(new Extensions3DUtil(gl));
   out->initializeExtensions();
   return out;
 }

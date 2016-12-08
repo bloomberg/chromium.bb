@@ -34,7 +34,7 @@ class PLATFORM_EXPORT CompositorAnimation {
       CompositorTargetProperty::Type target,
       int groupId,
       int animationId) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new CompositorAnimation(curve, target, animationId, groupId));
   }
 

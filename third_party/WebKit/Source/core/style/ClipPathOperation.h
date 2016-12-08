@@ -106,7 +106,7 @@ class ShapeClipPathOperation final : public ClipPathOperation {
   const Path& path(const FloatRect& boundingRect) {
     ASSERT(m_shape);
     m_path.reset();
-    m_path = wrapUnique(new Path);
+    m_path = WTF::wrapUnique(new Path);
     m_shape->path(*m_path, boundingRect);
     m_path->setWindRule(m_shape->getWindRule());
     return *m_path;

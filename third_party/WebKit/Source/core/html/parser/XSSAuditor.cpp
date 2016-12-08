@@ -423,7 +423,7 @@ void XSSAuditor::setEncoding(const WTF::TextEncoding& encoding) {
     if (m_decodedHTTPBody.find(isRequiredForInjection) == kNotFound)
       m_decodedHTTPBody = String();
     if (m_decodedHTTPBody.length() >= miniumLengthForSuffixTree)
-      m_decodedHTTPBodySuffixTree = wrapUnique(
+      m_decodedHTTPBodySuffixTree = WTF::wrapUnique(
           new SuffixTree<ASCIICodebook>(m_decodedHTTPBody, suffixTreeDepth));
   }
 

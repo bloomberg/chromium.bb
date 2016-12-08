@@ -177,7 +177,7 @@ void ServiceWorkerGlobalScope::setRegistration(
   if (!getExecutionContext())
     return;
   m_registration = ServiceWorkerRegistration::getOrCreate(
-      getExecutionContext(), wrapUnique(handle.release()));
+      getExecutionContext(), WTF::wrapUnique(handle.release()));
 }
 
 bool ServiceWorkerGlobalScope::addEventListenerInternal(

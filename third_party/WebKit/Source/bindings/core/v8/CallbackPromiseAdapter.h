@@ -83,12 +83,13 @@ namespace blink {
 // };
 // std::unique_ptr<WebCallbacks<std::unique_ptr<WebMyClass>,
 //                 const WebMyErrorClass&>>
-//     callbacks = wrapUnique(new CallbackPromiseAdapter<MyClass, MyErrorClass>(
-//     resolver));
+//     callbacks = WTF::wrapUnique(
+//         new CallbackPromiseAdapter<MyClass, MyErrorClass>(resolver));
 // ...
 //
 // std::unique_ptr<WebCallbacks<bool, const WebMyErrorClass&>> callbacks2 =
-//     wrapUnique(new CallbackPromiseAdapter<bool, MyErrorClass>(resolver));
+//     WTF::wrapUnique(
+//         new CallbackPromiseAdapter<bool, MyErrorClass>(resolver));
 // ...
 //
 //

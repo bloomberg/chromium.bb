@@ -14,7 +14,7 @@ namespace {
 
 std::unique_ptr<ImageDecoder> createDecoder(
     ImageDecoder::AlphaOption alphaOption) {
-  return wrapUnique(new PNGImageDecoder(
+  return WTF::wrapUnique(new PNGImageDecoder(
       alphaOption, ColorBehavior::transformToTargetForTesting(),
       ImageDecoder::noDecodedImageByteLimit));
 }

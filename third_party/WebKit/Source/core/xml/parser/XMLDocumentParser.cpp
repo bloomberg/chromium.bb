@@ -982,7 +982,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName,
 
   if (m_parserPaused) {
     m_scriptStartPosition = textPosition();
-    m_pendingCallbacks.append(wrapUnique(new PendingStartElementNSCallback(
+    m_pendingCallbacks.append(WTF::wrapUnique(new PendingStartElementNSCallback(
         localName, prefix, uri, nbNamespaces, libxmlNamespaces, nbAttributes,
         nbDefaulted, libxmlAttributes)));
     return;
@@ -1065,7 +1065,7 @@ void XMLDocumentParser::endElementNs() {
 
   if (m_parserPaused) {
     m_pendingCallbacks.append(
-        makeUnique<PendingEndElementNSCallback>(m_scriptStartPosition));
+        WTF::makeUnique<PendingEndElementNSCallback>(m_scriptStartPosition));
     return;
   }
 
@@ -1153,7 +1153,7 @@ void XMLDocumentParser::characters(const xmlChar* chars, int length) {
 
   if (m_parserPaused) {
     m_pendingCallbacks.append(
-        makeUnique<PendingCharactersCallback>(chars, length));
+        WTF::makeUnique<PendingCharactersCallback>(chars, length));
     return;
   }
 
@@ -1171,7 +1171,7 @@ void XMLDocumentParser::error(XMLErrors::ErrorType type,
   vsnprintf(formattedMessage, sizeof(formattedMessage) - 1, message, args);
 
   if (m_parserPaused) {
-    m_pendingCallbacks.append(wrapUnique(new PendingErrorCallback(
+    m_pendingCallbacks.append(WTF::wrapUnique(new PendingErrorCallback(
         type, reinterpret_cast<const xmlChar*>(formattedMessage), lineNumber(),
         columnNumber())));
     return;
@@ -1187,7 +1187,7 @@ void XMLDocumentParser::processingInstruction(const String& target,
 
   if (m_parserPaused) {
     m_pendingCallbacks.append(
-        makeUnique<PendingProcessingInstructionCallback>(target, data));
+        WTF::makeUnique<PendingProcessingInstructionCallback>(target, data));
     return;
   }
 
@@ -1228,7 +1228,7 @@ void XMLDocumentParser::cdataBlock(const String& text) {
     return;
 
   if (m_parserPaused) {
-    m_pendingCallbacks.append(makeUnique<PendingCDATABlockCallback>(text));
+    m_pendingCallbacks.append(WTF::makeUnique<PendingCDATABlockCallback>(text));
     return;
   }
 
@@ -1244,7 +1244,7 @@ void XMLDocumentParser::comment(const String& text) {
     return;
 
   if (m_parserPaused) {
-    m_pendingCallbacks.append(makeUnique<PendingCommentCallback>(text));
+    m_pendingCallbacks.append(WTF::makeUnique<PendingCommentCallback>(text));
     return;
   }
 
@@ -1292,7 +1292,7 @@ void XMLDocumentParser::internalSubset(const String& name,
     return;
 
   if (m_parserPaused) {
-    m_pendingCallbacks.append(wrapUnique(
+    m_pendingCallbacks.append(WTF::wrapUnique(
         new PendingInternalSubsetCallback(name, externalID, systemID)));
     return;
   }
@@ -1550,7 +1550,7 @@ void XMLDocumentParser::doEnd() {
     xmlDocPtr doc =
         xmlDocPtrForString(document(), m_originalSourceForTransform.toString(),
                            document()->url().getString());
-    document()->setTransformSource(makeUnique<TransformSource>(doc));
+    document()->setTransformSource(WTF::makeUnique<TransformSource>(doc));
     DocumentParser::stopParsing();
   }
 }

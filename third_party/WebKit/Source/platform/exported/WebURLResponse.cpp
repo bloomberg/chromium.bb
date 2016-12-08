@@ -60,7 +60,7 @@ class ExtraDataContainer : public ResourceResponse::ExtraData {
 
  private:
   explicit ExtraDataContainer(WebURLResponse::ExtraData* extraData)
-      : m_extraData(wrapUnique(extraData)) {}
+      : m_extraData(WTF::wrapUnique(extraData)) {}
 
   std::unique_ptr<WebURLResponse::ExtraData> m_extraData;
 };

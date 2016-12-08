@@ -214,7 +214,7 @@ class HTMLToken {
   void beginDOCTYPE() {
     ASSERT(m_type == Uninitialized);
     m_type = DOCTYPE;
-    m_doctypeData = wrapUnique(new DoctypeData);
+    m_doctypeData = WTF::wrapUnique(new DoctypeData);
   }
 
   void beginDOCTYPE(UChar character) {

@@ -556,7 +556,8 @@ void InspectorPageAgent::getResourceContent(
       m_resourceContentLoaderClientId,
       WTF::bind(
           &InspectorPageAgent::getResourceContentAfterResourcesContentLoaded,
-          wrapPersistent(this), frameId, url, passed(std::move(callback))));
+          wrapPersistent(this), frameId, url,
+          WTF::passed(std::move(callback))));
 }
 
 void InspectorPageAgent::searchContentAfterResourcesContentLoaded(
@@ -606,7 +607,8 @@ void InspectorPageAgent::searchInResource(
       WTF::bind(&InspectorPageAgent::searchContentAfterResourcesContentLoaded,
                 wrapPersistent(this), frameId, url, query,
                 optionalCaseSensitive.fromMaybe(false),
-                optionalIsRegex.fromMaybe(false), passed(std::move(callback))));
+                optionalIsRegex.fromMaybe(false),
+                WTF::passed(std::move(callback))));
 }
 
 Response InspectorPageAgent::setDocumentContent(const String& frameId,

@@ -207,7 +207,7 @@ ResourceResponse& ResourceResponse::operator=(const ResourceResponse&) =
 std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData()
     const {
   std::unique_ptr<CrossThreadResourceResponseData> data =
-      wrapUnique(new CrossThreadResourceResponseData);
+      WTF::wrapUnique(new CrossThreadResourceResponseData);
   data->m_url = url().copy();
   data->m_mimeType = mimeType().getString().isolatedCopy();
   data->m_expectedContentLength = expectedContentLength();

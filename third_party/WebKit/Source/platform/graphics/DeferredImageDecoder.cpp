@@ -81,7 +81,7 @@ std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(
 
 std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(
     std::unique_ptr<ImageDecoder> actualDecoder) {
-  return wrapUnique(new DeferredImageDecoder(std::move(actualDecoder)));
+  return WTF::wrapUnique(new DeferredImageDecoder(std::move(actualDecoder)));
 }
 
 DeferredImageDecoder::DeferredImageDecoder(
@@ -159,7 +159,7 @@ void DeferredImageDecoder::setDataInternal(PassRefPtr<SharedBuffer> passData,
 
   if (m_frameGenerator) {
     if (!m_rwBuffer)
-      m_rwBuffer = wrapUnique(new SkRWBuffer(data->size()));
+      m_rwBuffer = WTF::wrapUnique(new SkRWBuffer(data->size()));
 
     const char* segment = 0;
     for (size_t length = data->getSomeData(segment, m_rwBuffer->size()); length;

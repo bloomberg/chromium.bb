@@ -179,7 +179,7 @@ struct CrossThreadCopier<WTF::PassedWrapper<T>> {
   STATIC_ONLY(CrossThreadCopier);
   using Type = WTF::PassedWrapper<typename CrossThreadCopier<T>::Type>;
   static Type copy(WTF::PassedWrapper<T>&& value) {
-    return passed(CrossThreadCopier<T>::copy(value.moveOut()));
+    return WTF::passed(CrossThreadCopier<T>::copy(value.moveOut()));
   }
 };
 

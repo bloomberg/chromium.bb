@@ -80,7 +80,7 @@ class MockSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
       sk_sp<SkColorSpace> colorSpace,
       SkColorType colorType) {
     m_createSurfaceCount++;
-    return wrapUnique(new UnacceleratedImageBufferSurface(
+    return WTF::wrapUnique(new UnacceleratedImageBufferSurface(
         size, opacityMode, InitializeImagePixels, std::move(colorSpace),
         colorType));
   }
@@ -97,10 +97,10 @@ class RecordingImageBufferSurfaceTest : public Test {
  protected:
   RecordingImageBufferSurfaceTest() {
     std::unique_ptr<MockSurfaceFactory> surfaceFactory =
-        makeUnique<MockSurfaceFactory>();
+        WTF::makeUnique<MockSurfaceFactory>();
     m_surfaceFactory = surfaceFactory.get();
     std::unique_ptr<RecordingImageBufferSurface> testSurface =
-        wrapUnique(new RecordingImageBufferSurface(
+        WTF::wrapUnique(new RecordingImageBufferSurface(
             IntSize(10, 10), std::move(surfaceFactory), NonOpaque, nullptr));
     m_testSurface = testSurface.get();
     // We create an ImageBuffer in order for the testSurface to be
@@ -108,7 +108,7 @@ class RecordingImageBufferSurfaceTest : public Test {
     m_imageBuffer = ImageBuffer::create(std::move(testSurface));
     EXPECT_FALSE(!m_imageBuffer);
     m_fakeImageBufferClient =
-        wrapUnique(new FakeImageBufferClient(m_imageBuffer.get()));
+        WTF::wrapUnique(new FakeImageBufferClient(m_imageBuffer.get()));
     m_imageBuffer->setClient(m_fakeImageBufferClient.get());
   }
 

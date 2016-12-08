@@ -176,7 +176,7 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
   DCHECK(m_stream->getTracks().size());
 
   m_recorderHandler =
-      wrapUnique(Platform::current()->createMediaRecorderHandler());
+      WTF::wrapUnique(Platform::current()->createMediaRecorderHandler());
   DCHECK(m_recorderHandler);
 
   if (!m_recorderHandler) {

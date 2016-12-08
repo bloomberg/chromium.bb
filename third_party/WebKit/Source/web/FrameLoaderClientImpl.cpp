@@ -780,7 +780,7 @@ std::unique_ptr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
   HTMLMediaElementEncryptedMedia& encryptedMedia =
       HTMLMediaElementEncryptedMedia::from(htmlMediaElement);
   WebString sinkId(HTMLMediaElementAudioOutputDevice::sinkId(htmlMediaElement));
-  return wrapUnique(webFrame->client()->createMediaPlayer(
+  return WTF::wrapUnique(webFrame->client()->createMediaPlayer(
       source, client, &encryptedMedia, encryptedMedia.contentDecryptionModule(),
       sinkId));
 }
@@ -922,7 +922,7 @@ std::unique_ptr<WebServiceWorkerProvider>
 FrameLoaderClientImpl::createServiceWorkerProvider() {
   if (!m_webFrame->client())
     return nullptr;
-  return wrapUnique(m_webFrame->client()->createServiceWorkerProvider());
+  return WTF::wrapUnique(m_webFrame->client()->createServiceWorkerProvider());
 }
 
 bool FrameLoaderClientImpl::isControlledByServiceWorker(
@@ -949,7 +949,8 @@ FrameLoaderClientImpl::createApplicationCacheHost(
     WebApplicationCacheHostClient* client) {
   if (!m_webFrame->client())
     return nullptr;
-  return wrapUnique(m_webFrame->client()->createApplicationCacheHost(client));
+  return WTF::wrapUnique(
+      m_webFrame->client()->createApplicationCacheHost(client));
 }
 
 void FrameLoaderClientImpl::dispatchDidChangeManifest() {

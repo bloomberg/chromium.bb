@@ -78,7 +78,7 @@ bool BMPImageDecoder::decodeHelper(bool onlySize) {
     return false;
 
   if (!m_reader) {
-    m_reader = wrapUnique(
+    m_reader = WTF::wrapUnique(
         new BMPImageReader(this, m_decodedOffset, imgDataOffset, false));
     m_reader->setData(m_data.get());
   }

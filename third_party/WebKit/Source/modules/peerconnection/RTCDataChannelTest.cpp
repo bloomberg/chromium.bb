@@ -75,7 +75,7 @@ class MockHandler final : public WebRTCDataChannelHandler {
 
 TEST(RTCDataChannelTest, BufferedAmount) {
   MockHandler* handler = new MockHandler();
-  RTCDataChannel* channel = RTCDataChannel::create(0, wrapUnique(handler));
+  RTCDataChannel* channel = RTCDataChannel::create(0, WTF::wrapUnique(handler));
 
   handler->changeState(WebRTCDataChannelHandlerClient::ReadyStateOpen);
   String message(std::string(100, 'A').c_str());
@@ -85,7 +85,7 @@ TEST(RTCDataChannelTest, BufferedAmount) {
 
 TEST(RTCDataChannelTest, BufferedAmountLow) {
   MockHandler* handler = new MockHandler();
-  RTCDataChannel* channel = RTCDataChannel::create(0, wrapUnique(handler));
+  RTCDataChannel* channel = RTCDataChannel::create(0, WTF::wrapUnique(handler));
 
   // Add and drain 100 bytes
   handler->changeState(WebRTCDataChannelHandlerClient::ReadyStateOpen);

@@ -20,8 +20,8 @@ std::unique_ptr<ThreadedWorkletObjectProxy> ThreadedWorkletObjectProxy::create(
     const WeakPtr<ThreadedWorkletMessagingProxy>& messagingProxyWeakPtr,
     ParentFrameTaskRunners* parentFrameTaskRunners) {
   DCHECK(messagingProxyWeakPtr);
-  return wrapUnique(new ThreadedWorkletObjectProxy(messagingProxyWeakPtr,
-                                                   parentFrameTaskRunners));
+  return WTF::wrapUnique(new ThreadedWorkletObjectProxy(
+      messagingProxyWeakPtr, parentFrameTaskRunners));
 }
 
 ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() {
@@ -51,7 +51,7 @@ void ThreadedWorkletObjectProxy::reportConsoleMessage(
           BLINK_FROM_HERE,
           crossThreadBind(&ThreadedWorkletMessagingProxy::reportConsoleMessage,
                           m_messagingProxyWeakPtr, source, level, message,
-                          passed(location->clone())));
+                          WTF::passed(location->clone())));
 }
 
 void ThreadedWorkletObjectProxy::postMessageToPageInspector(

@@ -83,7 +83,7 @@ PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject,
   DCHECK(layoutObject.node());
 
   PaintRenderingContext2D* renderingContext = PaintRenderingContext2D::create(
-      ImageBuffer::create(wrapUnique(
+      ImageBuffer::create(WTF::wrapUnique(
           new RecordingImageBufferSurface(size, nullptr /* fallbackFactory */,
                                           m_hasAlpha ? NonOpaque : Opaque))),
       m_hasAlpha, zoom);

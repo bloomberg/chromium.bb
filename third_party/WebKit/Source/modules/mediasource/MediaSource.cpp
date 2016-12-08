@@ -779,7 +779,7 @@ std::unique_ptr<WebSourceBuffer> MediaSource::createWebSourceBuffer(
 
   switch (m_webMediaSource->addSourceBuffer(type, codecs, &webSourceBuffer)) {
     case WebMediaSource::AddStatusOk:
-      return wrapUnique(webSourceBuffer);
+      return WTF::wrapUnique(webSourceBuffer);
     case WebMediaSource::AddStatusNotSupported:
       DCHECK(!webSourceBuffer);
       // 2.2

@@ -18,7 +18,7 @@ class UnderlyingSizeListChecker : public InterpolationType::ConversionChecker {
 
   static std::unique_ptr<UnderlyingSizeListChecker> create(
       const NonInterpolableList& underlyingList) {
-    return wrapUnique(new UnderlyingSizeListChecker(underlyingList));
+    return WTF::wrapUnique(new UnderlyingSizeListChecker(underlyingList));
   }
 
  private:
@@ -52,7 +52,7 @@ class InheritedSizeListChecker : public InterpolationType::ConversionChecker {
   static std::unique_ptr<InheritedSizeListChecker> create(
       CSSPropertyID property,
       const SizeList& inheritedSizeList) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new InheritedSizeListChecker(property, inheritedSizeList));
   }
 

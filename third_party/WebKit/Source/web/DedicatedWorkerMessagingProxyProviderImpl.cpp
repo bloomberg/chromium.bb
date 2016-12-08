@@ -61,7 +61,7 @@ DedicatedWorkerMessagingProxyProviderImpl::createWorkerMessagingProxy(
                                    LocalFileSystemClient::create());
     provideContentSettingsClientToWorker(
         workerClients,
-        wrapUnique(
+        WTF::wrapUnique(
             webFrame->client()->createWorkerContentSettingsClientProxy()));
     // FIXME: call provideServiceWorkerContainerClientToWorker here when we
     // support ServiceWorker in dedicated workers (http://crbug.com/371690)

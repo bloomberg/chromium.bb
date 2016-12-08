@@ -56,8 +56,8 @@ std::unique_ptr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::create(
     const WeakPtr<InProcessWorkerMessagingProxy>& messagingProxyWeakPtr,
     ParentFrameTaskRunners* parentFrameTaskRunners) {
   DCHECK(messagingProxyWeakPtr);
-  return wrapUnique(new InProcessWorkerObjectProxy(messagingProxyWeakPtr,
-                                                   parentFrameTaskRunners));
+  return WTF::wrapUnique(new InProcessWorkerObjectProxy(
+      messagingProxyWeakPtr, parentFrameTaskRunners));
 }
 
 InProcessWorkerObjectProxy::~InProcessWorkerObjectProxy() {}
@@ -71,7 +71,7 @@ void InProcessWorkerObjectProxy::postMessageToWorkerObject(
                  crossThreadBind(
                      &InProcessWorkerMessagingProxy::postMessageToWorkerObject,
                      m_messagingProxyWeakPtr, std::move(message),
-                     passed(std::move(channels))));
+                     WTF::passed(std::move(channels))));
 }
 
 void InProcessWorkerObjectProxy::confirmMessageFromWorkerObject() {
@@ -123,7 +123,7 @@ void InProcessWorkerObjectProxy::reportException(
           BLINK_FROM_HERE,
           crossThreadBind(&InProcessWorkerMessagingProxy::dispatchErrorEvent,
                           m_messagingProxyWeakPtr, errorMessage,
-                          passed(location->clone()), exceptionId));
+                          WTF::passed(location->clone()), exceptionId));
 }
 
 void InProcessWorkerObjectProxy::reportConsoleMessage(
@@ -137,7 +137,7 @@ void InProcessWorkerObjectProxy::reportConsoleMessage(
           BLINK_FROM_HERE,
           crossThreadBind(&InProcessWorkerMessagingProxy::reportConsoleMessage,
                           m_messagingProxyWeakPtr, source, level, message,
-                          passed(location->clone())));
+                          WTF::passed(location->clone())));
 }
 
 void InProcessWorkerObjectProxy::postMessageToPageInspector(
@@ -161,7 +161,7 @@ void InProcessWorkerObjectProxy::didCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* globalScope) {
   DCHECK(!m_workerGlobalScope);
   m_workerGlobalScope = toWorkerGlobalScope(globalScope);
-  m_timer = wrapUnique(new Timer<InProcessWorkerObjectProxy>(
+  m_timer = WTF::wrapUnique(new Timer<InProcessWorkerObjectProxy>(
       this, &InProcessWorkerObjectProxy::checkPendingActivity));
 }
 

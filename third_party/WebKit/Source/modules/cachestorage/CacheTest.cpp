@@ -236,7 +236,7 @@ class CacheStorageTest : public ::testing::Test {
 
   Cache* createCache(ScopedFetcherForTests* fetcher,
                      WebServiceWorkerCache* webCache) {
-    return Cache::create(fetcher, wrapUnique(webCache));
+    return Cache::create(fetcher, WTF::wrapUnique(webCache));
   }
 
   ScriptState* getScriptState() {

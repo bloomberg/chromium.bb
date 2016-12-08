@@ -290,7 +290,7 @@ PaintArtifactCompositor::clientForPaintChunk(
       return std::move(client);
   }
 
-  return wrapUnique(new ContentLayerClientImpl(
+  return WTF::wrapUnique(new ContentLayerClientImpl(
       paintChunk.id
           ? *paintChunk.id
           : paintArtifact.getDisplayItemList()[paintChunk.beginIndex].getId()));
@@ -768,7 +768,7 @@ void PaintArtifactCompositor::update(
     return;
 
   if (m_extraDataForTestingEnabled)
-    m_extraDataForTesting = wrapUnique(new ExtraDataForTesting);
+    m_extraDataForTesting = WTF::wrapUnique(new ExtraDataForTesting);
 
   m_rootLayer->RemoveAllChildren();
   m_rootLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);

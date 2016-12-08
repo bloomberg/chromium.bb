@@ -42,7 +42,7 @@ ScriptPromise NavigationPreloadManager::setHeaderValue(ScriptState* scriptState,
   ScriptPromise promise = resolver->promise();
   m_registration->webRegistration()->setNavigationPreloadHeader(
       value, client->provider(),
-      makeUnique<SetNavigationPreloadHeaderCallbacks>(resolver));
+      WTF::makeUnique<SetNavigationPreloadHeaderCallbacks>(resolver));
   return promise;
 }
 
@@ -57,7 +57,7 @@ ScriptPromise NavigationPreloadManager::getState(ScriptState* scriptState) {
   ScriptPromise promise = resolver->promise();
   m_registration->webRegistration()->getNavigationPreloadState(
       client->provider(),
-      makeUnique<GetNavigationPreloadStateCallbacks>(resolver));
+      WTF::makeUnique<GetNavigationPreloadStateCallbacks>(resolver));
   return promise;
 }
 
@@ -77,7 +77,7 @@ ScriptPromise NavigationPreloadManager::setEnabled(bool enable,
   ScriptPromise promise = resolver->promise();
   m_registration->webRegistration()->enableNavigationPreload(
       enable, client->provider(),
-      makeUnique<EnableNavigationPreloadCallbacks>(resolver));
+      WTF::makeUnique<EnableNavigationPreloadCallbacks>(resolver));
   return promise;
 }
 

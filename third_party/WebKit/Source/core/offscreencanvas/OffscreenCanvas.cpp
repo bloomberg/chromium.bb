@@ -187,7 +187,7 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::getOrCreateFrameDispatcher() {
     // The frame dispatcher connects the current thread of OffscreenCanvas
     // (either main or worker) to the browser process and remains unchanged
     // throughout the lifetime of this OffscreenCanvas.
-    m_frameDispatcher = wrapUnique(new OffscreenCanvasFrameDispatcherImpl(
+    m_frameDispatcher = WTF::wrapUnique(new OffscreenCanvasFrameDispatcherImpl(
         m_clientId, m_sinkId, m_localId, m_nonceHigh, m_nonceLow,
         m_placeholderCanvasId, m_size.width(), m_size.height()));
   }

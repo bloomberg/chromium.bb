@@ -100,7 +100,8 @@ class UnderlyingSideNumbersChecker
  public:
   static std::unique_ptr<UnderlyingSideNumbersChecker> create(
       const SideNumbers& underlyingSideNumbers) {
-    return wrapUnique(new UnderlyingSideNumbersChecker(underlyingSideNumbers));
+    return WTF::wrapUnique(
+        new UnderlyingSideNumbersChecker(underlyingSideNumbers));
   }
 
   static SideNumbers getUnderlyingSideNumbers(
@@ -128,7 +129,7 @@ class InheritedSideNumbersChecker
   static std::unique_ptr<InheritedSideNumbersChecker> create(
       CSSPropertyID property,
       const SideNumbers& inheritedSideNumbers) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new InheritedSideNumbersChecker(property, inheritedSideNumbers));
   }
 

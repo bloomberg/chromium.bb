@@ -87,7 +87,7 @@ namespace WTF {
 // However, to make the functor be able to get called multiple times, the
 // stored object does not get moved out automatically when the underlying
 // function is actually invoked. If you want to make an argument "auto-passed",
-// you can do so by wrapping your bound argument with passed() function, as
+// you can do so by wrapping your bound argument with WTF::passed() function, as
 // shown below:
 //
 //     void yourFunction(Argument argument)
@@ -98,11 +98,11 @@ namespace WTF {
 //
 //     ...
 //     std::unique_ptr<Function<void()>> functor = bind(yourFunction,
-//         passed(Argument()));
+//         WTF::passed(Argument()));
 //     ...
 //     (*functor)();
 //
-// The underlying function must receive the argument wrapped by passed() by
+// The underlying function must receive the argument wrapped by WTF::passed() by
 // rvalue reference or by value.
 //
 // Obviously, if you create a functor this way, you shouldn't call the functor
@@ -123,9 +123,10 @@ class PassedWrapper final {
 
 template <typename T>
 PassedWrapper<T> passed(T&& value) {
-  static_assert(!std::is_reference<T>::value,
-                "You must pass an rvalue to passed() so it can be moved. Add "
-                "std::move() if necessary.");
+  static_assert(
+      !std::is_reference<T>::value,
+      "You must pass an rvalue to WTF::passed() so it can be moved. Add "
+      "std::move() if necessary.");
   static_assert(!std::is_const<T>::value,
                 "|value| must not be const so it can be moved.");
   return PassedWrapper<T>(std::move(value));
@@ -144,7 +145,7 @@ class UnretainedWrapper final {
 template <typename T>
 UnretainedWrapper<T, SameThreadAffinity> unretained(T* value) {
   static_assert(!WTF::IsGarbageCollectedType<T>::value,
-                "unretained() + GCed type is forbidden");
+                "WTF::unretained() + GCed type is forbidden");
   return UnretainedWrapper<T, SameThreadAffinity>(value);
 }
 
@@ -247,7 +248,8 @@ std::unique_ptr<
 bindInternal(FunctionType function, BoundParameters&&... boundParameters) {
   using UnboundRunType =
       base::MakeUnboundRunType<FunctionType, BoundParameters...>;
-  return wrapUnique(new Function<UnboundRunType, threadAffinity>(base::Bind(
+  return WTF::wrapUnique(new Function<UnboundRunType,
+                                      threadAffinity>(base::Bind(
       function,
       typename ParamStorageTraits<typename std::decay<BoundParameters>::type>::
           StorageType(std::forward<BoundParameters>(boundParameters))...)));
@@ -290,8 +292,6 @@ struct BindUnwrapTraits<WTF::UnretainedWrapper<T, threadAffinity>> {
 
 }  // namespace base
 
-using WTF::passed;
-using WTF::unretained;
 using WTF::crossThreadUnretained;
 
 using WTF::Function;

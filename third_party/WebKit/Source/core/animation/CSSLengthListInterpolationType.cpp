@@ -67,7 +67,7 @@ class InheritedLengthListChecker : public InterpolationType::ConversionChecker {
   static std::unique_ptr<InheritedLengthListChecker> create(
       CSSPropertyID property,
       const Vector<Length>& inheritedLengthList) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new InheritedLengthListChecker(property, inheritedLengthList));
   }
 

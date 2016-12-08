@@ -33,7 +33,7 @@
 namespace WTF {
 
 std::unique_ptr<Vector<unsigned>> lineEndings(const String& text) {
-  std::unique_ptr<Vector<unsigned>> result(makeUnique<Vector<unsigned>>());
+  std::unique_ptr<Vector<unsigned>> result(WTF::makeUnique<Vector<unsigned>>());
 
   unsigned start = 0;
   while (start < text.length()) {

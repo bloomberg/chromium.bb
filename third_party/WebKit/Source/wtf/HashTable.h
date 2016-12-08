@@ -142,14 +142,14 @@ class HashTableStatsPtr<Allocator, false> final {
 
  public:
   static std::unique_ptr<HashTableStats> create() {
-    return wrapUnique(new HashTableStats);
+    return WTF::wrapUnique(new HashTableStats);
   }
 
   static std::unique_ptr<HashTableStats> copy(
       const std::unique_ptr<HashTableStats>& other) {
     if (!other)
       return nullptr;
-    return wrapUnique(new HashTableStats(*other));
+    return WTF::wrapUnique(new HashTableStats(*other));
   }
 
   static void swap(std::unique_ptr<HashTableStats>& stats,

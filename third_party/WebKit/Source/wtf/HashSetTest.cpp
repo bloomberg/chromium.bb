@@ -95,7 +95,8 @@ TEST(HashSetTest, HashSetOwnPtr) {
   {
     // AddResult in a separate scope to avoid assertion hit,
     // since we modify the container further.
-    HashSet<std::unique_ptr<Dummy>>::AddResult res1 = set.add(wrapUnique(ptr1));
+    HashSet<std::unique_ptr<Dummy>>::AddResult res1 =
+        set.add(WTF::wrapUnique(ptr1));
     EXPECT_EQ(ptr1, res1.storedValue->get());
   }
 
@@ -107,7 +108,8 @@ TEST(HashSetTest, HashSetOwnPtr) {
 
   Dummy* ptr2 = new Dummy(deleted2);
   {
-    HashSet<std::unique_ptr<Dummy>>::AddResult res2 = set.add(wrapUnique(ptr2));
+    HashSet<std::unique_ptr<Dummy>>::AddResult res2 =
+        set.add(WTF::wrapUnique(ptr2));
     EXPECT_EQ(res2.storedValue->get(), ptr2);
   }
 
@@ -128,8 +130,8 @@ TEST(HashSetTest, HashSetOwnPtr) {
   deleted2 = false;
   {
     OwnPtrSet set;
-    set.add(makeUnique<Dummy>(deleted1));
-    set.add(makeUnique<Dummy>(deleted2));
+    set.add(WTF::makeUnique<Dummy>(deleted1));
+    set.add(WTF::makeUnique<Dummy>(deleted2));
   }
   EXPECT_TRUE(deleted1);
   EXPECT_TRUE(deleted2);
@@ -142,8 +144,8 @@ TEST(HashSetTest, HashSetOwnPtr) {
   ptr2 = new Dummy(deleted2);
   {
     OwnPtrSet set;
-    set.add(wrapUnique(ptr1));
-    set.add(wrapUnique(ptr2));
+    set.add(WTF::wrapUnique(ptr1));
+    set.add(WTF::wrapUnique(ptr2));
     ownPtr1 = set.take(ptr1);
     EXPECT_EQ(1UL, set.size());
     ownPtr2 = set.takeAny();

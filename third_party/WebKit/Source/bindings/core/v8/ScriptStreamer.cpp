@@ -471,13 +471,14 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource) {
     DCHECK(!m_source);
     m_stream = new SourceStream(m_loadingTaskRunner.get());
     // m_source takes ownership of m_stream.
-    m_source = wrapUnique(
+    m_source = WTF::wrapUnique(
         new v8::ScriptCompiler::StreamedSource(m_stream, m_encoding));
 
     ScriptState::Scope scope(m_scriptState.get());
     std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>
-        scriptStreamingTask(wrapUnique(v8::ScriptCompiler::StartStreamingScript(
-            m_scriptState->isolate(), m_source.get(), m_compileOptions)));
+        scriptStreamingTask(
+            WTF::wrapUnique(v8::ScriptCompiler::StartStreamingScript(
+                m_scriptState->isolate(), m_source.get(), m_compileOptions)));
     if (!scriptStreamingTask) {
       // V8 cannot stream the script.
       suppressStreaming();
@@ -490,7 +491,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource) {
 
     ScriptStreamerThread::shared()->postTask(
         crossThreadBind(&ScriptStreamerThread::runScriptStreamingTask,
-                        passed(std::move(scriptStreamingTask)),
+                        WTF::passed(std::move(scriptStreamingTask)),
                         wrapCrossThreadPersistent(this)));
     recordStartedStreamingHistogram(m_scriptType, 1);
   }

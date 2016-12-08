@@ -56,7 +56,7 @@ struct Scale {
 class InheritedScaleChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedScaleChecker> create(const Scale& scale) {
-    return wrapUnique(new InheritedScaleChecker(scale));
+    return WTF::wrapUnique(new InheritedScaleChecker(scale));
   }
 
  private:

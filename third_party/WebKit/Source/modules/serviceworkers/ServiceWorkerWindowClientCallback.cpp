@@ -18,7 +18,7 @@ void NavigateClientCallback::onSuccess(
       m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->resolve(ServiceWorkerWindowClient::take(
-      m_resolver.get(), wrapUnique(clientInfo.release())));
+      m_resolver.get(), WTF::wrapUnique(clientInfo.release())));
 }
 
 void NavigateClientCallback::onError(const WebServiceWorkerError& error) {

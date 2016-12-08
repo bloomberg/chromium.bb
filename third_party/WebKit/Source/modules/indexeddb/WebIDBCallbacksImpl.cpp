@@ -57,7 +57,7 @@ namespace blink {
 // static
 std::unique_ptr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::create(
     IDBRequest* request) {
-  return wrapUnique(new WebIDBCallbacksImpl(request));
+  return WTF::wrapUnique(new WebIDBCallbacksImpl(request));
 }
 
 WebIDBCallbacksImpl::WebIDBCallbacksImpl(IDBRequest* request)
@@ -104,13 +104,13 @@ void WebIDBCallbacksImpl::onSuccess(WebIDBCursor* cursor,
 
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
-  m_request->onSuccess(wrapUnique(cursor), key, primaryKey,
+  m_request->onSuccess(WTF::wrapUnique(cursor), key, primaryKey,
                        IDBValue::create(value));
 }
 
 void WebIDBCallbacksImpl::onSuccess(WebIDBDatabase* backend,
                                     const WebIDBMetadata& metadata) {
-  std::unique_ptr<WebIDBDatabase> db = wrapUnique(backend);
+  std::unique_ptr<WebIDBDatabase> db = WTF::wrapUnique(backend);
   if (m_request) {
     InspectorInstrumentation::AsyncTask asyncTask(
         m_request->getExecutionContext(), this);
@@ -193,7 +193,7 @@ void WebIDBCallbacksImpl::onUpgradeNeeded(long long oldVersion,
                                           const WebIDBMetadata& metadata,
                                           unsigned short dataLoss,
                                           WebString dataLossMessage) {
-  std::unique_ptr<WebIDBDatabase> db = wrapUnique(database);
+  std::unique_ptr<WebIDBDatabase> db = WTF::wrapUnique(database);
   if (m_request) {
     InspectorInstrumentation::AsyncTask asyncTask(
         m_request->getExecutionContext(), this);

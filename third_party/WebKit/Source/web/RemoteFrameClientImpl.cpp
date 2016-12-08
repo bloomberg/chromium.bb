@@ -155,10 +155,10 @@ void RemoteFrameClientImpl::forwardInputEvent(Event* event) {
   // FIXME: Add a check for out-of-process iframes enabled.
   std::unique_ptr<WebInputEvent> webEvent;
   if (event->isKeyboardEvent())
-    webEvent = wrapUnique(
+    webEvent = WTF::wrapUnique(
         new WebKeyboardEventBuilder(*static_cast<KeyboardEvent*>(event)));
   else if (event->isMouseEvent())
-    webEvent = wrapUnique(new WebMouseEventBuilder(
+    webEvent = WTF::wrapUnique(new WebMouseEventBuilder(
         m_webFrame->frame()->view(),
         m_webFrame->toImplBase()->frame()->ownerLayoutItem(),
         *static_cast<MouseEvent*>(event)));

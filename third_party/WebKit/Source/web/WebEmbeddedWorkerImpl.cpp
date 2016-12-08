@@ -80,8 +80,8 @@ namespace blink {
 WebEmbeddedWorker* WebEmbeddedWorker::create(
     WebServiceWorkerContextClient* client,
     WebWorkerContentSettingsClientProxy* contentSettingsClient) {
-  return new WebEmbeddedWorkerImpl(wrapUnique(client),
-                                   wrapUnique(contentSettingsClient));
+  return new WebEmbeddedWorkerImpl(WTF::wrapUnique(client),
+                                   WTF::wrapUnique(contentSettingsClient));
 }
 
 static HashSet<WebEmbeddedWorkerImpl*>& runningWorkerInstances() {
@@ -339,7 +339,7 @@ void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame) {
   DCHECK(!m_askedToTerminate);
   m_loadingShadowPage = false;
   m_networkProvider =
-      wrapUnique(m_workerContextClient->createServiceWorkerNetworkProvider(
+      WTF::wrapUnique(m_workerContextClient->createServiceWorkerNetworkProvider(
           frame->dataSource()));
   m_mainScriptLoader = WorkerScriptLoader::create();
   m_mainScriptLoader->setRequestContext(
@@ -428,7 +428,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread() {
       ServiceWorkerGlobalScopeClientImpl::create(*m_workerContextClient));
   provideServiceWorkerContainerClientToWorker(
       workerClients,
-      wrapUnique(m_workerContextClient->createServiceWorkerProvider()));
+      WTF::wrapUnique(m_workerContextClient->createServiceWorkerProvider()));
 
   // We need to set the CSP to both the shadow page's document and the
   // ServiceWorkerGlobalScope.
@@ -443,7 +443,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread() {
   WorkerThreadStartMode startMode =
       m_workerInspectorProxy->workerStartMode(document);
   std::unique_ptr<WorkerSettings> workerSettings =
-      wrapUnique(new WorkerSettings(document->settings()));
+      WTF::wrapUnique(new WorkerSettings(document->settings()));
 
   std::unique_ptr<WorkerThreadStartupData> startupData =
       WorkerThreadStartupData::create(

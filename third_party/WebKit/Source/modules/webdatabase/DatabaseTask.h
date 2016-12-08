@@ -78,9 +78,9 @@ class Database::DatabaseOpenTask final : public DatabaseTask {
                                                   DatabaseError& error,
                                                   String& errorMessage,
                                                   bool& success) {
-    return wrapUnique(new DatabaseOpenTask(db, setVersionInNewDatabase,
-                                           completeEvent, error, errorMessage,
-                                           success));
+    return WTF::wrapUnique(new DatabaseOpenTask(db, setVersionInNewDatabase,
+                                                completeEvent, error,
+                                                errorMessage, success));
   }
 
  private:
@@ -107,7 +107,7 @@ class Database::DatabaseCloseTask final : public DatabaseTask {
   static std::unique_ptr<DatabaseCloseTask> create(
       Database* db,
       WaitableEvent* synchronizer) {
-    return wrapUnique(new DatabaseCloseTask(db, synchronizer));
+    return WTF::wrapUnique(new DatabaseCloseTask(db, synchronizer));
   }
 
  private:
@@ -126,7 +126,7 @@ class Database::DatabaseTransactionTask final : public DatabaseTask {
   // Transaction task is never synchronous, so no 'synchronizer' parameter.
   static std::unique_ptr<DatabaseTransactionTask> create(
       SQLTransactionBackend* transaction) {
-    return wrapUnique(new DatabaseTransactionTask(transaction));
+    return WTF::wrapUnique(new DatabaseTransactionTask(transaction));
   }
 
   SQLTransactionBackend* transaction() const { return m_transaction.get(); }
@@ -147,7 +147,7 @@ class Database::DatabaseTableNamesTask final : public DatabaseTask {
  public:
   static std::unique_ptr<DatabaseTableNamesTask>
   create(Database* db, WaitableEvent* synchronizer, Vector<String>& names) {
-    return wrapUnique(new DatabaseTableNamesTask(db, synchronizer, names));
+    return WTF::wrapUnique(new DatabaseTableNamesTask(db, synchronizer, names));
   }
 
  private:

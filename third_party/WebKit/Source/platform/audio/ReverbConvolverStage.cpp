@@ -56,16 +56,16 @@ ReverbConvolverStage::ReverbConvolverStage(
   ASSERT(accumulationBuffer);
 
   if (!m_directMode) {
-    m_fftKernel = makeUnique<FFTFrame>(fftSize);
+    m_fftKernel = WTF::makeUnique<FFTFrame>(fftSize);
     m_fftKernel->doPaddedFFT(impulseResponse + stageOffset, stageLength);
-    m_fftConvolver = makeUnique<FFTConvolver>(fftSize);
+    m_fftConvolver = WTF::makeUnique<FFTConvolver>(fftSize);
   } else {
     ASSERT(!stageOffset);
     ASSERT(stageLength <= fftSize / 2);
 
-    m_directKernel = wrapUnique(new AudioFloatArray(fftSize / 2));
+    m_directKernel = WTF::wrapUnique(new AudioFloatArray(fftSize / 2));
     m_directKernel->copyToRange(impulseResponse, 0, stageLength);
-    m_directConvolver = makeUnique<DirectConvolver>(renderSliceSize);
+    m_directConvolver = WTF::makeUnique<DirectConvolver>(renderSliceSize);
   }
   m_temporaryBuffer.allocate(renderSliceSize);
 

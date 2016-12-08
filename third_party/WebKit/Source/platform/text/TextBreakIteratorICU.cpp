@@ -48,7 +48,7 @@ class LineBreakIteratorPool final {
   }
 
   static std::unique_ptr<LineBreakIteratorPool> create() {
-    return wrapUnique(new LineBreakIteratorPool);
+    return WTF::wrapUnique(new LineBreakIteratorPool);
   }
 
   icu::BreakIterator* take(const AtomicString& locale) {

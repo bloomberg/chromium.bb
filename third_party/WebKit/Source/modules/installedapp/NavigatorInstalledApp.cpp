@@ -84,7 +84,8 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
   controller()->getInstalledApps(
       WebSecurityOrigin(
           scriptState->getExecutionContext()->getSecurityOrigin()),
-      wrapUnique(new CallbackPromiseAdapter<RelatedAppArray, void>(resolver)));
+      WTF::wrapUnique(
+          new CallbackPromiseAdapter<RelatedAppArray, void>(resolver)));
   return promise;
 }
 

@@ -52,7 +52,7 @@ class InheritedFontWeightChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedFontWeightChecker> create(
       FontWeight fontWeight) {
-    return wrapUnique(new InheritedFontWeightChecker(fontWeight));
+    return WTF::wrapUnique(new InheritedFontWeightChecker(fontWeight));
   }
 
  private:

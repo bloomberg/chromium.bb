@@ -21,7 +21,7 @@ class InheritedTranslateChecker : public InterpolationType::ConversionChecker {
 
   static std::unique_ptr<InheritedTranslateChecker> create(
       PassRefPtr<TranslateTransformOperation> inheritedTranslate) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new InheritedTranslateChecker(std::move(inheritedTranslate)));
   }
 

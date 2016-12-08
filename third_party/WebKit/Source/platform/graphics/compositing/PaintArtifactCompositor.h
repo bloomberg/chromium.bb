@@ -44,7 +44,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   ~PaintArtifactCompositor();
 
   static std::unique_ptr<PaintArtifactCompositor> create() {
-    return wrapUnique(new PaintArtifactCompositor());
+    return WTF::wrapUnique(new PaintArtifactCompositor());
   }
 
   // Updates the layer tree to match the provided paint artifact.

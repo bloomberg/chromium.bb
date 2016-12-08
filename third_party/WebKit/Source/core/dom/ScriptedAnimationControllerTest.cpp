@@ -45,7 +45,7 @@ namespace {
 class TaskOrderObserver {
  public:
   std::unique_ptr<WTF::Closure> createTask(int id) {
-    return WTF::bind(&TaskOrderObserver::runTask, unretained(this), id);
+    return WTF::bind(&TaskOrderObserver::runTask, WTF::unretained(this), id);
   }
   const Vector<int>& order() const { return m_order; }
 
@@ -96,8 +96,9 @@ TEST_F(ScriptedAnimationControllerTest, EnqueueWithinTask) {
   TaskOrderObserver observer;
 
   controller().enqueueTask(observer.createTask(1));
-  controller().enqueueTask(WTF::bind(
-      &enqueueTask, wrapPersistent(&controller()), unretained(&observer), 2));
+  controller().enqueueTask(WTF::bind(&enqueueTask,
+                                     wrapPersistent(&controller()),
+                                     WTF::unretained(&observer), 2));
   controller().enqueueTask(observer.createTask(3));
   EXPECT_EQ(0u, observer.order().size());
 

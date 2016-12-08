@@ -30,7 +30,7 @@ class PLATFORM_EXPORT CompositorTransformAnimationCurve
 
  public:
   static std::unique_ptr<CompositorTransformAnimationCurve> create() {
-    return wrapUnique(new CompositorTransformAnimationCurve());
+    return WTF::wrapUnique(new CompositorTransformAnimationCurve());
   }
 
   ~CompositorTransformAnimationCurve() override;

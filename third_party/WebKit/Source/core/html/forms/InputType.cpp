@@ -86,7 +86,7 @@ using InputTypeFactoryMap =
 
 static std::unique_ptr<InputTypeFactoryMap> createInputTypeFactoryMap() {
   std::unique_ptr<InputTypeFactoryMap> map =
-      wrapUnique(new InputTypeFactoryMap);
+      WTF::wrapUnique(new InputTypeFactoryMap);
   map->add(InputTypeNames::button, ButtonInputType::create);
   map->add(InputTypeNames::checkbox, CheckboxInputType::create);
   map->add(InputTypeNames::color, ColorInputType::create);

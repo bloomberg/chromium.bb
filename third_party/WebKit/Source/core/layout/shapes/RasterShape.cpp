@@ -77,8 +77,8 @@ RasterShapeIntervals::computeShapeMarginIntervals(int shapeMargin) const {
                                 ? size()
                                 : size() - offset() * 2 + shapeMargin * 2;
   std::unique_ptr<RasterShapeIntervals> result =
-      wrapUnique(new RasterShapeIntervals(marginIntervalsSize,
-                                          std::max(shapeMargin, offset())));
+      WTF::wrapUnique(new RasterShapeIntervals(
+          marginIntervalsSize, std::max(shapeMargin, offset())));
   MarginIntervalGenerator marginIntervalGenerator(shapeMargin);
 
   for (int y = bounds().y(); y < bounds().maxY(); ++y) {

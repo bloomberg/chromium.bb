@@ -294,9 +294,9 @@ void HTMLLinkElement::scheduleEvent() {
   TaskRunnerHelper::get(TaskType::DOMManipulation, &document())
       ->postTask(
           BLINK_FROM_HERE,
-          WTF::bind(&HTMLLinkElement::dispatchPendingEvent,
-                    wrapPersistent(this),
-                    passed(IncrementLoadEventDelayCount::create(document()))));
+          WTF::bind(
+              &HTMLLinkElement::dispatchPendingEvent, wrapPersistent(this),
+              WTF::passed(IncrementLoadEventDelayCount::create(document()))));
 }
 
 void HTMLLinkElement::startLoadingDynamicSheet() {

@@ -68,7 +68,7 @@ class CORE_EXPORT WorkerThreadStartupData final {
       const Vector<String>* originTrialTokens,
       std::unique_ptr<WorkerSettings> workerSettings,
       V8CacheOptions v8CacheOptions = V8CacheOptionsDefault) {
-    return wrapUnique(new WorkerThreadStartupData(
+    return WTF::wrapUnique(new WorkerThreadStartupData(
         scriptURL, userAgent, sourceCode, std::move(cachedMetaData), startMode,
         contentSecurityPolicyHeaders, referrerPolicy, starterOrigin,
         workerClients, addressSpace, originTrialTokens,

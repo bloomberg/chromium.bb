@@ -69,7 +69,7 @@ RTCDataChannel* RTCDataChannel::create(
     const WebRTCDataChannelInit& init,
     ExceptionState& exceptionState) {
   std::unique_ptr<WebRTCDataChannelHandler> handler =
-      wrapUnique(peerConnectionHandler->createDataChannel(label, init));
+      WTF::wrapUnique(peerConnectionHandler->createDataChannel(label, init));
   if (!handler) {
     exceptionState.throwDOMException(NotSupportedError,
                                      "RTCDataChannel is not supported");

@@ -580,7 +580,8 @@ const KURL& SecurityOrigin::urlWithUniqueSecurityOrigin() {
 
 std::unique_ptr<SecurityOrigin::PrivilegeData>
 SecurityOrigin::createPrivilegeData() const {
-  std::unique_ptr<PrivilegeData> privilegeData = wrapUnique(new PrivilegeData);
+  std::unique_ptr<PrivilegeData> privilegeData =
+      WTF::wrapUnique(new PrivilegeData);
   privilegeData->m_universalAccess = m_universalAccess;
   privilegeData->m_canLoadLocalResources = m_canLoadLocalResources;
   privilegeData->m_blockLocalAccessFromLocalOrigin =

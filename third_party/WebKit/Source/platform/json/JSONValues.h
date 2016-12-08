@@ -64,7 +64,7 @@ class PLATFORM_EXPORT JSONValue {
   virtual ~JSONValue() {}
 
   static std::unique_ptr<JSONValue> null() {
-    return wrapUnique(new JSONValue());
+    return WTF::wrapUnique(new JSONValue());
   }
 
   enum ValueType {
@@ -109,15 +109,15 @@ class PLATFORM_EXPORT JSONValue {
 class PLATFORM_EXPORT JSONBasicValue : public JSONValue {
  public:
   static std::unique_ptr<JSONBasicValue> create(bool value) {
-    return wrapUnique(new JSONBasicValue(value));
+    return WTF::wrapUnique(new JSONBasicValue(value));
   }
 
   static std::unique_ptr<JSONBasicValue> create(int value) {
-    return wrapUnique(new JSONBasicValue(value));
+    return WTF::wrapUnique(new JSONBasicValue(value));
   }
 
   static std::unique_ptr<JSONBasicValue> create(double value) {
-    return wrapUnique(new JSONBasicValue(value));
+    return WTF::wrapUnique(new JSONBasicValue(value));
   }
 
   bool asBoolean(bool* output) const override;
@@ -144,11 +144,11 @@ class PLATFORM_EXPORT JSONBasicValue : public JSONValue {
 class PLATFORM_EXPORT JSONString : public JSONValue {
  public:
   static std::unique_ptr<JSONString> create(const String& value) {
-    return wrapUnique(new JSONString(value));
+    return WTF::wrapUnique(new JSONString(value));
   }
 
   static std::unique_ptr<JSONString> create(const char* value) {
-    return wrapUnique(new JSONString(value));
+    return WTF::wrapUnique(new JSONString(value));
   }
 
   bool asString(String* output) const override;
@@ -168,7 +168,7 @@ class PLATFORM_EXPORT JSONObject : public JSONValue {
  public:
   using Entry = std::pair<String, JSONValue*>;
   static std::unique_ptr<JSONObject> create() {
-    return wrapUnique(new JSONObject());
+    return WTF::wrapUnique(new JSONObject());
   }
 
   static JSONObject* cast(JSONValue* value) {
@@ -178,7 +178,7 @@ class PLATFORM_EXPORT JSONObject : public JSONValue {
   }
 
   static std::unique_ptr<JSONObject> from(std::unique_ptr<JSONValue> value) {
-    auto maybeObject = wrapUnique(JSONObject::cast(value.get()));
+    auto maybeObject = WTF::wrapUnique(JSONObject::cast(value.get()));
     if (maybeObject)
       value.release();
     return maybeObject;
@@ -237,7 +237,7 @@ class PLATFORM_EXPORT JSONObject : public JSONValue {
 class PLATFORM_EXPORT JSONArray : public JSONValue {
  public:
   static std::unique_ptr<JSONArray> create() {
-    return wrapUnique(new JSONArray());
+    return WTF::wrapUnique(new JSONArray());
   }
 
   static JSONArray* cast(JSONValue* value) {
@@ -247,7 +247,7 @@ class PLATFORM_EXPORT JSONArray : public JSONValue {
   }
 
   static std::unique_ptr<JSONArray> from(std::unique_ptr<JSONValue> value) {
-    auto maybeArray = wrapUnique(JSONArray::cast(value.get()));
+    auto maybeArray = WTF::wrapUnique(JSONArray::cast(value.get()));
     if (maybeArray)
       value.release();
     return maybeArray;

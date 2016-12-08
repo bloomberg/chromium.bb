@@ -719,7 +719,7 @@ void AXObjectCacheImpl::updateAriaOwns(
       HashSet<AXID>* owners = m_idToAriaOwnersMapping.get(id);
       if (!owners) {
         owners = new HashSet<AXID>();
-        m_idToAriaOwnersMapping.set(id, wrapUnique(owners));
+        m_idToAriaOwnersMapping.set(id, WTF::wrapUnique(owners));
       }
       owners->add(owner->axObjectID());
     }

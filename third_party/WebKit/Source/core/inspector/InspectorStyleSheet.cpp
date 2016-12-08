@@ -969,10 +969,10 @@ DEFINE_TRACE(InspectorStyle) {
 InspectorStyleSheetBase::InspectorStyleSheetBase(Listener* listener)
     : m_id(IdentifiersFactory::createIdentifier()),
       m_listener(listener),
-      m_lineEndings(makeUnique<LineEndings>()) {}
+      m_lineEndings(WTF::makeUnique<LineEndings>()) {}
 
 void InspectorStyleSheetBase::onStyleSheetTextChanged() {
-  m_lineEndings = makeUnique<LineEndings>();
+  m_lineEndings = WTF::makeUnique<LineEndings>();
   if (listener())
     listener()->styleSheetChanged(this);
 }
@@ -1468,7 +1468,7 @@ void InspectorStyleSheet::innerSetText(const String& text,
   m_parsedFlatRules.clear();
   collectFlatRules(sourceDataSheet, &m_parsedFlatRules);
 
-  m_sourceData = makeUnique<RuleSourceDataList>();
+  m_sourceData = WTF::makeUnique<RuleSourceDataList>();
   flattenSourceData(ruleTree, m_sourceData.get());
   m_text = text;
 

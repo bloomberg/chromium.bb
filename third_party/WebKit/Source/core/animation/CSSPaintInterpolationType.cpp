@@ -34,10 +34,10 @@ class InheritedPaintChecker : public InterpolationType::ConversionChecker {
   static std::unique_ptr<InheritedPaintChecker> create(
       CSSPropertyID property,
       const StyleColor& color) {
-    return wrapUnique(new InheritedPaintChecker(property, color));
+    return WTF::wrapUnique(new InheritedPaintChecker(property, color));
   }
   static std::unique_ptr<InheritedPaintChecker> create(CSSPropertyID property) {
-    return wrapUnique(new InheritedPaintChecker(property));
+    return WTF::wrapUnique(new InheritedPaintChecker(property));
   }
 
  private:

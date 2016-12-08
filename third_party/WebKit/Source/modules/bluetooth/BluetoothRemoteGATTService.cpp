@@ -79,7 +79,7 @@ class GetCharacteristicsCallback
       m_resolver->resolve(
           m_service->device()->getOrCreateBluetoothRemoteGATTCharacteristic(
               m_resolver->getExecutionContext(),
-              wrapUnique(webCharacteristics[0]), m_service));
+              WTF::wrapUnique(webCharacteristics[0]), m_service));
       return;
     }
 
@@ -89,8 +89,8 @@ class GetCharacteristicsCallback
          webCharacteristics) {
       characteristics.append(
           m_service->device()->getOrCreateBluetoothRemoteGATTCharacteristic(
-              m_resolver->getExecutionContext(), wrapUnique(webCharacteristic),
-              m_service));
+              m_resolver->getExecutionContext(),
+              WTF::wrapUnique(webCharacteristic), m_service));
     }
     m_resolver->resolve(characteristics);
   }

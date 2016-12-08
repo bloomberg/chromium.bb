@@ -948,7 +948,7 @@ void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range,
 
 std::unique_ptr<Vector<double>> CSSParserImpl::consumeKeyframeKeyList(
     CSSParserTokenRange range) {
-  std::unique_ptr<Vector<double>> result = wrapUnique(new Vector<double>);
+  std::unique_ptr<Vector<double>> result = WTF::wrapUnique(new Vector<double>);
   while (true) {
     range.consumeWhitespace();
     const CSSParserToken& token = range.consumeIncludingWhitespace();

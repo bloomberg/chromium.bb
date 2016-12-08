@@ -141,8 +141,8 @@ void ProgressTracker::willStartLoading(unsigned long identifier,
           ProgressBarCompletion::LoadEvent &&
       (m_finishedParsing || priority < ResourceLoadPriorityHigh))
     return;
-  m_progressItems.set(
-      identifier, makeUnique<ProgressItem>(progressItemDefaultEstimatedLength));
+  m_progressItems.set(identifier, WTF::makeUnique<ProgressItem>(
+                                      progressItemDefaultEstimatedLength));
 }
 
 void ProgressTracker::incrementProgress(unsigned long identifier,

@@ -2645,8 +2645,9 @@ void Internals::resetTypeAheadSession(HTMLSelectElement* select) {
 }
 
 bool Internals::loseSharedGraphicsContext3D() {
-  std::unique_ptr<WebGraphicsContext3DProvider> sharedProvider = wrapUnique(
-      Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+  std::unique_ptr<WebGraphicsContext3DProvider> sharedProvider =
+      WTF::wrapUnique(Platform::current()
+                          ->createSharedOffscreenGraphicsContext3DProvider());
   if (!sharedProvider)
     return false;
   gpu::gles2::GLES2Interface* sharedGL = sharedProvider->contextGL();

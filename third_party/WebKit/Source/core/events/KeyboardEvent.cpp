@@ -97,7 +97,7 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
           static_cast<PlatformEvent::Modifiers>(key.modifiers),
           key.timeStampSeconds,
           InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities()),
-      m_keyEvent(makeUnique<WebKeyboardEvent>(key)),
+      m_keyEvent(WTF::makeUnique<WebKeyboardEvent>(key)),
       // TODO(crbug.com/482880): Fix this initialization to lazy initialization.
       m_code(Platform::current()->domCodeStringFromEnum(key.domCode)),
       m_key(Platform::current()->domKeyStringFromEnum(key.domKey)),

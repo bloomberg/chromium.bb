@@ -142,7 +142,7 @@ DrawingBuffer::DrawingBuffer(
     : m_client(client),
       m_preserveDrawingBuffer(preserve),
       m_webGLVersion(webGLVersion),
-      m_contextProvider(wrapUnique(
+      m_contextProvider(WTF::wrapUnique(
           new WebGraphicsContext3DProviderWrapper(std::move(contextProvider)))),
       m_gl(this->contextProvider()->contextGL()),
       m_extensionsUtil(std::move(extensionsUtil)),

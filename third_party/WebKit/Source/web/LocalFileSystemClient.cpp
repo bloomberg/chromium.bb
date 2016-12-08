@@ -45,7 +45,7 @@
 namespace blink {
 
 std::unique_ptr<FileSystemClient> LocalFileSystemClient::create() {
-  return wrapUnique(
+  return WTF::wrapUnique(
       static_cast<FileSystemClient*>(new LocalFileSystemClient()));
 }
 

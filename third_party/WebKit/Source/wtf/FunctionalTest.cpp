@@ -217,17 +217,18 @@ TEST(FunctionalTest, MultiPartBind) {
   assertArgs(a, b, c, 4, 4.5, 'e');
 
   std::unique_ptr<Function<void(double*, char*)>> fourBound =
-      bind(sixArgFunc, 5, 5.5, 'f', unretained(&a));
+      bind(sixArgFunc, 5, 5.5, 'f', WTF::unretained(&a));
   (*fourBound)(&b, &c);
   assertArgs(a, b, c, 5, 5.5, 'f');
 
   std::unique_ptr<Function<void(char*)>> fiveBound =
-      bind(sixArgFunc, 6, 6.5, 'g', unretained(&a), unretained(&b));
+      bind(sixArgFunc, 6, 6.5, 'g', WTF::unretained(&a), WTF::unretained(&b));
   (*fiveBound)(&c);
   assertArgs(a, b, c, 6, 6.5, 'g');
 
-  std::unique_ptr<Function<void()>> sixBound = bind(
-      sixArgFunc, 7, 7.5, 'h', unretained(&a), unretained(&b), unretained(&c));
+  std::unique_ptr<Function<void()>> sixBound =
+      bind(sixArgFunc, 7, 7.5, 'h', WTF::unretained(&a), WTF::unretained(&b),
+           WTF::unretained(&c));
   (*sixBound)();
   assertArgs(a, b, c, 7, 7.5, 'h');
 }
@@ -255,51 +256,51 @@ class B : public A {
 
 TEST(FunctionalTest, MemberFunctionBind) {
   A a(10);
-  std::unique_ptr<Function<int()>> function1 = bind(&A::f, unretained(&a));
+  std::unique_ptr<Function<int()>> function1 = bind(&A::f, WTF::unretained(&a));
   EXPECT_EQ(10, (*function1)());
 
   std::unique_ptr<Function<int()>> function2 =
-      bind(&A::addF, unretained(&a), 15);
+      bind(&A::addF, WTF::unretained(&a), 15);
   EXPECT_EQ(25, (*function2)());
 
   std::unique_ptr<Function<int()>> function3 =
-      bind(&A::overridden, unretained(&a));
+      bind(&A::overridden, WTF::unretained(&a));
   EXPECT_EQ(42, (*function3)());
 }
 
 TEST(FunctionalTest, MemberFunctionBindWithSubclassPointer) {
   B b(10);
-  std::unique_ptr<Function<int()>> function1 = bind(&A::f, unretained(&b));
+  std::unique_ptr<Function<int()>> function1 = bind(&A::f, WTF::unretained(&b));
   EXPECT_EQ(10, (*function1)());
 
   std::unique_ptr<Function<int()>> function2 =
-      bind(&A::addF, unretained(&b), 15);
+      bind(&A::addF, WTF::unretained(&b), 15);
   EXPECT_EQ(25, (*function2)());
 
   std::unique_ptr<Function<int()>> function3 =
-      bind(&A::overridden, unretained(&b));
+      bind(&A::overridden, WTF::unretained(&b));
   EXPECT_EQ(43, (*function3)());
 
-  std::unique_ptr<Function<int()>> function4 = bind(&B::f, unretained(&b));
+  std::unique_ptr<Function<int()>> function4 = bind(&B::f, WTF::unretained(&b));
   EXPECT_EQ(11, (*function4)());
 
   std::unique_ptr<Function<int()>> function5 =
-      bind(&B::addF, unretained(&b), 15);
+      bind(&B::addF, WTF::unretained(&b), 15);
   EXPECT_EQ(26, (*function5)());
 }
 
 TEST(FunctionalTest, MemberFunctionBindWithSubclassPointerWithCast) {
   B b(10);
   std::unique_ptr<Function<int()>> function1 =
-      bind(&A::f, unretained(static_cast<A*>(&b)));
+      bind(&A::f, WTF::unretained(static_cast<A*>(&b)));
   EXPECT_EQ(10, (*function1)());
 
   std::unique_ptr<Function<int()>> function2 =
-      bind(&A::addF, unretained(static_cast<A*>(&b)), 15);
+      bind(&A::addF, WTF::unretained(static_cast<A*>(&b)), 15);
   EXPECT_EQ(25, (*function2)());
 
   std::unique_ptr<Function<int()>> function3 =
-      bind(&A::overridden, unretained(static_cast<A*>(&b)));
+      bind(&A::overridden, WTF::unretained(static_cast<A*>(&b)));
   EXPECT_EQ(43, (*function3)());
 }
 
@@ -312,19 +313,19 @@ TEST(FunctionalTest, MemberFunctionPartBind) {
       bind(&A::addF);
   EXPECT_EQ(25, (*unboundFunction2)(&a, 15));
   std::unique_ptr<Function<int(int)>> objectBoundFunction2 =
-      bind(&A::addF, unretained(&a));
+      bind(&A::addF, WTF::unretained(&a));
   EXPECT_EQ(25, (*objectBoundFunction2)(15));
 }
 
 TEST(FunctionalTest, MemberFunctionBindByUniquePtr) {
   std::unique_ptr<Function<int()>> function1 =
-      WTF::bind(&A::f, makeUnique<A>(10));
+      WTF::bind(&A::f, WTF::makeUnique<A>(10));
   EXPECT_EQ(10, (*function1)());
 }
 
 TEST(FunctionalTest, MemberFunctionBindByPassedUniquePtr) {
   std::unique_ptr<Function<int()>> function1 =
-      WTF::bind(&A::f, passed(makeUnique<A>(10)));
+      WTF::bind(&A::f, WTF::passed(WTF::makeUnique<A>(10)));
   EXPECT_EQ(10, (*function1)());
 }
 
@@ -372,7 +373,7 @@ TEST(FunctionalTest, UnretainedWithRefCounted) {
   RefPtr<Number> five = Number::create(5);
   EXPECT_EQ(1, five->refCount());
   std::unique_ptr<Function<int()>> multiplyFiveByTwoFunction =
-      bind(multiplyNumberByTwo, unretained(five.get()));
+      bind(multiplyNumberByTwo, WTF::unretained(five.get()));
   EXPECT_EQ(1, five->refCount());
   EXPECT_EQ(10, (*multiplyFiveByTwoFunction)());
   EXPECT_EQ(1, five->refCount());
@@ -475,23 +476,23 @@ int tripleMoveOnlysByValues(MoveOnly first, MoveOnly second, MoveOnly third) {
 TEST(FunctionalTest, BindMoveOnlyObjects) {
   MoveOnly one(1);
   std::unique_ptr<Function<int()>> bound =
-      bind(singleMoveOnlyByRvalueReference, passed(std::move(one)));
+      bind(singleMoveOnlyByRvalueReference, WTF::passed(std::move(one)));
   EXPECT_EQ(0, one.value());  // Should be moved away.
   EXPECT_EQ(1, (*bound)());
   // The stored value must be cleared in the first function call.
   EXPECT_EQ(0, (*bound)());
 
-  bound = bind(singleMoveOnlyByValue, passed(MoveOnly(1)));
+  bound = bind(singleMoveOnlyByValue, WTF::passed(MoveOnly(1)));
   EXPECT_EQ(1, (*bound)());
   EXPECT_EQ(0, (*bound)());
 
-  bound = bind(tripleMoveOnlysByRvalueReferences, passed(MoveOnly(1)),
-               passed(MoveOnly(2)), passed(MoveOnly(3)));
+  bound = bind(tripleMoveOnlysByRvalueReferences, WTF::passed(MoveOnly(1)),
+               WTF::passed(MoveOnly(2)), WTF::passed(MoveOnly(3)));
   EXPECT_EQ(6, (*bound)());
   EXPECT_EQ(0, (*bound)());
 
-  bound = bind(tripleMoveOnlysByValues, passed(MoveOnly(1)),
-               passed(MoveOnly(2)), passed(MoveOnly(3)));
+  bound = bind(tripleMoveOnlysByValues, WTF::passed(MoveOnly(1)),
+               WTF::passed(MoveOnly(2)), WTF::passed(MoveOnly(3)));
   EXPECT_EQ(6, (*bound)());
   EXPECT_EQ(0, (*bound)());
 }

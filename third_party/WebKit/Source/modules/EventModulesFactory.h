@@ -19,7 +19,7 @@ class Event;
 class EventModulesFactory final : public EventFactoryBase {
  public:
   static std::unique_ptr<EventModulesFactory> create() {
-    return makeUnique<EventModulesFactory>();
+    return WTF::makeUnique<EventModulesFactory>();
   }
 
   Event* create(ExecutionContext*, const String& eventType) override;

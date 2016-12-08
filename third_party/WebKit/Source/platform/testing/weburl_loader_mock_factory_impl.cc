@@ -21,7 +21,7 @@ namespace blink {
 
 std::unique_ptr<WebURLLoaderMockFactory> WebURLLoaderMockFactory::create()
 {
-    return wrapUnique(new WebURLLoaderMockFactoryImpl);
+  return WTF::wrapUnique(new WebURLLoaderMockFactoryImpl);
 }
 
 WebURLLoaderMockFactoryImpl::WebURLLoaderMockFactoryImpl() {}

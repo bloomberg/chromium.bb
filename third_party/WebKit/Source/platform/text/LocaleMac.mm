@@ -104,11 +104,11 @@ LocaleMac::~LocaleMac() {}
 std::unique_ptr<LocaleMac> LocaleMac::create(const String& localeIdentifier) {
   RetainPtr<NSLocale> locale =
       [[NSLocale alloc] initWithLocaleIdentifier:localeIdentifier];
-  return wrapUnique(new LocaleMac(locale.get()));
+  return WTF::wrapUnique(new LocaleMac(locale.get()));
 }
 
 std::unique_ptr<LocaleMac> LocaleMac::create(NSLocale* locale) {
-  return wrapUnique(new LocaleMac(locale));
+  return WTF::wrapUnique(new LocaleMac(locale));
 }
 
 RetainPtr<NSDateFormatter> LocaleMac::shortDateFormatter() {

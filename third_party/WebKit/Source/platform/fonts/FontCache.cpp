@@ -186,7 +186,7 @@ FontPlatformData* FontCache::getFontPlatformData(
       auto adding =
           &gFontPlatformDataCache->add(key, SizedFontPlatformDataSet())
                .storedValue->value;
-      adding->set(roundedSize, wrapUnique(new FontPlatformData(*result)));
+      adding->set(roundedSize, WTF::wrapUnique(new FontPlatformData(*result)));
     }
   }
 
@@ -201,7 +201,7 @@ std::unique_ptr<FontPlatformData> FontCache::scaleFontPlatformData(
 #if OS(MACOSX)
   return createFontPlatformData(fontDescription, creationParams, fontSize);
 #else
-  return makeUnique<FontPlatformData>(fontPlatformData, fontSize);
+  return WTF::makeUnique<FontPlatformData>(fontPlatformData, fontSize);
 #endif
 }
 
@@ -213,7 +213,7 @@ ShapeCache* FontCache::getShapeCache(const FallbackListCompositeKey& key) {
   ShapeCache* result = nullptr;
   if (it == gFallbackListShaperCache->end()) {
     result = new ShapeCache();
-    gFallbackListShaperCache->set(key, wrapUnique(result));
+    gFallbackListShaperCache->set(key, WTF::wrapUnique(result));
   } else {
     result = it->value.get();
   }

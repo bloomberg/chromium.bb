@@ -87,7 +87,7 @@ void ColorChooserUIController::openColorChooser() {
   WebFrameClient* webFrameClient = frame->client();
   if (!webFrameClient)
     return;
-  m_chooser = wrapUnique(webFrameClient->createColorChooser(
+  m_chooser = WTF::wrapUnique(webFrameClient->createColorChooser(
       this, static_cast<WebColor>(m_client->currentColor().rgb()),
       m_client->suggestions()));
 }

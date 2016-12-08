@@ -97,7 +97,7 @@ ImageQualityController::~ImageQualityController() {
 }
 
 ImageQualityController::ImageQualityController()
-    : m_timer(wrapUnique(new Timer<ImageQualityController>(
+    : m_timer(WTF::wrapUnique(new Timer<ImageQualityController>(
           this,
           &ImageQualityController::highQualityRepaintTimerFired))),
       m_frameTimeWhenTimerStarted(0.0) {}

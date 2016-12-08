@@ -281,7 +281,7 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
   // font loading failing.  Out-of-process loading occurs for registered fonts
   // stored in non-system locations.  When loading fails, we do not want to use
   // the returned FontPlatformData since it will not have a valid SkTypeface.
-  std::unique_ptr<FontPlatformData> platformData = wrapUnique(
+  std::unique_ptr<FontPlatformData> platformData = WTF::wrapUnique(
       new FontPlatformData(platformFont, size, syntheticBold, syntheticItalic,
                            fontDescription.orientation()));
   if (!platformData->typeface()) {

@@ -30,29 +30,29 @@ void f()
 void f()
 {
     std::unique_ptr<T> owned(new T(argument));
-    // Or: auto owned = wrapUnique(new T(argument)); †1
+    // Or: auto owned = WTF::wrapUnique(new T(argument)); †1
     owned->useThis();
     T& reference = *owned;
     T* pointer = owned.get();
     owned.reset();      // Or: owned = nullptr
-    owned.reset(new T); // Or: owned = wrapUnique(new T)
+    owned.reset(new T); // Or: owned = WTF::wrapUnique(new T)
     T* leakedPointer = owned.release();
 }
 ```
 |||---|||
 
-†1 `wrapUnique()` is particularly useful when you pass a `unique_ptr` to somebody else:
+†1 `WTF::wrapUnique()` is particularly useful when you pass a `unique_ptr` to somebody else:
 
 ```c++
 std::unique_ptr<T> g()
 {
-    h(wrapUnique(new T(argument))); // Pass to a function.
-    return wrapUnique(new T(argument)); // Return from a function.
+    h(WTF::wrapUnique(new T(argument))); // Pass to a function.
+    return WTF::wrapUnique(new T(argument)); // Return from a function.
 }
 
 ```
 
-You need to `#include "wtf/PtrUtil.h"` for `wrapUnique()`.
+You need to `#include "wtf/PtrUtil.h"` for `WTF::wrapUnique()`.
 
 ## Passing and Receiving
 

@@ -46,7 +46,7 @@ V8PerContextData::V8PerContextData(v8::Local<v8::Context> context)
     : m_isolate(context->GetIsolate()),
       m_wrapperBoilerplates(m_isolate),
       m_constructorMap(m_isolate),
-      m_contextHolder(makeUnique<gin::ContextHolder>(m_isolate)),
+      m_contextHolder(WTF::makeUnique<gin::ContextHolder>(m_isolate)),
       m_context(m_isolate, context),
       m_activityLogger(0),
       m_compiledPrivateScript(m_isolate) {
@@ -77,7 +77,7 @@ V8PerContextData::~V8PerContextData() {
 
 std::unique_ptr<V8PerContextData> V8PerContextData::create(
     v8::Local<v8::Context> context) {
-  return wrapUnique(new V8PerContextData(context));
+  return WTF::wrapUnique(new V8PerContextData(context));
 }
 
 V8PerContextData* V8PerContextData::from(v8::Local<v8::Context> context) {

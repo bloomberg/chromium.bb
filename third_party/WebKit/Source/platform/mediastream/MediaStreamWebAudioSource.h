@@ -48,7 +48,7 @@ class MediaStreamWebAudioSource : public AudioSourceProvider {
  public:
   static std::unique_ptr<MediaStreamWebAudioSource> create(
       std::unique_ptr<WebAudioSourceProvider> provider) {
-    return wrapUnique(new MediaStreamWebAudioSource(std::move(provider)));
+    return WTF::wrapUnique(new MediaStreamWebAudioSource(std::move(provider)));
   }
 
   ~MediaStreamWebAudioSource() override;

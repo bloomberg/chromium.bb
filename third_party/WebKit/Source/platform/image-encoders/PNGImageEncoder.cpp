@@ -86,7 +86,7 @@ std::unique_ptr<PNGImageEncoderState> PNGImageEncoderState::create(
                PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0);
   png_write_info(png, info);
 
-  return wrapUnique(new PNGImageEncoderState(png, info));
+  return WTF::wrapUnique(new PNGImageEncoderState(png, info));
 }
 
 void PNGImageEncoder::writeOneRowToPng(unsigned char* pixels,

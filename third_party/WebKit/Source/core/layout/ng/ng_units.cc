@@ -243,7 +243,7 @@ NGExclusions::NGExclusions(const NGExclusions& other) {
 }
 
 void NGExclusions::Add(const NGExclusion& exclusion) {
-  storage.append(makeUnique<NGExclusion>(exclusion));
+  storage.append(WTF::makeUnique<NGExclusion>(exclusion));
   if (exclusion.type == NGExclusion::kFloatLeft) {
     last_left_float = storage.rbegin()->get();
   } else if (exclusion.type == NGExclusion::kFloatRight) {

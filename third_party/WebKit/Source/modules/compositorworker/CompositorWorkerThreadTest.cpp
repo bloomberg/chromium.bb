@@ -36,7 +36,7 @@ namespace {
 class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
  public:
   static std::unique_ptr<TestCompositorWorkerObjectProxy> create() {
-    return wrapUnique(new TestCompositorWorkerObjectProxy());
+    return WTF::wrapUnique(new TestCompositorWorkerObjectProxy());
   }
 
   // (Empty) WorkerReportingProxy implementation:
@@ -78,7 +78,7 @@ class TestCompositorProxyClient
 class CompositorWorkerTestPlatform : public TestingPlatformSupport {
  public:
   CompositorWorkerTestPlatform()
-      : m_thread(wrapUnique(m_oldPlatform->createThread("Compositor"))) {}
+      : m_thread(WTF::wrapUnique(m_oldPlatform->createThread("Compositor"))) {}
 
   WebThread* compositorThread() const override { return m_thread.get(); }
 
@@ -121,7 +121,7 @@ class CompositorWorkerThreadTest : public ::testing::Test {
 
   // Attempts to run some simple script for |worker|.
   void checkWorkerCanExecuteScript(WorkerThread* worker) {
-    std::unique_ptr<WaitableEvent> waitEvent = makeUnique<WaitableEvent>();
+    std::unique_ptr<WaitableEvent> waitEvent = WTF::makeUnique<WaitableEvent>();
     worker->workerBackingThread().backingThread().postTask(
         BLINK_FROM_HERE,
         crossThreadBind(&CompositorWorkerThreadTest::executeScriptInWorker,

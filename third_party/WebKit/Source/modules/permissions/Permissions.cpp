@@ -126,7 +126,7 @@ ScriptPromise Permissions::query(ScriptState* scriptState,
       scriptState->getExecutionContext()->getSecurityOrigin(),
       convertToBaseCallback(WTF::bind(
           &Permissions::taskComplete, wrapPersistent(this),
-          wrapPersistent(resolver), passed(std::move(descriptorCopy)))));
+          wrapPersistent(resolver), WTF::passed(std::move(descriptorCopy)))));
   return promise;
 }
 
@@ -159,7 +159,7 @@ ScriptPromise Permissions::request(ScriptState* scriptState,
       UserGestureIndicator::processingUserGesture(),
       convertToBaseCallback(WTF::bind(
           &Permissions::taskComplete, wrapPersistent(this),
-          wrapPersistent(resolver), passed(std::move(descriptorCopy)))));
+          wrapPersistent(resolver), WTF::passed(std::move(descriptorCopy)))));
   return promise;
 }
 
@@ -191,7 +191,7 @@ ScriptPromise Permissions::revoke(ScriptState* scriptState,
       scriptState->getExecutionContext()->getSecurityOrigin(),
       convertToBaseCallback(WTF::bind(
           &Permissions::taskComplete, wrapPersistent(this),
-          wrapPersistent(resolver), passed(std::move(descriptorCopy)))));
+          wrapPersistent(resolver), WTF::passed(std::move(descriptorCopy)))));
   return promise;
 }
 
@@ -248,10 +248,11 @@ ScriptPromise Permissions::requestAll(
       std::move(internalPermissions),
       scriptState->getExecutionContext()->getSecurityOrigin(),
       UserGestureIndicator::processingUserGesture(),
-      convertToBaseCallback(WTF::bind(
-          &Permissions::batchTaskComplete, wrapPersistent(this),
-          wrapPersistent(resolver), passed(std::move(internalPermissionsCopy)),
-          passed(std::move(callerIndexToInternalIndex)))));
+      convertToBaseCallback(
+          WTF::bind(&Permissions::batchTaskComplete, wrapPersistent(this),
+                    wrapPersistent(resolver),
+                    WTF::passed(std::move(internalPermissionsCopy)),
+                    WTF::passed(std::move(callerIndexToInternalIndex)))));
   return promise;
 }
 

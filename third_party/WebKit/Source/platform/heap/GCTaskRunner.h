@@ -100,10 +100,11 @@ class GCTaskRunner final {
 
  public:
   explicit GCTaskRunner(WebThread* thread)
-      : m_gcTaskObserver(wrapUnique(new GCTaskObserver)), m_thread(thread) {
+      : m_gcTaskObserver(WTF::wrapUnique(new GCTaskObserver)),
+        m_thread(thread) {
     m_thread->addTaskObserver(m_gcTaskObserver.get());
-    ThreadState::current()->addInterruptor(
-        wrapUnique(new MessageLoopInterruptor(thread->getWebTaskRunner())));
+    ThreadState::current()->addInterruptor(WTF::wrapUnique(
+        new MessageLoopInterruptor(thread->getWebTaskRunner())));
   }
 
   ~GCTaskRunner() { m_thread->removeTaskObserver(m_gcTaskObserver.get()); }

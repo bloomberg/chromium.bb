@@ -139,7 +139,7 @@ class GetPrimaryServicesCallback
     if (m_quantity == mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE) {
       DCHECK_EQ(1u, webServices.size());
       m_resolver->resolve(m_device->getOrCreateBluetoothRemoteGATTService(
-          wrapUnique(webServices[0])));
+          WTF::wrapUnique(webServices[0])));
       return;
     }
 
@@ -147,7 +147,7 @@ class GetPrimaryServicesCallback
     services.reserveInitialCapacity(webServices.size());
     for (WebBluetoothRemoteGATTService* webService : webServices) {
       services.append(m_device->getOrCreateBluetoothRemoteGATTService(
-          wrapUnique(webService)));
+          WTF::wrapUnique(webService)));
     }
     m_resolver->resolve(services);
   }

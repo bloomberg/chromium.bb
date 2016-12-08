@@ -19,7 +19,7 @@ namespace {
 class IsMonospaceChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<IsMonospaceChecker> create(bool isMonospace) {
-    return wrapUnique(new IsMonospaceChecker(isMonospace));
+    return WTF::wrapUnique(new IsMonospaceChecker(isMonospace));
   }
 
  private:
@@ -38,7 +38,7 @@ class InheritedFontSizeChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedFontSizeChecker> create(
       const FontDescription::Size& inheritedFontSize) {
-    return wrapUnique(new InheritedFontSizeChecker(inheritedFontSize));
+    return WTF::wrapUnique(new InheritedFontSizeChecker(inheritedFontSize));
   }
 
  private:

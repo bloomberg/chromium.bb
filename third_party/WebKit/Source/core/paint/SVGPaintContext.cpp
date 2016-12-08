@@ -101,7 +101,7 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary() {
 
   if (!isIsolationInstalled() &&
       SVGLayoutSupport::isIsolationRequired(&m_object)) {
-    m_compositingRecorder = wrapUnique(new CompositingRecorder(
+    m_compositingRecorder = WTF::wrapUnique(new CompositingRecorder(
         paintInfo().context, m_object, SkBlendMode::kSrcOver, 1));
   }
 
@@ -119,7 +119,7 @@ void SVGPaintContext::applyCompositingIfNecessary() {
   if (opacity < 1 || blendMode != WebBlendModeNormal) {
     const FloatRect compositingBounds =
         m_object.visualRectInLocalSVGCoordinates();
-    m_compositingRecorder = wrapUnique(new CompositingRecorder(
+    m_compositingRecorder = WTF::wrapUnique(new CompositingRecorder(
         paintInfo().context, m_object,
         WebCoreCompositeToSkiaComposite(CompositeSourceOver, blendMode),
         opacity, &compositingBounds));
@@ -161,7 +161,7 @@ bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources) {
   if (!filter)
     return true;
   m_filterRecordingContext =
-      wrapUnique(new SVGFilterRecordingContext(paintInfo().context));
+      WTF::wrapUnique(new SVGFilterRecordingContext(paintInfo().context));
   m_filter = filter;
   GraphicsContext* filterContext = SVGFilterPainter(*filter).prepareEffect(
       m_object, *m_filterRecordingContext);
@@ -170,7 +170,8 @@ bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources) {
 
   // Because the filter needs to cache its contents we replace the context
   // during filtering with the filter's context.
-  m_filterPaintInfo = wrapUnique(new PaintInfo(*filterContext, m_paintInfo));
+  m_filterPaintInfo =
+      WTF::wrapUnique(new PaintInfo(*filterContext, m_paintInfo));
 
   // Because we cache the filter contents and do not invalidate on paint
   // invalidation rect changes, we need to paint the entire filter region

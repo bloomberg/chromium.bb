@@ -45,7 +45,7 @@ void PresentationReceiver::onReceiverConnectionAvailable(
   // take() will call PresentationReceiver::registerConnection()
   // and register the connection.
   auto connection =
-      PresentationConnection::take(this, wrapUnique(connectionClient));
+      PresentationConnection::take(this, WTF::wrapUnique(connectionClient));
 
   // receiver.connectionList property not accessed
   if (!m_connectionListProperty)

@@ -475,7 +475,7 @@ ComputedStyle* ComputedStyle::addCachedPseudoStyle(
   ComputedStyle* result = pseudo.get();
 
   if (!m_cachedPseudoStyles)
-    m_cachedPseudoStyles = wrapUnique(new PseudoStyleCache);
+    m_cachedPseudoStyles = WTF::wrapUnique(new PseudoStyleCache);
 
   m_cachedPseudoStyles->append(pseudo);
 
@@ -1137,7 +1137,7 @@ void ComputedStyle::updatePropertySpecificDifferences(
 void ComputedStyle::addPaintImage(StyleImage* image) {
   if (!m_rareNonInheritedData.access()->m_paintImages) {
     m_rareNonInheritedData.access()->m_paintImages =
-        makeUnique<Vector<Persistent<StyleImage>>>();
+        WTF::makeUnique<Vector<Persistent<StyleImage>>>();
   }
   m_rareNonInheritedData.access()->m_paintImages->append(image);
 }
@@ -1560,7 +1560,7 @@ CounterDirectiveMap& ComputedStyle::accessCounterDirectives() {
   std::unique_ptr<CounterDirectiveMap>& map =
       m_rareNonInheritedData.access()->m_counterDirectives;
   if (!map)
-    map = wrapUnique(new CounterDirectiveMap);
+    map = WTF::wrapUnique(new CounterDirectiveMap);
   return *map;
 }
 

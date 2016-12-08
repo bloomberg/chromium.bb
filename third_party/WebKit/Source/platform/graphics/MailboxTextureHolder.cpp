@@ -97,8 +97,8 @@ void MailboxTextureHolder::releaseTextureThreadSafe() {
     textureThreadTaskRunner()->postTask(
         BLINK_FROM_HERE,
         crossThreadBind(&releaseTexture, m_isConvertedFromSkiaTexture,
-                        m_textureId, passed(std::move(m_contextProvider)),
-                        passed(std::move(passedSyncToken))));
+                        m_textureId, WTF::passed(std::move(m_contextProvider)),
+                        WTF::passed(std::move(passedSyncToken))));
   }
   m_textureId = 0u;  // invalidate the texture.
   setWasTransferred(false);

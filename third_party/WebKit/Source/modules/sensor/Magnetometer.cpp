@@ -37,7 +37,7 @@ MagnetometerReading* Magnetometer::reading() const {
 
 std::unique_ptr<SensorReadingFactory>
 Magnetometer::createSensorReadingFactory() {
-  return makeUnique<SensorReadingFactoryImpl<MagnetometerReading>>();
+  return WTF::makeUnique<SensorReadingFactoryImpl<MagnetometerReading>>();
 }
 
 DEFINE_TRACE(Magnetometer) {

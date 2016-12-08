@@ -582,8 +582,8 @@ static void createContextProviderOnMainThread(
     ContextProviderCreationInfo* creationInfo,
     WaitableEvent* waitableEvent) {
   ASSERT(isMainThread());
-  creationInfo->createdContextProvider =
-      wrapUnique(Platform::current()->createOffscreenGraphicsContext3DProvider(
+  creationInfo->createdContextProvider = WTF::wrapUnique(
+      Platform::current()->createOffscreenGraphicsContext3DProvider(
           creationInfo->contextAttributes, creationInfo->url, 0,
           creationInfo->glInfo));
   waitableEvent->signal();
@@ -627,7 +627,7 @@ WebGLRenderingContextBase::createContextProviderInternal(
   const auto& url = canvas ? canvas->document().topDocument().url()
                            : scriptState->getExecutionContext()->url();
   if (isMainThread()) {
-    contextProvider = wrapUnique(
+    contextProvider = WTF::wrapUnique(
         Platform::current()->createOffscreenGraphicsContext3DProvider(
             contextAttributes, url, 0, &glInfo));
   } else {
@@ -754,7 +754,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::getImage(
   OpacityMode opacityMode =
       creationAttributes().hasAlpha() ? NonOpaque : Opaque;
   std::unique_ptr<AcceleratedImageBufferSurface> surface =
-      makeUnique<AcceleratedImageBufferSurface>(size, opacityMode);
+      WTF::makeUnique<AcceleratedImageBufferSurface>(size, opacityMode);
   if (!surface->isValid())
     return nullptr;
   std::unique_ptr<ImageBuffer> buffer = ImageBuffer::create(std::move(surface));
@@ -5152,7 +5152,7 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
     // Try using an accelerated image buffer, this allows YUV conversion to be
     // done on the GPU.
     std::unique_ptr<ImageBufferSurface> surface =
-        wrapUnique(new AcceleratedImageBufferSurface(
+        WTF::wrapUnique(new AcceleratedImageBufferSurface(
             IntSize(video->videoWidth(), video->videoHeight())));
     if (surface->isValid()) {
       std::unique_ptr<ImageBuffer> imageBuffer(
@@ -7402,7 +7402,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*) {
                         ? canvas()->document().topDocument().url()
                         : getOffscreenCanvas()->getExecutionContext()->url();
   if (isMainThread()) {
-    contextProvider = wrapUnique(
+    contextProvider = WTF::wrapUnique(
         Platform::current()->createOffscreenGraphicsContext3DProvider(
             attributes, url, 0, &glInfo));
   } else {

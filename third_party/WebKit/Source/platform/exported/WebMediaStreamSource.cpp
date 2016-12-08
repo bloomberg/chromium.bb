@@ -147,7 +147,7 @@ void WebMediaStreamSource::setExtraData(ExtraData* extraData) {
     extraData->setOwner(m_private.get());
 
   m_private->setExtraData(
-      wrapUnique(new ExtraDataContainer(wrapUnique(extraData))));
+      WTF::wrapUnique(new ExtraDataContainer(WTF::wrapUnique(extraData))));
 }
 
 WebMediaConstraints WebMediaStreamSource::constraints() {

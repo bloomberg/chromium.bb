@@ -144,7 +144,7 @@ PendingInvalidations& StyleInvalidator::ensurePendingInvalidations(
   PendingInvalidationMap::AddResult addResult =
       m_pendingInvalidationMap.add(&node, nullptr);
   if (addResult.isNewEntry)
-    addResult.storedValue->value = makeUnique<PendingInvalidations>();
+    addResult.storedValue->value = WTF::makeUnique<PendingInvalidations>();
   return *addResult.storedValue->value;
 }
 

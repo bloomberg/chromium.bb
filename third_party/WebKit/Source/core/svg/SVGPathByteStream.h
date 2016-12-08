@@ -38,11 +38,11 @@ class SVGPathByteStream {
 
  public:
   static std::unique_ptr<SVGPathByteStream> create() {
-    return wrapUnique(new SVGPathByteStream);
+    return WTF::wrapUnique(new SVGPathByteStream);
   }
 
   std::unique_ptr<SVGPathByteStream> clone() const {
-    return wrapUnique(new SVGPathByteStream(m_data));
+    return WTF::wrapUnique(new SVGPathByteStream(m_data));
   }
 
   typedef Vector<unsigned char> Data;

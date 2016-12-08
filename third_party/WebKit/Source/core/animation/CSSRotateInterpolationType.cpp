@@ -113,7 +113,7 @@ class InheritedRotationChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedRotationChecker> create(
       const Rotation& inheritedRotation) {
-    return wrapUnique(new InheritedRotationChecker(inheritedRotation));
+    return WTF::wrapUnique(new InheritedRotationChecker(inheritedRotation));
   }
 
   bool isValid(const InterpolationEnvironment& environment,

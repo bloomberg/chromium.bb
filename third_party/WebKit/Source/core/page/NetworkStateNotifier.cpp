@@ -92,7 +92,7 @@ void NetworkStateNotifier::addObserver(NetworkStateObserver* observer,
   MutexLocker locker(m_mutex);
   ObserverListMap::AddResult result = m_observers.add(context, nullptr);
   if (result.isNewEntry)
-    result.storedValue->value = wrapUnique(new ObserverList);
+    result.storedValue->value = WTF::wrapUnique(new ObserverList);
 
   ASSERT(result.storedValue->value->observers.find(observer) == kNotFound);
   result.storedValue->value->observers.append(observer);

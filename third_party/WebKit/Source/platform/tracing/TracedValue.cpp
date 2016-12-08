@@ -10,7 +10,7 @@
 namespace blink {
 
 std::unique_ptr<TracedValue> TracedValue::create() {
-  return wrapUnique(new TracedValue());
+  return WTF::wrapUnique(new TracedValue());
 }
 
 TracedValue::TracedValue() {}

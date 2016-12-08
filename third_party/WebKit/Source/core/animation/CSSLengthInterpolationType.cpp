@@ -32,7 +32,7 @@ class InheritedLengthChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedLengthChecker> create(CSSPropertyID property,
                                                         const Length& length) {
-    return wrapUnique(new InheritedLengthChecker(property, length));
+    return WTF::wrapUnique(new InheritedLengthChecker(property, length));
   }
 
  private:

@@ -28,7 +28,7 @@ void PresentationConnectionCallbacks::onSuccess(
     std::unique_ptr<WebPresentationConnectionClient>
         PresentationConnectionClient) {
   std::unique_ptr<WebPresentationConnectionClient> result(
-      wrapUnique(PresentationConnectionClient.release()));
+      WTF::wrapUnique(PresentationConnectionClient.release()));
 
   if (!m_resolver->getExecutionContext() ||
       m_resolver->getExecutionContext()->isContextDestroyed())

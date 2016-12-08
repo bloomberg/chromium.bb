@@ -35,7 +35,7 @@ class PathPositionMapper {
 
  public:
   static std::unique_ptr<PathPositionMapper> create(const Path& path) {
-    return wrapUnique(new PathPositionMapper(path));
+    return WTF::wrapUnique(new PathPositionMapper(path));
   }
 
   enum PositionType {

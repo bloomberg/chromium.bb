@@ -56,8 +56,9 @@ int main(int argc, char** argv) {
 
     mojo::edk::Init();
     base::TestIOThread testIoThread(base::TestIOThread::kAutoStart);
-    std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipcSupport(wrapUnique(
-        new mojo::edk::test::ScopedIPCSupport(testIoThread.task_runner())));
+    std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipcSupport(
+        WTF::wrapUnique(
+            new mojo::edk::test::ScopedIPCSupport(testIoThread.task_runner())));
     result = base::LaunchUnitTests(
         argc, argv, base::Bind(runTestSuite, base::Unretained(&testSuite)));
   }

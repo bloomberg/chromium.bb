@@ -42,7 +42,7 @@ class SQLErrorData {
  public:
   static std::unique_ptr<SQLErrorData> create(unsigned code,
                                               const String& message) {
-    return wrapUnique(new SQLErrorData(code, message));
+    return WTF::wrapUnique(new SQLErrorData(code, message));
   }
 
   static std::unique_ptr<SQLErrorData> create(unsigned code,

@@ -28,7 +28,7 @@ class DeferredLoadingTest : public SimTest {
 
   std::unique_ptr<SimRequest> createMainResource() {
     std::unique_ptr<SimRequest> mainResource =
-        wrapUnique(new SimRequest("https://example.com/", "text/html"));
+        WTF::wrapUnique(new SimRequest("https://example.com/", "text/html"));
     loadURL("https://example.com/");
     return mainResource;
   }

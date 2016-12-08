@@ -174,7 +174,7 @@ class SVGTransformListChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<SVGTransformListChecker> create(
       const InterpolationValue& underlying) {
-    return wrapUnique(new SVGTransformListChecker(underlying));
+    return WTF::wrapUnique(new SVGTransformListChecker(underlying));
   }
 
   bool isValid(const InterpolationEnvironment&,

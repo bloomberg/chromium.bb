@@ -49,7 +49,7 @@ PlatformSpeechSynthesizer::PlatformSpeechSynthesizer(
   m_webSpeechSynthesizerClient =
       new WebSpeechSynthesizerClientImpl(this, client);
   m_webSpeechSynthesizer =
-      wrapUnique(Platform::current()->createSpeechSynthesizer(
+      WTF::wrapUnique(Platform::current()->createSpeechSynthesizer(
           m_webSpeechSynthesizerClient));
 }
 

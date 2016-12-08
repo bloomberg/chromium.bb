@@ -266,7 +266,7 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
       ShapeResult::RunInfo* run = new ShapeResult::RunInfo(
           currentFont, direction, ICUScriptToHBScript(currentRunScript),
           startIndex, numGlyphsToInsert, numCharacters);
-      shapeResult->insertRun(wrapUnique(run), lastChangePosition,
+      shapeResult->insertRun(WTF::wrapUnique(run), lastChangePosition,
                              numGlyphsToInsert, harfBuzzBuffer);
     }
     lastChangePosition = glyphIndex;

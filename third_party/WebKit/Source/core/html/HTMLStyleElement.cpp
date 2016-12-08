@@ -124,9 +124,9 @@ void HTMLStyleElement::notifyLoadedSheetAndAllCriticalSubresources(
   TaskRunnerHelper::get(TaskType::DOMManipulation, &document())
       ->postTask(
           BLINK_FROM_HERE,
-          WTF::bind(&HTMLStyleElement::dispatchPendingEvent,
-                    wrapPersistent(this),
-                    passed(IncrementLoadEventDelayCount::create(document()))));
+          WTF::bind(
+              &HTMLStyleElement::dispatchPendingEvent, wrapPersistent(this),
+              WTF::passed(IncrementLoadEventDelayCount::create(document()))));
   m_firedLoad = true;
 }
 

@@ -48,7 +48,7 @@ bool isNonCharacter(int character) {
 
 std::unique_ptr<TextCodec> TextCodecUTF8::create(const TextEncoding&,
                                                  const void*) {
-  return wrapUnique(new TextCodecUTF8);
+  return WTF::wrapUnique(new TextCodecUTF8);
 }
 
 void TextCodecUTF8::registerEncodingNames(EncodingNameRegistrar registrar) {

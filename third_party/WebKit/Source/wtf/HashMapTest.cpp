@@ -106,8 +106,8 @@ using OwnPtrHashMap = HashMap<int, std::unique_ptr<DestructCounter>>;
 TEST(HashMapTest, OwnPtrAsValue) {
   int destructNumber = 0;
   OwnPtrHashMap map;
-  map.add(1, wrapUnique(new DestructCounter(1, &destructNumber)));
-  map.add(2, wrapUnique(new DestructCounter(2, &destructNumber)));
+  map.add(1, WTF::wrapUnique(new DestructCounter(1, &destructNumber)));
+  map.add(2, WTF::wrapUnique(new DestructCounter(2, &destructNumber)));
 
   DestructCounter* counter1 = map.get(1);
   EXPECT_EQ(1, counter1->get());
@@ -246,10 +246,10 @@ TEST(HashMapTest, AddResult) {
   EXPECT_EQ(0, result.storedValue->value.get());
 
   SimpleClass* simple1 = new SimpleClass(1);
-  result.storedValue->value = wrapUnique(simple1);
+  result.storedValue->value = WTF::wrapUnique(simple1);
   EXPECT_EQ(simple1, map.get(1));
 
-  IntSimpleMap::AddResult result2 = map.add(1, makeUnique<SimpleClass>(2));
+  IntSimpleMap::AddResult result2 = map.add(1, WTF::makeUnique<SimpleClass>(2));
   EXPECT_FALSE(result2.isNewEntry);
   EXPECT_EQ(1, result.storedValue->key);
   EXPECT_EQ(1, result.storedValue->value->v());

@@ -27,7 +27,7 @@ void AppBannerController::bindMojoRequest(
     mojom::blink::AppBannerControllerRequest request) {
   DCHECK(frame);
 
-  mojo::MakeStrongBinding(wrapUnique(new AppBannerController(*frame)),
+  mojo::MakeStrongBinding(WTF::wrapUnique(new AppBannerController(*frame)),
                           std::move(request));
 }
 

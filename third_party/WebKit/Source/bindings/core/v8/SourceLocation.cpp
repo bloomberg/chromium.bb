@@ -118,8 +118,8 @@ std::unique_ptr<SourceLocation> SourceLocation::create(
     unsigned columnNumber,
     std::unique_ptr<v8_inspector::V8StackTrace> stackTrace,
     int scriptId) {
-  return wrapUnique(new SourceLocation(url, lineNumber, columnNumber,
-                                       std::move(stackTrace), scriptId));
+  return WTF::wrapUnique(new SourceLocation(url, lineNumber, columnNumber,
+                                            std::move(stackTrace), scriptId));
 }
 
 // static
@@ -130,8 +130,8 @@ std::unique_ptr<SourceLocation> SourceLocation::createFromNonEmptyV8StackTrace(
   String url = toCoreString(stackTrace->topSourceURL());
   unsigned lineNumber = stackTrace->topLineNumber();
   unsigned columnNumber = stackTrace->topColumnNumber();
-  return wrapUnique(new SourceLocation(url, lineNumber, columnNumber,
-                                       std::move(stackTrace), scriptId));
+  return WTF::wrapUnique(new SourceLocation(url, lineNumber, columnNumber,
+                                            std::move(stackTrace), scriptId));
 }
 
 // static
@@ -186,7 +186,7 @@ void SourceLocation::toTracedValue(TracedValue* value, const char* name) const {
 }
 
 std::unique_ptr<SourceLocation> SourceLocation::clone() const {
-  return wrapUnique(new SourceLocation(
+  return WTF::wrapUnique(new SourceLocation(
       m_url.isolatedCopy(), m_lineNumber, m_columnNumber,
       m_stackTrace ? m_stackTrace->clone() : nullptr, m_scriptId));
 }

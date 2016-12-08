@@ -1059,7 +1059,7 @@ void PaintLayer::updateAncestorDependentCompositingInputs(
     const AncestorDependentCompositingInputs& compositingInputs,
     bool hasAncestorWithClipPath) {
   m_ancestorDependentCompositingInputs =
-      makeUnique<AncestorDependentCompositingInputs>(compositingInputs);
+      WTF::makeUnique<AncestorDependentCompositingInputs>(compositingInputs);
   m_hasAncestorWithClipPath = hasAncestorWithClipPath;
   m_needsAncestorDependentCompositingInputsUpdate = false;
 }
@@ -1558,7 +1558,7 @@ void PaintLayer::didUpdateNeedsCompositedScrolling() {
 void PaintLayer::updateStackingNode() {
   DCHECK(!m_stackingNode);
   if (requiresStackingNode())
-    m_stackingNode = makeUnique<PaintLayerStackingNode>(this);
+    m_stackingNode = WTF::makeUnique<PaintLayerStackingNode>(this);
   else
     m_stackingNode = nullptr;
 }
@@ -2682,7 +2682,7 @@ void PaintLayer::ensureCompositedLayerMapping() {
     return;
 
   ensureRareData().compositedLayerMapping =
-      wrapUnique(new CompositedLayerMapping(*this));
+      WTF::wrapUnique(new CompositedLayerMapping(*this));
   m_rareData->compositedLayerMapping->setNeedsGraphicsLayerUpdate(
       GraphicsLayerUpdateSubtree);
 

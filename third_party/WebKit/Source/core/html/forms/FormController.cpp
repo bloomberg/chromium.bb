@@ -206,7 +206,7 @@ class SavedFormState {
 };
 
 std::unique_ptr<SavedFormState> SavedFormState::create() {
-  return wrapUnique(new SavedFormState);
+  return WTF::wrapUnique(new SavedFormState);
 }
 
 static bool isNotFormControlTypeCharacter(UChar ch) {
@@ -223,7 +223,7 @@ std::unique_ptr<SavedFormState> SavedFormState::deserialize(
   if (!itemCount)
     return nullptr;
   std::unique_ptr<SavedFormState> savedFormState =
-      wrapUnique(new SavedFormState);
+      WTF::wrapUnique(new SavedFormState);
   while (itemCount--) {
     if (index + 1 >= stateVector.size())
       return nullptr;
@@ -425,7 +425,7 @@ static String formStateSignature() {
 Vector<String> DocumentState::toStateVector() {
   FormKeyGenerator* keyGenerator = FormKeyGenerator::create();
   std::unique_ptr<SavedFormStateMap> stateMap =
-      wrapUnique(new SavedFormStateMap);
+      WTF::wrapUnique(new SavedFormStateMap);
   for (const auto& formControl : m_formControls) {
     HTMLFormControlElementWithState* control = formControl.get();
     DCHECK(control->isConnected());

@@ -34,8 +34,9 @@ class RejectedPromises::Message final {
       const String& errorMessage,
       std::unique_ptr<SourceLocation> location,
       AccessControlStatus corsStatus) {
-    return wrapUnique(new Message(scriptState, promise, exception, errorMessage,
-                                  std::move(location), corsStatus));
+    return WTF::wrapUnique(new Message(scriptState, promise, exception,
+                                       errorMessage, std::move(location),
+                                       corsStatus));
   }
 
   bool isCollected() { return m_collected || !m_scriptState->contextIsValid(); }
@@ -215,9 +216,10 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data) {
           ->currentThread()
           ->scheduler()
           ->timerTaskRunner()
-          ->postTask(BLINK_FROM_HERE, WTF::bind(&RejectedPromises::revokeNow,
-                                                RefPtr<RejectedPromises>(this),
-                                                passed(std::move(message))));
+          ->postTask(BLINK_FROM_HERE,
+                     WTF::bind(&RejectedPromises::revokeNow,
+                               RefPtr<RejectedPromises>(this),
+                               WTF::passed(std::move(message))));
       m_reportedAsErrors.remove(i);
       return;
     }
@@ -226,7 +228,7 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data) {
 
 std::unique_ptr<RejectedPromises::MessageQueue>
 RejectedPromises::createMessageQueue() {
-  return makeUnique<MessageQueue>();
+  return WTF::makeUnique<MessageQueue>();
 }
 
 void RejectedPromises::dispose() {
@@ -250,7 +252,7 @@ void RejectedPromises::processQueue() {
       ->timerTaskRunner()
       ->postTask(BLINK_FROM_HERE, WTF::bind(&RejectedPromises::processQueueNow,
                                             PassRefPtr<RejectedPromises>(this),
-                                            passed(std::move(queue))));
+                                            WTF::passed(std::move(queue))));
 }
 
 void RejectedPromises::processQueueNow(std::unique_ptr<MessageQueue> queue) {

@@ -49,7 +49,7 @@ class SharedWorkerRepositoryClientImpl final
  public:
   static std::unique_ptr<SharedWorkerRepositoryClientImpl> create(
       WebSharedWorkerRepositoryClient* client) {
-    return wrapUnique(new SharedWorkerRepositoryClientImpl(client));
+    return WTF::wrapUnique(new SharedWorkerRepositoryClientImpl(client));
   }
 
   ~SharedWorkerRepositoryClientImpl() override {}

@@ -80,7 +80,7 @@ class DeactivateTransactionTask : public V8PerIsolateData::EndOfScopeTask {
  public:
   static std::unique_ptr<DeactivateTransactionTask> create(
       IDBTransaction* transaction) {
-    return wrapUnique(new DeactivateTransactionTask(transaction));
+    return WTF::wrapUnique(new DeactivateTransactionTask(transaction));
   }
 
   void run() override {

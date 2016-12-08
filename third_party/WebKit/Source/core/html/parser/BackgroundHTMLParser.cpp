@@ -111,13 +111,13 @@ BackgroundHTMLParser::BackgroundHTMLParser(
     std::unique_ptr<Configuration> config,
     std::unique_ptr<WebTaskRunner> loadingTaskRunner)
     : m_weakFactory(this),
-      m_token(wrapUnique(new HTMLToken)),
+      m_token(WTF::wrapUnique(new HTMLToken)),
       m_tokenizer(HTMLTokenizer::create(config->options)),
       m_treeBuilderSimulator(config->options),
       m_options(config->options),
       m_outstandingTokenLimit(config->outstandingTokenLimit),
       m_parser(config->parser),
-      m_pendingTokens(wrapUnique(new CompactHTMLTokenStream)),
+      m_pendingTokens(WTF::wrapUnique(new CompactHTMLTokenStream)),
       m_pendingTokenLimit(config->pendingTokenLimit),
       m_xssAuditor(std::move(config->xssAuditor)),
       m_decoder(std::move(config->decoder)),
@@ -326,7 +326,7 @@ bool BackgroundHTMLParser::queueChunkForMainThread() {
 
   double chunkStartTime = monotonicallyIncreasingTimeMS();
   std::unique_ptr<HTMLDocumentParser::TokenizedChunk> chunk =
-      wrapUnique(new HTMLDocumentParser::TokenizedChunk);
+      WTF::wrapUnique(new HTMLDocumentParser::TokenizedChunk);
   TRACE_EVENT_WITH_FLOW0("blink,loading",
                          "BackgroundHTMLParser::sendTokensToMainThread",
                          chunk.get(), TRACE_EVENT_FLAG_FLOW_OUT);
@@ -361,7 +361,7 @@ bool BackgroundHTMLParser::queueChunkForMainThread() {
                       ("Parser.ChunkEnqueueTime", 1, 10000, 50));
   chunkEnqueueTime.count(monotonicallyIncreasingTimeMS() - chunkStartTime);
 
-  m_pendingTokens = wrapUnique(new CompactHTMLTokenStream);
+  m_pendingTokens = WTF::wrapUnique(new CompactHTMLTokenStream);
   return isEmpty;
 }
 

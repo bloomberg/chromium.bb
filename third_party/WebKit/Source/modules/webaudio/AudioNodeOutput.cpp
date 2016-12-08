@@ -51,7 +51,7 @@ inline AudioNodeOutput::AudioNodeOutput(AudioHandler* handler,
 std::unique_ptr<AudioNodeOutput> AudioNodeOutput::create(
     AudioHandler* handler,
     unsigned numberOfChannels) {
-  return wrapUnique(new AudioNodeOutput(handler, numberOfChannels));
+  return WTF::wrapUnique(new AudioNodeOutput(handler, numberOfChannels));
 }
 
 void AudioNodeOutput::dispose() {

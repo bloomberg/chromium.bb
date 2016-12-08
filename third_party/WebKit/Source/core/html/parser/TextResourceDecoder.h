@@ -52,7 +52,7 @@ class CORE_EXPORT TextResourceDecoder {
       const String& mimeType,
       const WTF::TextEncoding& defaultEncoding = WTF::TextEncoding(),
       bool usesEncodingDetector = false) {
-    return wrapUnique(new TextResourceDecoder(
+    return WTF::wrapUnique(new TextResourceDecoder(
         mimeType, defaultEncoding, usesEncodingDetector
                                        ? UseAllAutoDetection
                                        : UseContentAndBOMBasedDetection));
@@ -60,8 +60,8 @@ class CORE_EXPORT TextResourceDecoder {
   // Corresponds to utf-8 decode in Encoding spec:
   // https://encoding.spec.whatwg.org/#utf-8-decode.
   static std::unique_ptr<TextResourceDecoder> createAlwaysUseUTF8ForText() {
-    return wrapUnique(new TextResourceDecoder("plain/text", UTF8Encoding(),
-                                              AlwaysUseUTF8ForText));
+    return WTF::wrapUnique(new TextResourceDecoder("plain/text", UTF8Encoding(),
+                                                   AlwaysUseUTF8ForText));
   }
   ~TextResourceDecoder();
 

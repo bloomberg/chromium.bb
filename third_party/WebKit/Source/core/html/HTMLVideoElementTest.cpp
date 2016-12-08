@@ -72,7 +72,7 @@ class StubFrameLoaderClient : public EmptyFrameLoaderClient {
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) override {
-    return wrapUnique(new MockWebMediaPlayer);
+    return WTF::wrapUnique(new MockWebMediaPlayer);
   }
 };
 

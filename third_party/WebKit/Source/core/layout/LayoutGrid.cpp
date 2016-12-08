@@ -367,7 +367,7 @@ class LayoutGrid::GridIterator {
         (m_direction == ForColumns) ? m_grid.size() : m_grid[0].size();
     for (; varyingTrackIndex < endOfVaryingTrackIndex; ++varyingTrackIndex) {
       if (checkEmptyCells(rowSpan, columnSpan)) {
-        std::unique_ptr<GridArea> result = wrapUnique(
+        std::unique_ptr<GridArea> result = WTF::wrapUnique(
             new GridArea(GridSpan::translatedDefiniteGridSpan(
                              m_rowIndex, m_rowIndex + rowSpan),
                          GridSpan::translatedDefiniteGridSpan(
@@ -1123,7 +1123,7 @@ double LayoutGrid::computeFlexFactorUnitSize(
       leftOverSpace -= baseSize;
       flexFactorSum -= flexFactor;
       if (!additionalTracksToTreatAsInflexible)
-        additionalTracksToTreatAsInflexible = makeUnique<TrackIndexSet>();
+        additionalTracksToTreatAsInflexible = WTF::makeUnique<TrackIndexSet>();
       additionalTracksToTreatAsInflexible->add(index);
       validFlexFactorUnit = false;
     }
@@ -2045,7 +2045,7 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
       firstAutoRepeatTrack + grid.autoRepeatTracks(direction);
 
   if (!m_grid.hasGridItems()) {
-    emptyTrackIndexes = wrapUnique(new OrderedTrackIndexSet);
+    emptyTrackIndexes = WTF::wrapUnique(new OrderedTrackIndexSet);
     for (size_t trackIndex = firstAutoRepeatTrack;
          trackIndex < lastAutoRepeatTrack; ++trackIndex)
       emptyTrackIndexes->add(trackIndex);
@@ -2055,7 +2055,7 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
       GridIterator iterator(grid, direction, trackIndex);
       if (!iterator.nextGridItem()) {
         if (!emptyTrackIndexes)
-          emptyTrackIndexes = wrapUnique(new OrderedTrackIndexSet);
+          emptyTrackIndexes = WTF::wrapUnique(new OrderedTrackIndexSet);
         emptyTrackIndexes->add(trackIndex);
       }
     }
@@ -2228,7 +2228,7 @@ LayoutGrid::createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
                                                        crossDirection);
   GridSpan crossDirectionPositions = GridSpan::translatedDefiniteGridSpan(
       endOfCrossDirection, endOfCrossDirection + crossDirectionSpanSize);
-  return wrapUnique(
+  return WTF::wrapUnique(
       new GridArea(specifiedDirection == ForColumns ? crossDirectionPositions
                                                     : specifiedPositions,
                    specifiedDirection == ForColumns ? specifiedPositions

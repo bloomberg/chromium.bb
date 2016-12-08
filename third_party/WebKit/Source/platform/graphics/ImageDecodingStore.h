@@ -67,7 +67,7 @@ class PLATFORM_EXPORT ImageDecodingStore final {
 
  public:
   static std::unique_ptr<ImageDecodingStore> create() {
-    return wrapUnique(new ImageDecodingStore);
+    return WTF::wrapUnique(new ImageDecodingStore);
   }
   ~ImageDecodingStore();
 
@@ -141,7 +141,7 @@ class PLATFORM_EXPORT ImageDecodingStore final {
     static std::unique_ptr<DecoderCacheEntry> create(
         const ImageFrameGenerator* generator,
         std::unique_ptr<ImageDecoder> decoder) {
-      return wrapUnique(
+      return WTF::wrapUnique(
           new DecoderCacheEntry(generator, 0, std::move(decoder)));
     }
 

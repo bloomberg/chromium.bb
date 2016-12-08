@@ -36,7 +36,7 @@ std::unique_ptr<WebActiveGestureAnimation>
 WebActiveGestureAnimation::createAtAnimationStart(
     std::unique_ptr<WebGestureCurve> curve,
     WebGestureCurveTarget* target) {
-  return wrapUnique(
+  return WTF::wrapUnique(
       new WebActiveGestureAnimation(std::move(curve), target, 0, true));
 }
 
@@ -45,8 +45,8 @@ WebActiveGestureAnimation::createWithTimeOffset(
     std::unique_ptr<WebGestureCurve> curve,
     WebGestureCurveTarget* target,
     double startTime) {
-  return wrapUnique(new WebActiveGestureAnimation(std::move(curve), target,
-                                                  startTime, false));
+  return WTF::wrapUnique(new WebActiveGestureAnimation(std::move(curve), target,
+                                                       startTime, false));
 }
 
 WebActiveGestureAnimation::~WebActiveGestureAnimation() {}

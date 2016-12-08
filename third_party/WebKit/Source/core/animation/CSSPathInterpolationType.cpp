@@ -55,7 +55,7 @@ class InheritedPathChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedPathChecker> create(
       PassRefPtr<StylePath> stylePath) {
-    return wrapUnique(new InheritedPathChecker(std::move(stylePath)));
+    return WTF::wrapUnique(new InheritedPathChecker(std::move(stylePath)));
   }
 
  private:

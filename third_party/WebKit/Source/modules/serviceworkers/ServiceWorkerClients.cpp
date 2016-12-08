@@ -70,7 +70,7 @@ class GetCallback : public WebServiceWorkerClientCallbacks {
   void onSuccess(
       std::unique_ptr<WebServiceWorkerClientInfo> webClient) override {
     std::unique_ptr<WebServiceWorkerClientInfo> client =
-        wrapUnique(webClient.release());
+        WTF::wrapUnique(webClient.release());
     if (!m_resolver->getExecutionContext() ||
         m_resolver->getExecutionContext()->isContextDestroyed())
       return;

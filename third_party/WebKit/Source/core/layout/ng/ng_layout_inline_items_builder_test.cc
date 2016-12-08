@@ -204,7 +204,7 @@ static std::unique_ptr<LayoutInline> createLayoutInline(
     void (*initialize_style)(ComputedStyle*)) {
   RefPtr<ComputedStyle> style(ComputedStyle::create());
   initialize_style(style.get());
-  std::unique_ptr<LayoutInline> node = makeUnique<LayoutInline>(nullptr);
+  std::unique_ptr<LayoutInline> node = WTF::makeUnique<LayoutInline>(nullptr);
   node->setStyleInternal(std::move(style));
   return node;
 }

@@ -137,7 +137,7 @@ void ThreadDebugger::promiseRejectionRevoked(v8::Local<v8::Context> context,
 }
 
 void ThreadDebugger::beginUserGesture() {
-  m_userGestureIndicator = wrapUnique(
+  m_userGestureIndicator = WTF::wrapUnique(
       new UserGestureIndicator(DocumentUserGestureToken::create(nullptr)));
 }
 
@@ -459,8 +459,8 @@ void ThreadDebugger::startRepeatingTimer(
   m_timerData.append(data);
   m_timerCallbacks.append(callback);
 
-  std::unique_ptr<Timer<ThreadDebugger>> timer =
-      wrapUnique(new Timer<ThreadDebugger>(this, &ThreadDebugger::onTimer));
+  std::unique_ptr<Timer<ThreadDebugger>> timer = WTF::wrapUnique(
+      new Timer<ThreadDebugger>(this, &ThreadDebugger::onTimer));
   Timer<ThreadDebugger>* timerPtr = timer.get();
   m_timers.append(std::move(timer));
   timerPtr->startRepeating(interval, BLINK_FROM_HERE);

@@ -486,8 +486,8 @@ void VRDisplay::beginPresent() {
     if (doc) {
       // Since the callback for requestPresent is asynchronous, we've lost our
       // UserGestureToken, and need to create a new one to enter fullscreen.
-      gestureIndicator =
-          wrapUnique(new UserGestureIndicator(DocumentUserGestureToken::create(
+      gestureIndicator = WTF::wrapUnique(
+          new UserGestureIndicator(DocumentUserGestureToken::create(
               doc, UserGestureToken::Status::PossiblyExistingGesture)));
     }
     Fullscreen::requestFullscreen(*canvas, Fullscreen::UnprefixedRequest);
@@ -724,8 +724,8 @@ void VRDisplay::onFullscreenCheck(TimerBase*) {
     Document* doc = this->document();
     std::unique_ptr<UserGestureIndicator> gestureIndicator;
     if (doc) {
-      gestureIndicator =
-          wrapUnique(new UserGestureIndicator(DocumentUserGestureToken::create(
+      gestureIndicator = WTF::wrapUnique(
+          new UserGestureIndicator(DocumentUserGestureToken::create(
               doc, UserGestureToken::Status::PossiblyExistingGesture)));
     }
     Fullscreen::requestFullscreen(*canvas, Fullscreen::UnprefixedRequest);

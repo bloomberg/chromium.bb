@@ -71,7 +71,7 @@ Settings::Settings()
 }
 
 std::unique_ptr<Settings> Settings::create() {
-  return wrapUnique(new Settings);
+  return WTF::wrapUnique(new Settings);
 }
 
 SETTINGS_SETTER_BODIES

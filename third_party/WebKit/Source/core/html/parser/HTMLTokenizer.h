@@ -44,7 +44,7 @@ class CORE_EXPORT HTMLTokenizer {
  public:
   static std::unique_ptr<HTMLTokenizer> create(
       const HTMLParserOptions& options) {
-    return wrapUnique(new HTMLTokenizer(options));
+    return WTF::wrapUnique(new HTMLTokenizer(options));
   }
   ~HTMLTokenizer();
 

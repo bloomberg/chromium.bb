@@ -200,7 +200,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(DOMUint8ClampedArray* data,
       m_callback(callback),
       m_scriptPromiseResolver(resolver) {
   DCHECK(m_data->length() == (unsigned)(size.height() * size.width() * 4));
-  m_encodedImage = wrapUnique(new Vector<unsigned char>());
+  m_encodedImage = WTF::wrapUnique(new Vector<unsigned char>());
   m_pixelRowStride = size.width() * NumChannelsPng;
   m_idleTaskStatus = IdleTaskNotSupported;
   m_numRowsCompleted = 0;

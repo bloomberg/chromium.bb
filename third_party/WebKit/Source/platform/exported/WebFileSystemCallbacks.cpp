@@ -144,7 +144,7 @@ void WebFileSystemCallbacks::didResolveURL(const WebString& name,
 void WebFileSystemCallbacks::didCreateFileWriter(WebFileWriter* webFileWriter,
                                                  long long length) {
   ASSERT(!m_private.isNull());
-  m_private->callbacks()->didCreateFileWriter(wrapUnique(webFileWriter),
+  m_private->callbacks()->didCreateFileWriter(WTF::wrapUnique(webFileWriter),
                                               length);
   m_private.reset();
 }

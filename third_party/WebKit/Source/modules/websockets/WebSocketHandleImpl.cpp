@@ -42,8 +42,9 @@ void WebSocketHandleImpl::initialize(InterfaceProvider* interfaceProvider) {
   DCHECK(!m_websocket);
   interfaceProvider->getInterface(mojo::GetProxy(&m_websocket));
 
-  m_websocket.set_connection_error_with_reason_handler(convertToBaseCallback(
-      WTF::bind(&WebSocketHandleImpl::onConnectionError, unretained(this))));
+  m_websocket.set_connection_error_with_reason_handler(
+      convertToBaseCallback(WTF::bind(&WebSocketHandleImpl::onConnectionError,
+                                      WTF::unretained(this))));
 }
 
 void WebSocketHandleImpl::connect(const KURL& url,

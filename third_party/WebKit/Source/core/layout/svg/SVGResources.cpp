@@ -174,7 +174,7 @@ bool SVGResources::hasResourceData() const {
 static inline SVGResources& ensureResources(
     std::unique_ptr<SVGResources>& resources) {
   if (!resources)
-    resources = wrapUnique(new SVGResources);
+    resources = WTF::wrapUnique(new SVGResources);
 
   return *resources.get();
 }

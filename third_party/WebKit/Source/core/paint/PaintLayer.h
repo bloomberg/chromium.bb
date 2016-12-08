@@ -962,7 +962,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   ClipRectsCache* clipRectsCache() const { return m_clipRectsCache.get(); }
   ClipRectsCache& ensureClipRectsCache() const {
     if (!m_clipRectsCache)
-      m_clipRectsCache = wrapUnique(new ClipRectsCache);
+      m_clipRectsCache = WTF::wrapUnique(new ClipRectsCache);
     return *m_clipRectsCache;
   }
   void clearClipRectsCache() const { m_clipRectsCache.reset(); }
@@ -1091,7 +1091,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   PaintLayerRareData& ensureRareData() {
     if (!m_rareData)
-      m_rareData = wrapUnique(new PaintLayerRareData);
+      m_rareData = WTF::wrapUnique(new PaintLayerRareData);
     return *m_rareData;
   }
 

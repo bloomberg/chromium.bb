@@ -1142,7 +1142,7 @@ void ChromeClientImpl::didObserveNonGetFetchFromScript() const {
 
 std::unique_ptr<WebFrameScheduler> ChromeClientImpl::createFrameScheduler(
     BlameContext* blameContext) {
-  return wrapUnique(
+  return WTF::wrapUnique(
       m_webView->scheduler()->createFrameScheduler(blameContext).release());
 }
 

@@ -32,7 +32,7 @@ void createCompositorMutatorClient(
 }  // namespace
 
 CompositorMutatorImpl::CompositorMutatorImpl()
-    : m_animationManager(wrapUnique(new CustomCompositorAnimationManager)),
+    : m_animationManager(WTF::wrapUnique(new CustomCompositorAnimationManager)),
       m_client(nullptr) {}
 
 std::unique_ptr<CompositorMutatorClient> CompositorMutatorImpl::createClient() {

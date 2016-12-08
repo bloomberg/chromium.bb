@@ -30,7 +30,7 @@ void FetchHeaderList::append(const String& name, const String& value) {
   // "To append a name/value (|name|/|value|) pair to a header list (|list|),
   // append a new header whose name is |name|, byte lowercased, and value is
   // |value|, to |list|."
-  m_headerList.append(wrapUnique(new Header(name.lower(), value)));
+  m_headerList.append(WTF::wrapUnique(new Header(name.lower(), value)));
 }
 
 void FetchHeaderList::set(const String& name, const String& value) {
@@ -54,7 +54,7 @@ void FetchHeaderList::set(const String& name, const String& value) {
       return;
     }
   }
-  m_headerList.append(makeUnique<Header>(lowercasedName, value));
+  m_headerList.append(WTF::makeUnique<Header>(lowercasedName, value));
 }
 
 String FetchHeaderList::extractMIMEType() const {

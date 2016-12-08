@@ -140,7 +140,7 @@ class CORE_EXPORT AtomicHTMLToken {
         break;
       case HTMLToken::DOCTYPE:
         m_name = AtomicString(token.data());
-        m_doctypeData = makeUnique<DoctypeData>();
+        m_doctypeData = WTF::makeUnique<DoctypeData>();
         m_doctypeData->m_hasPublicIdentifier = true;
         token.publicIdentifier().appendTo(m_doctypeData->m_publicIdentifier);
         m_doctypeData->m_hasSystemIdentifier = true;

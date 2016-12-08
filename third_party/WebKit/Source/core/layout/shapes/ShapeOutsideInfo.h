@@ -120,7 +120,7 @@ class ShapeOutsideInfo final {
 
   static std::unique_ptr<ShapeOutsideInfo> createInfo(
       const LayoutBox& layoutBox) {
-    return wrapUnique(new ShapeOutsideInfo(layoutBox));
+    return WTF::wrapUnique(new ShapeOutsideInfo(layoutBox));
   }
   static bool isEnabledFor(const LayoutBox&);
 

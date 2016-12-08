@@ -15,9 +15,8 @@ namespace blink {
 WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactoryImpl* factory,
                                    WebURLLoader* default_loader)
     : factory_(factory),
-      default_loader_(wrapUnique(default_loader)),
-      weak_factory_(this) {
-}
+      default_loader_(WTF::wrapUnique(default_loader)),
+      weak_factory_(this) {}
 
 WebURLLoaderMock::~WebURLLoaderMock() {
   cancel();
@@ -36,7 +35,7 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
   // will just proxy to the client.
   std::unique_ptr<WebURLLoaderTestDelegate> default_delegate;
   if (!delegate) {
-    default_delegate = wrapUnique(new WebURLLoaderTestDelegate());
+    default_delegate = WTF::wrapUnique(new WebURLLoaderTestDelegate());
     delegate = default_delegate.get();
   }
 

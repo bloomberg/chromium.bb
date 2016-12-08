@@ -151,7 +151,7 @@ class CounterContentData final : public ContentData {
 
   ContentData* cloneInternal() const override {
     std::unique_ptr<CounterContent> counterData =
-        wrapUnique(new CounterContent(*counter()));
+        WTF::wrapUnique(new CounterContent(*counter()));
     return create(std::move(counterData));
   }
 

@@ -53,7 +53,7 @@ const SpaceSplitString& ClassList::classNames() const {
   DCHECK(m_element->hasClass());
   if (m_element->document().inQuirksMode()) {
     if (!m_classNamesForQuirksMode)
-      m_classNamesForQuirksMode = wrapUnique(
+      m_classNamesForQuirksMode = WTF::wrapUnique(
           new SpaceSplitString(value(), SpaceSplitString::ShouldNotFoldCase));
     return *m_classNamesForQuirksMode.get();
   }

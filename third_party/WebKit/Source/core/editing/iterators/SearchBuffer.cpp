@@ -83,7 +83,7 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
     }
   }
 
-  m_textSearcher = makeUnique<TextSearcherICU>();
+  m_textSearcher = WTF::makeUnique<TextSearcherICU>();
   m_textSearcher->setPattern(StringView(m_target.data(), m_target.size()),
                              !(m_options & CaseInsensitive));
 

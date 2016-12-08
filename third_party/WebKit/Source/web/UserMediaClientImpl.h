@@ -45,7 +45,7 @@ class UserMediaClientImpl final : public UserMediaClient {
  public:
   static std::unique_ptr<UserMediaClientImpl> create(
       WebUserMediaClient* client) {
-    return wrapUnique(new UserMediaClientImpl(client));
+    return WTF::wrapUnique(new UserMediaClientImpl(client));
   }
 
   // UserMediaClient ----------------------------------------------

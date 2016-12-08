@@ -98,7 +98,7 @@ ResourceRequest& ResourceRequest::operator=(const ResourceRequest&) = default;
 std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::copyData()
     const {
   std::unique_ptr<CrossThreadResourceRequestData> data =
-      makeUnique<CrossThreadResourceRequestData>();
+      WTF::makeUnique<CrossThreadResourceRequestData>();
   data->m_url = url().copy();
   data->m_cachePolicy = getCachePolicy();
   data->m_timeoutInterval = timeoutInterval();

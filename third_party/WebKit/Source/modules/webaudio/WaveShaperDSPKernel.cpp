@@ -40,18 +40,18 @@ WaveShaperDSPKernel::WaveShaperDSPKernel(WaveShaperProcessor* processor)
 
 void WaveShaperDSPKernel::lazyInitializeOversampling() {
   if (!m_tempBuffer) {
-    m_tempBuffer = wrapUnique(
+    m_tempBuffer = WTF::wrapUnique(
         new AudioFloatArray(AudioUtilities::kRenderQuantumFrames * 2));
-    m_tempBuffer2 = wrapUnique(
+    m_tempBuffer2 = WTF::wrapUnique(
         new AudioFloatArray(AudioUtilities::kRenderQuantumFrames * 4));
     m_upSampler =
-        wrapUnique(new UpSampler(AudioUtilities::kRenderQuantumFrames));
-    m_downSampler =
-        wrapUnique(new DownSampler(AudioUtilities::kRenderQuantumFrames * 2));
-    m_upSampler2 =
-        wrapUnique(new UpSampler(AudioUtilities::kRenderQuantumFrames * 2));
-    m_downSampler2 =
-        wrapUnique(new DownSampler(AudioUtilities::kRenderQuantumFrames * 4));
+        WTF::wrapUnique(new UpSampler(AudioUtilities::kRenderQuantumFrames));
+    m_downSampler = WTF::wrapUnique(
+        new DownSampler(AudioUtilities::kRenderQuantumFrames * 2));
+    m_upSampler2 = WTF::wrapUnique(
+        new UpSampler(AudioUtilities::kRenderQuantumFrames * 2));
+    m_downSampler2 = WTF::wrapUnique(
+        new DownSampler(AudioUtilities::kRenderQuantumFrames * 4));
   }
 }
 

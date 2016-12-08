@@ -48,7 +48,8 @@ using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
 class MockThreadableLoaderClient : public ThreadableLoaderClient {
  public:
   static std::unique_ptr<MockThreadableLoaderClient> create() {
-    return wrapUnique(new ::testing::StrictMock<MockThreadableLoaderClient>);
+    return WTF::wrapUnique(
+        new ::testing::StrictMock<MockThreadableLoaderClient>);
   }
   MOCK_METHOD2(didSendData, void(unsigned long long, unsigned long long));
   MOCK_METHOD3(didReceiveResponseMock,
@@ -176,7 +177,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
       ThreadableLoaderClient* client,
       CrossOriginRequestPolicy crossOriginRequestPolicy) override {
     std::unique_ptr<WaitableEvent> completionEvent =
-        makeUnique<WaitableEvent>();
+        WTF::makeUnique<WaitableEvent>();
     postTaskToWorkerGlobalScope(
         BLINK_FROM_HERE,
         createCrossThreadTask(
@@ -189,7 +190,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
 
   void startLoader(const ResourceRequest& request) override {
     std::unique_ptr<WaitableEvent> completionEvent =
-        makeUnique<WaitableEvent>();
+        WTF::makeUnique<WaitableEvent>();
     postTaskToWorkerGlobalScope(
         BLINK_FROM_HERE,
         createCrossThreadTask(
@@ -226,7 +227,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
     testing::runPendingTasks();
 
     std::unique_ptr<WaitableEvent> completionEvent =
-        makeUnique<WaitableEvent>();
+        WTF::makeUnique<WaitableEvent>();
     postTaskToWorkerGlobalScope(
         BLINK_FROM_HERE,
         createCrossThreadTask(
@@ -237,9 +238,9 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   }
 
   void onSetUp() override {
-    m_mockWorkerReportingProxy = makeUnique<MockWorkerReportingProxy>();
+    m_mockWorkerReportingProxy = WTF::makeUnique<MockWorkerReportingProxy>();
     m_securityOrigin = document().getSecurityOrigin();
-    m_workerThread = wrapUnique(new WorkerThreadForTest(
+    m_workerThread = WTF::wrapUnique(new WorkerThreadForTest(
         this, *m_mockWorkerReportingProxy, m_threadHeapMode));
 
     expectWorkerLifetimeReportingCalls();
@@ -355,14 +356,14 @@ class ThreadableLoaderTest
   ThreadableLoaderTest() {
     switch (GetParam()) {
       case DocumentThreadableLoaderTest:
-        m_helper = wrapUnique(new DocumentThreadableLoaderTestHelper);
+        m_helper = WTF::wrapUnique(new DocumentThreadableLoaderTestHelper);
         break;
       case WorkerThreadableLoaderTest:
-        m_helper = wrapUnique(
+        m_helper = WTF::wrapUnique(
             new WorkerThreadableLoaderTestHelper(BlinkGC::MainThreadHeapMode));
         break;
       case PerThreadHeapEnabledWorkerThreadableLoaderTest:
-        m_helper = wrapUnique(
+        m_helper = WTF::wrapUnique(
             new WorkerThreadableLoaderTestHelper(BlinkGC::PerThreadHeapMode));
         break;
     }

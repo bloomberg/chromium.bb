@@ -81,7 +81,7 @@ rasterInvalidationTrackingMap() {
 
 std::unique_ptr<GraphicsLayer> GraphicsLayer::create(
     GraphicsLayerClient* client) {
-  return wrapUnique(new GraphicsLayer(client));
+  return WTF::wrapUnique(new GraphicsLayer(client));
 }
 
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
@@ -116,7 +116,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     m_client->verifyNotPainting();
 #endif
 
-  m_contentLayerDelegate = makeUnique<ContentLayerDelegate>(this);
+  m_contentLayerDelegate = WTF::makeUnique<ContentLayerDelegate>(this);
   m_layer = Platform::current()->compositorSupport()->createContentLayer(
       m_contentLayerDelegate.get());
   m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);

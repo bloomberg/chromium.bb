@@ -2203,7 +2203,7 @@ void LayoutBlockFlow::setMustDiscardMarginBefore(bool value) {
     return;
 
   if (!m_rareData)
-    m_rareData = makeUnique<LayoutBlockFlowRareData>(this);
+    m_rareData = WTF::makeUnique<LayoutBlockFlowRareData>(this);
 
   m_rareData->m_discardMarginBefore = value;
 }
@@ -2218,7 +2218,7 @@ void LayoutBlockFlow::setMustDiscardMarginAfter(bool value) {
     return;
 
   if (!m_rareData)
-    m_rareData = makeUnique<LayoutBlockFlowRareData>(this);
+    m_rareData = WTF::makeUnique<LayoutBlockFlowRareData>(this);
 
   m_rareData->m_discardMarginAfter = value;
 }
@@ -2277,7 +2277,7 @@ void LayoutBlockFlow::setMaxMarginBeforeValues(LayoutUnit pos, LayoutUnit neg) {
     if (pos == LayoutBlockFlowRareData::positiveMarginBeforeDefault(this) &&
         neg == LayoutBlockFlowRareData::negativeMarginBeforeDefault(this))
       return;
-    m_rareData = makeUnique<LayoutBlockFlowRareData>(this);
+    m_rareData = WTF::makeUnique<LayoutBlockFlowRareData>(this);
   }
   m_rareData->m_margins.setPositiveMarginBefore(pos);
   m_rareData->m_margins.setNegativeMarginBefore(neg);
@@ -2288,7 +2288,7 @@ void LayoutBlockFlow::setMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg) {
     if (pos == LayoutBlockFlowRareData::positiveMarginAfterDefault(this) &&
         neg == LayoutBlockFlowRareData::negativeMarginAfterDefault(this))
       return;
-    m_rareData = makeUnique<LayoutBlockFlowRareData>(this);
+    m_rareData = WTF::makeUnique<LayoutBlockFlowRareData>(this);
   }
   m_rareData->m_margins.setPositiveMarginAfter(pos);
   m_rareData->m_margins.setNegativeMarginAfter(neg);
@@ -2721,7 +2721,7 @@ LayoutUnit LayoutBlockFlow::getClearDelta(LayoutBox* child,
 
 void LayoutBlockFlow::createFloatingObjects() {
   m_floatingObjects =
-      wrapUnique(new FloatingObjects(this, isHorizontalWritingMode()));
+      WTF::wrapUnique(new FloatingObjects(this, isHorizontalWritingMode()));
 }
 
 void LayoutBlockFlow::willBeDestroyed() {
@@ -4103,7 +4103,7 @@ void LayoutBlockFlow::setPaginationStrutPropagatedFromChild(LayoutUnit strut) {
   if (!m_rareData) {
     if (!strut)
       return;
-    m_rareData = makeUnique<LayoutBlockFlowRareData>(this);
+    m_rareData = WTF::makeUnique<LayoutBlockFlowRareData>(this);
   }
   m_rareData->m_paginationStrutPropagatedFromChild = strut;
 }
@@ -4112,7 +4112,7 @@ void LayoutBlockFlow::setFirstForcedBreakOffset(LayoutUnit blockOffset) {
   if (!m_rareData) {
     if (!blockOffset)
       return;
-    m_rareData = makeUnique<LayoutBlockFlowRareData>(this);
+    m_rareData = WTF::makeUnique<LayoutBlockFlowRareData>(this);
   }
   m_rareData->m_firstForcedBreakOffset = blockOffset;
 }
@@ -4273,7 +4273,7 @@ LayoutBlockFlow::LayoutBlockFlowRareData& LayoutBlockFlow::ensureRareData() {
   if (m_rareData)
     return *m_rareData;
 
-  m_rareData = makeUnique<LayoutBlockFlowRareData>(this);
+  m_rareData = WTF::makeUnique<LayoutBlockFlowRareData>(this);
   return *m_rareData;
 }
 

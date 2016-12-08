@@ -127,7 +127,7 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::createFromParentPolicy(
     FeaturePolicy::FeatureList& features) {
   DCHECK(currentOrigin);
   std::unique_ptr<FeaturePolicy> newPolicy =
-      wrapUnique(new FeaturePolicy(currentOrigin, features));
+      WTF::wrapUnique(new FeaturePolicy(currentOrigin, features));
   for (const FeaturePolicy::Feature* feature : features) {
     if (!parent ||
         parent->isFeatureEnabledForOrigin(*feature, *currentOrigin)) {

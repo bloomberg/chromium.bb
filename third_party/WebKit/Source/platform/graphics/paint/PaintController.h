@@ -44,7 +44,7 @@ class PLATFORM_EXPORT PaintController {
 
  public:
   static std::unique_ptr<PaintController> create() {
-    return wrapUnique(new PaintController());
+    return WTF::wrapUnique(new PaintController());
   }
 
   ~PaintController() {

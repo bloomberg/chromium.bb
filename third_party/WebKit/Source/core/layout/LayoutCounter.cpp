@@ -392,7 +392,7 @@ static CounterNode* makeCounterNodeIfNeeded(LayoutObject& object,
     nodeMap = counterMaps().get(&object);
   } else {
     nodeMap = new CounterMap;
-    counterMaps().set(&object, wrapUnique(nodeMap));
+    counterMaps().set(&object, WTF::wrapUnique(nodeMap));
     object.setHasCounterNodeMap(true);
   }
   nodeMap->set(identifier, newNode);

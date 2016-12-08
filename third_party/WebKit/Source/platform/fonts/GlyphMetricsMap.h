@@ -120,10 +120,11 @@ GlyphMetricsMap<T>::locatePageSlowCase(unsigned pageNumber) {
       if (page)
         return page;
     } else {
-      m_pages = wrapUnique(new HashMap<int, std::unique_ptr<GlyphMetricsPage>>);
+      m_pages =
+          WTF::wrapUnique(new HashMap<int, std::unique_ptr<GlyphMetricsPage>>);
     }
     page = new GlyphMetricsPage;
-    m_pages->set(pageNumber, wrapUnique(page));
+    m_pages->set(pageNumber, WTF::wrapUnique(page));
   }
 
   // Fill in the whole page with the unknown glyph information.

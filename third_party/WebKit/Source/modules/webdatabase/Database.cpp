@@ -875,7 +875,7 @@ void Database::runTransaction(SQLTransactionCallback* callback,
       getExecutionContext()->postTask(
           BLINK_FROM_HERE, createSameThreadTask(&callTransactionErrorCallback,
                                                 wrapPersistent(callback),
-                                                passed(std::move(error))));
+                                                WTF::passed(std::move(error))));
     }
   }
 }

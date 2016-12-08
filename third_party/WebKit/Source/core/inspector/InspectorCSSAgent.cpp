@@ -726,7 +726,7 @@ void InspectorCSSAgent::enable(std::unique_ptr<EnableCallback> prpCallback) {
   m_resourceContentLoader->ensureResourcesContentLoaded(
       m_resourceContentLoaderClientId,
       WTF::bind(&InspectorCSSAgent::resourceContentLoaded, wrapPersistent(this),
-                passed(std::move(prpCallback))));
+                WTF::passed(std::move(prpCallback))));
 }
 
 void InspectorCSSAgent::resourceContentLoaded(

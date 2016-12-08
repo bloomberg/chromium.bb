@@ -202,11 +202,11 @@ void ThreadHeapStats::decreaseAllocatedSpace(size_t delta) {
 }
 
 ThreadHeap::ThreadHeap()
-    : m_regionTree(makeUnique<RegionTree>()),
-      m_heapDoesNotContainCache(wrapUnique(new HeapDoesNotContainCache)),
-      m_safePointBarrier(makeUnique<SafePointBarrier>()),
-      m_freePagePool(wrapUnique(new FreePagePool)),
-      m_orphanedPagePool(wrapUnique(new OrphanedPagePool)),
+    : m_regionTree(WTF::makeUnique<RegionTree>()),
+      m_heapDoesNotContainCache(WTF::wrapUnique(new HeapDoesNotContainCache)),
+      m_safePointBarrier(WTF::makeUnique<SafePointBarrier>()),
+      m_freePagePool(WTF::wrapUnique(new FreePagePool)),
+      m_orphanedPagePool(WTF::wrapUnique(new OrphanedPagePool)),
       m_markingStack(CallbackStack::create()),
       m_postMarkingCallbackStack(CallbackStack::create()),
       m_globalWeakCallbackStack(CallbackStack::create()),

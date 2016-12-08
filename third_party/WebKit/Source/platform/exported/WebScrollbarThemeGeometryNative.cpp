@@ -35,7 +35,7 @@ namespace blink {
 
 std::unique_ptr<WebScrollbarThemeGeometryNative>
 WebScrollbarThemeGeometryNative::create(ScrollbarTheme& theme) {
-  return wrapUnique(new WebScrollbarThemeGeometryNative(theme));
+  return WTF::wrapUnique(new WebScrollbarThemeGeometryNative(theme));
 }
 
 WebScrollbarThemeGeometryNative::WebScrollbarThemeGeometryNative(

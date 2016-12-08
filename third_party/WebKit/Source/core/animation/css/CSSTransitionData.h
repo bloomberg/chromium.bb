@@ -51,12 +51,12 @@ class CSSTransitionData final : public CSSTimingData {
   };
 
   static std::unique_ptr<CSSTransitionData> create() {
-    return wrapUnique(new CSSTransitionData);
+    return WTF::wrapUnique(new CSSTransitionData);
   }
 
   static std::unique_ptr<CSSTransitionData> create(
       const CSSTransitionData& transitionData) {
-    return wrapUnique(new CSSTransitionData(transitionData));
+    return WTF::wrapUnique(new CSSTransitionData(transitionData));
   }
 
   bool transitionsMatchForStyleRecalc(const CSSTransitionData& other) const;

@@ -261,9 +261,9 @@ std::unique_ptr<HRTFElevation> HRTFElevation::createForSubject(
     return nullptr;
 
   std::unique_ptr<HRTFKernelList> kernelListL =
-      makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
+      WTF::makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
   std::unique_ptr<HRTFKernelList> kernelListR =
-      makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
+      WTF::makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
 
   // Load convolution kernels from HRTF files.
   int interpolatedIndex = 0;
@@ -297,8 +297,9 @@ std::unique_ptr<HRTFElevation> HRTFElevation::createForSubject(
     }
   }
 
-  std::unique_ptr<HRTFElevation> hrtfElevation = wrapUnique(new HRTFElevation(
-      std::move(kernelListL), std::move(kernelListR), elevation, sampleRate));
+  std::unique_ptr<HRTFElevation> hrtfElevation = WTF::wrapUnique(
+      new HRTFElevation(std::move(kernelListL), std::move(kernelListR),
+                        elevation, sampleRate));
   return hrtfElevation;
 }
 
@@ -314,9 +315,9 @@ std::unique_ptr<HRTFElevation> HRTFElevation::createByInterpolatingSlices(
   ASSERT(x >= 0.0 && x < 1.0);
 
   std::unique_ptr<HRTFKernelList> kernelListL =
-      makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
+      WTF::makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
   std::unique_ptr<HRTFKernelList> kernelListR =
-      makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
+      WTF::makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
 
   HRTFKernelList* kernelListL1 = hrtfElevation1->kernelListL();
   HRTFKernelList* kernelListR1 = hrtfElevation1->kernelListR();
@@ -335,7 +336,7 @@ std::unique_ptr<HRTFElevation> HRTFElevation::createByInterpolatingSlices(
   double angle = (1.0 - x) * hrtfElevation1->elevationAngle() +
                  x * hrtfElevation2->elevationAngle();
 
-  std::unique_ptr<HRTFElevation> hrtfElevation = wrapUnique(
+  std::unique_ptr<HRTFElevation> hrtfElevation = WTF::wrapUnique(
       new HRTFElevation(std::move(kernelListL), std::move(kernelListR),
                         static_cast<int>(angle), sampleRate));
   return hrtfElevation;

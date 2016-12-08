@@ -41,7 +41,7 @@ class UnderlyingRotationTypeChecker
  public:
   static std::unique_ptr<UnderlyingRotationTypeChecker> create(
       OffsetRotationType underlyingRotationType) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new UnderlyingRotationTypeChecker(underlyingRotationType));
   }
 
@@ -65,7 +65,8 @@ class InheritedRotationTypeChecker
  public:
   static std::unique_ptr<InheritedRotationTypeChecker> create(
       OffsetRotationType inheritedRotationType) {
-    return wrapUnique(new InheritedRotationTypeChecker(inheritedRotationType));
+    return WTF::wrapUnique(
+        new InheritedRotationTypeChecker(inheritedRotationType));
   }
 
   bool isValid(const InterpolationEnvironment& environment,

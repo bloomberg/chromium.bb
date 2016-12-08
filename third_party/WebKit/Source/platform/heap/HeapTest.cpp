@@ -483,7 +483,7 @@ class ThreadedTesterBase {
   static void test(ThreadedTesterBase* tester) {
     Vector<std::unique_ptr<WebThread>, numberOfThreads> m_threads;
     for (int i = 0; i < numberOfThreads; i++) {
-      m_threads.append(wrapUnique(
+      m_threads.append(WTF::wrapUnique(
           Platform::current()->createThread("blink gc testing thread")));
       m_threads.back()->getWebTaskRunner()->postTask(
           BLINK_FROM_HERE,
@@ -545,7 +545,7 @@ class ThreadedHeapTester : public ThreadedTesterBase {
 
   std::unique_ptr<GlobalIntWrapperPersistent> createGlobalPersistent(
       int value) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new GlobalIntWrapperPersistent(IntWrapper::create(value)));
   }
 
@@ -1293,7 +1293,7 @@ class FinalizationObserverWithHashMap {
     ObserverMap::AddResult result = map.add(&target, nullptr);
     if (result.isNewEntry) {
       result.storedValue->value =
-          makeUnique<FinalizationObserverWithHashMap>(target);
+          WTF::makeUnique<FinalizationObserverWithHashMap>(target);
     } else {
       ASSERT(result.storedValue->value);
     }
@@ -4652,7 +4652,7 @@ TEST(HeapTest, DestructorsCalled) {
   HeapHashMap<Member<IntWrapper>, std::unique_ptr<SimpleClassWithDestructor>>
       map;
   SimpleClassWithDestructor* hasDestructor = new SimpleClassWithDestructor();
-  map.add(IntWrapper::create(1), wrapUnique(hasDestructor));
+  map.add(IntWrapper::create(1), WTF::wrapUnique(hasDestructor));
   SimpleClassWithDestructor::s_wasDestructed = false;
   map.clear();
   EXPECT_TRUE(SimpleClassWithDestructor::s_wasDestructed);
@@ -4793,7 +4793,7 @@ class GCParkingThreadTester {
  public:
   static void test() {
     std::unique_ptr<WebThread> sleepingThread =
-        wrapUnique(Platform::current()->createThread("SleepingThread"));
+        WTF::wrapUnique(Platform::current()->createThread("SleepingThread"));
     sleepingThread->getWebTaskRunner()->postTask(
         BLINK_FROM_HERE, crossThreadBind(sleeperMainFunc));
 
@@ -5478,8 +5478,8 @@ class DeadBitTester {
     IntWrapper::s_destructorCalls = 0;
 
     MutexLocker locker(mainThreadMutex());
-    std::unique_ptr<WebThread> workerThread =
-        wrapUnique(Platform::current()->createThread("Test Worker Thread"));
+    std::unique_ptr<WebThread> workerThread = WTF::wrapUnique(
+        Platform::current()->createThread("Test Worker Thread"));
     workerThread->getWebTaskRunner()->postTask(
         BLINK_FROM_HERE, crossThreadBind(workerThreadMain));
 
@@ -5579,8 +5579,8 @@ class ThreadedStrongificationTester {
     IntWrapper::s_destructorCalls = 0;
 
     MutexLocker locker(mainThreadMutex());
-    std::unique_ptr<WebThread> workerThread =
-        wrapUnique(Platform::current()->createThread("Test Worker Thread"));
+    std::unique_ptr<WebThread> workerThread = WTF::wrapUnique(
+        Platform::current()->createThread("Test Worker Thread"));
     workerThread->getWebTaskRunner()->postTask(
         BLINK_FROM_HERE, crossThreadBind(workerThreadMain));
 
@@ -5772,8 +5772,8 @@ class RecursiveLockingTester {
     DestructorLockingObject::s_destructorCalls = 0;
 
     MutexLocker locker(mainThreadMutex());
-    std::unique_ptr<WebThread> workerThread =
-        wrapUnique(Platform::current()->createThread("Test Worker Thread"));
+    std::unique_ptr<WebThread> workerThread = WTF::wrapUnique(
+        Platform::current()->createThread("Test Worker Thread"));
     workerThread->getWebTaskRunner()->postTask(
         BLINK_FROM_HERE, crossThreadBind(workerThreadMain));
 
@@ -6489,7 +6489,7 @@ class WeakPersistentHolder final {
 TEST(HeapTest, WeakPersistent) {
   Persistent<IntWrapper> object = new IntWrapper(20);
   std::unique_ptr<WeakPersistentHolder> holder =
-      makeUnique<WeakPersistentHolder>(object);
+      WTF::makeUnique<WeakPersistentHolder>(object);
   preciselyCollectGarbage();
   EXPECT_TRUE(holder->object());
   object = nullptr;
@@ -6533,7 +6533,7 @@ TEST(HeapTest, CrossThreadWeakPersistent) {
   // the worker thread.
   MutexLocker mainThreadMutexLocker(mainThreadMutex());
   std::unique_ptr<WebThread> workerThread =
-      wrapUnique(Platform::current()->createThread("Test Worker Thread"));
+      WTF::wrapUnique(Platform::current()->createThread("Test Worker Thread"));
   DestructorLockingObject* object = nullptr;
   workerThread->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,

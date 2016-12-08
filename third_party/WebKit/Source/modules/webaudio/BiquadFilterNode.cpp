@@ -44,9 +44,9 @@ BiquadFilterNode::BiquadFilterNode(BaseAudioContext& context)
       m_detune(AudioParam::create(context, ParamTypeBiquadFilterDetune, 0.0)) {
   setHandler(AudioBasicProcessorHandler::create(
       AudioHandler::NodeTypeBiquadFilter, *this, context.sampleRate(),
-      wrapUnique(new BiquadProcessor(context.sampleRate(), 1,
-                                     m_frequency->handler(), m_q->handler(),
-                                     m_gain->handler(), m_detune->handler()))));
+      WTF::wrapUnique(new BiquadProcessor(
+          context.sampleRate(), 1, m_frequency->handler(), m_q->handler(),
+          m_gain->handler(), m_detune->handler()))));
 
   // Explicitly set the filter type so that any histograms get updated with the
   // default value.  Otherwise, the histogram won't ever show it.

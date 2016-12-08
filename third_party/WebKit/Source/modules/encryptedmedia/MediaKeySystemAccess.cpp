@@ -52,7 +52,7 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
 
     // 2.9. Let media keys be a new MediaKeys object.
     MediaKeys* mediaKeys = MediaKeys::create(
-        getExecutionContext(), m_supportedSessionTypes, wrapUnique(cdm));
+        getExecutionContext(), m_supportedSessionTypes, WTF::wrapUnique(cdm));
 
     // 2.10. Resolve promise with media keys.
     resolve(mediaKeys);

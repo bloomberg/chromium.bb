@@ -56,10 +56,10 @@ MediaStream* HTMLCanvasElementCapture::captureStream(
   const WebSize size(element.width(), element.height());
   std::unique_ptr<WebCanvasCaptureHandler> handler;
   if (givenFrameRate)
-    handler = wrapUnique(Platform::current()->createCanvasCaptureHandler(
+    handler = WTF::wrapUnique(Platform::current()->createCanvasCaptureHandler(
         size, frameRate, &track));
   else
-    handler = wrapUnique(Platform::current()->createCanvasCaptureHandler(
+    handler = WTF::wrapUnique(Platform::current()->createCanvasCaptureHandler(
         size, kDefaultFrameRate, &track));
 
   if (!handler) {

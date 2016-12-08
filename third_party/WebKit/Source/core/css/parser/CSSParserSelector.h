@@ -38,11 +38,11 @@ class CORE_EXPORT CSSParserSelector {
   explicit CSSParserSelector(const QualifiedName&, bool isImplicit = false);
 
   static std::unique_ptr<CSSParserSelector> create() {
-    return wrapUnique(new CSSParserSelector);
+    return WTF::wrapUnique(new CSSParserSelector);
   }
   static std::unique_ptr<CSSParserSelector> create(const QualifiedName& name,
                                                    bool isImplicit = false) {
-    return makeUnique<CSSParserSelector>(name, isImplicit);
+    return WTF::makeUnique<CSSParserSelector>(name, isImplicit);
   }
 
   ~CSSParserSelector();
