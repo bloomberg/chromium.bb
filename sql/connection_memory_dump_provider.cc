@@ -55,18 +55,19 @@ bool ConnectionMemoryDumpProvider::OnMemoryDump(
 }
 
 bool ConnectionMemoryDumpProvider::ReportMemoryUsage(
-    base::trace_event::MemoryAllocatorDump* mad) {
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& dump_name) {
   int cache_size = 0;
   int schema_size = 0;
   int statement_size = 0;
-  if (!GetDbMemoryUsage(&cache_size, &schema_size, &statement_size)) {
+  if (!GetDbMemoryUsage(&cache_size, &schema_size, &statement_size))
     return false;
-  }
 
+  auto* mad = pmd->CreateAllocatorDump(dump_name);
   mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                  cache_size + schema_size + statement_size);
-  mad->process_memory_dump()->AddSuballocation(mad->guid(), FormatDumpName());
+  pmd->AddSuballocation(mad->guid(), FormatDumpName());
 
   return true;
 }

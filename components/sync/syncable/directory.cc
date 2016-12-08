@@ -944,8 +944,7 @@ void Directory::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
   if (store_) {
     std::string dump_name =
         base::StringPrintf("%s/store", dump_name_base.c_str());
-    auto* dump = pmd->CreateAllocatorDump(dump_name);
-    store_->ReportMemoryUsage(dump);
+    store_->ReportMemoryUsage(pmd, dump_name);
   }
 }
 

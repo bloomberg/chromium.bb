@@ -22,7 +22,7 @@
 
 namespace base {
 namespace trace_event {
-class MemoryAllocatorDump;
+class ProcessMemoryDump;
 }
 }
 
@@ -104,7 +104,8 @@ class DirectoryBackingStore : public base::NonThreadSafe {
   // Returns true on success, false on error.
   bool GetDatabasePageSize(int* page_size);
 
-  bool ReportMemoryUsage(base::trace_event::MemoryAllocatorDump* mad);
+  bool ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,
+                         const std::string& dump_name);
 
  protected:
   // For test classes.

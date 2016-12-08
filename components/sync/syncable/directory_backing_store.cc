@@ -1718,8 +1718,9 @@ bool DirectoryBackingStore::GetDatabasePageSize(int* page_size) {
 }
 
 bool DirectoryBackingStore::ReportMemoryUsage(
-    base::trace_event::MemoryAllocatorDump* mad) {
-  return db_ && db_->ReportMemoryUsage(mad);
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& dump_name) {
+  return db_ && db_->ReportMemoryUsage(pmd, dump_name);
 }
 
 bool DirectoryBackingStore::UpdatePageSizeIfNecessary() {

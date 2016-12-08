@@ -29,7 +29,7 @@ namespace base {
 class FilePath;
 class HistogramBase;
 namespace trace_event {
-class MemoryAllocatorDump;
+class ProcessMemoryDump;
 }
 }
 
@@ -254,8 +254,9 @@ class SQL_EXPORT Connection {
   // get diagnostic information about the database.
   std::string GetDiagnosticInfo(int extended_error, Statement* statement);
 
-  // Reports memory usage into provided memory dump.
-  bool ReportMemoryUsage(base::trace_event::MemoryAllocatorDump* mad);
+  // Reports memory usage into provided memory dump with the given name.
+  bool ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,
+                         const std::string& dump_name);
 
   // Initialization ------------------------------------------------------------
 
