@@ -1493,13 +1493,9 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   if (!frame_)
     return false;
 
-  // TODO(kenrb): document() should not be null, but as a transitional step
-  // we have RenderFrameProxy 'wrapping' a RenderFrameImpl, passing messages
-  // to this method. This happens for a top-level remote frame, where a
-  // document-less RenderFrame is replaced by a RenderFrameProxy but kept
-  // around and is still able to receive messages.
-  if (!frame_->document().isNull())
-    GetContentClient()->SetActiveURL(frame_->document().url());
+  DCHECK(!frame_->document().isNull());
+
+  GetContentClient()->SetActiveURL(frame_->document().url());
 
   for (auto& observer : observers_) {
     if (observer.OnMessageReceived(msg))
