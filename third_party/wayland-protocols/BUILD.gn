@@ -190,3 +190,24 @@ source_set("stylus_protocol") {
 
   public_configs = [ ":stylus_protocol_config" ]
 }
+
+config("keyboard_configuration_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("keyboard_configuration_protocol") {
+  sources = [
+    "include/protocol/keyboard-configuration-unstable-v1-client-protocol.h",
+    "include/protocol/keyboard-configuration-unstable-v1-server-protocol.h",
+    "protocol/keyboard-configuration-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":keyboard_configuration_protocol_config" ]
+}
