@@ -12,6 +12,7 @@ import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.TabState;
@@ -56,8 +57,10 @@ public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBa
 
     }
 
-    @Feature("Incognito")
-    @MediumTest
+    // Flaky, see crbug.com/671268
+    // @Feature("Incognito")
+    // @MediumTest
+    @DisabledTest
     public void testSingleRunningChromeTabbedActivity()
             throws InterruptedException, CanceledException {
         startMainActivityOnBlankPage();
