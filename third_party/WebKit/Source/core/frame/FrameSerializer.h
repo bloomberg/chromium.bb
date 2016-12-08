@@ -89,6 +89,12 @@ class CORE_EXPORT FrameSerializer final {
 
     // Tells whether to skip serialization of a subresource.
     virtual bool shouldSkipResource(const Resource&) { return false; }
+
+    // Returns custom attributes that need to add in order to serialize the
+    // element.
+    virtual Vector<Attribute> getCustomAttributes(const Element&) {
+      return Vector<Attribute>();
+    }
   };
 
   // Constructs a serializer that will write output to the given vector of

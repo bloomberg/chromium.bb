@@ -220,4 +220,20 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveInlineScriptInAttributes) {
   EXPECT_NE(WTF::kNotFound, mhtml.find("src="));
 }
 
+TEST_F(WebFrameSerializerSanitizationTest, DisableFormElements) {
+  String mhtml = generateMHTMLParts("http://www.test.com", "form.html");
+
+  int matches = 0;
+  size_t start = 0;
+  while (true) {
+    const char kDisabledAttr[] = "disabled=3D\"\"";
+    size_t pos = mhtml.find(kDisabledAttr, start);
+    if (pos == WTF::kNotFound)
+      break;
+    matches++;
+    start = pos + arraysize(kDisabledAttr) - 1;
+  }
+  EXPECT_EQ(21, matches);
+}
+
 }  // namespace blink

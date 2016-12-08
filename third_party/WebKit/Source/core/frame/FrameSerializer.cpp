@@ -98,6 +98,9 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
   ~SerializerMarkupAccumulator() override;
 
  protected:
+  void appendCustomAttributes(StringBuilder&,
+                              const Element&,
+                              Namespaces*) override;
   void appendText(StringBuilder& out, Text&) override;
   bool shouldIgnoreAttribute(const Element&, const Attribute&) override;
   void appendElement(StringBuilder& out, Element&, Namespaces*) override;
@@ -138,6 +141,15 @@ SerializerMarkupAccumulator::SerializerMarkupAccumulator(
       m_nodes(nodes) {}
 
 SerializerMarkupAccumulator::~SerializerMarkupAccumulator() {}
+
+void SerializerMarkupAccumulator::appendCustomAttributes(
+    StringBuilder& result,
+    const Element& element,
+    Namespaces* namespaces) {
+  Vector<Attribute> attributes = m_delegate.getCustomAttributes(element);
+  for (const auto& attribute : attributes)
+    appendAttribute(result, element, attribute, namespaces);
+}
 
 void SerializerMarkupAccumulator::appendText(StringBuilder& result,
                                              Text& text) {

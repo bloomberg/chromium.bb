@@ -85,6 +85,7 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   bool rewriteLink(const Element&, String& rewrittenLink) override;
   bool shouldSkipResourceWithURL(const KURL&) override;
   bool shouldSkipResource(const Resource&) override;
+  Vector<Attribute> getCustomAttributes(const Element&) override;
 
  private:
   WebFrameSerializer::MHTMLPartsGenerationDelegate& m_webDelegate;
@@ -164,6 +165,22 @@ bool MHTMLFrameSerializerDelegate::shouldSkipResource(
              WebFrameSerializerCacheControlPolicy::
                  SkipAnyFrameOrResourceMarkedNoStore &&
          resource.hasCacheControlNoStoreHeader();
+}
+
+Vector<Attribute> MHTMLFrameSerializerDelegate::getCustomAttributes(
+    const Element& element) {
+  Vector<Attribute> attributes;
+
+  // Disable all form elements in MTHML to tell the user that the form cannot be
+  // worked on. MHTML is loaded in full sandboxing mode which disable the form
+  // submission and script execution.
+  if (element.isFormControlElement() &&
+      !element.fastHasAttribute(HTMLNames::disabledAttr)) {
+    Attribute disabledAttribute(HTMLNames::disabledAttr, "");
+    attributes.append(disabledAttribute);
+  }
+
+  return attributes;
 }
 
 bool cacheControlNoStoreHeaderPresent(
