@@ -98,6 +98,12 @@ const char kInsecureOriginToken[] =
     "YW1wbGUuY29tOjgwIiwgImZlYXR1cmUiOiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6"
     "IDIwMDAwMDAwMDB9";
 
+// These timestamps should be in the past and future, respectively. Sanity
+// checks within the tests assert that that is true, to guard against poorly-set
+// system clocks. (And against the inevitable march of time past the year 2033)
+double kPastTimestamp = 1000000000;
+double kFutureTimestamp = 2000000000;
+
 class TestOriginTrialPolicy : public OriginTrialPolicy {
  public:
   base::StringPiece GetPublicKey() const override {
@@ -151,6 +157,15 @@ class TrialTokenValidatorTest : public testing::Test {
   }
 
   ~TrialTokenValidatorTest() override { SetContentClient(nullptr); }
+
+  void SetUp() override {
+    // Ensure that the system clock is set to a date that the matches the test
+    // expectations. If this fails, either the clock on the test device is
+    // incorrect, or the actual date is after 2033-05-18, and the tokens need to
+    // be regenerated.
+    ASSERT_GT(base::Time::Now(), base::Time::FromDoubleT(kPastTimestamp));
+    ASSERT_LT(base::Time::Now(), base::Time::FromDoubleT(kFutureTimestamp));
+  }
 
   void SetPublicKey(const uint8_t* key) {
     test_content_client_.SetOriginTrialPublicKey(key);
