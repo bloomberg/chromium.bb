@@ -434,13 +434,13 @@ IOThread::IOThread(
   chrome_browser_net::SetGlobalSTHDistributor(
       std::unique_ptr<net::ct::STHDistributor>(new net::ct::STHDistributor()));
 
-  BrowserThread::SetDelegate(BrowserThread::IO, this);
+  BrowserThread::SetIOThreadDelegate(this);
 }
 
 IOThread::~IOThread() {
   // This isn't needed for production code, but in tests, IOThread may
   // be multiply constructed.
-  BrowserThread::SetDelegate(BrowserThread::IO, NULL);
+  BrowserThread::SetIOThreadDelegate(nullptr);
 
   pref_proxy_config_tracker_->DetachFromPrefService();
   DCHECK(!globals_);

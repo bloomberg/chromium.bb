@@ -7,17 +7,15 @@
 
 namespace content {
 
-// A class with this type may be registered via
-// BrowserThread::SetDelegate.
+// BrowserThread::SetDelegate was deprecated, this is now only used by
+// BrowserThread::SetIOThreadDelegate.
 //
-// If registered as such, it will schedule to run Init() before the
-// message loop begins and the schedule InitAsync() as the first
-// task on its message loop (after the BrowserThread has done its own
-// initialization), and receive a CleanUp call right after the message
-// loop ends (and before the BrowserThread has done its own clean-up).
+// When registered as such, it will schedule to run Init() before the message
+// loop begins and receive a CleanUp call right after the message loop ends (and
+// before the BrowserThread has done its own clean-up).
 class BrowserThreadDelegate {
  public:
-  virtual ~BrowserThreadDelegate() {}
+  virtual ~BrowserThreadDelegate() = default;
 
   // Called prior to starting the message loop
   virtual void Init() = 0;

@@ -99,6 +99,8 @@ struct BrowserThreadTaskRunners {
 base::LazyInstance<BrowserThreadTaskRunners>::Leaky g_task_runners =
     LAZY_INSTANCE_INITIALIZER;
 
+using BrowserThreadDelegateAtomicPtr = base::subtle::AtomicWord;
+
 struct BrowserThreadGlobals {
   BrowserThreadGlobals()
       : blocking_pool(
@@ -107,8 +109,6 @@ struct BrowserThreadGlobals {
                                           base::TaskPriority::USER_VISIBLE)) {
     memset(threads, 0, BrowserThread::ID_COUNT * sizeof(threads[0]));
     memset(thread_ids, 0, BrowserThread::ID_COUNT * sizeof(thread_ids[0]));
-    memset(thread_delegates, 0,
-           BrowserThread::ID_COUNT * sizeof(thread_delegates[0]));
   }
 
   // This lock protects |threads| and |thread_ids|. Do not read or modify those
@@ -125,9 +125,10 @@ struct BrowserThreadGlobals {
   // array upon destruction.
   BrowserThreadImpl* threads[BrowserThread::ID_COUNT];
 
-  // Only atomic operations are used on this array. The delegates are not owned
-  // by this array, rather by whoever calls BrowserThread::SetDelegate.
-  BrowserThreadDelegate* thread_delegates[BrowserThread::ID_COUNT];
+  // Only atomic operations are used on this pointer. The delegate isn't owned
+  // by BrowserThreadGlobals, rather by whoever calls
+  // BrowserThread::SetIOThreadDelegate.
+  BrowserThreadDelegateAtomicPtr io_thread_delegate = 0;
 
   const scoped_refptr<base::SequencedWorkerPool> blocking_pool;
 };
@@ -185,24 +186,22 @@ void BrowserThreadImpl::FlushThreadPoolHelperForTesting() {
 void BrowserThreadImpl::Init() {
   BrowserThreadGlobals& globals = g_globals.Get();
 
-  if (BrowserThread::CurrentlyOn(BrowserThread::DB) ||
-      BrowserThread::CurrentlyOn(BrowserThread::FILE) ||
-      BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING) ||
-      BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER) ||
-      BrowserThread::CurrentlyOn(BrowserThread::CACHE)) {
+  if (identifier_ == BrowserThread::DB ||
+      identifier_ == BrowserThread::FILE ||
+      identifier_ == BrowserThread::FILE_USER_BLOCKING ||
+      identifier_ == BrowserThread::PROCESS_LAUNCHER ||
+      identifier_ == BrowserThread::CACHE) {
     base::MessageLoop* message_loop = base::MessageLoop::current();
     message_loop->DisallowNesting();
     message_loop->DisallowTaskObservers();
   }
 
-  using base::subtle::AtomicWord;
-  AtomicWord* storage =
-      reinterpret_cast<AtomicWord*>(&globals.thread_delegates[identifier_]);
-  AtomicWord stored_pointer = base::subtle::NoBarrier_Load(storage);
-  BrowserThreadDelegate* delegate =
-      reinterpret_cast<BrowserThreadDelegate*>(stored_pointer);
-  if (delegate)
-    delegate->Init();
+  if (identifier_ == BrowserThread::IO) {
+    BrowserThreadDelegateAtomicPtr delegate =
+        base::subtle::NoBarrier_Load(&globals.io_thread_delegate);
+    if (delegate)
+      reinterpret_cast<BrowserThreadDelegate*>(delegate)->Init();
+  }
 }
 
 // We disable optimizations for this block of functions so the compiler doesn't
@@ -299,15 +298,12 @@ void BrowserThreadImpl::Run(base::RunLoop* run_loop) {
 void BrowserThreadImpl::CleanUp() {
   BrowserThreadGlobals& globals = g_globals.Get();
 
-  using base::subtle::AtomicWord;
-  AtomicWord* storage =
-      reinterpret_cast<AtomicWord*>(&globals.thread_delegates[identifier_]);
-  AtomicWord stored_pointer = base::subtle::NoBarrier_Load(storage);
-  BrowserThreadDelegate* delegate =
-      reinterpret_cast<BrowserThreadDelegate*>(stored_pointer);
-
-  if (delegate)
-    delegate->CleanUp();
+  if (identifier_ == BrowserThread::IO) {
+    BrowserThreadDelegateAtomicPtr delegate =
+        base::subtle::NoBarrier_Load(&globals.io_thread_delegate);
+    if (delegate)
+      reinterpret_cast<BrowserThreadDelegate*>(delegate)->CleanUp();
+  }
 
   // PostTaskHelper() accesses the message loop while holding this lock.
   // However, the message loop will soon be destructed without any locking. So
@@ -571,17 +567,16 @@ BrowserThread::GetTaskRunnerForThread(ID identifier) {
   return g_task_runners.Get().proxies[identifier];
 }
 
-void BrowserThread::SetDelegate(ID identifier,
-                                BrowserThreadDelegate* delegate) {
-  using base::subtle::AtomicWord;
+// static
+void BrowserThread::SetIOThreadDelegate(BrowserThreadDelegate* delegate) {
   BrowserThreadGlobals& globals = g_globals.Get();
-  AtomicWord* storage = reinterpret_cast<AtomicWord*>(
-      &globals.thread_delegates[identifier]);
-  AtomicWord old_pointer = base::subtle::NoBarrier_AtomicExchange(
-      storage, reinterpret_cast<AtomicWord>(delegate));
+  BrowserThreadDelegateAtomicPtr old_delegate =
+      base::subtle::NoBarrier_AtomicExchange(
+          &globals.io_thread_delegate,
+          reinterpret_cast<BrowserThreadDelegateAtomicPtr>(delegate));
 
   // This catches registration when previously registered.
-  DCHECK(!delegate || !old_pointer);
+  DCHECK(!delegate || !old_delegate);
 }
 
 }  // namespace content

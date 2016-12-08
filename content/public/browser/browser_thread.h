@@ -222,15 +222,19 @@ class CONTENT_EXPORT BrowserThread {
   static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForThread(
       ID identifier);
 
-  // Sets the delegate for the specified BrowserThread.
+  // Sets the delegate for BrowserThread::IO.
   //
-  // Only one delegate may be registered at a time.  Delegates may be
+  // This only supports the IO thread as it doesn't work for potentially
+  // redirected threads (ref. http://crbug.com/653916) and also doesn't make
+  // sense for the UI thread.
+  //
+  // Only one delegate may be registered at a time. The delegate may be
   // unregistered by providing a nullptr pointer.
   //
-  // If the caller unregisters a delegate before CleanUp has been
-  // called, it must perform its own locking to ensure the delegate is
-  // not deleted while unregistering.
-  static void SetDelegate(ID identifier, BrowserThreadDelegate* delegate);
+  // If the caller unregisters the delegate before CleanUp has been called, it
+  // must perform its own locking to ensure the delegate is not deleted while
+  // unregistering.
+  static void SetIOThreadDelegate(BrowserThreadDelegate* delegate);
 
   // Use these templates in conjunction with RefCountedThreadSafe or scoped_ptr
   // when you want to ensure that an object is deleted on a specific thread.
