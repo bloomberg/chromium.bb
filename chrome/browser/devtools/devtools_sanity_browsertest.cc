@@ -1428,7 +1428,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
 
 // This test enables switches::kUseGpuInTests which causes false positives
 // with MemorySanitizer.
-#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || defined(OS_WIN)
+// Flaky on Linux and Windows https://crbug.com/624215
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+    defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_TestLatencyInfoInstrumentation \
   DISABLED_TestLatencyInfoInstrumentation
 #else
