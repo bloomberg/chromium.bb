@@ -7932,6 +7932,602 @@
             "url": "/encoding/textencoder-utf16-surrogates.html"
           }
         ],
+        "encrypted-media/clearkey-check-initdata-type.html": [
+          {
+            "path": "encrypted-media/clearkey-check-initdata-type.html",
+            "url": "/encrypted-media/clearkey-check-initdata-type.html"
+          }
+        ],
+        "encrypted-media/clearkey-events-session-closed-event.html": [
+          {
+            "path": "encrypted-media/clearkey-events-session-closed-event.html",
+            "url": "/encrypted-media/clearkey-events-session-closed-event.html"
+          }
+        ],
+        "encrypted-media/clearkey-events.html": [
+          {
+            "path": "encrypted-media/clearkey-events.html",
+            "url": "/encrypted-media/clearkey-events.html"
+          }
+        ],
+        "encrypted-media/clearkey-generate-request-disallowed-input.html": [
+          {
+            "path": "encrypted-media/clearkey-generate-request-disallowed-input.html",
+            "url": "/encrypted-media/clearkey-generate-request-disallowed-input.html"
+          }
+        ],
+        "encrypted-media/clearkey-invalid-license.html": [
+          {
+            "path": "encrypted-media/clearkey-invalid-license.html",
+            "url": "/encrypted-media/clearkey-invalid-license.html"
+          }
+        ],
+        "encrypted-media/clearkey-keystatuses-multiple-sessions.html": [
+          {
+            "path": "encrypted-media/clearkey-keystatuses-multiple-sessions.html",
+            "url": "/encrypted-media/clearkey-keystatuses-multiple-sessions.html"
+          }
+        ],
+        "encrypted-media/clearkey-keystatuses.html": [
+          {
+            "path": "encrypted-media/clearkey-keystatuses.html",
+            "url": "/encrypted-media/clearkey-keystatuses.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-destroy-persistent-license.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-destroy-persistent-license.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-destroy-persistent-license.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-persistent-license-events.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-persistent-license-events.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-persistent-license-events.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-persistent-license.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-persistent-license.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-persistent-license.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-persistent-usage-record-events.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-persistent-usage-record-events.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-persistent-usage-record-events.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-persistent-usage-record.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-persistent-usage-record.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-persistent-usage-record.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-retrieve-destroy-persistent-license.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-retrieve-destroy-persistent-license.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-retrieve-destroy-persistent-license.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-retrieve-persistent-license.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-retrieve-persistent-license.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-retrieve-persistent-license.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-retrieve-persistent-usage-record.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-retrieve-persistent-usage-record.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-retrieve-persistent-usage-record.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-clear-encrypted.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-clear-encrypted.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-clear-encrypted.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-encrypted-clear-sources.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-encrypted-clear-sources.html",
+            "timeout": "long",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-encrypted-clear-sources.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-encrypted-clear.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-encrypted-clear.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-encrypted-clear.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-events.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-events.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-events.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-multikey-sequential-readyState.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-multikey-sequential-readyState.html",
+            "timeout": "long",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-multikey-sequential-readyState.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-multikey-sequential.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-multikey-sequential.html",
+            "timeout": "long",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-multikey-sequential.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-multikey.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-multikey.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-multikey.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-multisession.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-multisession.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-multisession.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-after-src.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-after-src.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-after-src.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-after-update.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-after-update.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-after-update.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-immediately.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-immediately.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-immediately.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-onencrypted.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-onencrypted.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-setMediaKeys-onencrypted.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-two-videos.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-two-videos.html",
+            "timeout": "long",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-two-videos.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary-waitingforkey.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary-waitingforkey.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary-waitingforkey.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-playback-temporary.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-playback-temporary.html",
+            "url": "/encrypted-media/clearkey-mp4-playback-temporary.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-requestmediakeysystemaccess.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-requestmediakeysystemaccess.html",
+            "timeout": "long",
+            "url": "/encrypted-media/clearkey-mp4-requestmediakeysystemaccess.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-reset-src-after-setmediakeys.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-reset-src-after-setmediakeys.html",
+            "url": "/encrypted-media/clearkey-mp4-reset-src-after-setmediakeys.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-setmediakeys-again-after-playback.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-setmediakeys-again-after-playback.html",
+            "url": "/encrypted-media/clearkey-mp4-setmediakeys-again-after-playback.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-setmediakeys-again-after-resetting-src.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-setmediakeys-again-after-resetting-src.html",
+            "url": "/encrypted-media/clearkey-mp4-setmediakeys-again-after-resetting-src.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-setmediakeys-at-same-time.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-setmediakeys-at-same-time.html",
+            "url": "/encrypted-media/clearkey-mp4-setmediakeys-at-same-time.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-setmediakeys-multiple-times-with-different-mediakeys.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-setmediakeys-multiple-times-with-different-mediakeys.html",
+            "url": "/encrypted-media/clearkey-mp4-setmediakeys-multiple-times-with-different-mediakeys.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-setmediakeys-multiple-times-with-the-same-mediakeys.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-setmediakeys-multiple-times-with-the-same-mediakeys.html",
+            "url": "/encrypted-media/clearkey-mp4-setmediakeys-multiple-times-with-the-same-mediakeys.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-setmediakeys-to-multiple-video-elements.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-setmediakeys-to-multiple-video-elements.html",
+            "url": "/encrypted-media/clearkey-mp4-setmediakeys-to-multiple-video-elements.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-setmediakeys.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-setmediakeys.html",
+            "url": "/encrypted-media/clearkey-mp4-setmediakeys.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-syntax-mediakeys.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-syntax-mediakeys.html",
+            "url": "/encrypted-media/clearkey-mp4-syntax-mediakeys.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-syntax-mediakeysession.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-syntax-mediakeysession.html",
+            "url": "/encrypted-media/clearkey-mp4-syntax-mediakeysession.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-syntax-mediakeysystemaccess.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-syntax-mediakeysystemaccess.html",
+            "url": "/encrypted-media/clearkey-mp4-syntax-mediakeysystemaccess.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-unique-origin.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-unique-origin.html",
+            "url": "/encrypted-media/clearkey-mp4-unique-origin.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-update-disallowed-input.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-update-disallowed-input.html",
+            "url": "/encrypted-media/clearkey-mp4-update-disallowed-input.html"
+          }
+        ],
+        "encrypted-media/clearkey-mp4-waiting-for-a-key.html": [
+          {
+            "path": "encrypted-media/clearkey-mp4-waiting-for-a-key.html",
+            "url": "/encrypted-media/clearkey-mp4-waiting-for-a-key.html"
+          }
+        ],
+        "encrypted-media/clearkey-not-callable-after-createsession.html": [
+          {
+            "path": "encrypted-media/clearkey-not-callable-after-createsession.html",
+            "url": "/encrypted-media/clearkey-not-callable-after-createsession.html"
+          }
+        ],
+        "encrypted-media/clearkey-update-non-ascii-input.html": [
+          {
+            "path": "encrypted-media/clearkey-update-non-ascii-input.html",
+            "url": "/encrypted-media/clearkey-update-non-ascii-input.html"
+          }
+        ],
+        "encrypted-media/drm-check-initdata-type.html": [
+          {
+            "path": "encrypted-media/drm-check-initdata-type.html",
+            "url": "/encrypted-media/drm-check-initdata-type.html"
+          }
+        ],
+        "encrypted-media/drm-events-session-closed-event.html": [
+          {
+            "path": "encrypted-media/drm-events-session-closed-event.html",
+            "url": "/encrypted-media/drm-events-session-closed-event.html"
+          }
+        ],
+        "encrypted-media/drm-events.html": [
+          {
+            "path": "encrypted-media/drm-events.html",
+            "url": "/encrypted-media/drm-events.html"
+          }
+        ],
+        "encrypted-media/drm-expiration.html": [
+          {
+            "path": "encrypted-media/drm-expiration.html",
+            "url": "/encrypted-media/drm-expiration.html"
+          }
+        ],
+        "encrypted-media/drm-generate-request-disallowed-input.html": [
+          {
+            "path": "encrypted-media/drm-generate-request-disallowed-input.html",
+            "url": "/encrypted-media/drm-generate-request-disallowed-input.html"
+          }
+        ],
+        "encrypted-media/drm-invalid-license.html": [
+          {
+            "path": "encrypted-media/drm-invalid-license.html",
+            "url": "/encrypted-media/drm-invalid-license.html"
+          }
+        ],
+        "encrypted-media/drm-keystatuses-multiple-sessions.html": [
+          {
+            "path": "encrypted-media/drm-keystatuses-multiple-sessions.html",
+            "url": "/encrypted-media/drm-keystatuses-multiple-sessions.html"
+          }
+        ],
+        "encrypted-media/drm-keystatuses.html": [
+          {
+            "path": "encrypted-media/drm-keystatuses.html",
+            "url": "/encrypted-media/drm-keystatuses.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-onencrypted.html": [
+          {
+            "path": "encrypted-media/drm-mp4-onencrypted.html",
+            "url": "/encrypted-media/drm-mp4-onencrypted.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-destroy-persistent-license.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-destroy-persistent-license.html",
+            "url": "/encrypted-media/drm-mp4-playback-destroy-persistent-license.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-persistent-license-events.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-persistent-license-events.html",
+            "url": "/encrypted-media/drm-mp4-playback-persistent-license-events.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-persistent-license.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-persistent-license.html",
+            "url": "/encrypted-media/drm-mp4-playback-persistent-license.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-persistent-usage-record-events.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-persistent-usage-record-events.html",
+            "url": "/encrypted-media/drm-mp4-playback-persistent-usage-record-events.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-persistent-usage-record.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-persistent-usage-record.html",
+            "timeout": "long",
+            "url": "/encrypted-media/drm-mp4-playback-persistent-usage-record.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-retrieve-destroy-persistent-license.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-retrieve-destroy-persistent-license.html",
+            "timeout": "long",
+            "url": "/encrypted-media/drm-mp4-playback-retrieve-destroy-persistent-license.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-retrieve-persistent-license.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-retrieve-persistent-license.html",
+            "timeout": "long",
+            "url": "/encrypted-media/drm-mp4-playback-retrieve-persistent-license.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-retrieve-persistent-usage-record.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-retrieve-persistent-usage-record.html",
+            "url": "/encrypted-media/drm-mp4-playback-retrieve-persistent-usage-record.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-clear-encrypted.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-clear-encrypted.html",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-clear-encrypted.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-encrypted-clear-sources.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-encrypted-clear-sources.html",
+            "timeout": "long",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-encrypted-clear-sources.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-encrypted-clear.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-encrypted-clear.html",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-encrypted-clear.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-events.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-events.html",
+            "timeout": "long",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-events.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-expired.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-expired.html",
+            "timeout": "long",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-expired.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-multikey-sequential-readyState.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-multikey-sequential-readyState.html",
+            "timeout": "long",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-multikey-sequential-readyState.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-multikey-sequential.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-multikey-sequential.html",
+            "timeout": "long",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-multikey-sequential.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-multikey.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-multikey.html",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-multikey.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-multisession.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-multisession.html",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-multisession.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-src.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-src.html",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-src.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-update.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-update.html",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-update.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-immediately.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-immediately.html",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-setMediaKeys-immediately.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-onencrypted.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-onencrypted.html",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-setMediaKeys-onencrypted.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-two-videos.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-two-videos.html",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-two-videos.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary-waitingforkey.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary-waitingforkey.html",
+            "url": "/encrypted-media/drm-mp4-playback-temporary-waitingforkey.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-playback-temporary.html": [
+          {
+            "path": "encrypted-media/drm-mp4-playback-temporary.html",
+            "url": "/encrypted-media/drm-mp4-playback-temporary.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-requestmediakeysystemaccess.html": [
+          {
+            "path": "encrypted-media/drm-mp4-requestmediakeysystemaccess.html",
+            "timeout": "long",
+            "url": "/encrypted-media/drm-mp4-requestmediakeysystemaccess.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-reset-src-after-setmediakeys.html": [
+          {
+            "path": "encrypted-media/drm-mp4-reset-src-after-setmediakeys.html",
+            "url": "/encrypted-media/drm-mp4-reset-src-after-setmediakeys.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-setmediakeys-again-after-playback.html": [
+          {
+            "path": "encrypted-media/drm-mp4-setmediakeys-again-after-playback.html",
+            "url": "/encrypted-media/drm-mp4-setmediakeys-again-after-playback.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-setmediakeys-again-after-resetting-src.html": [
+          {
+            "path": "encrypted-media/drm-mp4-setmediakeys-again-after-resetting-src.html",
+            "url": "/encrypted-media/drm-mp4-setmediakeys-again-after-resetting-src.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-setmediakeys-at-same-time.html": [
+          {
+            "path": "encrypted-media/drm-mp4-setmediakeys-at-same-time.html",
+            "url": "/encrypted-media/drm-mp4-setmediakeys-at-same-time.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-setmediakeys-multiple-times-with-different-mediakeys.html": [
+          {
+            "path": "encrypted-media/drm-mp4-setmediakeys-multiple-times-with-different-mediakeys.html",
+            "url": "/encrypted-media/drm-mp4-setmediakeys-multiple-times-with-different-mediakeys.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-setmediakeys-multiple-times-with-the-same-mediakeys.html": [
+          {
+            "path": "encrypted-media/drm-mp4-setmediakeys-multiple-times-with-the-same-mediakeys.html",
+            "url": "/encrypted-media/drm-mp4-setmediakeys-multiple-times-with-the-same-mediakeys.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-setmediakeys-to-multiple-video-elements.html": [
+          {
+            "path": "encrypted-media/drm-mp4-setmediakeys-to-multiple-video-elements.html",
+            "url": "/encrypted-media/drm-mp4-setmediakeys-to-multiple-video-elements.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-setmediakeys.html": [
+          {
+            "path": "encrypted-media/drm-mp4-setmediakeys.html",
+            "url": "/encrypted-media/drm-mp4-setmediakeys.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-syntax-mediakeys.html": [
+          {
+            "path": "encrypted-media/drm-mp4-syntax-mediakeys.html",
+            "url": "/encrypted-media/drm-mp4-syntax-mediakeys.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-syntax-mediakeysession.html": [
+          {
+            "path": "encrypted-media/drm-mp4-syntax-mediakeysession.html",
+            "url": "/encrypted-media/drm-mp4-syntax-mediakeysession.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-syntax-mediakeysystemaccess.html": [
+          {
+            "path": "encrypted-media/drm-mp4-syntax-mediakeysystemaccess.html",
+            "url": "/encrypted-media/drm-mp4-syntax-mediakeysystemaccess.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-unique-origin.html": [
+          {
+            "path": "encrypted-media/drm-mp4-unique-origin.html",
+            "url": "/encrypted-media/drm-mp4-unique-origin.html"
+          }
+        ],
+        "encrypted-media/drm-mp4-waiting-for-a-key.html": [
+          {
+            "path": "encrypted-media/drm-mp4-waiting-for-a-key.html",
+            "url": "/encrypted-media/drm-mp4-waiting-for-a-key.html"
+          }
+        ],
+        "encrypted-media/drm-not-callable-after-createsession.html": [
+          {
+            "path": "encrypted-media/drm-not-callable-after-createsession.html",
+            "url": "/encrypted-media/drm-not-callable-after-createsession.html"
+          }
+        ],
+        "encrypted-media/drm-temporary-license-type.html": [
+          {
+            "path": "encrypted-media/drm-temporary-license-type.html",
+            "url": "/encrypted-media/drm-temporary-license-type.html"
+          }
+        ],
+        "encrypted-media/idlharness.html": [
+          {
+            "path": "encrypted-media/idlharness.html",
+            "url": "/encrypted-media/idlharness.html"
+          }
+        ],
         "fullscreen/api/document-fullscreen-enabled.html": [
           {
             "path": "fullscreen/api/document-fullscreen-enabled.html",

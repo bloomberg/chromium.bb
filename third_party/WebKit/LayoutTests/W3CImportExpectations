@@ -237,7 +237,9 @@ imported/wpt/dpub-aria [ Skip ]
 imported/wpt/editing [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/wpt/encoding [ Pass ]
-imported/wpt/encrypted-media [ Skip ]
+## Owners: jrummell@chromium.org
+# imported/wpt/encrypted-media [ Pass ]
+imported/wpt/encrypted-media/Google [ Skip ]
 imported/wpt/eventsource [ Skip ]
 imported/wpt/ext-xhtml-pubid [ Skip ]
 imported/wpt/fetch [ Skip ]
