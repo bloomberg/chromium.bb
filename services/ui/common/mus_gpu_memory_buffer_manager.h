@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
 
 namespace ui {
@@ -61,6 +62,7 @@ class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager,
                          BASE_HASH_NAMESPACE::hash<gfx::GpuMemoryBufferId>>;
   std::unordered_map<int, NativeBuffers> native_buffers_;
 
+  const gpu::GpuMemoryBufferConfigurationSet native_configurations_;
   base::WeakPtrFactory<MusGpuMemoryBufferManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MusGpuMemoryBufferManager);

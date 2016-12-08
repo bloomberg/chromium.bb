@@ -15,7 +15,10 @@ namespace ui {
 MusGpuMemoryBufferManager::MusGpuMemoryBufferManager(
     mojom::GpuServiceInternal* gpu_service,
     int client_id)
-    : gpu_service_(gpu_service), client_id_(client_id), weak_factory_(this) {}
+    : gpu_service_(gpu_service),
+      client_id_(client_id),
+      native_configurations_(gpu::GetNativeGpuMemoryBufferConfigurations()),
+      weak_factory_(this) {}
 
 MusGpuMemoryBufferManager::~MusGpuMemoryBufferManager() {}
 
@@ -29,8 +32,8 @@ MusGpuMemoryBufferManager::CreateGpuMemoryBufferHandle(
     gpu::SurfaceHandle surface_handle) {
   DCHECK(CalledOnValidThread());
   if (gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER) {
-    const bool is_native =
-        gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
+    const bool is_native = native_configurations_.find(std::make_pair(
+                               format, usage)) != native_configurations_.end();
     if (is_native) {
       gfx::GpuMemoryBufferHandle handle;
       gpu_service_->CreateGpuMemoryBuffer(id, size, format, usage, client_id,

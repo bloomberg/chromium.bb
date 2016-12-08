@@ -218,10 +218,6 @@ const char kDisableLowLatencyDxva[]         = "disable-low-latency-dxva";
 // Disables usage of the namespace sandbox.
 const char kDisableNamespaceSandbox[]       = "disable-namespace-sandbox";
 
-// Disables native GPU memory buffer support.
-const char kDisableNativeGpuMemoryBuffers[] =
-    "disable-native-gpu-memory-buffers";
-
 // Disables the Web Notification and the Push APIs.
 const char kDisableNotifications[]          = "disable-notifications";
 
@@ -862,9 +858,6 @@ const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
 
 // Use the Mandoline UI Service in the Chrome render process.
 const char kUseMusInRenderer[] = "use-mus-in-renderer";
-
-// Enable native GPU memory buffer support when available.
-const char kEnableNativeGpuMemoryBuffers[] = "enable-native-gpu-memory-buffers";
 
 // Texture target for CHROMIUM_image backed content textures.
 const char kContentImageTextureTarget[] = "content-image-texture-target";

@@ -26,6 +26,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
+#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "media/media_features.h"
 #include "ui/gl/gl_switches.h"
 
@@ -142,15 +143,14 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      NumberOfRendererRasterThreads() == 1, "Raster is using a single thread.",
      false},
     {kNativeGpuMemoryBuffersFeatureName, false,
-     !BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled(),
+     !gpu::AreNativeGpuMemoryBuffersEnabled(),
      "Native GpuMemoryBuffers have been disabled, either via about:flags"
      " or command line.",
      true},
-    {"vpx_decode",
-     manager->IsFeatureBlacklisted(
-         gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) ||
-     manager->IsFeatureBlacklisted(
-         gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
+    {"vpx_decode", manager->IsFeatureBlacklisted(
+                       gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) ||
+                       manager->IsFeatureBlacklisted(
+                           gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
      accelerated_vpx_disabled,
      "Accelerated VPx video decode has been disabled, either via blacklist"
      " or the command line.",
@@ -158,8 +158,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
     {kWebGL2FeatureName,
      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2),
      command_line.HasSwitch(switches::kDisableES3APIs),
-     "WebGL2 has been disabled via blacklist or the command line.",
-     false},
+     "WebGL2 has been disabled via blacklist or the command line.", false},
   };
   DCHECK(index < arraysize(kGpuFeatureInfo));
   *eof = (index == arraysize(kGpuFeatureInfo) - 1);
@@ -232,7 +231,7 @@ bool IsGpuMemoryBufferCompositorResourcesEnabled() {
   }
 
   // Native GPU memory buffers are required.
-  if (!BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled())
+  if (!gpu::AreNativeGpuMemoryBuffersEnabled())
     return false;
 
 #if defined(OS_MACOSX)

@@ -51,59 +51,6 @@ void GpuMemoryBufferDeleted(
       FROM_HERE, base::Bind(destruction_callback, sync_token));
 }
 
-GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
-  GpuMemoryBufferConfigurationSet configurations;
-
-  if (BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled()) {
-    const gfx::BufferFormat kNativeFormats[] = {
-        gfx::BufferFormat::R_8,
-        gfx::BufferFormat::RG_88,
-        gfx::BufferFormat::BGR_565,
-        gfx::BufferFormat::RGBA_4444,
-        gfx::BufferFormat::RGBA_8888,
-        gfx::BufferFormat::BGRA_8888,
-        gfx::BufferFormat::UYVY_422,
-        gfx::BufferFormat::YVU_420,
-        gfx::BufferFormat::YUV_420_BIPLANAR};
-    const gfx::BufferUsage kNativeUsages[] = {
-        gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT,
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
-    for (auto& format : kNativeFormats) {
-      for (auto& usage : kNativeUsages) {
-        if (gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
-          configurations.insert(std::make_pair(format, usage));
-      }
-    }
-  }
-
-#if defined(USE_OZONE) || defined(OS_MACOSX)
-  // Disable native buffers only when using Mesa.
-  bool force_native_gpu_read_write_formats =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseGL) != gl::kGLImplementationOSMesaName;
-#else
-  bool force_native_gpu_read_write_formats = false;
-#endif
-  if (force_native_gpu_read_write_formats) {
-    const gfx::BufferFormat kGPUReadWriteFormats[] = {
-        gfx::BufferFormat::BGR_565,   gfx::BufferFormat::RGBA_8888,
-        gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::BGRA_8888,
-        gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::UYVY_422,
-        gfx::BufferFormat::YVU_420,   gfx::BufferFormat::YUV_420_BIPLANAR};
-    const gfx::BufferUsage kGPUReadWriteUsages[] = {
-        gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT};
-    for (auto& format : kGPUReadWriteFormats) {
-      for (auto& usage : kGPUReadWriteUsages) {
-        if (gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
-          configurations.insert(std::make_pair(format, usage));
-      }
-    }
-  }
-
-  return configurations;
-}
-
 BrowserGpuMemoryBufferManager* g_gpu_memory_buffer_manager = nullptr;
 
 }  // namespace
@@ -151,7 +98,7 @@ struct BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandleRequest
 BrowserGpuMemoryBufferManager::BrowserGpuMemoryBufferManager(
     int gpu_client_id,
     uint64_t gpu_client_tracing_id)
-    : native_configurations_(GetNativeGpuMemoryBufferConfigurations()),
+    : native_configurations_(gpu::GetNativeGpuMemoryBufferConfigurations()),
       gpu_client_id_(gpu_client_id),
       gpu_client_tracing_id_(gpu_client_tracing_id),
       gpu_host_id_(0) {
@@ -169,28 +116,11 @@ BrowserGpuMemoryBufferManager* BrowserGpuMemoryBufferManager::current() {
 }
 
 // static
-bool BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled() {
-  // Disable native buffers when using Mesa.
-  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseGL) == gl::kGLImplementationOSMesaName) {
-    return false;
-  }
-
-#if defined(OS_MACOSX)
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableNativeGpuMemoryBuffers);
-#else
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNativeGpuMemoryBuffers);
-#endif
-}
-
-// static
 uint32_t BrowserGpuMemoryBufferManager::GetImageTextureTarget(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  GpuMemoryBufferConfigurationSet native_configurations =
-      GetNativeGpuMemoryBufferConfigurations();
+  gpu::GpuMemoryBufferConfigurationSet native_configurations =
+      gpu::GetNativeGpuMemoryBufferConfigurations();
   if (native_configurations.find(std::make_pair(format, usage)) ==
       native_configurations.end()) {
     return GL_TEXTURE_2D;

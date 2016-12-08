@@ -51,6 +51,7 @@ source_set("server_gpu") {
   public_deps = [
     "//gpu/command_buffer/client",
     "//gpu/ipc/common",
+    "//gpu/ipc/host",
     "//services/ui/gpu/interfaces",
     "//ui/gfx",
   ]

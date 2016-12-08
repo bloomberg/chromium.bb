@@ -700,6 +700,7 @@ test("content_browsertests") {
     "//device/wake_lock",
     "//gin",
     "//gpu",
+    "//gpu/ipc/host",
     "//ipc:mojom",
     "//ipc:test_support",
     "//media",

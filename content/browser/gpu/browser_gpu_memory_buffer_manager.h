@@ -19,27 +19,7 @@
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/common/surface_handle.h"
-
-namespace content {
-
-using GpuMemoryBufferConfigurationKey =
-    std::pair<gfx::BufferFormat, gfx::BufferUsage>;
-using GpuMemoryBufferConfigurationSet =
-    base::hash_set<GpuMemoryBufferConfigurationKey>;
-
-}  // content
-
-namespace BASE_HASH_NAMESPACE {
-
-template <>
-struct hash<content::GpuMemoryBufferConfigurationKey> {
-  size_t operator()(const content::GpuMemoryBufferConfigurationKey& key) const {
-    return base::HashInts(static_cast<int>(key.first),
-                          static_cast<int>(key.second));
-  }
-};
-
-}  // namespace BASE_HASH_NAMESPACE
+#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 
 namespace content {
 class GpuProcessHost;
@@ -57,8 +37,6 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   ~BrowserGpuMemoryBufferManager() override;
 
   static BrowserGpuMemoryBufferManager* current();
-
-  static bool IsNativeGpuMemoryBuffersEnabled();
 
   static uint32_t GetImageTextureTarget(gfx::BufferFormat format,
                                         gfx::BufferUsage usage);
@@ -161,7 +139,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
 
   uint64_t ClientIdToTracingProcessId(int client_id) const;
 
-  const GpuMemoryBufferConfigurationSet native_configurations_;
+  const gpu::GpuMemoryBufferConfigurationSet native_configurations_;
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;
 
