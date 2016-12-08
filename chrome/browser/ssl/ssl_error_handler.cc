@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -41,6 +42,11 @@ class NetworkTimeTracker;
 }
 
 namespace {
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+const base::Feature kCaptivePortalInterstitial{
+    "CaptivePortalInterstitial", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
 // The delay in milliseconds before displaying the SSL interstitial.
 // This can be changed in tests.
@@ -137,8 +143,7 @@ void RecordUMA(SSLErrorHandlerEvent event) {
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 bool IsCaptivePortalInterstitialEnabled() {
-  return base::FieldTrialList::FindFullName("CaptivePortalInterstitial") ==
-         "Enabled";
+  return base::FeatureList::IsEnabled(kCaptivePortalInterstitial);
 }
 #endif
 
