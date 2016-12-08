@@ -177,12 +177,19 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
   StartFlowLoginAsManager();
   FillNewUserData(kTestSupervisedUserDisplayName);
 
+  base::RunLoop mount_wait_loop, add_key_wait_loop;
+  mock_homedir_methods_->set_mount_callback(mount_wait_loop.QuitClosure());
+  mock_homedir_methods_->set_add_key_callback(add_key_wait_loop.QuitClosure());
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
   EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _, _)).Times(1);
 
   JSEval("$('supervised-user-creation-next-button').click()");
 
+  mount_wait_loop.Run();
+  add_key_wait_loop.Run();
   testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
+  mock_homedir_methods_->set_mount_callback(base::Closure());
+  mock_homedir_methods_->set_add_key_callback(base::Closure());
 
   EXPECT_TRUE(registration_utility_stub_->register_was_called());
   EXPECT_EQ(registration_utility_stub_->display_name(),
@@ -195,6 +202,9 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
 
   // We wait for token now. Press cancel button at this point.
   JSEvalOrExitBrowser("$('supervised-user-creation').cancel()");
+
+  // TODO(achuith): There should probably be a wait for a specific event.
+  content::RunAllPendingInMessageLoop();
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,

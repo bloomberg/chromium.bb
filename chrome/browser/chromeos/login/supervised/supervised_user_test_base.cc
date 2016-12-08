@@ -335,16 +335,23 @@ void SupervisedUserTestBase::FillNewUserData(const std::string& display_name) {
 void SupervisedUserTestBase::StartUserCreation(
     const std::string& button_id,
     const std::string& expected_display_name) {
+  base::RunLoop mount_wait_loop, add_key_wait_loop;
+  mock_homedir_methods_->set_mount_callback(mount_wait_loop.QuitClosure());
+  mock_homedir_methods_->set_add_key_callback(add_key_wait_loop.QuitClosure());
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
   EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _, _)).Times(1);
 
   JSEval(std::string("$('").append(button_id).append("').click()"));
 
+  mount_wait_loop.Run();
+  add_key_wait_loop.Run();
   ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
+  mock_homedir_methods_->set_mount_callback(base::Closure());
+  mock_homedir_methods_->set_add_key_callback(base::Closure());
 
   EXPECT_TRUE(registration_utility_stub_->register_was_called());
-  EXPECT_EQ(registration_utility_stub_->display_name(),
-            base::UTF8ToUTF16(expected_display_name));
+  EXPECT_EQ(base::UTF8ToUTF16(expected_display_name),
+            registration_utility_stub_->display_name());
 
   registration_utility_stub_->RunSuccessCallback("token");
 
@@ -353,6 +360,9 @@ void SupervisedUserTestBase::StartUserCreation(
 
   JSExpect(StringPrintf("%s == 'created'", kCurrentPage));
   JSEvalOrExitBrowser("$('supervised-user-creation-gotit-button').click()");
+
+  // TODO(achuith): There should probably be a wait for a specific event.
+  content::RunAllPendingInMessageLoop();
 }
 
 void SupervisedUserTestBase::SigninAsSupervisedUser(

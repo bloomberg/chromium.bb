@@ -15,10 +15,8 @@ using ::testing::_;
 
 namespace cryptohome {
 
-MockHomedirMethods::MockHomedirMethods()
-    : success_(false), return_code_(cryptohome::MOUNT_ERROR_NONE) {}
-
-MockHomedirMethods::~MockHomedirMethods() {}
+MockHomedirMethods::MockHomedirMethods() = default;
+MockHomedirMethods::~MockHomedirMethods() = default;
 
 void MockHomedirMethods::SetUp(bool success, MountError return_code) {
   success_ = success;
@@ -29,8 +27,9 @@ void MockHomedirMethods::SetUp(bool success, MountError return_code) {
       WithArgs<2>(Invoke(this, &MockHomedirMethods::DoCallback)));
   ON_CALL(*this, MountEx(_, _, _, _)).WillByDefault(
       WithArgs<3>(Invoke(this, &MockHomedirMethods::DoMountCallback)));
-  ON_CALL(*this, AddKeyEx(_, _, _, _, _)).WillByDefault(
-      WithArgs<4>(Invoke(this, &MockHomedirMethods::DoCallback)));
+  ON_CALL(*this, AddKeyEx(_, _, _, _, _))
+      .WillByDefault(
+          WithArgs<4>(Invoke(this, &MockHomedirMethods::DoAddKeyCallback)));
   ON_CALL(*this, UpdateKeyEx(_, _, _, _, _)).WillByDefault(
       WithArgs<4>(Invoke(this, &MockHomedirMethods::DoCallback)));
   ON_CALL(*this, RemoveKeyEx(_, _, _, _)).WillByDefault(
@@ -48,6 +47,14 @@ void MockHomedirMethods::DoGetDataCallback(const GetKeyDataCallback& callback) {
 void MockHomedirMethods::DoMountCallback(const MountCallback& callback) {
   callback.Run(
       success_, return_code_, MockAsyncMethodCaller::kFakeSanitizedUsername);
+  if (!on_mount_called_.is_null())
+    on_mount_called_.Run();
+}
+
+void MockHomedirMethods::DoAddKeyCallback(const Callback& callback) {
+  callback.Run(success_, return_code_);
+  if (!on_add_key_called_.is_null())
+    on_add_key_called_.Run();
 }
 
 }  // namespace cryptohome

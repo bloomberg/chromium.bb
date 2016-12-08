@@ -1323,7 +1323,8 @@ bool DOMMessageQueue::WaitForMessage(std::string* message) {
   DCHECK(message);
   if (message_queue_.empty()) {
     // This will be quit when a new message comes in.
-    message_loop_runner_ = new MessageLoopRunner;
+    message_loop_runner_ =
+        new MessageLoopRunner(MessageLoopRunner::QuitMode::IMMEDIATE);
     message_loop_runner_->Run();
   }
   // The queue should not be empty, unless we were quit because of a timeout.

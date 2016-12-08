@@ -17,7 +17,7 @@ namespace cryptohome {
 class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
  public:
   MockHomedirMethods();
-  virtual ~MockHomedirMethods();
+  ~MockHomedirMethods() override;
 
   void SetUp(bool success, MountError return_code);
 
@@ -59,13 +59,24 @@ class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
                void(const Identification& id,
                     const GetAccountDiskUsageCallback& callback));
 
- private:
-  bool success_;
-  MountError return_code_;
+  void set_mount_callback(const base::Closure& callback) {
+    on_mount_called_ = callback;
+  }
+  void set_add_key_callback(const base::Closure& callback) {
+    on_add_key_called_ = callback;
+  }
 
+ private:
   void DoCallback(const Callback& callback);
   void DoGetDataCallback(const GetKeyDataCallback& callback);
   void DoMountCallback(const MountCallback& callback);
+  void DoAddKeyCallback(const Callback& callback);
+
+  bool success_ = false;
+  MountError return_code_ = MOUNT_ERROR_NONE;
+
+  base::Closure on_mount_called_;
+  base::Closure on_add_key_called_;
 
   DISALLOW_COPY_AND_ASSIGN(MockHomedirMethods);
 };
