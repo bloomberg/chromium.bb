@@ -20,19 +20,18 @@
 namespace ui {
 namespace devtools {
 
-class UI_DEVTOOLS_EXPORT UiDevToolsServer
-    : public NON_EXPORTED_BASE(net::HttpServer::Delegate) {
+class UiDevToolsServer : public net::HttpServer::Delegate {
  public:
   ~UiDevToolsServer() override;
 
   // Returns an empty unique_ptr if ui devtools flag isn't enabled or if a
   // server instance has already been created.
-  static std::unique_ptr<UiDevToolsServer> Create(
+  static UI_DEVTOOLS_EXPORT std::unique_ptr<UiDevToolsServer> Create(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
 
   // Returns a list of attached UiDevToolsClient name + URL
   using NameUrlPair = std::pair<std::string, std::string>;
-  static std::vector<NameUrlPair> GetClientNamesAndUrls();
+  static UI_DEVTOOLS_EXPORT std::vector<NameUrlPair> GetClientNamesAndUrls();
 
   void AttachClient(std::unique_ptr<UiDevToolsClient> client);
   void SendOverWebSocket(int connection_id, const String& message);
