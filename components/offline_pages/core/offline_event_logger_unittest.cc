@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/offline_event_logger.h"
+#include "components/offline_pages/core/offline_event_logger.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
