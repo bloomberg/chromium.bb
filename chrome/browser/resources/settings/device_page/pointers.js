@@ -49,7 +49,7 @@ Polymer({
   },
 
   // Mouse and touchpad sections are only subsections if they are both present.
-  getSectionClass_: function(hasMouse, hasTouchpad) {
+  getSubsectionClass_: function(hasMouse, hasTouchpad) {
     return hasMouse && hasTouchpad ? 'subsection' : '';
   },
 });
