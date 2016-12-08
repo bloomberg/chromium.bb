@@ -7,6 +7,7 @@
 
 import base64
 import binascii
+import collections
 import logging
 import re
 import sys
@@ -544,13 +545,12 @@ class IsolateServerGrpc(StorageApi):
     for response in self._stub.FetchBlobs(request):
       if not response.status.succeeded:
         raise IOError(
-            'Error while fetching %s: %s' % (
-                digest, response.status.error_detail))
+            'Error while fetching %s: %s' % (digest, response.status))
       if not expected_offset == response.data.offset:
         raise IOError(
             'Error while fetching %s: expected offset %d, got %d' % (
                 digest, expected_offset, response.data.offset))
-      offset += len(response.data.data)
+      expected_offset += len(response.data.data)
       yield response.data.data
 
   def push(self, item, push_state, content=None):
@@ -564,22 +564,35 @@ class IsolateServerGrpc(StorageApi):
     guard_memory_use(self, content, item.size)
 
     try:
-      # a cheezy way to avoid memcpy of (possibly huge) file, until streaming
-      # upload support is implemented.
-      if isinstance(content, list) and len(content) == 1:
-        content = content[0]
-      else:
-        content = ''.join(content)
-      request = isolate_bot_pb2.PushBlobsRequest()
-      request.data.digest.digest = binascii.unhexlify(item.digest)
-      request.data.digest.size_bytes = item.size
-      request.data.data = content
-      # There's only one request, but the streaming API expects an interable
-      # like a list.
+      def chunker():
+        # Returns one bit of content at a time
+        if not isinstance(content, collections.Iterable):
+          yield content
+        else:
+          for chunk in content:
+            yield chunk
+      def slicer():
+        # Ensures every bit of content is under the gRPC max size; yields
+        # proto messages to send via gRPC.
+        request = isolate_bot_pb2.PushBlobsRequest()
+        request.data.digest.digest = binascii.unhexlify(item.digest)
+        request.data.digest.size_bytes = item.size
+        request.data.offset = 0
+        for chunk in chunker():
+          # Make sure we send at least one chunk for zero-length blobs
+          has_sent_anything = False
+          while chunk and not has_sent_anything:
+            slice_len = min(len(chunk), NET_IO_FILE_CHUNK)
+            request.data.data = chunk[:slice_len]
+            yield request
+            has_sent_anything = True
+            request.data.offset += slice_len
+            # The proxy only expects the first chunk to have the digest
+            request.data.ClearField("digest")
+            chunk = chunk[slice_len:]
+
       # TODO(aludwin): batch up several requests to reuse TCP connections
-      # TODO(aludwin): allow larger blobs to be broken up into chunks
-      requests = [request]
-      response = self._stub.PushBlobs(requests)
+      response = self._stub.PushBlobs(slicer())
       if not response.status.succeeded:
         raise IOError(
             'Error while uploading %s: %s' % (
