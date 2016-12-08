@@ -110,7 +110,16 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
         for (DownloadItem item : result) {
             DownloadItemWrapper wrapper = createDownloadItemWrapper(item);
-            if (addDownloadHistoryItemWrapper(wrapper)) itemCounts[wrapper.getFilterType()]++;
+            if (addDownloadHistoryItemWrapper(wrapper)
+                    && wrapper.isVisibleToUser(DownloadFilter.FILTER_ALL)) {
+                itemCounts[wrapper.getFilterType()]++;
+                if (!isOffTheRecord && wrapper.getFilterType() == DownloadFilter.FILTER_OTHER) {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "Android.DownloadManager.OtherExtensions.InitialCount",
+                            wrapper.getFileExtensionType(),
+                            DownloadHistoryItemWrapper.FILE_EXTENSION_BOUNDARY);
+                }
+            }
         }
 
         if (!isOffTheRecord) recordDownloadCountHistograms(itemCounts);

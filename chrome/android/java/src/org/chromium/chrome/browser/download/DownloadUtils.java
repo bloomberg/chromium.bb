@@ -272,6 +272,12 @@ public class DownloadUtils {
             if (selectedItemsFilterType != wrappedItem.getFilterType()) {
                 selectedItemsFilterType = DownloadFilter.FILTER_ALL;
             }
+            if (wrappedItem.getFilterType() == DownloadFilter.FILTER_OTHER) {
+                RecordHistogram.recordEnumeratedHistogram(
+                        "Android.DownloadManager.OtherExtensions.Share",
+                        wrappedItem.getFileExtensionType(),
+                        DownloadHistoryItemWrapper.FILE_EXTENSION_BOUNDARY);
+            }
 
             String mimeType = Intent.normalizeMimeType(wrappedItem.getMimeType());
 
