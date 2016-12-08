@@ -1907,6 +1907,10 @@ url::SchemeHostPort SpdySession::GetServer() {
                              host_port_pair().host(), host_port_pair().port());
 }
 
+bool SpdySession::GetRemoteEndpoint(IPEndPoint* endpoint) {
+  return GetPeerAddress(endpoint) == OK;
+}
+
 bool SpdySession::GetSSLInfo(SSLInfo* ssl_info) const {
   return connection_->socket()->GetSSLInfo(ssl_info);
 }

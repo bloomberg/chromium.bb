@@ -560,6 +560,11 @@ QuicCryptoClientStream* QuicChromiumClientSession::GetCryptoStream() {
   return crypto_stream_.get();
 }
 
+bool QuicChromiumClientSession::GetRemoteEndpoint(IPEndPoint* endpoint) {
+  *endpoint = peer_address().impl().socket_address();
+  return true;
+}
+
 // TODO(rtenneti): Add unittests for GetSSLInfo which exercise the various ways
 // we learn about SSL info (sync vs async vs cached).
 bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {

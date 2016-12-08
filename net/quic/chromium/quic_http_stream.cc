@@ -43,7 +43,8 @@ std::unique_ptr<base::Value> NetLogQuicPushStreamCallback(
 
 QuicHttpStream::QuicHttpStream(
     const base::WeakPtr<QuicChromiumClientSession>& session)
-    : next_state_(STATE_NONE),
+    : MultiplexedHttpStream(MultiplexedSessionHandle(session)),
+      next_state_(STATE_NONE),
       session_(session),
       quic_version_(session->GetQuicVersion()),
       session_error_(OK),
@@ -162,9 +163,7 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   request_time_ = base::Time::Now();
   priority_ = priority;
 
-  bool success = session_->GetSSLInfo(&ssl_info_);
-  DCHECK(success);
-  DCHECK(ssl_info_.cert.get());
+  SaveSSLInfo();
 
   std::string url(request_info->url.spec());
   QuicClientPromisedInfo* promised =
@@ -239,8 +238,10 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   HostPortPair origin = HostPortPair::FromURL(request_info_->url);
   if (origin.Equals(HostPortPair("accounts.google.com", 443)) &&
       request_headers.HasHeader(HttpRequestHeaders::kCookie)) {
+    SSLInfo ssl_info;
+    GetSSLInfo(&ssl_info);
     UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.CookieSentToAccountsOverChannelId",
-                          ssl_info_.channel_id_sent);
+                          ssl_info.channel_id_sent);
   }
   if ((!found_promise_ && !stream_) || !session_) {
     return was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED
@@ -356,10 +357,6 @@ void QuicHttpStream::Close(bool not_reusable) {
   ResetStream();
 }
 
-HttpStream* QuicHttpStream::RenewStreamForAuth() {
-  return nullptr;
-}
-
 bool QuicHttpStream::IsResponseBodyComplete() const {
   return next_state_ == STATE_OPEN && !stream_;
 }
@@ -367,15 +364,6 @@ bool QuicHttpStream::IsResponseBodyComplete() const {
 bool QuicHttpStream::IsConnectionReused() const {
   // TODO(rch): do something smarter here.
   return stream_ && stream_->id() > 1;
-}
-
-void QuicHttpStream::SetConnectionReused() {
-  // QUIC doesn't need an indicator here.
-}
-
-bool QuicHttpStream::CanReuseConnection() const {
-  // QUIC streams aren't considered reusable.
-  return false;
 }
 
 int64_t QuicHttpStream::GetTotalReceivedBytes() const {
@@ -413,36 +401,6 @@ bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
     load_timing_info->socket_reused = true;
   }
   return true;
-}
-
-void QuicHttpStream::GetSSLInfo(SSLInfo* ssl_info) {
-  *ssl_info = ssl_info_;
-}
-
-void QuicHttpStream::GetSSLCertRequestInfo(
-    SSLCertRequestInfo* cert_request_info) {
-  DCHECK(stream_);
-  NOTIMPLEMENTED();
-}
-
-bool QuicHttpStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
-  if (!session_)
-    return false;
-
-  *endpoint = session_->peer_address().impl().socket_address();
-  return true;
-}
-
-Error QuicHttpStream::GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                               TokenBindingType tb_type,
-                                               std::vector<uint8_t>* out) {
-  return session_->GetTokenBindingSignature(key, tb_type, out);
-}
-
-void QuicHttpStream::Drain(HttpNetworkSession* session) {
-  NOTREACHED();
-  Close(false);
-  delete this;
 }
 
 void QuicHttpStream::PopulateNetErrorDetails(NetErrorDetails* details) {
