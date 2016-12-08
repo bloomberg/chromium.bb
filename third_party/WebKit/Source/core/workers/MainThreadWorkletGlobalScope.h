@@ -20,7 +20,14 @@ class ScriptSourceCode;
 class CORE_EXPORT MainThreadWorkletGlobalScope : public WorkletGlobalScope,
                                                  public WorkletGlobalScopeProxy,
                                                  public DOMWindowProperty {
+  USING_GARBAGE_COLLECTED_MIXIN(MainThreadWorkletGlobalScope);
+
  public:
+  MainThreadWorkletGlobalScope(LocalFrame*,
+                               const KURL&,
+                               const String& userAgent,
+                               PassRefPtr<SecurityOrigin>,
+                               v8::Isolate*);
   ~MainThreadWorkletGlobalScope() override;
   bool isMainThreadWorkletGlobalScope() const final { return true; }
 
@@ -40,13 +47,6 @@ class CORE_EXPORT MainThreadWorkletGlobalScope : public WorkletGlobalScope,
     WorkletGlobalScope::trace(visitor);
     DOMWindowProperty::trace(visitor);
   }
-
- protected:
-  MainThreadWorkletGlobalScope(LocalFrame*,
-                               const KURL&,
-                               const String& userAgent,
-                               PassRefPtr<SecurityOrigin>,
-                               v8::Isolate*);
 };
 
 DEFINE_TYPE_CASTS(MainThreadWorkletGlobalScope,

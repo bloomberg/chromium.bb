@@ -10,7 +10,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerOrWorkletGlobalScope.h"
 
 namespace {
 
@@ -148,8 +148,8 @@ void Deprecation::countDeprecation(ExecutionContext* context,
     Deprecation::countDeprecation(*toDocument(context), feature);
     return;
   }
-  if (context->isWorkerGlobalScope())
-    toWorkerGlobalScope(context)->countDeprecation(feature);
+  if (context->isWorkerOrWorkletGlobalScope())
+    toWorkerOrWorkletGlobalScope(context)->countDeprecation(feature);
 }
 
 void Deprecation::countDeprecation(const Document& document,

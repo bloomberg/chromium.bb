@@ -1312,6 +1312,7 @@ source_set("unit_tests") {
     "timing/PerformanceObserverTest.cpp",
     "timing/PerformanceTest.cpp",
     "workers/DedicatedWorkerTest.cpp",
+    "workers/MainThreadWorkletTest.cpp",
     "workers/WorkerThreadTest.cpp",
     "workers/WorkerThreadTestHelper.h",
     "xml/XPathFunctionsTest.cpp",

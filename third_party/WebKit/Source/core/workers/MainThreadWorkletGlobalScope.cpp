@@ -25,17 +25,19 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}
 
 void MainThreadWorkletGlobalScope::countFeature(UseCounter::Feature feature) {
-  // TODO(nhiroki): Support UseCounter for main thread worklets. A parent
-  // document is on the same thread, so just record API use in the document's
-  // UseCounter (https://crbug.com/667357).
+  DCHECK(isMainThread());
+  // A parent document is on the same thread, so just record API use in the
+  // document's UseCounter.
+  UseCounter::count(frame(), feature);
 }
 
 void MainThreadWorkletGlobalScope::countDeprecation(
     UseCounter::Feature feature) {
+  DCHECK(isMainThread());
+  // A parent document is on the same thread, so just record API use in the
+  // document's UseCounter.
   addDeprecationMessage(feature);
-  // TODO(nhiroki): Support UseCounter for main thread worklets. A parent
-  // document is on the same thread, so just record API use in the document's
-  // UseCounter (https://crbug.com/667357).
+  Deprecation::countDeprecation(frame(), feature);
 }
 
 WorkerThread* MainThreadWorkletGlobalScope::thread() const {
