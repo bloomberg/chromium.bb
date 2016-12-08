@@ -249,6 +249,11 @@ class SimpleBuilder(generic_builders.Builder):
 
   def RunEarlySyncAndSetupStages(self):
     """Runs through the early sync and board setup stages."""
+    # If this build is master and uses Buildbucket scheduler, run
+    # scheduler_stages.ScheduleSlavesStage to schedule slaves.
+    if (config_lib.UseBuildbucketScheduler(self._run.config) and
+        config_lib.IsMasterBuild(self._run.config)):
+      self._RunStage(scheduler_stages.ScheduleSlavesStage)
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(build_stages.RegenPortageCacheStage)
