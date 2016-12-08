@@ -9,6 +9,7 @@
 #include "platform/blob/BlobData.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -17,7 +18,9 @@ class FetchResponseDataTest : public ::testing::Test {
   FetchResponseData* createInternalResponse() {
     FetchResponseData* internalResponse = FetchResponseData::create();
     internalResponse->setStatus(200);
-    internalResponse->setURL(KURL(ParsedURLString, "http://www.example.com"));
+    Vector<KURL> urlList;
+    urlList.append(KURL(ParsedURLString, "http://www.example.com"));
+    internalResponse->setURLList(urlList);
     internalResponse->headerList()->append("set-cookie", "foo");
     internalResponse->headerList()->append("bar", "bar");
     internalResponse->headerList()->append("cache-control", "no-cache");
@@ -215,7 +218,7 @@ TEST_F(FetchResponseDataTest, OpaqueRedirectFilter) {
   EXPECT_EQ(internalResponse, opaqueResponseData->internalResponse());
 
   EXPECT_EQ(opaqueResponseData->headerList()->size(), 0u);
-  EXPECT_EQ(opaqueResponseData->url(), internalResponse->url());
+  EXPECT_EQ(*opaqueResponseData->url(), *internalResponse->url());
 }
 
 TEST_F(FetchResponseDataTest,

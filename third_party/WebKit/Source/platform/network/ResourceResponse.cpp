@@ -185,7 +185,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   m_wasFallbackRequiredByServiceWorker =
       data->m_wasFallbackRequiredByServiceWorker;
   m_serviceWorkerResponseType = data->m_serviceWorkerResponseType;
-  m_originalURLViaServiceWorker = data->m_originalURLViaServiceWorker;
+  m_urlListViaServiceWorker = data->m_urlListViaServiceWorker;
   m_cacheStorageCacheName = data->m_cacheStorageCacheName;
   m_responseTime = data->m_responseTime;
   m_remoteIPAddress = AtomicString(data->m_remoteIPAddress);
@@ -250,7 +250,11 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData()
   data->m_wasFallbackRequiredByServiceWorker =
       m_wasFallbackRequiredByServiceWorker;
   data->m_serviceWorkerResponseType = m_serviceWorkerResponseType;
-  data->m_originalURLViaServiceWorker = m_originalURLViaServiceWorker.copy();
+  data->m_urlListViaServiceWorker.resize(m_urlListViaServiceWorker.size());
+  std::transform(m_urlListViaServiceWorker.begin(),
+                 m_urlListViaServiceWorker.end(),
+                 data->m_urlListViaServiceWorker.begin(),
+                 [](const KURL& url) { return url.copy(); });
   data->m_cacheStorageCacheName = cacheStorageCacheName().isolatedCopy();
   data->m_responseTime = m_responseTime;
   data->m_remoteIPAddress = m_remoteIPAddress.getString().isolatedCopy();
@@ -597,6 +601,12 @@ PassRefPtr<ResourceLoadInfo> ResourceResponse::resourceLoadInfo() const {
 void ResourceResponse::setResourceLoadInfo(
     PassRefPtr<ResourceLoadInfo> loadInfo) {
   m_resourceLoadInfo = loadInfo;
+}
+
+KURL ResourceResponse::originalURLViaServiceWorker() const {
+  if (m_urlListViaServiceWorker.isEmpty())
+    return KURL();
+  return m_urlListViaServiceWorker.back();
 }
 
 void ResourceResponse::setEncodedDataLength(long long value) {

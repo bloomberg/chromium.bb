@@ -116,9 +116,9 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   // considering the CORS preflight logic.
   bool was_fallback_required_by_service_worker;
 
-  // The original URL of the response which was fetched by the ServiceWorker.
-  // This may be empty if the response was created inside the ServiceWorker.
-  GURL original_url_via_service_worker;
+  // The URL list of the response which was served by the ServiceWorker. See
+  // ServiceWorkerResponseInfo::url_list_via_service_worker().
+  std::vector<GURL> url_list_via_service_worker;
 
   // The type of the response which was fetched by the ServiceWorker.
   blink::WebServiceWorkerResponseType response_type_via_service_worker;

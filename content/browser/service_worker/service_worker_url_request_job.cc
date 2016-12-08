@@ -651,7 +651,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
 
 void ServiceWorkerURLRequestJob::SetResponse(
     const ServiceWorkerResponse& response) {
-  response_url_ = response.url;
+  response_url_list_ = response.url_list;
   service_worker_response_type_ = response.response_type;
   cors_exposed_header_names_ = response.cors_exposed_header_names;
   response_time_ = response.response_time;
@@ -797,7 +797,7 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
             false /* was_fetched_via_service_worker */,
             false /* was_fetched_via_foreign_fetch */,
             false /* was_fallback_required */,
-            GURL() /* original_url_via_service_worker */,
+            std::vector<GURL>() /* url_list_via_service_worker */,
             blink::WebServiceWorkerResponseTypeDefault,
             base::TimeTicks() /* service_worker_start_time */,
             base::TimeTicks() /* service_worker_ready_time */,
@@ -807,12 +807,13 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
     return;
   }
   ServiceWorkerResponseInfo::ForRequest(request_, true)
-      ->OnStartCompleted(
-          true /* was_fetched_via_service_worker */,
-          fetch_type_ == ServiceWorkerFetchType::FOREIGN_FETCH,
-          fall_back_required_, response_url_, service_worker_response_type_,
-          worker_start_time_, worker_ready_time_, response_is_in_cache_storage_,
-          response_cache_storage_cache_name_, cors_exposed_header_names_);
+      ->OnStartCompleted(true /* was_fetched_via_service_worker */,
+                         fetch_type_ == ServiceWorkerFetchType::FOREIGN_FETCH,
+                         fall_back_required_, response_url_list_,
+                         service_worker_response_type_, worker_start_time_,
+                         worker_ready_time_, response_is_in_cache_storage_,
+                         response_cache_storage_cache_name_,
+                         cors_exposed_header_names_);
 }
 
 bool ServiceWorkerURLRequestJob::IsMainResourceLoad() const {

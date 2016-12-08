@@ -34,6 +34,7 @@
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -154,6 +155,7 @@ class FetchManager::Loader final
   ~Loader() override;
   DECLARE_VIRTUAL_TRACE();
 
+  void didReceiveRedirectTo(const KURL&) override;
   void didReceiveResponse(unsigned long,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
@@ -282,6 +284,7 @@ class FetchManager::Loader final
   Member<SRIVerifier> m_integrityVerifier;
   bool m_didFinishLoading;
   bool m_isIsolatedWorld;
+  Vector<KURL> m_urlList;
   Member<ExecutionContext> m_executionContext;
 };
 
@@ -301,6 +304,7 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext,
       m_isIsolatedWorld(isIsolatedWorld),
       m_executionContext(executionContext) {
   ThreadState::current()->registerPreFinalizer(this);
+  m_urlList.append(request->url());
 }
 
 FetchManager::Loader::~Loader() {
@@ -316,11 +320,18 @@ DEFINE_TRACE(FetchManager::Loader) {
   visitor->trace(m_executionContext);
 }
 
+void FetchManager::Loader::didReceiveRedirectTo(const KURL& url) {
+  m_urlList.append(url);
+}
+
 void FetchManager::Loader::didReceiveResponse(
     unsigned long,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   ASSERT(handle);
+  // TODO(horo): This check could be false when we will use the response url
+  // in service worker responses. (crbug.com/553535)
+  DCHECK(response.url() == m_urlList.back());
   ScriptState* scriptState = m_resolver->getScriptState();
   ScriptState::Scope scope(scriptState);
 
@@ -423,7 +434,15 @@ void FetchManager::Loader::didReceiveResponse(
   responseData->setStatusMessage(response.httpStatusText());
   for (auto& it : response.httpHeaderFields())
     responseData->headerList()->append(it.key, it.value);
-  responseData->setURL(response.url());
+  if (response.urlListViaServiceWorker().isEmpty()) {
+    // Note: |urlListViaServiceWorker| is empty, unless the response came from a
+    // service worker, in which case it will only be empty if it was created
+    // through new Response().
+    responseData->setURLList(m_urlList);
+  } else {
+    DCHECK(response.wasFetchedViaServiceWorker());
+    responseData->setURLList(response.urlListViaServiceWorker());
+  }
   responseData->setMIMEType(response.mimeType());
   responseData->setResponseTime(response.responseTime());
 

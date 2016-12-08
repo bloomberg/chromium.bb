@@ -154,6 +154,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
 
     void didSendData(unsigned long long bytesSent,
                      unsigned long long totalBytesToBeSent) override;
+    void didReceiveRedirectTo(const KURL&) override;
     void didReceiveResponse(unsigned long identifier,
                             const ResourceResponse&,
                             std::unique_ptr<WebDataConsumerHandle>) override;
@@ -193,6 +194,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
 
   void didSendData(unsigned long long bytesSent,
                    unsigned long long totalBytesToBeSent);
+  void didReceiveRedirectTo(const KURL&);
   void didReceiveResponse(unsigned long identifier,
                           std::unique_ptr<CrossThreadResourceResponseData>,
                           std::unique_ptr<WebDataConsumerHandle>);

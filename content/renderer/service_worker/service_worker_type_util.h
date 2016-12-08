@@ -18,13 +18,8 @@ void GetServiceWorkerHeaderMapFromWebRequest(
     const blink::WebServiceWorkerRequest& web_request,
     ServiceWorkerHeaderMap* headers);
 
-void GetServiceWorkerHeaderMapFromWebResponse(
-    const blink::WebServiceWorkerResponse& web_response,
-    ServiceWorkerHeaderMap* headers);
-
-void GetCorsExposedHeaderNamesFromWebResponse(
-    const blink::WebServiceWorkerResponse& web_response,
-    ServiceWorkerHeaderList* result);
+ServiceWorkerResponse GetServiceWorkerResponseFromWebResponse(
+    const blink::WebServiceWorkerResponse& web_response);
 
 }  // namespace content
 

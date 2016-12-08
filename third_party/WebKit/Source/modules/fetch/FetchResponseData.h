@@ -11,6 +11,7 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include <memory>
 
@@ -69,7 +70,7 @@ class MODULES_EXPORT FetchResponseData final
   FetchResponseData* clone(ScriptState*);
 
   Type getType() const { return m_type; }
-  const KURL& url() const { return m_url; }
+  const KURL* url() const;
   unsigned short status() const { return m_status; }
   AtomicString statusMessage() const { return m_statusMessage; }
   FetchHeaderList* headerList() const { return m_headerList.get(); }
@@ -85,7 +86,7 @@ class MODULES_EXPORT FetchResponseData final
     return m_corsExposedHeaderNames;
   }
 
-  void setURL(const KURL& url) { m_url = url; }
+  void setURLList(const Vector<KURL>&);
   void setStatus(unsigned short status) { m_status = status; }
   void setStatusMessage(AtomicString statusMessage) {
     m_statusMessage = statusMessage;
@@ -117,7 +118,7 @@ class MODULES_EXPORT FetchResponseData final
 
   Type m_type;
   std::unique_ptr<TerminationReason> m_terminationReason;
-  KURL m_url;
+  Vector<KURL> m_urlList;
   unsigned short m_status;
   AtomicString m_statusMessage;
   Member<FetchHeaderList> m_headerList;

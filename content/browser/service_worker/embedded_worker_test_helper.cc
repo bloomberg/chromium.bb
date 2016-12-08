@@ -356,12 +356,14 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
       embedded_worker_id, fetch_event_id,
       SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
       ServiceWorkerResponse(
-          GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
-          ServiceWorkerHeaderMap(), std::string(), 0, GURL(),
+          base::MakeUnique<std::vector<GURL>>(), 200, "OK",
+          blink::WebServiceWorkerResponseTypeDefault,
+          base::MakeUnique<ServiceWorkerHeaderMap>(), std::string(), 0, GURL(),
           blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
           false /* is_in_cache_storage */,
           std::string() /* cache_storage_cache_name */,
-          ServiceWorkerHeaderList() /* cors_exposed_header_names */),
+          base::MakeUnique<
+              ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
       base::Time::Now()));
   callback.Run(SERVICE_WORKER_OK, base::Time::Now());
 }

@@ -770,7 +770,8 @@ TEST_F(MultibufferDataSourceTest,
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.setWasFetchedViaServiceWorker(true);
-  response1.setOriginalURLViaServiceWorker(GURL(kHttpUrl));
+  std::vector<blink::WebURL> url_list = {GURL(kHttpUrl)};
+  response1.setURLListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are same. So no error should
@@ -784,7 +785,8 @@ TEST_F(MultibufferDataSourceTest,
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.setWasFetchedViaServiceWorker(true);
-  response1.setOriginalURLViaServiceWorker(GURL(kHttpDifferentPathUrl));
+  std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentPathUrl)};
+  response1.setURLListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are same. So no error should
@@ -798,7 +800,8 @@ TEST_F(MultibufferDataSourceTest,
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.setWasFetchedViaServiceWorker(true);
-  response1.setOriginalURLViaServiceWorker(GURL(kHttpDifferentOriginUrl));
+  std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentOriginUrl)};
+  response1.setURLListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are different. So an error should
@@ -812,7 +815,8 @@ TEST_F(MultibufferDataSourceTest,
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.setWasFetchedViaServiceWorker(true);
-  response1.setOriginalURLViaServiceWorker(GURL(kHttpDifferentOriginUrl));
+  std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentOriginUrl)};
+  response1.setURLListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are different, but a CORS check
@@ -1505,7 +1509,8 @@ TEST_F(MultibufferDataSourceTest, DidPassCORSAccessTest) {
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.setWasFetchedViaServiceWorker(true);
-  response1.setOriginalURLViaServiceWorker(GURL(kHttpDifferentOriginUrl));
+  std::vector<blink::WebURL> urlList = {GURL(kHttpDifferentOriginUrl)};
+  response1.setURLListViaServiceWorker(urlList);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
 

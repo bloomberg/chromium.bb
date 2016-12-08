@@ -194,9 +194,13 @@ class ErrorWebCacheForTests : public WebServiceWorkerCache {
       const String expectedRequestUrl =
           KURL(expectedBatchOperations[i].request.url());
       EXPECT_EQ(expectedRequestUrl, KURL(batchOperations[i].request.url()));
-      const String expectedResponseUrl =
-          KURL(expectedBatchOperations[i].response.url());
-      EXPECT_EQ(expectedResponseUrl, KURL(batchOperations[i].response.url()));
+      ASSERT_EQ(expectedBatchOperations[i].response.urlList().size(),
+                batchOperations[i].response.urlList().size());
+      for (size_t j = 0;
+           j < expectedBatchOperations[i].response.urlList().size(); ++j) {
+        EXPECT_EQ(expectedBatchOperations[i].response.urlList()[j],
+                  batchOperations[i].response.urlList()[j]);
+      }
       CompareQueryParamsForTest(expectedBatchOperations[i].matchParams,
                                 batchOperations[i].matchParams);
     }
@@ -467,7 +471,9 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
   ASSERT(request);
 
   WebServiceWorkerResponse webResponse;
-  webResponse.setURL(KURL(ParsedURLString, url));
+  std::vector<KURL> urlList;
+  urlList.push_back(KURL(ParsedURLString, url));
+  webResponse.setURLList(urlList);
   Response* response = Response::create(getScriptState(), webResponse);
 
   WebVector<WebServiceWorkerCache::BatchOperation> expectedDeleteOperations(
@@ -545,7 +551,9 @@ TEST_F(CacheStorageTest, MatchResponseTest) {
   const String responseUrl = "http://match.response.test/";
 
   WebServiceWorkerResponse webResponse;
-  webResponse.setURL(KURL(ParsedURLString, responseUrl));
+  std::vector<KURL> urlList;
+  urlList.push_back(KURL(ParsedURLString, responseUrl));
+  webResponse.setURLList(urlList);
   webResponse.setResponseType(WebServiceWorkerResponseTypeDefault);
 
   Cache* cache = createCache(fetcher, new MatchTestCache(webResponse));
@@ -642,9 +650,9 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest) {
   expectedUrls[1] = url2;
 
   WebVector<WebServiceWorkerResponse> webResponses(size_t(2));
-  webResponses[0].setURL(KURL(ParsedURLString, url1));
+  webResponses[0].setURLList(std::vector<KURL>({KURL(ParsedURLString, url1)}));
   webResponses[0].setResponseType(WebServiceWorkerResponseTypeDefault);
-  webResponses[1].setURL(KURL(ParsedURLString, url2));
+  webResponses[1].setURLList(std::vector<KURL>({KURL(ParsedURLString, url2)}));
   webResponses[1].setResponseType(WebServiceWorkerResponseTypeDefault);
 
   Cache* cache =

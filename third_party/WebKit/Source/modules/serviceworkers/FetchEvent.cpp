@@ -120,7 +120,12 @@ void FetchEvent::onNavigationPreloadResponse(
       new BodyStreamBuffer(scriptState, new BytesConsumerForDataConsumerHandle(
                                             scriptState->getExecutionContext(),
                                             std::move(dataConsumeHandle))));
-  responseData->setURL(response->url());
+  const WebVector<WebURL>& webURLList = response->urlList();
+  // Navigation preload doesn't support redirect.
+  DCHECK_EQ(1u, webURLList.size());
+  Vector<KURL> urlList(1);
+  urlList[0] = webURLList[0];
+  responseData->setURLList(urlList);
   responseData->setStatus(response->status());
   responseData->setStatusMessage(response->statusText());
   responseData->setResponseTime(response->responseTime());

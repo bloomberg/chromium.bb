@@ -284,14 +284,19 @@ class CacheStorageManagerTest : public testing::Test {
 
     std::unique_ptr<storage::BlobDataHandle> blob_handle =
         blob_storage_context_->AddFinishedBlob(blob_data.get());
+    std::unique_ptr<std::vector<GURL>> url_list =
+        base::MakeUnique<std::vector<GURL>>();
+    url_list->push_back(request.url);
     ServiceWorkerResponse response(
-        request.url, status_code, "OK",
-        blink::WebServiceWorkerResponseTypeDefault, response_headers,
+        std::move(url_list), status_code, "OK",
+        blink::WebServiceWorkerResponseTypeDefault,
+        base::MakeUnique<ServiceWorkerHeaderMap>(response_headers),
         blob_handle->uuid(), request.url.spec().size(), GURL(),
         blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
         false /* is_in_cache_storage */,
         std::string() /* cache_storage_cache_name */,
-        ServiceWorkerHeaderList() /* cors_exposed_header_names */);
+        base::MakeUnique<
+            ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
 
     CacheStorageBatchOperation operation;
     operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;

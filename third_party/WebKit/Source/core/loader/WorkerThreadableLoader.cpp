@@ -42,6 +42,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/network/ResourceTimingInfo.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/debug/Alias.h"
 #include <memory>
@@ -323,6 +324,13 @@ void WorkerThreadableLoader::didSendData(
   m_client->didSendData(bytesSent, totalBytesToBeSent);
 }
 
+void WorkerThreadableLoader::didReceiveRedirectTo(const KURL& url) {
+  DCHECK(!isMainThread());
+  if (!m_client)
+    return;
+  m_client->didReceiveRedirectTo(url);
+}
+
 void WorkerThreadableLoader::didReceiveResponse(
     unsigned long identifier,
     std::unique_ptr<CrossThreadResourceResponseData> responseData,
@@ -487,6 +495,19 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didSendData(
       BLINK_FROM_HERE,
       createCrossThreadTask(&WorkerThreadableLoader::didSendData, workerLoader,
                             bytesSent, totalBytesToBeSent));
+}
+
+void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveRedirectTo(
+    const KURL& url) {
+  DCHECK(isMainThread());
+  CrossThreadPersistent<WorkerThreadableLoader> workerLoader =
+      m_workerLoader.get();
+  if (!workerLoader || !m_forwarder)
+    return;
+  m_forwarder->forwardTask(
+      BLINK_FROM_HERE,
+      createCrossThreadTask(&WorkerThreadableLoader::didReceiveRedirectTo,
+                            workerLoader, url));
 }
 
 void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveResponse(

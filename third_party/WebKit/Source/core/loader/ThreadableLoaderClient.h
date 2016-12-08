@@ -39,6 +39,7 @@
 
 namespace blink {
 
+class KURL;
 class ResourceError;
 class ResourceResponse;
 class ResourceTimingInfo;
@@ -49,7 +50,7 @@ class CORE_EXPORT ThreadableLoaderClient {
  public:
   virtual void didSendData(unsigned long long /*bytesSent*/,
                            unsigned long long /*totalBytesToBeSent*/) {}
-
+  virtual void didReceiveRedirectTo(const KURL&) {}
   virtual void didReceiveResponse(unsigned long /*identifier*/,
                                   const ResourceResponse&,
                                   std::unique_ptr<WebDataConsumerHandle>) {}

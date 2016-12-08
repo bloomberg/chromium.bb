@@ -1051,8 +1051,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setWasFallbackRequiredByServiceWorker(
       info.was_fallback_required_by_service_worker);
   response->setServiceWorkerResponseType(info.response_type_via_service_worker);
-  response->setOriginalURLViaServiceWorker(
-      info.original_url_via_service_worker);
+  response->setURLListViaServiceWorker(info.url_list_via_service_worker);
   response->setCacheStorageCacheName(
       info.is_in_cache_storage
           ? blink::WebString::fromUTF8(info.cache_storage_cache_name)

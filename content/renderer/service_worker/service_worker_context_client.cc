@@ -253,7 +253,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     DCHECK(!response_);
     DCHECK(!downloaded_file);
     response_ = base::MakeUnique<blink::WebServiceWorkerResponse>();
-    response_->setURL(url_);
+    response_->setURLList(std::vector<blink::WebURL>({url_}));
     DCHECK(response_head.headers);
     response_->setStatus(response_head.headers->response_code());
     response_->setStatusText(
@@ -693,22 +693,10 @@ void ServiceWorkerContextClient::respondToFetchEvent(
     int fetch_event_id,
     const blink::WebServiceWorkerResponse& web_response,
     double event_dispatch_time) {
-  ServiceWorkerHeaderMap headers;
-  GetServiceWorkerHeaderMapFromWebResponse(web_response, &headers);
-  ServiceWorkerHeaderList cors_exposed_header_names;
-  GetCorsExposedHeaderNamesFromWebResponse(web_response,
-                                           &cors_exposed_header_names);
-  ServiceWorkerResponse response(
-      web_response.url(), web_response.status(),
-      web_response.statusText().utf8(), web_response.responseType(), headers,
-      web_response.blobUUID().utf8(), web_response.blobSize(),
-      web_response.streamURL(), web_response.error(),
-      base::Time::FromInternalValue(web_response.responseTime()),
-      !web_response.cacheStorageCacheName().isNull(),
-      web_response.cacheStorageCacheName().utf8(), cors_exposed_header_names);
   Send(new ServiceWorkerHostMsg_FetchEventResponse(
       GetRoutingID(), fetch_event_id,
-      SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, response,
+      SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+      GetServiceWorkerResponseFromWebResponse(web_response),
       base::Time::FromDoubleT(event_dispatch_time)));
 }
 

@@ -249,17 +249,22 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT bool wasFallbackRequiredByServiceWorker() const;
   BLINK_PLATFORM_EXPORT void setWasFallbackRequiredByServiceWorker(bool);
 
-  // The type of the response which was fetched by the ServiceWorker.
+  // The type of the response which was served by the ServiceWorker.
   BLINK_PLATFORM_EXPORT WebServiceWorkerResponseType
   serviceWorkerResponseType() const;
   BLINK_PLATFORM_EXPORT void setServiceWorkerResponseType(
       WebServiceWorkerResponseType);
 
-  // The URL of the Response object the ServiceWorker passed to respondWith().
-  // See ServiceWorkerResponseInfo::original_url_via_service_worker() for
-  // details.
+  // The URL list of the Response object the ServiceWorker passed to
+  // respondWith(). See ServiceWorkerResponseInfo::url_list_via_service_worker()
+  // for details.
+  BLINK_PLATFORM_EXPORT void setURLListViaServiceWorker(
+      const WebVector<WebURL>&);
+
+  // Returns the last URL of the URL list of the Response object the
+  // ServiceWorker passed to respondWith() if it did. Otherwise returns an empty
+  // URL.
   BLINK_PLATFORM_EXPORT WebURL originalURLViaServiceWorker() const;
-  BLINK_PLATFORM_EXPORT void setOriginalURLViaServiceWorker(const WebURL&);
 
   // The boundary of the response. Set only when this is a multipart response.
   BLINK_PLATFORM_EXPORT void setMultipartBoundary(const char* bytes,
@@ -271,7 +276,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void setCacheStorageCacheName(const WebString&);
 
   // The headers that should be exposed according to CORS. Only guaranteed
-  // to be set if the response was fetched by a ServiceWorker.
+  // to be set if the response was served by a ServiceWorker.
   BLINK_PLATFORM_EXPORT WebVector<WebString> corsExposedHeaderNames() const;
   BLINK_PLATFORM_EXPORT void setCorsExposedHeaderNames(
       const WebVector<WebString>&);

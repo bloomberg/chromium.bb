@@ -306,13 +306,17 @@ class PLATFORM_EXPORT ResourceResponse final {
     m_serviceWorkerResponseType = value;
   }
 
-  // See ServiceWorkerResponseInfo::original_url_via_service_worker.
-  const KURL& originalURLViaServiceWorker() const {
-    return m_originalURLViaServiceWorker;
+  // See ServiceWorkerResponseInfo::url_list_via_service_worker.
+  const Vector<KURL>& urlListViaServiceWorker() const {
+    return m_urlListViaServiceWorker;
   }
-  void setOriginalURLViaServiceWorker(const KURL& url) {
-    m_originalURLViaServiceWorker = url;
+  void setURLListViaServiceWorker(const Vector<KURL>& urlList) {
+    m_urlListViaServiceWorker = urlList;
   }
+
+  // Returns the last URL of urlListViaServiceWorker if exists. Otherwise
+  // returns an empty URL.
+  KURL originalURLViaServiceWorker() const;
 
   const Vector<char>& multipartBoundary() const { return m_multipartBoundary; }
   void setMultipartBoundary(const char* bytes, size_t size) {
@@ -466,9 +470,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   // The type of the response which was fetched by the ServiceWorker.
   WebServiceWorkerResponseType m_serviceWorkerResponseType;
 
-  // The original URL of the response which was fetched by the ServiceWorker.
-  // This may be empty if the response was created inside the ServiceWorker.
-  KURL m_originalURLViaServiceWorker;
+  // The URL list of the response which was fetched by the ServiceWorker.
+  // This is empty if the response was created inside the ServiceWorker.
+  Vector<KURL> m_urlListViaServiceWorker;
 
   // The cache name of the CacheStorage from where the response is served via
   // the ServiceWorker. Null if the response isn't from the CacheStorage.
@@ -554,7 +558,7 @@ struct CrossThreadResourceResponseData {
   bool m_wasFetchedViaForeignFetch;
   bool m_wasFallbackRequiredByServiceWorker;
   WebServiceWorkerResponseType m_serviceWorkerResponseType;
-  KURL m_originalURLViaServiceWorker;
+  Vector<KURL> m_urlListViaServiceWorker;
   String m_cacheStorageCacheName;
   int64_t m_responseTime;
   String m_remoteIPAddress;

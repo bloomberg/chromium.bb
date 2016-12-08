@@ -533,6 +533,7 @@ bool DocumentThreadableLoader::redirectReceived(
   // Allow same origin requests to continue after allowing clients to audit the
   // redirect.
   if (isAllowedRedirect(request.url())) {
+    m_client->didReceiveRedirectTo(request.url());
     if (m_client->isDocumentThreadableLoaderClient()) {
       return static_cast<DocumentThreadableLoaderClient*>(m_client)
           ->willFollowRedirect(request, redirectResponse);
@@ -585,6 +586,8 @@ bool DocumentThreadableLoader::redirectReceived(
         accessControlErrorDescription));
     return false;
   }
+
+  m_client->didReceiveRedirectTo(request.url());
 
   // FIXME: consider combining this with CORS redirect handling performed by
   // CrossOriginAccessControl::handleRedirect().

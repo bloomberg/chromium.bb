@@ -41,9 +41,10 @@ message CacheResponse {
   required string status_text = 2;
   required ResponseType response_type = 3;
   repeated CacheHeaderMap headers = 4;
-  optional string url = 5;
+  optional string url = 5 [deprecated = true];
   optional int64 response_time = 6;
   repeated string cors_exposed_header_names = 7;
+  repeated string url_list = 8;
 }
 
 message CacheMetadata {

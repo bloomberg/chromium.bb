@@ -279,10 +279,11 @@ void WebURLResponse::setSecurityStyle(WebSecurityStyle securityStyle) {
 
 void WebURLResponse::setSecurityDetails(
     const WebSecurityDetails& webSecurityDetails) {
-  blink::ResourceResponse::SignedCertificateTimestampList sctList;
-  for (const auto& iter : webSecurityDetails.sctList)
+  ResourceResponse::SignedCertificateTimestampList sctList;
+  for (const auto& iter : webSecurityDetails.sctList) {
     sctList.append(
-        static_cast<blink::ResourceResponse::SignedCertificateTimestamp>(iter));
+        static_cast<ResourceResponse::SignedCertificateTimestamp>(iter));
+  }
   Vector<String> sanList;
   sanList.append(webSecurityDetails.sanList.data(),
                  webSecurityDetails.sanList.size());
@@ -373,12 +374,16 @@ void WebURLResponse::setServiceWorkerResponseType(
   m_resourceResponse->setServiceWorkerResponseType(value);
 }
 
-WebURL WebURLResponse::originalURLViaServiceWorker() const {
-  return m_resourceResponse->originalURLViaServiceWorker();
+void WebURLResponse::setURLListViaServiceWorker(
+    const WebVector<WebURL>& urlListViaServiceWorker) {
+  Vector<KURL> urlList(urlListViaServiceWorker.size());
+  std::transform(urlListViaServiceWorker.begin(), urlListViaServiceWorker.end(),
+                 urlList.begin(), [](const WebURL& url) { return url; });
+  m_resourceResponse->setURLListViaServiceWorker(urlList);
 }
 
-void WebURLResponse::setOriginalURLViaServiceWorker(const WebURL& url) {
-  m_resourceResponse->setOriginalURLViaServiceWorker(url);
+WebURL WebURLResponse::originalURLViaServiceWorker() const {
+  return m_resourceResponse->originalURLViaServiceWorker();
 }
 
 void WebURLResponse::setMultipartBoundary(const char* bytes, size_t size) {

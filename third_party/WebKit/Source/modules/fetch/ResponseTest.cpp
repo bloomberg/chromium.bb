@@ -20,6 +20,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
+#include "wtf/Vector.h"
 #include <memory>
 
 namespace blink {
@@ -36,10 +37,11 @@ std::unique_ptr<WebServiceWorkerResponse> createTestWebServiceWorkerResponse() {
                  {"set-cookie", "foop"},
                  {"foo", "bar"},
                  {0, 0}};
-
+  Vector<WebURL> urlList;
+  urlList.append(url);
   std::unique_ptr<WebServiceWorkerResponse> webResponse =
       makeUnique<WebServiceWorkerResponse>();
-  webResponse->setURL(url);
+  webResponse->setURLList(urlList);
   webResponse->setStatus(status);
   webResponse->setStatusText(statusText);
   webResponse->setResponseType(WebServiceWorkerResponseTypeDefault);
@@ -55,8 +57,9 @@ TEST(ServiceWorkerResponseTest, FromFetchResponseData) {
   const KURL url(ParsedURLString, "http://www.response.com");
 
   FetchResponseData* fetchResponseData = FetchResponseData::create();
-  fetchResponseData->setURL(url);
-
+  Vector<KURL> urlList;
+  urlList.append(url);
+  fetchResponseData->setURLList(urlList);
   Response* response = Response::create(&page->document(), fetchResponseData);
   ASSERT(response);
   EXPECT_EQ(url, response->url());
@@ -68,7 +71,8 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponse) {
       createTestWebServiceWorkerResponse();
   Response* response = Response::create(scope.getScriptState(), *webResponse);
   ASSERT(response);
-  EXPECT_EQ(webResponse->url(), response->url());
+  ASSERT_EQ(1u, webResponse->urlList().size());
+  EXPECT_EQ(webResponse->urlList()[0], response->url());
   EXPECT_EQ(webResponse->status(), response->status());
   EXPECT_STREQ(webResponse->statusText().utf8().c_str(),
                response->statusText().utf8().data());
@@ -223,7 +227,9 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneDefault) {
   BodyStreamBuffer* buffer = createHelloWorldBuffer(scope.getScriptState());
   FetchResponseData* fetchResponseData =
       FetchResponseData::createWithBuffer(buffer);
-  fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
+  Vector<KURL> urlList;
+  urlList.append(KURL(ParsedURLString, "http://www.response.com"));
+  fetchResponseData->setURLList(urlList);
   Response* response =
       Response::create(scope.getExecutionContext(), fetchResponseData);
   EXPECT_EQ(response->internalBodyBuffer(), buffer);
@@ -235,7 +241,9 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneBasic) {
   BodyStreamBuffer* buffer = createHelloWorldBuffer(scope.getScriptState());
   FetchResponseData* fetchResponseData =
       FetchResponseData::createWithBuffer(buffer);
-  fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
+  Vector<KURL> urlList;
+  urlList.append(KURL(ParsedURLString, "http://www.response.com"));
+  fetchResponseData->setURLList(urlList);
   fetchResponseData = fetchResponseData->createBasicFilteredResponse();
   Response* response =
       Response::create(scope.getExecutionContext(), fetchResponseData);
@@ -248,7 +256,9 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneCORS) {
   BodyStreamBuffer* buffer = createHelloWorldBuffer(scope.getScriptState());
   FetchResponseData* fetchResponseData =
       FetchResponseData::createWithBuffer(buffer);
-  fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
+  Vector<KURL> urlList;
+  urlList.append(KURL(ParsedURLString, "http://www.response.com"));
+  fetchResponseData->setURLList(urlList);
   fetchResponseData = fetchResponseData->createCORSFilteredResponse();
   Response* response =
       Response::create(scope.getExecutionContext(), fetchResponseData);
@@ -261,7 +271,9 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneOpaque) {
   BodyStreamBuffer* buffer = createHelloWorldBuffer(scope.getScriptState());
   FetchResponseData* fetchResponseData =
       FetchResponseData::createWithBuffer(buffer);
-  fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
+  Vector<KURL> urlList;
+  urlList.append(KURL(ParsedURLString, "http://www.response.com"));
+  fetchResponseData->setURLList(urlList);
   fetchResponseData = fetchResponseData->createOpaqueFilteredResponse();
   Response* response =
       Response::create(scope.getExecutionContext(), fetchResponseData);
@@ -276,7 +288,9 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError) {
       BytesConsumer::createErrored(BytesConsumer::Error()));
   FetchResponseData* fetchResponseData =
       FetchResponseData::createWithBuffer(buffer);
-  fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
+  Vector<KURL> urlList;
+  urlList.append(KURL(ParsedURLString, "http://www.response.com"));
+  fetchResponseData->setURLList(urlList);
   Response* response =
       Response::create(scope.getExecutionContext(), fetchResponseData);
   DummyExceptionStateForTesting exceptionState;

@@ -953,16 +953,9 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
   DCHECK(!(operation.response.response_type ==
                blink::WebServiceWorkerResponseTypeOpaqueRedirect &&
            operation.response.blob_size));
-  std::unique_ptr<ServiceWorkerResponse> response(new ServiceWorkerResponse(
-      operation.response.url, operation.response.status_code,
-      operation.response.status_text, operation.response.response_type,
-      operation.response.headers, operation.response.blob_uuid,
-      operation.response.blob_size, operation.response.stream_url,
-      operation.response.error, operation.response.response_time,
-      false /* is_in_cache_storage */,
-      std::string() /* cache_storage_cache_name */,
-      operation.response.cors_exposed_header_names));
 
+  std::unique_ptr<ServiceWorkerResponse> response =
+      base::MakeUnique<ServiceWorkerResponse>(operation.response);
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 
   if (!response->blob_uuid.empty()) {
@@ -1068,7 +1061,8 @@ void CacheStorageCache::PutDidCreateEntry(
   response_metadata->set_status_text(put_context->response->status_text);
   response_metadata->set_response_type(
       WebResponseTypeToProtoResponseType(put_context->response->response_type));
-  response_metadata->set_url(put_context->response->url.spec());
+  for (const auto& url : put_context->response->url_list)
+    response_metadata->add_url_list(url.spec());
   response_metadata->set_response_time(
       put_context->response->response_time.ToInternalValue());
   for (ServiceWorkerHeaderMap::const_iterator it =
@@ -1407,24 +1401,37 @@ void CacheStorageCache::PopulateRequestFromMetadata(
 void CacheStorageCache::PopulateResponseMetadata(
     const proto::CacheMetadata& metadata,
     ServiceWorkerResponse* response) {
-  *response = ServiceWorkerResponse(
-      GURL(metadata.response().url()), metadata.response().status_code(),
-      metadata.response().status_text(),
-      ProtoResponseTypeToWebResponseType(metadata.response().response_type()),
-      ServiceWorkerHeaderMap(), "", 0, GURL(),
-      blink::WebServiceWorkerResponseErrorUnknown,
-      base::Time::FromInternalValue(metadata.response().response_time()),
-      true /* is_in_cache_storage */, cache_name_,
-      ServiceWorkerHeaderList(
-          metadata.response().cors_exposed_header_names().begin(),
-          metadata.response().cors_exposed_header_names().end()));
+  std::unique_ptr<std::vector<GURL>> url_list =
+      base::MakeUnique<std::vector<GURL>>();
+  // TODO(horo) Add UMA for the deprecated URL field.
+  if (metadata.response().has_url()) {
+    url_list->push_back(GURL(metadata.response().url()));
+  } else {
+    url_list->reserve(metadata.response().url_list_size());
+    for (int i = 0; i < metadata.response().url_list_size(); ++i)
+      url_list->push_back(GURL(metadata.response().url_list(i)));
+  }
 
+  std::unique_ptr<ServiceWorkerHeaderMap> headers =
+      base::MakeUnique<ServiceWorkerHeaderMap>();
   for (int i = 0; i < metadata.response().headers_size(); ++i) {
     const proto::CacheHeaderMap header = metadata.response().headers(i);
     DCHECK_EQ(std::string::npos, header.name().find('\0'));
     DCHECK_EQ(std::string::npos, header.value().find('\0'));
-    response->headers.insert(std::make_pair(header.name(), header.value()));
+    headers->insert(std::make_pair(header.name(), header.value()));
   }
+
+  *response = ServiceWorkerResponse(
+      std::move(url_list), metadata.response().status_code(),
+      metadata.response().status_text(),
+      ProtoResponseTypeToWebResponseType(metadata.response().response_type()),
+      std::move(headers), "", 0, GURL(),
+      blink::WebServiceWorkerResponseErrorUnknown,
+      base::Time::FromInternalValue(metadata.response().response_time()),
+      true /* is_in_cache_storage */, cache_name_,
+      base::MakeUnique<ServiceWorkerHeaderList>(
+          metadata.response().cors_exposed_header_names().begin(),
+          metadata.response().cors_exposed_header_names().end()));
 }
 
 std::unique_ptr<storage::BlobDataHandle>

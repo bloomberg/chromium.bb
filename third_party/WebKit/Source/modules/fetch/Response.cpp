@@ -44,7 +44,11 @@ FetchResponseData* createFetchResponseDataFromWebResponse(
   else
     response = FetchResponseData::createNetworkErrorResponse();
 
-  response->setURL(webResponse.url());
+  const WebVector<WebURL>& webURLList = webResponse.urlList();
+  Vector<KURL> urlList(webURLList.size());
+  std::transform(webURLList.begin(), webURLList.end(), urlList.begin(),
+                 [](const WebURL& url) { return url; });
+  response->setURLList(urlList);
   response->setStatus(webResponse.status());
   response->setStatusMessage(webResponse.statusText());
   response->setResponseTime(webResponse.responseTime());
@@ -350,9 +354,12 @@ String Response::url() const {
   // "The url attribute's getter must return the empty string if response's
   // url is null and response's url, serialized with the exclude fragment
   // flag set, otherwise."
-  if (!m_response->url().hasFragmentIdentifier())
-    return m_response->url();
-  KURL url(m_response->url());
+  const KURL* responseURL = m_response->url();
+  if (!responseURL)
+    return emptyString();
+  if (!responseURL->hasFragmentIdentifier())
+    return *responseURL;
+  KURL url(*responseURL);
   url.removeFragmentIdentifier();
   return url;
 }

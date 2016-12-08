@@ -20,7 +20,7 @@ class WebServiceWorkerResponsePrivate
         responseType(WebServiceWorkerResponseTypeDefault),
         error(WebServiceWorkerResponseErrorUnknown),
         responseTime(0) {}
-  WebURL url;
+  WebVector<WebURL> urlList;
   unsigned short status;
   WebString statusText;
   WebServiceWorkerResponseType responseType;
@@ -44,12 +44,12 @@ void WebServiceWorkerResponse::assign(const WebServiceWorkerResponse& other) {
   m_private = other.m_private;
 }
 
-void WebServiceWorkerResponse::setURL(const WebURL& url) {
-  m_private->url = url;
+void WebServiceWorkerResponse::setURLList(const WebVector<WebURL>& urlList) {
+  m_private->urlList = urlList;
 }
 
-WebURL WebServiceWorkerResponse::url() const {
-  return m_private->url;
+const WebVector<WebURL>& WebServiceWorkerResponse::urlList() const {
+  return m_private->urlList;
 }
 
 void WebServiceWorkerResponse::setStatus(unsigned short status) {

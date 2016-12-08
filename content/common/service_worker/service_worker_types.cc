@@ -76,11 +76,11 @@ ServiceWorkerResponse::ServiceWorkerResponse()
       error(blink::WebServiceWorkerResponseErrorUnknown) {}
 
 ServiceWorkerResponse::ServiceWorkerResponse(
-    const GURL& url,
+    std::unique_ptr<std::vector<GURL>> url_list,
     int status_code,
     const std::string& status_text,
     blink::WebServiceWorkerResponseType response_type,
-    const ServiceWorkerHeaderMap& headers,
+    std::unique_ptr<ServiceWorkerHeaderMap> headers,
     const std::string& blob_uuid,
     uint64_t blob_size,
     const GURL& stream_url,
@@ -88,20 +88,21 @@ ServiceWorkerResponse::ServiceWorkerResponse(
     base::Time response_time,
     bool is_in_cache_storage,
     const std::string& cache_storage_cache_name,
-    const ServiceWorkerHeaderList& cors_exposed_headers)
-    : url(url),
-      status_code(status_code),
+    std::unique_ptr<ServiceWorkerHeaderList> cors_exposed_headers)
+    : status_code(status_code),
       status_text(status_text),
       response_type(response_type),
-      headers(headers),
       blob_uuid(blob_uuid),
       blob_size(blob_size),
       stream_url(stream_url),
       error(error),
       response_time(response_time),
       is_in_cache_storage(is_in_cache_storage),
-      cache_storage_cache_name(cache_storage_cache_name),
-      cors_exposed_header_names(cors_exposed_headers) {}
+      cache_storage_cache_name(cache_storage_cache_name) {
+  this->url_list.swap(*url_list);
+  this->headers.swap(*headers);
+  this->cors_exposed_header_names.swap(*cors_exposed_headers);
+}
 
 ServiceWorkerResponse::ServiceWorkerResponse(
     const ServiceWorkerResponse& other) = default;
@@ -110,7 +111,8 @@ ServiceWorkerResponse::~ServiceWorkerResponse() {}
 
 size_t ServiceWorkerResponse::EstimatedStructSize() {
   size_t size = sizeof(ServiceWorkerResponse);
-  size += url.spec().size();
+  for (const auto& url : url_list)
+    size += url.spec().size();
   size += blob_uuid.size();
   size += stream_url.spec().size();
   size += cache_storage_cache_name.size();

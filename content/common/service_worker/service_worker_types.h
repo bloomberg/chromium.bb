@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/strings/string_util.h"
@@ -170,11 +171,11 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
 struct CONTENT_EXPORT ServiceWorkerResponse {
   ServiceWorkerResponse();
   ServiceWorkerResponse(
-      const GURL& url,
+      std::unique_ptr<std::vector<GURL>> url_list,
       int status_code,
       const std::string& status_text,
       blink::WebServiceWorkerResponseType response_type,
-      const ServiceWorkerHeaderMap& headers,
+      std::unique_ptr<ServiceWorkerHeaderMap> headers,
       const std::string& blob_uuid,
       uint64_t blob_size,
       const GURL& stream_url,
@@ -182,13 +183,13 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
       base::Time response_time,
       bool is_in_cache_storage,
       const std::string& cache_storage_cache_name,
-      const ServiceWorkerHeaderList& cors_exposed_header_names);
+      std::unique_ptr<ServiceWorkerHeaderList> cors_exposed_header_names);
   ServiceWorkerResponse(const ServiceWorkerResponse& other);
   ~ServiceWorkerResponse();
   size_t EstimatedStructSize();
 
   // Be sure to update EstimatedSize() when adding members.
-  GURL url;
+  std::vector<GURL> url_list;
   int status_code;
   std::string status_text;
   blink::WebServiceWorkerResponseType response_type;

@@ -43,8 +43,8 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
       head.was_fetched_via_foreign_fetch;
   new_response->head.was_fallback_required_by_service_worker =
       head.was_fallback_required_by_service_worker;
-  new_response->head.original_url_via_service_worker =
-      head.original_url_via_service_worker;
+  new_response->head.url_list_via_service_worker =
+      head.url_list_via_service_worker;
   new_response->head.response_type_via_service_worker =
       head.response_type_via_service_worker;
   new_response->head.service_worker_start_time =

@@ -44,8 +44,8 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
   void reset();
   void assign(const WebServiceWorkerResponse&);
 
-  void setURL(const WebURL&);
-  WebURL url() const;
+  void setURLList(const WebVector<WebURL>&);
+  const WebVector<WebURL>& urlList() const;
 
   void setStatus(unsigned short);
   unsigned short status() const;

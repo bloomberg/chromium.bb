@@ -44,8 +44,7 @@ void ServiceWorkerResponseInfo::GetExtraResponseInfo(
   response_info->was_fetched_via_foreign_fetch = was_fetched_via_foreign_fetch_;
   response_info->was_fallback_required_by_service_worker =
       was_fallback_required_;
-  response_info->original_url_via_service_worker =
-      original_url_via_service_worker_;
+  response_info->url_list_via_service_worker = url_list_via_service_worker_;
   response_info->response_type_via_service_worker =
       response_type_via_service_worker_;
   response_info->service_worker_start_time = service_worker_start_time_;
@@ -71,7 +70,7 @@ void ServiceWorkerResponseInfo::OnStartCompleted(
     bool was_fetched_via_service_worker,
     bool was_fetched_via_foreign_fetch,
     bool was_fallback_required,
-    const GURL& original_url_via_service_worker,
+    const std::vector<GURL>& url_list_via_service_worker,
     blink::WebServiceWorkerResponseType response_type_via_service_worker,
     base::TimeTicks service_worker_start_time,
     base::TimeTicks service_worker_ready_time,
@@ -81,7 +80,7 @@ void ServiceWorkerResponseInfo::OnStartCompleted(
   was_fetched_via_service_worker_ = was_fetched_via_service_worker;
   was_fetched_via_foreign_fetch_ = was_fetched_via_foreign_fetch;
   was_fallback_required_ = was_fallback_required;
-  original_url_via_service_worker_ = original_url_via_service_worker;
+  url_list_via_service_worker_ = url_list_via_service_worker;
   response_type_via_service_worker_ = response_type_via_service_worker;
   response_is_in_cache_storage_ = response_is_in_cache_storage;
   response_cache_storage_cache_name_ = response_cache_storage_cache_name;
@@ -98,7 +97,7 @@ void ServiceWorkerResponseInfo::ResetData() {
   was_fetched_via_service_worker_ = false;
   was_fetched_via_foreign_fetch_ = false;
   was_fallback_required_ = false;
-  original_url_via_service_worker_ = GURL();
+  url_list_via_service_worker_.clear();
   response_type_via_service_worker_ =
       blink::WebServiceWorkerResponseTypeDefault;
   response_is_in_cache_storage_ = false;

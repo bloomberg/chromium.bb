@@ -79,25 +79,6 @@ blink::WebVector<blink::WebServiceWorkerRequest> WebRequestsFromRequests(
   return web_requests;
 }
 
-ServiceWorkerResponse ResponseFromWebResponse(
-    const blink::WebServiceWorkerResponse& web_response) {
-  ServiceWorkerHeaderMap headers;
-  GetServiceWorkerHeaderMapFromWebResponse(web_response, &headers);
-  ServiceWorkerHeaderList cors_exposed_header_names;
-  GetCorsExposedHeaderNamesFromWebResponse(web_response,
-                                           &cors_exposed_header_names);
-  // We don't support streaming for cache.
-  DCHECK(web_response.streamURL().isEmpty());
-  return ServiceWorkerResponse(
-      web_response.url(), web_response.status(),
-      web_response.statusText().ascii(), web_response.responseType(), headers,
-      web_response.blobUUID().ascii(), web_response.blobSize(),
-      web_response.streamURL(), blink::WebServiceWorkerResponseErrorUnknown,
-      base::Time::FromInternalValue(web_response.responseTime()),
-      !web_response.cacheStorageCacheName().isNull(),
-      web_response.cacheStorageCacheName().utf8(), cors_exposed_header_names);
-}
-
 CacheStorageCacheQueryParams QueryParamsFromWebQueryParams(
     const blink::WebServiceWorkerCache::QueryParams& web_query_params) {
   CacheStorageCacheQueryParams query_params;
@@ -122,11 +103,15 @@ CacheStorageCacheOperationType CacheOperationTypeFromWebCacheOperationType(
 
 CacheStorageBatchOperation BatchOperationFromWebBatchOperation(
     const blink::WebServiceWorkerCache::BatchOperation& web_operation) {
+  // We don't support streaming for cache.
+  DCHECK(web_operation.response.streamURL().isEmpty());
+
   CacheStorageBatchOperation operation;
   operation.operation_type =
       CacheOperationTypeFromWebCacheOperationType(web_operation.operationType);
   operation.request = FetchRequestFromWebRequest(web_operation.request);
-  operation.response = ResponseFromWebResponse(web_operation.response);
+  operation.response =
+      GetServiceWorkerResponseFromWebResponse(web_operation.response);
   operation.match_params =
       QueryParamsFromWebQueryParams(web_operation.matchParams);
   return operation;
@@ -643,7 +628,7 @@ void CacheStorageDispatcher::OnWebCacheDestruction(int cache_id) {
 void CacheStorageDispatcher::PopulateWebResponseFromResponse(
     const ServiceWorkerResponse& response,
     blink::WebServiceWorkerResponse* web_response) {
-  web_response->setURL(response.url);
+  web_response->setURLList(response.url_list);
   web_response->setStatus(response.status_code);
   web_response->setStatusText(WebString::fromASCII(response.status_text));
   web_response->setResponseType(response.response_type);
