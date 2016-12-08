@@ -725,7 +725,7 @@ void InspectorNetworkAgent::didReceiveResourceResponse(
   // following didReceiveResponse as there will be no calls to didReceiveData
   // from the network stack.
   if (isNotModified && cachedResource && cachedResource->encodedSize())
-    didReceiveData(frame, identifier, 0, cachedResource->encodedSize(), 0);
+    didReceiveData(frame, identifier, 0, cachedResource->encodedSize());
 }
 
 static bool isErrorStatusCode(int statusCode) {
@@ -735,8 +735,7 @@ static bool isErrorStatusCode(int statusCode) {
 void InspectorNetworkAgent::didReceiveData(LocalFrame*,
                                            unsigned long identifier,
                                            const char* data,
-                                           int dataLength,
-                                           int encodedDataLength) {
+                                           int dataLength) {
   String requestId = IdentifiersFactory::requestId(identifier);
 
   if (data) {
@@ -750,8 +749,17 @@ void InspectorNetworkAgent::didReceiveData(LocalFrame*,
       m_resourcesData->maybeAddResourceData(requestId, data, dataLength);
   }
 
-  frontend()->dataReceived(requestId, monotonicallyIncreasingTime(), dataLength,
-                           encodedDataLength);
+  frontend()->dataReceived(
+      requestId, monotonicallyIncreasingTime(), dataLength,
+      m_resourcesData->getAndClearPendingEncodedDataLength(requestId));
+}
+
+void InspectorNetworkAgent::didReceiveEncodedDataLength(
+    LocalFrame*,
+    unsigned long identifier,
+    int encodedDataLength) {
+  String requestId = IdentifiersFactory::requestId(identifier);
+  m_resourcesData->addPendingEncodedDataLength(requestId, encodedDataLength);
 }
 
 void InspectorNetworkAgent::didFinishLoading(unsigned long identifier,
@@ -760,6 +768,14 @@ void InspectorNetworkAgent::didFinishLoading(unsigned long identifier,
   String requestId = IdentifiersFactory::requestId(identifier);
   NetworkResourcesData::ResourceData const* resourceData =
       m_resourcesData->data(requestId);
+
+  int pendingEncodedDataLength =
+      m_resourcesData->getAndClearPendingEncodedDataLength(requestId);
+  if (pendingEncodedDataLength > 0) {
+    frontend()->dataReceived(requestId, monotonicallyIncreasingTime(), 0,
+                             pendingEncodedDataLength);
+  }
+
   if (resourceData &&
       (!resourceData->cachedResource() ||
        resourceData->cachedResource()->getDataBufferingPolicy() ==

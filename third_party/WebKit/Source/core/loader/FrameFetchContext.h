@@ -95,8 +95,9 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
                                   Resource*) override;
   void dispatchDidReceiveData(unsigned long identifier,
                               const char* data,
-                              int dataLength,
-                              int encodedDataLength) override;
+                              int dataLength) override;
+  void dispatchDidReceiveEncodedData(unsigned long identifier,
+                                     int encodedDataLength) override;
   void dispatchDidDownloadData(unsigned long identifier,
                                int dataLength,
                                int encodedDataLength) override;
@@ -105,6 +106,7 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
                                 int64_t encodedDataLength) override;
   void dispatchDidFail(unsigned long identifier,
                        const ResourceError&,
+                       int64_t encodedDataLength,
                        bool isInternalRequest) override;
 
   bool shouldLoadNewResource(Resource::Type) const override;

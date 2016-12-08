@@ -1191,7 +1191,9 @@ void ResourceFetcher::didFailLoading(Resource* resource,
   m_resourceTimingInfoMap.take(const_cast<Resource*>(resource));
   bool isInternalRequest = resource->options().initiatorInfo.name ==
                            FetchInitiatorTypeNames::internal;
-  context().dispatchDidFail(resource->identifier(), error, isInternalRequest);
+  context().dispatchDidFail(resource->identifier(), error,
+                            resource->response().encodedDataLength(),
+                            isInternalRequest);
   resource->error(error);
   context().didLoadResource(resource);
 
@@ -1271,8 +1273,9 @@ void ResourceFetcher::didReceiveData(const Resource* resource,
                                      const char* data,
                                      int dataLength,
                                      int encodedDataLength) {
-  context().dispatchDidReceiveData(resource->identifier(), data, dataLength,
-                                   encodedDataLength);
+  context().dispatchDidReceiveData(resource->identifier(), data, dataLength);
+  context().dispatchDidReceiveEncodedData(resource->identifier(),
+                                          encodedDataLength);
 }
 
 void ResourceFetcher::didDownloadData(const Resource* resource,

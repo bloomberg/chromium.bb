@@ -87,6 +87,7 @@ NetworkResourcesData::ResourceData::ResourceData(
       m_type(InspectorPageAgent::OtherResource),
       m_httpStatusCode(0),
       m_rawHeaderSize(0),
+      m_pendingEncodedDataLength(0),
       m_cachedResource(nullptr) {}
 
 DEFINE_TRACE(NetworkResourcesData::ResourceData) {
@@ -352,6 +353,26 @@ NetworkResourcesData::resources() {
   for (auto& request : m_requestIdToResourceDataMap)
     result.append(request.value);
   return result;
+}
+
+int NetworkResourcesData::getAndClearPendingEncodedDataLength(
+    const String& requestId) {
+  ResourceData* resourceData = resourceDataForRequestId(requestId);
+  if (!resourceData)
+    return 0;
+
+  int pendingEncodedDataLength = resourceData->pendingEncodedDataLength();
+  resourceData->clearPendingEncodedDataLength();
+  return pendingEncodedDataLength;
+}
+
+void NetworkResourcesData::addPendingEncodedDataLength(const String& requestId,
+                                                       int encodedDataLength) {
+  ResourceData* resourceData = resourceDataForRequestId(requestId);
+  if (!resourceData)
+    return;
+
+  resourceData->addPendingEncodedDataLength(encodedDataLength);
 }
 
 void NetworkResourcesData::clear(const String& preservedLoaderId) {

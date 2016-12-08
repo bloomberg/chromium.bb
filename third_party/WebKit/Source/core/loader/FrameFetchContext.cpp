@@ -423,14 +423,19 @@ void FrameFetchContext::dispatchDidReceiveResponse(
 
 void FrameFetchContext::dispatchDidReceiveData(unsigned long identifier,
                                                const char* data,
-                                               int dataLength,
-                                               int encodedDataLength) {
+                                               int dataLength) {
+  frame()->loader().progress().incrementProgress(identifier, dataLength);
+  InspectorInstrumentation::didReceiveData(frame(), identifier, data,
+                                           dataLength);
+}
+
+void FrameFetchContext::dispatchDidReceiveEncodedData(unsigned long identifier,
+                                                      int encodedDataLength) {
   TRACE_EVENT1(
       "devtools.timeline", "ResourceReceivedData", "data",
       InspectorReceiveDataEvent::data(identifier, frame(), encodedDataLength));
-  frame()->loader().progress().incrementProgress(identifier, dataLength);
-  InspectorInstrumentation::didReceiveData(frame(), identifier, data,
-                                           dataLength, encodedDataLength);
+  InspectorInstrumentation::didReceiveEncodedDataLength(frame(), identifier,
+                                                        encodedDataLength);
 }
 
 void FrameFetchContext::dispatchDidDownloadData(unsigned long identifier,
@@ -440,8 +445,9 @@ void FrameFetchContext::dispatchDidDownloadData(unsigned long identifier,
       "devtools.timeline", "ResourceReceivedData", "data",
       InspectorReceiveDataEvent::data(identifier, frame(), encodedDataLength));
   frame()->loader().progress().incrementProgress(identifier, dataLength);
-  InspectorInstrumentation::didReceiveData(frame(), identifier, 0, dataLength,
-                                           encodedDataLength);
+  InspectorInstrumentation::didReceiveData(frame(), identifier, 0, dataLength);
+  InspectorInstrumentation::didReceiveEncodedDataLength(frame(), identifier,
+                                                        encodedDataLength);
 }
 
 void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier,
@@ -459,6 +465,7 @@ void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier,
 
 void FrameFetchContext::dispatchDidFail(unsigned long identifier,
                                         const ResourceError& error,
+                                        int64_t encodedDataLength,
                                         bool isInternalRequest) {
   TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                InspectorResourceFinishEvent::data(identifier, 0, true));
@@ -493,7 +500,7 @@ void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(
   }
 
   if (resource->encodedSize() > 0)
-    dispatchDidReceiveData(identifier, 0, resource->encodedSize(), 0);
+    dispatchDidReceiveData(identifier, 0, resource->encodedSize());
 
   dispatchDidFinishLoading(identifier, 0, 0);
 }

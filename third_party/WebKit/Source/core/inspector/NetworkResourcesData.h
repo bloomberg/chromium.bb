@@ -157,6 +157,11 @@ class NetworkResourcesData final
     void setCertificate(const Vector<AtomicString>& certificate) {
       m_certificate = certificate;
     }
+    int pendingEncodedDataLength() const { return m_pendingEncodedDataLength; }
+    void clearPendingEncodedDataLength() { m_pendingEncodedDataLength = 0; }
+    void addPendingEncodedDataLength(int encodedDataLength) {
+      m_pendingEncodedDataLength += encodedDataLength;
+    }
 
     DECLARE_TRACE();
 
@@ -183,6 +188,7 @@ class NetworkResourcesData final
     String m_mimeType;
     String m_textEncodingName;
     int m_rawHeaderSize;
+    int m_pendingEncodedDataLength;
 
     RefPtr<SharedBuffer> m_buffer;
     WeakMember<Resource> m_cachedResource;
@@ -223,6 +229,10 @@ class NetworkResourcesData final
   void setCertificate(const String& requestId,
                       const Vector<AtomicString>& certificate);
   HeapVector<Member<ResourceData>> resources();
+
+  int getAndClearPendingEncodedDataLength(const String& requestId);
+  void addPendingEncodedDataLength(const String& requestId,
+                                   int encodedDataLength);
 
   DECLARE_TRACE();
 

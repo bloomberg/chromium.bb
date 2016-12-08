@@ -101,8 +101,9 @@ class CORE_EXPORT FetchContext
                                           Resource*);
   virtual void dispatchDidReceiveData(unsigned long identifier,
                                       const char* data,
-                                      int dataLength,
-                                      int encodedDataLength);
+                                      int dataLength);
+  virtual void dispatchDidReceiveEncodedData(unsigned long identifier,
+                                             int encodedDataLength);
   virtual void dispatchDidDownloadData(unsigned long identifier,
                                        int dataLength,
                                        int encodedDataLength);
@@ -111,6 +112,7 @@ class CORE_EXPORT FetchContext
                                         int64_t encodedDataLength);
   virtual void dispatchDidFail(unsigned long identifier,
                                const ResourceError&,
+                               int64_t encodedDataLength,
                                bool isInternalRequest);
 
   virtual bool shouldLoadNewResource(Resource::Type) const { return false; }

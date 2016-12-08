@@ -97,8 +97,10 @@ class CORE_EXPORT InspectorNetworkAgent final
   void didReceiveData(LocalFrame*,
                       unsigned long identifier,
                       const char* data,
-                      int dataLength,
-                      int encodedDataLength);
+                      int dataLength);
+  void didReceiveEncodedDataLength(LocalFrame*,
+                                   unsigned long identifier,
+                                   int encodedDataLength);
   void didFinishLoading(unsigned long identifier,
                         double monotonicFinishTime,
                         int64_t encodedDataLength);
