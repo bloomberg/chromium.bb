@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include <cassert>
 #include <limits>
 #include <ostream>
 #include <type_traits>
