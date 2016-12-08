@@ -84,6 +84,9 @@ found in the LICENSE file.
       var viewMat = mat4.create();
       var vrPresentButton = null;
 
+      var heavyGpu = WGLUUrl.getBool('heavyGpu', false);
+      var simulatedWorkTimeMs = WGLUUrl.getFloat('workTime', 0);
+
       // ================================
       // WebVR-specific code begins here.
       // ================================
@@ -113,7 +116,7 @@ found in the LICENSE file.
 
         var textureLoader = new WGLUTextureLoader(gl);
         var texture = textureLoader.loadTexture("media/textures/cube-sea.png");
-        cubeSea = new VRCubeSea(gl, texture, 12, true);
+        cubeSea = new VRCubeSea(gl, texture, heavyGpu ? 12 : 10, heavyGpu);
         stats = new WGLUStats(gl);
 
         // Wait until we have a WebGL context to resize and start rendering.
@@ -204,8 +207,21 @@ found in the LICENSE file.
         }
       }
 
+      var now = (window.performance && performance.now) ? performance.now.bind(performance) : Date.now;
+
       function onAnimationFrame (t) {
         stats.begin();
+
+        if (simulatedWorkTimeMs > 0) {
+          // Simulate a heavy Javascript workload
+          var start = now();
+          mat4.perspective(projectionMat, Math.PI*0.4, webglCanvas.width / webglCanvas.height, 0.1, 1024.0);
+          while (now() - start < simulatedWorkTimeMs) {
+            // Spin our wheels doing useless BS :)
+            mat4.invert(projectionMat, projectionMat);
+            mat4.translate(projectionMat, projectionMat, [1.0, 1.0, 1.0]);
+          }
+        }
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 

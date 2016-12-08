@@ -113,8 +113,9 @@
 
             // Tests
             { index: "Test", path: "test-canvas-attributes.html", title: "Canvas Attributes" },
-            { index: "Test", path: "test-slow-render.html", title: "Slow Rendering" },
-            { index: "Test", path: "test-slow-javascript.html", title: "Slow Javascript" },
+            { index: "Test", path: "test-slow-render.html?heavyGpu=1", title: "Slow GPU" },
+            { index: "Test", path: "test-slow-render.html?workTime=48", title: "Slow Javascript" },
+            { index: "Test", path: "test-slow-render.html?heavyGpu=1&workTime=48", title: "Slow GPU and Javascript" },
           ];
 
           // Append an element for every item in the pages list.
