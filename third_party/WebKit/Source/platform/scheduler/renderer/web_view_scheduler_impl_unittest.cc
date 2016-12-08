@@ -15,6 +15,7 @@
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -585,6 +586,85 @@ TEST_F(WebViewSchedulerImplTest, BackgroundParser_DETERMINISTIC_LOADING) {
 
   web_view_scheduler_->DecrementBackgroundParserCount();
   EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+}
+
+namespace {
+
+using ScopedExpensiveBackgroundTimerThrottlingForTest =
+    ScopedRuntimeEnabledFeatureForTest<
+        RuntimeEnabledFeatures::expensiveBackgroundTimerThrottlingEnabled,
+        RuntimeEnabledFeatures::setExpensiveBackgroundTimerThrottlingEnabled>;
+
+void ExpensiveTestTask(base::SimpleTestTickClock* clock,
+                       std::vector<base::TimeTicks>* run_times) {
+  run_times->push_back(clock->NowTicks());
+  clock->Advance(base::TimeDelta::FromMilliseconds(250));
+}
+
+class FakeWebViewSchedulerSettings
+    : public WebViewScheduler::WebViewSchedulerSettings {
+ public:
+  float expensiveBackgroundThrottlingCPUBudget() override { return 0.01; }
+
+  float expensiveBackgroundThrottlingInitialBudget() override { return 0.0; }
+
+  float expensiveBackgroundThrottlingMaxBudget() override { return 0.0; }
+
+  float expensiveBackgroundThrottlingMaxDelay() override { return 0.0; }
+};
+
+}  // namespace
+
+TEST_F(WebViewSchedulerImplTest, BackgroundThrottlingGracePeriod) {
+  ScopedExpensiveBackgroundTimerThrottlingForTest
+      budget_background_throttling_enabler(true);
+
+  std::vector<base::TimeTicks> run_times;
+  FakeWebViewSchedulerSettings web_view_scheduler_settings;
+  web_view_scheduler_.reset(new WebViewSchedulerImpl(
+      nullptr, &web_view_scheduler_settings, scheduler_.get(), false));
+  web_frame_scheduler_ =
+      web_view_scheduler_->createWebFrameSchedulerImpl(nullptr);
+  web_view_scheduler_->setPageVisible(false);
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(2500));
+
+  web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
+      BLINK_FROM_HERE, base::Bind(&ExpensiveTestTask, clock_.get(), &run_times),
+      0.1);
+  web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
+      BLINK_FROM_HERE, base::Bind(&ExpensiveTestTask, clock_.get(), &run_times),
+      0.1);
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(3500));
+
+  // Check that these tasks are aligned, but are not subject to
+  // budget-based throttling.
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(3000),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(3250)));
+  run_times.clear();
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(11500));
+
+  web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
+      BLINK_FROM_HERE, base::Bind(&ExpensiveTestTask, clock_.get(), &run_times),
+      0.1);
+  web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
+      BLINK_FROM_HERE, base::Bind(&ExpensiveTestTask, clock_.get(), &run_times),
+      0.1);
+
+  mock_task_runner_->RunUntilIdle();
+
+  // Check that tasks are aligned and throttled.
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(12),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(29)));
 }
 
 }  // namespace scheduler

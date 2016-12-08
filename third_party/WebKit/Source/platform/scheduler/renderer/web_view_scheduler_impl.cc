@@ -30,6 +30,8 @@ constexpr base::TimeDelta kDefaultMaxBackgroundThrottlingDelay =
     base::TimeDelta::FromMinutes(1);
 constexpr base::TimeDelta kDefaultInitialBackgroundBudget =
     base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kBackgroundBudgetThrottlingGracePeriod =
+    base::TimeDelta::FromSeconds(10);
 
 // Values coming from WebViewSchedulerSettings are interpreted as follows:
 //   -1 is "not set". Scheduler should use a reasonable default.
@@ -108,6 +110,10 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       background_time_budget_pool_(nullptr),
       settings_(settings) {
   renderer_scheduler->AddWebViewScheduler(this);
+
+  delayed_background_budget_throttling_enabler_.Reset(
+      base::Bind(&WebViewSchedulerImpl::EnableBackgroundBudgetThrottling,
+                 base::Unretained(this)));
 }
 
 WebViewSchedulerImpl::~WebViewSchedulerImpl() {
@@ -132,19 +138,13 @@ void WebViewSchedulerImpl::setPageVisible(bool page_visible) {
     frame_scheduler->setPageVisible(page_visible_);
   }
 
-  if (background_time_budget_pool_) {
-    LazyNow lazy_now(renderer_scheduler_->tick_clock());
-    if (page_visible_) {
-      background_time_budget_pool_->DisableThrottling(&lazy_now);
-    } else {
-      background_time_budget_pool_->EnableThrottling(&lazy_now);
-    }
-  }
+  UpdateBackgroundBudgetThrottlingState();
 }
 
 std::unique_ptr<WebFrameSchedulerImpl>
 WebViewSchedulerImpl::createWebFrameSchedulerImpl(
     base::trace_event::BlameContext* blame_context) {
+  MaybeInitializeBackgroundTimeBudgetPool();
   std::unique_ptr<WebFrameSchedulerImpl> frame_scheduler(
       new WebFrameSchedulerImpl(renderer_scheduler_, this, blame_context));
   frame_scheduler->setPageVisible(page_visible_);
@@ -302,13 +302,9 @@ void WebViewSchedulerImpl::MaybeInitializeBackgroundTimeBudgetPool() {
           "background", GetMaxBudgetLevel(settings_),
           GetMaxThrottlingDelay(settings_));
 
-  LazyNow lazy_now(renderer_scheduler_->tick_clock());
+  UpdateBackgroundBudgetThrottlingState();
 
-  if (page_visible_) {
-    background_time_budget_pool_->DisableThrottling(&lazy_now);
-  } else {
-    background_time_budget_pool_->EnableThrottling(&lazy_now);
-  }
+  LazyNow lazy_now(renderer_scheduler_->tick_clock());
 
   background_time_budget_pool_->SetTimeBudgetRecoveryRate(
       lazy_now.Now(), GetBackgroundBudgetRecoveryRate(settings_));
@@ -335,6 +331,33 @@ void WebViewSchedulerImpl::OnThrottlingReported(
       throttling_duration.InSecondsF());
 
   intervention_reporter_->ReportIntervention(WebString::fromUTF8(message));
+}
+
+void WebViewSchedulerImpl::EnableBackgroundBudgetThrottling() {
+  if (!background_time_budget_pool_)
+    return;
+
+  LazyNow lazy_now(renderer_scheduler_->tick_clock());
+
+  background_time_budget_pool_->EnableThrottling(&lazy_now);
+}
+
+void WebViewSchedulerImpl::UpdateBackgroundBudgetThrottlingState() {
+  if (!background_time_budget_pool_)
+    return;
+
+  delayed_background_budget_throttling_enabler_.Cancel();
+
+  LazyNow lazy_now(renderer_scheduler_->tick_clock());
+
+  if (page_visible_) {
+    background_time_budget_pool_->DisableThrottling(&lazy_now);
+  } else {
+    // TODO(altimin): Consider moving this logic into PumpThrottledTasks.
+    renderer_scheduler_->ControlTaskRunner()->PostDelayedTask(
+        FROM_HERE, delayed_background_budget_throttling_enabler_.callback(),
+        kBackgroundBudgetThrottlingGracePeriod);
+  }
 }
 
 // static
