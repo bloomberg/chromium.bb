@@ -40,8 +40,7 @@ PaymentAppManager* PaymentAppServiceWorkerRegistration::paymentAppManager(
 PaymentAppManager* PaymentAppServiceWorkerRegistration::paymentAppManager(
     ScriptState* scriptState) {
   if (!m_paymentAppManager) {
-    m_paymentAppManager = PaymentAppManager::create(
-        scriptState->getExecutionContext(), m_registration);
+    m_paymentAppManager = PaymentAppManager::create(m_registration);
   }
   return m_paymentAppManager.get();
 }
