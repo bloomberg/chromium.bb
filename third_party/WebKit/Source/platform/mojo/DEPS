@@ -6,6 +6,6 @@ include_rules = [
     "+base/strings/string16.h",
     "+mojo/public/cpp/bindings/binding.h",
     "+mojo/public/cpp/bindings/wtf_array.h",
-    "+mojo/common/common_custom_types.mojom-blink.h",
+    "+mojo/common/string16.mojom-blink.h",
     "+mojo/common/test_common_custom_types.mojom-blink.h",
 ]

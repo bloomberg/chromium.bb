@@ -4,7 +4,7 @@
 
 module font_service.mojom;
 
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/file.mojom";
 
 enum TypefaceSlant {
   ROMAN = 0,

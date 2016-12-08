@@ -6,7 +6,7 @@ module filesystem.mojom;
 
 import "components/filesystem/public/interfaces/file.mojom";
 import "components/filesystem/public/interfaces/types.mojom";
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/file.mojom";
 
 struct FileOpenDetails {
   string path;

@@ -9,8 +9,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "base/version.h"
-#include "mojo/common/common_custom_types.mojom-shared.h"
+#include "mojo/common/file.mojom-shared.h"
 #include "mojo/common/mojo_common_export.h"
+#include "mojo/common/string16.mojom-shared.h"
+#include "mojo/common/time.mojom-shared.h"
+#include "mojo/common/unguessable_token.mojom-shared.h"
+#include "mojo/common/version.mojom-shared.h"
 
 namespace mojo {
 

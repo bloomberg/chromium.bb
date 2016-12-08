@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "mojo/common/common_custom_types.mojom.h"
 #include "mojo/common/test_common_custom_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"

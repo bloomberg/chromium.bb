@@ -10,7 +10,7 @@ define('media_router_bindings', [
     'content/public/renderer/frame_interfaces',
     'chrome/browser/media/router/mojo/media_router.mojom',
     'extensions/common/mojo/keep_alive.mojom',
-    'mojo/common/common_custom_types.mojom',
+    'mojo/common/time.mojom',
     'mojo/public/js/connection',
     'mojo/public/js/router',
 ], function(bindings,
@@ -18,7 +18,7 @@ define('media_router_bindings', [
             frameInterfaces,
             mediaRouterMojom,
             keepAliveMojom,
-            commonCustomTypesMojom,
+            timeMojom,
             connector,
             routerModule) {
   'use strict';

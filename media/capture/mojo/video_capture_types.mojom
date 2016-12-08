@@ -5,7 +5,8 @@
 module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/time.mojom";
+import "mojo/common/values.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum ResolutionChangePolicy {

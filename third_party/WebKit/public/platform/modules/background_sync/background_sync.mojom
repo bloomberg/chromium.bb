@@ -4,8 +4,6 @@
 
 module blink.mojom;
 
-import "mojo/common/common_custom_types.mojom";
-
 enum BackgroundSyncNetworkState {
   ANY,
   AVOID_CELLULAR,

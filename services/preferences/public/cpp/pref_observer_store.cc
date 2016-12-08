@@ -5,7 +5,6 @@
 #include "services/preferences/public/cpp/pref_observer_store.h"
 
 #include "base/values.h"
-#include "mojo/common/common_custom_types.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "services/service_manager/public/cpp/connector.h"
 

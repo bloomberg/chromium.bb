@@ -4,7 +4,7 @@
 
 module media_router.mojom;
 
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/time.mojom";
 
 // Represents an output sink to which media can be routed.
 struct MediaSink {

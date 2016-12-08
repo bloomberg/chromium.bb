@@ -4,7 +4,8 @@
 
 module metrics.mojom;
 
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/file_path.mojom";
+import "mojo/common/time.mojom";
 
 // These structs mirror the corresponding types in base::StackSamplingProfiler.
 

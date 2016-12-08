@@ -6,7 +6,7 @@
 
 module arc.mojom;
 
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/values.mojom";
 
 [Extensible]
 enum BluetoothAdapterState {

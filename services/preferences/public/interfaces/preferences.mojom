@@ -4,7 +4,7 @@
 
 module prefs.mojom;
 
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/values.mojom";
 
 // Used to subscribe to preference changes within PreferenceManager. After
 // requesting to observe, the current values for all requested keys are sent.

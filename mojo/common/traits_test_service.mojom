@@ -4,7 +4,7 @@
 
 module mojo.common.mojom;
 
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/version.mojom";
 
 // All functions on this interface echo their arguments to test StructTraits
 // serialization and deserialization.

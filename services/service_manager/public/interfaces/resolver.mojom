@@ -4,7 +4,7 @@
 
 module service_manager.mojom;
 
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/file_path.mojom";
 import "services/service_manager/public/interfaces/interface_provider_spec.mojom";
 
 // The result of a Resolve operation via Resolver.

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 module cc.mojom;
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/unguessable_token.mojom";
 
 struct LocalFrameId {
   // An identifier allocated by the client uniquely identifying a surface within

@@ -6,7 +6,7 @@
 #define CommonCustomTypesStructTraits_h
 
 #include "base/strings/string16.h"
-#include "mojo/common/common_custom_types.mojom-blink.h"
+#include "mojo/common/string16.mojom-blink.h"
 #include "platform/PlatformExport.h"
 
 namespace mojo {

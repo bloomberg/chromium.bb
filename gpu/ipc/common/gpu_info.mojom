@@ -6,7 +6,8 @@
 module gpu.mojom;
 
 import "gpu/ipc/common/dx_diag_node.mojom";
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/time.mojom";
+import "mojo/common/version.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // gpu::GPUInfo::GPUDevice

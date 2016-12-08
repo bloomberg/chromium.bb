@@ -2,4 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//mojo/common/common_custom_types.typemap" ]
+typemaps = [
+  "//mojo/common/file.typemap",
+  "//mojo/common/file_path.typemap",
+  "//mojo/common/string16.typemap",
+  "//mojo/common/time.typemap",
+  "//mojo/common/unguessable_token.typemap",
+  "//mojo/common/values.typemap",
+  "//mojo/common/version.typemap",
+]

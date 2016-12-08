@@ -5,7 +5,7 @@
 module leveldb.mojom;
 
 import "components/filesystem/public/interfaces/directory.mojom";
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/unguessable_token.mojom";
 
 enum DatabaseError {
   OK,

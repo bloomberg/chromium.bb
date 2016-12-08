@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "components/prefs/value_map_pref_store.h"
-#include "mojo/common/common_custom_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 

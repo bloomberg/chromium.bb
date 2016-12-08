@@ -4,7 +4,7 @@
 
 module ui.mojom;
 
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum LatencyComponentType {

@@ -8,7 +8,9 @@
 
 module indexed_db.mojom;
 
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/file_path.mojom";
+import "mojo/common/string16.mojom";
+import "mojo/common/time.mojom";
 import "url/mojo/origin.mojom";
 
 enum CursorDirection {

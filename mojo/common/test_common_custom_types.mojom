@@ -4,7 +4,12 @@
 
 module mojo.common.test;
 
-import "mojo/common/common_custom_types.mojom";
+import "mojo/common/file.mojom";
+import "mojo/common/file_path.mojom";
+import "mojo/common/string16.mojom";
+import "mojo/common/time.mojom";
+import "mojo/common/unguessable_token.mojom";
+import "mojo/common/values.mojom";
 
 interface TestFilePath {
   BounceFilePath(mojo.common.mojom.FilePath in)
