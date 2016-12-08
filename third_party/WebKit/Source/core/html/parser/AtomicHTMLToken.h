@@ -222,8 +222,7 @@ inline void AtomicHTMLToken::initializeAttributes(
 
   m_attributes.clear();
   m_attributes.reserveInitialCapacity(size);
-  for (size_t i = 0; i < size; ++i) {
-    const HTMLToken::Attribute& attribute = attributes[i];
+  for (const auto& attribute : attributes) {
     if (attribute.nameAsVector().isEmpty())
       continue;
 

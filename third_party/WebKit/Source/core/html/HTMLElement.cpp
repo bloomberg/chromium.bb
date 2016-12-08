@@ -419,9 +419,8 @@ const AtomicString& HTMLElement::eventNameForAttributeName(
         {onwheelAttr, EventTypeNames::wheel},
     };
 
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(attrToEventNames); i++)
-      attributeNameToEventNameMap.set(attrToEventNames[i].attr.localName(),
-                                      attrToEventNames[i].event);
+    for (const auto& name : attrToEventNames)
+      attributeNameToEventNameMap.set(name.attr.localName(), name.event);
   }
 
   return attributeNameToEventNameMap.get(attrName.localName());

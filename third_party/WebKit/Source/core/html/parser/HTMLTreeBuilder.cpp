@@ -480,8 +480,7 @@ static void adjustAttributes(AtomicHTMLToken* token) {
     mapLoweredLocalNameToName(caseMap, attrs.get(), length);
   }
 
-  for (unsigned i = 0; i < token->attributes().size(); ++i) {
-    Attribute& tokenAttribute = token->attributes().at(i);
+  for (auto& tokenAttribute : token->attributes()) {
     const QualifiedName& casedName = caseMap->get(tokenAttribute.localName());
     if (!casedName.localName().isNull())
       tokenAttribute.parserSetName(casedName);

@@ -44,9 +44,9 @@ VTTRegion* VTTRegionList::getRegionById(const String& id) const {
   if (id.isEmpty())
     return nullptr;
 
-  for (size_t i = 0; i < m_list.size(); ++i) {
-    if (m_list[i]->id() == id)
-      return m_list[i].get();
+  for (const auto& region : m_list) {
+    if (region->id() == id)
+      return region.get();
   }
 
   return nullptr;

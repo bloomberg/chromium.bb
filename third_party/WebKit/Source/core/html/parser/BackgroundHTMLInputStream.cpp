@@ -115,10 +115,10 @@ void BackgroundHTMLInputStream::rewindTo(HTMLInputCheckpoint checkpointIndex,
 
 void BackgroundHTMLInputStream::updateTotalCheckpointTokenCount() {
   m_totalCheckpointTokenCount = 0;
-  size_t lastCheckpointIndex = m_checkpoints.size();
-  for (size_t i = 0; i < lastCheckpointIndex; ++i)
+  for (const auto& checkpoint : m_checkpoints) {
     m_totalCheckpointTokenCount +=
-        m_checkpoints[i].tokensExtractedSincePreviousCheckpoint;
+        checkpoint.tokensExtractedSincePreviousCheckpoint;
+  }
 }
 
 }  // namespace blink

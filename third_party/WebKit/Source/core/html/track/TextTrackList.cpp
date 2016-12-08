@@ -67,29 +67,29 @@ int TextTrackList::getTrackIndexRelativeToRenderedTracks(TextTrack* textTrack) {
   // track."
   int trackIndex = 0;
 
-  for (size_t i = 0; i < m_elementTracks.size(); ++i) {
-    if (!m_elementTracks[i]->isRendered())
+  for (const auto& track : m_elementTracks) {
+    if (!track->isRendered())
       continue;
 
-    if (m_elementTracks[i] == textTrack)
+    if (track == textTrack)
       return trackIndex;
     ++trackIndex;
   }
 
-  for (size_t i = 0; i < m_addTrackTracks.size(); ++i) {
-    if (!m_addTrackTracks[i]->isRendered())
+  for (const auto& track : m_addTrackTracks) {
+    if (!track->isRendered())
       continue;
 
-    if (m_addTrackTracks[i] == textTrack)
+    if (track == textTrack)
       return trackIndex;
     ++trackIndex;
   }
 
-  for (size_t i = 0; i < m_inbandTracks.size(); ++i) {
-    if (!m_inbandTracks[i]->isRendered())
+  for (const auto& track : m_inbandTracks) {
+    if (!track->isRendered())
       continue;
 
-    if (m_inbandTracks[i] == textTrack)
+    if (track == textTrack)
       return trackIndex;
     ++trackIndex;
   }
@@ -144,14 +144,14 @@ void TextTrackList::invalidateTrackIndexesAfterTrack(TextTrack* track) {
 
   if (track->trackType() == TextTrack::TrackElement) {
     tracks = &m_elementTracks;
-    for (size_t i = 0; i < m_addTrackTracks.size(); ++i)
-      m_addTrackTracks[i]->invalidateTrackIndex();
-    for (size_t i = 0; i < m_inbandTracks.size(); ++i)
-      m_inbandTracks[i]->invalidateTrackIndex();
+    for (const auto& addTrack : m_addTrackTracks)
+      addTrack->invalidateTrackIndex();
+    for (const auto& inbandTrack : m_inbandTracks)
+      inbandTrack->invalidateTrackIndex();
   } else if (track->trackType() == TextTrack::AddTrack) {
     tracks = &m_addTrackTracks;
-    for (size_t i = 0; i < m_inbandTracks.size(); ++i)
-      m_inbandTracks[i]->invalidateTrackIndex();
+    for (const auto& inbandTrack : m_inbandTracks)
+      inbandTrack->invalidateTrackIndex();
   } else if (track->trackType() == TextTrack::InBand) {
     tracks = &m_inbandTracks;
   } else {
@@ -215,8 +215,8 @@ void TextTrackList::remove(TextTrack* track) {
 }
 
 void TextTrackList::removeAllInbandTracks() {
-  for (unsigned i = 0; i < m_inbandTracks.size(); ++i) {
-    m_inbandTracks[i]->setTrackList(0);
+  for (const auto& track : m_inbandTracks) {
+    track->setTrackList(0);
   }
   m_inbandTracks.clear();
 }

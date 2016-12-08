@@ -225,24 +225,22 @@ FileList* FileInputType::createFileList(
     int rootLength = rootPath.length();
     if (rootPath[rootLength - 1] != '\\' && rootPath[rootLength - 1] != '/')
       rootLength += 1;
-    for (size_t i = 0; i < size; ++i) {
+    for (const auto& file : files) {
       // Normalize backslashes to slashes before exposing the relative path to
       // script.
-      String relativePath =
-          files[i].path.substring(rootLength).replace('\\', '/');
-      fileList->append(
-          File::createWithRelativePath(files[i].path, relativePath));
+      String relativePath = file.path.substring(rootLength).replace('\\', '/');
+      fileList->append(File::createWithRelativePath(file.path, relativePath));
     }
     return fileList;
   }
 
-  for (size_t i = 0; i < size; ++i) {
-    if (files[i].fileSystemURL.isEmpty()) {
+  for (const auto& file : files) {
+    if (file.fileSystemURL.isEmpty()) {
       fileList->append(
-          File::createForUserProvidedFile(files[i].path, files[i].displayName));
+          File::createForUserProvidedFile(file.path, file.displayName));
     } else {
       fileList->append(File::createForFileSystemFile(
-          files[i].fileSystemURL, files[i].metadata, File::IsUserVisible));
+          file.fileSystemURL, file.metadata, File::IsUserVisible));
     }
   }
   return fileList;
@@ -352,8 +350,8 @@ void FileInputType::setFilesFromPaths(const Vector<String>& paths) {
   }
 
   Vector<FileChooserFileInfo> files;
-  for (unsigned i = 0; i < paths.size(); ++i)
-    files.append(FileChooserFileInfo(paths[i]));
+  for (const auto& path : paths)
+    files.append(FileChooserFileInfo(path));
 
   if (input.fastHasAttribute(multipleAttr)) {
     filesChosen(files);

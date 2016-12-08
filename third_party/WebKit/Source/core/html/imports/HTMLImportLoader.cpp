@@ -171,8 +171,8 @@ bool HTMLImportLoader::hasPendingResources() const {
 }
 
 void HTMLImportLoader::didFinishLoading() {
-  for (size_t i = 0; i < m_imports.size(); ++i)
-    m_imports[i]->didFinishLoading();
+  for (const auto& importChild : m_imports)
+    importChild->didFinishLoading();
 
   clearResource();
 

@@ -321,8 +321,8 @@ void HTMLConstructionSite::executeQueuedTasks() {
   TaskQueue queue;
   queue.swap(m_taskQueue);
 
-  for (size_t i = 0; i < size; ++i)
-    executeTask(queue[i]);
+  for (auto& task : queue)
+    executeTask(task);
 
   // We might be detached now.
 }
@@ -407,8 +407,7 @@ void HTMLConstructionSite::mergeAttributesFromTokenIntoElement(
   if (token->attributes().isEmpty())
     return;
 
-  for (unsigned i = 0; i < token->attributes().size(); ++i) {
-    const Attribute& tokenAttribute = token->attributes().at(i);
+  for (const auto& tokenAttribute : token->attributes()) {
     if (element->attributesWithoutUpdate().findIndex(tokenAttribute.name()) ==
         kNotFound)
       element->setAttribute(tokenAttribute.name(), tokenAttribute.value());

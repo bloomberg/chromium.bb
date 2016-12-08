@@ -1230,11 +1230,9 @@ bool HTMLMediaElement::textTracksAreReady() const {
   // mode was not in the disabled state when the element's resource selection
   // algorithm last started now have a text track readiness state of loaded or
   // failed to load.
-  for (unsigned i = 0; i < m_textTracksWhenResourceSelectionBegan.size(); ++i) {
-    if (m_textTracksWhenResourceSelectionBegan[i]->getReadinessState() ==
-            TextTrack::Loading ||
-        m_textTracksWhenResourceSelectionBegan[i]->getReadinessState() ==
-            TextTrack::NotLoaded)
+  for (const auto& textTrack : m_textTracksWhenResourceSelectionBegan) {
+    if (textTrack->getReadinessState() == TextTrack::Loading ||
+        textTrack->getReadinessState() == TextTrack::NotLoaded)
       return false;
   }
 

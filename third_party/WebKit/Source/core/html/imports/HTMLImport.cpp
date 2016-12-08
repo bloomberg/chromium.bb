@@ -106,8 +106,8 @@ void HTMLImport::recalcTreeState(HTMLImport* root) {
       updated.append(i);
   }
 
-  for (size_t i = 0; i < updated.size(); ++i)
-    updated[i]->stateDidChange();
+  for (const auto& import : updated)
+    import->stateDidChange();
 }
 
 #if !defined(NDEBUG)

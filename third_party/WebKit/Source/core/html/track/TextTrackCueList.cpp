@@ -43,9 +43,9 @@ TextTrackCue* TextTrackCueList::anonymousIndexedGetter(unsigned index) const {
 }
 
 TextTrackCue* TextTrackCueList::getCueById(const AtomicString& id) const {
-  for (size_t i = 0; i < m_list.size(); ++i) {
-    if (m_list[i]->id() == id)
-      return m_list[i].get();
+  for (const auto& cue : m_list) {
+    if (cue->id() == id)
+      return cue.get();
   }
   return nullptr;
 }

@@ -55,9 +55,9 @@ void LoadableTextTrack::setMode(const AtomicString& mode) {
 
 void LoadableTextTrack::addRegions(
     const HeapVector<Member<VTTRegion>>& newRegions) {
-  for (size_t i = 0; i < newRegions.size(); ++i) {
-    newRegions[i]->setTrack(this);
-    regions()->add(newRegions[i]);
+  for (const auto& region : newRegions) {
+    region->setTrack(this);
+    regions()->add(region);
   }
 }
 

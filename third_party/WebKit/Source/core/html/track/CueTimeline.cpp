@@ -189,7 +189,6 @@ void CueTimeline::updateActiveCues(double movieTime) {
     mediaElement.scheduleTimeupdateEvent(true);
 
   // Explicitly cache vector sizes, as their content is constant from here.
-  size_t currentCuesSize = currentCues.size();
   size_t missedCuesSize = missedCues.size();
   size_t previousCuesSize = previousCues.size();
 
@@ -243,11 +242,11 @@ void CueTimeline::updateActiveCues(double movieTime) {
   // 8 - Let affected tracks be a list of text tracks, initially empty.
   HeapVector<Member<TextTrack>> affectedTracks;
 
-  for (size_t i = 0; i < missedCuesSize; ++i) {
+  for (const auto& missedCue : missedCues) {
     // 9 - For each text track cue in missed cues, prepare an event named enter
     // for the TextTrackCue object with the text track cue start time.
-    eventTasks.append(std::make_pair(missedCues[i].data()->startTime(),
-                                     missedCues[i].data()));
+    eventTasks.append(
+        std::make_pair(missedCue.data()->startTime(), missedCue.data()));
 
     // 10 - For each text track [...] in missed cues, prepare an event
     // named exit for the TextTrackCue object with the  with the later of
@@ -258,36 +257,39 @@ void CueTimeline::updateActiveCues(double movieTime) {
     // checked when these tasks are actually queued below. This doesn't
     // affect sorting events before dispatch either, because the exit
     // event has the same time as the enter event.
-    if (missedCues[i].data()->startTime() < missedCues[i].data()->endTime())
-      eventTasks.append(std::make_pair(missedCues[i].data()->endTime(),
-                                       missedCues[i].data()));
+    if (missedCue.data()->startTime() < missedCue.data()->endTime()) {
+      eventTasks.append(
+          std::make_pair(missedCue.data()->endTime(), missedCue.data()));
+    }
   }
 
-  for (size_t i = 0; i < previousCuesSize; ++i) {
+  for (const auto& previousCue : previousCues) {
     // 10 - For each text track cue in other cues that has its text
     // track cue active flag set prepare an event named exit for the
     // TextTrackCue object with the text track cue end time.
-    if (!currentCues.contains(previousCues[i]))
-      eventTasks.append(std::make_pair(previousCues[i].data()->endTime(),
-                                       previousCues[i].data()));
+    if (!currentCues.contains(previousCue)) {
+      eventTasks.append(
+          std::make_pair(previousCue.data()->endTime(), previousCue.data()));
+    }
   }
 
-  for (size_t i = 0; i < currentCuesSize; ++i) {
+  for (const auto& currentCue : currentCues) {
     // 11 - For each text track cue in current cues that does not have its
     // text track cue active flag set, prepare an event named enter for the
     // TextTrackCue object with the text track cue start time.
-    if (!previousCues.contains(currentCues[i]))
-      eventTasks.append(std::make_pair(currentCues[i].data()->startTime(),
-                                       currentCues[i].data()));
+    if (!previousCues.contains(currentCue)) {
+      eventTasks.append(
+          std::make_pair(currentCue.data()->startTime(), currentCue.data()));
+    }
   }
 
   // 12 - Sort the tasks in events in ascending time order (tasks with earlier
   // times first).
   nonCopyingSort(eventTasks.begin(), eventTasks.end(), eventTimeCueCompare);
 
-  for (size_t i = 0; i < eventTasks.size(); ++i) {
-    if (!affectedTracks.contains(eventTasks[i].second->track()))
-      affectedTracks.append(eventTasks[i].second->track());
+  for (const auto& task : eventTasks) {
+    if (!affectedTracks.contains(task.second->track()))
+      affectedTracks.append(task.second->track());
 
     // 13 - Queue each task in events, in list order.
 
@@ -295,18 +297,17 @@ void CueTimeline::updateActiveCues(double movieTime) {
     // depending on the time that is associated with the event. This
     // correctly identifies the type of the event, if the startTime is
     // less than the endTime in the cue.
-    if (eventTasks[i].second->startTime() >= eventTasks[i].second->endTime()) {
-      mediaElement.scheduleEvent(createEventWithTarget(
-          EventTypeNames::enter, eventTasks[i].second.get()));
-      mediaElement.scheduleEvent(createEventWithTarget(
-          EventTypeNames::exit, eventTasks[i].second.get()));
+    if (task.second->startTime() >= task.second->endTime()) {
+      mediaElement.scheduleEvent(
+          createEventWithTarget(EventTypeNames::enter, task.second.get()));
+      mediaElement.scheduleEvent(
+          createEventWithTarget(EventTypeNames::exit, task.second.get()));
     } else {
-      bool isEnterEvent =
-          eventTasks[i].first == eventTasks[i].second->startTime();
+      bool isEnterEvent = task.first == task.second->startTime();
       AtomicString eventName =
           isEnterEvent ? EventTypeNames::enter : EventTypeNames::exit;
       mediaElement.scheduleEvent(
-          createEventWithTarget(eventName, eventTasks[i].second.get()));
+          createEventWithTarget(eventName, task.second.get()));
     }
   }
 
@@ -318,16 +319,15 @@ void CueTimeline::updateActiveCues(double movieTime) {
   // 15 - For each text track in affected tracks, in the list order, queue a
   // task to fire a simple event named cuechange at the TextTrack object, and,
   // ...
-  for (size_t i = 0; i < affectedTracks.size(); ++i) {
-    mediaElement.scheduleEvent(createEventWithTarget(EventTypeNames::cuechange,
-                                                     affectedTracks[i].get()));
+  for (const auto& track : affectedTracks) {
+    mediaElement.scheduleEvent(
+        createEventWithTarget(EventTypeNames::cuechange, track.get()));
 
     // ... if the text track has a corresponding track element, to then fire a
     // simple event named cuechange at the track element as well.
-    if (affectedTracks[i]->trackType() == TextTrack::TrackElement) {
+    if (track->trackType() == TextTrack::TrackElement) {
       HTMLTrackElement* trackElement =
-          static_cast<LoadableTextTrack*>(affectedTracks[i].get())
-              ->trackElement();
+          static_cast<LoadableTextTrack*>(track.get())->trackElement();
       DCHECK(trackElement);
       mediaElement.scheduleEvent(
           createEventWithTarget(EventTypeNames::cuechange, trackElement));
@@ -337,12 +337,12 @@ void CueTimeline::updateActiveCues(double movieTime) {
   // 16 - Set the text track cue active flag of all the cues in the current
   // cues, and unset the text track cue active flag of all the cues in the
   // other cues.
-  for (size_t i = 0; i < currentCuesSize; ++i)
-    currentCues[i].data()->setIsActive(true);
+  for (const auto& cue : currentCues)
+    cue.data()->setIsActive(true);
 
-  for (size_t i = 0; i < previousCuesSize; ++i) {
-    if (!currentCues.contains(previousCues[i])) {
-      TextTrackCue* cue = previousCues[i].data();
+  for (const auto& previousCue : previousCues) {
+    if (!currentCues.contains(previousCue)) {
+      TextTrackCue* cue = previousCue.data();
       cue->setIsActive(false);
       cue->removeDisplayTree();
     }

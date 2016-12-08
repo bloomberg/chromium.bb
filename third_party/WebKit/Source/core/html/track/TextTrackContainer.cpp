@@ -109,8 +109,8 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement,
   // corresponding CSS boxes added to output, in text track cue order, run the
   // following substeps:
   double movieTime = video.currentTime();
-  for (size_t i = 0; i < activeCues.size(); ++i) {
-    TextTrackCue* cue = activeCues[i].data();
+  for (const auto& activeCue : activeCues) {
+    TextTrackCue* cue = activeCue.data();
 
     DCHECK(cue->isActive());
     if (!cue->track() || !cue->track()->isRendered() || !cue->isActive())

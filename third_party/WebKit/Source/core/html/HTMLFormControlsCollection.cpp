@@ -108,9 +108,9 @@ static HTMLElement* firstNamedItem(const ListedElement::List& elementsArray,
                                    const String& name) {
   DCHECK(attrName == idAttr || attrName == nameAttr);
 
-  for (unsigned i = 0; i < elementsArray.size(); ++i) {
-    HTMLElement* element = toHTMLElement(elementsArray[i]);
-    if (elementsArray[i]->isEnumeratable() &&
+  for (const auto& listedElement : elementsArray) {
+    HTMLElement* element = toHTMLElement(listedElement);
+    if (listedElement->isEnumeratable() &&
         element->fastGetAttribute(attrName) == name)
       return element;
   }
@@ -136,10 +136,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const {
   NamedItemCache* cache = NamedItemCache::create();
   HashSet<StringImpl*> foundInputElements;
 
-  const ListedElement::List& elementsArray = listedElements();
-
-  for (unsigned i = 0; i < elementsArray.size(); ++i) {
-    ListedElement* listedElement = elementsArray[i];
+  for (const auto& listedElement : listedElements()) {
     if (listedElement->isEnumeratable()) {
       HTMLElement* element = toHTMLElement(listedElement);
       const AtomicString& idAttrVal = element->getIdAttribute();
@@ -158,10 +155,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const {
   // HTMLFormControlsCollection doesn't support named getter for IMG
   // elements. However we still need to handle IMG elements here because
   // HTMLFormElement named getter relies on this.
-  const HeapVector<Member<HTMLImageElement>>& imageElementsArray =
-      formImageElements();
-  for (unsigned i = 0; i < imageElementsArray.size(); ++i) {
-    HTMLImageElement* element = imageElementsArray[i];
+  for (const auto& element : formImageElements()) {
     const AtomicString& idAttrVal = element->getIdAttribute();
     const AtomicString& nameAttrVal = element->getNameAttribute();
     if (!idAttrVal.isEmpty() && !foundInputElements.contains(idAttrVal.impl()))

@@ -194,10 +194,9 @@ void HTMLFormElement::handleLocalEvents(Event& event) {
 }
 
 unsigned HTMLFormElement::length() const {
-  const ListedElement::List& elements = listedElements();
   unsigned len = 0;
-  for (unsigned i = 0; i < elements.size(); ++i) {
-    if (elements[i]->isEnumeratable())
+  for (const auto& element : listedElements()) {
+    if (element->isEnumeratable())
       ++len;
   }
   return len;
@@ -211,12 +210,10 @@ void HTMLFormElement::submitImplicitly(Event* event,
                                        bool fromImplicitSubmissionTrigger) {
   int submissionTriggerCount = 0;
   bool seenDefaultButton = false;
-  const ListedElement::List& elements = listedElements();
-  for (unsigned i = 0; i < elements.size(); ++i) {
-    ListedElement* ListedElement = elements[i];
-    if (!ListedElement->isFormControlElement())
+  for (const auto& element : listedElements()) {
+    if (!element->isFormControlElement())
       continue;
-    HTMLFormControlElement* control = toHTMLFormControlElement(ListedElement);
+    HTMLFormControlElement* control = toHTMLFormControlElement(element);
     if (!seenDefaultButton && control->canBeSuccessfulSubmitButton()) {
       if (fromImplicitSubmissionTrigger)
         seenDefaultButton = true;
@@ -238,10 +235,9 @@ void HTMLFormElement::submitImplicitly(Event* event,
 
 bool HTMLFormElement::validateInteractively() {
   UseCounter::count(document(), UseCounter::FormValidationStarted);
-  const ListedElement::List& elements = listedElements();
-  for (unsigned i = 0; i < elements.size(); ++i) {
-    if (elements[i]->isFormControlElement())
-      toHTMLFormControlElement(elements[i])->hideVisibleValidationMessage();
+  for (const auto& element : listedElements()) {
+    if (element->isFormControlElement())
+      toHTMLFormControlElement(element)->hideVisibleValidationMessage();
   }
 
   HeapVector<Member<HTMLFormControlElement>> unhandledInvalidControls;
@@ -257,8 +253,7 @@ bool HTMLFormElement::validateInteractively() {
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   // Focus on the first focusable control and show a validation message.
-  for (unsigned i = 0; i < unhandledInvalidControls.size(); ++i) {
-    HTMLFormControlElement* unhandled = unhandledInvalidControls[i].get();
+  for (const auto& unhandled : unhandledInvalidControls) {
     if (unhandled->isFocusable()) {
       unhandled->showValidationMessage();
       UseCounter::count(document(), UseCounter::FormValidationShowedMessage);
@@ -267,8 +262,7 @@ bool HTMLFormElement::validateInteractively() {
   }
   // Warn about all of unfocusable controls.
   if (document().frame()) {
-    for (unsigned i = 0; i < unhandledInvalidControls.size(); ++i) {
-      HTMLFormControlElement* unhandled = unhandledInvalidControls[i].get();
+    for (const auto& unhandled : unhandledInvalidControls) {
       if (unhandled->isFocusable())
         continue;
       String message(
@@ -471,10 +465,9 @@ void HTMLFormElement::reset() {
     return;
   }
 
-  const ListedElement::List& elements = listedElements();
-  for (unsigned i = 0; i < elements.size(); ++i) {
-    if (elements[i]->isFormControlElement())
-      toHTMLFormControlElement(elements[i])->reset();
+  for (const auto& element : listedElements()) {
+    if (element->isFormControlElement())
+      toHTMLFormControlElement(element)->reset();
   }
 
   m_isInResetFunction = false;
@@ -664,13 +657,12 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(
   const ListedElement::List& listedElements = this->listedElements();
   HeapVector<Member<ListedElement>> elements;
   elements.reserveCapacity(listedElements.size());
-  for (unsigned i = 0; i < listedElements.size(); ++i)
-    elements.append(listedElements[i]);
+  for (const auto& element : listedElements)
+    elements.append(element);
   int invalidControlsCount = 0;
-  for (unsigned i = 0; i < elements.size(); ++i) {
-    if (elements[i]->form() == this && elements[i]->isFormControlElement()) {
-      HTMLFormControlElement* control =
-          toHTMLFormControlElement(elements[i].get());
+  for (const auto& element : elements) {
+    if (element->form() == this && element->isFormControlElement()) {
+      HTMLFormControlElement* control = toHTMLFormControlElement(element);
       if (control->isSubmittableElement() &&
           !control->checkValidity(unhandledInvalidControls, eventBehavior) &&
           control->formOwner() == this) {

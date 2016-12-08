@@ -512,13 +512,13 @@ void HTMLCollection::namedItems(const AtomicString& name,
 
   const NamedItemCache& cache = namedItemCache();
   if (HeapVector<Member<Element>>* idResults = cache.getElementsById(name)) {
-    for (unsigned i = 0; i < idResults->size(); ++i)
-      result.append(idResults->at(i));
+    for (const auto& element : *idResults)
+      result.append(element);
   }
   if (HeapVector<Member<Element>>* nameResults =
           cache.getElementsByName(name)) {
-    for (unsigned i = 0; i < nameResults->size(); ++i)
-      result.append(nameResults->at(i));
+    for (const auto& element : *nameResults)
+      result.append(element);
   }
 }
 

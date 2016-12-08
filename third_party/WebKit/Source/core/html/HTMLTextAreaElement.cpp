@@ -480,9 +480,8 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue) {
     if (n->isTextNode())
       textNodes.append(n);
   }
-  size_t size = textNodes.size();
-  for (size_t i = 0; i < size; ++i)
-    removeChild(textNodes[i].get(), IGNORE_EXCEPTION);
+  for (const auto& text : textNodes)
+    removeChild(text.get(), IGNORE_EXCEPTION);
 
   // Normalize line endings.
   String value = defaultValue;

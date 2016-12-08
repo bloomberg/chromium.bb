@@ -87,8 +87,8 @@ void PublicURLManager::revoke(const String& uuid) {
         urlsToRemove.append(registeredUrl.key);
       }
     }
-    for (unsigned j = 0; j < urlsToRemove.size(); j++)
-      registeredURLs.remove(urlsToRemove[j]);
+    for (const auto& url : urlsToRemove)
+      registeredURLs.remove(url);
     urlsToRemove.clear();
   }
 }

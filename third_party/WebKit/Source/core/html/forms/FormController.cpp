@@ -60,8 +60,8 @@ static inline HTMLFormElement* ownerFormForState(
 void FormControlState::serializeTo(Vector<String>& stateVector) const {
   DCHECK(!isFailure());
   stateVector.append(String::number(m_values.size()));
-  for (size_t i = 0; i < m_values.size(); ++i)
-    stateVector.append(m_values[i].isNull() ? emptyString() : m_values[i]);
+  for (const auto& value : m_values)
+    stateVector.append(value.isNull() ? emptyString() : value);
 }
 
 FormControlState FormControlState::deserialize(
@@ -295,8 +295,8 @@ Vector<String> SavedFormState::getReferencedFilePaths() const {
       const Vector<FileChooserFileInfo>& selectedFiles =
           HTMLInputElement::filesFromFileInputFormControlState(
               formControlState);
-      for (size_t i = 0; i < selectedFiles.size(); ++i)
-        toReturn.append(selectedFiles[i].path);
+      for (const auto& file : selectedFiles)
+        toReturn.append(file.path);
     }
   }
   return toReturn;

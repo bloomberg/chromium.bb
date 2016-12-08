@@ -535,8 +535,8 @@ void DateTimeEditElement::addField(DateTimeFieldElement* field) {
 }
 
 bool DateTimeEditElement::anyEditableFieldsHaveValues() const {
-  for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex) {
-    if (!m_fields[fieldIndex]->isDisabled() && m_fields[fieldIndex]->hasValue())
+  for (const auto& field : m_fields) {
+    if (!field->isDisabled() && field->hasValue())
       return true;
   }
   return false;
@@ -767,8 +767,8 @@ void DateTimeEditElement::readOnlyStateChanged() {
 }
 
 void DateTimeEditElement::resetFields() {
-  for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex)
-    m_fields[fieldIndex]->removeEventHandler();
+  for (const auto& field : m_fields)
+    field->removeEventHandler();
   m_fields.shrink(0);
 }
 
@@ -788,22 +788,22 @@ void DateTimeEditElement::setValueAsDate(
     const LayoutParameters& layoutParameters,
     const DateComponents& date) {
   layout(layoutParameters, date);
-  for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex)
-    m_fields[fieldIndex]->setValueAsDate(date);
+  for (const auto& field : m_fields)
+    field->setValueAsDate(date);
 }
 
 void DateTimeEditElement::setValueAsDateTimeFieldsState(
     const DateTimeFieldsState& dateTimeFieldsState) {
-  for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex)
-    m_fields[fieldIndex]->setValueAsDateTimeFieldsState(dateTimeFieldsState);
+  for (const auto& field : m_fields)
+    field->setValueAsDateTimeFieldsState(dateTimeFieldsState);
 }
 
 void DateTimeEditElement::setEmptyValue(
     const LayoutParameters& layoutParameters,
     const DateComponents& dateForReadOnlyField) {
   layout(layoutParameters, dateForReadOnlyField);
-  for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex)
-    m_fields[fieldIndex]->setEmptyValue(DateTimeFieldElement::DispatchNoEvent);
+  for (const auto& field : m_fields)
+    field->setEmptyValue(DateTimeFieldElement::DispatchNoEvent);
 }
 
 bool DateTimeEditElement::hasFocusedField() {
@@ -850,8 +850,8 @@ String DateTimeEditElement::value() const {
 
 DateTimeFieldsState DateTimeEditElement::valueAsDateTimeFieldsState() const {
   DateTimeFieldsState dateTimeFieldsState;
-  for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex)
-    m_fields[fieldIndex]->populateDateTimeFieldsState(dateTimeFieldsState);
+  for (const auto& field : m_fields)
+    field->populateDateTimeFieldsState(dateTimeFieldsState);
   return dateTimeFieldsState;
 }
 
