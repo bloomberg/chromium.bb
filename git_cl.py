@@ -4586,7 +4586,7 @@ def SendUpstream(parser, args, cmd):
     # after it. Add a period on a new line to circumvent this. Also add a space
     # before the period to make sure that Gitiles continues to correctly resolve
     # the URL.
-    commit_desc.append_footer('Review URL: %s .' % cl.GetIssueURL())
+    commit_desc.append_footer('Review-Url: %s .' % cl.GetIssueURL())
   if options.contributor:
     commit_desc.append_footer('Patch from %s.' % options.contributor)
 

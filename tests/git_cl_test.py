@@ -749,7 +749,7 @@ class TestGitCl(TestCase):
       ((['git', 'reset', '--soft', 'fake_ancestor_sha'],), ''),
       ((['git', 'commit', '-m',
          'Issue: 12345\n\nR=john@chromium.org\n\n'
-         'Review URL: https://codereview.example.com/12345 .'],),
+         'Review-Url: https://codereview.example.com/12345 .'],),
        ''),
       ((['git', 'config', 'rietveld.force-https-commit-url'],), ''),
       ((['git',
@@ -1011,7 +1011,7 @@ class TestGitCl(TestCase):
       ((['git', 'reset', '--soft', 'fake_ancestor_sha'],), ''),
       ((['git', 'commit', '-m',
          'Issue: 123\n\nR=john@chromium.org\n\n'
-         'Review URL: https://codereview.chromium.org/123 .'],), ''),
+         'Review-Url: https://codereview.chromium.org/123 .'],), ''),
       ((['git', 'config', 'branch.feature.merge'],), 'refs/heads/master'),
       ((['git', 'config', 'branch.feature.remote'],), 'origin'),
       ((['git', 'config', '--get', 'remote.origin.url'],),
@@ -1115,8 +1115,7 @@ class TestGitCl(TestCase):
       ((['git', 'commit', '--amend', '-m',
         'Issue: 123\n\nR=john@chromium.org\n'
         '\n'
-        'Review URL: https://codereview.chromium.org/123 .\n'
-        '\n'
+        'Review-Url: https://codereview.chromium.org/123 .\n'
         'Cr-Commit-Position: refs/heads/master@{#544}\n'
         'Cr-Branched-From: refs/svn/2014@{#2208}'],), ''),
 
@@ -1130,8 +1129,7 @@ class TestGitCl(TestCase):
       ((['update_description', 123,
          'Issue: 123\n\nR=john@chromium.org\n'
          '\n'
-         'Review URL: https://codereview.chromium.org/123 .\n'
-         '\n'
+         'Review-Url: https://codereview.chromium.org/123 .\n'
          'Cr-Commit-Position: refs/heads/master@{#544}\n'
          'Cr-Branched-From: refs/svn/2014@{#2208}\n'
          'Committed: '
