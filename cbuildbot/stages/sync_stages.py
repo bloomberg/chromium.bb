@@ -625,7 +625,8 @@ class ManifestVersionedSyncStage(SyncStage):
       # later. This is easier than parsing the manifest again after
       # the re-execution.
       self._run.attrs.metadata.UpdateKeyDictWithDict(
-          'version', {'android': android_version})
+          'version', {'android': android_version,
+                      'android-branch':  constants.ANDROID_BUILD_BRANCH})
 
   def _SetChromeVersionIfApplicable(self, manifest):
     """If 'chrome' is in |manifest|, write the version to the BuilderRun object.
