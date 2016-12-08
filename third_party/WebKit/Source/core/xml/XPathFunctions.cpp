@@ -334,15 +334,12 @@ Value FunId::evaluate(EvaluationContext& context) const {
   StringBuilder idList;  // A whitespace-separated list of IDs
 
   if (a.isNodeSet()) {
-    const NodeSet& nodes = a.toNodeSet(&context);
-    for (size_t i = 0; i < nodes.size(); ++i) {
-      String str = stringValue(nodes[i]);
-      idList.append(str);
+    for (const auto& node : a.toNodeSet(&context)) {
+      idList.append(stringValue(node));
       idList.append(' ');
     }
   } else {
-    String str = a.toString();
-    idList.append(str);
+    idList.append(a.toString());
   }
 
   TreeScope& contextScope = context.node->treeScope();
@@ -677,8 +674,8 @@ Value FunSum::evaluate(EvaluationContext& context) const {
   // addition is not associative.  However, this is unlikely to ever become a
   // practical issue, and sorting is slow.
 
-  for (unsigned i = 0; i < nodes.size(); i++)
-    sum += Value(stringValue(nodes[i])).toNumber();
+  for (const auto& node : nodes)
+    sum += Value(stringValue(node)).toNumber();
 
   return sum;
 }

@@ -85,8 +85,8 @@ static void setUpAxisNamesMap(AxisNamesMap& axisNames) {
       {"preceding", Step::PrecedingAxis},
       {"preceding-sibling", Step::PrecedingSiblingAxis},
       {"self", Step::SelfAxis}};
-  for (unsigned i = 0; i < sizeof(axisNameList) / sizeof(axisNameList[0]); ++i)
-    axisNames.set(axisNameList[i].name, axisNameList[i].axis);
+  for (const auto& axisName : axisNameList)
+    axisNames.set(axisName.name, axisName.axis);
 }
 
 static bool isAxisName(const String& name, Step::Axis& type) {

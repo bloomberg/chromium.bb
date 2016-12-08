@@ -110,10 +110,9 @@ bool EqTestOp::compare(EvaluationContext& context,
       // performing the comparison on the string-values of the two nodes
       // is true.
       const NodeSet& rhsSet = rhs.toNodeSet(&context);
-      for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
-        for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
-          if (compare(context, stringValue(lhsSet[lindex]),
-                      stringValue(rhsSet[rindex])))
+      for (const auto& leftNode : lhsSet) {
+        for (const auto& rightNode : rhsSet) {
+          if (compare(context, stringValue(leftNode), stringValue(rightNode)))
             return true;
         }
       }
@@ -126,9 +125,8 @@ bool EqTestOp::compare(EvaluationContext& context,
       // comparison on the number to be compared and on the result of
       // converting the string-value of that node to a number using the
       // number function is true.
-      for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
-        if (compare(context, Value(stringValue(lhsSet[lindex])).toNumber(),
-                    rhs))
+      for (const auto& leftNode : lhsSet) {
+        if (compare(context, Value(stringValue(leftNode)).toNumber(), rhs))
           return true;
       }
       return false;
@@ -139,8 +137,8 @@ bool EqTestOp::compare(EvaluationContext& context,
       // a node in the node-set such that the result of performing the
       // comparison on the string-value of the node and the other string
       // is true.
-      for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
-        if (compare(context, stringValue(lhsSet[lindex]), rhs))
+      for (const auto& leftNode : lhsSet) {
+        if (compare(context, stringValue(leftNode), rhs))
           return true;
       }
       return false;
@@ -158,16 +156,15 @@ bool EqTestOp::compare(EvaluationContext& context,
   if (rhs.isNodeSet()) {
     const NodeSet& rhsSet = rhs.toNodeSet(&context);
     if (lhs.isNumber()) {
-      for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
-        if (compare(context, lhs,
-                    Value(stringValue(rhsSet[rindex])).toNumber()))
+      for (const auto& rightNode : rhsSet) {
+        if (compare(context, lhs, Value(stringValue(rightNode)).toNumber()))
           return true;
       }
       return false;
     }
     if (lhs.isString()) {
-      for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
-        if (compare(context, lhs, stringValue(rhsSet[rindex])))
+      for (const auto& rightNode : rhsSet) {
+        if (compare(context, lhs, stringValue(rightNode)))
           return true;
       }
       return false;
@@ -242,11 +239,10 @@ Value Union::evaluate(EvaluationContext& context) const {
   const NodeSet& rhsNodes = rhs.toNodeSet(&context);
 
   HeapHashSet<Member<Node>> nodes;
-  for (size_t i = 0; i < resultSet.size(); ++i)
-    nodes.add(resultSet[i]);
+  for (const auto& node : resultSet)
+    nodes.add(node);
 
-  for (size_t i = 0; i < rhsNodes.size(); ++i) {
-    Node* node = rhsNodes[i];
+  for (const auto& node : rhsNodes) {
     if (nodes.add(node).isNewEntry)
       resultSet.append(node);
   }

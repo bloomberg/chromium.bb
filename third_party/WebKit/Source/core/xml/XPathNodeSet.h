@@ -43,6 +43,12 @@ class NodeSet final : public GarbageCollected<NodeSet> {
   size_t size() const { return m_nodes.size(); }
   bool isEmpty() const { return !m_nodes.size(); }
   Node* operator[](unsigned i) const { return m_nodes.at(i).get(); }
+  HeapVector<Member<Node>>::iterator begin() { return m_nodes.begin(); }
+  HeapVector<Member<Node>>::iterator end() { return m_nodes.end(); }
+  HeapVector<Member<Node>>::const_iterator begin() const {
+    return m_nodes.begin();
+  }
+  HeapVector<Member<Node>>::const_iterator end() const { return m_nodes.end(); }
   void reserveCapacity(size_t newCapacity) {
     m_nodes.reserveCapacity(newCapacity);
   }

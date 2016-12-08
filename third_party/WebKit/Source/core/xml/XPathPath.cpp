@@ -58,18 +58,16 @@ Value Filter::evaluate(EvaluationContext& evaluationContext) const {
   NodeSet& nodes = v.modifiableNodeSet(evaluationContext);
   nodes.sort();
 
-  for (unsigned i = 0; i < m_predicates.size(); i++) {
+  for (const auto& predicate : m_predicates) {
     NodeSet* newNodes = NodeSet::create();
     evaluationContext.size = nodes.size();
     evaluationContext.position = 0;
 
-    for (unsigned j = 0; j < nodes.size(); j++) {
-      Node* node = nodes[j];
-
+    for (const auto& node : nodes) {
       evaluationContext.node = node;
       ++evaluationContext.position;
 
-      if (m_predicates[i]->evaluate(evaluationContext))
+      if (predicate->evaluate(evaluationContext))
         newNodes->append(node);
     }
     nodes.swap(*newNodes);
@@ -119,8 +117,7 @@ Value LocationPath::evaluate(EvaluationContext& evaluationContext) const {
 void LocationPath::evaluate(EvaluationContext& context, NodeSet& nodes) const {
   bool resultIsSorted = nodes.isSorted();
 
-  for (unsigned i = 0; i < m_steps.size(); i++) {
-    Step* step = m_steps[i];
+  for (const auto& step : m_steps) {
     NodeSet* newNodes = NodeSet::create();
     HeapHashSet<Member<Node>> newNodesSet;
 
@@ -140,15 +137,14 @@ void LocationPath::evaluate(EvaluationContext& context, NodeSet& nodes) const {
                                         step->getAxis() == Step::SelfAxis))
       newNodes->markSubtreesDisjoint(true);
 
-    for (unsigned j = 0; j < nodes.size(); j++) {
+    for (const auto& inputNode : nodes) {
       NodeSet* matches = NodeSet::create();
-      step->evaluate(context, nodes[j], *matches);
+      step->evaluate(context, inputNode, *matches);
 
       if (!matches->isSorted())
         resultIsSorted = false;
 
-      for (size_t nodeIndex = 0; nodeIndex < matches->size(); ++nodeIndex) {
-        Node* node = (*matches)[nodeIndex];
+      for (const auto& node : *matches) {
         if (!needToCheckForDuplicateNodes || newNodesSet.add(node).isNewEntry)
           newNodes->append(node);
       }

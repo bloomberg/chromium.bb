@@ -65,8 +65,7 @@ void Step::optimize() {
   // list sensitive, or to first predicate that is only context position
   // sensitive, e.g. foo[position() mod 2 = 0].
   HeapVector<Member<Predicate>> remainingPredicates;
-  for (size_t i = 0; i < m_predicates.size(); ++i) {
-    Predicate* predicate = m_predicates[i];
+  for (const auto& predicate : m_predicates) {
     if ((!predicate->isContextPositionSensitive() ||
          nodeTest().mergedPredicates().isEmpty()) &&
         !predicate->isContextSizeSensitive() && remainingPredicates.isEmpty()) {
@@ -105,15 +104,13 @@ bool optimizeStepPair(Step* first, Step* second) {
 }
 
 bool Step::predicatesAreContextListInsensitive() const {
-  for (size_t i = 0; i < m_predicates.size(); ++i) {
-    Predicate* predicate = m_predicates[i].get();
+  for (const auto& predicate : m_predicates) {
     if (predicate->isContextPositionSensitive() ||
         predicate->isContextSizeSensitive())
       return false;
   }
 
-  for (size_t i = 0; i < nodeTest().mergedPredicates().size(); ++i) {
-    Predicate* predicate = nodeTest().mergedPredicates()[i].get();
+  for (const auto& predicate : nodeTest().mergedPredicates()) {
     if (predicate->isContextPositionSensitive() ||
         predicate->isContextSizeSensitive())
       return false;
@@ -130,9 +127,7 @@ void Step::evaluate(EvaluationContext& evaluationContext,
   nodesInAxis(evaluationContext, context, nodes);
 
   // Check predicates that couldn't be merged into node test.
-  for (unsigned i = 0; i < m_predicates.size(); i++) {
-    Predicate* predicate = m_predicates[i].get();
-
+  for (const auto& predicate : m_predicates) {
     NodeSet* newNodes = NodeSet::create();
     if (!nodes.isSorted())
       newNodes->markSorted(false);
@@ -246,11 +241,7 @@ static inline bool nodeMatches(EvaluationContext& evaluationContext,
   // Only the first merged predicate may depend on position.
   ++evaluationContext.position;
 
-  const HeapVector<Member<Predicate>>& mergedPredicates =
-      nodeTest.mergedPredicates();
-  for (unsigned i = 0; i < mergedPredicates.size(); i++) {
-    Predicate* predicate = mergedPredicates[i].get();
-
+  for (const auto& predicate : nodeTest.mergedPredicates()) {
     evaluationContext.node = node;
     // No need to set context size - we only get here when evaluating
     // predicates that do not depend on it.
