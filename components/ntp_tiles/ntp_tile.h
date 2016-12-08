@@ -21,7 +21,9 @@ struct NTPTile {
   GURL url;
   NTPTileSource source;
 
-  // Only valid for source == WHITELIST (empty otherwise).
+  // Empty unless whitelists are enabled and this site is in a whitelist.
+  // However, may be non-empty even if |source| is not |WHITELIST|, if this tile
+  // is also available from another, higher-priority source.
   base::FilePath whitelist_icon_path;
 
   NTPTile();
