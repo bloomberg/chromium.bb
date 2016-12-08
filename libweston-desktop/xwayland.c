@@ -241,6 +241,8 @@ create_surface(struct weston_desktop_xwayland *xwayland,
 	wl_resource_add_destroy_listener(wsurface->resource,
 					 &surface->resource_destroy_listener);
 
+	weston_desktop_surface_set_pid(surface->surface, 0);
+
 	return surface;
 }
 

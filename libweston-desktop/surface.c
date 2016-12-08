@@ -269,6 +269,8 @@ weston_desktop_surface_create(struct weston_desktop *desktop,
 	wsurface->committed = weston_desktop_surface_committed;
 	wsurface->committed_private = surface;
 
+	surface->pid = -1;
+
 	surface->surface_commit_listener.notify =
 		weston_desktop_surface_surface_committed;
 	wl_signal_add(&surface->surface->commit_signal,
@@ -590,7 +592,7 @@ weston_desktop_surface_get_pid(struct weston_desktop_surface *surface)
 {
 	pid_t pid;
 
-	if (surface->pid != 0) {
+	if (surface->pid != -1) {
 		pid = surface->pid;
 	} else {
 		struct weston_desktop_client *client =
@@ -598,6 +600,10 @@ weston_desktop_surface_get_pid(struct weston_desktop_surface *surface)
 		struct wl_client *wl_client =
 			weston_desktop_client_get_client(client);
 
+		/* wl_client should always be valid, because only in the
+		 * xwayland case it wouldn't be, but in that case we won't
+		 * reach here, as the pid is initialized to 0. */
+		assert(wl_client);
 		wl_client_get_credentials(wl_client, &pid, NULL, NULL);
 	}
 	return pid;
