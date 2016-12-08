@@ -9,9 +9,9 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +34,10 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -94,7 +98,7 @@ static id g_chrome_execute_command_sender = nil;
 @implementation DonorWindow
 
 - (void)chromeExecuteCommand:(id)sender {
-  g_chrome_execute_command_sender = [sender retain];
+  g_chrome_execute_command_sender = sender;
 }
 
 @end
@@ -112,7 +116,6 @@ class ScopedWindowSwizzler {
   }
 
   ~ScopedWindowSwizzler() {
-    [g_chrome_execute_command_sender release];
     g_chrome_execute_command_sender = nil;
   }
 
@@ -215,23 +218,23 @@ class PasswordGenerationAgentTest : public web::WebTestWithWebState {
  public:
   void SetUp() override {
     web::WebTestWithWebState::SetUp();
-    mock_js_suggestion_manager_.reset(
-        [[OCMockObject niceMockForClass:[JsSuggestionManager class]] retain]);
-    mock_js_password_manager_.reset(
-        [[OCMockObject niceMockForClass:[JsPasswordManager class]] retain]);
-    mock_ui_delegate_.reset([[MockPasswordsUiDelegate alloc] init]);
-    test_web_state_.reset(new web::TestWebState);
-    agent_.reset([[PasswordGenerationAgent alloc]
+    mock_js_suggestion_manager_ =
+        [OCMockObject niceMockForClass:[JsSuggestionManager class]];
+    mock_js_password_manager_ =
+        [OCMockObject niceMockForClass:[JsPasswordManager class]];
+    mock_ui_delegate_ = [[MockPasswordsUiDelegate alloc] init];
+    test_web_state_ = base::MakeUnique<web::TestWebState>();
+    agent_ = [[PasswordGenerationAgent alloc]
              initWithWebState:test_web_state_.get()
               passwordManager:nullptr
         passwordManagerDriver:nullptr
             JSPasswordManager:mock_js_password_manager_
           JSSuggestionManager:mock_js_suggestion_manager_
-          passwordsUiDelegate:mock_ui_delegate_]);
+          passwordsUiDelegate:mock_ui_delegate_];
     @autoreleasepool {
-      accessory_view_controller_.reset([[FormInputAccessoryViewController alloc]
+      accessory_view_controller_ = [[FormInputAccessoryViewController alloc]
           initWithWebState:test_web_state_.get()
-                 providers:@[ agent_ ]]);
+                 providers:@[ agent_ ]];
     }
   }
 
@@ -287,11 +290,11 @@ class PasswordGenerationAgentTest : public web::WebTestWithWebState {
 
  protected:
   // Returns the current generation agent.
-  PasswordGenerationAgent* agent() { return agent_.get(); }
+  PasswordGenerationAgent* agent() { return agent_; }
 
   // Returns the current accessory view controller.
   FormInputAccessoryViewController* accessory_controller() {
-    return accessory_view_controller_.get();
+    return accessory_view_controller_;
   }
 
  private:
@@ -299,20 +302,19 @@ class PasswordGenerationAgentTest : public web::WebTestWithWebState {
   std::unique_ptr<web::TestWebState> test_web_state_;
 
   // Mock for JsSuggestionManager;
-  base::scoped_nsobject<id> mock_js_suggestion_manager_;
+  id mock_js_suggestion_manager_;
 
   // Mock for JsPasswordManager.
-  base::scoped_nsobject<id> mock_js_password_manager_;
+  id mock_js_password_manager_;
 
   // Mock for the UI delegate.
-  base::scoped_nsobject<MockPasswordsUiDelegate> mock_ui_delegate_;
+  MockPasswordsUiDelegate* mock_ui_delegate_;
 
   // Controller that shows custom input accessory views.
-  base::scoped_nsobject<FormInputAccessoryViewController>
-      accessory_view_controller_;
+  FormInputAccessoryViewController* accessory_view_controller_;
 
   // The current generation agent.
-  base::scoped_nsobject<PasswordGenerationAgent> agent_;
+  PasswordGenerationAgent* agent_;
 };
 
 // Tests that local heuristics skip forms with GAIA realm.
@@ -482,7 +484,7 @@ TEST_F(PasswordGenerationAgentTest,
   NSString* password = @"abc";
 
   [[[mock_js_password_manager() stub] andDo:^(NSInvocation* invocation) {
-    void (^completion_handler)(BOOL);
+    __unsafe_unretained void (^completion_handler)(BOOL);
     [invocation getArgument:&completion_handler atIndex:4];
     completion_handler(YES);
   }] fillPasswordForm:kAccountCreationFormName

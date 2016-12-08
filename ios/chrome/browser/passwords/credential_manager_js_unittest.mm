@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #import "ios/chrome/browser/passwords/js_credential_manager.h"
@@ -18,6 +17,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -59,9 +62,9 @@ class CredentialManagerJsTest : public web::WebTestWithWebState {
 
   void SetUp() override {
     web::WebTestWithWebState::SetUp();
-    js_credential_manager_.reset(base::mac::ObjCCastStrict<JSCredentialManager>(
-        [[web_state()->GetJSInjectionReceiver()
-            instanceOfClass:[JSCredentialManager class]] retain]));
+    js_credential_manager_ = base::mac::ObjCCastStrict<JSCredentialManager>(
+        [web_state()->GetJSInjectionReceiver()
+            instanceOfClass:[JSCredentialManager class]]);
     observer_.reset(new MockWebStateObserver(web_state()));
   }
 
@@ -255,7 +258,7 @@ class CredentialManagerJsTest : public web::WebTestWithWebState {
 
  private:
   // Manager for injected credential manager JavaScript.
-  base::scoped_nsobject<JSCredentialManager> js_credential_manager_;
+  JSCredentialManager* js_credential_manager_;
 
   // Mock observer for testing.
   std::unique_ptr<MockWebStateObserver> observer_;

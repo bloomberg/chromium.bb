@@ -7,8 +7,17 @@
 #include <stdint.h>
 
 #include "base/callback.h"
+#include "ios/web/public/web_state/web_state_observer.h"
 
 namespace web {
+
+void TestWebState::AddObserver(WebStateObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TestWebState::RemoveObserver(WebStateObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 TestWebState::TestWebState()
     : web_usage_enabled_(false),
@@ -16,7 +25,12 @@ TestWebState::TestWebState()
       trust_level_(kAbsolute),
       content_is_html_(true) {}
 
-TestWebState::~TestWebState() = default;
+TestWebState::~TestWebState() {
+  for (auto& observer : observers_)
+    observer.WebStateDestroyed();
+  for (auto& observer : observers_)
+    observer.ResetWebState();
+};
 
 WebStateDelegate* TestWebState::GetDelegate() {
   return nil;

@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -12,6 +11,10 @@
 #import "ios/web/public/test/test_web_state.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -42,11 +45,10 @@ class PasswordControllerOffTheRecordTest : public web::WebTestWithWebState {
  public:
   void SetUp() override {
     web::WebTestWithWebState::SetUp();
-    password_controller_.reset([[PasswordController alloc]
+    password_controller_ = [[PasswordController alloc]
            initWithWebState:&off_the_record_web_state_
         passwordsUiDelegate:nil
-                     client:base::MakeUnique<
-                                IncognitoPasswordManagerClient>()]);
+                     client:base::MakeUnique<IncognitoPasswordManagerClient>()];
   }
 
   void TearDown() override {
@@ -56,7 +58,7 @@ class PasswordControllerOffTheRecordTest : public web::WebTestWithWebState {
 
  protected:
   OffTheRecordWebState off_the_record_web_state_;
-  base::scoped_nsobject<PasswordController> password_controller_;
+  PasswordController* password_controller_;
 };
 
 // Check that if the PasswordController is told (by the PasswordManagerClient)

@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/mac/bind_objc_block.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,6 +29,10 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using testing::Return;
 
@@ -105,9 +108,9 @@ typedef BOOL (^StringPredicate)(NSString*);
 // Returns a block that takes a string argument and returns whether it is equal
 // to |string|.
 StringPredicate EqualsString(const char* string) {
-  return [[^BOOL(NSString* other) {
+  return [^BOOL(NSString* other) {
     return [base::SysUTF8ToNSString(string) isEqualToString:other];
-  } copy] autorelease];
+  } copy];
 }
 
 // A stub PasswordManagerClient for testing.
@@ -191,11 +194,11 @@ class CredentialManagerTest : public web::WebTestWithWebState {
     web::WebTestWithWebState::SetUp();
     id originalMock =
         [OCMockObject niceMockForClass:[JSCredentialManager class]];
-    mock_js_credential_manager_.reset([[MockJSCredentialManager alloc]
-        initWithRepresentedObject:originalMock]);
-    credential_manager_.reset(new CredentialManager(
-        web_state(), &stub_client_, &stub_driver_,
-        static_cast<id>(mock_js_credential_manager_.get())));
+    mock_js_credential_manager_ = [[MockJSCredentialManager alloc]
+        initWithRepresentedObject:originalMock];
+    credential_manager_.reset(
+        new CredentialManager(web_state(), &stub_client_, &stub_driver_,
+                              static_cast<id>(mock_js_credential_manager_)));
     LoadHtml(@"", GURL(kTestURL));
   }
 
@@ -263,7 +266,7 @@ class CredentialManagerTest : public web::WebTestWithWebState {
   password_manager::StubPasswordManagerDriver stub_driver_;
 
   // Mock for JSCredentialManager.
-  base::scoped_nsobject<MockJSCredentialManager> mock_js_credential_manager_;
+  MockJSCredentialManager* mock_js_credential_manager_;
 
   // CredentialManager for testing.
   std::unique_ptr<CredentialManager> credential_manager_;

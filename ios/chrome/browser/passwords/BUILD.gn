@@ -96,6 +96,7 @@ source_set("passwords_generation_utils") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "credential_manager_js_unittest.mm",

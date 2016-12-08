@@ -20,6 +20,7 @@ struct Credential;
 struct FaviconURL;
 struct LoadCommittedDetails;
 class WebState;
+class TestWebState;
 class WebStateImpl;
 
 enum class PageLoadCompletionStatus : bool { SUCCESS = 0, FAILURE = 1 };
@@ -156,6 +157,7 @@ class WebStateObserver {
 
  private:
   friend class WebStateImpl;
+  friend class TestWebState;
 
   // Stops observing the current web state.
   void ResetWebState();

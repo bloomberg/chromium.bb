@@ -11,7 +11,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/mac/bind_objc_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
@@ -38,6 +37,10 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/OCMock/OCPartialMockObject.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
@@ -85,17 +88,16 @@ class MockLogManager : public password_manager::LogManager {
 // using the given |store|. If not null, |weak_client| is filled with a
 // non-owning pointer to the created client. The created controller is
 // returned.
-base::scoped_nsobject<PasswordController> CreatePasswordController(
+PasswordController* CreatePasswordController(
     web::WebState* web_state,
     password_manager::PasswordStore* store,
     MockPasswordManagerClient** weak_client) {
   auto client = base::MakeUnique<MockPasswordManagerClient>(store);
   if (weak_client)
     *weak_client = client.get();
-  return base::scoped_nsobject<PasswordController>([[PasswordController alloc]
-         initWithWebState:web_state
-      passwordsUiDelegate:nil
-                   client:std::move(client)]);
+  return [[PasswordController alloc] initWithWebState:web_state
+                                  passwordsUiDelegate:nil
+                                               client:std::move(client)];
 }
 
 }  // namespace
@@ -129,8 +131,6 @@ base::scoped_nsobject<PasswordController> CreatePasswordController(
 
 @property(nonatomic, copy) NSArray* suggestions;
 
-- (void)dealloc;
-
 @end
 
 @implementation PasswordsTestSuggestionController
@@ -141,10 +141,6 @@ base::scoped_nsobject<PasswordController> CreatePasswordController(
   self.suggestions = suggestions;
 }
 
-- (void)dealloc {
-  [_suggestions release];
-  [super dealloc];
-}
 
 @end
 
@@ -164,12 +160,12 @@ class PasswordControllerTest : public web::WebTestWithWebState {
       // otherwise [passwordController_ suggestionProvider] will be retained
       // until PlatformTest teardown, at which point all Chrome objects are
       // already gone and teardown may access invalid memory.
-      suggestionController_.reset([[PasswordsTestSuggestionController alloc]
+      suggestionController_ = [[PasswordsTestSuggestionController alloc]
           initWithWebState:web_state()
-                 providers:@[ [passwordController_ suggestionProvider] ]]);
-      accessoryViewController_.reset([[FormInputAccessoryViewController alloc]
+                 providers:@[ [passwordController_ suggestionProvider] ]];
+      accessoryViewController_ = [[FormInputAccessoryViewController alloc]
           initWithWebState:web_state()
-                 providers:@[ [suggestionController_ accessoryViewProvider] ]]);
+                 providers:@[ [suggestionController_ accessoryViewProvider] ]];
     }
   }
 
@@ -218,7 +214,7 @@ class PasswordControllerTest : public web::WebTestWithWebState {
         ++failure_count;
         // Fetches the completion handler from |invocation| and calls it with
         // failure status.
-        void (^completionHandler)(BOOL);
+        __unsafe_unretained void (^completionHandler)(BOOL);
         const NSInteger kArgOffset = 1;
         const NSInteger kCompletionHandlerArgIndex = 4;
         [invocation getArgument:&completionHandler
@@ -235,15 +231,13 @@ class PasswordControllerTest : public web::WebTestWithWebState {
   }
 
   // SuggestionController for testing.
-  base::scoped_nsobject<PasswordsTestSuggestionController>
-      suggestionController_;
+  PasswordsTestSuggestionController* suggestionController_;
 
   // FormInputAccessoryViewController for testing.
-  base::scoped_nsobject<FormInputAccessoryViewController>
-      accessoryViewController_;
+  FormInputAccessoryViewController* accessoryViewController_;
 
   // PasswordController for testing.
-  base::scoped_nsobject<PasswordController> passwordController_;
+  PasswordController* passwordController_;
 
   scoped_refptr<password_manager::PasswordStore> store_;
 };
@@ -1266,7 +1260,7 @@ TEST(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
       .WillByDefault(testing::Return(browser_state.get()));
 
   MockPasswordManagerClient* weak_client = nullptr;
-  base::scoped_nsobject<PasswordController> passwordController =
+  PasswordController* passwordController =
       CreatePasswordController(&web_state, nullptr, &weak_client);
   static_cast<TestingPrefServiceSimple*>(weak_client->GetPrefs())
       ->registry()

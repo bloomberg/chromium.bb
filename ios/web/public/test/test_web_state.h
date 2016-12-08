@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -57,8 +58,11 @@ class TestWebState : public WebState {
   CRWWebViewProxyType GetWebViewProxy() const override;
   bool IsShowingWebInterstitial() const override;
   WebInterstitial* GetWebInterstitial() const override;
-  void AddObserver(WebStateObserver* observer) override {}
-  void RemoveObserver(WebStateObserver* observer) override {}
+
+  void AddObserver(WebStateObserver* observer) override;
+
+  void RemoveObserver(WebStateObserver* observer) override;
+
   void AddPolicyDecider(WebStatePolicyDecider* decider) override {}
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override {}
   int DownloadImage(const GURL& url,
@@ -84,6 +88,9 @@ class TestWebState : public WebState {
   bool content_is_html_;
   std::string mime_type_;
   std::string content_language_;
+
+  // A list of observers notified when page state changes. Weak references.
+  base::ObserverList<WebStateObserver, true> observers_;
 };
 
 }  // namespace web
