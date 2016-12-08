@@ -159,6 +159,7 @@
       'CrWinClngLLDdbg': 'clang_tot_minimal_symbols_shared_debug_use_lld_x86',
       'EarlGreyiOS': 'ios',
       'GomaCanaryiOS': 'ios',
+      'ios-simulator': 'ios',
       'Headless Linux (dbg)': '//build/args/bots/chromium.fyi/headless_linux_dbg.gn',
       'MD Top Chrome ChromeOS material-hybrid': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome ChromeOS non-material': 'chromeos_with_codecs_debug_bot',
