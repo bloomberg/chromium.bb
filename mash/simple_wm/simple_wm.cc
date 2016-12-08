@@ -196,7 +196,6 @@ void SimpleWM::OnWmNewDisplay(
   // Only handles a single root.
   DCHECK(!root_);
   window_tree_host_ = std::move(window_tree_host);
-  window_tree_host_->InitCompositor();
   root_ = window_tree_host_->window();
   DCHECK(window_manager_client_);
   window_manager_client_->AddActivationParent(root_);
