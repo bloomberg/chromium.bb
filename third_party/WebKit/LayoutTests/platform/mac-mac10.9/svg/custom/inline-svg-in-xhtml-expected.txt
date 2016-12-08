@@ -17,19 +17,18 @@ layer at (48,38) size 722x542 layerType: foreground only
         LayoutBlockFlow {legend} at (14,0) size 88x18
           LayoutText {#text} at (2,0) size 84x18
             text run at (2,0) width 84: "HTML Form"
-        LayoutBlockFlow (anonymous) at (14,7.59) size 688x102
-          LayoutBlockFlow {p} at (0,32) size 688x19
-            LayoutInline {label} at (0,0) size 110x18
-              LayoutText {#text} at (0,0) size 110x18
-                text run at (0,0) width 110: "Enter something:"
-            LayoutText {#text} at (109,0) size 5x18
-              text run at (109,0) width 5: " "
-            LayoutTextControl {input} at (113.75,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-            LayoutText {#text} at (0,0) size 0x0
-          LayoutBlockFlow {p} at (0,67) size 688x19
-            LayoutButton {button} at (0,1) size 62.02x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-              LayoutBlockFlow (anonymous) at (8,2) size 46.02x13
-                LayoutText {#text} at (0,0) size 46x13
-                  text run at (0,0) width 46: "Activate!"
+        LayoutBlockFlow {p} at (14,39.59) size 688x19
+          LayoutInline {label} at (0,0) size 110x18
+            LayoutText {#text} at (0,0) size 110x18
+              text run at (0,0) width 110: "Enter something:"
+          LayoutText {#text} at (109,0) size 5x18
+            text run at (109,0) width 5: " "
+          LayoutTextControl {input} at (113.75,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutText {#text} at (0,0) size 0x0
+        LayoutBlockFlow {p} at (14,74.59) size 688x19
+          LayoutButton {button} at (0,1) size 62.02x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+            LayoutBlockFlow (anonymous) at (8,2) size 46.02x13
+              LayoutText {#text} at (0,0) size 46x13
+                text run at (0,0) width 46: "Activate!"
 layer at (182,82) size 117x13
   LayoutBlockFlow {div} at (3,3) size 117x13

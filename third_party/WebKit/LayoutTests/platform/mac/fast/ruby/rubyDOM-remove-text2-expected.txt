@@ -20,7 +20,6 @@ layer at (0,0) size 800x600
             LayoutRubyText {RT} at (0,-10) size 107.30x10
               LayoutText {#text} at (0,0) size 108x10
                 text run at (0,0) width 108: "Hyper-text Markup Language"
-            LayoutRubyBase (anonymous) at (0,0) size 107.30x0
           LayoutRubyRun (anonymous) at (264.44,0) size 8x18
             LayoutRubyBase (anonymous) at (0,0) size 8x18
               LayoutText {#text} at (0,0) size 8x18

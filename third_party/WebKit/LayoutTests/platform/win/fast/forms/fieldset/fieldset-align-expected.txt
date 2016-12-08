@@ -10,29 +10,29 @@ layer at (0,0) size 785x1371 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {LEGEND} at (14,0) size 103.53x18
           LayoutText {#text} at (2,0) size 100x17
             text run at (2,0) width 100: "My Legend left"
-        LayoutBlockFlow (anonymous) at (14,7.59) size 737x38
-          LayoutTextControl {INPUT} at (0,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutBlockFlow (anonymous) at (14,23.59) size 737x22
+          LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
       LayoutFieldset {FIELDSET} at (2,91.59) size 765x57.59 [border: (2px groove #C0C0C0)]
         LayoutBlockFlow {LEGEND} at (321.86,0) size 121.28x18
           LayoutText {#text} at (2,0) size 118x17
             text run at (2,0) width 118: "My Legend center"
-        LayoutBlockFlow (anonymous) at (14,7.59) size 737x38
-          LayoutTextControl {INPUT} at (0,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutBlockFlow (anonymous) at (14,23.59) size 737x22
+          LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
       LayoutFieldset {FIELDSET} at (2,149.19) size 765x57.59 [border: (2px groove #C0C0C0)]
         LayoutBlockFlow {LEGEND} at (638.58,0) size 112.42x18
           LayoutText {#text} at (2,0) size 109x17
             text run at (2,0) width 109: "My Legend right"
-        LayoutBlockFlow (anonymous) at (14,7.59) size 737x38
-          LayoutTextControl {INPUT} at (0,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutBlockFlow (anonymous) at (14,23.59) size 737x22
+          LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
       LayoutFieldset {FIELDSET} at (2,206.78) size 765x57.59 [border: (2px groove #C0C0C0)]
         LayoutBlockFlow {LEGEND} at (14,0) size 126.63x18
           LayoutText {#text} at (2,0) size 123x17
             text run at (2,0) width 123: "My Legend default"
-        LayoutBlockFlow (anonymous) at (14,7.59) size 737x38
-          LayoutTextControl {INPUT} at (0,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutBlockFlow (anonymous) at (14,23.59) size 737x22
+          LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {HR} at (0,272.38) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,290.38) size 769x18
@@ -46,29 +46,29 @@ layer at (0,0) size 785x1371 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBlockFlow {LEGEND} at (14,0) size 103.53x18
             LayoutText {#text} at (2,0) size 100x17
               text run at (2,0) width 100: "My Legend left"
-          LayoutBlockFlow (anonymous) at (14,7.59) size 737x38
-            LayoutTextControl {INPUT} at (564,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutBlockFlow (anonymous) at (14,23.59) size 737x22
+            LayoutTextControl {INPUT} at (564,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutText {#text} at (0,0) size 0x0
         LayoutFieldset {FIELDSET} at (2,57.59) size 765x57.59 [border: (2px groove #C0C0C0)]
           LayoutBlockFlow {LEGEND} at (321.86,0) size 121.28x18
             LayoutText {#text} at (2,0) size 118x17
               text run at (2,0) width 118: "My Legend center"
-          LayoutBlockFlow (anonymous) at (14,7.59) size 737x38
-            LayoutTextControl {INPUT} at (564,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutBlockFlow (anonymous) at (14,23.59) size 737x22
+            LayoutTextControl {INPUT} at (564,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutText {#text} at (0,0) size 0x0
         LayoutFieldset {FIELDSET} at (2,115.19) size 765x57.59 [border: (2px groove #C0C0C0)]
           LayoutBlockFlow {LEGEND} at (638.58,0) size 112.42x18
             LayoutText {#text} at (2,0) size 109x17
               text run at (2,0) width 109: "My Legend right"
-          LayoutBlockFlow (anonymous) at (14,7.59) size 737x38
-            LayoutTextControl {INPUT} at (564,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutBlockFlow (anonymous) at (14,23.59) size 737x22
+            LayoutTextControl {INPUT} at (564,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutText {#text} at (0,0) size 0x0
         LayoutFieldset {FIELDSET} at (2,172.78) size 765x57.59 [border: (2px groove #C0C0C0)]
           LayoutBlockFlow {LEGEND} at (624.38,0) size 126.63x18
             LayoutText {#text} at (2,0) size 123x17
               text run at (2,0) width 123: "My Legend default"
-          LayoutBlockFlow (anonymous) at (14,7.59) size 737x38
-            LayoutTextControl {INPUT} at (564,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutBlockFlow (anonymous) at (14,23.59) size 737x22
+            LayoutTextControl {INPUT} at (564,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,554.75) size 769x0
         LayoutInline {SPAN} at (0,0) size 0x0
@@ -81,29 +81,29 @@ layer at (0,0) size 785x1371 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {LEGEND} at (17,0) size 103.53x18
           LayoutText {#text} at (2,0) size 100x17
             text run at (2,0) width 100: "My Legend left"
-        LayoutBlockFlow (anonymous) at (17,17) size 705x38
-          LayoutTextControl {INPUT} at (0,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutBlockFlow (anonymous) at (17,33) size 705x22
+          LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
       LayoutFieldset {FIELDSET} at (15,701.75) size 739x72 [border: (2px groove #C0C0C0)]
         LayoutBlockFlow {LEGEND} at (308.86,0) size 121.28x18
           LayoutText {#text} at (2,0) size 118x17
             text run at (2,0) width 118: "My Legend center"
-        LayoutBlockFlow (anonymous) at (17,17) size 705x38
-          LayoutTextControl {INPUT} at (0,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutBlockFlow (anonymous) at (17,33) size 705x22
+          LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
       LayoutFieldset {FIELDSET} at (15,788.75) size 739x72 [border: (2px groove #C0C0C0)]
         LayoutBlockFlow {LEGEND} at (609.58,0) size 112.42x18
           LayoutText {#text} at (2,0) size 109x17
             text run at (2,0) width 109: "My Legend right"
-        LayoutBlockFlow (anonymous) at (17,17) size 705x38
-          LayoutTextControl {INPUT} at (0,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutBlockFlow (anonymous) at (17,33) size 705x22
+          LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
       LayoutFieldset {FIELDSET} at (15,875.75) size 739x72 [border: (2px groove #C0C0C0)]
         LayoutBlockFlow {LEGEND} at (17,0) size 126.63x18
           LayoutText {#text} at (2,0) size 123x17
             text run at (2,0) width 123: "My Legend default"
-        LayoutBlockFlow (anonymous) at (17,17) size 705x38
-          LayoutTextControl {INPUT} at (0,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutBlockFlow (anonymous) at (17,33) size 705x22
+          LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {HR} at (0,962.75) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,980.75) size 769x18
@@ -117,29 +117,29 @@ layer at (0,0) size 785x1371 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBlockFlow {LEGEND} at (17,0) size 103.53x18
             LayoutText {#text} at (2,0) size 100x17
               text run at (2,0) width 100: "My Legend left"
-          LayoutBlockFlow (anonymous) at (17,17) size 705x38
-            LayoutTextControl {INPUT} at (532,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutBlockFlow (anonymous) at (17,33) size 705x22
+            LayoutTextControl {INPUT} at (532,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutText {#text} at (0,0) size 0x0
         LayoutFieldset {FIELDSET} at (15,87) size 739x72 [border: (2px groove #C0C0C0)]
           LayoutBlockFlow {LEGEND} at (308.86,0) size 121.28x18
             LayoutText {#text} at (2,0) size 118x17
               text run at (2,0) width 118: "My Legend center"
-          LayoutBlockFlow (anonymous) at (17,17) size 705x38
-            LayoutTextControl {INPUT} at (532,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutBlockFlow (anonymous) at (17,33) size 705x22
+            LayoutTextControl {INPUT} at (532,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutText {#text} at (0,0) size 0x0
         LayoutFieldset {FIELDSET} at (15,174) size 739x72 [border: (2px groove #C0C0C0)]
           LayoutBlockFlow {LEGEND} at (609.58,0) size 112.42x18
             LayoutText {#text} at (2,0) size 109x17
               text run at (2,0) width 109: "My Legend right"
-          LayoutBlockFlow (anonymous) at (17,17) size 705x38
-            LayoutTextControl {INPUT} at (532,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutBlockFlow (anonymous) at (17,33) size 705x22
+            LayoutTextControl {INPUT} at (532,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutText {#text} at (0,0) size 0x0
         LayoutFieldset {FIELDSET} at (15,261) size 739x72 [border: (2px groove #C0C0C0)]
           LayoutBlockFlow {LEGEND} at (595.38,0) size 126.63x18
             LayoutText {#text} at (2,0) size 123x17
               text run at (2,0) width 123: "My Legend default"
-          LayoutBlockFlow (anonymous) at (17,17) size 705x38
-            LayoutTextControl {INPUT} at (532,16) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutBlockFlow (anonymous) at (17,33) size 705x22
+            LayoutTextControl {INPUT} at (532,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,1362.75) size 769x0
         LayoutInline {SPAN} at (0,0) size 0x0
