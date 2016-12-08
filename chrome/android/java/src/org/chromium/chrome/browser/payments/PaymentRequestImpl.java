@@ -42,6 +42,7 @@ import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
 import org.chromium.payments.mojom.PaymentComplete;
 import org.chromium.payments.mojom.PaymentDetails;
+import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentErrorReason;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -222,10 +223,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private List<PaymentItem> mRawLineItems;
 
     /**
-     * A mapping from method names to modified totals. Used to display modified totals for each
-     * payment instrument.
+     * A mapping from method names to modifiers, which include modified totals and additional line
+     * items. Used to display modified totals for each payment instrument, modified total in order
+     * summary, and additional line items in order summary.
      */
-    private Map<String, PaymentItem> mModifiedTotals;
+    private Map<String, PaymentDetailsModifier> mModifiers;
 
     /**
      * The UI model of the shopping cart, including the total. Each item includes a label and a
@@ -390,9 +392,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 addresses.get(firstCompleteAddressIndex).setShippingAddressLabelWithoutCountry();
             }
 
-            mShippingAddressesSection =
-                    new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_ADDRESSES,
-                            firstCompleteAddressIndex, addresses);
+            mShippingAddressesSection = new SectionInformation(
+                    PaymentRequestUI.TYPE_SHIPPING_ADDRESSES,
+                    firstCompleteAddressIndex, addresses);
         }
 
         if (requestPayerName || requestPayerPhone || requestPayerEmail) {
@@ -420,8 +422,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     if (!uniqueContactInfos.contains(uniqueContactInfo)) {
                         uniqueContactInfos.add(uniqueContactInfo);
 
-                        boolean isComplete =
-                                mContactEditor.isContactInformationComplete(name, phone, email);
+                        boolean isComplete = mContactEditor.isContactInformationComplete(name,
+                                phone, email);
                         contacts.add(new AutofillContact(profile, name, phone, email, isComplete));
                     }
                 }
@@ -484,7 +486,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         setIsShowing(true);
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
-        // Catch any time the user switches tabs.  Because the dialog is modal, a user shouldn't be
+        // Catch any time the user switches tabs. Because the dialog is modal, a user shouldn't be
         // allowed to switch tabs, which can happen if the user receives an external Intent.
         mContext.getTabModelSelector().addObserver(mSelectorObserver);
         mContext.getCurrentTabModel().addObserver(mTabModelObserver);
@@ -524,8 +526,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         Map<PaymentApp, Map<String, PaymentMethodData>> queryApps = new ArrayMap<>();
         for (int i = 0; i < mApps.size(); i++) {
             PaymentApp app = mApps.get(i);
-            Map<String, PaymentMethodData> appMethods =
-                    filterMerchantMethodData(mMethodData, app.getAppMethodNames());
+            Map<String, PaymentMethodData> appMethods = filterMerchantMethodData(mMethodData,
+                    app.getAppMethodNames());
             if (appMethods == null || !app.supportsMethodsAndData(appMethods)) {
                 mPendingApps.remove(app);
             } else {
@@ -605,9 +607,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return false;
         }
 
-        String totalCurrency = details.total.amount.currency;
         if (mFormatter == null) {
-            mFormatter = new CurrencyStringFormatter(totalCurrency, Locale.getDefault());
+            mFormatter = new CurrencyStringFormatter(details.total.amount.currency,
+                    Locale.getDefault());
         }
 
         // Total is never pending.
@@ -615,22 +617,20 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 details.total.label, mFormatter.getFormattedCurrencyCode(),
                 mFormatter.format(details.total.amount.value), /* isPending */ false);
 
-        List<LineItem> uiLineItems = getLineItems(details.displayItems, totalCurrency, mFormatter);
+        List<LineItem> uiLineItems = getLineItems(details.displayItems, mFormatter);
 
         mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
         mRawTotal = details.total;
         mRawLineItems = Collections.unmodifiableList(Arrays.asList(details.displayItems));
 
-        mUiShippingOptions = getShippingOptions(details.shippingOptions, totalCurrency, mFormatter);
+        mUiShippingOptions = getShippingOptions(details.shippingOptions, mFormatter);
 
         for (int i = 0; i < details.modifiers.length; i++) {
-            PaymentItem total = details.modifiers[i].total;
-            String[] methods = details.modifiers[i].methodData.supportedMethods;
-            if (total != null) {
-                for (int j = 0; j < methods.length; j++) {
-                    if (mModifiedTotals == null) mModifiedTotals = new ArrayMap<>();
-                    mModifiedTotals.put(methods[j], total);
-                }
+            PaymentDetailsModifier modifier = details.modifiers[i];
+            String[] methods = modifier.methodData.supportedMethods;
+            for (int j = 0; j < methods.length; j++) {
+                if (mModifiers == null) mModifiers = new ArrayMap<>();
+                mModifiers.put(methods[j], modifier);
             }
         }
 
@@ -639,63 +639,54 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         return true;
     }
 
-    /** Updates the modified totals for payment instruments. */
+    /** Updates the modifiers for payment instruments and order summary. */
     private void updateInstrumentModifiedTotals() {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
-        if (mModifiedTotals == null) return;
+        if (mModifiers == null) return;
         if (mPaymentMethodsSection == null) return;
 
         for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {
             PaymentInstrument instrument = (PaymentInstrument) mPaymentMethodsSection.getItem(i);
-            PaymentItem modifiedTotal = getModifiedTotal(instrument);
-            instrument.setModifiedTotal(
-                    modifiedTotal == null ? null : mFormatter.format(modifiedTotal.amount.value));
+            PaymentDetailsModifier modifier = getModifier(instrument);
+            instrument.setModifiedTotal(modifier == null || modifier.total == null ? null
+                    : mFormatter.format(modifier.total.amount.value));
         }
 
-        updateOrderSummaryTotal((PaymentInstrument) mPaymentMethodsSection.getSelectedItem());
+        updateOrderSummary((PaymentInstrument) mPaymentMethodsSection.getSelectedItem());
     }
 
-    private void updateOrderSummaryTotal(@Nullable PaymentInstrument instrument) {
+    /** Sets the modifier for the order summary based on the given instrument, if any. */
+    private void updateOrderSummary(@Nullable PaymentInstrument instrument) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
 
-        PaymentItem total = getModifiedTotal(instrument);
+        PaymentDetailsModifier modifier = getModifier(instrument);
+        PaymentItem total = modifier == null ? null : modifier.total;
         if (total == null) total = mRawTotal;
 
         mUiShoppingCart.setTotal(new LineItem(total.label, mFormatter.getFormattedCurrencyCode(),
                 mFormatter.format(total.amount.value), false /* isPending */));
+        mUiShoppingCart.setAdditionalContents(modifier == null ? null
+                : getLineItems(modifier.additionalDisplayItems, mFormatter));
         mUI.updateOrderSummarySection(mUiShoppingCart);
     }
 
-    @Nullable private PaymentItem getModifiedTotal(@Nullable PaymentInstrument instrument) {
+    /** @return The first modifier that matches the given instrument, or null. */
+    @Nullable private PaymentDetailsModifier getModifier(@Nullable PaymentInstrument instrument) {
         if (instrument == null) return null;
         Set<String> methodNames = instrument.getInstrumentMethodNames();
-        methodNames.retainAll(mModifiedTotals.keySet());
-        return methodNames.isEmpty() ? null : mModifiedTotals.get(methodNames.iterator().next());
-    }
-
-    /**
-     * Returns true if all fields in the payment item are non-null and non-empty.
-     *
-     * @param item The payment item to examine.
-     * @return True if all fields are present and non-empty.
-     */
-    private static boolean hasAllPaymentItemFields(PaymentItem item) {
-        // "label", "currency", and "value" should be non-empty.
-        return item != null && !TextUtils.isEmpty(item.label) && item.amount != null
-                && !TextUtils.isEmpty(item.amount.currency)
-                && !TextUtils.isEmpty(item.amount.value);
+        methodNames.retainAll(mModifiers.keySet());
+        return methodNames.isEmpty() ? null : mModifiers.get(methodNames.iterator().next());
     }
 
     /**
      * Converts a list of payment items and returns their parsed representation.
      *
-     * @param items The payment items to parse and validate.
-     * @param totalCurrency The currency code for the total amount of payment.
-     * @param formatter A formatter and validator for the currency amount value.
+     * @param items     The payment items to parse. Can be null.
+     * @param formatter A formatter for the currency amount value.
      * @return A list of valid line items.
      */
     private static List<LineItem> getLineItems(
-            PaymentItem[] items, String totalCurrency, CurrencyStringFormatter formatter) {
+            @Nullable PaymentItem[] items, CurrencyStringFormatter formatter) {
         // Line items are optional.
         if (items == null) return new ArrayList<>();
 
@@ -713,13 +704,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     /**
      * Converts a list of shipping options and returns their parsed representation.
      *
-     * @param options The raw shipping options to parse and validate.
-     * @param totalCurrency The currency code for the total amount of payment.
-     * @param formatter A formatter and validator for the currency amount value.
+     * @param options   The raw shipping options to parse. Can be null.
+     * @param formatter A formatter for the currency amount value.
      * @return The UI representation of the shipping options.
      */
-    private static SectionInformation getShippingOptions(PaymentShippingOption[] options,
-            String totalCurrency, CurrencyStringFormatter formatter) {
+    private static SectionInformation getShippingOptions(
+            @Nullable PaymentShippingOption[] options, CurrencyStringFormatter formatter) {
         // Shipping options are optional.
         if (options == null || options.length == 0) {
             return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS);
@@ -844,7 +834,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 }
             }
 
-            updateOrderSummaryTotal((PaymentInstrument) option);
+            updateOrderSummary((PaymentInstrument) option);
             mPaymentMethodsSection.setSelectedItem(option);
         }
 
@@ -990,8 +980,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         PaymentInstrument instrument = (PaymentInstrument) selectedPaymentMethod;
         mPaymentAppRunning = true;
 
-        PaymentOption selectedContact =
-                mContactSection != null ? mContactSection.getSelectedItem() : null;
+        PaymentOption selectedContact = mContactSection != null ? mContactSection.getSelectedItem()
+                : null;
         mPaymentResponseHelper = new PaymentResponseHelper(
                 selectedShippingAddress, selectedShippingOption, selectedContact, this);
 
@@ -1095,9 +1085,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     private void respondCanMakePaymentQuery(boolean response) {
-        mClient.onCanMakePayment(response
-                        ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
-                        : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
+        mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
+                : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
         }
@@ -1138,8 +1127,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (instruments != null) {
             for (int i = 0; i < instruments.size(); i++) {
                 PaymentInstrument instrument = instruments.get(i);
-                Set<String> instrumentMethodNames =
-                        new HashSet<>(instrument.getInstrumentMethodNames());
+                Set<String> instrumentMethodNames = new HashSet<>(
+                        instrument.getInstrumentMethodNames());
                 instrumentMethodNames.retainAll(mMethodData.keySet());
                 if (!instrumentMethodNames.isEmpty()) {
                     addPendingInstrument(instrument);
@@ -1160,8 +1149,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         for (int i = 0; i < mPendingAutofillInstruments.size(); ++i) {
             assert mPendingAutofillInstruments.get(i) instanceof AutofillPaymentInstrument;
 
-            String countryCode = AutofillAddress.getCountryCode((
-                    (AutofillPaymentInstrument) mPendingAutofillInstruments.get(
+            String countryCode = AutofillAddress
+                    .getCountryCode(((AutofillPaymentInstrument) mPendingAutofillInstruments.get(
                             i)).getBillingAddress());
             if (!uniqueCountryCodes.contains(countryCode)) {
                 uniqueCountryCodes.add(countryCode);
@@ -1214,22 +1203,22 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     private boolean disconnectIfNoPaymentMethodsSupported() {
         boolean waitingForPaymentApps = !mPendingApps.isEmpty() || !mPendingInstruments.isEmpty();
-        boolean foundPaymentMethods =
-                mPaymentMethodsSection != null && !mPaymentMethodsSection.isEmpty();
+        boolean foundPaymentMethods = mPaymentMethodsSection != null
+                && !mPaymentMethodsSection.isEmpty();
         boolean userCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.NO_CREDIT_CARD_ABORT);
 
         if (!mArePaymentMethodsSupported
                 || (getIsShowing() && !waitingForPaymentApps && !foundPaymentMethods
-                           && !userCanAddCreditCard)) {
+                        && !userCanAddCreditCard)) {
             // All payment apps have responded, but none of them have instruments. It's possible to
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.
             disconnectFromClientWithDebugMessage("Requested payment methods have no instruments",
                     PaymentErrorReason.NOT_SUPPORTED);
             recordAbortReasonHistogram(mArePaymentMethodsSupported
-                            ? PaymentRequestMetrics.ABORT_REASON_NO_MATCHING_PAYMENT_METHOD
-                            : PaymentRequestMetrics.ABORT_REASON_NO_SUPPORTED_PAYMENT_METHOD);
+                    ? PaymentRequestMetrics.ABORT_REASON_NO_MATCHING_PAYMENT_METHOD
+                    : PaymentRequestMetrics.ABORT_REASON_NO_SUPPORTED_PAYMENT_METHOD);
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return true;
         }
@@ -1306,8 +1295,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mShippingAddressesSection.getSelectedItem() == null) return;
 
         assert mShippingAddressesSection.getSelectedItem() instanceof AutofillAddress;
-        AutofillAddress selectedAddress =
-                (AutofillAddress) mShippingAddressesSection.getSelectedItem();
+        AutofillAddress selectedAddress = (AutofillAddress) mShippingAddressesSection
+                .getSelectedItem();
 
         // The label should only include the country if the view is focused.
         if (willFocus) {

@@ -4,14 +4,19 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 /**
  * The shopping cart contents and total.
  */
 public class ShoppingCart {
     private LineItem mTotal;
-    private List<LineItem> mContents;
+    @Nullable private List<LineItem> mContents;
+    @Nullable private List<LineItem> mAdditionalContents;
 
     /**
      * Builds the shopping cart UI data model.
@@ -19,7 +24,7 @@ public class ShoppingCart {
      * @param totalPrice The total price.
      * @param contents The shopping cart contents. The breakdown of the total price. OK to be null.
      */
-    public ShoppingCart(LineItem totalPrice, List<LineItem> contents) {
+    public ShoppingCart(LineItem totalPrice, @Nullable List<LineItem> contents) {
         mTotal = totalPrice;
         mContents = contents;
     }
@@ -43,12 +48,19 @@ public class ShoppingCart {
     }
 
     /**
-     * Returns the shopping cart items.
+     * Returns the shopping cart items, including both the original items and the additional items
+     * that vary depending on the selected payment instrument, e.g., debut card discounts.
      *
-     * @return The shopping cart items. Can be null.
+     * @return The shopping cart items. Can be null. Should not be modified.
      */
-    public List<LineItem> getContents() {
-        return mContents;
+    @Nullable public List<LineItem> getContents() {
+        if (mContents == null && mAdditionalContents == null) return null;
+
+        List<LineItem> result = new ArrayList<>();
+        if (mContents != null) result.addAll(mContents);
+        if (mAdditionalContents != null) result.addAll(mAdditionalContents);
+
+        return Collections.unmodifiableList(result);
     }
 
     /**
@@ -56,7 +68,17 @@ public class ShoppingCart {
      *
      * @param contents The shopping cart items. Can be null.
      */
-    public void setContents(List<LineItem> contents) {
+    public void setContents(@Nullable List<LineItem> contents) {
         mContents = contents;
+    }
+
+    /**
+     * Update the additional shopping cart items that vary depending on the selected payment
+     * instrument, e.g., debit card discounts.
+     *
+     * @param additionalContents The additional shopping cart items. Can be null.
+     */
+    public void setAdditionalContents(@Nullable List<LineItem> additionalContents) {
+        mAdditionalContents = additionalContents;
     }
 }
