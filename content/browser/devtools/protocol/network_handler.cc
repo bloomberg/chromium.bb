@@ -85,6 +85,26 @@ void GetCookiesForURLOnUI(
                  callback));
 }
 
+void GetCookiesOnIO(ResourceContext* resource_context,
+                    net::URLRequestContextGetter* context_getter,
+                    const CookieListCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  net::URLRequestContext* request_context =
+      context_getter->GetURLRequestContext();
+  request_context->cookie_store()->GetAllCookiesAsync(
+      base::Bind(&GotCookiesForURLOnIO, callback));
+}
+
+void GetCookiesOnUI(ResourceContext* resource_context,
+                    net::URLRequestContextGetter* context_getter,
+                    const CookieListCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&GetCookiesOnIO, base::Unretained(resource_context),
+                 base::Unretained(context_getter), callback));
+}
+
 void DeletedCookieOnIO(const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
@@ -192,13 +212,24 @@ void SetCookieOnUI(
 
 class GetCookiesCommand {
  public:
-  explicit GetCookiesCommand(
-      RenderFrameHostImpl* frame_host,
-      const CookieListCallback& callback)
-      : callback_(callback),
-        request_count_(0) {
+  GetCookiesCommand(RenderFrameHostImpl* frame_host,
+                    bool global,
+                    const CookieListCallback& callback)
+      : callback_(callback), request_count_(0) {
     CookieListCallback got_cookies_callback = base::Bind(
         &GetCookiesCommand::GotCookiesForURL, base::Unretained(this));
+
+    if (global) {
+      request_count_ = 1;
+      GetCookiesOnUI(frame_host->GetSiteInstance()
+                         ->GetBrowserContext()
+                         ->GetResourceContext(),
+                     frame_host->GetProcess()
+                         ->GetStoragePartition()
+                         ->GetURLRequestContext(),
+                     got_cookies_callback);
+      return;
+    }
 
     std::queue<FrameTreeNode*> queue;
     queue.push(frame_host->frame_tree_node());
@@ -293,14 +324,13 @@ Response NetworkHandler::ClearBrowserCookies() {
   return Response::OK();
 }
 
-Response NetworkHandler::GetCookies(DevToolsCommandId command_id) {
+Response NetworkHandler::GetCookies(DevToolsCommandId command_id,
+                                    const bool* global) {
   if (!host_)
     return Response::InternalError("Could not connect to view");
-  new GetCookiesCommand(
-      host_,
-      base::Bind(&NetworkHandler::SendGetCookiesResponse,
-                 weak_factory_.GetWeakPtr(),
-                 command_id));
+  new GetCookiesCommand(host_, global ? *global : false,
+                        base::Bind(&NetworkHandler::SendGetCookiesResponse,
+                                   weak_factory_.GetWeakPtr(), command_id));
   return Response::OK();
 }
 

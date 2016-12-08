@@ -32,7 +32,7 @@ class NetworkHandler {
 
   Response ClearBrowserCache();
   Response ClearBrowserCookies();
-  Response GetCookies(DevToolsCommandId command_id);
+  Response GetCookies(DevToolsCommandId command_id, const bool* global);
   Response DeleteCookie(DevToolsCommandId command_id,
                         const std::string& cookie_name,
                         const std::string& url);
