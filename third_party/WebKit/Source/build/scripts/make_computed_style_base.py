@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from collections import namedtuple
 import math
 import sys
 
@@ -12,6 +11,56 @@ import template_expander
 import make_style_builder
 
 from name_utilities import camel_case
+
+
+class Field(object):
+    """
+    The generated ComputedStyle object is made up of a series of Fields.
+    Each Field has a name, size, type, etc, and a bunch of attributes to
+    determine which methods it will be used in.
+
+    A Field also has enough information to use any storage type in C++, such as
+    regular member variables, or more complex storage like vectors or hashmaps.
+    Almost all properties will have at least one Field, often more than one.
+
+    Fields also fall into various families, which determine the logic that is
+    used to generate them. The available field families are:
+      - 'enum', for fields that store the values of an enum
+      - 'inherited_flag', for single-bit flags that store whether a property is
+                          inherited by this style or set explicitly
+    """
+    def __init__(self, field_family, **kwargs):
+        # Values common to all fields
+        # Name of field
+        self.name = kwargs.pop('name')
+        # Property field is for
+        self.property = kwargs.pop('property')
+        # Field storage type
+        self.type = kwargs.pop('type')
+        # Bits needed for storage
+        self.size = kwargs.pop('size')
+        # Default value for field
+        self.default_value = kwargs.pop('default_value')
+        # Method names
+        self.getter_method_name = kwargs.pop('getter_method_name')
+        self.setter_method_name = kwargs.pop('setter_method_name')
+        self.initial_method_name = kwargs.pop('initial_method_name')
+        self.resetter_method_name = kwargs.pop('resetter_method_name')
+
+        # Field family: one of these must be true
+        self.is_enum = field_family == 'enum'
+        self.is_inherited_flag = field_family == 'inherited_flag'
+        assert not (self.is_enum and self.is_inherited_flag), 'Only one field family can be specified at a time'
+
+        if self.is_enum:
+            # Enum-only fields
+            self.is_inherited_method_name = kwargs.pop('is_inherited_method_name')
+        elif self.is_inherited_flag:
+            # Inherited flag-only fields
+            pass
+
+        assert len(kwargs) == 0, 'Unexpected arguments provided to Field: ' + str(kwargs)
+
 
 class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
     def __init__(self, in_file_path):
@@ -31,32 +80,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 enum_values = [camel_case(k) for k in property['keywords']]
                 self._computed_enums[enum_name] = enum_values
 
-        # A list of fields for the generated class.
-        # TODO(sashab): Rename this to Member, and add better documentation for what this list is for,
-        # including asserts to show inter-field dependencies.
-        Field = namedtuple('Field', [
-            # Name of field member variable
-            'name',
-            # Property field is for
-            'property',
-            # Field family: one of these must be true
-            'is_enum',
-            'is_inherited_flag',
-            # Field storage type
-            'type',
-            # Bits needed for storage
-            'size',
-            # Default value for field
-            'default_value',
-            # Method names
-            'getter_method_name',
-            'setter_method_name',
-            'initial_method_name',
-            'resetter_method_name',
-            'is_inherited_method_name',
-        ])
-
-        # A list of all the fields to be generated. Add new fields here.
+        # A list of all the fields to be generated.
         self._fields = []
         for property in self._properties.values():
             if property['keyword_only']:
@@ -76,15 +100,14 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 default_value = type_name + '::' + camel_case(property['initial_keyword'])
 
                 # If the property is independent, add the single-bit sized isInherited flag
-                # to the list of member variable as well.
+                # to the list of Fields as well.
                 if property['independent']:
                     field_name_suffix_upper = property['upper_camel_name'] + 'IsInherited'
                     field_name_suffix_lower = property_name_lower + 'IsInherited'
                     self._fields.append(Field(
+                        'inherited_flag',
                         name='m_' + field_name_suffix_lower,
                         property=property,
-                        is_enum=False,
-                        is_inherited_flag=True,
                         type='bool',
                         size=1,
                         default_value='true',
@@ -92,15 +115,13 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                         setter_method_name='set' + field_name_suffix_upper,
                         initial_method_name='initial' + field_name_suffix_upper,
                         resetter_method_name='reset' + field_name_suffix_upper,
-                        is_inherited_method_name='',
                     ))
 
                 # Add the property itself as a member variable.
                 self._fields.append(Field(
+                    'enum',
                     name=field_name,
                     property=property,
-                    is_enum=True,
-                    is_inherited_flag=False,
                     type=type_name,
                     size=int(math.ceil(bits_needed)),
                     default_value=default_value,
