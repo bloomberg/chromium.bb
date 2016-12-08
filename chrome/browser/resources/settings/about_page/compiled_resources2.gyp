@@ -35,5 +35,13 @@
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'channel_switcher_dialog',
+      'dependencies': [
+        'about_page_browser_proxy',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }

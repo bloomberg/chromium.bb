@@ -18,6 +18,15 @@ var RegulatoryInfo;
 
 /**
  * @typedef {{
+ *   currentChannel: string,
+ *   targetChannel: string,
+ *   canChangeChannel: boolean,
+ * }}
+ */
+var ChannelInfo;
+
+/**
+ * @typedef {{
  *   arcVersion: string,
  *   osFirmware: string,
  *   osVersion: string,
@@ -130,11 +139,8 @@ cr.define('settings', function() {
      */
     setChannel: function(channel, isPowerwashAllowed) {},
 
-    /** @return {!Promise<!BrowserChannel>} */
-    getCurrentChannel: function() {},
-
-    /** @return {!Promise<!BrowserChannel>} */
-    getTargetChannel: function() {},
+    /** @return {!Promise<!ChannelInfo>} */
+    getChannelInfo: function() {},
 
     /** @return {!Promise<!VersionInfo>} */
     getVersionInfo: function() {},
@@ -186,13 +192,8 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    getCurrentChannel: function() {
-      return cr.sendWithPromise('getCurrentChannel');
-    },
-
-    /** @override */
-    getTargetChannel: function() {
-      return cr.sendWithPromise('getTargetChannel');
+    getChannelInfo: function() {
+      return cr.sendWithPromise('getChannelInfo');
     },
 
     /** @override */

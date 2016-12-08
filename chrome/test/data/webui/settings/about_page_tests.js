@@ -18,8 +18,7 @@ cr.define('settings_about_page', function() {
 
     if (cr.isChromeOS) {
       methodNames.push(
-        'getCurrentChannel',
-        'getTargetChannel',
+        'getChannelInfo',
         'getVersionInfo',
         'getRegulatoryInfo',
         'setChannel');
@@ -31,18 +30,19 @@ cr.define('settings_about_page', function() {
     this.updateStatus_ = UpdateStatus.UPDATED;
 
     if (cr.isChromeOS) {
-      /** @type {!VersionInfo} */
+      /** @private {!VersionInfo} */
       this.versionInfo_ = {
         arcVersion: '',
         osFirmware: '',
         osVersion: '',
       };
 
-      /** @private {!BrowserChannel} */
-      this.currentChannel_ = BrowserChannel.BETA;
-
-      /** @private {!BrowserChannel} */
-      this.targetChannel_ = BrowserChannel.BETA;
+      /** @private {!ChannelInfo} */
+      this.channelInfo_ = {
+        currentChannel: BrowserChannel.BETA,
+        targetChannel: BrowserChannel.BETA,
+        canChangeChannel: true,
+      };
 
       /** @private {?RegulatoryInfo} */
       this.regulatoryInfo_ = null;
@@ -88,16 +88,21 @@ cr.define('settings_about_page', function() {
       this.versionInfo_ = versionInfo;
     };
 
+    /** @param {boolean} canChangeChannel */
+    TestAboutPageBrowserProxy.prototype.setCanChangeChannel = function(
+        canChangeChannel) {
+      this.channelInfo_.canChangeChannel = canChangeChannel;
+    };
+
     /**
      * @param {!BrowserChannel} current
      * @param {!BrowserChannel} target
      */
     TestAboutPageBrowserProxy.prototype.setChannels = function(
         current, target) {
-      this.currentChannel_ = current;
-      this.targetChannel_ = target;
+      this.channelInfo_.currentChannel = current;
+      this.channelInfo_.targetChannel = target;
     };
-
 
     /** @param {?RegulatoryInfo} regulatoryInfo */
     TestAboutPageBrowserProxy.prototype.setRegulatoryInfo = function(
@@ -106,15 +111,9 @@ cr.define('settings_about_page', function() {
     };
 
     /** @override */
-    TestAboutPageBrowserProxy.prototype.getCurrentChannel = function() {
-      this.methodCalled('getCurrentChannel');
-      return Promise.resolve(this.currentChannel_);
-    };
-
-    /** @override */
-    TestAboutPageBrowserProxy.prototype.getTargetChannel = function() {
-      this.methodCalled('getTargetChannel');
-      return Promise.resolve(this.targetChannel_);
+    TestAboutPageBrowserProxy.prototype.getChannelInfo = function() {
+      this.methodCalled('getChannelInfo');
+      return Promise.resolve(this.channelInfo_);
     };
 
     /** @override */
@@ -186,7 +185,14 @@ cr.define('settings_about_page', function() {
         page = document.createElement('settings-about-page');
         settings.navigateTo(settings.Route.ABOUT);
         document.body.appendChild(page);
-        return aboutBrowserProxy.whenCalled('refreshUpdateStatus');
+        if (!cr.isChromeOS) {
+          return aboutBrowserProxy.whenCalled('refreshUpdateStatus');
+        } else {
+          return Promise.all([
+            aboutBrowserProxy.whenCalled('getChannelInfo'),
+            aboutBrowserProxy.whenCalled('refreshUpdateStatus'),
+          ]);
+        }
       }
 
       /**
@@ -585,7 +591,7 @@ cr.define('settings_about_page', function() {
           return Promise.all([
             browserProxy.whenCalled('pageReady'),
             browserProxy.whenCalled('getVersionInfo'),
-            browserProxy.whenCalled('getCurrentChannel'),
+            browserProxy.whenCalled('getChannelInfo'),
           ]).then(function() {
             assertEquals(versionInfo.arcVersion, page.$.arcVersion.textContent);
             assertEquals(versionInfo.osVersion, page.$.osVersion.textContent);
@@ -599,25 +605,25 @@ cr.define('settings_about_page', function() {
          * dictated by the browser via loadTimeData boolean).
          * @param {boolean} canChangeChannel Whether to simulate the case where
          *     changing channels is allowed.
+         * @return {!Promise}
          */
         function checkChangeChannelButton(canChangeChannel) {
-          loadTimeData.overrideValues({
-            aboutCanChangeChannel: canChangeChannel
-          });
+          browserProxy.setCanChangeChannel(canChangeChannel);
           page = document.createElement('settings-detailed-build-info');
           document.body.appendChild(page);
-
-          var changeChannelButton = page.$$('paper-button');
-          assertTrue(!!changeChannelButton);
-          assertEquals(canChangeChannel, !changeChannelButton.disabled)
+          return browserProxy.whenCalled('getChannelInfo').then(function() {
+            var changeChannelButton = page.$$('paper-button');
+            assertTrue(!!changeChannelButton);
+            assertEquals(canChangeChannel, !changeChannelButton.disabled);
+          });
         }
 
         test('ChangeChannel_Enabled', function() {
-          checkChangeChannelButton(true);
+          return checkChangeChannelButton(true);
         });
 
         test('ChangeChannel_Disabled', function() {
-          checkChangeChannelButton(false);
+          return checkChangeChannelButton(false);
         });
       });
     }
@@ -640,7 +646,7 @@ cr.define('settings_about_page', function() {
           radioButtons = dialog.shadowRoot.querySelectorAll(
               'paper-radio-button');
           assertEquals(3, radioButtons.length);
-          return browserProxy.whenCalled('getCurrentChannel');
+          return browserProxy.whenCalled('getChannelInfo');
         });
 
         teardown(function() { dialog.remove(); });
@@ -669,21 +675,23 @@ cr.define('settings_about_page', function() {
           MockInteractions.tap(radioButtons.item(2));
           Polymer.dom.flush();
 
-          assertFalse(dialog.$.warning.hidden);
-          // Check that only the "Change channel" button becomes visible.
-          assertTrue(dialog.$.changeChannelAndPowerwash.hidden);
-          assertFalse(dialog.$.changeChannel.hidden);
+          return browserProxy.whenCalled('getChannelInfo').then(function() {
+            assertFalse(dialog.$.warning.hidden);
+            // Check that only the "Change channel" button becomes visible.
+            assertTrue(dialog.$.changeChannelAndPowerwash.hidden);
+            assertFalse(dialog.$.changeChannel.hidden);
 
-          var whenTargetChannelChangedFired = test_util.eventToPromise(
-              'target-channel-changed', dialog);
+            var whenTargetChannelChangedFired = test_util.eventToPromise(
+                'target-channel-changed', dialog);
 
-          MockInteractions.tap(dialog.$.changeChannel);
-          return browserProxy.whenCalled('setChannel').then(function(args) {
-            assertEquals(BrowserChannel.DEV, args[0]);
-            assertFalse(args[1]);
-            return whenTargetChannelChangedFired;
-          }).then(function(event) {
-            assertEquals(BrowserChannel.DEV, event.detail);
+            MockInteractions.tap(dialog.$.changeChannel);
+            return browserProxy.whenCalled('setChannel').then(function(args) {
+              assertEquals(BrowserChannel.DEV, args[0]);
+              assertFalse(args[1]);
+              return whenTargetChannelChangedFired;
+            }).then(function(event) {
+              assertEquals(BrowserChannel.DEV, event.detail);
+            });
           });
         });
 
@@ -693,22 +701,24 @@ cr.define('settings_about_page', function() {
           MockInteractions.tap(radioButtons.item(0));
           Polymer.dom.flush();
 
-          assertFalse(dialog.$.warning.hidden);
-          // Check that only the "Change channel and Powerwash" button becomes
-          // visible.
-          assertFalse(dialog.$.changeChannelAndPowerwash.hidden);
-          assertTrue(dialog.$.changeChannel.hidden);
+          return browserProxy.whenCalled('getChannelInfo').then(function() {
+            assertFalse(dialog.$.warning.hidden);
+            // Check that only the "Change channel and Powerwash" button becomes
+            // visible.
+            assertFalse(dialog.$.changeChannelAndPowerwash.hidden);
+            assertTrue(dialog.$.changeChannel.hidden);
 
-          var whenTargetChannelChangedFired = test_util.eventToPromise(
-              'target-channel-changed', dialog);
+            var whenTargetChannelChangedFired = test_util.eventToPromise(
+                'target-channel-changed', dialog);
 
-          MockInteractions.tap(dialog.$.changeChannelAndPowerwash);
-          return browserProxy.whenCalled('setChannel').then(function(args) {
-            assertEquals(BrowserChannel.STABLE, args[0]);
-            assertTrue(args[1]);
-            return whenTargetChannelChangedFired;
-          }).then(function(event) {
-            assertEquals(BrowserChannel.STABLE, event.detail);
+            MockInteractions.tap(dialog.$.changeChannelAndPowerwash);
+            return browserProxy.whenCalled('setChannel').then(function(args) {
+              assertEquals(BrowserChannel.STABLE, args[0]);
+              assertTrue(args[1]);
+              return whenTargetChannelChangedFired;
+            }).then(function(event) {
+              assertEquals(BrowserChannel.STABLE, event.detail);
+            });
           });
         });
       });

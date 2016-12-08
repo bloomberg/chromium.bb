@@ -308,8 +308,6 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
       IDS_ABOUT_CROS_VERSION_LICENSE,
       base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));
   html_source->AddString("aboutProductOsLicense", os_license);
-
-  html_source->AddBoolean("aboutCanChangeChannel", CanChangeChannel(profile));
   html_source->AddBoolean("aboutEnterpriseManaged", IsEnterpriseManaged());
 
   base::Time build_time = base::SysInfo::GetLsbReleaseTime();
@@ -357,11 +355,8 @@ void AboutHandler::RegisterMessages() {
       "getRegulatoryInfo", base::Bind(&AboutHandler::HandleGetRegulatoryInfo,
                                       base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getCurrentChannel", base::Bind(&AboutHandler::HandleGetCurrentChannel,
-                                      base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getTargetChannel", base::Bind(&AboutHandler::HandleGetTargetChannel,
-                                     base::Unretained(this)));
+      "getChannelInfo", base::Bind(&AboutHandler::HandleGetChannelInfo,
+                                   base::Unretained(this)));
 #endif
 #if defined(OS_MACOSX)
   web_ui()->RegisterMessageCallback(
@@ -520,31 +515,35 @@ void AboutHandler::HandleGetRegulatoryInfo(const base::ListValue* args) {
                  weak_factory_.GetWeakPtr(), callback_id));
 }
 
-void AboutHandler::HandleGetCurrentChannel(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-  // First argument to GetChannel() is a flag that indicates whether
-  // current channel should be returned (if true) or target channel
-  // (otherwise).
-  version_updater_->GetChannel(
-      true, base::Bind(&AboutHandler::OnGetChannelReady,
-                       weak_factory_.GetWeakPtr(), callback_id));
-}
-
-void AboutHandler::HandleGetTargetChannel(const base::ListValue* args) {
+void AboutHandler::HandleGetChannelInfo(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
   version_updater_->GetChannel(
-      false, base::Bind(&AboutHandler::OnGetChannelReady,
-                        weak_factory_.GetWeakPtr(), callback_id));
+      true /* get current channel */,
+      base::Bind(&AboutHandler::OnGetCurrentChannel, weak_factory_.GetWeakPtr(),
+                 callback_id));
 }
 
-void AboutHandler::OnGetChannelReady(std::string callback_id,
-                                     const std::string& channel) {
-  ResolveJavascriptCallback(base::StringValue(callback_id),
-                            base::StringValue(channel));
+void AboutHandler::OnGetCurrentChannel(std::string callback_id,
+                                       const std::string& current_channel) {
+  version_updater_->GetChannel(
+      false /* get target channel */,
+      base::Bind(&AboutHandler::OnGetTargetChannel, weak_factory_.GetWeakPtr(),
+                 callback_id, current_channel));
+}
+
+void AboutHandler::OnGetTargetChannel(std::string callback_id,
+                                      const std::string& current_channel,
+                                      const std::string& target_channel) {
+  std::unique_ptr<base::DictionaryValue> channel_info(
+      new base::DictionaryValue);
+  channel_info->SetString("currentChannel", current_channel);
+  channel_info->SetString("targetChannel", target_channel);
+  channel_info->SetBoolean("canChangeChannel",
+                           CanChangeChannel(Profile::FromWebUI(web_ui())));
+
+  ResolveJavascriptCallback(base::StringValue(callback_id), *channel_info);
 }
 
 void AboutHandler::HandleRequestUpdate(const base::ListValue* args) {

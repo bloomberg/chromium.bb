@@ -23,12 +23,7 @@ Polymer({
     showChannelSwitcherDialog_: Boolean,
 
     /** @private */
-    canChangeChannel_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('aboutCanChangeChannel');
-      },
-    },
+    canChangeChannel_: Boolean,
   },
 
   /** @override */
@@ -39,10 +34,19 @@ Polymer({
     browserProxy.getVersionInfo().then(function(versionInfo) {
       this.versionInfo_ = versionInfo;
     }.bind(this));
-    browserProxy.getCurrentChannel().then(function(channel) {
+
+    this.updateChannelInfo_();
+  },
+
+  /** @private */
+  updateChannelInfo_: function() {
+    var browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
+    browserProxy.getChannelInfo().then(function(info) {
+      // Display the target channel for the 'Currently on' message.
       this.currentlyOnChannelText_ = this.i18n(
           'aboutCurrentlyOnChannel',
-          this.i18n(settings.browserChannelToI18nId(channel)));
+          this.i18n(settings.browserChannelToI18nId(info.targetChannel)));
+      this.canChangeChannel_ = info.canChangeChannel;
     }.bind(this));
   },
 
@@ -66,6 +70,7 @@ Polymer({
       // previous dialog's contents are cleared.
       dialog.addEventListener('close', function() {
         this.showChannelSwitcherDialog_ = false;
+        this.updateChannelInfo_();
       }.bind(this));
     }.bind(this));
   },

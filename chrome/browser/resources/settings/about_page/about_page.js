@@ -83,7 +83,8 @@ Polymer({
     'updateShowUpdateStatus_(' +
         'obsoleteSystemInfo_, currentUpdateStatusEvent_,' +
         'hasCheckedForUpdates_)',
-    'updateShowRelaunch_(currentUpdateStatusEvent_, targetChannel_)',
+    'updateShowRelaunch_(currentUpdateStatusEvent_, targetChannel_,' +
+        'currentChannel_)',
     'updateShowButtonContainer_(' +
         'showRelaunch_, showRelaunchAndPowerwash_, showCheckUpdates_)',
 </if>
@@ -109,13 +110,9 @@ Polymer({
       this.targetChannel_ = e.detail;
     }.bind(this));
 
-    Promise.all([
-      this.aboutBrowserProxy_.getCurrentChannel(),
-      this.aboutBrowserProxy_.getTargetChannel(),
-    ]).then(function(channels) {
-      this.currentChannel_ = channels[0];
-      this.targetChannel_ = channels[1];
-
+    this.aboutBrowserProxy_.getChannelInfo().then(function(info) {
+      this.currentChannel_ = info.currentChannel;
+      this.targetChannel_ = info.targetChannel;
       this.startListening_();
     }.bind(this));
 

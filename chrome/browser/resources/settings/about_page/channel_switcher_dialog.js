@@ -23,6 +23,9 @@ Polymer({
     /** @private {!BrowserChannel} */
     currentChannel_: String,
 
+    /** @private {!BrowserChannel} */
+    targetChannel_: String,
+
     /**
      * Controls which of the two action buttons is visible.
      * @private {?{changeChannel: boolean, changeChannelAndPowerwash: boolean}}
@@ -45,11 +48,11 @@ Polymer({
   /** @override */
   ready: function() {
     this.browserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();
-
-    this.browserProxy_.getCurrentChannel().then(function(channel) {
-      this.currentChannel_ = channel;
-      // Pre-populate radio group with current channel.
-      this.$$('paper-radio-group').select(channel);
+    this.browserProxy_.getChannelInfo().then(function(info) {
+      this.currentChannel_ = info.currentChannel;
+      this.targetChannel_ = info.targetChannel;
+      // Pre-populate radio group with target channel.
+      this.$$('paper-radio-group').select(this.targetChannel_);
     }.bind(this));
   },
 
@@ -118,30 +121,44 @@ Polymer({
   onChannelSelectionChanged_: function() {
     var selectedChannel = this.$$('paper-radio-group').selected;
 
-    if (selectedChannel == this.currentChannel_) {
+    // Selected channel is the same as the target channel so only show 'cancel'.
+    if (selectedChannel == this.targetChannel_) {
       this.shouldShowButtons_ = null;
+      this.warning_ = null;
+      return;
+    }
+
+    // Selected channel is the same as the current channel, allow the user to
+    // change without warnings.
+    if (selectedChannel == this.currentChannel_) {
+      this.updateButtons_(true, false);
       this.warning_ = null;
       return;
     }
 
     if (settings.isTargetChannelMoreStable(
         this.currentChannel_, selectedChannel)) {
+      // More stable channel selected. For non managed devices, notify the user
+      // about powerwash.
       if (loadTimeData.getBoolean('aboutEnterpriseManaged')) {
         this.updateWarning_(
-            'aboutDelayedWarningTitle',
-            'aboutDelayedWarningMessage',
+            'aboutDelayedWarningTitle', 'aboutDelayedWarningMessage',
             'aboutProductTitle');
         this.updateButtons_(true, false);
       } else {
         this.updateWarning_(
-          'aboutPowerwashWarningTitle', 'aboutPowerwashWarningMessage');
+            'aboutPowerwashWarningTitle', 'aboutPowerwashWarningMessage');
         this.updateButtons_(false, true);
       }
     } else {
-      this.updateWarning_(
-        'aboutUnstableWarningTitle',
-        'aboutUnstableWarningMessage',
-        'aboutProductTitle');
+      if (selectedChannel == BrowserChannel.DEV) {
+        // Dev channel selected, warn the user.
+        this.updateWarning_(
+            'aboutUnstableWarningTitle', 'aboutUnstableWarningMessage',
+            'aboutProductTitle');
+      } else {
+        this.warning_ = null;
+      }
       this.updateButtons_(true, false);
     }
   },
