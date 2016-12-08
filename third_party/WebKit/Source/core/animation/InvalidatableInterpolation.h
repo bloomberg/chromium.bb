@@ -49,18 +49,18 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
         m_startKeyframe(startKeyframe),
         m_endKeyframe(endKeyframe),
         m_currentFraction(std::numeric_limits<double>::quiet_NaN()),
-        m_isCached(false) {}
+        m_isConversionCached(false) {}
 
   using ConversionCheckers = InterpolationType::ConversionCheckers;
 
   std::unique_ptr<TypedInterpolationValue> maybeConvertUnderlyingValue(
       const InterpolationEnvironment&) const;
-  const TypedInterpolationValue* ensureValidInterpolation(
+  const TypedInterpolationValue* ensureValidConversion(
       const InterpolationEnvironment&,
       const UnderlyingValueOwner&) const;
-  void clearCache() const;
-  bool isCacheValid(const InterpolationEnvironment&,
-                    const UnderlyingValueOwner&) const;
+  void clearConversionCache() const;
+  bool isConversionCacheValid(const InterpolationEnvironment&,
+                              const UnderlyingValueOwner&) const;
   bool isNeutralKeyframeActive() const;
   std::unique_ptr<PairwisePrimitiveInterpolation> maybeConvertPairwise(
       const InterpolationEnvironment&,
@@ -79,7 +79,7 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
   RefPtr<PropertySpecificKeyframe> m_startKeyframe;
   RefPtr<PropertySpecificKeyframe> m_endKeyframe;
   double m_currentFraction;
-  mutable bool m_isCached;
+  mutable bool m_isConversionCached;
   mutable std::unique_ptr<PrimitiveInterpolation> m_cachedPairConversion;
   mutable ConversionCheckers m_conversionCheckers;
   mutable std::unique_ptr<TypedInterpolationValue> m_cachedValue;
