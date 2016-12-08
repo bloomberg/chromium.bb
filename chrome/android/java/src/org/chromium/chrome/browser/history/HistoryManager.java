@@ -75,6 +75,13 @@ public class HistoryManager implements OnMenuItemClickListener {
             openItemsInNewTabs(mSelectionDelegate.getSelectedItems(), true);
             mSelectionDelegate.clearSelection();
             return true;
+        } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
+            for (HistoryItem historyItem : mSelectionDelegate.getSelectedItems()) {
+                mHistoryAdapter.markItemForRemoval(historyItem);
+            }
+            mHistoryAdapter.removeItems();
+            mSelectionDelegate.clearSelection();
+            return true;
         }
         return false;
     }
@@ -92,6 +99,18 @@ public class HistoryManager implements OnMenuItemClickListener {
     public void onDestroyed() {
         mSelectableListLayout.onDestroyed();
         mHistoryAdapter.onDestroyed();
+    }
+
+    /**
+     * Removes the HistoryItem from the history backend and the HistoryAdapter.
+     * @param item The HistoryItem to remove.
+     */
+    public void removeItem(HistoryItem item) {
+        if (mSelectionDelegate.isItemSelected(item)) {
+            mSelectionDelegate.toggleSelectionForItem(item);
+        }
+        mHistoryAdapter.markItemForRemoval(item);
+        mHistoryAdapter.removeItems();
     }
 
     /**

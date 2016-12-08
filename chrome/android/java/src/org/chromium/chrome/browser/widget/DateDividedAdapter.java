@@ -108,7 +108,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     /**
      * A bucket of items with the same date.
      */
-    private static class ItemGroup {
+    protected static class ItemGroup {
         private final Date mDate;
         private final List<TimedItem> mItems = new ArrayList<>();
 
@@ -126,6 +126,10 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         public void addItem(TimedItem item) {
             mItems.add(item);
             mIsSorted = false;
+        }
+
+        public void removeItem(TimedItem item) {
+            mItems.remove(item);
         }
 
         /** Records the position of all the TimedItems in this group, relative to the full list. */
@@ -329,7 +333,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     /**
      * Utility method to traverse all groups and find the {@link ItemGroup} for the given position.
      */
-    private Pair<ItemGroup, Integer> getGroupAt(int position) {
+    protected Pair<ItemGroup, Integer> getGroupAt(int position) {
         // TODO(ianwen): Optimize the performance if the number of groups becomes too large.
         int i = position;
         for (ItemGroup group : mGroups) {
@@ -341,6 +345,13 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         }
         assert false;
         return null;
+    }
+
+    /**
+     * @param group The group to remove from the adapter.
+     */
+    protected void removeGroup(ItemGroup group) {
+        mGroups.remove(group);
     }
 
     /**

@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.history;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 
 /**
@@ -17,6 +19,7 @@ import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 public class HistoryItemView extends SelectableItemView<HistoryItem> {
     private TextView mTitle;
     private TextView mDomain;
+    private TintedImageButton mRemoveButton;
 
     public HistoryItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -27,6 +30,13 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> {
         super.onFinishInflate();
         mTitle = (TextView) findViewById(R.id.title);
         mDomain = (TextView) findViewById(R.id.domain);
+        mRemoveButton = (TintedImageButton) findViewById(R.id.remove);
+        mRemoveButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                remove();
+            }
+        });
     }
 
     @Override
@@ -41,6 +51,13 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> {
      */
     public void setHistoryManager(HistoryManager manager) {
         getItem().setHistoryManager(manager);
+    }
+
+    /**
+     * Removes the item associated with this view.
+     */
+    public void remove() {
+        getItem().remove();
     }
 
     @Override

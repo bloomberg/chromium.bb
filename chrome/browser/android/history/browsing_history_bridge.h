@@ -32,6 +32,20 @@ class BrowsingHistoryBridge : public BrowsingHistoryServiceHandler {
                     jstring j_query,
                     int64_t j_query_end_time);
 
+  // Adds a HistoryEntry with the |j_url| and |j_timestamps| to the list of
+  // items being removed. The removal will not be committed until
+  // ::removeItems() is called.
+  void MarkItemForRemoval(
+      JNIEnv* env,
+      const JavaParamRef<jobject>& obj,
+      jstring j_url,
+      const JavaParamRef<jlongArray>& j_timestamps);
+
+  // Removes all items that have been marked for removal through
+  // ::markItemForRemoval().
+  void RemoveItems(JNIEnv* env,
+                   const JavaParamRef<jobject>& obj);
+
   // BrowsingHistoryServiceHandler implementation
   void OnQueryComplete(
       std::vector<BrowsingHistoryService::HistoryEntry>* results,
@@ -48,6 +62,9 @@ class BrowsingHistoryBridge : public BrowsingHistoryServiceHandler {
   std::unique_ptr<BrowsingHistoryService> browsing_history_service_;
   base::android::ScopedJavaGlobalRef<jobject> j_history_service_obj_;
   base::android::ScopedJavaGlobalRef<jobject> j_query_result_obj_;
+
+  std::vector<std::unique_ptr<BrowsingHistoryService::HistoryEntry>>
+      items_to_remove_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryBridge);
 };

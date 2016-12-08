@@ -8,12 +8,15 @@ import android.text.TextUtils;
 
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 
+import java.util.Arrays;
+
 /** Contains information about a single browsing history item. */
 public class HistoryItem extends TimedItem {
     private final String mUrl;
     private final String mDomain;
     private final String mTitle;
     private final long mTimestamp;
+    private final long[] mTimestampList;
     private Long mStableId;
 
     private HistoryManager mManager;
@@ -22,13 +25,16 @@ public class HistoryItem extends TimedItem {
      * @param url The url for this item.
      * @param domain The string to display for the item's domain.
      * @param title The string to display for the item's title.
-     * @param timestamp The timestamp for this item.
+     * @param timestamps The list of timestamps for this item.
      */
-    public HistoryItem(String url, String domain, String title, long timestamp) {
+    public HistoryItem(String url, String domain, String title, long[] timestamps) {
         mUrl = url;
         mDomain = domain;
         mTitle = TextUtils.isEmpty(title) ? url : title;
-        mTimestamp = timestamp;
+        mTimestampList = Arrays.copyOf(timestamps, timestamps.length);
+
+        // The last timestamp in the list is the most recent visit.
+        mTimestamp = mTimestampList[mTimestampList.length - 1];
     }
 
     /** @return The url for this item. */
@@ -49,6 +55,13 @@ public class HistoryItem extends TimedItem {
     @Override
     public long getTimestamp() {
         return mTimestamp;
+    }
+
+    /**
+     * @return An array of timestamps representing visits to this item's url.
+     */
+    public long[] getTimestamps() {
+        return Arrays.copyOf(mTimestampList, mTimestampList.length);
     }
 
     @Override
@@ -73,5 +86,12 @@ public class HistoryItem extends TimedItem {
      */
     public void open() {
         if (mManager != null) mManager.openItem(mUrl, null, false);
+    }
+
+    /**
+     * Removes this item.
+     */
+    public void remove() {
+        if (mManager != null) mManager.removeItem(this);
     }
 }

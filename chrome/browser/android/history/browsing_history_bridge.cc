@@ -7,6 +7,7 @@
 #include <jni.h>
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -66,13 +67,21 @@ void BrowsingHistoryBridge::OnQueryComplete(
     if (domain.empty())
       domain = base::UTF8ToUTF16(it->url.scheme() + ":");
 
+    std::vector<int64_t> timestamps;
+    for (auto timestampIt = it->all_timestamps.begin();
+         timestampIt != it->all_timestamps.end(); ++timestampIt) {
+      timestamps.push_back(
+          base::Time::FromInternalValue(*timestampIt).ToJavaTime());
+    }
+
     Java_BrowsingHistoryBridge_createHistoryItemAndAddToList(
-        env,
-        j_query_result_obj_.obj(),
+        env, j_query_result_obj_.obj(),
         base::android::ConvertUTF8ToJavaString(env, it->url.spec()),
         base::android::ConvertUTF16ToJavaString(env, domain),
         base::android::ConvertUTF16ToJavaString(env, it->title),
-        it->time.ToJavaTime());
+        base::android::ToJavaLongArray(env, timestamps));
+
+    timestamps.clear();
   }
 
   Java_BrowsingHistoryBridge_onQueryHistoryComplete(
@@ -83,16 +92,48 @@ void BrowsingHistoryBridge::OnQueryComplete(
   j_query_result_obj_.Release();
 }
 
+void BrowsingHistoryBridge::MarkItemForRemoval(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jstring j_url,
+    const JavaParamRef<jlongArray>& j_timestamps) {
+  std::unique_ptr<BrowsingHistoryService::HistoryEntry> entry(
+      new BrowsingHistoryService::HistoryEntry());
+  entry->url = GURL(base::android::ConvertJavaStringToUTF16(env, j_url));
+
+  std::vector<int64_t> timestamps;
+  base::android::JavaLongArrayToInt64Vector(env, j_timestamps.obj(),
+                                            &timestamps);
+  for (auto it = timestamps.begin(); it != timestamps.end(); ++it) {
+    base::Time visit_time = base::Time::FromJavaTime(*it);
+    entry->all_timestamps.insert(visit_time.ToInternalValue());
+  }
+
+  items_to_remove_.push_back(std::move(entry));
+  timestamps.clear();
+}
+
+void BrowsingHistoryBridge::RemoveItems(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj) {
+  browsing_history_service_->RemoveVisits(&items_to_remove_);
+  items_to_remove_.clear();
+}
+
 void BrowsingHistoryBridge::OnRemoveVisitsComplete() {
-  // TODO(twellington): implement
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_BrowsingHistoryBridge_onRemoveComplete(env,
+                                              j_history_service_obj_.obj());
 }
 
 void BrowsingHistoryBridge::OnRemoveVisitsFailed() {
-  // TODO(twellington): implement
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_BrowsingHistoryBridge_onRemoveFailed(env, j_history_service_obj_.obj());
 }
 
 void BrowsingHistoryBridge::HistoryDeleted() {
-  // TODO(twellington): implement
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_BrowsingHistoryBridge_onHistoryDeleted(env,
+                                              j_history_service_obj_.obj());
 }
 
 void BrowsingHistoryBridge::HasOtherFormsOfBrowsingHistory(

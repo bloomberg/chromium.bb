@@ -9,8 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.Callback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.history.BrowsingHistoryBridge.BrowsingHistoryObserver;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Bridges the user's browsing history and the UI used to display it.
  */
-public class HistoryAdapter extends DateDividedAdapter {
+public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistoryObserver {
     private static final String EMPTY_QUERY = "";
 
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
@@ -32,7 +32,7 @@ public class HistoryAdapter extends DateDividedAdapter {
     public HistoryAdapter(SelectionDelegate<HistoryItem> delegate, HistoryManager manager) {
         setHasStableIds(true);
         mSelectionDelegate = delegate;
-        mBridge = new BrowsingHistoryBridge();
+        mBridge = new BrowsingHistoryBridge(this);
         mManager = manager;
     }
 
@@ -48,16 +48,29 @@ public class HistoryAdapter extends DateDividedAdapter {
      * Initializes the HistoryAdapter and loads the first set of browsing history items.
      */
     public void initialize() {
-        mBridge.queryHistory(new Callback<List<HistoryItem>>() {
-            @Override
-            public void onResult(List<HistoryItem> result) {
-                // Return early if the results are returned after the activity/native page is
-                // destroyed to avoid unnecessary work.
-                if (mDestroyed) return;
+        mBridge.queryHistory(EMPTY_QUERY, 0);
+    }
 
-                loadItems(result);
-            }
-        }, EMPTY_QUERY, 0);
+    /**
+     * Adds the HistoryItem to the list of items being removed and removes it from the adapter. The
+     * removal will not be committed until #removeItems() is called.
+     * @param item The item to mark for removal.
+     */
+    public void markItemForRemoval(HistoryItem item) {
+        ItemGroup group = getGroupAt(item.getPosition()).first;
+        group.removeItem(item);
+        // Remove the group if only the date header is left.
+        if (group.size() == 1) removeGroup(group);
+        notifyDataSetChanged();
+
+        mBridge.markItemForRemoval(item);
+    }
+
+    /**
+     * Removes all items that have been marked for removal through #markItemForRemoval().
+     */
+    public void removeItems() {
+        mBridge.removeItems();
     }
 
     @Override
@@ -82,4 +95,20 @@ public class HistoryAdapter extends DateDividedAdapter {
         return R.layout.date_view;
     }
 
+    @Override
+    public void onQueryHistoryComplete(List<HistoryItem> items) {
+        // Return early if the results are returned after the activity/native page is
+        // destroyed to avoid unnecessary work.
+        if (mDestroyed) return;
+
+        loadItems(items);
+    }
+
+    @Override
+    public void onHistoryDeleted() {
+        mSelectionDelegate.clearSelection();
+        // TODO(twellington): Account for items that have been paged in due to infinite scroll.
+        //                    This currently removes all items and re-issues a query.
+        initialize();
+    }
 }
