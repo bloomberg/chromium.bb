@@ -36,8 +36,15 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> {
         mDomain.setText(item.getDomain());
     }
 
+    /**
+     * @param manager The HistoryManager associated with this item.
+     */
+    public void setHistoryManager(HistoryManager manager) {
+        getItem().setHistoryManager(manager);
+    }
+
     @Override
     protected void onClick() {
-        // TODO(twellington): Handle clicks on the HistoryItemView.
+        if (getItem() != null) getItem().open();
     }
 }

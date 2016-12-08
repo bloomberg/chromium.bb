@@ -67,6 +67,13 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
         setChecked(mSelectionDelegate.isItemSelected(item));
     }
 
+    /**
+     * @return The item associated with this SelectableItemView.
+     */
+    public E getItem() {
+        return mItem;
+    }
+
     // FrameLayout implementations.
     @Override
     protected void onFinishInflate() {

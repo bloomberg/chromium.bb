@@ -16,6 +16,8 @@ public class HistoryItem extends TimedItem {
     private final long mTimestamp;
     private Long mStableId;
 
+    private HistoryManager mManager;
+
     /**
      * @param url The url for this item.
      * @param domain The string to display for the item's domain.
@@ -27,6 +29,11 @@ public class HistoryItem extends TimedItem {
         mDomain = domain;
         mTitle = TextUtils.isEmpty(title) ? url : title;
         mTimestamp = timestamp;
+    }
+
+    /** @return The url for this item. */
+    public String getUrl() {
+        return mUrl;
     }
 
     /** @return The string to display for the item's domain. */
@@ -52,5 +59,19 @@ public class HistoryItem extends TimedItem {
             mStableId = (mStableId << 32) + (getTimestamp() & 0x0FFFFFFFF);
         }
         return mStableId;
+    }
+
+    /**
+     * @param manager The HistoryManager associated with this item.
+     */
+    public void setHistoryManager(HistoryManager manager) {
+        mManager = manager;
+    }
+
+    /**
+     * Navigates a tab to this item's URL.
+     */
+    public void open() {
+        if (mManager != null) mManager.openItem(mUrl, null, false);
     }
 }

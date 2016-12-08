@@ -25,13 +25,15 @@ public class HistoryAdapter extends DateDividedAdapter {
 
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
     private final BrowsingHistoryBridge mBridge;
+    private final HistoryManager mManager;
 
     private boolean mDestroyed;
 
-    public HistoryAdapter(SelectionDelegate<HistoryItem> delegate) {
+    public HistoryAdapter(SelectionDelegate<HistoryItem> delegate, HistoryManager manager) {
         setHasStableIds(true);
         mSelectionDelegate = delegate;
         mBridge = new BrowsingHistoryBridge();
+        mManager = manager;
     }
 
     /**
@@ -72,6 +74,7 @@ public class HistoryAdapter extends DateDividedAdapter {
         SelectableItemViewHolder<HistoryItem> holder =
                 (SelectableItemViewHolder<HistoryItem>) current;
         holder.displayItem(item);
+        item.setHistoryManager(mManager);
     }
 
     @Override
