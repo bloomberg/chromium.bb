@@ -152,20 +152,29 @@ window.Audit = (function () {
       }
 
       // For the assertion with a single operand.
-      this._detail = this._detail.replace('${actual}', this._actualDescription);
+      this._detail = this._detail.replace(
+          /\$\{actual\}/g, this._actualDescription);
 
       // If there is a second operand (i.e. expected value), we have to build
       // the string for it as well.
-      if (this._expected) {
+      if (this._expected !== null) {
         this._detail = this._detail.replace(
-            '${expected}', this._expectedDescription);
+            /\$\{expected\}/g, this._expectedDescription);
       }
 
       // If there is any property in |_options|, replace the property name
       // with the value.
       for (let name in this._options) {
-        this._detail = this._detail.replace(
-            '${' + name + '}',
+        if (name === 'numberOfErrors'
+            || name === 'numberOfArrayElements'
+            || name === 'verbose') {
+          continue;
+        }
+
+        // The RegExp key string contains special character. Take care of it.
+        let re = '\$\{' + name + '\}';
+        re = re.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+        this._detail = this._detail.replace(new RegExp(re, 'g'),
             _generateDescription(this._options[name]));
       }
     }
@@ -647,23 +656,25 @@ window.Audit = (function () {
      * |threshold|.
      *
      * @example
-     *   should(2.3).beCloseTo(2, 0.3);
+     *   should(2.3).beCloseTo(2, { threshold: 0.3 });
      *
      * @result
      *   "PASS    2.3 is 2 within an error of 0.3."
-     *
+     * @param {Object} options              Options for assertion.
      * @param {Number} options.threshold    Threshold value for the comparison.
      */
     beCloseTo () {
       this._processArguments(arguments);
 
+      // The threshold is relative except when |expected| is zero, in which case
+      // it is absolute.
       let absExpected = this._expected ? Math.abs(this._expected) : 1;
       let error = Math.abs(this._actual - this._expected) / absExpected;
 
       return this._assert(
-        error < this._options.threshold,
-        '${actual} is ${expected} within an error of ${threshold}',
-        '${actual} is not ${expected} within a error of ${threshold}: ' +
+        error <= this._options.threshold,
+        '${actual} is ${expected} within an error of ${threshold}.',
+        '${actual} is not ${expected} within an error of ${threshold}: ' +
           '${actual} with error of ${threshold}.');
     }
 
@@ -941,14 +952,14 @@ window.Audit = (function () {
       // the specified one.
       if (arguments.length > 0) {
         this._taskSequence = [];
-        for (let i = 0; arguments.length; i++) {
+        for (let i = 0; i < arguments.length; i++) {
           let taskLabel = arguments[i];
           if (!this._tasks.hasOwnProperty(taskLabel)) {
             _throwException('Audit.run:: undefined task.');
           } else if (this._taskSequence.includes(taskLabel)) {
             _throwException('Audit.run:: duplicate task request.');
           } else {
-            this._taskSequence.push[taskLabel];
+            this._taskSequence.push(taskLabel);
           }
         }
       }
