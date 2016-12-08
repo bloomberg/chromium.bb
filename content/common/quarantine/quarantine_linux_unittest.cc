@@ -16,8 +16,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
-#include "content/browser/download/quarantine.h"
-#include "content/browser/download/quarantine_constants_linux.h"
+#include "content/common/quarantine/quarantine_constants_linux.h"
+#include "content/public/common/quarantine.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -37,6 +37,8 @@ class QuarantineLinuxTest : public testing::Test {
 
   const base::FilePath& test_file() const { return test_file_; }
 
+  const base::FilePath& test_dir() const { return temp_dir_.GetPath(); }
+
   const GURL& source_url() const { return source_url_; }
 
   const GURL& referrer_url() const { return referrer_url_; }
@@ -52,24 +54,9 @@ class QuarantineLinuxTest : public testing::Test {
         setxattr(test_file_.value().c_str(), "user.test", "test", 4, 0);
     is_xattr_supported_ = (!result) || (errno != ENOTSUP);
     if (!is_xattr_supported_) {
-      DVLOG(0) << "Test will be skipped because extended attributes are not "
-               << "supported on this OS/file system.";
+      LOG(WARNING) << "Test will be skipped because extended attributes are "
+                      "not supported on this OS/file system.";
     }
-  }
-
-  void CheckExtendedAttributeValue(const string attr_name,
-                                   const string expected_value) const {
-    ssize_t len =
-        getxattr(test_file().value().c_str(), attr_name.c_str(), NULL, 0);
-    if (len <= static_cast<ssize_t>(0)) {
-      FAIL() << "Attribute '" << attr_name << "' does not exist";
-    }
-    char* buffer = new char[len];
-    len = getxattr(test_file().value().c_str(), attr_name.c_str(), buffer, len);
-    EXPECT_EQ(expected_value.size(), static_cast<size_t>(len));
-    string real_value(buffer, len);
-    delete[] buffer;
-    EXPECT_EQ(expected_value, real_value);
   }
 
   void GetExtendedAttributeNames(vector<string>* attr_names) const {
@@ -84,25 +71,6 @@ class QuarantineLinuxTest : public testing::Test {
     delete[] buffer;
   }
 
-  void VerifyAttributesAreSetCorrectly() const {
-    vector<string> attr_names;
-    GetExtendedAttributeNames(&attr_names);
-
-    // Check if the attributes are set on the file
-    vector<string>::const_iterator pos =
-        find(attr_names.begin(), attr_names.end(), kSourceURLExtendedAttrName);
-    EXPECT_NE(pos, attr_names.end());
-    pos = find(attr_names.begin(), attr_names.end(),
-               kReferrerURLExtendedAttrName);
-    EXPECT_NE(pos, attr_names.end());
-
-    // Check if the attribute values are set correctly
-    CheckExtendedAttributeValue(kSourceURLExtendedAttrName,
-                                source_url().spec());
-    CheckExtendedAttributeValue(kReferrerURLExtendedAttrName,
-                                referrer_url().spec());
-  }
-
  private:
   base::ScopedTempDir temp_dir_;
   base::FilePath test_file_;
@@ -111,13 +79,15 @@ class QuarantineLinuxTest : public testing::Test {
   bool is_xattr_supported_;
 };
 
+}  // namespace
+
 TEST_F(QuarantineLinuxTest, CheckMetadataSetCorrectly) {
   if (!is_xattr_supported())
     return;
   EXPECT_EQ(
       QuarantineFileResult::OK,
       QuarantineFile(test_file(), source_url(), referrer_url(), std::string()));
-  VerifyAttributesAreSetCorrectly();
+  EXPECT_TRUE(IsFileQuarantined(test_file(), source_url(), referrer_url()));
 }
 
 TEST_F(QuarantineLinuxTest, SetMetadataMultipleTimes) {
@@ -129,7 +99,7 @@ TEST_F(QuarantineLinuxTest, SetMetadataMultipleTimes) {
   EXPECT_EQ(
       QuarantineFileResult::OK,
       QuarantineFile(test_file(), source_url(), referrer_url(), std::string()));
-  VerifyAttributesAreSetCorrectly();
+  EXPECT_TRUE(IsFileQuarantined(test_file(), source_url(), referrer_url()));
 }
 
 TEST_F(QuarantineLinuxTest, InvalidSourceURLTest) {
@@ -143,8 +113,8 @@ TEST_F(QuarantineLinuxTest, InvalidSourceURLTest) {
   GetExtendedAttributeNames(&attr_names);
   EXPECT_EQ(attr_names.end(), find(attr_names.begin(), attr_names.end(),
                                    kSourceURLExtendedAttrName));
-  CheckExtendedAttributeValue(kReferrerURLExtendedAttrName,
-                              referrer_url().spec());
+  EXPECT_NE(attr_names.end(), find(attr_names.begin(), attr_names.end(),
+                                   kReferrerURLExtendedAttrName));
 }
 
 TEST_F(QuarantineLinuxTest, InvalidReferrerURLTest) {
@@ -158,7 +128,7 @@ TEST_F(QuarantineLinuxTest, InvalidReferrerURLTest) {
   GetExtendedAttributeNames(&attr_names);
   EXPECT_EQ(attr_names.end(), find(attr_names.begin(), attr_names.end(),
                                    kReferrerURLExtendedAttrName));
-  CheckExtendedAttributeValue(kSourceURLExtendedAttrName, source_url().spec());
+  EXPECT_TRUE(IsFileQuarantined(test_file(), source_url(), GURL()));
 }
 
 TEST_F(QuarantineLinuxTest, InvalidURLsTest) {
@@ -174,7 +144,40 @@ TEST_F(QuarantineLinuxTest, InvalidURLsTest) {
                                    kSourceURLExtendedAttrName));
   EXPECT_EQ(attr_names.end(), find(attr_names.begin(), attr_names.end(),
                                    kReferrerURLExtendedAttrName));
+  EXPECT_FALSE(IsFileQuarantined(test_file(), GURL(), GURL()));
 }
 
-}  // namespace
+TEST_F(QuarantineLinuxTest, IsFileQuarantined) {
+  if (!is_xattr_supported())
+    return;
+  base::FilePath does_not_exist = test_dir().AppendASCII("a.jar");
+  EXPECT_FALSE(IsFileQuarantined(does_not_exist, GURL(), GURL()));
+
+  base::FilePath no_annotations = test_dir().AppendASCII("b.jar");
+  ASSERT_EQ(5, base::WriteFile(no_annotations, "Hello", 5));
+  EXPECT_FALSE(IsFileQuarantined(no_annotations, GURL(), GURL()));
+
+  base::FilePath source_only = test_dir().AppendASCII("c.jar");
+  ASSERT_EQ(5, base::WriteFile(source_only, "Hello", 5));
+  ASSERT_EQ(QuarantineFileResult::OK,
+            QuarantineFile(source_only, source_url(), GURL(), std::string()));
+  EXPECT_TRUE(IsFileQuarantined(source_only, source_url(), GURL()));
+  EXPECT_TRUE(IsFileQuarantined(source_only, GURL(), GURL()));
+  EXPECT_TRUE(IsFileQuarantined(source_only, GURL(), referrer_url()));
+  EXPECT_FALSE(IsFileQuarantined(source_only, referrer_url(), GURL()));
+
+  base::FilePath fully_annotated = test_dir().AppendASCII("d.jar");
+  ASSERT_EQ(5, base::WriteFile(fully_annotated, "Hello", 5));
+  ASSERT_EQ(QuarantineFileResult::OK,
+            QuarantineFile(fully_annotated, source_url(), referrer_url(),
+                           std::string()));
+  EXPECT_TRUE(IsFileQuarantined(fully_annotated, GURL(), GURL()));
+  EXPECT_TRUE(IsFileQuarantined(fully_annotated, source_url(), GURL()));
+  EXPECT_TRUE(IsFileQuarantined(fully_annotated, source_url(), referrer_url()));
+  EXPECT_TRUE(IsFileQuarantined(fully_annotated, GURL(), referrer_url()));
+  EXPECT_FALSE(IsFileQuarantined(fully_annotated, source_url(), source_url()));
+  EXPECT_FALSE(
+      IsFileQuarantined(fully_annotated, referrer_url(), referrer_url()));
+}
+
 }  // namespace content

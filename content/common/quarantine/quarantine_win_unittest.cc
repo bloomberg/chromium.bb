@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_file_util.h"
-#include "content/browser/download/quarantine.h"
+#include "content/public/common/quarantine.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -65,10 +65,8 @@ TEST(QuarantineWinTest, LocalFile_DependsOnLocalConfig) {
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
   base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
 
-  const char* const kLocalSourceURLs[] = {
-    "http://localhost/foo",
-    "file:///C:/some-local-dir/foo.exe"
-  };
+  const char* const kLocalSourceURLs[] = {"http://localhost/foo",
+                                          "file:///C:/some-local-dir/foo.exe"};
 
   for (const auto source_url : kLocalSourceURLs) {
     SCOPED_TRACE(::testing::Message() << "Trying URL " << source_url);

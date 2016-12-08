@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_QUARANTINE_CONSTANTS_LINUX_H_
-#define CONTENT_BROWSER_DOWNLOAD_QUARANTINE_CONSTANTS_LINUX_H_
+#ifndef CONTENT_COMMON_QUARANTINE_QUARANTINE_CONSTANTS_LINUX_H_
+#define CONTENT_COMMON_QUARANTINE_QUARANTINE_CONSTANTS_LINUX_H_
 
 #include "content/common/content_export.h"
 
@@ -20,4 +20,4 @@ CONTENT_EXPORT extern const char kReferrerURLExtendedAttrName[];
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_QUARANTINE_CONSTANTS_LINUX_H_
+#endif  // CONTENT_COMMON_QUARANTINE_QUARANTINE_CONSTANTS_LINUX_H_

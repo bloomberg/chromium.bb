@@ -91,6 +91,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/quarantine.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_file_error_injector.h"
@@ -1176,10 +1177,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeType) {
   CheckDownload(browser(), file, file);
 }
 
-#if defined(OS_WIN)
-// Download a file and confirm that the zone identifier (on windows)
-// is set to internet.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone_DependsOnLocalConfig) {
+#if defined(OS_WIN) || defined(OS_LINUX)
+// Download a file and confirm that the file is correctly quarantined.
+//
+// TODO(asanka): We should enable the test on Mac as well, but currently
+// |browser_tests| aren't run from a process that has LSFileQuarantineEnabled
+// bit set.
+IN_PROC_BROWSER_TEST_F(DownloadTest, Quarantine_DependsOnLocalConfig) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path));
 
   // Download the file and wait.  We do not expect the Select File dialog.
@@ -1190,10 +1194,17 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone_DependsOnLocalConfig) {
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   base::FilePath downloaded_file(DestinationFile(browser(), file));
-  if (base::VolumeSupportsADS(downloaded_file))
-    EXPECT_TRUE(base::HasInternetZoneIdentifier(downloaded_file));
+  EXPECT_TRUE(content::IsFileQuarantined(downloaded_file, url, GURL()));
   CheckDownload(browser(), file, file);
 }
+#endif
+
+#if defined(OS_WIN)
+// A couple of Windows specific tests to make sure we respect OS specific
+// restrictions on Mark-Of-The-Web can be applied. While Chrome doesn't directly
+// apply these policies, Chrome still needs to make sure the correct APIs are
+// invoked during the download process that result in the expected MOTW
+// behavior.
 
 // Downloading a file from the local host shouldn't cause the application of a
 // zone identifier.
@@ -1208,7 +1219,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckLocalhostZone_DependsOnLocalConfig) {
   DownloadAndWait(browser(), url);
   base::FilePath file(FILE_PATH_LITERAL("a_zip_file.zip"));
   base::FilePath downloaded_file(DestinationFile(browser(), file));
-  EXPECT_FALSE(base::HasInternetZoneIdentifier(downloaded_file));
+  EXPECT_FALSE(content::IsFileQuarantined(downloaded_file, GURL(), GURL()));
 }
 
 // Same as the test above, but uses a file:// URL to a local file.
@@ -1221,7 +1232,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckLocalFileZone_DependsOnLocalConfig) {
   DownloadAndWait(browser(), url);
   base::FilePath file(FILE_PATH_LITERAL("a_zip_file.zip"));
   base::FilePath downloaded_file(DestinationFile(browser(), file));
-  EXPECT_FALSE(base::HasInternetZoneIdentifier(downloaded_file));
+  EXPECT_FALSE(content::IsFileQuarantined(downloaded_file, GURL(), GURL()));
 }
 #endif
 

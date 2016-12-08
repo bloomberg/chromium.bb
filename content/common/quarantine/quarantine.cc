@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/quarantine.h"
+#include "content/public/common/quarantine.h"
 
 #include "build/build_config.h"
 
@@ -17,6 +17,12 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
   return QuarantineFileResult::OK;
 }
 
-} // namespace content
+bool IsFileQuarantined(const base::FilePath& file,
+                       const GURL& source_url,
+                       const GURL& referrer_url) {
+  return false;
+}
 
-#endif // !WIN && !MAC && !LINUX
+}  // namespace content
+
+#endif  // !WIN && !MAC && !LINUX

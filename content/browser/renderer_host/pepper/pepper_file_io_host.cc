@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task_runner_util.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
 #include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/browser/renderer_host/pepper/pepper_security_helper.h"
@@ -21,6 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/quarantine.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
@@ -287,7 +288,7 @@ void PepperFileIOHost::DidOpenInternalFile(
   base::File::Error error =
       file.IsValid() ? base::File::FILE_OK : file.error_details();
   file_.SetFile(std::move(file));
-  OnOpenProxyCallback(reply_context, error);
+  SendFileOpenReply(reply_context, error);
 }
 
 void PepperFileIOHost::GotResolvedRenderProcessId(
@@ -297,12 +298,9 @@ void PepperFileIOHost::GotResolvedRenderProcessId(
     base::ProcessId resolved_render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   resolved_render_process_id_ = resolved_render_process_id;
-  file_.CreateOrOpen(
-      path,
-      file_flags,
-      base::Bind(&PepperFileIOHost::OnOpenProxyCallback,
-                 AsWeakPtr(),
-                 reply_context));
+  file_.CreateOrOpen(path, file_flags,
+                     base::Bind(&PepperFileIOHost::OnLocalFileOpened,
+                                AsWeakPtr(), reply_context, path));
 }
 
 int32_t PepperFileIOHost::OnHostMsgTouch(
@@ -394,7 +392,7 @@ void PepperFileIOHost::DidOpenQuotaFile(
   max_written_offset_ = max_written_offset;
   file_.SetFile(std::move(file));
 
-  OnOpenProxyCallback(reply_context, base::File::FILE_OK);
+  SendFileOpenReply(reply_context, base::File::FILE_OK);
 }
 
 void PepperFileIOHost::DidCloseFile(base::File::Error /*error*/) {
@@ -448,7 +446,46 @@ void PepperFileIOHost::ExecutePlatformGeneralCallback(
   state_manager_.SetOperationFinished();
 }
 
-void PepperFileIOHost::OnOpenProxyCallback(
+void PepperFileIOHost::OnLocalFileOpened(
+    ppapi::host::ReplyMessageContext reply_context,
+    const base::FilePath& path,
+    base::File::Error error_code) {
+#if defined(OS_WIN) || defined(OS_LINUX)
+  // Quarantining a file before its contents are available is only supported on
+  // Windows and Linux.
+  if (!FileOpenForWrite(open_flags_) || error_code != base::File::FILE_OK) {
+    SendFileOpenReply(reply_context, error_code);
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
+      FROM_HERE,
+      base::Bind(&QuarantineFile, path,
+                 browser_ppapi_host_->GetDocumentURLForInstance(pp_instance()),
+                 GURL(), std::string()),
+      base::Bind(&PepperFileIOHost::OnLocalFileQuarantined, AsWeakPtr(),
+                 reply_context, path));
+#else
+  SendFileOpenReply(reply_context, error_code);
+#endif
+}
+
+#if defined(OS_WIN) || defined(OS_LINUX)
+void PepperFileIOHost::OnLocalFileQuarantined(
+    ppapi::host::ReplyMessageContext reply_context,
+    const base::FilePath& path,
+    QuarantineFileResult quarantine_result) {
+  base::File::Error file_error = (quarantine_result == QuarantineFileResult::OK
+                                      ? base::File::FILE_OK
+                                      : base::File::FILE_ERROR_SECURITY);
+  if (file_error != base::File::FILE_OK && file_.IsValid())
+    file_.Close(base::FileProxy::StatusCallback());
+  SendFileOpenReply(reply_context, file_error);
+}
+#endif
+
+void PepperFileIOHost::SendFileOpenReply(
     ppapi::host::ReplyMessageContext reply_context,
     base::File::Error error_code) {
   int32_t pp_error = ppapi::FileErrorToPepperError(error_code);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/quarantine.h"
+#include "content/public/common/quarantine.h"
 
 #include <windows.h>
 
@@ -13,6 +13,8 @@
 #include <shobjidl.h>
 #include <wininet.h>
 
+#include <vector>
+
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -20,6 +22,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_comptr.h"
@@ -67,16 +70,22 @@ bool ZoneIdentifierPresentForFile(const base::FilePath& path) {
 
   // The zone identifier contents is expected to be:
   // "[ZoneTransfer]\r\nZoneId=3\r\n". The actual ZoneId can be different. A
-  // buffer of 16 bytes is sufficient for testing whether the contents start
-  // with "[ZoneTransfer]".
-  std::vector<char> zone_identifier_contents(16);
+  // buffer of 32 bytes is sufficient for verifying the contents.
+  std::vector<char> zone_identifier_contents_buffer(32);
   DWORD actual_length = 0;
-  if (!ReadFile(file.Get(), &zone_identifier_contents.front(),
-                zone_identifier_contents.size(), &actual_length, NULL))
+  if (!ReadFile(file.Get(), &zone_identifier_contents_buffer.front(),
+                zone_identifier_contents_buffer.size(), &actual_length, NULL))
     return false;
-  base::StringPiece zone_identifier_string(&zone_identifier_contents.front(),
-                                           actual_length);
-  return zone_identifier_string.find("[ZoneTransfer]") == 0;
+  zone_identifier_contents_buffer.resize(actual_length);
+
+  std::string zone_identifier_contents(zone_identifier_contents_buffer.begin(),
+                                       zone_identifier_contents_buffer.end());
+
+  std::vector<base::StringPiece> lines =
+      base::SplitStringPiece(zone_identifier_contents, "\n",
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return lines.size() == 2 && lines[0] == "[ZoneTransfer]" &&
+         lines[1].find("ZoneId=") == 0;
 }
 
 void RecordAttachmentServicesSaveResult(const base::FilePath& file,
@@ -331,6 +340,12 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
   if (!base::PathExists(file))
     return FailedSaveResultToQuarantineResult(save_result);
   return QuarantineFileResult::OK;
+}
+
+bool IsFileQuarantined(const base::FilePath& file,
+                       const GURL& source_url,
+                       const GURL& referrer_url) {
+  return ZoneIdentifierPresentForFile(file);
 }
 
 }  // namespace content

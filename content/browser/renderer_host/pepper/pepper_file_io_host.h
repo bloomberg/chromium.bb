@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
+#include "content/public/common/quarantine.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_file_info.h"
@@ -82,8 +83,16 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       ppapi::host::ReplyMessageContext reply_context,
       base::File::Error error_code);
 
-  void OnOpenProxyCallback(ppapi::host::ReplyMessageContext reply_context,
-                           base::File::Error error_code);
+  void OnLocalFileOpened(ppapi::host::ReplyMessageContext reply_context,
+                         const base::FilePath& path,
+                         base::File::Error error_code);
+
+  void OnLocalFileQuarantined(ppapi::host::ReplyMessageContext reply_context,
+                              const base::FilePath& path,
+                              QuarantineFileResult quarantine_result);
+
+  void SendFileOpenReply(ppapi::host::ReplyMessageContext reply_context,
+                         base::File::Error error_code);
 
   void GotUIThreadStuffForInternalFileSystems(
       ppapi::host::ReplyMessageContext reply_context,

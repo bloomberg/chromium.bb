@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/quarantine.h"
+#include "content/public/common/quarantine.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 #import <Foundation/Foundation.h>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
@@ -37,8 +38,9 @@ bool GetQuarantinePropertiesDeprecated(
     return false;
 
   base::ScopedCFTypeRef<CFTypeRef> quarantine_properties;
-  OSStatus status = LSCopyItemAttribute(&file_ref, kLSRolesAll,
-      kLSItemQuarantineProperties, quarantine_properties.InitializeInto());
+  OSStatus status =
+      LSCopyItemAttribute(&file_ref, kLSRolesAll, kLSItemQuarantineProperties,
+                          quarantine_properties.InitializeInto());
   if (status != noErr)
     return true;
 
@@ -61,6 +63,7 @@ bool SetQuarantinePropertiesDeprecated(const base::FilePath& file,
   FSRef file_ref;
   if (FSPathMakeRef(path, &file_ref, nullptr) != noErr)
     return false;
+
   OSStatus os_error = LSSetItemAttribute(
       &file_ref, kLSRolesAll, kLSItemQuarantineProperties, properties);
   if (os_error != noErr) {
@@ -104,7 +107,8 @@ bool GetQuarantineProperties(
       base::mac::ObjCCast<NSDictionary>(quarantine_properties);
   if (!quarantine_properties_dict) {
     LOG(WARNING) << "Quarantine properties have wrong class: "
-                 << [[[quarantine_properties class] description] UTF8String];
+                 << base::SysNSStringToUTF8(
+                        [[quarantine_properties class] description]);
     return false;
   }
 
@@ -199,8 +203,10 @@ bool AddOriginMetadataToFile(const base::FilePath& file,
 
   base::ScopedCFTypeRef<MDItemRef> md_item(
       MDItemCreate(NULL, base::mac::NSToCFCast(file_path)));
-  if (!md_item)
+  if (!md_item) {
+    LOG(WARNING) << "MDItemCreate failed for path " << file.value();
     return false;
+  }
 
   // We won't put any more than 2 items into the attribute.
   NSMutableArray* list = [NSMutableArray arrayWithCapacity:2];
@@ -258,8 +264,8 @@ bool AddQuarantineMetadataToFile(const base::FilePath& file,
 
   if (![properties valueForKey:(NSString*)kLSQuarantineTypeKey]) {
     CFStringRef type = source.SchemeIsHTTPOrHTTPS()
-                       ? kLSQuarantineTypeWebDownload
-                       : kLSQuarantineTypeOtherDownload;
+                           ? kLSQuarantineTypeWebDownload
+                           : kLSQuarantineTypeOtherDownload;
     [properties setValue:(NSString*)type
                   forKey:(NSString*)kLSQuarantineTypeKey];
   }
@@ -292,13 +298,50 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
                                     const GURL& source_url,
                                     const GURL& referrer_url,
                                     const std::string& client_guid) {
+  if (!base::PathExists(file))
+    return QuarantineFileResult::FILE_MISSING;
+
+  // Don't consider it an error if we fail to add origin metadata.
+  AddOriginMetadataToFile(file, source_url, referrer_url);
   bool quarantine_succeeded =
       AddQuarantineMetadataToFile(file, source_url, referrer_url);
-  bool origin_succeeded =
-      AddOriginMetadataToFile(file, source_url, referrer_url);
-  return quarantine_succeeded && origin_succeeded
-             ? QuarantineFileResult::OK
-             : QuarantineFileResult::ANNOTATION_FAILED;
+  return quarantine_succeeded ? QuarantineFileResult::OK
+                              : QuarantineFileResult::ANNOTATION_FAILED;
+}
+
+bool IsFileQuarantined(const base::FilePath& file,
+                       const GURL& expected_source_url,
+                       const GURL& referrer_url) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  if (!base::PathExists(file))
+    return false;
+
+  base::scoped_nsobject<NSMutableDictionary> properties;
+  bool success = false;
+  if (base::mac::IsAtLeastOS10_10()) {
+    success = GetQuarantineProperties(file, &properties);
+  } else {
+    success = GetQuarantinePropertiesDeprecated(file, &properties);
+  }
+
+  if (!success || !properties)
+    return false;
+
+  NSString* source_url =
+      [[properties valueForKey:(NSString*)kLSQuarantineDataURLKey] description];
+
+  if (!expected_source_url.is_valid())
+    return [source_url length] > 0;
+
+  if (![source_url
+          isEqualToString:base::SysUTF8ToNSString(expected_source_url.spec())])
+    return false;
+
+  return !referrer_url.is_valid() ||
+         [[[properties valueForKey:(NSString*)kLSQuarantineOriginURLKey]
+             description]
+             isEqualToString:base::SysUTF8ToNSString(referrer_url.spec())];
 }
 
 }  // namespace content

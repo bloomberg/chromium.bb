@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_QUARANTINE_H_
-#define CONTENT_BROWSER_DOWNLOAD_QUARANTINE_H_
+#ifndef CONTENT_PUBLIC_COMMON_QUARANTINE_H_
+#define CONTENT_PUBLIC_COMMON_QUARANTINE_H_
 
 #include <string>
 
@@ -78,6 +78,29 @@ QuarantineFile(const base::FilePath& file,
                const GURL& referrer_url,
                const std::string& client_guid);
 
+// Determine if a file has quarantine metadata attached to it.
+//
+// If |source_url| is non-empty, then the download source URL in
+// quarantine metadata should match |source_url| exactly. The function returns
+// |false| if there is a mismatch. If |source_url| is empty, then this function
+// only checks for the existence of a download source URL in quarantine
+// metadata.
+//
+// If |referrer_url| is valid, then the download referrer URL in quarantine
+// metadata must match |referrer_url| exactly. The function returns |false| if
+// there is a mismatch in the |referrer_url| even if the |source_url| matches.
+// No referrer URL checks are performed if |referrer_url| is empty.
+//
+// If both |source_url| and |referrer_url|, then the funciton returns true if
+// any quarantine metadata is present for the file.
+//
+// **Note**: On Windows, this function only checks if the |ZoneIdentifier|
+// metadata is present. |source_url| and |referrer_url| are ignored. Windows
+// currently doesn't store individual URLs as part of the mark-of-the-web.
+CONTENT_EXPORT bool IsFileQuarantined(const base::FilePath& file,
+                                      const GURL& source_url,
+                                      const GURL& referrer_url);
+
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_QUARANTINE_H_
+#endif  // CONTENT_PUBLIC_COMMON_QUARANTINE_H_
