@@ -2167,3 +2167,6 @@ crbug.com/669911 [ Win7 Win10 ] virtual/threaded/animations/zoom-responsive-tran
 crbug.com/671618 http/tests/websocket/workers/worker-reload.html [ Pass Timeout ]
 crbug.com/671618 virtual/mojo-loading/http/tests/websocket/workers/worker-reload.html [ Pass Timeout ]
 crbug.com/671618 virtual/mojo-loading/http/tests/websocket/workers/worker-shutdown-race.html [ Pass Timeout ]
+
+# Added 2016-12-07
+crbug.com/672493 [ Linux ] http/tests/websocket/workers/worker-shutdown-race.html [ Pass Timeout ]
