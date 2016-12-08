@@ -35,11 +35,11 @@ testOverriddenToString(new Date, true)
 testOverriddenToString(new Date, false)
 #<Date>
 testOverriddenToString({}, true)
-Object {}
+Object {toString: function, valueOf: function}
 testOverriddenToString({}, false)
-Object {}
+Object {toString: function, valueOf: function}
 testOverriddenToString(new Number(1), true)
-Number {[[PrimitiveValue]]: 1}
+Number {[[PrimitiveValue]]: 1, toString: function, valueOf: function}
 testOverriddenToString(new Number(1), false)
-Number {[[PrimitiveValue]]: 1}
+Number {[[PrimitiveValue]]: 1, toString: function, valueOf: function}
 

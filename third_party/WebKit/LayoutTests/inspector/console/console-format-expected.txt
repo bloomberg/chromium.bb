@@ -225,10 +225,10 @@ console-format.html:7
 console-format.html:8 [svg#svg-node]
 globals[25]
     <svg id="svg-node"></svg>
-console-format.html:7 Object {}
+console-format.html:7 Object {getFoo: function}
 console-format.html:8 [Object]
 globals[26]
-Object {}
+Object {getFoo: function}
 console-format.html:7 -0
 console-format.html:8 [-0]
 globals[27]
@@ -241,10 +241,10 @@ console-format.html:7 function Object() { [native code] }
 console-format.html:8 [function]
 globals[29]
 function Object() { [native code] }
-console-format.html:7 Object {}
+console-format.html:7 Object {__defineGetter__: function, __defineSetter__: function, hasOwnProperty: function, __lookupGetter__: function, __lookupSetter__: function…}
 console-format.html:8 [Object]
 globals[30]
-Object {}
+Object {__defineGetter__: function, __defineSetter__: function, hasOwnProperty: function, __lookupGetter__: function, __lookupSetter__: function…}
 console-format.html:7 function ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:8 [function]

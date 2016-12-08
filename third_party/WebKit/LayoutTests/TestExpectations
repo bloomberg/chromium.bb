@@ -806,11 +806,6 @@ crbug.com/498539 [ Mac ] inspector/sources/debugger/live-edit-no-reveal.html [ C
 crbug.com/498539 [ Win7 ] inspector/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.html [ Failure Pass ]
 crbug.com/498539 [ Mac10.9 ] inspector/console/console-uncaught-exception.html [ Failure Pass ]
 
-crbug.com/666882 inspector/console/console-log-object-with-getter.html [ NeedsManualRebaseline ]
-crbug.com/645053 inspector/console/console-format-collections.html [ NeedsManualRebaseline ]
-crbug.com/645053 inspector/console/console-format.html [ NeedsManualRebaseline ]
-crbug.com/645053 inspector/console/console-tainted-globals.html [ NeedsManualRebaseline ]
-
 crbug.com/498539 [ Win7 ] inspector/console/console-dir-es6.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
 
