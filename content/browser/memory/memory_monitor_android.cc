@@ -8,7 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "content/browser/memory/memory_coordinator.h"
+#include "content/browser/memory/memory_coordinator_impl.h"
 #include "jni/MemoryMonitorAndroid_jni.h"
 
 namespace content {
@@ -66,13 +66,18 @@ static void GetMemoryInfoCallback(
 
 // The maximum level of onTrimMemory (TRIM_MEMORY_COMPLETE).
 const int kTrimMemoryLevelMax = 0x80;
+const int kTrimMemoryRunningLow = 0x10;
+const int kTrimMemoryRunningCritical = 0x15;
 
 // Called by JNI.
 static void OnTrimMemory(JNIEnv* env,
                          const base::android::JavaParamRef<jclass>& jcaller,
                          jint level) {
   DCHECK(level >= 0 && level <= kTrimMemoryLevelMax);
-  auto state = MemoryCoordinator::GetInstance()->GetGlobalMemoryState();
+  auto* coordinator =
+      static_cast<MemoryCoordinatorImpl*>(MemoryCoordinator::GetInstance());
+
+  auto state = coordinator->GetGlobalMemoryState();
   switch (state) {
     case base::MemoryState::NORMAL:
       UMA_HISTOGRAM_ENUMERATION("Memory.Coordinator.TrimMemoryLevel.Normal",
@@ -89,6 +94,14 @@ static void OnTrimMemory(JNIEnv* env,
     case base::MemoryState::UNKNOWN:
       NOTREACHED();
       break;
+  }
+
+  if (level >= kTrimMemoryRunningCritical) {
+    coordinator->ForceSetGlobalState(base::MemoryState::SUSPENDED,
+                                     base::TimeDelta::FromMinutes(1));
+  } else if (level >= kTrimMemoryRunningLow) {
+    coordinator->ForceSetGlobalState(base::MemoryState::THROTTLED,
+                                     base::TimeDelta::FromMinutes(1));
   }
 }
 

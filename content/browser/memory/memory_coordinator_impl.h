@@ -59,6 +59,12 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
                const NotificationSource& source,
                const NotificationDetails& details) override;
 
+  // Overrides the global state to |new_state|. State update tasks won't be
+  // scheduled until |duration| is passed. This means that the global state
+  // remains the same until |duration| is passed or another call of this method.
+  void ForceSetGlobalState(base::MemoryState new_state,
+                           base::TimeDelta duration);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, CalculateNextState);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, UpdateState);
@@ -68,12 +74,16 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
 
   using MemoryState = base::MemoryState;
 
+  // Changes the global state and notifies state changes to clients (lives in
+  // the browser) and child processes (renderers) if needed. Returns true when
+  // the state is actually changed.
+  bool ChangeStateIfNeeded(MemoryState prev_state, MemoryState next_state);
+
   // Calculates the next global state from the amount of free memory using
   // a heuristic.
   MemoryState CalculateNextState();
 
-  // Updates the global state and notifies state changes to clients (lives in
-  // the browser) and child processes (renderers) if necessary.
+  // Periodically called to update the global state.
   void UpdateState();
 
   // Notifies a state change to in-process clients.
@@ -94,7 +104,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   NotificationRegistrar notification_registrar_;
   std::unique_ptr<MemoryMonitor> memory_monitor_;
-  base::Closure update_state_callback_;
+  base::CancelableClosure update_state_closure_;
   base::MemoryState current_state_ = MemoryState::NORMAL;
   base::TimeTicks last_state_change_;
 

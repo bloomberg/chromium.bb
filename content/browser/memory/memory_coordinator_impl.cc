@@ -165,8 +165,6 @@ MemoryCoordinatorImpl::MemoryCoordinatorImpl(
       memory_monitor_(std::move(memory_monitor)),
       weak_ptr_factory_(this) {
   DCHECK(memory_monitor_.get());
-  update_state_callback_ = base::Bind(&MemoryCoordinatorImpl::UpdateState,
-                                      weak_ptr_factory_.GetWeakPtr());
   InitializeParameters();
 }
 
@@ -180,6 +178,7 @@ void MemoryCoordinatorImpl::Start() {
   notification_registrar_.Add(
       this, NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       NotificationService::AllBrowserContextsAndSources());
+  last_state_change_ = base::TimeTicks::Now();
   ScheduleUpdateState(base::TimeDelta());
 }
 
@@ -204,14 +203,15 @@ base::MemoryState MemoryCoordinatorImpl::GetCurrentMemoryState() const {
 void MemoryCoordinatorImpl::SetCurrentMemoryStateForTesting(
     base::MemoryState memory_state) {
   // This changes the current state temporariy for testing. The state will be
-  // updated later by the task posted at ScheduleUpdateState.
-  DCHECK(memory_state != MemoryState::UNKNOWN);
-  base::MemoryState prev_state = current_state_;
-  current_state_ = memory_state;
-  if (prev_state != current_state_) {
-    NotifyStateToClients();
-    NotifyStateToChildren();
-  }
+  // updated 1 minute later.
+  ForceSetGlobalState(memory_state, base::TimeDelta::FromMinutes(1));
+}
+
+void MemoryCoordinatorImpl::ForceSetGlobalState(base::MemoryState new_state,
+                                                base::TimeDelta duration) {
+  DCHECK(new_state != MemoryState::UNKNOWN);
+  ChangeStateIfNeeded(current_state_, new_state);
+  ScheduleUpdateState(duration);
 }
 
 void MemoryCoordinatorImpl::Observe(int type,
@@ -228,6 +228,25 @@ void MemoryCoordinatorImpl::Observe(int type,
   iter->second.is_visible = *Details<bool>(details).ptr();
   auto new_state = ToMojomMemoryState(GetGlobalMemoryState());
   SetChildMemoryState(iter->first, new_state);
+}
+
+bool MemoryCoordinatorImpl::ChangeStateIfNeeded(base::MemoryState prev_state,
+                                                base::MemoryState next_state) {
+  if (prev_state == next_state)
+    return false;
+
+  base::TimeTicks prev_last_state_change = last_state_change_;
+  last_state_change_ = base::TimeTicks::Now();
+  current_state_ = next_state;
+
+  TRACE_EVENT2("memory-infra", "MemoryCoordinatorImpl::ChangeStateIfNeeded",
+               "prev", MemoryStateToString(prev_state),
+               "next", MemoryStateToString(next_state));
+  RecordStateChange(prev_state, next_state,
+                    last_state_change_ - prev_last_state_change);
+  NotifyStateToClients();
+  NotifyStateToChildren();
+  return true;
 }
 
 base::MemoryState MemoryCoordinatorImpl::CalculateNextState() {
@@ -273,24 +292,8 @@ base::MemoryState MemoryCoordinatorImpl::CalculateNextState() {
 }
 
 void MemoryCoordinatorImpl::UpdateState() {
-  base::TimeTicks prev_last_state_change = last_state_change_;
-  base::TimeTicks now = base::TimeTicks::Now();
-  MemoryState prev_state = current_state_;
   MemoryState next_state = CalculateNextState();
-
-  if (last_state_change_.is_null() || current_state_ != next_state) {
-    current_state_ = next_state;
-    last_state_change_ = now;
-  }
-
-  if (next_state != prev_state) {
-    TRACE_EVENT2("memory-infra", "MemoryCoordinatorImpl::UpdateState",
-                 "prev", MemoryStateToString(prev_state),
-                 "next", MemoryStateToString(next_state));
-
-    RecordStateChange(prev_state, next_state, now - prev_last_state_change);
-    NotifyStateToClients();
-    NotifyStateToChildren();
+  if (ChangeStateIfNeeded(current_state_, next_state)) {
     ScheduleUpdateState(minimum_transition_period_);
   } else {
     ScheduleUpdateState(monitoring_interval_);
@@ -340,7 +343,10 @@ void MemoryCoordinatorImpl::RecordStateChange(MemoryState prev_state,
 }
 
 void MemoryCoordinatorImpl::ScheduleUpdateState(base::TimeDelta delta) {
-  task_runner_->PostDelayedTask(FROM_HERE, update_state_callback_, delta);
+  update_state_closure_.Reset(base::Bind(&MemoryCoordinatorImpl::UpdateState,
+                                         weak_ptr_factory_.GetWeakPtr()));
+  task_runner_->PostDelayedTask(FROM_HERE, update_state_closure_.callback(),
+                                delta);
 }
 
 void MemoryCoordinatorImpl::InitializeParameters() {
