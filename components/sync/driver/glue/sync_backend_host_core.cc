@@ -18,7 +18,6 @@
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
-#include "components/sync/driver/glue/sync_backend_registrar.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -26,6 +25,7 @@
 #include "components/sync/engine/engine_components_factory.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
+#include "components/sync/engine/sync_backend_registrar.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/engine/sync_manager_factory.h"
 

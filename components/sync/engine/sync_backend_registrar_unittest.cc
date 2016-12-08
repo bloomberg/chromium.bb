@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/glue/sync_backend_registrar.h"
+#include "components/sync/engine/sync_backend_registrar.h"
 
 #include <memory>
 
