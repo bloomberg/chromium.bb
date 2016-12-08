@@ -4642,6 +4642,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-gl"
         ],
         "name": "angle_deqp_gles2_gl_tests",
@@ -4660,6 +4661,7 @@
       },
       {
         "args": [
+          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-gl"
         ],
         "name": "angle_deqp_gles31_gl_tests",
@@ -4678,6 +4680,7 @@
       },
       {
         "args": [
+          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-gl"
         ],
         "name": "angle_deqp_gles3_gl_tests",
@@ -9544,6 +9547,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-gl"
         ],
         "name": "angle_deqp_gles2_gl_tests",
@@ -9851,6 +9855,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-d3d11"
         ],
         "name": "angle_deqp_gles2_d3d11_tests",
@@ -10016,6 +10021,9 @@
   "Optional Win7 Release (NVIDIA)": {
     "gtest_tests": [
       {
+        "args": [
+          "--test-launcher-batch-limit=400"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10030,6 +10038,7 @@
       },
       {
         "args": [
+          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-d3d11"
         ],
         "name": "angle_deqp_gles2_d3d11_tests",
@@ -13950,6 +13959,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-d3d11"
         ],
         "name": "angle_deqp_gles2_d3d11_tests",
@@ -15421,6 +15431,9 @@
   "Win7 Release (NVIDIA)": {
     "gtest_tests": [
       {
+        "args": [
+          "--test-launcher-batch-limit=400"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15435,6 +15448,7 @@
       },
       {
         "args": [
+          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-d3d11"
         ],
         "name": "angle_deqp_gles2_d3d11_tests",
@@ -15453,6 +15467,26 @@
       },
       {
         "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-d3d11"
+        ],
+        "name": "angle_deqp_gles31_d3d11_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles31_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-gl"
         ],
         "name": "angle_deqp_gles31_gl_tests",
@@ -15471,6 +15505,7 @@
       },
       {
         "args": [
+          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-d3d11"
         ],
         "name": "angle_deqp_gles3_d3d11_tests",
@@ -16926,6 +16961,9 @@
   "Win7 x64 Release (NVIDIA)": {
     "gtest_tests": [
       {
+        "args": [
+          "--test-launcher-batch-limit=400"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16940,6 +16978,7 @@
       },
       {
         "args": [
+          "--test-launcher-batch-limit=400",
           "--deqp-egl-display-type=angle-d3d11"
         ],
         "name": "angle_deqp_gles2_d3d11_tests",

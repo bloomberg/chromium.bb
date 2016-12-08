@@ -748,6 +748,9 @@ COMMON_GTESTS = {
         ],
       },
     ],
+    'args': [
+      '--test-launcher-batch-limit=400'
+    ]
   },
 
   'angle_deqp_gles2_d3d11_tests': {
@@ -776,7 +779,10 @@ COMMON_GTESTS = {
       'shards': 4,
     },
     'test': 'angle_deqp_gles2_tests',
-    'args': ['--deqp-egl-display-type=angle-d3d11']
+    'args': [
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-d3d11'
+    ]
   },
 
   'angle_deqp_gles2_gl_tests': {
@@ -800,7 +806,10 @@ COMMON_GTESTS = {
       'shards': 4,
     },
     'test': 'angle_deqp_gles2_tests',
-    'args': ['--deqp-egl-display-type=angle-gl'],
+    'args': [
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-gl'
+    ]
   },
 
   'angle_deqp_gles2_gles_tests': {
@@ -825,7 +834,10 @@ COMMON_GTESTS = {
     # Only pass the display type to desktop. The Android runner doesn't support
     # passing args to the executable but only one display type is supported on
     # Android anyways.
-    'desktop_args': ['--deqp-egl-display-type=angle-gles'],
+    'desktop_args': [
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-gles'
+    ],
     'android_args': ['--enable-xml-result-parsing']
   },
 
@@ -851,7 +863,10 @@ COMMON_GTESTS = {
       'shards': 12,
     },
     'test': 'angle_deqp_gles3_tests',
-    'args': ['--deqp-egl-display-type=angle-d3d11']
+    'args': [
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-d3d11'
+    ]
   },
 
   'angle_deqp_gles3_gl_tests': {
@@ -875,7 +890,37 @@ COMMON_GTESTS = {
       'shards': 12,
     },
     'test': 'angle_deqp_gles3_tests',
-    'args': ['--deqp-egl-display-type=angle-gl']
+    'args': [
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-gl'
+    ]
+  },
+
+  'angle_deqp_gles31_d3d11_tests': {
+    'tester_configs': [
+      {
+        'fyi_only': True,
+        'run_on_optional': False,
+        # Run on the Win Release NVIDIA bots.
+        'build_configs': ['Release'],
+        'swarming_dimension_sets': [
+          {
+            'gpu': '10de:104a',
+            'os': 'Windows-2008ServerR2-SP1'
+          }
+        ],
+      }
+    ],
+    'swarming': {
+      # TODO(geofflang): Increase the number of shards as more tests start to
+      # pass and runtime increases.
+      'shards': 4,
+    },
+    'test': 'angle_deqp_gles31_tests',
+    'args': [
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-d3d11'
+    ]
   },
 
   'angle_deqp_gles31_gl_tests': {
@@ -903,7 +948,10 @@ COMMON_GTESTS = {
       'shards': 4,
     },
     'test': 'angle_deqp_gles31_tests',
-    'args': ['--deqp-egl-display-type=angle-gl']
+    'args': [
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-gl'
+    ]
   },
 
   # Until we have more capacity, run angle_end2end_tests only on the
