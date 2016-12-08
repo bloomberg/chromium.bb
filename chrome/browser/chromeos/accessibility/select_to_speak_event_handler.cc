@@ -27,7 +27,7 @@ SelectToSpeakEventHandler::~SelectToSpeakEventHandler() {
 
 void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   if (event->key_code() == ui::VKEY_LWIN) {
-    if (event->type() == ui::ET_KEY_PRESSED) {
+    if (event->type() == ui::ET_KEY_PRESSED && state_ == INACTIVE) {
       state_ = SEARCH_DOWN;
     } else if (event->type() == ui::ET_KEY_RELEASED) {
       if (state_ == CAPTURING) {

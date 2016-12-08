@@ -156,6 +156,31 @@ TEST_F(SelectToSpeakEventHandlerTest, SearchPlusClick) {
   EXPECT_FALSE(event_capturer_.last_key_event());
 }
 
+TEST_F(SelectToSpeakEventHandlerTest, RepeatSearchKey) {
+  // Holding the Search key may generate key repeat events. Make sure it's
+  // still treated as if the search key is down.
+  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+
+  generator_->set_current_location(gfx::Point(100, 12));
+  generator_->PressLeftButton();
+  EXPECT_FALSE(event_capturer_.last_mouse_event());
+
+  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_PRESSED));
+
+  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+
+  generator_->ReleaseLeftButton();
+  EXPECT_FALSE(event_capturer_.last_mouse_event());
+
+  EXPECT_TRUE(event_delegate_->CapturedAXEvent(ui::AX_EVENT_MOUSE_RELEASED));
+
+  event_capturer_.Reset();
+  generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  EXPECT_FALSE(event_capturer_.last_key_event());
+}
+
 TEST_F(SelectToSpeakEventHandlerTest, SearchPlusClickTwice) {
   // Same as SearchPlusClick, above, but test that the user can keep
   // holding down Search and click again.
