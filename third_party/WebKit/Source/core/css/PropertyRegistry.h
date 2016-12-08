@@ -52,6 +52,7 @@ class PropertyRegistry : public GarbageCollected<PropertyRegistry> {
                         const CSSValue* initial,
                         PassRefPtr<CSSVariableData> initialVariableData);
   const Registration* registration(const AtomicString&) const;
+  size_t registrationCount() const { return m_registrations.size(); }
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_registrations); }
 

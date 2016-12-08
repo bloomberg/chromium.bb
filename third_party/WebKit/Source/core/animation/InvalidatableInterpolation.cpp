@@ -32,7 +32,7 @@ InvalidatableInterpolation::maybeConvertPairwise(
     const InterpolationEnvironment& environment,
     const UnderlyingValueOwner& underlyingValueOwner) const {
   DCHECK(m_currentFraction != 0 && m_currentFraction != 1);
-  for (const auto& interpolationType : m_interpolationTypes) {
+  for (const auto& interpolationType : *m_interpolationTypes) {
     if ((m_startKeyframe->isNeutral() || m_endKeyframe->isNeutral()) &&
         (!underlyingValueOwner ||
          underlyingValueOwner.type() != *interpolationType))
@@ -59,7 +59,7 @@ InvalidatableInterpolation::convertSingleKeyframe(
     const UnderlyingValueOwner& underlyingValueOwner) const {
   if (keyframe.isNeutral() && !underlyingValueOwner)
     return nullptr;
-  for (const auto& interpolationType : m_interpolationTypes) {
+  for (const auto& interpolationType : *m_interpolationTypes) {
     if (keyframe.isNeutral() &&
         underlyingValueOwner.type() != *interpolationType)
       continue;
@@ -89,7 +89,7 @@ void InvalidatableInterpolation::addConversionCheckers(
 std::unique_ptr<TypedInterpolationValue>
 InvalidatableInterpolation::maybeConvertUnderlyingValue(
     const InterpolationEnvironment& environment) const {
-  for (const auto& interpolationType : m_interpolationTypes) {
+  for (const auto& interpolationType : *m_interpolationTypes) {
     InterpolationValue result =
         interpolationType->maybeConvertUnderlyingValue(environment);
     if (result)
@@ -144,6 +144,9 @@ InvalidatableInterpolation::ensureValidConversion(
     const InterpolationEnvironment& environment,
     const UnderlyingValueOwner& underlyingValueOwner) const {
   DCHECK(!std::isnan(m_currentFraction));
+  DCHECK(m_interpolationTypes &&
+         m_interpolationTypesVersion ==
+             environment.interpolationTypesMap().version());
   if (isConversionCacheValid(environment, underlyingValueOwner))
     return m_cachedValue.get();
   clearConversionCache();
@@ -170,6 +173,18 @@ InvalidatableInterpolation::ensureValidConversion(
   }
   m_isConversionCached = true;
   return m_cachedValue.get();
+}
+
+void InvalidatableInterpolation::ensureValidInterpolationTypes(
+    const InterpolationEnvironment& environment) const {
+  const InterpolationTypesMap& map = environment.interpolationTypesMap();
+  if (m_interpolationTypesVersion != map.version()) {
+    m_interpolationTypes = nullptr;
+  }
+  if (!m_interpolationTypes) {
+    m_interpolationTypes = &map.get(m_property);
+    clearConversionCache();
+  }
 }
 
 void InvalidatableInterpolation::setFlagIfInheritUsed(
@@ -208,6 +223,7 @@ void InvalidatableInterpolation::applyStack(
   UnderlyingValueOwner underlyingValueOwner;
   const InvalidatableInterpolation& firstInterpolation =
       toInvalidatableInterpolation(*interpolations.at(startingIndex));
+  firstInterpolation.ensureValidInterpolationTypes(environment);
   if (firstInterpolation.dependsOnUnderlyingValue()) {
     underlyingValueOwner.set(
         firstInterpolation.maybeConvertUnderlyingValue(environment));
@@ -235,6 +251,7 @@ void InvalidatableInterpolation::applyStack(
     const InvalidatableInterpolation& currentInterpolation =
         toInvalidatableInterpolation(*interpolations.at(i));
     DCHECK(currentInterpolation.dependsOnUnderlyingValue());
+    currentInterpolation.ensureValidInterpolationTypes(environment);
     const TypedInterpolationValue* currentValue =
         currentInterpolation.ensureValidConversion(environment,
                                                    underlyingValueOwner);
