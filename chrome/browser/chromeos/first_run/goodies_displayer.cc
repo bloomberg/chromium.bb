@@ -18,6 +18,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -106,12 +108,13 @@ void GoodiesDisplayer::Delete() {
 // new Chromebooks; when appropriate, it uses pref to mark page as shown,
 // removes itself from BrowserListObservers, and deletes itself.
 void GoodiesDisplayer::OnBrowserSetLastActive(Browser* browser) {
-  // 1. Must be an actual tabbed brower window.
+  // 1. Must be an actual tabbed browser window.
   if (browser->type() != Browser::TYPE_TABBED)
     return;
 
-  // 2. Not guest or incognito session (keep observing).
-  if (browser->profile()->IsOffTheRecord())
+  // 2. Not guest or incognito session or supervised user (keep observing).
+  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
+  if (browser->profile()->IsOffTheRecord() || (user && user->IsSupervised()))
     return;
 
   PrefService* local_state = g_browser_process->local_state();
