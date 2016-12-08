@@ -10,6 +10,7 @@ static_library("task_scheduler_util") {
 
   deps = [
     "//base",
-    "//components/variations",
+    "//components/task_scheduler_util/initialization",
+    "//components/task_scheduler_util/variations",
   ]
 }

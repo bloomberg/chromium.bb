@@ -218,10 +218,6 @@
                     "name": "EnableViaFlag",
                     "forcing_flag": "enable-browser-task-scheduler",
                     "params": {
-                        "Background": "3;8;0.1;0;30000",
-                        "BackgroundFileIO": "3;8;0.1;0;30000",
-                        "Foreground": "8;32;0.3;0;30000",
-                        "ForegroundFileIO": "8;32;0.3;0;30000",
                         "RedirectHistoryService": "true",
                         "RedirectSequencedWorkerPools": "true"
                     }
