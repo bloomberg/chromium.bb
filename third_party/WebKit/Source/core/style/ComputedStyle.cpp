@@ -1521,7 +1521,7 @@ FloatRoundedRect ComputedStyle::getRoundedInnerBorderFor(
 
 FloatRoundedRect ComputedStyle::getRoundedInnerBorderFor(
     const LayoutRect& borderRect,
-    const LayoutRectOutsets insets,
+    const LayoutRectOutsets& insets,
     bool includeLogicalLeftEdge,
     bool includeLogicalRightEdge) const {
   LayoutRect innerRect(borderRect);

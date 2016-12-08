@@ -198,7 +198,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(
     // FIXME: Should eventually give the theme control over whether the box
     // shadow should paint, since controls could have custom shadows of their
     // own.
-    paintBoxShadow(paintInfo, paintRect, style, Normal);
+    paintNormalBoxShadow(paintInfo, paintRect, style);
 
     if (bleedAvoidanceIsClipping(boxDecorationData.bleedAvoidance)) {
       stateSaver.save();
@@ -230,7 +230,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(
   }
 
   if (!paintingOverflowContents) {
-    paintBoxShadow(paintInfo, paintRect, style, Inset);
+    paintInsetBoxShadow(paintInfo, paintRect, style);
 
     // The theme will tell us whether or not we should also paint the CSS
     // border.
@@ -912,26 +912,18 @@ void BoxPainter::paintBorder(const LayoutBoxModelObject& obj,
   borderPainter.paintBorder(info, rect);
 }
 
-void BoxPainter::paintBoxShadow(const PaintInfo& info,
-                                const LayoutRect& paintRect,
-                                const ComputedStyle& style,
-                                ShadowStyle shadowStyle,
-                                bool includeLogicalLeftEdge,
-                                bool includeLogicalRightEdge) {
-  // FIXME: Deal with border-image. Would be great to use border-image as a
-  // mask.
-  GraphicsContext& context = info.context;
+void BoxPainter::paintNormalBoxShadow(const PaintInfo& info,
+                                      const LayoutRect& paintRect,
+                                      const ComputedStyle& style,
+                                      bool includeLogicalLeftEdge,
+                                      bool includeLogicalRightEdge) {
   if (!style.boxShadow())
     return;
-  FloatRoundedRect border =
-      (shadowStyle == Inset)
-          ? style.getRoundedInnerBorderFor(paintRect, includeLogicalLeftEdge,
-                                           includeLogicalRightEdge)
-          : style.getRoundedBorderFor(paintRect, includeLogicalLeftEdge,
-                                      includeLogicalRightEdge);
+  GraphicsContext& context = info.context;
+  FloatRoundedRect border = style.getRoundedBorderFor(
+      paintRect, includeLogicalLeftEdge, includeLogicalRightEdge);
 
   bool hasBorderRadius = style.hasBorderRadius();
-  bool isHorizontal = style.isHorizontalWritingMode();
   bool hasOpaqueBackground =
       style.visitedDependentColor(CSSPropertyBackgroundColor).alpha() == 255;
 
@@ -940,7 +932,7 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info,
   const ShadowList* shadowList = style.boxShadow();
   for (size_t i = shadowList->shadows().size(); i--;) {
     const ShadowData& shadow = shadowList->shadows()[i];
-    if (shadow.style() != shadowStyle)
+    if (shadow.style() != Normal)
       continue;
 
     FloatSize shadowOffset(shadow.x(), shadow.y());
@@ -953,97 +945,138 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info,
     const Color& shadowColor =
         shadow.color().resolve(style.visitedDependentColor(CSSPropertyColor));
 
-    if (shadow.style() == Normal) {
-      FloatRect fillRect = border.rect();
-      fillRect.inflate(shadowSpread);
-      if (fillRect.isEmpty())
-        continue;
+    FloatRect fillRect = border.rect();
+    fillRect.inflate(shadowSpread);
+    if (fillRect.isEmpty())
+      continue;
 
-      FloatRect shadowRect(border.rect());
-      shadowRect.inflate(shadowBlur + shadowSpread);
-      shadowRect.move(shadowOffset);
+    FloatRect shadowRect(border.rect());
+    shadowRect.inflate(shadowBlur + shadowSpread);
+    shadowRect.move(shadowOffset);
 
-      // Save the state and clip, if not already done.
-      // The clip does not depend on any shadow-specific properties.
-      if (!stateSaver.saved()) {
-        stateSaver.save();
-        if (hasBorderRadius) {
-          FloatRoundedRect rectToClipOut = border;
-
-          // If the box is opaque, it is unnecessary to clip it out. However,
-          // doing so saves time when painting the shadow. On the other hand, it
-          // introduces subpixel gaps along the corners. Those are avoided by
-          // insetting the clipping path by one CSS pixel.
-          if (hasOpaqueBackground)
-            rectToClipOut.inflateWithRadii(-1);
-
-          if (!rectToClipOut.isEmpty())
-            context.clipOutRoundedRect(rectToClipOut);
-        } else {
-          // This IntRect is correct even with fractional shadows, because it is
-          // used for the rectangle of the box itself, which is always
-          // pixel-aligned.
-          FloatRect rectToClipOut = border.rect();
-
-          // If the box is opaque, it is unnecessary to clip it out. However,
-          // doing so saves time when painting the shadow. On the other hand, it
-          // introduces subpixel gaps along the edges if they are not
-          // pixel-aligned. Those are avoided by insetting the clipping path by
-          // one CSS pixel.
-          if (hasOpaqueBackground)
-            rectToClipOut.inflate(-1);
-
-          if (!rectToClipOut.isEmpty())
-            context.clipOut(rectToClipOut);
-        }
-      }
-
-      // Draw only the shadow.
-      context.setShadow(shadowOffset, shadowBlur, shadowColor,
-                        DrawLooperBuilder::ShadowRespectsTransforms,
-                        DrawLooperBuilder::ShadowIgnoresAlpha, DrawShadowOnly);
-
+    // Save the state and clip, if not already done.
+    // The clip does not depend on any shadow-specific properties.
+    if (!stateSaver.saved()) {
+      stateSaver.save();
       if (hasBorderRadius) {
-        FloatRoundedRect influenceRect(
-            pixelSnappedIntRect(LayoutRect(shadowRect)), border.getRadii());
-        float changeAmount = 2 * shadowBlur + shadowSpread;
-        if (changeAmount >= 0)
-          influenceRect.expandRadii(changeAmount);
-        else
-          influenceRect.shrinkRadii(-changeAmount);
+        FloatRoundedRect rectToClipOut = border;
 
-        FloatRoundedRect roundedFillRect = border;
-        roundedFillRect.inflate(shadowSpread);
+        // If the box is opaque, it is unnecessary to clip it out. However,
+        // doing so saves time when painting the shadow. On the other hand, it
+        // introduces subpixel gaps along the corners. Those are avoided by
+        // insetting the clipping path by one CSS pixel.
+        if (hasOpaqueBackground)
+          rectToClipOut.inflateWithRadii(-1);
 
-        if (shadowSpread >= 0)
-          roundedFillRect.expandRadii(shadowSpread);
-        else
-          roundedFillRect.shrinkRadii(-shadowSpread);
-        if (!roundedFillRect.isRenderable())
-          roundedFillRect.adjustRadii();
-        roundedFillRect.constrainRadii();
-        context.fillRoundedRect(roundedFillRect, Color::black);
+        if (!rectToClipOut.isEmpty())
+          context.clipOutRoundedRect(rectToClipOut);
       } else {
-        context.fillRect(fillRect, Color::black);
+        // This IntRect is correct even with fractional shadows, because it is
+        // used for the rectangle of the box itself, which is always
+        // pixel-aligned.
+        FloatRect rectToClipOut = border.rect();
+
+        // If the box is opaque, it is unnecessary to clip it out. However,
+        // doing so saves time when painting the shadow. On the other hand, it
+        // introduces subpixel gaps along the edges if they are not
+        // pixel-aligned. Those are avoided by insetting the clipping path by
+        // one CSS pixel.
+        if (hasOpaqueBackground)
+          rectToClipOut.inflate(-1);
+
+        if (!rectToClipOut.isEmpty())
+          context.clipOut(rectToClipOut);
       }
-    } else {
-      // The inset shadow case.
-      GraphicsContext::Edges clippedEdges = GraphicsContext::NoEdge;
-      if (!includeLogicalLeftEdge) {
-        if (isHorizontal)
-          clippedEdges |= GraphicsContext::LeftEdge;
-        else
-          clippedEdges |= GraphicsContext::TopEdge;
-      }
-      if (!includeLogicalRightEdge) {
-        if (isHorizontal)
-          clippedEdges |= GraphicsContext::RightEdge;
-        else
-          clippedEdges |= GraphicsContext::BottomEdge;
-      }
-      context.drawInnerShadow(border, shadowColor, shadowOffset, shadowBlur,
-                              shadowSpread, clippedEdges);
     }
+
+    // Draw only the shadow.
+    context.setShadow(shadowOffset, shadowBlur, shadowColor,
+                      DrawLooperBuilder::ShadowRespectsTransforms,
+                      DrawLooperBuilder::ShadowIgnoresAlpha, DrawShadowOnly);
+
+    if (hasBorderRadius) {
+      FloatRoundedRect influenceRect(
+          pixelSnappedIntRect(LayoutRect(shadowRect)), border.getRadii());
+      float changeAmount = 2 * shadowBlur + shadowSpread;
+      if (changeAmount >= 0)
+        influenceRect.expandRadii(changeAmount);
+      else
+        influenceRect.shrinkRadii(-changeAmount);
+
+      FloatRoundedRect roundedFillRect = border;
+      roundedFillRect.inflate(shadowSpread);
+
+      if (shadowSpread >= 0)
+        roundedFillRect.expandRadii(shadowSpread);
+      else
+        roundedFillRect.shrinkRadii(-shadowSpread);
+      if (!roundedFillRect.isRenderable())
+        roundedFillRect.adjustRadii();
+      roundedFillRect.constrainRadii();
+      context.fillRoundedRect(roundedFillRect, Color::black);
+    } else {
+      context.fillRect(fillRect, Color::black);
+    }
+  }
+}
+
+void BoxPainter::paintInsetBoxShadow(const PaintInfo& info,
+                                     const LayoutRect& paintRect,
+                                     const ComputedStyle& style,
+                                     bool includeLogicalLeftEdge,
+                                     bool includeLogicalRightEdge) {
+  if (!style.boxShadow())
+    return;
+  FloatRoundedRect bounds = style.getRoundedInnerBorderFor(
+      paintRect, includeLogicalLeftEdge, includeLogicalRightEdge);
+  paintInsetBoxShadowInBounds(info, bounds, style, includeLogicalLeftEdge,
+                              includeLogicalRightEdge);
+}
+
+void BoxPainter::paintInsetBoxShadowInBounds(const PaintInfo& info,
+                                             const FloatRoundedRect& bounds,
+                                             const ComputedStyle& style,
+                                             bool includeLogicalLeftEdge,
+                                             bool includeLogicalRightEdge) {
+  // The caller should have checked style.boxShadow() when computing bounds.
+  DCHECK(style.boxShadow());
+  GraphicsContext& context = info.context;
+
+  bool isHorizontal = style.isHorizontalWritingMode();
+  GraphicsContextStateSaver stateSaver(context, false);
+
+  const ShadowList* shadowList = style.boxShadow();
+  for (size_t i = shadowList->shadows().size(); i--;) {
+    const ShadowData& shadow = shadowList->shadows()[i];
+    if (shadow.style() != Inset)
+      continue;
+
+    FloatSize shadowOffset(shadow.x(), shadow.y());
+    float shadowBlur = shadow.blur();
+    float shadowSpread = shadow.spread();
+
+    if (shadowOffset.isZero() && !shadowBlur && !shadowSpread)
+      continue;
+
+    const Color& shadowColor =
+        shadow.color().resolve(style.visitedDependentColor(CSSPropertyColor));
+
+    // The inset shadow case.
+    GraphicsContext::Edges clippedEdges = GraphicsContext::NoEdge;
+    if (!includeLogicalLeftEdge) {
+      if (isHorizontal)
+        clippedEdges |= GraphicsContext::LeftEdge;
+      else
+        clippedEdges |= GraphicsContext::TopEdge;
+    }
+    if (!includeLogicalRightEdge) {
+      if (isHorizontal)
+        clippedEdges |= GraphicsContext::RightEdge;
+      else
+        clippedEdges |= GraphicsContext::BottomEdge;
+    }
+    context.drawInnerShadow(bounds, shadowColor, shadowOffset, shadowBlur,
+                            shadowSpread, clippedEdges);
   }
 }
 

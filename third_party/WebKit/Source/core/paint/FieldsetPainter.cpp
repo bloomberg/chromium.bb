@@ -49,14 +49,15 @@ void FieldsetPainter::paintBoxDecorationBackground(
                                        paintInfo.phase, paintRect);
   BoxDecorationData boxDecorationData(m_layoutFieldset);
 
-  if (boxDecorationData.bleedAvoidance == BackgroundBleedNone)
-    BoxPainter::paintBoxShadow(paintInfo, paintRect,
-                               m_layoutFieldset.styleRef(), Normal);
+  if (boxDecorationData.bleedAvoidance == BackgroundBleedNone) {
+    BoxPainter::paintNormalBoxShadow(paintInfo, paintRect,
+                                     m_layoutFieldset.styleRef());
+  }
   BoxPainter(m_layoutFieldset)
       .paintFillLayers(paintInfo, boxDecorationData.backgroundColor,
                        m_layoutFieldset.style()->backgroundLayers(), paintRect);
-  BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutFieldset.styleRef(),
-                             Inset);
+  BoxPainter::paintInsetBoxShadow(paintInfo, paintRect,
+                                  m_layoutFieldset.styleRef());
 
   if (!boxDecorationData.hasBorderDecoration)
     return;

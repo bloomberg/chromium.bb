@@ -3404,7 +3404,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       bool includeLogicalLeftEdge = true,
       bool includeLogicalRightEdge = true) const;
   FloatRoundedRect getRoundedInnerBorderFor(const LayoutRect& borderRect,
-                                            const LayoutRectOutsets insets,
+                                            const LayoutRectOutsets& insets,
                                             bool includeLogicalLeftEdge,
                                             bool includeLogicalRightEdge) const;
 

@@ -51,10 +51,15 @@ class InlineFlowBoxPainter {
                       const FillLayer&,
                       const LayoutRect&,
                       SkBlendMode op);
-  void paintBoxShadow(const PaintInfo&,
-                      const ComputedStyle&,
-                      ShadowStyle,
-                      const LayoutRect& paintRect);
+  inline bool shouldForceIncludeLogicalEdges() const;
+  inline bool includeLogicalLeftEdgeForBoxShadow() const;
+  inline bool includeLogicalRightEdgeForBoxShadow() const;
+  void paintNormalBoxShadow(const PaintInfo&,
+                            const ComputedStyle&,
+                            const LayoutRect& paintRect);
+  void paintInsetBoxShadow(const PaintInfo&,
+                           const ComputedStyle&,
+                           const LayoutRect& paintRect);
   LayoutRect paintRectForImageStrip(const LayoutPoint& paintOffset,
                                     const LayoutSize& frameSize,
                                     TextDirection) const;

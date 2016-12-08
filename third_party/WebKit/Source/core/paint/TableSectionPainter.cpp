@@ -400,9 +400,16 @@ void TableSectionPainter::paintBoxShadow(const PaintInfo& paintInfo,
                           .boundsForDrawingRecorder(paintInfo, paintOffset);
   LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableSection,
                                        type, bounds);
-  BoxPainter::paintBoxShadow(
-      paintInfo, LayoutRect(paintOffset, m_layoutTableSection.size()),
-      m_layoutTableSection.styleRef(), shadowStyle);
+  LayoutRect paintRect(paintOffset, m_layoutTableSection.size());
+  if (shadowStyle == Normal) {
+    BoxPainter::paintNormalBoxShadow(paintInfo, paintRect,
+                                     m_layoutTableSection.styleRef());
+  } else {
+    // TODO(wangxianzhu): Calculate the inset shadow bounds by insetting
+    // paintRect by half widths of collapsed borders.
+    BoxPainter::paintInsetBoxShadow(paintInfo, paintRect,
+                                    m_layoutTableSection.styleRef());
+  }
 }
 
 }  // namespace blink
