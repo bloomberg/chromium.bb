@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -249,7 +250,8 @@ RemoteSuggestionsProvider::RemoteSuggestionsProvider(
       nuke_when_initialized_(false),
       thumbnail_requests_throttler_(
           pref_service,
-          RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL) {
+          RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL),
+      tick_clock_(base::MakeUnique<base::DefaultTickClock>()) {
   pref_service_->ClearPref(kDeprecatedSnippetHostsPref);
 
   RestoreCategoriesFromPrefs();
@@ -290,6 +292,7 @@ void RemoteSuggestionsProvider::RegisterProfilePrefs(
   registry->RegisterInt64Pref(prefs::kSnippetBackgroundFetchingIntervalWifi, 0);
   registry->RegisterInt64Pref(prefs::kSnippetBackgroundFetchingIntervalFallback,
                               0);
+  registry->RegisterInt64Pref(prefs::kLastSuccessfulBackgroundFetchTime, 0);
 
   RemoteSuggestionsStatusService::RegisterProfilePrefs(registry);
 }
@@ -331,7 +334,7 @@ void RemoteSuggestionsProvider::FetchSnippetsFromHosts(
   params.interactive_request = interactive_request;
   snippets_fetcher_->FetchSnippets(
       params, base::BindOnce(&RemoteSuggestionsProvider::OnFetchFinished,
-                             base::Unretained(this)));
+                             base::Unretained(this), interactive_request));
 }
 
 void RemoteSuggestionsProvider::Fetch(
@@ -641,6 +644,7 @@ void RemoteSuggestionsProvider::OnDatabaseError() {
 
 void RemoteSuggestionsProvider::OnFetchMoreFinished(
     const FetchDoneCallback& fetching_callback,
+    NTPSnippetsFetcher::FetchResult fetch_result,
     NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!fetched_categories) {
     // TODO(fhorschig): Disambiguate the kind of error that led here.
@@ -702,11 +706,20 @@ void RemoteSuggestionsProvider::OnFetchMoreFinished(
 }
 
 void RemoteSuggestionsProvider::OnFetchFinished(
+    bool interactive_request,
+    NTPSnippetsFetcher::FetchResult fetch_result,
     NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!ready()) {
     // TODO(tschumann): What happens if this was a user-triggered, interactive
     // request? Is the UI waiting indefinitely now?
     return;
+  }
+
+  // Record the fetch time of a successfull background fetch.
+  if (!interactive_request &&
+      fetch_result == NTPSnippetsFetcher::FetchResult::SUCCESS) {
+    pref_service_->SetInt64(prefs::kLastSuccessfulBackgroundFetchTime,
+                            tick_clock_->NowTicks().ToInternalValue());
   }
 
   // Mark all categories as not provided by the server in the latest fetch. The

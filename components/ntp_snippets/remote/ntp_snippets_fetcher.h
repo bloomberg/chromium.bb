@@ -80,12 +80,6 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   using FetchedCategoriesVector = std::vector<FetchedCategory>;
   using OptionalFetchedCategories = base::Optional<FetchedCategoriesVector>;
 
-  // |snippets| contains parsed snippets if a fetch succeeded. If problems
-  // occur, |snippets| contains no value (no actual vector in base::Optional).
-  // Error details can be retrieved using last_status().
-  using SnippetsAvailableCallback =
-      base::OnceCallback<void(OptionalFetchedCategories fetched_categories)>;
-
   // Enumeration listing all possible outcomes for fetch attempts. Used for UMA
   // histograms, so do not change existing values. Insert new values at the end,
   // and update the histogram definition.
@@ -101,6 +95,13 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     NON_INTERACTIVE_QUOTA_ERROR,
     RESULT_MAX
   };
+
+  // |snippets| contains parsed snippets if a fetch succeeded. If problems
+  // occur, |snippets| contains no value (no actual vector in base::Optional).
+  // Error details can be retrieved using last_status().
+  using SnippetsAvailableCallback =
+      base::OnceCallback<void(FetchResult fetch_result,
+                              OptionalFetchedCategories fetched_categories)>;
 
   // Enumeration listing all possible variants of dealing with personalization.
   enum class Personalization { kPersonal, kNonPersonal, kBoth };

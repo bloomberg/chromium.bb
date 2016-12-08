@@ -151,6 +151,11 @@ class RemoteSuggestionsProvider final
     return category_contents_.find(category)->second.dismissed;
   }
 
+  // Overrides internal clock for testing purposes.
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock) {
+    tick_clock_ = std::move(tick_clock);
+  }
+
  private:
   friend class RemoteSuggestionsProviderTest;
 
@@ -261,10 +266,13 @@ class RemoteSuggestionsProvider final
   // Callback for fetch-more requests with the NTPSnippetsFetcher.
   void OnFetchMoreFinished(
       const FetchDoneCallback& fetching_callback,
+      NTPSnippetsFetcher::FetchResult fetch_result,
       NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
 
   // Callback for regular fetch requests with the NTPSnippetsFetcher.
   void OnFetchFinished(
+      bool interactive_request,
+      NTPSnippetsFetcher::FetchResult fetch_status,
       NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
 
   // Moves all snippets from |to_archive| into the archive of the |content|.
@@ -406,6 +414,9 @@ class RemoteSuggestionsProvider final
 
   // Request throttler for limiting requests to thumbnail images.
   RequestThrottler thumbnail_requests_throttler_;
+
+  // A clock for getting the time. This allows to inject a tick clock in tests.
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsProvider);
 };

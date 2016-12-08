@@ -40,6 +40,9 @@ extern const char kSnippetThumbnailsInteractiveRequestCount[];
 // thumbnails.
 extern const char kSnippetThumbnailsRequestsDay[];
 
+// The pref name for the time of the last successful background fetch.
+extern const char kLastSuccessfulBackgroundFetchTime[];
+
 extern const char kDismissedAssetDownloadSuggestions[];
 extern const char kDismissedRecentOfflineTabSuggestions[];
 extern const char kDismissedOfflinePageDownloadSuggestions[];

@@ -1005,7 +1005,7 @@ void NTPSnippetsFetcher::FetchFinished(OptionalFetchedCategories categories,
 
   DVLOG(1) << "Fetch finished: " << last_status_;
 
-  std::move(callback).Run(std::move(categories));
+  std::move(callback).Run(status_code, std::move(categories));
 }
 
 bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
