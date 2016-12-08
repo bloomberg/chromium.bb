@@ -106,6 +106,47 @@ void SourceBufferRange::Seek(DecodeTimestamp timestamp) {
       << next_buffer_index_ << ", size = " << buffers_.size();
 }
 
+int SourceBufferRange::GetConfigIdAtTime(DecodeTimestamp timestamp) {
+  DCHECK(CanSeekTo(timestamp));
+  DCHECK(!keyframe_map_.empty());
+
+  KeyframeMap::iterator result = GetFirstKeyframeAtOrBefore(timestamp);
+  CHECK(result != keyframe_map_.end());
+  size_t buffer_index = result->second - keyframe_map_index_base_;
+  CHECK_LT(buffer_index, buffers_.size()) << buffer_index
+                                          << ", size = " << buffers_.size();
+
+  return buffers_[buffer_index]->GetConfigId();
+}
+
+bool SourceBufferRange::SameConfigThruRange(DecodeTimestamp start,
+                                            DecodeTimestamp end) {
+  DCHECK(CanSeekTo(start));
+  DCHECK(CanSeekTo(end));
+  DCHECK(start <= end);
+  DCHECK(!keyframe_map_.empty());
+
+  if (start == end)
+    return true;
+
+  KeyframeMap::const_iterator result = GetFirstKeyframeAtOrBefore(start);
+  CHECK(result != keyframe_map_.end());
+  size_t buffer_index = result->second - keyframe_map_index_base_;
+  CHECK_LT(buffer_index, buffers_.size()) << buffer_index
+                                          << ", size = " << buffers_.size();
+
+  int start_config = buffers_[buffer_index]->GetConfigId();
+  buffer_index++;
+  while (buffer_index < buffers_.size() &&
+         buffers_[buffer_index]->GetDecodeTimestamp() <= end) {
+    if (buffers_[buffer_index]->GetConfigId() != start_config)
+      return false;
+    buffer_index++;
+  }
+
+  return true;
+}
+
 void SourceBufferRange::SeekAheadTo(DecodeTimestamp timestamp) {
   SeekAhead(timestamp, false);
 }

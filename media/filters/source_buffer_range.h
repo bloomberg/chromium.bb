@@ -37,6 +37,15 @@ class SourceBufferRange {
     ALLOW_GAPS
   };
 
+  // Return the config ID for the buffer at |timestamp|. Precondition: callers
+  // must first verify CanSeekTo(timestamp) == true.
+  int GetConfigIdAtTime(DecodeTimestamp timestamp);
+
+  // Return true if all buffers in range of [start, end] have the same config
+  // ID. Precondition: callers must first verify that
+  // CanSeekTo(start) ==  CanSeekTo(end) == true.
+  bool SameConfigThruRange(DecodeTimestamp start, DecodeTimestamp end);
+
   // Sequential buffers with the same decode timestamp make sense under certain
   // conditions, typically when the first buffer is a keyframe. Due to some
   // atypical media append behaviors where a new keyframe might have the same

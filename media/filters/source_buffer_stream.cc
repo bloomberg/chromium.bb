@@ -1229,6 +1229,18 @@ void SourceBufferStream::Seek(base::TimeDelta timestamp) {
   if (itr == ranges_.end())
     return;
 
+  if (!audio_configs_.empty()) {
+    const auto& config = audio_configs_[(*itr)->GetConfigIdAtTime(seek_dts)];
+    if (config.codec() == kCodecOpus) {
+      DecodeTimestamp preroll_dts = std::max(seek_dts - config.seek_preroll(),
+                                             (*itr)->GetStartTimestamp());
+      if ((*itr)->CanSeekTo(preroll_dts) &&
+          (*itr)->SameConfigThruRange(preroll_dts, seek_dts)) {
+        seek_dts = preroll_dts;
+      }
+    }
+  }
+
   SeekAndSetSelectedRange(*itr, seek_dts);
   seek_pending_ = false;
 }

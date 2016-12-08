@@ -133,6 +133,10 @@ static const char kOpusEndTrimmingHash_2[] =
     "-11.91,-11.11,-8.27,-7.13,-7.86,-10.00,";
 static const char kOpusEndTrimmingHash_3[] =
     "-13.31,-14.38,-13.70,-11.71,-10.21,-10.49,";
+static const char kOpusSmallCodecDelayHash_1[] =
+    "-0.48,-0.09,1.27,1.06,1.54,-0.22,";
+static const char kOpusSmallCodecDelayHash_2[] =
+    "0.29,0.15,-0.19,0.25,0.68,0.83,";
 #else
 // Hash for a full playthrough of "opus-trimming-test.(webm|ogg)".
 static const char kOpusEndTrimmingHash_1[] =
@@ -143,6 +147,12 @@ static const char kOpusEndTrimmingHash_2[] =
 // The above hash, plus an additional playthrough starting from T=6.36s.
 static const char kOpusEndTrimmingHash_3[] =
     "-13.28,-14.35,-13.67,-11.68,-10.18,-10.46,";
+// Hash for a full playthrough of "bear-opus.webm".
+static const char kOpusSmallCodecDelayHash_1[] =
+    "-0.47,-0.09,1.28,1.07,1.55,-0.22,";
+// The above hash, plus an additional playthrough starting from T=1.414s.
+static const char kOpusSmallCodecDelayHash_2[] =
+    "0.31,0.15,-0.18,0.25,0.70,0.84,";
 #endif  // defined(OPUS_FIXED_POINT)
 #endif  // !defined(MOJO_RENDERER)
 
@@ -1131,9 +1141,59 @@ TEST_F(PipelineIntegrationTest,
   EXPECT_HASH_EQ(kOpusEndTrimmingHash_3, GetAudioHash());
 }
 
-// TODO(dalecurtis): Add an opus test file which FFmpeg and ChunkDemuxer will
-// both seek the same in and shows the difference of preroll.
-// http://crbug.com/509894
+TEST_F(PipelineIntegrationTest,
+       MAYBE_CLOCKLESS(BasicPlaybackOpusPrerollExceedsCodecDelay)) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-opus.webm", kHashed | kClockless));
+
+  AudioDecoderConfig config =
+      demuxer_->GetStream(DemuxerStream::AUDIO)->audio_decoder_config();
+
+  // Verify that this file's preroll is not eclipsed by the codec delay so we
+  // can detect when preroll is not properly performed.
+  base::TimeDelta codec_delay = base::TimeDelta::FromSecondsD(
+      static_cast<double>(config.codec_delay()) / config.samples_per_second());
+  ASSERT_GT(config.seek_preroll(), codec_delay);
+
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusSmallCodecDelayHash_1, GetAudioHash());
+
+  // Seek halfway through the file to invoke seek preroll.
+  ASSERT_TRUE(Seek(base::TimeDelta::FromSecondsD(1.414)));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusSmallCodecDelayHash_2, GetAudioHash());
+}
+
+TEST_F(PipelineIntegrationTest,
+       MAYBE_CLOCKLESS(BasicPlaybackOpusPrerollExceedsCodecDelay_MediaSource)) {
+  MockMediaSource source("bear-opus.webm", kOpusAudioOnlyWebM,
+                         kAppendWholeFile);
+  EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(
+                             &source, kClockless | kHashed, nullptr));
+  source.EndOfStream();
+
+  AudioDecoderConfig config =
+      demuxer_->GetStream(DemuxerStream::AUDIO)->audio_decoder_config();
+
+  // Verify that this file's preroll is not eclipsed by the codec delay so we
+  // can detect when preroll is not properly performed.
+  base::TimeDelta codec_delay = base::TimeDelta::FromSecondsD(
+      static_cast<double>(config.codec_delay()) / config.samples_per_second());
+  ASSERT_GT(config.seek_preroll(), codec_delay);
+
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusSmallCodecDelayHash_1, GetAudioHash());
+
+  // Seek halfway through the file to invoke seek preroll.
+  base::TimeDelta seek_time = base::TimeDelta::FromSecondsD(1.414);
+  source.Seek(seek_time);
+  ASSERT_TRUE(Seek(seek_time));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusSmallCodecDelayHash_2, GetAudioHash());
+}
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackLive) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-live.webm", kHashed));
