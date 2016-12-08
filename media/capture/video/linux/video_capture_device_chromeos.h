@@ -6,6 +6,7 @@
 #define MEDIA_CAPTURE_VIDEO_LINUX_VIDEO_CAPTURE_DEVICE_CHROMEOS_H_
 
 #include "base/macros.h"
+#include "media/capture/video/linux/camera_facing_chromeos.h"
 #include "media/capture/video/linux/video_capture_device_linux.h"
 
 namespace display {
@@ -24,11 +25,15 @@ class VideoCaptureDeviceChromeOS : public VideoCaptureDeviceLinux {
       const VideoCaptureDeviceDescriptor& device_descriptor);
   ~VideoCaptureDeviceChromeOS() override;
 
+ protected:
+  void SetRotation(int rotation) override;
+
  private:
   class ScreenObserverDelegate;
 
   void SetDisplayRotation(const display::Display& display);
   scoped_refptr<ScreenObserverDelegate> screen_observer_delegate_;
+  const CameraFacingChromeOS::LensFacing lens_facing_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceChromeOS);
 };
 

@@ -37,8 +37,8 @@ std::list<uint32_t> VideoCaptureDeviceLinux::GetListOfUsableFourCCs(
 
 VideoCaptureDeviceLinux::VideoCaptureDeviceLinux(
     const VideoCaptureDeviceDescriptor& device_descriptor)
-    : v4l2_thread_("V4L2CaptureThread"),
-      device_descriptor_(device_descriptor) {}
+    : device_descriptor_(device_descriptor),
+      v4l2_thread_("V4L2CaptureThread") {}
 
 VideoCaptureDeviceLinux::~VideoCaptureDeviceLinux() {
   // Check if the thread is running.

@@ -45,7 +45,9 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
                        SetPhotoOptionsCallback callback) override;
 
  protected:
-  void SetRotation(int rotation);
+  virtual void SetRotation(int rotation);
+
+  const VideoCaptureDeviceDescriptor device_descriptor_;
 
  private:
   static int TranslatePowerLineFrequencyToV4L2(PowerLineFrequency frequency);
@@ -59,8 +61,6 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   std::list<base::Closure> photo_requests_queue_;
 
   base::Thread v4l2_thread_;  // Thread used for reading data from the device.
-
-  const VideoCaptureDeviceDescriptor device_descriptor_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceLinux);
 };
