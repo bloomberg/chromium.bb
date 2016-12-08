@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(harkness): Update to WorkerNavigator partial interface documentation.
-// https://wicg.github.io/budget-api/#navigator-budget-interface
+// https://wicg.github.io/budget-api/#navigator-workernavigator-extensions
 
 [
     RuntimeEnabled=Budget
 ] partial interface WorkerNavigator {
-    readonly attribute BudgetService budget;
+    [SameObject] readonly attribute BudgetService budget;
 };
