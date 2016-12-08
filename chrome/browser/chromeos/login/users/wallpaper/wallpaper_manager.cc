@@ -370,11 +370,6 @@ void WallpaperManager::Shutdown() {
   wallpaper_manager = nullptr;
 }
 
-void WallpaperManager::BindRequest(
-    ash::mojom::WallpaperManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
 WallpaperManager::WallpaperResolution
 WallpaperManager::GetAppropriateResolution() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -808,7 +803,7 @@ void WallpaperManager::UpdateWallpaper(bool clear_cache) {
 // WallpaperManager, private: --------------------------------------------------
 
 WallpaperManager::WallpaperManager()
-    : pending_inactive_(NULL), weak_factory_(this) {
+    : binding_(this), pending_inactive_(nullptr), weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   wallpaper::WallpaperManagerBase::SetPathIds(
       chrome::DIR_USER_DATA, chrome::DIR_CHROMEOS_WALLPAPERS,
@@ -829,6 +824,18 @@ WallpaperManager::WallpaperManager()
               sequence_token_, base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
+
+  content::ServiceManagerConnection* connection =
+      content::ServiceManagerConnection::GetForProcess();
+  if (connection && connection->GetConnector()) {
+    // Connect to the wallpaper controller interface in the ash service.
+    ash::mojom::WallpaperControllerPtr wallpaper_controller_ptr;
+    connection->GetConnector()->ConnectToInterface(
+        ash_util::GetAshServiceName(), &wallpaper_controller_ptr);
+    // Register this object as the wallpaper picker.
+    wallpaper_controller_ptr->SetWallpaperPicker(
+        binding_.CreateInterfacePtrAndBind());
+  }
 }
 
 WallpaperManager::PendingWallpaper* WallpaperManager::GetPendingWallpaper(

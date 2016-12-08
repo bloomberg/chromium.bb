@@ -28,7 +28,6 @@
           "ash::mojom::SystemTray",
           "ash::mojom::TouchViewManager",
           "ash::mojom::WallpaperController",
-          "ash::mojom::WallpaperManager",
           "ash::mojom::VpnList",
           "keyboard::mojom::Keyboard"
         ],

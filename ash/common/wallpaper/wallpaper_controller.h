@@ -56,11 +56,8 @@ class ASH_EXPORT WallpaperController
 
   wallpaper::WallpaperLayout GetWallpaperLayout() const;
 
-  // Sets wallpaper. This is mostly called by WallpaperManager to set
-  // the default or user selected custom wallpaper.
-  // Returns true if new image was actually set. And false when duplicate set
-  // request detected.
-  bool SetWallpaperImage(const gfx::ImageSkia& image,
+  // Sets the wallpaper and alerts observers of changes.
+  void SetWallpaperImage(const gfx::ImageSkia& image,
                          wallpaper::WallpaperLayout layout);
 
   // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
@@ -106,6 +103,7 @@ class ASH_EXPORT WallpaperController
   void OpenSetWallpaperPage();
 
   // mojom::WallpaperController overrides:
+  void SetWallpaperPicker(mojom::WallpaperPickerPtr picker) override;
   void SetWallpaper(const SkBitmap& wallpaper,
                     wallpaper::WallpaperLayout layout) override;
 
@@ -130,6 +128,9 @@ class ASH_EXPORT WallpaperController
   bool locked_;
 
   WallpaperMode wallpaper_mode_;
+
+  // Wallpaper picker interface in chrome browser, used to open the picker.
+  mojom::WallpaperPickerPtr wallpaper_picker_;
 
   // Bindings for the WallpaperController interface.
   mojo::BindingSet<mojom::WallpaperController> bindings_;

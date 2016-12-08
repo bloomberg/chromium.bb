@@ -11,6 +11,9 @@ enum WallpaperLayout { CENTER, CENTER_CROPPED, STRETCH, TILE, };
 
 // Used by Chrome to set the wallpaper displayed by ash.
 interface WallpaperController {
+  // Set the wallpaper picker interface, to let ash trigger Chrome's picker.
+  SetWallpaperPicker(WallpaperPicker picker);
+
   // Set the wallpaper bitmap and layout used for the ash desktop background.
   // A null or empty |wallpaper| bitmap is treated as a no-op.
   // TODO(crbug.com/655875): Optimize ash wallpaper transport; avoid sending
@@ -19,7 +22,7 @@ interface WallpaperController {
 };
 
 // Used by ash to trigger Chrome's wallpaper picker functionality.
-interface WallpaperManager {
+interface WallpaperPicker {
   // Open the wallpaper picker window.
   Open();
 };

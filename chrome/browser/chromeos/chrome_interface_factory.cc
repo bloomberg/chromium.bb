@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
@@ -114,10 +113,6 @@ class FactoryImpl {
     launchable_->ProcessRequest(std::move(request));
   }
 
-  void BindRequest(ash::mojom::WallpaperManagerRequest request) {
-    WallpaperManager::Get()->BindRequest(std::move(request));
-  }
-
   void BindRequest(app_list::mojom::AppListPresenterRequest request) {
     if (!app_list_presenter_service_)
       app_list_presenter_service_ = base::MakeUnique<AppListPresenterService>();
@@ -158,8 +153,6 @@ bool ChromeInterfaceFactory::OnConnect(
                                                      main_thread_task_runner_);
   FactoryImpl::AddFactory<mash::mojom::Launchable>(registry,
                                                    main_thread_task_runner_);
-  FactoryImpl::AddFactory<ash::mojom::WallpaperManager>(
-      registry, main_thread_task_runner_);
   FactoryImpl::AddFactory<app_list::mojom::AppListPresenter>(
       registry, main_thread_task_runner_);
 

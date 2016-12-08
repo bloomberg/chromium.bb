@@ -21,14 +21,14 @@
 #include "components/wallpaper/wallpaper_manager_base.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 
 class WallpaperManager
     : public wallpaper::WallpaperManagerBase,
-      public ash::mojom::WallpaperManager,
+      public ash::mojom::WallpaperPicker,
       public content::NotificationObserver,
       public user_manager::UserManager::UserSessionStateObserver {
  public:
@@ -46,9 +46,6 @@ class WallpaperManager
   // Deletes the existing instance of WallpaperManager. Allows the
   // WallpaperManager to remove any observers it has registered.
   static void Shutdown();
-
-  // Binds the mojom::WallpaperManager interface request to this object.
-  void BindRequest(ash::mojom::WallpaperManagerRequest request);
 
   // wallpaper::WallpaperManagerBase:
   WallpaperResolution GetAppropriateResolution() override;
@@ -85,7 +82,7 @@ class WallpaperManager
   wallpaper::WallpaperFilesId GetFilesId(
       const AccountId& account_id) const override;
 
-  // ash::mojom::WallpaperManager:
+  // ash::mojom::WallpaperPicker:
   void Open() override;
 
   // content::NotificationObserver:
@@ -163,7 +160,7 @@ class WallpaperManager
       const base::FilePath& customized_default_wallpaper_file_large,
       std::unique_ptr<gfx::ImageSkia> large_wallpaper_image) override;
 
-  mojo::BindingSet<ash::mojom::WallpaperManager> bindings_;
+  mojo::Binding<ash::mojom::WallpaperPicker> binding_;
 
   std::unique_ptr<CrosSettings::ObserverSubscription>
       show_user_name_on_signin_subscription_;
