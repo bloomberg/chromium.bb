@@ -78,16 +78,6 @@ AST_MATCHER(clang::CXXMethodDecl, isInstanceMethod) {
   return Node.isInstance();
 }
 
-// TODO(lukasza): Remove this matcher definition, after we pull
-// https://reviews.llvm.org/D27207 (aka rL288366) from upstream clang.
-AST_MATCHER_P(clang::Type,
-              hasUnqualifiedDesugaredType,
-              clang::ast_matchers::internal::Matcher<clang::Type>,
-              InnerMatcher) {
-  const clang::Type* desugaredType = Node.getUnqualifiedDesugaredType();
-  return InnerMatcher.matches(*desugaredType, Finder, Builder);
-}
-
 AST_MATCHER_P(clang::FunctionTemplateDecl,
               templatedDecl,
               clang::ast_matchers::internal::Matcher<clang::FunctionDecl>,
