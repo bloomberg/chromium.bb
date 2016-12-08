@@ -3862,8 +3862,20 @@ class CompositingWidgetTest : public views::test::WidgetTest {
            widget_type == Widget::InitParams::TYPE_CONTROL))
         continue;
 
+#if defined(OS_MACOSX)
+      // Mac always always has a compositing window manager, but doesn't have
+      // transparent titlebars which is what ShouldWindowContentsBeTransparent()
+      // is currently used for. Asking for transparency should get it. Note that
+      // TestViewsDelegate::use_transparent_windows_ determines the result of
+      // INFER_OPACITY: assume it is false.
+      bool should_be_transparent =
+          opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
+#else
+      bool should_be_transparent = widget.ShouldWindowContentsBeTransparent();
+#endif
+
       EXPECT_EQ(IsNativeWindowTransparent(widget.GetNativeWindow()),
-                widget.ShouldWindowContentsBeTransparent());
+                should_be_transparent);
 
       // When using the Mandoline UI Service, the translucency does not rely on
       // the widget type.
@@ -3899,15 +3911,7 @@ TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetOpaque) {
   CheckAllWidgetsForOpacity(Widget::InitParams::OPAQUE_WINDOW);
 }
 
-// Failing on Mac. http://cbrug.com/623421
-#if defined(OS_MACOSX)
-#define MAYBE_Transparency_DesktopWidgetTranslucent \
-    DISABLED_Transparency_DesktopWidgetTranslucent
-#else
-#define MAYBE_Transparency_DesktopWidgetTranslucent \
-    Transparency_DesktopWidgetTranslucent
-#endif
-TEST_F(CompositingWidgetTest, MAYBE_Transparency_DesktopWidgetTranslucent) {
+TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetTranslucent) {
   CheckAllWidgetsForOpacity(Widget::InitParams::TRANSLUCENT_WINDOW);
 }
 
