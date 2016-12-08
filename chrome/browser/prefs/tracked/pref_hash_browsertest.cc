@@ -10,12 +10,14 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/json/json_reader.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -30,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/default_search_manager.h"
+#include "components/search_engines/template_url_data.h"
 #include "components/user_prefs/tracked/tracked_preference_histogram_names.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
@@ -1171,3 +1174,119 @@ class PrefHashBrowserTestRegistryValidationFailure
 PREF_HASH_BROWSER_TEST(PrefHashBrowserTestRegistryValidationFailure,
                        RegistryValidationFailure);
 #endif
+
+// Verifies that all preferences related to choice of default search engine are
+// protected.
+class PrefHashBrowserTestDefaultSearch : public PrefHashBrowserTestBase {
+ public:
+  void SetupPreferences() override {
+    // Set user selected default search engine.
+    DefaultSearchManager default_search_manager(
+        profile()->GetPrefs(), DefaultSearchManager::ObserverCallback());
+    DefaultSearchManager::Source dse_source =
+        static_cast<DefaultSearchManager::Source>(-1);
+
+    TemplateURLData user_dse;
+    user_dse.SetKeyword(base::UTF8ToUTF16("userkeyword"));
+    user_dse.SetShortName(base::UTF8ToUTF16("username"));
+    user_dse.SetURL("http://user_default_engine/search?q=good_user_query");
+    default_search_manager.SetUserSelectedDefaultSearchEngine(user_dse);
+
+    const TemplateURLData* current_dse =
+        default_search_manager.GetDefaultSearchEngine(&dse_source);
+    EXPECT_EQ(DefaultSearchManager::FROM_USER, dse_source);
+    EXPECT_EQ(current_dse->keyword(), base::UTF8ToUTF16("userkeyword"));
+    EXPECT_EQ(current_dse->short_name(), base::UTF8ToUTF16("username"));
+    EXPECT_EQ(current_dse->url(),
+              "http://user_default_engine/search?q=good_user_query");
+  }
+
+  void AttackPreferencesOnDisk(
+      base::DictionaryValue* unprotected_preferences,
+      base::DictionaryValue* protected_preferences) override {
+    static constexpr char default_search_provider_data[] = R"(
+    {
+      "default_search_provider_data" : {
+        "template_url_data" : {
+          "keyword" : "badkeyword",
+          "short_name" : "badname",
+          "url" : "http://bad_default_engine/search?q=dirty_user_query"
+        }
+      }
+    })";
+    static constexpr char search_provider_overrides[] = R"(
+    {
+      "search_provider_overrides" : [
+        {
+          "keyword" : "badkeyword",
+          "name" : "badname",
+          "search_url" : "http://bad_default_engine/search?q=dirty_user_query",
+          "encoding" : "utf-8",
+          "id" : 1
+        }, {
+          "keyword" : "badkeyword2",
+          "name" : "badname2",
+          "search_url" : "http://bad_default_engine2/search?q=dirty_user_query",
+          "encoding" : "utf-8",
+          "id" : 2
+        }
+      ]
+    })";
+    static constexpr char default_search_provider[] = R"(
+    {
+      "default_search_provider" : {
+        "keyword" : "badkeyword",
+        "name" : "badname",
+        "search_url" : "http://bad_default_engine/search?q=dirty_user_query"
+      }
+    })";
+
+    // Try to override default search in all three of available preferences.
+    auto attack1 = base::DictionaryValue::From(
+        base::JSONReader::Read(default_search_provider_data));
+    auto attack2 = base::DictionaryValue::From(
+        base::JSONReader::Read(search_provider_overrides));
+    auto attack3 = base::DictionaryValue::From(
+        base::JSONReader::Read(default_search_provider));
+    unprotected_preferences->MergeDictionary(attack1.get());
+    unprotected_preferences->MergeDictionary(attack2.get());
+    unprotected_preferences->MergeDictionary(attack3.get());
+    if (protected_preferences) {
+      // Override here, too.
+      protected_preferences->MergeDictionary(attack1.get());
+      protected_preferences->MergeDictionary(attack2.get());
+      protected_preferences->MergeDictionary(attack3.get());
+    }
+  }
+
+  void VerifyReactionToPrefAttack() override {
+    DefaultSearchManager default_search_manager(
+        profile()->GetPrefs(), DefaultSearchManager::ObserverCallback());
+    DefaultSearchManager::Source dse_source =
+        static_cast<DefaultSearchManager::Source>(-1);
+
+    const TemplateURLData* current_dse =
+        default_search_manager.GetDefaultSearchEngine(&dse_source);
+
+    if (protection_level_ < PROTECTION_ENABLED_DSE) {
+// This doesn't work on OS_CHROMEOS because we fail to attack Preferences.
+#if !defined(OS_CHROMEOS)
+      // Attack is successful.
+      EXPECT_EQ(DefaultSearchManager::FROM_USER, dse_source);
+      EXPECT_EQ(current_dse->keyword(), base::UTF8ToUTF16("badkeyword"));
+      EXPECT_EQ(current_dse->short_name(), base::UTF8ToUTF16("badname"));
+      EXPECT_EQ(current_dse->url(),
+                "http://bad_default_engine/search?q=dirty_user_query");
+#endif
+    } else {
+      // Attack fails.
+      EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, dse_source);
+      EXPECT_NE(current_dse->keyword(), base::UTF8ToUTF16("badkeyword"));
+      EXPECT_NE(current_dse->short_name(), base::UTF8ToUTF16("badname"));
+      EXPECT_NE(current_dse->url(),
+                "http://bad_default_engine/search?q=dirty_user_query");
+    }
+  }
+};
+
+PREF_HASH_BROWSER_TEST(PrefHashBrowserTestDefaultSearch, SearchProtected);
