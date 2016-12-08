@@ -55,6 +55,7 @@ source_set("chromeos") {
     "//chromeos:attestation_proto",
     "//chromeos:cryptohome_proto",
     "//chromeos:cryptohome_signkey_proto",
+    "//chromeos/components/tether",
     "//components/arc",
     "//components/certificate_reporting:cert_logger_proto",
     "//components/certificate_reporting:encrypted_cert_logger_proto",

@@ -15,10 +15,12 @@ namespace tether {
 // TODO(khorimoto): Implement.
 class Initializer {
  public:
+  static void Initialize();
+
+ private:
   Initializer();
   ~Initializer();
 
- private:
   DISALLOW_COPY_AND_ASSIGN(Initializer);
 };
 

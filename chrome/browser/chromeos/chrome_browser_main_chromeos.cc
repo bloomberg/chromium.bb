@@ -104,6 +104,7 @@
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/components/tether/initializer.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"
@@ -708,6 +709,10 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // guest profile.
   if (!user_manager::UserManager::Get()->IsLoggedInAsGuest())
     low_disk_notification_ = base::MakeUnique<LowDiskNotification>();
+
+  if (parsed_command_line().HasSwitch(chromeos::switches::kEnableTether)) {
+    chromeos::tether::Initializer::Initialize();
+  }
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }

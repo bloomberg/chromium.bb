@@ -244,6 +244,9 @@ const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 // rather than the kiosk app mode.
 const char kEnableKioskMode[] = "enable-kiosk-mode";
 
+// Enables tethering to nearby LTE devices.
+const char kEnableTether[] = "enable-tether";
+
 // Disables material design OOBE UI.
 const char kDisableMdOobe[] = "disable-md-oobe";
 

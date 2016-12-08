@@ -8,6 +8,8 @@ namespace chromeos {
 
 namespace tether {
 
+void Initializer::Initialize() {}
+
 Initializer::Initializer() {}
 
 Initializer::~Initializer() {}
