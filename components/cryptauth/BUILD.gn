@@ -29,6 +29,8 @@ static_library("cryptauth") {
     "cryptauth_gcm_manager.h",
     "cryptauth_gcm_manager_impl.cc",
     "cryptauth_gcm_manager_impl.h",
+    "eid_generator.cc",
+    "eid_generator.h",
     "pref_names.cc",
     "pref_names.h",
     "remote_device.cc",
@@ -94,6 +96,7 @@ source_set("unit_tests") {
     "cryptauth_enroller_impl_unittest.cc",
     "cryptauth_enrollment_manager_unittest.cc",
     "cryptauth_gcm_manager_impl_unittest.cc",
+    "eid_generator_unittest.cc",
     "fake_secure_message_delegate_unittest.cc",
     "sync_scheduler_impl_unittest.cc",
   ]
