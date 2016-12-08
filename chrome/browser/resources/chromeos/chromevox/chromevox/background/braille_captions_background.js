@@ -58,9 +58,14 @@ cvox.BrailleCaptionsBackground.isEnabled = function() {
  * @param {ArrayBuffer} cells Braille cells shown on the display.
  * @param {Array<number>} brailleToText Map of Braille letters to the first
  *     index of corresponding text letter.
+ * @param {{brailleOffset: number, textOffset: number}} offsetsForSlices
+ *    Offsets to use for caculating indices. The element is the braille offset,
+ *    the second is the text offset.
+ * @param {number} rows Number of rows to display.
+ * @param {number} columns Number of columns to display.
  */
 cvox.BrailleCaptionsBackground.setContent = function(text, cells,
-    brailleToText) {
+    brailleToText, offsetsForSlices, rows, columns) {
   var self = cvox.BrailleCaptionsBackground;
   // Convert the cells to Unicode braille pattern characters.
   var byteBuf = new Uint8Array(cells);
@@ -70,11 +75,10 @@ cvox.BrailleCaptionsBackground.setContent = function(text, cells,
     brailleChars += String.fromCharCode(
         self.BRAILLE_UNICODE_BLOCK_START | byteBuf[i]);
   }
-
-  var groups = this.groupBrailleAndText(brailleChars, text, brailleToText);
-
+  var groups = this.groupBrailleAndText(brailleChars, text, brailleToText,
+      offsetsForSlices);
   if (cvox.ChromeVox.isChromeOS) {
-    var data = {groups: groups};
+    var data = {groups: groups, rows: rows, cols: columns};
     (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, data)).send();
   } else {
     cvox.ExtensionBridge.send({
@@ -88,26 +92,38 @@ cvox.BrailleCaptionsBackground.setContent = function(text, cells,
 /**
  * @param {string} brailleChars Braille characters shown on the display.
  * @param {string} text Text of the shown braille.
- * @param {Array<number>} brailleToText Map of Braille letters to the first
+ * @param {Array<number>} brailleToText Map of Braille cells to the first
  *     index of corresponding text letter.
- * @return {Array}
+ * @param {{brailleOffset: number, textOffset: number}} offsets
+ *    Offsets to use for caculating indices. The element is the braille offset,
+ *    the second is the text offset.
+ * @return {Array} The groups of braille and texts to be displayed.
  */
 cvox.BrailleCaptionsBackground.groupBrailleAndText = function(brailleChars,
-    text, brailleToText) {
+    text, brailleToText, offsets) {
   var brailleBuf = '';
   var groups = [];
   var textIndex = 0;
+  var brailleOffset = offsets.brailleOffset;
+  var textOffset = offsets.textOffset;
+  var calculateTextIndex = function(index) {
+    return brailleToText[index + brailleOffset] - textOffset;
+  };
+
   for (var i = 0; i < brailleChars.length; ++i) {
-    if ((i != 0) && ((brailleToText[i] != textIndex))) {
-      groups.push([text.substr(textIndex, brailleToText[i] - textIndex),
+    var textSliceIndex = calculateTextIndex(i);
+    if (i != 0 && textSliceIndex != textIndex) {
+      groups.push([text.substr(textIndex,
+          textSliceIndex - textIndex),
           brailleBuf]);
       brailleBuf = '';
-      textIndex = brailleToText[i];
+      textIndex = textSliceIndex;
     }
     brailleBuf += brailleChars.charAt(i);
   }
+
   // Puts the rest of the text into the last group.
-  if (brailleBuf.length > 0) {
+  if (brailleBuf.length > 0 && text.charAt(textIndex) != ' ') {
     groups.push([text.substr(textIndex), brailleBuf]);
   }
   return groups;
@@ -134,17 +150,23 @@ cvox.BrailleCaptionsBackground.setActive = function(newValue) {
 };
 
 /**
- * Returns a display state representing the state of the captions feature.
- * This is used when no actual hardware display is connected.
- * @return {cvox.BrailleDisplayState}
+ * Calls a callback on a display state representing the state of the captions
+ * feature. This is used when no actual hardware display is connected.
+ * @param {function(!cvox.BrailleDisplayState)} callback The callback to pass
+ * the display state into.
  */
-cvox.BrailleCaptionsBackground.getVirtualDisplayState = function() {
+cvox.BrailleCaptionsBackground.getVirtualDisplayState = function(callback) {
   var self = cvox.BrailleCaptionsBackground;
   if (self.isEnabled()) {
-    var rows = parseInt(localStorage['virtualBrailleRows'], 10) || 1;
-    var columns = parseInt(localStorage['virtualBrailleColumns'], 10) || 40;
-    return {available: true, textRowCount: rows, textColumnCount: columns};
+    chrome.storage.local.get({'virtualBrailleRows': 1}, function(items) {
+      var rows = items['virtualBrailleRows'];
+      chrome.storage.local.get({'virtualBrailleColumns': 40}, function(items) {
+        var columns = items['virtualBrailleColumns'];
+        callback({available: true, textRowCount: rows,
+          textColumnCount: columns});
+      });
+    });
   } else {
-    return {available: false};
+    callback({available: false});
   }
 };

@@ -52,10 +52,13 @@ cvox.OptionsPage.init = function() {
     $('brailleWordWrap').checked = items.brailleWordWrap;
   });
 
-  $('virtual_braille_display_rows_input').value =
-      localStorage['virtualBrailleRows'];
-  $('virtual_braille_display_columns_input').value =
-      localStorage['virtualBrailleColumns'];
+  chrome.storage.local.get({'virtualBrailleRows' : 1}, function(items) {
+    $('virtual_braille_display_rows_input').value = items['virtualBrailleRows'];
+  });
+  chrome.storage.local.get({'virtualBrailleColumns' : 40}, function(items) {
+    $('virtual_braille_display_columns_input').value =
+        items['virtualBrailleColumns'];
+  });
   var changeToInterleave =
       Msgs.getMsg('options_change_current_display_style_interleave');
   var changeToSideBySide =
@@ -94,8 +97,9 @@ cvox.OptionsPage.init = function() {
 
   var clearVirtualDisplay = function() {
     var groups = [];
-    var sizeOfDisplay = parseInt(localStorage['virtualBrailleRows'], 10) *
-        parseInt(localStorage['virtualBrailleColumns'], 10);
+    var sizeOfDisplay =
+        parseInt($('virtual_braille_display_rows_input').innerHTML, 10) *
+        parseInt($('virtual_braille_display_columns_input').innerHTML, 10);
     for (var i = 0; i < sizeOfDisplay; i++) {
         groups.push(['X', 'X']);
     }
@@ -114,9 +118,9 @@ cvox.OptionsPage.init = function() {
     clearVirtualDisplay();
   }, true);
 
-  handleNumbericalInputPref('virtual_braille_display_rows_input',
+  handleNumericalInputPref('virtual_braille_display_rows_input',
       'virtualBrailleRows');
-  handleNumbericalInputPref('virtual_braille_display_columns_input',
+  handleNumericalInputPref('virtual_braille_display_columns_input',
       'virtualBrailleColumns');
 };
 
@@ -142,19 +146,27 @@ cvox.OptionsPage.update = function() {
  * @param {string} id Id of the input box.
  * @param {string} pref Preference key in localStorage to access and modify.
  */
-var handleNumbericalInputPref = function(id, pref) {
+var handleNumericalInputPref = function(id, pref) {
   $(id).addEventListener('input', function(evt) {
-    if ($(id).value === '')
+    if ($(id).value === '') {
       return;
-    else if (parseInt($(id).value, 10) < 1 || parseInt($(id).value, 10) > 99)
-      $(id).value = localStorage[pref];
-    else
-      localStorage[pref] = $(id).value;
+    }
+    else if (parseInt($(id).value, 10) < 1 || parseInt($(id).value, 10) > 99) {
+      chrome.storage.local.get(pref, function(items) {
+        $(id).value = items[pref];
+      });
+    }else {
+      var items = {};
+      items[pref] = $(id).value;
+      chrome.storage.local.set(items);
+    }
   }, true);
 
   $(id).addEventListener('focusout', function(evt) {
     if ($(id).value === '')
-      $(id).value = localStorage[pref];
+      chrome.storage.local.get(pref, function(items) {
+        $(id).value = items[pref];
+      });
   }, true);
 };
 

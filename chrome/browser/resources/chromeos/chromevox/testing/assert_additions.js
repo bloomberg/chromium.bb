@@ -80,5 +80,25 @@ function assertEqualsJSON(expected, actual, opt_message) {
   }
 }
 
+/**
+ * Asserts that two ArrayBuffers have the same content.
+ * @param {ArrayBuffer} arrayBufA The expected ArrayBuffer.
+ * @param {ArrayBuffer} arrayBufB The test ArrayBuffer.
+ */
+function assertArrayBuffersEquals(arrayBufA, arrayBufB) {
+  var view1 = new Uint8Array(arrayBufA);
+  var view2 = new Uint8Array(arrayBufB);
+  assertEquals(JSON.stringify(view1), JSON.stringify(view2));
+}
+
+/**
+ * Asserts that two Arrays have the same content.
+ * @param {ArrayBuffer} arrayA The expected array.
+ * @param {ArrayBuffer} arrayB The test array.
+ */
+function assertArraysEquals(arrayA, arrayB) {
+  assertEquals(JSON.stringify(arrayA), JSON.stringify(arrayB));
+}
+
 assertSame = assertEquals;
 assertNotSame = assertNotEquals;

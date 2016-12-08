@@ -16,33 +16,71 @@ goog.provide('cvox.PanStrategy');
  */
 cvox.PanStrategy = function() {
   /**
-   * @type {number}
+   * @type {{rows: number, columns: number}}
    * @private
    */
-  this.displaySize_ = 0;
+  this.displaySize_ = {rows: 1, columns: 40};
+
   /**
-   * @type {number}
-   * @private
-   */
-  this.contentLength_ = 0;
-  /**
-   * Points before which it is desirable to break content if it doesn't fit
-   * on the display.
-   * @type {!Array<number>}
-   * @private
-   */
-  this.breakPoints_ = [];
-  /**
+   * Start and end are both inclusive.
    * @type {!cvox.PanStrategy.Range}
    * @private
    */
-  this.viewPort_ = {start: 0, end: 0};
+  this.viewPort_ = {firstRow: 0, lastRow: 0};
+
+  /**
+   * The ArrayBuffer holding the braille cells after it's been processed to
+   * wrap words that are cut off by the column boundaries.
+   * @type {!ArrayBuffer}
+   * @private
+   */
+  this.wrappedBuffer_ = new ArrayBuffer(0);
+
+  /**
+   * The original text that corresponds with the braille buffers. There is only
+   * one textBuffer that correlates with both fixed and wrapped buffers.
+   * @type {string}
+   * @private
+   */
+  this.textBuffer_ = '';
+
+  /**
+   * The ArrayBuffer holding the original braille cells, without being
+   * processed to wrap words.
+   * @type {!ArrayBuffer}
+   * @private
+   */
+  this.fixedBuffer_ = new ArrayBuffer(0);
+
+  /**
+   * The updated mapping from braille cells to text characters for the wrapped
+   * buffer.
+   * @type {Array<number>}
+   * @private
+   */
+  this.wrappedBrailleToText_ = [];
+
+  /**
+   * The original mapping from braille cells to text characters.
+   * @type {Array<number>}
+   * @private
+   */
+  this.fixedBrailleToText_ = [];
+
+  /**
+   * Indicates whether the pan strategy is wrapped or fixed. It is wrapped when
+   * true.
+   * @type {boolean}
+   * @private
+   */
+  this.panStrategyWrapped_ = false;
+
 };
 
 /**
  * A range used to represent the viewport with inclusive start and xclusive
  * end position.
- * @typedef {{start: number, end: number}}
+ * @typedef {{firstRow: number, lastRow: number}}
  */
 cvox.PanStrategy.Range;
 
@@ -58,25 +96,176 @@ cvox.PanStrategy.prototype = {
   },
 
   /**
-   * Sets the display size.  This call may update the viewport.
-   * @param {number} size the new display size, or {@code 0} if no display is
-   *     present.
+   * Gets the current displaySize.
+   * @type {{rows: number, columns: number}}
    */
-  setDisplaySize: function(size) {
-    this.displaySize_ = size;
-    this.panToPosition_(this.viewPort_.start);
+  get displaySize() {
+    return this.displaySize_;
   },
 
   /**
-   * Sets the current content that panning should happen within.  This call may
-   * change the viewport.
-   * @param {!ArrayBuffer} translatedContent The new content.
+   * @return {{brailleOffset: number, textOffset: number}} The offset of
+   * braille and text indices of the current slice.
+   */
+  get offsetsForSlices() {
+    return {brailleOffset: this.viewPort_.firstRow * this.displaySize_.columns,
+     textOffset: this.brailleToText[this.viewPort_.firstRow *
+         this.displaySize_.columns]};
+  },
+
+  /**
+   * @return {number} The number of lines in the fixedBuffer.
+   */
+  get fixedLineCount() {
+    return Math.ceil(this.fixedBuffer_.byteLength / this.displaySize_.columns);
+  },
+
+  /**
+   * @return {number} The number of lines in the wrappedBuffer.
+   */
+  get wrappedLineCount() {
+     return Math.ceil(this.wrappedBuffer_.byteLength /
+         this.displaySize_.columns);
+  },
+
+  /**
+   * @return {Array<number>} The map of Braille cells to the first index of the
+   *    corresponding text character.
+   */
+  get brailleToText() {
+    if (this.panStrategyWrapped_)
+      return this.wrappedBrailleToText_;
+    else
+      return this.fixedBrailleToText_;
+  },
+
+  /**
+   * @return {ArrayBuffer} Buffer of the slice of braille cells within the
+   *    bounds of the viewport.
+   */
+  getCurrentBrailleViewportContents: function() {
+    var buf = this.panStrategyWrapped_ ?
+        this.wrappedBuffer_ : this.fixedBuffer_;
+    return buf.slice(this.viewPort_.firstRow * this.displaySize_.columns,
+        (this.viewPort_.lastRow + 1) * this.displaySize_.columns);
+  },
+
+  /**
+   * @return {string} String of the slice of text letters corresponding with
+   *    the current braille slice.
+   */
+  getCurrentTextViewportContents: function() {
+    var brailleToText = this.brailleToText;
+    // Index of last braille character in slice.
+    var index = (this.viewPort_.lastRow + 1) * this.displaySize_.columns - 1;
+    // Index of first text character that the last braille character points to.
+    var end = brailleToText[index];
+    // Increment index until brailleToText[index] points to a different char.
+    // This is the cutoff point, as substring cuts up to, but not including,
+    // brailleToText[index].
+    while (index < brailleToText.length && brailleToText[index] == end) {
+      index++;
+    }
+    return this.textBuffer_.substring(
+        brailleToText[this.viewPort_.firstRow * this.displaySize_.columns],
+        brailleToText[index]);
+  },
+
+  /**
+   * Sets the current pan strategy and resets the viewport.
+   */
+  setPanStrategy: function(wordWrap) {
+    this.panStrategyWrapped_ = wordWrap;
+    this.panToPosition_(0);
+  },
+
+  /**
+   * Sets the display size.  This call may update the viewport.
+   * @param {number} rowCount the new row size, or {@code 0} if no display is
+   *     present.
+   * @param {number} columnCount the new column size, or {@code 0}
+   *    if no display is present.
+   */
+  setDisplaySize: function(rowCount, columnCount) {
+    this.displaySize_ = {rows: rowCount, columns: columnCount};
+    this.setContent(this.textBuffer_, this.fixedBuffer_,
+        this.fixedBrailleToText_, 0);
+  },
+
+  /**
+   * Sets the internal data structures that hold the fixed and wrapped buffers
+   * and maps.
+   * @param {string} textBuffer Text of the shown braille.
+   * @param {!ArrayBuffer} translatedContent The new braille content.
+   * @param {Array<number>} fixedBrailleToText Map of Braille cells to the first
+   *     index of corresponding text letter.
    * @param {number} targetPosition Target position.  The viewport is changed
    *     to overlap this position.
    */
-  setContent: function(translatedContent, targetPosition) {
-    this.breakPoints_ = this.calculateBreakPoints_(translatedContent);
-    this.contentLength_ = translatedContent.byteLength;
+  setContent: function(textBuffer, translatedContent, fixedBrailleToText,
+                  targetPosition) {
+    this.viewPort_.firstRow = 0;
+    this.viewPort_.lastRow = this.displaySize_.rows - 1;
+    this.fixedBrailleToText_ = fixedBrailleToText;
+    this.wrappedBrailleToText_ = [];
+    this.textBuffer_ = textBuffer;
+    this.fixedBuffer_ = translatedContent;
+
+    // Convert the cells to Unicode braille pattern characters.
+    var view = new Uint8Array(translatedContent);
+    var wrappedBrailleArray = [];
+
+    var lastBreak = 0;
+    var cellsPadded = 0;
+    var index;
+    for (index = 0; index < translatedContent.byteLength + cellsPadded;
+        index++) {
+      // Is index at the beginning of a new line?
+      if (index != 0 && index % this.displaySize_.columns == 0) {
+        if (view[index - cellsPadded] == 0) {
+          // Delete all empty cells at the beginning of this line.
+          while (index - cellsPadded < view.length &&
+              view[index - cellsPadded] == 0) {
+            cellsPadded--;
+          }
+          index--;
+          lastBreak = index;
+        } else if (view[index - cellsPadded - 1] != 0 &&
+            lastBreak % this.displaySize_.columns != 0) {
+          // If first cell is not empty, we need to move the whole word down to
+          // this line and padd to previous line with 0's, from |lastBreak| to
+          // index. The braille to text map is also updated.
+          // If lastBreak is at the beginning of a line, that means the current
+          // word is bigger than |this.displaySize_.columns| so we shouldn't
+          // wrap.
+          for (var j = lastBreak + 1; j < index; j++) {
+            wrappedBrailleArray[j] = 0;
+            this.wrappedBrailleToText_[j] = this.wrappedBrailleToText_[j - 1];
+            cellsPadded++;
+          }
+          lastBreak = index;
+          index--;
+        } else {
+          // |lastBreak| is at the beginning of a line, so current word is
+          // bigger than |this.displaySize_.columns| so we shouldn't wrap.
+          wrappedBrailleArray.push(view[index - cellsPadded]);
+          this.wrappedBrailleToText_.push(
+              fixedBrailleToText[index - cellsPadded]);
+        }
+      } else {
+        if (view[index - cellsPadded] == 0) {
+          lastBreak = index;
+        }
+        wrappedBrailleArray.push(view[index - cellsPadded]);
+        this.wrappedBrailleToText_.push(
+            fixedBrailleToText[index - cellsPadded]);
+      }
+    }
+
+    // Convert the wrapped Braille Uint8 Array back to ArrayBuffer.
+    var wrappedBrailleUint8Array = new Uint8Array(wrappedBrailleArray);
+    this.wrappedBuffer_ = new ArrayBuffer(wrappedBrailleUint8Array.length);
+    new Uint8Array(this.wrappedBuffer_).set(wrappedBrailleUint8Array);
     this.panToPosition_(targetPosition);
   },
 
@@ -86,15 +275,17 @@ cvox.PanStrategy.prototype = {
    * @return {boolean} {@code true} if the viewport was changed.
    */
   next: function() {
-    var newStart = this.viewPort_.end;
+    var contentLength = this.panStrategyWrapped_ ?
+        this.wrappedLineCount : this.fixedLineCount;
+    var newStart = this.viewPort_.lastRow + 1;
     var newEnd;
-    if (newStart + this.displaySize_ < this.contentLength_) {
-      newEnd = this.extendRight_(newStart);
+    if (newStart + this.displaySize_.rows - 1 < contentLength) {
+      newEnd = newStart + this.displaySize_.rows - 1;
     } else {
-      newEnd = this.contentLength_;
+      newEnd = contentLength - 1;
     }
-    if (newEnd > newStart) {
-      this.viewPort_ = {start: newStart, end: newEnd};
+    if (newEnd >= newStart) {
+      this.viewPort_ = {firstRow: newStart, lastRow: newEnd};
       return true;
     }
     return false;
@@ -106,27 +297,19 @@ cvox.PanStrategy.prototype = {
    * @return {boolean} {@code true} if the viewport was changed.
    */
   previous: function() {
-    if (this.viewPort_.start > 0) {
+    var contentLength = this.panStrategyWrapped_ ?
+        this.wrappedLineCount : this.fixedLineCount;
+    if (this.viewPort_.firstRow > 0) {
       var newStart, newEnd;
-      if (this.viewPort_.start <= this.displaySize_) {
+      if (this.viewPort_.firstRow < this.displaySize_.rows) {
         newStart = 0;
-        newEnd = this.extendRight_(newStart);
+        newEnd = Math.min(this.displaySize_.rows, contentLength);
       } else {
-        newEnd = this.viewPort_.start;
-        var limit = newEnd - this.displaySize_;
-        newStart = limit;
-        var pos = 0;
-        while (pos < this.breakPoints_.length &&
-            this.breakPoints_[pos] < limit) {
-          pos++;
-        }
-        if (pos < this.breakPoints_.length &&
-            this.breakPoints_[pos] < newEnd) {
-          newStart = this.breakPoints_[pos];
-        }
+        newEnd = this.viewPort_.firstRow - 1;
+        newStart = newEnd - this.displaySize_.rows + 1;
       }
-      if (newStart < newEnd) {
-        this.viewPort_ = {start: newStart, end: newEnd};
+      if (newStart <= newEnd) {
+        this.viewPort_ = {firstRow: newStart, lastRow: newEnd};
         return true;
       }
     }
@@ -134,87 +317,19 @@ cvox.PanStrategy.prototype = {
   },
 
   /**
-   * Finds the end position for a new viewport start position, considering
-   * current breakpoints as well as display size and content length.
-   * @param {number} from Start of the region to extend.
-   * @return {number}
-   * @private
-   */
-  extendRight_: function(from) {
-    var limit = Math.min(from + this.displaySize_, this.contentLength_);
-    var pos = 0;
-    var result = limit;
-    while (pos < this.breakPoints_.length && this.breakPoints_[pos] <= from) {
-      pos++;
-    }
-    while (pos < this.breakPoints_.length && this.breakPoints_[pos] <= limit) {
-      result = this.breakPoints_[pos];
-      pos++;
-    }
-    return result;
-  },
-
-  /**
-   * Overridden by subclasses to provide breakpoints given translated
-   * braille cell content.
-   * @param {!ArrayBuffer} content New display content.
-   * @return {!Array<number>} The points before which it is desirable to break
-   *     content if needed or the empty array if no points are more desirable
-   *     than any position.
-   * @private
-   */
-  calculateBreakPoints_: function(content) {return [];},
-
-  /**
    * Moves the viewport so that it overlaps a target position without taking
    * the current viewport position into consideration.
    * @param {number} position Target position.
    */
   panToPosition_: function(position) {
-    if (this.displaySize_ > 0) {
-      this.viewPort_ = {start: 0, end: 0};
-      while (this.next() && this.viewPort_.end <= position) {
+    if (this.displaySize_.rows * this.displaySize_.columns > 0) {
+      this.viewPort_ = {firstRow: -1, lastRow: -1};
+      while (this.next() && (this.viewPort_.lastRow + 1) *
+          this.displaySize_.columns <= position) {
         // Nothing to do.
       }
     } else {
-      this.viewPort_ = {start: position, end: position};
+      this.viewPort_ = {firstRow: position, lastRow: position};
     }
-  },
-};
-
-/**
- * A pan strategy that fits as much content on the display as possible, that
- * is, it doesn't do any wrapping.
- * @constructor
- * @extends {cvox.PanStrategy}
- */
-cvox.FixedPanStrategy = cvox.PanStrategy;
-/**
- * A pan strategy that tries to wrap 'words' when breaking content.
- * A 'word' in this context is just a chunk of non-blank braille cells
- * delimited by blank cells.
- * @constructor
- * @extends {cvox.PanStrategy}
- */
-cvox.WrappingPanStrategy = function() {
-  cvox.PanStrategy.call(this);
-};
-
-cvox.WrappingPanStrategy.prototype = {
-  __proto__: cvox.PanStrategy.prototype,
-
-  /** @override */
-  calculateBreakPoints_: function(content) {
-    var view = new Uint8Array(content);
-    var newContentLength = view.length;
-    var result = [];
-    var lastCellWasBlank = false;
-    for (var pos = 0; pos < view.length; ++pos) {
-      if (lastCellWasBlank && view[pos] != 0) {
-        result.push(pos);
-      }
-      lastCellWasBlank = (view[pos] == 0);
-    }
-    return result;
   },
 };

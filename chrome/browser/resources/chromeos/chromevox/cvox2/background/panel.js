@@ -471,17 +471,19 @@ Panel.addMenu = function(menuMsg) {
  */
 Panel.onUpdateBraille = function(data) {
   var groups = data.groups;
-  var cols = parseInt(localStorage['virtualBrailleColumns'], 10);
-  var rows = parseInt(localStorage['virtualBrailleRows'], 10);
+  var cols = data.cols;
+  var rows = data.rows;
   var sideBySide = localStorage['brailleSideBySide'] === 'true';
 
   var addBorders = function(event) {
     var cell = event.target;
     if (cell.tagName == 'TD') {
       cell.className = 'highlighted-cell';
-      var companionID = cell.getAttribute('companionID');
-      var companion = $(companionID);
-      companion.className = 'highlighted-cell';
+      var companionIDs = cell.getAttribute('data-companionIDs');
+      companionIDs.split(' ').map(function(companionID) {
+        var companion = $(companionID);
+        companion.className = 'highlighted-cell';
+      });
     }
   };
 
@@ -489,9 +491,11 @@ Panel.onUpdateBraille = function(data) {
     var cell = event.target;
     if (cell.tagName == 'TD') {
       cell.className = 'unhighlighted-cell';
-      var companionID = cell.getAttribute('companionID');
-      var companion = $(companionID);
-      companion.className = 'unhighlighted-cell';
+      var companionIDs = cell.getAttribute('data-companionIDs');
+      companionIDs.split(' ').map(function(companionID) {
+        var companion = $(companionID);
+        companion.className = 'unhighlighted-cell';
+      });
     }
   };
 
@@ -510,8 +514,10 @@ Panel.onUpdateBraille = function(data) {
 
   var row1, row2;
   rowCount = 0;
+  var cellCount = cols;
   for (var i = 0; i < groups.length; i++) {
-    if (i % cols == 0) {
+    if (cellCount == cols) {
+      cellCount = 0;
       // Check if we reached the limit on the number of rows we can have.
       if (rowCount == rows)
         break;
@@ -529,14 +535,44 @@ Panel.onUpdateBraille = function(data) {
     var topCell = row1.insertCell(-1);
     topCell.innerHTML = groups[i][0];
     topCell.id = i + '-textCell';
-    topCell.setAttribute('companionID', i + '-brailleCell');
+    topCell.setAttribute('data-companionIDs', i + '-brailleCell');
     topCell.className = 'unhighlighted-cell';
 
     var bottomCell = row2.insertCell(-1);
-    bottomCell.innerHTML = groups[i][1];
     bottomCell.id = i + '-brailleCell';
-    bottomCell.setAttribute('companionID', i + '-textCell');
+    bottomCell.setAttribute('data-companionIDs', i + '-textCell');
     bottomCell.className = 'unhighlighted-cell';
+    if (cellCount + groups[i][1].length > cols) {
+      bottomCell.innerHTML = groups[i][1].substring(0, cols - cellCount);
+      if (rowCount == rows)
+        break;
+      rowCount++;
+      row1 = this.brailleTableElement_.insertRow(-1);
+      if (sideBySide) {
+        // Side by side.
+        row2 = this.brailleTableElement2_.insertRow(-1);
+      } else {
+        // Interleaved.
+        row2 = this.brailleTableElement_.insertRow(-1);
+      }
+      var bottomCell2 = row2.insertCell(-1);
+      bottomCell2.id = i + '-brailleCell2';
+      bottomCell2.setAttribute('data-companionIDs',
+          i + '-textCell ' + i + '-brailleCell');
+      bottomCell.setAttribute('data-companionIDs',
+          bottomCell.getAttribute('data-companionIDs') +
+          ' ' + i + '-brailleCell2');
+      topCell.setAttribute('data-companionID2',
+          bottomCell.getAttribute('data-companionIDs') +
+          ' ' + i + '-brailleCell2');
+
+      bottomCell2.className = 'unhighlighted-cell';
+      bottomCell2.innerHTML = groups[i][1].substring(cols - cellCount);
+      cellCount = bottomCell2.innerHTML.length;
+    } else {
+      bottomCell.innerHTML = groups[i][1];
+      cellCount += groups[i][1].length;
+    }
   }
 };
 

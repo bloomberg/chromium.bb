@@ -81,8 +81,6 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'useIBeamCursor': cvox.ChromeVox.isMac,
   'useNext': true,
   'useVerboseMode': true,
-  'virtualBrailleRows': 1,
-  'virtualBrailleColumns': 40
 };
 
 

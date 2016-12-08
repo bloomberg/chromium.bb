@@ -40,30 +40,20 @@ cvox.BrailleDisplayManager = function(translatorManager) {
   this.expansionType_ =
       cvox.ExpandingBrailleTranslator.ExpansionType.SELECTION;
   /**
-   * @type {!ArrayBuffer}
-   * @private
-   */
-  this.translatedContent_ = new ArrayBuffer(0);
-  /**
-   * @type {!ArrayBuffer}
-   * @private
-   */
-  this.displayedContent_ = this.translatedContent_;
-  /**
    * @type {cvox.PanStrategy}
    * @private
    */
-  this.panStrategy_ = new cvox.WrappingPanStrategy();
+  this.panStrategy_ = new cvox.PanStrategy();
   /**
    * @type {function(!cvox.BrailleKeyEvent, !cvox.NavBraille)}
    * @private
    */
   this.commandListener_ = function() {};
   /**
-   * Current display state used for width calculations.  This is different from
-   * realDisplayState_ if the braille captions feature is enabled and there is
-   * no hardware display connected.  Otherwise, it is the same object
-   * as realDisplayState_.
+   * Current display state to show in the Virtual Braille Captions display.
+   * This is different from realDisplayState_ if the braille captions feature
+   * is enabled and there is no hardware display connected.  Otherwise, it is
+   * the same object as realDisplayState_.
    * @type {!cvox.BrailleDisplayState}
    * @private
    */
@@ -76,16 +66,6 @@ cvox.BrailleDisplayManager = function(translatorManager) {
    * @private
    */
   this.realDisplayState_ = this.displayState_;
-  /**
-   * @type {!Array<number>}
-   * @private
-   */
-  this.textToBraille_ = [];
-  /**
-   * @type {!Array<number>}
-   * @private
-   */
-  this.brailleToText_ = [];
 
   translatorManager.addChangeListener(function() {
     this.translateContent_(this.content_, this.expansionType_);
@@ -94,6 +74,10 @@ cvox.BrailleDisplayManager = function(translatorManager) {
   chrome.storage.onChanged.addListener(function(changes, area) {
     if (area == 'local' && 'brailleWordWrap' in changes) {
       this.updatePanStrategy_(changes.brailleWordWrap.newValue);
+    }
+    if (area == 'local' && ('virtualBrailleRows' in changes ||
+          'virtualBrailleColumns' in changes)) {
+      this.onCaptionsStateChanged_();
     }
   }.bind(this));
   chrome.storage.local.get({brailleWordWrap: true}, function(items) {
@@ -158,21 +142,26 @@ cvox.BrailleDisplayManager.prototype.setCommandListener = function(func) {
  */
 cvox.BrailleDisplayManager.prototype.refreshDisplayState_ = function(
     newState) {
-  var oldSize = this.displayState_.textColumnCount *
-                this.displayState_.textRowCount || 0;
+  var oldColumnCount = this.displayState_.textColumnCount || 0;
+  var oldRowCount = this.displayState_.textRowCount || 0;
+  var processDisplayState = function(displayState) {
+    this.displayState_ = displayState;
+    var newColumnCount = displayState.textColumnCount || 0;
+    var newRowCount = displayState.textRowCount || 0;
+
+    if (oldColumnCount != newColumnCount || oldRowCount != newRowCount) {
+      this.panStrategy_.setDisplaySize(newRowCount, newColumnCount);
+    }
+    this.refresh_();
+  }.bind(this);
   this.realDisplayState_ = newState;
   if (newState.available) {
-    this.displayState_ = newState;
+    processDisplayState(newState);
+    // Update the dimensions of the virtual braille captions display to those
+    // of a real physical display when one is plugged in.
   } else {
-    this.displayState_ =
-        cvox.BrailleCaptionsBackground.getVirtualDisplayState();
+    cvox.BrailleCaptionsBackground.getVirtualDisplayState(processDisplayState);
   }
-  var newSize = this.displayState_.textColumnCount *
-                this.displayState_.textRowCount || 0;
-  if (oldSize != newSize) {
-    this.panStrategy_.setDisplaySize(newSize);
-  }
-  this.refresh_();
 };
 
 
@@ -188,25 +177,27 @@ cvox.BrailleDisplayManager.prototype.onCaptionsStateChanged_ = function() {
 };
 
 
-/** @private */
+/**
+ * Refreshes what is shown on the physical braille display and the virtual
+ * braille captions display.
+ * @private
+ */
 cvox.BrailleDisplayManager.prototype.refresh_ = function() {
   if (!this.displayState_.available) {
     return;
   }
-  var viewPort = this.panStrategy_.viewPort;
-  var buf = this.displayedContent_.slice(viewPort.start, viewPort.end);
+  var brailleBuf = this.panStrategy_.getCurrentBrailleViewportContents();
+  var textBuf = this.panStrategy_.getCurrentTextViewportContents();
   if (this.realDisplayState_.available) {
-    chrome.brailleDisplayPrivate.writeDots(buf, buf.byteLength, 1);
+    chrome.brailleDisplayPrivate.writeDots(brailleBuf,
+        brailleBuf.byteLength, 1);
   }
   if (cvox.BrailleCaptionsBackground.isEnabled()) {
-    var start = this.brailleToTextPosition_(viewPort.start);
-    var end = this.brailleToTextPosition_(viewPort.end);
-    cvox.BrailleCaptionsBackground.setContent(
-        this.content_.text.toString().substring(start, end), buf,
-        this.brailleToText_);
+    cvox.BrailleCaptionsBackground.setContent(textBuf, brailleBuf,
+        this.panStrategy_.brailleToText, this.panStrategy_.offsetsForSlices,
+        this.displayState_.textRowCount, this.displayState_.textColumnCount);
   }
 };
-
 
 /**
  * @param {!cvox.NavBraille} newContent New display content.
@@ -220,8 +211,6 @@ cvox.BrailleDisplayManager.prototype.translateContent_ = function(
   var writeTranslatedContent = function(cells, textToBraille, brailleToText) {
     this.content_ = newContent;
     this.expansionType_ = newExpansionType;
-    this.textToBraille_ = textToBraille;
-    this.brailleToText_ = brailleToText;
     var startIndex = this.content_.startIndex;
     var endIndex = this.content_.endIndex;
     var targetPosition;
@@ -247,19 +236,15 @@ cvox.BrailleDisplayManager.prototype.translateContent_ = function(
       } else {
         translatedEndIndex = textToBraille[endIndex];
       }
-      this.translatedContent_ = cells;
-      // Copy the translated content to a separate buffer and  add the cursor
-      // to it.
-      this.displayedContent_ = new ArrayBuffer(cells.byteLength);
-      new Uint8Array(this.displayedContent_).set(new Uint8Array(cells));
-      this.writeCursor_(this.displayedContent_,
-                        translatedStartIndex, translatedEndIndex);
+      // Add the cursor to cells.
+      this.writeCursor_(cells, translatedStartIndex, translatedEndIndex);
       targetPosition = translatedStartIndex;
     } else {
-      this.translatedContent_ = this.displayedContent_ = cells;
       targetPosition = 0;
     }
-    this.panStrategy_.setContent(this.translatedContent_, targetPosition);
+    this.panStrategy_.setContent(this.content_.text.toString(),
+        cells, brailleToText, targetPosition);
+
     this.refresh_();
   }.bind(this);
 
@@ -289,7 +274,8 @@ cvox.BrailleDisplayManager.prototype.onKeyEvent_ = function(event) {
       break;
     case cvox.BrailleKeyCommand.ROUTING:
       event.displayPosition = this.brailleToTextPosition_(
-          event.displayPosition + this.panStrategy_.viewPort.start);
+          event.displayPosition + this.panStrategy_.viewPort.firstRow *
+          this.panStrategy_.displaySize.columns);
       // fall through
     default:
       this.commandListener_(event, this.content_);
@@ -331,7 +317,6 @@ cvox.BrailleDisplayManager.prototype.panRight_ = function() {
   }
 };
 
-
 /**
  * Writes a cursor in the specified range into translated content.
  * @param {ArrayBuffer} buffer Buffer to add cursor to.
@@ -357,7 +342,6 @@ cvox.BrailleDisplayManager.prototype.writeCursor_ = function(
   }
 };
 
-
 /**
  * Returns the text position corresponding to an absolute braille position,
  * that is not accounting for the current pan position.
@@ -368,7 +352,7 @@ cvox.BrailleDisplayManager.prototype.writeCursor_ = function(
  */
 cvox.BrailleDisplayManager.prototype.brailleToTextPosition_ =
     function(braillePosition) {
-  var mapping = this.brailleToText_;
+  var mapping = this.panStrategy_.brailleToText;
   if (braillePosition < 0) {
     // This shouldn't happen.
     console.error('WARNING: Braille position < 0: ' + braillePosition);
@@ -383,17 +367,11 @@ cvox.BrailleDisplayManager.prototype.brailleToTextPosition_ =
   }
 };
 
-
 /**
  * @param {boolean} wordWrap
  * @private
  */
 cvox.BrailleDisplayManager.prototype.updatePanStrategy_ = function(wordWrap) {
-  var newStrategy = wordWrap ? new cvox.WrappingPanStrategy() :
-      new cvox.FixedPanStrategy();
-  newStrategy.setDisplaySize(this.displayState_.textColumnCount || 0);
-  newStrategy.setContent(this.translatedContent_,
-                         this.panStrategy_.viewPort.start);
-  this.panStrategy_ = newStrategy;
+  this.panStrategy_.setPanStrategy(wordWrap);
   this.refresh_();
 };

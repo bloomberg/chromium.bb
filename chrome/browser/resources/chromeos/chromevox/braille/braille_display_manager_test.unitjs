@@ -32,7 +32,8 @@ CvoxBrailleDisplayManagerUnitTest.prototype = {
     this.translator = new FakeTranslator();
     this.translatorManager = new FakeTranslatorManager();
     /** @const */
-    this.DISPLAY_SIZE = 12;
+    this.DISPLAY_ROW_SIZE = 1;
+    this.DISPLAY_COLUMN_SIZE = 12;
   },
 
   addFakeApi: function() {
@@ -49,15 +50,16 @@ CvoxBrailleDisplayManagerUnitTest.prototype = {
   },
 
   displayAvailable: function() {
-    this.displayState = {available: true, textRowCount: 1, textColumnCount: this.DISPLAY_SIZE};
+    this.displayState = {available: true, textRowCount: this.DISPLAY_ROW_SIZE,
+	textColumnCount: this.DISPLAY_COLUMN_SIZE};
   },
 
   /**
    * Asserts display pan position and selection markers on the last written
    * display content and clears it.  There must be exactly one
    * set of cells written.
-   * @param {number} start expected pan position
-   * @param {number=} opt_selStart first cell (relative to buffer start that
+   * @param {number} start expected pan position in the braille display
+   * @param {number=} opt_selStart first cell (relative to buffer start) that
    *                               should have a selection
    * @param {number=} opt_selEnd last cell that should have a selection.
    */
@@ -69,8 +71,11 @@ CvoxBrailleDisplayManagerUnitTest.prototype = {
     var a = new Uint8Array(this.writtenCells[0]);
     this.writtenCells.length = 0;
     var firstCell = a[0] & ~cvox.BrailleDisplayManager.CURSOR_DOTS_;
+    // We are asserting that start, which is an index, and firstCell,
+    // which is a value, are the same because the fakeTranslator generates
+    // the values of the braille cells based on indices.
     assertEquals(start, firstCell,
-                 'Start mismatch: ' + start + ' vs. ' + firstCell);
+                 ' Start mismatch: ' + start + ' vs. ' + firstCell);
     if (opt_selStart !== undefined) {
       for (var i = opt_selStart; i < opt_selEnd; ++i) {
         assertEquals(cvox.BrailleDisplayManager.CURSOR_DOTS_,
@@ -108,6 +113,10 @@ function FakeTranslator() {
 FakeTranslator.prototype = {
   /**
    * Does a translation where every other character becomes two cells.
+   * The translated text does not correspond with the actual content of
+   * the original text, but instead uses the indices. Each even index of the
+   * original text is mapped to one translated cell, while each odd index is
+   * mapped to two translated cells.
    * @override
    */
   translate: function(spannable, expansionType, callback) {
@@ -247,18 +256,20 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'CursorAndPanning', function() {
   // Cursor at beginning of line.
   manager.setContent(createNavBrailleWithCursor(0, 0));
   this.assertDisplayPositionAndClear(0, 0);
-  // Cursor at end of line.
+  // When cursor at end of line.
   manager.setContent(createNavBrailleWithCursor(text.length, text.length));
+  // The first braille cell should be the result of the equation below.
   this.assertDisplayPositionAndClear(
-      2 * this.DISPLAY_SIZE,
-      translatedSize % this.DISPLAY_SIZE);
+      Math.floor(translatedSize / this.DISPLAY_COLUMN_SIZE) *
+          this.DISPLAY_COLUMN_SIZE,
+      translatedSize % this.DISPLAY_COLUMN_SIZE);
   // Selection from the end of what fits on the first display to the end of the
   // line.
   manager.setContent(createNavBrailleWithCursor(7, text.length));
-  this.assertDisplayPositionAndClear(0, 10, this.DISPLAY_SIZE);
+  this.assertDisplayPositionAndClear(0, 10, this.DISPLAY_COLUMN_SIZE);
   // Selection on all of the line.
   manager.setContent(createNavBrailleWithCursor(0, text.length));
-  this.assertDisplayPositionAndClear(0, 0, this.DISPLAY_SIZE);
+  this.assertDisplayPositionAndClear(0, 0, this.DISPLAY_COLUMN_SIZE);
 });
 
 /**
@@ -270,9 +281,10 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'BasicGroup', function() {
   var translated = '1';
   var mapping = [0];
   var expected = [['a','1']];
+  var offsets = {brailleOffset: 0, textOffset: 0};
 
   var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
-                                                     translated, text, mapping);
+                                        translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
 
@@ -285,9 +297,10 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'OneRtoManyB', function() {
   var translated = '11';
   var mapping = [0,0];
   var expected = [['A', '11']];
+  var offsets = {brailleOffset: 0, textOffset: 0};
 
   var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
-                                                     translated, text, mapping);
+					translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
 
@@ -300,9 +313,10 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'OneBtoManyR', function() {
   var translated = '1';
   var mapping = [0];
   var expected = [['knowledge', '1']];
+  var offsets = {brailleOffset: 0, textOffset: 0};
 
   var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
-                                                     translated, text, mapping);
+					     translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
 
@@ -315,9 +329,10 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'OneRtoManyB_BothEnds', function() {
   var translated = 'X122X3';
   var mapping = [0,0,1,2,3,3];
   var expected = [['A', 'X1'], ['b', '2'],['b', '2'], ['C', 'X3']];
+  var offsets = {brailleOffset: 0, textOffset: 0};
 
   var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
-                                                     translated, text, mapping);
+					     translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
 
@@ -331,9 +346,10 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'OneBtoManyR_BothEnds', function() {
   var mapping = [0, 9, 10, 11, 12, 13, 14];
   var expected = [['knowledge', '1'], ['h', '2'], ['a', '3'], ['p', '4'],
       ['p', '4'], ['y', '5'], ['ch', '6']];
+  var offsets = {brailleOffset: 0, textOffset: 0};
 
   var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(translated,
-                                                                 text, mapping);
+							 text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
 
@@ -347,8 +363,9 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'RandB_Random', function() {
   var mapping = [0, 9, 9, 10, 11, 11, 12, 13, 14, 15];
   var expected = [['knowledge', '1'], ['I', 'X2'], ['s', '3'], ['P', 'X4'],
                            ['o', '5'], ['w', '6'], ['e', '7'], ['r', '8']];
+  var offsets = {brailleOffset: 0, textOffset: 0};
 
   var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
-                                                     translated, text, mapping);
+					     translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
