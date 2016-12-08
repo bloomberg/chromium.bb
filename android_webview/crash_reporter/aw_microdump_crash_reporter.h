@@ -14,6 +14,7 @@ void EnableMicrodumpCrashReporter(const std::string& process_type,
                                   int crash_signal_fd);
 void AddGpuFingerprintToMicrodumpCrashHandler(
     const std::string& gpu_fingerprint);
+void SetWebViewTextAddrRange(uintptr_t start, uintptr_t end);
 bool DumpWithoutCrashingToFd(int fd);
 }  // namespace crash_reporter
 }  // namespace android_webview
