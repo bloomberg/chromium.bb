@@ -69,7 +69,8 @@
       <settings-basic-page prefs="{{prefs}}"
           page-visibility="[[pageVisibility]]"
           show-android-apps="[[showAndroidApps]]"
-          on-subpage-expand="onSubpageExpand_">
+          on-subpage-expand="onSubpageExpand_"
+          in-search-mode="[[inSearchMode_]]">
       </settings-basic-page>
     </template>
     <template is="dom-if"
@@ -90,12 +91,14 @@
           showPages_.advanced, inSearchMode_, hasExpandedSection_)]]">
         <settings-advanced-page prefs="{{prefs}}"
             page-visibility="[[pageVisibility]]"
-            on-subpage-expand="onSubpageExpand_">
+            on-subpage-expand="onSubpageExpand_"
+            in-search-mode="[[inSearchMode_]]">
         </settings-advanced-page>
       </template>
     </template>
     <template is="dom-if" if="[[showPages_.about]]">
-      <settings-about-page></settings-about-page>
+      <settings-about-page in-search-mode="[[inSearchMode_]]">
+      </settings-about-page>
     </template>
     <div id="overscroll" style="padding-bottom: [[overscroll_]]px"></div>
   </template>

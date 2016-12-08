@@ -9,6 +9,19 @@
  * @polymerBehavior MainPageBehavior
  */
 var MainPageBehaviorImpl = {
+  properties: {
+    /**
+     * Whether a search operation is in progress or previous search results are
+     * being displayed.
+     * @private {boolean}
+     */
+    inSearchMode: {
+      type: Boolean,
+      value: false,
+      observer: 'inSearchModeChanged_',
+    },
+  },
+
   /** @type {?HTMLElement} The scrolling container. */
   scroller: null,
 
@@ -45,6 +58,16 @@ var MainPageBehaviorImpl = {
       setTimeout(this.tryTransitionToSection_.bind(this, scrollToSection));
     else
       this.tryTransitionToSection_(scrollToSection);
+  },
+
+  /**
+   * When exiting search mode, we need to make another attempt to scroll to
+   * the correct section, since it has just been re-rendered.
+   * @private
+   */
+  inSearchModeChanged_: function(inSearchMode) {
+    if (!inSearchMode)
+      this.tryTransitionToSection_(!settings.lastRouteChangeWasPopstate());
   },
 
   /**
