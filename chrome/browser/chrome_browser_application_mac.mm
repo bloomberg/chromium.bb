@@ -11,6 +11,7 @@
 #include "base/mac/call_with_eh_frame.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/mac/exception_processor.h"
 #include "chrome/common/chrome_switches.h"
@@ -253,6 +254,7 @@ void CancelTerminate() {
 }
 
 - (void)sendEvent:(NSEvent*)event {
+  TRACE_EVENT0("toplevel", "BrowserCrApplication::sendEvent");
   base::debug::ScopedCrashKey crash_key(
       crash_keys::mac::kNSEvent, base::SysNSStringToUTF8([event description]));
 
