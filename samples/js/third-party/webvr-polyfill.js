@@ -3779,6 +3779,7 @@ module.exports = Emitter;
  */
 var Util = _dereq_('./util.js');
 var WebVRPolyfill = _dereq_('./webvr-polyfill.js').WebVRPolyfill;
+var InstallWebVRSpecShim = _dereq_('./webvr-polyfill.js').InstallWebVRSpecShim;
 
 // Initialize a WebVRConfig just in case.
 window.WebVRConfig = Util.extend({
@@ -3842,7 +3843,10 @@ if (!window.WebVRConfig.DEFER_INITIALIZATION) {
   window.InitializeWebVRPolyfill = function() {
     new WebVRPolyfill();
   }
+  window.InitializeSpecShim = InstallWebVRSpecShim;
 }
+
+
 
 },{"./util.js":22,"./webvr-polyfill.js":25}],14:[function(_dereq_,module,exports){
 /*
@@ -5967,5 +5971,6 @@ function InstallWebVRSpecShim() {
 };
 
 module.exports.WebVRPolyfill = WebVRPolyfill;
+module.exports.InstallWebVRSpecShim = InstallWebVRSpecShim;
 
 },{"./base.js":2,"./cardboard-vr-display.js":5,"./display-wrappers.js":8,"./mouse-keyboard-vr-display.js":15,"./util.js":22}]},{},[13]);
