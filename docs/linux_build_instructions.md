@@ -117,7 +117,7 @@ $ gn gen out/Default
 * For more info on GN, run `gn help` on the command line or read the
   [quick start guide](../tools/gn/docs/quick_start.md).
 
-### Faster builds
+### <a id=faster-builds></a>Faster builds
 
 This section contains some things you can change to speed up your builds,
 sorted so that the things that make the biggest difference are first.
@@ -136,9 +136,6 @@ By default GN produces a build with all of the debug assertions enabled
 `symbol_level=1` will produce enough information for stack traces, but not
 line-by-line debugging. Setting `symbol_level=0` will include no debug
 symbols at all. Either will speed up the build compared to full symbols.
-
-See [faster builds on Linux](linux_faster_builds.md) for various tips and
-settings that may speed up your build.
 
 #### Disable debug symbols for Blink
 

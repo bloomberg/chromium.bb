@@ -56,7 +56,8 @@ building release mode with DCHECKs enabled using the following define:
 
 ### Linux
 
-Linux has its own page on [making the build faster](linux_faster_builds.md).
+The Linux build instructions page has its own section on [making the build
+faster](linux_build_instructions.md#faster-builds).
 
 ## Configuring the Build
 
