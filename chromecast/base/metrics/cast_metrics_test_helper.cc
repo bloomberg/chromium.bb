@@ -20,8 +20,9 @@ class CastMetricsHelperStub : public CastMetricsHelper {
   CastMetricsHelperStub();
   ~CastMetricsHelperStub() override;
 
-  void UpdateCurrentAppInfo(const std::string& app_id,
-                            const std::string& session_id) override;
+  void DidStartLoad(const std::string& app_id) override;
+  void DidCompleteLoad(const std::string& app_id,
+                       const std::string& session_id) override;
   void UpdateSDKInfo(const std::string& sdk_version) override;
   void LogMediaPlay() override;
   void LogMediaPause() override;
@@ -50,7 +51,10 @@ CastMetricsHelperStub::~CastMetricsHelperStub() {
   stub_instance_exists = false;
 }
 
-void CastMetricsHelperStub::UpdateCurrentAppInfo(
+void CastMetricsHelperStub::DidStartLoad(const std::string& app_id) {
+}
+
+void CastMetricsHelperStub::DidCompleteLoad(
     const std::string& app_id,
     const std::string& session_id) {
 }

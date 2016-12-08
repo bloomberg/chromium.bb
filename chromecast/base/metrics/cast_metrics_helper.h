@@ -62,10 +62,13 @@ class CastMetricsHelper {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~CastMetricsHelper();
 
-  // This function updates the info and stores the startup time of the current
-  // active application
-  virtual void UpdateCurrentAppInfo(const std::string& app_id,
-                                    const std::string& session_id);
+  // This records the startup time of an app load (note: another app
+  // may be running and still collecting metrics).
+  virtual void DidStartLoad(const std::string& app_id);
+  // This function marks the completion of a successful app load. It switches
+  // metric collection to this app.
+  virtual void DidCompleteLoad(const std::string& app_id,
+                               const std::string& session_id);
   // This function updates the sdk version of the current active application
   virtual void UpdateSDKInfo(const std::string& sdk_version);
 
@@ -140,8 +143,15 @@ class CastMetricsHelper {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // Start time of the most recent app.
+  // Start time for loading the next app.
+  base::TimeTicks app_load_start_time_;
+  // Start time for the currently running app.
   base::TimeTicks app_start_time_;
+
+  // The app id for the app that is currently loading and, if the load is
+  // successful, will replace the currently running app.  The currently running
+  // app is still collecting metrics.
+  std::string loading_app_id_;
 
   // Currently running app id. Used to construct histogram name.
   std::string app_id_;

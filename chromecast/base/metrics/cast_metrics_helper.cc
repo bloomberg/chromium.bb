@@ -135,12 +135,19 @@ CastMetricsHelper::~CastMetricsHelper() {
   g_instance = NULL;
 }
 
-void CastMetricsHelper::UpdateCurrentAppInfo(const std::string& app_id,
-                                             const std::string& session_id) {
-  MAKE_SURE_THREAD(UpdateCurrentAppInfo, app_id, session_id);
+void CastMetricsHelper::DidStartLoad(const std::string& app_id) {
+  loading_app_id_ = app_id;
+  app_load_start_time_ = base::TimeTicks::Now();
+}
+
+void CastMetricsHelper::DidCompleteLoad(const std::string& app_id,
+                                        const std::string& session_id) {
+  MAKE_SURE_THREAD(DidCompleteLoad, app_id, session_id);
+  DCHECK_EQ(app_id, loading_app_id_);
+  loading_app_id_ = std::string();
   app_id_ = app_id;
+  app_start_time_ = app_load_start_time_;
   session_id_ = session_id;
-  app_start_time_ = base::TimeTicks::Now();
   logged_first_audio_ = false;
   TagAppStartForGroupedHistograms(app_id_);
   sdk_version_.clear();
