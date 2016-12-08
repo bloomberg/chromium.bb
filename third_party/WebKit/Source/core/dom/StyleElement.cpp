@@ -77,12 +77,8 @@ void StyleElement::removedFrom(Element& element,
 
   Document& document = element.document();
   if (m_registeredAsCandidate) {
-    ShadowRoot* shadowRoot = element.containingShadowRoot();
-    if (!shadowRoot)
-      shadowRoot = insertionPoint->containingShadowRoot();
-
-    document.styleEngine().removeStyleSheetCandidateNode(
-        element, shadowRoot ? *toTreeScope(shadowRoot) : toTreeScope(document));
+    document.styleEngine().removeStyleSheetCandidateNode(element,
+                                                         *insertionPoint);
     m_registeredAsCandidate = false;
   }
 

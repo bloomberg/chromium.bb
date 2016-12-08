@@ -269,8 +269,11 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint) {
     return;
 
   // No need to remove XSLStyleSheet from StyleEngine.
-  if (!DocumentXSLT::processingInstructionRemovedFromDocument(document(), this))
-    document().styleEngine().removeStyleSheetCandidateNode(*this);
+  if (!DocumentXSLT::processingInstructionRemovedFromDocument(document(),
+                                                              this)) {
+    document().styleEngine().removeStyleSheetCandidateNode(*this,
+                                                           *insertionPoint);
+  }
 
   StyleSheet* removedSheet = m_sheet;
   if (m_sheet) {

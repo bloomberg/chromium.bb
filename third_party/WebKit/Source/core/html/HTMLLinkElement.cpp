@@ -216,7 +216,8 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint) {
     DCHECK(!linkStyle() || !linkStyle()->hasSheet());
     return;
   }
-  document().styleEngine().removeStyleSheetCandidateNode(*this);
+  document().styleEngine().removeStyleSheetCandidateNode(*this,
+                                                         *insertionPoint);
 
   StyleSheet* removedSheet = sheet();
 
@@ -224,7 +225,7 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint) {
     m_link->ownerRemoved();
 
   document().styleEngine().setNeedsActiveStyleUpdate(removedSheet,
-                                                     FullStyleUpdate);
+                                                     AnalyzedStyleUpdate);
 }
 
 void HTMLLinkElement::finishParsingChildren() {

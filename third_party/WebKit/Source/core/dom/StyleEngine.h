@@ -105,8 +105,7 @@ class CORE_EXPORT StyleEngine final
   bool needsActiveStyleUpdate() const;
   void setNeedsActiveStyleUpdate(StyleSheet*, StyleResolverUpdateMode);
   void addStyleSheetCandidateNode(Node&);
-  void removeStyleSheetCandidateNode(Node&);
-  void removeStyleSheetCandidateNode(Node&, TreeScope&);
+  void removeStyleSheetCandidateNode(Node&, ContainerNode& insertionPoint);
   void modifiedStyleSheetCandidateNode(Node&);
   void watchedSelectorsChanged();
   void initialViewportChanged();

@@ -220,14 +220,17 @@ void StyleEngine::addStyleSheetCandidateNode(Node& node) {
     m_activeTreeScopes.add(&treeScope);
 }
 
-void StyleEngine::removeStyleSheetCandidateNode(Node& node) {
-  removeStyleSheetCandidateNode(node, *m_document);
-}
-
 void StyleEngine::removeStyleSheetCandidateNode(Node& node,
-                                                TreeScope& treeScope) {
+                                                ContainerNode& insertionPoint) {
   DCHECK(!isXSLStyleSheet(node));
+  DCHECK(insertionPoint.isConnected());
 
+  ShadowRoot* shadowRoot = node.containingShadowRoot();
+  if (!shadowRoot)
+    shadowRoot = insertionPoint.containingShadowRoot();
+
+  TreeScope& treeScope =
+      shadowRoot ? *toTreeScope(shadowRoot) : toTreeScope(document());
   TreeScopeStyleSheetCollection* collection =
       styleSheetCollectionFor(treeScope);
   // After detaching document, collection could be null. In the case,
