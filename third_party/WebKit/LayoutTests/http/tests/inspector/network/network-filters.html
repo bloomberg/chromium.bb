@@ -90,9 +90,8 @@ function test()
      */
     function setNetworkLogFilter(value, isRegex)
     {
-        UI.panels.network._networkLogView._textFilterUI._filterInputElement.value = value;
         UI.panels.network._networkLogView._textFilterUI._regexCheckBox.checked = isRegex;
-        UI.panels.network._networkLogView._textFilterUI._valueChanged();
+        UI.panels.network._networkLogView._textFilterUI.setValue(value);
         UI.panels.network._networkLogView._filterChanged(null); // event not used in this method, so passing null
     }
 }
