@@ -530,7 +530,7 @@
             ],
             "experiments": [
                 {
-                    "name": "DocumentWriteScriptBlockGroup",
+                    "name": "DocumentWriteScriptBlockGroup_20161208_Launch",
                     "params": {
                         "disallowFetchForDocWrittenScriptsInMainFrame": "false",
                         "disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections": "true"
