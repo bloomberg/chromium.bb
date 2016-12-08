@@ -669,15 +669,6 @@ bool TokenPreloadScanner::shouldEvaluateForDocumentWrite(const String& source) {
   if (!m_documentParameters->doDocumentWritePreloadScanning)
     return false;
 
-  // Log inline script length counts, which will help tune
-  // kMaxLengthForEvaluating. The 50,000 limit was found experimentally.
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, scriptLengthHistogram,
-      ("PreloadScanner.DocumentWrite.ScriptLength", 0, 50000, 50));
-  scriptLengthHistogram.count(source.length());
-
-  // Script length is already logged, but include a count for script length
-  // for easy comparison with the rest of the reasons.
   if (source.length() > kMaxLengthForEvaluating) {
     LogGatedEvaluation(GatedEvaluationScriptTooLong);
     return false;
