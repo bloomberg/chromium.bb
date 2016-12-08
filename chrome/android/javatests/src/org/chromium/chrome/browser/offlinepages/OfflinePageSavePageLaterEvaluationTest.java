@@ -351,10 +351,10 @@ public class OfflinePageSavePageLaterEvaluationTest
         switch (status) {
             case BackgroundSavePageResult.SUCCESS:
                 return "SUCCESS";
-            case BackgroundSavePageResult.PRERENDER_FAILURE:
-                return "PRERENDER_FAILURE";
-            case BackgroundSavePageResult.PRERENDER_CANCELED:
-                return "PRERENDER_CANCELED";
+            case BackgroundSavePageResult.LOADING_FAILURE:
+                return "LOADING_FAILURE";
+            case BackgroundSavePageResult.LOADING_CANCELED:
+                return "LOADING_CANCELED";
             case BackgroundSavePageResult.FOREGROUND_CANCELED:
                 return "FOREGROUND_CANCELED";
             case BackgroundSavePageResult.SAVE_FAILED:

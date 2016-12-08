@@ -39,7 +39,7 @@ Offliner::RequestStatus ClassifyFinalStatus(
     case prerender::FINAL_STATUS_CANCELLED:
     // TODO(dougarnett): Reconsider if/when get better granularity (642768)
     case prerender::FINAL_STATUS_UNSUPPORTED_SCHEME:
-      return Offliner::PRERENDERING_CANCELED;
+      return Offliner::LOADING_CANCELED;
 
     // Identify non-retryable failures. These are a hard type failures
     // associated with the page and so are expected to occur again if retried.
@@ -50,7 +50,7 @@ Offliner::RequestStatus ClassifyFinalStatus(
     case prerender::FINAL_STATUS_CREATE_NEW_WINDOW:
     case prerender::FINAL_STATUS_INVALID_HTTP_METHOD:
     case prerender::FINAL_STATUS_OPEN_URL:
-      return Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY;
+      return Offliner::RequestStatus::LOADING_FAILED_NO_RETRY;
 
     // Identify failures that indicate we should stop further processing
     // for now. These may be current resource issues or app closing.
@@ -62,7 +62,7 @@ Offliner::RequestStatus ClassifyFinalStatus(
     case prerender::FINAL_STATUS_TIMED_OUT:
     case prerender::FINAL_STATUS_APP_TERMINATING:
     case prerender::FINAL_STATUS_PROFILE_DESTROYED:
-      return Offliner::RequestStatus::PRERENDERING_FAILED_NO_NEXT;
+      return Offliner::RequestStatus::LOADING_FAILED_NO_NEXT;
 
     // Otherwise, assume retryable failure.
 
@@ -72,7 +72,7 @@ Offliner::RequestStatus ClassifyFinalStatus(
     case prerender::FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED:
     case prerender::FINAL_STATUS_WINDOW_PRINT:
     default:
-      return Offliner::RequestStatus::PRERENDERING_FAILED;
+      return Offliner::RequestStatus::LOADING_FAILED;
   }
 }
 
@@ -222,7 +222,7 @@ void PrerenderingLoader::HandleLoadingStopped() {
     if (IsLoaded()) {
       // If page already loaded, then prerender is telling us that it is
       // canceling (and we should stop using the loaded WebContents).
-      request_status = Offliner::RequestStatus::PRERENDERING_CANCELED;
+      request_status = Offliner::RequestStatus::LOADING_CANCELED;
     } else {
       // Otherwise, get the available FinalStatus to classify the outcome.
       prerender::FinalStatus final_status = adapter_->GetFinalStatus();
@@ -245,7 +245,7 @@ void PrerenderingLoader::HandleLoadingStopped() {
     adapter_->DestroyActive();
   } else {
     // No access to FinalStatus so classify as retryable failure.
-    request_status = Offliner::RequestStatus::PRERENDERING_FAILED;
+    request_status = Offliner::RequestStatus::LOADING_FAILED;
   }
 
   snapshot_controller_.reset(nullptr);

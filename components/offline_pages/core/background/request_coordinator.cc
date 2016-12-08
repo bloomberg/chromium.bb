@@ -784,7 +784,7 @@ void RequestCoordinator::StartOffliner(
       update_result->item_statuses.at(0).second != ItemActionStatus::SUCCESS) {
     is_busy_ = false;
     // TODO(fgorski): what is the best result? Do we create a new status?
-    StopProcessing(Offliner::PRERENDERING_NOT_STARTED);
+    StopProcessing(Offliner::LOADING_NOT_STARTED);
     DVLOG(1) << "Failed to mark attempt started: " << request_id;
     UpdateRequestResult request_result =
         update_result->store_state != StoreState::LOADED
@@ -823,7 +823,7 @@ void RequestCoordinator::StartOffliner(
   } else {
     is_busy_ = false;
     DVLOG(0) << "Unable to start LoadAndSave";
-    StopProcessing(Offliner::PRERENDERING_NOT_STARTED);
+    StopProcessing(Offliner::LOADING_NOT_STARTED);
 
     // We need to undo the MarkAttemptStarted that brought us to this
     // method since we didn't success in starting after all.
@@ -858,7 +858,7 @@ void RequestCoordinator::UpdateRequestForCompletedAttempt(
     const SavePageRequest& request,
     Offliner::RequestStatus status) {
   if (status == Offliner::RequestStatus::FOREGROUND_CANCELED ||
-      status == Offliner::RequestStatus::PRERENDERING_CANCELED) {
+      status == Offliner::RequestStatus::LOADING_CANCELED) {
     // Update the request for the canceled attempt.
     // TODO(dougarnett): See if we can conclusively identify other attempt
     // aborted cases to treat this way (eg, for Render Process Killed).
@@ -867,9 +867,9 @@ void RequestCoordinator::UpdateRequestForCompletedAttempt(
     // Remove the request from the queue if it succeeded.
     RemoveAttemptedRequest(request,
                            RequestNotifier::BackgroundSavePageResult::SUCCESS);
-  } else if (status == Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY) {
+  } else if (status == Offliner::RequestStatus::LOADING_FAILED_NO_RETRY) {
     RemoveAttemptedRequest(
-        request, RequestNotifier::BackgroundSavePageResult::PRERENDER_FAILURE);
+        request, RequestNotifier::BackgroundSavePageResult::LOADING_FAILURE);
   } else if (request.completed_attempt_count() + 1 >=
              policy_->GetMaxCompletedTries()) {
     // Remove from the request queue if we exceeded max retries. The +1
@@ -899,12 +899,12 @@ bool RequestCoordinator::ShouldTryNextRequest(
     case Offliner::RequestStatus::SAVE_FAILED:
     case Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED:
     case Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT:
-    case Offliner::RequestStatus::PRERENDERING_FAILED:
-    case Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY:
+    case Offliner::RequestStatus::LOADING_FAILED:
+    case Offliner::RequestStatus::LOADING_FAILED_NO_RETRY:
       return true;
     case Offliner::RequestStatus::FOREGROUND_CANCELED:
-    case Offliner::RequestStatus::PRERENDERING_CANCELED:
-    case Offliner::RequestStatus::PRERENDERING_FAILED_NO_NEXT:
+    case Offliner::RequestStatus::LOADING_CANCELED:
+    case Offliner::RequestStatus::LOADING_FAILED_NO_NEXT:
       // No further processing in this service window.
       return false;
     default:

@@ -602,8 +602,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
 
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
-  SendOfflinerDoneCallback(request,
-                           Offliner::RequestStatus::PRERENDERING_FAILED);
+  SendOfflinerDoneCallback(request, Offliner::RequestStatus::LOADING_FAILED);
   PumpLoop();
 
   // For retriable failure, processing should continue to 2nd request so
@@ -641,8 +640,8 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
 
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
-  SendOfflinerDoneCallback(
-      request, Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY);
+  SendOfflinerDoneCallback(request,
+                           Offliner::RequestStatus::LOADING_FAILED_NO_RETRY);
   PumpLoop();
 
   // For no retry failure, processing should continue to 2nd request so
@@ -661,7 +660,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
   // Check that the observer got the notification that we failed (and the
   // subsequent notification that the request was removed).
   EXPECT_TRUE(observer().completed_called());
-  EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::PRERENDER_FAILURE,
+  EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::LOADING_FAILURE,
             observer().last_status());
 }
 
@@ -678,8 +677,8 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoNextFailure) {
 
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
-  SendOfflinerDoneCallback(
-      request, Offliner::RequestStatus::PRERENDERING_FAILED_NO_NEXT);
+  SendOfflinerDoneCallback(request,
+                           Offliner::RequestStatus::LOADING_FAILED_NO_NEXT);
   PumpLoop();
 
   // For no next failure, processing should not continue to 2nd request so
@@ -729,8 +728,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
 
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
-  SendOfflinerDoneCallback(request,
-                           Offliner::RequestStatus::PRERENDERING_CANCELED);
+  SendOfflinerDoneCallback(request, Offliner::RequestStatus::LOADING_CANCELED);
   PumpLoop();
   EXPECT_TRUE(immediate_schedule_callback_called());
 
@@ -840,7 +838,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithLoadingDisabled) {
   EXPECT_TRUE(immediate_schedule_callback_called());
 
   EXPECT_FALSE(is_starting());
-  EXPECT_EQ(Offliner::PRERENDERING_NOT_STARTED, last_offlining_status());
+  EXPECT_EQ(Offliner::LOADING_NOT_STARTED, last_offlining_status());
 }
 
 // This tests a StopProcessing call before we have actually started the

@@ -19,22 +19,22 @@ static std::string OfflinerRequestStatusToString(
       return "SAVED";
     case Offliner::REQUEST_COORDINATOR_CANCELED:
       return "REQUEST_COORDINATOR_CANCELED";
-    case Offliner::PRERENDERING_CANCELED:
-      return "PRERENDERING_CANCELED";
-    case Offliner::PRERENDERING_FAILED:
-      return "PRERENDERING_FAILED";
+    case Offliner::LOADING_CANCELED:
+      return "LOADING_CANCELED";
+    case Offliner::LOADING_FAILED:
+      return "LOADING_FAILED";
     case Offliner::SAVE_FAILED:
       return "SAVE_FAILED";
     case Offliner::FOREGROUND_CANCELED:
       return "FOREGROUND_CANCELED";
     case Offliner::REQUEST_COORDINATOR_TIMED_OUT:
       return "REQUEST_COORDINATOR_TIMED_OUT";
-    case Offliner::PRERENDERING_NOT_STARTED:
-      return "PRERENDERING_NOT_STARTED";
-    case Offliner::PRERENDERING_FAILED_NO_RETRY:
-      return "PRERENDERING_FAILED_NO_RETRY";
-    case Offliner::PRERENDERING_FAILED_NO_NEXT:
-      return "PRERENDERING_FAILED_NO_NEXT";
+    case Offliner::LOADING_NOT_STARTED:
+      return "LOADING_NOT_STARTED";
+    case Offliner::LOADING_FAILED_NO_RETRY:
+      return "LOADING_FAILED_NO_RETRY";
+    case Offliner::LOADING_FAILED_NO_NEXT:
+      return "LOADING_FAILED_NO_NEXT";
     default:
       NOTREACHED();
       return std::to_string(static_cast<int>(request_status));
@@ -46,10 +46,10 @@ static std::string BackgroundSavePageResultToString(
   switch (result) {
     case RequestNotifier::BackgroundSavePageResult::SUCCESS:
       return "SUCCESS";
-    case RequestNotifier::BackgroundSavePageResult::PRERENDER_FAILURE:
-      return "PRERENDER_FAILURE";
-    case RequestNotifier::BackgroundSavePageResult::PRERENDER_CANCELED:
-      return "PRERENDER_CANCELED";
+    case RequestNotifier::BackgroundSavePageResult::LOADING_FAILURE:
+      return "LOADING_FAILURE";
+    case RequestNotifier::BackgroundSavePageResult::LOADING_CANCELED:
+      return "LOADING_CANCELED";
     case RequestNotifier::BackgroundSavePageResult::FOREGROUND_CANCELED:
       return "FOREGROUND_CANCELED";
     case RequestNotifier::BackgroundSavePageResult::SAVE_FAILED:

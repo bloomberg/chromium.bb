@@ -62,9 +62,9 @@ class MockPrerenderingLoader : public PrerenderingLoader {
     mock_loading_ = false;
     mock_loaded_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(load_page_callback_,
-                              Offliner::RequestStatus::PRERENDERING_FAILED,
-                              nullptr /* web_contents */));
+        FROM_HERE,
+        base::Bind(load_page_callback_, Offliner::RequestStatus::LOADING_FAILED,
+                   nullptr /* web_contents */));
   }
 
   void CompleteLoadingAsLoaded() {
@@ -84,7 +84,7 @@ class MockPrerenderingLoader : public PrerenderingLoader {
     mock_loaded_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(load_page_callback_,
-                              Offliner::RequestStatus::PRERENDERING_CANCELED,
+                              Offliner::RequestStatus::LOADING_CANCELED,
                               nullptr /* web_contents */));
   }
 
@@ -255,7 +255,7 @@ TEST_F(PrerenderingOfflinerTest, LoadAndSaveLoadStartedButFails) {
   loader()->CompleteLoadingAsFailed();
   PumpLoop();
   EXPECT_TRUE(completion_callback_called());
-  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_FAILED, request_status());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED, request_status());
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_FALSE(SaveInProgress());
 }
@@ -361,7 +361,7 @@ TEST_F(PrerenderingOfflinerTest, LoadAndSaveLoadedButThenCanceledFromLoader) {
   loader()->CompleteLoadingAsCanceled();
   PumpLoop();
   EXPECT_TRUE(completion_callback_called());
-  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_CANCELED, request_status());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_CANCELED, request_status());
   EXPECT_FALSE(loader()->IsLoaded());
   // Note: save still in progress since it does not support canceling.
   EXPECT_TRUE(SaveInProgress());

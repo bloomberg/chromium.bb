@@ -30,10 +30,10 @@ class Offliner {
     SAVED = 2,
     // RequestCoordinator canceled request.
     REQUEST_COORDINATOR_CANCELED = 3,
-    // Prerendering was canceled.
-    PRERENDERING_CANCELED = 4,
-    // Prerendering failed to load page.
-    PRERENDERING_FAILED = 5,
+    // Loading was canceled.
+    LOADING_CANCELED = 4,
+    // Loader failed to load page.
+    LOADING_FAILED = 5,
     // Failed to save loaded page.
     SAVE_FAILED = 6,
     // Foreground transition canceled request.
@@ -41,12 +41,12 @@ class Offliner {
     // RequestCoordinator canceled request attempt per time limit.
     REQUEST_COORDINATOR_TIMED_OUT = 8,
     // The loader did not accept/start the request.
-    PRERENDERING_NOT_STARTED = 9,
-    // Prerendering failed with hard error so should not retry the request.
-    PRERENDERING_FAILED_NO_RETRY = 10,
-    // Prerendering failed with some error that suggests we should not continue
+    LOADING_NOT_STARTED = 9,
+    // Loader failed with hard error so should not retry the request.
+    LOADING_FAILED_NO_RETRY = 10,
+    // Loader failed with some error that suggests we should not continue
     // processing another request at this time.
-    PRERENDERING_FAILED_NO_NEXT = 11,
+    LOADING_FAILED_NO_NEXT = 11,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

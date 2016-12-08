@@ -17,8 +17,8 @@ class RequestNotifier {
   // GENERATED_JAVA_ENUM_PACKAGE:org.chromium.components.offlinepages
   enum class BackgroundSavePageResult {
     SUCCESS,
-    PRERENDER_FAILURE,
-    PRERENDER_CANCELED,
+    LOADING_FAILURE,
+    LOADING_CANCELED,
     FOREGROUND_CANCELED,
     SAVE_FAILED,
     EXPIRED,

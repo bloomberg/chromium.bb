@@ -236,8 +236,7 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromPrerenderStopLoading) {
   PumpLoop();
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());
-  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_CANCELED,
-            callback_load_status());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_CANCELED, callback_load_status());
   EXPECT_FALSE(test_adapter()->IsActive());
 }
 
@@ -257,8 +256,7 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoContent) {
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(callback_called());
   // We did not provide any WebContents for the callback so expect did not load.
-  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_FAILED,
-            callback_load_status());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED, callback_load_status());
 
   // Stopped event causes no harm.
   test_adapter()->GetObserver()->OnPrerenderStop();
@@ -282,7 +280,7 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoRetry) {
   EXPECT_TRUE(callback_called());
   // We did not provide any WebContents for the callback so expect did not load.
   // FinalStatus is non-retryable failure.
-  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY,
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_NO_RETRY,
             callback_load_status());
 
   // Stopped event causes no harm.
@@ -307,7 +305,7 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoNext) {
   EXPECT_TRUE(callback_called());
   // We did not provide any WebContents for the callback so expect did not load.
   // FinalStatus is non-next failure.
-  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_FAILED_NO_NEXT,
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_NO_NEXT,
             callback_load_status());
 
   // Stopped event causes no harm.
@@ -330,8 +328,7 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadCanceled) {
   PumpLoop();
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(callback_called());
-  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_CANCELED,
-            callback_load_status());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_CANCELED, callback_load_status());
 
   // Stopped event causes no harm.
   test_adapter()->GetObserver()->OnPrerenderStop();
@@ -355,8 +352,7 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedUnsupportedScheme) {
   EXPECT_TRUE(callback_called());
   // Unsupported Scheme final status currently considered a cancel rather
   // than failure in case it is due to lost network connectivity.
-  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_CANCELED,
-            callback_load_status());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_CANCELED, callback_load_status());
 
   // Stopped event causes no harm.
   test_adapter()->GetObserver()->OnPrerenderStop();

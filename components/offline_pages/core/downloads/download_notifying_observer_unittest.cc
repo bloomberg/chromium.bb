@@ -224,7 +224,7 @@ TEST_F(DownloadNotifyingObserverTest, OnCompletedFailure) {
   SavePageRequest request(kTestOfflineId, GURL(kTestUrl), kTestClientId,
                           kTestCreationTime, kTestUserRequested);
   observer()->OnCompleted(
-      request, RequestNotifier::BackgroundSavePageResult::PRERENDER_FAILURE);
+      request, RequestNotifier::BackgroundSavePageResult::LOADING_FAILURE);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_FAILED,
             notifier()->last_notification_type());
   EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
