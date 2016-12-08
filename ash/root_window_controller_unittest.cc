@@ -723,14 +723,14 @@ class MockTextInputClient : public ui::DummyTextInputClient {
  public:
   MockTextInputClient() : ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT) {}
 
-  void EnsureCaretInRect(const gfx::Rect& rect) override {
-    visible_rect_ = rect;
+  void EnsureCaretNotInRect(const gfx::Rect& rect) override {
+    caret_exclude_rect_ = rect;
   }
 
-  const gfx::Rect& visible_rect() const { return visible_rect_; }
+  const gfx::Rect& caret_exclude_rect() const { return caret_exclude_rect_; }
 
  private:
-  gfx::Rect visible_rect_;
+  gfx::Rect caret_exclude_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTextInputClient);
 };
@@ -1083,11 +1083,69 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
 
   ui->EnsureCaretInWorkArea();
   ASSERT_EQ(root_window->bounds().width(),
-            text_input_client.visible_rect().width());
-  ASSERT_EQ(root_window->bounds().height() - keyboard_height,
-            text_input_client.visible_rect().height());
+            text_input_client.caret_exclude_rect().width());
+  ASSERT_EQ(keyboard_height, text_input_client.caret_exclude_rect().height());
 
   input_method->SetFocusedTextInputClient(NULL);
+}
+
+TEST_F(VirtualKeyboardRootWindowControllerTest,
+       EnsureCaretInWorkAreaWithMultipleDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("500x500,600x600");
+  const int64_t primary_display_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  const int64_t secondary_display_id =
+      Shell::GetInstance()->display_manager()->GetSecondaryDisplay().id();
+  ASSERT_NE(primary_display_id, secondary_display_id);
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(static_cast<size_t>(2), root_windows.size());
+  aura::Window* primary_root_window = root_windows[0];
+  aura::Window* secondary_root_window = root_windows[1];
+
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  keyboard::KeyboardUI* ui = keyboard_controller->ui();
+
+  MockTextInputClient text_input_client;
+  ui::InputMethod* input_method = ui->GetInputMethod();
+  ASSERT_TRUE(input_method);
+  input_method->SetFocusedTextInputClient(&text_input_client);
+
+  const int keyboard_height = 100;
+  // Check that the keyboard on the primary screen doesn't cover the window on
+  // the secondary screen.
+  aura::Window* keyboard_container = Shell::GetContainer(
+      primary_root_window, kShellWindowId_VirtualKeyboardContainer);
+  ASSERT_TRUE(keyboard_container);
+  keyboard_container->Show();
+  aura::Window* keyboard_window = ui->GetKeyboardWindow();
+  keyboard_container->AddChild(keyboard_window);
+  keyboard_window->set_owned_by_parent(false);
+  keyboard_window->SetBounds(keyboard::FullWidthKeyboardBoundsFromRootBounds(
+      primary_root_window->bounds(), keyboard_height));
+
+  EXPECT_TRUE(primary_root_window->GetBoundsInScreen().Contains(
+      text_input_client.caret_exclude_rect()));
+  EXPECT_FALSE(secondary_root_window->GetBoundsInScreen().Contains(
+      text_input_client.caret_exclude_rect()));
+
+  // Move the keyboard into the secondary display and check that the keyboard
+  // doesn't cover the window on the primary screen.
+  keyboard_controller->ShowKeyboardInDisplay(secondary_display_id);
+  keyboard_window->SetBounds(keyboard::FullWidthKeyboardBoundsFromRootBounds(
+      secondary_root_window->bounds(), keyboard_height));
+
+  ui->EnsureCaretInWorkArea();
+  EXPECT_FALSE(primary_root_window->GetBoundsInScreen().Contains(
+      text_input_client.caret_exclude_rect()));
+  EXPECT_TRUE(secondary_root_window->GetBoundsInScreen().Contains(
+      text_input_client.caret_exclude_rect()));
+
+  input_method->SetFocusedTextInputClient(nullptr);
 }
 
 // Tests that the virtual keyboard does not block context menus. The virtual

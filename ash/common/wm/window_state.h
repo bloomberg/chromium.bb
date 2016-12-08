@@ -281,7 +281,7 @@ class ASH_EXPORT WindowState {
   // True if the window should not adjust the window's bounds when
   // virtual keyboard bounds changes.
   // TODO(oshima): This is hack. Replace this with proper
-  // implementation based on EnsureCaretInRect.
+  // implementation based on EnsureCaretNotInRect.
   bool ignore_keyboard_bounds_change() const {
     return ignore_keyboard_bounds_change_;
   }

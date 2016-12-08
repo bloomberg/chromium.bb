@@ -46,7 +46,7 @@ class DummyTextInputClient : public TextInputClient {
   bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) override;
   void ExtendSelectionAndDelete(size_t before, size_t after) override;
-  void EnsureCaretInRect(const gfx::Rect& rect) override;
+  void EnsureCaretNotInRect(const gfx::Rect& rect) override;
   bool IsTextEditCommandEnabled(TextEditCommand command) const override;
   void SetTextEditCommandForNextKeyEvent(TextEditCommand command) override;
 

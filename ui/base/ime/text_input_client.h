@@ -162,13 +162,13 @@ class UI_BASE_IME_EXPORT TextInputClient {
   // between browser and renderer.
   virtual void ExtendSelectionAndDelete(size_t before, size_t after) = 0;
 
-  // Ensure the caret is within |rect|.  |rect| is in screen coordinates and
+  // Ensure the caret is not in |rect|.  |rect| is in screen coordinates and
   // may extend beyond the bounds of this TextInputClient.
   // Note: On Windows, the returned value is supposed to be DIP (Density
   // Independent Pixel).
   // TODO(ime): Have a clear spec whether the returned value is DIP or not.
   // http://crbug.com/360334
-  virtual void EnsureCaretInRect(const gfx::Rect& rect) = 0;
+  virtual void EnsureCaretNotInRect(const gfx::Rect& rect) = 0;
 
   // Returns true if |command| is currently allowed to be executed.
   virtual bool IsTextEditCommandEnabled(TextEditCommand command) const = 0;

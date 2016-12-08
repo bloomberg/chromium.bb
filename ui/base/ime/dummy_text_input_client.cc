@@ -116,8 +116,7 @@ void DummyTextInputClient::ExtendSelectionAndDelete(size_t before,
                                                     size_t after) {
 }
 
-void DummyTextInputClient::EnsureCaretInRect(const gfx::Rect& rect)  {
-}
+void DummyTextInputClient::EnsureCaretNotInRect(const gfx::Rect& rect) {}
 
 bool DummyTextInputClient::IsTextEditCommandEnabled(
     TextEditCommand command) const {

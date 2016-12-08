@@ -1424,15 +1424,16 @@ void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
     rfh->ExtendSelectionAndDelete(before, after);
 }
 
-void RenderWidgetHostViewAura::EnsureCaretInRect(const gfx::Rect& rect) {
-  gfx::Rect intersected_rect(
-      gfx::IntersectRects(rect, window_->GetBoundsInScreen()));
+void RenderWidgetHostViewAura::EnsureCaretNotInRect(const gfx::Rect& rect) {
+  gfx::Rect rect_in_local_space = ConvertRectFromScreen(rect);
+  gfx::Rect hiding_area_in_this_window =
+      gfx::IntersectRects(rect_in_local_space, window_->bounds());
 
-  if (intersected_rect.IsEmpty())
+  if (hiding_area_in_this_window.IsEmpty())
     return;
 
   host_->ScrollFocusedEditableNodeIntoRect(
-      ConvertRectFromScreen(intersected_rect));
+      gfx::SubtractRects(window_->bounds(), hiding_area_in_this_window));
 }
 
 bool RenderWidgetHostViewAura::IsTextEditCommandEnabled(

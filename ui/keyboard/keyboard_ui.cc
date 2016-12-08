@@ -31,12 +31,8 @@ void KeyboardUI::HideKeyboardContainer(aura::Window* container) {
 void KeyboardUI::EnsureCaretInWorkArea() {
   if (GetInputMethod()->GetTextInputClient()) {
     aura::Window* keyboard_window = GetKeyboardWindow();
-    aura::Window* root_window = keyboard_window->GetRootWindow();
-    gfx::Rect available_bounds = root_window->bounds();
-    gfx::Rect keyboard_bounds = keyboard_window->bounds();
-    available_bounds.set_height(available_bounds.height() -
-        keyboard_bounds.height());
-    GetInputMethod()->GetTextInputClient()->EnsureCaretInRect(available_bounds);
+    GetInputMethod()->GetTextInputClient()->EnsureCaretNotInRect(
+        keyboard_window->GetBoundsInScreen());
   }
 }
 

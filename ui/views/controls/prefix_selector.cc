@@ -137,8 +137,7 @@ bool PrefixSelector::ChangeTextDirectionAndLayoutAlignment(
 void PrefixSelector::ExtendSelectionAndDelete(size_t before, size_t after) {
 }
 
-void PrefixSelector::EnsureCaretInRect(const gfx::Rect& rect) {
-}
+void PrefixSelector::EnsureCaretNotInRect(const gfx::Rect& rect) {}
 
 bool PrefixSelector::IsTextEditCommandEnabled(
     ui::TextEditCommand command) const {
