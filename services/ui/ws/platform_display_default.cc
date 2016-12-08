@@ -17,7 +17,7 @@
 
 #if defined(OS_WIN)
 #include "ui/platform_window/win/win_window.h"
-#elif defined(USE_X11)
+#elif defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "ui/platform_window/x11/x11_window.h"
 #elif defined(OS_ANDROID)
 #include "ui/platform_window/android/platform_window_android.h"
@@ -59,7 +59,7 @@ void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
   gfx::Rect bounds(metrics_.bounds.origin(), metrics_.pixel_size);
 #if defined(OS_WIN)
   platform_window_ = base::MakeUnique<ui::WinWindow>(this, bounds);
-#elif defined(USE_X11)
+#elif defined(USE_X11) && !defined(OS_CHROMEOS)
   platform_window_ = base::MakeUnique<ui::X11Window>(this);
   platform_window_->SetBounds(bounds);
 #elif defined(OS_ANDROID)
