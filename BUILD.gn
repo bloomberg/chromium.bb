@@ -113,6 +113,7 @@ if (is_win) {
     deps = [
       "//chrome/installer/gcapi",
       "//chrome/installer/mini_installer",
+      "//cloud_print",
       "//components/policy:pack_policy_templates",
       "//courgette",
       "//courgette:copy_courgette_binaries",
