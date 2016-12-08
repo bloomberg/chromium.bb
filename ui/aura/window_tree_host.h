@@ -60,6 +60,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   void InitHost();
 
+  void InitCompositor();
+
   void AddObserver(WindowTreeHostObserver* observer);
   void RemoveObserver(WindowTreeHostObserver* observer);
 
@@ -191,7 +193,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void DestroyDispatcher();
 
   void CreateCompositor();
-  void InitCompositor();
   void OnAcceleratedWidgetAvailable();
 
   // Returns the location of the RootWindow on native screen.
