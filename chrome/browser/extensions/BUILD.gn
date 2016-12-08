@@ -1050,9 +1050,11 @@ static_library("extensions") {
     }
   }
 
-  if (!is_android && !is_ios) {
-    # Non-mobile.
-    #deps += [ "//apps" ]
+  if (!is_android) {
+    sources += [
+      "api/processes/processes_api.cc",
+      "api/processes/processes_api.h",
+    ]
   }
 
   if (is_win || is_mac) {
@@ -1137,13 +1139,6 @@ static_library("extensions") {
       "api/mdns/dns_sd_registry.h",
       "api/mdns/mdns_api.cc",
       "api/mdns/mdns_api.h",
-    ]
-  }
-
-  if (enable_task_manager) {
-    sources += [
-      "api/processes/processes_api.cc",
-      "api/processes/processes_api.h",
     ]
   }
 

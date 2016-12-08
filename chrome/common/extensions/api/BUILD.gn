@@ -87,7 +87,7 @@ schema_sources = [
   "webstore_widget_private.idl",
   "windows.json",
 ]
-if (enable_task_manager) {
+if (!is_android) {
   schema_sources += [ "processes.idl" ]
 }
 if (is_chromeos) {

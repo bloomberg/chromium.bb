@@ -79,8 +79,6 @@ declare_args() {
 
 # Additional dependent variables -----------------------------------------------
 
-enable_task_manager = !is_ios && !is_android
-
 enable_themes = !is_android && !is_ios
 
 # Whether we are using the rlz library or not.  Platforms like Android send

@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   preview_dialog->ForEachFrame(base::Bind(&CheckPdfPluginForRenderFrame));
 }
 
-#if defined(ENABLE_TASK_MANAGER)
+#if !defined(OS_ANDROID)
 
 namespace {
 
@@ -396,4 +396,4 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
 }  // namespace
 
-#endif  // defined(ENABLE_TASK_MANAGER)
+#endif  // !defined(OS_ANDROID)

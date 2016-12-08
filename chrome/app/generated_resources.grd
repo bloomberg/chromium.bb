@@ -3325,7 +3325,7 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       </if>
 
       <!-- Task Manager Window -->
-      <if expr="enable_task_manager">
+      <if expr="not is_android">
         <if expr="not use_titlecase">
           <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
             End process

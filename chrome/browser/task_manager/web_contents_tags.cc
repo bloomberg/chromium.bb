@@ -4,6 +4,7 @@
 
 #include "chrome/browser/task_manager/web_contents_tags.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/task_manager/providers/web_contents/background_contents_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/devtools_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/extension_tag.h"
@@ -24,7 +25,7 @@
 
 namespace task_manager {
 
-#if defined(ENABLE_TASK_MANAGER)
+#if !defined(OS_ANDROID)
 namespace {
 
 // Adds the |tag| to |contents|. It also adds the |tag| to the
@@ -57,86 +58,87 @@ bool IsExtensionWebContents(content::WebContents* contents) {
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 }  // namespace
-#endif  // defined(ENABLE_TASK_MANAGER)
+
+#endif  // !defined(OS_ANDROID)
 
 // static
 void WebContentsTags::CreateForBackgroundContents(
     content::WebContents* web_contents,
     BackgroundContents* background_contents) {
-#if defined(ENABLE_TASK_MANAGER)
+#if !defined(OS_ANDROID)
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(
         web_contents,
         new BackgroundContentsTag(web_contents, background_contents),
         WebContentsTag::kTagKey);
   }
-#endif  // defined(ENABLE_TASK_MANAGER)
+#endif  // !defined(OS_ANDROID)
 }
 
 // static
 void WebContentsTags::CreateForDevToolsContents(
     content::WebContents* web_contents) {
-#if defined(ENABLE_TASK_MANAGER)
+#if !defined(OS_ANDROID)
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents,
                    new DevToolsTag(web_contents),
                    WebContentsTag::kTagKey);
   }
-#endif  // defined(ENABLE_TASK_MANAGER)
+#endif  // !defined(OS_ANDROID)
 }
 
 // static
 void WebContentsTags::CreateForPrerenderContents(
     content::WebContents* web_contents) {
-#if defined(ENABLE_TASK_MANAGER)
+#if !defined(OS_ANDROID)
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents,
                    new PrerenderTag(web_contents),
                    WebContentsTag::kTagKey);
   }
-#endif  // defined(ENABLE_TASK_MANAGER)
+#endif  // !defined(OS_ANDROID)
 }
 
 // static
 void WebContentsTags::CreateForTabContents(content::WebContents* web_contents) {
-#if defined(ENABLE_TASK_MANAGER)
+#if !defined(OS_ANDROID)
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents,
                    new TabContentsTag(web_contents),
                    WebContentsTag::kTagKey);
   }
-#endif  // defined(ENABLE_TASK_MANAGER)
+#endif  // !defined(OS_ANDROID)
 }
 
 // static
 void WebContentsTags::CreateForPrintingContents(
     content::WebContents* web_contents) {
-#if defined(ENABLE_TASK_MANAGER) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if !defined(OS_ANDROID) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents,
                    new PrintingTag(web_contents),
                    WebContentsTag::kTagKey);
   }
-#endif  // defined(ENABLE_TASK_MANAGER) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // !defined(OS_ANDROID) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 }
 
 // static
 void WebContentsTags::CreateForGuestContents(
     content::WebContents* web_contents) {
-#if defined(ENABLE_TASK_MANAGER)
+#if !defined(OS_ANDROID)
   DCHECK(guest_view::GuestViewBase::IsGuest(web_contents));
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents,
                    new GuestTag(web_contents),
                    WebContentsTag::kTagKey);
   }
-#endif  // defined(ENABLE_TASK_MANAGER)
+#endif  // !defined(OS_ANDROID)
 }
 
 // static
 void WebContentsTags::CreateForExtension(content::WebContents* web_contents,
                                          extensions::ViewType view_type) {
-#if defined(ENABLE_TASK_MANAGER) && BUILDFLAG(ENABLE_EXTENSIONS)
+#if !defined(OS_ANDROID) && BUILDFLAG(ENABLE_EXTENSIONS)
   DCHECK(IsExtensionWebContents(web_contents));
 
   if (!WebContentsTag::FromWebContents(web_contents)) {
@@ -144,16 +146,16 @@ void WebContentsTags::CreateForExtension(content::WebContents* web_contents,
                    new ExtensionTag(web_contents, view_type),
                    WebContentsTag::kTagKey);
   }
-#endif  // defined(ENABLE_TASK_MANAGER) && BUILDFLAG(ENABLE_EXTENSIONS)
+#endif  // !defined(OS_ANDROID) && BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
 // static
 void WebContentsTags::ClearTag(content::WebContents* web_contents) {
-#if defined(ENABLE_TASK_MANAGER)
+#if !defined(OS_ANDROID)
   const WebContentsTag* tag = WebContentsTag::FromWebContents(web_contents);
   WebContentsTagsManager::GetInstance()->ClearFromProvider(tag);
   web_contents->RemoveUserData(WebContentsTag::kTagKey);
-#endif  // defined(ENABLE_TASK_MANAGER)
+#endif  // !defined(OS_ANDROID)
 }
 
 }  // namespace task_manager

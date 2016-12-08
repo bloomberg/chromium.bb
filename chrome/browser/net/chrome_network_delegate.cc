@@ -361,11 +361,11 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request,
 
 void ChromeNetworkDelegate::OnNetworkBytesReceived(net::URLRequest* request,
                                                    int64_t bytes_received) {
-#if defined(ENABLE_TASK_MANAGER)
+#if !defined(OS_ANDROID)
   // Note: Currently, OnNetworkBytesReceived is only implemented for HTTP jobs,
   // not FTP or other types, so those kinds of bytes will not be reported here.
   task_manager::TaskManagerInterface::OnRawBytesRead(*request, bytes_received);
-#endif  // defined(ENABLE_TASK_MANAGER)
+#endif  // !defined(OS_ANDROID)
 
   ReportDataUsageStats(request, 0 /* tx_bytes */, bytes_received);
 }

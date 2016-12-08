@@ -386,9 +386,9 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   PluginsResourceService::RegisterPrefs(registry);
 #endif
 
-#if defined(ENABLE_TASK_MANAGER)
+#if !defined(OS_ANDROID)
   task_manager::TaskManagerInterface::RegisterPrefs(registry);
-#endif  // defined(ENABLE_TASK_MANAGER)
+#endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
   BackgroundModeManager::RegisterPrefs(registry);
