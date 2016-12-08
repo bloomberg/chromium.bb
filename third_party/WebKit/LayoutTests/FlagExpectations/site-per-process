@@ -177,6 +177,9 @@ crbug.com/670409 virtual/mojo-loading/http/tests/perf/large-inlined-script.html 
 crbug.com/670409 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure ]
 crbug.com/670409 virtual/mojo-loading/http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Timeout ]
 
+# https://crbug.com/672570: autoplay-crossorigin.html fails w/ --site-per-process
+crbug.com/672570 http/tests/media/autoplay-crossorigin.html [ Timeout ]
+
 # TODO(lukasza, alexmos): Triage these failures.
 Bug(none) fast/frames/cached-frame-counter.html [ Timeout ]
 Bug(none) fast/frames/frame-limit.html [ Timeout ]
