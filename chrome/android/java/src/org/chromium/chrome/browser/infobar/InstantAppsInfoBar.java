@@ -21,7 +21,7 @@ public class InstantAppsInfoBar extends ConfirmInfoBar {
     private InstantAppsBannerData mData;
 
     protected InstantAppsInfoBar(InstantAppsBannerData data) {
-        super(0, data.getIcon(), data.getAppName(), null, null, null);
+        super(0, data.getIcon(), data.getAppName(), null, data.getPrimaryActionLabel(), null);
         mData = data;
     }
 
@@ -33,7 +33,6 @@ public class InstantAppsInfoBar extends ConfirmInfoBar {
         layout.setMessage(mData.getAppName());
         layout.getMessageLayout().addDescription(
                 UrlFormatter.formatUrlForSecurityDisplay(mData.getUrl(), false));
-        layout.getPrimaryButton().setText(R.string.instant_apps_open_in_app);
         layout.getPrimaryButton()
                 .setButtonColor(ApiCompatibilityUtils.getColor(getContext().getResources(),
                         R.color.app_banner_install_button_bg));

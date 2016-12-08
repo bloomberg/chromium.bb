@@ -14,19 +14,21 @@ import org.chromium.content_public.browser.WebContents;
  * Encapsulates information needed to display an {@link InstantAppsInfoBar}.
  */
 public class InstantAppsBannerData {
-    private String mAppName;
-    private Bitmap mAppIcon;
-    private String mUrl;
-    private Intent mIntent;
-    private WebContents mWebContents;
-    private Uri mReferrer;
+    private final String mAppName;
+    private final Bitmap mAppIcon;
+    private final String mUrl;
+    private final Intent mIntent;
+    private final WebContents mWebContents;
+    private final Uri mReferrer;
+    private final String mPrimaryActionLabel;
 
     public InstantAppsBannerData(String appName, Bitmap icon, String url, Uri referrer,
-            Intent intent, WebContents webContents) {
+            Intent intent, String primaryActionLabel, WebContents webContents) {
         mAppName = appName;
         mAppIcon = icon;
         mUrl = url;
         mIntent = intent;
+        mPrimaryActionLabel = primaryActionLabel;
         mWebContents = webContents;
         mReferrer = referrer;
     }
@@ -59,5 +61,10 @@ public class InstantAppsBannerData {
     /** @return The referrer page for the Instant App. */
     public Uri getReferrer() {
         return mReferrer;
+    }
+
+    /** @return The label for the button that will launch the Instant App. */
+    public String getPrimaryActionLabel() {
+        return mPrimaryActionLabel;
     }
 }
