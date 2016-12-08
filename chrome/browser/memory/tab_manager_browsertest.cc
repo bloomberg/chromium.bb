@@ -20,6 +20,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -35,6 +37,13 @@ namespace memory {
 
 class TabManagerTest : public InProcessBrowserTest {
 };
+
+bool ObserveNavEntryCommitted(const GURL& expected_url,
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
+  return content::Details<content::LoadCommittedDetails>(details)
+             ->entry->GetURL() == expected_url;
+}
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   using content::WindowedNotificationObserver;
@@ -135,7 +144,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   // Select the first tab.  It should reload.
   WindowedNotificationObserver reload1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
+      base::Bind(&ObserveNavEntryCommitted,
+                 GURL(chrome::kChromeUIChromeURLsURL)));
   chrome::SelectNumberedTab(browser(), 0);
   reload1.Wait();
   // Make sure the FindBarController gets the right WebContents.
@@ -149,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   // Select the third tab. It should reload.
   WindowedNotificationObserver reload2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
+      base::Bind(&ObserveNavEntryCommitted, GURL("chrome://dns")));
   chrome::SelectNumberedTab(browser(), 2);
   reload2.Wait();
   EXPECT_EQ(2, tsm->active_index());
@@ -163,14 +173,14 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   EXPECT_FALSE(chrome::CanGoForward(browser()));
   WindowedNotificationObserver back1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
+      base::Bind(&ObserveNavEntryCommitted, GURL(chrome::kChromeUIVersionURL)));
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   back1.Wait();
   EXPECT_TRUE(chrome::CanGoBack(browser()));
   EXPECT_TRUE(chrome::CanGoForward(browser()));
   WindowedNotificationObserver back2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
+      base::Bind(&ObserveNavEntryCommitted, GURL(chrome::kChromeUITermsURL)));
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   back2.Wait();
   EXPECT_FALSE(chrome::CanGoBack(browser()));

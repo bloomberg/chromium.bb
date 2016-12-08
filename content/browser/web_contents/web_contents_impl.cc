@@ -674,9 +674,15 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                                         RenderFrameHost* render_frame_host,
                                         const IPC::Message& message) {
   DCHECK(render_view_host || render_frame_host);
-  if (GetWebUI() &&
-      static_cast<WebUIImpl*>(GetWebUI())->OnMessageReceived(message)) {
-    return true;
+
+  if (render_view_host) {
+    RenderFrameHost* main_frame = render_view_host->GetMainFrame();
+    if (main_frame) {
+      WebUIImpl* web_ui =
+          static_cast<RenderFrameHostImpl*>(main_frame)->web_ui();
+      if (web_ui && web_ui->OnMessageReceived(message))
+        return true;
+    }
   }
 
   if (render_frame_host) {
