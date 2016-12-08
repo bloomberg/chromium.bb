@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ios/rules.gni")
+import("//build/mac/tweak_info_plist.gni")
+import("//ios/build/chrome_build.gni")
+
 source_set("app") {
   sources = [
     "deferred_initialization_runner.h",
@@ -59,4 +63,34 @@ bundle_data("resources") {
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
+}
+
+tweak_info_plist("info_plist") {
+  info_plists = [
+    "resources/Info.plist",
+    "resources/ChromeAddition+Info.plist",
+  ]
+  if (ios_chrome_info_plist_additions != []) {
+    info_plists += ios_chrome_info_plist_additions
+  }
+  if (ios_encryption_export_compliance_code != "") {
+    info_plists += [ "resources/EncryptionExportCompliance+Info.plist" ]
+  }
+  args = [
+    "--breakpad=$breakpad_enabled_as_int",
+    "--branding=$chromium_short_name",
+  ]
+}
+
+compile_plist("entitlements") {
+  format = "xml1"
+  plist_templates = [ "resources/Chrome.entitlements" ]
+  if (ios_chrome_entitlements_additions != []) {
+    plist_templates += ios_chrome_entitlements_additions
+  }
+  if (!ios_automatically_manage_certs) {
+    plist_templates += [ "resources/AssociatedDomains.entitlements" ]
+  }
+  substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
+  output_name = "$target_gen_dir/$chromium_short_name.entitlements"
 }

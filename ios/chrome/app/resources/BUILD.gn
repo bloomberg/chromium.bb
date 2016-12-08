@@ -80,6 +80,20 @@ bundle_data("chromium_icons") {
   ]
 }
 
+bundle_data("quick_action_icons") {
+  sources = [
+    "quick_action_new_incognito_tab@2x.png",
+    "quick_action_new_incognito_tab@3x.png",
+    "quick_action_new_tab@2x.png",
+    "quick_action_new_tab@3x.png",
+    "quick_action_voice_search@2x.png",
+    "quick_action_voice_search@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
 bundle_data("launchscreen_assets") {
   sources = [
     "launchscreen_images.xcassets/Contents.json",
