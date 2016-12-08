@@ -237,8 +237,8 @@ static int av1_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
                          PARTITION_TYPE partition,
 #endif
                          TX_SIZE txsz, int y, int x, int ss_x) {
-  const int wl = mi_width_log2_lookup[bsize];
-  const int w = AOMMAX(num_4x4_blocks_wide_lookup[bsize] >> ss_x, 1);
+  const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
+  const int w = AOMMAX(width >> ss_x, 1);
   const int step = tx_size_wide_unit[txsz];
 
   // TODO(bshacklett, huisu): Currently the RD loop traverses 4X8 blocks in
@@ -252,9 +252,10 @@ static int av1_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
   if (!right_available) return 0;
 
   // Handle block size 4x8 and 4x4
-  if (ss_x == 0 && num_4x4_blocks_wide_lookup[bsize] < 2 && x == 0) return 1;
+  if (ss_x == 0 && width < 2 && x == 0) return 1;
 
   if (y == 0) {
+    const int wl = mi_width_log2_lookup[bsize];
     const int hl = mi_height_log2_lookup[bsize];
     const uint8_t *order;
     int my_order, tr_order;
@@ -298,13 +299,14 @@ static int av1_has_bottom(BLOCK_SIZE bsize, int mi_row, int mi_col,
   } else {
     const int wl = mi_width_log2_lookup[bsize];
     const int hl = mi_height_log2_lookup[bsize];
-    const int h = 1 << (hl + 1 - ss_y);
+    const int height = block_size_high[bsize] >> tx_size_high_log2[0];
+    const int h = AOMMAX(height >> ss_y, 1);
     const int step = tx_size_wide_unit[txsz];
     const uint8_t *order = orders[bsize];
     int my_order, bl_order;
 
     // Handle block size 8x4 and 4x4
-    if (ss_y == 0 && num_4x4_blocks_high_lookup[bsize] < 2 && y == 0) return 1;
+    if (ss_y == 0 && height < 2 && y == 0) return 1;
 
     if (y + step < h) return 1;
 
