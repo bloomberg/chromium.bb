@@ -65,4 +65,10 @@ Found: document
 Checking '// do'
 Not Found: document
 
+Checking '["should'
+Not Found: shouldNotFindThisFunction
+
+Checking 'shou'
+Not Found: should not find this
+
 

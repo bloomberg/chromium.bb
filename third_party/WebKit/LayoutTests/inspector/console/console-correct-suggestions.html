@@ -11,6 +11,10 @@ function templateString()
     };
 }
 
+function shouldNotFindThisFunction() { }
+
+window["should not find this"] = true;
+
 function test()
 {
     var consoleEditor;
@@ -62,7 +66,9 @@ function test()
         () => testCompletions('"string g', ["getComputedStyle"], false),
         () => testCompletions("`template string docu", ["document"], false),
         () => testCompletions("`${do", ["document"], false),
-        () => testCompletions("// do", ["document"], false)
+        () => testCompletions("// do", ["document"], false),
+        () => testCompletions('["should', ["shouldNotFindThisFunction"]),
+        () => testCompletions("shou", ["should not find this"])
     ]).then(InspectorTest.completeTest);
 
 }
