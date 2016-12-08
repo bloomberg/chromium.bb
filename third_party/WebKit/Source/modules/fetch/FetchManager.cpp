@@ -887,7 +887,7 @@ FetchManager* FetchManager::create(ExecutionContext* executionContext) {
 }
 
 FetchManager::FetchManager(ExecutionContext* executionContext)
-    : ContextLifecycleObserver(executionContext), m_isStopped(false) {}
+    : ContextLifecycleObserver(executionContext) {}
 
 ScriptPromise FetchManager::fetch(ScriptState* scriptState,
                                   FetchRequestData* request) {
@@ -905,8 +905,6 @@ ScriptPromise FetchManager::fetch(ScriptState* scriptState,
 }
 
 void FetchManager::contextDestroyed() {
-  ASSERT(!m_isStopped);
-  m_isStopped = true;
   for (auto& loader : m_loaders)
     loader->dispose();
 }

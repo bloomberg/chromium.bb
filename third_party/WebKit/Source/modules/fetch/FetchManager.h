@@ -24,7 +24,6 @@ class FetchManager final : public GarbageCollected<FetchManager>,
   explicit FetchManager(ExecutionContext*);
   ScriptPromise fetch(ScriptState*, FetchRequestData*);
   void contextDestroyed() override;
-  bool isStopped() const { return m_isStopped; }
 
   DECLARE_TRACE();
 
@@ -35,7 +34,6 @@ class FetchManager final : public GarbageCollected<FetchManager>,
   void onLoaderFinished(Loader*);
 
   HeapHashSet<Member<Loader>> m_loaders;
-  bool m_isStopped;
 };
 
 }  // namespace blink

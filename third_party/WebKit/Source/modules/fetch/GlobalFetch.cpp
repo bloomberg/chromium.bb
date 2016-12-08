@@ -45,10 +45,6 @@ class GlobalFetchImpl final
       exceptionState.throwTypeError("The global scope is shutting down.");
       return ScriptPromise();
     }
-    if (m_fetchManager->isStopped()) {
-      exceptionState.throwTypeError("The global scope is shutting down.");
-      return ScriptPromise();
-    }
 
     // "Let |r| be the associated request of the result of invoking the
     // initial value of Request as constructor with |input| and |init| as
