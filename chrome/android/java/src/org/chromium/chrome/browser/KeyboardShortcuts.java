@@ -161,7 +161,7 @@ public class KeyboardShortcuts {
         addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_bookmark_page,
                 KeyEvent.KEYCODE_D, KeyEvent.META_CTRL_ON);
         addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_zoom_in,
-                KeyEvent.KEYCODE_PLUS, KeyEvent.META_CTRL_ON);
+                KeyEvent.KEYCODE_EQUALS, KeyEvent.META_CTRL_ON);
         addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_zoom_out,
                 KeyEvent.KEYCODE_MINUS, KeyEvent.META_CTRL_ON);
         addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_reset_zoom,
