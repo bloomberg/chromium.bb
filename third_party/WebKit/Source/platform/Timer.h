@@ -75,6 +75,8 @@ class PLATFORM_EXPORT TimerBase {
     m_repeatInterval += delta;
   }
 
+  void moveToNewTaskRunner(WebTaskRunner*);
+
   struct PLATFORM_EXPORT Comparator {
     bool operator()(const TimerBase* a, const TimerBase* b) const;
   };

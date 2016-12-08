@@ -85,6 +85,28 @@ double TimerBase::nextFireInterval() const {
   return m_nextFireTime - current;
 }
 
+void TimerBase::moveToNewTaskRunner(WebTaskRunner* taskRunner) {
+#if DCHECK_IS_ON()
+  DCHECK_EQ(m_thread, currentThread());
+  DCHECK(taskRunner->runsTasksOnCurrentThread());
+#endif
+  // If the underlying task runner stays the same, ignore it.
+  if (m_webTaskRunner->toSingleThreadTaskRunner() ==
+      taskRunner->toSingleThreadTaskRunner()) {
+    return;
+  }
+
+  m_weakPtrFactory.revokeAll();
+
+  m_webTaskRunner = taskRunner->clone();
+
+  double now = timerMonotonicallyIncreasingTime();
+  double nextFireTime = m_nextFireTime;
+  m_nextFireTime = 0;
+
+  setNextFireTime(now, nextFireTime - now);
+}
+
 // static
 WebTaskRunner* TimerBase::getTimerTaskRunner() {
   return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
