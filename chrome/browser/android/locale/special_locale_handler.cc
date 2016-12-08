@@ -65,6 +65,12 @@ jboolean SpecialLocaleHandler::LoadTemplateUrls(
     return false;
 
   for (const auto& data_url : prepopulated_list) {
+    TemplateURL* existing = template_url_service_->GetTemplateURLForKeyword(
+        data_url.get()->keyword());
+    // Do not add local engines if there is already one.
+    if (existing)
+      continue;
+
     data_url.get()->safe_for_autoreplace = true;
     std::unique_ptr<TemplateURL> turl(
         new TemplateURL(*data_url, TemplateURL::LOCAL));
