@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <GLES3/gl3.h>
 #include <stdint.h>
 
 #include "base/macros.h"
@@ -593,6 +594,21 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
     }
   }
 
+  void TexSubImage2D(GLenum target,
+                     GLint level,
+                     GLint xoffset,
+                     GLint yoffset,
+                     GLsizei width,
+                     GLsizei height,
+                     GLenum format,
+                     GLenum type,
+                     const void* pixels) override {
+    if (!texsubimage2d_callback_.is_null()) {
+      texsubimage2d_callback_.Run(target, level, xoffset, yoffset, width,
+                                  height, format, type, pixels);
+    }
+  }
+
   base::Callback<void(GLenum target,
                       GLint level,
                       GLint internalformat,
@@ -603,6 +619,17 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
                       GLenum type,
                       const void* pixels)>
       teximage2d_callback_;
+
+  base::Callback<void(GLenum target,
+                      GLint level,
+                      GLint xoffset,
+                      GLint yoffset,
+                      GLsizei width,
+                      GLsizei height,
+                      GLenum format,
+                      GLenum type,
+                      const void* pixels)>
+      texsubimage2d_callback_;
 };
 void MailboxHoldersReleased(const gpu::SyncToken& sync_token) {}
 }  // namespace
@@ -674,7 +701,7 @@ TEST_F(SkCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
   EXPECT_EQ(fWidth / 2, renderer_.LastImageDimensionsForTesting().height());
 }
 
-TEST_F(SkCanvasVideoRendererTest, TexImageImplY16) {
+TEST_F(SkCanvasVideoRendererTest, TexImage2D_Y16_RGBA32F) {
   // Create test frame.
   // |offset_x| and |offset_y| define visible rect's offset to coded rect.
   const int offset_x = 3;
@@ -727,6 +754,57 @@ TEST_F(SkCanvasVideoRendererTest, TexImageImplY16) {
   SkCanvasVideoRenderer::TexImage2D(GL_TEXTURE_2D, &gles2, video_frame.get(), 0,
                                     GL_RGBA, GL_RGBA, GL_FLOAT, true /*flip_y*/,
                                     true);
+}
+
+TEST_F(SkCanvasVideoRendererTest, TexSubImage2D_Y16_R32F) {
+  // Create test frame.
+  // |offset_x| and |offset_y| define visible rect's offset to coded rect.
+  const int offset_x = 3;
+  const int offset_y = 5;
+  const int width = 16;
+  const int height = 16;
+  const int stride = width + offset_x;
+  const size_t byte_size = stride * (height + offset_y) * 2;
+  std::unique_ptr<unsigned char, base::AlignedFreeDeleter> memory(
+      static_cast<unsigned char*>(base::AlignedAlloc(
+          byte_size, media::VideoFrame::kFrameAddressAlignment)));
+  const gfx::Rect rect(offset_x, offset_y, width, height);
+  scoped_refptr<media::VideoFrame> video_frame =
+      CreateTestY16Frame(gfx::Size(stride, offset_y + height), rect,
+                         memory.get(), cropped_frame()->timestamp());
+
+  // Create GL context.
+  sk_sp<const GrGLInterface> null_interface(GrGLCreateNullInterface());
+  sk_sp<GrContext> gr_context(GrContext::Create(
+      kOpenGL_GrBackend,
+      reinterpret_cast<GrBackendContext>(null_interface.get())));
+  TestGLES2Interface gles2;
+  Context3D context_3d(&gles2, gr_context.get());
+
+  // Bind the texImage2D callback to verify the uint16 to float32 conversion.
+  gles2.texsubimage2d_callback_ = base::Bind([](
+      GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+      GLsizei height, GLenum format, GLenum type, const void* pixels) {
+    EXPECT_EQ(static_cast<unsigned>(GL_FLOAT), type);
+    EXPECT_EQ(static_cast<unsigned>(GL_RED), format);
+    EXPECT_EQ(2, xoffset);
+    EXPECT_EQ(1, yoffset);
+    EXPECT_EQ(16, width);
+    EXPECT_EQ(16, height);
+    EXPECT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
+    const float* data = static_cast<const float*>(pixels);
+    for (int j = 0; j < height; j++) {
+      for (int i = 0; i < width; i++) {
+        const int value = i + j * width;  // flip_y is false.
+        float expected_value =
+            (((value & 0xFF) << 8) | (~value & 0xFF)) / 65535.f;
+        EXPECT_EQ(expected_value, data[(i + j * width)]);
+      }
+    }
+  });
+  SkCanvasVideoRenderer::TexSubImage2D(GL_TEXTURE_2D, &gles2, video_frame.get(),
+                                       0, GL_RED, GL_FLOAT, 2 /*xoffset*/,
+                                       1 /*yoffset*/, false /*flip_y*/, true);
 }
 
 }  // namespace media

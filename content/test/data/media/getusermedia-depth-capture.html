@@ -40,11 +40,7 @@
     console.log('Calling depthStreamToRGBAUint8Texture');
     getFake16bitStream().then(function(stream) {
       detectVideoInLocalView1(stream, function() {
-        testVideoToRGBA8Texture('local-view-1', function(skip_info) {
-          if (skip_info) {
-            console.log("SKIP depthStreamToRGBAUint8Texture: " +
-                        skip_info);
-          }
+        testVideoToRGBA8Texture('local-view-1', function() {
           stream.getVideoTracks()[0].stop();
           waitForVideoToStop('local-view-1');
         }, failedCallback);
@@ -57,11 +53,20 @@
     console.log('Calling depthStreamToRGBAFloatTexture');
     getFake16bitStream().then(function(stream) {
       detectVideoInLocalView1(stream, function() {
-        testVideoToRGBA32FTexture('local-view-1', function(skip_info) {
-          if (skip_info) {
-            console.log("SKIP depthStreamToRGBAFloatTexture: " +
-                        skip_info);
-          }
+        testVideoToRGBA32FTexture('local-view-1', function() {
+          stream.getVideoTracks()[0].stop();
+          waitForVideoToStop('local-view-1');
+        }, failedCallback);
+      });
+    },
+    failedCallback);
+  }
+
+  function depthStreamToR32FloatTexture() {
+    console.log('Calling depthStreamToR32FloatTexture');
+    getFake16bitStream().then(function(stream) {
+      detectVideoInLocalView1(stream, function() {
+        testVideoToR32FTexture('local-view-1', function() {
           stream.getVideoTracks()[0].stop();
           waitForVideoToStop('local-view-1');
         }, failedCallback);
@@ -157,6 +162,19 @@
       return error({name:"WebGL is not available."});
     return testVideoToTexture(gl, video, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,
                               readAndVerifyRGBA8, success, error);
+  }
+
+  function testVideoToR32FTexture(videoElementName, success, error) {
+    var video = $(videoElementName);
+    var canvas = document.createElement('canvas');
+    canvas.width = 96;
+    canvas.height = 96;
+    var gl = canvas.getContext('webgl2');
+    if(!gl)
+      return error({name:"WebGL2 is not available."});
+    var color_buffer_float_ext = gl.getExtension('EXT_color_buffer_float');
+    return testVideoToTexture(gl, video, gl.R32F, gl.RED, gl.FLOAT,
+                              readAndVerifyR32F, success, error);
   }
 
   function testVideoToTexture(gl, video, internalformat, format, type,
@@ -290,6 +308,15 @@
                         test_name);
   }
 
+  function readAndVerifyR32F(gl, width, height, flip_y, test_name) {
+    var arr = new Float32Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, arr);
+    var color_step = 1.0 / (width + height);
+    return verifyPixelsRed(arr, width, height, flip_y, color_step,
+                           1.0 /*wrap_around*/, 1.5 / 65535 /*tolerance*/,
+						   test_name);
+  }
+
   function onLoad() {
     var query = /query=(.*)/.exec(window.location.href);
     if (!query)
@@ -298,6 +325,8 @@
       depthStreamToRGBAUint8Texture();
     else if (query[1] == "RGBAFloat")
       depthStreamToRGBAFloatTexture();
+    else if (query[1] == "R32Float")
+      depthStreamToR32FloatTexture();
   }
   </script>
 </head>

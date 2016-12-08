@@ -4,6 +4,7 @@
 
 #include "media/renderers/skcanvas_video_renderer.h"
 
+#include <GLES3/gl3.h>
 #include <limits>
 
 #include "base/macros.h"
@@ -534,21 +535,28 @@ void FlipAndConvertY16(const VideoFrame* video_frame,
   const uint8_t* row_head = video_frame->visible_data(0);
   const size_t stride = video_frame->stride(0);
   const int height = video_frame->visible_rect().height();
-  for (int i = 0; i < height; ++i) {
+  for (int i = 0; i < height; ++i, row_head += stride) {
     uint8_t* out_row_head = flip_y ? out + output_row_bytes * (height - i - 1)
                                    : out + output_row_bytes * i;
     const uint16_t* row = reinterpret_cast<const uint16_t*>(row_head);
     const uint16_t* row_end = row + video_frame->visible_rect().width();
     if (type == GL_FLOAT) {
-      DCHECK_EQ(static_cast<unsigned>(GL_RGBA), format);
       float* out_row = reinterpret_cast<float*>(out_row_head);
-      while (row < row_end) {
-        float gray_value = *row++ / 65535.f;
-        *out_row++ = gray_value;
-        *out_row++ = gray_value;
-        *out_row++ = gray_value;
-        *out_row++ = 1.0f;
+      if (format == GL_RGBA) {
+        while (row < row_end) {
+          float gray_value = *row++ / 65535.f;
+          *out_row++ = gray_value;
+          *out_row++ = gray_value;
+          *out_row++ = gray_value;
+          *out_row++ = 1.0f;
+        }
+        continue;
+      } else if (format == GL_RED) {
+        while (row < row_end)
+          *out_row++ = *row++ / 65535.f;
+        continue;
       }
+      // For other formats, hit NOTREACHED bellow.
     } else if (type == GL_UNSIGNED_BYTE) {
       // We take the upper 8 bits of 16-bit data and convert it as luminance to
       // ARGB.  We loose the precision here, but it is important not to render
@@ -560,11 +568,10 @@ void FlipAndConvertY16(const VideoFrame* video_frame,
         uint32_t gray_value = *row++ >> 8;
         *rgba++ = SkColorSetRGB(gray_value, gray_value, gray_value);
       }
-    } else {
-      NOTREACHED() << "Unsupported Y16 conversion for format: 0x" << std::hex
-                   << format << " and type: 0x" << std::hex << type;
+      continue;
     }
-    row_head += stride;
+    NOTREACHED() << "Unsupported Y16 conversion for format: 0x" << std::hex
+                 << format << " and type: 0x" << std::hex << type;
   }
 }
 
@@ -588,7 +595,13 @@ bool TexImageHelper(VideoFrame* frame,
             output_bytes_per_pixel = 4 * sizeof(GLfloat);
             break;
           }
-        // Pass through.
+          return false;
+        case GL_RED:
+          if (type == GL_FLOAT) {
+            output_bytes_per_pixel = sizeof(GLfloat);
+            break;
+          }
+          return false;
         default:
           return false;
       }

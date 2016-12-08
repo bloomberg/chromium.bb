@@ -53,10 +53,9 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def CustomizeOptions(cls):
     options = cls._finder_options.browser_options
-    options.AppendExtraBrowserArgs(
-        '--disable-domain-blocking-for-3d-apis')
-    options.AppendExtraBrowserArgs(
-        '--use-fake-ui-for-media-stream')
+    options.AppendExtraBrowserArgs('--disable-domain-blocking-for-3d-apis')
+    options.AppendExtraBrowserArgs('--enable-es3-apis')
+    options.AppendExtraBrowserArgs('--use-fake-ui-for-media-stream')
     options.AppendExtraBrowserArgs(
         '--use-fake-device-for-media-stream=device-count=2')
     # Required for about:gpucrash handling from Telemetry.
@@ -67,7 +66,9 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     tests = (('DepthCapture_depthStreamToRGBAUint8Texture',
               'getusermedia-depth-capture.html?query=RGBAUint8'),
              ('DepthCapture_depthStreamToRGBAFloatTexture',
-              'getusermedia-depth-capture.html?query=RGBAFloat'))
+              'getusermedia-depth-capture.html?query=RGBAFloat'),
+             ('DepthCapture_depthStreamToR32FloatTexture',
+              'getusermedia-depth-capture.html?query=R32Float'))
     for t in tests:
       yield (t[0], t[1], ('_' + t[0]))
 
