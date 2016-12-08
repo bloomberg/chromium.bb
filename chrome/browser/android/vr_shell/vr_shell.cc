@@ -502,59 +502,57 @@ void VrShell::SendEventsToTargetOnGL(InputTarget input_target,
                                  int pixel_y) {
   std::vector<std::unique_ptr<WebGestureEvent>> gesture_list =
       controller_->DetectGestures();
-  std::unique_ptr<WebGestureEvent> gesture = std::move(gesture_list.front());
+  double timestamp = gesture_list.front()->timeStampSeconds;
 
-  // TODO(asimjour) for now, scroll is sent to the main content.
-  if (gesture->type == WebInputEvent::GestureScrollBegin ||
-      gesture->type == WebInputEvent::GestureScrollUpdate ||
-      gesture->type == WebInputEvent::GestureScrollEnd ||
-      gesture->type == WebInputEvent::GestureFlingCancel) {
-    SendGestureOnGL(CONTENT, base::WrapUnique(new WebGestureEvent(*gesture)));
+  if (touch_pending_) {
+    touch_pending_ = false;
+    std::unique_ptr<WebGestureEvent> event(new WebGestureEvent());
+    event->type = WebInputEvent::GestureTapDown;
+    event->sourceDevice = blink::WebGestureDeviceTouchpad;
+    event->timeStampSeconds = timestamp;
+    event->x = pixel_x;
+    event->y = pixel_y;
+    gesture_list.push_back(std::move(event));
   }
 
-  if (gesture->type == WebInputEvent::GestureScrollEnd) {
-    CHECK(gesture_list.size() == 2);
-    if (gesture_list.back()->type == WebInputEvent::GestureTapDown) {
-      gesture_list.back()->x = pixel_x;
-      gesture_list.back()->y = pixel_y;
-      if (input_target != NONE)
-        SendGestureOnGL(input_target, std::move(gesture_list.back()));
-    } else if (gesture_list.back()->type == WebInputEvent::GestureFlingStart) {
-      SendGestureOnGL(CONTENT, std::move(gesture_list.back()));
-    } else {
-      NOTREACHED();
+  for (const auto& gesture : gesture_list) {
+    switch (gesture->type) {
+      case WebInputEvent::GestureScrollBegin:
+      case WebInputEvent::GestureScrollUpdate:
+      case WebInputEvent::GestureScrollEnd:
+      case WebInputEvent::GestureFlingCancel:
+      case WebInputEvent::GestureFlingStart:
+        SendGestureOnGL(CONTENT,
+                        base::WrapUnique(new WebGestureEvent(*gesture)));
+        break;
+      case WebInputEvent::GestureTapDown:
+        gesture->x = pixel_x;
+        gesture->y = pixel_y;
+        if (input_target != NONE)
+          SendGestureOnGL(input_target,
+                          base::WrapUnique(new WebGestureEvent(*gesture)));
+        break;
+      case WebInputEvent::Undefined:
+        break;
+      default:
+        NOTREACHED();
     }
   }
 
-  WebInputEvent::Type original_type = gesture->type;
-
+  // Hover support
   bool new_target = input_target != current_input_target_;
   if (new_target && current_input_target_ != NONE) {
     // Send a move event indicating that the pointer moved off of an element.
-    SendGestureOnGL(current_input_target_, MakeMouseEvent(
-        WebInputEvent::MouseLeave, gesture->timeStampSeconds, 0, 0));
+    SendGestureOnGL(current_input_target_,
+                    MakeMouseEvent(WebInputEvent::MouseLeave, timestamp, 0, 0));
   }
-  current_input_target_ = input_target;
-  if (current_input_target_ == NONE) {
-    return;
-  }
-  WebInputEvent::Type type =
-      new_target ? WebInputEvent::MouseEnter : WebInputEvent::MouseMove;
-  SendGestureOnGL(current_input_target_, MakeMouseEvent(
-      type, gesture->timeStampSeconds, pixel_x, pixel_y));
 
-  if (original_type == WebInputEvent::GestureTapDown || touch_pending_) {
-    std::unique_ptr<WebGestureEvent> event(new WebGestureEvent(*gesture));
-    if (touch_pending_) {
-      touch_pending_ = false;
-      event->sourceDevice = blink::WebGestureDeviceTouchpad;
-      event->timeStampSeconds =
-          (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-    }
-    event->type = WebInputEvent::GestureTapDown;
-    event->x = pixel_x;
-    event->y = pixel_y;
-    SendGestureOnGL(current_input_target_, std::move(event));
+  current_input_target_ = input_target;
+  if (current_input_target_ != NONE) {
+    WebInputEvent::Type type =
+        new_target ? WebInputEvent::MouseEnter : WebInputEvent::MouseMove;
+    SendGestureOnGL(input_target,
+                    MakeMouseEvent(type, timestamp, pixel_x, pixel_y));
   }
 }
 
