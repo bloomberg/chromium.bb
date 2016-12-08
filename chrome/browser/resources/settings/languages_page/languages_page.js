@@ -35,9 +35,10 @@ Polymer({
     languageHelper: Object,
 
     /** @private */
-    spellCheckSecondary_: {
+    spellCheckSecondaryText_: {
       type: String,
-      value: 'Placeholder, e.g. English (United States)',
+      value: '',
+      computed: 'getSpellCheckSecondaryText_(languages.enabled.*)',
     },
 
     /**
@@ -373,6 +374,14 @@ Polymer({
    */
   getLanguageListTwoLine_: function() {
     return cr.isChromeOS || cr.isWindows ? 'two-line' : '';
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getSpellCheckListTwoLine_: function() {
+    return this.spellCheckSecondaryText_.length ? 'two-line' : '';
   },
 
   /**

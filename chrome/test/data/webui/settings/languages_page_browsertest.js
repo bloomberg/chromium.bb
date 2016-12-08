@@ -295,6 +295,27 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
         assertFalse(spellCheckSettingsExist);
       } else {
         assertTrue(spellCheckSettingsExist);
+
+        // Ensure no language has spell check enabled.
+        for (var i = 0; i < languagesPage.languages.enabled.length; i++) {
+          languagesPage.set(
+              'languages.enabled.' + i + '.spellCheckEnabled', false);
+        }
+
+        // The row button should have the extra row only if some language has
+        // spell check enabled.
+        var triggerRow = languagesPage.$.spellCheckSubpageTrigger;
+        assertFalse(triggerRow.classList.contains('two-line'));
+        assertEquals(
+            0, triggerRow.querySelector('.secondary').textContent.length);
+
+        languagesPage.set(
+            'languages.enabled.0.language.supportsSpellcheck', true);
+        languagesPage.set('languages.enabled.0.spellCheckEnabled', true);
+        assertTrue(triggerRow.classList.contains('two-line'));
+        assertLT(
+            0, triggerRow.querySelector('.secondary').textContent.length);
+
         MockInteractions.tap(
             spellCheckCollapse.querySelector('.list-button:last-of-type'));
         assertTrue(!!languagesPage.$$('settings-edit-dictionary-page'));

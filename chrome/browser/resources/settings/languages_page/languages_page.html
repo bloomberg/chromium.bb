@@ -132,7 +132,7 @@
           </div>
         </iron-collapse>
 <if expr="chromeos">
-        <div id="manage-input-methods-subpage-trigger"
+        <div id="manageInputMethodsSubpageTrigger"
             class="settings-box two-line" actionable
             on-tap="toggleExpandButton_">
           <div class="start">
@@ -176,13 +176,13 @@
         </iron-collapse>
 </if>
 <if expr="not is_macosx">
-        <div id="spellcheck-subpage-trigger" class="settings-box two-line"
+        <div id="spellCheckSubpageTrigger"
+            class$="settings-box [[getSpellCheckListTwoLine_(
+                spellCheckSecondaryText_)]]"
             actionable on-tap="toggleExpandButton_">
           <div class="start">
             <div>$i18n{spellCheckListTitle}</div>
-            <div class="secondary">
-              [[getSpellCheckSecondaryText_(languages.enabled.*)]]
-            </div>
+            <div class="secondary">[[spellCheckSecondaryText_]]</div>
           </div>
           <cr-expand-button expanded="{{spellCheckOpened_}}"
               alt="$i18n{spellCheckExpandA11yLabel}">
@@ -258,7 +258,7 @@
 <if expr="chromeos">
       <template is="dom-if" route-path="/inputMethods">
         <settings-subpage
-            associated-control="[[$$('#manage-input-methods-subpage-trigger')]]"
+            associated-control="[[$$('#manageInputMethodsSubpageTrigger')]]"
             page-title="$i18n{manageInputMethodsPageTitle}">
           <settings-manage-input-methods-page languages="{{languages}}"
               language-helper="[[languageHelper]]">
@@ -269,7 +269,7 @@
 <if expr="not is_macosx">
       <template is="dom-if" route-path="/editDictionary">
         <settings-subpage
-            associated-control="[[$$('#spellcheck-subpage-trigger')]]"
+            associated-control="[[$$('#spellCheckSubpageTrigger')]]"
             page-title="$i18n{editDictionaryPageTitle}">
           <settings-edit-dictionary-page></settings-edit-dictionary-page>
         </settings-subpage>
