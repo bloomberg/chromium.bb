@@ -3714,7 +3714,7 @@ TEST_F(SSLClientSocketTest, DumpMemoryStats) {
   for (const auto& pair : allocator_dumps) {
     const std::string& dump_name = pair.first;
     if (dump_name.find("ssl_socket") == std::string::npos)
-      return;
+      continue;
     std::unique_ptr<base::Value> raw_attrs =
         pair.second->attributes_for_testing()->ToBaseValue();
     base::DictionaryValue* attrs;
