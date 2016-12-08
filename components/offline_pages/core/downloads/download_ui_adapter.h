@@ -108,7 +108,6 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   // Task callbacks.
   void OnOfflinePagesLoaded(const MultipleOfflinePageItemResult& pages);
   void NotifyItemsLoaded(Observer* observer);
-  void OnOfflinePagesChanged(const MultipleOfflinePageItemResult& pages);
   void OnDeletePagesDone(DeletePageResult result);
 
   // Always valid, this class is a member of the model.

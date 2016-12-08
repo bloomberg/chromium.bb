@@ -242,20 +242,14 @@ TEST_F(DownloadUIAdapterTest, ItemWithWrongNamespace) {
   EXPECT_EQ(0UL, added_guids.size());
 }
 
-TEST_F(DownloadUIAdapterTest, ItemUpdated) {
+TEST_F(DownloadUIAdapterTest, ItemAdded) {
   PumpLoop();
   // Clear the initial page and replace it with updated one.
   model->pages.clear();
-  // Add page with the same offline_id/guid, notify adapter.
-  // This should generate 'updated' notification.
-  OfflinePageItem page1(GURL(kTestUrl), kTestOfflineId1, kTestClientId1,
-                        base::FilePath(kTestFilePath), kFileSize,
-                        kTestCreationTime);
   // Add a new page which did not exist before.
   OfflinePageItem page2(GURL(kTestUrl), kTestOfflineId2, kTestClientId2,
                         base::FilePath(kTestFilePath), kFileSize,
                         kTestCreationTime);
-  model->AddPageAndNotifyAdapter(page1);
   model->AddPageAndNotifyAdapter(page2);
   PumpLoop();
   EXPECT_EQ(1UL, added_guids.size());

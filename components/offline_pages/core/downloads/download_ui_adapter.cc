@@ -82,8 +82,16 @@ void DownloadUIAdapter::OfflinePageModelLoaded(OfflinePageModel* model) {
 void DownloadUIAdapter::OfflinePageAdded(OfflinePageModel* model,
                                          const OfflinePageItem& added_page) {
   DCHECK(model == model_);
-  model_->GetAllPages(base::Bind(&DownloadUIAdapter::OnOfflinePagesChanged,
-                                 weak_ptr_factory_.GetWeakPtr()));
+  if (!IsVisibleInUI(added_page.client_id))
+    return;
+
+  const std::string& guid = added_page.client_id.id;
+  DCHECK(items_.find(guid) == items_.end());
+
+  items_[guid] = base::MakeUnique<ItemInfo>(added_page);
+  const DownloadUIItem& item = *(items_[guid]->ui_item);
+  for (Observer& observer : observers_)
+    observer.ItemAdded(item);
 }
 
 void DownloadUIAdapter::OfflinePageDeleted(int64_t offline_id,
@@ -179,27 +187,6 @@ void DownloadUIAdapter::NotifyItemsLoaded(Observer* observer) {
     observer->ItemsLoaded();
 }
 
-// This method is only called by OPM when a single item added.
-// TODO(dimich): change OPM to have real OnPageAdded/OnPageUpdated and
-// simplify this code.
-void DownloadUIAdapter::OnOfflinePagesChanged(
-    const MultipleOfflinePageItemResult& pages) {
-  std::vector<std::string> added_guids;
-  for (const auto& page : pages) {
-    if (!IsVisibleInUI(page.client_id))  // Item should be filtered out.
-      continue;
-    const std::string& guid = page.client_id.id;
-    if (items_.find(guid) != items_.end())  // Item already exists.
-      continue;
-    items_[guid] = base::MakeUnique<ItemInfo>(page);
-    added_guids.push_back(guid);
-  }
-  for (auto& guid : added_guids) {
-    const DownloadUIItem& item = *(items_.find(guid)->second->ui_item.get());
-    for (Observer& observer : observers_)
-      observer.ItemAdded(item);
-  }
-}
 
 void DownloadUIAdapter::OnDeletePagesDone(DeletePageResult result) {
   // TODO(dimich): Consider adding UMA to record user actions.
