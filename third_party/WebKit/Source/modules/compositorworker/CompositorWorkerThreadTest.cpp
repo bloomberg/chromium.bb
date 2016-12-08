@@ -10,7 +10,6 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/CompositorProxyClient.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/testing/DummyPageHolder.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerBackingThread.h"
@@ -36,9 +35,8 @@ namespace {
 // CompositorWorkerThreads.
 class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
  public:
-  static std::unique_ptr<TestCompositorWorkerObjectProxy> create(
-      ExecutionContext* context) {
-    return wrapUnique(new TestCompositorWorkerObjectProxy(context));
+  static std::unique_ptr<TestCompositorWorkerObjectProxy> create() {
+    return wrapUnique(new TestCompositorWorkerObjectProxy());
   }
 
   // (Empty) WorkerReportingProxy implementation:
@@ -50,28 +48,16 @@ class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
                             const String& message,
                             SourceLocation*) override {}
   void postMessageToPageInspector(const String&) override {}
-  ParentFrameTaskRunners* getParentFrameTaskRunners() override {
-    return m_parentFrameTaskRunners.get();
-  }
-
   void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override {}
   void didEvaluateWorkerScript(bool success) override {}
   void didCloseWorkerGlobalScope() override {}
   void willDestroyWorkerGlobalScope() override {}
   void didTerminateWorkerThread() override {}
 
-  ExecutionContext* getExecutionContext() override {
-    return m_executionContext.get();
-  }
-
  private:
-  TestCompositorWorkerObjectProxy(ExecutionContext* context)
-      : InProcessWorkerObjectProxy(nullptr),
-        m_executionContext(context),
-        m_parentFrameTaskRunners(ParentFrameTaskRunners::create(nullptr)) {}
-
-  Persistent<ExecutionContext> m_executionContext;
-  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
+  TestCompositorWorkerObjectProxy()
+      : InProcessWorkerObjectProxy(nullptr,
+                                   ParentFrameTaskRunners::create(nullptr)) {}
 };
 
 class TestCompositorProxyClient
@@ -111,15 +97,12 @@ class CompositorWorkerThreadTest : public ::testing::Test {
  public:
   void SetUp() override {
     CompositorWorkerThread::createSharedBackingThreadForTest();
-    m_page = DummyPageHolder::create();
-    m_objectProxy =
-        TestCompositorWorkerObjectProxy::create(&m_page->document());
+    m_objectProxy = TestCompositorWorkerObjectProxy::create();
     m_securityOrigin =
         SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
   }
 
   void TearDown() override {
-    m_page.reset();
     CompositorWorkerThread::clearSharedBackingThread();
   }
 
@@ -158,7 +141,6 @@ class CompositorWorkerThreadTest : public ::testing::Test {
     waitEvent->signal();
   }
 
-  std::unique_ptr<DummyPageHolder> m_page;
   RefPtr<SecurityOrigin> m_securityOrigin;
   std::unique_ptr<InProcessWorkerObjectProxy> m_objectProxy;
   CompositorWorkerTestPlatform m_testPlatform;

@@ -17,9 +17,11 @@
 namespace blink {
 
 std::unique_ptr<ThreadedWorkletObjectProxy> ThreadedWorkletObjectProxy::create(
-    const WeakPtr<ThreadedWorkletMessagingProxy>& messagingProxyWeakPtr) {
+    const WeakPtr<ThreadedWorkletMessagingProxy>& messagingProxyWeakPtr,
+    ParentFrameTaskRunners* parentFrameTaskRunners) {
   DCHECK(messagingProxyWeakPtr);
-  return wrapUnique(new ThreadedWorkletObjectProxy(messagingProxyWeakPtr));
+  return wrapUnique(new ThreadedWorkletObjectProxy(messagingProxyWeakPtr,
+                                                   parentFrameTaskRunners));
 }
 
 ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() {
@@ -67,7 +69,7 @@ void ThreadedWorkletObjectProxy::postMessageToPageInspector(
 
 ParentFrameTaskRunners*
 ThreadedWorkletObjectProxy::getParentFrameTaskRunners() {
-  return m_messagingProxyWeakPtr->getParentFrameTaskRunners();
+  return m_parentFrameTaskRunners.get();
 }
 
 void ThreadedWorkletObjectProxy::didCloseWorkerGlobalScope() {
@@ -90,7 +92,9 @@ void ThreadedWorkletObjectProxy::didTerminateWorkerThread() {
 }
 
 ThreadedWorkletObjectProxy::ThreadedWorkletObjectProxy(
-    const WeakPtr<ThreadedWorkletMessagingProxy>& messagingProxyWeakPtr)
-    : m_messagingProxyWeakPtr(messagingProxyWeakPtr) {}
+    const WeakPtr<ThreadedWorkletMessagingProxy>& messagingProxyWeakPtr,
+    ParentFrameTaskRunners* parentFrameTaskRunners)
+    : m_messagingProxyWeakPtr(messagingProxyWeakPtr),
+      m_parentFrameTaskRunners(parentFrameTaskRunners) {}
 
 }  // namespace blink

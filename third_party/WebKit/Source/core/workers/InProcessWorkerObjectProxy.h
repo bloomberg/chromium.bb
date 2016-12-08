@@ -37,31 +37,32 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/WeakPtr.h"
 #include <memory>
 
 namespace blink {
 
-class ExecutionContext;
 class InProcessWorkerMessagingProxy;
+class ParentFrameTaskRunners;
 class WorkerGlobalScope;
 class WorkerOrWorkletGlobalScope;
 
-// A proxy to talk to the worker object. This object is created on the
-// parent context thread (i.e. usually the main thread), passed on to
-// the worker thread, and used to proxy messages to the
+// A proxy to talk to the parent worker object. This object is created and
+// destroyed on the parent context thread (i.e. usually the main thread), and
+// used on the worker thread for proxying messages to the
 // InProcessWorkerMessagingProxy on the parent context thread.
+// InProcessWorkerMessagingProxy always outlives this proxy.
 //
 // This also checks pending activities on WorkerGlobalScope and reports a result
 // to the message proxy when an exponential backoff timer is fired.
-//
-// Used only by in-process workers (DedicatedWorker and CompositorWorker.)
 class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
   USING_FAST_MALLOC(InProcessWorkerObjectProxy);
   WTF_MAKE_NONCOPYABLE(InProcessWorkerObjectProxy);
 
  public:
   static std::unique_ptr<InProcessWorkerObjectProxy> create(
-      const WeakPtr<InProcessWorkerMessagingProxy>&);
+      const WeakPtr<InProcessWorkerMessagingProxy>&,
+      ParentFrameTaskRunners*);
   ~InProcessWorkerObjectProxy() override;
 
   void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>,
@@ -88,21 +89,22 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
   void didTerminateWorkerThread() override;
 
  protected:
-  InProcessWorkerObjectProxy(const WeakPtr<InProcessWorkerMessagingProxy>&);
-  virtual ExecutionContext* getExecutionContext();
+  InProcessWorkerObjectProxy(const WeakPtr<InProcessWorkerMessagingProxy>&,
+                             ParentFrameTaskRunners*);
 
  private:
   friend class InProcessWorkerMessagingProxyForTest;
 
   void checkPendingActivity(TimerBase*);
 
-  // This object always outlives this proxy.
-  InProcessWorkerMessagingProxy* m_messagingProxy;
-
   // No guarantees about the lifetimes of tasks posted by this proxy wrt the
   // InProcessWorkerMessagingProxy so a weak pointer must be used when posting
   // the tasks.
   WeakPtr<InProcessWorkerMessagingProxy> m_messagingProxyWeakPtr;
+
+  // Used to post a task to InProcessWorkerMessagingProxy on the parent context
+  // thread.
+  CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 
   // Used for checking pending activities on the worker global scope. This is
   // cancelled when the worker global scope is destroyed.

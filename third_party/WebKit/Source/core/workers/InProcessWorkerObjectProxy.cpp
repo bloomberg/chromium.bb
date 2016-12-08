@@ -53,9 +53,11 @@ const double kDefaultIntervalInSec = 1;
 const double kMaxIntervalInSec = 30;
 
 std::unique_ptr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::create(
-    const WeakPtr<InProcessWorkerMessagingProxy>& messagingProxy) {
-  DCHECK(messagingProxy);
-  return wrapUnique(new InProcessWorkerObjectProxy(messagingProxy));
+    const WeakPtr<InProcessWorkerMessagingProxy>& messagingProxyWeakPtr,
+    ParentFrameTaskRunners* parentFrameTaskRunners) {
+  DCHECK(messagingProxyWeakPtr);
+  return wrapUnique(new InProcessWorkerObjectProxy(messagingProxyWeakPtr,
+                                                   parentFrameTaskRunners));
 }
 
 InProcessWorkerObjectProxy::~InProcessWorkerObjectProxy() {}
@@ -140,7 +142,6 @@ void InProcessWorkerObjectProxy::reportConsoleMessage(
 
 void InProcessWorkerObjectProxy::postMessageToPageInspector(
     const String& message) {
-  DCHECK(getExecutionContext()->isDocument());
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
   // run even on a suspended page.
   getParentFrameTaskRunners()
@@ -153,8 +154,7 @@ void InProcessWorkerObjectProxy::postMessageToPageInspector(
 
 ParentFrameTaskRunners*
 InProcessWorkerObjectProxy::getParentFrameTaskRunners() {
-  DCHECK(m_messagingProxy);
-  return m_messagingProxy->getParentFrameTaskRunners();
+  return m_parentFrameTaskRunners.get();
 }
 
 void InProcessWorkerObjectProxy::didCreateWorkerGlobalScope(
@@ -194,17 +194,13 @@ void InProcessWorkerObjectProxy::didTerminateWorkerThread() {
 }
 
 InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(
-    const WeakPtr<InProcessWorkerMessagingProxy>& messagingProxy)
-    : m_messagingProxy(messagingProxy.get()),
-      m_messagingProxyWeakPtr(messagingProxy),
+    const WeakPtr<InProcessWorkerMessagingProxy>& messagingProxyWeakPtr,
+    ParentFrameTaskRunners* parentFrameTaskRunners)
+    : m_messagingProxyWeakPtr(messagingProxyWeakPtr),
+      m_parentFrameTaskRunners(parentFrameTaskRunners),
       m_defaultIntervalInSec(kDefaultIntervalInSec),
       m_nextIntervalInSec(kDefaultIntervalInSec),
       m_maxIntervalInSec(kMaxIntervalInSec) {}
-
-ExecutionContext* InProcessWorkerObjectProxy::getExecutionContext() {
-  DCHECK(m_messagingProxy);
-  return m_messagingProxy->getExecutionContext();
-}
 
 void InProcessWorkerObjectProxy::checkPendingActivity(TimerBase*) {
   bool hasPendingActivity = V8GCController::hasPendingActivity(

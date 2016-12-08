@@ -90,8 +90,8 @@ InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(
       m_workerObject(workerObject),
       m_workerClients(workerClients),
       m_weakPtrFactory(this) {
-  m_workerObjectProxy =
-      InProcessWorkerObjectProxy::create(m_weakPtrFactory.createWeakPtr());
+  m_workerObjectProxy = InProcessWorkerObjectProxy::create(
+      m_weakPtrFactory.createWeakPtr(), getParentFrameTaskRunners());
 }
 
 InProcessWorkerMessagingProxy::~InProcessWorkerMessagingProxy() {
