@@ -688,3 +688,27 @@ TEST_F('OutputE2ETest', 'BraileWhitespace', function() {
         o);
   });
 });
+
+TEST_F('OutputE2ETest', 'BrailleAncestry', function() {
+  this.runWithLoadedTree(function() {/*!
+    <ul><li><a href="#">test</a></li></ul>
+  */},
+  function(root) {
+    var text = root.find({role: 'inlineTextBox'});
+    var link = root.find({role: 'link'});
+    var listItem = root.find({role: 'listItem'});
+    var list = root.find({role: 'list'});
+    var range = cursors.Range.fromNode(text);
+    var o = new Output().withBraille(range, null, 'navigate');
+    checkBrailleOutput(
+        'test lnk lstitm list +1',
+        [
+          {value: new Output.NodeSpan(text), start: 0, end: 4},
+          {value: new Output.NodeSpan(link), start: 5, end: 8},
+          {value: new Output.NodeSpan(listItem), start: 9, end: 15},
+          {value: new Output.NodeSpan(list), start: 16, end: 23}
+        ],
+
+        o);
+  });
+});

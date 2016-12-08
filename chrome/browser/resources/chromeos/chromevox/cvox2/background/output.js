@@ -1721,6 +1721,7 @@ Output.prototype = {
   mergeBraille_: function(spans) {
     var separator = '';  // Changes to space as appropriate.
     var prevHasInlineNode = false;
+    var prevIsName = false;
     return spans.reduce(function(result, cur) {
       // Ignore empty spans except when they contain a selection.
       var hasSelection = cur.getSpanInstanceOf(Output.SelectionSpan);
@@ -1746,15 +1747,18 @@ Output.prototype = {
                 s.node.role == RoleType.inlineTextBox;
           });
 
+      var isName = cur.hasSpan('name');
+
       // Now, decide whether we should include separators between the previous
       // span and |cur|.
       // Never separate chunks without something already there at this point.
 
       // The only case where we know for certain that a separator is not needed
-      // is when the previous and current node are in-lined. In all other cases,
-      // use the surrounding whitespace to ensure we only have one separator
-      // between the node text.
-      if (result.length == 0 || (hasInlineNode && prevHasInlineNode))
+      // is when the previous and current values are in-lined and part of the
+      // node's name. In all other cases, use the surrounding whitespace to
+      // ensure we only have one separator between the node text.
+      if (result.length == 0 ||
+          (hasInlineNode && prevHasInlineNode && isName && prevIsName))
         separator = '';
       else if (result.toString()[result.length - 1] == Output.SPACE ||
           cur.toString()[0] == Output.SPACE)
@@ -1763,6 +1767,7 @@ Output.prototype = {
         separator = Output.SPACE;
 
       prevHasInlineNode = hasInlineNode;
+      prevIsName = isName;
       result.append(separator);
       result.append(cur);
       return result;
