@@ -250,20 +250,16 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         // Start and connect to a new service of an external APK.
         ChildProcessConnectionImpl externalApkConnection =
                 allocateConnection(EXTERNAL_APK_PACKAGE_NAME);
+        assertNotNull(externalApkConnection);
         // Start and connect to a new service for a regular tab.
         ChildProcessConnectionImpl tabConnection = allocateConnection(appContext.getPackageName());
+        assertNotNull(tabConnection);
 
         // Verify that one connection is allocated for an external APK and a regular tab
         // respectively.
         assertEquals(1, ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
                                 appContext, EXTERNAL_APK_PACKAGE_NAME));
         assertEquals(1, allocatedChromeSandboxedConnectionsCount());
-
-        // Verify that connections allocated for an external APK and the regular tab are from
-        // different ChildConnectionAllocators, since both ChildConnectionAllocators start
-        // allocating connections from number 0.
-        assertEquals(0, externalApkConnection.getServiceNumber());
-        assertEquals(0, tabConnection.getServiceNumber());
     }
 
     /**

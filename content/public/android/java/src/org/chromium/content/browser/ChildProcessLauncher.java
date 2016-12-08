@@ -34,6 +34,7 @@ import org.chromium.content.common.SurfaceWrapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -73,6 +74,12 @@ public class ChildProcessLauncher {
             for (int i = 0; i < numChildServices; i++) {
                 mFreeConnectionIndices.add(i);
             }
+            // Randomize the order of named child services to workaround this bug:
+            // Android restarts crashed services with the previous intent. If browser crashes and
+            // is restarted at the same time, then it's possible to bind to the restarted service
+            // with stale intent and bundle data. See crbug.com/664341#c84 for an example.
+            // Randomizing the start up order is a pure workaround to make this case less likely.
+            Collections.shuffle(mFreeConnectionIndices);
             mChildClassName = serviceClassName;
             mInSandbox = inSandbox;
         }
