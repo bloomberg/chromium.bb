@@ -288,11 +288,6 @@ struct TwiceWiderInteger {
                                        IsSigned>::type;
 };
 
-template <typename Integer>
-struct PositionOfSignBit {
-  static const size_t value = IntegerBitsPlusSign<Integer>::value - 1;
-};
-
 enum ArithmeticPromotionCategory {
   LEFT_PROMOTION,  // Use the type of the left-hand argument.
   RIGHT_PROMOTION  // Use the type of the right-hand argument.
