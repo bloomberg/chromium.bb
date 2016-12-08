@@ -232,8 +232,9 @@ void OfflinePageEvaluationBridge::OfflinePageModelLoaded(
   NotifyIfDoneLoading();
 }
 
-void OfflinePageEvaluationBridge::OfflinePageModelChanged(
-    OfflinePageModel* model) {}
+void OfflinePageEvaluationBridge::OfflinePageAdded(
+    OfflinePageModel* model,
+    const OfflinePageItem& added_page) {}
 
 void OfflinePageEvaluationBridge::OfflinePageDeleted(
     int64_t offline_id,

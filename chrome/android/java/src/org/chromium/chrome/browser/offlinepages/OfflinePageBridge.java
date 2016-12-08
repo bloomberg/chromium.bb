@@ -78,7 +78,7 @@ public class OfflinePageBridge {
          * Called when the native side of offline pages is changed due to adding, removing or
          * update an offline page.
          */
-        public void offlinePageModelChanged() {}
+        public void offlinePageAdded(OfflinePageItem addedPage) {}
 
         /**
          * Called when an offline page is deleted. This can be called as a result of
@@ -440,9 +440,9 @@ public class OfflinePageBridge {
     }
 
     @CalledByNative
-    protected void offlinePageModelChanged() {
+    protected void offlinePageAdded(OfflinePageItem addedPage) {
         for (OfflinePageModelObserver observer : mObservers) {
-            observer.offlinePageModelChanged();
+            observer.offlinePageAdded(addedPage);
         }
     }
 

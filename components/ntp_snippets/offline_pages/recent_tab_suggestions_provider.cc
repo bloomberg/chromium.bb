@@ -208,8 +208,9 @@ void RecentTabSuggestionsProvider::
 void RecentTabSuggestionsProvider::OfflinePageModelLoaded(
     offline_pages::OfflinePageModel* model) {}
 
-void RecentTabSuggestionsProvider::OfflinePageModelChanged(
-    offline_pages::OfflinePageModel* model) {
+void RecentTabSuggestionsProvider::OfflinePageAdded(
+    offline_pages::OfflinePageModel* model,
+    const offline_pages::OfflinePageItem& added_page) {
   DCHECK_EQ(offline_page_model_, model);
   FetchRecentTabs();
 }

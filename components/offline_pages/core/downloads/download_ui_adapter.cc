@@ -79,7 +79,8 @@ void DownloadUIAdapter::OfflinePageModelLoaded(OfflinePageModel* model) {
   // This signal is not used here.
 }
 
-void DownloadUIAdapter::OfflinePageModelChanged(OfflinePageModel* model) {
+void DownloadUIAdapter::OfflinePageAdded(OfflinePageModel* model,
+                                         const OfflinePageItem& added_page) {
   DCHECK(model == model_);
   model_->GetAllPages(base::Bind(&DownloadUIAdapter::OnOfflinePagesChanged,
                                  weak_ptr_factory_.GetWeakPtr()));

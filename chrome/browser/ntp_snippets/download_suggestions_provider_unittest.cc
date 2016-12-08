@@ -276,9 +276,10 @@ class DownloadSuggestionsProviderTest : public testing::Test {
     provider_->OfflinePageModelLoaded(&offline_pages_model_);
   }
 
-  void FireOfflinePageModelChanged() {
+  void AddOfflinePage(const offline_pages::OfflinePageItem& added_page) {
     DCHECK(provider_);
-    provider_->OfflinePageModelChanged(&offline_pages_model_);
+    offline_pages_model_.mutable_items()->push_back(added_page);
+    provider_->OfflinePageAdded(&offline_pages_model_, added_page);
   }
 
   void FireOfflinePageDeleted(const OfflinePageItem& item) {
@@ -525,8 +526,9 @@ TEST_F(DownloadSuggestionsProviderTest,
       *observer(),
       OnNewSuggestions(_, downloads_category(),
                        UnorderedElementsAre(HasUrl("http://dummy.com/2"),
+                                            HasUrl("http://dummy.com/3"),
                                             HasUrl("http://download.com/2"))));
-  FireOfflinePageModelChanged();
+  AddOfflinePage(CreateDummyOfflinePage(3));
 }
 
 TEST_F(DownloadSuggestionsProviderTest, ShouldReturnDismissedSuggestions) {
@@ -617,9 +619,10 @@ TEST_F(DownloadSuggestionsProviderTest,
       *observer(),
       OnNewSuggestions(_, downloads_category(),
                        UnorderedElementsAre(HasUrl("http://dummy.com/2"),
+                                            HasUrl("http://dummy.com/3"),
                                             HasUrl("http://download.com/1"),
                                             HasUrl("http://download.com/2"))));
-  FireOfflinePageModelChanged();
+  AddOfflinePage(CreateDummyOfflinePage(3));
 }
 
 TEST_F(DownloadSuggestionsProviderTest, ShouldReplaceDismissedItemWithNewData) {
@@ -645,18 +648,20 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldReplaceDismissedItemWithNewData) {
 
   provider()->DismissSuggestion(
       GetDummySuggestionId(1, /*is_offline_page=*/false));
+  provider()->DismissSuggestion(
+      GetDummySuggestionId(2, /*is_offline_page=*/false));
 
   // The provider is not notified about the 6th item, however, it must report
   // it now.
   EXPECT_CALL(
       *observer(),
       OnNewSuggestions(_, downloads_category(),
-                       UnorderedElementsAre(HasUrl("http://download.com/2"),
+                       UnorderedElementsAre(HasUrl("http://dummy.com/1"),
                                             HasUrl("http://download.com/3"),
                                             HasUrl("http://download.com/4"),
                                             HasUrl("http://download.com/5"),
                                             HasUrl("http://download.com/6"))));
-  FireOfflinePageModelChanged();
+  AddOfflinePage(CreateDummyOfflinePage(1));
 }
 
 TEST_F(DownloadSuggestionsProviderTest,
@@ -742,20 +747,21 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldReplaceRemovedItemWithNewData) {
   EXPECT_CALL(
       *observer(),
       OnNewSuggestions(_, downloads_category(),
-                       UnorderedElementsAre(HasUrl("http://download.com/1"),
+                       UnorderedElementsAre(HasUrl("http://dummy.com/6"),
+                                            HasUrl("http://download.com/1"),
                                             HasUrl("http://download.com/2"),
                                             HasUrl("http://download.com/3"),
-                                            HasUrl("http://download.com/4"),
-                                            HasUrl("http://download.com/5"))));
-  FireOfflinePageModelChanged();
+                                            HasUrl("http://download.com/4"))));
+  AddOfflinePage(CreateDummyOfflinePage(6));
 }
 
 TEST_F(DownloadSuggestionsProviderTest, ShouldPruneOfflinePagesDismissedIDs) {
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
 
-  *(offline_pages_model()->mutable_items()) =
-      CreateDummyOfflinePages({1, 2, 3});
+  auto offline_pages = CreateDummyOfflinePages({1, 2, 3});
+
+  *(offline_pages_model()->mutable_items()) = offline_pages;
   EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(),
                                             UnorderedElementsAre(
                                                 HasUrl("http://dummy.com/1"),
@@ -771,18 +777,9 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldPruneOfflinePagesDismissedIDs) {
       GetDummySuggestionId(3, /*is_offline_page=*/true));
   EXPECT_THAT(GetDismissedSuggestions(), SizeIs(3));
 
-  // Prune on getting all offline pages.
-  EXPECT_CALL(*observer(),
-              OnNewSuggestions(_, downloads_category(), IsEmpty()));
-
-  *(offline_pages_model()->mutable_items()) =
-      CreateDummyOfflinePages({2, 3});
-  FireOfflinePageModelChanged();
-
-  // The first suggestion is added back to the |offline_pages_model| storage,
-  // because otherwise |GetDismissedSuggestions| cannot return it.
-  *(offline_pages_model()->mutable_items()) =
-      CreateDummyOfflinePages({1, 2, 3});
+  // Note that the first suggestion is not removed from |offline_pages_model|
+  // storage, because otherwise |GetDismissedSuggestions| cannot return it.
+  FireOfflinePageDeleted(offline_pages[0]);
   EXPECT_THAT(GetDismissedSuggestions(), SizeIs(2));
 
   // Prune when offline page is deleted.

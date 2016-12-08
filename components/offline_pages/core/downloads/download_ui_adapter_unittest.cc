@@ -104,7 +104,7 @@ class MockOfflinePageModel : public StubOfflinePageModel {
   void AddPageAndNotifyAdapter(const OfflinePageItem& page) {
     EXPECT_EQ(pages.end(), pages.find(page.offline_id));
     pages[page.offline_id] = page;
-    observer_->OfflinePageModelChanged(this);
+    observer_->OfflinePageAdded(this, page);
   }
 
   ClientPolicyController* GetPolicyController() override {

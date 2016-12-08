@@ -78,9 +78,9 @@ class OfflinePageModel : public base::SupportsUserData {
     // Invoked when the model has finished loading.
     virtual void OfflinePageModelLoaded(OfflinePageModel* model) = 0;
 
-    // Invoked when the model is being updated, due to adding, removing or
-    // updating an offline page.
-    virtual void OfflinePageModelChanged(OfflinePageModel* model) = 0;
+    // Invoked when the model is being updated due to adding an offline page.
+    virtual void OfflinePageAdded(OfflinePageModel* model,
+                                  const OfflinePageItem& added_page) = 0;
 
     // Invoked when an offline copy related to |offline_id| was deleted.
     virtual void OfflinePageDeleted(int64_t offline_id,

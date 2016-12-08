@@ -278,10 +278,13 @@ void OfflinePageBridge::OfflinePageModelLoaded(OfflinePageModel* model) {
   NotifyIfDoneLoading();
 }
 
-void OfflinePageBridge::OfflinePageModelChanged(OfflinePageModel* model) {
+void OfflinePageBridge::OfflinePageAdded(OfflinePageModel* model,
+                                         const OfflinePageItem& added_page) {
   DCHECK_EQ(offline_page_model_, model);
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_OfflinePageBridge_offlinePageModelChanged(env, java_ref_);
+
+  Java_OfflinePageBridge_offlinePageAdded(
+      env, java_ref_, ToJavaOfflinePageItem(env, added_page));
 }
 
 void OfflinePageBridge::OfflinePageDeleted(int64_t offline_id,

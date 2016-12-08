@@ -152,7 +152,7 @@ public class SuggestionsSection extends InnerNode {
                     }
 
                     @Override
-                    public void offlinePageModelChanged() {
+                    public void offlinePageAdded(OfflinePageItem addedPage) {
                         updateAllSnippetOfflineAvailability();
                     }
 

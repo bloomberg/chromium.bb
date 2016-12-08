@@ -68,7 +68,9 @@ class RecentTabSuggestionsProvider
 
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(offline_pages::OfflinePageModel* model) override;
-  void OfflinePageModelChanged(offline_pages::OfflinePageModel* model) override;
+  void OfflinePageAdded(
+      offline_pages::OfflinePageModel* model,
+      const offline_pages::OfflinePageItem& added_page) override;
   void OfflinePageDeleted(int64_t offline_id,
                           const offline_pages::ClientId& client_id) override;
 

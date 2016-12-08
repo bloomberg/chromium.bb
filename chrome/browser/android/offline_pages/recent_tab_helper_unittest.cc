@@ -95,13 +95,14 @@ class RecentTabHelperTest
     return task_runner_;
   }
 
-  size_t model_changed_count() { return model_changed_count_; }
+  size_t page_added_count() { return page_added_count_; }
   size_t model_removed_count() { return model_removed_count_; }
 
   // OfflinePageModel::Observer
   void OfflinePageModelLoaded(OfflinePageModel* model) override { }
-  void OfflinePageModelChanged(OfflinePageModel* model) override {
-    model_changed_count_++;
+  void OfflinePageAdded(OfflinePageModel* model,
+                        const OfflinePageItem& added_page) override {
+    page_added_count_++;
   }
   void OfflinePageDeleted(int64_t, const offline_pages::ClientId&) override {
     model_removed_count_++;
@@ -115,7 +116,7 @@ class RecentTabHelperTest
 
   RecentTabHelper* recent_tab_helper_;  // Owned by WebContents.
   OfflinePageModel* model_;  // Keyed service
-  size_t model_changed_count_;
+  size_t page_added_count_;
   size_t model_removed_count_;
   std::vector<OfflinePageItem> all_pages_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
@@ -158,11 +159,10 @@ bool TestDelegate::GetTabId(content::WebContents* web_contents, int* tab_id) {
 RecentTabHelperTest::RecentTabHelperTest()
     : recent_tab_helper_(nullptr),
       model_(nullptr),
-      model_changed_count_(0),
+      page_added_count_(0),
       model_removed_count_(0),
       task_runner_(new base::TestMockTimeTaskRunner),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 void RecentTabHelperTest::SetUp() {
   content::RenderViewHostTestHarness::SetUp();
@@ -259,11 +259,11 @@ TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoad) {
   recent_tab_helper()->DocumentAvailableInMainFrame();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
-  EXPECT_EQ(0U, model_changed_count());
+  EXPECT_EQ(0U, page_added_count());
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   RunUntilIdle();
-  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   GetAllPages();
   EXPECT_EQ(1U, all_pages().size());
@@ -275,7 +275,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoad) {
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   RunUntilIdle();
-  EXPECT_EQ(2U, model_changed_count());
+  EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
   // the same page should be simply overridden.
   GetAllPages();
@@ -293,11 +293,11 @@ TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoadSecondFails) {
   recent_tab_helper()->DocumentAvailableInMainFrame();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
-  EXPECT_EQ(0U, model_changed_count());
+  EXPECT_EQ(0U, page_added_count());
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   RunUntilIdle();
-  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   GetAllPages();
   EXPECT_EQ(1U, all_pages().size());
@@ -319,7 +319,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoadSecondFails) {
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   RunUntilIdle();
-  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   // The exact same page should still be available.
   GetAllPages();
@@ -336,11 +336,11 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrl) {
   recent_tab_helper()->DocumentAvailableInMainFrame();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
-  EXPECT_EQ(0U, model_changed_count());
+  EXPECT_EQ(0U, page_added_count());
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   RunUntilIdle();
-  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   GetAllPages();
   EXPECT_EQ(1U, all_pages().size());
@@ -353,7 +353,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrl) {
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   RunUntilIdle();
-  EXPECT_EQ(2U, model_changed_count());
+  EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
   // the same page should be simply overridden.
   GetAllPages();
@@ -371,11 +371,11 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrlSecondFails) {
   recent_tab_helper()->DocumentAvailableInMainFrame();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
-  EXPECT_EQ(0U, model_changed_count());
+  EXPECT_EQ(0U, page_added_count());
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   RunUntilIdle();
-  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   GetAllPages();
   EXPECT_EQ(1U, all_pages().size());
@@ -397,7 +397,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrlSecondFails) {
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   RunUntilIdle();
-  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
   // the same page should be simply overridden.
   GetAllPages();
@@ -412,11 +412,11 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsAndUrls) {
   recent_tab_helper()->DocumentAvailableInMainFrame();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
-  EXPECT_EQ(0U, model_changed_count());
+  EXPECT_EQ(0U, page_added_count());
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   RunUntilIdle();
-  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   GetAllPages();
   EXPECT_EQ(1U, all_pages().size());
@@ -428,7 +428,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsAndUrls) {
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   RunUntilIdle();
-  EXPECT_EQ(2U, model_changed_count());
+  EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
   // the same page should be simply overridden.
   GetAllPages();

@@ -42,7 +42,8 @@ class OfflinePageEvaluationBridge : public OfflinePageModel::Observer,
 
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
-  void OfflinePageModelChanged(OfflinePageModel* model) override;
+  void OfflinePageAdded(OfflinePageModel* model,
+                        const OfflinePageItem& added_page) override;
   void OfflinePageDeleted(int64_t offline_id,
                           const ClientId& client_id) override;
 

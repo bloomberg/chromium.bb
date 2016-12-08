@@ -306,8 +306,10 @@ void DownloadSuggestionsProvider::OfflinePageModelLoaded(
   AsynchronouslyFetchOfflinePagesDownloads(/*notify=*/true);
 }
 
-void DownloadSuggestionsProvider::OfflinePageModelChanged(
-    offline_pages::OfflinePageModel* model) {
+void DownloadSuggestionsProvider::OfflinePageAdded(
+    offline_pages::OfflinePageModel* model,
+    const offline_pages::OfflinePageItem& added_page) {
+  // TODO(dewittj, vitaliii): Don't refetch everything when this is called.
   DCHECK_EQ(offline_page_model_, model);
   AsynchronouslyFetchOfflinePagesDownloads(/*notify=*/true);
 }

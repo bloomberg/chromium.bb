@@ -717,6 +717,7 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
     const OfflinePageItem& offline_page,
     ItemActionStatus status) {
   SavePageResult result;
+
   if (status == ItemActionStatus::SUCCESS) {
     offline_pages_[offline_page.offline_id] = offline_page;
     result = SavePageResult::SUCCESS;
@@ -739,8 +740,13 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
   }
 
   DeletePendingArchiver(archiver);
+
+  // We don't want to notify observers if the add failed.
+  if (result != SavePageResult::SUCCESS)
+    return;
+
   for (Observer& observer : observers_)
-    observer.OfflinePageModelChanged(this);
+    observer.OfflinePageAdded(this, offline_page);
 }
 
 void OfflinePageModelImpl::OnMarkPageAccesseDone(

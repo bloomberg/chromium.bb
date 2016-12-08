@@ -77,7 +77,8 @@ class OfflinePageModelImplTest
 
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
-  void OfflinePageModelChanged(OfflinePageModel* model) override;
+  void OfflinePageAdded(OfflinePageModel* model,
+                        const OfflinePageItem& added_page) override;
   void OfflinePageDeleted(int64_t offline_id,
                           const ClientId& client_id) override;
 
@@ -232,15 +233,16 @@ void OfflinePageModelImplTest::OfflinePageModelLoaded(OfflinePageModel* model) {
   ASSERT_EQ(model_.get(), model);
 }
 
-void OfflinePageModelImplTest::OfflinePageModelChanged(
-    OfflinePageModel* model) {
-  ASSERT_EQ(model_.get(), model);
-}
-
 void OfflinePageModelImplTest::OfflinePageDeleted(int64_t offline_id,
                                                   const ClientId& client_id) {
   last_deleted_offline_id_ = offline_id;
   last_deleted_client_id_ = client_id;
+}
+
+void OfflinePageModelImplTest::OfflinePageAdded(
+    OfflinePageModel* model,
+    const OfflinePageItem& added_page) {
+  ASSERT_EQ(model_.get(), model);
 }
 
 void OfflinePageModelImplTest::SetLastPathCreatedByArchiver(
