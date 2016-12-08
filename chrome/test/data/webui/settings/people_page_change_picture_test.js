@@ -107,6 +107,8 @@ cr.define('settings_people_page_change_picture', function() {
         discardControlBar = changePicture.$.discardControlBar;
         assertTrue(!!discardControlBar);
 
+        changePicture.currentRouteChanged(settings.Route.CHANGE_PICTURE);
+
         return browserProxy.whenCalled('initialize').then(function() {
           Polymer.dom.flush();
         });
@@ -139,6 +141,10 @@ cr.define('settings_people_page_change_picture', function() {
         expectEquals(ChangePictureSelectionTypes.CAMERA,
                      getSelectedItem().dataset.type);
         expectTrue(discardControlBar.hidden);
+
+        // Ensure that the camera is deactivated if user navigates away.
+        changePicture.currentRouteChanged(settings.Route.BASIC);
+        expectFalse(settingsCamera.cameraActive);
       });
 
       test('ChangePictureProfileImage', function() {

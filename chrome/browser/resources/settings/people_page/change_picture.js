@@ -35,6 +35,7 @@ Polymer({
   is: 'settings-change-picture',
 
   behaviors: [
+    settings.RouteObserverBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
   ],
@@ -132,8 +133,18 @@ Polymer({
                           this.receiveProfileImage_.bind(this));
     this.addWebUIListener('camera-presence-changed',
                           this.receiveCameraPresence_.bind(this));
+  },
 
-    this.browserProxy_.initialize();
+
+  /** @protected */
+  currentRouteChanged: function(newRoute) {
+    // Reset the selection state when we navigate to this page.
+    if (newRoute == settings.Route.CHANGE_PICTURE) {
+      this.browserProxy_.initialize();
+    } else {
+      // Ensure we deactivate the camera when we navigate away.
+      this.selectedItem_ = null;
+    }
   },
 
   /**
@@ -374,7 +385,7 @@ Polymer({
    * @private
    */
   isCameraActive_: function(cameraPresent, selectedItem) {
-    return cameraPresent && selectedItem &&
+    return cameraPresent && !!selectedItem &&
         selectedItem.dataset.type == ChangePictureSelectionTypes.CAMERA;
   },
 
@@ -394,7 +405,7 @@ Polymer({
    * @private
    */
   isAuthorCreditShown_: function(selectedItem) {
-    return selectedItem &&
+    return !!selectedItem &&
         selectedItem.dataset.type == ChangePictureSelectionTypes.DEFAULT;
   },
 
