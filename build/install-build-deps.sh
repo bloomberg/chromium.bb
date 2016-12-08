@@ -138,17 +138,16 @@ chromeos_dev_list="libbluetooth-dev libxkbcommon-dev realpath"
 # Packages needed for development
 dev_list="bison cdbs curl dpkg-dev elfutils devscripts fakeroot
           flex fonts-ipafont fonts-thai-tlwg g++ git-core git-svn gperf
-          language-pack-da language-pack-fr language-pack-he
-          language-pack-zh-hant libasound2-dev libbrlapi-dev libav-tools
-          libbz2-dev libcairo2-dev libcap-dev libcups2-dev libcurl4-gnutls-dev
-          libdrm-dev libelf-dev libffi-dev libgconf2-dev libglib2.0-dev
-          libglu1-mesa-dev libgnome-keyring-dev libgtk2.0-dev libkrb5-dev
-          libnspr4-dev libnss3-dev libpam0g-dev libpci-dev libpulse-dev
-          libsctp-dev libspeechd-dev libsqlite3-dev libssl-dev libudev-dev
-          libwww-perl libxslt1-dev libxss-dev libxt-dev libxtst-dev openbox
-          patch perl pkg-config python python-cherrypy3 python-crypto
-          python-dev python-numpy python-opencv python-openssl python-psutil
-          python-yaml rpm ruby subversion ttf-dejavu-core wdiff xcompmgr zip
+          libasound2-dev libbrlapi-dev libav-tools libbz2-dev libcairo2-dev
+          libcap-dev libcups2-dev libcurl4-gnutls-dev libdrm-dev libelf-dev
+          libffi-dev libgconf2-dev libglib2.0-dev libglu1-mesa-dev
+          libgnome-keyring-dev libgtk2.0-dev libkrb5-dev libnspr4-dev
+          libnss3-dev libpam0g-dev libpci-dev libpulse-dev libsctp-dev
+          libspeechd-dev libsqlite3-dev libssl-dev libudev-dev libwww-perl
+          libxslt1-dev libxss-dev libxt-dev libxtst-dev openbox patch perl
+          pkg-config python python-cherrypy3 python-crypto python-dev
+          python-numpy python-opencv python-openssl python-psutil python-yaml
+          rpm ruby subversion ttf-dejavu-core wdiff xcompmgr zip
           $chromeos_dev_list"
 
 # 64-bit systems need a minimum set of 32-bit compat packages for the pre-built
@@ -536,4 +535,24 @@ if test "$do_inst_nacl" = "1"; then
       /usr/lib/i386-linux-gnu/libssl.so
 else
   echo "Skipping symbolic links for NaCl."
+fi
+
+echo "Installing locales."
+CHROMIUM_LOCALES="da_DK.UTF-8 fr_FR.UTF-8 he_IL.UTF-8 zh_TW.UTF-8"
+LOCALE_GEN=/etc/locale.gen
+if [ -e ${LOCALE_GEN} ]; then
+  OLD_LOCALE_GEN="$(cat /etc/locale.gen)"
+  for CHROMIUM_LOCALE in ${CHROMIUM_LOCALES}; do
+    sudo sed -i "s/^# ${CHROMIUM_LOCALE}/${CHROMIUM_LOCALE}/" ${LOCALE_GEN}
+  done
+  # Regenerating locales can take a while, so only do it if we need to.
+  if (echo "${OLD_LOCALE_GEN}" | cmp -s ${LOCALE_GEN}); then
+    echo "Locales already up-to-date."
+  else
+    sudo locale-gen
+  fi
+else
+  for CHROMIUM_LOCALE in ${CHROMIUM_LOCALES}; do
+    sudo locale-gen ${CHROMIUM_LOCALE}
+  done
 fi
