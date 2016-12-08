@@ -8,7 +8,6 @@
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/wm/window_properties.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/property_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager.h"
@@ -83,10 +82,8 @@ SettingsWindowObserver::~SettingsWindowObserver() {
 
 void SettingsWindowObserver::OnNewSettingsWindow(Browser* settings_browser) {
   aura::Window* window = settings_browser->window()->GetNativeWindow();
-  property_util::SetTitle(window,
-                          l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
-  property_util::SetIntProperty(window, ash::kShelfItemTypeKey,
-                                ash::TYPE_DIALOG);
+  window->SetTitle(l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
+  window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* icon = rb.GetImageSkiaNamed(IDR_ASH_SHELF_ICON_SETTINGS);
   // The new gfx::ImageSkia instance is owned by the window itself.

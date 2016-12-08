@@ -40,7 +40,6 @@
 #include "ash/wm/window_properties.h"             // nogncheck
 #include "ash/wm/window_util.h"                   // nogncheck
 #include "chrome/browser/ui/ash/ash_util.h"       // nogncheck
-#include "chrome/browser/ui/ash/property_util.h"  // nogncheck
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
@@ -108,8 +107,7 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
 
 #if defined(USE_ASH)
   aura::Window* window = g_task_manager_view->GetWidget()->GetNativeWindow();
-  property_util::SetIntProperty(window, ash::kShelfItemTypeKey,
-                                ash::TYPE_DIALOG);
+  window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* icon = rb.GetImageSkiaNamed(IDR_ASH_SHELF_ICON_TASK_MANAGER);
   // The new gfx::ImageSkia instance is owned by the window itself.

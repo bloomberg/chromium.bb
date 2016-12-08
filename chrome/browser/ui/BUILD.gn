@@ -1384,8 +1384,6 @@ split_static_library("ui") {
       "ash/networking_config_delegate_chromeos.h",
       "ash/palette_delegate_chromeos.cc",
       "ash/palette_delegate_chromeos.h",
-      "ash/property_util.cc",
-      "ash/property_util.h",
       "ash/session_state_delegate_chromeos.cc",
       "ash/session_state_delegate_chromeos.h",
       "ash/session_util.cc",

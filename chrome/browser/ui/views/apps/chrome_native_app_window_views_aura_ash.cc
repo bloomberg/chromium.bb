@@ -24,7 +24,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
-#include "chrome/browser/ui/ash/property_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -139,8 +138,7 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
 
   if (app_window->window_type_is_panel()) {
     // Ash's ShelfWindowWatcher handles app panel windows once this type is set.
-    property_util::SetIntProperty(window, ash::kShelfItemTypeKey,
-                                  ash::TYPE_APP_PANEL);
+    window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP_PANEL);
   } else {
     window->SetProperty(aura::client::kAppType,
                         static_cast<int>(ash::AppType::CHROME_APP));
