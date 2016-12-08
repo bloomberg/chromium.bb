@@ -46,8 +46,12 @@ declare_args() {
 }
 
 if (use_system_xcode == "") {
-  _result = exec_script("//build/mac/should_use_hermetic_xcode.py",
-                        [ target_os ],
-                        "value")
-  use_system_xcode = _result == 0
+  if (target_os == "mac") {
+    _result =
+        exec_script("//build/mac/should_use_hermetic_xcode.py", [], "value")
+    use_system_xcode = _result == 0
+  }
+  if (target_os == "ios") {
+    use_system_xcode = true
+  }
 }
