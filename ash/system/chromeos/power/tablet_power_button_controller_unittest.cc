@@ -62,6 +62,8 @@ class TabletPowerButtonControllerTest : public AshTestBase {
                              ->tablet_power_button_controller_for_test();
     test_api_ = base::MakeUnique<TabletPowerButtonController::TestApi>(
         tablet_controller_);
+    lock_state_test_api_ =
+        base::MakeUnique<LockStateControllerTestApi>(lock_state_controller_);
     tick_clock_ = new base::SimpleTestTickClock;
     tablet_controller_->SetTickClockForTesting(
         std::unique_ptr<base::TickClock>(tick_clock_));
@@ -121,6 +123,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
   LockStateController* lock_state_controller_;      // Not owned.
   TabletPowerButtonController* tablet_controller_;  // Not owned.
   std::unique_ptr<TabletPowerButtonController::TestApi> test_api_;
+  std::unique_ptr<LockStateControllerTestApi> lock_state_test_api_;
   base::SimpleTestTickClock* tick_clock_;  // Not owned.
   TestShellDelegate* shell_delegate_;      // Not owned.
   ui::test::EventGenerator* generator_ = nullptr;
@@ -181,15 +184,11 @@ TEST_F(TabletPowerButtonControllerTest,
 // released after the timer fires.
 TEST_F(TabletPowerButtonControllerTest,
        ReleasePowerButtonDuringShutdownAnimation) {
-  // Initializes LockStateControllerTestApi to observe shutdown animation timer.
-  std::unique_ptr<LockStateControllerTestApi> lock_state_test_api =
-      base::MakeUnique<LockStateControllerTestApi>(lock_state_controller_);
-
   PressPowerButton();
   test_api_->TriggerShutdownTimeout();
-  EXPECT_TRUE(lock_state_test_api->shutdown_timer_is_running());
+  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   ReleasePowerButton();
-  EXPECT_FALSE(lock_state_test_api->shutdown_timer_is_running());
+  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
   EXPECT_FALSE(GetBacklightsForcedOff());
 
   // Test again when backlights is forced off.
@@ -202,9 +201,9 @@ TEST_F(TabletPowerButtonControllerTest,
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
   EXPECT_FALSE(GetBacklightsForcedOff());
   test_api_->TriggerShutdownTimeout();
-  EXPECT_TRUE(lock_state_test_api->shutdown_timer_is_running());
+  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   ReleasePowerButton();
-  EXPECT_FALSE(lock_state_test_api->shutdown_timer_is_running());
+  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
   EXPECT_FALSE(GetBacklightsForcedOff());
 }
 
@@ -406,6 +405,53 @@ TEST_F(TabletPowerButtonControllerTest, TouchScreenState) {
   generator_->MoveMouseBy(1, 1);
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
   EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+}
+
+// When user switches convertible device between laptop mode and tablet mode,
+// power button may be pressed and held, which may cause unwanted shutdown.
+TEST_F(TabletPowerButtonControllerTest,
+       EnterOrLeaveMaximizeModeWhilePressingPowerButton) {
+  Initialize(LoginStatus::USER);
+  SetShouldLockScreenAutomatically(true);
+  EXPECT_FALSE(GetLockedState());
+
+  power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
+  tablet_controller_->OnEnterMaximizeMode();
+  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1500));
+  power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  EXPECT_FALSE(GetLockedState());
+  EXPECT_FALSE(GetBacklightsForcedOff());
+
+  power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  test_api_->TriggerShutdownTimeout();
+  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
+  tablet_controller_->OnEnterMaximizeMode();
+  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(2500));
+  power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  EXPECT_FALSE(GetLockedState());
+  EXPECT_FALSE(GetBacklightsForcedOff());
+
+  power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
+  tablet_controller_->OnLeaveMaximizeMode();
+  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(3500));
+  power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  EXPECT_FALSE(GetLockedState());
+  EXPECT_FALSE(GetBacklightsForcedOff());
+
+  power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  test_api_->TriggerShutdownTimeout();
+  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
+  tablet_controller_->OnLeaveMaximizeMode();
+  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(4500));
+  power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  EXPECT_FALSE(GetLockedState());
+  EXPECT_FALSE(GetBacklightsForcedOff());
 }
 
 }  // namespace test
