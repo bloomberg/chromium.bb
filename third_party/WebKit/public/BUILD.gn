@@ -185,7 +185,6 @@ source_set("blink_headers") {
     "platform/WebFocusType.h",
     "platform/WebFont.h",
     "platform/WebFontDescription.h",
-    "platform/WebFrameScheduler.h",
     "platform/WebGamepad.h",
     "platform/WebGamepadListener.h",
     "platform/WebGamepads.h",

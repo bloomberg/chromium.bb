@@ -53,10 +53,10 @@
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/plugins/PluginData.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebFrameScheduler.h"
 
 namespace blink {
 

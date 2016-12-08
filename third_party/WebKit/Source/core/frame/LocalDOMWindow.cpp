@@ -79,10 +79,10 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/EventDispatchForbiddenScope.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScreenInfo.h"
 #include <memory>
 

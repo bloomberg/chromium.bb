@@ -8,8 +8,8 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/tracing/TraceEvent.h"
-#include "public/platform/WebFrameScheduler.h"
 
 namespace blink {
 

@@ -11,12 +11,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/throttled_time_domain.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
-#include "public/platform/WebFrameScheduler.h"
 
 namespace blink {
 namespace scheduler {

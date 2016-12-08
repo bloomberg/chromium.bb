@@ -7,12 +7,12 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
-#include "public/platform/WebFrameScheduler.h"
 
 namespace blink {
 namespace scheduler {

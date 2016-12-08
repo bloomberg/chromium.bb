@@ -62,6 +62,7 @@
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/network/ResourceLoadPriority.h"
@@ -71,7 +72,6 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
-#include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebViewScheduler.h"
 #include <algorithm>

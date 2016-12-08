@@ -352,6 +352,7 @@ component("platform") {
     "UserGestureIndicator.h",
     "WaitableEvent.cpp",
     "WaitableEvent.h",
+    "WebFrameScheduler.h",
     "WebIconSizesParser.cpp",
     "WebScheduler.cpp",
     "WebTaskRunner.cpp",

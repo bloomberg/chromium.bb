@@ -5,16 +5,12 @@
 #ifndef WebFrameScheduler_h
 #define WebFrameScheduler_h
 
-#include "WebCommon.h"
-
-#include <string>
-
 namespace blink {
 
 class WebTaskRunner;
 class WebViewScheduler;
 
-class BLINK_PLATFORM_EXPORT WebFrameScheduler {
+class WebFrameScheduler {
  public:
   virtual ~WebFrameScheduler() {}
 

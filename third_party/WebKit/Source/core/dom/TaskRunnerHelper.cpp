@@ -6,9 +6,9 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/WebTaskRunner.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {

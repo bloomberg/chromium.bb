@@ -38,6 +38,7 @@
 #include "core/page/Page.h"
 #include "core/page/SpellCheckerClient.h"
 #include "platform/DragImage.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
@@ -45,7 +46,6 @@
 #include "platform/network/ResourceError.h"
 #include "platform/text/TextCheckerClient.h"
 #include "public/platform/WebFocusType.h"
-#include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScreenInfo.h"
 #include "wtf/Forward.h"
 #include <memory>
