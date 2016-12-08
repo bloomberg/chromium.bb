@@ -27,9 +27,10 @@ var ExportView = (function() {
     this.saveFileButton_ = $(ExportView.SAVE_FILE_BUTTON_ID);
     this.saveFileButton_.onclick = this.onSaveFile_.bind(this);
     this.saveStatusText_ = $(ExportView.SAVE_STATUS_TEXT_ID);
+    this.isSaving_ = false;
 
     this.userCommentsTextArea_ = $(ExportView.USER_COMMENTS_TEXT_AREA_ID);
-    this.enableSaveFileButton_(false);
+    this.updateSaveFileButton_();
     this.userCommentsTextArea_.onkeyup = this.onUserCommentsUpdated_.bind(this);
 
     // Track blob for previous log dump so it can be revoked when a new dump is
@@ -87,12 +88,14 @@ var ExportView = (function() {
      * of failure.
      */
     setSaveFileStatus: function(text, isSaving) {
-      this.enableSaveFileButton_(!isSaving);
+      this.isSaving_ = isSaving;
+      this.updateSaveFileButton_();
       this.saveStatusText_.textContent = text;
     },
 
-    enableSaveFileButton_: function(enabled) {
-      this.saveFileButton_.disabled = !enabled;
+    updateSaveFileButton_: function() {
+      this.saveFileButton_.disabled =
+          this.userCommentsTextArea_.value == '' || this.isSaving_;
     },
 
     showPrivacyWarning: function() {
@@ -160,7 +163,7 @@ var ExportView = (function() {
      * User comments are updated.
      */
     onUserCommentsUpdated_: function() {
-      this.enableSaveFileButton_(this.userCommentsTextArea_.value != '');
+      this.updateSaveFileButton_();
     },
 
     /**
