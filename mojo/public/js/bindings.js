@@ -69,9 +69,25 @@ define("mojo/public/js/bindings", [
     this.connection = null;
   }
 
+  InterfacePtrController.prototype.setConnectionErrorHandler
+      = function(callback) {
+    if (!this.isBound())
+      throw new Error("Cannot set connection error handler if not bound.");
+    this.connection.router_.setErrorHandler(callback);
+  }
+
+  InterfacePtrController.prototype.passInterface = function() {
+    if (!this.isBound())
+      return new InterfacePtrInfo(null, 0);
+
+    var result = new InterfacePtrInfo(
+        this.connection.router_.connector_.handle_, this.version);
+    this.connection.router_.connector_.handle_ = null;
+    this.reset();
+    return result;
+  }
+
   // TODO(yzshen): Implement the following methods.
-  //   InterfacePtrController.prototype.setConnectionErrorHandler
-  //   InterfacePtrController.prototype.passInterface
   //   InterfacePtrController.prototype.queryVersion
   //   InterfacePtrController.prototype.requireVersion
 
@@ -119,9 +135,26 @@ define("mojo/public/js/bindings", [
     this.stub_ = null;
   }
 
-  // TODO(yzshen): Implement the following methods.
-  //   Binding.prototype.setConnectionErrorHandler
-  //   Binding.prototype.unbind
+  Binding.prototype.setConnectionErrorHandler
+      = function(callback) {
+    if (!this.isBound())
+      throw new Error("Cannot set connection error handler if not bound.");
+    connection.StubBindings(this.stub_).connection.router_.setErrorHandler(
+        callback);
+  }
+
+  Binding.prototype.unbind = function() {
+    if (!this.isBound())
+      return new InterfaceRequest(null);
+
+    var result = new InterfaceRequest(
+        connection.StubBindings(this.stub_).connection.router_.connector_
+            .handle_);
+    connection.StubBindings(this.stub_).connection.router_.connector_.handle_ =
+        null;
+    this.close();
+    return result;
+  }
 
   var exports = {};
   exports.InterfacePtrInfo = InterfacePtrInfo;

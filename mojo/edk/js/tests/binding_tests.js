@@ -15,6 +15,8 @@ define([
             gc) {
   testIsBound()
       .then(testReusable)
+      .then(testConnectionError)
+      .then(testUnbind)
       .then(function() {
     this.result = "PASS";
     gc.collectGarbage();  // should not crash
@@ -72,6 +74,45 @@ define([
       return calc2.add(2);
     }).then(function(response) {
       expect(response.value).toBe(4);
+      return Promise.resolve();
+    });
+
+    return promise;
+  }
+
+  function testConnectionError() {
+    var calc = new math.CalculatorPtr();
+    var calcBinding = new bindings.Binding(math.Calculator,
+                                           new CalculatorImpl(),
+                                           bindings.makeRequest(calc));
+
+    var promise = new Promise(function(resolve, reject) {
+      calcBinding.setConnectionErrorHandler(function() {
+        resolve();
+      });
+      calc.ptr.reset();
+    });
+
+    return promise;
+  }
+
+  function testUnbind() {
+    var calc = new math.CalculatorPtr();
+    var calcBinding = new bindings.Binding(math.Calculator,
+                                           new CalculatorImpl(),
+                                           bindings.makeRequest(calc));
+    var newCalcBinding = null;
+
+    var promise = calc.add(2).then(function(response) {
+      expect(response.value).toBe(2);
+      var interfaceRequest = calcBinding.unbind();
+      expect(calcBinding.isBound()).toBeFalsy();
+      newCalcBinding = new bindings.Binding(math.Calculator,
+                                            new CalculatorImpl(),
+                                            interfaceRequest);
+      return calc.add(2);
+    }).then(function(response) {
+      expect(response.value).toBe(2);
       return Promise.resolve();
     });
 
