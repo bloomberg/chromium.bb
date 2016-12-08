@@ -46,6 +46,12 @@ function test()
             var mappingQueries = ["a", "b"];
             testJSFormatter("a();\n\n\n\n\n\n\n\n\nb();", mappingQueries, next);
         },
+
+        function ensureExponentialOperator(next)
+        {
+            var mappingQueries = ["2", "**", "3"];
+            testJSFormatter("2**3", mappingQueries, next);
+        },
     ]);
 }
 

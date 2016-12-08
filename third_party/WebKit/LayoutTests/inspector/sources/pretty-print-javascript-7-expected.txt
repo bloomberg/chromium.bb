@@ -79,3 +79,12 @@ b();
 Correct mapping for <a>
 Correct mapping for <b>
 
+Running: ensureExponentialOperator
+====== 8< ------
+2 ** 3
+
+------ >8 ======
+Correct mapping for <2>
+Correct mapping for <**>
+Correct mapping for <3>
+
