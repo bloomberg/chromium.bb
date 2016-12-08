@@ -5,10 +5,8 @@
 #ifndef BASE_NUMERICS_SAFE_CONVERSIONS_IMPL_H_
 #define BASE_NUMERICS_SAFE_CONVERSIONS_IMPL_H_
 
-#include <limits.h>
 #include <stdint.h>
 
-#include <climits>
 #include <limits>
 #include <type_traits>
 
