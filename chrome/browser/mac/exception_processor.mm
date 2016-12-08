@@ -84,9 +84,12 @@ static const char* const kExceptionSinkholes[] = {
 // This function is used to make it clear to the crash processor that this is
 // a forced exception crash.
 static NOINLINE void TERMINATING_FROM_UNCAUGHT_NSEXCEPTION(id exception) {
-  LOG(FATAL) << "Terminating from Objective-C exception: "
-             << base::SysNSStringToUTF8([exception name])
-             << ": " << base::SysNSStringToUTF8([exception reason]);
+  NSString* exception_message_ns = [NSString
+      stringWithFormat:@"%@: %@", [exception name], [exception reason]];
+  std::string exception_message = base::SysNSStringToUTF8(exception_message_ns);
+  base::debug::SetCrashKeyValue(crash_keys::mac::kNSException,
+                                exception_message);
+  LOG(FATAL) << "Terminating from Objective-C exception: " << exception_message;
 }
 
 static id ObjcExceptionPreprocessor(id exception) {
