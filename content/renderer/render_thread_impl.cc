@@ -1817,8 +1817,14 @@ static size_t GetMallocUsage() {
 
   size_t malloc_usage = 0;
   std::unique_ptr<HANDLE[]> heaps(new HANDLE[number_of_heaps]);
-  ::GetProcessHeaps(number_of_heaps, heaps.get());
-  for (size_t i = 0; i < number_of_heaps; i++) {
+  // If some heaps were gone between the first GetProcessHeaps and here,
+  // GetProcessHeaps obtains small number of heaps.
+  // If some new heaps were available between the first GetProcessHeaps and
+  // here, GetProcessHeaps returns larger number than number_of_heaps.
+  // So we need to see min(number_of_obtained_heaps, number_of_heaps).
+  DWORD number_of_obtained_heaps =
+      ::GetProcessHeaps(number_of_heaps, heaps.get());
+  for (size_t i = 0; i < number_of_heaps && i < number_of_obtained_heaps; i++) {
     PROCESS_HEAP_ENTRY heap_entry;
     ::HeapLock(heaps[i]);
     heap_entry.lpData = NULL;
