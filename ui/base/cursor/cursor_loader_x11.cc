@@ -87,7 +87,11 @@ const char* CursorCssNameFromId(int id) {
     case ui::kCursorPointer:
       return "left_ptr";
     case ui::kCursorMove:
-      return "move";
+      // Returning "move" is the correct thing here, but Blink doesn't
+      // make a distinction between move and all-scroll.  Other
+      // platforms use a cursor more consistent with all-scroll, so
+      // use that.
+      return "all-scroll";
     case ui::kCursorCross:
       return "crosshair";
     case ui::kCursorHand:
@@ -172,6 +176,7 @@ static const struct {
     { "progress",    "left_ptr_watch",  XC_watch },
     { "wait",        nullptr,           XC_watch },
     { "cell",        nullptr,           XC_plus },
+    { "all-scroll",  nullptr,           XC_fleur},
     { "crosshair",   nullptr,           XC_cross },
     { "text",        nullptr,           XC_xterm },
     { "not-allowed", "crossed_circle",  None },
