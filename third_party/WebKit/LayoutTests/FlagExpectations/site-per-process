@@ -1,6 +1,9 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/672546: fullscreen-enabledforself.php test doesn't work with OOPIFs
+crbug.com/672546 virtual/feature-policy/http/tests/feature-policy/fullscreen-enabledforself.php [ Failure ]
+
 # https://crbug.com/670105: uninvestigated test timeout caused by r435352.
 crbug.com/670105 http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Timeout ]
 crbug.com/670105 virtual/mojo-loading/http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Timeout ]
