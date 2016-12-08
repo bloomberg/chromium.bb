@@ -5,6 +5,7 @@
 #include "media/filters/decoder_stream_traits.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
@@ -113,6 +114,36 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::InitializeDecoder(
   decoder->Initialize(stream->video_decoder_config(),
                       stream->liveness() == DemuxerStream::LIVENESS_LIVE,
                       cdm_context, init_cb, output_cb);
+}
+
+void DecoderStreamTraits<DemuxerStream::VIDEO>::OnStreamReset(
+    DemuxerStream* stream) {
+  DCHECK(stream);
+  last_keyframe_timestamp_ = base::TimeDelta();
+}
+
+void DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecode(
+    const scoped_refptr<DecoderBuffer>& buffer) {
+  if (!buffer)
+    return;
+
+  if (buffer->end_of_stream()) {
+    last_keyframe_timestamp_ = base::TimeDelta();
+    return;
+  }
+
+  if (!buffer->is_key_frame())
+    return;
+
+  base::TimeDelta current_frame_timestamp = buffer->timestamp();
+  if (last_keyframe_timestamp_.is_zero()) {
+    last_keyframe_timestamp_ = current_frame_timestamp;
+    return;
+  }
+
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "Media.Video.KeyFrameDistance",
+      current_frame_timestamp - last_keyframe_timestamp_);
 }
 
 }  // namespace media

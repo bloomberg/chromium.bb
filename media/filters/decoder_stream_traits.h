@@ -5,6 +5,7 @@
 #ifndef MEDIA_FILTERS_DECODER_STREAM_TRAITS_H_
 #define MEDIA_FILTERS_DECODER_STREAM_TRAITS_H_
 
+#include "base/time/time.h"
 #include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/pipeline_status.h"
@@ -82,9 +83,12 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
                          CdmContext* cdm_context,
                          const InitCB& init_cb,
                          const OutputCB& output_cb);
-  void OnDecode(const scoped_refptr<DecoderBuffer>& buffer) {}
+  void OnDecode(const scoped_refptr<DecoderBuffer>& buffer);
   void OnDecodeDone(const scoped_refptr<OutputType>& buffer) {}
-  void OnStreamReset(DemuxerStream* stream) {}
+  void OnStreamReset(DemuxerStream* stream);
+
+ private:
+  base::TimeDelta last_keyframe_timestamp_;
 };
 
 }  // namespace media
