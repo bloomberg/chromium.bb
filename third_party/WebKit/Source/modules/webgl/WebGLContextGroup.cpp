@@ -30,24 +30,12 @@ namespace blink {
 WebGLContextGroup::WebGLContextGroup() : m_numberOfContextLosses(0) {}
 
 gpu::gles2::GLES2Interface* WebGLContextGroup::getAGLInterface() {
-  // It's possible that all of the WebGLRenderingContextBases (currently
-  // only one) referenced weakly by this WebGLContextGroup are GC'd before
-  // the (shared) WebGLObjects that it created. Since the calling code
-  // handles this gracefully, and since the graphical resources will have
-  // been implicitly reclaimed by the deletion of the context, explicitly
-  // test for this possibility.
-  if (m_contexts.isEmpty())
-    return nullptr;
-
-  // Weak processing removes dead entries from the HeapHashSet, so it's
-  // guaranteed that this will not return null for the reason that a
-  // WeakMember was nulled out.
+  DCHECK(!m_contexts.isEmpty());
   return (*m_contexts.begin())->contextGL();
 }
 
 void WebGLContextGroup::addContext(WebGLRenderingContextBase* context) {
-  m_contexts.add(context);
-  ScriptWrappableVisitor::writeBarrier(this, context);
+  m_contexts.add(TraceWrapperMember<WebGLRenderingContextBase>(this, context));
 }
 
 void WebGLContextGroup::loseContextGroup(
@@ -63,11 +51,8 @@ uint32_t WebGLContextGroup::numberOfContextLosses() const {
 }
 
 DEFINE_TRACE_WRAPPERS(WebGLContextGroup) {
-  // TODO(kbr, mlippautz): need to use the manual write barrier since we
-  // need to use weak members to get the desired semantics in Oilpan, but
-  // no such TraceWrapperMember (like TraceWrapperWeakMember) exists yet.
   for (auto context : m_contexts) {
-    visitor->traceWrappersWithManualWriteBarrier(context);
+    visitor->traceWrappers(context);
   }
 }
 

@@ -72,9 +72,7 @@ class WebGLContextGroup final : public GarbageCollected<WebGLContextGroup>,
 
   uint32_t m_numberOfContextLosses;
 
-  // Note: ideally this would use a TraceWrapperMember subclass, but
-  // that doesn't seem to exist for weak members yet.
-  HeapHashSet<WeakMember<WebGLRenderingContextBase>> m_contexts;
+  HeapHashSet<TraceWrapperMember<WebGLRenderingContextBase>> m_contexts;
 };
 
 }  // namespace blink
