@@ -120,7 +120,6 @@ component("net") {
 
     deps += [
       "//base/third_party/dynamic_annotations",
-      "//components/prefs",
       "//sdch",
       "//third_party/zlib",
     ]
