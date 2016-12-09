@@ -857,10 +857,6 @@ TEST_F(WidgetObserverTest, DISABLED_VisibilityChange) {
 }
 
 TEST_F(WidgetObserverTest, DestroyBubble) {
-  // TODO: reenable once http://crbug.com/663903 is fixed.
-  if (IsAuraMusClient())
-    return;
-
   // This test expect NativeWidgetAura, force its creation.
   ViewsDelegate::GetInstance()->set_native_widget_factory(
       ViewsDelegate::NativeWidgetFactory());
@@ -1289,10 +1285,6 @@ TEST_F(WidgetTest, DISABLED_FocusChangesOnBubble) {
 }
 
 TEST_F(WidgetTest, BubbleControlsResetOnInit) {
-  // TODO: enable once http://crbug.com/660994 is fixed.
-  if (IsAuraMusClient())
-    return;
-
   WidgetAutoclosePtr anchor(CreateTopLevelPlatformWidget());
   anchor->Show();
 

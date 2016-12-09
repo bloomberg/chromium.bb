@@ -296,6 +296,11 @@ WindowMus* WindowTreeClient::GetWindowByServerId(Id id) {
   return it != windows_.end() ? it->second : nullptr;
 }
 
+bool WindowTreeClient::IsWindowKnown(aura::Window* window) {
+  WindowMus* window_mus = WindowMus::Get(window);
+  return windows_.count(window_mus->server_id()) > 0;
+}
+
 InFlightChange* WindowTreeClient::GetOldestInFlightChangeMatching(
     const InFlightChange& change) {
   for (const auto& pair : in_flight_map_) {
@@ -329,38 +334,64 @@ bool WindowTreeClient::ApplyServerChangeToExistingInFlightChange(
 
 void WindowTreeClient::BuildWindowTree(
     const std::vector<ui::mojom::WindowDataPtr>& windows) {
-  for (const auto& window_data : windows) {
-    WindowMus* parent = window_data->parent_id == kInvalidServerId
-                            ? nullptr
-                            : GetWindowByServerId(window_data->parent_id);
-    WindowMus* existing_window = GetWindowByServerId(window_data->window_id);
-    if (!existing_window)
-      NewWindowFromWindowData(parent, window_data);
-    else if (parent)
-      parent->AddChildFromServer(existing_window);
+  for (const auto& window_data : windows)
+    CreateOrUpdateWindowFromWindowData(*window_data);
+}
+
+void WindowTreeClient::CreateOrUpdateWindowFromWindowData(
+    const ui::mojom::WindowData& window_data) {
+  WindowMus* parent = window_data.parent_id == kInvalidServerId
+                          ? nullptr
+                          : GetWindowByServerId(window_data.parent_id);
+  WindowMus* window = GetWindowByServerId(window_data.window_id);
+  if (!window)
+    window = NewWindowFromWindowData(parent, window_data);
+  else if (parent)
+    parent->AddChildFromServer(window);
+
+  if (window_data.transient_parent_id == kInvalidServerId)
+    return;
+
+  // Adjust the transient parent if necessary.
+  client::TransientWindowClient* transient_window_client =
+      client::GetTransientWindowClient();
+  Window* existing_transient_parent =
+      transient_window_client->GetTransientParent(window->GetWindow());
+  WindowMus* new_transient_parent =
+      GetWindowByServerId(window_data.transient_parent_id);
+  if (!new_transient_parent && existing_transient_parent) {
+    WindowMus::Get(existing_transient_parent)
+        ->RemoveTransientChildFromServer(window);
+  } else if (new_transient_parent &&
+             new_transient_parent->GetWindow() != existing_transient_parent) {
+    if (existing_transient_parent) {
+      WindowMus::Get(existing_transient_parent)
+          ->RemoveTransientChildFromServer(window);
+    }
+    new_transient_parent->AddTransientChildFromServer(window);
   }
 }
 
 std::unique_ptr<WindowPortMus> WindowTreeClient::CreateWindowPortMus(
-    const ui::mojom::WindowDataPtr& window_data,
+    const ui::mojom::WindowData& window_data,
     WindowMusType window_mus_type) {
   std::unique_ptr<WindowPortMus> window_port_mus(
       base::MakeUnique<WindowPortMus>(this, window_mus_type));
-  window_port_mus->set_server_id(window_data->window_id);
+  window_port_mus->set_server_id(window_data.window_id);
   RegisterWindowMus(window_port_mus.get());
   return window_port_mus;
 }
 
 void WindowTreeClient::SetLocalPropertiesFromServerProperties(
     WindowMus* window,
-    const ui::mojom::WindowDataPtr& window_data) {
-  for (auto& pair : window_data->properties)
+    const ui::mojom::WindowData& window_data) {
+  for (auto& pair : window_data.properties)
     window->SetPropertyFromServer(pair.first, &pair.second);
 }
 
 std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
     WindowMusType window_mus_type,
-    const ui::mojom::WindowDataPtr& window_data,
+    const ui::mojom::WindowData& window_data,
     int64_t display_id) {
   std::unique_ptr<WindowPortMus> window_port =
       CreateWindowPortMus(window_data, window_mus_type);
@@ -368,35 +399,33 @@ std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
       base::MakeUnique<WindowTreeHostMus>(std::move(window_port), this,
                                           display_id);
-  if (!window_data.is_null()) {
-    SetLocalPropertiesFromServerProperties(
-        WindowMus::Get(window_tree_host->window()), window_data);
-    if (window_data->visible) {
-      SetWindowVisibleFromServer(WindowMus::Get(window_tree_host->window()),
-                                 true);
-    }
-    SetWindowBoundsFromServer(WindowMus::Get(window_tree_host->window()),
-                              window_data->bounds);
+  SetLocalPropertiesFromServerProperties(
+      WindowMus::Get(window_tree_host->window()), window_data);
+  if (window_data.visible) {
+    SetWindowVisibleFromServer(WindowMus::Get(window_tree_host->window()),
+                               true);
   }
+  SetWindowBoundsFromServer(WindowMus::Get(window_tree_host->window()),
+                            window_data.bounds);
   return window_tree_host;
 }
 
 WindowMus* WindowTreeClient::NewWindowFromWindowData(
     WindowMus* parent,
-    const ui::mojom::WindowDataPtr& window_data) {
+    const ui::mojom::WindowData& window_data) {
   // This function is only called for windows coming from other clients.
   std::unique_ptr<WindowPortMus> window_port_mus(
       CreateWindowPortMus(window_data, WindowMusType::OTHER));
   WindowPortMus* window_port_mus_ptr = window_port_mus.get();
   Window* window = new Window(nullptr, std::move(window_port_mus));
   WindowMus* window_mus = window_port_mus_ptr;
-  SetWindowTypeFromProperties(window, window_data->properties);
+  SetWindowTypeFromProperties(window, window_data.properties);
   window->Init(ui::LAYER_NOT_DRAWN);
   SetLocalPropertiesFromServerProperties(window_mus, window_data);
-  window_mus->SetBoundsFromServer(window_data->bounds);
+  window_mus->SetBoundsFromServer(window_data.bounds);
   if (parent)
     parent->AddChildFromServer(window_port_mus_ptr);
-  if (window_data->visible)
+  if (window_data.visible)
     window_mus->SetVisibleFromServer(true);
   return window_port_mus_ptr;
 }
@@ -464,7 +493,7 @@ void WindowTreeClient::OnEmbedImpl(ui::mojom::WindowTree* window_tree,
 
   DCHECK(roots_.empty());
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
-      CreateWindowTreeHost(WindowMusType::EMBED, root_data, display_id);
+      CreateWindowTreeHost(WindowMusType::EMBED, *root_data, display_id);
 
   focus_synchronizer_->SetFocusFromServer(
       GetWindowByServerId(focused_window_id));
@@ -481,7 +510,7 @@ WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
   window_manager_delegate_->OnWmWillCreateDisplay(display);
 
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
-      CreateWindowTreeHost(WindowMusType::DISPLAY, root_data, display.id());
+      CreateWindowTreeHost(WindowMusType::DISPLAY, *root_data, display.id());
 
   WindowTreeHostMus* window_tree_host_ptr = window_tree_host.get();
   window_manager_delegate_->OnWmNewDisplay(std::move(window_tree_host),
@@ -1583,10 +1612,17 @@ void WindowTreeClient::OnWindowTreeHostCreated(
 
 void WindowTreeClient::OnTransientChildWindowAdded(Window* parent,
                                                    Window* transient_child) {
+  // TransientWindowClient is a singleton and we allow multiple
+  // WindowTreeClients. Ignore changes to windows we don't know about (assume
+  // they came from another connection).
+  if (!IsWindowKnown(parent) || !IsWindowKnown(transient_child))
+    return;
+
   if (WindowMus::Get(parent)->OnTransientChildAdded(
           WindowMus::Get(transient_child)) == WindowMus::ChangeSource::SERVER) {
     return;
   }
+
   // The change originated from client code and needs to be sent to the server.
   DCHECK(tree_);
   WindowMus* parent_mus = WindowMus::Get(parent);
@@ -1599,6 +1635,10 @@ void WindowTreeClient::OnTransientChildWindowAdded(Window* parent,
 
 void WindowTreeClient::OnTransientChildWindowRemoved(Window* parent,
                                                      Window* transient_child) {
+  // See comments in OnTransientChildWindowAdded() for details on early return.
+  if (!IsWindowKnown(parent) || !IsWindowKnown(transient_child))
+    return;
+
   if (WindowMus::Get(parent)->OnTransientChildRemoved(
           WindowMus::Get(transient_child)) == WindowMus::ChangeSource::SERVER) {
     return;
@@ -1616,6 +1656,10 @@ void WindowTreeClient::OnWillRestackTransientChildAbove(
     Window* parent,
     Window* transient_child) {
   DCHECK(parent->parent());
+  // See comments in OnTransientChildWindowAdded() for details on early return.
+  if (!IsWindowKnown(parent->parent()))
+    return;
+
   DCHECK_EQ(parent->parent(), transient_child->parent());
   WindowMus::Get(parent->parent())
       ->PrepareForTransientRestack(WindowMus::Get(transient_child));
@@ -1625,6 +1669,9 @@ void WindowTreeClient::OnDidRestackTransientChildAbove(
     Window* parent,
     Window* transient_child) {
   DCHECK(parent->parent());
+  // See comments in OnTransientChildWindowAdded() for details on early return.
+  if (!IsWindowKnown(parent->parent()))
+    return;
   DCHECK_EQ(parent->parent(), transient_child->parent());
   WindowMus::Get(parent->parent())
       ->OnTransientRestackDone(WindowMus::Get(transient_child));

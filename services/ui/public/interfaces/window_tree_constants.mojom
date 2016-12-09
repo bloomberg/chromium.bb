@@ -15,6 +15,9 @@ struct WindowData {
   // Unique identifier of the window.
   uint32 window_id;
 
+  // Id of the transient parent, 0 if there isn't one.
+  uint32 transient_parent_id;
+
   gfx.mojom.Rect bounds;
 
   // Arbitrary key/value pairs. The interpretation of these is left to the

@@ -181,6 +181,8 @@ class AURA_EXPORT WindowTreeClient
 
   WindowMus* GetWindowByServerId(Id id);
 
+  bool IsWindowKnown(aura::Window* window);
+
   // Returns the oldest InFlightChange that matches |change|.
   InFlightChange* GetOldestInFlightChangeMatching(const InFlightChange& change);
 
@@ -195,25 +197,29 @@ class AURA_EXPORT WindowTreeClient
 
   void BuildWindowTree(const std::vector<ui::mojom::WindowDataPtr>& windows);
 
+  // If the window identified by |window_data| doesn't exist a new window is
+  // created, otherwise the existing window is updated based on |window_data|.
+  void CreateOrUpdateWindowFromWindowData(
+      const ui::mojom::WindowData& window_data);
+
   // Creates a WindowPortMus from the server side data.
   std::unique_ptr<WindowPortMus> CreateWindowPortMus(
-      const ui::mojom::WindowDataPtr& window_data,
+      const ui::mojom::WindowData& window_data,
       WindowMusType window_mus_type);
 
   // Sets local properties on the associated Window from the server properties.
   void SetLocalPropertiesFromServerProperties(
       WindowMus* window,
-      const ui::mojom::WindowDataPtr& window_data);
+      const ui::mojom::WindowData& window_data);
 
   // Creates a new WindowTreeHostMus.
   std::unique_ptr<WindowTreeHostMus> CreateWindowTreeHost(
       WindowMusType window_mus_type,
-      const ui::mojom::WindowDataPtr& window_data,
+      const ui::mojom::WindowData& window_data,
       int64_t display_id);
 
-  WindowMus* NewWindowFromWindowData(
-      WindowMus* parent,
-      const ui::mojom::WindowDataPtr& window_data);
+  WindowMus* NewWindowFromWindowData(WindowMus* parent,
+                                     const ui::mojom::WindowData& window_data);
 
   // Sets the ui::mojom::WindowTree implementation.
   void SetWindowTree(ui::mojom::WindowTreePtr window_tree_ptr);

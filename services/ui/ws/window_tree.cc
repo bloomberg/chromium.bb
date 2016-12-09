@@ -1014,15 +1014,21 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(
     const ServerWindow* window) {
   DCHECK(IsWindowKnown(window));
   const ServerWindow* parent = window->parent();
-  // If the parent isn't known, it means the parent is not visible to us (not
-  // in roots), and should not be sent over.
-  if (parent && !IsWindowKnown(parent))
+  const ServerWindow* transient_parent = window->transient_parent();
+  // If the parent or transient parent isn't known, it means it is not visible
+  // to the client and should not be sent over.
+  if (!IsWindowKnown(parent))
     parent = nullptr;
+  if (!IsWindowKnown(transient_parent))
+    transient_parent = nullptr;
   mojom::WindowDataPtr window_data(mojom::WindowData::New());
   window_data->parent_id =
       parent ? ClientWindowIdForWindow(parent).id : ClientWindowId().id;
   window_data->window_id =
       window ? ClientWindowIdForWindow(window).id : ClientWindowId().id;
+  window_data->transient_parent_id =
+      transient_parent ? ClientWindowIdForWindow(transient_parent).id
+                       : ClientWindowId().id;
   window_data->bounds = window->bounds();
   window_data->properties = mojo::MapToUnorderedMap(window->properties());
   window_data->visible = window->visible();

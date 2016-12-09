@@ -357,7 +357,7 @@ interface WindowTreeClient {
   // If |window| was not visible to this client, but is visible now because
   // |new_parent| is visible to this client, then |windows| contains details
   // about |window|, and all its descendants. |windows| includes any windows
-  // that client may already know about, but did not know the parent because
+  // the client may already know about, but did not know the parent because
   // the parent was previously not visible to this client.
   // This is not sent for hierarchy changes of windows not known to this client
   // or not attached to the tree.

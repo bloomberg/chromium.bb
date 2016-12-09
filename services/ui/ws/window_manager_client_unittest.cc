@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "services/ui/common/util.h"
 #include "services/ui/ws/window_server_test_base.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -111,7 +112,6 @@ bool WaitForBoundsToChange(aura::Window* window) {
   return WindowServerTestBase::DoRunLoopWithTimeout();
 }
 
-
 // Spins a run loop until the tree beginning at |root| has |tree_size| windows
 // (including |root|).
 class TreeSizeMatchesObserver : public aura::WindowObserver {
@@ -204,7 +204,8 @@ class WindowTracker : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowTracker);
 };
 
-// Creates a new Window parented to |parent| that is made visible.
+// Creates a new visible Window. If |parent| is non-null the newly created
+// window is added to it.
 aura::Window* NewVisibleWindow(aura::Window* parent,
                                aura::WindowTreeClient* client) {
   std::unique_ptr<aura::WindowPortMus> window_port_mus =
@@ -212,7 +213,8 @@ aura::Window* NewVisibleWindow(aura::Window* parent,
   aura::Window* window = new aura::Window(nullptr, std::move(window_port_mus));
   window->Init(ui::LAYER_NOT_DRAWN);
   window->Show();
-  parent->AddChild(window);
+  if (parent)
+    parent->AddChild(window);
   return window;
 }
 
@@ -716,6 +718,42 @@ TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
       WaitForBoundsToChange(window_tree_host_in_second_client.window()));
   EXPECT_EQ(window_bounds,
             window_tree_host_in_second_client.GetBoundsInPixels());
+}
+
+TEST_F(WindowServerTest, OnWindowHierarchyChangedIncludesTransientParent) {
+  // Create a second connection. In the second connection create a window,
+  // parent it to the root, create another window, mark it as a transient parent
+  // of the first window and then add it.
+  EstablishConnectionViaFactoryDelegate delegate(window_manager());
+  set_window_manager_delegate(&delegate);
+  aura::WindowTreeClient second_client(connector(), this);
+  second_client.ConnectViaWindowTreeFactory();
+  aura::WindowTreeHostMus window_tree_host_in_second_client(&second_client);
+  aura::Window* second_client_child = NewVisibleWindow(
+      window_tree_host_in_second_client.window(), &second_client);
+  std::unique_ptr<aura::WindowPortMus> window_port_mus =
+      base::MakeUnique<aura::WindowPortMus>(&second_client,
+                                            aura::WindowMusType::LOCAL);
+  // Create the transient without a parent, set transient parent, then add.
+  aura::Window* transient = NewVisibleWindow(nullptr, &second_client);
+  aura::client::TransientWindowClient* transient_window_client =
+      aura::client::GetTransientWindowClient();
+  transient_window_client->AddTransientChild(second_client_child, transient);
+  second_client_child->AddChild(transient);
+
+  // Wait for the top-level to appear in the window manager.
+  ASSERT_TRUE(delegate.QuitOnCreate());
+  aura::Window* top_level_in_wm = delegate.created_window();
+
+  // Makes sure the window manager sees the same structure and the transient
+  // parent is connected correctly.
+  ASSERT_TRUE(WaitForTreeSizeToMatch(top_level_in_wm, 3u));
+  ASSERT_EQ(1u, top_level_in_wm->children().size());
+  aura::Window* second_client_child_in_wm = top_level_in_wm->children()[0];
+  ASSERT_EQ(1u, second_client_child_in_wm->children().size());
+  aura::Window* transient_in_wm = second_client_child_in_wm->children()[0];
+  ASSERT_EQ(second_client_child_in_wm,
+            transient_window_client->GetTransientParent(transient_in_wm));
 }
 
 }  // namespace ws
