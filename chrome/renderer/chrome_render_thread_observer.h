@@ -16,9 +16,6 @@
 #include "components/variations/child_process_field_trial_syncer.h"
 #include "content/public/renderer/render_thread_observer.h"
 
-class GURL;
-struct ContentSettings;
-
 namespace content {
 class ResourceDispatcherDelegate;
 }
@@ -57,10 +54,7 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
                                   const std::string& group_name) override;
 
   void OnSetIsIncognitoProcess(bool is_incognito_process);
-  void OnSetContentSettingsForCurrentURL(
-      const GURL& url, const ContentSettings& content_settings);
   void OnSetContentSettingRules(const RendererContentSettingRules& rules);
-  void OnGetCacheResourceStats();
   void OnSetFieldTrialGroup(const std::string& trial_name,
                             const std::string& group_name);
 
