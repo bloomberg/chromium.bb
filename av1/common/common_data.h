@@ -42,15 +42,17 @@ static const uint8_t b_height_log2_lookup[BLOCK_SIZES] = {
 // Log 2 conversion lookup tables for modeinfo width and height
 static const uint8_t mi_width_log2_lookup[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
-  0, 0, 0,
-#endif
+  0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, IF_EXT_PARTITION(4, 5, 5)
+#else
   0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, IF_EXT_PARTITION(3, 4, 4)
+#endif
 };
 static const uint8_t mi_height_log2_lookup[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
-  0, 0, 0,
-#endif
+  0, 0, 0, 0, 1, 0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 4, IF_EXT_PARTITION(5, 4, 5)
+#else
   0, 0, 0, 0, 1, 0, 1, 2, 1, 2, 3, 2, 3, IF_EXT_PARTITION(4, 3, 4)
+#endif
 };
 
 static const uint8_t mi_size_wide[BLOCK_SIZES] = {
