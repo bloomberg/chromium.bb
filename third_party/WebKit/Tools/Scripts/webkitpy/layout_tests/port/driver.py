@@ -332,9 +332,11 @@ class Driver(object):
     def _wait_for_server_process_output(self, server_process, deadline, text):
         output = ''
         line = server_process.read_stdout_line(deadline)
+        output += server_process.pop_all_buffered_stderr()
         while not server_process.timed_out and not server_process.has_crashed() and not text in line.rstrip():
             output += line
             line = server_process.read_stdout_line(deadline)
+            output += server_process.pop_all_buffered_stderr()
 
         if server_process.timed_out or server_process.has_crashed():
             _log.error('Failed to start the %s process: \n%s', server_process.name(), output)
