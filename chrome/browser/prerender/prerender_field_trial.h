@@ -11,9 +11,10 @@ class Profile;
 
 namespace prerender {
 
-// Exposed for testing.
 extern const base::Feature kNoStatePrefetchFeature;
 extern const char kNoStatePrefetchFeatureModeParameterName[];
+extern const char kNoStatePrefetchFeatureModeParameterPrefetch[];
+extern const char kNoStatePrefetchFeatureModeParameterPrerender[];
 extern const char kNoStatePrefetchFeatureModeParameterSimpleLoad[];
 
 // Configures prerender using kNoStatePrefetchFeature and field trial

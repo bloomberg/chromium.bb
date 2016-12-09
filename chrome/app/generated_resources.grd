@@ -5151,6 +5151,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Disabled
       </message>
 
+      <message name="IDS_FLAGS_NOSTATE_PREFETCH" desc="Name for the flag to set parameters for No-State Prefetch.">
+        No-State Prefetch
+      </message>
+      <message name="IDS_FLAGS_NOSTATE_PREFETCH_DESCRIPTION" desc="Description for the flag to set parameters for No-State Prefetch.">
+        "No-State Prefetch" pre-downloads resources to improve load times. "Prerender" does a full pre-rendering of the page, to improve load times even more. "Simple Load" does nothing and is similar to disabling the feature, but collects more metrics for comparison purposes.
+      </message>
+
       <!-- Print scaling feature -->
       <message name="IDS_FLAGS_PRINT_SCALING_NAME" desc="Name for the flag to add the print scaling feature to print preview.">
         Print Scaling.
