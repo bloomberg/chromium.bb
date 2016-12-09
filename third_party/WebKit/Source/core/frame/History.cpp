@@ -84,7 +84,7 @@ SerializedScriptValue* History::stateInternal() const {
 }
 
 void History::setScrollRestoration(const String& value) {
-  ASSERT(value == "manual" || value == "auto");
+  DCHECK(value == "manual" || value == "auto");
   if (!frame() || !frame()->loader().client())
     return;
 
@@ -133,14 +133,15 @@ void History::go(ExecutionContext* context, int delta) {
   if (!frame() || !frame()->loader().client())
     return;
 
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
   Document* activeDocument = toDocument(context);
   if (!activeDocument)
     return;
 
   if (!activeDocument->frame() ||
-      !activeDocument->frame()->canNavigate(*frame()))
+      !activeDocument->frame()->canNavigate(*frame())) {
     return;
+  }
   if (!NavigationDisablerForUnload::isNavigationAllowed())
     return;
 
@@ -185,8 +186,9 @@ bool History::canChangeToUrl(const KURL& url,
 
   RefPtr<SecurityOrigin> requestedOrigin = SecurityOrigin::create(url);
   if (requestedOrigin->isUnique() ||
-      !requestedOrigin->isSameSchemeHostPort(documentOrigin))
+      !requestedOrigin->isSameSchemeHostPort(documentOrigin)) {
     return false;
+  }
 
   return true;
 }

@@ -112,8 +112,9 @@ DOMStringList* Location::ancestorOrigins() const {
   if (!m_frame)
     return origins;
   for (Frame* frame = m_frame->tree().parent(); frame;
-       frame = frame->tree().parent())
+       frame = frame->tree().parent()) {
     origins->append(frame->securityContext()->getSecurityOrigin()->toString());
+  }
   return origins;
 }
 
@@ -255,7 +256,7 @@ void Location::setLocation(const String& url,
                            LocalDOMWindow* enteredWindow,
                            ExceptionState* exceptionState,
                            SetLocation locationPolicy) {
-  ASSERT(m_frame);
+  DCHECK(m_frame);
   if (!m_frame || !m_frame->host())
     return;
 
@@ -263,11 +264,12 @@ void Location::setLocation(const String& url,
     return;
 
   if (!currentWindow->frame()->canNavigate(*m_frame)) {
-    if (exceptionState)
+    if (exceptionState) {
       exceptionState->throwSecurityError(
           "The current window does not have permission to navigate the target "
           "frame to '" +
           url + "'.");
+    }
     return;
   }
 

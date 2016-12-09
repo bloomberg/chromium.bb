@@ -42,6 +42,7 @@ class ExecutionContext;
 class ExceptionState;
 class SecurityOrigin;
 
+// This class corresponds to the History interface.
 class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
                                   public ScriptWrappable,
                                   public DOMWindowProperty {
