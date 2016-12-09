@@ -94,11 +94,11 @@
                class="dropdown-trigger"></paper-icon-button>
           <paper-menu class="dropdown-content">
             <paper-item class="clear-all" on-tap="onClearAllTap_"
-                on-blur="onItemBlur_">
+                role="menuitem" on-blur="onItemBlur_">
               $i18n{clearAll}
             </paper-item>
             <paper-item on-tap="onOpenDownloadsFolderTap_"
-                on-blur="onItemBlur_">
+                role="menuitem" on-blur="onItemBlur_">
               $i18n{openDownloadsFolder}
             </paper-item>
           </paper-menu>

@@ -1055,7 +1055,7 @@ paper-button {
 }
 
 #date {
-  color: rgb(104, 113, 116);
+  color: var(--paper-grey-700);
         font-size: 100%;
         font-weight: 500;
         margin: 24px auto 10px;
@@ -1101,7 +1101,7 @@ paper-button {
 }
 
 #content:not(.is-active) #details {
-  color: rgba(186, 186, 186, .6);
+  color: rgba(27, 27, 27, .6);
 }
 
 #content:not(.is-active) #name {
@@ -1172,7 +1172,7 @@ paper-button {
 }
 
 .is-active #url {
-  color: #969696;
+  color: var(--paper-grey-600);
 }
 
 #progress, #description:not(:empty), .controls {
@@ -1223,7 +1223,7 @@ paper-button {
 }
 
 #remove {
-  color: #969696;
+  color: var(--paper-grey-700);
         font-size: 16px;
         height: 32px;
         line-height: 17px;  
@@ -3276,10 +3276,10 @@ paper-item {
         <paper-menu-button id="more" horizontal-align="right" allow-outside-scroll="">
           <paper-icon-button icon="cr:more-vert" title="$i18n{moreActions}" class="dropdown-trigger"></paper-icon-button>
           <paper-menu class="dropdown-content">
-            <paper-item class="clear-all" on-tap="onClearAllTap_" on-blur="onItemBlur_">
+            <paper-item class="clear-all" on-tap="onClearAllTap_" role="menuitem" on-blur="onItemBlur_">
               $i18n{clearAll}
             </paper-item>
-            <paper-item on-tap="onOpenDownloadsFolderTap_" on-blur="onItemBlur_">
+            <paper-item on-tap="onOpenDownloadsFolderTap_" role="menuitem" on-blur="onItemBlur_">
               $i18n{openDownloadsFolder}
             </paper-item>
           </paper-menu>
@@ -3361,7 +3361,7 @@ paper-item {
 
 #no-downloads {
   align-items: center;
-        color: #b4b4b4;
+        color: #6e6e6e;
         display: flex;
         font-size: 123.1%;
         font-weight: 500;
