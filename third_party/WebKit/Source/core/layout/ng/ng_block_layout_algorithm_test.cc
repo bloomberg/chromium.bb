@@ -25,6 +25,7 @@ NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
       .SetAvailableSize(size)
       .SetPercentageResolutionSize(size)
       .SetTextDirection(direction)
+      .SetWritingMode(writing_mode)
       .ToConstraintSpace();
 }
 
@@ -387,7 +388,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
 //   </div>
 TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase5) {
   const int kVerticalDivMarginRight = 60;
-  const int kVerticalDivWidth = 60;
+  const int kVerticalDivWidth = 50;
   const int kHorizontalDivMarginLeft = 100;
 
   style_->setWidth(Length(500, Fixed));

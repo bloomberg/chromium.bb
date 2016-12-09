@@ -198,7 +198,7 @@ void NGInlineNode::ShapeText() {
   }
 }
 
-bool NGInlineNode::Layout(const NGConstraintSpace* constraint_space,
+bool NGInlineNode::Layout(NGConstraintSpace* constraint_space,
                           NGFragmentBase** out) {
   // TODO(layout-dev): Perform pre-layout text step.
 

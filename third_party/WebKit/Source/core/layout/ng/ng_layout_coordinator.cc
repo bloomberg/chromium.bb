@@ -9,9 +9,8 @@
 
 namespace blink {
 
-NGLayoutCoordinator::NGLayoutCoordinator(
-    NGLayoutInputNode* input_node,
-    const NGConstraintSpace* constraint_space) {
+NGLayoutCoordinator::NGLayoutCoordinator(NGLayoutInputNode* input_node,
+                                         NGConstraintSpace* constraint_space) {
   layout_algorithms_.append(
       NGLayoutInputNode::AlgorithmForInputNode(input_node, constraint_space));
 }

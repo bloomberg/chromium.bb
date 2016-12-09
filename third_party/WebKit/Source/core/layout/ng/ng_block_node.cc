@@ -39,7 +39,7 @@ NGBlockNode::NGBlockNode(ComputedStyle* style)
 // included from a compilation unit that lacks the ComputedStyle definition.
 NGBlockNode::~NGBlockNode() {}
 
-bool NGBlockNode::Layout(const NGConstraintSpace* constraint_space,
+bool NGBlockNode::Layout(NGConstraintSpace* constraint_space,
                          NGFragmentBase** out) {
   DCHECK(!minmax_algorithm_)
       << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
@@ -66,8 +66,8 @@ bool NGBlockNode::Layout(const NGConstraintSpace* constraint_space,
     DCHECK(layout_box_);
     fragment_ = RunOldLayout(*constraint_space);
   }
-  *out = new NGFragment(constraint_space->WritingMode(), Style()->direction(),
-                        fragment_.get());
+  *out = new NGFragment(FromPlatformWritingMode(Style()->getWritingMode()),
+                        Style()->direction(), fragment_.get());
   // Reset coordinator for future use
   layout_coordinator_ = nullptr;
   return true;

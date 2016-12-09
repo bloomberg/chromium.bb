@@ -33,7 +33,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   ~NGBlockNode() override;
 
-  bool Layout(const NGConstraintSpace*, NGFragmentBase**) override;
+  bool Layout(NGConstraintSpace*, NGFragmentBase**) override;
   NGBlockNode* NextSibling() override;
 
   // Computes the value of min-content and max-content for this box.

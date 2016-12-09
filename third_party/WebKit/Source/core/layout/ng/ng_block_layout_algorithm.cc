@@ -270,10 +270,9 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       current_child_->UpdateLayoutBox(toNGPhysicalFragment(child_fragment),
                                       space_for_current_child_);
 
-      FinishCurrentChildLayout(
-          new NGFragment(space_for_current_child_->WritingMode(),
-                         current_child_->Style()->direction(),
-                         toNGPhysicalFragment(child_fragment)));
+      FinishCurrentChildLayout(new NGFragment(
+          ConstraintSpace().WritingMode(), ConstraintSpace().Direction(),
+          toNGPhysicalFragment(child_fragment)));
       current_child_ = current_child_->NextSibling();
       state_ = kStatePrepareForChildLayout;
       return kNotFinished;
@@ -444,9 +443,13 @@ void NGBlockLayoutAlgorithm::UpdateMarginStrut(const NGMarginStrut& from) {
 NGConstraintSpace*
 NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() const {
   DCHECK(current_child_);
-  space_builder_->SetIsNewFormattingContext(
-      IsNewFormattingContextForInFlowBlockLevelChild(ConstraintSpace(),
-                                                     CurrentChildStyle()));
+  space_builder_
+      ->SetIsNewFormattingContext(
+          IsNewFormattingContextForInFlowBlockLevelChild(ConstraintSpace(),
+                                                         CurrentChildStyle()))
+      .SetWritingMode(
+          FromPlatformWritingMode(CurrentChildStyle().getWritingMode()))
+      .SetTextDirection(CurrentChildStyle().direction());
   NGConstraintSpace* child_space = space_builder_->ToConstraintSpace();
 
   // TODO(layout-ng): Set offset through the space builder.

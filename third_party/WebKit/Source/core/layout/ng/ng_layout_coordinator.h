@@ -18,7 +18,7 @@ class NGConstraintSpace;
 class CORE_EXPORT NGLayoutCoordinator final
     : public GarbageCollectedFinalized<NGLayoutCoordinator> {
  public:
-  NGLayoutCoordinator(NGLayoutInputNode*, const NGConstraintSpace*);
+  NGLayoutCoordinator(NGLayoutInputNode*, NGConstraintSpace*);
 
   bool Tick(NGPhysicalFragmentBase**);
 

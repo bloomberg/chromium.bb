@@ -17,7 +17,7 @@ namespace blink {
 
 NGLayoutAlgorithm* NGLayoutInputNode::AlgorithmForInputNode(
     NGLayoutInputNode* input_node,
-    const NGConstraintSpace* constraint_space) {
+    NGConstraintSpace* constraint_space) {
   // At least for now, this should never be called on LegacyInline
   // children. However, there will be other kinds of input_node so
   // it makes sense to do this here.
@@ -26,12 +26,11 @@ NGLayoutAlgorithm* NGLayoutInputNode::AlgorithmForInputNode(
 
   if (block->CanUseNewLayout()) {
     if (block->HasInlineChildren())
-      return new NGInlineLayoutAlgorithm(
-          block->Style(), toNGInlineNode(block->FirstChild()),
-          constraint_space->ChildSpace(block->Style()));
+      return new NGInlineLayoutAlgorithm(block->Style(),
+                                         toNGInlineNode(block->FirstChild()),
+                                         constraint_space);
     return new NGBlockLayoutAlgorithm(
-        block->Style(), toNGBlockNode(block->FirstChild()),
-        constraint_space->ChildSpace(block->Style()));
+        block->Style(), toNGBlockNode(block->FirstChild()), constraint_space);
   }
 
   return new NGLegacyBlockLayoutAlgorithm(block, constraint_space);

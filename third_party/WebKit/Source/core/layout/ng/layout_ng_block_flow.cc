@@ -18,8 +18,7 @@ bool LayoutNGBlockFlow::isOfType(LayoutObjectType type) const {
 void LayoutNGBlockFlow::layoutBlock(bool relayoutChildren) {
   LayoutAnalyzer::BlockScope analyzer(*this);
 
-  const auto* constraint_space =
-      NGConstraintSpace::CreateFromLayoutObject(*this);
+  auto* constraint_space = NGConstraintSpace::CreateFromLayoutObject(*this);
 
   // TODO(layout-dev): This should be created in the constructor once instead.
   // There is some internal state which needs to be cleared between layout

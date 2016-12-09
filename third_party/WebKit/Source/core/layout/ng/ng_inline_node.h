@@ -31,7 +31,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   NGInlineNode(LayoutObject* start_inline, ComputedStyle* block_style);
   ~NGInlineNode() override;
 
-  bool Layout(const NGConstraintSpace*, NGFragmentBase**) override;
+  bool Layout(NGConstraintSpace*, NGFragmentBase**) override;
   NGInlineNode* NextSibling() override;
 
   // Prepare inline and text content for layout. Must be called before
