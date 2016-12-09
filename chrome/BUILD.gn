@@ -498,7 +498,7 @@ if (is_win) {
   tweak_info_plist("chrome_app_plist") {
     info_plist = "app/app-Info.plist"
     _keystone_arg = "0"
-    if (enable_mac_keystone) {
+    if (is_chrome_branded) {
       _keystone_arg = "1"
     }
     args = [
@@ -761,7 +761,7 @@ if (is_win) {
       "//chrome/app_shim:app_mode_loader",
     ]
 
-    if (enable_mac_keystone) {
+    if (is_chrome_branded) {
       sources += [
         "browser/mac/keystone_promote_postflight.sh",
         "browser/mac/keystone_promote_preflight.sh",
@@ -900,7 +900,7 @@ if (is_win) {
     }
   }
 
-  if (enable_mac_keystone) {
+  if (is_chrome_branded) {
     action("keystone_registration_framework") {
       script = "//chrome/tools/build/mac/copy_keystone_framework.py"
 

@@ -69,7 +69,7 @@ copy("copies") {
     "sign_installer_tools.sh",
   ]
 
-  if (enable_mac_keystone) {
+  if (is_chrome_branded) {
     sources += [ "keystone_install.sh" ]
   }
 
