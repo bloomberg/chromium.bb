@@ -3262,7 +3262,7 @@ drm_output_propose_state(struct weston_output *output_base,
 	struct drm_output *output = to_drm_output(output_base);
 	struct drm_output_state *state;
 	struct weston_view *ev;
-	pixman_region32_t surface_overlap, renderer_region;
+	pixman_region32_t surface_overlap, renderer_region, occluded_region;
 	struct weston_plane *primary = &output_base->compositor->primary_plane;
 
 	assert(!output->state_last);
@@ -3284,9 +3284,12 @@ drm_output_propose_state(struct weston_output *output_base,
 	 * as we do for flipping full screen surfaces.
 	 */
 	pixman_region32_init(&renderer_region);
+	pixman_region32_init(&occluded_region);
 
 	wl_list_for_each(ev, &output_base->compositor->view_list, link) {
 		struct weston_plane *next_plane = NULL;
+		pixman_region32_t clipped_view;
+		bool occluded = false;
 
 		/* If this view doesn't touch our output at all, there's no
 		 * reason to do anything with it. */
@@ -3298,19 +3301,36 @@ drm_output_propose_state(struct weston_output *output_base,
 		if (ev->output_mask != (1u << output->base.id))
 			next_plane = primary;
 
+		/* Ignore views we know to be totally occluded. */
+		pixman_region32_init(&clipped_view);
+		pixman_region32_intersect(&clipped_view,
+					  &ev->transform.boundingbox,
+					  &output->base.region);
+
+		pixman_region32_init(&surface_overlap);
+		pixman_region32_subtract(&surface_overlap, &clipped_view,
+					 &occluded_region);
+		occluded = !pixman_region32_not_empty(&surface_overlap);
+		if (occluded) {
+			pixman_region32_fini(&surface_overlap);
+			pixman_region32_fini(&clipped_view);
+			continue;
+		}
+
 		/* Since we process views from top to bottom, we know that if
 		 * the view intersects the calculated renderer region, it must
 		 * be part of, or occluded by, it, and cannot go on a plane. */
-		pixman_region32_init(&surface_overlap);
 		pixman_region32_intersect(&surface_overlap, &renderer_region,
-					  &ev->transform.boundingbox);
-
+					  &clipped_view);
 		if (pixman_region32_not_empty(&surface_overlap))
 			next_plane = primary;
 		pixman_region32_fini(&surface_overlap);
 
 		if (next_plane == NULL)
 			next_plane = drm_output_prepare_cursor_view(state, ev);
+
+		if (next_plane == NULL && !drm_view_is_opaque(ev))
+			next_plane = primary;
 
 		if (next_plane == NULL)
 			next_plane = drm_output_prepare_scanout_view(state, ev);
@@ -3321,12 +3341,25 @@ drm_output_propose_state(struct weston_output *output_base,
 		if (next_plane == NULL)
 			next_plane = primary;
 
+		/* If we've been assigned to the 'primary' (renderer) plane,
+		 * add this to our renderer region. If we have been assigned
+		 * to the cursor plane, do nothing, as the cursor plane is
+		 * blended with content underneath it. If neither, we have
+		 * been assigned to an overlay plane, so add this view's
+		 * area to the occluded region. */
 		if (next_plane == primary)
 			pixman_region32_union(&renderer_region,
 					      &renderer_region,
-					      &ev->transform.boundingbox);
+					      &clipped_view);
+		else if (!output->cursor_plane ||
+			 next_plane != &output->cursor_plane->base)
+			pixman_region32_union(&occluded_region,
+					      &occluded_region,
+					      &clipped_view);
+		pixman_region32_fini(&clipped_view);
 	}
 	pixman_region32_fini(&renderer_region);
+	pixman_region32_fini(&occluded_region);
 
 	return state;
 }
