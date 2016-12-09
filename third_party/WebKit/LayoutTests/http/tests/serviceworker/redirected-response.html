@@ -9,9 +9,16 @@
 function redirected_test(url,
                          fetch_method,
                          cache,
+                         expected_redirected,
                          expected_url_list) {
   return fetch_method(url).then(response => {
         var cloned_response = response.clone();
+        assert_equals(
+            response.redirected, expected_redirected,
+            'The redirected flag of response must match. URL: ' + url);
+        assert_equals(
+            cloned_response.redirected, expected_redirected,
+            'The redirected flag of cloned response must match. URL: ' + url);
         if (self.internals) {
           assert_array_equals(
               self.internals.getInternalResponseURLList(response),
@@ -26,6 +33,9 @@ function redirected_test(url,
       })
     .then(_ => cache.match(url))
     .then(response => {
+        assert_equals(response.redirected, expected_redirected,
+        'The redirected flag of response in CacheStorage must match. URL: ' +
+        url);
         if (self.internals) {
           assert_array_equals(
               self.internals.getInternalResponseURLList(response),
@@ -62,17 +72,21 @@ promise_test(t => {
           frame = f;
           return Promise.all([
               redirected_test(TARGET_URL, self.fetch, cache,
+                              false /* expected_redirected */,
                               [TARGET_URL]),
               redirected_test(REDIRECT_TO_TARGET_URL, self.fetch, cache,
+                              true /* expected_redirected */,
                               [REDIRECT_TO_TARGET_URL, TARGET_URL]),
               redirected_test('./?url=' + encodeURIComponent(TARGET_URL),
                               frame.contentWindow.fetch,
                               cache,
+                              false /* expected_redirected */,
                               [TARGET_URL]),
               redirected_test(
                   './?url=' + encodeURIComponent(REDIRECT_TO_TARGET_URL),
                   frame.contentWindow.fetch,
                   cache,
+                  true /* expected_redirected */,
                   [REDIRECT_TO_TARGET_URL, TARGET_URL]),
             ]);
         })
@@ -81,5 +95,5 @@ promise_test(t => {
           frame.remove();
           return service_worker_unregister(t, SCOPE);
         });
-  }, 'Verify URL list of responses.');
+  }, 'Verify redirected flag of responses.');
 </script>

@@ -60,6 +60,7 @@ class MODULES_EXPORT Response final : public Body {
   // From Response.idl:
   String type() const;
   String url() const;
+  bool redirected() const;
   unsigned short status() const;
   bool ok() const;
   String statusText() const;

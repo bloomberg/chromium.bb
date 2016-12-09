@@ -652,6 +652,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter bodyUsed
 [Worker]     getter headers
 [Worker]     getter ok
+[Worker]     getter redirected
 [Worker]     getter status
 [Worker]     getter statusText
 [Worker]     getter type

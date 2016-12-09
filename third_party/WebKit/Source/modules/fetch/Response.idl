@@ -20,6 +20,7 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredire
     [CallWith=ExecutionContext, RaisesException] static Response redirect(USVString url, optional unsigned short status = 302);
     readonly attribute ResponseType type;
     readonly attribute USVString url;
+    readonly attribute boolean redirected;
     readonly attribute unsigned short status;
     readonly attribute boolean ok;
     readonly attribute ByteString statusText;

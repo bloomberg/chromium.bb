@@ -4184,6 +4184,7 @@ interface Response
     getter bodyUsed
     getter headers
     getter ok
+    getter redirected
     getter status
     getter statusText
     getter type

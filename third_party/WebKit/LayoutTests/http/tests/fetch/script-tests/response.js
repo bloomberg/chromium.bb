@@ -18,6 +18,7 @@ test(function() {
     assert_equals(response.type, 'default',
                   'Default Response.type should be \'default\'');
     assert_equals(response.url, '', 'Response.url should be the empty string');
+    assert_false(response.redirected, 'Response.redirected should be false.');
     assert_equals(response.status, 200,
                   'Default Response.status should be 200');
     assert_true(response.ok, 'Default Response.ok must be true');

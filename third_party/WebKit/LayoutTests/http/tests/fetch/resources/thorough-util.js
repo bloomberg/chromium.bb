@@ -65,6 +65,14 @@ var checkFetchResponseType = function(type, url, data) {
                 type,
                 'type must match. url: ' + url);
 };
+var checkFetchResponseRedirected = function(expected, url, data) {
+  assert_equals(data.fetchResult,
+                'resolved',
+                'fetchResult must be resolved. url = ' + url);
+  assert_equals(data.redirected,
+                expected,
+                url + ' redirected flag should match');
+};
 var checkURLList = function(redirectedURLList, url, data) {
   if (!self.internals)
     return;
@@ -102,6 +110,8 @@ var noServerHeader =
 var typeBasic = checkFetchResponseType.bind(this, 'basic');
 var typeCors = checkFetchResponseType.bind(this, 'cors');
 var typeOpaque = checkFetchResponseType.bind(this, 'opaque');
+var responseRedirected = checkFetchResponseRedirected.bind(this, true);
+var responseNotRedirected = checkFetchResponseRedirected.bind(this, false);
 
 // Functions to check the result of JSONP which is evaluated in
 // thorough-iframe.html by appending <script> element.
@@ -365,6 +375,7 @@ function doFetch(request) {
                   status: response.status,
                   headers: headersToArray(response.headers),
                   type: response.type,
+                  redirected: response.redirected,
                   urlList: self.internals ?
                            self.internals.getInternalResponseURLList(response) :
                            [],

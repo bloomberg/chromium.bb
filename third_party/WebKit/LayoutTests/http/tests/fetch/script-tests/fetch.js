@@ -29,6 +29,7 @@ promise_test(function(t) {
           assert_equals(response.headers.get('Content-Type'),
                         'text/plain;charset=US-ASCII');
           assert_equals(size(response.headers), 1);
+          assert_false(response.redirected);
           if (self.internals) {
             assert_array_equals(
                 self.internals.getInternalResponseURLList(response),
@@ -68,6 +69,7 @@ promise_test(function(t) {
           assert_equals(response.headers.get('Content-Type'),
                         'text/html;charset=utf-8');
           assert_equals(size(response.headers), 1);
+          assert_false(response.redirected);
           if (self.internals) {
             assert_array_equals(
                 self.internals.getInternalResponseURLList(response),
@@ -99,6 +101,7 @@ if ('createObjectURL' in URL) {
             assert_equals(response.headers.get('Content-Type'), 'text/fox');
             assert_equals(response.headers.get('Content-Length'), '3');
             assert_equals(size(response.headers), 2);
+            assert_false(response.redirected);
             if (self.internals) {
               assert_array_equals(
                   self.internals.getInternalResponseURLList(response), [url]);
@@ -136,6 +139,7 @@ promise_test(function(t) {
       .then(function(response) {
           assert_equals(response.status, 200);
           assert_equals(response.statusText, 'OK');
+          assert_false(response.redirected);
           if (self.internals) {
             assert_array_equals(
                 self.internals.getInternalResponseURLList(response),
@@ -150,6 +154,7 @@ promise_test(function(t) {
       .then(function(response) {
           assert_equals(response.status, 404);
           assert_equals(response.statusText, 'Not Found');
+          assert_false(response.redirected);
           if (self.internals) {
             assert_array_equals(
                 self.internals.getInternalResponseURLList(response),
@@ -176,6 +181,7 @@ promise_test(function(t) {
           // serialized with the exclude fragment flag set, otherwise.
           assert_equals(response.url,
             BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200');
+          assert_false(response.redirected);
           if (self.internals) {
             assert_array_equals(
                 self.internals.getInternalResponseURLList(response),
@@ -205,6 +211,7 @@ promise_test(function(t) {
             'Response\'s url is locationURL');
           assert_equals(request.url, redirect_original_url,
             'Request\'s url remains the original URL');
+          assert_true(response.redirected);
           if (self.internals) {
             assert_array_equals(
                 self.internals.getInternalResponseURLList(response),
@@ -230,6 +237,7 @@ promise_test(function(t) {
           assert_equals(response.status, 0);
           assert_equals(response.type, 'opaqueredirect');
           assert_equals(response.url, request.url);
+          assert_false(response.redirected);
           if (self.internals) {
             assert_array_equals(
                 self.internals.getInternalResponseURLList(response),
@@ -285,6 +293,7 @@ promise_test(function(test) {
           assert_equals(response.status, 200);
           assert_equals(response.statusText, 'OK');
           assert_equals(response.url, url);
+          assert_false(response.redirected);
           if (self.internals) {
             assert_array_equals(
                 self.internals.getInternalResponseURLList(response), [url]);
@@ -301,6 +310,7 @@ promise_test(function(test) {
           assert_equals(response.status, 200);
           assert_equals(response.statusText, 'OK');
           assert_equals(response.url, url);
+          assert_false(response.redirected);
           if (self.internals) {
             assert_array_equals(
                 self.internals.getInternalResponseURLList(response), [url]);

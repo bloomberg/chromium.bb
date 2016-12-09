@@ -16,6 +16,7 @@ var TEST_TARGETS = [
   [REDIRECT_LOOP_URL + encodeURIComponent(BASE_URL) + '&Count=20&mode=cors' +
    '&credentials=same-origin',
    [fetchResolved, hasContentLength, hasBody, typeBasic,
+    responseRedirected,
     checkURLList.bind(
         self,
         createExpectedURLList(
@@ -30,6 +31,7 @@ var TEST_TARGETS = [
   [REDIRECT_LOOP_URL + encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=*') +
    '&Count=20&mode=cors&credentials=same-origin&method=GET',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors,
+    responseRedirected,
     checkURLList.bind(
         self,
         createExpectedURLList(
@@ -49,6 +51,7 @@ var TEST_TARGETS = [
   [OTHER_REDIRECT_LOOP_URL + encodeURIComponent(BASE_URL + 'ACAOrigin=*') +
    '&Count=20&mode=cors&credentials=same-origin&method=GET&ACAOrigin=*',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors,
+    responseRedirected,
     checkURLList.bind(
         self,
         createExpectedURLList(
@@ -67,6 +70,7 @@ var TEST_TARGETS = [
    encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=*') +
    '&Count=20&mode=cors&credentials=same-origin&method=GET&ACAOrigin=*',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors,
+    responseRedirected,
     checkURLList.bind(
         self,
         createExpectedURLList(

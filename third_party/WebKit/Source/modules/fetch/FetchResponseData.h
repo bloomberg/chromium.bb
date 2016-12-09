@@ -87,6 +87,7 @@ class MODULES_EXPORT FetchResponseData final
   }
 
   void setURLList(const Vector<KURL>&);
+  const Vector<KURL>& urlList() const { return m_urlList; }
   const Vector<KURL>& internalURLList() const;
 
   void setStatus(unsigned short status) { m_status = status; }

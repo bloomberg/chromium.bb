@@ -364,6 +364,10 @@ String Response::url() const {
   return url;
 }
 
+bool Response::redirected() const {
+  return m_response->urlList().size() > 1;
+}
+
 unsigned short Response::status() const {
   // "The status attribute's getter must return response's status."
   return m_response->status();
