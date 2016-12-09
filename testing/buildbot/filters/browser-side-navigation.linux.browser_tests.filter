@@ -4,8 +4,6 @@
 -PredictorBrowserTest.RendererInitiatedNavigationPreconnect
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirect
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirectNoHang
-# TabManagerTest.TabManagerBasics crashes sometimes
--TabManagerTest.TabManagerBasics
 -ThreatDOMDetailsTest.Everything
 
 # https://crbug.com/652767: NavigationHandle::GetResponseHeaders sometimes
