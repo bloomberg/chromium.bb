@@ -411,6 +411,10 @@ std::string NexeLoadManager::GetManifestURLArgument() const {
   return manifest_url;
 }
 
+void NexeLoadManager::CloseTrustedPluginChannel() {
+  trusted_plugin_channel_.reset();
+}
+
 bool NexeLoadManager::IsPNaCl() const {
   return mime_type_ == kPNaClMIMEType;
 }

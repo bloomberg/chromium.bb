@@ -281,6 +281,8 @@ class PPBNaClPrivate {
   static void InstanceCreated(PP_Instance instance);
   /* Performs internal cleanup when an instance is destroyed. */
   static void InstanceDestroyed(PP_Instance instance);
+  /* Terminates the NaCl loader process associated with the instance */
+  static void TerminateNaClLoader(PP_Instance instance);
   /* Returns the kind of SFI sandbox implemented by NaCl on this
    * platform.
    */

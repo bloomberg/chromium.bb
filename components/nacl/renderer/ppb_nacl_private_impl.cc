@@ -884,6 +884,13 @@ void PPBNaClPrivate::InstanceDestroyed(PP_Instance instance) {
   map.erase(iter);
 }
 
+// static
+void PPBNaClPrivate::TerminateNaClLoader(PP_Instance instance) {
+  auto* load_mgr = GetNexeLoadManager(instance);
+  if (load_mgr)
+    load_mgr->CloseTrustedPluginChannel();
+}
+
 namespace {
 
 PP_Bool NaClDebugEnabledForURL(const char* alleged_nmf_url) {

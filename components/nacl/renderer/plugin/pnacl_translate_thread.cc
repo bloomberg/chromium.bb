@@ -280,7 +280,6 @@ void PnaclTranslateThread::DoCompile() {
   {
     base::AutoLock lock(subprocess_mu_);
     compiler_subprocess_active_ = false;
-    compiler_subprocess_->Shutdown();
   }
 
   core->CallOnMainThread(0, compile_finished_callback_, PP_OK);
@@ -341,7 +340,6 @@ void PnaclTranslateThread::DoLink() {
   {
     base::AutoLock lock(subprocess_mu_);
     ld_subprocess_active_ = false;
-    ld_subprocess_->Shutdown();
   }
 
   pp::Core* core = pp::Module::Get()->core();

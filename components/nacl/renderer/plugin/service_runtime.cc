@@ -42,11 +42,12 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
       callback.pp_completion_callback());
 }
 
-// TODO(mseaborn): Remove this method, since it is a no-op.
 void ServiceRuntime::Shutdown() {
+  nacl::PPBNaClPrivate::TerminateNaClLoader(pp_instance_);
 }
 
 ServiceRuntime::~ServiceRuntime() {
+  Shutdown();
 }
 
 }  // namespace plugin

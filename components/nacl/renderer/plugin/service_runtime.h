@@ -40,6 +40,8 @@ struct SelLdrStartParams {
 };
 
 //  ServiceRuntime abstracts a NativeClient sel_ldr instance.
+// TODO(dschuff): Merge this with NaClSubprocess, since, that now only contains
+// a ServiceRuntime.
 class ServiceRuntime {
  public:
   ServiceRuntime(Plugin* plugin,

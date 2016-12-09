@@ -89,6 +89,8 @@ class NexeLoadManager {
   bool RequestNaClManifest(const std::string& url);
   void ProcessNaClManifest(const std::string& program_url);
 
+  void CloseTrustedPluginChannel();
+
   // URL resolution support.
   // plugin_base_url is the URL used for resolving relative URLs used in
   // src="...".
