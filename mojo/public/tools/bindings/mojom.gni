@@ -49,9 +49,22 @@ foreach(configuration, _bindings_configurations) {
   }
 }
 
-# Generate C++/JavaScript/Java source files from mojom files. The output files
-# will go under the generated file directory tree with the same path as each
-# input file.
+# Generates targets for building C++, JavaScript and Java bindings from mojom
+# files. The output files will go under the generated file directory tree with
+# the same path as each input file.
+#
+# Other targets should depend on one of these generated targets (where "foo"
+# is the target name):
+#
+#   foo
+#       C++ and Javascript bindings. Other mojom targets should also depend on
+#       this target.
+#
+#   foo_blink
+#       C++ bindings using Blink standard types.
+#
+#   foo_java
+#       Java bindings.
 #
 # Parameters:
 #
