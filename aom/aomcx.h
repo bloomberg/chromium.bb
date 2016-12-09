@@ -277,6 +277,22 @@ enum aome_enc_control_id {
    */
   AV1E_SET_TILE_ROWS,
 
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+  /*!\brief Codec control function to set loop_filter_across_tiles_enabled.
+   *
+   * In encoding and decoding, AV1 allows disabling loop filter across tile
+   * boundary The parameter for this control describes the value of this flag,
+   * which has a valid range [0, 1]:
+   *            0 = disable loop filter across tile boundary
+   *            1 = enable loop filter across tile boundary
+   *
+   * By default, the value is 0, i.e. disable loop filter across tile boundary.
+   *
+   * Supported in codecs: AV1
+   */
+  AV1E_SET_TILE_LOOPFILTER,
+#endif
+
   /*!\brief Codec control function to enable frame parallel decoding feature.
    *
    * AV1 has a bitstream feature to reduce decoding dependency between frames
@@ -568,6 +584,10 @@ AOM_CTRL_USE_TYPE(AV1E_SET_TILE_COLUMNS, int)
 #define AOM_CTRL_AV1E_SET_TILE_COLUMNS
 AOM_CTRL_USE_TYPE(AV1E_SET_TILE_ROWS, int)
 #define AOM_CTRL_AV1E_SET_TILE_ROWS
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+AOM_CTRL_USE_TYPE(AV1E_SET_TILE_LOOPFILTER, int)
+#define AOM_CTRL_AV1E_SET_TILE_LOOPFILTER
+#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
 
 AOM_CTRL_USE_TYPE(AOME_GET_LAST_QUANTIZER, int *)
 #define AOM_CTRL_AOME_GET_LAST_QUANTIZER

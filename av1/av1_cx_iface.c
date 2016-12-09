@@ -34,6 +34,9 @@ struct av1_extracfg {
   unsigned int static_thresh;
   unsigned int tile_columns;
   unsigned int tile_rows;
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+  unsigned int loop_filter_across_tiles_enabled;
+#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
   unsigned int arnr_max_frames;
   unsigned int arnr_strength;
   unsigned int min_gf_interval;
@@ -80,7 +83,10 @@ static struct av1_extracfg default_extra_cfg = {
 #else
   0,  // tile_columns
   0,  // tile_rows
-#endif            // CONFIG_EXT_TILE
+#endif  // CONFIG_EXT_TILE
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+  0,              // loop_filter_across_tiles_enabled
+#endif            // CONFIG_DEBLOCKING_ACROSS_TILES
   7,              // arnr_max_frames
   5,              // arnr_strength
   0,              // min_gf_interval; 0 -> default decision
@@ -250,6 +256,9 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
   RANGE_CHECK_HI(extra_cfg, tile_rows, 2);
 #endif  // CONFIG_EXT_TILE
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+  RANGE_CHECK_HI(extra_cfg, loop_filter_across_tiles_enabled, 1);
+#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
   RANGE_CHECK_HI(extra_cfg, sharpness, 7);
   RANGE_CHECK_HI(extra_cfg, arnr_max_frames, 15);
   RANGE_CHECK_HI(extra_cfg, arnr_strength, 6);
@@ -483,6 +492,11 @@ static aom_codec_err_t set_encoder_config(
   oxcf->tile_rows = extra_cfg->tile_rows;
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+  oxcf->loop_filter_across_tiles_enabled =
+      extra_cfg->loop_filter_across_tiles_enabled;
+#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
+
   oxcf->error_resilient_mode = cfg->g_error_resilient;
   oxcf->frame_parallel_decoding_mode = extra_cfg->frame_parallel_decoding_mode;
 
@@ -644,6 +658,16 @@ static aom_codec_err_t ctrl_set_tile_rows(aom_codec_alg_priv_t *ctx,
   extra_cfg.tile_rows = CAST(AV1E_SET_TILE_ROWS, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
+
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+static aom_codec_err_t ctrl_set_tile_loopfilter(aom_codec_alg_priv_t *ctx,
+                                                va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.loop_filter_across_tiles_enabled =
+      CAST(AV1E_SET_TILE_LOOPFILTER, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
 
 static aom_codec_err_t ctrl_set_arnr_max_frames(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
@@ -1329,6 +1353,9 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AOME_SET_STATIC_THRESHOLD, ctrl_set_static_thresh },
   { AV1E_SET_TILE_COLUMNS, ctrl_set_tile_columns },
   { AV1E_SET_TILE_ROWS, ctrl_set_tile_rows },
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+  { AV1E_SET_TILE_LOOPFILTER, ctrl_set_tile_loopfilter },
+#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
   { AOME_SET_ARNR_MAXFRAMES, ctrl_set_arnr_max_frames },
   { AOME_SET_ARNR_STRENGTH, ctrl_set_arnr_strength },
   { AOME_SET_TUNING, ctrl_set_tuning },

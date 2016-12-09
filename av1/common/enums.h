@@ -222,6 +222,15 @@ typedef enum {
   TX_TYPES,
 } TX_TYPE;
 
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+typedef enum {
+  TILE_LEFT_BOUNDARY = 1,
+  TILE_RIGHT_BOUNDARY = 2,
+  TILE_ABOVE_BOUNDARY = 4,
+  TILE_BOTTOM_BOUNDARY = 8,
+} TILE_BOUNDARY_TYPE;
+#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
+
 #if CONFIG_EXT_TX
 #define EXT_TX_SIZES 4       // number of sizes that use extended transforms
 #define EXT_TX_SETS_INTER 4  // Sets of transform selections for INTER

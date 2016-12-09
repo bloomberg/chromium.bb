@@ -376,6 +376,10 @@ static const arg_def_t tile_cols =
 static const arg_def_t tile_rows =
     ARG_DEF(NULL, "tile-rows", 1,
             "Number of tile rows to use, log2 (set to 0 while threads > 1)");
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+static const arg_def_t tile_loopfilter = ARG_DEF(
+    NULL, "tile-loopfilter", 1, "Enable loop filter across tile boundary");
+#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
 static const arg_def_t lossless =
     ARG_DEF(NULL, "lossless", 1, "Lossless mode (0: false (default), 1: true)");
 #if CONFIG_AOM_QM
@@ -468,6 +472,9 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &static_thresh,
                                        &tile_cols,
                                        &tile_rows,
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+                                       &tile_loopfilter,
+#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
                                        &arnr_maxframes,
                                        &arnr_strength,
                                        &tune_ssim,
@@ -507,6 +514,9 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AOME_SET_STATIC_THRESHOLD,
                                         AV1E_SET_TILE_COLUMNS,
                                         AV1E_SET_TILE_ROWS,
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+                                        AV1E_SET_TILE_LOOPFILTER,
+#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
                                         AOME_SET_ARNR_MAXFRAMES,
                                         AOME_SET_ARNR_STRENGTH,
                                         AOME_SET_TUNING,

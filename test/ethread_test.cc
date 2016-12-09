@@ -83,6 +83,9 @@ class AVxEncoderThreadTest
       encoder->Control(AV1E_SET_TILE_COLUMNS, 2);
       encoder->Control(AV1E_SET_TILE_ROWS, 0);
 #endif  // CONFIG_AV1 && CONFIG_EXT_TILE
+#if CONFIG_DEBLOCKING_ACROSS_TILES
+      encoder->Control(AV1E_SET_TILE_LOOPFILTER, 0);
+#endif  // CONFIG_DEBLOCKING_ACROSS_TILES
       encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
       if (encoding_mode_ != ::libaom_test::kRealTime) {
         encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);

@@ -288,6 +288,7 @@ EXPERIMENT_LIST="
     adapt_scan
     filter_7bit
     parallel_deblocking
+    deblocking_across_tiles
     tile_groups
     ec_adapt
     rd_debug
