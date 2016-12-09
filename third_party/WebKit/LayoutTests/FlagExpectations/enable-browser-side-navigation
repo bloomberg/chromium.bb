@@ -112,12 +112,6 @@ crbug.com/640631 http/tests/loading/text-content-type-with-binary-extension.html
 # WebFrameClient::didReceiveServerRedirectForProvisionalLoad.
 crbug.com/647698 http/tests/loading/307-after-303-after-post.html [ Failure ]
 
-# https://crbug.com/648588: Properly set origin and referrer header
-crbug.com/648588 http/tests/navigation/post-frames-goback1.html [ Failure ]
-crbug.com/648588 http/tests/navigation/post-goback1.html [ Failure ]
-crbug.com/648588 virtual/stable/http/tests/navigation/post-frames-goback1.html [ Failure ]
-crbug.com/648588 virtual/stable/http/tests/navigation/post-goback1.html [ Failure ]
-
 # Properly set ZoomLevel (see IFrameZoomBrowsertests*)
 Bug(none) fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
 

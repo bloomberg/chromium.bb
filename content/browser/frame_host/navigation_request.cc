@@ -110,12 +110,35 @@ bool IsSecureFrame(FrameTreeNode* frame) {
   return true;
 }
 
+// This should match blink::ResourceRequest::needsHTTPOrigin.
+bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
+                     const std::string& method) {
+  // Don't add an Origin header if it is already present.
+  if (headers->HasHeader(net::HttpRequestHeaders::kOrigin))
+    return false;
+
+  // Don't send an Origin header for GET or HEAD to avoid privacy issues.
+  // For example, if an intranet page has a hyperlink to an external web
+  // site, we don't want to include the Origin of the request because it
+  // will leak the internal host name. Similar privacy concerns have lead
+  // to the widespread suppression of the Referer header at the network
+  // layer.
+  if (method == "GET" || method == "HEAD")
+    return false;
+
+  // For non-GET and non-HEAD methods, always send an Origin header so the
+  // server knows we support this feature.
+  return true;
+}
+
 // TODO(clamy): This should match what's happening in
 // blink::FrameFetchContext::addAdditionalRequestHeaders.
 void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
                                  const GURL& url,
                                  FrameMsg_Navigate_Type::Value navigation_type,
-                                 BrowserContext* browser_context) {
+                                 BrowserContext* browser_context,
+                                 const std::string& method,
+                                 FrameTreeNode* frame_tree_node) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
@@ -137,6 +160,24 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   // requests, as described in
   // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
   headers->AddHeaderFromString("Upgrade-Insecure-Requests: 1");
+
+  // Next, set the HTTP Origin if needed.
+  if (!NeedsHTTPOrigin(headers, method))
+    return;
+
+  // Create a unique origin.
+  url::Origin origin;
+  if (frame_tree_node->IsMainFrame()) {
+    // For main frame, the origin is the url currently loading.
+    origin = url::Origin(url);
+  } else if ((frame_tree_node->effective_sandbox_flags() &
+              blink::WebSandboxFlags::Origin) == blink::WebSandboxFlags::None) {
+    // The origin should be the origin of the root, except for sandboxed
+    // frames which have a unique origin.
+    origin = frame_tree_node->frame_tree()->root()->current_origin();
+  }
+
+  headers->SetHeader(net::HttpRequestHeaders::kOrigin, origin.Serialize());
 }
 
 }  // namespace
@@ -259,7 +300,8 @@ NavigationRequest::NavigationRequest(
   headers.AddHeadersFromString(begin_params_.headers);
   AddAdditionalRequestHeaders(
       &headers, common_params_.url, common_params_.navigation_type,
-      frame_tree_node_->navigator()->GetController()->GetBrowserContext());
+      frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+      common_params.method, frame_tree_node);
   begin_params_.headers = headers.ToString();
 }
 
