@@ -73,7 +73,7 @@ HttpServerPropertiesManager::PrefDelegate::~PrefDelegate() {}
 
 HttpServerPropertiesManager::HttpServerPropertiesManager(
     PrefDelegate* pref_delegate,
-    scoped_refptr<base::SequencedTaskRunner> network_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : pref_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       pref_delegate_(pref_delegate),
       setting_prefs_(false),
