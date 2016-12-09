@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/nsview_additions.h"
@@ -108,12 +109,20 @@ NSRect BubbleDecoration::GetBackgroundFrame(NSRect frame) {
 
 void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   const NSRect decoration_frame = NSInsetRect(frame, 0.0, kImageFrameYInset);
-  CGFloat text_offset = NSMinX(decoration_frame);
+  CGFloat text_left_offset = NSMinX(decoration_frame);
+  CGFloat text_right_offset = NSMaxX(decoration_frame);
+  const BOOL is_rtl = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+
   if (image_) {
     // Center the image vertically.
     const NSSize image_size = [image_ size];
     NSRect image_rect = decoration_frame;
-    image_rect.origin.x += kLeftSidePadding;
+    if (is_rtl) {
+      image_rect.origin.x =
+          NSMaxX(decoration_frame) - image_size.width - kLeftSidePadding;
+    } else {
+      image_rect.origin.x += kLeftSidePadding;
+    }
     image_rect.origin.y +=
         std::floor((NSHeight(decoration_frame) - image_size.height) / 2.0);
     image_rect.size = image_size;
@@ -123,16 +132,21 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
               fraction:1.0
         respectFlipped:YES
                  hints:nil];
-    text_offset = NSMaxX(image_rect) + kIconLabelPadding;
+    if (is_rtl)
+      text_right_offset = NSMinX(image_rect) - kIconLabelPadding;
+    else
+      text_left_offset = NSMaxX(image_rect) + kIconLabelPadding;
   }
 
   // Draw the divider and set the text color.
   NSBezierPath* line = [NSBezierPath bezierPath];
+  const CGFloat divider_x_position =
+      is_rtl ? NSMinX(decoration_frame) + DividerPadding()
+             : NSMaxX(decoration_frame) - DividerPadding();
+
   [line setLineWidth:1];
-  [line moveToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),
-                                NSMinY(decoration_frame))];
-  [line lineToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),
-                                NSMaxY(decoration_frame))];
+  [line moveToPoint:NSMakePoint(divider_x_position, NSMinY(decoration_frame))];
+  [line lineToPoint:NSMakePoint(divider_x_position, NSMaxY(decoration_frame))];
 
   bool in_dark_mode = [[control_view window] inIncognitoModeWithSystemTheme];
   [GetDividerColor(in_dark_mode) set];
@@ -144,8 +158,8 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
 
   if (label_) {
     NSRect text_rect = frame;
-    text_rect.origin.x = text_offset;
-    text_rect.size.width = NSMaxX(decoration_frame) - NSMinX(text_rect);
+    text_rect.origin.x = text_left_offset;
+    text_rect.size.width = text_right_offset - text_left_offset;
     // Transform the coordinate system to adjust the baseline on Retina. This is
     // the only way to get fractional adjustments.
     gfx::ScopedNSGraphicsContextSaveGState saveGraphicsState;
