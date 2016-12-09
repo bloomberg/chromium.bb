@@ -450,7 +450,7 @@ static void dr_prediction_z1(uint8_t *dst, ptrdiff_t stride, int bs,
   (void)left;
   (void)dy;
   assert(dy == 1);
-  assert(dx < 0);
+  assert(dx > 0);
 
 #if CONFIG_INTRA_INTERP
   if (filter_type != INTRA_FILTER_LINEAR) {
@@ -466,8 +466,8 @@ static void dr_prediction_z1(uint8_t *dst, ptrdiff_t stride, int bs,
     memset(src + pad_size + 2 * bs, above[2 * bs - 1],
            pad_size * sizeof(above[0]));
     flags[0] = 1;
-    x = -dx;
-    for (r = 0; r < bs; ++r, dst += stride, x -= dx) {
+    x = dx;
+    for (r = 0; r < bs; ++r, dst += stride, x += dx) {
       base = x >> 8;
       shift = x & 0xFF;
       shift = ROUND_POWER_OF_TWO(shift, 8 - SUBPEL_BITS);
@@ -513,8 +513,8 @@ static void dr_prediction_z1(uint8_t *dst, ptrdiff_t stride, int bs,
   }
 #endif  // CONFIG_INTRA_INTERP
 
-  x = -dx;
-  for (r = 0; r < bs; ++r, dst += stride, x -= dx) {
+  x = dx;
+  for (r = 0; r < bs; ++r, dst += stride, x += dx) {
     base = x >> 8;
     shift = x & 0xFF;
 
@@ -598,7 +598,7 @@ static void dr_prediction_z3(uint8_t *dst, ptrdiff_t stride, int bs,
   (void)dx;
 
   assert(dx == 1);
-  assert(dy < 0);
+  assert(dy > 0);
 
 #if CONFIG_INTRA_INTERP
   if (filter_type != INTRA_FILTER_LINEAR) {
@@ -614,8 +614,8 @@ static void dr_prediction_z3(uint8_t *dst, ptrdiff_t stride, int bs,
     for (i = 0; i < pad_size; ++i)
       src[4 * (i + 2 * bs + pad_size)] = left[2 * bs - 1];
     flags[0] = 1;
-    y = -dy;
-    for (c = 0; c < bs; ++c, y -= dy) {
+    y = dy;
+    for (c = 0; c < bs; ++c, y += dy) {
       base = y >> 8;
       shift = y & 0xFF;
       shift = ROUND_POWER_OF_TWO(shift, 8 - SUBPEL_BITS);
@@ -671,8 +671,8 @@ static void dr_prediction_z3(uint8_t *dst, ptrdiff_t stride, int bs,
   }
 #endif  // CONFIG_INTRA_INTERP
 
-  y = -dy;
-  for (c = 0; c < bs; ++c, y -= dy) {
+  y = dy;
+  for (c = 0; c < bs; ++c, y += dy) {
     base = y >> 8;
     shift = y & 0xFF;
 
@@ -695,7 +695,7 @@ static void dr_prediction_z3(uint8_t *dst, ptrdiff_t stride, int bs,
 // If angle > 180 && angle < 270, dx = 1;
 static INLINE int get_dx(int angle) {
   if (angle > 0 && angle < 90) {
-    return -dr_intra_derivative[angle];
+    return dr_intra_derivative[angle];
   } else if (angle > 90 && angle < 180) {
     return dr_intra_derivative[180 - angle];
   } else {
@@ -712,7 +712,7 @@ static INLINE int get_dy(int angle) {
   if (angle > 90 && angle < 180) {
     return dr_intra_derivative[angle - 90];
   } else if (angle > 180 && angle < 270) {
-    return -dr_intra_derivative[270 - angle];
+    return dr_intra_derivative[270 - angle];
   } else {
     // In this case, we are not really going to use dy. We may return any value.
     return 1;
@@ -1357,6 +1357,8 @@ static void build_intra_predictors_high(
   const uint16_t *above_ref = ref - ref_stride;
 #if CONFIG_EXT_INTRA
   int p_angle = 0;
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const int angle_step = av1_get_angle_step(mbmi->sb_type, plane);
   const int is_dr_mode = av1_is_directional_mode(mode, xd->mi[0]->mbmi.sb_type);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
@@ -1375,7 +1377,7 @@ static void build_intra_predictors_high(
 #if CONFIG_EXT_INTRA
   if (is_dr_mode) {
     p_angle = mode_to_angle_map[mode] +
-              xd->mi[0]->mbmi.angle_delta[plane != 0] * ANGLE_STEP;
+              xd->mi[0]->mbmi.angle_delta[plane != 0] * angle_step;
     if (p_angle <= 90)
       need_above = 1, need_left = 0, need_above_left = 1;
     else if (p_angle < 180)
@@ -1521,7 +1523,9 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   int need_above_left = extend_modes[mode] & NEED_ABOVELEFT;
 #if CONFIG_EXT_INTRA
   int p_angle = 0;
-  const int is_dr_mode = av1_is_directional_mode(mode, xd->mi[0]->mbmi.sb_type);
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const int angle_step = av1_get_angle_step(mbmi->sb_type, plane);
+  const int is_dr_mode = av1_is_directional_mode(mode, mbmi->sb_type);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   const FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
@@ -1540,7 +1544,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 #if CONFIG_EXT_INTRA
   if (is_dr_mode) {
     p_angle = mode_to_angle_map[mode] +
-              xd->mi[0]->mbmi.angle_delta[plane != 0] * ANGLE_STEP;
+              xd->mi[0]->mbmi.angle_delta[plane != 0] * angle_step;
     if (p_angle <= 90)
       need_above = 1, need_left = 0, need_above_left = 1;
     else if (p_angle < 180)

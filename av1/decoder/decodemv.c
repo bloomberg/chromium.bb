@@ -18,6 +18,9 @@
 #include "av1/common/mvref_common.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/reconinter.h"
+#if CONFIG_EXT_INTRA
+#include "av1/common/reconintra.h"
+#endif  // CONFIG_EXT_INTRA
 #include "av1/common/seg_common.h"
 #if CONFIG_WARPED_MOTION
 #include "av1/common/warped_motion.h"
@@ -661,11 +664,13 @@ static void read_intra_angle_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   (void)cm;
   if (bsize < BLOCK_8X8) return;
 
-  if (mbmi->mode != DC_PRED && mbmi->mode != TM_PRED) {
+  if (av1_is_directional_mode(mbmi->mode, bsize)) {
+    const int max_angle_delta = av1_get_max_angle_delta(mbmi->sb_type, 0);
     mbmi->angle_delta[0] =
-        read_uniform(r, 2 * MAX_ANGLE_DELTAS + 1) - MAX_ANGLE_DELTAS;
+        read_uniform(r, 2 * max_angle_delta + 1) - max_angle_delta;
 #if CONFIG_INTRA_INTERP
-    p_angle = mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
+    p_angle = mode_to_angle_map[mbmi->mode] +
+              mbmi->angle_delta[0] * av1_get_angle_step(mbmi->sb_type, 0);
     if (av1_is_intra_filter_switchable(p_angle)) {
       FRAME_COUNTS *counts = xd->counts;
       mbmi->intra_filter = aom_read_tree(
@@ -677,9 +682,9 @@ static void read_intra_angle_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // CONFIG_INTRA_INTERP
   }
 
-  if (mbmi->uv_mode != DC_PRED && mbmi->uv_mode != TM_PRED) {
+  if (av1_is_directional_mode(mbmi->uv_mode, bsize)) {
     mbmi->angle_delta[1] =
-        read_uniform(r, 2 * MAX_ANGLE_DELTAS + 1) - MAX_ANGLE_DELTAS;
+        read_uniform(r, 2 * MAX_ANGLE_DELTA_UV + 1) - MAX_ANGLE_DELTA_UV;
   }
 }
 #endif  // CONFIG_EXT_INTRA

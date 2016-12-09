@@ -113,7 +113,6 @@ static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 #define NEW_MV_DISCOUNT_FACTOR 8
 
 #if CONFIG_EXT_INTRA
-#define ANGLE_FAST_SEARCH 1
 #define ANGLE_SKIP_THRESH 10
 #define FILTER_FAST_SEARCH 1
 #endif  // CONFIG_EXT_INTRA
@@ -2555,22 +2554,29 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_EXT_INTRA
-static void pick_intra_angle_routine_sby(
-    const AV1_COMP *const cpi, MACROBLOCK *x, int *rate, int *rate_tokenonly,
-    int64_t *distortion, int *skippable, int *best_angle_delta,
-    TX_SIZE *best_tx_size, TX_TYPE *best_tx_type,
+// Run RD calculation with given luma intra prediction angle., and return
+// the RD cost. Update the best mode info. if the RD cost is the best so far.
+static int64_t calc_rd_given_intra_angle(
+    const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int mode_cost,
+    int64_t best_rd_in, int8_t angle_delta, int max_angle_delta, int *rate,
+    RD_STATS *rd_stats, int *best_angle_delta, TX_SIZE *best_tx_size,
+    TX_TYPE *best_tx_type,
 #if CONFIG_INTRA_INTERP
     INTRA_FILTER *best_filter,
 #endif  // CONFIG_INTRA_INTERP
-    BLOCK_SIZE bsize, int rate_overhead, int64_t *best_rd) {
+    int64_t *best_rd) {
   int this_rate;
   RD_STATS tokenonly_rd_stats;
   int64_t this_rd;
   MB_MODE_INFO *mbmi = &x->e_mbd.mi[0]->mbmi;
-  super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
-  if (tokenonly_rd_stats.rate == INT_MAX) return;
 
-  this_rate = tokenonly_rd_stats.rate + rate_overhead;
+  mbmi->angle_delta[0] = angle_delta;
+  super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd_in);
+  if (tokenonly_rd_stats.rate == INT_MAX) return INT64_MAX;
+
+  this_rate = tokenonly_rd_stats.rate + mode_cost +
+              write_uniform_cost(2 * max_angle_delta + 1,
+                                 mbmi->angle_delta[0] + max_angle_delta);
   this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
 
   if (this_rd < *best_rd) {
@@ -2582,170 +2588,119 @@ static void pick_intra_angle_routine_sby(
 #endif  // CONFIG_INTRA_INTERP
     *best_tx_type = mbmi->tx_type;
     *rate = this_rate;
-    *rate_tokenonly = tokenonly_rd_stats.rate;
-    *distortion = tokenonly_rd_stats.dist;
-    *skippable = tokenonly_rd_stats.skip;
+    rd_stats->rate = tokenonly_rd_stats.rate;
+    rd_stats->dist = tokenonly_rd_stats.dist;
+    rd_stats->skip = tokenonly_rd_stats.skip;
   }
+  return this_rd;
 }
 
+// With given luma directional intra prediction mode, pick the best angle delta
+// Return the RD cost corresponding to the best angle delta.
 static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                       int *rate, int *rate_tokenonly,
-                                       int64_t *distortion, int *skippable,
-                                       BLOCK_SIZE bsize, int rate_overhead,
+                                       int *rate, RD_STATS *rd_stats,
+                                       BLOCK_SIZE bsize, int mode_cost,
                                        int64_t best_rd) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *mbmi = &mic->mbmi;
-  int this_rate;
-  RD_STATS tokenonly_rd_stats;
-  int angle_delta, best_angle_delta = 0;
+  int i, angle_delta, best_angle_delta = 0;
+  const int max_angle_delta = av1_get_max_angle_delta(bsize, 0);
+  int first_try = 1;
 #if CONFIG_INTRA_INTERP
   int p_angle;
   const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
   INTRA_FILTER filter, best_filter = INTRA_FILTER_LINEAR;
 #endif  // CONFIG_INTRA_INTERP
-  const double rd_adjust = 1.2;
-  int64_t this_rd;
+  int64_t this_rd, best_rd_in, rd_cost[16];
   TX_SIZE best_tx_size = mic->mbmi.tx_size;
   TX_TYPE best_tx_type = mbmi->tx_type;
 
-  if (ANGLE_FAST_SEARCH) {
-    int deltas_level1[3] = { 0, -2, 2 };
-    int deltas_level2[3][2] = {
-      { -1, 1 }, { -3, -1 }, { 1, 3 },
-    };
-    const int level1 = 3, level2 = 2;
-    int i, j, best_i = -1, first_try = 1;
+  for (i = 0; i < 2 * (max_angle_delta + 2); ++i) rd_cost[i] = INT64_MAX;
 
-    for (i = 0; i < level1; ++i) {
-      int64_t tmp_best_rd;
-      mic->mbmi.angle_delta[0] = deltas_level1[i];
+  for (angle_delta = 0; angle_delta <= max_angle_delta; angle_delta += 2) {
 #if CONFIG_INTRA_INTERP
-      p_angle =
-          mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
-      for (filter = INTRA_FILTER_LINEAR; filter < INTRA_FILTERS; ++filter) {
-        if ((FILTER_FAST_SEARCH || !av1_is_intra_filter_switchable(p_angle)) &&
-            filter != INTRA_FILTER_LINEAR)
-          continue;
-        mic->mbmi.intra_filter = filter;
+    for (filter = INTRA_FILTER_LINEAR; filter < INTRA_FILTERS; ++filter) {
+      if (FILTER_FAST_SEARCH && filter != INTRA_FILTER_LINEAR) continue;
+      mic->mbmi.intra_filter = filter;
 #endif  // CONFIG_INTRA_INTERP
-        tmp_best_rd = (first_try && best_rd < INT64_MAX)
-                          ? (int64_t)(best_rd * rd_adjust)
-                          : best_rd;
-        super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, tmp_best_rd);
-        if (tokenonly_rd_stats.rate == INT_MAX) {
-          if (first_try)
-            return best_rd;
-          else
-            continue;
-        }
-        this_rate = tokenonly_rd_stats.rate + rate_overhead;
+      for (i = 0; i < 2; ++i) {
+        best_rd_in = (best_rd == INT64_MAX)
+                         ? INT64_MAX
+                         : (best_rd + (best_rd >> (first_try ? 3 : 5)));
+        this_rd = calc_rd_given_intra_angle(
+            cpi, x, bsize,
 #if CONFIG_INTRA_INTERP
-        this_rate += cpi->intra_filter_cost[intra_filter_ctx][filter];
-#endif  // CONFIG_INTRA_INTERP
-        this_rd =
-            RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
-        if (first_try && best_rd < INT64_MAX && this_rd > best_rd * rd_adjust)
-          return best_rd;
-        first_try = 0;
-        if (this_rd < best_rd) {
-          best_i = i;
-          best_rd = this_rd;
-          best_angle_delta = mbmi->angle_delta[0];
-          best_tx_size = mbmi->tx_size;
-#if CONFIG_INTRA_INTERP
-          best_filter = mbmi->intra_filter;
-#endif  // CONFIG_INTRA_INTERP
-          best_tx_type = mbmi->tx_type;
-          *rate = this_rate;
-          *rate_tokenonly = tokenonly_rd_stats.rate;
-          *distortion = tokenonly_rd_stats.dist;
-          *skippable = tokenonly_rd_stats.skip;
-        }
-#if CONFIG_INTRA_INTERP
-      }
-#endif  // CONFIG_INTRA_INTERP
-    }
-
-    if (best_i >= 0) {
-      for (j = 0; j < level2; ++j) {
-        mic->mbmi.angle_delta[0] = deltas_level2[best_i][j];
-#if CONFIG_INTRA_INTERP
-        p_angle =
-            mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
-        for (filter = INTRA_FILTER_LINEAR; filter < INTRA_FILTERS; ++filter) {
-          mic->mbmi.intra_filter = filter;
-          if ((FILTER_FAST_SEARCH ||
-               !av1_is_intra_filter_switchable(p_angle)) &&
-              filter != INTRA_FILTER_LINEAR)
-            continue;
-#endif  // CONFIG_INTRA_INTERP
-          pick_intra_angle_routine_sby(
-              cpi, x, rate, rate_tokenonly, distortion, skippable,
-              &best_angle_delta, &best_tx_size, &best_tx_type,
-#if CONFIG_INTRA_INTERP
-              &best_filter,
-#endif  // CONFIG_INTRA_INTERP
-              bsize,
-#if CONFIG_INTRA_INTERP
-              rate_overhead + cpi->intra_filter_cost[intra_filter_ctx][filter],
+            mode_cost + cpi->intra_filter_cost[intra_filter_ctx][filter],
 #else
-            rate_overhead,
+          mode_cost,
 #endif  // CONFIG_INTRA_INTERP
-              &best_rd);
-#if CONFIG_INTRA_INTERP
-        }
-#endif  // CONFIG_INTRA_INTERP
-      }
-    }
-  } else {
-    for (angle_delta = -MAX_ANGLE_DELTAS; angle_delta <= MAX_ANGLE_DELTAS;
-         ++angle_delta) {
-      mbmi->angle_delta[0] = angle_delta;
-#if CONFIG_INTRA_INTERP
-      p_angle =
-          mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
-      for (filter = INTRA_FILTER_LINEAR; filter < INTRA_FILTERS; ++filter) {
-        mic->mbmi.intra_filter = filter;
-        if ((FILTER_FAST_SEARCH || !av1_is_intra_filter_switchable(p_angle)) &&
-            filter != INTRA_FILTER_LINEAR)
-          continue;
-#endif  // CONFIG_INTRA_INTERP
-        pick_intra_angle_routine_sby(
-            cpi, x, rate, rate_tokenonly, distortion, skippable,
-            &best_angle_delta, &best_tx_size, &best_tx_type,
+            best_rd_in, (1 - 2 * i) * angle_delta, max_angle_delta, rate,
+            rd_stats, &best_angle_delta, &best_tx_size, &best_tx_type,
 #if CONFIG_INTRA_INTERP
             &best_filter,
 #endif  // CONFIG_INTRA_INTERP
-            bsize,
-#if CONFIG_INTRA_INTERP
-            rate_overhead + cpi->intra_filter_cost[intra_filter_ctx][filter],
-#else
-          rate_overhead,
-#endif  // CONFIG_INTRA_INTERP
             &best_rd);
-#if CONFIG_INTRA_INTERP
+        rd_cost[2 * angle_delta + i] = this_rd;
+        if (first_try && this_rd == INT64_MAX) return best_rd;
+        first_try = 0;
+        if (angle_delta == 0) {
+          rd_cost[1] = this_rd;
+          break;
+        }
       }
-#endif  // CONFIG_INTRA_INTERP
+#if CONFIG_INTRA_INTERP
     }
+#endif  // CONFIG_INTRA_INTERP
+  }
+
+  assert(best_rd != INT64_MAX);
+  for (angle_delta = 1; angle_delta <= max_angle_delta; angle_delta += 2) {
+    int64_t rd_thresh;
+#if CONFIG_INTRA_INTERP
+    for (filter = INTRA_FILTER_LINEAR; filter < INTRA_FILTERS; ++filter) {
+      if (FILTER_FAST_SEARCH && filter != INTRA_FILTER_LINEAR) continue;
+      mic->mbmi.intra_filter = filter;
+#endif  // CONFIG_INTRA_INTERP
+      for (i = 0; i < 2; ++i) {
+        int skip_search = 0;
+        rd_thresh = best_rd + (best_rd >> 5);
+        if (rd_cost[2 * (angle_delta + 1) + i] > rd_thresh &&
+            rd_cost[2 * (angle_delta - 1) + i] > rd_thresh)
+          skip_search = 1;
+        if (!skip_search) {
+          this_rd = calc_rd_given_intra_angle(
+              cpi, x, bsize,
+#if CONFIG_INTRA_INTERP
+              mode_cost + cpi->intra_filter_cost[intra_filter_ctx][filter],
+#else
+            mode_cost,
+#endif  // CONFIG_INTRA_INTERP
+              best_rd, (1 - 2 * i) * angle_delta, max_angle_delta, rate,
+              rd_stats, &best_angle_delta, &best_tx_size, &best_tx_type,
+#if CONFIG_INTRA_INTERP
+              &best_filter,
+#endif  // CONFIG_INTRA_INTERP
+              &best_rd);
+        }
+      }
+#if CONFIG_INTRA_INTERP
+    }
+#endif  // CONFIG_INTRA_INTERP
   }
 
 #if CONFIG_INTRA_INTERP
-  if (FILTER_FAST_SEARCH && *rate_tokenonly < INT_MAX) {
-    mbmi->angle_delta[0] = best_angle_delta;
-    p_angle = mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
+  if (FILTER_FAST_SEARCH && rd_stats->rate < INT_MAX) {
+    p_angle = mode_to_angle_map[mbmi->mode] +
+              best_angle_delta * av1_get_angle_step(bsize, 0);
     if (av1_is_intra_filter_switchable(p_angle)) {
       for (filter = INTRA_FILTER_LINEAR + 1; filter < INTRA_FILTERS; ++filter) {
         mic->mbmi.intra_filter = filter;
-        pick_intra_angle_routine_sby(
-            cpi, x, rate, rate_tokenonly, distortion, skippable,
+        this_rd = calc_rd_given_intra_angle(
+            cpi, x, bsize,
+            mode_cost + cpi->intra_filter_cost[intra_filter_ctx][filter],
+            best_rd, best_angle_delta, max_angle_delta, rate, rd_stats,
             &best_angle_delta, &best_tx_size, &best_tx_type, &best_filter,
-            bsize,
-#if CONFIG_INTRA_INTERP
-            rate_overhead + cpi->intra_filter_cost[intra_filter_ctx][filter],
-#else
-            rate_overhead,
-#endif  // CONFIG_INTRA_INTERP
             &best_rd);
       }
     }
@@ -2911,7 +2866,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
   INTRA_FILTER best_filter = INTRA_FILTER_LINEAR;
 #endif  // CONFIG_INTRA_INTERP
-  int is_directional_mode, rate_overhead, best_angle_delta = 0;
+  int is_directional_mode, best_angle_delta = 0;
   uint8_t directional_mode_skip_mask[INTRA_MODES];
   const int src_stride = x->plane[0].src.stride;
   const uint8_t *src = x->plane[0].src.buf;
@@ -2990,30 +2945,24 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     od_encode_rollback(&x->daala_enc, &pre_buf);
 #endif
 #if CONFIG_EXT_INTRA
-    is_directional_mode =
-        (mic->mbmi.mode != DC_PRED && mic->mbmi.mode != TM_PRED);
+    is_directional_mode = av1_is_directional_mode(mic->mbmi.mode, bsize);
     if (is_directional_mode && directional_mode_skip_mask[mic->mbmi.mode])
       continue;
     if (is_directional_mode) {
-      rate_overhead = bmode_costs[mic->mbmi.mode] +
-                      write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1, 0);
-      this_rate_tokenonly = INT_MAX;
-      this_rd = rd_pick_intra_angle_sby(cpi, x, &this_rate,
-                                        &this_rate_tokenonly, &this_distortion,
-                                        &s, bsize, rate_overhead, best_rd);
+      this_rd_stats.rate = INT_MAX;
+      this_rd =
+          rd_pick_intra_angle_sby(cpi, x, &this_rate, &this_rd_stats, bsize,
+                                  bmode_costs[mic->mbmi.mode], best_rd);
     } else {
       mic->mbmi.angle_delta[0] = 0;
       super_block_yrd(cpi, x, &this_rd_stats, bsize, best_rd);
-      this_rate_tokenonly = this_rd_stats.rate;
-      this_distortion = this_rd_stats.dist;
-      s = this_rd_stats.skip;
     }
 #else
     super_block_yrd(cpi, x, &this_rd_stats, bsize, best_rd);
+#endif  // CONFIG_EXT_INTRA
     this_rate_tokenonly = this_rd_stats.rate;
     this_distortion = this_rd_stats.dist;
     s = this_rd_stats.skip;
-#endif  // CONFIG_EXT_INTRA
 
     if (this_rate_tokenonly == INT_MAX) continue;
 
@@ -3039,17 +2988,17 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA
     if (is_directional_mode) {
+      const int max_angle_delta = av1_get_max_angle_delta(bsize, 0);
 #if CONFIG_INTRA_INTERP
-      int p_angle;
-      p_angle = mode_to_angle_map[mic->mbmi.mode] +
-                mic->mbmi.angle_delta[0] * ANGLE_STEP;
+      const int p_angle =
+          mode_to_angle_map[mic->mbmi.mode] +
+          mic->mbmi.angle_delta[0] * av1_get_angle_step(bsize, 0);
       if (av1_is_intra_filter_switchable(p_angle))
         this_rate +=
             cpi->intra_filter_cost[intra_filter_ctx][mic->mbmi.intra_filter];
 #endif  // CONFIG_INTRA_INTERP
-      this_rate +=
-          write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1,
-                             MAX_ANGLE_DELTAS + mic->mbmi.angle_delta[0]);
+      this_rate += write_uniform_cost(
+          2 * max_angle_delta + 1, max_angle_delta + mic->mbmi.angle_delta[0]);
     }
 #endif  // CONFIG_EXT_INTRA
     this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, this_distortion);
@@ -4039,97 +3988,86 @@ static int rd_pick_filter_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_EXT_INTRA
-static void pick_intra_angle_routine_sbuv(
-    const AV1_COMP *const cpi, MACROBLOCK *x, int *rate, int *rate_tokenonly,
-    int64_t *distortion, int *skippable, int *best_angle_delta,
-    BLOCK_SIZE bsize, int rate_overhead, int64_t *best_rd) {
+// Run RD calculation with given chroma intra prediction angle., and return
+// the RD cost. Update the best mode info. if the RD cost is the best so far.
+static int64_t pick_intra_angle_routine_sbuv(
+    const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
+    int rate_overhead, int64_t best_rd_in, int *rate, RD_STATS *rd_stats,
+    int *best_angle_delta, int64_t *best_rd) {
   MB_MODE_INFO *mbmi = &x->e_mbd.mi[0]->mbmi;
   int this_rate;
   int64_t this_rd;
   RD_STATS tokenonly_rd_stats;
 
-  if (!super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd)) return;
-
+  if (!super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd_in))
+    return INT64_MAX;
   this_rate = tokenonly_rd_stats.rate + rate_overhead;
   this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
   if (this_rd < *best_rd) {
     *best_rd = this_rd;
     *best_angle_delta = mbmi->angle_delta[1];
     *rate = this_rate;
-    *rate_tokenonly = tokenonly_rd_stats.rate;
-    *distortion = tokenonly_rd_stats.dist;
-    *skippable = tokenonly_rd_stats.skip;
+    rd_stats->rate = tokenonly_rd_stats.rate;
+    rd_stats->dist = tokenonly_rd_stats.dist;
+    rd_stats->skip = tokenonly_rd_stats.skip;
   }
+  return this_rd;
 }
 
+// With given chroma directional intra prediction mode, pick the best angle
+// delta. Return true if a RD cost that is smaller than the input one is found.
 static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                    int *rate, int *rate_tokenonly,
-                                    int64_t *distortion, int *skippable,
                                     BLOCK_SIZE bsize, int rate_overhead,
-                                    int64_t best_rd) {
+                                    int64_t best_rd, int *rate,
+                                    RD_STATS *rd_stats) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  int this_rate;
-  int64_t this_rd;
-  int angle_delta, best_angle_delta = 0;
-  const double rd_adjust = 1.2;
-  RD_STATS tokenonly_rd_stats;
+  int i, angle_delta, best_angle_delta = 0;
+  int64_t this_rd, best_rd_in, rd_cost[2 * (MAX_ANGLE_DELTA_UV + 2)];
 
-  *rate_tokenonly = INT_MAX;
-  if (ANGLE_FAST_SEARCH) {
-    int deltas_level1[3] = { 0, -2, 2 };
-    int deltas_level2[3][2] = {
-      { -1, 1 }, { -3, -1 }, { 1, 3 },
-    };
-    const int level1 = 3, level2 = 2;
-    int i, j, best_i = -1;
+  rd_stats->rate = INT_MAX;
+  rd_stats->skip = 0;
+  rd_stats->dist = INT64_MAX;
+  for (i = 0; i < 2 * (MAX_ANGLE_DELTA_UV + 2); ++i) rd_cost[i] = INT64_MAX;
 
-    for (i = 0; i < level1; ++i) {
-      int64_t tmp_best_rd;
-      mbmi->angle_delta[1] = deltas_level1[i];
-      tmp_best_rd = (i == 0 && best_rd < INT64_MAX)
-                        ? (int64_t)(best_rd * rd_adjust)
-                        : best_rd;
-      if (!super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, tmp_best_rd)) {
-        if (i == 0)
-          break;
-        else
-          continue;
-      }
-      this_rate = tokenonly_rd_stats.rate + rate_overhead;
-      this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
-      if (i == 0 && best_rd < INT64_MAX && this_rd > best_rd * rd_adjust) break;
-      if (this_rd < best_rd) {
-        best_i = i;
-        best_rd = this_rd;
-        best_angle_delta = mbmi->angle_delta[1];
-        *rate = this_rate;
-        *rate_tokenonly = tokenonly_rd_stats.rate;
-        *distortion = tokenonly_rd_stats.dist;
-        *skippable = tokenonly_rd_stats.skip;
+  for (angle_delta = 0; angle_delta <= MAX_ANGLE_DELTA_UV; angle_delta += 2) {
+    for (i = 0; i < 2; ++i) {
+      best_rd_in = (best_rd == INT64_MAX)
+                       ? INT64_MAX
+                       : (best_rd + (best_rd >> ((angle_delta == 0) ? 3 : 5)));
+      mbmi->angle_delta[1] = (1 - 2 * i) * angle_delta;
+      this_rd = pick_intra_angle_routine_sbuv(cpi, x, bsize, rate_overhead,
+                                              best_rd_in, rate, rd_stats,
+                                              &best_angle_delta, &best_rd);
+      rd_cost[2 * angle_delta + i] = this_rd;
+      if (angle_delta == 0) {
+        if (this_rd == INT64_MAX) return 0;
+        rd_cost[1] = this_rd;
+        break;
       }
     }
+  }
 
-    if (best_i >= 0) {
-      for (j = 0; j < level2; ++j) {
-        mbmi->angle_delta[1] = deltas_level2[best_i][j];
-        pick_intra_angle_routine_sbuv(cpi, x, rate, rate_tokenonly, distortion,
-                                      skippable, &best_angle_delta, bsize,
-                                      rate_overhead, &best_rd);
+  assert(best_rd != INT64_MAX);
+  for (angle_delta = 1; angle_delta <= MAX_ANGLE_DELTA_UV; angle_delta += 2) {
+    int64_t rd_thresh;
+    for (i = 0; i < 2; ++i) {
+      int skip_search = 0;
+      rd_thresh = best_rd + (best_rd >> 5);
+      if (rd_cost[2 * (angle_delta + 1) + i] > rd_thresh &&
+          rd_cost[2 * (angle_delta - 1) + i] > rd_thresh)
+        skip_search = 1;
+      if (!skip_search) {
+        mbmi->angle_delta[1] = (1 - 2 * i) * angle_delta;
+        this_rd = pick_intra_angle_routine_sbuv(cpi, x, bsize, rate_overhead,
+                                                best_rd, rate, rd_stats,
+                                                &best_angle_delta, &best_rd);
       }
-    }
-  } else {
-    for (angle_delta = -MAX_ANGLE_DELTAS; angle_delta <= MAX_ANGLE_DELTAS;
-         ++angle_delta) {
-      mbmi->angle_delta[1] = angle_delta;
-      pick_intra_angle_routine_sbuv(cpi, x, rate, rate_tokenonly, distortion,
-                                    skippable, &best_angle_delta, bsize,
-                                    rate_overhead, &best_rd);
     }
   }
 
   mbmi->angle_delta[1] = best_angle_delta;
-  return *rate_tokenonly != INT_MAX;
+  return rd_stats->rate != INT_MAX;
 }
 #endif  // CONFIG_EXT_INTRA
 
@@ -4176,13 +4114,11 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_EXT_INTRA
     is_directional_mode = av1_is_directional_mode(mode, mbmi->sb_type);
     rate_overhead = cpi->intra_uv_mode_cost[mbmi->mode][mode] +
-                    write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1, 0);
+                    write_uniform_cost(2 * MAX_ANGLE_DELTA_UV + 1, 0);
     mbmi->angle_delta[1] = 0;
     if (is_directional_mode) {
-      if (!rd_pick_intra_angle_sbuv(
-              cpi, x, &this_rate, &tokenonly_rd_stats.rate,
-              &tokenonly_rd_stats.dist, &tokenonly_rd_stats.skip, bsize,
-              rate_overhead, best_rd))
+      if (!rd_pick_intra_angle_sbuv(cpi, x, bsize, rate_overhead, best_rd,
+                                    &this_rate, &tokenonly_rd_stats))
         continue;
     } else {
       if (!super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd)) {
@@ -4194,10 +4130,12 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
     this_rate =
         tokenonly_rd_stats.rate + cpi->intra_uv_mode_cost[mbmi->mode][mode];
-    if (is_directional_mode)
-      this_rate += write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1,
-                                      MAX_ANGLE_DELTAS + mbmi->angle_delta[1]);
-#else
+    if (is_directional_mode) {
+      this_rate +=
+          write_uniform_cost(2 * MAX_ANGLE_DELTA_UV + 1,
+                             MAX_ANGLE_DELTA_UV + mbmi->angle_delta[1]);
+    }
+#else  // CONFIG_EXT_INTRA
     if (!super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd)) {
 #if CONFIG_PVQ
       od_encode_rollback(&x->daala_enc, &buf);
@@ -4207,6 +4145,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     this_rate =
         tokenonly_rd_stats.rate + cpi->intra_uv_mode_cost[mbmi->mode][mode];
 #endif  // CONFIG_EXT_INTRA
+
 #if CONFIG_FILTER_INTRA
     if (mbmi->sb_type >= BLOCK_8X8 && mode == DC_PRED)
       this_rate += av1_cost_bit(cpi->common.fc->filter_intra_probs[1], 0);
@@ -8465,9 +8404,9 @@ static void pick_filter_intra_interframe(
   rate2 += write_uniform_cost(
       FILTER_INTRA_MODES, mbmi->filter_intra_mode_info.filter_intra_mode[0]);
 #if CONFIG_EXT_INTRA
-  if (mbmi->uv_mode != DC_PRED && mbmi->uv_mode != TM_PRED) {
-    rate2 += write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1,
-                                MAX_ANGLE_DELTAS + mbmi->angle_delta[1]);
+  if (av1_is_directional_mode(mbmi->uv_mode, bsize)) {
+    rate2 += write_uniform_cost(2 * MAX_ANGLE_DELTA_UV + 1,
+                                MAX_ANGLE_DELTA_UV + mbmi->angle_delta[1]);
   }
 #endif  // CONFIG_EXT_INTRA
   if (mbmi->mode == DC_PRED) {
@@ -8617,7 +8556,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_EXT_INTRA
   int8_t uv_angle_delta[TX_SIZES];
   int is_directional_mode, angle_stats_ready = 0;
-  int rate_overhead, rate_dummy;
   uint8_t directional_mode_skip_mask[INTRA_MODES];
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
@@ -9153,8 +9091,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       TX_SIZE uv_tx;
       struct macroblockd_plane *const pd = &xd->plane[1];
 #if CONFIG_EXT_INTRA
-      is_directional_mode = (mbmi->mode != DC_PRED && mbmi->mode != TM_PRED);
+      is_directional_mode = av1_is_directional_mode(mbmi->mode, bsize);
       if (is_directional_mode) {
+        int rate_dummy;
         if (!angle_stats_ready) {
           const int src_stride = x->plane[0].src.stride;
           const uint8_t *src = x->plane[0].src.buf;
@@ -9169,25 +9108,20 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           angle_stats_ready = 1;
         }
         if (directional_mode_skip_mask[mbmi->mode]) continue;
-        rate_overhead = write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1, 0) +
-                        intra_mode_cost[mbmi->mode];
-        rate_y = INT_MAX;
+        rd_stats_y.rate = INT_MAX;
         this_rd =
-            rd_pick_intra_angle_sby(cpi, x, &rate_dummy, &rate_y, &distortion_y,
-                                    &skippable, bsize, rate_overhead, best_rd);
+            rd_pick_intra_angle_sby(cpi, x, &rate_dummy, &rd_stats_y, bsize,
+                                    intra_mode_cost[mbmi->mode], best_rd);
       } else {
         mbmi->angle_delta[0] = 0;
         super_block_yrd(cpi, x, &rd_stats_y, bsize, best_rd);
-        rate_y = rd_stats_y.rate;
-        distortion_y = rd_stats_y.dist;
-        skippable = rd_stats_y.skip;
       }
 #else
       super_block_yrd(cpi, x, &rd_stats_y, bsize, best_rd);
+#endif  // CONFIG_EXT_INTRA
       rate_y = rd_stats_y.rate;
       distortion_y = rd_stats_y.dist;
       skippable = rd_stats_y.skip;
-#endif  // CONFIG_EXT_INTRA
 
       if (rate_y == INT_MAX) continue;
 
@@ -9257,20 +9191,21 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 #if CONFIG_EXT_INTRA
       if (is_directional_mode) {
+        const int max_angle_delta = av1_get_max_angle_delta(bsize, 0);
 #if CONFIG_INTRA_INTERP
         int p_angle;
         const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
-        p_angle =
-            mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
+        p_angle = mode_to_angle_map[mbmi->mode] +
+                  mbmi->angle_delta[0] * av1_get_angle_step(bsize, 0);
         if (av1_is_intra_filter_switchable(p_angle))
           rate2 += cpi->intra_filter_cost[intra_filter_ctx][mbmi->intra_filter];
 #endif  // CONFIG_INTRA_INTERP
-        rate2 += write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1,
-                                    MAX_ANGLE_DELTAS + mbmi->angle_delta[0]);
+        rate2 += write_uniform_cost(2 * max_angle_delta + 1,
+                                    max_angle_delta + mbmi->angle_delta[0]);
       }
       if (mbmi->uv_mode != DC_PRED && mbmi->uv_mode != TM_PRED) {
-        rate2 += write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1,
-                                    MAX_ANGLE_DELTAS + mbmi->angle_delta[1]);
+        rate2 += write_uniform_cost(2 * MAX_ANGLE_DELTA_UV + 1,
+                                    MAX_ANGLE_DELTA_UV + mbmi->angle_delta[1]);
       }
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA

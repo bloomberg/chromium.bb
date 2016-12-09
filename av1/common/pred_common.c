@@ -117,8 +117,9 @@ static INTRA_FILTER get_ref_intra_filter(const MB_MODE_INFO *ref_mbmi) {
       }
     } else {
       if (av1_is_directional_mode(mode, ref_mbmi->sb_type)) {
+        const int angle_step = av1_get_angle_step(ref_mbmi->sb_type, 0);
         int p_angle =
-            mode_to_angle_map[mode] + ref_mbmi->angle_delta[0] * ANGLE_STEP;
+            mode_to_angle_map[mode] + ref_mbmi->angle_delta[0] * angle_step;
         if (av1_is_intra_filter_switchable(p_angle)) {
           ref_type = ref_mbmi->intra_filter;
         }
