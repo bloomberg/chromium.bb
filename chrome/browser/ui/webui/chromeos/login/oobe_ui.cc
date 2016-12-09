@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -167,10 +166,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
           extensions::kGaiaAuthExtensionOrigin));
   source->OverrideContentSecurityPolicyObjectSrc(
       "object-src chrome:;");
-  source->AddResourcePath("gaia_auth_host.js",
-                          StartupUtils::IsWebviewSigninEnabled()
-                              ? IDR_GAIA_AUTH_AUTHENTICATOR_JS
-                              : IDR_GAIA_AUTH_HOST_JS);
 
   // Serve deferred resources.
   source->AddResourcePath(kEnrollmentHTMLPath, IDR_OOBE_ENROLLMENT_HTML);

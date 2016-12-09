@@ -191,11 +191,6 @@ std::string StartupUtils::GetInitialLocale() {
 }
 
 // static
-bool StartupUtils::IsWebviewSigninEnabled() {
-  return true;
-}
-
-// static
 void StartupUtils::SetInitialLocale(const std::string& locale) {
   if (l10n_util::IsValidLocaleSyntax(locale))
     SaveStringPreferenceForced(prefs::kInitialLocale, locale);

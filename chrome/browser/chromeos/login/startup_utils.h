@@ -59,9 +59,6 @@ class StartupUtils {
   // Sets initial locale in local settings.
   static void SetInitialLocale(const std::string& locale);
 
-  // Returns true if webview based signin flow has been activated.
-  static bool IsWebviewSigninEnabled();
-
   // Registers OOBE preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 };

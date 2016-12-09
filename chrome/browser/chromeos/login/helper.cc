@@ -9,7 +9,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -231,22 +230,17 @@ content::StoragePartition* GetSigninPartition() {
 }
 
 net::URLRequestContextGetter* GetSigninContext() {
-  if (StartupUtils::IsWebviewSigninEnabled()) {
-    content::StoragePartition* signin_partition = GetSigninPartition();
+  content::StoragePartition* signin_partition = GetSigninPartition();
 
-    // Special case for unit tests. There's no LoginDisplayHost thus no
-    // webview instance. TODO(nkostylev): Investigate if there's a better
-    // place to address this like dependency injection. http://crbug.com/477402
-    if (!signin_partition && !LoginDisplayHost::default_host())
-      return ProfileHelper::GetSigninProfile()->GetRequestContext();
+  // Special case for unit tests. There's no LoginDisplayHost thus no
+  // webview instance. See http://crbug.com/477402
+  if (!signin_partition && !LoginDisplayHost::default_host())
+    return ProfileHelper::GetSigninProfile()->GetRequestContext();
 
-    if (!signin_partition)
-      return nullptr;
+  if (!signin_partition)
+    return nullptr;
 
-    return signin_partition->GetURLRequestContext();
-  }
-
-  return ProfileHelper::GetSigninProfile()->GetRequestContext();
+  return signin_partition->GetURLRequestContext();
 }
 
 }  // namespace login

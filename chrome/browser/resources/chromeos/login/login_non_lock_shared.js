@@ -30,6 +30,8 @@
 <include src="screen_device_disabled.js">
 <include src="screen_unrecoverable_cryptohome_error.js">
 
+<include src="../../gaia_auth_host/authenticator.js">
+
 // Register assets for async loading.
 [{
   id: SCREEN_OOBE_ENROLLMENT,

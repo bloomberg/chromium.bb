@@ -1544,21 +1544,11 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
 
 net::URLRequestContextGetter*
 UserSessionManager::GetAuthRequestContext() const {
-  net::URLRequestContextGetter* auth_request_context = nullptr;
+  content::StoragePartition* signin_partition = login::GetSigninPartition();
+  if (!signin_partition)
+    return nullptr;
 
-  if (StartupUtils::IsWebviewSigninEnabled()) {
-    // Webview uses different partition storage than iframe. We need to get
-    // cookies from the right storage for url request to get auth token into
-    // session.
-    content::StoragePartition* signin_partition = login::GetSigninPartition();
-    if (signin_partition)
-      auth_request_context = signin_partition->GetURLRequestContext();
-  } else if (authenticator_.get() && authenticator_->authentication_context()) {
-    auth_request_context =
-        content::BrowserContext::GetDefaultStoragePartition(
-            authenticator_->authentication_context())->GetURLRequestContext();
-  }
-  return auth_request_context;
+  return signin_partition->GetURLRequestContext();
 }
 
 void UserSessionManager::AttemptRestart(Profile* profile) {
@@ -1791,16 +1781,17 @@ void UserSessionManager::SendUserPodsMetrics() {
 }
 
 void UserSessionManager::OnOAuth2TokensFetched(UserContext context) {
-  if (StartupUtils::IsWebviewSigninEnabled() && TokenHandlesEnabled()) {
-    CreateTokenUtilIfMissing();
-    if (!token_handle_util_->HasToken(context.GetAccountId())) {
-      token_handle_fetcher_.reset(new TokenHandleFetcher(
-          token_handle_util_.get(), context.GetAccountId()));
-      token_handle_fetcher_->FillForNewUser(
-          context.GetAccessToken(),
-          base::Bind(&UserSessionManager::OnTokenHandleObtained,
-                     weak_factory_.GetWeakPtr()));
-    }
+  if (!TokenHandlesEnabled())
+    return;
+
+  CreateTokenUtilIfMissing();
+  if (!token_handle_util_->HasToken(context.GetAccountId())) {
+    token_handle_fetcher_.reset(new TokenHandleFetcher(token_handle_util_.get(),
+                                                       context.GetAccountId()));
+    token_handle_fetcher_->FillForNewUser(
+        context.GetAccessToken(),
+        base::Bind(&UserSessionManager::OnTokenHandleObtained,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
