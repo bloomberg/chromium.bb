@@ -172,6 +172,7 @@ test("capture_unittests") {
     "content/video_capture_oracle_unittest.cc",
     "video/fake_video_capture_device_unittest.cc",
     "video/linux/camera_facing_chromeos_unittest.cc",
+    "video/linux/v4l2_capture_delegate_unittest.cc",
     "video/mac/video_capture_device_factory_mac_unittest.mm",
     "video/video_capture_device_unittest.cc",
   ]

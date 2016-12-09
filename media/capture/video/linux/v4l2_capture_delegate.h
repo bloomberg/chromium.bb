@@ -30,7 +30,7 @@ namespace media {
 // capture specifics are implemented in derived classes. Created and destroyed
 // on the owner's thread, otherwise living and operating on |v4l2_task_runner_|.
 // TODO(mcasas): Make this class a non-ref-counted.
-class V4L2CaptureDelegate final
+class CAPTURE_EXPORT V4L2CaptureDelegate final
     : public base::RefCountedThreadSafe<V4L2CaptureDelegate> {
  public:
   // Retrieves the #planes for a given |fourcc|, or 0 if unknown.
@@ -65,6 +65,8 @@ class V4L2CaptureDelegate final
   void SetRotation(int rotation);
 
  private:
+  friend class V4L2CaptureDelegateTest;
+
   friend class base::RefCountedThreadSafe<V4L2CaptureDelegate>;
   ~V4L2CaptureDelegate();
 
