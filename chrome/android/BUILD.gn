@@ -672,7 +672,6 @@ template("chrome_public_apk_tmpl_shared") {
       deps = []
     }
 
-    native_lib_version_rule = "//build/util:chrome_version_json"
     deps += [
       ":chrome_java",
       ":chrome_public_apk_resources",

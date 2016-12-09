@@ -40,7 +40,8 @@ template("chrome_public_apk_tmpl") {
     _native_lib_file =
         rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
     native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
-
+    native_lib_version_rule = "//build/util:chrome_version_json"
+    
     if (is_java_debug) {
       enable_multidex = true
     } else {
