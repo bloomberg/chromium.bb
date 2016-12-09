@@ -21,10 +21,9 @@ public class FirstRunStatus {
 
     /**
      * Sets the "main First Run Experience flow complete" preference.
-     * @param context Any context
      * @param isComplete Whether the main First Run Experience flow is complete
      */
-    public static void setFirstRunFlowComplete(Context context, boolean isComplete) {
+    public static void setFirstRunFlowComplete(boolean isComplete) {
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(FIRST_RUN_FLOW_COMPLETE, isComplete)
@@ -35,11 +34,9 @@ public class FirstRunStatus {
      * Returns whether the main First Run Experience flow is complete.
      * Note: that might NOT include "intro"/"what's new" pages, but it always
      * includes ToS and Sign In pages if necessary.
-     * @param context Any context
      */
-    public static boolean getFirstRunFlowComplete(Context context) {
-        return ContextUtils.getAppSharedPreferences()
-                .getBoolean(FIRST_RUN_FLOW_COMPLETE, false);
+    public static boolean getFirstRunFlowComplete() {
+        return ContextUtils.getAppSharedPreferences().getBoolean(FIRST_RUN_FLOW_COMPLETE, false);
     }
 
     /**
@@ -54,16 +51,15 @@ public class FirstRunStatus {
     /**
     * Checks whether the welcome page should be skipped from the main First Run Experience.
     */
-    public static boolean shouldSkipWelcomePage(Context context) {
+    public static boolean shouldSkipWelcomePage() {
         return ContextUtils.getAppSharedPreferences().getBoolean(SKIP_WELCOME_PAGE, false);
     }
 
     /**
      * Sets the "lightweight First Run Experience flow complete" preference.
-     * @param context Any context
      * @param isComplete Whether the lightweight First Run Experience flow is complete
      */
-    public static void setLightweightFirstRunFlowComplete(Context context, boolean isComplete) {
+    public static void setLightweightFirstRunFlowComplete(boolean isComplete) {
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(LIGHTWEIGHT_FIRST_RUN_FLOW_COMPLETE, isComplete)
@@ -72,9 +68,8 @@ public class FirstRunStatus {
 
     /**
      * Returns whether the "lightweight First Run Experience flow" is complete.
-     * @param context Any context
      */
-    public static boolean getLightweightFirstRunFlowComplete(Context context) {
+    public static boolean getLightweightFirstRunFlowComplete() {
         return ContextUtils.getAppSharedPreferences().getBoolean(
                 LIGHTWEIGHT_FIRST_RUN_FLOW_COMPLETE, false);
     }

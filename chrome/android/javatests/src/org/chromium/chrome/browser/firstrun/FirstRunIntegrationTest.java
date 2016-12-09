@@ -33,7 +33,7 @@ public class FirstRunIntegrationTest extends ChromeTabbedActivityTestBase {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @RetryOnFailure
     public void testExitFirstRunExperience() throws InterruptedException {
-        if (FirstRunStatus.getFirstRunFlowComplete(getActivity())) {
+        if (FirstRunStatus.getFirstRunFlowComplete()) {
             return;
         }
 

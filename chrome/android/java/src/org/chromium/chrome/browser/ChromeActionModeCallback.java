@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
@@ -37,6 +38,16 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
         notifyContextualActionBarVisibilityChanged(true);
+
+        int allowedActionModes = ActionModeCallbackHelper.MENU_ITEM_PROCESS_TEXT
+                | ActionModeCallbackHelper.MENU_ITEM_SHARE;
+        // Disable options that expose additional Chrome functionality prior to the FRE being
+        // completed (i.e. creation of a new tab).
+        if (FirstRunStatus.getFirstRunFlowComplete()) {
+            allowedActionModes |= ActionModeCallbackHelper.MENU_ITEM_WEB_SEARCH;
+        }
+        mHelper.setAllowedMenuItems(allowedActionModes);
+
         mHelper.onCreateActionMode(mode, menu);
         return true;
     }
