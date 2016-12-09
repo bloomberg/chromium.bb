@@ -269,6 +269,7 @@ weston_view_create(struct weston_surface *surface)
 		return NULL;
 
 	view->surface = surface;
+	view->plane = &surface->compositor->primary_plane;
 
 	/* Assign to surface */
 	wl_list_insert(&surface->views, &view->surface_link);
