@@ -140,6 +140,7 @@ def get_fyi_waterfall_config():
     swarming=[
       {
        'os': 'Android',
+       'android_devices': '1',
        'device_ids': [
            'build245-m4--device1', 'build245-m4--device2',
            'build245-m4--device3', 'build245-m4--device4',
@@ -480,6 +481,8 @@ def get_swarming_dimension(dimension, device_affinity):
   }
   if 'gpu' in dimension:
     complete_dimension['gpu'] = dimension['gpu']
+  if 'android_devices' in dimension:
+    complete_dimension['android_devices'] = dimension['android_devices']
   return complete_dimension
 
 
