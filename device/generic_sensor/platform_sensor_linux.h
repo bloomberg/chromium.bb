@@ -8,15 +8,13 @@
 #include "device/generic_sensor/platform_sensor.h"
 
 namespace base {
-class RepeatingTimer;
 class SingleThreadTaskRunner;
-class Thread;
 }
 
 namespace device {
 
 class SensorReader;
-struct SensorDataLinux;
+struct SensorInfoLinux;
 
 class PlatformSensorLinux : public PlatformSensor {
  public:
@@ -24,12 +22,16 @@ class PlatformSensorLinux : public PlatformSensor {
       mojom::SensorType type,
       mojo::ScopedSharedBufferMapping mapping,
       PlatformSensorProvider* provider,
-      const SensorDataLinux& data,
-      std::unique_ptr<SensorReader> sensor_reader,
+      const SensorInfoLinux* sensor_device,
       scoped_refptr<base::SingleThreadTaskRunner> polling_thread_task_runner);
 
-  // Thread safe.
   mojom::ReportingMode GetReportingMode() override;
+
+  // Called by a sensor reader. Takes new readings.
+  void UpdatePlatformSensorReading(SensorReading reading);
+
+  // Called by a sensor reader if an error occurs.
+  void NotifyPlatformSensorError();
 
  protected:
   ~PlatformSensorLinux() override;
@@ -40,25 +42,12 @@ class PlatformSensorLinux : public PlatformSensor {
   PlatformSensorConfiguration GetDefaultConfiguration() override;
 
  private:
-  void BeginPoll(const PlatformSensorConfiguration& configuration);
-  void StopPoll();
-
-  // Triggers |sensor_reader_| to read new sensor data.
-  // If new data is read, UpdateSensorReading() is called.
-  void PollForReadingData();
-
-  // Owned timer to be deleted on a polling thread.
-  base::RepeatingTimer* timer_;
-
   const PlatformSensorConfiguration default_configuration_;
   const mojom::ReportingMode reporting_mode_;
 
   // A sensor reader that reads values from sensor files
   // and stores them to a SensorReading structure.
   std::unique_ptr<SensorReader> sensor_reader_;
-
-  // A task runner that is used to poll sensor data.
-  scoped_refptr<base::SingleThreadTaskRunner> polling_thread_task_runner_;
 
   // Stores previously read values that are used to
   // determine whether the recent values are changed

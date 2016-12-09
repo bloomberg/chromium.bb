@@ -10,7 +10,7 @@
 #include "device/generic_sensor/platform_sensor_provider_android.h"
 #elif defined(OS_WIN)
 #include "device/generic_sensor/platform_sensor_provider_win.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) && defined(USE_UDEV)
 #include "device/generic_sensor/platform_sensor_provider_linux.h"
 #endif
 
@@ -38,8 +38,10 @@ PlatformSensorProvider* PlatformSensorProvider::GetInstance() {
   return PlatformSensorProviderAndroid::GetInstance();
 #elif defined(OS_WIN)
   return PlatformSensorProviderWin::GetInstance();
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) && defined(USE_UDEV)
   return PlatformSensorProviderLinux::GetInstance();
+#else
+  return nullptr;
 #endif
 }
 

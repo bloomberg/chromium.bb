@@ -32,8 +32,7 @@ void PlatformSensorProviderBase::CreateSensor(
     return;
   }
 
-  mojo::ScopedSharedBufferMapping mapping = shared_buffer_handle_->MapAtOffset(
-      kReadingBufferSize, SensorReadingSharedBuffer::GetOffset(type));
+  mojo::ScopedSharedBufferMapping mapping = MapSharedBufferForType(type);
   if (!mapping) {
     callback.Run(nullptr);
     return;
@@ -43,8 +42,6 @@ void PlatformSensorProviderBase::CreateSensor(
   if (it != requests_map_.end()) {
     it->second.push_back(callback);
   } else {  // This is the first CreateSensor call.
-    memset(mapping.get(), 0, kReadingBufferSize);
-
     requests_map_[type] = CallbackQueue({callback});
 
     CreateSensorInternal(
@@ -115,6 +112,22 @@ void PlatformSensorProviderBase::NotifySensorCreated(
     callback.Run(sensor);
 
   requests_map_.erase(type);
+}
+
+std::vector<mojom::SensorType>
+PlatformSensorProviderBase::GetPendingRequestTypes() {
+  std::vector<mojom::SensorType> request_types;
+  for (auto const& entry : requests_map_)
+    request_types.push_back(entry.first);
+  return request_types;
+}
+
+mojo::ScopedSharedBufferMapping
+PlatformSensorProviderBase::MapSharedBufferForType(mojom::SensorType type) {
+  mojo::ScopedSharedBufferMapping mapping = shared_buffer_handle_->MapAtOffset(
+      kReadingBufferSize, SensorReadingSharedBuffer::GetOffset(type));
+  memset(mapping.get(), 0, kReadingBufferSize);
+  return mapping;
 }
 
 }  // namespace device

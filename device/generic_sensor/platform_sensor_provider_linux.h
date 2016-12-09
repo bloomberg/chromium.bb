@@ -7,23 +7,35 @@
 
 #include "device/generic_sensor/platform_sensor_provider.h"
 
+#include "device/generic_sensor/linux/platform_sensor_manager.h"
+
 namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
 class Thread;
 }
 
 namespace device {
 
-struct SensorDataLinux;
-class SensorReader;
+struct SensorInfoLinux;
 
-class PlatformSensorProviderLinux : public PlatformSensorProvider {
+class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderLinux
+    : public PlatformSensorProvider,
+      public SensorDeviceManager::Delegate {
  public:
-  PlatformSensorProviderLinux();
-  ~PlatformSensorProviderLinux() override;
-
   static PlatformSensorProviderLinux* GetInstance();
 
+  // Sets another service provided by tests.
+  void SetSensorDeviceManagerForTesting(
+      std::unique_ptr<SensorDeviceManager> sensor_device_manager);
+
+  // Sets task runner for tests.
+  void SetFileTaskRunnerForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
  protected:
+  ~PlatformSensorProviderLinux() override;
+
   void CreateSensorInternal(mojom::SensorType type,
                             mojo::ScopedSharedBufferMapping mapping,
                             const CreateSensorCallback& callback) override;
@@ -34,37 +46,70 @@ class PlatformSensorProviderLinux : public PlatformSensorProvider {
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) override;
 
  private:
-  void SensorReaderFound(
+  friend struct base::DefaultSingletonTraits<PlatformSensorProviderLinux>;
+
+  using SensorDeviceMap =
+      std::unordered_map<mojom::SensorType, std::unique_ptr<SensorInfoLinux>>;
+
+  PlatformSensorProviderLinux();
+
+  void SensorDeviceFound(
       mojom::SensorType type,
       mojo::ScopedSharedBufferMapping mapping,
       const PlatformSensorProviderBase::CreateSensorCallback& callback,
-      const SensorDataLinux& data,
-      std::unique_ptr<SensorReader> sensor_reader);
+      SensorInfoLinux* sensor_device);
+
+  bool StartPollingThread();
 
   // Stops a polling thread if there are no sensors left. Must be called on
-  // a different that polling thread that allows io.
+  // a different than the polling thread which allows I/O.
   void StopPollingThread();
 
-  // TODO(maksims): make a separate class Manager that will
-  // create provide sensors with a polling task runner, check sensors existence
-  // and notify provider if a new sensor has appeared and it can be created if a
-  // request comes again for the same sensor.
-  // A use case example: a request for a sensor X comes, manager checks if the
-  // sensor exists on a platform and notifies a provider it is not found.
-  // The provider stores this information into its cache and doesn't try to
-  // create this specific sensor if a request comes. But when, for example,
-  // the sensor X is plugged into a usb port, the manager notices that and
-  // notifies the provider, which updates its cache and starts handling requests
-  // for the sensor X.
-  //
-  // Right now, this thread is used to find sensors files and poll data.
+  // Shuts down a service that tracks events from iio subsystem.
+  void Shutdown();
+
+  // Returns SensorInfoLinux structure of a requested type.
+  // If a request cannot be processed immediately, returns nullptr and
+  // all the requests stored in |requests_map_| are processed after
+  // enumeration is ready.
+  SensorInfoLinux* GetSensorDevice(mojom::SensorType type);
+
+  // Returns all found iio devices. Currently not implemented.
+  void GetAllSensorDevices();
+
+  // Processed stored requests in |request_map_|.
+  void ProcessStoredRequests();
+
+  // Called when sensors are created asynchronously after enumeration is done.
+  void CreateSensorAndNotify(mojom::SensorType type,
+                             SensorInfoLinux* sensor_device);
+
+  // SensorDeviceManager::Delegate implements:
+  void OnSensorNodesEnumerated() override;
+  void OnDeviceAdded(mojom::SensorType type,
+                     std::unique_ptr<SensorInfoLinux> sensor_device) override;
+  void OnDeviceRemoved(mojom::SensorType type,
+                       const std::string& device_node) override;
+
+  // Set to true when enumeration is ready.
+  bool sensor_nodes_enumerated_;
+
+  // Set to true when |sensor_device_manager_| has already started enumeration.
+  bool sensor_nodes_enumeration_started_;
+
+  // Stores all available sensor devices by type.
+  SensorDeviceMap sensor_devices_by_type_;
+
+  // A thread that is used by sensor readers in case of polling strategy.
   std::unique_ptr<base::Thread> polling_thread_;
 
-  // A task runner that is passed to polling sensors to poll data.
-  scoped_refptr<base::SingleThreadTaskRunner> polling_thread_task_runner_;
+  // This manager is being used to get |SensorInfoLinux|, which represents
+  // all the information of a concrete sensor provided by OS.
+  std::unique_ptr<SensorDeviceManager> sensor_device_manager_;
 
-  // Browser's file thread task runner passed from renderer. Used to
-  // stop a polling thread.
+  // Browser's file thread task runner passed from renderer. Used by this
+  // provider to stop a polling thread and passed to a manager that
+  // runs a linux device monitor service on this task runner.
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorProviderLinux);

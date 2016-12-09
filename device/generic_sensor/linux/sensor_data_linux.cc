@@ -23,12 +23,11 @@ const char kChangedAxisKernelVersion[] = "3.18.0";
 const base::FilePath::CharType* kSensorsBasePath =
     FILE_PATH_LITERAL("/sys/bus/iio/devices");
 
-void InitAmbientLightSensorData(SensorDataLinux* data) {
+void InitAmbientLightSensorData(SensorPathsLinux* data) {
   std::vector<std::string> file_names{
       "in_illuminance0_input", "in_illuminance_input", "in_illuminance0_raw",
       "in_illuminance_raw"};
   data->sensor_file_names.push_back(std::move(file_names));
-  data->reporting_mode = mojom::ReportingMode::ON_CHANGE;
   data->default_configuration =
       PlatformSensorConfiguration(kDefaultAmbientLightFrequencyHz);
 }
@@ -41,7 +40,7 @@ void MaybeCheckKernelVersionAndAssignFileNames(
     const std::vector<std::string>& file_names_x,
     const std::vector<std::string>& file_names_y,
     const std::vector<std::string>& file_names_z,
-    SensorDataLinux* data) {
+    SensorPathsLinux* data) {
 #if defined(OS_CHROMEOS)
   const base::Version checked_kernel_version(kChangedAxisKernelVersion);
   DCHECK(checked_kernel_version.IsValid());
@@ -62,7 +61,7 @@ void MaybeCheckKernelVersionAndAssignFileNames(
 }
 
 // TODO(maksims): add support for lid accelerometer on chromeos.
-void InitAccelerometerSensorData(SensorDataLinux* data) {
+void InitAccelerometerSensorData(SensorPathsLinux* data) {
   std::vector<std::string> file_names_x{"in_accel_x_base_raw",
                                         "in_accel_x_raw"};
   std::vector<std::string> file_names_y{"in_accel_y_base_raw",
@@ -72,32 +71,35 @@ void InitAccelerometerSensorData(SensorDataLinux* data) {
 
 #if defined(OS_CHROMEOS)
   data->sensor_scale_name = "in_accel_base_scale";
-  data->apply_scaling_func =
-      base::Bind([](double scaling_value, SensorReading& reading) {
-        double scaling = kMeanGravity / scaling_value;
+  data->sensor_frequency_file_name = "in_accel_base_sampling_frequency";
+  data->apply_scaling_func = base::Bind(
+      [](double scaling_value, double offset, SensorReading& reading) {
+        double scaling = (kMeanGravity / scaling_value) + offset;
         reading.values[0] = scaling * reading.values[0];
         reading.values[1] = scaling * reading.values[1];
         reading.values[2] = scaling * reading.values[2];
       });
 #else
   data->sensor_scale_name = "in_accel_scale";
-  data->apply_scaling_func =
-      base::Bind([](double scaling_value, SensorReading& reading) {
+  data->sensor_offset_file_name = "in_accel_offset";
+  data->sensor_frequency_file_name = "in_accel_sampling_frequency";
+  data->apply_scaling_func = base::Bind(
+      [](double scaling_value, double offset, SensorReading& reading) {
+        double scaling = scaling_value + offset;
         // Adapt Linux reading values to generic sensor api specs.
-        reading.values[0] = -scaling_value * reading.values[0];
-        reading.values[1] = -scaling_value * reading.values[1];
-        reading.values[2] = -scaling_value * reading.values[2];
+        reading.values[0] = -scaling * reading.values[0];
+        reading.values[1] = -scaling * reading.values[1];
+        reading.values[2] = -scaling * reading.values[2];
       });
 #endif
 
   MaybeCheckKernelVersionAndAssignFileNames(file_names_x, file_names_y,
                                             file_names_z, data);
-  data->reporting_mode = mojom::ReportingMode::CONTINUOUS;
   data->default_configuration =
       PlatformSensorConfiguration(kDefaultAccelerometerFrequencyHz);
 }
 
-void InitGyroscopeSensorData(SensorDataLinux* data) {
+void InitGyroscopeSensorData(SensorPathsLinux* data) {
   std::vector<std::string> file_names_x{"in_anglvel_x_base_raw",
                                         "in_anglvel_x_raw"};
   std::vector<std::string> file_names_y{"in_anglvel_y_base_raw",
@@ -106,10 +108,11 @@ void InitGyroscopeSensorData(SensorDataLinux* data) {
                                         "in_anglvel_z_raw"};
 #if defined(OS_CHROMEOS)
   data->sensor_scale_name = "in_anglvel_base_scale";
-  data->apply_scaling_func =
-      base::Bind([](double scaling_value, SensorReading& reading) {
+  data->sensor_frequency_file_name = "in_anglvel_base_frequency";
+  data->apply_scaling_func = base::Bind(
+      [](double scaling_value, double offset, SensorReading& reading) {
         double scaling =
-            kMeanGravity * kRadiansInDegreesPerSecond / scaling_value;
+            kMeanGravity * kRadiansInDegreesPerSecond / scaling_value + offset;
         // Adapt CrOS reading values to generic sensor api specs.
         reading.values[0] = -scaling * reading.values[0];
         reading.values[1] = -scaling * reading.values[1];
@@ -117,54 +120,60 @@ void InitGyroscopeSensorData(SensorDataLinux* data) {
       });
 #else
   data->sensor_scale_name = "in_anglvel_scale";
-  data->apply_scaling_func =
-      base::Bind([](double scaling_value, SensorReading& reading) {
-        reading.values[0] = scaling_value * reading.values[0];
-        reading.values[1] = scaling_value * reading.values[1];
-        reading.values[2] = scaling_value * reading.values[2];
+  data->sensor_offset_file_name = "in_anglvel_offset";
+  data->sensor_frequency_file_name = "in_anglvel_sampling_frequency";
+  data->apply_scaling_func = base::Bind(
+      [](double scaling_value, double offset, SensorReading& reading) {
+        double scaling = scaling_value + offset;
+        reading.values[0] = scaling * reading.values[0];
+        reading.values[1] = scaling * reading.values[1];
+        reading.values[2] = scaling * reading.values[2];
       });
 #endif
 
   MaybeCheckKernelVersionAndAssignFileNames(file_names_x, file_names_y,
                                             file_names_z, data);
-  data->reporting_mode = mojom::ReportingMode::CONTINUOUS;
   data->default_configuration =
       PlatformSensorConfiguration(kDefaultGyroscopeFrequencyHz);
 }
 
 // TODO(maksims): Verify magnitometer works correctly on a chromebook when
 // I get one with that sensor onboard.
-void InitMagnitometerSensorData(SensorDataLinux* data) {
+void InitMagnitometerSensorData(SensorPathsLinux* data) {
   std::vector<std::string> file_names_x{"in_magn_x_raw"};
   std::vector<std::string> file_names_y{"in_magn_y_raw"};
   std::vector<std::string> file_names_z{"in_magn_z_raw"};
 
   data->sensor_scale_name = "in_magn_scale";
-  data->apply_scaling_func = base::Bind([](double scaling_value,
-                                           SensorReading& reading) {
-    reading.values[0] = scaling_value * kMicroteslaInGauss * reading.values[0];
-    reading.values[1] = scaling_value * kMicroteslaInGauss * reading.values[1];
-    reading.values[2] = scaling_value * kMicroteslaInGauss * reading.values[2];
-  });
+  data->sensor_offset_file_name = "in_magn_offset";
+  data->sensor_frequency_file_name = "in_magn_sampling_frequency";
+  data->apply_scaling_func = base::Bind(
+      [](double scaling_value, double offset, SensorReading& reading) {
+        double scaling = scaling_value + offset;
+        reading.values[0] = scaling * kMicroteslaInGauss * reading.values[0];
+        reading.values[1] = scaling * kMicroteslaInGauss * reading.values[1];
+        reading.values[2] = scaling * kMicroteslaInGauss * reading.values[2];
+      });
 
   MaybeCheckKernelVersionAndAssignFileNames(file_names_x, file_names_y,
                                             file_names_z, data);
-  data->reporting_mode = mojom::ReportingMode::CONTINUOUS;
   data->default_configuration =
       PlatformSensorConfiguration(kDefaultMagnetometerFrequencyHz);
 }
 
 }  // namespace
 
-SensorDataLinux::SensorDataLinux() : base_path_sensor_linux(kSensorsBasePath) {}
+SensorPathsLinux::SensorPathsLinux()
+    : base_path_sensor_linux(kSensorsBasePath) {}
 
-SensorDataLinux::~SensorDataLinux() = default;
+SensorPathsLinux::~SensorPathsLinux() = default;
 
-SensorDataLinux::SensorDataLinux(const SensorDataLinux& other) = default;
+SensorPathsLinux::SensorPathsLinux(const SensorPathsLinux& other) = default;
 
-bool InitSensorData(SensorType type, SensorDataLinux* data) {
+bool InitSensorData(SensorType type, SensorPathsLinux* data) {
   DCHECK(data);
 
+  data->type = type;
   switch (type) {
     case SensorType::AMBIENT_LIGHT:
       InitAmbientLightSensorData(data);
@@ -179,11 +188,28 @@ bool InitSensorData(SensorType type, SensorDataLinux* data) {
       InitMagnitometerSensorData(data);
       break;
     default:
-      NOTIMPLEMENTED();
       return false;
   }
 
   return true;
 }
+
+SensorInfoLinux::SensorInfoLinux(
+    const std::string& sensor_device_node,
+    double sensor_device_frequency,
+    double sensor_device_scaling_value,
+    double sensor_device_offset_value,
+    mojom::ReportingMode mode,
+    SensorPathsLinux::ReaderFunctor scaling_func,
+    std::vector<base::FilePath> device_reading_files)
+    : device_node(sensor_device_node),
+      device_frequency(sensor_device_frequency),
+      device_scaling_value(sensor_device_scaling_value),
+      device_offset_value(sensor_device_offset_value),
+      reporting_mode(mode),
+      apply_scaling_func(scaling_func),
+      device_reading_files(std::move(device_reading_files)) {}
+
+SensorInfoLinux::~SensorInfoLinux() = default;
 
 }  // namespace device

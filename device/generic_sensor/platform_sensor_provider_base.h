@@ -53,13 +53,19 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderBase
   // are no sensors left.
   virtual void AllSensorsRemoved() {}
 
+  void NotifySensorCreated(mojom::SensorType type,
+                           scoped_refptr<PlatformSensor> sensor);
+
+  std::vector<mojom::SensorType> GetPendingRequestTypes();
+
+  mojo::ScopedSharedBufferMapping MapSharedBufferForType(
+      mojom::SensorType type);
+
  private:
   friend class PlatformSensor;  // To call RemoveSensor();
 
   bool CreateSharedBufferIfNeeded();
   void RemoveSensor(mojom::SensorType type);
-  void NotifySensorCreated(mojom::SensorType type,
-                           scoped_refptr<PlatformSensor> sensor);
 
  private:
   using CallbackQueue = std::vector<CreateSensorCallback>;
