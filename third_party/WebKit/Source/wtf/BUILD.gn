@@ -334,6 +334,7 @@ test("wtf_unittests") {
     "text/StringBuilderTest.cpp",
     "text/StringImplTest.cpp",
     "text/StringOperatorsTest.cpp",
+    "text/StringToNumberTest.cpp",
     "text/StringViewTest.cpp",
     "text/TextCodecICUTest.cpp",
     "text/TextCodecLatin1Test.cpp",

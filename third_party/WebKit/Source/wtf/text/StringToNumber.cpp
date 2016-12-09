@@ -7,6 +7,7 @@
 #include "wtf/ASCIICType.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringImpl.h"
+#include <type_traits>
 
 namespace WTF {
 
@@ -29,10 +30,13 @@ static inline IntegralType toIntegralType(const CharType* data,
                                           size_t length,
                                           bool* ok,
                                           int base) {
-  static const IntegralType integralMax =
+  static_assert(std::is_integral<IntegralType>::value,
+                "IntegralType must be an integral type.");
+  static constexpr IntegralType integralMax =
       std::numeric_limits<IntegralType>::max();
-  static const bool isSigned = std::numeric_limits<IntegralType>::is_signed;
-  const IntegralType maxMultiplier = integralMax / base;
+  static constexpr IntegralType integralMin =
+      std::numeric_limits<IntegralType>::min();
+  static constexpr bool isSigned = std::numeric_limits<IntegralType>::is_signed;
 
   IntegralType value = 0;
   bool isOk = false;
@@ -70,26 +74,30 @@ static inline IntegralType toIntegralType(const CharType* data,
     else
       digitValue = c - 'A' + 10;
 
-    if (value > maxMultiplier ||
-        (value == maxMultiplier &&
-         digitValue > (integralMax % base) + isNegative))
+    bool overflow;
+    if (isNegative) {
+      // Overflow condition:
+      //       value * base - digitValue < integralMin
+      //   <=> value < (integralMin + digitValue) / base
+      // We must be careful of rounding errors here, but the default rounding
+      // mode (round to zero) works well, so we can use this formula as-is.
+      overflow = value < (integralMin + digitValue) / base;
+    } else {
+      // Overflow condition:
+      //       value * base + digitValue > integralMax
+      //   <=> value > (integralMax + digitValue) / base
+      // Ditto regarding rounding errors.
+      overflow = value > (integralMax - digitValue) / base;
+    }
+    if (overflow)
       goto bye;
 
-    value = base * value + digitValue;
+    if (isNegative)
+      value = base * value - digitValue;
+    else
+      value = base * value + digitValue;
     ++data;
   }
-
-#if COMPILER(MSVC)
-#pragma warning(push, 0)
-#pragma warning(disable : 4146)
-#endif
-
-  if (isNegative)
-    value = -value;
-
-#if COMPILER(MSVC)
-#pragma warning(pop)
-#endif
 
   // skip trailing space
   while (length && isSpaceOrNewline(*data)) {
