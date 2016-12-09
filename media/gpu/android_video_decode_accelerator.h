@@ -94,7 +94,6 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   };
 
   enum DrainType {
-    DRAIN_TYPE_NONE,
     DRAIN_FOR_FLUSH,
     DRAIN_FOR_RESET,
     DRAIN_FOR_DESTROY,
@@ -138,9 +137,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // used.
   void DoIOTask(bool start_timer);
 
-  // Feeds input data to |media_codec_|. This checks
-  // |pending_bitstream_buffers_| and queues a buffer to |media_codec_|.
-  // Returns true if any input was processed.
+  // Feeds buffers in |pending_bitstream_records_| to |media_codec_|. Returns
+  // true if one was queued.
   bool QueueInput();
 
   // Dequeues output from |media_codec_| and feeds the decoded frame to the
@@ -282,9 +280,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Time at which we last did useful work on io_timer_.
   base::TimeTicks most_recent_work_;
 
-  // Type of a drain request. We need to distinguish between DRAIN_FOR_FLUSH
-  // and other types, see IsDrainingForResetOrDestroy().
-  DrainType drain_type_;
+  // The ongoing drain operation, if any.
+  base::Optional<DrainType> drain_type_;
 
   // Holds a ref-count to the CDM to avoid using the CDM after it's destroyed.
   scoped_refptr<MediaKeys> cdm_for_reference_holding_only_;

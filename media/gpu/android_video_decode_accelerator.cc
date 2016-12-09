@@ -231,7 +231,6 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       state_(NO_ERROR),
       picturebuffers_requested_(false),
       picture_buffer_manager_(this),
-      drain_type_(DRAIN_TYPE_NONE),
       media_drm_bridge_cdm_context_(nullptr),
       cdm_registration_id_(0),
       pending_input_buf_index_(-1),
@@ -593,9 +592,9 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
     switch (status) {
       case MEDIA_CODEC_ERROR:
         // Do not post an error if we are draining for reset and destroy.
-        // Instead, run the drain completion task.
+        // Instead, signal completion of the drain.
         if (IsDrainingForResetOrDestroy()) {
-          DVLOG(1) << __func__ << ": error while codec draining";
+          DVLOG(1) << __func__ << ": error while draining";
           state_ = ERROR;
           OnDrainCompleted();
         } else {
@@ -771,7 +770,7 @@ void AndroidVideoDecodeAccelerator::Decode(
   // If we previously deferred a codec restart, take care of it now. This can
   // happen on older devices where configuration changes require a codec reset.
   if (codec_needs_reset_) {
-    DCHECK_EQ(drain_type_, DRAIN_TYPE_NONE);
+    DCHECK(!drain_type_);
     ResetCodecState();
   }
 
@@ -864,11 +863,7 @@ void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
 void AndroidVideoDecodeAccelerator::Flush() {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (state_ == SURFACE_DESTROYED || defer_surface_creation_)
-    NotifyFlushDone();
-  else
-    StartCodecDrain(DRAIN_FOR_FLUSH);
+  StartCodecDrain(DRAIN_FOR_FLUSH);
 }
 
 void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
@@ -962,17 +957,31 @@ void AndroidVideoDecodeAccelerator::StartCodecDrain(DrainType drain_type) {
   DVLOG(2) << __func__ << " drain_type:" << drain_type;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // We assume that DRAIN_FOR_FLUSH and DRAIN_FOR_RESET cannot come while
-  // another drain request is present, but DRAIN_FOR_DESTROY can.
-  DCHECK_NE(drain_type, DRAIN_TYPE_NONE);
-  DCHECK(drain_type_ == DRAIN_TYPE_NONE || drain_type == DRAIN_FOR_DESTROY)
-      << "Unexpected StartCodecDrain() with drain type " << drain_type
-      << " while already draining with drain type " << drain_type_;
-
-  const bool enqueue_eos = drain_type_ == DRAIN_TYPE_NONE;
+  auto previous_drain_type = drain_type_;
   drain_type_ = drain_type;
 
-  if (enqueue_eos)
+  // Only DRAIN_FOR_DESTROY is allowed while a drain is already in progress.
+  DCHECK(!previous_drain_type || drain_type == DRAIN_FOR_DESTROY)
+      << "StartCodecDrain(" << drain_type
+      << ") while already draining with type " << previous_drain_type.value();
+
+  // Skip the drain if:
+  // * There's no codec.
+  // * The codec is not currently decoding and we have no more inputs to submit.
+  //   (Reset() and Destroy() should clear pending inputs before calling this).
+  // * The drain is for reset or destroy (where we can drop pending decodes) and
+  //   the codec is not VP8. We still have to drain VP8 in this case because
+  //   MediaCodec can hang in release() or flush() if we don't drain it.
+  //   http://crbug.com/598963
+  if (!media_codec_ || (pending_bitstream_records_.empty() &&
+                        bitstream_buffers_in_decoder_.empty()) ||
+      (drain_type != DRAIN_FOR_FLUSH && codec_config_->codec != kCodecVP8)) {
+    OnDrainCompleted();
+    return;
+  }
+
+  // Queue EOS if one is not already queued.
+  if (!previous_drain_type)
     DecodeBuffer(BitstreamBuffer(-1, base::SharedMemoryHandle(), 0));
 }
 
@@ -984,39 +993,33 @@ void AndroidVideoDecodeAccelerator::OnDrainCompleted() {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // If we were waiting for an EOS, clear the state and reset the MediaCodec
-  // as normal.
-  //
-  // Some Android platforms seem to send an EOS buffer even when we're not
-  // expecting it. In this case, destroy and reset the codec but don't notify
-  // flush done since it violates the state machine. http://crbug.com/585959.
+  // Sometimes MediaCodec returns an EOS buffer even if we didn't queue one.
+  // Consider it an error. http://crbug.com/585959.
+  if (!drain_type_) {
+    state_ = ERROR;
+    ResetCodecState();
+    return;
+  }
 
-  switch (drain_type_) {
-    case DRAIN_TYPE_NONE:
-      // Unexpected EOS.
-      state_ = ERROR;
-      ResetCodecState();
-      break;
+  ResetCodecState();
+  switch (*drain_type_) {
     case DRAIN_FOR_FLUSH:
-      ResetCodecState();
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
                                 weak_this_factory_.GetWeakPtr()));
       break;
     case DRAIN_FOR_RESET:
-      ResetCodecState();
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyResetDone,
                                 weak_this_factory_.GetWeakPtr()));
       break;
     case DRAIN_FOR_DESTROY:
-      ResetCodecState();
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::ActualDestroy,
                                 weak_this_factory_.GetWeakPtr()));
       break;
   }
-  drain_type_ = DRAIN_TYPE_NONE;
+  drain_type_.reset();
 }
 
 void AndroidVideoDecodeAccelerator::ResetCodecState() {
@@ -1025,8 +1028,10 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
   // If there is already a reset in flight, then that counts.  This can really
   // only happen if somebody calls Reset.
   // If the surface is destroyed there's nothing to do.
-  if (state_ == WAITING_FOR_CODEC || state_ == SURFACE_DESTROYED)
+  if (state_ == WAITING_FOR_CODEC || state_ == SURFACE_DESTROYED ||
+      !media_codec_) {
     return;
+  }
 
   bitstream_buffers_in_decoder_.clear();
 
@@ -1097,19 +1102,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
   bitstreams_notified_in_advance_.clear();
 
   picture_buffer_manager_.ReleaseCodecBuffers(output_picture_buffers_);
-
-  // Some VP8 files require complete MediaCodec drain before we can call
-  // MediaCodec.flush() or MediaCodec.reset(). http://crbug.com/598963.
-  if (media_codec_ && codec_config_->codec == kCodecVP8 &&
-      !bitstream_buffers_in_decoder_.empty()) {
-    // Postpone ResetCodecState() after the drain.
-    StartCodecDrain(DRAIN_FOR_RESET);
-  } else {
-    ResetCodecState();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyResetDone,
-                              weak_this_factory_.GetWeakPtr()));
-  }
+  StartCodecDrain(DRAIN_FOR_RESET);
 }
 
 void AndroidVideoDecodeAccelerator::SetSurface(int32_t surface_id) {
@@ -1132,21 +1125,11 @@ void AndroidVideoDecodeAccelerator::Destroy() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   picture_buffer_manager_.Destroy(output_picture_buffers_);
-
   client_ = nullptr;
 
-  // Some VP8 files require a complete MediaCodec drain before we can call
-  // MediaCodec.flush() or MediaCodec.release(). http://crbug.com/598963. In
-  // that case, postpone ActualDestroy() until after the drain.
-  if (media_codec_ && codec_config_->codec == kCodecVP8) {
-    // Clear |pending_bitstream_records_|.
-    while (!pending_bitstream_records_.empty())
-      pending_bitstream_records_.pop();
-
-    StartCodecDrain(DRAIN_FOR_DESTROY);
-  } else {
-    ActualDestroy();
-  }
+  // We don't want to queue more inputs while draining.
+  std::queue<BitstreamRecord>().swap(pending_bitstream_records_);
+  StartCodecDrain(DRAIN_FOR_DESTROY);
 }
 
 void AndroidVideoDecodeAccelerator::ActualDestroy() {
@@ -1222,7 +1205,7 @@ void AndroidVideoDecodeAccelerator::OnSurfaceDestroyed() {
 
   // If we're draining, signal completion now because the drain can no longer
   // proceed.
-  if (drain_type_ != DRAIN_TYPE_NONE)
+  if (drain_type_)
     OnDrainCompleted();
 }
 
