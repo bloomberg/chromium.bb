@@ -504,6 +504,8 @@ void TextFieldInputType::subtreeHasChanged() {
   element().updatePlaceholderVisibility();
   element().pseudoStateChanged(CSSSelector::PseudoValid);
   element().pseudoStateChanged(CSSSelector::PseudoInvalid);
+  element().pseudoStateChanged(CSSSelector::PseudoInRange);
+  element().pseudoStateChanged(CSSSelector::PseudoOutOfRange);
 
   didSetValueByUserEdit(wasChanged ? ValueChangeStateChanged
                                    : ValueChangeStateNone);
