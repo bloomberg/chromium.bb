@@ -2121,14 +2121,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_VIDEO_FULLSCREEN_ORIENTATION_LOCK_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(media::kVideoFullscreenOrientationLock)},
 #endif
-#if defined(OS_CHROMEOS)
-    {"cros-comp-updates", IDS_FLAGS_CROS_COMP_UPDATES_NAME,
-     IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kCrosCompUpdates)},
-    {"component-flash-only", IDS_FLAGS_COMPONENT_FLASH_ONLY_NAME,
-     IDS_FLAGS_COMPONENT_FLASH_ONLY_DESCRIPTION, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kComponentFlashOnly)},
-#endif
     {"enable-nostate-prefetch", IDS_FLAGS_NOSTATE_PREFETCH,
      IDS_FLAGS_NOSTATE_PREFETCH_DESCRIPTION, kOsAll,
      FEATURE_WITH_VARIATIONS_VALUE_TYPE(prerender::kNoStatePrefetchFeature,
