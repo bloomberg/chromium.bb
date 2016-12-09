@@ -110,11 +110,17 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
       m_contentsLayerId(0),
       m_scrollableArea(nullptr),
       m_renderingContext3d(0),
+      m_colorBehavior(ColorBehavior::transformToGlobalTarget()),
       m_hasPreferredRasterBounds(false) {
 #if ENABLE(ASSERT)
   if (m_client)
     m_client->verifyNotPainting();
 #endif
+
+  // In true color mode, no inputs are adjusted, and all colors are converted
+  // at rasterization time.
+  if (RuntimeEnabledFeatures::trueColorRenderingEnabled())
+    m_colorBehavior = ColorBehavior::tag();
 
   m_contentLayerDelegate = WTF::makeUnique<ContentLayerDelegate>(this);
   m_layer = Platform::current()->compositorSupport()->createContentLayer(
@@ -327,7 +333,8 @@ bool GraphicsLayer::paintWithoutCommit(
     return false;
   }
 
-  GraphicsContext context(getPaintController(), disabledMode);
+  GraphicsContext context(getPaintController(), disabledMode, nullptr,
+                          m_colorBehavior);
 
   m_previousInterestRect = *interestRect;
   m_client->paintContents(this, context, m_paintingPhase, *interestRect);
@@ -1234,7 +1241,9 @@ sk_sp<SkPicture> GraphicsLayer::capturePicture() {
     return nullptr;
 
   IntSize intSize = expandedIntSize(size());
-  GraphicsContext graphicsContext(getPaintController());
+  GraphicsContext graphicsContext(getPaintController(),
+                                  GraphicsContext::NothingDisabled, nullptr,
+                                  m_colorBehavior);
   graphicsContext.beginRecording(IntRect(IntPoint(0, 0), intSize));
   getPaintController().paintArtifact().replay(graphicsContext);
   return graphicsContext.endRecording();

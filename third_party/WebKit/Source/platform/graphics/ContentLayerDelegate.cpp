@@ -25,7 +25,6 @@
 
 #include "platform/graphics/ContentLayerDelegate.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -90,11 +89,9 @@ void ContentLayerDelegate::paintContents(
   paintController.paintArtifact().appendToWebDisplayItemList(
       webDisplayItemList);
 
-  if (!RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-    // TODO(ccameron): This color space should come from the GraphicsLayer.
-    // https://crbug.com/667411
+  if (m_graphicsLayer->colorBehavior().isTransformToTargetColorSpace()) {
     webDisplayItemList->setImpliedColorSpace(gfx::ColorSpace::FromSkColorSpace(
-        ColorBehavior::globalTargetColorSpace()));
+        m_graphicsLayer->colorBehavior().targetColorSpace()));
   }
   paintController.setDisplayItemConstructionIsDisabled(false);
   paintController.setSubsequenceCachingIsDisabled(false);

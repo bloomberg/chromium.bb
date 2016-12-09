@@ -30,6 +30,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/Font.h"
+#include "platform/graphics/ColorBehavior.h"
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsContextState.h"
@@ -70,9 +71,11 @@ class PLATFORM_EXPORT GraphicsContext {
                           // the context from performance tests.
   };
 
-  explicit GraphicsContext(PaintController&,
-                           DisabledMode = NothingDisabled,
-                           SkMetaData* = 0);
+  explicit GraphicsContext(
+      PaintController&,
+      DisabledMode = NothingDisabled,
+      SkMetaData* = 0,
+      ColorBehavior = ColorBehavior::transformToGlobalTarget());
 
   ~GraphicsContext();
 
@@ -80,6 +83,7 @@ class PLATFORM_EXPORT GraphicsContext {
   const SkCanvas* canvas() const { return m_canvas; }
 
   PaintController& getPaintController() { return m_paintController; }
+  const ColorBehavior& getColorBehavior() const { return m_colorBehavior; }
 
   bool contextDisabled() const { return m_disabledState; }
 
@@ -445,6 +449,8 @@ class PLATFORM_EXPORT GraphicsContext {
   SkPictureRecorder m_pictureRecorder;
 
   SkMetaData m_metaData;
+
+  const ColorBehavior m_colorBehavior;
 
 #if DCHECK_IS_ON()
   int m_layerCount;
