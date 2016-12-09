@@ -225,24 +225,12 @@ bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
   clang::StringRef name = decl.getName();
 
   // These methods should never be renamed.
-  static const char* kBlacklistMethods[] = {"trace", "traceImpl", "lock",
-                                            "unlock", "try_lock"};
+  static const char* kBlacklistMethods[] = {"trace",  "traceImpl", "lock",
+                                            "unlock", "try_lock",  "begin",
+                                            "end",    "rbegin",    "rend"};
   for (const auto& b : kBlacklistMethods) {
     if (name == b)
       return true;
-  }
-
-  // Iterator methods shouldn't be renamed to work with stl and range-for
-  // loops.
-  std::string ret_type = decl.getReturnType().getAsString();
-  if (ret_type.find("iterator") != std::string::npos ||
-      ret_type.find("Iterator") != std::string::npos) {
-    static const char* kIteratorBlacklist[] = {"begin", "end", "rbegin",
-                                               "rend"};
-    for (const auto& b : kIteratorBlacklist) {
-      if (name == b)
-        return true;
-    }
   }
 
   // Subclasses of InspectorAgent will subclass "disable()" from both blink and
