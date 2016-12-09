@@ -74,6 +74,7 @@ source_set("browser") {
     "xcallback_parameters.mm",
   ]
   deps = [
+    ":settings_resources",
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
