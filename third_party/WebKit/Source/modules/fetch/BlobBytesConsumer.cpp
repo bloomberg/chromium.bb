@@ -231,8 +231,14 @@ void BlobBytesConsumer::didFinishLoading(unsigned long identifier,
 
 void BlobBytesConsumer::didFail(const ResourceError& e) {
   if (e.isCancellation()) {
-    DCHECK_EQ(PublicState::Closed, m_state);
-    return;
+    // |m_loader| can be canceled when
+    //  - this object explicitly cancels it, or
+    //  - the global context is shutting down.
+    // In the first case, |m_state| should be Closed.
+    if (getExecutionContext() && !getExecutionContext()->isContextDestroyed())
+      DCHECK_EQ(PublicState::Closed, m_state);
+    if (m_state == PublicState::Closed)
+      return;
   }
   DCHECK_EQ(PublicState::ReadableOrWaiting, m_state);
   m_loader = nullptr;
