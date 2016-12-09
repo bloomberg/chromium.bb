@@ -259,7 +259,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
   explicit ClientDelegate(QuicClient* client) : client_(client) {}
   ~ClientDelegate() override {}
   void OnCanWrite() override {
-    EpollEvent event(EPOLLOUT, false);
+    EpollEvent event(EPOLLOUT);
     client_->OnEvent(client_->GetLatestFD(), &event);
   }
 
@@ -400,7 +400,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     StartServer();
 
     CreateClientWithWriter();
-    static EpollEvent event(EPOLLOUT, false);
+    static EpollEvent event(EPOLLOUT);
     if (client_writer_ != nullptr) {
       client_writer_->Initialize(
           QuicConnectionPeer::GetHelper(
@@ -2912,7 +2912,7 @@ TEST_P(EndToEndTest, DISABLED_TestHugeResponseWithPacketLoss) {
   client->UseWriter(client_writer_);
   client->Connect();
   client_.reset(client);
-  static EpollEvent event(EPOLLOUT, false);
+  static EpollEvent event(EPOLLOUT);
   client_writer_->Initialize(
       QuicConnectionPeer::GetHelper(client_->client()->session()->connection()),
       QuicConnectionPeer::GetAlarmFactory(
