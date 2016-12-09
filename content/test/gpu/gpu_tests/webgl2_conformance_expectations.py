@@ -54,7 +54,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance2/rendering/rendering-sampling-feedback-loop.html',
-        bug=660844)
+        bug=660844) # WebGL 2.0.1
+    self.Fail('conformance2/rendering/read-draw-when-missing-image.html',
+        bug=672719) # WebGL 2.0.1
+    self.Fail('conformance2/glsl3/float-parsing.html',
+        bug=672722) # WebGL 2.0.1
     self.Fail('conformance2/textures/misc/' +
         'integer-cubemap-specification-order-bug.html',
         bug=483282) # owner:cwallez, test might be buggy
