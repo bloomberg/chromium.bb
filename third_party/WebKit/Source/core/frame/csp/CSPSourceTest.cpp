@@ -53,6 +53,28 @@ TEST_F(CSPSourceTest, BasicMatching) {
   EXPECT_FALSE(source.matches(KURL(base, "HTTP://example.com:8000/FOO/BAR")));
 }
 
+TEST_F(CSPSourceTest, BasicPathMatching) {
+  KURL base;
+  CSPSource A(csp.get(), "http", "example.com", 8000, "/",
+              CSPSource::NoWildcard, CSPSource::NoWildcard);
+
+  EXPECT_TRUE(A.matches(KURL(base, "http://example.com:8000")));
+  EXPECT_TRUE(A.matches(KURL(base, "http://example.com:8000/")));
+  EXPECT_TRUE(A.matches(KURL(base, "http://example.com:8000/foo/bar")));
+
+  EXPECT_FALSE(A.matches(KURL(base, "http://example.com:8000path")));
+  EXPECT_FALSE(A.matches(KURL(base, "http://example.com:9000/")));
+
+  CSPSource B(csp.get(), "http", "example.com", 8000, "", CSPSource::NoWildcard,
+              CSPSource::NoWildcard);
+  EXPECT_TRUE(B.matches(KURL(base, "http://example.com:8000")));
+  EXPECT_TRUE(B.matches(KURL(base, "http://example.com:8000/")));
+  EXPECT_TRUE(A.matches(KURL(base, "http://example.com:8000/foo/bar")));
+
+  EXPECT_FALSE(B.matches(KURL(base, "http://example.com:8000path")));
+  EXPECT_FALSE(B.matches(KURL(base, "http://example.com:9000/")));
+}
+
 TEST_F(CSPSourceTest, WildcardMatching) {
   KURL base;
   CSPSource source(csp.get(), "http", "example.com", 0, "/",
@@ -194,6 +216,9 @@ TEST_F(CSPSourceTest, Subsumes) {
       {{"https", "/page1.html", 0}, {"https", "/page1.html", 0}, true, true},
       {{"http", "/page1.html", 70}, {"http", "/page1.html", 70}, true, true},
       {{"https", "/page1.html", 70}, {"https", "/page1.html", 70}, true, true},
+      {{"http", "/", 0}, {"http", "", 0}, true, true},
+      {{"http", "/", 80}, {"http", "", 80}, true, true},
+      {{"http", "/", 80}, {"https", "", 443}, false, true},
       // One stronger signal in the first CSPSource
       {{"https", "/", 0}, {"http", "/", 0}, true, false},
       {{"http", "/page1.html", 0}, {"http", "/", 0}, true, false},

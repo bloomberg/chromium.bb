@@ -1244,9 +1244,7 @@ TEST_F(SourceListDirectiveTest, SubsumesListWildcard) {
       {"http: ftp: ws:", {"*", "https: http: ftp: ws: wss:"}, true},
       {"http: ftp: ws:", {"*", "https: 'strict-dynamic'"}, true},
       {"http://another.test", {"*", "'self'"}, true},
-      // TODO(amalika): Fix the test below that should have the same behavior as
-      // the test above.
-      // {"http://another.test/", {"*", "'self'"}, true},
+      {"http://another.test/", {"*", "'self'"}, true},
       {"http://another.test", {"https:", "'self'"}, true},
       {"'self'", {"*", "'self'"}, true},
       {"'unsafe-eval' * ", {"'unsafe-eval'"}, true},

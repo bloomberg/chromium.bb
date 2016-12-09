@@ -74,7 +74,7 @@ bool CSPSource::hostMatches(const String& host) const {
 }
 
 bool CSPSource::pathMatches(const String& urlPath) const {
-  if (m_path.isEmpty())
+  if (m_path.isEmpty() || (m_path == "/" && urlPath.isEmpty()))
     return true;
 
   String path = decodeURLEscapeSequences(urlPath);
@@ -154,7 +154,9 @@ CSPSource* CSPSource::intersect(CSPSource* other) const {
   }
 
   String host = m_hostWildcard == NoWildcard ? m_host : other->m_host;
-  String path = other->pathMatches(m_path) ? m_path : other->m_path;
+  // Since sources are similar and paths match, pick the longer one.
+  String path =
+      m_path.length() > other->m_path.length() ? m_path : other->m_path;
   // Choose this port if the other port is empty, has wildcard or is a port for
   // a less secure scheme such as "http" whereas scheme of this is "https", in
   // which case the lengths would differ.
