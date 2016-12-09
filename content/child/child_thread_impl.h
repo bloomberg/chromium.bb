@@ -109,20 +109,10 @@ class CONTENT_EXPORT ChildThreadImpl
 
   mojom::RouteProvider* GetRemoteRouteProvider();
 
-  // Allocates a block of shared memory of the given size. Returns NULL on
+  // Allocates a block of shared memory of the given size. Returns nullptr on
   // failure.
-  // Note: On posix, this requires a sync IPC to the browser process,
-  // but on windows the child process directly allocates the block.
-  std::unique_ptr<base::SharedMemory> AllocateSharedMemory(size_t buf_size);
-
-  // A static variant that can be called on background threads provided
-  // the |sender| passed in is safe to use on background threads.
-  // |out_of_memory| is an output variable populated on failure which tells the
-  // caller whether the failure was caused by an out of memory error.
   static std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
-      size_t buf_size,
-      IPC::Sender* sender,
-      bool* out_of_memory);
+      size_t buf_size);
 
 #if defined(OS_LINUX)
   void SetThreadPriority(base::PlatformThreadId id,

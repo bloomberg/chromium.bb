@@ -102,22 +102,9 @@ ChildSharedBitmapManager::AllocateSharedBitmap(const gfx::Size& size) {
   if (!cc::SharedBitmap::SizeInBytes(size, &memory_size))
     return std::unique_ptr<SharedMemoryBitmap>();
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
-  bool out_of_memory = false;
   std::unique_ptr<base::SharedMemory> memory =
-      ChildThreadImpl::AllocateSharedMemory(memory_size, nullptr,
-                                            &out_of_memory);
-  if (!memory) {
-    if (out_of_memory) {
-      CollectMemoryUsageAndDie(size, memory_size);
-    } else {
-      // Callers of this method are not prepared to handle failures during
-      // shutdown. Exit immediately. This is expected behavior during the Fast
-      // Shutdown path, so use EXIT_SUCCESS. https://crbug.com/615121.
-      exit(EXIT_SUCCESS);
-    }
-  }
-
-  if (!memory->Map(memory_size))
+      ChildThreadImpl::AllocateSharedMemory(memory_size);
+  if (!memory || !memory->Map(memory_size))
     CollectMemoryUsageAndDie(size, memory_size);
 
   NotifyAllocatedSharedBitmap(memory.get(), id);

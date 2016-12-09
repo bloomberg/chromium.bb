@@ -677,23 +677,13 @@ mojom::RouteProvider* ChildThreadImpl::GetRemoteRouteProvider() {
   return remote_route_provider_.get();
 }
 
-std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
-    size_t buf_size) {
-  DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
-  return AllocateSharedMemory(buf_size, this, nullptr);
-}
-
 // static
 std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
-    size_t buf_size,
-    IPC::Sender* sender,
-    bool* out_of_memory) {
+    size_t buf_size) {
   mojo::ScopedSharedBufferHandle mojo_buf =
       mojo::SharedBufferHandle::Create(buf_size);
   if (!mojo_buf->is_valid()) {
     LOG(WARNING) << "Browser failed to allocate shared memory";
-    if (out_of_memory)
-      *out_of_memory = true;
     return nullptr;
   }
 
