@@ -15,6 +15,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_vector.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -48,6 +49,7 @@ class GURL;
 namespace base {
 class CommandLine;
 class FilePath;
+class SchedulerWorkerPoolParams;
 }
 
 namespace blink {
@@ -798,6 +800,16 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns the RapporService from the browser process.
   virtual ::rappor::RapporService* GetRapporService();
+
+  // Provides parameters for initializing the global task scheduler. If
+  // |params_vector| is empty, default parameters are used.
+  virtual void GetTaskSchedulerInitializationParams(
+      std::vector<base::SchedulerWorkerPoolParams>* params_vector,
+      base::TaskScheduler::WorkerPoolIndexForTraitsCallback*
+          index_to_traits_callback) {}
+
+  // Performs any necessary PostTask API redirection to the task scheduler.
+  virtual void PerformExperimentalTaskSchedulerRedirections() {}
 };
 
 }  // namespace content

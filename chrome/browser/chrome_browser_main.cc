@@ -33,7 +33,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
-#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -134,7 +133,6 @@
 #include "components/rappor/rappor_service_impl.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
-#include "components/task_scheduler_util/initialization_util.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
@@ -929,6 +927,11 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 int ChromeBrowserMainParts::PreCreateThreads() {
+  // IMPORTANT
+  // Calls in this function should not post tasks or create threads as
+  // components used to handle those tasks are not yet available. This work
+  // should be deferred to PreMainMessageLoopRunImpl.
+
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreCreateThreads");
   result_code_ = PreCreateThreadsImpl();
 
@@ -1199,25 +1202,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   device::GeolocationProvider::SetGeolocationDelegate(
       new ChromeGeolocationDelegate());
 
-  // IMPORTANT
-  // Do not add anything below this line until you've verified your new code
-  // does not interfere with the critical initialization order below. Some of
-  // the calls below end up implicitly creating threads and as such new calls
-  // typically either belong before them or in a later startup phase.
-
   // Now that the command line has been mutated based on about:flags, we can
-  // initialize field trials and setup metrics. The field trials are needed by
-  // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
+  // initialize field trials. The field trials are needed by IOThread's
+  // initialization which happens in BrowserProcess:PreCreateThreads. Metrics
+  // initialization is handled in PreMainMessageLoopRunImpl since it posts
+  // tasks.
   SetupFieldTrials();
-
-  // Task Scheduler initialization needs to be here for the following reasons:
-  //   * After |SetupFieldTrials()|: Initialization uses variations.
-  //   * Near the end of |PreCreateThreads()|: The TaskScheduler needs to be
-  //         created before any other threads are (by contract) but it creates
-  //         threads itself so instantiating it earlier is also incorrect.
-  // To maintain scoping symmetry, if this line is moved, the corresponding
-  // shutdown call may also need to be moved.
-  task_scheduler_util::InitializeDefaultBrowserTaskScheduler();
 
   // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
   // This also instantiates the IOThread which requests the metrics service and
@@ -2071,13 +2061,6 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // browser_shutdown takes care of deleting browser_process, so we need to
   // release it.
   ignore_result(browser_process_.release());
-
-  // The TaskScheduler was initialized before invoking
-  // |browser_process_->PreCreateThreads()|. To maintain scoping symmetry,
-  // perform the shutdown after |browser_process_->PostDestroyThreads()|.
-  base::TaskScheduler* task_scheduler = base::TaskScheduler::GetInstance();
-  if (task_scheduler)
-    task_scheduler->Shutdown();
 
   browser_shutdown::ShutdownPostThreadsStop(restart_flags);
   master_prefs_.reset();

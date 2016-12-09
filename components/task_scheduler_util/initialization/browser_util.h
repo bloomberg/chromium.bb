@@ -9,6 +9,7 @@
 
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace base {
 class TaskTraits;
@@ -50,9 +51,11 @@ BrowserWorkerPoolConfigurationToSchedulerWorkerPoolParams(
 // GetDefaultBrowserSchedulerWorkerPoolParams().
 size_t BrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits);
 
+#if defined(OS_IOS)
 // Returns the default browser scheduler worker pool params.
 std::vector<base::SchedulerWorkerPoolParams>
 GetDefaultBrowserSchedulerWorkerPoolParams();
+#endif  // defined(OS_IOS)
 
 }  // namespace initialization
 }  // namespace task_scheduler_util

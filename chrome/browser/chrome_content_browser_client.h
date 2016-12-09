@@ -317,6 +317,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                           media::mojom::RemoterRequest request) final;
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
+  void GetTaskSchedulerInitializationParams(
+      std::vector<base::SchedulerWorkerPoolParams>* params_vector,
+      base::TaskScheduler::WorkerPoolIndexForTraitsCallback*
+          index_to_traits_callback) override;
+
+  void PerformExperimentalTaskSchedulerRedirections() override;
+
  private:
   friend class DisableWebRtcEncryptionFlagTest;
 

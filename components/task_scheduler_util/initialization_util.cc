@@ -14,6 +14,7 @@
 
 namespace task_scheduler_util {
 
+#if defined(OS_IOS)
 void InitializeDefaultBrowserTaskScheduler() {
   std::vector<base::SchedulerWorkerPoolParams> params_vector =
       variations::GetBrowserSchedulerWorkerPoolParamsFromVariations();
@@ -28,5 +29,6 @@ void InitializeDefaultBrowserTaskScheduler() {
   task_scheduler_util::variations::
       MaybePerformBrowserTaskSchedulerRedirection();
 }
+#endif  // defined(OS_IOS)
 
 }  // namespace task_scheduler_util

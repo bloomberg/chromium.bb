@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_TASK_SCHEDULER_UTIL_INITIALIZATION_UTIL_H_
 #define COMPONENTS_TASK_SCHEDULER_UTIL_INITIALIZATION_UTIL_H_
 
+#include "build/build_config.h"
+
 namespace task_scheduler_util {
 
 // Calls base::TaskScheduler::CreateAndSetDefaultTaskScheduler with arguments

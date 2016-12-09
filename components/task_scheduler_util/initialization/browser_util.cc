@@ -11,7 +11,6 @@
 #include "base/task_scheduler/switches.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "build/build_config.h"
 
 namespace task_scheduler_util {
 namespace initialization {
@@ -85,6 +84,7 @@ size_t BrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
   return is_background ? BACKGROUND : FOREGROUND;
 }
 
+#if defined(OS_IOS)
 std::vector<base::SchedulerWorkerPoolParams>
 GetDefaultBrowserSchedulerWorkerPoolParams() {
   constexpr size_t kNumWorkerPoolsDefined =
@@ -93,7 +93,12 @@ GetDefaultBrowserSchedulerWorkerPoolParams() {
   static_assert(kNumWorkerPoolsDefined == 4,
                 "Expected 4 worker pools in BrowserWorkerPoolsConfiguration");
   BrowserWorkerPoolsConfiguration config;
-#if defined(OS_ANDROID) || defined(OS_IOS)
+  constexpr size_t kSizeAssignedFields =
+      sizeof(config.background.threads) +
+      sizeof(config.background.detach_period) +
+      sizeof(config.background.standby_thread_policy);
+  static_assert(kSizeAssignedFields == sizeof(config.background),
+                "Not all fields were assigned");
   config.background.standby_thread_policy = StandbyThreadPolicy::ONE;
   config.background.threads =
       base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0);
@@ -113,29 +118,9 @@ GetDefaultBrowserSchedulerWorkerPoolParams() {
   config.foreground_file_io.threads =
       base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0);
   config.foreground_file_io.detach_period = base::TimeDelta::FromSeconds(30);
-#else
-  config.background.standby_thread_policy = StandbyThreadPolicy::ONE;
-  config.background.threads =
-      base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0);
-  config.background.detach_period = base::TimeDelta::FromSeconds(30);
-
-  config.background_file_io.standby_thread_policy = StandbyThreadPolicy::ONE;
-  config.background_file_io.threads =
-      base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0);
-  config.background_file_io.detach_period = base::TimeDelta::FromSeconds(30);
-
-  config.foreground.standby_thread_policy = StandbyThreadPolicy::ONE;
-  config.foreground.threads =
-      base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0);
-  config.foreground.detach_period = base::TimeDelta::FromSeconds(30);
-
-  config.foreground_file_io.standby_thread_policy = StandbyThreadPolicy::ONE;
-  config.foreground_file_io.threads =
-      base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0);
-  config.foreground_file_io.detach_period = base::TimeDelta::FromSeconds(30);
-#endif
   return BrowserWorkerPoolConfigurationToSchedulerWorkerPoolParams(config);
 }
+#endif  // defined(OS_IOS)
 
 }  // namespace initialization
 }  // namespace task_scheduler_util

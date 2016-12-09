@@ -31,9 +31,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system_monitor/system_monitor.h"
+#include "base/task_scheduler/initialization_util.h"
+#include "base/task_scheduler/scheduler_worker_pool_params.h"
+#include "base/task_scheduler/task_scheduler.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
@@ -374,6 +379,71 @@ CreateWinMemoryPressureMonitor(const base::CommandLine& parsed_command_line) {
   return base::MakeUnique<base::win::MemoryPressureMonitor>();
 }
 #endif  // defined(OS_WIN)
+
+enum WorkerPoolType : size_t {
+  BACKGROUND = 0,
+  BACKGROUND_FILE_IO,
+  FOREGROUND,
+  FOREGROUND_FILE_IO,
+  WORKER_POOL_COUNT  // Always last.
+};
+
+std::vector<base::SchedulerWorkerPoolParams>
+GetDefaultSchedulerWorkerPoolParams() {
+  using StandbyThreadPolicy =
+      base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
+  using ThreadPriority = base::ThreadPriority;
+  std::vector<base::SchedulerWorkerPoolParams> params_vector;
+#if defined(OS_ANDROID)
+  params_vector.emplace_back(
+      "Background", ThreadPriority::BACKGROUND, StandbyThreadPolicy::ONE,
+       base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
+       base::TimeDelta::FromSeconds(30));
+  params_vector.emplace_back(
+      "BackgroundFileIO", ThreadPriority::BACKGROUND, StandbyThreadPolicy::ONE,
+       base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
+       base::TimeDelta::FromSeconds(30));
+  params_vector.emplace_back(
+      "Foreground", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
+       base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
+       base::TimeDelta::FromSeconds(30));
+  params_vector.emplace_back(
+      "ForegroundFileIO", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
+       base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
+       base::TimeDelta::FromSeconds(30));
+#else
+  params_vector.emplace_back(
+      "Background", ThreadPriority::BACKGROUND, StandbyThreadPolicy::ONE,
+       base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
+       base::TimeDelta::FromSeconds(30));
+  params_vector.emplace_back(
+      "BackgroundFileIO", ThreadPriority::BACKGROUND, StandbyThreadPolicy::ONE,
+       base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
+       base::TimeDelta::FromSeconds(30));
+  params_vector.emplace_back(
+      "Foreground", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
+       base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
+       base::TimeDelta::FromSeconds(30));
+  params_vector.emplace_back(
+      "ForegroundFileIO", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
+       base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
+       base::TimeDelta::FromSeconds(30));
+#endif
+  DCHECK_EQ(WORKER_POOL_COUNT, params_vector.size());
+  return params_vector;
+}
+
+// Returns the worker pool index for |traits| defaulting to FOREGROUND or
+// FOREGROUND_FILE_IO on any other priorities based off of worker pools defined
+// in GetDefaultSchedulerWorkerPoolParams().
+size_t DefaultBrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
+  const bool is_background =
+      traits.priority() == base::TaskPriority::BACKGROUND;
+  if (traits.with_file_io())
+    return is_background ? BACKGROUND_FILE_IO : FOREGROUND_FILE_IO;
+
+  return is_background ? BACKGROUND : FOREGROUND;
+}
 
 }  // namespace
 
@@ -868,6 +938,23 @@ void BrowserMainLoop::CreateStartupTasks() {
 int BrowserMainLoop::CreateThreads() {
   TRACE_EVENT0("startup,rail", "BrowserMainLoop::CreateThreads");
 
+  std::vector<base::SchedulerWorkerPoolParams> params_vector;
+  base::TaskScheduler::WorkerPoolIndexForTraitsCallback
+      index_to_traits_callback;
+  GetContentClient()->browser()->GetTaskSchedulerInitializationParams(
+      &params_vector, &index_to_traits_callback);
+
+  if (params_vector.empty() || index_to_traits_callback.is_null()) {
+    params_vector = GetDefaultSchedulerWorkerPoolParams();
+    index_to_traits_callback =
+        base::Bind(&DefaultBrowserWorkerPoolIndexForTraits);
+  }
+
+  base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
+      params_vector, index_to_traits_callback);
+
+  GetContentClient()->browser()->PerformExperimentalTaskSchedulerRedirections();
+
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
   base::Thread::Options ui_message_loop_options;
@@ -1162,6 +1249,11 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:ThreadPool");
     BrowserThreadImpl::ShutdownThreadPool();
   }
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:TaskScheduler");
+    base::TaskScheduler::GetInstance()->Shutdown();
+  }
+
   // Must happen after the IO thread is shutdown since this may be accessed from
   // it.
   {
