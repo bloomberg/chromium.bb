@@ -33,7 +33,7 @@
 #include "wtf/TypeTraits.h"
 #include <cstddef>
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 #include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
 
@@ -90,7 +90,7 @@ class StaticLocalWrapper<T, true> {
   }
 };
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 #define DEFINE_STATIC_LOCAL_CHECK_THREADSAFE_ACCESS(Name) \
   static StaticLocalVerifier Name##StaticLocalVerifier;   \
   ASSERT(Name##StaticLocalVerifier.isNotRacy())
