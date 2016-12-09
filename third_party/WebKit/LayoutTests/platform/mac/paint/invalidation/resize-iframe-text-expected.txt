@@ -17,6 +17,11 @@
           "reason": "incremental"
         },
         {
+          "object": "LayoutView #document",
+          "rect": [0, 600, 785, 81],
+          "reason": "incremental"
+        },
+        {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 8, 784, 18],
           "reason": "forced by layout"
@@ -25,6 +30,16 @@
           "object": "LayoutText #text",
           "rect": [8, 8, 346, 18],
           "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [785, 0, 15, 681],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [785, 0, 15, 600],
+          "reason": "scroll"
         }
       ]
     }
@@ -57,6 +72,18 @@
     {
       "object": "HorizontalScrollbar",
       "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
     }
   ]
 }
