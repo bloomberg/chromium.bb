@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.hardware_acceleration;
 
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -16,7 +16,8 @@ import org.chromium.chrome.test.util.ActivityUtils;
  */
 public class EmbedContentViewActivityHWATest extends InstrumentationTestCase {
 
-    @SmallTest
+    // @SmallTest
+    @DisabledTest
     public void testHardwareAcceleration() throws Exception {
         Runnable runnable = new Runnable() {
             @Override
