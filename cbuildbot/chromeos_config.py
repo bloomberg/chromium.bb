@@ -712,12 +712,21 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
+        'chell-paladin',
         'gale-paladin',
         'lakitu_next-paladin',
         'poppy-paladin',
 
         # Firmware Builders.
         'link-depthcharge-full-firmware',
+
+        # Experimental PFQs
+
+        # We collect profiles on chell-chrome-pfq for
+        # feedback-directed-optimization. The prebuilt chrome won't be used by
+        # other builders or developer's local builds unless they specify the
+        # same use flags.
+        'chell-chrome-pfq',
     ]),
 }
 
@@ -3195,6 +3204,15 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'useflags': append_useflags(['-transparent_hugepage']),
           'hw_tests': ([hw_test_list.AFDORecordTest()] +
                        hw_test_list.SharedPoolPFQ()),
+      },
+
+      'chell-chrome-pfq': {
+          'afdo_generate': True,
+          'latest_toolchain': True,
+          # Disable hugepages before collecting AFDO profile.
+          'useflags': append_useflags(['-transparent_hugepage', 'clang',
+                                       'llvm-next']),
+          'hw_tests': [hw_test_list.AFDORecordTest()]
       },
 
       'cyan-chrome-pfq': {
