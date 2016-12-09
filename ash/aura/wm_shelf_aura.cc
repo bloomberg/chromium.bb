@@ -6,7 +6,6 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
-#include "ash/shelf/dimmer_view.h"
 #include "ash/shelf/shelf_bezel_event_handler.h"
 #include "ash/shell.h"
 
@@ -46,10 +45,6 @@ class WmShelfAura::AutoHideEventHandler : public ui::EventHandler {
 WmShelfAura::WmShelfAura() {}
 
 WmShelfAura::~WmShelfAura() {}
-
-WmDimmerView* WmShelfAura::CreateDimmerView(bool disable_animations_for_test) {
-  return DimmerView::Create(this, disable_animations_for_test);
-}
 
 void WmShelfAura::CreateShelfWidget(WmWindow* root) {
   WmShelf::CreateShelfWidget(root);

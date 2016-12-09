@@ -736,8 +736,6 @@ component("ash") {
     "shared/immersive_handler_factory.h",
     "shared/immersive_revealed_lock.cc",
     "shared/immersive_revealed_lock.h",
-    "shelf/dimmer_view.cc",
-    "shelf/dimmer_view.h",
     "shelf/shelf_bezel_event_handler.cc",
     "shelf/shelf_bezel_event_handler.h",
     "shelf/shelf_window_targeter.cc",

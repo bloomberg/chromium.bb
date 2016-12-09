@@ -1162,21 +1162,6 @@ TEST_F(WindowSelectorTest, FullscreenWindow) {
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
 }
 
-// Tests that the shelf dimming state is removed while in overview and restored
-// on exiting overview.
-TEST_F(WindowSelectorTest, OverviewUndimsShelf) {
-  gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  wm::WindowState* window_state = wm::GetWindowState(window1.get());
-  window_state->Maximize();
-  ShelfWidget* shelf = GetPrimaryShelf()->shelf_widget();
-  EXPECT_TRUE(shelf->GetDimsShelf());
-  ToggleOverview();
-  EXPECT_FALSE(shelf->GetDimsShelf());
-  ToggleOverview();
-  EXPECT_TRUE(shelf->GetDimsShelf());
-}
-
 // Tests that entering overview when a fullscreen window is active in maximized
 // mode correctly applies the transformations to the window and correctly
 // updates the window bounds on exiting overview mode: http://crbug.com/401664.

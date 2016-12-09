@@ -28,7 +28,6 @@ class ShelfLockingManager;
 class ShelfView;
 class ShelfWidget;
 class StatusAreaWidget;
-class WmDimmerView;
 class WmShelfObserver;
 class WmWindow;
 
@@ -90,17 +89,6 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   void UpdateAutoHideState();
 
   ShelfBackgroundType GetBackgroundType() const;
-
-  // Creates a view that dims shelf items. The returned view is owned by its
-  // widget. Returns null if shelf dimming is not supported (e.g. on mus).
-  // TODO(jamescook): Delete this after material design ships, as MD will not
-  // require shelf dimming. http://crbug.com/614453
-  virtual WmDimmerView* CreateDimmerView(bool disable_animations_for_test);
-
-  // Shelf items are slightly dimmed (e.g. when a window is maximized).
-  // TODO(jamescook): Delete this after material design ships, as MD will not
-  // require shelf dimming. http://crbug.com/614453
-  bool IsDimmed() const;
 
   // Whether the shelf view is visible.
   // TODO(jamescook): Consolidate this with GetVisibilityState().

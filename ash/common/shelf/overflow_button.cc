@@ -166,8 +166,6 @@ void OverflowButton::PaintForeground(gfx::Canvas* canvas,
 int OverflowButton::NonMaterialBackgroundImageId() const {
   if (shelf_view_->IsShowingOverflowBubble())
     return IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED;
-  else if (wm_shelf_->IsDimmed())
-    return IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK;
   return IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL;
 }
 

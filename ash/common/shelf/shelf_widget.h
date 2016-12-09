@@ -54,10 +54,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void HideShelfBehindBlackBar(bool hide, int animation_time_ms);
   bool IsShelfHiddenBehindBlackBar() const;
 
-  // Causes shelf items to be slightly dimmed (e.g. when a window is maximized).
-  void SetDimsShelf(bool dimming);
-  bool GetDimsShelf() const;
-
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
   StatusAreaWidget* status_area_widget() const { return status_area_widget_; }
 
@@ -83,9 +79,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Clean up prior to deletion.
   void Shutdown();
 
-  // Force the shelf to be presented in an undimmed state.
-  void ForceUndimming(bool force);
-
   // See WmShelf::UpdateIconPositionForPanel().
   void UpdateIconPositionForPanel(WmWindow* panel);
 
@@ -100,17 +93,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Overridden from views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
-
-  // A function to test the current alpha used by the dimming bar. If there is
-  // no dimmer active, the function will return -1.
-  int GetDimmingAlphaForTest();
-
-  // A function to test the bounds of the dimming bar. Returns gfx::Rect() if
-  // the dimmer is inactive.
-  gfx::Rect GetDimmerBoundsForTest();
-
-  // Disable dimming animations for running tests.
-  void DisableDimmingAnimationsForTest();
 
   // ShelfBackgroundAnimatorObserver overrides:
   void UpdateShelfItemBackground(int alpha) override;

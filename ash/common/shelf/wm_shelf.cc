@@ -200,14 +200,6 @@ ShelfBackgroundType WmShelf::GetBackgroundType() const {
   return shelf_widget_->GetBackgroundType();
 }
 
-WmDimmerView* WmShelf::CreateDimmerView(bool disable_animations_for_test) {
-  return nullptr;
-}
-
-bool WmShelf::IsDimmed() const {
-  return shelf_widget_->GetDimsShelf();
-}
-
 bool WmShelf::IsVisible() const {
   return shelf_widget_->IsShelfVisible();
 }

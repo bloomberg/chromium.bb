@@ -507,10 +507,6 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     UpdateShelfBackground(change_type);
   }
 
-  shelf_widget_->SetDimsShelf(state.visibility_state == SHELF_VISIBLE &&
-                              state.window_state ==
-                                  wm::WORKSPACE_WINDOW_STATE_MAXIMIZED);
-
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
   UpdateBoundsAndOpacity(

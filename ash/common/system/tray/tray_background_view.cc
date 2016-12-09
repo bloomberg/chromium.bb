@@ -114,15 +114,6 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
 
 class TrayBackground : public views::Background {
  public:
-  const static int kImageTypeDefault = 0;
-  const static int kImageTypeOnBlack = 1;
-  const static int kImageTypePressed = 2;
-  const static int kNumStates = 3;
-
-  const static int kImageHorizontal = 0;
-  const static int kImageVertical = 1;
-  const static int kNumOrientations = 2;
-
   TrayBackground(TrayBackgroundView* tray_background_view, bool draws_active)
       : tray_background_view_(tray_background_view),
         draws_active_(draws_active),
@@ -154,7 +145,19 @@ class TrayBackground : public views::Background {
   }
 
   void PaintNonMaterial(gfx::Canvas* canvas, views::View* view) const {
+    const static int kImageTypeDefault = 0;
+    // TODO(estade): leftover type which should be removed along with the rest
+    // of pre-MD code.
+    // const static int kImageTypeOnBlack = 1;
+    const static int kImageTypePressed = 2;
+    const static int kNumStates = 3;
+
+    const static int kImageHorizontal = 0;
+    const static int kImageVertical = 1;
+    const static int kNumOrientations = 2;
+
     const int kGridSizeForPainter = 9;
+
     const int kImages[kNumOrientations][kNumStates][kGridSizeForPainter] = {
         {
             // Horizontal
@@ -177,8 +180,6 @@ class TrayBackground : public views::Background {
     int state = kImageTypeDefault;
     if (draws_active_ && tray_background_view_->is_active())
       state = kImageTypePressed;
-    else if (shelf->IsDimmed())
-      state = kImageTypeOnBlack;
     else
       state = kImageTypeDefault;
 

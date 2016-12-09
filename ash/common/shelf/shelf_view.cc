@@ -433,15 +433,6 @@ void ShelfView::OnShelfAlignmentChanged() {
     app_list_button->SchedulePaint();
 }
 
-void ShelfView::SchedulePaintForAllButtons() {
-  for (int i = 0; i < view_model_->view_size(); ++i) {
-    if (i >= first_visible_index_ && i <= last_visible_index_)
-      view_model_->view_at(i)->SchedulePaint();
-  }
-  if (overflow_button_ && overflow_button_->visible())
-    overflow_button_->SchedulePaint();
-}
-
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(ShelfID id) {
   int index = model_->ItemIndexByID(id);
   if (index == -1)
@@ -1840,7 +1831,6 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
     }
   }
 
-  shelf_widget_->ForceUndimming(true);
   // NOTE: if you convert to HAS_MNEMONICS be sure to update menu building code.
   launcher_menu_runner_->RunMenuAt(source->GetWidget(), nullptr, anchor,
                                    menu_alignment, source_type);
@@ -1848,7 +1838,6 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
 
 void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {
   context_menu_id_ = 0;
-  shelf_widget_->ForceUndimming(false);
 
   // Hide the hide overflow bubble after showing a context menu for its items.
   if (owner_overflow_bubble_)

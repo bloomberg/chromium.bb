@@ -173,11 +173,6 @@ class ShelfDragCallback {
       EXPECT_EQ(shelf_widget_bounds_.x(), shelf_bounds.x());
     }
 
-    // if the shelf is being dimmed test dimmer bounds as well.
-    if (GetShelfWidget()->GetDimsShelf())
-      EXPECT_EQ(GetShelfWidget()->GetWindowBoundsInScreen(),
-                GetShelfWidget()->GetDimmerBoundsForTest());
-
     // Auto hidden shelf has a visible height of 0 in MD (where this inequality
     // does not apply); whereas auto hidden shelf has a visible height of 3 in
     // non-MD.
@@ -382,8 +377,6 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
-  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(),
-            GetShelfWidget()->GetWindowBoundsInScreen());
   EXPECT_EQ(shelf_shown.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
@@ -429,7 +422,6 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
-  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(), gfx::Rect());
   EXPECT_EQ(bounds_noshelf.ToString(), window->bounds().ToString());
   EXPECT_EQ(shelf_hidden.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
@@ -451,8 +443,6 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
-  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(),
-            GetShelfWidget()->GetWindowBoundsInScreen());
   EXPECT_EQ(shelf_shown.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
@@ -465,7 +455,6 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
-  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(), gfx::Rect());
   EXPECT_EQ(bounds_noshelf.ToString(), window->bounds().ToString());
   EXPECT_EQ(shelf_hidden.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
@@ -500,8 +489,6 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
-  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(),
-            GetShelfWidget()->GetWindowBoundsInScreen());
   EXPECT_EQ(shelf_shown.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
@@ -514,7 +501,6 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
-  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(), gfx::Rect());
   EXPECT_EQ(bounds_noshelf.ToString(), window->bounds().ToString());
   EXPECT_EQ(shelf_hidden.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
@@ -930,171 +916,6 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   EXPECT_EQ(screen->GetPrimaryDisplay().work_area().bottom(),
             widget->GetWorkAreaBoundsInScreen().bottom());
-}
-
-// Basic assertions around the dimming of the shelf.
-TEST_F(ShelfLayoutManagerTest, DimmingBehavior) {
-  ui::test::EventGenerator& generator(GetEventGenerator());
-
-  ShelfWidget* shelf_widget = GetShelfWidget();
-  shelf_widget->DisableDimmingAnimationsForTest();
-  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  gfx::Point off_shelf = display.bounds().CenterPoint();
-  gfx::Point on_shelf = shelf_widget->GetWindowBoundsInScreen().CenterPoint();
-  views::Widget* widget = CreateTestWidget();
-
-  // Test there is no dimming object active at this point.
-  generator.MoveMouseTo(on_shelf.x(), on_shelf.y());
-  EXPECT_EQ(-1, shelf_widget->GetDimmingAlphaForTest());
-  generator.MoveMouseTo(off_shelf.x(), off_shelf.y());
-  EXPECT_EQ(-1, shelf_widget->GetDimmingAlphaForTest());
-
-  // After maximization, the shelf should be visible and the dimmer created.
-  widget->Maximize();
-
-  on_shelf = shelf_widget->GetWindowBoundsInScreen().CenterPoint();
-  EXPECT_LT(0, shelf_widget->GetDimmingAlphaForTest());
-
-  // Moving the mouse off the shelf should dim the bar.
-  generator.MoveMouseTo(off_shelf.x(), off_shelf.y());
-  EXPECT_LT(0, shelf_widget->GetDimmingAlphaForTest());
-
-  // Adding touch events outside the shelf should still keep the shelf in
-  // dimmed state.
-  generator.PressTouch();
-  generator.MoveTouch(off_shelf);
-  EXPECT_LT(0, shelf_widget->GetDimmingAlphaForTest());
-  // Move the touch into the shelf area should undim.
-  generator.MoveTouch(on_shelf);
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-  generator.ReleaseTouch();
-  // And a release dims again.
-  EXPECT_LT(0, shelf_widget->GetDimmingAlphaForTest());
-
-  // Moving the mouse on the shelf should undim the bar.
-  generator.MoveMouseTo(on_shelf);
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-
-  // No matter what the touch events do, the shelf should stay undimmed.
-  generator.PressTouch();
-  generator.MoveTouch(off_shelf);
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-  generator.MoveTouch(on_shelf);
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-  generator.MoveTouch(off_shelf);
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-  generator.MoveTouch(on_shelf);
-  generator.ReleaseTouch();
-
-  // After restore, the dimming object should be deleted again.
-  widget->Restore();
-  EXPECT_EQ(-1, shelf_widget->GetDimmingAlphaForTest());
-}
-
-// Test that dimming works correctly with multiple displays.
-TEST_F(ShelfLayoutManagerTest, DimmingBehaviorDualDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  // Create two displays.
-  UpdateDisplay("0+0-200x200,+200+0-100x100");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  EXPECT_EQ(root_windows.size(), 2U);
-
-  std::vector<ShelfWidget*> shelf_widgets;
-  for (auto* root_window : root_windows) {
-    ShelfLayoutManager* shelf =
-        GetRootWindowController(root_window)->GetShelfLayoutManager();
-    shelf_widgets.push_back(shelf->shelf_widget());
-
-    // For disabling the dimming animation to work, the animation must be
-    // disabled prior to creating the dimmer.
-    shelf_widgets.back()->DisableDimmingAnimationsForTest();
-
-    // Create a maximized window to create the dimmer.
-    views::Widget::InitParams params;
-    params.context = root_window;
-    params.bounds = root_window->GetBoundsInScreen();
-    params.show_state = ui::SHOW_STATE_MAXIMIZED;
-    CreateTestWidgetWithParams(params);
-  }
-
-  ui::test::EventGenerator& generator(GetEventGenerator());
-
-  generator.MoveMouseTo(root_windows[0]->GetBoundsInScreen().CenterPoint());
-  EXPECT_LT(0, shelf_widgets[0]->GetDimmingAlphaForTest());
-  EXPECT_LT(0, shelf_widgets[1]->GetDimmingAlphaForTest());
-
-  generator.MoveMouseTo(
-      shelf_widgets[0]->GetWindowBoundsInScreen().CenterPoint());
-  EXPECT_EQ(0, shelf_widgets[0]->GetDimmingAlphaForTest());
-  EXPECT_LT(0, shelf_widgets[1]->GetDimmingAlphaForTest());
-
-  generator.MoveMouseTo(
-      shelf_widgets[1]->GetWindowBoundsInScreen().CenterPoint());
-  EXPECT_LT(0, shelf_widgets[0]->GetDimmingAlphaForTest());
-  EXPECT_EQ(0, shelf_widgets[1]->GetDimmingAlphaForTest());
-
-  generator.MoveMouseTo(root_windows[1]->GetBoundsInScreen().CenterPoint());
-  EXPECT_LT(0, shelf_widgets[0]->GetDimmingAlphaForTest());
-  EXPECT_LT(0, shelf_widgets[1]->GetDimmingAlphaForTest());
-}
-
-// Assertions around the dimming of the shelf in conjunction with menus.
-TEST_F(ShelfLayoutManagerTest, DimmingBehaviorWithMenus) {
-  ui::test::EventGenerator& generator(GetEventGenerator());
-  generator.MoveMouseTo(0, 0);
-
-  ShelfWidget* shelf_widget = GetShelfWidget();
-  shelf_widget->DisableDimmingAnimationsForTest();
-
-  // After maximization, the shelf should be visible and the dimmer created.
-  views::Widget* widget = CreateTestWidget();
-  widget->Maximize();
-
-  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  gfx::Point off_shelf = display.bounds().CenterPoint();
-  gfx::Point on_shelf = shelf_widget->GetWindowBoundsInScreen().CenterPoint();
-
-  // Moving the mouse on the shelf should undim the bar.
-  generator.MoveMouseTo(on_shelf.x(), on_shelf.y());
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-
-  // Simulate a menu opening.
-  shelf_widget->ForceUndimming(true);
-
-  // Moving the mouse off the shelf should not dim the bar.
-  generator.MoveMouseTo(off_shelf.x(), off_shelf.y());
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-
-  // No matter what the touch events do, the shelf should stay undimmed.
-  generator.PressTouch();
-  generator.MoveTouch(off_shelf);
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-  generator.MoveTouch(on_shelf);
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-  generator.MoveTouch(off_shelf);
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-  generator.ReleaseTouch();
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-
-  // "Closing the menu" should now turn off the menu since no event is inside
-  // the shelf any longer.
-  shelf_widget->ForceUndimming(false);
-  EXPECT_LT(0, shelf_widget->GetDimmingAlphaForTest());
-
-  // Moving the mouse again on the shelf which should undim the bar again.
-  // This time we check that the bar stays undimmed when the mouse remains on
-  // the bar and the "menu gets closed".
-  generator.MoveMouseTo(on_shelf.x(), on_shelf.y());
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-  shelf_widget->ForceUndimming(true);
-  generator.MoveMouseTo(off_shelf.x(), off_shelf.y());
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-  generator.MoveMouseTo(on_shelf.x(), on_shelf.y());
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
-  shelf_widget->ForceUndimming(true);
-  EXPECT_EQ(0, shelf_widget->GetDimmingAlphaForTest());
 }
 
 // Verifies the shelf is visible when status/shelf is focused.
@@ -1710,37 +1531,6 @@ TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
             widget_two->GetNativeWindow()->bounds().ToString());
   EXPECT_EQ(area_when_shelf_shown,
             widget_one->GetNativeWindow()->bounds().size().GetArea());
-}
-
-// Confirm that the shelf is dimmed only when content is maximized and
-// shelf is not autohidden.
-TEST_F(ShelfLayoutManagerTest, Dimming) {
-  WmShelf* shelf = GetPrimaryShelf();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-
-  // Normal window doesn't dim shelf.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  ShelfWidget* shelf_widget = GetShelfWidget();
-  EXPECT_FALSE(shelf_widget->GetDimsShelf());
-
-  // Maximized window does.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_TRUE(shelf_widget->GetDimsShelf());
-
-  // Change back to normal stops dimming.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_FALSE(shelf_widget->GetDimsShelf());
-
-  // Changing back to maximized dims again.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_TRUE(shelf_widget->GetDimsShelf());
-
-  // Changing shelf to autohide stops dimming.
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_FALSE(shelf_widget->GetDimsShelf());
 }
 
 // This test fails on Windows (likely due to hard-coded pointer coordinate

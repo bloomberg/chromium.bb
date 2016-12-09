@@ -193,8 +193,6 @@ void AppListButton::PaintAppListButton(gfx::Canvas* canvas,
   if (WmShell::Get()->GetAppListTargetVisibility() ||
       draw_background_as_active_) {
     background_image_id = IDR_AURA_LAUNCHER_BACKGROUND_PRESSED;
-  } else if (wm_shelf_->IsDimmed()) {
-    background_image_id = IDR_AURA_LAUNCHER_BACKGROUND_ON_BLACK;
   } else {
     background_image_id = IDR_AURA_LAUNCHER_BACKGROUND_NORMAL;
   }

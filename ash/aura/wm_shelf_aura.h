@@ -20,7 +20,6 @@ class ASH_EXPORT WmShelfAura : public WmShelf {
   ~WmShelfAura() override;
 
   // WmShelf:
-  WmDimmerView* CreateDimmerView(bool disable_animations_for_test) override;
   void CreateShelfWidget(WmWindow* root) override;
   void WillDeleteShelfLayoutManager() override;
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
