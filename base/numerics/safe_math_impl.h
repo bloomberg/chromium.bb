@@ -46,7 +46,6 @@ struct UnsignedOrFloatForSize<Numeric, false, true> {
 
 template <typename T>
 constexpr bool HasSignBit(T x) {
-  // Cast to unsigned since right shift on signed is undefined.
   return static_cast<typename std::make_signed<T>::type>(x) <
          static_cast<typename std::make_signed<T>::type>(0);
 }
