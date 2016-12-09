@@ -33,11 +33,11 @@ class MockCommandBufferBase : public CommandBufferServiceBase {
   ~MockCommandBufferBase() override;
 
   State GetLastState() override;
-  int32_t GetLastToken() override;
-  void WaitForTokenInRange(int32_t start, int32_t end) override;
-  void WaitForGetOffsetInRange(int32_t start, int32_t end) override;
+  State WaitForTokenInRange(int32_t start, int32_t end) override;
+  State WaitForGetOffsetInRange(int32_t start, int32_t end) override;
   void SetGetBuffer(int transfer_buffer_id) override;
   void SetGetOffset(int32_t get_offset) override;
+  void SetReleaseCount(uint64_t release_count) override;
   scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
                                                   int32_t* id) override;
   scoped_refptr<gpu::Buffer> GetTransferBuffer(int32_t id) override;
@@ -119,6 +119,7 @@ class MockClientGpuControl : public GpuControl {
   MOCK_METHOD1(IsFenceSyncRelease, bool(uint64_t release));
   MOCK_METHOD1(IsFenceSyncFlushed, bool(uint64_t release));
   MOCK_METHOD1(IsFenceSyncFlushReceived, bool(uint64_t release));
+  MOCK_METHOD1(IsFenceSyncReleased, bool(uint64_t release));
   MOCK_METHOD2(SignalSyncToken, void(const SyncToken& sync_token,
                                      const base::Closure& callback));
   MOCK_METHOD1(CanWaitUnverifiedSyncToken, bool(const SyncToken*));

@@ -947,6 +947,7 @@ void GpuCommandBufferStub::OnFenceSyncRelease(uint64_t release) {
     mailbox_manager->PushTextureUpdates(sync_token);
   }
 
+  command_buffer_->SetReleaseCount(release);
   sync_point_client_->ReleaseFenceSync(release);
 }
 

@@ -25,6 +25,10 @@ class ContextSupport {
   virtual void SignalSyncToken(const SyncToken& sync_token,
                                const base::Closure& callback) = 0;
 
+  // Returns true if the given fence sync has been released (executed) by the
+  // command buffer. This may be called from any thread.
+  virtual bool IsFenceSyncReleased(uint64_t release_count) = 0;
+
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared
   // passed the glEndQueryEXT() point.
   virtual void SignalQuery(uint32_t query, const base::Closure& callback) = 0;

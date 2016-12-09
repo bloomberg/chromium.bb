@@ -32,17 +32,6 @@ const char* GetCommandName(CommandId command_id) {
 }
 
 }  // namespace cmd
-
-#if !defined(NACL_WIN64)
-// TODO(apatrick): this is a temporary optimization while skia is calling
-// RendererGLContext::MakeCurrent prior to every GL call. It saves returning 6
-// ints redundantly when only the error is needed for the CommandBufferProxy
-// implementation.
-error::Error CommandBuffer::GetLastError() {
-  return GetLastState().error;
-}
-#endif
-
 }  // namespace gpu
 
 

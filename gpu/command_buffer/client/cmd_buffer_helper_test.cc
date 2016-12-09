@@ -68,7 +68,7 @@ class CommandBufferServiceLocked : public CommandBufferService {
 
   int FlushCount() { return flush_count_; }
 
-  void WaitForGetOffsetInRange(int32_t start, int32_t end) override {
+  State WaitForGetOffsetInRange(int32_t start, int32_t end) override {
     // Flush only if it's required to unblock this Wait.
     if (last_flush_ != -1 &&
         !CommandBuffer::InRange(start, end, previous_put_offset_)) {
@@ -76,7 +76,7 @@ class CommandBufferServiceLocked : public CommandBufferService {
       CommandBufferService::Flush(last_flush_);
       last_flush_ = -1;
     }
-    CommandBufferService::WaitForGetOffsetInRange(start, end);
+    return CommandBufferService::WaitForGetOffsetInRange(start, end);
   }
 
  private:
@@ -247,7 +247,7 @@ class CommandBufferHelperTest : public testing::Test {
 
   int32_t GetPutOffset() { return command_buffer_->GetPutOffset(); }
 
-  int32_t GetHelperGetOffset() { return helper_->get_offset(); }
+  int32_t GetHelperGetOffset() { return helper_->cached_get_offset_; }
 
   int32_t GetHelperPutOffset() { return helper_->put_; }
 

@@ -102,11 +102,7 @@ class GPU_EXPORT CommandBufferHelper
   // Returns true if the token has passed.
   // Parameters:
   //   the value of the token to check whether it has passed
-  bool HasTokenPassed(int32_t token) const {
-    if (token > token_)
-      return true;  // we wrapped
-    return last_token_read() >= token;
-  }
+  bool HasTokenPassed(int32_t token);
 
   // Waits until the token of a particular value has passed through the command
   // stream (i.e. commands inserted before that token have been executed).
@@ -179,12 +175,6 @@ class GPU_EXPORT CommandBufferHelper
     return data;
   }
 
-  int32_t last_token_read() const { return command_buffer_->GetLastToken(); }
-
-  int32_t get_offset() const {
-    return command_buffer_->GetLastState().get_offset;
-  }
-
   // Common Commands
   void Noop(uint32_t skip_count) {
     cmd::Noop* cmd = GetImmediateCmdSpace<cmd::Noop>(
@@ -215,10 +205,7 @@ class GPU_EXPORT CommandBufferHelper
                      uint32_t shared_memory_offset) {
     cmd::SetBucketData* cmd = GetCmdSpace<cmd::SetBucketData>();
     if (cmd) {
-      cmd->Init(bucket_id,
-                offset,
-                size,
-                shared_memory_id,
+      cmd->Init(bucket_id, offset, size, shared_memory_id,
                 shared_memory_offset);
     }
   }
@@ -243,12 +230,8 @@ class GPU_EXPORT CommandBufferHelper
                       uint32_t data_memory_offset) {
     cmd::GetBucketStart* cmd = GetCmdSpace<cmd::GetBucketStart>();
     if (cmd) {
-      cmd->Init(bucket_id,
-                result_memory_id,
-                result_memory_offset,
-                data_memory_size,
-                data_memory_id,
-                data_memory_offset);
+      cmd->Init(bucket_id, result_memory_id, result_memory_offset,
+                data_memory_size, data_memory_id, data_memory_offset);
     }
   }
 
@@ -259,17 +242,12 @@ class GPU_EXPORT CommandBufferHelper
                      uint32_t shared_memory_offset) {
     cmd::GetBucketData* cmd = GetCmdSpace<cmd::GetBucketData>();
     if (cmd) {
-      cmd->Init(bucket_id,
-                offset,
-                size,
-                shared_memory_id,
+      cmd->Init(bucket_id, offset, size, shared_memory_id,
                 shared_memory_offset);
     }
   }
 
-  CommandBuffer* command_buffer() const {
-    return command_buffer_;
-  }
+  CommandBuffer* command_buffer() const { return command_buffer_; }
 
   scoped_refptr<Buffer> get_ring_buffer() const { return ring_buffer_; }
 
@@ -277,13 +255,9 @@ class GPU_EXPORT CommandBufferHelper
 
   void FreeRingBuffer();
 
-  bool HaveRingBuffer() const {
-    return ring_buffer_id_ != -1;
-  }
+  bool HaveRingBuffer() const { return ring_buffer_id_ != -1; }
 
-  bool usable () const {
-    return usable_;
-  }
+  bool usable() const { return usable_; }
 
   void ClearUsable() {
     usable_ = false;
@@ -296,11 +270,6 @@ class GPU_EXPORT CommandBufferHelper
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
-  // Returns the number of available entries (they may not be contiguous).
-  int32_t AvailableEntries() {
-    return (get_offset() - put_ - 1 + total_entry_count_) % total_entry_count_;
-  }
-
   void CalcImmediateEntries(int waiting_count);
   bool AllocateRingBuffer();
   void FreeResources();
@@ -316,6 +285,10 @@ class GPU_EXPORT CommandBufferHelper
 
   int32_t GetTotalFreeEntriesNoWaiting() const;
 
+  // Updates |cached_get_offset_|, |cached_last_token_read_| and |context_lost_|
+  // from given command buffer state.
+  void UpdateCachedState(const CommandBuffer::State& state);
+
   CommandBuffer* command_buffer_;
   int32_t ring_buffer_id_;
   int32_t ring_buffer_size_;
@@ -326,7 +299,8 @@ class GPU_EXPORT CommandBufferHelper
   int32_t token_;
   int32_t put_;
   int32_t last_put_sent_;
-  int32_t last_barrier_put_sent_;
+  int32_t cached_last_token_read_;
+  int32_t cached_get_offset_;
 
 #if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
   int commands_issued_;

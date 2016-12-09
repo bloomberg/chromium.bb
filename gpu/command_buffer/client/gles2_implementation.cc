@@ -262,21 +262,10 @@ bool GLES2Implementation::Initialize(
     return false;
   }
 
-  // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
-  // Don't register a dump provider in these cases.
-  // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
-  if (base::ThreadTaskRunnerHandle::IsSet()) {
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "GLES2Implementation", base::ThreadTaskRunnerHandle::Get());
-  }
-
   return true;
 }
 
 GLES2Implementation::~GLES2Implementation() {
-  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-      this);
-
   // Make sure the queries are finished otherwise we'll delete the
   // shared memory (mapped_memory_) which will free the memory used
   // by the queries. The GPU process when validating that memory is still
@@ -403,6 +392,12 @@ void GLES2Implementation::SignalSyncToken(const gpu::SyncToken& sync_token,
     // Invalid sync token, just call the callback immediately.
     callback.Run();
   }
+}
+
+// For some command buffer implementations this can be called from any thread.
+// It's safe to access gpu_control_ without the lock because it is const.
+bool GLES2Implementation::IsFenceSyncReleased(uint64_t release_count) {
+  return gpu_control_->IsFenceSyncReleased(release_count);
 }
 
 void GLES2Implementation::SignalQuery(uint32_t query,

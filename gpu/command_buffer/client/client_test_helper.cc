@@ -20,30 +20,33 @@ using ::testing::Invoke;
 
 namespace gpu {
 
-MockCommandBufferBase::MockCommandBufferBase() : put_offset_(0) {
-}
+MockCommandBufferBase::MockCommandBufferBase() : put_offset_(0) {}
 
-MockCommandBufferBase::~MockCommandBufferBase() {
-}
+MockCommandBufferBase::~MockCommandBufferBase() {}
 
 CommandBuffer::State MockCommandBufferBase::GetLastState() {
   return state_;
-}
-
-int32_t MockCommandBufferBase::GetLastToken() {
-  return state_.token;
 }
 
 void MockCommandBufferBase::SetGetOffset(int32_t get_offset) {
   state_.get_offset = get_offset;
 }
 
-void MockCommandBufferBase::WaitForTokenInRange(int32_t start, int32_t end) {}
+void MockCommandBufferBase::SetReleaseCount(uint64_t release_count) {
+  state_.release_count = release_count;
+}
 
-void MockCommandBufferBase::WaitForGetOffsetInRange(int32_t start,
-                                                    int32_t end) {
+CommandBuffer::State MockCommandBufferBase::WaitForTokenInRange(int32_t start,
+                                                                int32_t end) {
+  return state_;
+}
+
+CommandBuffer::State MockCommandBufferBase::WaitForGetOffsetInRange(
+    int32_t start,
+    int32_t end) {
   state_.get_offset = put_offset_;
   OnFlush();
+  return state_;
 }
 
 void MockCommandBufferBase::SetGetBuffer(int transfer_buffer_id) {
@@ -125,8 +128,7 @@ MockClientCommandBuffer::MockClientCommandBuffer() {
   DelegateToFake();
 }
 
-MockClientCommandBuffer::~MockClientCommandBuffer() {
-}
+MockClientCommandBuffer::~MockClientCommandBuffer() {}
 
 void MockClientCommandBuffer::Flush(int32_t put_offset) {
   FlushHelper(put_offset);
@@ -138,30 +140,24 @@ void MockClientCommandBuffer::OrderingBarrier(int32_t put_offset) {
 
 void MockClientCommandBuffer::DelegateToFake() {
   ON_CALL(*this, DestroyTransferBuffer(_))
-      .WillByDefault(Invoke(
-          this, &MockCommandBufferBase::DestroyTransferBufferHelper));
+      .WillByDefault(
+          Invoke(this, &MockCommandBufferBase::DestroyTransferBufferHelper));
 }
 
 MockClientCommandBufferMockFlush::MockClientCommandBufferMockFlush() {
   DelegateToFake();
 }
 
-MockClientCommandBufferMockFlush::~MockClientCommandBufferMockFlush() {
-}
+MockClientCommandBufferMockFlush::~MockClientCommandBufferMockFlush() {}
 
 void MockClientCommandBufferMockFlush::DelegateToFake() {
   MockClientCommandBuffer::DelegateToFake();
   ON_CALL(*this, Flush(_))
-      .WillByDefault(Invoke(
-          this, &MockCommandBufferBase::FlushHelper));
+      .WillByDefault(Invoke(this, &MockCommandBufferBase::FlushHelper));
 }
 
-MockClientGpuControl::MockClientGpuControl() {
-}
+MockClientGpuControl::MockClientGpuControl() {}
 
-MockClientGpuControl::~MockClientGpuControl() {
-}
+MockClientGpuControl::~MockClientGpuControl() {}
 
 }  // namespace gpu
-
-

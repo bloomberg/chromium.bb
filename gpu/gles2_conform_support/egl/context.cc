@@ -221,6 +221,11 @@ bool Context::IsFenceSyncFlushReceived(uint64_t release) {
   return display_->IsFenceSyncFlushReceived(release);
 }
 
+bool Context::IsFenceSyncReleased(uint64_t release) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void Context::SignalSyncToken(const gpu::SyncToken& sync_token,
                               const base::Closure& callback) {
   NOTIMPLEMENTED();

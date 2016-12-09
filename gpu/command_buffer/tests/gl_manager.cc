@@ -428,6 +428,7 @@ void GLManager::SetupBaseContext() {
 void GLManager::OnFenceSyncRelease(uint64_t release) {
   DCHECK(sync_point_client_);
   DCHECK(!sync_point_client_->client_state()->IsFenceSyncReleased(release));
+  command_buffer_->SetReleaseCount(release);
   sync_point_client_->ReleaseFenceSync(release);
 }
 
@@ -453,6 +454,10 @@ void GLManager::MakeCurrent() {
 
 void GLManager::SetSurface(gl::GLSurface* surface) {
   decoder_->SetSurface(surface);
+}
+
+void GLManager::PerformIdleWork() {
+  executor_->PerformIdleWork();
 }
 
 void GLManager::Destroy() {
@@ -631,6 +636,10 @@ bool GLManager::IsFenceSyncFlushed(uint64_t release) {
 
 bool GLManager::IsFenceSyncFlushReceived(uint64_t release) {
   return IsFenceSyncRelease(release);
+}
+
+bool GLManager::IsFenceSyncReleased(uint64_t release) {
+  return release <= command_buffer_->GetLastState().release_count;
 }
 
 void GLManager::SignalSyncToken(const gpu::SyncToken& sync_token,

@@ -29,8 +29,7 @@ PpapiCommandBufferProxy::PpapiCommandBufferProxy(
       pending_fence_sync_release_(0),
       flushed_fence_sync_release_(0),
       validated_fence_sync_release_(0) {
-  shared_state_shm_.reset(
-      new base::SharedMemory(shared_state.shmem(), false));
+  shared_state_shm_.reset(new base::SharedMemory(shared_state.shmem(), false));
   shared_state_shm_->Map(shared_state.size());
   InstanceData* data = dispatcher->GetInstanceData(resource.instance());
   flush_info_ = &data->flush_info_;
@@ -43,13 +42,8 @@ PpapiCommandBufferProxy::~PpapiCommandBufferProxy() {
 
 gpu::CommandBuffer::State PpapiCommandBufferProxy::GetLastState() {
   ppapi::ProxyLock::AssertAcquiredDebugOnly();
-  return last_state_;
-}
-
-int32_t PpapiCommandBufferProxy::GetLastToken() {
-  ppapi::ProxyLock::AssertAcquiredDebugOnly();
   TryUpdateState();
-  return last_state_.token;
+  return last_state_;
 }
 
 void PpapiCommandBufferProxy::Flush(int32_t put_offset) {
@@ -74,49 +68,46 @@ void PpapiCommandBufferProxy::OrderingBarrier(int32_t put_offset) {
   pending_fence_sync_release_ = next_fence_sync_release_ - 1;
 }
 
-void PpapiCommandBufferProxy::WaitForTokenInRange(int32_t start, int32_t end) {
+gpu::CommandBuffer::State PpapiCommandBufferProxy::WaitForTokenInRange(
+    int32_t start,
+    int32_t end) {
   TryUpdateState();
   if (!InRange(start, end, last_state_.token) &&
       last_state_.error == gpu::error::kNoError) {
     bool success = false;
     gpu::CommandBuffer::State state;
     if (Send(new PpapiHostMsg_PPBGraphics3D_WaitForTokenInRange(
-             ppapi::API_ID_PPB_GRAPHICS_3D,
-             resource_,
-             start,
-             end,
-             &state,
-             &success)))
+            ppapi::API_ID_PPB_GRAPHICS_3D, resource_, start, end, &state,
+            &success)))
       UpdateState(state, success);
   }
   DCHECK(InRange(start, end, last_state_.token) ||
          last_state_.error != gpu::error::kNoError);
+  return last_state_;
 }
 
-void PpapiCommandBufferProxy::WaitForGetOffsetInRange(int32_t start,
-                                                      int32_t end) {
+gpu::CommandBuffer::State PpapiCommandBufferProxy::WaitForGetOffsetInRange(
+    int32_t start,
+    int32_t end) {
   TryUpdateState();
   if (!InRange(start, end, last_state_.get_offset) &&
       last_state_.error == gpu::error::kNoError) {
     bool success = false;
     gpu::CommandBuffer::State state;
     if (Send(new PpapiHostMsg_PPBGraphics3D_WaitForGetOffsetInRange(
-             ppapi::API_ID_PPB_GRAPHICS_3D,
-             resource_,
-             start,
-             end,
-             &state,
-             &success)))
+            ppapi::API_ID_PPB_GRAPHICS_3D, resource_, start, end, &state,
+            &success)))
       UpdateState(state, success);
   }
   DCHECK(InRange(start, end, last_state_.get_offset) ||
          last_state_.error != gpu::error::kNoError);
+  return last_state_;
 }
 
 void PpapiCommandBufferProxy::SetGetBuffer(int32_t transfer_buffer_id) {
   if (last_state_.error == gpu::error::kNoError) {
     Send(new PpapiHostMsg_PPBGraphics3D_SetGetBuffer(
-         ppapi::API_ID_PPB_GRAPHICS_3D, resource_, transfer_buffer_id));
+        ppapi::API_ID_PPB_GRAPHICS_3D, resource_, transfer_buffer_id));
   }
 }
 
@@ -133,8 +124,8 @@ scoped_refptr<gpu::Buffer> PpapiCommandBufferProxy::CreateTransferBuffer(
   ppapi::proxy::SerializedHandle handle(
       ppapi::proxy::SerializedHandle::SHARED_MEMORY);
   if (!Send(new PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer(
-            ppapi::API_ID_PPB_GRAPHICS_3D, resource_,
-            base::checked_cast<uint32_t>(size), id, &handle))) {
+          ppapi::API_ID_PPB_GRAPHICS_3D, resource_,
+          base::checked_cast<uint32_t>(size), id, &handle))) {
     if (last_state_.error == gpu::error::kNoError)
       last_state_.error = gpu::error::kLostContext;
     return NULL;
@@ -211,6 +202,11 @@ bool PpapiCommandBufferProxy::IsFenceSyncFlushReceived(uint64_t release) {
 
   EnsureWorkVisible();
   return release <= validated_fence_sync_release_;
+}
+
+bool PpapiCommandBufferProxy::IsFenceSyncReleased(uint64_t release) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void PpapiCommandBufferProxy::SignalSyncToken(const gpu::SyncToken& sync_token,

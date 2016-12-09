@@ -292,9 +292,9 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
       return false;
     }
 
-    if (command_buffer_->GetLastError() != gpu::error::kNoError) {
+    if (command_buffer_->GetLastState().error != gpu::error::kNoError) {
       DLOG(ERROR) << "Context dead on arrival. Last error: "
-                  << command_buffer_->GetLastError();
+                  << command_buffer_->GetLastState().error;
       return false;
     }
 
@@ -453,6 +453,9 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
   base::Optional<base::AutoLock> hold;
   if (support_locking_)
     hold.emplace(context_lock_);
+
+  gles2_impl_->OnMemoryDump(args, pmd);
+  gles2_helper_->OnMemoryDump(args, pmd);
 
   context_thread_checker_.DetachFromThread();
   SkiaGpuTraceMemoryDump trace_memory_dump(

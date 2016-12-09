@@ -251,6 +251,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // ContextSupport implementation.
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        const base::Closure& callback) override;
+  bool IsFenceSyncReleased(uint64_t release_count) override;
   void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
 
@@ -816,7 +817,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   int current_trace_stack_;
 
-  GpuControl* gpu_control_;
+  GpuControl* const gpu_control_;
 
   Capabilities capabilities_;
 

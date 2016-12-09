@@ -27,6 +27,10 @@ void TestContextSupport::SignalSyncToken(const gpu::SyncToken& sync_token,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
+bool TestContextSupport::IsFenceSyncReleased(uint64_t release) {
+  return true;
+}
+
 void TestContextSupport::SignalQuery(uint32_t query,
                                      const base::Closure& callback) {
   sync_point_callbacks_.push_back(callback);

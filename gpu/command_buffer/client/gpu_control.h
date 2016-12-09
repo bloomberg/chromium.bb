@@ -82,17 +82,28 @@ class GPU_EXPORT GpuControl {
   virtual CommandBufferId GetCommandBufferID() const = 0;
   virtual int32_t GetExtraCommandBufferData() const = 0;
 
-  // Fence Syncs use release counters at a context level, these fence syncs
-  // need to be flushed before they can be shared with other contexts across
-  // channels. Subclasses should implement these functions and take care of
-  // figuring out when a fence sync has been flushed. The difference between
-  // IsFenceSyncFlushed and IsFenceSyncFlushReceived, one is testing is the
-  // client has issued the flush, and the other is testing if the service
-  // has received the flush.
+  // Generates a fence sync which should be inserted into the GL command stream.
+  // When the service executes the fence sync it is released. Fence syncs are
+  // shared with other contexts as sync tokens which encapsulate the fence sync
+  // and the command buffer on which it was generated. Fence syncs need to be
+  // flushed before they can be used by other contexts. Furthermore, the flush
+  // must be verified before sending a sync token across channel boundaries.
   virtual uint64_t GenerateFenceSyncRelease() = 0;
+
+  // Returns true if the fence sync is valid.
   virtual bool IsFenceSyncRelease(uint64_t release) = 0;
+
+  // Returns true if the client has flushed the fence sync.
   virtual bool IsFenceSyncFlushed(uint64_t release) = 0;
+
+  // Returns true if the service has received the fence sync. Used for verifying
+  // sync tokens.
   virtual bool IsFenceSyncFlushReceived(uint64_t release) = 0;
+
+  // Returns true if the service has released (executed) the fence sync. Some
+  // implementations may support calling this from any thread without holding
+  // the lock provided by the client.
+  virtual bool IsFenceSyncReleased(uint64_t release) = 0;
 
   // Runs |callback| when sync token is signalled.
   virtual void SignalSyncToken(const SyncToken& sync_token,

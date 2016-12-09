@@ -22,6 +22,7 @@ class GPU_EXPORT CommandBuffer {
     State()
         : get_offset(0),
           token(-1),
+          release_count(0),
           error(error::kNoError),
           context_lost_reason(error::kUnknown),
           generation(0) {
@@ -36,6 +37,10 @@ class GPU_EXPORT CommandBuffer {
     // token value, for example in response to an asynchronous set token command
     // embedded in the command buffer. The default token value is zero.
     int32_t token;
+
+    // The fence sync release count. Incremented by InsertFenceSync commands.
+    // Used by the client to monitor sync token progress.
+    uint64_t release_count;
 
     // Error status.
     error::Error error;
@@ -74,13 +79,6 @@ class GPU_EXPORT CommandBuffer {
   // Returns the last state without synchronizing with the service.
   virtual State GetLastState() = 0;
 
-  // Returns the last token without synchronizing with the service. Note that
-  // while you could just call GetLastState().token, GetLastState needs to be
-  // fast as it is called for every command where GetLastToken is only called
-  // by code that needs to know the last token so it can be slower but more up
-  // to date than GetLastState.
-  virtual int32_t GetLastToken() = 0;
-
   // The writer calls this to update its put offset. This ensures the reader
   // sees the latest added commands, and will eventually process them. On the
   // service side, commands are processed up to the given put_offset before
@@ -94,11 +92,11 @@ class GPU_EXPORT CommandBuffer {
 
   // The writer calls this to wait until the current token is within a
   // specific range, inclusive. Can return early if an error is generated.
-  virtual void WaitForTokenInRange(int32_t start, int32_t end) = 0;
+  virtual State WaitForTokenInRange(int32_t start, int32_t end) = 0;
 
   // The writer calls this to wait until the current get offset is within a
   // specific range, inclusive. Can return early if an error is generated.
-  virtual void WaitForGetOffsetInRange(int32_t start, int32_t end) = 0;
+  virtual State WaitForGetOffsetInRange(int32_t start, int32_t end) = 0;
 
   // Sets the buffer commands are read from.
   // Also resets the get and put offsets to 0.
@@ -111,17 +109,6 @@ class GPU_EXPORT CommandBuffer {
 
   // Destroy a transfer buffer. The ID must be positive.
   virtual void DestroyTransferBuffer(int32_t id) = 0;
-
-// The NaCl Win64 build only really needs the struct definitions above; having
-// GetLastError declared would mean we'd have to also define it, and pull more
-// of gpu in to the NaCl Win64 build.
-#if !defined(NACL_WIN64)
-  // TODO(apatrick): this is a temporary optimization while skia is calling
-  // RendererGLContext::MakeCurrent prior to every GL call. It saves returning 6
-  // ints redundantly when only the error is needed for the CommandBufferProxy
-  // implementation.
-  virtual error::Error GetLastError();
-#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CommandBuffer);

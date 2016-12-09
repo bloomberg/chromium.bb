@@ -29,6 +29,7 @@ class TestContextSupport : public gpu::ContextSupport {
   // gpu::ContextSupport implementation.
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        const base::Closure& callback) override;
+  bool IsFenceSyncReleased(uint64_t release) override;
   void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
   void Swap() override;

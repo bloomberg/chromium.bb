@@ -42,33 +42,29 @@ class MemoryBufferBacking : public BufferBacking {
 CommandBufferService::CommandBufferService(
     TransferBufferManagerInterface* transfer_buffer_manager)
     : ring_buffer_id_(-1),
-      shared_state_(NULL),
+      shared_state_(nullptr),
       num_entries_(0),
       get_offset_(0),
       put_offset_(0),
       transfer_buffer_manager_(transfer_buffer_manager),
       token_(0),
+      release_count_(0),
       generation_(0),
       error_(error::kNoError),
-      context_lost_reason_(error::kUnknown) {
-}
+      context_lost_reason_(error::kUnknown) {}
 
-CommandBufferService::~CommandBufferService() {
-}
+CommandBufferService::~CommandBufferService() {}
 
 CommandBufferService::State CommandBufferService::GetLastState() {
   State state;
   state.get_offset = get_offset_;
   state.token = token_;
+  state.release_count = release_count_;
   state.error = error_;
   state.context_lost_reason = context_lost_reason_;
   state.generation = ++generation_;
 
   return state;
-}
-
-int32_t CommandBufferService::GetLastToken() {
-  return GetLastState().token;
 }
 
 void CommandBufferService::UpdateState() {
@@ -78,12 +74,17 @@ void CommandBufferService::UpdateState() {
   }
 }
 
-void CommandBufferService::WaitForTokenInRange(int32_t start, int32_t end) {
+CommandBuffer::State CommandBufferService::WaitForTokenInRange(int32_t start,
+                                                               int32_t end) {
   DCHECK(error_ != error::kNoError || InRange(start, end, token_));
+  return GetLastState();
 }
 
-void CommandBufferService::WaitForGetOffsetInRange(int32_t start, int32_t end) {
+CommandBuffer::State CommandBufferService::WaitForGetOffsetInRange(
+    int32_t start,
+    int32_t end) {
   DCHECK(error_ != error::kNoError || InRange(start, end, get_offset_));
+  return GetLastState();
 }
 
 void CommandBufferService::Flush(int32_t put_offset) {
@@ -136,6 +137,12 @@ void CommandBufferService::SetGetOffset(int32_t get_offset) {
   get_offset_ = get_offset;
 }
 
+void CommandBufferService::SetReleaseCount(uint64_t release_count) {
+  DCHECK(release_count >= release_count_);
+  release_count_ = release_count;
+  UpdateState();
+}
+
 scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
                                                                  int32_t* id) {
   static int32_t next_id = 1;
@@ -180,7 +187,6 @@ scoped_refptr<Buffer> CommandBufferService::CreateTransferBufferWithId(
 
   return GetTransferBuffer(id);
 }
-
 
 void CommandBufferService::SetToken(int32_t token) {
   token_ = token;

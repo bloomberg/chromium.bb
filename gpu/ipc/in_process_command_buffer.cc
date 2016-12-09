@@ -497,14 +497,6 @@ void InProcessCommandBuffer::OnContextLost() {
     gpu_control_client_->OnGpuControlLostContext();
 }
 
-CommandBuffer::State InProcessCommandBuffer::GetStateFast() {
-  CheckSequencedThread();
-  base::AutoLock lock(state_after_last_flush_lock_);
-  if (state_after_last_flush_.generation - last_state_.generation < 0x80000000U)
-    last_state_ = state_after_last_flush_;
-  return last_state_;
-}
-
 void InProcessCommandBuffer::QueueTask(bool out_of_order,
                                        const base::Closure& task) {
   if (out_of_order) {
@@ -543,13 +535,17 @@ void InProcessCommandBuffer::ProcessTasksOnGpuThread() {
 
 CommandBuffer::State InProcessCommandBuffer::GetLastState() {
   CheckSequencedThread();
+  base::AutoLock lock(last_state_lock_);
   return last_state_;
 }
 
-int32_t InProcessCommandBuffer::GetLastToken() {
+void InProcessCommandBuffer::UpdateLastStateOnGpuThread() {
   CheckSequencedThread();
-  GetStateFast();
-  return last_state_.token;
+  command_buffer_lock_.AssertAcquired();
+  base::AutoLock lock(last_state_lock_);
+  State state = command_buffer_->GetLastState();
+  if (state.generation - last_state_.generation < 0x80000000U)
+    last_state_ = state;
 }
 
 void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset) {
@@ -557,18 +553,13 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset) {
   ScopedEvent handle_flush(&flush_event_);
   base::AutoLock lock(command_buffer_lock_);
 
-  {
-    command_buffer_->Flush(put_offset);
-    {
-      // Update state before signaling the flush event.
-      base::AutoLock lock(state_after_last_flush_lock_);
-      state_after_last_flush_ = command_buffer_->GetLastState();
-    }
-  }
+  command_buffer_->Flush(put_offset);
+  // Update state before signaling the flush event.
+  UpdateLastStateOnGpuThread();
 
   // If we've processed all pending commands but still have pending queries,
   // pump idle work until the query is passed.
-  if (put_offset == state_after_last_flush_.get_offset &&
+  if (put_offset == command_buffer_->GetLastState().get_offset &&
       (executor_->HasMoreIdleWork() || executor_->HasPendingQueries())) {
     ScheduleDelayedWorkOnGpuThread();
   }
@@ -599,7 +590,7 @@ void InProcessCommandBuffer::ScheduleDelayedWorkOnGpuThread() {
 
 void InProcessCommandBuffer::Flush(int32_t put_offset) {
   CheckSequencedThread();
-  if (last_state_.error != gpu::error::kNoError)
+  if (GetLastState().error != gpu::error::kNoError)
     return;
 
   if (last_put_offset_ == put_offset)
@@ -617,29 +608,34 @@ void InProcessCommandBuffer::OrderingBarrier(int32_t put_offset) {
   Flush(put_offset);
 }
 
-void InProcessCommandBuffer::WaitForTokenInRange(int32_t start, int32_t end) {
+CommandBuffer::State InProcessCommandBuffer::WaitForTokenInRange(int32_t start,
+                                                                 int32_t end) {
   CheckSequencedThread();
-  while (!InRange(start, end, GetLastToken()) &&
-         last_state_.error == gpu::error::kNoError) {
+  State last_state = GetLastState();
+  while (!InRange(start, end, last_state.token) &&
+         last_state.error == gpu::error::kNoError) {
     flush_event_.Wait();
+    last_state = GetLastState();
   }
+  return last_state;
 }
 
-void InProcessCommandBuffer::WaitForGetOffsetInRange(int32_t start,
-                                                     int32_t end) {
+CommandBuffer::State InProcessCommandBuffer::WaitForGetOffsetInRange(
+    int32_t start,
+    int32_t end) {
   CheckSequencedThread();
-
-  GetStateFast();
-  while (!InRange(start, end, last_state_.get_offset) &&
-         last_state_.error == gpu::error::kNoError) {
+  State last_state = GetLastState();
+  while (!InRange(start, end, last_state.get_offset) &&
+         last_state.error == gpu::error::kNoError) {
     flush_event_.Wait();
-    GetStateFast();
+    last_state = GetLastState();
   }
+  return last_state;
 }
 
 void InProcessCommandBuffer::SetGetBuffer(int32_t shm_id) {
   CheckSequencedThread();
-  if (last_state_.error != gpu::error::kNoError)
+  if (GetLastState().error != gpu::error::kNoError)
     return;
 
   base::WaitableEvent completion(
@@ -651,10 +647,7 @@ void InProcessCommandBuffer::SetGetBuffer(int32_t shm_id) {
   QueueTask(false, task);
   completion.Wait();
 
-  {
-    base::AutoLock lock(state_after_last_flush_lock_);
-    state_after_last_flush_ = command_buffer_->GetLastState();
-  }
+  last_put_offset_ = 0;
 }
 
 void InProcessCommandBuffer::SetGetBufferOnGpuThread(
@@ -662,7 +655,7 @@ void InProcessCommandBuffer::SetGetBufferOnGpuThread(
     base::WaitableEvent* completion) {
   base::AutoLock lock(command_buffer_lock_);
   command_buffer_->SetGetBuffer(shm_id);
-  last_put_offset_ = 0;
+  UpdateLastStateOnGpuThread();
   completion->Signal();
 }
 
@@ -1030,6 +1023,10 @@ bool InProcessCommandBuffer::IsFenceSyncFlushReceived(uint64_t release) {
   return IsFenceSyncFlushed(release);
 }
 
+bool InProcessCommandBuffer::IsFenceSyncReleased(uint64_t release) {
+  return release <= GetLastState().release_count;
+}
+
 void InProcessCommandBuffer::SignalSyncToken(const SyncToken& sync_token,
                                              const base::Closure& callback) {
   CheckSequencedThread();
@@ -1130,11 +1127,6 @@ void InProcessCommandBuffer::SetSwapBuffersCompletionCallback(
 void InProcessCommandBuffer::SetUpdateVSyncParametersCallback(
     const UpdateVSyncParametersCallback& callback) {
   update_vsync_parameters_completion_callback_ = callback;
-}
-
-gpu::error::Error InProcessCommandBuffer::GetLastError() {
-  CheckSequencedThread();
-  return last_state_.error;
 }
 
 namespace {

@@ -30,14 +30,16 @@ class GLReadbackTest : public testing::Test {
 
   void TearDown() override { gl_.Destroy(); }
 
-  static void WaitForQueryCallback(int q, base::Closure cb) {
+  void WaitForQueryCallback(int q, base::Closure cb) {
     unsigned int done = 0;
+    gl_.PerformIdleWork();
     glGetQueryObjectuivEXT(q, GL_QUERY_RESULT_AVAILABLE_EXT, &done);
     if (done) {
       cb.Run();
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&WaitForQueryCallback, q, cb),
+          FROM_HERE, base::Bind(&GLReadbackTest::WaitForQueryCallback,
+                                base::Unretained(this), q, cb),
           base::TimeDelta::FromMilliseconds(3));
     }
   }
@@ -50,7 +52,6 @@ class GLReadbackTest : public testing::Test {
 
   GLManager gl_;
 };
-
 
 TEST_F(GLReadbackTest, ReadPixelsWithPBOAndQuery) {
   const GLint kBytesPerPixel = 4;

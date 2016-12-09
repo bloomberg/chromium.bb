@@ -117,15 +117,13 @@ PP_Bool PPB_Graphics3D_Impl::Flush(int32_t put_offset) {
 gpu::CommandBuffer::State PPB_Graphics3D_Impl::WaitForTokenInRange(
     int32_t start,
     int32_t end) {
-  GetCommandBuffer()->WaitForTokenInRange(start, end);
-  return GetCommandBuffer()->GetLastState();
+  return GetCommandBuffer()->WaitForTokenInRange(start, end);
 }
 
 gpu::CommandBuffer::State PPB_Graphics3D_Impl::WaitForGetOffsetInRange(
     int32_t start,
     int32_t end) {
-  GetCommandBuffer()->WaitForGetOffsetInRange(start, end);
-  return GetCommandBuffer()->GetLastState();
+  return GetCommandBuffer()->WaitForGetOffsetInRange(start, end);
 }
 
 void PPB_Graphics3D_Impl::EnsureWorkVisible() {

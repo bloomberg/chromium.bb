@@ -42,11 +42,10 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
 
   // gpu::CommandBuffer implementation:
   State GetLastState() override;
-  int32_t GetLastToken() override;
   void Flush(int32_t put_offset) override;
   void OrderingBarrier(int32_t put_offset) override;
-  void WaitForTokenInRange(int32_t start, int32_t end) override;
-  void WaitForGetOffsetInRange(int32_t start, int32_t end) override;
+  State WaitForTokenInRange(int32_t start, int32_t end) override;
+  State WaitForGetOffsetInRange(int32_t start, int32_t end) override;
   void SetGetBuffer(int32_t transfer_buffer_id) override;
   scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
                                                   int32_t* id) override;
@@ -73,6 +72,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   bool IsFenceSyncRelease(uint64_t release) override;
   bool IsFenceSyncFlushed(uint64_t release) override;
   bool IsFenceSyncFlushReceived(uint64_t release) override;
+  bool IsFenceSyncReleased(uint64_t release) override;
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        const base::Closure& callback) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;

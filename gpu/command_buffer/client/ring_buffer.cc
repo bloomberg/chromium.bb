@@ -146,10 +146,9 @@ void RingBuffer::DiscardBlock(void* pointer) {
 }
 
 unsigned int RingBuffer::GetLargestFreeSizeNoWaiting() {
-  unsigned int last_token_read = helper_->last_token_read();
   while (!blocks_.empty()) {
     Block& block = blocks_.front();
-    if (block.token > last_token_read || block.state == IN_USE) break;
+    if (!helper_->HasTokenPassed(block.token) || block.state == IN_USE) break;
     FreeOldestBlock();
   }
   if (free_offset_ == in_use_offset_) {
