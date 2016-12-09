@@ -117,7 +117,7 @@ $ gn gen out/Default
 * For more info on GN, run `gn help` on the command line or read the
   [quick start guide](../tools/gn/docs/quick_start.md).
 
-### <a id=faster-builds></a>Faster builds
+### <a name="faster-builds"></a>Faster builds
 
 This section contains some things you can change to speed up your builds,
 sorted so that the things that make the biggest difference are first.
