@@ -427,7 +427,7 @@ deps_os = {
 
     # gRPC, an RPC framework. For Blimp use only.
     'src/third_party/grpc':
-      Var('chromium_git') + '/external/github.com/grpc/grpc' + '@' + 'b4cc5fc16c1368149c8a20c51248a18009ff8254',
+      Var('chromium_git') + '/external/github.com/grpc/grpc' + '@' + '5945dfa700a0566be7ea6691cc8a86ecb4a53924',
 
     # DevTools node modules. Used on Linux buildbots only.
     'src/third_party/WebKit/Source/devtools/devtools-node-modules':
