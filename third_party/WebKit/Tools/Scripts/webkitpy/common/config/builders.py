@@ -43,6 +43,10 @@ BUILDERS = {
         "port_name": "linux-trusty",
         "specifiers": ['Trusty', 'Release']
     },
+    "WebKit Linux Trusty (dbg)": {
+        "port_name": "linux-trusty",
+        "specifiers": ['Trusty', 'Debug']
+    },
     "WebKit Mac10.9": {
         "port_name": "mac-mac10.9",
         "specifiers": ['Mac10.9', 'Release']
