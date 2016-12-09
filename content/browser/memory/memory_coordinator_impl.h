@@ -69,6 +69,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, CalculateNextState);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, UpdateState);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, SetMemoryStateForTesting);
+  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, ForceSetGlobalState);
 
   friend struct MemoryCoordinatorSingletonTraits;
 

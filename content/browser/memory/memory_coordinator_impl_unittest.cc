@@ -7,6 +7,7 @@
 #include "base/memory/memory_coordinator_proxy.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "content/browser/memory/memory_monitor.h"
 #include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,8 +56,9 @@ class MemoryCoordinatorImplTest : public testing::Test {
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kMemoryCoordinator);
 
+    task_runner_ = new base::TestMockTimeTaskRunner();
     coordinator_.reset(new MemoryCoordinatorImpl(
-        message_loop_.task_runner(), base::WrapUnique(new MockMemoryMonitor)));
+        task_runner_, base::WrapUnique(new MockMemoryMonitor)));
 
     base::MemoryCoordinatorProxy::GetInstance()->
         SetGetCurrentMemoryStateCallback(base::Bind(
@@ -74,6 +76,7 @@ class MemoryCoordinatorImplTest : public testing::Test {
 
  protected:
   std::unique_ptr<MemoryCoordinatorImpl> coordinator_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::MessageLoop message_loop_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -214,6 +217,51 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateForTesting) {
   EXPECT_TRUE(client.is_called());
   EXPECT_EQ(base::MemoryState::THROTTLED, client.state());
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(&client);
+}
+
+TEST_F(MemoryCoordinatorImplTest, ForceSetGlobalState) {
+  coordinator_->expected_renderer_size_ = 10;
+  coordinator_->new_renderers_until_throttled_ = 4;
+  coordinator_->new_renderers_until_suspended_ = 2;
+  coordinator_->new_renderers_back_to_normal_ = 5;
+  coordinator_->new_renderers_back_to_throttled_ = 3;
+  DCHECK(coordinator_->ValidateParameters());
+  GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(50);
+
+  base::TimeDelta interval = base::TimeDelta::FromSeconds(5);
+  base::TimeDelta minimum_transition = base::TimeDelta::FromSeconds(30);
+  coordinator_->monitoring_interval_ = interval;
+  coordinator_->minimum_transition_period_ = minimum_transition;
+
+  // Starts updating states. The initial state should be NORMAL with above
+  // configuration.
+  coordinator_->Start();
+  task_runner_->RunUntilIdle();
+  EXPECT_EQ(base::MemoryState::NORMAL, coordinator_->GetGlobalMemoryState());
+
+  base::TimeDelta force_set_duration = interval * 3;
+  coordinator_->ForceSetGlobalState(base::MemoryState::SUSPENDED,
+                                    force_set_duration);
+  EXPECT_EQ(base::MemoryState::SUSPENDED, coordinator_->GetGlobalMemoryState());
+
+  // The state should remain SUSPENDED even after some monitoring period are
+  // passed.
+  task_runner_->FastForwardBy(interval * 2);
+  task_runner_->RunUntilIdle();
+  EXPECT_EQ(base::MemoryState::SUSPENDED, coordinator_->GetGlobalMemoryState());
+
+  // The state should be updated after |force_set_duration| is passed.
+  task_runner_->FastForwardBy(force_set_duration);
+  task_runner_->RunUntilIdle();
+  EXPECT_EQ(base::MemoryState::NORMAL, coordinator_->GetGlobalMemoryState());
+
+  // Also make sure that the state is updated based on free avaiable memory.
+  // Since the global state has changed in the previous task, we have to wait
+  // for |minimum_transition|.
+  GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(40);
+  task_runner_->FastForwardBy(minimum_transition);
+  task_runner_->RunUntilIdle();
+  EXPECT_EQ(base::MemoryState::THROTTLED, coordinator_->GetGlobalMemoryState());
 }
 
 }  // namespace content
