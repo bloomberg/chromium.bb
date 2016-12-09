@@ -2951,12 +2951,6 @@ void FrameView::updatePaintProperties() {
     frameView.lifecycle().advanceTo(DocumentLifecycle::InPrePaint);
   });
 
-  // TODO(chrishtr): merge this into the actual pre-paint tree walk.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-    forAllNonThrottledFrameViews([](FrameView& frameView) {
-      CompositingInputsUpdater(frameView.layoutView()->layer()).update();
-    });
-
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
     PrePaintTreeWalk().walk(*this);
 

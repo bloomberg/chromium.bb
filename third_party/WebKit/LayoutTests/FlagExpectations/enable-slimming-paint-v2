@@ -465,6 +465,7 @@ Bug(none) fast/block/float/nested-floats-expand-formatting-context.html [ Failur
 Bug(none) fast/block/float/relative-painted-twice.html [ Failure ]
 Bug(none) fast/block/float/shrink-to-avoid-float-complexity.html [ Failure ]
 Bug(none) fast/block/float/width-update-after-clear.html [ Failure ]
+crbug.com/667946 fast/block/float/float-change-composited-scrolling.html [ Failure ]
 Bug(none) fast/block/margin-collapse/103.html [ Failure ]
 Bug(none) fast/block/margin-collapse/104.html [ Failure ]
 Bug(none) fast/block/margin-collapse/empty-clear-blocks.html [ Failure ]

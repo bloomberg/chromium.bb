@@ -102,7 +102,8 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer,
   layer->updateAncestorOverflowLayer(info.lastOverflowClipLayer);
   if (info.lastOverflowClipLayer && layer->needsCompositingInputsUpdate() &&
       layer->layoutObject()->style()->position() == StickyPosition) {
-    if (info.lastOverflowClipLayer != previousOverflowLayer) {
+    if (info.lastOverflowClipLayer != previousOverflowLayer &&
+        !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
       // Old ancestor scroller should no longer have these constraints.
       ASSERT(!previousOverflowLayer ||
              !previousOverflowLayer->getScrollableArea()

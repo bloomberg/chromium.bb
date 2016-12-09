@@ -10,18 +10,27 @@
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/PaintLayer.h"
 
 namespace blink {
 
 struct PrePaintTreeWalkContext {
-  PrePaintTreeWalkContext() : paintInvalidatorContext(treeBuilderContext) {}
+  PrePaintTreeWalkContext()
+      : paintInvalidatorContext(treeBuilderContext),
+        ancestorOverflowPaintLayer(nullptr) {}
   PrePaintTreeWalkContext(const PrePaintTreeWalkContext& parentContext)
       : treeBuilderContext(parentContext.treeBuilderContext),
         paintInvalidatorContext(treeBuilderContext,
-                                parentContext.paintInvalidatorContext) {}
+                                parentContext.paintInvalidatorContext),
+        ancestorOverflowPaintLayer(parentContext.ancestorOverflowPaintLayer) {}
 
   PaintPropertyTreeBuilderContext treeBuilderContext;
   PaintInvalidatorContext paintInvalidatorContext;
+
+  // The ancestor in the PaintLayer tree which has overflow clip, or
+  // is the root layer. Note that it is tree ancestor, not containing
+  // block or stacking ancestor.
+  PaintLayer* ancestorOverflowPaintLayer;
 };
 
 void PrePaintTreeWalk::walk(FrameView& rootFrame) {
@@ -62,6 +71,36 @@ bool PrePaintTreeWalk::walk(FrameView& frameView,
   return descendantsFullyUpdated;
 }
 
+static void updateAuxiliaryObjectProperties(
+    const LayoutObject& object,
+    PrePaintTreeWalkContext& localContext) {
+  PaintLayer* paintLayer = nullptr;
+
+  if (object.isBoxModelObject() && object.hasLayer())
+    paintLayer = object.enclosingLayer();
+
+  if (paintLayer) {
+    paintLayer->updateAncestorOverflowLayer(
+        localContext.ancestorOverflowPaintLayer);
+  }
+
+  if (object.styleRef().position() == StickyPosition && paintLayer) {
+    paintLayer->layoutObject()->updateStickyPositionConstraints();
+
+    // Sticky position constraints and ancestor overflow scroller affect
+    // the sticky layer position, so we need to update it again here.
+    // TODO(flackr): This should be refactored in the future to be clearer
+    // (i.e. update layer position and ancestor inputs updates in the
+    // same walk)
+    paintLayer->updateLayerPosition();
+  }
+
+  if (object.hasOverflowClip() || (paintLayer && paintLayer->isRootLayer())) {
+    DCHECK(paintLayer);
+    localContext.ancestorOverflowPaintLayer = paintLayer;
+  }
+}
+
 bool PrePaintTreeWalk::walk(const LayoutObject& object,
                             const PrePaintTreeWalkContext& context) {
   PrePaintTreeWalkContext localContext(context);
@@ -86,6 +125,10 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
     }
     return descendantsFullyUpdated;
   }
+
+  // This must happen before updateContextForBoxPosition, because the
+  // latter reads some of the state computed uere.
+  updateAuxiliaryObjectProperties(object, localContext);
 
   // Ensure the current context takes into account the box position. This can
   // change the current context's paint offset so it must proceed the paint

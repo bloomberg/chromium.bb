@@ -1036,11 +1036,16 @@ PaintLayer* PaintLayer::enclosingLayerForPaintInvalidation() const {
 void PaintLayer::setNeedsCompositingInputsUpdate() {
   setNeedsCompositingInputsUpdateInternal();
 
-  // TODO(chrishtr): This is a bit of a heavy hammer, because not all
+  // TODO(chrishtr): These are a bit of a heavy hammer, because not all
   // things which require compositing inputs update require a descendant-
   // dependent flags udpate. Reduce call sites after SPv2 launch allows
   /// removal of CompositingInputsUpdater.
   markAncestorChainForDescendantDependentFlagsUpdate();
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    // This update is needed in order to re-compute sticky position constraints,
+    // not for any other reason.
+    layoutObject()->setNeedsPaintPropertyUpdate();
+  }
 }
 
 void PaintLayer::setNeedsCompositingInputsUpdateInternal() {
