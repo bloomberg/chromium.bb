@@ -32,16 +32,42 @@ const char* RequestOutcomeToString(RequestOutcome outcome) {
   }
 }
 
+// Note: network_instrumentation code should do as much work as possible inside
+// the arguments of trace macros so that very little instrumentation overhead is
+// incurred if the trace category is disabled. See https://crbug.com/669666.
+
+namespace {
+
+std::unique_ptr<TracedValue> scopedResourceTrackerBeginData(
+    const blink::ResourceRequest& request) {
+  std::unique_ptr<TracedValue> data = TracedValue::create();
+  data->setString("url", request.url().getString());
+  return data;
+}
+
+std::unique_ptr<TracedValue> resourcePrioritySetData(
+    blink::ResourceLoadPriority priority) {
+  std::unique_ptr<TracedValue> data = TracedValue::create();
+  data->setInteger("priority", priority);
+  return data;
+}
+
+std::unique_ptr<TracedValue> endResourceLoadData(RequestOutcome outcome) {
+  std::unique_ptr<TracedValue> data = TracedValue::create();
+  data->setString("outcome", RequestOutcomeToString(outcome));
+  return data;
+}
+
+}  // namespace
+
 ScopedResourceLoadTracker::ScopedResourceLoadTracker(
     unsigned long resourceID,
     const blink::ResourceRequest& request)
     : m_resourceLoadContinuesBeyondScope(false), m_resourceID(resourceID) {
-  std::unique_ptr<TracedValue> beginData = TracedValue::create();
-  beginData->setString("url", request.url().getString());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       kNetInstrumentationCategory, kResourceLoadTitle,
       TRACE_ID_WITH_SCOPE(kBlinkResourceID, TRACE_ID_LOCAL(resourceID)),
-      "beginData", std::move(beginData));
+      "beginData", scopedResourceTrackerBeginData(request));
 }
 
 ScopedResourceLoadTracker::~ScopedResourceLoadTracker() {
@@ -55,21 +81,17 @@ void ScopedResourceLoadTracker::resourceLoadContinuesBeyondScope() {
 
 void resourcePrioritySet(unsigned long resourceID,
                          blink::ResourceLoadPriority priority) {
-  std::unique_ptr<TracedValue> data = TracedValue::create();
-  data->setInteger("priority", priority);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
       kNetInstrumentationCategory, kResourcePrioritySetTitle,
       TRACE_ID_WITH_SCOPE(kBlinkResourceID, TRACE_ID_LOCAL(resourceID)), "data",
-      std::move(data));
+      resourcePrioritySetData(priority));
 }
 
 void endResourceLoad(unsigned long resourceID, RequestOutcome outcome) {
-  std::unique_ptr<TracedValue> endData = TracedValue::create();
-  endData->setString("outcome", RequestOutcomeToString(outcome));
   TRACE_EVENT_NESTABLE_ASYNC_END1(
       kNetInstrumentationCategory, kResourceLoadTitle,
       TRACE_ID_WITH_SCOPE(kBlinkResourceID, TRACE_ID_LOCAL(resourceID)),
-      "endData", std::move(endData));
+      "endData", endResourceLoadData(outcome));
 }
 
 }  // namespace network_instrumentation
