@@ -185,7 +185,13 @@ class TrialTokenValidatorTest : public testing::Test {
   TestContentClient test_content_client_;
 };
 
-TEST_F(TrialTokenValidatorTest, ValidateValidToken) {
+// Flaky on Android swarming bots: crbug.com/672294
+#if defined(OS_ANDROID)
+#define MAYBE_ValidateValidToken DISABLED_ValidateValidToken
+#else
+#define MAYBE_ValidateValidToken ValidateValidToken
+#endif
+TEST_F(TrialTokenValidatorTest, MAYBE_ValidateValidToken) {
   std::string feature;
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
             TrialTokenValidator::ValidateToken(kSampleToken,
@@ -232,7 +238,13 @@ TEST_F(TrialTokenValidatorTest, ValidateValidTokenWithIncorrectKey) {
                                                appropriate_origin_, &feature));
 }
 
-TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledFeatures) {
+// Flaky on Android swarming bots: crbug.com/672294
+#if defined(OS_ANDROID)
+#define MAYBE_ValidatorRespectsDisabledFeatures DISABLED_ValidatorRespectsDisabledFeatures
+#else
+#define MAYBE_ValidatorRespectsDisabledFeatures ValidatorRespectsDisabledFeatures
+#endif
+TEST_F(TrialTokenValidatorTest, MAYBE_ValidatorRespectsDisabledFeatures) {
   std::string feature;
   // Disable an irrelevant feature; token should still validate
   DisableFeature(kInappropriateFeatureName);
@@ -254,7 +266,13 @@ TEST_F(TrialTokenValidatorTest, ValidateRequestInsecure) {
       GURL(kInsecureOrigin), response_headers_.get(), kAppropriateFeatureName));
 }
 
-TEST_F(TrialTokenValidatorTest, ValidateRequestValidToken) {
+// Flaky on Android swarming bots: crbug.com/672294
+#if defined(OS_ANDROID)
+#define MAYBE_ValidateRequestValidToken DISABLED_ValidateRequestValidToken
+#else
+#define MAYBE_ValidateRequestValidToken ValidateRequestValidToken
+#endif
+TEST_F(TrialTokenValidatorTest, MAYBE_ValidateRequestValidToken) {
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kSampleToken);
   EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
       GURL(kAppropriateOrigin), response_headers_.get(),
@@ -267,7 +285,13 @@ TEST_F(TrialTokenValidatorTest, ValidateRequestNoTokens) {
       kAppropriateFeatureName));
 }
 
-TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaders) {
+// Flaky on Android swarming bots: crbug.com/672294
+#if defined(OS_ANDROID)
+#define MAYBE_ValidateRequestMultipleHeaders DISABLED_ValidateRequestMultipleHeaders
+#else
+#define MAYBE_ValidateRequestMultipleHeaders ValidateRequestMultipleHeaders
+#endif
+TEST_F(TrialTokenValidatorTest, MAYBE_ValidateRequestMultipleHeaders) {
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kSampleToken);
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kExpiredToken);
   EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
@@ -281,7 +305,13 @@ TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaders) {
       kAppropriateFeatureName));
 }
 
-TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaderValues) {
+// Flaky on Android swarming bots: crbug.com/672294
+#if defined(OS_ANDROID)
+#define MAYBE_ValidateRequestMultipleHeaderValues DISABLED_ValidateRequestMultipleHeaderValues
+#else
+#define MAYBE_ValidateRequestMultipleHeaderValues ValidateRequestMultipleHeaderValues
+#endif
+TEST_F(TrialTokenValidatorTest, MAYBE_ValidateRequestMultipleHeaderValues) {
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kExpiredToken +
                                ", " + kSampleToken);
   EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
