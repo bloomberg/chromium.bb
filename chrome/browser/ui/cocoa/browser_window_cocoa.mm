@@ -40,7 +40,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
-#import "chrome/browser/ui/cocoa/profiles/avatar_menu_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/restart_browser.h"
 #include "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
