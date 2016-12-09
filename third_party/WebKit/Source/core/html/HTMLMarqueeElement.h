@@ -25,9 +25,7 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/KeyframeEffectModel.h"
-#include "core/dom/FrameRequestCallback.h"
 #include "core/html/HTMLElement.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -65,44 +63,8 @@ class HTMLMarqueeElement final : public HTMLElement {
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  class RequestAnimationFrameCallback final : public FrameRequestCallback {
-    WTF_MAKE_NONCOPYABLE(RequestAnimationFrameCallback);
-
-   public:
-    explicit RequestAnimationFrameCallback(HTMLMarqueeElement* marquee)
-        : m_marquee(marquee) {}
-    void handleEvent(double) override;
-
-    DEFINE_INLINE_VIRTUAL_TRACE() {
-      visitor->trace(m_marquee);
-      FrameRequestCallback::trace(visitor);
-    }
-
-   private:
-    Member<HTMLMarqueeElement> m_marquee;
-  };
-
-  class AnimationFinished final : public EventListener {
-    WTF_MAKE_NONCOPYABLE(AnimationFinished);
-
-   public:
-    explicit AnimationFinished(HTMLMarqueeElement* marquee)
-        : EventListener(CPPEventListenerType), m_marquee(marquee) {}
-
-    bool operator==(const EventListener& that) const override {
-      return this == &that;
-    }
-
-    void handleEvent(ExecutionContext*, Event*) override;
-
-    DEFINE_INLINE_VIRTUAL_TRACE() {
-      visitor->trace(m_marquee);
-      EventListener::trace(visitor);
-    }
-
-   private:
-    Member<HTMLMarqueeElement> m_marquee;
-  };
+  class RequestAnimationFrameCallback;
+  class AnimationFinished;
 
   struct AnimationParameters {
     String transformBegin;
@@ -117,18 +79,16 @@ class HTMLMarqueeElement final : public HTMLElement {
     double marqueeHeight;
   };
 
-  StringKeyframeEffectModel* createEffectModel(AnimationParameters&);
+  StringKeyframeEffectModel* createEffectModel(const AnimationParameters&);
 
   void continueAnimation();
   bool shouldContinue();
 
-  enum Behavior { Scroll, Slide, Alternate };
-  Behavior behavior() const;
+  enum Behavior { kScroll, kSlide, kAlternate };
+  Behavior getBehavior() const;
 
-  enum Direction { Left, Right, Up, Down };
-  Direction direction() const;
-
-  bool trueSpeed() const;
+  enum Direction { kLeft, kRight, kUp, kDown };
+  Direction getDirection() const;
 
   Metrics getMetrics();
   AnimationParameters getAnimationParameters();
