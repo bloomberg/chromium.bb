@@ -166,12 +166,17 @@ function test()
     function dumpCompletions(completions, expected)
     {
         var completionSet = new Set(completions.map(c => c.title));
+        var notFound = false;
         for (var completion of expected) {
-            if (completionSet.has(completion))
+            if (completionSet.has(completion)) {
                 InspectorTest.addResult(completion);
-            else
+            } else {
                 InspectorTest.addResult("NOT FOUND: " + completion);
+                notFound = true;
+            }
         }
+        if (notFound)
+            InspectorTest.addResult(JSON.stringify(completions));
     }
 }
 
