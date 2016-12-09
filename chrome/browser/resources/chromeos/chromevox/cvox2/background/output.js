@@ -627,13 +627,16 @@ Output.Action.prototype = {
 /**
  * Action to play an earcon.
  * @param {string} earconId
+ * @param {chrome.automation.Rect=} opt_location
  * @constructor
  * @extends {Output.Action}
  */
-Output.EarconAction = function(earconId) {
+Output.EarconAction = function(earconId, opt_location) {
   Output.Action.call(this);
   /** @type {string} */
   this.earconId = earconId;
+  /** @type {chrome.automation.Rect|undefined} */
+  this.location = opt_location;
 };
 
 Output.EarconAction.prototype = {
@@ -641,7 +644,13 @@ Output.EarconAction.prototype = {
 
   /** @override */
   run: function() {
-    cvox.ChromeVox.earcons.playEarcon(cvox.Earcon[this.earconId]);
+    cvox.ChromeVox.earcons.playEarcon(
+        cvox.Earcon[this.earconId], this.location);
+  },
+
+  /** @override */
+  toJSON: function() {
+    return {earconId: this.earconId};
   }
 };
 
@@ -1248,7 +1257,7 @@ Output.prototype = {
             return;
           if (this.formatOptions_.speech && resolvedInfo.earconId) {
             options.annotation.push(
-                new Output.EarconAction(resolvedInfo.earconId));
+                new Output.EarconAction(resolvedInfo.earconId), node.location);
           }
           var msgId =
               this.formatOptions_.braille ? resolvedInfo.msgId + '_brl' :
@@ -1270,7 +1279,7 @@ Output.prototype = {
               return;
 
             options.annotation.push(
-                new Output.EarconAction(tree.firstChild.value));
+                new Output.EarconAction(tree.firstChild.value, node.location));
             this.append_(buff, '', options);
           } else if (token == 'countChildren') {
             var role = tree.firstChild.value;
@@ -1795,7 +1804,7 @@ Output.prototype = {
       while (earconFinder = ancestors.pop()) {
         var info = Output.ROLE_INFO_[earconFinder.role];
         if (info && info.earconId) {
-          return new Output.EarconAction(info.earconId);
+          return new Output.EarconAction(info.earconId, node.location);
           break;
         }
         earconFinder = earconFinder.parent;

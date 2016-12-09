@@ -43,12 +43,18 @@ NextEarcons.prototype = {
   /**
    * @override
    */
-  playEarcon: function(earcon) {
+  playEarcon: function(earcon, opt_location) {
     if (!cvox.AbstractEarcons.enabled) {
       return;
     }
     console.log('Earcon ' + earcon);
-
+    if (ChromeVoxState.instance.currentRange &&
+        ChromeVoxState.instance.currentRange.isValid()) {
+      var node = ChromeVoxState.instance.currentRange.start.node;
+      var rect = opt_location || node.location;
+      var container = node.root.location;
+      this.engine_.setPositionForRect(rect, container);
+    }
     switch (earcon) {
       case cvox.Earcon.ALERT_MODAL:
       case cvox.Earcon.ALERT_NONMODAL:

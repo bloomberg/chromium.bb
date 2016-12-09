@@ -89,8 +89,10 @@ cvox.AbstractEarcons.enabled = true;
 /**
  * Plays the specified earcon sound.
  * @param {cvox.Earcon} earcon An earcon identifier.
+ * @param {Object=} opt_location A location associated with the earcon such as a
+ * control's bounding rectangle.
  */
-cvox.AbstractEarcons.prototype.playEarcon = function(earcon) {
+cvox.AbstractEarcons.prototype.playEarcon = function(earcon, opt_location) {
 };
 
 

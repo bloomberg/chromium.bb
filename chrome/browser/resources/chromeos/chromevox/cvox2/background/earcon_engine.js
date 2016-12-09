@@ -157,6 +157,11 @@ EarconEngine.HALF_STEP = Math.pow(2.0, 1.0 / 12.0);
 EarconEngine.BASE_URL = chrome.extension.getURL('cvox2/background/earcons/');
 
 /**
+ * The maximum value to pass to PannerNode.setPosition.
+ */
+EarconEngine.MAX_PAN_ABS_X_POSITION = 4;
+
+/**
  * Fetches a sound asynchronously and loads its data into an AudioBuffer.
  *
  * @param {string} name The name of the sound to load.
@@ -210,7 +215,7 @@ EarconEngine.prototype.createCommonFilters = function(properties) {
   }
   if (pan != 0) {
     var panNode = this.context_.createPanner();
-    panNode.setPosition(pan, 0, -1);
+    panNode.setPosition(pan, 0, 0);
     panNode.setOrientation(0, 0, 1);
     last.connect(panNode);
     last = panNode;
@@ -712,4 +717,22 @@ EarconEngine.prototype.cancelProgress = function() {
 
   window.clearInterval(this.progressIntervalID_);
   this.progressIntervalID_ = null;
+};
+
+/**
+ * @param {chrome.automation.Rect} rect
+ * @param {chrome.automation.Rect} container
+ */
+EarconEngine.prototype.setPositionForRect = function(rect, container) {
+  // The horizontal position computed as a percentage relative to its container.
+  var x = (rect.left + rect.width / 2) / container.width;
+
+  // Clamp.
+  x = Math.min(Math.max(x, 0.0), 1.0);
+
+  // Map to between the negative maximum pan x position and the positive max x
+  // pan position.
+  x = (2 * x - 1) * EarconEngine.MAX_PAN_ABS_X_POSITION;
+
+  this.masterPan = x;
 };

@@ -49,7 +49,7 @@ cvox.ClassicEarcons.prototype.getBaseUrl = function() {
 /**
  * @override
  */
-cvox.ClassicEarcons.prototype.playEarcon = function(earcon) {
+cvox.ClassicEarcons.prototype.playEarcon = function(earcon, opt_location) {
   goog.base(this, 'playEarcon', earcon);
   if (!cvox.AbstractEarcons.enabled) {
     return;
