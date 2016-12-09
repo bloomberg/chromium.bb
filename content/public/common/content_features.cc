@@ -136,7 +136,7 @@ const base::Feature kPassiveDocumentEventListeners{
 // Whether we should force a touchstart and first touchmove per scroll event
 // listeners to be 'passive' during fling.
 const base::Feature kPassiveEventListenersDueToFling{
-    "PassiveEventListenersDueToFling", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PassiveEventListenersDueToFling", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Pointer events support.
 const base::Feature kPointerEvents{"PointerEvent",
