@@ -17,7 +17,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(storage::StorageType, storage::kStorageTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(storage::QuotaStatusCode, storage::kQuotaStatusLast)
 
 IPC_STRUCT_TRAITS_BEGIN(content::StorageQuotaParams)
-  IPC_STRUCT_TRAITS_MEMBER(render_view_id)
+  IPC_STRUCT_TRAITS_MEMBER(render_frame_id)
   IPC_STRUCT_TRAITS_MEMBER(request_id)
   IPC_STRUCT_TRAITS_MEMBER(origin_url)
   IPC_STRUCT_TRAITS_MEMBER(storage_type)

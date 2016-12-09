@@ -254,13 +254,12 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
     return;
   }
 
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_id,
-                                   params.render_view_id);
+  content::WebContents* web_contents = tab_util::GetWebContentsByFrameID(
+      render_process_id, params.render_frame_id);
   if (!web_contents) {
     // The tab may have gone away or the request may not be from a tab.
     LOG(WARNING) << "Attempt to request quota tabless renderer: "
-                 << render_process_id << "," << params.render_view_id;
+                 << render_process_id << "," << params.render_frame_id;
     DispatchCallbackOnIOThread(callback, QUOTA_PERMISSION_RESPONSE_CANCELLED);
     return;
   }
@@ -286,7 +285,7 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
 
   // The tab has no UI service for presenting the permissions request.
   LOG(WARNING) << "Attempt to request quota from a background page: "
-               << render_process_id << "," << params.render_view_id;
+               << render_process_id << "," << params.render_frame_id;
   DispatchCallbackOnIOThread(callback, QUOTA_PERMISSION_RESPONSE_CANCELLED);
 }
 

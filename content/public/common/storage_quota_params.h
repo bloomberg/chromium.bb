@@ -18,13 +18,13 @@ namespace content {
 // RequestStorageQuota call.
 struct CONTENT_EXPORT StorageQuotaParams {
   StorageQuotaParams()
-      : render_view_id(MSG_ROUTING_NONE),
+      : render_frame_id(MSG_ROUTING_NONE),
         request_id(-1),
         storage_type(storage::kStorageTypeTemporary),
         requested_size(0),
         user_gesture(false) {}
 
-  int render_view_id;
+  int render_frame_id;
   int request_id;
   GURL origin_url;
   storage::StorageType storage_type;

@@ -120,7 +120,7 @@ void QuotaDispatcher::QueryStorageUsageAndQuota(
       request_id, origin_url, type));
 }
 
-void QuotaDispatcher::RequestStorageQuota(int render_view_id,
+void QuotaDispatcher::RequestStorageQuota(int render_frame_id,
                                           const GURL& origin_url,
                                           StorageType type,
                                           uint64_t requested_size,
@@ -131,7 +131,7 @@ void QuotaDispatcher::RequestStorageQuota(int render_view_id,
   pending_quota_callbacks_.AddWithID(std::move(callback), request_id);
 
   StorageQuotaParams params;
-  params.render_view_id = render_view_id;
+  params.render_frame_id = render_frame_id;
   params.request_id = request_id;
   params.origin_url = origin_url;
   params.storage_type = type;

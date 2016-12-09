@@ -64,7 +64,7 @@ class QuotaDispatcher : public WorkerThread::Observer {
   void QueryStorageUsageAndQuota(const GURL& gurl,
                                  storage::StorageType type,
                                  std::unique_ptr<Callback> callback);
-  void RequestStorageQuota(int render_view_id,
+  void RequestStorageQuota(int render_frame_id,
                            const GURL& gurl,
                            storage::StorageType type,
                            uint64_t requested_size,
