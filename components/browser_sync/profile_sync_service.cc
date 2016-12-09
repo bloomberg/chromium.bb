@@ -115,7 +115,29 @@ using syncer::WeakHandle;
 
 namespace browser_sync {
 
+namespace {
+
 typedef GoogleServiceAuthError AuthError;
+
+// Events in ClearServerData flow to be recorded in histogram. Existing
+// constants should not be deleted or reordered. New ones shold be added at the
+// end, before CLEAR_SERVER_DATA_MAX.
+enum ClearServerDataEvents {
+  // ClearServerData started after user switched to custom passphrase.
+  CLEAR_SERVER_DATA_STARTED,
+  // DataTypeManager reported that catchup configuration failed.
+  CLEAR_SERVER_DATA_CATCHUP_FAILED,
+  // ClearServerData flow restarted after browser restart.
+  CLEAR_SERVER_DATA_RETRIED,
+  // Success.
+  CLEAR_SERVER_DATA_SUCCEEDED,
+  // Client received RECET_LOCAL_SYNC_DATA after custom passphrase was enabled
+  // on different client.
+  CLEAR_SERVER_DATA_RESET_LOCAL_DATA_RECEIVED,
+  CLEAR_SERVER_DATA_MAX
+};
+
+const char kClearServerDataEventsHistogramName[] = "Sync.ClearServerDataEvents";
 
 const char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";
 
@@ -147,17 +169,15 @@ const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
     false,
 };
 
-static const base::FilePath::CharType kSyncDataFolderName[] =
+const base::FilePath::CharType kSyncDataFolderName[] =
     FILE_PATH_LITERAL("Sync Data");
-static const base::FilePath::CharType kLevelDBFolderName[] =
+const base::FilePath::CharType kLevelDBFolderName[] =
     FILE_PATH_LITERAL("LevelDB");
 
 #if defined(OS_WIN)
-static const base::FilePath::CharType kLoopbackServerBackendFilename[] =
+const base::FilePath::CharType kLoopbackServerBackendFilename[] =
     FILE_PATH_LITERAL("profile.pb");
 #endif
-
-namespace {
 
 // Perform the actual sync data folder deletion.
 // This should only be called on the sync thread.
@@ -387,6 +407,10 @@ void ProfileSyncService::StartSyncingWithServer() {
   if (base::FeatureList::IsEnabled(
           switches::kSyncClearDataOnPassphraseEncryption) &&
       sync_prefs_.GetPassphraseEncryptionTransitionInProgress()) {
+    // We are restarting catchup configuration after browser restart.
+    UMA_HISTOGRAM_ENUMERATION(kClearServerDataEventsHistogramName,
+                              CLEAR_SERVER_DATA_RETRIED, CLEAR_SERVER_DATA_MAX);
+
     BeginConfigureCatchUpBeforeClear();
     return;
   }
@@ -1304,6 +1328,9 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
     case syncer::RESET_LOCAL_SYNC_DATA:
       ShutdownImpl(syncer::DISABLE_SYNC);
       startup_controller_->TryStart();
+      UMA_HISTOGRAM_ENUMERATION(kClearServerDataEventsHistogramName,
+                                CLEAR_SERVER_DATA_RESET_LOCAL_DATA_RECEIVED,
+                                CLEAR_SERVER_DATA_MAX);
       break;
     default:
       NOTREACHED();
@@ -1321,6 +1348,8 @@ void ProfileSyncService::OnLocalSetPassphraseEncryption(
   // At this point the user has set a custom passphrase and we have received the
   // updated nigori state. Time to cache the nigori state, and catch up the
   // active data types.
+  UMA_HISTOGRAM_ENUMERATION(kClearServerDataEventsHistogramName,
+                            CLEAR_SERVER_DATA_STARTED, CLEAR_SERVER_DATA_MAX);
   sync_prefs_.SetNigoriSpecificsForPassphraseTransition(
       nigori_state.nigori_specifics);
   sync_prefs_.SetPassphraseEncryptionTransitionInProgress(true);
@@ -1358,6 +1387,8 @@ void ProfileSyncService::OnClearServerDataDone() {
   // nigori state.
   ShutdownImpl(syncer::DISABLE_SYNC);
   startup_controller_->TryStart();
+  UMA_HISTOGRAM_ENUMERATION(kClearServerDataEventsHistogramName,
+                            CLEAR_SERVER_DATA_SUCCEEDED, CLEAR_SERVER_DATA_MAX);
 }
 
 void ProfileSyncService::OnConfigureDone(
@@ -1371,7 +1402,7 @@ void ProfileSyncService::OnConfigureDone(
   DCHECK(cached_passphrase_.empty());
 
   if (!sync_configure_start_time_.is_null()) {
-    if (result.status == DataTypeManager::OK) {
+    if (configure_status_ == DataTypeManager::OK) {
       base::Time sync_configure_stop_time = base::Time::Now();
       base::TimeDelta delta =
           sync_configure_stop_time - sync_configure_start_time_;
@@ -1405,6 +1436,12 @@ void ProfileSyncService::OnConfigureDone(
 
   // Handle unrecoverable error.
   if (configure_status_ != DataTypeManager::OK) {
+    if (catch_up_configure_in_progress_) {
+      // Record catchup configuration failure.
+      UMA_HISTOGRAM_ENUMERATION(kClearServerDataEventsHistogramName,
+                                CLEAR_SERVER_DATA_CATCHUP_FAILED,
+                                CLEAR_SERVER_DATA_MAX);
+    }
     // Something catastrophic had happened. We should only have one
     // error representing it.
     syncer::SyncError error = data_type_status_table_.GetUnrecoverableError();

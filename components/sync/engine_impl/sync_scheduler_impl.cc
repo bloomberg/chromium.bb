@@ -534,7 +534,6 @@ void SyncSchedulerImpl::DoClearServerDataSyncCycleJob(JobPriority priority) {
 
   if (!CanRunJobNow(priority)) {
     SDVLOG(2) << "Unable to run clear server data job right now.";
-    RunAndReset(&pending_configure_params_->retry_task);
     return;
   }
 
