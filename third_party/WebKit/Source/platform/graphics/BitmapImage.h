@@ -120,14 +120,14 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   size_t currentFrame() const { return m_currentFrame; }
   size_t frameCount();
 
-  sk_sp<SkImage> frameAtIndex(size_t);
+  sk_sp<SkImage> frameAtIndex(size_t, const ColorBehavior&);
 
   bool frameIsCompleteAtIndex(size_t) const;
   float frameDurationAtIndex(size_t) const;
   bool frameHasAlphaAtIndex(size_t);
   ImageOrientation frameOrientationAtIndex(size_t);
 
-  sk_sp<SkImage> decodeAndCacheFrame(size_t index);
+  sk_sp<SkImage> decodeAndCacheFrame(size_t index, const ColorBehavior&);
   void updateSize() const;
 
   // Returns the total number of bytes allocated for all framebuffers, i.e.
@@ -191,6 +191,8 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   sk_sp<SkImage>
       m_cachedFrame;  // A cached copy of the most recently-accessed frame.
   size_t m_cachedFrameIndex;  // Index of the frame that is cached.
+  ColorBehavior m_cachedFrameColorBehavior;  // Color behavior that created the
+                                             // cached frame.
 
   std::unique_ptr<Timer<BitmapImage>> m_frameTimer;
   int m_repetitionCount;  // How many total animation loops we should do.  This

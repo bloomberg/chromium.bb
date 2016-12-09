@@ -5,7 +5,6 @@
 #include "platform/graphics/ColorBehavior.h"
 
 #include "platform/graphics/BitmapImageMetrics.h"
-#include "third_party/skia/include/core/SkColorSpace.h"
 #include "wtf/SpinLock.h"
 
 namespace blink {
@@ -64,6 +63,18 @@ ColorBehavior ColorBehavior::transformToGlobalTarget() {
 // static
 ColorBehavior ColorBehavior::transformToTargetForTesting() {
   return transformToGlobalTarget();
+}
+
+bool ColorBehavior::operator==(const ColorBehavior& other) const {
+  if (m_type != other.m_type)
+    return false;
+  if (m_type != Type::TransformTo)
+    return true;
+  return SkColorSpace::Equals(m_target.get(), other.m_target.get());
+}
+
+bool ColorBehavior::operator!=(const ColorBehavior& other) const {
+  return !(*this == other);
 }
 
 }  // namespace blink

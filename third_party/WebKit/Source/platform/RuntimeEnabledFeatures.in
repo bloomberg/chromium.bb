@@ -242,7 +242,7 @@ TimerThrottlingForHiddenFrames status=stable
 // enabled since they're a feature always supported by Chrome.
 TouchEventFeatureDetection status=stable
 TraceWrappables
-TrueColorRendering status=experimental, settable_from_internals=True
+TrueColorRendering status=experimental
 TrustedEventsDefaultAction status=stable
 UserSelectAll status=stable
 WebAnimationsAPI status=experimental

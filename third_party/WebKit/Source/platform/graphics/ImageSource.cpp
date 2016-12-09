@@ -27,14 +27,14 @@
 
 #include "platform/graphics/ImageSource.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
 
-ImageSource::ImageSource() {}
+ImageSource::ImageSource()
+    : m_decoderColorBehavior(ColorBehavior::transformToGlobalTarget()) {}
 
 ImageSource::~ImageSource() {}
 
@@ -49,6 +49,7 @@ PassRefPtr<SharedBuffer> ImageSource::data() {
 bool ImageSource::setData(PassRefPtr<SharedBuffer> passData,
                           bool allDataReceived) {
   RefPtr<SharedBuffer> data = passData;
+  m_allDataReceived = allDataReceived;
 
   if (m_decoder) {
     m_decoder->setData(data.release(), allDataReceived);
@@ -57,15 +58,9 @@ bool ImageSource::setData(PassRefPtr<SharedBuffer> passData,
     return true;
   }
 
-  if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-    m_decoder = DeferredImageDecoder::create(data, allDataReceived,
-                                             ImageDecoder::AlphaPremultiplied,
-                                             ColorBehavior::tag());
-  } else {
-    m_decoder = DeferredImageDecoder::create(
-        data, allDataReceived, ImageDecoder::AlphaPremultiplied,
-        ColorBehavior::transformToGlobalTarget());
-  }
+  m_decoder = DeferredImageDecoder::create(data, allDataReceived,
+                                           ImageDecoder::AlphaPremultiplied,
+                                           m_decoderColorBehavior);
 
   // Insufficient data is not a failure.
   return m_decoder || !ImageDecoder::hasSufficientDataToSniffImageType(*data);
@@ -114,9 +109,21 @@ size_t ImageSource::frameCount() const {
   return m_decoder ? m_decoder->frameCount() : 0;
 }
 
-sk_sp<SkImage> ImageSource::createFrameAtIndex(size_t index) {
+sk_sp<SkImage> ImageSource::createFrameAtIndex(
+    size_t index,
+    const ColorBehavior& colorBehavior) {
   if (!m_decoder)
     return nullptr;
+
+  if (colorBehavior != m_decoderColorBehavior) {
+    m_decoder = DeferredImageDecoder::create(data(), m_allDataReceived,
+                                             ImageDecoder::AlphaPremultiplied,
+                                             colorBehavior);
+    m_decoderColorBehavior = colorBehavior;
+    // The data has already been validated, so changing the color behavior
+    // should always result in a valid decoder.
+    DCHECK(m_decoder);
+  }
 
   return m_decoder->createFrameAtIndex(index);
 }

@@ -27,6 +27,7 @@
 #define ImageSource_h
 
 #include "platform/PlatformExport.h"
+#include "platform/graphics/ColorBehavior.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -90,7 +91,7 @@ class PLATFORM_EXPORT ImageSource final {
   size_t frameCount() const;
 
   // Attempts to create the requested frame.
-  sk_sp<SkImage> createFrameAtIndex(size_t);
+  sk_sp<SkImage> createFrameAtIndex(size_t, const ColorBehavior&);
 
   float frameDurationAtIndex(size_t) const;
   bool frameHasAlphaAtIndex(
@@ -105,6 +106,8 @@ class PLATFORM_EXPORT ImageSource final {
 
  private:
   std::unique_ptr<DeferredImageDecoder> m_decoder;
+  ColorBehavior m_decoderColorBehavior;
+  bool m_allDataReceived = false;
 };
 
 }  // namespace blink

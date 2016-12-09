@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "public/platform/WebVector.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkColorSpace;
@@ -56,6 +57,9 @@ class PLATFORM_EXPORT ColorBehavior {
 
   // Transform to a target color space to be used by tests.
   static ColorBehavior transformToTargetForTesting();
+
+  bool operator==(const ColorBehavior&) const;
+  bool operator!=(const ColorBehavior&) const;
 
  private:
   enum class Type {

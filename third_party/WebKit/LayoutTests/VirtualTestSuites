@@ -2,7 +2,8 @@
   {
     "prefix": "color_space",
     "base": "fast/canvas/color-space",
-    "args": ["--enable-color-correct-rendering"]
+    "args": ["--enable-color-correct-rendering",
+             "--enable-true-color-rendering"]
   },
   {
     "prefix": "gpu",
