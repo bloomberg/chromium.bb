@@ -10,6 +10,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "platform/Histogram.h"
+#include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -92,6 +93,61 @@ void AutoplayUmaHelper::onAutoplayInitiated(AutoplaySource source) {
   }
 
   m_element->addEventListener(EventTypeNames::playing, this, false);
+}
+
+void AutoplayUmaHelper::recordCrossOriginAutoplayResult(
+    CrossOriginAutoplayResult result) {
+  if (!m_element->isHTMLVideoElement())
+    return;
+  if (!m_element->isInCrossOriginFrame())
+    return;
+
+  // Record each metric only once per element, since the metric focuses on the
+  // site distribution. If a page calls play() multiple times, it will be
+  // recorded only once.
+  if (m_recordedCrossOriginAutoplayResults.count(result))
+    return;
+
+  switch (result) {
+    case CrossOriginAutoplayResult::AutoplayAllowed:
+      // Record metric
+      Platform::current()->recordRapporURL(
+          "Media.Autoplay.CrossOrigin.Allowed.ChildFrame",
+          m_element->document().url());
+      Platform::current()->recordRapporURL(
+          "Media.Autoplay.CrossOrigin.Allowed.TopLevelFrame",
+          m_element->document().topDocument().url());
+      m_recordedCrossOriginAutoplayResults.insert(result);
+      break;
+    case CrossOriginAutoplayResult::AutoplayBlocked:
+      Platform::current()->recordRapporURL(
+          "Media.Autoplay.CrossOrigin.Blocked.ChildFrame",
+          m_element->document().url());
+      Platform::current()->recordRapporURL(
+          "Media.Autoplay.CrossOrigin.Blocked.TopLevelFrame",
+          m_element->document().topDocument().url());
+      m_recordedCrossOriginAutoplayResults.insert(result);
+      break;
+    case CrossOriginAutoplayResult::PlayedWithGesture:
+      // Record this metric only when the video has been blocked from autoplay
+      // previously. This is to record the sites having videos that are blocked
+      // to autoplay but the user starts the playback by gesture.
+      if (!m_recordedCrossOriginAutoplayResults.count(
+              CrossOriginAutoplayResult::AutoplayBlocked)) {
+        return;
+      }
+      Platform::current()->recordRapporURL(
+          "Media.Autoplay.CrossOrigin.PlayedWithGestureAfterBlock.ChildFrame",
+          m_element->document().url());
+      Platform::current()->recordRapporURL(
+          "Media.Autoplay.CrossOrigin.PlayedWithGestureAfterBlock."
+          "TopLevelFrame",
+          m_element->document().topDocument().url());
+      m_recordedCrossOriginAutoplayResults.insert(result);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void AutoplayUmaHelper::recordAutoplayUnmuteStatus(

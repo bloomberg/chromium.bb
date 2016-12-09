@@ -10,6 +10,8 @@
 #include "core/events/EventListener.h"
 #include "platform/heap/Handle.h"
 
+#include <set>
+
 namespace blink {
 
 // These values are used for histograms. Do not reorder.
@@ -38,6 +40,12 @@ enum AutoplayBlockedReason {
   AutoplayBlockedReasonMax = 3
 };
 
+enum class CrossOriginAutoplayResult {
+  AutoplayAllowed,
+  AutoplayBlocked,
+  PlayedWithGesture,
+};
+
 class Document;
 class ElementVisibilityObserver;
 class HTMLMediaElement;
@@ -57,6 +65,7 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
 
   void onAutoplayInitiated(AutoplaySource);
 
+  void recordCrossOriginAutoplayResult(CrossOriginAutoplayResult);
   void recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus);
 
   void didMoveToNewDocument(Document& oldDocument);
@@ -114,6 +123,8 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
 
   // Whether an autoplaying muted video is visible.
   bool m_isVisible;
+
+  std::set<CrossOriginAutoplayResult> m_recordedCrossOriginAutoplayResults;
 
   // The observer is used to observer an autoplaying muted video changing it's
   // visibility, which is used for offscreen duration UMA.  The UMA is pending

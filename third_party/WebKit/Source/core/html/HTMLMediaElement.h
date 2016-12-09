@@ -293,6 +293,9 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   // specified origin.
   bool isMediaDataCORSSameOrigin(SecurityOrigin*) const;
 
+  // Returns this media element is in a cross-origin frame.
+  bool isInCrossOriginFrame() const;
+
   void scheduleEvent(Event*);
   void scheduleTimeupdateEvent(bool periodicEvent);
 
@@ -510,6 +513,8 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   // should use, if checking to see if an action is allowed.
   bool isLockedPendingUserGesture() const;
 
+  bool isLockedPendingUserGestureIfCrossOriginExperimentEnabled() const;
+
   // If the user gesture is required, then this will remove it.  Note that
   // one should not generally call this method directly; use the one on
   // m_helper and give it a reason.
@@ -520,6 +525,10 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   // the requirement is currently overridden.  This does not check if a user
   // gesture is currently being processed.
   bool isGestureNeededForPlayback() const;
+
+  bool isGestureNeededForPlaybackIfCrossOriginExperimentEnabled() const;
+
+  bool isGestureNeededForPlaybackIfPendingUserGestureIsLocked() const;
 
   // Return true if and only if the settings allow autoplay of media on this
   // frame.
@@ -626,6 +635,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
 
   // FIXME: HTMLMediaElement has way too many state bits.
   bool m_lockedPendingUserGesture : 1;
+  bool m_lockedPendingUserGestureIfCrossOriginExperimentEnabled : 1;
   bool m_playing : 1;
   bool m_shouldDelayLoadEvent : 1;
   bool m_haveFiredLoadedData : 1;

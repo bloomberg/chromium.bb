@@ -394,6 +394,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_fragmentEndTime(std::numeric_limits<double>::quiet_NaN()),
       m_pendingActionFlags(0),
       m_lockedPendingUserGesture(false),
+      m_lockedPendingUserGestureIfCrossOriginExperimentEnabled(true),
       m_playing(false),
       m_shouldDelayLoadEvent(false),
       m_haveFiredLoadedData(false),
@@ -422,6 +423,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
   BLINK_MEDIA_LOG << "HTMLMediaElement(" << (void*)this << ")";
 
   m_lockedPendingUserGesture = computeLockedPendingUserGesture(document);
+  m_lockedPendingUserGestureIfCrossOriginExperimentEnabled =
+      isDocumentCrossOrigin(document);
 
   LocalFrame* frame = document.frame();
   if (frame) {
@@ -468,9 +471,8 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument) {
       computeLockedPendingUserGesture(oldDocument);
   bool newDocumentRequiresUserGesture =
       computeLockedPendingUserGesture(document());
-  if (newDocumentRequiresUserGesture && !oldDocumentRequiresUserGesture) {
+  if (newDocumentRequiresUserGesture && !oldDocumentRequiresUserGesture)
     m_lockedPendingUserGesture = true;
-  }
 
   if (m_shouldDelayLoadEvent) {
     document().incrementLoadEventDelayCount();
@@ -482,6 +484,9 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument) {
     // m_webMediaPlayer can not cause load event dispatching in oldDocument.
     oldDocument.incrementLoadEventDelayCount();
   }
+
+  if (isDocumentCrossOrigin(document()) && !isDocumentCrossOrigin(oldDocument))
+    m_lockedPendingUserGestureIfCrossOriginExperimentEnabled = true;
 
   removeElementFromDocumentMap(this, &oldDocument);
   addElementToDocumentMap(this, &document());
@@ -1330,6 +1335,10 @@ bool HTMLMediaElement::isMediaDataCORSSameOrigin(SecurityOrigin* origin) const {
           !origin->taintsCanvas(currentSrc()));
 }
 
+bool HTMLMediaElement::isInCrossOriginFrame() const {
+  return isDocumentCrossOrigin(document());
+}
+
 void HTMLMediaElement::startProgressEventTimer() {
   if (m_progressEventTimer.isActive())
     return;
@@ -1691,6 +1700,13 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
       m_autoplayUmaHelper->onAutoplayInitiated(AutoplaySource::Attribute);
 
       if (!isGestureNeededForPlayback()) {
+        if (isGestureNeededForPlaybackIfCrossOriginExperimentEnabled()) {
+          m_autoplayUmaHelper->recordCrossOriginAutoplayResult(
+              CrossOriginAutoplayResult::AutoplayBlocked);
+        } else {
+          m_autoplayUmaHelper->recordCrossOriginAutoplayResult(
+              CrossOriginAutoplayResult::AutoplayAllowed);
+        }
         if (isHTMLVideoElement() && muted() &&
             RuntimeEnabledFeatures::autoplayMutedVideosEnabled()) {
           // We might end up in a situation where the previous
@@ -1709,6 +1725,9 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
           scheduleNotifyPlaying();
           m_autoplaying = false;
         }
+      } else {
+        m_autoplayUmaHelper->recordCrossOriginAutoplayResult(
+            CrossOriginAutoplayResult::AutoplayBlocked);
       }
     }
 
@@ -2185,14 +2204,26 @@ Nullable<ExceptionCode> HTMLMediaElement::play() {
         return nullptr;
       }
 
+      m_autoplayUmaHelper->recordCrossOriginAutoplayResult(
+          CrossOriginAutoplayResult::AutoplayBlocked);
       String message = ExceptionMessages::failedToExecute(
           "play", "HTMLMediaElement",
           "API can only be initiated by a user gesture.");
       document().addConsoleMessage(ConsoleMessage::create(
           JSMessageSource, WarningMessageLevel, message));
       return NotAllowedError;
+    } else {
+      if (isGestureNeededForPlaybackIfCrossOriginExperimentEnabled()) {
+        m_autoplayUmaHelper->recordCrossOriginAutoplayResult(
+            CrossOriginAutoplayResult::AutoplayBlocked);
+      } else {
+        m_autoplayUmaHelper->recordCrossOriginAutoplayResult(
+            CrossOriginAutoplayResult::AutoplayAllowed);
+      }
     }
   } else {
+    m_autoplayUmaHelper->recordCrossOriginAutoplayResult(
+        CrossOriginAutoplayResult::PlayedWithGesture);
     UserGestureIndicator::utilizeUserGesture();
     unlockUserGesture();
   }
@@ -3786,12 +3817,26 @@ bool HTMLMediaElement::isLockedPendingUserGesture() const {
 
 void HTMLMediaElement::unlockUserGesture() {
   m_lockedPendingUserGesture = false;
+  m_lockedPendingUserGestureIfCrossOriginExperimentEnabled = false;
 }
 
 bool HTMLMediaElement::isGestureNeededForPlayback() const {
   if (!m_lockedPendingUserGesture)
     return false;
 
+  return isGestureNeededForPlaybackIfPendingUserGestureIsLocked();
+}
+
+bool HTMLMediaElement::
+    isGestureNeededForPlaybackIfCrossOriginExperimentEnabled() const {
+  if (!m_lockedPendingUserGestureIfCrossOriginExperimentEnabled)
+    return false;
+
+  return isGestureNeededForPlaybackIfPendingUserGestureIsLocked();
+}
+
+bool HTMLMediaElement::isGestureNeededForPlaybackIfPendingUserGestureIsLocked()
+    const {
   if (loadType() == WebMediaPlayer::LoadTypeMediaStream)
     return false;
 
