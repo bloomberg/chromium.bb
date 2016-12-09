@@ -15,18 +15,9 @@ Polymer({
     /**
      * Optional preference object associated with the indicator. Initialized to
      * null so that computed functions will get called if this is never set.
-     * @type {?chrome.settingsPrivate.PrefObject}
+     * @type {!chrome.settingsPrivate.PrefObject|undefined}
      */
-    pref: {type: Object, value: null},
-
-    /**
-     * Optional email of the user controlling the setting when the setting does
-     * not correspond to a pref (Chrome OS only). Only used when pref is null.
-     * Initialized to '' so that computed functions will get called if this is
-     * never set. TODO(stevenjb/michaelpg): Create a separate indicator for
-     * non-pref (i.e. explicitly set) indicators (see language_detail_page).
-     */
-    controllingUser: {type: String, value: ''},
+    pref: Object,
 
     /**
      * Which indicator type to show (or NONE).
@@ -41,17 +32,16 @@ Polymer({
 
   /**
    * @param {CrPolicyIndicatorType} type
-   * @param {?chrome.settingsPrivate.PrefObject} pref
+   * @param {!chrome.settingsPrivate.PrefObject} pref
    * @return {string} The tooltip text for |type|.
    * @private
    */
-  getTooltip_: function(type, pref, controllingUser) {
+  getTooltip_: function(type, pref) {
     if (type == CrPolicyIndicatorType.RECOMMENDED) {
       if (pref && pref.value == pref.recommendedValue)
         return this.i18n_('controlledSettingRecommendedMatches');
       return this.i18n_('controlledSettingRecommendedDiffers');
     }
-    var name = pref ? pref.controlledByName : controllingUser;
-    return this.getPolicyIndicatorTooltip(type, name);
+    return this.getPolicyIndicatorTooltip(type, pref.controlledByName || '');
   }
 });
