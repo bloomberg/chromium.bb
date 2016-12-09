@@ -38,8 +38,11 @@
 #include <linux/input.h>
 
 #include <wayland-client.h>
-#include <wayland-egl.h>
 #include <wayland-cursor.h>
+
+#ifdef ENABLE_EGL
+#include <wayland-egl.h>
+#endif
 
 #include "compositor.h"
 #include "compositor-wayland.h"
@@ -386,6 +389,7 @@ draw_initial_frame(struct wayland_output *output)
 			  output->base.current_mode->height);
 }
 
+#ifdef ENABLE_EGL
 static void
 wayland_output_update_gl_border(struct wayland_output *output)
 {
@@ -455,6 +459,7 @@ wayland_output_update_gl_border(struct wayland_output *output)
 				       cairo_image_surface_get_stride(output->gl.border.bottom) / 4,
 				       cairo_image_surface_get_data(output->gl.border.bottom));
 }
+#endif
 
 static void
 wayland_output_start_repaint_loop(struct weston_output *output_base)
@@ -480,6 +485,7 @@ wayland_output_start_repaint_loop(struct weston_output *output_base)
 	wl_display_flush(wb->parent.wl_display);
 }
 
+#ifdef ENABLE_EGL
 static int
 wayland_output_repaint_gl(struct weston_output *output_base,
 			  pixman_region32_t *damage)
@@ -498,6 +504,7 @@ wayland_output_repaint_gl(struct weston_output *output_base,
 				 &ec->primary_plane.damage, damage);
 	return 0;
 }
+#endif
 
 static void
 wayland_output_update_shm_border(struct wayland_shm_buffer *buffer)
@@ -665,9 +672,11 @@ wayland_output_disable(struct weston_output *base)
 
 	if (b->use_pixman) {
 		pixman_renderer_output_destroy(&output->base);
+#ifdef ENABLE_EGL
 	} else {
 		gl_renderer->output_destroy(&output->base);
 		wl_egl_window_destroy(output->gl.egl_window);
+#endif
 	}
 
 	wayland_output_destroy_shm_buffers(output);
@@ -702,6 +711,7 @@ wayland_output_destroy(struct weston_output *base)
 
 static const struct wl_shell_surface_listener shell_surface_listener;
 
+#ifdef ENABLE_EGL
 static int
 wayland_output_init_gl_renderer(struct wayland_output *output)
 {
@@ -737,6 +747,7 @@ cleanup_window:
 	wl_egl_window_destroy(output->gl.egl_window);
 	return -1;
 }
+#endif
 
 static int
 wayland_output_init_pixman_renderer(struct wayland_output *output)
@@ -785,6 +796,7 @@ wayland_output_resize_surface(struct wayland_output *output)
 		wl_region_destroy(region);
 	}
 
+#ifdef ENABLE_EGL
 	if (output->gl.egl_window) {
 		wl_egl_window_resize(output->gl.egl_window,
 				     width, height, 0, 0);
@@ -811,6 +823,7 @@ wayland_output_resize_surface(struct wayland_output *output)
 		cairo_surface_destroy(output->gl.border.bottom);
 		output->gl.border.bottom = NULL;
 	}
+#endif
 
 	wayland_output_destroy_shm_buffers(output);
 }
@@ -1037,11 +1050,13 @@ wayland_output_switch_mode(struct weston_output *output_base,
 		pixman_renderer_output_destroy(output_base);
 		if (wayland_output_init_pixman_renderer(output) < 0)
 			goto err_output;
+#ifdef ENABLE_EGL
 	} else {
 		gl_renderer->output_destroy(output_base);
 		wl_egl_window_destroy(output->gl.egl_window);
 		if (wayland_output_init_gl_renderer(output) < 0)
 			goto err_output;
+#endif
 	}
 	wl_surface_destroy(old_surface);
 
@@ -1168,11 +1183,13 @@ wayland_output_enable(struct weston_output *base)
 			goto err_output;
 
 		output->base.repaint = wayland_output_repaint_pixman;
+#ifdef ENABLE_EGL
 	} else {
 		if (wayland_output_init_gl_renderer(output) < 0)
 			goto err_output;
 
 		output->base.repaint = wayland_output_repaint_gl;
+#endif
 	}
 
 	output->base.start_repaint_loop = wayland_output_start_repaint_loop;
@@ -2470,7 +2487,11 @@ wayland_backend_create(struct weston_compositor *compositor,
 
 	create_cursor(b, new_config);
 
+#ifdef ENABLE_EGL
 	b->use_pixman = new_config->use_pixman;
+#else
+	b->use_pixman = true;
+#endif
 	b->fullscreen = new_config->fullscreen;
 
 	if (!b->use_pixman) {

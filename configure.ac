@@ -222,11 +222,14 @@ AC_SUBST(WAYLAND_PROTOCOLS_DATADIR, $ac_wayland_protocols_pkgdatadir)
 AC_ARG_ENABLE(wayland-compositor, [  --enable-wayland-compositor],,
 	      enable_wayland_compositor=yes)
 AM_CONDITIONAL(ENABLE_WAYLAND_COMPOSITOR,
-	       test x$enable_wayland_compositor = xyes -a x$enable_egl = xyes)
-if test x$enable_wayland_compositor = xyes -a x$enable_egl = xyes; then
+	       test x$enable_wayland_compositor = xyes)
+if test x$enable_wayland_compositor = xyes; then
   AC_DEFINE([BUILD_WAYLAND_COMPOSITOR], [1],
 	    [Build the Wayland (nested) compositor])
-  PKG_CHECK_MODULES(WAYLAND_COMPOSITOR, [wayland-client >= $WAYLAND_PREREQ_VERSION wayland-egl wayland-cursor])
+  PKG_CHECK_MODULES(WAYLAND_COMPOSITOR, [wayland-client >= $WAYLAND_PREREQ_VERSION wayland-cursor])
+  if test x$enable_egl = xyes; then
+    PKG_CHECK_MODULES(WAYLAND_COMPOSITOR_EGL, [wayland-egl])
+  fi
 fi
 
 
