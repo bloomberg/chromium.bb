@@ -52,6 +52,10 @@ test("components_unittests") {
     ]
   }
 
+  if (is_android) {
+    enable_multidex = true
+  }
+
   # Add only ":unit_tests" dependencies here. If your tests have dependencies
   # (this would at least include the component itself), they should be on the
   # test source set and not here.

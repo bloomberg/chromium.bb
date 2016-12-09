@@ -62,6 +62,7 @@ test("blimp_unittests") {
   }
 
   if (is_android) {
+    enable_multidex = true
     deps += [ "//blimp/client:blimp_unittests_java_deps" ]
   }
 }
