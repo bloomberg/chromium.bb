@@ -19,6 +19,7 @@
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/safe_builtins.h"
+#include "extensions/renderer/script_injection_callback.h"
 #include "gin/runner.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -117,11 +118,16 @@ class ScriptContext : public RequestSender::Source {
   // Safely calls the v8::Function, respecting the page load deferrer and
   // possibly executing asynchronously.
   // Doesn't catch exceptions; callers must do that if they want.
-  // USE THIS METHOD RATHER THAN v8::Function::Call WHEREVER POSSIBLE.
+  // USE THESE METHODS RATHER THAN v8::Function::Call WHEREVER POSSIBLE.
   // TODO(devlin): Remove the above variants in favor of this.
   void SafeCallFunction(const v8::Local<v8::Function>& function,
                         int argc,
                         v8::Local<v8::Value> argv[]);
+  void SafeCallFunction(
+      const v8::Local<v8::Function>& function,
+      int argc,
+      v8::Local<v8::Value> argv[],
+      const ScriptInjectionCallback::CompleteCallback& callback);
 
   void DispatchEvent(const char* event_name, v8::Local<v8::Array> args) const;
 

@@ -288,12 +288,12 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
 }
 
 void ScriptInjection::OnJsInjectionCompleted(
-    const blink::WebVector<v8::Local<v8::Value> >& results) {
+    const std::vector<v8::Local<v8::Value>>& results) {
   DCHECK(!did_inject_js_);
 
   bool expects_results = injector_->ExpectsResults();
   if (expects_results) {
-    if (!results.isEmpty() && !results[0].IsEmpty()) {
+    if (!results.empty() && !results[0].IsEmpty()) {
       // Right now, we only support returning single results (per frame).
       std::unique_ptr<content::V8ValueConverter> v8_converter(
           content::V8ValueConverter::create());

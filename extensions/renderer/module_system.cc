@@ -285,15 +285,6 @@ v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
 
 v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
     const std::string& module_name,
-    const std::string& method_name) {
-  v8::EscapableHandleScope handle_scope(GetIsolate());
-  v8::Local<v8::Value> no_args;
-  return handle_scope.Escape(
-      CallModuleMethod(module_name, method_name, 0, &no_args));
-}
-
-v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
-    const std::string& module_name,
     const std::string& method_name,
     int argc,
     v8::Local<v8::Value> argv[]) {
@@ -332,20 +323,32 @@ void ModuleSystem::CallModuleMethodSafe(const std::string& module_name,
                                         const std::string& method_name) {
   v8::HandleScope handle_scope(GetIsolate());
   v8::Local<v8::Value> no_args;
-  CallModuleMethodSafe(module_name, method_name, 0, &no_args);
+  CallModuleMethodSafe(module_name, method_name, 0, &no_args,
+                       ScriptInjectionCallback::CompleteCallback());
 }
 
 void ModuleSystem::CallModuleMethodSafe(
     const std::string& module_name,
     const std::string& method_name,
     std::vector<v8::Local<v8::Value>>* args) {
-  CallModuleMethodSafe(module_name, method_name, args->size(), args->data());
+  CallModuleMethodSafe(module_name, method_name, args->size(), args->data(),
+                       ScriptInjectionCallback::CompleteCallback());
 }
 
 void ModuleSystem::CallModuleMethodSafe(const std::string& module_name,
                                         const std::string& method_name,
                                         int argc,
                                         v8::Local<v8::Value> argv[]) {
+  CallModuleMethodSafe(module_name, method_name, argc, argv,
+                       ScriptInjectionCallback::CompleteCallback());
+}
+
+void ModuleSystem::CallModuleMethodSafe(
+    const std::string& module_name,
+    const std::string& method_name,
+    int argc,
+    v8::Local<v8::Value> argv[],
+    const ScriptInjectionCallback::CompleteCallback& callback) {
   TRACE_EVENT2("v8", "v8.callModuleMethodSafe", "module_name", module_name,
                "method_name", method_name);
 
@@ -363,7 +366,7 @@ void ModuleSystem::CallModuleMethodSafe(const std::string& module_name,
   {
     v8::TryCatch try_catch(GetIsolate());
     try_catch.SetCaptureMessage(true);
-    context_->SafeCallFunction(function, argc, argv);
+    context_->SafeCallFunction(function, argc, argv, callback);
     if (try_catch.HasCaught())
       HandleException(try_catch);
   }

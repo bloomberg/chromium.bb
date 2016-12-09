@@ -5,14 +5,12 @@
 #ifndef EXTENSIONS_RENDERER_SCRIPT_INJECTION_CALLBACK_H_
 #define EXTENSIONS_RENDERER_SCRIPT_INJECTION_CALLBACK_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
 #include "v8/include/v8.h"
-
-namespace blink {
-template<typename T> class WebVector;
-}
 
 namespace extensions {
 
@@ -22,8 +20,7 @@ namespace extensions {
 class ScriptInjectionCallback : public blink::WebScriptExecutionCallback {
  public:
   using CompleteCallback =
-      base::Callback<void(
-          const blink::WebVector<v8::Local<v8::Value>>& result)>;
+      base::Callback<void(const std::vector<v8::Local<v8::Value>>& result)>;
 
   ScriptInjectionCallback(const CompleteCallback& injection_completed_callback);
   ~ScriptInjectionCallback() override;

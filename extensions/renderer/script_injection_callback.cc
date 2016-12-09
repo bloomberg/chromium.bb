@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/script_injection_callback.h"
 
+#include "third_party/WebKit/public/platform/WebVector.h"
+
 namespace extensions {
 
 ScriptInjectionCallback::ScriptInjectionCallback(
@@ -16,7 +18,8 @@ ScriptInjectionCallback::~ScriptInjectionCallback() {
 
 void ScriptInjectionCallback::completed(
     const blink::WebVector<v8::Local<v8::Value> >& result) {
-  injection_completed_callback_.Run(result);
+  std::vector<v8::Local<v8::Value>> stl_result(result.begin(), result.end());
+  injection_completed_callback_.Run(stl_result);
   delete this;
 }
 

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "extensions/renderer/native_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
+#include "extensions/renderer/script_injection_callback.h"
 #include "gin/modules/module_registry_observer.h"
 #include "v8/include/v8.h"
 
@@ -86,9 +87,6 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   // equivalent to calling require('module_name').method_name() from JS.
   // DEPRECATED: see crbug.com/629431
   // TODO(devlin): Remove these.
-  v8::Local<v8::Value> CallModuleMethod(
-      const std::string& module_name,
-      const std::string& method_name);
   v8::Local<v8::Value> CallModuleMethod(const std::string& module_name,
                                         const std::string& method_name,
                                         int argc,
@@ -104,6 +102,12 @@ class ModuleSystem : public ObjectBackedNativeHandler,
                             const std::string& method_name,
                             int argc,
                             v8::Local<v8::Value> argv[]);
+  void CallModuleMethodSafe(
+      const std::string& module_name,
+      const std::string& method_name,
+      int argc,
+      v8::Local<v8::Value> argv[],
+      const ScriptInjectionCallback::CompleteCallback& callback);
 
   // Register |native_handler| as a potential target for requireNative(), so
   // calls to requireNative(|name|) from JS will return a new object created by

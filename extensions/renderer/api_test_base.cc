@@ -204,12 +204,21 @@ void ApiTestEnvironment::RunTestInner(const std::string& test_name,
                                       const base::Closure& quit_closure) {
   v8::HandleScope scope(env()->isolate());
   ModuleSystem::NativesEnabledScope natives_enabled(env()->module_system());
-  v8::Local<v8::Value> result =
-      env()->module_system()->CallModuleMethod("testBody", test_name);
-  if (!result->IsTrue()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure);
-    FAIL() << "Failed to run test \"" << test_name << "\"";
-  }
+  v8::Local<v8::Value> result;
+  bool did_run = false;
+  auto callback = [](bool* did_run, const base::Closure& quit_closure,
+                     const std::string& test_name,
+                     const std::vector<v8::Local<v8::Value>>& result) {
+    *did_run = true;
+    if (result.empty() || result[0].IsEmpty() || !result[0]->IsTrue()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure);
+      FAIL() << "Failed to run test \"" << test_name << "\"";
+    }
+  };
+  env()->module_system()->CallModuleMethodSafe(
+      "testBody", test_name, 0, nullptr,
+      base::Bind(callback, &did_run, quit_closure, test_name));
+  ASSERT_TRUE(did_run);
 }
 
 void ApiTestEnvironment::RunPromisesAgain() {

@@ -205,17 +205,36 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
 void ScriptContext::SafeCallFunction(const v8::Local<v8::Function>& function,
                                      int argc,
                                      v8::Local<v8::Value> argv[]) {
+  SafeCallFunction(function, argc, argv,
+                   ScriptInjectionCallback::CompleteCallback());
+}
+
+void ScriptContext::SafeCallFunction(
+    const v8::Local<v8::Function>& function,
+    int argc,
+    v8::Local<v8::Value> argv[],
+    const ScriptInjectionCallback::CompleteCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   v8::HandleScope handle_scope(isolate());
   v8::Context::Scope scope(v8_context());
   v8::MicrotasksScope microtasks(isolate(),
                                  v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::Local<v8::Object> global = v8_context()->Global();
   if (web_frame_) {
+    ScriptInjectionCallback* wrapper_callback = nullptr;
+    if (!callback.is_null()) {
+      // ScriptInjectionCallback manages its own lifetime.
+      wrapper_callback = new ScriptInjectionCallback(callback);
+    }
     web_frame_->requestExecuteV8Function(v8_context(), function, global, argc,
-                                         argv, nullptr);
+                                         argv, wrapper_callback);
   } else {
     // TODO(devlin): This probably isn't safe.
-    function->Call(global, argc, argv);
+    v8::Local<v8::Value> result = function->Call(global, argc, argv);
+    if (!callback.is_null()) {
+      std::vector<v8::Local<v8::Value>> results(1, result);
+      callback.Run(results);
+    }
   }
 }
 
