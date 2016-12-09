@@ -19,10 +19,10 @@
 <script>
 // This test measures the lifecycle update performance of changing paint offset.
 
-// Create a column with 100 rows of divs and 50 spans on each row.
+// Create a column with many rows of divs and many spans on each row.
 function createColumn(parent) {
-  var rowsPerColumn = 100;
-  var spansPerRow = 50;
+  var rowsPerColumn = 200;
+  var spansPerRow = 100;
   var columnDiv = document.createElement('div');
   parent.appendChild(columnDiv);
   columnDiv.setAttribute('class', 'column');
