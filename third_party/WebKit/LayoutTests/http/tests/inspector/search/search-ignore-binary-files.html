@@ -1,0 +1,25 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="./search-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.waitForScriptSource("pink.jpg", doSearch);
+
+    function doSearch(next)
+    {
+        var scope = new Sources.SourcesSearchScope();
+        var searchConfig = new Workspace.SearchConfig("AAAAAAA", true, false);
+        InspectorTest.runSearchAndDumpResults(scope, searchConfig, true, InspectorTest.completeTest.bind(InspectorTest));
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that search doesn't search in binary resources.</p>
+<img src="./resources/pink.jpg"></img>
+</body>
+</html>
