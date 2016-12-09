@@ -5757,11 +5757,16 @@
     },
     "chell-chrome-pfq": {
         "_template": "chrome_pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "chell"
         ],
         "important": false,
         "manifest": "official.xml",
+        "useflags": [
+            "-transparent_hugepage",
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "chell-chromium-pfq": {
