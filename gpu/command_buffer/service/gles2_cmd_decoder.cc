@@ -4803,6 +4803,10 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   offscreen_resolved_frame_buffer_.reset();
   offscreen_resolved_color_texture_.reset();
 
+  // Release all fences now, because some fence types need the context to be
+  // current on destruction.
+  pending_readpixel_fences_ = std::queue<FenceCallback>();
+
   // Need to release these before releasing |group_| which may own the
   // ShaderTranslatorCache.
   fragment_translator_ = NULL;

@@ -154,11 +154,15 @@ EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
   }
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-  Visual* visual;
-  ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
-      true, &visual, nullptr, nullptr, nullptr);
-  display_attribs.push_back(EGL_X11_VISUAL_ID_ANGLE);
-  display_attribs.push_back(static_cast<EGLint>(XVisualIDFromVisual(visual)));
+  // ANGLE_NULL doesn't use the visual, and may run without X11 where we can't
+  // get it anyway.
+  if (platform_type != EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE) {
+    Visual* visual;
+    ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
+        true, &visual, nullptr, nullptr, nullptr);
+    display_attribs.push_back(EGL_X11_VISUAL_ID_ANGLE);
+    display_attribs.push_back(static_cast<EGLint>(XVisualIDFromVisual(visual)));
+  }
 #endif
 
   display_attribs.push_back(EGL_NONE);
@@ -249,9 +253,13 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
   EGLint alpha_size = 8;
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-  ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
-      true, nullptr, &buffer_size, nullptr, nullptr);
-  alpha_size = buffer_size == 32 ? 8 : 0;
+  // If we're using ANGLE_NULL, we may not have a display, in which case we
+  // can't use XVisualManager.
+  if (g_native_display) {
+    ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
+        true, nullptr, &buffer_size, nullptr, nullptr);
+    alpha_size = buffer_size == 32 ? 8 : 0;
+  }
 #endif
 
   EGLint surface_type = (format == GLSurface::SURFACE_SURFACELESS)

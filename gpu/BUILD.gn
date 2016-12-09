@@ -399,8 +399,25 @@ fuzzer_test("gpu_fuzzer") {
     "//ui/gl:test_support",
   ]
 
-  libfuzzer_options = [
-    "max_len=16384",
-    "use_traces=1",
+  libfuzzer_options = [ "max_len=16384" ]
+}
+
+fuzzer_test("gpu_fuzzer_angle") {
+  sources = [
+    "command_buffer/tests/fuzzer_main.cc",
   ]
+
+  defines = [ "GPU_FUZZER_USE_ANGLE" ]
+
+  deps = [
+    ":gpu",
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//gpu/command_buffer/common:gles2_utils",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/gl:test_support",
+  ]
+
+  libfuzzer_options = [ "max_len=16384" ]
 }
