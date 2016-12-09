@@ -27,11 +27,14 @@ import sys
 
 DEFAULT_USER_REQUEST = True
 DEFAULT_USE_TEST_SCHEDULER = False
+# 0 means the batch would be the whole list of urls.
+DEFAULT_BATCH_SIZE = 0
 DEFAULT_VERBOSE = False
 CONFIG_FILENAME = 'test_config'
 CONFIG_TEMPLATE = """\
 IsUserRequested = {is_user_requested}
 UseTestScheduler = {use_test_scheduler}
+ScheduleBatchSize = {schedule_batch_size}
 """
 
 
@@ -62,6 +65,11 @@ def main(args):
       dest='use_test_scheduler',
       action='store_false',
       help='Use GCMNetworkManager for scheduling. Default option.')
+  parser.add_argument(
+      '--batch-size',
+      type=int,
+      dest='schedule_batch_size',
+      help='Number of pages to be queued after previous batch completes.')
   parser.add_argument(
       '-v',
       '--verbose',
@@ -113,7 +121,8 @@ def main(args):
     config.write(
         CONFIG_TEMPLATE.format(
             is_user_requested=options.user_request,
-            use_test_scheduler=options.use_test_scheduler))
+            use_test_scheduler=options.use_test_scheduler,
+            schedule_batch_size=options.schedule_batch_size))
 
   print 'Uploading config file and input file onto the device.'
   subprocess.call(

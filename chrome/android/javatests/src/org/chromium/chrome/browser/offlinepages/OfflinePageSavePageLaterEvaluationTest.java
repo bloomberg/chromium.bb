@@ -94,6 +94,7 @@ public class OfflinePageSavePageLaterEvaluationTest
     private int mCount;
     private boolean mIsUserRequested;
     private boolean mUseTestScheduler;
+    private int mScheduleBatchSize;
 
     private LongSparseArray<RequestMetadata> mRequestMetadata;
 
@@ -182,8 +183,7 @@ public class OfflinePageSavePageLaterEvaluationTest
                         }
                     }
                 }
-            }
-            if (!externalArchiveDir.mkdir()) {
+            } else if (!externalArchiveDir.mkdir()) {
                 log("Cannot create directory on external storage to store saved pages.");
             }
         } catch (SecurityException e) {
@@ -257,7 +257,9 @@ public class OfflinePageSavePageLaterEvaluationTest
         checkTrue(mUrls != null, "URLs weren't loaded.");
         checkTrue(mUrls.size() > 0, "No valid URLs in the input file.");
 
-        mCompletionLatch = new CountDownLatch(1);
+        if (mScheduleBatchSize == 0) {
+            mScheduleBatchSize = mUrls.size();
+        }
 
         initializeBridgeForProfile(useCustomScheduler);
         mObserver = new OfflinePageEvaluationObserver() {
@@ -276,9 +278,13 @@ public class OfflinePageSavePageLaterEvaluationTest
                 metadata.mTimeDelta.setEndTime(System.currentTimeMillis());
                 if (metadata.mStatus == -1) {
                     mCount++;
+                } else {
+                    log("The request for url: " + metadata.mUrl
+                            + " has more than one completion callbacks!");
+                    log("Previous status: " + metadata.mStatus + ". Current: " + status);
                 }
                 metadata.mStatus = status;
-                if (mCount == mUrls.size()) {
+                if (mCount == mUrls.size() || mCount % mScheduleBatchSize == 0) {
                     mCompletionLatch.countDown();
                     return;
                 }
@@ -315,11 +321,16 @@ public class OfflinePageSavePageLaterEvaluationTest
             fail("Test initialization error, aborting. No results would be written.");
             return;
         }
-        for (String url : mUrls) {
-            savePageLater(url, NAMESPACE);
+        int count = 0;
+        for (int i = 0; i < mUrls.size(); i++) {
+            savePageLater(mUrls.get(i), NAMESPACE);
+            count++;
+            if (count == mScheduleBatchSize || i == mUrls.size() - 1) {
+                count = 0;
+                mCompletionLatch = new CountDownLatch(1);
+                mCompletionLatch.await();
+            }
         }
-
-        mCompletionLatch.await();
         writeResults();
     }
 
@@ -465,6 +476,7 @@ public class OfflinePageSavePageLaterEvaluationTest
             properties.load(inputStream);
             mIsUserRequested = Boolean.parseBoolean(properties.getProperty("IsUserRequested"));
             mUseTestScheduler = Boolean.parseBoolean(properties.getProperty("UseTestScheduler"));
+            mScheduleBatchSize = Integer.parseInt(properties.getProperty("ScheduleBatchSize"));
         } catch (FileNotFoundException e) {
             Log.e(TAG, e.getMessage(), e);
             fail(String.format(
