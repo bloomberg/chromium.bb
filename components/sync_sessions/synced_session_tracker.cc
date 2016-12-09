@@ -261,7 +261,11 @@ void SyncedSessionTracker::PutTabInWindow(const std::string& session_tag,
     tab = std::move(it->second);
     unmapped_tabs_[session_tag].erase(it);
   }
-  DCHECK(tab);
+  if (!tab) {
+    LOG(ERROR) << "crbug.com/665196 Attempting to map tab " << tab_id
+               << " multiple times!";
+    return;
+  }
 
   tab->window_id.set_id(window_id);
   DVLOG(1) << "  - tab " << tab_id << " added to window " << window_id;

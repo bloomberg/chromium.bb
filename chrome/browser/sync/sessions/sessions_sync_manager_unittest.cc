@@ -2051,6 +2051,14 @@ TEST_F(SessionsSyncManagerTest, OnLocalTabModified) {
   ASSERT_EQ(2, tab2_2.navigation_size());
   EXPECT_EQ(bar1.spec(), tab2_2.navigation(0).virtual_url());
   EXPECT_EQ(bar2.spec(), tab2_2.navigation(1).virtual_url());
+
+  // Verify tab delegates have Sync ids.
+  std::set<const SyncedWindowDelegate*> window_delegates =
+      get_synced_window_getter()->GetSyncedWindowDelegates();
+  // Sync ids are in reverse order because tabs are inserted at the beginning
+  // of the tab list.
+  EXPECT_EQ(1, (*window_delegates.begin())->GetTabAt(0)->GetSyncId());
+  EXPECT_EQ(0, (*window_delegates.begin())->GetTabAt(1)->GetSyncId());
 }
 
 // Check that if a tab becomes uninteresting (for example no syncable URLs),
@@ -2161,6 +2169,14 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionExistingTabs) {
   EXPECT_TRUE(specifics2.has_header());
   const sync_pb::SessionHeader& header_s2 = specifics2.header();
   EXPECT_EQ(1, header_s2.window_size());
+
+  // Verify tab delegates have Sync ids.
+  std::set<const SyncedWindowDelegate*> window_delegates =
+      get_synced_window_getter()->GetSyncedWindowDelegates();
+  // Sync ids are in same order as tabs because the association happens after
+  // the tabs are opened (and therefore iterates through same order).
+  EXPECT_EQ(0, (*window_delegates.begin())->GetTabAt(0)->GetSyncId());
+  EXPECT_EQ(1, (*window_delegates.begin())->GetTabAt(1)->GetSyncId());
 }
 
 TEST_F(SessionsSyncManagerTest, ForeignSessionModifiedTime) {

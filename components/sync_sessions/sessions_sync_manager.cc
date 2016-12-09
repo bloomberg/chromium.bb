@@ -367,6 +367,7 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab_delegate,
   bool existing_tab_node =
       session_tracker_.GetTabNodeForLocalTab(tab_id, &tab_node_id);
   DCHECK_NE(TabNodePool::kInvalidTabNodeID, tab_node_id);
+  tab_delegate->SetSyncId(tab_node_id);
   sessions::SessionTab* session_tab =
       session_tracker_.GetTab(current_machine_tag(), tab_id);
 
@@ -766,9 +767,10 @@ void SessionsSyncManager::UpdateTrackerWithSpecifics(
     // In both cases, we can safely throw it into the set of node ids.
     session_tracker_.OnTabNodeSeen(session_tag, specifics.tab_node_id());
     sessions::SessionTab* tab = session_tracker_.GetTab(session_tag, tab_id);
-    if (tab->timestamp > modification_time) {
+    if (!tab->timestamp.is_null() && tab->timestamp > modification_time) {
       DVLOG(1) << "Ignoring " << session_tag << "'s session tab " << tab_id
-               << " with earlier modification time";
+               << " with earlier modification time: " << tab->timestamp
+               << " vs " << modification_time;
       return;
     }
 
