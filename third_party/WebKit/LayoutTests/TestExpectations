@@ -132,8 +132,8 @@ crbug.com/630615 [ Win7 ] images/color-profile-background-image-space.html [ Ski
 
 crbug.com/632000 [ Win ] images/paint-subrect-grid.html [ Pass Failure ]
 
-crbug.com/636271 [ Mac10.10 ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
-crbug.com/636271 [ Mac10.10 ] virtual/spinvalidation/paint/invalidation/resize-iframe-text.html [ Skip ]
+crbug.com/672676 [ Mac ] paint/invalidation/resize-iframe-text.html [ Failure Crash ]
+crbug.com/672676 [ Mac ] virtual/spinvalidation/paint/invalidation/resize-iframe-text.html [ Skip ]
 
 crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
