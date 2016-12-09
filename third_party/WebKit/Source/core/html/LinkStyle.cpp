@@ -236,40 +236,41 @@ void LinkStyle::removePendingSheet() {
 void LinkStyle::setDisabledState(bool disabled) {
   LinkStyle::DisabledState oldDisabledState = m_disabledState;
   m_disabledState = disabled ? Disabled : EnabledViaScript;
-  if (oldDisabledState != m_disabledState) {
-    // If we change the disabled state while the sheet is still loading, then we
-    // have to perform three checks:
-    if (styleSheetIsLoading()) {
-      // Check #1: The sheet becomes disabled while loading.
-      if (m_disabledState == Disabled)
-        removePendingSheet();
+  if (oldDisabledState == m_disabledState)
+    return;
 
-      // Check #2: An alternate sheet becomes enabled while it is still loading.
-      if (m_owner->relAttribute().isAlternate() &&
-          m_disabledState == EnabledViaScript)
-        addPendingSheet(Blocking);
+  // If we change the disabled state while the sheet is still loading, then we
+  // have to perform three checks:
+  if (styleSheetIsLoading()) {
+    // Check #1: The sheet becomes disabled while loading.
+    if (m_disabledState == Disabled)
+      removePendingSheet();
 
-      // Check #3: A main sheet becomes enabled while it was still loading and
-      // after it was disabled via script. It takes really terrible code to make
-      // this happen (a double toggle for no reason essentially). This happens
-      // on virtualplastic.net, which manages to do about 12 enable/disables on
-      // only 3 sheets. :)
-      if (!m_owner->relAttribute().isAlternate() &&
-          m_disabledState == EnabledViaScript && oldDisabledState == Disabled)
-        addPendingSheet(Blocking);
+    // Check #2: An alternate sheet becomes enabled while it is still loading.
+    if (m_owner->relAttribute().isAlternate() &&
+        m_disabledState == EnabledViaScript)
+      addPendingSheet(Blocking);
 
-      // If the sheet is already loading just bail.
-      return;
-    }
+    // Check #3: A main sheet becomes enabled while it was still loading and
+    // after it was disabled via script. It takes really terrible code to make
+    // this happen (a double toggle for no reason essentially). This happens
+    // on virtualplastic.net, which manages to do about 12 enable/disables on
+    // only 3 sheets. :)
+    if (!m_owner->relAttribute().isAlternate() &&
+        m_disabledState == EnabledViaScript && oldDisabledState == Disabled)
+      addPendingSheet(Blocking);
 
-    if (m_sheet) {
-      m_sheet->setDisabled(disabled);
-      return;
-    }
-
-    if (m_disabledState == EnabledViaScript && m_owner->shouldProcessStyle())
-      process();
+    // If the sheet is already loading just bail.
+    return;
   }
+
+  if (m_sheet) {
+    m_sheet->setDisabled(disabled);
+    return;
+  }
+
+  if (m_disabledState == EnabledViaScript && m_owner->shouldProcessStyle())
+    process();
 }
 
 void LinkStyle::setCrossOriginStylesheetStatus(CSSStyleSheet* sheet) {
@@ -407,7 +408,7 @@ void LinkStyle::setSheetTitle(
   if (title.isEmpty() || !isUnset() || m_owner->isAlternate())
     return;
 
-  KURL href = m_owner->getNonEmptyURLAttribute(hrefAttr);
+  const KURL& href = m_owner->getNonEmptyURLAttribute(hrefAttr);
   if (href.isValid() && !href.isEmpty()) {
     document().styleEngine().setPreferredStylesheetSetNameIfNotSet(
         title, updateActiveSheets);
