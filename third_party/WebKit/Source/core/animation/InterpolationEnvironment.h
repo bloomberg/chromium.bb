@@ -5,7 +5,6 @@
 #ifndef InterpolationEnvironment_h
 #define InterpolationEnvironment_h
 
-#include "core/animation/InterpolationTypesMap.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 
@@ -19,24 +18,14 @@ class InterpolationEnvironment {
   STACK_ALLOCATED();
 
  public:
-  explicit InterpolationEnvironment(const InterpolationTypesMap& map,
-                                    StyleResolverState& state)
-      : m_interpolationTypesMap(map),
-        m_state(&state),
-        m_svgElement(nullptr),
-        m_svgBaseValue(nullptr) {}
+  explicit InterpolationEnvironment(StyleResolverState& state)
+      : m_state(&state), m_svgElement(nullptr), m_svgBaseValue(nullptr) {}
 
-  explicit InterpolationEnvironment(const InterpolationTypesMap& map,
-                                    SVGElement& svgElement,
+  explicit InterpolationEnvironment(SVGElement& svgElement,
                                     const SVGPropertyBase& svgBaseValue)
-      : m_interpolationTypesMap(map),
-        m_state(nullptr),
+      : m_state(nullptr),
         m_svgElement(&svgElement),
         m_svgBaseValue(&svgBaseValue) {}
-
-  const InterpolationTypesMap& interpolationTypesMap() const {
-    return m_interpolationTypesMap;
-  }
 
   StyleResolverState& state() {
     DCHECK(m_state);
@@ -62,7 +51,6 @@ class InterpolationEnvironment {
   }
 
  private:
-  const InterpolationTypesMap& m_interpolationTypesMap;
   StyleResolverState* m_state;
   Member<SVGElement> m_svgElement;
   Member<const SVGPropertyBase> m_svgBaseValue;

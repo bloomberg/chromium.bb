@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InterpolationTypesMap_h
-#define InterpolationTypesMap_h
+#ifndef PropertyInterpolationTypesMapping_h
+#define PropertyInterpolationTypesMapping_h
 
 #include "wtf/Vector.h"
 #include <memory>
@@ -15,14 +15,11 @@ class PropertyHandle;
 
 using InterpolationTypes = Vector<std::unique_ptr<const InterpolationType>>;
 
-class InterpolationTypesMap {
-  STACK_ALLOCATED();
+namespace PropertyInterpolationTypesMapping {
 
- public:
-  virtual const InterpolationTypes& get(const PropertyHandle&) const = 0;
-  virtual size_t version() const { return 0; }
+const InterpolationTypes& get(const PropertyHandle&);
 };
 
 }  // namespace blink
 
-#endif  // InterpolationTypesMap_h
+#endif  // PropertyInterpolationTypesMapping_h
