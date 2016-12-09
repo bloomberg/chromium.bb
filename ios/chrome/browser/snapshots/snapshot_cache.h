@@ -7,10 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
-#import "ios/chrome/browser/snapshots/lru_cache.h"
 
 typedef void (^GreyBlock)(UIImage*);
 
@@ -19,35 +16,7 @@ typedef void (^GreyBlock)(UIImage*);
 // scroll offset and zoom level, used to stand in for the UIWebView if it has
 // been purged from memory or when quickly switching tabs.
 // Persists to disk on a background thread each time a snapshot changes.
-@interface SnapshotCache : NSObject {
- @private
-  // Dictionary to hold color snapshots in memory. n.b. Color snapshots are not
-  // kept in memory on tablets.
-  base::scoped_nsobject<NSMutableDictionary> imageDictionary_;
-
-  // Cache to hold color snapshots in memory. n.b. Color snapshots are not
-  // kept in memory on tablets. It is used in place of the imageDictionary_ when
-  // the LRU cache snapshot experiment is enabled.
-  base::scoped_nsobject<LRUCache> lruCache_;
-
-  // Temporary dictionary to hold grey snapshots for tablet side swipe. This
-  // will be nil before -createGreyCache is called and after -removeGreyCache
-  // is called.
-  base::scoped_nsobject<NSMutableDictionary> greyImageDictionary_;
-  NSSet* pinnedIDs_;
-
-  // Session ID of most recent pending grey snapshot request.
-  base::scoped_nsobject<NSString> mostRecentGreySessionId_;
-  // Block used by pending request for a grey snapshot.
-  base::scoped_nsprotocol<GreyBlock> mostRecentGreyBlock_;
-
-  // Session ID and correspoinding UIImage for the snapshot that will likely
-  // be requested to be saved to disk when the application is backgrounded.
-  base::scoped_nsobject<NSString> backgroundingImageSessionId_;
-  base::scoped_nsobject<UIImage> backgroundingColorImage_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_SnapshotCache_;
-}
+@interface SnapshotCache : NSObject
 
 // Track session IDs to not release on low memory and to reload on
 // |UIApplicationDidBecomeActiveNotification|.

@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
