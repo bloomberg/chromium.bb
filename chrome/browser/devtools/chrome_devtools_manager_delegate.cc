@@ -26,7 +26,6 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
-#include "net/base/host_port_pair.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::DevToolsAgentHost;
@@ -39,9 +38,23 @@ char kLocationsParam[] = "locations";
 char kHostParam[] = "host";
 char kPortParam[] = "port";
 
+class ChromeDevToolsManagerDelegate::HostData {
+ public:
+  HostData() {}
+  ~HostData() {}
+
+  RemoteLocations& remote_locations() { return remote_locations_; }
+
+  void set_remote_locations(RemoteLocations& locations) {
+    remote_locations_.swap(locations);
+  }
+
+ private:
+  RemoteLocations remote_locations_;
+};
+
 ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate()
-    : network_protocol_handler_(new DevToolsNetworkProtocolHandler()),
-      remote_locations_requester_(nullptr) {
+    : network_protocol_handler_(new DevToolsNetworkProtocolHandler()) {
   content::DevToolsAgentHost::AddObserver(this);
 }
 
@@ -52,18 +65,6 @@ ChromeDevToolsManagerDelegate::~ChromeDevToolsManagerDelegate() {
 void ChromeDevToolsManagerDelegate::Inspect(
     content::DevToolsAgentHost* agent_host) {
   DevToolsWindow::OpenDevToolsWindow(agent_host, nullptr);
-}
-
-void ChromeDevToolsManagerDelegate::DevicesAvailable(
-    const DevToolsDeviceDiscovery::CompleteDevices& devices) {
-  DevToolsAgentHost::List remote_targets;
-  for (const auto& complete : devices) {
-    for (const auto& browser : complete.second->browsers()) {
-      for (const auto& page : browser->pages())
-        remote_targets.push_back(page->CreateTarget());
-    }
-  }
-  remote_agent_hosts_.swap(remote_targets);
 }
 
 base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
@@ -169,16 +170,73 @@ std::string ChromeDevToolsManagerDelegate::GetFrontendResource(
 void ChromeDevToolsManagerDelegate::DevToolsAgentHostAttached(
     content::DevToolsAgentHost* agent_host) {
   network_protocol_handler_->DevToolsAgentStateChanged(agent_host, true);
+
+  DCHECK(host_data_.find(agent_host) == host_data_.end());
+  host_data_[agent_host].reset(new ChromeDevToolsManagerDelegate::HostData());
 }
 
 void ChromeDevToolsManagerDelegate::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
-  if (agent_host == remote_locations_requester_) {
-    remote_locations_requester_ = nullptr;
+  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, false);
+  // This class is created lazily, so it may not know about some attached hosts.
+  if (host_data_.find(agent_host) != host_data_.end()) {
+    host_data_.erase(agent_host);
+    UpdateDeviceDiscovery();
+  }
+}
+
+void ChromeDevToolsManagerDelegate::DevicesAvailable(
+    const DevToolsDeviceDiscovery::CompleteDevices& devices) {
+  DevToolsAgentHost::List remote_targets;
+  for (const auto& complete : devices) {
+    for (const auto& browser : complete.second->browsers()) {
+      for (const auto& page : browser->pages())
+        remote_targets.push_back(page->CreateTarget());
+    }
+  }
+  remote_agent_hosts_.swap(remote_targets);
+}
+
+void ChromeDevToolsManagerDelegate::UpdateDeviceDiscovery() {
+  RemoteLocations remote_locations;
+  for (const auto& pair : host_data_) {
+    RemoteLocations& locations = pair.second->remote_locations();
+    remote_locations.insert(locations.begin(), locations.end());
+  }
+
+  bool equals = remote_locations.size() == remote_locations_.size();
+  if (equals) {
+    RemoteLocations::iterator it1 = remote_locations.begin();
+    RemoteLocations::iterator it2 = remote_locations_.begin();
+    while (it1 != remote_locations.end()) {
+      DCHECK(it2 != remote_locations_.end());
+      if (!(*it1).Equals(*it2))
+        equals = false;
+      ++it1;
+      ++it2;
+    }
+    DCHECK(it2 == remote_locations_.end());
+  }
+
+  if (equals)
+    return;
+
+  if (remote_locations.empty()) {
     device_discovery_.reset();
     remote_agent_hosts_.clear();
+  } else {
+    if (!device_manager_)
+      device_manager_ = AndroidDeviceManager::Create();
+
+    AndroidDeviceManager::DeviceProviders providers;
+    providers.push_back(new TCPDeviceProvider(remote_locations));
+    device_manager_->SetDeviceProviders(providers);
+
+    device_discovery_.reset(new DevToolsDeviceDiscovery(device_manager_.get(),
+        base::Bind(&ChromeDevToolsManagerDelegate::DevicesAvailable,
+                   base::Unretained(this))));
   }
-  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, false);
+  remote_locations_.swap(remote_locations);
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -186,13 +244,11 @@ ChromeDevToolsManagerDelegate::SetRemoteLocations(
     content::DevToolsAgentHost* agent_host,
     int command_id,
     base::DictionaryValue* params) {
-  if (remote_locations_requester_) {
+  if (host_data_.find(agent_host) == host_data_.end()) {
       return DevToolsProtocol::CreateInvalidParamsResponse(
-          command_id,
-          "Remote locations are already in use by another client.");
+          command_id, "Cannot find agent host");
   }
 
-  remote_locations_requester_ = agent_host;
   std::set<net::HostPortPair> tcp_locations;
   base::ListValue* locations;
   if (!params->GetList(kLocationsParam, &locations))
@@ -218,21 +274,8 @@ ChromeDevToolsManagerDelegate::SetRemoteLocations(
     tcp_locations.insert(net::HostPortPair(host, port));
   }
 
-  if (tcp_locations.empty()) {
-    device_discovery_.reset();
-    remote_agent_hosts_.clear();
-  } else {
-    if (!device_manager_)
-      device_manager_ = AndroidDeviceManager::Create();
-
-    AndroidDeviceManager::DeviceProviders providers;
-    providers.push_back(new TCPDeviceProvider(tcp_locations));
-    device_manager_->SetDeviceProviders(providers);
-
-    device_discovery_.reset(new DevToolsDeviceDiscovery(device_manager_.get(),
-        base::Bind(&ChromeDevToolsManagerDelegate::DevicesAvailable,
-                   base::Unretained(this))));
-  }
+  host_data_[agent_host]->set_remote_locations(tcp_locations);
+  UpdateDeviceDiscovery();
 
   std::unique_ptr<base::DictionaryValue> result(
       base::MakeUnique<base::DictionaryValue>());
