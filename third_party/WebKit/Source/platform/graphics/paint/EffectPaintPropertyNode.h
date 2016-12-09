@@ -76,12 +76,13 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
-  // if an effect node has changed.
+  // if an effect node has changed. It ignores changes of reference filters
+  // because SkImageFilter doesn't have an equality operator.
   bool operator==(const EffectPaintPropertyNode& o) const {
     return m_parent == o.m_parent &&
            m_localTransformSpace == o.m_localTransformSpace &&
-           m_outputClip == o.m_outputClip && m_filter == o.m_filter &&
-           m_opacity == o.m_opacity;
+           m_outputClip == o.m_outputClip && m_opacity == o.m_opacity &&
+           m_filter.equalsIgnoringReferenceFilters(o.m_filter);
   }
 #endif
 

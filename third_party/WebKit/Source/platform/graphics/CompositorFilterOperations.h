@@ -40,10 +40,16 @@ class PLATFORM_EXPORT CompositorFilterOperations {
   void clear();
   bool isEmpty() const;
 
+  // For reference filters, this equality operator compares pointers of the
+  // image_filter fields instead of their values.
   bool operator==(const CompositorFilterOperations&) const;
   bool operator!=(const CompositorFilterOperations& o) const {
     return !(*this == o);
   }
+
+#if DCHECK_IS_ON()
+  bool equalsIgnoringReferenceFilters(const CompositorFilterOperations&) const;
+#endif
 
  private:
   cc::FilterOperations m_filterOperations;
