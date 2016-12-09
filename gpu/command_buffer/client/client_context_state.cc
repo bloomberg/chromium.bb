@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/client/client_context_state.h"
 
+#include "base/logging.h"
+
 namespace gpu {
 namespace gles2 {
 
@@ -11,6 +13,17 @@ ClientContextState::ClientContextState() {
 }
 
 ClientContextState::~ClientContextState() {
+}
+
+void ClientContextState::SetViewport(
+    GLint x, GLint y, GLsizei width, GLsizei height) {
+  DCHECK_LE(0, width);
+  DCHECK_LE(0, height);
+
+  viewport_x = x;
+  viewport_y = y;
+  viewport_width = width;
+  viewport_height = height;
 }
 
 // Include the auto-generated part of this file. We split this because it means

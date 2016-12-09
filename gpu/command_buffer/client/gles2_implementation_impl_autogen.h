@@ -2782,25 +2782,6 @@ void GLES2Implementation::VertexAttribI4uiv(GLuint indx, const GLuint* values) {
   CheckGLError();
 }
 
-void GLES2Implementation::Viewport(GLint x,
-                                   GLint y,
-                                   GLsizei width,
-                                   GLsizei height) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glViewport(" << x << ", " << y
-                     << ", " << width << ", " << height << ")");
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glViewport", "width < 0");
-    return;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glViewport", "height < 0");
-    return;
-  }
-  helper_->Viewport(x, y, width, height);
-  CheckGLError();
-}
-
 void GLES2Implementation::BlitFramebufferCHROMIUM(GLint srcX0,
                                                   GLint srcY0,
                                                   GLint srcX1,

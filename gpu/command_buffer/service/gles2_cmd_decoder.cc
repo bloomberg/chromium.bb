@@ -3552,6 +3552,12 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
                 &caps.max_vertex_texture_image_units, 1);
   DoGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &caps.max_vertex_uniform_vectors,
                 1);
+  {
+    GLint dims[2] = {0, 0};
+    DoGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims, 2);
+    caps.max_viewport_width = dims[0];
+    caps.max_viewport_height = dims[1];
+  }
   DoGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS,
                 &caps.num_compressed_texture_formats, 1);
   DoGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &caps.num_shader_binary_formats,

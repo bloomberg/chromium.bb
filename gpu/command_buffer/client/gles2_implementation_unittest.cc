@@ -404,6 +404,8 @@ class GLES2ImplementationTest : public testing::Test {
   static const GLint kMaxVertexAttribs = 8;
   static const GLint kMaxVertexTextureImageUnits = 0;
   static const GLint kMaxVertexUniformVectors = 128;
+  static const GLint kMaxViewportWidth = 8192;
+  static const GLint kMaxViewportHeight = 6144;
   static const GLint kNumCompressedTextureFormats = 0;
   static const GLint kNumShaderBinaryFormats = 0;
   static const GLuint kMaxTransformFeedbackSeparateAttribs = 4;
@@ -467,6 +469,8 @@ class GLES2ImplementationTest : public testing::Test {
       capabilities.max_vertex_attribs = kMaxVertexAttribs;
       capabilities.max_vertex_texture_image_units = kMaxVertexTextureImageUnits;
       capabilities.max_vertex_uniform_vectors = kMaxVertexUniformVectors;
+      capabilities.max_viewport_width = kMaxViewportWidth;
+      capabilities.max_viewport_height = kMaxViewportHeight;
       capabilities.num_compressed_texture_formats =
           kNumCompressedTextureFormats;
       capabilities.num_shader_binary_formats = kNumShaderBinaryFormats;

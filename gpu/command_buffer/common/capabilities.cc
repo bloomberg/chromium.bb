@@ -20,6 +20,8 @@ Capabilities::Capabilities()
       max_vertex_attribs(0),
       max_vertex_texture_image_units(0),
       max_vertex_uniform_vectors(0),
+      max_viewport_width(0),
+      max_viewport_height(0),
       num_compressed_texture_formats(0),
       num_shader_binary_formats(0),
       bind_generates_resource_chromium(0),

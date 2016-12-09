@@ -174,6 +174,12 @@ void PopulateNumericCapabilities(Capabilities* caps,
                 &caps->max_vertex_texture_image_units);
   glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS,
                 &caps->max_vertex_uniform_vectors);
+  {
+    GLint dims[2] = {0, 0};
+    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims);
+    caps->max_viewport_width = dims[0];
+    caps->max_viewport_height = dims[1];
+  }
   glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS,
                 &caps->num_compressed_texture_formats);
   glGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &caps->num_shader_binary_formats);

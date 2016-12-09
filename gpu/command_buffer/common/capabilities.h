@@ -78,6 +78,9 @@ struct GPU_EXPORT Capabilities {
   int max_vertex_attribs;
   int max_vertex_texture_image_units;
   int max_vertex_uniform_vectors;
+  // MAX_VIEWPORT_DIMS[2]
+  int max_viewport_width;
+  int max_viewport_height;
   int num_compressed_texture_formats;
   int num_shader_binary_formats;
   int bind_generates_resource_chromium;

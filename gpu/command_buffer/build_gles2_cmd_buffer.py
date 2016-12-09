@@ -4014,6 +4014,7 @@ _FUNCTION_INFO = {
     'state': 'Scissor',
   },
   'Viewport': {
+    'impl_func': False,
     'decoder_func': 'DoViewport',
   },
   'ResizeCHROMIUM': {

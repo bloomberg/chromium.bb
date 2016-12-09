@@ -26,9 +26,17 @@ struct GLES2_IMPL_EXPORT ClientContextState {
   // 'changed' will be true if the state was different from 'enabled.
   bool SetCapabilityState(GLenum cap, bool enabled, bool* changed);
 
+  // Cache the user's valid viewport.
+  void SetViewport(GLint x, GLint y, GLsizei width, GLsizei height);
+
   #include "gpu/command_buffer/client/client_context_state_autogen.h"
 
   EnableFlags enable_flags;
+
+  GLint viewport_x = 0;
+  GLint viewport_y = 0;
+  GLsizei viewport_width = 0;
+  GLsizei viewport_height = 0;
 };
 
 }  // namespace gles2
