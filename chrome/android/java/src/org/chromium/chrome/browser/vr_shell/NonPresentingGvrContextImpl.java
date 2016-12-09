@@ -5,17 +5,13 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.app.Activity;
-import android.os.StrictMode;
 
 import com.google.vr.ndk.base.GvrLayout;
-
-import org.chromium.base.Log;
 
 /**
  * Creates an active GvrContext from a detached GvrLayout. This is used by magic window mode.
  */
 public class NonPresentingGvrContextImpl implements NonPresentingGvrContext {
-    private static final String TAG = "NPGvrContextImpl";
     private GvrLayout mGvrLayout;
 
     public NonPresentingGvrContextImpl(Activity activity) {
@@ -24,17 +20,7 @@ public class NonPresentingGvrContextImpl implements NonPresentingGvrContext {
 
     @Override
     public long getNativeGvrContext() {
-        long nativeGvrContext = 0;
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            nativeGvrContext = mGvrLayout.getGvrApi().getNativeGvrContext();
-        } catch (Exception ex) {
-            Log.e(TAG, "Unable to instantiate GvrApi", ex);
-            return 0;
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-        return nativeGvrContext;
+        return mGvrLayout.getGvrApi().getNativeGvrContext();
     }
 
     @Override

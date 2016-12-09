@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.app.Activity;
+import android.os.StrictMode;
 
+import org.chromium.base.Log;
 import org.chromium.base.annotations.UsedByReflection;
 
 /**
@@ -14,6 +16,7 @@ import org.chromium.base.annotations.UsedByReflection;
  */
 @UsedByReflection("VrShellDelegate.java")
 public class VrClassesBuilderImpl implements VrClassesBuilder {
+    private static final String TAG = "VrClassesBuilderImpl";
     private final Activity mActivity;
 
     @UsedByReflection("VrShellDelegate.java")
@@ -23,12 +26,28 @@ public class VrClassesBuilderImpl implements VrClassesBuilder {
 
     @Override
     public NonPresentingGvrContext createNonPresentingGvrContext() {
-        return new NonPresentingGvrContextImpl(mActivity);
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            return new NonPresentingGvrContextImpl(mActivity);
+        } catch (Exception ex) {
+            Log.e(TAG, "Unable to instantiate NonPresentingGvrContextImpl", ex);
+            return null;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     @Override
     public VrShell createVrShell() {
-        return new VrShellImpl(mActivity);
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            return new VrShellImpl(mActivity);
+        } catch (Exception ex) {
+            Log.e(TAG, "Unable to instantiate VrShellImpl", ex);
+            return null;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     @Override

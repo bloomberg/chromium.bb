@@ -410,6 +410,7 @@ public class VrShellDelegate {
     private long createNonPresentingNativeContext() {
         if (mVrClassesBuilder == null) return 0;
         mNonPresentingGvrContext = mVrClassesBuilder.createNonPresentingGvrContext();
+        if (mNonPresentingGvrContext == null) return 0;
         return mNonPresentingGvrContext.getNativeGvrContext();
     }
 
@@ -473,11 +474,8 @@ public class VrShellDelegate {
 
     private boolean createVrShell() {
         if (mVrClassesBuilder == null) return false;
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
         mVrShell = mVrClassesBuilder.createVrShell();
-        StrictMode.setThreadPolicy(oldPolicy);
-        return true;
+        return mVrShell != null;
     }
 
     private void addVrViews() {
