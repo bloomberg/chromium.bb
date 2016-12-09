@@ -58,8 +58,6 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
     ReloadType reload_type) {
   switch (reload_type) {
     case ReloadType::NORMAL:
-      return FrameMsg_Navigate_Type::RELOAD;
-    case ReloadType::MAIN_RESOURCE:
       return FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE;
     case ReloadType::BYPASSING_CACHE:
     case ReloadType::DISABLE_LOFI_MODE:

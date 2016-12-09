@@ -265,7 +265,7 @@ void NavigationControllerImpl::Restore(
 }
 
 void NavigationControllerImpl::Reload(bool check_for_repost) {
-  ReloadInternal(check_for_repost, ReloadType::MAIN_RESOURCE);
+  ReloadInternal(check_for_repost, ReloadType::NORMAL);
 }
 void NavigationControllerImpl::ReloadBypassingCache(bool check_for_repost) {
   ReloadInternal(check_for_repost, ReloadType::BYPASSING_CACHE);
@@ -327,7 +327,7 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
       base::TimeDelta delta = now - last_committed_reload_time_;
       UMA_HISTOGRAM_MEDIUM_TIMES("Navigation.Reload.ReloadToReloadDuration",
                                  delta);
-      if (last_committed_reload_type_ == ReloadType::MAIN_RESOURCE) {
+      if (last_committed_reload_type_ == ReloadType::NORMAL) {
         UMA_HISTOGRAM_MEDIUM_TIMES(
             "Navigation.Reload.ReloadMainResourceToReloadDuration", delta);
       }

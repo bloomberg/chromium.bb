@@ -12,8 +12,7 @@ namespace content {
 // history navigation, it loads preferring cache (which may be stale).
 enum class ReloadType {
   NONE,                  // Normal load, restore, or history navigation.
-  NORMAL,                // Normal (cache-validating) reload.
-  MAIN_RESOURCE,         // Reload validating only the main resource.
+  NORMAL,                // Reload validating only the main resource.
   BYPASSING_CACHE,       // Reload bypassing the cache (shift-reload).
   ORIGINAL_REQUEST_URL,  // Reload using the original request URL.
   DISABLE_LOFI_MODE      // Reload with Lo-Fi mode disabled.

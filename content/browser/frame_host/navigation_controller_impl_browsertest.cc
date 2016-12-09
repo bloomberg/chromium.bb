@@ -6698,8 +6698,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
 
-  // Reload triggers a reload of ReloadType::MAIN_RESOURCE.  The first reload
-  // should not be counted.
+  // Reload triggers a reload of ReloadType::NORMAL.  The first reload should
+  // not be counted.
   controller.Reload(false);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 0);
@@ -6734,8 +6734,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 2);
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
 
-  // Another reload of ReloadType::MAIN_RESOURCE should be counted by both
-  // metrics again.
+  // Another reload of ReloadType::NORMAL should be counted by both metrics
+  // again.
   controller.Reload(false);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 3);

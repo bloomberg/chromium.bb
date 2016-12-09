@@ -14,6 +14,8 @@ struct FrameMsg_Navigate_Type {
     RELOAD,
 
     // Reload the page, validating only cache entry for the main resource.
+    // TODO(toyoshim): We should rename this one to be RELOAD and remove the old
+    // unused RELOAD behavior.
     RELOAD_MAIN_RESOURCE,
 
     // Reload the page, bypassing any cache entries.
