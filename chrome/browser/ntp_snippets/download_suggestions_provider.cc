@@ -49,6 +49,11 @@ const char kOfflinePageDownloadsPrefix = 'O';
 
 const char* kMaxSuggestionsCountParamName = "downloads_max_count";
 
+bool CompareOfflinePagesMostRecentlyCreatedFirst(const OfflinePageItem& left,
+                                                 const OfflinePageItem& right) {
+  return left.creation_time > right.creation_time;
+}
+
 int GetMaxSuggestionsCount() {
   bool assets_enabled =
       base::FeatureList::IsEnabled(features::kAssetDownloadSuggestionsFeature);
@@ -95,12 +100,11 @@ base::Time GetAssetDownloadPublishedTime(const DownloadItem& item) {
   return item.GetStartTime();
 }
 
-struct OrderDownloadsMostRecentlyDownloadedFirst {
-  bool operator()(const DownloadItem* left, const DownloadItem* right) const {
-    return GetAssetDownloadPublishedTime(*left) >
-           GetAssetDownloadPublishedTime(*right);
-  }
-};
+bool CompareDownloadsMostRecentlyDownloadedFirst(const DownloadItem* left,
+                                                 const DownloadItem* right) {
+  return GetAssetDownloadPublishedTime(*left) >
+         GetAssetDownloadPublishedTime(*right);
+}
 
 bool IsClientIdForOfflinePageDownload(
     offline_pages::ClientPolicyController* policy_controller,
@@ -310,9 +314,31 @@ void DownloadSuggestionsProvider::OfflinePageModelLoaded(
 void DownloadSuggestionsProvider::OfflinePageAdded(
     offline_pages::OfflinePageModel* model,
     const offline_pages::OfflinePageItem& added_page) {
-  // TODO(dewittj, vitaliii): Don't refetch everything when this is called.
   DCHECK_EQ(offline_page_model_, model);
-  AsynchronouslyFetchOfflinePagesDownloads(/*notify=*/true);
+  if (!IsClientIdForOfflinePageDownload(model->GetPolicyController(),
+                                        added_page.client_id)) {
+    return;
+  }
+
+  // This is all in one statement so that it is completely compiled out in
+  // release builds.
+  DCHECK_EQ(ReadOfflinePageDismissedIDsFromPrefs().count(
+                GetOfflinePagePerCategoryID(added_page.offline_id)),
+            0U);
+
+  int max_suggestions_count = GetMaxSuggestionsCount();
+  if (static_cast<int>(cached_offline_page_downloads_.size()) <
+      max_suggestions_count) {
+    cached_offline_page_downloads_.push_back(added_page);
+  } else if (max_suggestions_count > 0) {
+    auto oldest_page_iterator =
+        std::max_element(cached_offline_page_downloads_.begin(),
+                         cached_offline_page_downloads_.end(),
+                         &CompareOfflinePagesMostRecentlyCreatedFirst);
+    *oldest_page_iterator = added_page;
+  }
+
+  SubmitContentSuggestions();
 }
 
 void DownloadSuggestionsProvider::OfflinePageDeleted(
@@ -454,7 +480,7 @@ void DownloadSuggestionsProvider::FetchAssetsDownloads() {
     std::nth_element(cached_asset_downloads_.begin(),
                      cached_asset_downloads_.begin() + max_suggestions_count,
                      cached_asset_downloads_.end(),
-                     OrderDownloadsMostRecentlyDownloadedFirst());
+                     &CompareDownloadsMostRecentlyDownloadedFirst);
     cached_asset_downloads_.resize(max_suggestions_count);
   }
 }
@@ -553,9 +579,9 @@ bool DownloadSuggestionsProvider::CacheAssetDownloadIfNeeded(
             GetMaxSuggestionsCount());
   if (static_cast<int>(cached_asset_downloads_.size()) ==
       GetMaxSuggestionsCount()) {
-    auto oldest = std::max_element(cached_asset_downloads_.begin(),
-                                   cached_asset_downloads_.end(),
-                                   OrderDownloadsMostRecentlyDownloadedFirst());
+    auto oldest = std::max_element(
+        cached_asset_downloads_.begin(), cached_asset_downloads_.end(),
+        &CompareDownloadsMostRecentlyDownloadedFirst);
     if (GetAssetDownloadPublishedTime(*item) <=
         GetAssetDownloadPublishedTime(**oldest)) {
       return false;
@@ -659,7 +685,7 @@ void DownloadSuggestionsProvider::UpdateOfflinePagesCache(
     std::nth_element(
         items.begin(), items.begin() + max_suggestions_count, items.end(),
         [](const OfflinePageItem* left, const OfflinePageItem* right) {
-          return left->creation_time > right->creation_time;
+          return CompareOfflinePagesMostRecentlyCreatedFirst(*left, *right);
         });
     items.resize(max_suggestions_count);
   }
