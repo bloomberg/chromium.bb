@@ -86,6 +86,8 @@
       'cert/ct_verifier.h',
       'cert/ct_verify_result.cc',
       'cert/ct_verify_result.h',
+      'cert/do_nothing_ct_verifier.cc',
+      'cert/do_nothing_ct_verifier.h',
       'cert/internal/cert_error_id.cc',
       'cert/internal/cert_error_id.h',
       'cert/internal/cert_error_params.cc',
