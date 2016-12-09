@@ -71,7 +71,8 @@ bool GetClientCertInfo(const X509Certificate* certificate,
     return false;
   }
 
-  switch (EVP_PKEY_id(key.get())) {
+  int key_type = EVP_PKEY_id(key.get());
+  switch (key_type) {
     case EVP_PKEY_RSA:
       *out_type = SSLPrivateKey::Type::RSA;
       break;
@@ -90,12 +91,14 @@ bool GetClientCertInfo(const X509Certificate* certificate,
           *out_type = SSLPrivateKey::Type::ECDSA_P384;
           break;
         default:
+          LOG(ERROR) << "Unsupported curve type " << curve;
           return false;
       }
       break;
     }
 
     default:
+      LOG(ERROR) << "Unsupported key type " << key_type;
       return false;
   }
 
