@@ -141,6 +141,14 @@ class ImeListItemView : public ActionableView {
   // ActionableView:
   bool PerformAction(const ui::Event& event) override {
     ime_list_view_->HandleViewClicked(this);
+
+    if (ime_list_view_->should_focus_ime_after_selection_with_keyboard() &&
+        event.type() == ui::EventType::ET_KEY_PRESSED) {
+      ime_list_view_->set_last_item_selected_with_keyboard(true);
+    } else {
+      ime_list_view_->CloseImeListView();
+    }
+
     return true;
   }
 
@@ -253,7 +261,9 @@ class MaterialKeyboardStatusRowView : public views::View {
 ImeListView::ImeListView(SystemTrayItem* owner,
                          bool show_keyboard_toggle,
                          SingleImeBehavior single_ime_behavior)
-    : TrayDetailsView(owner) {
+    : TrayDetailsView(owner),
+      last_item_selected_with_keyboard_(false),
+      should_focus_ime_after_selection_with_keyboard_(false) {
   SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   IMEInfoList list;
   delegate->GetAvailableIMEList(&list);
@@ -296,6 +306,10 @@ void ImeListView::Update(const IMEInfoList& list,
 
   Layout();
   SchedulePaint();
+
+  if (should_focus_ime_after_selection_with_keyboard_ &&
+      last_item_selected_with_keyboard_)
+    FocusCurrentImeIfNeeded();
 }
 
 void ImeListView::ResetImeListView() {
@@ -303,6 +317,12 @@ void ImeListView::ResetImeListView() {
   Reset();
   material_keyboard_status_view_ = nullptr;
   keyboard_status_ = nullptr;
+}
+
+void ImeListView::CloseImeListView() {
+  last_selected_item_id_.clear();
+  last_item_selected_with_keyboard_ = false;
+  GetWidget()->Close();
 }
 
 void ImeListView::AppendIMEList(const IMEInfoList& list) {
@@ -389,6 +409,8 @@ void ImeListView::PrependMaterialKeyboardStatus() {
 void ImeListView::HandleViewClicked(views::View* view) {
   if (view == keyboard_status_) {
     WmShell::Get()->ToggleIgnoreExternalKeyboard();
+    last_selected_item_id_.clear();
+    last_item_selected_with_keyboard_ = false;
     return;
   }
 
@@ -397,6 +419,7 @@ void ImeListView::HandleViewClicked(views::View* view) {
   if (ime != ime_map_.end()) {
     WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SWITCH_MODE);
     std::string ime_id = ime->second;
+    last_selected_item_id_ = ime_id;
     delegate->SwitchIME(ime_id);
   } else {
     std::map<views::View*, std::string>::const_iterator property =
@@ -404,10 +427,9 @@ void ImeListView::HandleViewClicked(views::View* view) {
     if (property == property_map_.end())
       return;
     const std::string key = property->second;
+    last_selected_item_id_ = key;
     delegate->ActivateIMEProperty(key);
-  }
-
-  GetWidget()->Close();
+  };
 }
 
 void ImeListView::HandleButtonPressed(views::Button* sender,
@@ -415,6 +437,19 @@ void ImeListView::HandleButtonPressed(views::Button* sender,
   if (material_keyboard_status_view_ &&
       sender == material_keyboard_status_view_->toggle()) {
     WmShell::Get()->ToggleIgnoreExternalKeyboard();
+    last_selected_item_id_.clear();
+    last_item_selected_with_keyboard_ = false;
+  }
+}
+
+void ImeListView::FocusCurrentImeIfNeeded() {
+  views::FocusManager* manager = GetFocusManager();
+  if (!manager || manager->GetFocusedView() || last_selected_item_id_.empty())
+    return;
+
+  for (auto ime_map : ime_map_) {
+    if (ime_map.second == last_selected_item_id_)
+      (ime_map.first)->RequestFocus();
   }
 }
 

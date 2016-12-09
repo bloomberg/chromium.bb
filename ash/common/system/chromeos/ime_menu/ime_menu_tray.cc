@@ -307,6 +307,7 @@ class ImeMenuListView : public ImeListView {
                   bool show_keyboard_toggle,
                   SingleImeBehavior single_ime_behavior)
       : ImeListView(owner, show_keyboard_toggle, ImeListView::HIDE_SINGLE_IME) {
+    set_should_focus_ime_after_selection_with_keyboard(true);
   }
 
   ~ImeMenuListView() override {}

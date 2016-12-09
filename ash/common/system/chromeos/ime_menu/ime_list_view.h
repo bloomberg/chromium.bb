@@ -37,6 +37,23 @@ class ImeListView : public TrayDetailsView {
   // Removes (and destroys) all child views.
   virtual void ResetImeListView();
 
+  // Closes the view.
+  void CloseImeListView();
+
+  void set_last_item_selected_with_keyboard(
+      bool last_item_selected_with_keyboard) {
+    last_item_selected_with_keyboard_ = last_item_selected_with_keyboard;
+  }
+
+  void set_should_focus_ime_after_selection_with_keyboard(
+      const bool focus_current_ime) {
+    should_focus_ime_after_selection_with_keyboard_ = focus_current_ime;
+  }
+
+  bool should_focus_ime_after_selection_with_keyboard() const {
+    return should_focus_ime_after_selection_with_keyboard_;
+  }
+
   // TrayDetailsView:
   void HandleViewClicked(views::View* view) override;
   void HandleButtonPressed(views::Button* sender,
@@ -64,12 +81,27 @@ class ImeListView : public TrayDetailsView {
   // Inserts the material on-screen keyboard status in the detailed view.
   void PrependMaterialKeyboardStatus();
 
+  // Requests focus on the current IME if it was selected with keyboard so that
+  // accessible text will alert the user of the IME change.
+  void FocusCurrentImeIfNeeded();
+
   std::map<views::View*, std::string> ime_map_;
   std::map<views::View*, std::string> property_map_;
   // On-screen keyboard view which is not used in material design.
   views::View* keyboard_status_;
   // On-screen keyboard view which is only used in material design.
   MaterialKeyboardStatusRowView* material_keyboard_status_view_;
+
+  // The id of the last item selected with keyboard. It will be empty if the
+  // item is not selected with keyboard.
+  std::string last_selected_item_id_;
+
+  // True if the last item is selected with keyboard.
+  bool last_item_selected_with_keyboard_;
+
+  // True if focus should be requested after switching IMEs with keyboard in
+  // order to trigger spoken feedback with ChromeVox enabled.
+  bool should_focus_ime_after_selection_with_keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeListView);
 };
