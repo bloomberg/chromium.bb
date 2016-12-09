@@ -22,6 +22,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -1307,7 +1308,7 @@ TEST_P(DockedWindowResizerTest, DragToShelf) {
   if (test_panels()) {
     // The panel should be touching the shelf and attached.
     EXPECT_EQ(shelf_y, w1->bounds().bottom());
-    EXPECT_TRUE(wm::GetWindowState(w1.get())->panel_attached());
+    EXPECT_TRUE(w1->GetProperty(kPanelAttachedKey));
   } else {
     // The window should not be touching the shelf.
     EXPECT_EQ(shelf_y - kDistanceFromShelf, w1->bounds().bottom());

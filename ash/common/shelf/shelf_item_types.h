@@ -56,6 +56,7 @@ enum ShelfItemStatus {
 
 struct ASH_EXPORT ShelfItem {
   ShelfItem();
+  ShelfItem(const ShelfItem& shelf_item);
   ~ShelfItem();
 
   ShelfItemType type = TYPE_UNDEFINED;
@@ -71,6 +72,9 @@ struct ASH_EXPORT ShelfItem {
 
   // The application id for this shelf item; only populated for some items.
   std::string app_id;
+
+  // Whether the tooltip should be shown on hover; generally true.
+  bool shows_tooltip = true;
 };
 
 typedef std::vector<ShelfItem> ShelfItems;

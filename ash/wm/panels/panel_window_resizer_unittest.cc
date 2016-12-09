@@ -21,6 +21,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/i18n/rtl.h"
 #include "base/win/windows_version.h"
@@ -90,8 +91,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
   // Test dragging the panel slightly, then detaching, and then reattaching
   // dragging out by the vector (dx, dy).
   void DetachReattachTest(aura::Window* window, int dx, int dy) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
-    EXPECT_TRUE(window_state->panel_attached());
+    EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
     aura::Window* root_window = window->GetRootWindow();
     EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());
     DragStart(window);
@@ -111,7 +111,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
     // The panel should be detached when the drag completes.
     DragEnd();
 
-    EXPECT_FALSE(window_state->panel_attached());
+    EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
     EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
     EXPECT_EQ(root_window, window->GetRootWindow());
 
@@ -122,7 +122,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
     DragEnd();
 
     // The panel should be reattached and have snapped to the launcher.
-    EXPECT_TRUE(window_state->panel_attached());
+    EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
     EXPECT_EQ(initial_bounds.x(), window->GetBoundsInScreen().x());
     EXPECT_EQ(initial_bounds.y(), window->GetBoundsInScreen().y());
     EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());
@@ -299,7 +299,7 @@ TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
   EXPECT_EQ(initial_bounds.x(), window->GetBoundsInScreen().x());
   EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
-  EXPECT_FALSE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
   EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
 
   DragStart(window.get());
@@ -308,7 +308,7 @@ TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
   EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
-  EXPECT_FALSE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
   EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
 }
 
@@ -327,7 +327,7 @@ TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
   EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
-  EXPECT_FALSE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
   EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
 }
 
@@ -346,7 +346,7 @@ TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
   DragMove(0, -100);
   DragEnd();
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
-  EXPECT_FALSE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
 
   // Drag the window just above the other display's launcher.
   DragStart(window.get());
@@ -359,7 +359,7 @@ TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
 
   // When dropped should move to second display's panel container.
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_TRUE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
   EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());
 }
 
@@ -384,7 +384,7 @@ TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
 
   // When dropped should move to second display's panel container.
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_TRUE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
   EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());
 }
 
@@ -415,7 +415,7 @@ TEST_F(PanelWindowResizerTest, AttachToSecondFullscreenDisplay) {
 
   // When dropped should move to second display's panel container.
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_TRUE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
   EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());
   EXPECT_TRUE(window->IsVisible());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsActive());
@@ -424,19 +424,19 @@ TEST_F(PanelWindowResizerTest, AttachToSecondFullscreenDisplay) {
 
 TEST_F(PanelWindowResizerTest, RevertDragRestoresAttachment) {
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
-  EXPECT_TRUE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
   EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());
   DragStart(window.get());
   DragMove(0, -100);
   DragRevert();
-  EXPECT_TRUE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
   EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());
 
   // Detach panel.
   DragStart(window.get());
   DragMove(0, -100);
   DragEnd();
-  EXPECT_FALSE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
   EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
 
   // Drag back to launcher.
@@ -445,7 +445,7 @@ TEST_F(PanelWindowResizerTest, RevertDragRestoresAttachment) {
 
   // When the drag is reverted it should remain detached.
   DragRevert();
-  EXPECT_FALSE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
   EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
 }
 

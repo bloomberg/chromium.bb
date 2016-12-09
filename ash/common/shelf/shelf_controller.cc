@@ -119,8 +119,6 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
     return false;
   }
 
-  bool ShouldShowTooltip() override { return true; }
-
   void Close() override { NOTIMPLEMENTED(); }
 
   mojom::ShelfItemDelegateAssociatedPtr delegate_;

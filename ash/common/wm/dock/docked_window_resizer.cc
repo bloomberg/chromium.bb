@@ -12,6 +12,7 @@
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
@@ -206,7 +207,7 @@ void DockedWindowResizer::FinishedDragging(
   WmWindow* window = GetTarget();
   const bool is_attached_panel =
       window->GetType() == ui::wm::WINDOW_TYPE_PANEL &&
-      window_state_->panel_attached();
+      window->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED);
   const bool is_resized =
       (details().bounds_change & WindowResizer::kBoundsChange_Resizes) != 0;
 

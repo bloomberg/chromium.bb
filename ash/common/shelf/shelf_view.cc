@@ -527,14 +527,11 @@ bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
 }
 
 bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
-  if (view == GetAppListButton() &&
-      WmShell::Get()->GetAppListTargetVisibility()) {
+  // TODO(msw): Push this app list state into ShelfItem::shows_tooltip.
+  if (view == GetAppListButton() && GetAppListButton()->is_showing_app_list())
     return false;
-  }
   const ShelfItem* item = ShelfItemForView(view);
-  if (!item)
-    return false;
-  return model_->GetShelfItemDelegate(item->id)->ShouldShowTooltip();
+  return item && item->shows_tooltip;
 }
 
 base::string16 ShelfView::GetTitleForView(const views::View* view) const {

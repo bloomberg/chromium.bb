@@ -11,6 +11,7 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -91,7 +92,7 @@ WmWindow* GetDefaultParent(WmWindow* context,
       return target_root->GetChildByShellWindowId(
           kShellWindowId_UnparentedControlContainer);
     case ui::wm::WINDOW_TYPE_PANEL:
-      if (window->GetWindowState()->panel_attached())
+      if (window->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED))
         return target_root->GetChildByShellWindowId(
             kShellWindowId_PanelContainer);
       return GetContainerFromAlwaysOnTopController(target_root, window);

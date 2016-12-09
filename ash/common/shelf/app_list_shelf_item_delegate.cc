@@ -63,10 +63,6 @@ bool AppListShelfItemDelegate::CanPin() const {
   return true;
 }
 
-bool AppListShelfItemDelegate::ShouldShowTooltip() {
-  return true;
-}
-
 void AppListShelfItemDelegate::Close() {}
 
 }  // namespace ash

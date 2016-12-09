@@ -38,6 +38,11 @@ void UpdateShelfItemForWindow(ShelfItem* item, WmWindow* window) {
   item->image = window->GetAppIcon();
   if (item->image.isNull())
     item->image = window->GetWindowIcon();
+
+  // Do not show tooltips for visible attached app panel windows.
+  item->shows_tooltip =
+      item->type != TYPE_APP_PANEL || !window->IsVisible() ||
+      !window->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED);
 }
 
 }  // namespace
@@ -80,6 +85,7 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
   if (property == WmWindowProperty::APP_ICON ||
       property == WmWindowProperty::APP_ID ||
       property == WmWindowProperty::DRAW_ATTENTION ||
+      property == WmWindowProperty::PANEL_ATTACHED ||
       property == WmWindowProperty::SHELF_ITEM_TYPE ||
       property == WmWindowProperty::WINDOW_ICON) {
     window_watcher_->OnUserWindowPropertyChanged(window);
@@ -89,6 +95,13 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
 void ShelfWindowWatcher::UserWindowObserver::OnWindowDestroying(
     WmWindow* window) {
   window_watcher_->OnUserWindowDestroying(window);
+}
+
+void ShelfWindowWatcher::UserWindowObserver::OnWindowVisibilityChanged(
+    WmWindow* window,
+    bool visible) {
+  // The tooltip behavior for panel windows depends on the panel visibility.
+  window_watcher_->OnUserWindowPropertyChanged(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

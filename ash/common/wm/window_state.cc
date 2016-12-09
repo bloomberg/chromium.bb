@@ -302,7 +302,6 @@ WindowState::WindowState(WmWindow* window)
     : window_(window),
       window_position_managed_(false),
       bounds_changed_by_user_(false),
-      panel_attached_(true),
       ignored_by_shelf_(false),
       can_consume_system_keys_(false),
       unminimize_to_restore_bounds_(false),

@@ -52,7 +52,6 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
   bool IsDraggable() override;
   bool CanPin() const override;
-  bool ShouldShowTooltip() override;
   void Close() override;
 
   // Get the refocus url pattern, which can be used to identify this application

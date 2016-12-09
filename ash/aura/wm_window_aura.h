@@ -84,6 +84,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   gfx::Transform GetTargetTransform() const override;
   bool IsSystemModal() const override;
   bool GetBoolProperty(WmWindowProperty key) override;
+  void SetBoolProperty(WmWindowProperty key, bool value) override;
   SkColor GetColorProperty(WmWindowProperty key) override;
   void SetColorProperty(WmWindowProperty key, SkColor value) override;
   int GetIntProperty(WmWindowProperty key) override;

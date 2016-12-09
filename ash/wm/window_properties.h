@@ -22,14 +22,16 @@ namespace wm {
 class WindowState;
 }  // namespace wm
 
-// Shell-specific window property keys.
+// Shell-specific window property keys; some keys are exported for use in tests.
 
 // Alphabetical sort.
 
 // If this is set to true, the window stays in the same root window even if the
 // bounds outside of its root window is set.
-// This is exported as it's used in the tests.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const kLockedToRootKey;
+
+// If true (and the window is a panel), it's attached to its shelf item.
+ASH_EXPORT extern const aura::WindowProperty<bool>* const kPanelAttachedKey;
 
 // A property key which stores the bounds to restore a window to. These take
 // preference over the current bounds/state. This is used by e.g. the always

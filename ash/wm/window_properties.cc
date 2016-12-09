@@ -13,6 +13,8 @@ namespace ash {
 
 DEFINE_WINDOW_PROPERTY_KEY(bool, kLockedToRootKey, false);
 
+DEFINE_WINDOW_PROPERTY_KEY(bool, kPanelAttachedKey, true);
+
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsOverrideKey, NULL);
 
 DEFINE_WINDOW_PROPERTY_KEY(ui::WindowShowState,

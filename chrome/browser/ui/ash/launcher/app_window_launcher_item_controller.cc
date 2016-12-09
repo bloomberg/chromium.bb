@@ -145,10 +145,6 @@ bool AppWindowLauncherItemController::CanPin() const {
          AppListControllerDelegate::PIN_EDITABLE;
 }
 
-bool AppWindowLauncherItemController::ShouldShowTooltip() {
-  return true;
-}
-
 void AppWindowLauncherItemController::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,

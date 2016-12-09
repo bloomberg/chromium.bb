@@ -238,10 +238,6 @@ bool BrowserShortcutLauncherItemController::CanPin() const {
   return true;
 }
 
-bool BrowserShortcutLauncherItemController::ShouldShowTooltip() {
-  return true;
-}
-
 bool BrowserShortcutLauncherItemController::IsListOfActiveBrowserEmpty() {
   return GetListOfActiveBrowsers().empty();
 }

@@ -42,10 +42,6 @@ bool TestShelfItemDelegate::CanPin() const {
   return true;
 }
 
-bool TestShelfItemDelegate::ShouldShowTooltip() {
-  return true;
-}
-
 void TestShelfItemDelegate::Close() {}
 
 }  // namespace test

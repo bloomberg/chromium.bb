@@ -9,6 +9,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/common/wm_window_property.h"
 #include "ui/events/event.h"
 
 namespace ash {
@@ -36,7 +37,7 @@ ShelfItemDelegate::PerformedAction ShelfWindowWatcherItemDelegate::ItemSelected(
     const ui::Event& event) {
   // Move panels attached on another display to the current display.
   if (GetShelfItemType(id_) == TYPE_APP_PANEL &&
-      window_->GetWindowState()->panel_attached() &&
+      window_->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED) &&
       window_->MoveToEventRoot(event)) {
     window_->Activate();
     return kExistingWindowActivated;
@@ -69,12 +70,6 @@ bool ShelfWindowWatcherItemDelegate::IsDraggable() {
 
 bool ShelfWindowWatcherItemDelegate::CanPin() const {
   return GetShelfItemType(id_) != TYPE_APP_PANEL;
-}
-
-bool ShelfWindowWatcherItemDelegate::ShouldShowTooltip() {
-  // Do not show tooltips for visible attached app panel windows.
-  return GetShelfItemType(id_) != TYPE_APP_PANEL || !window_->IsVisible() ||
-         !window_->GetWindowState()->panel_attached();
 }
 
 void ShelfWindowWatcherItemDelegate::Close() {

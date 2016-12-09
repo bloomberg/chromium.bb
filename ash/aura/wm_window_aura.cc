@@ -290,6 +290,9 @@ bool WmWindowAura::GetBoolProperty(WmWindowProperty key) {
     case WmWindowProperty::DRAW_ATTENTION:
       return window_->GetProperty(aura::client::kDrawAttentionKey);
 
+    case WmWindowProperty::PANEL_ATTACHED:
+      return window_->GetProperty(kPanelAttachedKey);
+
     case WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY:
       return window_->GetProperty(kSnapChildrenToPixelBoundary);
 
@@ -305,6 +308,17 @@ bool WmWindowAura::GetBoolProperty(WmWindowProperty key) {
   }
 
   return false;
+}
+
+void WmWindowAura::SetBoolProperty(WmWindowProperty key, bool value) {
+  switch (key) {
+    case WmWindowProperty::PANEL_ATTACHED:
+      window_->SetProperty(kPanelAttachedKey, value);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 SkColor WmWindowAura::GetColorProperty(WmWindowProperty key) {
@@ -888,6 +902,8 @@ void WmWindowAura::OnWindowPropertyChanged(aura::Window* window,
     wm_property = WmWindowProperty::EXCLUDE_FROM_MRU;
   } else if (key == aura::client::kModalKey) {
     wm_property = WmWindowProperty::MODAL_TYPE;
+  } else if (key == kPanelAttachedKey) {
+    wm_property = WmWindowProperty::PANEL_ATTACHED;
   } else if (key == kShelfIDKey) {
     wm_property = WmWindowProperty::SHELF_ID;
   } else if (key == kShelfItemTypeKey) {

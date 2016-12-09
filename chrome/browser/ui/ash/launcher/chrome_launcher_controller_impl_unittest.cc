@@ -284,7 +284,6 @@ class TestV2AppLauncherItemController : public LauncherItemController {
     return GetPinnableForAppID(app_id(), launcher_controller()->profile()) ==
            AppListControllerDelegate::PIN_EDITABLE;
   }
-  bool ShouldShowTooltip() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestV2AppLauncherItemController);

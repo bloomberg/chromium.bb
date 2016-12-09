@@ -134,6 +134,7 @@ class ASH_EXPORT WmWindow {
   virtual bool IsSystemModal() const = 0;
 
   virtual bool GetBoolProperty(WmWindowProperty key) = 0;
+  virtual void SetBoolProperty(WmWindowProperty key, bool value) = 0;
   virtual SkColor GetColorProperty(WmWindowProperty key) = 0;
   virtual void SetColorProperty(WmWindowProperty key, SkColor value) = 0;
   virtual int GetIntProperty(WmWindowProperty key) = 0;

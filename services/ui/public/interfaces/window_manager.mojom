@@ -90,6 +90,9 @@ interface WindowManager {
   // Type: mojom::String
   const string kName_Property = "prop:name";
 
+  // If true (and the window is a panel), it's attached to its shelf item.
+  const string kPanelAttached_Property = "prop:panel-attached";
+
   // The window's preferred size as defined by its content. Maps to
   // aura::client::kPreferredSize_Property. Type: gfx::Size.
   const string kPreferredSize_Property = "prop:preferred-size";

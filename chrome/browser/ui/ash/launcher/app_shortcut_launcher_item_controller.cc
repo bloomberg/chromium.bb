@@ -229,10 +229,6 @@ bool AppShortcutLauncherItemController::CanPin() const {
          AppListControllerDelegate::PIN_EDITABLE;
 }
 
-bool AppShortcutLauncherItemController::ShouldShowTooltip() {
-  return true;
-}
-
 content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
   URLPattern refocus_pattern(URLPattern::SCHEME_ALL);
   refocus_pattern.SetMatchAllURLs(true);

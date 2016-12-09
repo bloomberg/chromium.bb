@@ -64,10 +64,6 @@ bool ArcAppDeferredLauncherItemController::IsDraggable() {
   return false;
 }
 
-bool ArcAppDeferredLauncherItemController::ShouldShowTooltip() {
-  return true;
-}
-
 void ArcAppDeferredLauncherItemController::Close() {
   if (host_)
     host_->Close(app_id());

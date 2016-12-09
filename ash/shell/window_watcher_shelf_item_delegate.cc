@@ -48,10 +48,6 @@ bool WindowWatcherShelfItemDelegate::CanPin() const {
   return true;
 }
 
-bool WindowWatcherShelfItemDelegate::ShouldShowTooltip() {
-  return true;
-}
-
 void WindowWatcherShelfItemDelegate::Close() {}
 
 }  // namespace shell

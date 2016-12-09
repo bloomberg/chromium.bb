@@ -30,6 +30,9 @@ enum class WmWindowProperty {
   // Type int, but cast to ui::ModalType.
   MODAL_TYPE,
 
+  // Type bool. See ash::kPanelAttachedKey for details.
+  PANEL_ATTACHED,
+
   // Type int.
   SHELF_ID,
 

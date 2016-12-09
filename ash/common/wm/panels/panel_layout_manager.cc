@@ -340,7 +340,7 @@ void PanelLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
   if (in_add_window_)
     return;
   base::AutoReset<bool> auto_reset_in_add_window(&in_add_window_, true);
-  if (!child->GetWindowState()->panel_attached()) {
+  if (!child->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED)) {
     // This should only happen when a window is added to panel container as a
     // result of bounds change from within the application during a drag.
     // If so we have already stopped the drag and should reparent the panel

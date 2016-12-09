@@ -11,6 +11,7 @@
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
@@ -105,7 +106,8 @@ PanelWindowResizer::PanelWindowResizer(WindowResizer* next_window_resizer,
       panel_container_(NULL),
       initial_panel_container_(NULL),
       did_move_or_resize_(false),
-      was_attached_(window_state->panel_attached()),
+      was_attached_(
+          GetTarget()->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED)),
       weak_ptr_factory_(this) {
   DCHECK(details().is_resizable);
   panel_container_ = GetTarget()->GetRootWindow()->GetChildByShellWindowId(
@@ -155,11 +157,11 @@ void PanelWindowResizer::StartedDragging() {
   if (panel_container_)
     PanelLayoutManager::Get(panel_container_)->StartDragging(GetTarget());
   if (!was_attached_) {
-    // Attach the panel while dragging placing it in front of other panels.
-    window_state_->set_panel_attached(true);
+    // Attach the panel while dragging, placing it in front of other panels.
+    WmWindow* target = GetTarget();
+    target->SetBoolProperty(WmWindowProperty::PANEL_ATTACHED, true);
     // We use root window coordinates to ensure that during the drag the panel
     // is reparented to a container in the root window that has that window.
-    WmWindow* target = GetTarget();
     WmWindow* target_root = target->GetRootWindow();
     WmWindow* old_parent = target->GetParent();
     target->SetParentUsingContext(target_root,
@@ -172,8 +174,10 @@ void PanelWindowResizer::StartedDragging() {
 void PanelWindowResizer::FinishDragging() {
   if (!did_move_or_resize_)
     return;
-  if (window_state_->panel_attached() != details().should_attach_to_shelf) {
-    window_state_->set_panel_attached(details().should_attach_to_shelf);
+  if (GetTarget()->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED) !=
+      details().should_attach_to_shelf) {
+    GetTarget()->SetBoolProperty(WmWindowProperty::PANEL_ATTACHED,
+                                 details().should_attach_to_shelf);
     // We use last known location to ensure that after the drag the panel
     // is reparented to a container in the root window that has that location.
     WmWindow* target = GetTarget();

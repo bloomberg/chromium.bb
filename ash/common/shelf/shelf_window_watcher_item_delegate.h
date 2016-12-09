@@ -27,7 +27,6 @@ class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
   ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
   bool IsDraggable() override;
   bool CanPin() const override;
-  bool ShouldShowTooltip() override;
   void Close() override;
 
   ShelfID id_;

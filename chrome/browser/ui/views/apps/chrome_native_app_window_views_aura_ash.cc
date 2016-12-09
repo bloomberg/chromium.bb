@@ -238,10 +238,8 @@ ChromeNativeAppWindowViewsAuraAsh::GetRestoredState() const {
 }
 
 bool ChromeNativeAppWindowViewsAuraAsh::IsAlwaysOnTop() const {
-  if (app_window()->window_type_is_panel()) {
-    return
-        ash::wm::GetWindowState(widget()->GetNativeWindow())->panel_attached();
-  }
+  if (app_window()->window_type_is_panel())
+    return widget()->GetNativeWindow()->GetProperty(ash::kPanelAttachedKey);
   return widget()->IsAlwaysOnTop();
 }
 
