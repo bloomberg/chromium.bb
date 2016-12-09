@@ -76,7 +76,6 @@ namespace {
 
 // All values in dp.
 const int kTextWidth = 140;
-const int kDangerousTextWidth = 200;
 
 // The normal height of the item which may be exceeded if text is large.
 const int kDefaultHeight = 48;
@@ -1016,13 +1015,27 @@ void DownloadItemView::SizeLabelToMinWidth() {
   if (dangerous_download_label_sized_)
     return;
 
-  base::string16 label_text = dangerous_download_label_->text();
+  dangerous_download_label_->SetSize(
+      AdjustTextAndGetSize(dangerous_download_label_));
+  dangerous_download_label_sized_ = true;
+}
+
+// static
+gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
+  gfx::Size size = label->GetPreferredSize();
+
+  // If the label's width is already narrower than 200, we don't need to
+  // linebreak it, as it will fit on a single line.
+  if (size.width() <= 200)
+    return size;
+
+  base::string16 label_text = label->text();
   base::TrimWhitespace(label_text, base::TRIM_ALL, &label_text);
   DCHECK_EQ(base::string16::npos, label_text.find('\n'));
 
   // Make the label big so that GetPreferredSize() is not constrained by the
   // current width.
-  dangerous_download_label_->SetBounds(0, 0, 1000, 1000);
+  label->SetBounds(0, 0, 1000, 1000);
 
   // Use a const string from here. BreakIterator requies that text.data() not
   // change during its lifetime.
@@ -1035,16 +1048,11 @@ void DownloadItemView::SizeLabelToMinWidth() {
   bool status = iter.Init();
   DCHECK(status);
 
-  base::string16 prev_text = original_text;
-  gfx::Size size = dangerous_download_label_->GetPreferredSize();
-  int min_width = size.width();
-
   // Go through the string and try each line break (starting with no line break)
-  // searching for the optimal line break position.  Stop if we find one that
-  // yields one that is less than kDangerousTextWidth wide.  This is to prevent
-  // a short string (e.g.: "This file is malicious") from being broken up
-  // unnecessarily.
-  while (iter.Advance() && min_width > kDangerousTextWidth) {
+  // searching for the optimal line break position. Stop if we find one that
+  // yields minimum label width.
+  base::string16 prev_text = original_text;
+  for (gfx::Size min_width_size = size; iter.Advance(); min_width_size = size) {
     size_t pos = iter.pos();
     if (pos >= original_text.length())
       break;
@@ -1057,21 +1065,17 @@ void DownloadItemView::SizeLabelToMinWidth() {
       current_text.replace(pos - 1, 1, 1, base::char16('\n'));
     else
       current_text.insert(pos, 1, base::char16('\n'));
-    dangerous_download_label_->SetText(current_text);
-    size = dangerous_download_label_->GetPreferredSize();
+    label->SetText(current_text);
+    size = label->GetPreferredSize();
 
     // If the width is growing again, it means we passed the optimal width spot.
-    if (size.width() > min_width) {
-      dangerous_download_label_->SetText(prev_text);
-      break;
-    } else {
-      min_width = size.width();
+    if (size.width() > min_width_size.width()) {
+      label->SetText(prev_text);
+      return min_width_size;
     }
     prev_text = current_text;
   }
-
-  dangerous_download_label_->SetSize(size);
-  dangerous_download_label_sized_ = true;
+  return size;
 }
 
 void DownloadItemView::Reenable() {
