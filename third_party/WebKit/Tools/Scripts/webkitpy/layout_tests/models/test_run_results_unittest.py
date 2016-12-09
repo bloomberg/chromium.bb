@@ -428,3 +428,7 @@ class SummarizedResultsTest(unittest.TestCase):
         self.assertEquals(summary['num_regressions'], 6)
         self.assertEquals(summary['num_passes'], 1)  # keyboard.html
         self.assertEquals(summary['num_flaky'], 0)
+
+    def test_results_contains_path_delimiter(self):
+        summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
+        self.assertEqual(summary['path_delimiter'], '/')

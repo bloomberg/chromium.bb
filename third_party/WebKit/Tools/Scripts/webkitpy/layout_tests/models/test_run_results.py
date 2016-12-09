@@ -336,6 +336,7 @@ def summarize_results(port_obj, expectations, initial_results,
     results['builder_name'] = port_obj.get_option('builder_name')
     if port_obj.get_option('order') == 'random':
         results['random_order_seed'] = port_obj.get_option('seed')
+    results['path_delimiter'] = '/'
 
     # Don't do this by default since it takes >100ms.
     # It's only used for rebaselining and uploading data to the flakiness dashboard.
