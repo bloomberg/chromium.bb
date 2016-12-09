@@ -41,6 +41,7 @@ blink_core_sources("fetch") {
     "ResourceLoader.h",
     "ResourceLoaderOptions.h",
     "ResourceLoadingLog.h",
+    "ResourceStatus.h",
     "SubstituteData.h",
     "UniqueIdentifier.cpp",
     "UniqueIdentifier.h",

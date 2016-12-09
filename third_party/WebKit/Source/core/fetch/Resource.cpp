@@ -301,6 +301,12 @@ void Resource::ResourceCallback::runTask() {
     resource->finishPendingClients();
 }
 
+constexpr Resource::Status Resource::NotStarted;
+constexpr Resource::Status Resource::Pending;
+constexpr Resource::Status Resource::Cached;
+constexpr Resource::Status Resource::LoadError;
+constexpr Resource::Status Resource::DecodeError;
+
 Resource::Resource(const ResourceRequest& request,
                    Type type,
                    const ResourceLoaderOptions& options)

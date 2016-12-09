@@ -28,6 +28,7 @@
 #include "core/fetch/CachedMetadataHandler.h"
 #include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "core/fetch/ResourceStatus.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Timer.h"
@@ -83,13 +84,14 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   };
   static const int kLastResourceType = Manifest + 1;
 
-  enum Status {
-    NotStarted,
-    Pending,  // load in progress
-    Cached,   // load completed successfully
-    LoadError,
-    DecodeError
-  };
+  using Status = ResourceStatus;
+
+  // TODO(hiroshige): Remove the following declarations.
+  static constexpr Status NotStarted = ResourceStatus::NotStarted;
+  static constexpr Status Pending = ResourceStatus::Pending;
+  static constexpr Status Cached = ResourceStatus::Cached;
+  static constexpr Status LoadError = ResourceStatus::LoadError;
+  static constexpr Status DecodeError = ResourceStatus::DecodeError;
 
   // Whether a resource client for a preload should mark the preload as
   // referenced.
