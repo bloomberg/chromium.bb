@@ -792,6 +792,48 @@ TEST_F(BoundedFileNetLogObserverTest,
   ASSERT_TRUE(dict->GetDictionary("tabInfo", &tab_info));
 }
 
+// Adds events concurrently from several different threads. The exact order of
+// events seen by this test is non-deterministic.
+TEST_F(BoundedFileNetLogObserverTest, AddEventsFromMultipleThreads) {
+  const size_t kNumThreads = 10;
+  std::vector<std::unique_ptr<base::Thread>> threads(kNumThreads);
+  // Start all the threads. Waiting for them to start is to hopefuly improve
+  // the odds of hitting interesting races once events start being added.
+  for (size_t i = 0; i < threads.size(); ++i) {
+    threads[i] = base::MakeUnique<base::Thread>(
+        base::StringPrintf("WorkerThread%i", static_cast<int>(i)));
+    threads[i]->Start();
+    threads[i]->WaitUntilThreadStarted();
+  }
+
+  logger_->StartObserving(&net_log_, log_path_, nullptr, nullptr,
+                          kLargeFileSize, kTotalNumFiles);
+
+  const size_t kNumEventsAddedPerThread = 200;
+
+  // Add events in parallel from all the threads.
+  for (size_t i = 0; i < kNumThreads; ++i) {
+    threads[i]->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&BoundedFileNetLogObserverTest::AddEntries,
+                              base::Unretained(this), kNumEventsAddedPerThread,
+                              kDummyEventSize));
+  }
+
+  // Join all the threads.
+  threads.clear();
+
+  // Stop observing.
+  TestClosure closure;
+  logger_->StopObserving(nullptr, closure.closure());
+  closure.WaitForResult();
+
+  // Check that the expected number of events were written to disk.
+  std::unique_ptr<base::Value> root;
+  base::ListValue* events;
+  ASSERT_TRUE(ReadNetLogFromDisk(&root, &events));
+  ASSERT_EQ(kNumEventsAddedPerThread * kNumThreads, events->GetSize());
+}
+
 }  // namespace
 
 }  // namespace net
