@@ -71,6 +71,13 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
                        const std::string& account,
                        const std::string& args) override;
 
+  void OnReceivedError(const AwWebResourceRequest& request,
+                       int error_code) override;
+
+  void OnReceivedHttpError(const AwWebResourceRequest& request,
+                           const scoped_refptr<const net::HttpResponseHeaders>&
+                               response_headers) override;
+
   // Methods called from Java.
   void ProceedSslError(JNIEnv* env,
                        const base::android::JavaRef<jobject>& obj,

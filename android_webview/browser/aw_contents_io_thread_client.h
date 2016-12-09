@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 
 namespace net {
-class HttpResponseHeaders;
 class URLRequest;
 }
 
@@ -95,15 +94,6 @@ class AwContentsIoThreadClient {
 
   // Retrieve the AcceptThirdPartyCookies setting value of this AwContents.
   virtual bool ShouldAcceptThirdPartyCookies() const = 0;
-
-  // Called when a resource loading error has occured (e.g. an I/O error,
-  // host name lookup failure etc.)
-  virtual void OnReceivedError(const net::URLRequest* request) = 0;
-
-  // Called when a response from the server is received with status code >= 400.
-  virtual void OnReceivedHttpError(
-      const net::URLRequest* request,
-      const net::HttpResponseHeaders* response_headers) = 0;
 };
 
 } // namespace android_webview

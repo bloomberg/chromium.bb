@@ -23,6 +23,7 @@
 #include "grit/components_strings.h"
 #include "jni/AwContentsClientBridge_jni.h"
 #include "net/cert/x509_certificate.h"
+#include "net/http/http_response_headers.h"
 #include "net/ssl/openssl_client_key_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_client_cert_type.h"
@@ -38,7 +39,9 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::HasException;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
+using base::android::ToJavaArrayOfStrings;
 using content::BrowserThread;
+using std::vector;
 
 namespace android_webview {
 
@@ -409,6 +412,77 @@ void AwContentsClientBridge::NewLoginRequest(const std::string& realm,
 
   Java_AwContentsClientBridge_newLoginRequest(env, obj, jrealm, jaccount,
                                               jargs);
+}
+
+void AwContentsClientBridge::OnReceivedError(
+    const AwWebResourceRequest& request,
+    int error_code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  ScopedJavaLocalRef<jstring> jstring_description =
+      ConvertUTF8ToJavaString(env, net::ErrorToString(error_code));
+
+  AwWebResourceRequest::AwJavaWebResourceRequest java_web_resource_request;
+  AwWebResourceRequest::ConvertToJava(env, request, &java_web_resource_request);
+
+  Java_AwContentsClientBridge_onReceivedError(
+      env, obj, java_web_resource_request.jurl, request.is_main_frame,
+      request.has_user_gesture, java_web_resource_request.jmethod,
+      java_web_resource_request.jheader_names,
+      java_web_resource_request.jheader_values, error_code,
+      jstring_description);
+}
+
+void AwContentsClientBridge::OnReceivedHttpError(
+    const AwWebResourceRequest& request,
+    const scoped_refptr<const net::HttpResponseHeaders>& response_headers) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  AwWebResourceRequest::AwJavaWebResourceRequest java_web_resource_request;
+  AwWebResourceRequest::ConvertToJava(env, request, &java_web_resource_request);
+
+  vector<std::string> response_header_names;
+  vector<std::string> response_header_values;
+
+  {
+    size_t headers_iterator = 0;
+    std::string header_name, header_value;
+    while (response_headers->EnumerateHeaderLines(
+        &headers_iterator, &header_name, &header_value)) {
+      response_header_names.push_back(header_name);
+      response_header_values.push_back(header_value);
+    }
+  }
+
+  std::string mime_type, encoding;
+  response_headers->GetMimeTypeAndCharset(&mime_type, &encoding);
+  ScopedJavaLocalRef<jstring> jstring_mime_type =
+      ConvertUTF8ToJavaString(env, mime_type);
+  ScopedJavaLocalRef<jstring> jstring_encoding =
+      ConvertUTF8ToJavaString(env, encoding);
+  int status_code = response_headers->response_code();
+  ScopedJavaLocalRef<jstring> jstring_reason =
+      ConvertUTF8ToJavaString(env, response_headers->GetStatusText());
+  ScopedJavaLocalRef<jobjectArray> jstringArray_response_header_names =
+      ToJavaArrayOfStrings(env, response_header_names);
+  ScopedJavaLocalRef<jobjectArray> jstringArray_response_header_values =
+      ToJavaArrayOfStrings(env, response_header_values);
+
+  Java_AwContentsClientBridge_onReceivedHttpError(
+      env, obj, java_web_resource_request.jurl, request.is_main_frame,
+      request.has_user_gesture, java_web_resource_request.jmethod,
+      java_web_resource_request.jheader_names,
+      java_web_resource_request.jheader_values, jstring_mime_type,
+      jstring_encoding, status_code, jstring_reason,
+      jstringArray_response_header_names, jstringArray_response_header_values);
 }
 
 void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
