@@ -115,7 +115,7 @@ sign * 35						astérisque
 sign _ 5								souligné
 sign \X201E 56   guillemet bas fermant
 sign ¸ 456   #
-sign ´ 5   # 
+sign ´ 5   #
 sign \X007C 456   # barre verticale
 sign \X0082 6   # [single low-9 quotation mark (break permitted here)
 sign \X0083 124   # [latin small letter f with hook (no break here)
@@ -255,3 +255,54 @@ always \s--\s 36-36	tiret
 
 include braille-patterns.cti
 
+# Alphabet grec minuscules
+sign \X03B1 45-1    Alpha α
+sign \X03B2 45-12    Bêta β
+sign \X03B3 45-1245  Gamma γ
+sign \X03B4 45-145   Delta δ
+sign \X03B5 45-15    Epsilon ε
+sign \X03B6 45-1356  Dzêta ζ
+sign \X03B7 45-125   Êta η
+sign \X03B8 45-245   Thêta θ
+sign \X03B9 45-24    Iota ι
+sign \X03BA 45-13    Kappa κ
+sign \X03BB 45-123   Lambda λ
+sign \X03BC 45-134   Mu μ
+sign \X03BD 45-1345  Nu ν
+sign \X03BE 45-1346  Xi ξ
+sign \X03BF 45-135   Omicron ο
+sign \X03C0 45-1234  Pi π
+sign \X03C1 45-1235  Rhô ρ
+sign \X03C3 45-234   Sigma σ
+sign \X03C4 45-2345  Tau τ
+sign \X03C5 45-136   Upsilon υ
+sign \X03C6 45-124   Phi φ
+sign \X03C7 45-12345 khi χ
+sign \X03C8 45-13456 Psi ψ
+sign \X03C9 45-2456  Oméga ω
+
+# Alphabet grec majuscules
+sign \X0391 46-45-1     Alpha Α
+sign \X0392 46-45-12    Bêta Β
+sign \X0393 46-45-1245  Gamma Γ
+sign \X0394 46-45-145   Delta Δ
+sign \X0395 46-45-15    Epsilon Ε
+sign \X0396 46-45-1356  Dzêta Ζ
+sign \X0397 46-45-125   Êta Η
+sign \X0398 46-45-245   Thêta Θ
+sign \X0399 46-45-24    Iota Ι
+sign \X039A 46-45-13    Kappa Κ
+sign \X039B 46-45-123   Lambda Λ
+sign \X039C 46-45-134   Mu Μ
+sign \X039D 46-45-1345  Nu Ν
+sign \X039E 46-45-1346  Xi Ξ
+sign \X039F 46-45-135   Omicron Ο
+sign \X03A0 46-45-1234  Pi Π
+sign \X03A1 46-45-1235  Rhô Ρ
+sign \X03A3 46-45-234   Sigma Σ
+sign \X03A4 46-45-2345  Tau Τ
+sign \X03A5 46-45-136   Upsilon Υ
+sign \X03A6 46-45-124   Phi Φ
+sign \X03A7 46-45-12345 khi Χ
+sign \X03A8 46-45-13456 Psi Ψ
+sign \X03A9 46-45-2456  Oméga Ω
