@@ -68,6 +68,9 @@ source_set("pipeline_integration_tests") {
       "//media/base:test_support",
       "//media/mojo/clients",
       "//services/service_manager/public/cpp:service_test_support",
+
+      # Needed for the opus_config
+      "//third_party/opus",
       "//url",
 
       # TODO(dalecurtis): Required since the gmock header is included in the

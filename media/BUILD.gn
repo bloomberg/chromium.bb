@@ -648,7 +648,6 @@ source_set("unit_tests") {
   }
 
   if (media_use_ffmpeg) {
-    deps += [ "//media/ffmpeg:ffmpeg_unittests" ]
     sources += [
       "filters/audio_decoder_unittest.cc",
       "filters/audio_file_reader_unittest.cc",
@@ -656,6 +655,13 @@ source_set("unit_tests") {
       "filters/ffmpeg_demuxer_unittest.cc",
       "filters/ffmpeg_glue_unittest.cc",
       "filters/in_memory_url_protocol_unittest.cc",
+    ]
+
+    deps += [
+      "//media/ffmpeg:ffmpeg_unittests",
+
+      # Direct dependency needed for the config
+      "//third_party/opus",
     ]
 
     if (!is_android) {
