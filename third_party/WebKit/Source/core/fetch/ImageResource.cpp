@@ -158,10 +158,11 @@ void ImageResource::checkNotify() {
 }
 
 void ImageResource::markObserverFinished(ImageResourceObserver* observer) {
-  if (m_observers.contains(observer)) {
-    m_finishedObservers.add(observer);
-    m_observers.remove(observer);
-  }
+  auto it = m_observers.find(observer);
+  if (it == m_observers.end())
+    return;
+  m_observers.remove(it);
+  m_finishedObservers.add(observer);
 }
 
 void ImageResource::didAddClient(ResourceClient* client) {
@@ -207,13 +208,14 @@ void ImageResource::addObserver(ImageResourceObserver* observer) {
 void ImageResource::removeObserver(ImageResourceObserver* observer) {
   DCHECK(observer);
 
-  if (m_observers.contains(observer))
-    m_observers.remove(observer);
-  else if (m_finishedObservers.contains(observer))
-    m_finishedObservers.remove(observer);
-  else
-    NOTREACHED();
-
+  auto it = m_observers.find(observer);
+  if (it != m_observers.end()) {
+    m_observers.remove(it);
+  } else {
+    it = m_finishedObservers.find(observer);
+    DCHECK(it != m_finishedObservers.end());
+    m_finishedObservers.remove(it);
+  }
   didRemoveClientOrObserver();
 }
 
@@ -229,14 +231,10 @@ static void priorityFromObserver(const ImageResourceObserver* observer,
 ResourcePriority ImageResource::priorityFromObservers() {
   ResourcePriority priority;
 
-  for (auto* observer : m_finishedObservers.asVector()) {
-    if (m_finishedObservers.contains(observer))
-      priorityFromObserver(observer, priority);
-  }
-  for (auto* observer : m_observers.asVector()) {
-    if (m_observers.contains(observer))
-      priorityFromObserver(observer, priority);
-  }
+  for (const auto& it : m_finishedObservers)
+    priorityFromObserver(it.key, priority);
+  for (const auto& it : m_observers)
+    priorityFromObserver(it.key, priority);
 
   return priority;
 }
@@ -581,15 +579,13 @@ bool ImageResource::shouldPauseAnimation(const blink::Image* image) {
   if (!image || image != m_image)
     return false;
 
-  for (auto* observer : m_finishedObservers.asVector()) {
-    if (m_finishedObservers.contains(observer) && observer->willRenderImage())
+  for (const auto& it : m_finishedObservers)
+    if (it.key->willRenderImage())
       return false;
-  }
 
-  for (auto* observer : m_observers.asVector()) {
-    if (m_observers.contains(observer) && observer->willRenderImage())
+  for (const auto& it : m_observers)
+    if (it.key->willRenderImage())
       return false;
-  }
 
   return true;
 }
@@ -605,14 +601,12 @@ void ImageResource::updateImageAnimationPolicy() {
     return;
 
   ImageAnimationPolicy newPolicy = ImageAnimationPolicyAllowed;
-  for (auto* observer : m_finishedObservers.asVector()) {
-    if (m_finishedObservers.contains(observer) &&
-        observer->getImageAnimationPolicy(newPolicy))
+  for (const auto& it : m_finishedObservers) {
+    if (it.key->getImageAnimationPolicy(newPolicy))
       break;
   }
-  for (auto* observer : m_observers.asVector()) {
-    if (m_observers.contains(observer) &&
-        observer->getImageAnimationPolicy(newPolicy))
+  for (const auto& it : m_observers) {
+    if (it.key->getImageAnimationPolicy(newPolicy))
       break;
   }
 

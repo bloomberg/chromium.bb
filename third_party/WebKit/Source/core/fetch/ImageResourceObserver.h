@@ -51,11 +51,17 @@ class CORE_EXPORT ImageResourceObserver {
   // example would not render the image, but LayoutImages would (assuming they
   // have visibility: visible and their layout tree isn't hidden e.g., in the
   // b/f cache or in a background tab).
+  //
+  // An implementation of this method is not allowed to add or remove
+  // ImageResource observers.
   virtual bool willRenderImage() { return false; }
 
-  // Called to get imageAnimation policy from settings
+  // Called to get imageAnimation policy from settings. An implementation of
+  // this method is not allowed to add or remove ImageResource observers.
   virtual bool getImageAnimationPolicy(ImageAnimationPolicy&) { return false; }
 
+  // Return the observer's requested resource priority. An implementation of
+  // this method is not allowed to add or remove ImageResource observers.
   virtual ResourcePriority computeResourcePriority() const {
     return ResourcePriority();
   }
