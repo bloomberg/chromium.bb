@@ -1944,7 +1944,7 @@ enum drm_output_propose_state_mode {
 	DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY, /**< only assign to renderer & cursor */
 };
 
-static struct weston_plane *
+static struct drm_plane_state *
 drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 				struct weston_view *ev)
 {
@@ -2004,7 +2004,7 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	    state->dest_h != (unsigned) output->base.current_mode->height)
 		goto err;
 
-	return &scanout_plane->base;
+	return state;
 
 err:
 	drm_plane_state_put_back(state);
@@ -2170,7 +2170,6 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 	struct drm_property_info *dpms_prop;
 	struct drm_plane_state *scanout_state;
 	struct drm_plane_state *ps;
-	struct drm_plane *p;
 	struct drm_mode *mode;
 	struct drm_head *head;
 	uint32_t connectors[MAX_CLONED_CONNECTORS];
@@ -2197,7 +2196,7 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 
 	if (state->dpms != WESTON_DPMS_ON) {
 		wl_list_for_each(ps, &state->plane_list, link) {
-			p = ps->plane;
+			struct drm_plane *p = ps->plane;
 			assert(ps->fb == NULL);
 			assert(ps->output == NULL);
 
@@ -2287,8 +2286,8 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 			.request.type = DRM_VBLANK_RELATIVE | DRM_VBLANK_EVENT,
 			.request.sequence = 1,
 		};
+		struct drm_plane *p = ps->plane;
 
-		p = ps->plane;
 		if (p->type != WDRM_PLANE_TYPE_OVERLAY)
 			continue;
 
@@ -3000,7 +2999,7 @@ atomic_flip_handler(int fd, unsigned int frame, unsigned int sec,
 }
 #endif
 
-static struct weston_plane *
+static struct drm_plane_state *
 drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 				struct weston_view *ev)
 {
@@ -3071,7 +3070,7 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	    state->src_h != state->dest_h << 16)
 		goto err;
 
-	return &p->base;
+	return state;
 
 err:
 	drm_plane_state_put_back(state);
@@ -3115,7 +3114,7 @@ cursor_bo_update(struct drm_plane_state *plane_state, struct weston_view *ev)
 		weston_log("failed update cursor: %m\n");
 }
 
-static struct weston_plane *
+static struct drm_plane_state *
 drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 			       struct weston_view *ev)
 {
@@ -3201,7 +3200,7 @@ drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 	plane_state->dest_w = b->cursor_width;
 	plane_state->dest_h = b->cursor_height;
 
-	return &plane->base;
+	return plane_state;
 
 err:
 	drm_plane_state_put_back(plane_state);
@@ -3271,7 +3270,6 @@ drm_output_propose_state(struct weston_output *output_base,
 	struct drm_output_state *state;
 	struct weston_view *ev;
 	pixman_region32_t surface_overlap, renderer_region, occluded_region;
-	struct weston_plane *primary = &output_base->compositor->primary_plane;
 	bool planes_ok = (mode != DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY);
 
 	assert(!output->state_last);
@@ -3296,7 +3294,8 @@ drm_output_propose_state(struct weston_output *output_base,
 	pixman_region32_init(&occluded_region);
 
 	wl_list_for_each(ev, &output_base->compositor->view_list, link) {
-		struct weston_plane *next_plane = NULL;
+		struct drm_plane_state *ps = NULL;
+		bool force_renderer = false;
 		pixman_region32_t clipped_view;
 		bool occluded = false;
 
@@ -3308,7 +3307,7 @@ drm_output_propose_state(struct weston_output *output_base,
 		/* We only assign planes to views which are exclusively present
 		 * on our output. */
 		if (ev->output_mask != (1u << output->base.id))
-			next_plane = primary;
+			force_renderer = true;
 
 		/* Ignore views we know to be totally occluded. */
 		pixman_region32_init(&clipped_view);
@@ -3332,7 +3331,7 @@ drm_output_propose_state(struct weston_output *output_base,
 		pixman_region32_intersect(&surface_overlap, &renderer_region,
 					  &clipped_view);
 		if (pixman_region32_not_empty(&surface_overlap))
-			next_plane = primary;
+			force_renderer = true;
 
 		/* We do not control the stacking order of overlay planes;
 		 * the scanout plane is strictly stacked bottom and the cursor
@@ -3342,28 +3341,29 @@ drm_output_propose_state(struct weston_output *output_base,
 		pixman_region32_intersect(&surface_overlap, &occluded_region,
 					  &clipped_view);
 		if (pixman_region32_not_empty(&surface_overlap))
-			next_plane = primary;
+			force_renderer = true;
 		pixman_region32_fini(&surface_overlap);
 
 		/* The cursor plane is 'special' in the sense that we can still
 		 * place it in the legacy API, and we gate that with a separate
 		 * cursors_are_broken flag. */
-		if (next_plane == NULL && !b->cursors_are_broken)
-			next_plane = drm_output_prepare_cursor_view(state, ev);
+		if (!force_renderer && !b->cursors_are_broken)
+			ps = drm_output_prepare_cursor_view(state, ev);
 
-		if (next_plane == NULL && !drm_view_is_opaque(ev))
-			next_plane = primary;
+		/* If sprites are disabled or the view is not fully opaque, we
+		 * must put the view into the renderer - unless it has already
+		 * been placed in the cursor plane, which can handle alpha. */
+		if (!ps && !planes_ok)
+			force_renderer = true;
+		if (!ps && !drm_view_is_opaque(ev))
+			force_renderer = true;
 
-		if (next_plane == NULL && !planes_ok)
-			next_plane = primary;
+		if (!ps && !force_renderer)
+			ps = drm_output_prepare_scanout_view(state, ev);
+		if (!ps && !force_renderer)
+			ps = drm_output_prepare_overlay_view(state, ev);
 
-		if (next_plane == NULL)
-			next_plane = drm_output_prepare_scanout_view(state, ev);
-
-		if (next_plane == NULL)
-			next_plane = drm_output_prepare_overlay_view(state, ev);
-
-		if (next_plane && next_plane != primary) {
+		if (ps) {
 			/* If we have been assigned to an overlay or scanout
 			 * plane, add this area to the occluded region, so
 			 * other views are known to be behind it. The cursor
@@ -3371,8 +3371,7 @@ drm_output_propose_state(struct weston_output *output_base,
 			 * the content underneath it: the area should neither
 			 * be added to the renderer region nor the occluded
 			 * region. */
-			if (!output->cursor_plane ||
-			    next_plane != &output->cursor_plane->base) {
+			if (ps->plane->type != WDRM_PLANE_TYPE_CURSOR) {
 				pixman_region32_union(&occluded_region,
 						      &occluded_region,
 						      &clipped_view);
