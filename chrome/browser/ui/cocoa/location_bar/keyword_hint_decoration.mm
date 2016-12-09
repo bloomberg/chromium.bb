@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -115,16 +116,19 @@ void KeywordHintDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
 
   const bool draw_full = NSWidth(frame) > image_width;
 
-  if (draw_full) {
-    NSRect prefix_rect = frame;
-    const CGFloat prefix_width = GetLabelSize(hint_prefix_, attributes_).width;
-    DCHECK_GE(NSWidth(prefix_rect), prefix_width);
-    DrawLabel(hint_prefix_, attributes_, prefix_rect);
+  BOOL is_rtl = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+  NSString* left_string = is_rtl ? hint_suffix_ : hint_prefix_;
+  NSString* right_string = is_rtl ? hint_prefix_ : hint_suffix_;
 
+  if (draw_full) {
+    NSRect left_rect = frame;
+    const CGFloat left_width = GetLabelSize(left_string, attributes_).width;
+    left_rect.size.width = left_width;
+    DrawLabel(left_string, attributes_, left_rect);
     // The image should be drawn at a pixel boundary, round the prefix
     // so that partial pixels aren't oddly close (or distant).
-    frame.origin.x += std::floor(prefix_width + 0.5) + kHintImagePadding;
-    frame.size.width -= std::floor(prefix_width + 0.5) + kHintImagePadding;
+    frame.origin.x += std::floor(left_width + 0.5) + kHintImagePadding;
+    frame.size.width -= std::floor(left_width + 0.5) + kHintImagePadding;
   }
 
   NSRect image_rect = NSInsetRect(frame, 0.0, kHintImageYInset);
@@ -139,15 +143,15 @@ void KeywordHintDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   frame.size.width -= NSWidth(image_rect);
 
   if (draw_full) {
-    NSRect suffix_rect = frame;
-    const CGFloat suffix_width = GetLabelSize(hint_suffix_, attributes_).width;
+    NSRect right_rect = frame;
+    const CGFloat right_width = GetLabelSize(right_string, attributes_).width;
 
     // Draw the text kHintImagePadding away from [tab] icon so that
     // equal amount of space is maintained on either side of the icon.
     // This also ensures that suffix text is at the same distance
     // from [tab] icon in different web pages.
-    suffix_rect.origin.x += kHintImagePadding;
-    DCHECK_GE(NSWidth(suffix_rect), suffix_width);
-    DrawLabel(hint_suffix_, attributes_, suffix_rect);
+    right_rect.origin.x += kHintImagePadding;
+    DCHECK_GE(NSWidth(right_rect), right_width);
+    DrawLabel(right_string, attributes_, right_rect);
   }
 }
