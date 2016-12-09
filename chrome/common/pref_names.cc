@@ -926,6 +926,12 @@ const char kQuickUnlockModeWhitelist[] = "quick_unlock_mode_whitelist";
 // 2 - day. Users will have to enter their password every day.
 // 3 - week. Users will have to enter their password every week.
 const char kQuickUnlockTimeout[] = "quick_unlock_timeout";
+// Integer prefs indicating the minimum and maximum lengths of the lock screen
+// pin.
+const char kPinUnlockMinimumLength[] = "pin_unlock_minimum_length";
+const char kPinUnlockMaximumLength[] = "pin_unlock_maximum_length";
+// Boolean pref indicating whether users are allowed to set easy pins.
+const char kPinUnlockWeakPinsAllowed[] = "pin_unlock_weak_pins_allowed";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

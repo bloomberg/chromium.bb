@@ -30,6 +30,12 @@ void RegisterQuickUnlockProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       prefs::kQuickUnlockTimeout,
       static_cast<int>(QuickUnlockPasswordConfirmationFrequency::DAY));
+
+  // Preferences related the lock screen pin unlock.
+  registry->RegisterIntegerPref(prefs::kPinUnlockMinimumLength, 4);
+  // 0 indicates no maximum length for the pin.
+  registry->RegisterIntegerPref(prefs::kPinUnlockMaximumLength, 0);
+  registry->RegisterBooleanPref(prefs::kPinUnlockWeakPinsAllowed, true);
 }
 
 bool IsPinUnlockEnabled(PrefService* pref_service) {

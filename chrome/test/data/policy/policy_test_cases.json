@@ -2674,6 +2674,30 @@
     ]
   },
 
+  "PinUnlockMinimumLength": {
+    "os": ["chromeos"],
+    "test_policy": { "PinUnlockMinimumLength": 4 },
+    "pref_mappings": [
+      { "pref": "pin_unlock_minimum_length"}
+    ]
+  },
+
+  "PinUnlockMaximumLength": {
+    "os": ["chromeos"],
+    "test_policy": { "PinUnlockMaximumLength": 0 },
+    "pref_mappings": [
+      { "pref": "pin_unlock_maximum_length"}
+    ]
+  },
+
+  "PinUnlockWeakPinsAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "PinUnlockWeakPinsAllowed": true },
+    "pref_mappings": [
+      { "pref": "pin_unlock_weak_pins_allowed"}
+    ]
+  },
+
   "ArcCertificatesSyncMode": {
     "os": ["chromeos"],
     "can_be_recommended": false,

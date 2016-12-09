@@ -56,6 +56,40 @@ class QuickUnlockPrivateGetActiveModesFunction
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateGetActiveModesFunction);
 };
 
+class QuickUnlockPrivateCheckCredentialFunction
+    : public UIThreadExtensionFunction {
+ public:
+  QuickUnlockPrivateCheckCredentialFunction();
+  DECLARE_EXTENSION_FUNCTION("quickUnlockPrivate.checkCredential",
+                             QUICKUNLOCKPRIVATE_CHECKCREDENTIAL);
+
+ protected:
+  ~QuickUnlockPrivateCheckCredentialFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateCheckCredentialFunction);
+};
+
+class QuickUnlockPrivateGetCredentialRequirementsFunction
+    : public UIThreadExtensionFunction {
+ public:
+  QuickUnlockPrivateGetCredentialRequirementsFunction();
+  DECLARE_EXTENSION_FUNCTION("quickUnlockPrivate.getCredentialRequirements",
+                             QUICKUNLOCKPRIVATE_GETCREDENTIALREQUIREMENTS);
+
+ protected:
+  ~QuickUnlockPrivateGetCredentialRequirementsFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateGetCredentialRequirementsFunction);
+};
+
 class QuickUnlockPrivateSetModesFunction : public UIThreadExtensionFunction,
                                            public chromeos::AuthStatusConsumer {
  public:

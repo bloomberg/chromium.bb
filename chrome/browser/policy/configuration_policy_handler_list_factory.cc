@@ -616,6 +616,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::LIST },
   { key::kQuickUnlockTimeout, prefs::kQuickUnlockTimeout,
     base::Value::Type::INTEGER },
+  { key::kPinUnlockMinimumLength, prefs::kPinUnlockMinimumLength,
+    base::Value::Type::INTEGER },
+  { key::kPinUnlockMaximumLength, prefs::kPinUnlockMaximumLength,
+    base::Value::Type::INTEGER },
+  { key::kPinUnlockWeakPinsAllowed, prefs::kPinUnlockWeakPinsAllowed,
+    base::Value::Type::BOOLEAN },
 #endif
 };
 
