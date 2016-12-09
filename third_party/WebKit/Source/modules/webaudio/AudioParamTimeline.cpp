@@ -165,6 +165,10 @@ AudioParamTimeline::ParamEvent
 AudioParamTimeline::ParamEvent::createSetTargetEvent(float value,
                                                      double time,
                                                      double timeConstant) {
+  // The time line code does not expect a timeConstant of 0. (IT
+  // returns NaN or Infinity due to division by zero.  The caller
+  // should have converted this to a SetValueEvent.
+  DCHECK_NE(timeConstant, 0);
   return ParamEvent(ParamEvent::SetTarget, value, time, timeConstant, 0,
                     nullptr);
 }
@@ -237,11 +241,18 @@ void AudioParamTimeline::setTargetAtTime(float target,
   DCHECK(isMainThread());
 
   if (!isNonNegativeAudioParamTime(time, exceptionState) ||
-      !isPositiveAudioParamTime(timeConstant, exceptionState, "Time constant"))
+      !isNonNegativeAudioParamTime(timeConstant, exceptionState,
+                                   "Time constant"))
     return;
 
-  insertEvent(ParamEvent::createSetTargetEvent(target, time, timeConstant),
-              exceptionState);
+  // If timeConstant = 0, we instantly jump to the target value, so
+  // insert a SetValueEvent instead of SetTargetEvent.
+  if (timeConstant == 0) {
+    insertEvent(ParamEvent::createSetValueEvent(target, time), exceptionState);
+  } else {
+    insertEvent(ParamEvent::createSetTargetEvent(target, time, timeConstant),
+                exceptionState);
+  }
 }
 
 void AudioParamTimeline::setValueCurveAtTime(DOMFloat32Array* curve,
