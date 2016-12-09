@@ -257,7 +257,7 @@ void FileInputType::countUsage() {
 void FileInputType::createShadowSubtree() {
   DCHECK(element().shadow());
   HTMLInputElement* button =
-      HTMLInputElement::create(element().document(), 0, false);
+      HTMLInputElement::create(element().document(), false);
   button->setType(InputTypeNames::button);
   button->setAttribute(
       valueAttr,

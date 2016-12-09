@@ -85,12 +85,11 @@ TEST_F(HTMLInputElementTest, FilteredDataListOptionsForMultipleEmail) {
 }
 
 TEST_F(HTMLInputElementTest, create) {
-  HTMLInputElement* input = HTMLInputElement::create(
-      document(), nullptr, /* createdByParser */ false);
+  HTMLInputElement* input =
+      HTMLInputElement::create(document(), /* createdByParser */ false);
   EXPECT_NE(nullptr, input->userAgentShadowRoot());
 
-  input =
-      HTMLInputElement::create(document(), nullptr, /* createdByParser */ true);
+  input = HTMLInputElement::create(document(), /* createdByParser */ true);
   EXPECT_EQ(nullptr, input->userAgentShadowRoot());
   input->parserSetAttributes(Vector<Attribute>());
   EXPECT_NE(nullptr, input->userAgentShadowRoot());
@@ -122,15 +121,14 @@ TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
 
 TEST_F(HTMLInputElementTest, DefaultToolTip) {
   HTMLInputElement* inputWithoutForm =
-      HTMLInputElement::create(document(), nullptr, false);
+      HTMLInputElement::create(document(), false);
   inputWithoutForm->setBooleanAttribute(HTMLNames::requiredAttr, true);
   document().body()->appendChild(inputWithoutForm);
   EXPECT_EQ("<<ValidationValueMissing>>", inputWithoutForm->defaultToolTip());
 
   HTMLFormElement* form = HTMLFormElement::create(document());
   document().body()->appendChild(form);
-  HTMLInputElement* inputWithForm =
-      HTMLInputElement::create(document(), nullptr, false);
+  HTMLInputElement* inputWithForm = HTMLInputElement::create(document(), false);
   inputWithForm->setBooleanAttribute(HTMLNames::requiredAttr, true);
   form->appendChild(inputWithForm);
   EXPECT_EQ("<<ValidationValueMissing>>", inputWithForm->defaultToolTip());
@@ -141,8 +139,7 @@ TEST_F(HTMLInputElementTest, DefaultToolTip) {
 
 // crbug.com/589838
 TEST_F(HTMLInputElementTest, ImageTypeCrash) {
-  HTMLInputElement* input =
-      HTMLInputElement::create(document(), nullptr, false);
+  HTMLInputElement* input = HTMLInputElement::create(document(), false);
   input->setAttribute(HTMLNames::typeAttr, "image");
   input->ensureFallbackContent();
   // Make sure ensurePrimaryContent() recreates UA shadow tree, and updating

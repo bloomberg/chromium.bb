@@ -34,14 +34,14 @@ class HTMLKeygenElement final : public HTMLFormControlElementWithState {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLKeygenElement* create(Document&, HTMLFormElement*);
+  static HTMLKeygenElement* create(Document&);
 
   bool willValidate() const override { return false; }
 
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
  private:
-  HTMLKeygenElement(Document&, HTMLFormElement*);
+  explicit HTMLKeygenElement(Document&);
 
   bool areAuthorShadowsAllowed() const override { return false; }
 

@@ -60,7 +60,7 @@ bool WebHelperPluginImpl::initialize(const String& pluginType,
     return false;
 
   m_objectElement =
-      HTMLObjectElement::create(*frame->frame()->document(), 0, false);
+      HTMLObjectElement::create(*frame->frame()->document(), false);
   Vector<String> attributeNames;
   Vector<String> attributeValues;
   DCHECK(frame->frame()->document()->url().isValid());

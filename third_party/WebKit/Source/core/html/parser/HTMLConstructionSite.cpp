@@ -935,8 +935,8 @@ HTMLElement* HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token) {
     // FIXME: This can't use HTMLConstructionSite::createElement because we have
     // to pass the current form element. We should rework form association to
     // occur after construction to allow better code sharing here.
-    element = HTMLElementFactory::createHTMLElement(
-        token->name(), document, form, getCreateElementFlags());
+    element = HTMLElementFactory::createHTMLElement(token->name(), document,
+                                                    getCreateElementFlags());
     if (FormAssociated* formAssociatedElement =
             element->toFormAssociatedOrNull()) {
       formAssociatedElement->associateWith(form);

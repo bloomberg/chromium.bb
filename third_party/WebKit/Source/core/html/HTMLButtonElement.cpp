@@ -37,15 +37,13 @@ namespace blink {
 
 using namespace HTMLNames;
 
-inline HTMLButtonElement::HTMLButtonElement(Document& document,
-                                            HTMLFormElement* form)
-    : HTMLFormControlElement(buttonTag, document, form),
+inline HTMLButtonElement::HTMLButtonElement(Document& document)
+    : HTMLFormControlElement(buttonTag, document),
       m_type(SUBMIT),
       m_isActivatedSubmit(false) {}
 
-HTMLButtonElement* HTMLButtonElement::create(Document& document,
-                                             HTMLFormElement* form) {
-  return new HTMLButtonElement(document, form);
+HTMLButtonElement* HTMLButtonElement::create(Document& document) {
+  return new HTMLButtonElement(document);
 }
 
 void HTMLButtonElement::setType(const AtomicString& type) {

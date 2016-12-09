@@ -23,7 +23,7 @@ big interfaceName=HTMLElement
 blockquote interfaceName=HTMLQuoteElement
 body
 br interfaceName=HTMLBRElement
-button constructorNeedsFormElement
+button
 canvas
 caption interfaceName=HTMLTableCaptionElement
 center interfaceName=HTMLElement
@@ -45,7 +45,7 @@ dl interfaceName=HTMLDListElement
 dt interfaceName=HTMLElement
 em interfaceName=HTMLElement
 embed constructorNeedsCreatedByParser
-fieldset interfaceName=HTMLFieldSetElement, constructorNeedsFormElement
+fieldset interfaceName=HTMLFieldSetElement
 figcaption interfaceName=HTMLElement
 figure interfaceName=HTMLElement
 font
@@ -67,11 +67,11 @@ html
 i interfaceName=HTMLElement
 iframe interfaceName=HTMLIFrameElement
 image interfaceName=HTMLUnknownElement
-img interfaceName=HTMLImageElement, constructorNeedsFormElement, constructorNeedsCreatedByParser
-input constructorNeedsFormElement, constructorNeedsCreatedByParser
+img interfaceName=HTMLImageElement, constructorNeedsCreatedByParser
+input constructorNeedsCreatedByParser
 ins interfaceName=HTMLModElement
 kbd interfaceName=HTMLElement
-keygen constructorNeedsFormElement
+keygen
 label
 layer interfaceName=HTMLElement
 legend
@@ -91,11 +91,11 @@ nobr interfaceName=HTMLElement
 noembed interfaceName=HTMLNoEmbedElement, JSInterfaceName=HTMLElement
 noframes interfaceName=HTMLElement
 nolayer interfaceName=HTMLElement
-object constructorNeedsFormElement, constructorNeedsCreatedByParser
+object constructorNeedsCreatedByParser
 ol interfaceName=HTMLOListElement
 optgroup interfaceName=HTMLOptGroupElement
 option
-output constructorNeedsFormElement
+output
 shadow interfaceName=HTMLShadowElement
 p interfaceName=HTMLParagraphElement
 param
@@ -113,7 +113,7 @@ s interfaceName=HTMLElement
 samp interfaceName=HTMLElement
 script constructorNeedsCreatedByParser
 section interfaceName=HTMLElement
-select constructorNeedsFormElement
+select
 slot interfaceName=HTMLSlotElement
 small interfaceName=HTMLElement
 source
@@ -128,7 +128,7 @@ table
 tbody interfaceName=HTMLTableSectionElement
 td interfaceName=HTMLTableCellElement
 template
-textarea interfaceName=HTMLTextAreaElement, constructorNeedsFormElement
+textarea interfaceName=HTMLTextAreaElement
 tfoot interfaceName=HTMLTableSectionElement
 th interfaceName=HTMLTableCellElement
 thead interfaceName=HTMLTableSectionElement

@@ -1540,7 +1540,7 @@ HTMLElement* createDefaultParagraphElement(Document& document) {
 }
 
 HTMLElement* createHTMLElement(Document& document, const QualifiedName& name) {
-  return HTMLElementFactory::createHTMLElement(name.localName(), document, 0,
+  return HTMLElementFactory::createHTMLElement(name.localName(), document,
                                                CreatedByCloneNode);
 }
 

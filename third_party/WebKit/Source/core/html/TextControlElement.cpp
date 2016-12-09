@@ -59,9 +59,8 @@ namespace blink {
 using namespace HTMLNames;
 
 TextControlElement::TextControlElement(const QualifiedName& tagName,
-                                       Document& doc,
-                                       HTMLFormElement* form)
-    : HTMLFormControlElementWithState(tagName, doc, form),
+                                       Document& doc)
+    : HTMLFormControlElementWithState(tagName, doc),
       m_lastChangeWasUserEdit(false),
       m_cachedSelectionStart(0),
       m_cachedSelectionEnd(0) {

@@ -44,7 +44,6 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
 
  public:
   static HTMLObjectElement* create(Document&,
-                                   HTMLFormElement*,
                                    bool createdByParser);
   ~HTMLObjectElement() override;
   DECLARE_VIRTUAL_TRACE();
@@ -82,7 +81,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   void associateWith(HTMLFormElement*) override;
 
  private:
-  HTMLObjectElement(Document&, HTMLFormElement*, bool createdByParser);
+  HTMLObjectElement(Document&, bool createdByParser);
 
   void parseAttribute(const QualifiedName&,
                       const AtomicString&,

@@ -54,7 +54,6 @@ class CORE_EXPORT HTMLSelectElement final
 
  public:
   static HTMLSelectElement* create(Document&);
-  static HTMLSelectElement* create(Document&, HTMLFormElement*);
   ~HTMLSelectElement() override;
 
   int selectedIndex() const;
@@ -173,7 +172,7 @@ class CORE_EXPORT HTMLSelectElement final
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  HTMLSelectElement(Document&, HTMLFormElement*);
+  explicit HTMLSelectElement(Document&);
 
  private:
   const AtomicString& formControlType() const override;

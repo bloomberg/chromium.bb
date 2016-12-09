@@ -161,7 +161,7 @@ DEFINE_TRACE(MediaControlDivElement) {
 MediaControlInputElement::MediaControlInputElement(
     MediaControls& mediaControls,
     MediaControlElementType displayType)
-    : HTMLInputElement(mediaControls.document(), 0, false),
+    : HTMLInputElement(mediaControls.document(), false),
       MediaControlElement(mediaControls, displayType, this) {}
 
 bool MediaControlInputElement::isMouseFocusable() const {

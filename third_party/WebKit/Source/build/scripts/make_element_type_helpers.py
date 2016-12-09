@@ -26,7 +26,6 @@ class MakeElementTypeHelpersWriter(in_generator.Writer):
         'ImplementedAs': None,
         'JSInterfaceName': None,
         'constructorNeedsCreatedByParser': None,
-        'constructorNeedsFormElement': None,
         'interfaceName': None,
         'noConstructor': None,
         'noTypeHelpers': None,

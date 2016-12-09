@@ -87,7 +87,6 @@ class HTMLImageElement::ViewportChangeListener final
 };
 
 HTMLImageElement::HTMLImageElement(Document& document,
-                                   HTMLFormElement* form,
                                    bool createdByParser)
     : HTMLElement(imgTag, document),
       ActiveScriptWrappable(this),
@@ -107,9 +106,8 @@ HTMLImageElement* HTMLImageElement::create(Document& document) {
 }
 
 HTMLImageElement* HTMLImageElement::create(Document& document,
-                                           HTMLFormElement* form,
                                            bool createdByParser) {
-  return new HTMLImageElement(document, form, createdByParser);
+  return new HTMLImageElement(document, createdByParser);
 }
 
 HTMLImageElement::~HTMLImageElement() {}

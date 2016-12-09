@@ -35,7 +35,7 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLFieldSetElement* create(Document&, HTMLFormElement*);
+  static HTMLFieldSetElement* create(Document&);
   HTMLLegendElement* legend() const;
   HTMLCollection* elements();
 
@@ -43,7 +43,7 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
   void disabledAttributeChanged() override;
 
  private:
-  HTMLFieldSetElement(Document&, HTMLFormElement*);
+  explicit HTMLFieldSetElement(Document&);
 
   bool isEnumeratable() const override { return true; }
   bool supportsFocus() const override;

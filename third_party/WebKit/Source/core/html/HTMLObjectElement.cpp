@@ -50,7 +50,6 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLObjectElement::HTMLObjectElement(Document& document,
-                                            HTMLFormElement* form,
                                             bool createdByParser)
     : HTMLPlugInElement(objectTag,
                         document,
@@ -62,10 +61,8 @@ inline HTMLObjectElement::HTMLObjectElement(Document& document,
 inline HTMLObjectElement::~HTMLObjectElement() {}
 
 HTMLObjectElement* HTMLObjectElement::create(Document& document,
-                                             HTMLFormElement* form,
                                              bool createdByParser) {
-  HTMLObjectElement* element =
-      new HTMLObjectElement(document, form, createdByParser);
+  HTMLObjectElement* element = new HTMLObjectElement(document, createdByParser);
   element->ensureUserAgentShadowRoot();
   return element;
 }

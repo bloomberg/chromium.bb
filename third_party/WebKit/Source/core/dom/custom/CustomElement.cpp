@@ -169,7 +169,7 @@ HTMLElement* CustomElement::createUndefinedElement(
     element = toHTMLElement(v0element);
   } else if (shouldCreateBuiltin) {
     element = HTMLElementFactory::createHTMLElement(
-        tagName.localName(), document, nullptr, CreatedByCreateElement);
+        tagName.localName(), document, CreatedByCreateElement);
   } else {
     element = HTMLElement::create(tagName, document);
   }

@@ -96,10 +96,8 @@ class ListAttributeTargetObserver : public IdTargetObserver {
 
 const int defaultSize = 20;
 
-HTMLInputElement::HTMLInputElement(Document& document,
-                                   HTMLFormElement* form,
-                                   bool createdByParser)
-    : TextControlElement(inputTag, document, form),
+HTMLInputElement::HTMLInputElement(Document& document, bool createdByParser)
+    : TextControlElement(inputTag, document),
       m_size(defaultSize),
       m_hasDirtyValue(false),
       m_isChecked(false),
@@ -125,10 +123,9 @@ HTMLInputElement::HTMLInputElement(Document& document,
 }
 
 HTMLInputElement* HTMLInputElement::create(Document& document,
-                                           HTMLFormElement* form,
                                            bool createdByParser) {
   HTMLInputElement* inputElement =
-      new HTMLInputElement(document, form, createdByParser);
+      new HTMLInputElement(document, createdByParser);
   if (!createdByParser)
     inputElement->ensureUserAgentShadowRoot();
   return inputElement;

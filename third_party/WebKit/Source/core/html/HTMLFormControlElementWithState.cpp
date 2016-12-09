@@ -35,9 +35,8 @@ namespace blink {
 
 HTMLFormControlElementWithState::HTMLFormControlElementWithState(
     const QualifiedName& tagName,
-    Document& doc,
-    HTMLFormElement* f)
-    : HTMLFormControlElement(tagName, doc, f) {}
+    Document& doc)
+    : HTMLFormControlElement(tagName, doc) {}
 
 HTMLFormControlElementWithState::~HTMLFormControlElementWithState() {}
 

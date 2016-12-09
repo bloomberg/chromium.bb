@@ -55,7 +55,6 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement,
 
   static HTMLImageElement* create(Document&);
   static HTMLImageElement* create(Document&,
-                                  HTMLFormElement*,
                                   bool createdByParser);
   static HTMLImageElement* createForJSConstructor(Document&);
   static HTMLImageElement* createForJSConstructor(Document&, unsigned width);
@@ -162,7 +161,6 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement,
   };
 
   explicit HTMLImageElement(Document&,
-                            HTMLFormElement* = 0,
                             bool createdByParser = false);
 
   void didMoveToNewDocument(Document& oldDocument) override;

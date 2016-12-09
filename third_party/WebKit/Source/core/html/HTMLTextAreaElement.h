@@ -36,7 +36,7 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLTextAreaElement* create(Document&, HTMLFormElement*);
+  static HTMLTextAreaElement* create(Document&);
 
   unsigned cols() const { return m_cols; }
   unsigned rows() const { return m_rows; }
@@ -65,7 +65,7 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HTMLTextAreaElementTest, SanitizeUserInputValue);
-  HTMLTextAreaElement(Document&, HTMLFormElement*);
+  explicit HTMLTextAreaElement(Document&);
 
   enum WrapMethod { NoWrap, SoftWrap, HardWrap };
   enum SetValueCommonOption { NotSetSelection, SetSeletion };

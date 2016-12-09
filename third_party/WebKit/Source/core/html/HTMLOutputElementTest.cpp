@@ -14,8 +14,7 @@ namespace blink {
 TEST(HTMLLinkElementSizesAttributeTest,
      setHTMLForProperty_updatesForAttribute) {
   Document* document = Document::create();
-  HTMLOutputElement* element =
-      HTMLOutputElement::create(*document, /* form: */ nullptr);
+  HTMLOutputElement* element = HTMLOutputElement::create(*document);
   EXPECT_EQ(nullAtom, element->getAttribute(HTMLNames::forAttr));
   element->htmlFor()->setValue("  strawberry ");
   EXPECT_EQ("  strawberry ", element->getAttribute(HTMLNames::forAttr));
@@ -23,7 +22,7 @@ TEST(HTMLLinkElementSizesAttributeTest,
 
 TEST(HTMLOutputElementTest, setForAttribute_updatesHTMLForPropertyValue) {
   Document* document = Document::create();
-  HTMLOutputElement* element = HTMLOutputElement::create(*document, nullptr);
+  HTMLOutputElement* element = HTMLOutputElement::create(*document);
   DOMTokenList* forTokens = element->htmlFor();
   EXPECT_EQ(nullAtom, forTokens->value());
   element->setAttribute(HTMLNames::forAttr, "orange grape");

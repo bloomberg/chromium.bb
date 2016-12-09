@@ -32,7 +32,7 @@ class HTMLButtonElement final : public HTMLFormControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLButtonElement* create(Document&, HTMLFormElement*);
+  static HTMLButtonElement* create(Document&);
 
   void setType(const AtomicString&);
 
@@ -41,7 +41,7 @@ class HTMLButtonElement final : public HTMLFormControlElement {
   bool willRespondToMouseClickEvents() override;
 
  private:
-  HTMLButtonElement(Document&, HTMLFormElement*);
+  explicit HTMLButtonElement(Document&);
 
   enum Type { SUBMIT, RESET, BUTTON };
 

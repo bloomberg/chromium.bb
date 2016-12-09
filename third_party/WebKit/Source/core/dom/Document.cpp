@@ -666,7 +666,7 @@ Element* Document::createElement(const AtomicString& name,
           *this,
           QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI));
     }
-    return HTMLElementFactory::createHTMLElement(localName, *this, 0,
+    return HTMLElementFactory::createHTMLElement(localName, *this,
                                                  CreatedByCreateElement);
   }
   return Element::create(QualifiedName(nullAtom, name, nullAtom), this);
@@ -1174,8 +1174,7 @@ Element* Document::createElement(const QualifiedName& qName,
   // FIXME: Use registered namespaces and look up in a hash to find the right
   // factory.
   if (qName.namespaceURI() == xhtmlNamespaceURI)
-    e = HTMLElementFactory::createHTMLElement(qName.localName(), *this, 0,
-                                              flags);
+    e = HTMLElementFactory::createHTMLElement(qName.localName(), *this, flags);
   else if (qName.namespaceURI() == SVGNames::svgNamespaceURI)
     e = SVGElementFactory::createSVGElement(qName.localName(), *this, flags);
 

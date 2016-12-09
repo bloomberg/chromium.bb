@@ -39,7 +39,6 @@ class ElementLookupTrieWriter(in_generator.Writer):
     defaults = {
         'JSInterfaceName': None,
         'constructorNeedsCreatedByParser': None,
-        'constructorNeedsFormElement': None,
         'interfaceName': None,
         'noConstructor': None,
         'runtimeEnabled': None,

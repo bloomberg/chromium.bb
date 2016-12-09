@@ -147,7 +147,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   static Position endOfSentence(const Position&);
 
  protected:
-  TextControlElement(const QualifiedName&, Document&, HTMLFormElement*);
+  TextControlElement(const QualifiedName&, Document&);
   bool isPlaceholderEmpty() const;
   virtual void updatePlaceholderText() = 0;
 

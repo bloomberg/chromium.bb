@@ -35,18 +35,16 @@
 
 namespace blink {
 
-inline HTMLOutputElement::HTMLOutputElement(Document& document,
-                                            HTMLFormElement* form)
-    : HTMLFormControlElement(HTMLNames::outputTag, document, form),
+inline HTMLOutputElement::HTMLOutputElement(Document& document)
+    : HTMLFormControlElement(HTMLNames::outputTag, document),
       m_isDefaultValueMode(true),
       m_defaultValue(""),
       m_tokens(DOMTokenList::create(this)) {}
 
 HTMLOutputElement::~HTMLOutputElement() {}
 
-HTMLOutputElement* HTMLOutputElement::create(Document& document,
-                                             HTMLFormElement* form) {
-  return new HTMLOutputElement(document, form);
+HTMLOutputElement* HTMLOutputElement::create(Document& document) {
+  return new HTMLOutputElement(document);
 }
 
 const AtomicString& HTMLOutputElement::formControlType() const {

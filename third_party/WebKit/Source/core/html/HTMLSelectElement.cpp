@@ -85,8 +85,8 @@ using namespace HTMLNames;
 // signed.
 static const unsigned maxListItems = INT_MAX;
 
-HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
-    : HTMLFormControlElementWithState(selectTag, document, form),
+HTMLSelectElement::HTMLSelectElement(Document& document)
+    : HTMLFormControlElementWithState(selectTag, document),
       m_typeAhead(this),
       m_size(0),
       m_lastOnChangeOption(nullptr),
@@ -100,14 +100,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
 }
 
 HTMLSelectElement* HTMLSelectElement::create(Document& document) {
-  HTMLSelectElement* select = new HTMLSelectElement(document, 0);
-  select->ensureUserAgentShadowRoot();
-  return select;
-}
-
-HTMLSelectElement* HTMLSelectElement::create(Document& document,
-                                             HTMLFormElement* form) {
-  HTMLSelectElement* select = new HTMLSelectElement(document, form);
+  HTMLSelectElement* select = new HTMLSelectElement(document);
   select->ensureUserAgentShadowRoot();
   return select;
 }

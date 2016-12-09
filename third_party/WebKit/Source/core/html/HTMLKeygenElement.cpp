@@ -46,16 +46,15 @@ namespace blink {
 
 using namespace HTMLNames;
 
-HTMLKeygenElement::HTMLKeygenElement(Document& document, HTMLFormElement* form)
-    : HTMLFormControlElementWithState(keygenTag, document, form) {
+HTMLKeygenElement::HTMLKeygenElement(Document& document)
+    : HTMLFormControlElementWithState(keygenTag, document) {
   Deprecation::countDeprecation(document, UseCounter::HTMLKeygenElement);
   if (document.frame())
     document.frame()->loader().client()->didUseKeygen();
 }
 
-HTMLKeygenElement* HTMLKeygenElement::create(Document& document,
-                                             HTMLFormElement* form) {
-  HTMLKeygenElement* keygen = new HTMLKeygenElement(document, form);
+HTMLKeygenElement* HTMLKeygenElement::create(Document& document) {
+  HTMLKeygenElement* keygen = new HTMLKeygenElement(document);
   keygen->ensureUserAgentShadowRoot();
   return keygen;
 }

@@ -47,9 +47,7 @@ class CORE_EXPORT HTMLFormControlElementWithState
   void notifyFormStateChanged();
 
  protected:
-  HTMLFormControlElementWithState(const QualifiedName& tagName,
-                                  Document&,
-                                  HTMLFormElement*);
+  HTMLFormControlElementWithState(const QualifiedName& tagName, Document&);
 
   void finishParsingChildren() override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
