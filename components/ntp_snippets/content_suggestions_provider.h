@@ -82,7 +82,7 @@ class ContentSuggestionsProvider {
 
   // Dismisses the suggestion with the given ID. A provider needs to ensure that
   // a once-dismissed suggestion is never delivered again (through the
-  // Observer). The provider must not call Observer::OnSuggestionsChanged if the
+  // Observer). The provider must not call Observer::OnNewSuggestions if the
   // removal of the dismissed suggestion is the only change.
   virtual void DismissSuggestion(
       const ContentSuggestion::ID& suggestion_id) = 0;

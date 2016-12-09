@@ -122,7 +122,8 @@ class ContentSuggestionsService : public KeyedService,
                             const ImageFetchedCallback& callback);
 
   // Dismisses the suggestion with the given |suggestion_id|, if it exists.
-  // This will not trigger an update through the observers.
+  // This will not trigger an update through the observers (i.e. providers must
+  // not call |Observer::OnNewSuggestions|).
   void DismissSuggestion(const ContentSuggestion::ID& suggestion_id);
 
   // Dismisses the given |category|, if it exists.

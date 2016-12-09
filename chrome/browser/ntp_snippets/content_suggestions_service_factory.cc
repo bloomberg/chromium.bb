@@ -134,9 +134,10 @@ void RegisterBookmarkProvider(BookmarkModel* bookmark_model,
 void RegisterPhysicalWebPageProvider(
     ContentSuggestionsService* service,
     CategoryFactory* category_factory,
-    PhysicalWebDataSource* physical_web_data_source) {
+    PhysicalWebDataSource* physical_web_data_source,
+    PrefService* pref_service) {
   auto provider = base::MakeUnique<PhysicalWebPageSuggestionsProvider>(
-      service, category_factory, physical_web_data_source);
+      service, category_factory, physical_web_data_source, pref_service);
   service->RegisterProvider(std::move(provider));
 }
 #endif  // OS_ANDROID
@@ -307,7 +308,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   if (base::FeatureList::IsEnabled(
           ntp_snippets::kPhysicalWebPageSuggestionsFeature)) {
     RegisterPhysicalWebPageProvider(service, category_factory,
-                                    physical_web_data_source);
+                                    physical_web_data_source, pref_service);
   }
 #endif  // OS_ANDROID
 

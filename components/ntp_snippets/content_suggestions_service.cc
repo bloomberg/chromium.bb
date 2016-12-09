@@ -167,11 +167,10 @@ void ContentSuggestionsService::DismissSuggestion(
   providers_by_category_[suggestion_id.category()]->DismissSuggestion(
       suggestion_id);
 
-  // Remove the suggestion locally.
-  bool removed = RemoveSuggestionByID(suggestion_id);
-  DCHECK(removed) << "The dismissed suggestion " << suggestion_id
-                  << " has already been removed. Providers must not call"
-                  << " OnNewSuggestions in response to DismissSuggestion.";
+  // Remove the suggestion locally if it is present. A suggestion may be missing
+  // localy e.g. if it was sent to UI through |Fetch| or it has been dismissed
+  // from a different NTP.
+  RemoveSuggestionByID(suggestion_id);
 }
 
 void ContentSuggestionsService::DismissCategory(Category category) {

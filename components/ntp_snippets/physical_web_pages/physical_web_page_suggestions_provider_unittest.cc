@@ -17,6 +17,7 @@
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
+#include "components/ntp_snippets/offline_pages/offline_pages_test_utils.h"
 #include "components/ntp_snippets/status.h"
 #include "components/physical_web/data_source/fake_physical_web_data_source.h"
 #include "components/prefs/testing_pref_service.h"
@@ -25,12 +26,15 @@
 
 using base::DictionaryValue;
 using base::ListValue;
+using ntp_snippets::test::CaptureDismissedSuggestions;
 using physical_web::CreateDummyPhysicalWebPages;
 using physical_web::FakePhysicalWebDataSource;
 using testing::_;
 using testing::AnyNumber;
+using testing::AtMost;
 using testing::ElementsAre;
 using testing::ElementsAreArray;
+using testing::Mock;
 using testing::StrictMock;
 using testing::UnorderedElementsAre;
 
@@ -65,7 +69,10 @@ void CompareFetchMoreResult(
 class PhysicalWebPageSuggestionsProviderTest : public testing::Test {
  public:
   PhysicalWebPageSuggestionsProviderTest()
-      : pref_service_(base::MakeUnique<TestingPrefServiceSimple>()) {}
+      : pref_service_(base::MakeUnique<TestingPrefServiceSimple>()) {
+    PhysicalWebPageSuggestionsProvider::RegisterProfilePrefs(
+        pref_service_->registry());
+  }
 
   void IgnoreOnCategoryStatusChangedToAvailable() {
     EXPECT_CALL(observer_, OnCategoryStatusChanged(_, provided_category(),
@@ -81,10 +88,16 @@ class PhysicalWebPageSuggestionsProviderTest : public testing::Test {
     EXPECT_CALL(observer_, OnSuggestionInvalidated(_, _)).Times(AnyNumber());
   }
 
+  void IgnoreOnNewSuggestions() {
+    EXPECT_CALL(observer_, OnNewSuggestions(_, provided_category(), _))
+        .Times(AnyNumber());
+  }
+
   PhysicalWebPageSuggestionsProvider* CreateProvider() {
     DCHECK(!provider_);
     provider_ = base::MakeUnique<PhysicalWebPageSuggestionsProvider>(
-        &observer_, &category_factory_, &physical_web_data_source_);
+        &observer_, &category_factory_, &physical_web_data_source_,
+        pref_service_.get());
     return provider_.get();
   }
 
@@ -93,6 +106,12 @@ class PhysicalWebPageSuggestionsProviderTest : public testing::Test {
   Category provided_category() {
     return category_factory_.FromKnownCategory(
         KnownCategories::PHYSICAL_WEB_PAGES);
+  }
+
+  ContentSuggestion::ID GetDummySuggestionId(int id) {
+    return ContentSuggestion::ID(
+        provided_category(),
+        "https://resolved_url.com/" + base::IntToString(id));
   }
 
   void FireUrlFound(const std::string& url) {
@@ -204,6 +223,125 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
                  Status(StatusCode::SUCCESS), expected_suggestion_urls));
   // Wait for the callback to be called.
   run_loop.Run();
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest, ShouldDismiss) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1}));
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, provided_category(), _))
+      .Times(AtMost(1));
+  CreateProvider();
+
+  provider()->DismissSuggestion(GetDummySuggestionId(1));
+
+  std::vector<ContentSuggestion> dismissed_suggestions;
+  provider()->GetDismissedSuggestionsForDebugging(
+      provided_category(),
+      base::Bind(&CaptureDismissedSuggestions, &dismissed_suggestions));
+  EXPECT_THAT(dismissed_suggestions,
+              ElementsAre(HasUrl("https://resolved_url.com/1")));
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldInvalidateSuggestionOnUrlLost) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnNewSuggestions();
+  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1}));
+  CreateProvider();
+
+  EXPECT_CALL(*observer(), OnSuggestionInvalidated(_, GetDummySuggestionId(1)));
+  FireUrlLost("https://resolved_url.com/1");
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldNotShowDismissedSuggestions) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1}));
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, provided_category(), _))
+      .Times(AtMost(1));
+  CreateProvider();
+  Mock::VerifyAndClearExpectations(observer());
+
+  provider()->DismissSuggestion(GetDummySuggestionId(1));
+
+  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1, 2}));
+  EXPECT_CALL(
+      *observer(),
+      OnNewSuggestions(_, provided_category(),
+                       ElementsAre(HasUrl("https://resolved_url.com/2"))));
+  FireUrlFound("https://resolved_url.com/2");
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldPruneDismissedSuggestionsWhenFetching) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+  IgnoreOnNewSuggestions();
+  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1, 2}));
+  CreateProvider();
+
+  provider()->DismissSuggestion(GetDummySuggestionId(1));
+  provider()->DismissSuggestion(GetDummySuggestionId(2));
+
+  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({2, 3}));
+  FireUrlFound("https://resolved_url.com/3");
+
+  // The first page needs to be silently added back to the source, because
+  // |GetDismissedSuggestionsForDebugging| uses the data source to return
+  // suggestions and dismissed suggestions, which are not present there, cannot
+  // be returned.
+  physical_web_data_source()->SetMetadata(
+      CreateDummyPhysicalWebPages({1, 2, 3}));
+  std::vector<ContentSuggestion> dismissed_suggestions;
+  provider()->GetDismissedSuggestionsForDebugging(
+      provided_category(),
+      base::Bind(&CaptureDismissedSuggestions, &dismissed_suggestions));
+  EXPECT_THAT(dismissed_suggestions,
+              ElementsAre(HasUrl("https://resolved_url.com/2")));
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldPruneDismissedSuggestionsWhenUrlLost) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+  IgnoreOnNewSuggestions();
+  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1, 2}));
+  CreateProvider();
+
+  provider()->DismissSuggestion(GetDummySuggestionId(1));
+  provider()->DismissSuggestion(GetDummySuggestionId(2));
+
+  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({2}));
+  FireUrlLost("https://resolved_url.com/1");
+
+  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1, 2}));
+  std::vector<ContentSuggestion> dismissed_suggestions;
+  provider()->GetDismissedSuggestionsForDebugging(
+      provided_category(),
+      base::Bind(&CaptureDismissedSuggestions, &dismissed_suggestions));
+  EXPECT_THAT(dismissed_suggestions,
+              ElementsAre(HasUrl("https://resolved_url.com/2")));
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldStoreDismissedSuggestions) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+  IgnoreOnNewSuggestions();
+  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1, 2}));
+  CreateProvider();
+  provider()->DismissSuggestion(GetDummySuggestionId(1));
+  DestroyProvider();
+
+  CreateProvider();
+  std::vector<ContentSuggestion> dismissed_suggestions;
+  provider()->GetDismissedSuggestionsForDebugging(
+      provided_category(),
+      base::Bind(&CaptureDismissedSuggestions, &dismissed_suggestions));
+  EXPECT_THAT(dismissed_suggestions,
+              ElementsAre(HasUrl("https://resolved_url.com/1")));
 }
 
 }  // namespace ntp_snippets

@@ -164,6 +164,9 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/preferences/browser_prefs_android.h"
+#include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
+#include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
+#include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
 #else
 #include "chrome/browser/services/gcm/gcm_product_util.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -581,6 +584,13 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   PinnedTabCodec::RegisterProfilePrefs(registry);
   signin::RegisterProfilePrefs(registry);
 #endif
+
+#if defined(OS_ANDROID)
+  DownloadSuggestionsProvider::RegisterProfilePrefs(registry);
+  ntp_snippets::PhysicalWebPageSuggestionsProvider::RegisterProfilePrefs(
+      registry);
+  ntp_snippets::RecentTabSuggestionsProvider::RegisterProfilePrefs(registry);
+#endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -14,6 +15,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/ntp_snippets/pref_names.h"
+#include "components/ntp_snippets/pref_util.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
@@ -43,12 +48,14 @@ std::string GetPageId(const DictionaryValue& page_dictionary) {
 PhysicalWebPageSuggestionsProvider::PhysicalWebPageSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
     CategoryFactory* category_factory,
-    physical_web::PhysicalWebDataSource* physical_web_data_source)
+    physical_web::PhysicalWebDataSource* physical_web_data_source,
+    PrefService* pref_service)
     : ContentSuggestionsProvider(observer, category_factory),
       category_status_(CategoryStatus::AVAILABLE),
       provided_category_(category_factory->FromKnownCategory(
           KnownCategories::PHYSICAL_WEB_PAGES)),
-      physical_web_data_source_(physical_web_data_source) {
+      physical_web_data_source_(physical_web_data_source),
+      pref_service_(pref_service) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
   physical_web_data_source_->RegisterListener(this);
   // TODO(vitaliii): Rewrite initial fetch once crbug.com/667754 is resolved.
@@ -80,8 +87,10 @@ CategoryInfo PhysicalWebPageSuggestionsProvider::GetCategoryInfo(
 
 void PhysicalWebPageSuggestionsProvider::DismissSuggestion(
     const ContentSuggestion::ID& suggestion_id) {
-  // TODO(vitaliii): Implement this and then
-  // ClearDismissedSuggestionsForDebugging. (crbug.com/667766)
+  DCHECK_EQ(provided_category_, suggestion_id.category());
+  std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs();
+  dismissed_ids.insert(suggestion_id.id_within_category());
+  StoreDismissedIDsToPrefs(dismissed_ids);
 }
 
 void PhysicalWebPageSuggestionsProvider::FetchSuggestionImage(
@@ -119,13 +128,37 @@ void PhysicalWebPageSuggestionsProvider::ClearCachedSuggestions(
 void PhysicalWebPageSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category,
     const DismissedSuggestionsCallback& callback) {
-  // Not implemented.
-  callback.Run(std::vector<ContentSuggestion>());
+  DCHECK_EQ(provided_category_, category);
+  std::unique_ptr<ListValue> page_values =
+      physical_web_data_source_->GetMetadata();
+  const std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs();
+  std::vector<ContentSuggestion> suggestions;
+  for (const std::unique_ptr<Value>& page_value : *page_values) {
+    const DictionaryValue* page_dictionary;
+    if (!page_value->GetAsDictionary(&page_dictionary)) {
+      LOG(DFATAL) << "Physical Web page is not a dictionary.";
+      continue;
+    }
+
+    if (dismissed_ids.count(GetPageId(*page_dictionary))) {
+      suggestions.push_back(ConvertPhysicalWebPage(*page_dictionary));
+    }
+  }
+
+  callback.Run(std::move(suggestions));
 }
 
 void PhysicalWebPageSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
     Category category) {
-  // TODO(vitaliii): Implement when dismissed suggestions are supported.
+  DCHECK_EQ(provided_category_, category);
+  StoreDismissedIDsToPrefs(std::set<std::string>());
+  FetchPhysicalWebPages();
+}
+
+// static
+void PhysicalWebPageSuggestionsProvider::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kDismissedPhysicalWebPageSuggestions);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,6 +188,11 @@ PhysicalWebPageSuggestionsProvider::GetMostRecentPhysicalWebPagesWithFilter(
   std::unique_ptr<ListValue> page_values =
       physical_web_data_source_->GetMetadata();
 
+  // These is to filter out dismissed suggestions and at the same time prune the
+  // dismissed IDs list removing nonavailable pages (this is need since some
+  // OnLost() calls may have been missed).
+  const std::set<std::string> old_dismissed_ids = ReadDismissedIDsFromPrefs();
+  std::set<std::string> new_dismissed_ids;
   std::vector<const DictionaryValue*> page_dictionaries;
   for (const std::unique_ptr<Value>& page_value : *page_values) {
     const DictionaryValue* page_dictionary;
@@ -162,9 +200,19 @@ PhysicalWebPageSuggestionsProvider::GetMostRecentPhysicalWebPagesWithFilter(
       LOG(DFATAL) << "Physical Web page is not a dictionary.";
       continue;
     }
-    if (!excluded_ids.count(GetPageId(*page_dictionary))) {
+
+    const std::string page_id = GetPageId(*page_dictionary);
+    if (!excluded_ids.count(page_id) && !old_dismissed_ids.count(page_id)) {
       page_dictionaries.push_back(page_dictionary);
     }
+
+    if (old_dismissed_ids.count(page_id)) {
+      new_dismissed_ids.insert(page_id);
+    }
+  }
+
+  if (old_dismissed_ids.size() != new_dismissed_ids.size()) {
+    StoreDismissedIDsToPrefs(new_dismissed_ids);
   }
 
   std::sort(page_dictionaries.begin(), page_dictionaries.end(),
@@ -229,14 +277,40 @@ void PhysicalWebPageSuggestionsProvider::OnFound(const std::string& url) {
 }
 
 void PhysicalWebPageSuggestionsProvider::OnLost(const std::string& url) {
-  // TODO(vitaliii): Do not refetch, but just update the current state.
-  FetchPhysicalWebPages();
+  InvalidateSuggestion(url);
 }
 
 void PhysicalWebPageSuggestionsProvider::OnDistanceChanged(
     const std::string& url,
     double distance_estimate) {
   FetchPhysicalWebPages();
+}
+
+void PhysicalWebPageSuggestionsProvider::InvalidateSuggestion(
+    const std::string& page_id) {
+  observer()->OnSuggestionInvalidated(
+      this, ContentSuggestion::ID(provided_category_, page_id));
+
+  // Remove |page_id| from dismissed suggestions, if present.
+  std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs();
+  auto it = dismissed_ids.find(page_id);
+  if (it != dismissed_ids.end()) {
+    dismissed_ids.erase(it);
+    StoreDismissedIDsToPrefs(dismissed_ids);
+  }
+}
+
+std::set<std::string>
+PhysicalWebPageSuggestionsProvider::ReadDismissedIDsFromPrefs() const {
+  return prefs::ReadDismissedIDsFromPrefs(
+      *pref_service_, prefs::kDismissedPhysicalWebPageSuggestions);
+}
+
+void PhysicalWebPageSuggestionsProvider::StoreDismissedIDsToPrefs(
+    const std::set<std::string>& dismissed_ids) {
+  prefs::StoreDismissedIDsToPrefs(pref_service_,
+                                  prefs::kDismissedPhysicalWebPageSuggestions,
+                                  dismissed_ids);
 }
 
 }  // namespace ntp_snippets

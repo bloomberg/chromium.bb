@@ -98,7 +98,7 @@ class RecentTabSuggestionsProvider
       const;
 
   // Fires the |OnSuggestionInvalidated| event for the suggestion corresponding
-  // to the given |offline_id| and clears it from the dismissed IDs list, if
+  // to the given |offline_id| and deletes it from the dismissed IDs list, if
   // necessary.
   void InvalidateSuggestion(int64_t offline_id);
 

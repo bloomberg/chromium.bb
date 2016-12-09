@@ -33,12 +33,15 @@ const char kSnippetThumbnailsRequestsDay[] =
 
 const char kDismissedAssetDownloadSuggestions[] =
     "ntp_suggestions.downloads.assets.dismissed_ids";
-const char kDismissedRecentOfflineTabSuggestions[] =
-    "ntp_suggestions.offline_pages.recent_tabs.dismissed_ids";
-const char kDismissedOfflinePageDownloadSuggestions[] =
-    "ntp_suggestions.downloads.offline_pages.dismissed_ids";
 const char kDismissedForeignSessionsSuggestions[] =
     "ntp_suggestions.foreign_sessions.dismissed_ids";
+const char kDismissedOfflinePageDownloadSuggestions[] =
+    "ntp_suggestions.downloads.offline_pages.dismissed_ids";
+const char kDismissedPhysicalWebPageSuggestions[] =
+    "ntp_suggestions.physical_web.dismissed_ids";
+const char kDismissedRecentOfflineTabSuggestions[] =
+    "ntp_suggestions.offline_pages.recent_tabs.dismissed_ids";
+
 const char kDismissedCategories[] = "ntp_suggestions.dismissed_categories";
 
 const char kLastSuccessfulBackgroundFetchTime[] =

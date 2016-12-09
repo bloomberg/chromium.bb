@@ -19,6 +19,9 @@
 #include "components/physical_web/data_source/physical_web_data_source.h"
 #include "components/physical_web/data_source/physical_web_listener.h"
 
+class PrefRegistrySimple;
+class PrefService;
+
 namespace ntp_snippets {
 
 // Provides content suggestions from the Physical Web Service.
@@ -29,7 +32,8 @@ class PhysicalWebPageSuggestionsProvider
   PhysicalWebPageSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
       CategoryFactory* category_factory,
-      physical_web::PhysicalWebDataSource* physical_web_data_source);
+      physical_web::PhysicalWebDataSource* physical_web_data_source,
+      PrefService* pref_service);
   ~PhysicalWebPageSuggestionsProvider() override;
 
   // ContentSuggestionsProvider implementation.
@@ -51,6 +55,8 @@ class PhysicalWebPageSuggestionsProvider
       const DismissedSuggestionsCallback& callback) override;
   void ClearDismissedSuggestionsForDebugging(Category category) override;
 
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
  private:
   friend class PhysicalWebPageSuggestionsProviderTest;
 
@@ -61,8 +67,10 @@ class PhysicalWebPageSuggestionsProvider
   void FetchPhysicalWebPages();
 
   // Returns at most |max_count| ContentSuggestions with IDs not in
-  // |excluded_ids| and sorted by distance (the closest first). The raw pages
-  // are obtained from Physical Web data source.
+  // |excluded_ids| and sorted by distance (the closest first). Dismissed
+  // suggestions are excluded automatically (no need to add them to
+  // |excluded_ids|) and pruned. The raw pages are obtained from Physical Web
+  // data source.
   std::vector<ContentSuggestion> GetMostRecentPhysicalWebPagesWithFilter(
       int max_count,
       const std::set<std::string>& excluded_ids);
@@ -77,9 +85,21 @@ class PhysicalWebPageSuggestionsProvider
   void OnDistanceChanged(const std::string& url,
                          double distance_estimate) override;
 
+  // Fires the |OnSuggestionInvalidated| event for the suggestion corresponding
+  // to the given |page_id| and deletes it from the dismissed IDs list, if
+  // necessary.
+  void InvalidateSuggestion(const std::string& page_id);
+
+  // Reads dismissed IDs from Prefs.
+  std::set<std::string> ReadDismissedIDsFromPrefs() const;
+
+  // Writes |dismissed_ids| into Prefs.
+  void StoreDismissedIDsToPrefs(const std::set<std::string>& dismissed_ids);
+
   CategoryStatus category_status_;
   const Category provided_category_;
   physical_web::PhysicalWebDataSource* physical_web_data_source_;
+  PrefService* pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PhysicalWebPageSuggestionsProvider);
 };
