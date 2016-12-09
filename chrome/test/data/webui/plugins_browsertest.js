@@ -16,6 +16,7 @@ var ROOT_PATH = '../../../../';
  */
 function PluginsTest() {
   this.browserProxy = null;
+  this.setupFnResolver = new PromiseResolver();
 }
 
 PluginsTest.prototype = {
@@ -87,6 +88,8 @@ PluginsTest.prototype = {
       },
     };
 
+    this.browserProxy = new TestBrowserProxy();
+
     // A function that is called from chrome://plugins to allow this test to
     // replace the real Mojo browser proxy with a fake one, before any other
     // code runs.
@@ -106,16 +109,17 @@ PluginsTest.prototype = {
             pluginsMojom.PluginsPageHandler.name, function(handle) {
               var stub = connection.bindHandleToStub(
                   handle, pluginsMojom.PluginsPageHandler);
-              this.browserProxy = new TestBrowserProxy();
               bindings.StubBindings(stub).delegate = this.browserProxy;
             }.bind(this));
+        return this.setupFnResolver.promise;
       }.bind(this));
     }.bind(this);
   },
 };
 
-TEST_F('PluginsTest', 'DISABLED_Plugins', function() {
+TEST_F('PluginsTest', 'Plugins', function() {
   var browserProxy = this.browserProxy;
+  var setupFnResolver = this.setupFnResolver;
 
   var fakePluginData = {
     name: 'Group Name',
@@ -154,6 +158,9 @@ TEST_F('PluginsTest', 'DISABLED_Plugins', function() {
     var EXPECTED_PLUGINS = 2;
     suiteSetup(function() {
       browserProxy.setPluginsData([fakePluginData, fakePluginData]);
+      // Allow code being tested to proceed, now that fake data has been set up.
+      setupFnResolver.resolve();
+
       return Promise.all([
         browserProxy.whenCalled('getPluginsData'),
         browserProxy.whenCalled('getShowDetails'),
