@@ -11,11 +11,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "content/browser/gamepad/gamepad_shared_buffer_impl.h"
+#include "content/common/gamepad_hardware_buffer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_provider.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace content {
 
@@ -151,6 +153,16 @@ base::SharedMemoryHandle GamepadService::GetSharedMemoryHandleForProcess(
     base::ProcessHandle handle) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return provider_->GetSharedMemoryHandleForProcess(handle);
+}
+
+mojo::ScopedSharedBufferHandle GamepadService::GetSharedBufferHandle() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(heke): Use mojo::SharedBuffer rather than base::SharedMemory in
+  // GamepadSharedBuffer. See crbug.com/670655 for details.
+  return mojo::WrapSharedMemoryHandle(provider_->GetSharedMemoryHandle(),
+                                      sizeof(GamepadHardwareBuffer),
+                                      true /* read_only */);
 }
 
 void GamepadService::OnUserGesture() {

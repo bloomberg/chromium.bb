@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebGamepadListener.h"
 #include "third_party/WebKit/public/platform/WebPlatformEventListener.h"
 
@@ -18,16 +19,32 @@ namespace content {
 GamepadSharedMemoryReader::GamepadSharedMemoryReader(RenderThread* thread)
     : RendererGamepadProvider(thread),
       gamepad_hardware_buffer_(NULL),
-      ever_interacted_with_(false) {
+      ever_interacted_with_(false),
+      binding_(this) {
+  if (thread) {
+    thread->GetRemoteInterfaces()->GetInterface(
+        mojo::GetProxy(&gamepad_monitor_));
+    gamepad_monitor_->SetObserver(binding_.CreateInterfacePtrAndBind());
+  }
 }
 
 void GamepadSharedMemoryReader::SendStartMessage() {
-  CHECK(RenderThread::Get()->Send(new GamepadHostMsg_StartPolling(
-      &renderer_shared_memory_handle_)));
+  if (gamepad_monitor_) {
+    mojo::ScopedSharedBufferHandle buffer_handle;
+    gamepad_monitor_->GamepadStartPolling(&buffer_handle);
+    // TODO(heke): Use mojo::SharedBuffer rather than base::SharedMemory. See
+    // crbug.com/670655.
+    MojoResult result = mojo::UnwrapSharedMemoryHandle(
+        std::move(buffer_handle), &renderer_shared_memory_handle_, nullptr,
+        nullptr);
+    CHECK_EQ(MOJO_RESULT_OK, result);
+  }
 }
 
 void GamepadSharedMemoryReader::SendStopMessage() {
-    RenderThread::Get()->Send(new GamepadHostMsg_StopPolling());
+  if (gamepad_monitor_) {
+    gamepad_monitor_->GamepadStopPolling();
+  }
 }
 
 void GamepadSharedMemoryReader::Start(
@@ -107,18 +124,7 @@ GamepadSharedMemoryReader::~GamepadSharedMemoryReader() {
   StopIfObserving();
 }
 
-bool GamepadSharedMemoryReader::OnControlMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(GamepadSharedMemoryReader, message)
-    IPC_MESSAGE_HANDLER(GamepadMsg_GamepadConnected, OnGamepadConnected)
-    IPC_MESSAGE_HANDLER(GamepadMsg_GamepadDisconnected, OnGamepadDisconnected)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void GamepadSharedMemoryReader::OnGamepadConnected(
+void GamepadSharedMemoryReader::GamepadConnected(
     int index,
     const blink::WebGamepad& gamepad) {
   // The browser already checks if the user actually interacted with a device.
@@ -128,7 +134,7 @@ void GamepadSharedMemoryReader::OnGamepadConnected(
     listener()->didConnectGamepad(index, gamepad);
 }
 
-void GamepadSharedMemoryReader::OnGamepadDisconnected(
+void GamepadSharedMemoryReader::GamepadDisconnected(
     int index,
     const blink::WebGamepad& gamepad) {
   if (listener())

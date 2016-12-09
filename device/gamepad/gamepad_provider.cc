@@ -94,6 +94,11 @@ base::SharedMemoryHandle GamepadProvider::GetSharedMemoryHandleForProcess(
   return renderer_handle;
 }
 
+base::SharedMemoryHandle GamepadProvider::GetSharedMemoryHandle() {
+  return base::SharedMemory::DuplicateHandle(
+      gamepad_shared_buffer_->shared_memory()->handle());
+}
+
 void GamepadProvider::GetCurrentGamepadData(WebGamepads* data) {
   const WebGamepads* pads = gamepad_shared_buffer_->buffer();
   base::AutoLock lock(shared_memory_lock_);

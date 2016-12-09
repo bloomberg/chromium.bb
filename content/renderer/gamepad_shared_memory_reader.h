@@ -9,22 +9,24 @@
 
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
-#include "content/common/gamepad_messages.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
+#include "device/gamepad/public/interfaces/gamepad.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace content {
 
 struct GamepadHardwareBuffer;
 
-class GamepadSharedMemoryReader : public RendererGamepadProvider {
+class GamepadSharedMemoryReader : public RendererGamepadProvider,
+                                  public device::mojom::GamepadObserver {
  public:
   explicit GamepadSharedMemoryReader(RenderThread* thread);
   ~GamepadSharedMemoryReader() override;
 
   // RendererGamepadProvider implementation.
   void SampleGamepads(blink::WebGamepads& gamepads) override;
-  bool OnControlMessageReceived(const IPC::Message& message) override;
   void Start(blink::WebPlatformEventListener* listener) override;
 
  protected:
@@ -33,14 +35,19 @@ class GamepadSharedMemoryReader : public RendererGamepadProvider {
   void SendStopMessage() override;
 
  private:
-  void OnGamepadConnected(int index, const blink::WebGamepad& gamepad);
-  void OnGamepadDisconnected(int index, const blink::WebGamepad& gamepad);
+  // device::mojom::GamepadObserver methods.
+  void GamepadConnected(int index, const blink::WebGamepad& gamepad) override;
+  void GamepadDisconnected(int index,
+                           const blink::WebGamepad& gamepad) override;
 
   base::SharedMemoryHandle renderer_shared_memory_handle_;
   std::unique_ptr<base::SharedMemory> renderer_shared_memory_;
   GamepadHardwareBuffer* gamepad_hardware_buffer_;
 
   bool ever_interacted_with_;
+
+  mojo::Binding<device::mojom::GamepadObserver> binding_;
+  device::mojom::GamepadMonitorPtr gamepad_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadSharedMemoryReader);
 };

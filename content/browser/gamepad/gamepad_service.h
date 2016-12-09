@@ -15,6 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "device/gamepad/gamepad_provider.h"
+#include "mojo/public/cpp/system/buffer.h"
 
 namespace blink {
 class WebGamepad;
@@ -73,6 +74,9 @@ class CONTENT_EXPORT GamepadService
   // given process.
   base::SharedMemoryHandle GetSharedMemoryHandleForProcess(
       base::ProcessHandle handle);
+
+  // Returns a new mojo::ScopedSharedBuffer handle of the gamepad data.
+  mojo::ScopedSharedBufferHandle GetSharedBufferHandle();
 
   // Stop/join with the background thread in GamepadProvider |provider_|.
   void Terminate();
