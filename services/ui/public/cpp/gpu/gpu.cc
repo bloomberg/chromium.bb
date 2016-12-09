@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -11,12 +11,12 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/gpu_service.mojom.h"
+#include "services/ui/public/interfaces/gpu.mojom.h"
 
 namespace ui {
 
-GpuService::GpuService(service_manager::Connector* connector,
-                       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+Gpu::Gpu(service_manager::Connector* connector,
+         scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(std::move(task_runner)),
       connector_(connector),
@@ -24,7 +24,7 @@ GpuService::GpuService(service_manager::Connector* connector,
                       base::WaitableEvent::InitialState::NOT_SIGNALED) {
   DCHECK(main_task_runner_);
   DCHECK(connector_);
-  mojom::GpuServicePtr gpu_service_ptr;
+  mojom::GpuPtr gpu_service_ptr;
   connector_->ConnectToInterface(ui::mojom::kServiceName, &gpu_service_ptr);
   gpu_memory_buffer_manager_ = base::MakeUnique<ClientGpuMemoryBufferManager>(
       std::move(gpu_service_ptr));
@@ -37,7 +37,7 @@ GpuService::GpuService(service_manager::Connector* connector,
   }
 }
 
-GpuService::~GpuService() {
+Gpu::~Gpu() {
   DCHECK(IsMainThread());
   for (const auto& callback : establish_callbacks_)
     callback.Run(nullptr);
@@ -47,13 +47,13 @@ GpuService::~GpuService() {
 }
 
 // static
-std::unique_ptr<GpuService> GpuService::Create(
+std::unique_ptr<Gpu> Gpu::Create(
     service_manager::Connector* connector,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return base::WrapUnique(new GpuService(connector, std::move(task_runner)));
+  return base::WrapUnique(new Gpu(connector, std::move(task_runner)));
 }
 
-void GpuService::EstablishGpuChannel(
+void Gpu::EstablishGpuChannel(
     const gpu::GpuChannelEstablishedCallback& callback) {
   DCHECK(IsMainThread());
   scoped_refptr<gpu::GpuChannelHost> channel = GetGpuChannel();
@@ -68,10 +68,10 @@ void GpuService::EstablishGpuChannel(
 
   connector_->ConnectToInterface(ui::mojom::kServiceName, &gpu_service_);
   gpu_service_->EstablishGpuChannel(
-      base::Bind(&GpuService::OnEstablishedGpuChannel, base::Unretained(this)));
+      base::Bind(&Gpu::OnEstablishedGpuChannel, base::Unretained(this)));
 }
 
-scoped_refptr<gpu::GpuChannelHost> GpuService::EstablishGpuChannelSync() {
+scoped_refptr<gpu::GpuChannelHost> Gpu::EstablishGpuChannelSync() {
   DCHECK(IsMainThread());
   if (GetGpuChannel())
     return gpu_channel_;
@@ -92,11 +92,11 @@ scoped_refptr<gpu::GpuChannelHost> GpuService::EstablishGpuChannelSync() {
   return gpu_channel_;
 }
 
-gpu::GpuMemoryBufferManager* GpuService::GetGpuMemoryBufferManager() {
+gpu::GpuMemoryBufferManager* Gpu::GetGpuMemoryBufferManager() {
   return gpu_memory_buffer_manager_.get();
 }
 
-scoped_refptr<gpu::GpuChannelHost> GpuService::GetGpuChannel() {
+scoped_refptr<gpu::GpuChannelHost> Gpu::GetGpuChannel() {
   DCHECK(IsMainThread());
   if (gpu_channel_ && gpu_channel_->IsLost()) {
     gpu_channel_->DestroyChannel();
@@ -105,10 +105,9 @@ scoped_refptr<gpu::GpuChannelHost> GpuService::GetGpuChannel() {
   return gpu_channel_;
 }
 
-void GpuService::OnEstablishedGpuChannel(
-    int client_id,
-    mojo::ScopedMessagePipeHandle channel_handle,
-    const gpu::GPUInfo& gpu_info) {
+void Gpu::OnEstablishedGpuChannel(int client_id,
+                                  mojo::ScopedMessagePipeHandle channel_handle,
+                                  const gpu::GPUInfo& gpu_info) {
   DCHECK(IsMainThread());
   DCHECK(gpu_service_.get());
   DCHECK(!gpu_channel_);
@@ -125,17 +124,15 @@ void GpuService::OnEstablishedGpuChannel(
   establish_callbacks_.clear();
 }
 
-bool GpuService::IsMainThread() {
+bool Gpu::IsMainThread() {
   return main_task_runner_->BelongsToCurrentThread();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-GpuService::GetIOThreadTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner> Gpu::GetIOThreadTaskRunner() {
   return io_task_runner_;
 }
 
-std::unique_ptr<base::SharedMemory> GpuService::AllocateSharedMemory(
-    size_t size) {
+std::unique_ptr<base::SharedMemory> Gpu::AllocateSharedMemory(size_t size) {
   mojo::ScopedSharedBufferHandle handle =
       mojo::SharedBufferHandle::Create(size);
   if (!handle.is_valid())

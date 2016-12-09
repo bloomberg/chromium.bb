@@ -275,7 +275,7 @@
 
 #if defined(USE_AURA)
 #include "services/service_manager/runner/common/client_util.h"
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/views/mus/window_manager_connection.h"
 #endif
 
@@ -2721,7 +2721,7 @@ gpu::GpuChannelEstablishFactory*
 ChromeContentBrowserClient::GetGpuChannelEstablishFactory() {
 #if defined(USE_AURA)
   if (views::WindowManagerConnection::Exists())
-    return views::WindowManagerConnection::Get()->gpu_service();
+    return views::WindowManagerConnection::Get()->gpu();
 #endif
   return nullptr;
 }

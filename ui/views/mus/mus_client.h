@@ -35,7 +35,7 @@ class Identity;
 }
 
 namespace ui {
-class GpuService;
+class Gpu;
 }
 
 namespace wm {
@@ -138,7 +138,7 @@ class VIEWS_MUS_EXPORT MusClient
 
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
 
-  std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<ui::Gpu> gpu_;
 
   std::unique_ptr<PointerWatcherEventRouter2> pointer_watcher_event_router_;
 

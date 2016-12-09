@@ -14,7 +14,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/property_converter.h"
@@ -102,7 +102,7 @@ class SimpleWM : public service_manager::Service,
   aura::Window* root_ = nullptr;
   aura::WindowManagerClient* window_manager_client_ = nullptr;
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
-  std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<ui::Gpu> gpu_;
   std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
   std::map<aura::Window*, FrameView*> client_window_to_frame_view_;
 

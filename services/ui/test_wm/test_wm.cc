@@ -13,7 +13,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/property_converter.h"
@@ -46,7 +46,7 @@ class TestWM : public service_manager::Service,
     // WindowTreeClient destruction may callback to us.
     window_tree_client_.reset();
 
-    gpu_service_.reset();
+    gpu_.reset();
 
     display::Screen::SetScreenInstance(nullptr);
   }
@@ -59,9 +59,9 @@ class TestWM : public service_manager::Service,
     screen_ = base::MakeUnique<display::ScreenBase>();
     display::Screen::SetScreenInstance(screen_.get());
     aura_env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
-    gpu_service_ = ui::GpuService::Create(context()->connector(), nullptr);
+    gpu_ = ui::Gpu::Create(context()->connector(), nullptr);
     compositor_context_factory_ =
-        base::MakeUnique<aura::MusContextFactory>(gpu_service_.get());
+        base::MakeUnique<aura::MusContextFactory>(gpu_.get());
     aura_env_->set_context_factory(compositor_context_factory_.get());
     window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
         context()->connector(), this, this);
@@ -178,7 +178,7 @@ class TestWM : public service_manager::Service,
   aura::Window* root_ = nullptr;
   aura::WindowManagerClient* window_manager_client_ = nullptr;
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
-  std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<ui::Gpu> gpu_;
   std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
 
   bool started_ = false;

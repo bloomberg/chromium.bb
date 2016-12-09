@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
-#include "services/ui/public/interfaces/gpu_service.mojom.h"
+#include "services/ui/public/interfaces/gpu.mojom.h"
 
 namespace base {
 class WaitableEvent;
@@ -21,17 +21,13 @@ class WaitableEvent;
 
 namespace ui {
 
-namespace mojom {
-class GpuService;
-}
-
 class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
-  explicit ClientGpuMemoryBufferManager(mojom::GpuServicePtr gpu_service);
+  explicit ClientGpuMemoryBufferManager(mojom::GpuPtr gpu);
   ~ClientGpuMemoryBufferManager() override;
 
  private:
-  void InitThread(mojo::InterfacePtrInfo<mojom::GpuService> gpu_service_info);
+  void InitThread(mojom::GpuPtrInfo gpu_info);
   void TearDownThread();
   void AllocateGpuMemoryBufferOnThread(const gfx::Size& size,
                                        gfx::BufferFormat format,
@@ -56,7 +52,7 @@ class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   int counter_ = 0;
   // TODO(sad): Explore the option of doing this from an existing thread.
   base::Thread thread_;
-  mojom::GpuServicePtr gpu_service_;
+  mojom::GpuPtr gpu_;
   base::WeakPtr<ClientGpuMemoryBufferManager> weak_ptr_;
   base::WeakPtrFactory<ClientGpuMemoryBufferManager> weak_ptr_factory_;
 

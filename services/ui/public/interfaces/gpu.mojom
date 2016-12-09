@@ -9,7 +9,7 @@ import "gpu/ipc/common/sync_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
 
-interface GpuService {
+interface Gpu {
   // Tells the GPU service to create a new channel for communication with a
   // client. The GPU service responds with client ID, IPC handle and
   // GPUInfo.

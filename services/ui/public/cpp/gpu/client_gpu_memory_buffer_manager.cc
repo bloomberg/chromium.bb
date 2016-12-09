@@ -38,16 +38,15 @@ void NotifyDestructionOnCorrectThread(
 
 }  // namespace
 
-ClientGpuMemoryBufferManager::ClientGpuMemoryBufferManager(
-    mojom::GpuServicePtr gpu_service)
+ClientGpuMemoryBufferManager::ClientGpuMemoryBufferManager(mojom::GpuPtr gpu)
     : thread_("GpuMemoryThread"), weak_ptr_factory_(this) {
   CHECK(thread_.Start());
   // The thread is owned by this object. Which means the task will not run if
   // the object has been destroyed. So Unretained() is safe.
   thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ClientGpuMemoryBufferManager::InitThread,
-                            base::Unretained(this),
-                            base::Passed(gpu_service.PassInterface())));
+      FROM_HERE,
+      base::Bind(&ClientGpuMemoryBufferManager::InitThread,
+                 base::Unretained(this), base::Passed(gpu.PassInterface())));
 }
 
 ClientGpuMemoryBufferManager::~ClientGpuMemoryBufferManager() {
@@ -57,15 +56,14 @@ ClientGpuMemoryBufferManager::~ClientGpuMemoryBufferManager() {
   thread_.Stop();
 }
 
-void ClientGpuMemoryBufferManager::InitThread(
-    mojo::InterfacePtrInfo<mojom::GpuService> gpu_service_info) {
-  gpu_service_.Bind(std::move(gpu_service_info));
+void ClientGpuMemoryBufferManager::InitThread(mojom::GpuPtrInfo gpu_info) {
+  gpu_.Bind(std::move(gpu_info));
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
 
 void ClientGpuMemoryBufferManager::TearDownThread() {
   weak_ptr_factory_.InvalidateWeakPtrs();
-  gpu_service_.reset();
+  gpu_.reset();
 }
 
 void ClientGpuMemoryBufferManager::AllocateGpuMemoryBufferOnThread(
@@ -78,7 +76,7 @@ void ClientGpuMemoryBufferManager::AllocateGpuMemoryBufferOnThread(
   // |handle| and |wait| are both on the stack, and will be alive until |wait|
   // is signaled. So it is safe for OnGpuMemoryBufferAllocated() to operate on
   // these.
-  gpu_service_->CreateGpuMemoryBuffer(
+  gpu_->CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId(++counter_), size, format, usage,
       base::Bind(&OnGpuMemoryBufferAllocated, handle, wait));
 }
@@ -93,7 +91,7 @@ void ClientGpuMemoryBufferManager::DeletedGpuMemoryBuffer(
                    base::Unretained(this), id, sync_token));
     return;
   }
-  gpu_service_->DestroyGpuMemoryBuffer(id, sync_token);
+  gpu_->DestroyGpuMemoryBuffer(id, sync_token);
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>

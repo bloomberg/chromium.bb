@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/context_provider.h"
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/reflector.h"
@@ -26,8 +26,8 @@ class FakeReflector : public ui::Reflector {
 
 }  // namespace
 
-MusContextFactory::MusContextFactory(ui::GpuService* gpu_service)
-    : next_sink_id_(1u), gpu_service_(gpu_service) {}
+MusContextFactory::MusContextFactory(ui::Gpu* gpu)
+    : next_sink_id_(1u), gpu_(gpu) {}
 
 MusContextFactory::~MusContextFactory() {}
 
@@ -40,8 +40,8 @@ void MusContextFactory::CreateCompositorFrameSink(
   auto compositor_frame_sink = window_port->RequestCompositorFrameSink(
       ui::mojom::CompositorFrameSinkType::DEFAULT,
       make_scoped_refptr(
-          new ui::ContextProvider(gpu_service_->EstablishGpuChannelSync())),
-      gpu_service_->gpu_memory_buffer_manager());
+          new ui::ContextProvider(gpu_->EstablishGpuChannelSync())),
+      gpu_->gpu_memory_buffer_manager());
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 
@@ -77,7 +77,7 @@ uint32_t MusContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
 }
 
 gpu::GpuMemoryBufferManager* MusContextFactory::GetGpuMemoryBufferManager() {
-  return gpu_service_->gpu_memory_buffer_manager();
+  return gpu_->gpu_memory_buffer_manager();
 }
 
 cc::TaskGraphRunner* MusContextFactory::GetTaskGraphRunner() {

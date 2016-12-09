@@ -26,7 +26,7 @@ class Connector;
 }
 
 namespace ui {
-class GpuService;
+class Gpu;
 }
 
 namespace views {
@@ -59,7 +59,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   ~WindowManagerConnection() override;
 
   // |io_task_runner| is used by the gpu service. If no task runner is provided,
-  // then a new thread is created and used by ui::GpuService.
+  // then a new thread is created and used by ui::Gpu.
   static std::unique_ptr<WindowManagerConnection> Create(
       service_manager::Connector* connector,
       const service_manager::Identity& identity,
@@ -71,7 +71,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
     return pointer_watcher_event_router_.get();
   }
   service_manager::Connector* connector() { return connector_; }
-  ui::GpuService* gpu_service() { return gpu_service_.get(); }
+  ui::Gpu* gpu() { return gpu_.get(); }
   ui::WindowTreeClient* client() { return client_.get(); }
 
   ui::Window* NewTopLevelWindow(
@@ -114,7 +114,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   service_manager::Identity identity_;
   std::unique_ptr<ScreenMus> screen_;
   std::unique_ptr<ui::WindowTreeClient> client_;
-  std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<ui::Gpu> gpu_;
   std::unique_ptr<PointerWatcherEventRouter> pointer_watcher_event_router_;
   std::unique_ptr<SurfaceContextFactory> compositor_context_factory_;
 

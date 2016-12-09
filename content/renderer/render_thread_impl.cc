@@ -202,7 +202,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "content/renderer/mus/render_widget_window_tree_client_factory.h"
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)
@@ -655,9 +655,8 @@ void RenderThreadImpl::Init(
 
 #if defined(USE_AURA)
   if (IsRunningInMash()) {
-    gpu_service_ =
-        ui::GpuService::Create(GetServiceManagerConnection()->GetConnector(),
-                               ChildProcess::current()->io_task_runner());
+    gpu_ = ui::Gpu::Create(GetServiceManagerConnection()->GetConnector(),
+                           ChildProcess::current()->io_task_runner());
   }
 #endif
   gpu_memory_buffer_manager_ =
@@ -1659,8 +1658,8 @@ RenderThreadImpl::GetCompositorImplThreadTaskRunner() {
 
 gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {
 #if defined(USE_AURA)
-  if (gpu_service_)
-    return gpu_service_->gpu_memory_buffer_manager();
+  if (gpu_)
+    return gpu_->gpu_memory_buffer_manager();
 #endif
   return gpu_memory_buffer_manager_.get();
 }
@@ -1956,7 +1955,7 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
                                     GetGpuMemoryBufferManager());
   } else {
 #if defined(USE_AURA)
-    gpu_channel_ = gpu_service_->EstablishGpuChannelSync();
+    gpu_channel_ = gpu_->EstablishGpuChannelSync();
 #else
     NOTREACHED();
 #endif

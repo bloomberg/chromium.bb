@@ -13,7 +13,6 @@
           "ui::mojom::DisplayCompositor",
           "ui::mojom::DisplayManager",
           "ui::mojom::Gpu",
-          "ui::mojom::GpuService",
           "ui::mojom::IMEServer",
           "ui::mojom::InputDeviceServer",
           "ui::mojom::WindowTreeFactory"
@@ -26,8 +25,7 @@
           "ui::mojom::WindowServerTest"
         ],
         "gpu_client": [
-          "ui::mojom::Gpu",
-          "ui::mojom::GpuService"
+          "ui::mojom::Gpu"
         ],
         "ime_registrar": [
           "ui::mojom::IMERegistrar"
@@ -43,7 +41,6 @@
           "ui::mojom::DisplayCompositor",
           "ui::mojom::DisplayManager",
           "ui::mojom::Gpu",
-          "ui::mojom::GpuService",
           "ui::mojom::IMEServer",
           "ui::mojom::InputDeviceServer",
           "ui::mojom::WindowManagerWindowTreeFactory"

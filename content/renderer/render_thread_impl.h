@@ -92,7 +92,7 @@ class GpuVideoAcceleratorFactories;
 }
 
 namespace ui {
-class GpuService;
+class Gpu;
 }
 
 namespace v8 {
@@ -699,7 +699,7 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<ChildMemoryCoordinatorImpl> memory_coordinator_;
 
 #if defined(USE_AURA)
-  std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<ui::Gpu> gpu_;
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner>

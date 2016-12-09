@@ -12,7 +12,7 @@ mojom("interfaces") {
     "cursor.mojom",
     "display_manager.mojom",
     "event_matcher.mojom",
-    "gpu_service.mojom",
+    "gpu.mojom",
     "mus_constants.mojom",
     "user_access_manager.mojom",
     "user_activity_monitor.mojom",

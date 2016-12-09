@@ -39,7 +39,7 @@ class AuraInit;
 }
 
 namespace ui {
-class GpuService;
+class Gpu;
 }
 
 namespace ash {
@@ -84,7 +84,7 @@ class WindowManagerApplication
 
   std::unique_ptr<views::AuraInit> aura_init_;
 
-  std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<ui::Gpu> gpu_;
   std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
   std::unique_ptr<WindowManager> window_manager_;
 

@@ -15,7 +15,7 @@
 #include "ui/compositor/compositor.h"
 
 namespace ui {
-class GpuService;
+class Gpu;
 }
 
 namespace aura {
@@ -23,7 +23,7 @@ namespace aura {
 // ContextFactory implementation that can be used with Mus.
 class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
  public:
-  explicit MusContextFactory(ui::GpuService* gpu_service);
+  explicit MusContextFactory(ui::Gpu* gpu);
   ~MusContextFactory() override;
 
  private:
@@ -60,7 +60,7 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
   cc::SurfaceManager surface_manager_;
   uint32_t next_sink_id_;
   ui::RasterThreadHelper raster_thread_helper_;
-  ui::GpuService* gpu_service_;
+  ui::Gpu* gpu_;
 
   DISALLOW_COPY_AND_ASSIGN(MusContextFactory);
 };

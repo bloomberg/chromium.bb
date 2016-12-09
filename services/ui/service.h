@@ -23,7 +23,7 @@
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "services/ui/public/interfaces/display_manager.mojom.h"
-#include "services/ui/public/interfaces/gpu_service.mojom.h"
+#include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
@@ -62,7 +62,7 @@ class Service
       public service_manager::InterfaceFactory<mojom::AccessibilityManager>,
       public service_manager::InterfaceFactory<mojom::Clipboard>,
       public service_manager::InterfaceFactory<mojom::DisplayManager>,
-      public service_manager::InterfaceFactory<mojom::GpuService>,
+      public service_manager::InterfaceFactory<mojom::Gpu>,
       public service_manager::InterfaceFactory<mojom::IMERegistrar>,
       public service_manager::InterfaceFactory<mojom::IMEServer>,
       public service_manager::InterfaceFactory<mojom::UserAccessManager>,
@@ -119,9 +119,9 @@ class Service
   void Create(const service_manager::Identity& remote_identity,
               mojom::DisplayManagerRequest request) override;
 
-  // service_manager::InterfaceFactory<mojom::GpuService> implementation.
+  // service_manager::InterfaceFactory<mojom::Gpu> implementation.
   void Create(const service_manager::Identity& remote_identity,
-              mojom::GpuServiceRequest request) override;
+              mojom::GpuRequest request) override;
 
   // service_manager::InterfaceFactory<mojom::IMERegistrar> implementation.
   void Create(const service_manager::Identity& remote_identity,

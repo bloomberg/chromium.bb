@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -82,9 +82,8 @@ void MusDemo::OnStart() {
   property_converter_ = base::MakeUnique<aura::PropertyConverter>();
   wm_state_ = base::MakeUnique<::wm::WMState>();
 
-  gpu_service_ = GpuService::Create(context()->connector());
-  context_factory_ =
-      base::MakeUnique<aura::MusContextFactory>(gpu_service_.get());
+  gpu_ = Gpu::Create(context()->connector());
+  context_factory_ = base::MakeUnique<aura::MusContextFactory>(gpu_.get());
   env_->set_context_factory(context_factory_.get());
 
   window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(

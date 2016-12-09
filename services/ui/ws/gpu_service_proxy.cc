@@ -28,7 +28,7 @@ const int32_t kInternalGpuChannelClientId = 2;
 
 // The implementation that relays requests from clients to the real
 // service implementation in the GPU process over mojom.GpuServiceInternal.
-class GpuServiceImpl : public mojom::GpuService {
+class GpuServiceImpl : public mojom::Gpu {
  public:
   GpuServiceImpl(int client_id,
                  gpu::GPUInfo* gpu_info,
@@ -51,7 +51,7 @@ class GpuServiceImpl : public mojom::GpuService {
     callback.Run(client_id_, std::move(channel_handle), *gpu_info_);
   }
 
-  // mojom::GpuService overrides:
+  // mojom::Gpu overrides:
   void EstablishGpuChannel(
       const EstablishGpuChannelCallback& callback) override {
     // TODO(sad): crbug.com/617415 figure out how to generate a meaningful
@@ -69,8 +69,7 @@ class GpuServiceImpl : public mojom::GpuService {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      const mojom::GpuService::CreateGpuMemoryBufferCallback& callback)
-      override {
+      const mojom::Gpu::CreateGpuMemoryBufferCallback& callback) override {
     auto handle = gpu_memory_buffer_manager_->CreateGpuMemoryBufferHandle(
         id, client_id_, size, format, usage, gpu::kNullSurfaceHandle);
     callback.Run(handle);
@@ -113,7 +112,7 @@ GpuServiceProxy::GpuServiceProxy(GpuServiceProxyDelegate* delegate)
 GpuServiceProxy::~GpuServiceProxy() {
 }
 
-void GpuServiceProxy::Add(mojom::GpuServiceRequest request) {
+void GpuServiceProxy::Add(mojom::GpuRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<GpuServiceImpl>(next_client_id_++, &gpu_info_,
                                        gpu_memory_buffer_manager_.get(),

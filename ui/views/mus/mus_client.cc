@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/event_matcher.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -61,7 +61,7 @@ MusClient::~MusClient() {
   window_tree_client_.reset();
   ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
   ui::Clipboard::DestroyClipboardForCurrentThread();
-  gpu_service_.reset();
+  gpu_.reset();
 
   if (ViewsDelegate::GetInstance()) {
     ViewsDelegate::GetInstance()->set_native_widget_factory(
@@ -179,9 +179,9 @@ MusClient::MusClient(service_manager::Connector* connector,
 
   wm_state_ = base::MakeUnique<wm::WMState>();
 
-  gpu_service_ = ui::GpuService::Create(connector, std::move(io_task_runner));
+  gpu_ = ui::Gpu::Create(connector, std::move(io_task_runner));
   compositor_context_factory_ =
-      base::MakeUnique<aura::MusContextFactory>(gpu_service_.get());
+      base::MakeUnique<aura::MusContextFactory>(gpu_.get());
   aura::Env::GetInstance()->set_context_factory(
       compositor_context_factory_.get());
   window_tree_client_ =

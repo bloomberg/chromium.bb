@@ -39,7 +39,7 @@ class WMState;
 
 namespace ui {
 class ContextFactory;
-class GpuService;
+class Gpu;
 
 namespace demo {
 
@@ -106,7 +106,7 @@ class MusDemo : public service_manager::Service,
   aura::Window* root_window_ = nullptr;
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
   std::unique_ptr<aura::WindowTreeHostMus> window_tree_host_;
-  std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<ui::Gpu> gpu_;
   std::unique_ptr<ui::ContextFactory> context_factory_;
   std::unique_ptr<aura::Env> env_;
   std::unique_ptr<display::ScreenBase> screen_;

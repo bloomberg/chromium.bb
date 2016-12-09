@@ -82,10 +82,10 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
-  // The main thread for GpuService.
+  // The main thread for Gpu.
   base::Thread gpu_thread_;
 
-  // The thread that handles IO events for GpuService.
+  // The thread that handles IO events for Gpu.
   base::Thread io_thread_;
 
   // The display compositor gets its own thread in mus-gpu. The gpu service,

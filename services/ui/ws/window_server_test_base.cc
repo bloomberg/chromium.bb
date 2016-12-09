@@ -13,7 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -93,9 +93,9 @@ void WindowServerTestBase::SetUp() {
   WindowServerServiceTestBase::SetUp();
 
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
-  gpu_service_ = ui::GpuService::Create(connector(), nullptr);
+  gpu_ = ui::Gpu::Create(connector(), nullptr);
   compositor_context_factory_ =
-      base::MakeUnique<aura::MusContextFactory>(gpu_service_.get());
+      base::MakeUnique<aura::MusContextFactory>(gpu_.get());
   env_->set_context_factory(compositor_context_factory_.get());
   display::Screen::SetScreenInstance(&screen_);
   std::unique_ptr<aura::WindowTreeClient> window_manager_window_tree_client =
@@ -115,7 +115,7 @@ void WindowServerTestBase::TearDown() {
   window_tree_hosts_.clear();
   window_tree_clients_.clear();
   env_.reset();
-  gpu_service_.reset();
+  gpu_.reset();
   display::Screen::SetScreenInstance(nullptr);
 
   WindowServerServiceTestBase::TearDown();

@@ -8,7 +8,7 @@
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "services/ui/public/cpp/context_provider.h"
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_compositor_frame_sink.h"
 #include "ui/compositor/reflector.h"
@@ -29,8 +29,8 @@ class FakeReflector : public ui::Reflector {
 
 }  // namespace
 
-SurfaceContextFactory::SurfaceContextFactory(ui::GpuService* gpu_service)
-    : next_sink_id_(1u), gpu_service_(gpu_service) {}
+SurfaceContextFactory::SurfaceContextFactory(ui::Gpu* gpu)
+    : next_sink_id_(1u), gpu_(gpu) {}
 
 SurfaceContextFactory::~SurfaceContextFactory() {}
 
@@ -42,8 +42,8 @@ void SurfaceContextFactory::CreateCompositorFrameSink(
       native_widget->compositor_frame_sink_type();
   auto compositor_frame_sink = window->RequestCompositorFrameSink(
       compositor_frame_sink_type, make_scoped_refptr(new ui::ContextProvider(
-                                      gpu_service_->EstablishGpuChannelSync())),
-      gpu_service_->gpu_memory_buffer_manager());
+                                      gpu_->EstablishGpuChannelSync())),
+      gpu_->gpu_memory_buffer_manager());
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 
@@ -80,7 +80,7 @@ uint32_t SurfaceContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
 
 gpu::GpuMemoryBufferManager*
 SurfaceContextFactory::GetGpuMemoryBufferManager() {
-  return gpu_service_->gpu_memory_buffer_manager();
+  return gpu_->gpu_memory_buffer_manager();
 }
 
 cc::TaskGraphRunner* SurfaceContextFactory::GetTaskGraphRunner() {

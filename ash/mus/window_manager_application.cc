@@ -17,7 +17,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/common/accelerator_util.h"
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -57,7 +57,7 @@ WindowManagerApplication::~WindowManagerApplication() {
     blocking_pool_->Shutdown(kMaxNewShutdownBlockingTasks);
   }
 
-  gpu_service_.reset();
+  gpu_.reset();
 #if defined(OS_CHROMEOS)
   statistics_provider_.reset();
 #endif
@@ -122,9 +122,9 @@ void WindowManagerApplication::OnStart() {
       context()->connector(), context()->identity(), "ash_mus_resources.pak",
       "ash_mus_resources_200.pak", nullptr,
       views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER);
-  gpu_service_ = ui::GpuService::Create(context()->connector());
+  gpu_ = ui::Gpu::Create(context()->connector());
   compositor_context_factory_ =
-      base::MakeUnique<aura::MusContextFactory>(gpu_service_.get());
+      base::MakeUnique<aura::MusContextFactory>(gpu_.get());
   aura::Env::GetInstance()->set_context_factory(
       compositor_context_factory_.get());
   window_manager_.reset(new WindowManager(context()->connector()));

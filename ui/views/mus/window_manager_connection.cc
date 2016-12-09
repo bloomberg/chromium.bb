@@ -13,7 +13,7 @@
 #include "base/threading/thread_local.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_property.h"
@@ -89,7 +89,7 @@ WindowManagerConnection::~WindowManagerConnection() {
   client_.reset();
   ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
   ui::Clipboard::DestroyClipboardForCurrentThread();
-  gpu_service_.reset();
+  gpu_.reset();
   lazy_tls_ptr.Pointer()->Set(nullptr);
 
   if (ViewsDelegate::GetInstance()) {
@@ -155,9 +155,9 @@ WindowManagerConnection::WindowManagerConnection(
     : connector_(connector), identity_(identity) {
   lazy_tls_ptr.Pointer()->Set(this);
 
-  gpu_service_ = ui::GpuService::Create(connector, std::move(task_runner));
+  gpu_ = ui::Gpu::Create(connector, std::move(task_runner));
   compositor_context_factory_ =
-      base::MakeUnique<views::SurfaceContextFactory>(gpu_service_.get());
+      base::MakeUnique<views::SurfaceContextFactory>(gpu_.get());
   aura::Env::GetInstance()->set_context_factory(
       compositor_context_factory_.get());
   client_ = base::MakeUnique<ui::WindowTreeClient>(this, nullptr, nullptr);

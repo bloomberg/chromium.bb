@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_PUBLIC_CPP_GPU_GPU_SERVICE_H_
-#define SERVICES_UI_PUBLIC_CPP_GPU_GPU_SERVICE_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_GPU_GPU_H_
+#define SERVICES_UI_PUBLIC_CPP_GPU_GPU_H_
 
 #include <stdint.h>
 #include <vector>
@@ -15,7 +15,7 @@
 #include "base/threading/thread.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
-#include "services/ui/public/interfaces/gpu_service.mojom.h"
+#include "services/ui/public/interfaces/gpu.mojom.h"
 
 namespace service_manager {
 class Connector;
@@ -23,19 +23,19 @@ class Connector;
 
 namespace ui {
 
-class GpuService : public gpu::GpuChannelHostFactory,
-                   public gpu::GpuChannelEstablishFactory {
+class Gpu : public gpu::GpuChannelHostFactory,
+            public gpu::GpuChannelEstablishFactory {
  public:
-  ~GpuService() override;
+  ~Gpu() override;
 
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() const {
     return gpu_memory_buffer_manager_.get();
   }
 
-  // The GpuService has to be initialized in the main thread before establishing
+  // The Gpu has to be initialized in the main thread before establishing
   // the gpu channel. If no |task_runner| is provided, then a new thread is
   // created and used.
-  static std::unique_ptr<GpuService> Create(
+  static std::unique_ptr<Gpu> Create(
       service_manager::Connector* connector,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner = nullptr);
 
@@ -46,10 +46,10 @@ class GpuService : public gpu::GpuChannelHostFactory,
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
  private:
-  friend struct base::DefaultSingletonTraits<GpuService>;
+  friend struct base::DefaultSingletonTraits<Gpu>;
 
-  GpuService(service_manager::Connector* connector,
-             scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  Gpu(service_manager::Connector* connector,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   scoped_refptr<gpu::GpuChannelHost> GetGpuChannel();
   void EstablishGpuChannelOnMainThreadSyncLocked();
@@ -70,13 +70,13 @@ class GpuService : public gpu::GpuChannelHostFactory,
   std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<ClientGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
-  ui::mojom::GpuServicePtr gpu_service_;
+  ui::mojom::GpuPtr gpu_service_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   std::vector<gpu::GpuChannelEstablishedCallback> establish_callbacks_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuService);
+  DISALLOW_COPY_AND_ASSIGN(Gpu);
 };
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_PUBLIC_CPP_GPU_GPU_SERVICE_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_GPU_GPU_H_

@@ -15,7 +15,7 @@
 #include "services/ui/gpu/gpu_main.h"
 #include "services/ui/gpu/interfaces/gpu_service_host.mojom.h"
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
-#include "services/ui/public/interfaces/gpu_service.mojom.h"
+#include "services/ui/public/interfaces/gpu.mojom.h"
 
 namespace ui {
 
@@ -32,7 +32,7 @@ class GpuServiceProxy : public mojom::GpuServiceHost {
   explicit GpuServiceProxy(GpuServiceProxyDelegate* delegate);
   ~GpuServiceProxy() override;
 
-  void Add(mojom::GpuServiceRequest request);
+  void Add(mojom::GpuRequest request);
 
   // Requests a cc::mojom::DisplayCompositor interface from mus-gpu.
   void CreateDisplayCompositor(cc::mojom::DisplayCompositorRequest request,

@@ -204,7 +204,7 @@ bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,
   registry->AddInterface<mojom::AccessibilityManager>(this);
   registry->AddInterface<mojom::Clipboard>(this);
   registry->AddInterface<mojom::DisplayManager>(this);
-  registry->AddInterface<mojom::GpuService>(this);
+  registry->AddInterface<mojom::Gpu>(this);
   registry->AddInterface<mojom::IMERegistrar>(this);
   registry->AddInterface<mojom::IMEServer>(this);
   registry->AddInterface<mojom::UserAccessManager>(this);
@@ -297,7 +297,7 @@ void Service::Create(const service_manager::Identity& remote_identity,
 }
 
 void Service::Create(const service_manager::Identity& remote_identity,
-                     mojom::GpuServiceRequest request) {
+                     mojom::GpuRequest request) {
   window_server_->gpu_proxy()->Add(std::move(request));
 }
 
