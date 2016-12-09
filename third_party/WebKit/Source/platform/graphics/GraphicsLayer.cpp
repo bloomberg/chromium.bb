@@ -648,6 +648,12 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
   if (m_position != FloatPoint())
     json->setArray("position", pointAsJSONArray(m_position));
 
+  if (flags & LayerTreeIncludesDebugInfo &&
+      m_offsetFromLayoutObject != DoubleSize()) {
+    json->setArray("offsetFromLayoutObject",
+                   sizeAsJSONArray(m_offsetFromLayoutObject));
+  }
+
   if (m_hasTransformOrigin &&
       m_transformOrigin !=
           FloatPoint3D(m_size.width() * 0.5f, m_size.height() * 0.5f, 0))
@@ -768,6 +774,24 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
     json->setArray("squashingDisallowedReasons",
                    std::move(squashingDisallowedReasonsJSON));
   }
+
+  if (m_maskLayer) {
+    std::unique_ptr<JSONArray> maskLayerJSON = JSONArray::create();
+    maskLayerJSON->pushObject(
+        m_maskLayer->layerAsJSONInternal(flags, renderingContextMap));
+    json->setArray("maskLayer", std::move(maskLayerJSON));
+  }
+
+  if (m_contentsClippingMaskLayer) {
+    std::unique_ptr<JSONArray> contentsClippingMaskLayerJSON =
+        JSONArray::create();
+    contentsClippingMaskLayerJSON->pushObject(
+        m_contentsClippingMaskLayer->layerAsJSONInternal(flags,
+                                                         renderingContextMap));
+    json->setArray("contentsClippingMaskLayer",
+                   std::move(contentsClippingMaskLayerJSON));
+  }
+
   return json;
 }
 

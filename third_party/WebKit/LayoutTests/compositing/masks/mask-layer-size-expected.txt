@@ -12,7 +12,14 @@
       "bounds": [400, 200],
       "contentsOpaque": true,
       "drawsContent": true,
-      "backgroundColor": "#000000"
+      "backgroundColor": "#000000",
+      "maskLayer": [
+        {
+          "name": "Mask Layer",
+          "bounds": [400, 200],
+          "drawsContent": true
+        }
+      ]
     }
   ]
 }
