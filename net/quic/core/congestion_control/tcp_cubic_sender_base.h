@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/congestion_control/cubic.h"
 #include "net/quic/core/congestion_control/hybrid_slow_start.h"
 #include "net/quic/core/congestion_control/prr_sender.h"
@@ -20,6 +19,7 @@
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -32,7 +32,7 @@ namespace test {
 class TcpCubicSenderBasePeer;
 }  // namespace test
 
-class NET_EXPORT_PRIVATE TcpCubicSenderBase : public SendAlgorithmInterface {
+class QUIC_EXPORT_PRIVATE TcpCubicSenderBase : public SendAlgorithmInterface {
  public:
   // Reno option and max_tcp_congestion_window are provided for testing.
   TcpCubicSenderBase(const QuicClock* clock,

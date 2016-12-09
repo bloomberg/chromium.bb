@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_client_session_base.h"
 #include "net/quic/core/quic_types.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -19,11 +19,11 @@ namespace net {
 // same browser users profile), since cross-origin pushes are allowed
 // (subject to authority constraints).
 
-class NET_EXPORT_PRIVATE QuicClientPushPromiseIndex {
+class QUIC_EXPORT_PRIVATE QuicClientPushPromiseIndex {
  public:
   // Delegate is used to complete the rendezvous that began with
   // |Try()|.
-  class NET_EXPORT_PRIVATE Delegate {
+  class QUIC_EXPORT_PRIVATE Delegate {
    public:
     virtual ~Delegate() {}
 
@@ -47,7 +47,7 @@ class NET_EXPORT_PRIVATE QuicClientPushPromiseIndex {
     virtual void OnRendezvousResult(QuicSpdyStream* stream) = 0;
   };
 
-  class NET_EXPORT_PRIVATE TryHandle {
+  class QUIC_EXPORT_PRIVATE TryHandle {
    public:
     // Cancel the request.
     virtual void Cancel() = 0;

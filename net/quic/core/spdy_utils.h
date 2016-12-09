@@ -12,14 +12,14 @@
 #include <string>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_header_list.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_export.h"
 #include "net/spdy/spdy_framer.h"
 
 namespace net {
 
-class NET_EXPORT_PRIVATE SpdyUtils {
+class QUIC_EXPORT_PRIVATE SpdyUtils {
  public:
   static std::string SerializeUncompressedHeaders(
       const SpdyHeaderBlock& headers);

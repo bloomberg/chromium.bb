@@ -6,8 +6,8 @@
 #define NET_QUIC_CORE_QUIC_FLOW_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -23,7 +23,7 @@ const QuicStreamId kConnectionLevelId = 0;
 // control. The stream/connection owns a QuicFlowController which keeps track of
 // bytes sent/received, can tell the owner if it is flow control blocked, and
 // can send WINDOW_UPDATE or BLOCKED frames when needed.
-class NET_EXPORT_PRIVATE QuicFlowController {
+class QUIC_EXPORT_PRIVATE QuicFlowController {
  public:
   QuicFlowController(QuicConnection* connection,
                      QuicStreamId id,

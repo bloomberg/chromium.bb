@@ -14,14 +14,14 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 // An intermediate format of a handshake message that's convenient for a
 // CryptoFramer to serialize from or parse into.
-class NET_EXPORT_PRIVATE CryptoHandshakeMessage {
+class QUIC_EXPORT_PRIVATE CryptoHandshakeMessage {
  public:
   CryptoHandshakeMessage();
   CryptoHandshakeMessage(const CryptoHandshakeMessage& other);

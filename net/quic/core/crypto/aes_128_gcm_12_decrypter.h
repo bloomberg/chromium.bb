@@ -9,8 +9,8 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/crypto/aead_base_decrypter.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -20,7 +20,7 @@ namespace net {
 //
 // It uses an authentication tag of 12 bytes (96 bits). The fixed prefix
 // of the nonce is four bytes.
-class NET_EXPORT_PRIVATE Aes128Gcm12Decrypter : public AeadBaseDecrypter {
+class QUIC_EXPORT_PRIVATE Aes128Gcm12Decrypter : public AeadBaseDecrypter {
  public:
   enum {
     // Authentication tags are truncated to 96 bits.

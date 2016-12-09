@@ -10,14 +10,14 @@
 #include <string>
 
 #include "net/base/host_port_pair.h"
-#include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 // The id used to identify sessions. Includes the hostname, port, scheme and
 // privacy_mode.
-class NET_EXPORT_PRIVATE QuicServerId {
+class QUIC_EXPORT_PRIVATE QuicServerId {
  public:
   QuicServerId();
   QuicServerId(const HostPortPair& host_port_pair, PrivacyMode privacy_mode);

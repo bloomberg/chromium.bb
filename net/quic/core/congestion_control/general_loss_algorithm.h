@@ -9,18 +9,18 @@
 #include <map>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/congestion_control/loss_detection_interface.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
 #include "net/quic/core/quic_unacked_packet_map.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 // Class which can be configured to implement's TCP's approach of detecting loss
 // when 3 nacks have been received for a packet or with a time threshold.
 // Also implements TCP's early retransmit(RFC5827).
-class NET_EXPORT_PRIVATE GeneralLossAlgorithm : public LossDetectionInterface {
+class QUIC_EXPORT_PRIVATE GeneralLossAlgorithm : public LossDetectionInterface {
  public:
   // TCP retransmits after 3 nacks.
   static const QuicPacketCount kNumberOfNacksBeforeRetransmission = 3;

@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
+#include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 
 namespace net {
@@ -19,7 +19,7 @@ namespace net {
 // Serializes and parses a socket address (IP address and port), to be used in
 // the kCADR tag in the ServerHello handshake message and the Public Reset
 // packet.
-class NET_EXPORT_PRIVATE QuicSocketAddressCoder {
+class QUIC_EXPORT_PRIVATE QuicSocketAddressCoder {
  public:
   QuicSocketAddressCoder();
   explicit QuicSocketAddressCoder(const QuicSocketAddress& address);

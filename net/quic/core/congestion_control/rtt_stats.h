@@ -12,10 +12,10 @@
 #include <algorithm>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -23,7 +23,7 @@ namespace test {
 class RttStatsPeer;
 }  // namespace test
 
-class NET_EXPORT_PRIVATE RttStats {
+class QUIC_EXPORT_PRIVATE RttStats {
  public:
   RttStats();
 

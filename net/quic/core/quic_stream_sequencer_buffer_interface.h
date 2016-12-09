@@ -7,14 +7,14 @@
 
 #include <stddef.h>
 
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 // The QuicStreamSequencer uses an implementation of this interface to store
 // received data.
-class NET_EXPORT_PRIVATE QuicStreamSequencerBufferInterface {
+class QUIC_EXPORT_PRIVATE QuicStreamSequencerBufferInterface {
  public:
   virtual ~QuicStreamSequencerBufferInterface() {}
 

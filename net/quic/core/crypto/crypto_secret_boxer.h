@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
-#include "net/base/net_export.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -22,7 +22,7 @@ class QuicRandom;
 // CryptoSecretBoxer encrypts small chunks of plaintext (called 'boxing') and
 // then, later, can authenticate+decrypt the resulting boxes. This object is
 // thread-safe.
-class NET_EXPORT_PRIVATE CryptoSecretBoxer {
+class QUIC_EXPORT_PRIVATE CryptoSecretBoxer {
  public:
   CryptoSecretBoxer();
   ~CryptoSecretBoxer();

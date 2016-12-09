@@ -10,13 +10,13 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/crypto/proof_source.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 // QuicCompressedCertsCache is a cache to track most recently compressed certs.
-class NET_EXPORT_PRIVATE QuicCompressedCertsCache {
+class QUIC_EXPORT_PRIVATE QuicCompressedCertsCache {
  public:
   explicit QuicCompressedCertsCache(int64_t max_num_certs);
   ~QuicCompressedCertsCache();

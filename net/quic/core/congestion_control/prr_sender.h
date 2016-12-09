@@ -9,13 +9,13 @@
 
 #include <stddef.h>
 
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_bandwidth.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
-class NET_EXPORT_PRIVATE PrrSender {
+class QUIC_EXPORT_PRIVATE PrrSender {
  public:
   PrrSender();
   // OnPacketLost should be called on the first loss that triggers a recovery

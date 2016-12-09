@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_header_list.h"
 #include "net/quic/core/quic_headers_stream.h"
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_spdy_stream.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -23,7 +23,7 @@ class QuicSpdySessionPeer;
 }  // namespace test
 
 // A QUIC session with a headers stream.
-class NET_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
+class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
  public:
   // Does not take ownership of |connection| or |visitor|.
   QuicSpdySession(QuicConnection* connection,

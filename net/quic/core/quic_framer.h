@@ -17,8 +17,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -62,7 +62,7 @@ const size_t kMaxAckBlocks = (1 << (kNumberOfAckBlocksSize * 8)) - 1;
 
 // This class receives callbacks from the framer when packets
 // are processed.
-class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
+class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
  public:
   virtual ~QuicFramerVisitorInterface() {}
 
@@ -148,7 +148,7 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
 
 // Class for parsing and constructing QUIC packets.  It has a
 // QuicFramerVisitorInterface that is called when packets are parsed.
-class NET_EXPORT_PRIVATE QuicFramer {
+class QUIC_EXPORT_PRIVATE QuicFramer {
  public:
   // Constructs a new framer that installs a kNULL QuicEncrypter and
   // QuicDecrypter for level ENCRYPTION_NONE. |supported_versions| specifies the

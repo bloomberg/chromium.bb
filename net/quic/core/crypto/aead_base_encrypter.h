@@ -9,14 +9,14 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/crypto/scoped_evp_aead_ctx.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 // AeadBaseEncrypter is the base class of AEAD QuicEncrypter subclasses.
-class NET_EXPORT_PRIVATE AeadBaseEncrypter : public QuicEncrypter {
+class QUIC_EXPORT_PRIVATE AeadBaseEncrypter : public QuicEncrypter {
  public:
   AeadBaseEncrypter(const EVP_AEAD* aead_alg,
                     size_t key_size,

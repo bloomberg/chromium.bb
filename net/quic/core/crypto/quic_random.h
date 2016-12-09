@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "net/base/net_export.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 // The interface for a random number generator.
-class NET_EXPORT_PRIVATE QuicRandom {
+class QUIC_EXPORT_PRIVATE QuicRandom {
  public:
   virtual ~QuicRandom() {}
 

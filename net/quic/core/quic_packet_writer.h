@@ -7,15 +7,15 @@
 
 #include <stddef.h>
 
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 
 namespace net {
 
 struct WriteResult;
 
-class NET_EXPORT_PRIVATE PerPacketOptions {
+class QUIC_EXPORT_PRIVATE PerPacketOptions {
  public:
   PerPacketOptions() = default;
   virtual ~PerPacketOptions() {}
@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE PerPacketOptions {
 // An interface between writers and the entity managing the
 // socket (in our case the QuicDispatcher).  This allows the Dispatcher to
 // control writes, and manage any writers who end up write blocked.
-class NET_EXPORT_PRIVATE QuicPacketWriter {
+class QUIC_EXPORT_PRIVATE QuicPacketWriter {
  public:
   virtual ~QuicPacketWriter() {}
 

@@ -13,9 +13,9 @@
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -23,7 +23,7 @@ class CryptoFramer;
 class QuicData;
 class QuicDataWriter;
 
-class NET_EXPORT_PRIVATE CryptoFramerVisitorInterface {
+class QUIC_EXPORT_PRIVATE CryptoFramerVisitorInterface {
  public:
   virtual ~CryptoFramerVisitorInterface() {}
 
@@ -36,7 +36,7 @@ class NET_EXPORT_PRIVATE CryptoFramerVisitorInterface {
 
 // A class for framing the crypto messages that are exchanged in a QUIC
 // session.
-class NET_EXPORT_PRIVATE CryptoFramer {
+class QUIC_EXPORT_PRIVATE CryptoFramer {
  public:
   CryptoFramer();
 

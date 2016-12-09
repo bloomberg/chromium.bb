@@ -10,19 +10,19 @@
 
 #include <ostream>
 
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_bandwidth.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 // Structure to hold stats for a QuicConnection.
-struct NET_EXPORT_PRIVATE QuicConnectionStats {
+struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   QuicConnectionStats();
   QuicConnectionStats(const QuicConnectionStats& other);
   ~QuicConnectionStats();
 
-  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+  QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os,
       const QuicConnectionStats& s);
 

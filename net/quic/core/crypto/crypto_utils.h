@@ -14,18 +14,18 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/crypto/crypto_handshake.h"
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 class QuicRandom;
 
-class NET_EXPORT_PRIVATE CryptoUtils {
+class QUIC_EXPORT_PRIVATE CryptoUtils {
  public:
   // Diversification is a utility class that's used to act like a union type.
   // Values can be created by calling the functions like |NoDiversification|,

@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
-class NET_EXPORT_PRIVATE QuicEncrypter {
+class QUIC_EXPORT_PRIVATE QuicEncrypter {
  public:
   virtual ~QuicEncrypter() {}
 

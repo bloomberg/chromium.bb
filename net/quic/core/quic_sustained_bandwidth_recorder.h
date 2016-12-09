@@ -9,9 +9,9 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_bandwidth.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -23,7 +23,7 @@ class QuicSustainedBandwidthRecorderPeer;
 // to the client in a server config update message. A sustained bandwidth
 // estimate is only marked as valid if the QuicSustainedBandwidthRecorder has
 // been given uninterrupted reliable estimates over a certain period of time.
-class NET_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
+class QUIC_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
  public:
   QuicSustainedBandwidthRecorder();
 

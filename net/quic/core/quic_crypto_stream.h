@@ -8,12 +8,12 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/crypto/crypto_framer.h"
 #include "net/quic/core/crypto/crypto_utils.h"
 #include "net/quic/core/quic_config.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -30,7 +30,7 @@ class QuicSession;
 //
 // For more details:
 // https://docs.google.com/document/d/1g5nIXAIkN_Y-7XJW5K45IblHd_L2f5LTaDUDwvZ5L6g/edit?usp=sharing
-class NET_EXPORT_PRIVATE QuicCryptoStream
+class QUIC_EXPORT_PRIVATE QuicCryptoStream
     : public QuicStream,
       public CryptoFramerVisitorInterface {
  public:

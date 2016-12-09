@@ -11,15 +11,15 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_bandwidth.h"
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/core/quic_time.h"
 #include "net/quic/platform/api/quic_clock.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
-class NET_EXPORT_PRIVATE Cubic {
+class QUIC_EXPORT_PRIVATE Cubic {
  public:
   explicit Cubic(const QuicClock* clock);
 

@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
-#include "net/base/net_export.h"
+#include "net/quic/platform/api/quic_export.h"
 
-#define QUIC_FLAG(type, flag, value) NET_EXPORT_PRIVATE extern type flag;
+#define QUIC_FLAG(type, flag, value) QUIC_EXPORT_PRIVATE extern type flag;
 #include "net/quic/core/quic_flags_list.h"
 #undef QUIC_FLAG
 

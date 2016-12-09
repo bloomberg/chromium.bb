@@ -10,7 +10,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/congestion_control/cubic_bytes.h"
 #include "net/quic/core/congestion_control/hybrid_slow_start.h"
 #include "net/quic/core/congestion_control/prr_sender.h"
@@ -19,6 +18,7 @@
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -28,7 +28,7 @@ namespace test {
 class TcpCubicSenderBytesPeer;
 }  // namespace test
 
-class NET_EXPORT_PRIVATE TcpCubicSenderBytes : public TcpCubicSenderBase {
+class QUIC_EXPORT_PRIVATE TcpCubicSenderBytes : public TcpCubicSenderBase {
  public:
   TcpCubicSenderBytes(const QuicClock* clock,
                       const RttStats* rtt_stats,

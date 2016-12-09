@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
-#include "net/base/net_export.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 // Abstract base class for classes which allocate and delete buffers.
-class NET_EXPORT_PRIVATE QuicBufferAllocator {
+class QUIC_EXPORT_PRIVATE QuicBufferAllocator {
  public:
   virtual ~QuicBufferAllocator();
 

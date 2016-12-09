@@ -13,13 +13,13 @@
 #include <ostream>
 
 #include "base/compiler_specific.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_time.h"
 #include "net/quic/core/quic_types.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
-class NET_EXPORT_PRIVATE QuicBandwidth {
+class QUIC_EXPORT_PRIVATE QuicBandwidth {
  public:
   // Creates a new QuicBandwidth with an internal value of 0.
   static QuicBandwidth Zero();

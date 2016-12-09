@@ -16,11 +16,11 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/crypto/quic_compressed_certs_cache.h"
 #include "net/quic/core/quic_crypto_server_stream.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_spdy_session.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -33,7 +33,7 @@ class QuicServerSessionBasePeer;
 class QuicSimpleServerSessionPeer;
 }  // namespace test
 
-class NET_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
+class QUIC_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
  public:
   // Does not take ownership of |connection|. |crypto_config| must outlive the
   // session. |helper| must outlive any created crypto streams.

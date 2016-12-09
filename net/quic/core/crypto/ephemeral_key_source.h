@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/strings/string_piece.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -20,7 +20,7 @@ class QuicRandom;
 // for several connections in a short space of time. Since the implementation
 // of this may involve locking or thread-local data, this interface abstracts
 // that away.
-class NET_EXPORT_PRIVATE EphemeralKeySource {
+class QUIC_EXPORT_PRIVATE EphemeralKeySource {
  public:
   virtual ~EphemeralKeySource() {}
 

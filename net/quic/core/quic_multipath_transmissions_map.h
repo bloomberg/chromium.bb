@@ -16,15 +16,15 @@
 #include <unordered_map>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 typedef std::pair<QuicPathId, QuicPacketNumber> QuicPathIdPacketNumber;
 
-class NET_EXPORT_PRIVATE QuicMultipathTransmissionsMap {
+class QUIC_EXPORT_PRIVATE QuicMultipathTransmissionsMap {
  public:
   struct QuicPathIdPacketNumberHash {
     size_t operator()(std::pair<QuicPathId, QuicPacketNumber> value) const {

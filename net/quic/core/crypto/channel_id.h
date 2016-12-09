@@ -10,14 +10,14 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_types.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 // ChannelIDKey is an interface that supports signing with and serializing a
 // ChannelID key.
-class NET_EXPORT_PRIVATE ChannelIDKey {
+class QUIC_EXPORT_PRIVATE ChannelIDKey {
  public:
   virtual ~ChannelIDKey() {}
 
@@ -45,7 +45,7 @@ class ChannelIDSourceCallback {
 
 // ChannelIDSource is an abstract interface by which a QUIC client can obtain
 // a ChannelIDKey for a given hostname.
-class NET_EXPORT_PRIVATE ChannelIDSource {
+class QUIC_EXPORT_PRIVATE ChannelIDSource {
  public:
   virtual ~ChannelIDSource() {}
 
@@ -64,7 +64,7 @@ class NET_EXPORT_PRIVATE ChannelIDSource {
 };
 
 // ChannelIDVerifier verifies ChannelID signatures.
-class NET_EXPORT_PRIVATE ChannelIDVerifier {
+class QUIC_EXPORT_PRIVATE ChannelIDVerifier {
  public:
   // kContextStr is prepended to the data to be signed in order to ensure that
   // a ChannelID signature cannot be used in a different context. (The

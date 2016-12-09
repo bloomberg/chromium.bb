@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <map>
 
-#include "net/base/net_export.h"
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_bandwidth.h"
 #include "net/quic/core/quic_config.h"
@@ -19,6 +18,7 @@
 #include "net/quic/core/quic_time.h"
 #include "net/quic/core/quic_unacked_packet_map.h"
 #include "net/quic/platform/api/quic_clock.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -27,7 +27,7 @@ class RttStats;
 
 const QuicPacketCount kDefaultMaxCongestionWindowPackets = 2000;
 
-class NET_EXPORT_PRIVATE SendAlgorithmInterface {
+class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
   // A sorted std::vector of packets.
   typedef std::vector<std::pair<QuicPacketNumber, QuicPacketLength>>

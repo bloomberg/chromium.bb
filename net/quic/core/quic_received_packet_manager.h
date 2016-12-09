@@ -10,10 +10,10 @@
 #include <deque>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_config.h"
 #include "net/quic/core/quic_framer.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -25,7 +25,7 @@ class QuicReceivedPacketManagerPeer;
 struct QuicConnectionStats;
 
 // Records all received packets by a connection.
-class NET_EXPORT_PRIVATE QuicReceivedPacketManager {
+class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
  public:
   explicit QuicReceivedPacketManager(QuicConnectionStats* stats);
   virtual ~QuicReceivedPacketManager();

@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/crypto/quic_server_info.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -21,7 +21,8 @@ class HttpServerProperties;
 // PropertiesBasedQuicServerInfo fetches information about a QUIC server from
 // HttpServerProperties. Since the information is defined to be non-sensitive,
 // it's ok for us to keep it on disk.
-class NET_EXPORT_PRIVATE PropertiesBasedQuicServerInfo : public QuicServerInfo {
+class QUIC_EXPORT_PRIVATE PropertiesBasedQuicServerInfo
+    : public QuicServerInfo {
  public:
   PropertiesBasedQuicServerInfo(const QuicServerId& server_id,
                                 HttpServerProperties* http_server_properties);
@@ -43,7 +44,7 @@ class NET_EXPORT_PRIVATE PropertiesBasedQuicServerInfo : public QuicServerInfo {
   DISALLOW_COPY_AND_ASSIGN(PropertiesBasedQuicServerInfo);
 };
 
-class NET_EXPORT_PRIVATE PropertiesBasedQuicServerInfoFactory
+class QUIC_EXPORT_PRIVATE PropertiesBasedQuicServerInfoFactory
     : public QuicServerInfoFactory {
  public:
   explicit PropertiesBasedQuicServerInfoFactory(

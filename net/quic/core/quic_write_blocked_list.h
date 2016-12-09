@@ -11,9 +11,9 @@
 #include <set>
 
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_export.h"
 #include "net/spdy/priority_write_scheduler.h"
 
 namespace net {
@@ -21,7 +21,7 @@ namespace net {
 // Keeps tracks of the QUIC streams that have data to write, sorted by
 // priority.  QUIC stream priority order is:
 // Crypto stream > Headers stream > Data streams by requested priority.
-class NET_EXPORT_PRIVATE QuicWriteBlockedList {
+class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
  private:
   typedef PriorityWriteScheduler<QuicStreamId> QuicPriorityWriteScheduler;
 

@@ -11,11 +11,11 @@
 
 #include <stddef.h>
 
-#include "net/base/net_export.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
-class NET_EXPORT_PRIVATE QuicBlockedWriterInterface {
+class QUIC_EXPORT_PRIVATE QuicBlockedWriterInterface {
  public:
   virtual ~QuicBlockedWriterInterface() {}
 

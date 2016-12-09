@@ -10,16 +10,16 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/crypto/strike_register.h"
 #include "net/quic/core/crypto/strike_register_client.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
 // StrikeRegisterClient implementation that wraps a local in-memory
 // strike register.
-class NET_EXPORT_PRIVATE LocalStrikeRegisterClient
+class QUIC_EXPORT_PRIVATE LocalStrikeRegisterClient
     : public StrikeRegisterClient {
  public:
   LocalStrikeRegisterClient(unsigned max_entries,

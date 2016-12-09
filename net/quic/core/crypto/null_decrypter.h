@@ -10,8 +10,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/crypto/quic_decrypter.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -20,7 +20,7 @@ class QuicDataReader;
 // A NullDecrypter is a QuicDecrypter used before a crypto negotiation
 // has occurred.  It does not actually decrypt the payload, but does
 // verify a hash (fnv128) over both the payload and associated data.
-class NET_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
+class QUIC_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
  public:
   NullDecrypter();
   ~NullDecrypter() override {}
