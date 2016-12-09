@@ -375,6 +375,10 @@ size_t CalculatePositionsInFrame(
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  ui::ScopedCGContextSmoothFonts fontSmoothing;
+  [super drawInteriorWithFrame:cellFrame inView:controlView];
+
+  // NOTE: This method must closely match the logic in |-textFrameForFrame:|.
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect workingFrame;
@@ -382,20 +386,15 @@ size_t CalculatePositionsInFrame(
   CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
                             &decorations, &decorationFrames, &workingFrame);
 
-  // Draw the decorations.
+  // Draw the decorations. Do this after drawing the interior because the
+  // field editor's background rect overlaps the right edge of the security
+  // decoration's hover rounded rect.
   for (size_t i = 0; i < decorations.size(); ++i) {
     if (decorations[i]) {
       decorations[i]->DrawWithBackgroundInFrame(decorationFrames[i],
                                                 controlView);
     }
   }
-
-  // NOTE: This function must closely match the logic in
-  // |-textFrameForFrame:|.
-
-  // Superclass draws text portion WRT original |cellFrame|.
-  ui::ScopedCGContextSmoothFonts fontSmoothing;
-  [super drawInteriorWithFrame:cellFrame inView:controlView];
 }
 
 - (BOOL)canDropAtLocationInWindow:(NSPoint)location
