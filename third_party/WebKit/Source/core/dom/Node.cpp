@@ -2300,6 +2300,7 @@ StaticNodeList* Node::getDestinationInsertionPoints() {
 }
 
 HTMLSlotElement* Node::assignedSlot() const {
+  // assignedSlot doesn't need to call updateDistribution().
   DCHECK(!isPseudoElement());
   if (ShadowRoot* root = v1ShadowRootOfParent())
     return root->ensureSlotAssignment().findSlot(*this);
@@ -2307,7 +2308,7 @@ HTMLSlotElement* Node::assignedSlot() const {
 }
 
 HTMLSlotElement* Node::assignedSlotForBinding() {
-  updateDistribution();
+  // assignedSlot doesn't need to call updateDistribution().
   if (ShadowRoot* root = v1ShadowRootOfParent()) {
     if (root->type() == ShadowRootType::Open)
       return root->ensureSlotAssignment().findSlot(*this);
