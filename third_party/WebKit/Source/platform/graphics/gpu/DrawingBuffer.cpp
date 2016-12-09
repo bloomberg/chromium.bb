@@ -713,7 +713,11 @@ bool DrawingBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
     m_gl->GenSyncTokenCHROMIUM(fenceSync, produceSyncToken.GetData());
   }
 
-  DCHECK(produceSyncToken.HasData());
+  if (!produceSyncToken.HasData()) {
+    // This should only happen if the context has been lost.
+    return false;
+  }
+
   gl->WaitSyncTokenCHROMIUM(produceSyncToken.GetConstData());
   GLuint sourceTexture =
       gl->CreateAndConsumeTextureCHROMIUM(target, mailbox.name);

@@ -360,9 +360,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', 'amd'], bug=642822)
 
     # Mac Intel failures
-    self.Flaky('conformance/textures/webgl_canvas/tex-' +
-               '2d-rgb-rgb-unsigned_byte.html',
-               ['mac', 'intel'], bug=648377)
 
     # Failed on OSX 10.10 and 10.11
     self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
