@@ -50,8 +50,11 @@ def main():
                'failures': ['failed'] if ret else []}, fp)
   return ret
 
+
+# This is not really a "script test" so does not need to manually add
+# any additional compile targets.
 def main_compile_targets(args):
-  json.dump(['devtools_closure_compile'], args.output)
+  json.dump([''], args.output)
 
 
 if __name__ == '__main__':

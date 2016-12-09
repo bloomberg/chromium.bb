@@ -385,9 +385,17 @@
   "devtools_closure_compile": {
     "label": "//third_party/WebKit/Source/devtools:devtools_closure_compile",
     "type": "script",
-    "script": "//testing/scripts/run_devtools_closure_compile.py",
+    "script": "//testing/scripts/run_devtools_check.py",
     "args": [
         "../../third_party/WebKit/Source/devtools/scripts/compile_frontend.py",
+    ],
+  },
+  "devtools_eslint": {
+    "label": "//third_party/WebKit/Source/devtools:devtools_eslint",
+    "type": "script",
+    "script": "//testing/scripts/run_devtools_check.py",
+    "args": [
+        "../../third_party/WebKit/Source/devtools/scripts/buildbot/run_eslint.py",
     ],
   },
   "display_unittests": {

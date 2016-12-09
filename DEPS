@@ -101,6 +101,10 @@ vars = {
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
   'libfuzzer_revision': '2ed967ccadb496a1e916d9bd33a41386900dfb6a',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling devtools-node-modules
+  # and whatever else without interference from each other.
+  'devtools_node_modules_revision': '6226d6cd80aaf2e5295ed460cf73ef6a582e4d78',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -424,6 +428,10 @@ deps_os = {
     # gRPC, an RPC framework. For Blimp use only.
     'src/third_party/grpc':
       Var('chromium_git') + '/external/github.com/grpc/grpc' + '@' + 'b4cc5fc16c1368149c8a20c51248a18009ff8254',
+
+    # DevTools node modules. Used on Linux buildbots only.
+    'src/third_party/WebKit/Source/devtools/devtools-node-modules':
+      Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision')
   },
   'android': {
     'src/third_party/android_protobuf/src':
@@ -1059,6 +1067,14 @@ hooks = [
     'pattern': '.',
     'action': [ 'python',
                 'src/tools/clang_format_merge_driver/install_git_hook.py',
+    ],
+  },
+  {
+    'name': 'devtools_install_node',
+    'action': [ 'python',
+                'src/third_party/WebKit/Source/devtools/scripts/local_node/node.py',
+                '--running-as-hook',
+                '--version',
     ],
   },
 ]
