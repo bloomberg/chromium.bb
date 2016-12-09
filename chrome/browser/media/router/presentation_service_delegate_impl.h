@@ -30,6 +30,10 @@ struct PresentationSessionInfo;
 struct PresentationSessionMessage;
 }  // namespace content
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace media_router {
 
 class MediaRoute;
@@ -193,6 +197,11 @@ class PresentationServiceDelegateImpl
       const content::PresentationSessionStartedCallback& success_cb,
       const content::PresentationSessionInfo& new_session,
       const MediaRoute& route);
+
+#if !defined(OS_ANDROID)
+  // Returns true if auto-join requests should be cancelled for |origin|.
+  bool ShouldCancelAutoJoinForOrigin(const url::Origin& origin) const;
+#endif
 
   // References to the WebContents that owns this instance, and associated
   // browser profile's MediaRouter instance.

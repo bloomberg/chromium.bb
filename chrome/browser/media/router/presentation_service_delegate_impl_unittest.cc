@@ -12,14 +12,17 @@
 #include "chrome/browser/media/router/route_request_result.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
 #include "content/public/browser/presentation_session.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/origin.h"
 
 using ::testing::_;
 using ::testing::Mock;
@@ -472,5 +475,118 @@ TEST_F(PresentationServiceDelegateImplTest, SinksObserverCantRegister) {
   EXPECT_FALSE(delegate_impl_->AddScreenAvailabilityListener(
       render_process_id, render_frame_id, &listener));
 }
+
+#if !defined(OS_ANDROID)
+TEST_F(PresentationServiceDelegateImplTest, AutoJoinRequest) {
+  GURL frame_url(kFrameUrl);
+  std::string origin(url::Origin(frame_url).Serialize());
+  content::WebContentsTester::For(GetWebContents())
+      ->NavigateAndCommit(frame_url);
+  content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  int render_process_id = main_frame->GetProcess()->GetID();
+  int routing_id = main_frame->GetRoutingID();
+
+  MockCreatePresentationConnnectionCallbacks mock_create_connection_callbacks;
+  const std::string kPresentationId("auto-join");
+  ASSERT_TRUE(IsAutoJoinPresentationId(kPresentationId));
+
+  // Set the user preference for |origin| to prefer tab mirroring.
+  {
+    ListPrefUpdate update(profile()->GetPrefs(),
+                          prefs::kMediaRouterTabMirroringSources);
+    update->AppendIfNotPresent(base::MakeUnique<base::StringValue>(origin));
+  }
+
+  // Auto-join requests should be rejected.
+  EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionError(_));
+  EXPECT_CALL(router_, JoinRoute(_, kPresentationId, _, _, _, _, _)).Times(0);
+  delegate_impl_->JoinSession(
+      render_process_id, routing_id, presentation_urls_, kPresentationId,
+      base::Bind(&MockCreatePresentationConnnectionCallbacks::
+                     OnCreateConnectionSuccess,
+                 base::Unretained(&mock_create_connection_callbacks)),
+      base::Bind(
+          &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
+          base::Unretained(&mock_create_connection_callbacks)));
+
+  // Remove the user preference for |origin|.
+  {
+    ListPrefUpdate update(profile()->GetPrefs(),
+                          prefs::kMediaRouterTabMirroringSources);
+    update->Remove(base::StringValue(origin), nullptr);
+  }
+
+  // Auto-join requests should now go through.
+  EXPECT_CALL(router_, JoinRoute(_, kPresentationId, _, _, _, _, _)).Times(1);
+  delegate_impl_->JoinSession(
+      render_process_id, routing_id, presentation_urls_, kPresentationId,
+      base::Bind(&MockCreatePresentationConnnectionCallbacks::
+                     OnCreateConnectionSuccess,
+                 base::Unretained(&mock_create_connection_callbacks)),
+      base::Bind(
+          &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
+          base::Unretained(&mock_create_connection_callbacks)));
+}
+
+TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
+  GURL frame_url(kFrameUrl);
+  std::string origin(url::Origin(frame_url).Serialize());
+  content::WebContentsTester::For(GetWebContents())
+      ->NavigateAndCommit(frame_url);
+  content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  int render_process_id = main_frame->GetProcess()->GetID();
+  int routing_id = main_frame->GetRoutingID();
+
+  MockCreatePresentationConnnectionCallbacks mock_create_connection_callbacks;
+  const std::string kPresentationId("auto-join");
+  ASSERT_TRUE(IsAutoJoinPresentationId(kPresentationId));
+
+  // Set the user preference for |origin| to prefer tab mirroring.
+  {
+    ListPrefUpdate update(profile()->GetOffTheRecordProfile()->GetPrefs(),
+                          prefs::kMediaRouterTabMirroringSources);
+    update->AppendIfNotPresent(base::MakeUnique<base::StringValue>(origin));
+  }
+
+  // Setting the pref in incognito shouldn't set it for the non-incognito
+  // profile.
+  const base::ListValue* non_incognito_origins =
+      profile()->GetPrefs()->GetList(prefs::kMediaRouterTabMirroringSources);
+  EXPECT_EQ(non_incognito_origins->Find(base::StringValue(origin)),
+            non_incognito_origins->end());
+
+  // Auto-join requests should be rejected.
+  EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionError(_));
+  EXPECT_CALL(router_, JoinRoute(_, kPresentationId, _, _, _, _, _)).Times(0);
+  delegate_impl_->JoinSession(
+      render_process_id, routing_id, presentation_urls_, kPresentationId,
+      base::Bind(&MockCreatePresentationConnnectionCallbacks::
+                     OnCreateConnectionSuccess,
+                 base::Unretained(&mock_create_connection_callbacks)),
+      base::Bind(
+          &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
+          base::Unretained(&mock_create_connection_callbacks)));
+
+  // Remove the user preference for |origin| in incognito.
+  {
+    ListPrefUpdate update(profile()->GetOffTheRecordProfile()->GetPrefs(),
+                          prefs::kMediaRouterTabMirroringSources);
+    update->Remove(base::StringValue(origin), nullptr);
+  }
+
+  // Auto-join requests should now go through.
+  EXPECT_CALL(router_, JoinRoute(_, kPresentationId, _, _, _, _, _)).Times(1);
+  delegate_impl_->JoinSession(
+      render_process_id, routing_id, presentation_urls_, kPresentationId,
+      base::Bind(&MockCreatePresentationConnnectionCallbacks::
+                     OnCreateConnectionSuccess,
+                 base::Unretained(&mock_create_connection_callbacks)),
+      base::Bind(
+          &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
+          base::Unretained(&mock_create_connection_callbacks)));
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace media_router

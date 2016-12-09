@@ -32,6 +32,12 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#endif
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     media_router::PresentationServiceDelegateImpl);
 
@@ -828,6 +834,19 @@ void PresentationServiceDelegateImpl::JoinSession(
     return;
   }
 
+  const url::Origin& origin = url::Origin(GetLastCommittedURLForFrame(
+      RenderFrameHostId(render_process_id, render_frame_id), web_contents_));
+
+#if !defined(OS_ANDROID)
+  if (IsAutoJoinPresentationId(presentation_id) &&
+      ShouldCancelAutoJoinForOrigin(origin)) {
+    error_cb.Run(content::PresentationError(
+        content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
+        "Auto-join request cancelled by user preferences."));
+    return;
+  }
+#endif  // !defined(OS_ANDROID)
+
   // TODO(crbug.com/627655): Handle multiple URLs.
   const GURL& presentation_url = presentation_urls[0];
   bool incognito = web_contents_->GetBrowserContext()->IsOffTheRecord();
@@ -836,12 +855,9 @@ void PresentationServiceDelegateImpl::JoinSession(
       base::Bind(&PresentationServiceDelegateImpl::OnJoinRouteResponse,
                  weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,
                  presentation_url, presentation_id, success_cb, error_cb));
-  router_->JoinRoute(
-      MediaSourceForPresentationUrl(presentation_url).id(), presentation_id,
-      GetLastCommittedURLForFrame(
-          RenderFrameHostId(render_process_id, render_frame_id), web_contents_)
-          .GetOrigin(),
-      web_contents_, route_response_callbacks, base::TimeDelta(), incognito);
+  router_->JoinRoute(MediaSourceForPresentationUrl(presentation_url).id(),
+                     presentation_id, origin.GetURL(), web_contents_,
+                     route_response_callbacks, base::TimeDelta(), incognito);
 }
 
 void PresentationServiceDelegateImpl::CloseConnection(
@@ -976,5 +992,17 @@ bool PresentationServiceDelegateImpl::HasScreenAvailabilityListenerForTest(
   return frame_manager_->HasScreenAvailabilityListenerForTest(
       render_frame_host_id, source_id);
 }
+
+#if !defined(OS_ANDROID)
+bool PresentationServiceDelegateImpl::ShouldCancelAutoJoinForOrigin(
+    const url::Origin& origin) const {
+  const base::ListValue* origins =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext())
+          ->GetPrefs()
+          ->GetList(prefs::kMediaRouterTabMirroringSources);
+  return origins &&
+         origins->Find(base::StringValue(origin.Serialize())) != origins->end();
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace media_router

@@ -44,6 +44,9 @@ bool IsValidMediaSource(const MediaSource& source);
 // Returns true if |url| is a valid presentation URL.
 bool IsValidPresentationUrl(const GURL& url);
 
+// Returns true if |presentation_id| is an ID used by auto-join requests.
+bool IsAutoJoinPresentationId(const std::string& presentation_id);
+
 }  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ROUTER_MEDIA_SOURCE_HELPER_H_
