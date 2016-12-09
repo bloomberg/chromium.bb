@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
+#include "cc/test/fake_content_layer_client.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/solid_color_content_layer_client.h"
@@ -752,6 +753,58 @@ TEST_F(RotatedDropShadowFilterTest, RotatedDropShadowFilterTest_Software) {
   RunPixelTestType(
       PIXEL_TEST_SOFTWARE,
       base::FilePath(FILE_PATH_LITERAL("rotated_drop_shadow_filter_sw.png")));
+}
+
+class TranslatedFilterTest : public LayerTreeHostFiltersPixelTest {
+ protected:
+  void RunPixelTestType(PixelTestType test_type, base::FilePath image_name) {
+    scoped_refptr<Layer> clip = Layer::Create();
+    clip->SetBounds(gfx::Size(300, 300));
+    clip->SetMasksToBounds(true);
+
+    scoped_refptr<Layer> parent = Layer::Create();
+    parent->SetPosition(gfx::PointF(30.f, 30.f));
+
+    gfx::Rect child_rect(100, 100);
+    // Use two colors to bypass solid color detection, so we get a tile quad.
+    // This is intended to test render pass removal optimizations.
+    FakeContentLayerClient client;
+    client.set_bounds(child_rect.size());
+    SkPaint paint;
+    paint.setColor(SK_ColorGREEN);
+    client.add_draw_rect(child_rect, paint);
+    paint.setColor(SK_ColorBLUE);
+    client.add_draw_rect(gfx::Rect(100, 50), paint);
+    scoped_refptr<PictureLayer> child = PictureLayer::Create(&client);
+    child->SetBounds(child_rect.size());
+    child->SetIsDrawable(true);
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
+    child->SetFilters(filters);
+
+    // This layer will be clipped by |clip|, so the RenderPass created for
+    // |child| will only have one visible quad.
+    scoped_refptr<SolidColorLayer> grand_child =
+        CreateSolidColorLayer(gfx::Rect(-300, -300, 100, 100), SK_ColorRED);
+
+    child->AddChild(grand_child);
+    parent->AddChild(child);
+    clip->AddChild(parent);
+
+    RunPixelTest(test_type, clip, image_name);
+  }
+};
+
+TEST_F(TranslatedFilterTest, GL) {
+  RunPixelTestType(
+      PIXEL_TEST_GL,
+      base::FilePath(FILE_PATH_LITERAL("translated_blue_green_alpha_gl.png")));
+}
+
+TEST_F(TranslatedFilterTest, Software) {
+  RunPixelTestType(
+      PIXEL_TEST_SOFTWARE,
+      base::FilePath(FILE_PATH_LITERAL("translated_blue_green_alpha_sw.png")));
 }
 
 class EnlargedTextureWithAlphaThresholdFilter

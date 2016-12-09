@@ -996,8 +996,10 @@ const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
 
   const DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
   // Hack: this could be supported by concatenating transforms, but
-  // in practice if there is one quad, it is at the origin of the render pass.
-  if (!quad->shared_quad_state->quad_to_target_transform.IsIdentity())
+  // in practice if there is one quad, it is at the origin of the render pass
+  // and has the same size as the pass.
+  if (!quad->shared_quad_state->quad_to_target_transform.IsIdentity() ||
+      quad->rect != pass->output_rect)
     return nullptr;
   // The quad is expected to be the entire layer so that AA edges are correct.
   if (gfx::Rect(quad->shared_quad_state->quad_layer_bounds) != quad->rect)
