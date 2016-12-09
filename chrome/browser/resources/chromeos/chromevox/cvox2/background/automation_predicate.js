@@ -223,6 +223,10 @@ AutomationPredicate.object = function(node) {
   if (node.parent && node.parent.state.editable)
     return false;
 
+  // Descend into large nodes.
+  if (node.name && node.name.length > constants.OBJECT_MAX_CHARCOUNT)
+    return false;
+
   return node.state.focusable ||
       (AutomationPredicate.leafOrStaticText(node) &&
        (/\S+/.test(node.name) ||

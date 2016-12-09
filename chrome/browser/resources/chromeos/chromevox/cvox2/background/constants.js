@@ -19,3 +19,14 @@ constants.Dir = {
   /** Search from right to left. */
   BACKWARD: 'backward'
 };
+
+/**
+ * If a node contains more characters than this, it should not be visited during
+ * object navigation.
+ *
+ * This number was taken from group_util.js and is an approximate average of
+ * paragraph length. It's purpose is to prevent overloading tts.
+ * @type {number}
+ * @const
+ */
+constants.OBJECT_MAX_CHARCOUNT = 1500;
