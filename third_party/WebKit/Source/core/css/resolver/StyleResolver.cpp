@@ -35,6 +35,7 @@
 #include "core/MediaTypeNames.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/AnimationTimeline.h"
+#include "core/animation/CSSInterpolationTypesMap.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/InvalidatableInterpolation.h"
@@ -1230,7 +1231,8 @@ void StyleResolver::applyAnimatedProperties(
       continue;
     const Interpolation& interpolation = *entry.value.front();
     if (interpolation.isInvalidatableInterpolation()) {
-      InterpolationEnvironment environment(state);
+      CSSInterpolationTypesMap map(state.document().propertyRegistry());
+      InterpolationEnvironment environment(map, state);
       InvalidatableInterpolation::applyStack(entry.value, environment);
     } else {
       // TODO(alancutter): Remove this old code path once animations have

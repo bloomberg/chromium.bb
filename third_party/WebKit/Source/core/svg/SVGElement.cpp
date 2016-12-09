@@ -33,6 +33,7 @@
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/InvalidatableInterpolation.h"
+#include "core/animation/SVGInterpolationTypesMap.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -234,8 +235,9 @@ void SVGElement::applyActiveWebAnimations() {
           KeyframeEffectReadOnly::DefaultPriority, isSVGAttributeHandle);
   for (auto& entry : activeInterpolationsMap) {
     const QualifiedName& attribute = entry.key.svgAttribute();
+    SVGInterpolationTypesMap map;
     InterpolationEnvironment environment(
-        *this, propertyFromAttribute(attribute)->baseValueBase());
+        map, *this, propertyFromAttribute(attribute)->baseValueBase());
     InvalidatableInterpolation::applyStack(entry.value, environment);
   }
   svgRareData()->setWebAnimatedAttributesDirty(false);
