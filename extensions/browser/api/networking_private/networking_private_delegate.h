@@ -104,7 +104,7 @@ class NetworkingPrivateDelegate : public KeyedService {
   ~NetworkingPrivateDelegate() override;
 
   void set_ui_delegate(std::unique_ptr<UIDelegate> ui_delegate) {
-    ui_delegate_.reset(ui_delegate.release());
+    ui_delegate_ = std::move(ui_delegate);
   }
 
   const UIDelegate* ui_delegate() { return ui_delegate_.get(); }

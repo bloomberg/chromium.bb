@@ -99,7 +99,7 @@ bool CastMessageToMessageInfo(const CastMessage& message_proto,
   }
   if (value.get()) {
     DCHECK(!message->data.get());
-    message->data.reset(value.release());
+    message->data = std::move(value);
     return true;
   } else {
     return false;

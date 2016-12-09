@@ -112,8 +112,8 @@ void RequestQueue<T>::StartNextRequest() {
   std::pop_heap(
       pending_requests_.begin(), pending_requests_.end(), CompareRequests);
 
-  active_backoff_entry_.reset(pending_requests_.back().backoff_entry.release());
-  active_request_.reset(pending_requests_.back().request.release());
+  active_backoff_entry_ = std::move(pending_requests_.back().backoff_entry);
+  active_request_ = std::move(pending_requests_.back().request);
 
   pending_requests_.pop_back();
 

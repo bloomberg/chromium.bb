@@ -2299,9 +2299,9 @@ WebRequestInternalEventHandledFunction::Run() {
           response_headers->push_back(helpers::ResponseHeader(name, value));
       }
       if (has_request_headers)
-        response->request_headers.reset(request_headers.release());
+        response->request_headers = std::move(request_headers);
       else
-        response->response_headers.reset(response_headers.release());
+        response->response_headers = std::move(response_headers);
     }
 
     if (value->HasKey(keys::kAuthCredentialsKey)) {

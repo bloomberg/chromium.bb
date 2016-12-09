@@ -59,12 +59,12 @@ NetworkingPrivateDelegateFactory::~NetworkingPrivateDelegateFactory() {
 
 void NetworkingPrivateDelegateFactory::SetVerifyDelegateFactory(
     std::unique_ptr<VerifyDelegateFactory> factory) {
-  verify_factory_.reset(factory.release());
+  verify_factory_ = std::move(factory);
 }
 
 void NetworkingPrivateDelegateFactory::SetUIDelegateFactory(
     std::unique_ptr<UIDelegateFactory> factory) {
-  ui_factory_.reset(factory.release());
+  ui_factory_ = std::move(factory);
 }
 
 KeyedService* NetworkingPrivateDelegateFactory::BuildServiceInstanceFor(

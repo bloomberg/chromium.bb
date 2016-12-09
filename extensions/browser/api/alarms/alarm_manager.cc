@@ -309,7 +309,7 @@ void AlarmManager::WriteToStorage(const std::string& extension_id) {
   if (list != alarms_.end())
     alarms = AlarmsToValue(list->second);
   else
-    alarms.reset(AlarmsToValue(AlarmList()).release());
+    alarms = AlarmsToValue(AlarmList());
   storage->SetExtensionValue(extension_id, kRegisteredAlarms,
                              std::move(alarms));
 }
