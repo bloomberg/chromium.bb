@@ -15,6 +15,7 @@ traits_headers = [
   "//content/common/service_worker/service_worker_status_code_traits.h",
 ]
 type_mappings = [
+  "content.mojom.ExtendableMessageEventSource=::content::ExtendableMessageEventSource",
   "content.mojom.ServiceWorkerFetchRequest=::content::ServiceWorkerFetchRequest",
   "blink.mojom.ServiceWorkerEventStatus=::content::ServiceWorkerStatusCode",
 ]

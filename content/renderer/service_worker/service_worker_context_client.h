@@ -32,8 +32,6 @@
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 #include "v8/include/v8.h"
 
-struct ServiceWorkerMsg_ExtendableMessageEvent_Params;
-
 namespace base {
 class SingleThreadTaskRunner;
 class TaskRunner;
@@ -219,6 +217,9 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const ServiceWorkerVersionAttributes& attrs);
 
   // mojom::ServiceWorkerEventDispatcher
+  void DispatchExtendableMessageEvent(
+      mojom::ExtendableMessageEventPtr event,
+      const DispatchExtendableMessageEventCallback& callback) override;
   void DispatchFetchEvent(int fetch_event_id,
                           const ServiceWorkerFetchRequest& request,
                           mojom::FetchEventPreloadHandlePtr preload_handle,
@@ -229,9 +230,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const DispatchSyncEventCallback& callback) override;
 
   void OnActivateEvent(int request_id);
-  void OnExtendableMessageEvent(
-      int request_id,
-      const ServiceWorkerMsg_ExtendableMessageEvent_Params& params);
   void OnInstallEvent(int request_id);
   void OnNotificationClickEvent(
       int request_id,

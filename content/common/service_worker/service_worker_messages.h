@@ -132,14 +132,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientQueryOptions)
   IPC_STRUCT_TRAITS_MEMBER(include_uncontrolled)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_BEGIN(ServiceWorkerMsg_ExtendableMessageEvent_Params)
-  IPC_STRUCT_MEMBER(base::string16, message)
-  IPC_STRUCT_MEMBER(url::Origin, source_origin)
-  IPC_STRUCT_MEMBER(std::vector<int>, message_ports)
-  IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
-  IPC_STRUCT_MEMBER(content::ExtendableMessageEventSource, source)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(ServiceWorkerMsg_MessageToDocument_Params)
   IPC_STRUCT_MEMBER(int, thread_id)
   IPC_STRUCT_MEMBER(int, provider_id)
@@ -291,10 +283,6 @@ IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_InstallEventFinished,
                     base::Time /* dispatch_event_time */)
 
 IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_ActivateEventFinished,
-                    int /* request_id */,
-                    blink::WebServiceWorkerEventResult,
-                    base::Time /* dispatch_event_time */)
-IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_ExtendableMessageEventFinished,
                     int /* request_id */,
                     blink::WebServiceWorkerEventResult,
                     base::Time /* dispatch_event_time */)
@@ -538,9 +526,6 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_InstallEvent,
                      int /* request_id */)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_ActivateEvent,
                      int /* request_id */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ExtendableMessageEvent,
-                     int /* request_id */,
-                     ServiceWorkerMsg_ExtendableMessageEvent_Params)
 IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_NotificationClickEvent,
                      int /* request_id */,
                      std::string /* notification_id */,

@@ -186,6 +186,14 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
     NOTIMPLEMENTED();
   }
 
+  void DispatchExtendableMessageEvent(
+      mojom::ExtendableMessageEventPtr event,
+      const DispatchExtendableMessageEventCallback& callback) override {
+    if (!helper_)
+      return;
+    helper_->OnExtendableMessageEventStub(std::move(event), callback);
+  }
+
  private:
   base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
   const int thread_id_;
@@ -304,8 +312,6 @@ bool EmbeddedWorkerTestHelper::OnMessageToWorker(int thread_id,
   current_embedded_worker_id_ = embedded_worker_id;
   IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerTestHelper, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ActivateEvent, OnActivateEventStub)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ExtendableMessageEvent,
-                        OnExtendableMessageEventStub)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEventStub)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEventStub)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -329,11 +335,11 @@ void EmbeddedWorkerTestHelper::OnActivateEvent(int embedded_worker_id,
       blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
 }
 
-void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(int embedded_worker_id,
-                                                        int request_id) {
-  SimulateSend(new ServiceWorkerHostMsg_ExtendableMessageEventFinished(
-      embedded_worker_id, request_id,
-      blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
+void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(
+    mojom::ExtendableMessageEventPtr event,
+    const mojom::ServiceWorkerEventDispatcher::
+        DispatchExtendableMessageEventCallback& callback) {
+  callback.Run(SERVICE_WORKER_OK, base::Time::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
@@ -495,12 +501,12 @@ void EmbeddedWorkerTestHelper::OnActivateEventStub(int request_id) {
 }
 
 void EmbeddedWorkerTestHelper::OnExtendableMessageEventStub(
-    int request_id,
-    const ServiceWorkerMsg_ExtendableMessageEvent_Params& params) {
+    mojom::ExtendableMessageEventPtr event,
+    const mojom::ServiceWorkerEventDispatcher::
+        DispatchExtendableMessageEventCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnExtendableMessageEvent,
-                 AsWeakPtr(), current_embedded_worker_id_, request_id));
+      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnExtendableMessageEvent,
+                            AsWeakPtr(), base::Passed(&event), callback));
 }
 
 void EmbeddedWorkerTestHelper::OnInstallEventStub(int request_id) {

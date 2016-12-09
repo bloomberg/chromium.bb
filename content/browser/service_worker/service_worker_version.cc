@@ -1064,23 +1064,28 @@ void ServiceWorkerVersion::OnGetClientsFinished(int request_id,
       ServiceWorkerMsg_DidGetClients(request_id, *clients));
 }
 
-void ServiceWorkerVersion::OnSimpleEventResponse(
+void ServiceWorkerVersion::OnSimpleEventFinished(
     int request_id,
-    blink::WebServiceWorkerEventResult result,
+    ServiceWorkerStatusCode status,
     base::Time dispatch_event_time) {
   // Copy error callback before calling FinishRequest.
   PendingRequest* request = pending_requests_.Lookup(request_id);
   DCHECK(request) << "Invalid request id";
   StatusCallback callback = request->error_callback;
 
-  FinishRequest(request_id,
-                result == blink::WebServiceWorkerEventResultCompleted,
-                dispatch_event_time);
+  FinishRequest(request_id, status == SERVICE_WORKER_OK, dispatch_event_time);
 
+  callback.Run(status);
+}
+
+void ServiceWorkerVersion::OnSimpleEventResponse(
+    int request_id,
+    blink::WebServiceWorkerEventResult result,
+    base::Time dispatch_event_time) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
   if (result == blink::WebServiceWorkerEventResultRejected)
     status = SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
-  callback.Run(status);
+  OnSimpleEventFinished(request_id, status, dispatch_event_time);
 }
 
 void ServiceWorkerVersion::OnOpenWindow(int request_id, GURL url) {

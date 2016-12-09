@@ -28,6 +28,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -1169,24 +1170,27 @@ void ServiceWorkerDispatcherHost::
   std::vector<int> new_routing_ids;
   filter->UpdateMessagePortsWithNewRoutes(sent_message_ports, &new_routing_ids);
 
-  ServiceWorkerMsg_ExtendableMessageEvent_Params params;
-  params.message = message;
-  params.source_origin = source_origin;
-  params.message_ports = sent_message_ports;
-  params.new_routing_ids = new_routing_ids;
-  params.source = source;
+  mojom::ExtendableMessageEventPtr event = mojom::ExtendableMessageEvent::New();
+  event->message = message;
+  event->source_origin = source_origin;
+  event->message_ports = sent_message_ports;
+  event->new_routing_ids = new_routing_ids;
+  event->source = source;
 
   // Hide the client url if the client has a unique origin.
   if (source_origin.unique()) {
-    if (params.source.client_info.IsValid())
-      params.source.client_info.url = GURL();
+    if (event->source.client_info.IsValid())
+      event->source.client_info.url = GURL();
     else
-      params.source.service_worker_info.url = GURL();
+      event->source.service_worker_info.url = GURL();
   }
 
-  worker->DispatchSimpleEvent<
-      ServiceWorkerHostMsg_ExtendableMessageEventFinished>(
-      request_id, ServiceWorkerMsg_ExtendableMessageEvent(request_id, params));
+  // |event_dispatcher| is owned by |worker|, once |worker| got destroyed, the
+  // bound function will never be called, so it is safe to use
+  // base::Unretained() here.
+  worker->event_dispatcher()->DispatchExtendableMessageEvent(
+      std::move(event), base::Bind(&ServiceWorkerVersion::OnSimpleEventFinished,
+                                   base::Unretained(worker.get()), request_id));
 }
 
 template <typename SourceInfo>

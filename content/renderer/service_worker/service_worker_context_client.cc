@@ -180,6 +180,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
       IDMap<std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks>>;
   using SyncEventCallbacksMap = IDMap<std::unique_ptr<const SyncCallback>>;
   using FetchEventCallbacksMap = IDMap<std::unique_ptr<const FetchCallback>>;
+  using ExtendableMessageEventCallbacksMap =
+      IDMap<std::unique_ptr<const DispatchExtendableMessageEventCallback>>;
   using NavigationPreloadRequestsMap = IDMap<
       std::unique_ptr<ServiceWorkerContextClient::NavigationPreloadRequest>>;
 
@@ -211,6 +213,9 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   // Pending callbacks for Fetch Events.
   FetchEventCallbacksMap fetch_event_callbacks;
+
+  // Pending callbacks for Extendable Message Events.
+  ExtendableMessageEventCallbacksMap message_event_callbacks;
 
   // Pending navigation preload requests.
   NavigationPreloadRequestsMap preload_requests;
@@ -396,8 +401,6 @@ void ServiceWorkerContextClient::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerContextClient, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ActivateEvent, OnActivateEvent)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ExtendableMessageEvent,
-                        OnExtendableMessageEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NotificationClickEvent,
                         OnNotificationClickEvent)
@@ -577,6 +580,12 @@ void ServiceWorkerContextClient::willDestroyWorkerContext(
        !it.IsAtEnd(); it.Advance()) {
     it.GetCurrentValue()->Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
   }
+  // Aborts the all pending extendable message event callbacks.
+  for (WorkerContextData::ExtendableMessageEventCallbacksMap::iterator it(
+           &context_->message_event_callbacks);
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
+  }
 
   // We have to clear callbacks now, as they need to be freed on the
   // same thread.
@@ -666,9 +675,17 @@ void ServiceWorkerContextClient::didHandleExtendableMessageEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result,
     double event_dispatch_time) {
-  Send(new ServiceWorkerHostMsg_ExtendableMessageEventFinished(
-      GetRoutingID(), request_id, result,
-      base::Time::FromDoubleT(event_dispatch_time)));
+  const DispatchExtendableMessageEventCallback* callback =
+      context_->message_event_callbacks.Lookup(request_id);
+  DCHECK(callback);
+  if (result == blink::WebServiceWorkerEventResultCompleted) {
+    callback->Run(SERVICE_WORKER_OK,
+                  base::Time::FromDoubleT(event_dispatch_time));
+  } else {
+    callback->Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
+                  base::Time::FromDoubleT(event_dispatch_time));
+  }
+  context_->message_event_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::didHandleInstallEvent(
@@ -927,26 +944,29 @@ void ServiceWorkerContextClient::OnActivateEvent(int request_id) {
   proxy_->dispatchActivateEvent(request_id);
 }
 
-void ServiceWorkerContextClient::OnExtendableMessageEvent(
-    int request_id,
-    const ServiceWorkerMsg_ExtendableMessageEvent_Params& params) {
+void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
+    mojom::ExtendableMessageEventPtr event,
+    const DispatchExtendableMessageEventCallback& callback) {
   TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerContextClient::OnExtendableMessageEvent");
+               "ServiceWorkerContextClient::DispatchExtendableMessageEvent");
+  int request_id = context_->message_event_callbacks.Add(
+      base::MakeUnique<DispatchExtendableMessageEventCallback>(callback));
+
   blink::WebMessagePortChannelArray ports =
-      WebMessagePortChannelImpl::CreatePorts(params.message_ports,
-                                             params.new_routing_ids,
+      WebMessagePortChannelImpl::CreatePorts(event->message_ports,
+                                             event->new_routing_ids,
                                              main_thread_task_runner_);
-  if (params.source.client_info.IsValid()) {
+  if (event->source.client_info.IsValid()) {
     blink::WebServiceWorkerClientInfo web_client =
-        ToWebServiceWorkerClientInfo(params.source.client_info);
+        ToWebServiceWorkerClientInfo(event->source.client_info);
     proxy_->dispatchExtendableMessageEvent(
-        request_id, params.message, params.source_origin, ports, web_client);
+        request_id, event->message, event->source_origin, ports, web_client);
     return;
   }
 
-  DCHECK(params.source.service_worker_info.IsValid());
+  DCHECK(event->source.service_worker_info.IsValid());
   std::unique_ptr<ServiceWorkerHandleReference> handle =
-      ServiceWorkerHandleReference::Adopt(params.source.service_worker_info,
+      ServiceWorkerHandleReference::Adopt(event->source.service_worker_info,
                                           sender_.get());
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
@@ -954,7 +974,7 @@ void ServiceWorkerContextClient::OnExtendableMessageEvent(
   scoped_refptr<WebServiceWorkerImpl> worker =
       dispatcher->GetOrCreateServiceWorker(std::move(handle));
   proxy_->dispatchExtendableMessageEvent(
-      request_id, params.message, params.source_origin, ports,
+      request_id, event->message, event->source_origin, ports,
       WebServiceWorkerImpl::CreateHandle(worker));
 }
 

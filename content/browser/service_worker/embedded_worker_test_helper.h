@@ -30,7 +30,6 @@
 #include "url/gurl.h"
 
 class GURL;
-struct ServiceWorkerMsg_ExtendableMessageEvent_Params;
 
 namespace service_manager {
 class InterfaceProvider;
@@ -184,7 +183,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // worker. By default they just return success via
   // SimulateSendReplyToBrowser.
   virtual void OnActivateEvent(int embedded_worker_id, int request_id);
-  virtual void OnExtendableMessageEvent(int embedded_worker_id, int request_id);
+  virtual void OnExtendableMessageEvent(
+      mojom::ExtendableMessageEventPtr event,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchExtendableMessageEventCallback& callback);
   virtual void OnInstallEvent(int embedded_worker_id, int request_id);
   virtual void OnFetchEvent(int embedded_worker_id,
                             int fetch_event_id,
@@ -224,8 +226,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                              const IPC::Message& message);
   void OnActivateEventStub(int request_id);
   void OnExtendableMessageEventStub(
-      int request_id,
-      const ServiceWorkerMsg_ExtendableMessageEvent_Params& params);
+      mojom::ExtendableMessageEventPtr event,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchExtendableMessageEventCallback& callback);
   void OnInstallEventStub(int request_id);
   void OnFetchEventStub(int thread_id,
                         int fetch_event_id,

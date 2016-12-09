@@ -416,6 +416,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
     return max_request_expiration_time_ - tick_clock_->NowTicks();
   }
 
+  // Callback function for simple events dispatched through mojo interface
+  // mojom::ServiceWorkerEventDispatcher, once all simple events got dispatched
+  // through mojo, OnSimpleEventResponse function could be removed.
+  void OnSimpleEventFinished(int request_id,
+                             ServiceWorkerStatusCode status,
+                             base::Time dispatch_event_time);
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerMetrics;
@@ -588,6 +595,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnGetClients(int request_id,
                     const ServiceWorkerClientQueryOptions& options);
 
+  // Receiver function of responses of simple events dispatched through chromium
+  // IPCs. This is internally the same with OnSimpleEventFinished and will be
+  // replaced with OnSimpleEventFinished after all of simple events are
+  // dispatched via mojo.
   void OnSimpleEventResponse(int request_id,
                              blink::WebServiceWorkerEventResult result,
                              base::Time dispatch_event_time);
