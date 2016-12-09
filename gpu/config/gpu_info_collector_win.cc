@@ -423,8 +423,11 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   }
 
   if (id.length() <= 20) {
-    gpu_info->basic_info_state = kCollectInfoNonFatalFailure;
-    return kCollectInfoNonFatalFailure;
+    // Check if it is the RDP mirror driver "RDPUDD Chained DD"
+    if (wcscmp(dd.DeviceString, L"RDPUDD Chained DD") != 0) {
+      gpu_info->basic_info_state = kCollectInfoNonFatalFailure;
+      return kCollectInfoNonFatalFailure;
+    }
   }
 
   DeviceIDToVendorAndDevice(id, &gpu_info->gpu.vendor_id,
