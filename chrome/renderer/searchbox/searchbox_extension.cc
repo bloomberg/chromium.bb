@@ -169,6 +169,7 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
   // Otherwise, we just create an array with the generated one.
   if (!mv_item.thumbnail.spec().empty()) {
     v8::Local<v8::Array> thumbs = v8::Array::New(isolate, 2);
+    // Note: The "thumb2" source captures a thumbnail on the next visit.
     thumbs->Set(0, GenerateThumb2URL(isolate, mv_item.url.spec()));
     thumbs->Set(1, UTF8ToV8String(isolate, mv_item.thumbnail.spec()));
     obj->Set(v8::String::NewFromUtf8(isolate, "thumbnailUrls"), thumbs);
@@ -184,6 +185,9 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
     obj->Set(v8::String::NewFromUtf8(isolate, "faviconUrl"),
              UTF8ToV8String(isolate, mv_item.favicon.spec()));
   }
+
+  obj->Set(v8::String::NewFromUtf8(isolate, "tileSource"),
+           v8::Integer::New(isolate, static_cast<int>(mv_item.source)));
 
   if (IsIconNTPEnabled()) {
     // Update website http://www.chromium.org/embeddedsearch when we make this

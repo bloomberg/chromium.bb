@@ -88,7 +88,8 @@ const char kRLZParameterKey[] = "rlz";
 const char kInputEncodingKey[] = "ie";
 const char kAssistedQueryStatsKey[] = "aqs";
 
-InstantMostVisitedItem::InstantMostVisitedItem() {}
+InstantMostVisitedItem::InstantMostVisitedItem()
+    : source(ntp_tiles::NTPTileSource::TOP_SITES) {}
 
 InstantMostVisitedItem::InstantMostVisitedItem(
     const InstantMostVisitedItem& other) = default;

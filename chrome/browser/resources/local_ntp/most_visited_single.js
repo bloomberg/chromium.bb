@@ -294,7 +294,6 @@ var addTile = function(args) {
       return;
 
     data.tid = data.rid;
-    data.tileSource = NTPTileSource.TOP_SITES;
     if (!data.faviconUrl) {
       data.faviconUrl = 'chrome-search://favicon/size/16@' +
           window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;

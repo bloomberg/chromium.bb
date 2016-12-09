@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/strings/string16.h"
+#include "components/ntp_tiles/ntp_tile_source.h"
 #include "url/gurl.h"
 
 // ID used by Instant code to refer to objects (e.g. Autocomplete results, Most
@@ -141,9 +142,8 @@ struct InstantMostVisitedItem {
   // The external URL of the favicon associated with this page.
   GURL favicon;
 
-  // True if it's a server side suggestion.
-  // Otherwise, it's a client side suggestion.
-  bool is_server_side_suggestion;
+  // The source of the item, e.g. server-side or client-side.
+  ntp_tiles::NTPTileSource source;
 };
 
 // An InstantMostVisitedItem along with its assigned restricted ID.

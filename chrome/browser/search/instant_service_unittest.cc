@@ -179,9 +179,9 @@ TEST_F(InstantServiceTest, GetSuggestionFromClientSide) {
   history::MostVisitedURLList url_list;
   url_list.push_back(history::MostVisitedURL());
 
-  instant_service_->OnMostVisitedItemsReceived(url_list);
+  instant_service_->OnTopSitesReceived(url_list);
 
   auto items = instant_service_->most_visited_items_;
   ASSERT_EQ(1, (int)items.size());
-  ASSERT_FALSE(items[0].is_server_side_suggestion);
+  ASSERT_EQ(ntp_tiles::NTPTileSource::TOP_SITES, items[0].source);
 }

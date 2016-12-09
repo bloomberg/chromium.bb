@@ -102,11 +102,17 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   ~MostVisitedSites() override;
 
+  // Sets the observer, and immediately fetches the current suggestions.
   // Does not take ownership of |observer|, which must outlive this object and
   // must not be null.
   void SetMostVisitedURLsObserver(Observer* observer, int num_sites);
 
+  // Requests an asynchronous refresh of the suggestions. Notifies the observer
+  // once the request completes.
+  void Refresh();
+
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
+  void ClearBlacklistedUrls();
 
   // MostVisitedSitesSupervisor::Observer implementation.
   void OnBlockedSitesChanged() override;

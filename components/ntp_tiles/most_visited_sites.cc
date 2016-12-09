@@ -109,6 +109,10 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
   // SuggestionsService's cache or, if that is empty, sites from TopSites.
   BuildCurrentTiles();
   // Also start a request for fresh suggestions.
+  Refresh();
+}
+
+void MostVisitedSites::Refresh() {
   suggestions_service_->FetchSuggestionsData();
 }
 
@@ -128,6 +132,18 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
       suggestions_service_->BlacklistURL(url);
     else
       suggestions_service_->UndoBlacklistURL(url);
+  }
+}
+
+void MostVisitedSites::ClearBlacklistedUrls() {
+  if (top_sites_) {
+    // Always update the blacklist in the local TopSites.
+    top_sites_->ClearBlacklistedURLs();
+  }
+
+  // Only update the server-side blacklist if it's active.
+  if (mv_source_ == NTPTileSource::SUGGESTIONS_SERVICE) {
+    suggestions_service_->ClearBlacklist();
   }
 }
 
@@ -219,6 +235,8 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
     tile.url = url;
     tile.source = NTPTileSource::SUGGESTIONS_SERVICE;
     tile.whitelist_icon_path = GetWhitelistLargeIconPath(url);
+    tile.thumbnail_url = GURL(suggestion_pb.thumbnail());
+    tile.favicon_url = GURL(suggestion_pb.favicon_url());
 
     tiles.push_back(std::move(tile));
   }

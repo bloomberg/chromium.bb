@@ -83,6 +83,7 @@
 #include "components/ntp_snippets/remote/request_throttler.h"
 #include "components/ntp_snippets/sessions/foreign_sessions_suggestions_provider.h"
 #include "components/ntp_snippets/user_classifier.h"
+#include "components/ntp_tiles/most_visited_sites.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -155,7 +156,6 @@
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/android/ntp/new_tab_page_prefs.h"
-#include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/popular_sites.h"
 #else
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -501,6 +501,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
   ntp_snippets::RequestThrottler::RegisterProfilePrefs(registry);
   ntp_snippets::UserClassifier::RegisterProfilePrefs(registry);
+  ntp_tiles::MostVisitedSites::RegisterProfilePrefs(registry);
   password_bubble_experiment::RegisterPrefs(registry);
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
@@ -563,7 +564,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   variations::VariationsService::RegisterProfilePrefs(registry);
-  ntp_tiles::MostVisitedSites::RegisterProfilePrefs(registry);
   ntp_tiles::PopularSites::RegisterProfilePrefs(registry);
   NewTabPagePrefs::RegisterProfilePrefs(registry);
   PartnerBookmarksShim::RegisterProfilePrefs(registry);
