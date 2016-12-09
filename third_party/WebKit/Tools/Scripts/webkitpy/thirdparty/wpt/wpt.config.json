@@ -1,5 +1,5 @@
 {
-  "host": "127.0.0.1",
+  "bind_hostname": false,
   "doc_root": null,
   "ws_doc_root": null,
   "external_host": null,
