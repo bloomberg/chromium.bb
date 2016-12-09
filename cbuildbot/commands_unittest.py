@@ -634,6 +634,10 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     kwargs.setdefault('usepkg', default)
     kwargs.setdefault('chrome_binhost_only', default)
     kwargs.setdefault('skip_chroot_upgrade', default)
+
+    kwargs.setdefault('event_file',
+                      os.path.join(self._buildroot, 'events',
+                                   'build-test-events.json'))
     commands.Build(buildroot=self._buildroot, board='x86-generic', **kwargs)
     self.assertCommandContains(['./build_packages'])
 

@@ -320,9 +320,9 @@ def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
     cmd.extend(['--toolchain_boards', ','.join(toolchain_boards)])
 
   # workaround http://crbug.com/225509
-  # Building with FEATURES=separatedebug will create a dedicated tarball with the
-  # debug files, and the debug files won't be in the glibc.tbz2, which is where
-  # the build scripts expect them.
+  # Building with FEATURES=separatedebug will create a dedicated tarball with
+  # the debug files, and the debug files won't be in the glibc.tbz2, which is
+  # where the build scripts expect them.
   extra_env_local = extra_env.copy()
   extra_env_local.setdefault('FEATURES', '')
   extra_env_local['FEATURES'] += ' -separatedebug splitdebug'
@@ -464,7 +464,7 @@ def UpdateBinhostJson(buildroot):
 def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
           packages=(), skip_chroot_upgrade=True, noworkon=False,
           extra_env=None, chrome_root=None, noretry=False,
-          chroot_args=None):
+          chroot_args=None, event_file=None):
   """Wrapper around build_packages.
 
   Args:
@@ -483,9 +483,10 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
     chrome_root: The directory where chrome is stored.
     noretry: Do not retry package failures.
     chroot_args: The args to the chroot.
+    event_file: File name that events will be logged to.
   """
   cmd = ['./build_packages', '--board=%s' % board,
-         '--accept_licenses=@CHROMEOS', '--withdebugsymbols', '--withevents']
+         '--accept_licenses=@CHROMEOS', '--withdebugsymbols']
 
   if not build_autotest:
     cmd.append('--nowithautotest')
@@ -510,6 +511,10 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
 
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
+
+  if event_file:
+    cmd.append('--withevents')
+    cmd.append('--eventfile=%s' % event_file)
 
   cmd.extend(packages)
   RunBuildScript(buildroot, cmd, extra_env=extra_env, chroot_args=chroot_args,
