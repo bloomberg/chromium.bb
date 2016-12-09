@@ -265,33 +265,26 @@ void ChromeContentUtilityClient::OnCreateZipFile(
 #endif  // defined(OS_CHROMEOS)
 
 void ChromeContentUtilityClient::OnPatchFileBsdiff(
-    const base::FilePath& input_file,
-    const base::FilePath& patch_file,
-    const base::FilePath& output_file) {
-  if (input_file.empty() || patch_file.empty() || output_file.empty()) {
-    Send(new ChromeUtilityHostMsg_PatchFile_Finished(-1));
-  } else {
-    const int patch_status = bsdiff::ApplyBinaryPatch(input_file,
-                                                      patch_file,
-                                                      output_file);
-    Send(new ChromeUtilityHostMsg_PatchFile_Finished(patch_status));
-  }
+    const IPC::PlatformFileForTransit& input_file,
+    const IPC::PlatformFileForTransit& patch_file,
+    const IPC::PlatformFileForTransit& output_file) {
+  const int patch_status = bsdiff::ApplyBinaryPatch(
+      IPC::PlatformFileForTransitToFile(input_file),
+      IPC::PlatformFileForTransitToFile(patch_file),
+      IPC::PlatformFileForTransitToFile(output_file));
+  Send(new ChromeUtilityHostMsg_PatchFile_Finished(patch_status));
   ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnPatchFileCourgette(
-    const base::FilePath& input_file,
-    const base::FilePath& patch_file,
-    const base::FilePath& output_file) {
-  if (input_file.empty() || patch_file.empty() || output_file.empty()) {
-    Send(new ChromeUtilityHostMsg_PatchFile_Finished(-1));
-  } else {
-    const int patch_status = courgette::ApplyEnsemblePatch(
-        input_file.value().c_str(),
-        patch_file.value().c_str(),
-        output_file.value().c_str());
-    Send(new ChromeUtilityHostMsg_PatchFile_Finished(patch_status));
-  }
+    const IPC::PlatformFileForTransit& input_file,
+    const IPC::PlatformFileForTransit& patch_file,
+    const IPC::PlatformFileForTransit& output_file) {
+  const int patch_status = courgette::ApplyEnsemblePatch(
+      IPC::PlatformFileForTransitToFile(input_file),
+      IPC::PlatformFileForTransitToFile(patch_file),
+      IPC::PlatformFileForTransitToFile(output_file));
+  Send(new ChromeUtilityHostMsg_PatchFile_Finished(patch_status));
   ReleaseProcessIfNeeded();
 }
 

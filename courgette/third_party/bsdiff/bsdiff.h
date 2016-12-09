@@ -44,6 +44,7 @@
 
 #include <stdint.h>
 
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 
 namespace courgette {
@@ -75,6 +76,11 @@ BSDiffStatus CreateBinaryPatch(courgette::SourceStream* old_stream,
 BSDiffStatus ApplyBinaryPatch(courgette::SourceStream* old_stream,
                               courgette::SourceStream* patch_stream,
                               courgette::SinkStream* new_stream);
+
+// As above, but simply takes base::Files.
+BSDiffStatus ApplyBinaryPatch(base::File old_stream,
+                              base::File patch_stream,
+                              base::File new_stream);
 
 // As above, but simply takes the file paths.
 BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_stream,

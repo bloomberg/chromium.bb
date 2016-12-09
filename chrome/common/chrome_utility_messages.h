@@ -144,17 +144,17 @@ IPC_STRUCT_END()
 // and place the output in |output_file|. The patch should use the bsdiff
 // algorithm (Courgette's version).
 IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_PatchFileBsdiff,
-                     base::FilePath /* input_file */,
-                     base::FilePath /* patch_file */,
-                     base::FilePath /* output_file */)
+                     IPC::PlatformFileForTransit /* input_file */,
+                     IPC::PlatformFileForTransit /* patch_file */,
+                     IPC::PlatformFileForTransit /* output_file */)
 
 // Tell the utility process to patch the given |input_file| using |patch_file|
 // and place the output in |output_file|. The patch should use the Courgette
 // algorithm.
 IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_PatchFileCourgette,
-                     base::FilePath /* input_file */,
-                     base::FilePath /* patch_file */,
-                     base::FilePath /* output_file */)
+                     IPC::PlatformFileForTransit /* input_file */,
+                     IPC::PlatformFileForTransit /* patch_file */,
+                     IPC::PlatformFileForTransit /* output_file */)
 
 #if defined(OS_CHROMEOS)
 // Tell the utility process to create a zip file on the given list of files.

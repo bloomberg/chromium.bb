@@ -40,6 +40,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "courgette/crc.h"
 #include "courgette/streams.h"
@@ -189,24 +190,24 @@ BSDiffStatus ApplyBinaryPatch(SourceStream* old_stream,
   return OK;
 }
 
-BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_file_path,
-                              const base::FilePath& patch_file_path,
-                              const base::FilePath& new_file_path) {
+BSDiffStatus ApplyBinaryPatch(base::File old_file,
+                              base::File patch_file,
+                              base::File new_file) {
   // Set up the old stream.
-  base::MemoryMappedFile old_file;
-  if (!old_file.Initialize(old_file_path)) {
+  base::MemoryMappedFile old_file_mem;
+  if (!old_file_mem.Initialize(std::move(old_file))) {
     return READ_ERROR;
   }
   SourceStream old_file_stream;
-  old_file_stream.Init(old_file.data(), old_file.length());
+  old_file_stream.Init(old_file_mem.data(), old_file_mem.length());
 
   // Set up the patch stream.
-  base::MemoryMappedFile patch_file;
-  if (!patch_file.Initialize(patch_file_path)) {
+  base::MemoryMappedFile patch_file_mem;
+  if (!patch_file_mem.Initialize(std::move(patch_file))) {
     return READ_ERROR;
   }
   SourceStream patch_file_stream;
-  patch_file_stream.Init(patch_file.data(), patch_file.length());
+  patch_file_stream.Init(patch_file_mem.data(), patch_file_mem.length());
 
   // Set up the new stream and apply the patch.
   SinkStream new_sink_stream;
@@ -217,12 +218,33 @@ BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_file_path,
   }
 
   // Write the stream to disk.
-  int written = base::WriteFile(
-      new_file_path, reinterpret_cast<const char*>(new_sink_stream.Buffer()),
+  int written = new_file.Write(
+      0,
+      reinterpret_cast<const char*>(new_sink_stream.Buffer()),
       static_cast<int>(new_sink_stream.Length()));
   if (written != static_cast<int>(new_sink_stream.Length()))
     return WRITE_ERROR;
   return OK;
+}
+
+BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_file_path,
+                              const base::FilePath& patch_file_path,
+                              const base::FilePath& new_file_path) {
+  BSDiffStatus result = ApplyBinaryPatch(
+      base::File(
+          old_file_path,
+          base::File::FLAG_OPEN | base::File::FLAG_READ),
+      base::File(
+          patch_file_path,
+          base::File::FLAG_OPEN | base::File::FLAG_READ),
+      base::File(
+          new_file_path,
+          base::File::FLAG_CREATE_ALWAYS |
+              base::File::FLAG_WRITE |
+              base::File::FLAG_EXCLUSIVE_WRITE));
+  if (result != OK)
+    base::DeleteFile(new_file_path, false);
+  return result;
 }
 
 }  // namespace bsdiff

@@ -12,6 +12,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
@@ -371,33 +372,31 @@ Status ApplyEnsemblePatch(SourceStream* base,
   return C_OK;
 }
 
-Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
-                          const base::FilePath::CharType* patch_file_name,
-                          const base::FilePath::CharType* new_file_name) {
-  base::FilePath patch_file_path(patch_file_name);
-  base::MemoryMappedFile patch_file;
-  if (!patch_file.Initialize(patch_file_path))
+Status ApplyEnsemblePatch(base::File old_file,
+                          base::File patch_file,
+                          base::File new_file) {
+  base::MemoryMappedFile patch_file_mem;
+  if (!patch_file_mem.Initialize(std::move(patch_file)))
     return C_READ_OPEN_ERROR;
 
   // 'Dry-run' the first step of the patch process to validate format of header.
   SourceStream patch_header_stream;
-  patch_header_stream.Init(patch_file.data(), patch_file.length());
+  patch_header_stream.Init(patch_file_mem.data(), patch_file_mem.length());
   EnsemblePatchApplication patch_process;
   Status status = patch_process.ReadHeader(&patch_header_stream);
   if (status != C_OK)
     return status;
 
   // Read the old_file.
-  base::FilePath old_file_path(old_file_name);
-  base::MemoryMappedFile old_file;
-  if (!old_file.Initialize(old_file_path))
+  base::MemoryMappedFile old_file_mem;
+  if (!old_file_mem.Initialize(std::move(old_file)))
     return C_READ_ERROR;
 
   // Apply patch on streams.
   SourceStream old_source_stream;
   SourceStream patch_source_stream;
-  old_source_stream.Init(old_file.data(), old_file.length());
-  patch_source_stream.Init(patch_file.data(), patch_file.length());
+  old_source_stream.Init(old_file_mem.data(), old_file_mem.length());
+  patch_source_stream.Init(patch_file_mem.data(), patch_file_mem.length());
   SinkStream new_sink_stream;
   status = ApplyEnsemblePatch(&old_source_stream, &patch_source_stream,
                               &new_sink_stream);
@@ -405,12 +404,10 @@ Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
     return status;
 
   // Write the patched data to |new_file_name|.
-  base::FilePath new_file_path(new_file_name);
-  int written =
-      base::WriteFile(
-          new_file_path,
-          reinterpret_cast<const char*>(new_sink_stream.Buffer()),
-          static_cast<int>(new_sink_stream.Length()));
+  int written = new_file.Write(
+      0,
+      reinterpret_cast<const char*>(new_sink_stream.Buffer()),
+      static_cast<int>(new_sink_stream.Length()));
   if (written == -1)
     return C_WRITE_OPEN_ERROR;
   if (static_cast<size_t>(written) != new_sink_stream.Length())
@@ -419,4 +416,24 @@ Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
   return C_OK;
 }
 
-}  // namespace
+Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
+                          const base::FilePath::CharType* patch_file_name,
+                          const base::FilePath::CharType* new_file_name) {
+  Status result = ApplyEnsemblePatch(
+      base::File(
+          base::FilePath(old_file_name),
+          base::File::FLAG_OPEN | base::File::FLAG_READ),
+      base::File(
+          base::FilePath(patch_file_name),
+          base::File::FLAG_OPEN | base::File::FLAG_READ),
+      base::File(
+          base::FilePath(new_file_name),
+          base::File::FLAG_CREATE_ALWAYS |
+              base::File::FLAG_WRITE |
+              base::File::FLAG_EXCLUSIVE_WRITE));
+  if (result != C_OK)
+    base::DeleteFile(base::FilePath(new_file_name), false);
+  return result;
+}
+
+}  // namespace courgette

@@ -50,12 +50,12 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
                        const base::FileDescriptor& dest_fd);
 #endif  // defined(OS_CHROMEOS)
 
-  void OnPatchFileBsdiff(const base::FilePath& input_file,
-                         const base::FilePath& patch_file,
-                         const base::FilePath& output_file);
-  void OnPatchFileCourgette(const base::FilePath& input_file,
-                            const base::FilePath& patch_file,
-                            const base::FilePath& output_file);
+  void OnPatchFileBsdiff(const IPC::PlatformFileForTransit& input_file,
+                         const IPC::PlatformFileForTransit& patch_file,
+                         const IPC::PlatformFileForTransit& output_file);
+  void OnPatchFileCourgette(const IPC::PlatformFileForTransit& input_file,
+                            const IPC::PlatformFileForTransit& patch_file,
+                            const IPC::PlatformFileForTransit& output_file);
   void OnStartupPing();
 #if defined(FULL_SAFE_BROWSING)
   void OnAnalyzeZipFileForDownloadProtection(

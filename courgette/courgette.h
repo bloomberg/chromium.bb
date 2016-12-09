@@ -7,6 +7,7 @@
 
 #include <stddef.h>   // Required to define size_t on GCC
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 
 namespace courgette {
@@ -72,6 +73,15 @@ class EncodedProgram;
 // Returns C_OK unless something went wrong.
 Status ApplyEnsemblePatch(SourceStream* old, SourceStream* patch,
                           SinkStream* output);
+
+// Applies the patch in |patch_file| to the bytes in |old_file| and writes the
+// transformed ensemble to |new_file|.
+// Returns C_OK unless something went wrong.
+// This function first validates that the patch file has a proper header, so the
+// function can be used to 'try' a patch.
+Status ApplyEnsemblePatch(base::File old_file,
+                          base::File patch_file,
+                          base::File new_file);
 
 // Applies the patch in |patch_file_name| to the bytes in |old_file_name| and
 // writes the transformed ensemble to |new_file_name|.

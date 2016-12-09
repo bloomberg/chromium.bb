@@ -4,6 +4,7 @@
 
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -61,7 +62,6 @@ void PatchHost::StartProcess(std::unique_ptr<IPC::Message> message) {
       this, base::ThreadTaskRunnerHandle::Get().get());
   host->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_COMPONENT_PATCHER_NAME));
-  host->DisableSandbox();
   host->Send(message.release());
 }
 
@@ -102,13 +102,25 @@ void ChromeOutOfProcessPatcher::Patch(
     const base::FilePath& output_abs_path,
     base::Callback<void(int result)> callback) {
   host_ = new PatchHost(callback, task_runner);
+  IPC::PlatformFileForTransit input = IPC::TakePlatformFileForTransit(
+      base::File(
+          input_abs_path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+  IPC::PlatformFileForTransit patch = IPC::TakePlatformFileForTransit(
+      base::File(
+          patch_abs_path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+  IPC::PlatformFileForTransit output = IPC::TakePlatformFileForTransit(
+      base::File(
+          output_abs_path,
+          base::File::FLAG_CREATE |
+              base::File::FLAG_WRITE |
+              base::File::FLAG_EXCLUSIVE_WRITE));
   std::unique_ptr<IPC::Message> patch_message;
   if (operation == update_client::kBsdiff) {
     patch_message.reset(new ChromeUtilityMsg_PatchFileBsdiff(
-        input_abs_path, patch_abs_path, output_abs_path));
+        input, patch, output));
   } else if (operation == update_client::kCourgette) {
     patch_message.reset(new ChromeUtilityMsg_PatchFileCourgette(
-        input_abs_path, patch_abs_path, output_abs_path));
+        input, patch, output));
   } else {
     NOTREACHED();
   }
