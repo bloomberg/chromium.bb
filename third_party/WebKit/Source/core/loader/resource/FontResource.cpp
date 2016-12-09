@@ -105,19 +105,15 @@ void FontResource::didAddClient(ResourceClient* c) {
 void FontResource::setRevalidatingRequest(const ResourceRequest& request) {
   // Reload will use the same object, and needs to reset |m_loadLimitState|
   // before any didAddClient() is called again.
-  // TODO(toyoshim): Change following CHECKs to DCHECKs once we confirm these do
-  // not fire.
-  CHECK(isLoaded());
-  CHECK(!m_fontLoadShortLimitTimer.isActive());
-  CHECK(!m_fontLoadLongLimitTimer.isActive());
+  DCHECK(isLoaded());
+  DCHECK(!m_fontLoadShortLimitTimer.isActive());
+  DCHECK(!m_fontLoadLongLimitTimer.isActive());
   m_loadLimitState = LoadNotStarted;
   Resource::setRevalidatingRequest(request);
 }
 
 void FontResource::startLoadLimitTimers() {
-  // TODO(toyoshim): Change CHECK() to DCHECK() if this can survive on Canary
-  // for some days. http://crbug.com/670638
-  CHECK(isLoading());
+  DCHECK(isLoading());
   DCHECK_EQ(m_loadLimitState, LoadNotStarted);
   m_loadLimitState = UnderLimit;
   m_fontLoadShortLimitTimer.startOneShot(fontLoadWaitShortLimitSec,
@@ -151,11 +147,7 @@ FontPlatformData FontResource::platformDataFromCustomData(
 }
 
 void FontResource::fontLoadShortLimitCallback(TimerBase*) {
-  // TODO(toyoshim): Change CHECK() to DCHECK() and remove if(!isLoading()) if
-  // this can survive on Canary for some days. http://crbug.com/670638
-  CHECK(isLoading());
-  if (!isLoading())
-    return;
+  DCHECK(isLoading());
   DCHECK_EQ(m_loadLimitState, UnderLimit);
   m_loadLimitState = ShortLimitExceeded;
   ResourceClientWalker<FontResourceClient> walker(clients());
@@ -164,11 +156,7 @@ void FontResource::fontLoadShortLimitCallback(TimerBase*) {
 }
 
 void FontResource::fontLoadLongLimitCallback(TimerBase*) {
-  // TODO(toyoshim): Change CHECK() to DCHECK() and remove if(!isLoading()) if
-  // this can survive on Canary for some days. http://crbug.com/670638
-  CHECK(isLoading());
-  if (!isLoading())
-    return;
+  DCHECK(isLoading());
   DCHECK_EQ(m_loadLimitState, ShortLimitExceeded);
   m_loadLimitState = LongLimitExceeded;
   ResourceClientWalker<FontResourceClient> walker(clients());
