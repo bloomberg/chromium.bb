@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_HEADER_LIST_H_
-#define NET_QUIC_QUIC_HEADER_LIST_H_
+#ifndef NET_QUIC_CORE_QUIC_HEADER_LIST_H_
+#define NET_QUIC_CORE_QUIC_HEADER_LIST_H_
 
 #include <algorithm>
 #include <deque>
@@ -71,4 +71,4 @@ inline bool operator==(const QuicHeaderList& l1, const QuicHeaderList& l2) {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_HEADER_LIST_H_
+#endif  // NET_QUIC_CORE_QUIC_HEADER_LIST_H_

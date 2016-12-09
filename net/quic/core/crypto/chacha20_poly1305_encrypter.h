@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CRYPTO_CHACHA20_POLY1305_ENCRYPTER_H_
-#define NET_QUIC_CRYPTO_CHACHA20_POLY1305_ENCRYPTER_H_
+#ifndef NET_QUIC_CORE_CRYPTO_CHACHA20_POLY1305_ENCRYPTER_H_
+#define NET_QUIC_CORE_CRYPTO_CHACHA20_POLY1305_ENCRYPTER_H_
 
 #include <stddef.h>
 
@@ -36,4 +36,4 @@ class NET_EXPORT_PRIVATE ChaCha20Poly1305Encrypter : public AeadBaseEncrypter {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CRYPTO_CHACHA20_POLY1305_ENCRYPTER_H_
+#endif  // NET_QUIC_CORE_CRYPTO_CHACHA20_POLY1305_ENCRYPTER_H_

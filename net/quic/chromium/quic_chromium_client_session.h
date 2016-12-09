@@ -7,8 +7,8 @@
 // a non-owning pointer to the helper so this session needs to ensure that
 // the helper outlives the connection.
 
-#ifndef NET_QUIC_QUIC_CHROMIUM_CLIENT_SESSION_H_
-#define NET_QUIC_QUIC_CHROMIUM_CLIENT_SESSION_H_
+#ifndef NET_QUIC_CHROMIUM_QUIC_CHROMIUM_CLIENT_SESSION_H_
+#define NET_QUIC_CHROMIUM_QUIC_CHROMIUM_CLIENT_SESSION_H_
 
 #include <stddef.h>
 
@@ -417,4 +417,4 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_CHROMIUM_CLIENT_SESSION_H_
+#endif  // NET_QUIC_CHROMIUM_QUIC_CHROMIUM_CLIENT_SESSION_H_

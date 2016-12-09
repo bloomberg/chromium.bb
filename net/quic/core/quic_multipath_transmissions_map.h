@@ -9,8 +9,8 @@
 // gets retransmitted on path 2 with packet 2. (2, 2) will not be inserted
 // because this transmission does not "across" path compared to (2, 1).
 
-#ifndef NET_QUIC_QUIC_MULTIPATH_TRANSMISSIONS_MAP_H_
-#define NET_QUIC_QUIC_MULTIPATH_TRANSMISSIONS_MAP_H_
+#ifndef NET_QUIC_CORE_QUIC_MULTIPATH_TRANSMISSIONS_MAP_H_
+#define NET_QUIC_CORE_QUIC_MULTIPATH_TRANSMISSIONS_MAP_H_
 
 #include <deque>
 #include <unordered_map>
@@ -71,4 +71,4 @@ class NET_EXPORT_PRIVATE QuicMultipathTransmissionsMap {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_MULTIPATH_TRANSMISSIONS_MAP_H_
+#endif  // NET_QUIC_CORE_QUIC_MULTIPATH_TRANSMISSIONS_MAP_H_

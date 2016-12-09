@@ -8,8 +8,8 @@
 // alarm to ensure that alarms are not set too aggressively, and err towards
 // sending packets too early instead of too late.
 
-#ifndef NET_QUIC_CONGESTION_CONTROL_PACING_SENDER_H_
-#define NET_QUIC_CONGESTION_CONTROL_PACING_SENDER_H_
+#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_PACING_SENDER_H_
+#define NET_QUIC_CORE_CONGESTION_CONTROL_PACING_SENDER_H_
 
 #include <stdint.h>
 
@@ -73,4 +73,4 @@ class NET_EXPORT_PRIVATE PacingSender {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CONGESTION_CONTROL_PACING_SENDER_H_
+#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_PACING_SENDER_H_

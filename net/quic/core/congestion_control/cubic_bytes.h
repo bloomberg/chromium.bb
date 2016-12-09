@@ -5,8 +5,8 @@
 // Cubic algorithm, helper class to TCP cubic.
 // For details see http://netsrv.csc.ncsu.edu/export/cubic_a_new_tcp_2008.pdf.
 
-#ifndef NET_QUIC_CONGESTION_CONTROL_CUBIC_BYTES_H_
-#define NET_QUIC_CONGESTION_CONTROL_CUBIC_BYTES_H_
+#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_CUBIC_BYTES_H_
+#define NET_QUIC_CORE_CONGESTION_CONTROL_CUBIC_BYTES_H_
 
 #include <stdint.h>
 
@@ -100,4 +100,4 @@ class NET_EXPORT_PRIVATE CubicBytes {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CONGESTION_CONTROL_CUBIC_BYTES_H_
+#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_CUBIC_BYTES_H_

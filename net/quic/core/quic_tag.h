@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_TAG_H_
-#define NET_QUIC_QUIC_TAG_H_
+#ifndef NET_QUIC_CORE_QUIC_TAG_H_
+#define NET_QUIC_CORE_QUIC_TAG_H_
 
 #include <map>
 #include <string>
@@ -52,4 +52,4 @@ NET_EXPORT_PRIVATE std::string QuicTagToString(QuicTag tag);
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_TAG_H_
+#endif  // NET_QUIC_CORE_QUIC_TAG_H_

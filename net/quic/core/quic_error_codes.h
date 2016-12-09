@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_ERROR_CODES_H_
-#define NET_QUIC_QUIC_ERROR_CODES_H_
+#ifndef NET_QUIC_CORE_QUIC_ERROR_CODES_H_
+#define NET_QUIC_CORE_QUIC_ERROR_CODES_H_
 
 #include <stdint.h>
 
@@ -291,4 +291,4 @@ NET_EXPORT_PRIVATE const char* QuicErrorCodeToString(QuicErrorCode error);
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_ERROR_CODES_H_
+#endif  // NET_QUIC_CORE_QUIC_ERROR_CODES_H_

@@ -4,8 +4,8 @@
 //
 // QuicBandwidth represents a bandwidth, stored in bits per second resolution.
 
-#ifndef NET_QUIC_QUIC_BANDWIDTH_H_
-#define NET_QUIC_QUIC_BANDWIDTH_H_
+#ifndef NET_QUIC_CORE_QUIC_BANDWIDTH_H_
+#define NET_QUIC_CORE_QUIC_BANDWIDTH_H_
 
 #include <stdint.h>
 
@@ -119,4 +119,4 @@ inline std::ostream& operator<<(std::ostream& output,
 }
 
 }  // namespace net
-#endif  // NET_QUIC_QUIC_BANDWIDTH_H_
+#endif  // NET_QUIC_CORE_QUIC_BANDWIDTH_H_

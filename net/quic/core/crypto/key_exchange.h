@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CRYPTO_KEY_EXCHANGE_H_
-#define NET_QUIC_CRYPTO_KEY_EXCHANGE_H_
+#ifndef NET_QUIC_CORE_CRYPTO_KEY_EXCHANGE_H_
+#define NET_QUIC_CORE_CRYPTO_KEY_EXCHANGE_H_
 
 #include <string>
 
@@ -44,4 +44,4 @@ class NET_EXPORT_PRIVATE KeyExchange {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CRYPTO_KEY_EXCHANGE_H_
+#endif  // NET_QUIC_CORE_CRYPTO_KEY_EXCHANGE_H_

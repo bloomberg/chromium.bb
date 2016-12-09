@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CRYPTO_CURVE25519_KEY_EXCHANGE_H_
-#define NET_QUIC_CRYPTO_CURVE25519_KEY_EXCHANGE_H_
+#ifndef NET_QUIC_CORE_CRYPTO_CURVE25519_KEY_EXCHANGE_H_
+#define NET_QUIC_CORE_CRYPTO_CURVE25519_KEY_EXCHANGE_H_
 
 #include <stdint.h>
 
@@ -48,4 +48,4 @@ class NET_EXPORT_PRIVATE Curve25519KeyExchange : public KeyExchange {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CRYPTO_CURVE25519_KEY_EXCHANGE_H_
+#endif  // NET_QUIC_CORE_CRYPTO_CURVE25519_KEY_EXCHANGE_H_

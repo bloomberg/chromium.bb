@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_CLIENT_PROMISED_INFO_H_
-#define NET_QUIC_QUIC_CLIENT_PROMISED_INFO_H_
+#ifndef NET_QUIC_CORE_QUIC_CLIENT_PROMISED_INFO_H_
+#define NET_QUIC_CORE_QUIC_CLIENT_PROMISED_INFO_H_
 
 #include <sys/types.h>
 #include <string>
@@ -111,4 +111,4 @@ class NET_EXPORT_PRIVATE QuicClientPromisedInfo
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_CLIENT_PROMISED_INFO_H_
+#endif  // NET_QUIC_CORE_QUIC_CLIENT_PROMISED_INFO_H_

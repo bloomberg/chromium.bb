@@ -4,8 +4,8 @@
 //
 // TCP cubic send side congestion algorithm, emulates the behavior of TCP cubic.
 
-#ifndef NET_QUIC_CONGESTION_CONTROL_TCP_CUBIC_SENDER_PACKETS_H_
-#define NET_QUIC_CONGESTION_CONTROL_TCP_CUBIC_SENDER_PACKETS_H_
+#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_TCP_CUBIC_SENDER_PACKETS_H_
+#define NET_QUIC_CORE_CONGESTION_CONTROL_TCP_CUBIC_SENDER_PACKETS_H_
 
 #include <stdint.h>
 
@@ -104,4 +104,4 @@ class NET_EXPORT_PRIVATE TcpCubicSenderPackets : public TcpCubicSenderBase {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CONGESTION_CONTROL_TCP_CUBIC_SENDER_H_
+#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_TCP_CUBIC_SENDER_PACKETS_H_

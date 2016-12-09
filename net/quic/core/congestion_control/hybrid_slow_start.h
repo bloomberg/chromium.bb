@@ -13,8 +13,8 @@
 // http://netsrv.csc.ncsu.edu/export/hybridstart_pfldnet08.pdf
 // http://research.csc.ncsu.edu/netsrv/sites/default/files/hystart_techreport_2008.pdf
 
-#ifndef NET_QUIC_CONGESTION_CONTROL_HYBRID_SLOW_START_H_
-#define NET_QUIC_CONGESTION_CONTROL_HYBRID_SLOW_START_H_
+#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_HYBRID_SLOW_START_H_
+#define NET_QUIC_CORE_CONGESTION_CONTROL_HYBRID_SLOW_START_H_
 
 #include <stdint.h>
 
@@ -81,4 +81,4 @@ class NET_EXPORT_PRIVATE HybridSlowStart {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CONGESTION_CONTROL_HYBRID_SLOW_START_H_
+#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_HYBRID_SLOW_START_H_

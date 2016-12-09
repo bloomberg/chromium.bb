@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CONGESTION_CONTROL_GENERAL_LOSS_ALGORITHM_H_
-#define NET_QUIC_CONGESTION_CONTROL_GENERAL_LOSS_ALGORITHM_H_
+#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_GENERAL_LOSS_ALGORITHM_H_
+#define NET_QUIC_CORE_CONGESTION_CONTROL_GENERAL_LOSS_ALGORITHM_H_
 
 #include <algorithm>
 #include <map>
@@ -73,4 +73,4 @@ class NET_EXPORT_PRIVATE GeneralLossAlgorithm : public LossDetectionInterface {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CONGESTION_CONTROL_GENERAL_LOSS_ALGORITHM_H_
+#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_GENERAL_LOSS_ALGORITHM_H_

@@ -4,8 +4,8 @@
 //
 // A convenience class to store rtt samples and calculate smoothed rtt.
 
-#ifndef NET_QUIC_CONGESTION_CONTROL_RTT_STATS_H_
-#define NET_QUIC_CONGESTION_CONTROL_RTT_STATS_H_
+#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_RTT_STATS_H_
+#define NET_QUIC_CORE_CONGESTION_CONTROL_RTT_STATS_H_
 
 #include <stdint.h>
 
@@ -87,4 +87,4 @@ class NET_EXPORT_PRIVATE RttStats {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CONGESTION_CONTROL_RTT_STATS_H_
+#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_RTT_STATS_H_

@@ -29,4 +29,4 @@ struct NET_EXPORT_PRIVATE QuicPathCloseFrame {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_QUIC_FRAMES_H_
+#endif  // NET_QUIC_CORE_FRAMES_QUIC_PATH_CLOSE_FRAME_H_

@@ -4,8 +4,8 @@
 //
 // A QuicSession, which demuxes a single connection to individual streams.
 
-#ifndef NET_QUIC_QUIC_SESSION_H_
-#define NET_QUIC_QUIC_SESSION_H_
+#ifndef NET_QUIC_CORE_QUIC_SESSION_H_
+#define NET_QUIC_CORE_QUIC_SESSION_H_
 
 #include <stddef.h>
 
@@ -441,4 +441,4 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_SESSION_H_
+#endif  // NET_QUIC_CORE_QUIC_SESSION_H_

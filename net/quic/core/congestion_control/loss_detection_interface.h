@@ -4,8 +4,8 @@
 //
 // The pure virtual class for send side loss detection algorithm.
 
-#ifndef NET_QUIC_CONGESTION_CONTROL_LOSS_DETECTION_INTERFACE_H_
-#define NET_QUIC_CONGESTION_CONTROL_LOSS_DETECTION_INTERFACE_H_
+#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_LOSS_DETECTION_INTERFACE_H_
+#define NET_QUIC_CORE_CONGESTION_CONTROL_LOSS_DETECTION_INTERFACE_H_
 
 #include "net/base/net_export.h"
 #include "net/quic/core/congestion_control/send_algorithm_interface.h"
@@ -46,4 +46,4 @@ class NET_EXPORT_PRIVATE LossDetectionInterface {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CONGESTION_CONTROL_LOSS_DETECTION_INTERFACE_H_
+#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_LOSS_DETECTION_INTERFACE_H_

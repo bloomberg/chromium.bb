@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CRYPTO_CRYPTO_SECRET_BOXER_H_
-#define NET_QUIC_CRYPTO_CRYPTO_SECRET_BOXER_H_
+#ifndef NET_QUIC_CORE_CRYPTO_CRYPTO_SECRET_BOXER_H_
+#define NET_QUIC_CORE_CRYPTO_CRYPTO_SECRET_BOXER_H_
 
 #include <stddef.h>
 
@@ -60,4 +60,4 @@ class NET_EXPORT_PRIVATE CryptoSecretBoxer {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CRYPTO_CRYPTO_SECRET_BOXER_H_
+#endif  // NET_QUIC_CORE_CRYPTO_CRYPTO_SECRET_BOXER_H_

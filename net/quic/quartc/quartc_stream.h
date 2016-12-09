@@ -47,4 +47,4 @@ class NET_EXPORT_PRIVATE QuartcStream : public QuicStream,
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUARTC_STREAM_H_
+#endif  // NET_QUIC_QUARTC_QUARTC_STREAM_H_

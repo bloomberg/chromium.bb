@@ -76,4 +76,4 @@ static_assert(sizeof(QuicStreamFrame) <= 64,
 
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_QUIC_FRAMES_H_
+#endif  // NET_QUIC_CORE_FRAMES_QUIC_STREAM_FRAME_H_

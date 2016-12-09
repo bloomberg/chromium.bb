@@ -5,8 +5,8 @@
 // A connection level received packet manager which manages multiple per path
 // received packet managers.
 
-#ifndef NET_QUIC_QUIC_MULTIPATH_RECEIVED_PACKET_MANAGER_H_
-#define NET_QUIC_QUIC_MULTIPATH_RECEIVED_PACKET_MANAGER_H_
+#ifndef NET_QUIC_CORE_QUIC_MULTIPATH_RECEIVED_PACKET_MANAGER_H_
+#define NET_QUIC_CORE_QUIC_MULTIPATH_RECEIVED_PACKET_MANAGER_H_
 
 #include <memory>
 #include <unordered_map>
@@ -76,4 +76,4 @@ class NET_EXPORT_PRIVATE QuicMultipathReceivedPacketManager {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_MULTIPATH_RECEIVED_PACKET_MANAGER_H_
+#endif  // NET_QUIC_CORE_QUIC_MULTIPATH_RECEIVED_PACKET_MANAGER_H_

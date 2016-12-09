@@ -4,8 +4,8 @@
 //
 // Some helpers for quic crypto
 
-#ifndef NET_QUIC_CRYPTO_CRYPTO_UTILS_H_
-#define NET_QUIC_CRYPTO_CRYPTO_UTILS_H_
+#ifndef NET_QUIC_CORE_CRYPTO_CRYPTO_UTILS_H_
+#define NET_QUIC_CORE_CRYPTO_CRYPTO_UTILS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -165,4 +165,4 @@ class NET_EXPORT_PRIVATE CryptoUtils {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CRYPTO_CRYPTO_UTILS_H_
+#endif  // NET_QUIC_CORE_CRYPTO_CRYPTO_UTILS_H_

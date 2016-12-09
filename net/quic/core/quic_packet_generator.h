@@ -37,8 +37,8 @@
 // mode is ended via |FinishBatchOperations|, the current packet
 // will be serialzied, even if it is not full.
 
-#ifndef NET_QUIC_QUIC_PACKET_GENERATOR_H_
-#define NET_QUIC_QUIC_PACKET_GENERATOR_H_
+#ifndef NET_QUIC_CORE_QUIC_PACKET_GENERATOR_H_
+#define NET_QUIC_CORE_QUIC_PACKET_GENERATOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -217,4 +217,4 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_PACKET_GENERATOR_H_
+#endif  // NET_QUIC_CORE_QUIC_PACKET_GENERATOR_H_

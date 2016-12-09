@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_SIMPLE_BUFFER_ALLOCATOR_H_
-#define NET_QUIC_SIMPLE_BUFFER_ALLOCATOR_H_
+#ifndef NET_QUIC_CORE_QUIC_SIMPLE_BUFFER_ALLOCATOR_H_
+#define NET_QUIC_CORE_QUIC_SIMPLE_BUFFER_ALLOCATOR_H_
 
 #include "net/base/net_export.h"
 #include "net/quic/core/quic_buffer_allocator.h"
@@ -19,4 +19,4 @@ class NET_EXPORT_PRIVATE SimpleBufferAllocator : public QuicBufferAllocator {
 
 }  // namespace net
 
-#endif  // NET_QUIC_SIMPLE_BUFFER_ALLOCATOR_H_
+#endif  // NET_QUIC_CORE_QUIC_SIMPLE_BUFFER_ALLOCATOR_H_

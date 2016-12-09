@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_TYPES_H_
-#define NET_QUIC_QUIC_TYPES_H_
+#ifndef NET_QUIC_CORE_QUIC_TYPES_H_
+#define NET_QUIC_CORE_QUIC_TYPES_H_
 
 #include <stddef.h>
 #include <array>
@@ -256,4 +256,4 @@ enum PeerAddressChangeType {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_TYPES_H_
+#endif  // NET_QUIC_CORE_QUIC_TYPES_H_

@@ -6,8 +6,8 @@
 // the underlying UDP socket is available for writing (not write blocked
 // anymore).
 
-#ifndef NET_QUIC_QUIC_BLOCKED_WRITER_INTERFACE_H_
-#define NET_QUIC_QUIC_BLOCKED_WRITER_INTERFACE_H_
+#ifndef NET_QUIC_CORE_QUIC_BLOCKED_WRITER_INTERFACE_H_
+#define NET_QUIC_CORE_QUIC_BLOCKED_WRITER_INTERFACE_H_
 
 #include <stddef.h>
 
@@ -35,4 +35,4 @@ struct QuicBlockedWriterInterfacePtrHash {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_BLOCKED_WRITER_INTERFACE_H_
+#endif  // NET_QUIC_CORE_QUIC_BLOCKED_WRITER_INTERFACE_H_

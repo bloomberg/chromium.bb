@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CRYPTO_CERT_COMPRESSOR_H_
-#define NET_QUIC_CRYPTO_CERT_COMPRESSOR_H_
+#ifndef NET_QUIC_CORE_CRYPTO_CERT_COMPRESSOR_H_
+#define NET_QUIC_CORE_CRYPTO_CERT_COMPRESSOR_H_
 
 #include <string>
 #include <vector>
@@ -55,4 +55,4 @@ class NET_EXPORT_PRIVATE CertCompressor {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CRYPTO_CERT_COMPRESSOR_H_
+#endif  // NET_QUIC_CORE_CRYPTO_CERT_COMPRESSOR_H_

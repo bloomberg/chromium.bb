@@ -4,8 +4,8 @@
 //
 // Implements Proportional Rate Reduction (PRR) per RFC 6937.
 
-#ifndef NET_QUIC_CONGESTION_CONTROL_PRR_SENDER_H_
-#define NET_QUIC_CONGESTION_CONTROL_PRR_SENDER_H_
+#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_PRR_SENDER_H_
+#define NET_QUIC_CORE_CONGESTION_CONTROL_PRR_SENDER_H_
 
 #include <stddef.h>
 
@@ -42,4 +42,4 @@ class NET_EXPORT_PRIVATE PrrSender {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CONGESTION_CONTROL_PRR_SENDER_H_
+#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_PRR_SENDER_H_

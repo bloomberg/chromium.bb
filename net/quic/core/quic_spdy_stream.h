@@ -6,8 +6,8 @@
 // In each direction, the data on such a stream first contains compressed
 // headers then body data.
 
-#ifndef NET_QUIC_QUIC_SPDY_STREAM_H_
-#define NET_QUIC_QUIC_SPDY_STREAM_H_
+#ifndef NET_QUIC_CORE_QUIC_SPDY_STREAM_H_
+#define NET_QUIC_CORE_QUIC_SPDY_STREAM_H_
 
 #include <stddef.h>
 #include <sys/types.h>
@@ -232,4 +232,4 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_SPDY_STREAM_H_
+#endif  // NET_QUIC_CORE_QUIC_SPDY_STREAM_H_

@@ -7,8 +7,8 @@
 // packets on one path at the same time. Currently, next packet number is
 // tracked per-path.
 
-#ifndef NET_QUIC_QUIC_PACKET_CREATOR_H_
-#define NET_QUIC_QUIC_PACKET_CREATOR_H_
+#ifndef NET_QUIC_CORE_QUIC_PACKET_CREATOR_H_
+#define NET_QUIC_CORE_QUIC_PACKET_CREATOR_H_
 
 #include <stddef.h>
 
@@ -317,4 +317,4 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_PACKET_CREATOR_H_
+#endif  // NET_QUIC_CORE_QUIC_PACKET_CREATOR_H_

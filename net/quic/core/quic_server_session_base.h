@@ -4,8 +4,8 @@
 //
 // A server specific QuicSession subclass.
 
-#ifndef NET_QUIC_QUIC_SERVER_SESSION_BASE_H_
-#define NET_QUIC_QUIC_SERVER_SESSION_BASE_H_
+#ifndef NET_QUIC_CORE_QUIC_SERVER_SESSION_BASE_H_
+#define NET_QUIC_CORE_QUIC_SERVER_SESSION_BASE_H_
 
 #include <stdint.h>
 
@@ -135,4 +135,4 @@ class NET_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_SERVER_SESSION_BASE_H_
+#endif  // NET_QUIC_CORE_QUIC_SERVER_SESSION_BASE_H_

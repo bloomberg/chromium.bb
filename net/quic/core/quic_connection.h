@@ -13,8 +13,8 @@
 //
 // Note: this class is not thread-safe.
 
-#ifndef NET_QUIC_QUIC_CONNECTION_H_
-#define NET_QUIC_QUIC_CONNECTION_H_
+#ifndef NET_QUIC_CORE_QUIC_CONNECTION_H_
+#define NET_QUIC_CORE_QUIC_CONNECTION_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -1112,4 +1112,4 @@ class NET_EXPORT_PRIVATE QuicConnection
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_CONNECTION_H_
+#endif  // NET_QUIC_CORE_QUIC_CONNECTION_H_

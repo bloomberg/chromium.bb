@@ -8,8 +8,8 @@
 //
 // This implementation wraps the classes base::TimeTicks and base::TimeDelta.
 
-#ifndef NET_QUIC_QUIC_TIME_H_
-#define NET_QUIC_QUIC_TIME_H_
+#ifndef NET_QUIC_CORE_QUIC_TIME_H_
+#define NET_QUIC_CORE_QUIC_TIME_H_
 
 #include <stdint.h>
 
@@ -271,4 +271,4 @@ inline std::ostream& operator<<(std::ostream& output,
 }
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_TIME_H_
+#endif  // NET_QUIC_CORE_QUIC_TIME_H_
