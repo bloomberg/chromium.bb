@@ -114,6 +114,10 @@ class PresentationConnection final : public EventTargetWithInlineData,
   void didFinishLoadingBlob(DOMArrayBuffer*);
   void didFailLoadingBlob(FileError::ErrorCode);
 
+  // Internal helper function to dispatch state change events asynchronously.
+  void dispatchStateChangeEvent(Event*);
+  static void dispatchEventAsync(EventTarget*, Event*);
+
   // Cancel loads and pending messages when the connection is closed.
   void tearDown();
 

@@ -9,6 +9,7 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/events/Event.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -191,8 +192,14 @@ PresentationConnection* PresentationConnection::take(
   PresentationConnection* connection = new PresentationConnection(
       controller->frame(), client->getId(), client->getUrl());
   controller->registerConnection(connection);
-  request->dispatchEvent(PresentationConnectionAvailableEvent::create(
-      EventTypeNames::connectionavailable, connection));
+
+  // Fire onconnectionavailable event asynchronously.
+  auto* event = PresentationConnectionAvailableEvent::create(
+      EventTypeNames::connectionavailable, connection);
+  request->getExecutionContext()->postTask(
+      BLINK_FROM_HERE,
+      createSameThreadTask(&PresentationConnection::dispatchEventAsync,
+                           wrapPersistent(request), wrapPersistent(event)));
 
   return connection;
 }
@@ -415,10 +422,10 @@ void PresentationConnection::didChangeState(
       NOTREACHED();
       return;
     case WebPresentationConnectionState::Connected:
-      dispatchEvent(Event::create(EventTypeNames::connect));
+      dispatchStateChangeEvent(Event::create(EventTypeNames::connect));
       return;
     case WebPresentationConnectionState::Terminated:
-      dispatchEvent(Event::create(EventTypeNames::terminate));
+      dispatchStateChangeEvent(Event::create(EventTypeNames::terminate));
       return;
     // Closed state is handled in |didClose()|.
     case WebPresentationConnectionState::Closed:
@@ -435,7 +442,7 @@ void PresentationConnection::didClose(
     return;
 
   m_state = WebPresentationConnectionState::Closed;
-  dispatchEvent(PresentationConnectionCloseEvent::create(
+  dispatchStateChangeEvent(PresentationConnectionCloseEvent::create(
       EventTypeNames::close, connectionCloseReasonToString(reason), message));
 }
 
@@ -462,6 +469,21 @@ void PresentationConnection::didFailLoadingBlob(
   m_messages.removeFirst();
   m_blobLoader.clear();
   handleMessageQueue();
+}
+
+void PresentationConnection::dispatchStateChangeEvent(Event* event) {
+  getExecutionContext()->postTask(
+      BLINK_FROM_HERE,
+      createSameThreadTask(&PresentationConnection::dispatchEventAsync,
+                           wrapPersistent(this), wrapPersistent(event)));
+}
+
+// static
+void PresentationConnection::dispatchEventAsync(EventTarget* target,
+                                                Event* event) {
+  DCHECK(target);
+  DCHECK(event);
+  target->dispatchEvent(event);
 }
 
 void PresentationConnection::tearDown() {
