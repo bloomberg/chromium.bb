@@ -67,20 +67,11 @@ void FinalizeHandlerInitialization(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBodyImpl> body) {
-  if (skip_service_worker) {
-    // TODO(horo): Does this work properly for PlzNavigate?
-    if (ServiceWorkerUtils::IsMainResourceType(resource_type)) {
-      provider_host->SetDocumentUrl(net::SimplifyUrlForRequest(request->url()));
-      provider_host->SetTopmostFrameUrl(request->first_party_for_cookies());
-    }
-    return;
-  }
-
   std::unique_ptr<ServiceWorkerRequestHandler> handler(
       provider_host->CreateRequestHandler(
           request_mode, credentials_mode, redirect_mode, resource_type,
           request_context_type, frame_type, blob_storage_context->AsWeakPtr(),
-          body));
+          body, skip_service_worker));
   if (!handler)
     return;
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "content/browser/message_port_message_filter.h"
@@ -27,6 +28,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
+#include "net/base/url_util.h"
 
 namespace content {
 
@@ -36,6 +38,38 @@ namespace {
 // Next ServiceWorkerProviderHost ID for navigations, starts at -2 and keeps
 // going down.
 int g_next_navigation_provider_id = -2;
+
+// A request handler derivative used to handle navigation requests when
+// skip_service_worker flag is set. It tracks the document URL and sets the url
+// to the provider host.
+class ServiceWorkerURLTrackingRequestHandler
+    : public ServiceWorkerRequestHandler {
+ public:
+  ServiceWorkerURLTrackingRequestHandler(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
+      ResourceType resource_type)
+      : ServiceWorkerRequestHandler(context,
+                                    provider_host,
+                                    blob_storage_context,
+                                    resource_type) {}
+  ~ServiceWorkerURLTrackingRequestHandler() override {}
+
+  // Called via custom URLRequestJobFactory.
+  net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      ResourceContext* resource_context) override {
+    const GURL stripped_url = net::SimplifyUrlForRequest(request->url());
+    provider_host_->SetDocumentUrl(stripped_url);
+    provider_host_->SetTopmostFrameUrl(request->first_party_for_cookies());
+    return nullptr;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLTrackingRequestHandler);
+};
 
 }  // anonymous namespace
 
@@ -333,19 +367,24 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-    scoped_refptr<ResourceRequestBodyImpl> body) {
+    scoped_refptr<ResourceRequestBodyImpl> body,
+    bool skip_service_worker) {
+  if (skip_service_worker) {
+    if (!ServiceWorkerUtils::IsMainResourceType(resource_type))
+      return std::unique_ptr<ServiceWorkerRequestHandler>();
+    return base::MakeUnique<ServiceWorkerURLTrackingRequestHandler>(
+        context_, AsWeakPtr(), blob_storage_context, resource_type);
+  }
   if (IsHostToRunningServiceWorker()) {
-    return std::unique_ptr<ServiceWorkerRequestHandler>(
-        new ServiceWorkerContextRequestHandler(
-            context_, AsWeakPtr(), blob_storage_context, resource_type));
+    return base::MakeUnique<ServiceWorkerContextRequestHandler>(
+        context_, AsWeakPtr(), blob_storage_context, resource_type);
   }
   if (ServiceWorkerUtils::IsMainResourceType(resource_type) ||
       controlling_version()) {
-    return std::unique_ptr<ServiceWorkerRequestHandler>(
-        new ServiceWorkerControlleeRequestHandler(
-            context_, AsWeakPtr(), blob_storage_context, request_mode,
-            credentials_mode, redirect_mode, resource_type,
-            request_context_type, frame_type, body));
+    return base::MakeUnique<ServiceWorkerControlleeRequestHandler>(
+        context_, AsWeakPtr(), blob_storage_context, request_mode,
+        credentials_mode, redirect_mode, resource_type, request_context_type,
+        frame_type, body);
   }
   return std::unique_ptr<ServiceWorkerRequestHandler>();
 }

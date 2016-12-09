@@ -10,8 +10,8 @@
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
-#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -19,7 +19,9 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_job.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,9 +30,6 @@ namespace content {
 namespace {
 
 int kMockProviderId = 1;
-
-void EmptyCallback() {
-}
 
 }
 
@@ -42,13 +41,6 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
-    // A new unstored registration/version.
-    registration_ = new ServiceWorkerRegistration(GURL("https://host/scope/"),
-                                                  1L, context()->AsWeakPtr());
-    version_ = new ServiceWorkerVersion(registration_.get(),
-                                        GURL("https://host/script.js"), 1L,
-                                        context()->AsWeakPtr());
-
     // An empty host.
     std::unique_ptr<ServiceWorkerProviderHost> host(
         new ServiceWorkerProviderHost(
@@ -56,29 +48,12 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
             kMockProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
             ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
             context()->AsWeakPtr(), nullptr));
-    host->SetDocumentUrl(GURL("https://host/scope/"));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
 
-    context()->storage()->LazyInitialize(base::Bind(&EmptyCallback));
-    base::RunLoop().RunUntilIdle();
-
-    version_->set_fetch_handler_existence(
-        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
-    version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-    registration_->SetActiveVersion(version_);
-    context()->storage()->StoreRegistration(
-        registration_.get(),
-        version_.get(),
-        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-    provider_host_->AssociateRegistration(registration_.get(),
-                                          false /* notify_controllerchange */);
-    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
-    version_ = nullptr;
-    registration_ = nullptr;
     helper_.reset();
   }
 
@@ -87,30 +62,52 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     return helper_->context_wrapper();
   }
 
-  bool InitializeHandlerCheck(const std::string& url,
-                              const std::string& method,
-                              bool skip_service_worker,
-                              ResourceType resource_type) {
-    const GURL kDocUrl(url);
+  std::unique_ptr<net::URLRequest> CreateRequest(const std::string& url,
+                                                 const std::string& method) {
     std::unique_ptr<net::URLRequest> request =
-        url_request_context_.CreateRequest(kDocUrl, net::DEFAULT_PRIORITY,
+        url_request_context_.CreateRequest(GURL(url), net::DEFAULT_PRIORITY,
                                            &url_request_delegate_);
     request->set_method(method);
+    return request;
+  }
+
+  void InitializeHandler(net::URLRequest* request,
+                         bool skip_service_worker,
+                         ResourceType resource_type) {
     ServiceWorkerRequestHandler::InitializeHandler(
-        request.get(), context_wrapper(), &blob_storage_context_,
+        request, context_wrapper(), &blob_storage_context_,
         helper_->mock_render_process_id(), kMockProviderId, skip_service_worker,
         FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
         FetchRedirectMode::FOLLOW_MODE, resource_type,
         REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
         nullptr);
-    return ServiceWorkerRequestHandler::GetHandler(request.get()) != nullptr;
+  }
+
+  static ServiceWorkerRequestHandler* GetHandler(net::URLRequest* request) {
+    return ServiceWorkerRequestHandler::GetHandler(request);
+  }
+
+  std::unique_ptr<net::URLRequestJob> MaybeCreateJob(net::URLRequest* request) {
+    return std::unique_ptr<net::URLRequestJob>(
+        GetHandler(request)->MaybeCreateJob(
+            request, url_request_context_.network_delegate(),
+            context_wrapper()->resource_context()));
+  }
+
+  void InitializeHandlerSimpleTest(const std::string& url,
+                                   const std::string& method,
+                                   bool skip_service_worker,
+                                   ResourceType resource_type) {
+    std::unique_ptr<net::URLRequest> request = CreateRequest(url, method);
+    InitializeHandler(request.get(), skip_service_worker, resource_type);
+    ASSERT_TRUE(GetHandler(request.get()));
+    MaybeCreateJob(request.get());
+    EXPECT_EQ(url, provider_host_->document_url().spec());
   }
 
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
-  scoped_refptr<ServiceWorkerRegistration> registration_;
-  scoped_refptr<ServiceWorkerVersion> version_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   net::URLRequestContext url_request_context_;
   MockURLRequestDelegate url_request_delegate_;
@@ -120,51 +117,57 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
 class ServiceWorkerRequestHandlerTestP
     : public MojoServiceWorkerTestP<ServiceWorkerRequestHandlerTest> {};
 
-TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler) {
+TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_FTP) {
+  std::unique_ptr<net::URLRequest> request =
+      CreateRequest("ftp://host/scope/doc", "GET");
+  InitializeHandler(request.get(), false, RESOURCE_TYPE_MAIN_FRAME);
   // Cannot initialize a handler for non-secure origins.
-  EXPECT_FALSE(InitializeHandlerCheck(
-      "ftp://host/scope/doc", "GET", false, RESOURCE_TYPE_MAIN_FRAME));
-  // HTTP is ok because it might redirect to HTTPS.
-  EXPECT_TRUE(InitializeHandlerCheck("http://host/scope/doc", "GET", false,
-                                     RESOURCE_TYPE_MAIN_FRAME));
-  EXPECT_TRUE(InitializeHandlerCheck("https://host/scope/doc", "GET", false,
-                                     RESOURCE_TYPE_MAIN_FRAME));
+  EXPECT_FALSE(GetHandler(request.get()));
+}
 
+TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTP_MAIN_FRAME) {
+  // HTTP should have the handler because the response is possible to be a
+  // redirect to HTTPS.
+  InitializeHandlerSimpleTest("http://host/scope/doc", "GET", false,
+                              RESOURCE_TYPE_MAIN_FRAME);
+}
+
+TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTPS_MAIN_FRAME) {
+  InitializeHandlerSimpleTest("https://host/scope/doc", "GET", false,
+                              RESOURCE_TYPE_MAIN_FRAME);
+}
+
+TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTP_SUB_FRAME) {
+  // HTTP should have the handler because the response is possible to be a
+  // redirect to HTTPS.
+  InitializeHandlerSimpleTest("http://host/scope/doc", "GET", false,
+                              RESOURCE_TYPE_SUB_FRAME);
+}
+
+TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTPS_SUB_FRAME) {
+  InitializeHandlerSimpleTest("https://host/scope/doc", "GET", false,
+                              RESOURCE_TYPE_SUB_FRAME);
+}
+
+TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTPS_OPTIONS) {
   // OPTIONS is also supported. See crbug.com/434660.
-  EXPECT_TRUE(InitializeHandlerCheck(
-      "https://host/scope/doc", "OPTIONS", false, RESOURCE_TYPE_MAIN_FRAME));
+  InitializeHandlerSimpleTest("https://host/scope/doc", "OPTIONS", false,
+                              RESOURCE_TYPE_MAIN_FRAME);
+}
 
-  // Check provider host's URL after initializing a handler for main
-  // frame.
-  provider_host_->SetDocumentUrl(GURL(""));
-  EXPECT_FALSE(InitializeHandlerCheck(
-      "http://host/scope/doc", "GET", true, RESOURCE_TYPE_MAIN_FRAME));
-  EXPECT_STREQ("http://host/scope/doc",
-               provider_host_->document_url().spec().c_str());
-  EXPECT_FALSE(InitializeHandlerCheck(
-      "https://host/scope/doc", "GET", true, RESOURCE_TYPE_MAIN_FRAME));
-  EXPECT_STREQ("https://host/scope/doc",
-               provider_host_->document_url().spec().c_str());
+TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTPS_SKIP) {
+  InitializeHandlerSimpleTest("https://host/scope/doc", "GET", true,
+                              RESOURCE_TYPE_MAIN_FRAME);
+}
 
-  // Check provider host's URL after initializing a handler for a subframe.
-  provider_host_->SetDocumentUrl(GURL(""));
-  EXPECT_FALSE(InitializeHandlerCheck(
-      "http://host/scope/doc", "GET", true, RESOURCE_TYPE_SUB_FRAME));
-  EXPECT_STREQ("http://host/scope/doc",
-               provider_host_->document_url().spec().c_str());
-  EXPECT_FALSE(InitializeHandlerCheck(
-      "https://host/scope/doc", "GET", true, RESOURCE_TYPE_SUB_FRAME));
-  EXPECT_STREQ("https://host/scope/doc",
-               provider_host_->document_url().spec().c_str());
-
+TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_IMAGE) {
   // Check provider host's URL after initializing a handler for an image.
-  provider_host_->SetDocumentUrl(GURL(""));
-  EXPECT_FALSE(InitializeHandlerCheck(
-      "http://host/scope/doc", "GET", true, RESOURCE_TYPE_IMAGE));
-  EXPECT_STREQ("", provider_host_->document_url().spec().c_str());
-  EXPECT_FALSE(InitializeHandlerCheck(
-      "https://host/scope/doc", "GET", true, RESOURCE_TYPE_IMAGE));
-  EXPECT_STREQ("", provider_host_->document_url().spec().c_str());
+  provider_host_->SetDocumentUrl(GURL("https://host/scope/doc"));
+  std::unique_ptr<net::URLRequest> request =
+      CreateRequest("https://host/scope/image", "GET");
+  InitializeHandler(request.get(), true, RESOURCE_TYPE_IMAGE);
+  ASSERT_FALSE(GetHandler(request.get()));
+  EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->document_url());
 }
 
 INSTANTIATE_TEST_CASE_P(ServiceWorkerRequestHandlerTest,
