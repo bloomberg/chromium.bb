@@ -235,6 +235,10 @@ class PrerenderContents : public content::NotificationObserver,
   // Increments the number of bytes fetched over the network for this prerender.
   void AddNetworkBytes(int64_t bytes);
 
+  bool prerendering_has_been_cancelled() const {
+    return prerendering_has_been_cancelled_;
+  }
+
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
                     Profile* profile,
@@ -261,10 +265,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   content::NotificationRegistrar& notification_registrar() {
     return notification_registrar_;
-  }
-
-  bool prerendering_has_been_cancelled() const {
-    return prerendering_has_been_cancelled_;
   }
 
   content::WebContents* CreateWebContents(

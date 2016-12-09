@@ -392,16 +392,20 @@ void PrerenderLinkManager::StartPrerenders() {
       continue;
     }
 
-    // We have successfully started a new prerender.
-    (*i)->handle = handle.release();
-    ++total_started_prerender_count;
-    (*i)->handle->SetObserver(this);
-    if ((*i)->handle->IsPrerendering())
+    if (handle->IsPrerendering()) {
+      // We have successfully started a new prerender.
+      (*i)->handle = handle.release();
+      ++total_started_prerender_count;
+      (*i)->handle->SetObserver(this);
       OnPrerenderStart((*i)->handle);
-    RecordLinkManagerStarting((*i)->rel_types);
-
-    running_launcher_and_render_view_routes.insert(
-        launcher_and_render_view_route);
+      RecordLinkManagerStarting((*i)->rel_types);
+      running_launcher_and_render_view_routes.insert(
+          launcher_and_render_view_route);
+    } else {
+      Send((*i)->launcher_child_id,
+          new PrerenderMsg_OnPrerenderStop((*i)->prerender_id));
+      prerenders_.erase(*i);
+    }
   }
 }
 
@@ -522,7 +526,7 @@ void PrerenderLinkManager::OnPrerenderStop(
     return;
 
   Send(prerender->launcher_child_id,
-       new PrerenderMsg_OnPrerenderStop(prerender->prerender_id));
+      new PrerenderMsg_OnPrerenderStop(prerender->prerender_id));
   RemovePrerender(prerender);
   StartPrerenders();
 }

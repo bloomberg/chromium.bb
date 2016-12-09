@@ -48,7 +48,8 @@ void PrerenderHandle::OnCancel() {
 
 bool PrerenderHandle::IsPrerendering() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return prerender_data_.get() != nullptr;
+  return prerender_data_.get() != nullptr &&
+      !prerender_data_->contents()->prerendering_has_been_cancelled();
 }
 
 bool PrerenderHandle::IsFinishedLoading() const {
