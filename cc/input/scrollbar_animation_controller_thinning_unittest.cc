@@ -200,8 +200,8 @@ TEST_F(ScrollbarAnimationControllerThinningTest, BasicAppearAndFadeOut) {
 }
 
 // Scroll content. Move the mouse near the scrollbar and confirm it becomes
-// thick. Ensure it fades out after that.
-TEST_F(ScrollbarAnimationControllerThinningTest, MoveNearAndFadeOut) {
+// thick. Ensure it remains visible as long as the mouse is near the scrollbar.
+TEST_F(ScrollbarAnimationControllerThinningTest, MoveNearAndDontFadeOut) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
 
@@ -212,6 +212,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MoveNearAndFadeOut) {
   // An animation should have been enqueued.
   EXPECT_EQ(kDelayBeforeStarting, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_FALSE(client_.start_fade().IsCancelled());
 
   // Now move the mouse near the scrollbar. This should cancel the currently
   // queued fading animation and start animating thickness.
@@ -228,15 +229,16 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MoveNearAndFadeOut) {
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
-  // Once the thickening animation is complete, it should enqueue the delayed
-  // fade animation.
-  EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_FALSE(client_.start_fade().IsCancelled());
+  // Mouse is still near the Scrollbar. Once the thickness animation is
+  // complete, the queued delayed fade animation should be either cancelled or
+  // null.
+  EXPECT_TRUE(client_.start_fade().is_null() ||
+              client_.start_fade().IsCancelled());
 }
 
 // Scroll content. Move the mouse over the scrollbar and confirm it becomes
-// thick. Ensure it fades out after that.
-TEST_F(ScrollbarAnimationControllerThinningTest, MoveOverAndFadeOut) {
+// thick. Ensure it remains visible as long as the mouse is over the scrollbar.
+TEST_F(ScrollbarAnimationControllerThinningTest, MoveOverAndDontFadeOut) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
 
@@ -247,6 +249,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MoveOverAndFadeOut) {
   // An animation should have been enqueued.
   EXPECT_EQ(kDelayBeforeStarting, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_FALSE(client_.start_fade().IsCancelled());
 
   // Now move the mouse over the scrollbar. This should cancel the currently
   // queued fading animation and start animating thickness.
@@ -263,10 +266,11 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MoveOverAndFadeOut) {
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
-  // Once the thickening animation is complete, it should enqueue the delayed
-  // fade animation.
-  EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_FALSE(client_.start_fade().IsCancelled());
+  // Mouse is still over the Scrollbar. Once the thickness animation is
+  // complete, the queued delayed fade animation should be either null or
+  // cancelled.
+  EXPECT_TRUE(client_.start_fade().is_null() ||
+              client_.start_fade().IsCancelled());
 }
 
 // Make sure a scrollbar captured before the thickening animation doesn't try
@@ -291,9 +295,9 @@ TEST_F(ScrollbarAnimationControllerThinningTest,
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
-  // The fade animation should have been cancelled.
-  EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_TRUE(client_.start_fade().IsCancelled());
+  // The fade animation should have been cleared or cancelled.
+  EXPECT_TRUE(client_.start_fade().is_null() ||
+              client_.start_fade().IsCancelled());
 }
 
 // Make sure a scrollbar captured after a thickening animation doesn't try to
@@ -309,6 +313,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, DontFadeWhileCaptured) {
   // An animation should have been enqueued.
   EXPECT_EQ(kDelayBeforeStarting, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_FALSE(client_.start_fade().IsCancelled());
 
   // Now move the mouse over the scrollbar and animate it until it's thick.
   scrollbar_controller_->DidMouseMoveNear(0);
@@ -318,18 +323,21 @@ TEST_F(ScrollbarAnimationControllerThinningTest, DontFadeWhileCaptured) {
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
-  // Since the scrollbar became thick, it should have queued up a fade.
-  EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_FALSE(client_.start_fade().IsCancelled());
+  // Since the mouse is over the scrollbar, it should either clear or cancel the
+  // queued fade.
+  EXPECT_TRUE(client_.start_fade().is_null() ||
+              client_.start_fade().IsCancelled());
 
-  // Make sure capturing the scrollbar stops the fade.
+  // Make sure the queued fade animation is still null or cancelled after
+  // capturing the scrollbar.
   scrollbar_controller_->DidMouseDown();
-  EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_TRUE(client_.start_fade().IsCancelled());
+  EXPECT_TRUE(client_.start_fade().is_null() ||
+              client_.start_fade().IsCancelled());
 }
 
-// Make sure releasing a captured scrollbar causes it to fade out.
-TEST_F(ScrollbarAnimationControllerThinningTest, FadeAfterReleased) {
+// Make sure releasing a captured scrollbar when the mouse isn't near it, causes
+// the scrollbar to fade out.
+TEST_F(ScrollbarAnimationControllerThinningTest, FadeAfterReleasedFar) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
 
@@ -340,6 +348,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, FadeAfterReleased) {
   // An animation should have been enqueued.
   EXPECT_EQ(kDelayBeforeStarting, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_FALSE(client_.start_fade().IsCancelled());
 
   // Now move the mouse over the scrollbar and capture it.
   scrollbar_controller_->DidMouseMoveNear(0);
@@ -347,13 +356,62 @@ TEST_F(ScrollbarAnimationControllerThinningTest, FadeAfterReleased) {
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
-  // Since the scrollbar became thick, it should have queued up a fade.
-  EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_TRUE(client_.start_fade().IsCancelled());
+  // Since the mouse is still near the scrollbar, the queued fade should be
+  // either null or cancelled.
+  EXPECT_TRUE(client_.start_fade().is_null() ||
+              client_.start_fade().IsCancelled());
 
+  // Now move the mouse away from the scrollbar and release it.
+  scrollbar_controller_->DidMouseMoveNear(
+      kDefaultMouseMoveDistanceToTriggerAnimation + 1);
   scrollbar_controller_->DidMouseUp();
+
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+  time += kThinningDuration;
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(kIdleThicknessScale,
+                  scrollbar_layer_->thumb_thickness_scale_factor());
+
+  // The thickness animation is complete, a fade out must be queued.
   EXPECT_FALSE(client_.start_fade().is_null());
   EXPECT_FALSE(client_.start_fade().IsCancelled());
+}
+
+// Make sure releasing a captured scrollbar when the mouse is near/over it,
+// doesn't cause the scrollbar to fade out.
+TEST_F(ScrollbarAnimationControllerThinningTest, DontFadeAfterReleasedNear) {
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSeconds(1);
+
+  scrollbar_controller_->DidScrollBegin();
+  scrollbar_controller_->DidScrollUpdate(false);
+  scrollbar_controller_->DidScrollEnd();
+
+  // An animation should have been enqueued.
+  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_FALSE(client_.start_fade().IsCancelled());
+
+  // Now move the mouse over the scrollbar and capture it.
+  scrollbar_controller_->DidMouseMoveNear(0);
+  scrollbar_controller_->DidMouseDown();
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  // Since the mouse is over the scrollbar, the queued fade must be either
+  // null or cancelled.
+  EXPECT_TRUE(client_.start_fade().is_null() ||
+              client_.start_fade().IsCancelled());
+
+  // Mouse is still near the scrollbar, releasing it shouldn't do anything.
+  scrollbar_controller_->DidMouseUp();
+  EXPECT_TRUE(client_.start_fade().is_null() ||
+              client_.start_fade().IsCancelled());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 }
 
 // Make sure moving near a scrollbar while it's fading out causes it to reset
@@ -366,7 +424,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MoveNearScrollbarWhileFading) {
   scrollbar_controller_->DidScrollUpdate(false);
   scrollbar_controller_->DidScrollEnd();
 
-  // An animation should have been enqueued. Start it.
+  // A fade animation should have been enqueued. Start it.
   EXPECT_EQ(kDelayBeforeStarting, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
   client_.start_fade().Run();
@@ -393,44 +451,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MoveNearScrollbarWhileFading) {
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 }
 
-// Make sure capturing a scrollbar while it's fading out causes it to reset the
-// opacity and thicken instantly.
-TEST_F(ScrollbarAnimationControllerThinningTest, CaptureScrollbarWhileFading) {
-  base::TimeTicks time;
-  time += base::TimeDelta::FromSeconds(1);
-
-  scrollbar_controller_->DidScrollBegin();
-  scrollbar_controller_->DidScrollUpdate(false);
-  scrollbar_controller_->DidScrollEnd();
-
-  // Move mouse over the scrollbar.
-  scrollbar_controller_->DidMouseMoveNear(0);
-  scrollbar_controller_->Animate(time);
-  time += kThinningDuration;
-  scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
-
-  // A fade animation should have been enqueued. Start it.
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
-  EXPECT_FALSE(client_.start_fade().is_null());
-  client_.start_fade().Run();
-
-  scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
-
-  // Proceed half way through the fade out animation.
-  time += kFadeDuration / 2;
-  scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.5f, scrollbar_layer_->Opacity());
-
-  // Now capture the scrollbar. It should reset opacity to 1 instantly.
-  scrollbar_controller_->DidMouseDown();
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
-}
-
-// Make sure we can't capture scrollbar that's completely faded out
+// Make sure we can't capture scrollbar that's completely faded out.
 TEST_F(ScrollbarAnimationControllerThinningTest, TestCantCaptureWhenFaded) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
@@ -439,17 +460,9 @@ TEST_F(ScrollbarAnimationControllerThinningTest, TestCantCaptureWhenFaded) {
   scrollbar_controller_->DidScrollUpdate(false);
   scrollbar_controller_->DidScrollEnd();
 
-  // Move mouse over the scrollbar.
-  scrollbar_controller_->DidMouseMoveNear(0);
-  scrollbar_controller_->Animate(time);
-  time += kThinningDuration;
-  scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
-
-  // A fade animation should have been enqueued. Start it.
   EXPECT_EQ(kDelayBeforeStarting, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_FALSE(client_.start_fade().IsCancelled());
   client_.start_fade().Run();
   scrollbar_controller_->Animate(time);
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
@@ -458,7 +471,16 @@ TEST_F(ScrollbarAnimationControllerThinningTest, TestCantCaptureWhenFaded) {
   time += kFadeDuration;
   scrollbar_controller_->Animate(time);
   EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  // Move mouse over the scrollbar. It shouldn't thicken the scrollbar since
+  // it's completely faded out.
+  scrollbar_controller_->DidMouseMoveNear(0);
+  scrollbar_controller_->Animate(time);
+  time += kThinningDuration;
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(kIdleThicknessScale,
+                  scrollbar_layer_->thumb_thickness_scale_factor());
 
   client_.start_fade().Reset();
 
@@ -466,13 +488,15 @@ TEST_F(ScrollbarAnimationControllerThinningTest, TestCantCaptureWhenFaded) {
   // completely faded out.
   scrollbar_controller_->DidMouseDown();
   EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+  EXPECT_FLOAT_EQ(kIdleThicknessScale,
+                  scrollbar_layer_->thumb_thickness_scale_factor());
   EXPECT_TRUE(client_.start_fade().is_null());
 
   // Similarly, releasing the scrollbar should have no effect.
   scrollbar_controller_->DidMouseUp();
   EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+  EXPECT_FLOAT_EQ(kIdleThicknessScale,
+                  scrollbar_layer_->thumb_thickness_scale_factor());
   EXPECT_TRUE(client_.start_fade().is_null());
 }
 
@@ -498,20 +522,21 @@ TEST_F(ScrollbarAnimationControllerThinningTest, ScrollWithMouseNear) {
   // Now that we've received a scroll, we should be thick without an animation.
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
-  // An animation for the fade should have been enqueued.
+  // An animation for the fade should be either null or cancelled, since
+  // mouse is still near the scrollbar.
   scrollbar_controller_->DidScrollEnd();
   EXPECT_EQ(kDelayBeforeStarting, client_.delay());
-  EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_TRUE(client_.start_fade().is_null() ||
+              client_.start_fade().IsCancelled());
 
-  client_.start_fade().Run();
   scrollbar_controller_->Animate(time);
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
-  // Scrollbar should still be thick, even though the scrollbar fades out.
+  // Scrollbar should still be thick and visible.
   time += kFadeDuration;
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 }
 

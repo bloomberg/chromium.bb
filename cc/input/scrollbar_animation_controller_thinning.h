@@ -35,6 +35,7 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
   bool mouse_is_near_scrollbar() const { return mouse_is_near_scrollbar_; }
 
   void DidScrollUpdate(bool on_resize) override;
+  void DidScrollEnd() override;
 
   void DidMouseDown() override;
   void DidMouseUp() override;

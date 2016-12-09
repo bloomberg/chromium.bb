@@ -72,7 +72,8 @@ void ScrollbarAnimationControllerThinning::RunAnimationFrame(float progress) {
     if (current_animating_property_ == THICKNESS) {
       thickness_change_ = NONE;
       SetCurrentAnimatingProperty(OPACITY);
-      PostDelayedAnimationTask(false);
+      if (!mouse_is_near_scrollbar_)
+        PostDelayedAnimationTask(false);
     }
   }
 }
@@ -107,7 +108,6 @@ void ScrollbarAnimationControllerThinning::DidMouseUp() {
     StartAnimation();
   } else {
     SetCurrentAnimatingProperty(OPACITY);
-    PostDelayedAnimationTask(false);
   }
 }
 
@@ -135,6 +135,18 @@ void ScrollbarAnimationControllerThinning::DidScrollUpdate(bool on_resize) {
   ApplyThumbThicknessScale(mouse_is_near_scrollbar_ ? 1.f
                                                     : kIdleThicknessScale);
   SetCurrentAnimatingProperty(OPACITY);
+
+  // Don't fade out the scrollbar when mouse is near.
+  if (mouse_is_near_scrollbar_)
+    StopAnimation();
+}
+
+void ScrollbarAnimationControllerThinning::DidScrollEnd() {
+  ScrollbarAnimationController::DidScrollEnd();
+
+  // Don't fade out the scrollbar when mouse is near.
+  if (mouse_is_near_scrollbar_)
+    StopAnimation();
 }
 
 void ScrollbarAnimationControllerThinning::DidMouseMoveNear(float distance) {
