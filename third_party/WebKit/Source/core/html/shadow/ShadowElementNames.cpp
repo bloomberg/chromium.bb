@@ -84,6 +84,11 @@ const AtomicString& placeholder() {
   return name;
 }
 
+const AtomicString& searchClearButton() {
+  DEFINE_STATIC_LOCAL(AtomicString, name, ("search-clear"));
+  return name;
+}
+
 const AtomicString& searchDecoration() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("decoration"));
   return name;

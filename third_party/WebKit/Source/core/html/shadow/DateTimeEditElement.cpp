@@ -708,6 +708,9 @@ bool DateTimeEditElement::isReadOnly() const {
 
 void DateTimeEditElement::layout(const LayoutParameters& layoutParameters,
                                  const DateComponents& dateValue) {
+  // TODO(tkent): We assume this function never dispatches events. However this
+  // can dispatch 'blur' event in Node::removeChild().
+
   DEFINE_STATIC_LOCAL(AtomicString, fieldsWrapperPseudoId,
                       ("-webkit-datetime-edit-fields-wrapper"));
   if (!hasChildren()) {

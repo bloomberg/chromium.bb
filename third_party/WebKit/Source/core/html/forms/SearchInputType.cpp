@@ -150,7 +150,7 @@ const AtomicString& SearchInputType::defaultAutocapitalize() const {
 
 void SearchInputType::updateCancelButtonVisibility() {
   Element* button = element().userAgentShadowRoot()->getElementById(
-      ShadowElementNames::clearButton());
+      ShadowElementNames::searchClearButton());
   if (!button)
     return;
   if (element().value().isEmpty()) {

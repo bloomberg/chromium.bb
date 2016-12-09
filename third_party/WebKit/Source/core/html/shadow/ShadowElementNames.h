@@ -48,6 +48,7 @@ const AtomicString& editingViewPort();
 const AtomicString& innerEditor();
 const AtomicString& pickerIndicator();
 const AtomicString& placeholder();
+const AtomicString& searchClearButton();
 const AtomicString& searchDecoration();
 CORE_EXPORT const AtomicString& sliderThumb();
 const AtomicString& sliderTrack();
