@@ -285,5 +285,5 @@ void InlineLoginHandler::HandleDialogClose(const base::ListValue* args) {
     browser->CloseModalSigninWindow();
 
   // Does nothing if user manager is not showing.
-  UserManager::HideReauthDialog();
+  UserManagerProfileDialog::HideDialog();
 }

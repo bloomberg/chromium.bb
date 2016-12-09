@@ -429,8 +429,8 @@ void SigninCreateProfileHandler::OpenNewWindowForProfile(
 }
 
 void SigninCreateProfileHandler::OpenSigninDialogForProfile(Profile* profile) {
-  UserManager::ShowSigninDialog(web_ui()->GetWebContents()->GetBrowserContext(),
-                                profile->GetPath());
+  UserManagerProfileDialog::ShowSigninDialog(
+      web_ui()->GetWebContents()->GetBrowserContext(), profile->GetPath());
 }
 
 void SigninCreateProfileHandler::ShowProfileCreationError(

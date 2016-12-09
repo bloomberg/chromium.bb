@@ -42,6 +42,9 @@ SigninErrorUI::SigninErrorUI(content::WebUI* web_ui,
   if (is_system_profile) {
     signin_profile = g_browser_process->profile_manager()->GetProfileByPath(
         UserManager::GetSigninProfilePath());
+    // Sign in is completed before profile creation.
+    if (!signin_profile)
+      signin_profile = webui_profile->GetOriginalProfile();
   } else {
     signin_profile = webui_profile;
   }

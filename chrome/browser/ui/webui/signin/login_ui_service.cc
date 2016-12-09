@@ -77,7 +77,7 @@ void LoginUIService::DisplayLoginResult(Browser* browser,
     if (browser)
       browser->ShowModalSigninErrorWindow();
     else
-      UserManager::DisplayErrorMessage();
+      UserManagerProfileDialog::DisplayErrorMessage();
   } else if (browser) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         error_message.empty() ? BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN

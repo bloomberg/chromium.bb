@@ -83,7 +83,7 @@ void SigninErrorHandler::CloseDialog() {
   if (is_system_profile_) {
     // Avoid closing the user manager window when the error message is displayed
     // without browser window.
-    UserManager::HideReauthDialog();
+    UserManagerProfileDialog::HideDialog();
   } else {
     Browser* browser = signin::GetDesktopBrowser(web_ui());
     DCHECK(browser);

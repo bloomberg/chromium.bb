@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
-@class ReauthDialogWindowController;
+@class DialogWindowController;
 @class UserManagerWindowController;
 
 // Dialog widget that contains the Desktop User Manager webui. This object
@@ -44,10 +44,10 @@ class UserManagerMac {
 
   void LogTimeToOpen();
 
-  void ShowReauthDialog(content::BrowserContext* browser_context,
-                        const std::string& email,
-                        signin_metrics::Reason reason);
-  void CloseReauthDialog();
+  void ShowDialog(content::BrowserContext* browser_context,
+                  const std::string& email,
+                  const GURL& url);
+  void CloseDialog();
 
   void DisplayErrorMessage();
 
@@ -61,7 +61,7 @@ class UserManagerMac {
   // Controller of the window.
   base::scoped_nsobject<UserManagerWindowController> window_controller_;
 
-  base::scoped_nsobject<ReauthDialogWindowController> reauth_window_;
+  base::scoped_nsobject<DialogWindowController> reauth_window_;
 
   base::Time user_manager_started_showing_;
 

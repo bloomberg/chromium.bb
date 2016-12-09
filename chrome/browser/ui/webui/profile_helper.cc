@@ -26,7 +26,8 @@ namespace {
 void ShowSigninDialog(base::FilePath signin_profile_path,
                       Profile* system_profile,
                       Profile::CreateStatus status) {
-  UserManager::ShowSigninDialog(system_profile, signin_profile_path);
+  UserManagerProfileDialog::ShowSigninDialog(system_profile,
+                                             signin_profile_path);
 }
 
 void DeleteProfileCallback(std::unique_ptr<ScopedKeepAlive> keep_alive,

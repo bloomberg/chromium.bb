@@ -16,17 +16,18 @@ bool AddToSet(std::set<content::WebContents*>* content_set,
 
 }  // namespace
 
-UserManager::BaseReauthDialogDelegate::BaseReauthDialogDelegate()
+UserManagerProfileDialog::BaseDialogDelegate::BaseDialogDelegate()
     : guest_web_contents_(nullptr) {}
 
-bool UserManager::BaseReauthDialogDelegate::HandleContextMenu(
+bool UserManagerProfileDialog::BaseDialogDelegate::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Ignores context menu.
   return true;
 }
 
-void UserManager::BaseReauthDialogDelegate::LoadingStateChanged(
-    content::WebContents* source, bool to_different_document) {
+void UserManagerProfileDialog::BaseDialogDelegate::LoadingStateChanged(
+    content::WebContents* source,
+    bool to_different_document) {
   if (source->IsLoading() || guest_web_contents_)
     return;
 

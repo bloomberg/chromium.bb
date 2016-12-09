@@ -139,7 +139,7 @@ void SigninSupervisedUserImportHandler::AuthenticateCustodian(
   bool success = args->GetString(0, &email);
   DCHECK(success);
 
-  UserManager::ShowReauthDialog(
+  UserManagerProfileDialog::ShowReauthDialog(
       web_ui()->GetWebContents()->GetBrowserContext(), email,
       signin_metrics::Reason::REASON_REAUTHENTICATION);
 }

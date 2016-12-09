@@ -54,23 +54,24 @@ UserManagerMac* instance_ = nullptr;  // Weak.
 std::vector<base::Closure>* user_manager_shown_callbacks_for_testing_ = nullptr;
 BOOL instance_under_construction_ = NO;
 
-void CloseInstanceReauthDialog() {
+void CloseInstanceDialog() {
   DCHECK(instance_);
-  instance_->CloseReauthDialog();
+  instance_->CloseDialog();
 }
 
-// The modal dialog host the User Manager uses to display the reauth dialog.
+// The modal dialog host the User Manager uses to display the dialog.
 class UserManagerModalHost : public web_modal::WebContentsModalDialogHost {
  public:
   UserManagerModalHost(gfx::NativeView host_view)
       : host_view_(host_view) {}
 
   gfx::Size GetMaximumDialogSize() override {
-    return switches::UsePasswordSeparatedSigninFlow() ?
-        gfx::Size(UserManager::kReauthDialogWidth,
-                  UserManager::kReauthDialogHeight) :
-        gfx::Size(UserManager::kPasswordCombinedReauthDialogWidth,
-                  UserManager::kPasswordCombinedReauthDialogHeight);
+    return switches::UsePasswordSeparatedSigninFlow()
+               ? gfx::Size(UserManagerProfileDialog::kDialogWidth,
+                           UserManagerProfileDialog::kDialogHeight)
+               : gfx::Size(
+                     UserManagerProfileDialog::kPasswordCombinedDialogWidth,
+                     UserManagerProfileDialog::kPasswordCombinedDialogHeight);
   }
 
   ~UserManagerModalHost() override {}
@@ -91,7 +92,7 @@ class UserManagerModalHost : public web_modal::WebContentsModalDialogHost {
 };
 
 // The modal manager delegate allowing the display of constrained windows for
-// the reauth dialog.
+// the dialog.
 class UserManagerModalManagerDelegate :
     public web_modal::WebContentsModalDialogManagerDelegate {
  public:
@@ -140,17 +141,16 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
   }
 };
 
-class ReauthDialogDelegate : public UserManager::BaseReauthDialogDelegate,
-                             public ConstrainedWindowMacDelegate {
+class UserManagerProfileDialogDelegate
+    : public UserManagerProfileDialog::BaseDialogDelegate,
+      public ConstrainedWindowMacDelegate {
  public:
-  ReauthDialogDelegate() {
+  UserManagerProfileDialogDelegate() {
     hotKeysWebContentsDelegate_.reset(new UserManagerWebContentsDelegate());
   }
 
-  // UserManager::BaseReauthDialogDelegate:
-  void CloseReauthDialog() override {
-    CloseInstanceReauthDialog();
-  }
+  // UserManagerProfileDialog::BaseDialogDelegate:
+  void CloseDialog() override { CloseInstanceDialog(); }
 
   // WebContentsDelegate::HandleKeyboardEvent:
   void HandleKeyboardEvent(
@@ -161,48 +161,47 @@ class ReauthDialogDelegate : public UserManager::BaseReauthDialogDelegate,
 
   // ConstrainedWindowMacDelegate:
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override {
-    CloseReauthDialog();
+    CloseDialog();
   }
 
  private:
   std::unique_ptr<UserManagerWebContentsDelegate> hotKeysWebContentsDelegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(ReauthDialogDelegate);
+  DISALLOW_COPY_AND_ASSIGN(UserManagerProfileDialogDelegate);
 };
 
 }  // namespace
 
-// WindowController for the reauth dialog.
-@interface ReauthDialogWindowController
-    : NSWindowController <NSWindowDelegate> {
+// WindowController for the dialog.
+@interface DialogWindowController : NSWindowController<NSWindowDelegate> {
  @private
   std::string emailAddress_;
+  GURL url_;
   content::WebContents* webContents_;
-  signin_metrics::Reason reason_;
-  std::unique_ptr<ReauthDialogDelegate> webContentsDelegate_;
+  std::unique_ptr<UserManagerProfileDialogDelegate> webContentsDelegate_;
   std::unique_ptr<ConstrainedWindowMac> constrained_window_;
-  std::unique_ptr<content::WebContents> reauthWebContents_;
+  std::unique_ptr<content::WebContents> dialogWebContents_;
 }
 - (id)initWithProfile:(Profile*)profile
                 email:(std::string)email
-               reason:(signin_metrics::Reason)reason
+                  url:(GURL)url
           webContents:(content::WebContents*)webContents;
 - (void)showURL:(const GURL&)url;
 - (void)close;
 @end
 
-@implementation ReauthDialogWindowController
+@implementation DialogWindowController
 
 - (id)initWithProfile:(Profile*)profile
                 email:(std::string)email
-               reason:(signin_metrics::Reason)reason
+                  url:(GURL)url
           webContents:(content::WebContents*)webContents {
   webContents_ = webContents;
   emailAddress_ = email;
-  reason_ = reason;
+  url_ = url;
 
-  NSRect frame = NSMakeRect(
-      0, 0, UserManager::kReauthDialogWidth, UserManager::kReauthDialogHeight);
+  NSRect frame = NSMakeRect(0, 0, UserManagerProfileDialog::kDialogWidth,
+                            UserManagerProfileDialog::kDialogHeight);
   base::scoped_nsobject<ConstrainedWindowCustomWindow> window(
       [[ConstrainedWindowCustomWindow alloc]
           initWithContentRect:frame
@@ -210,11 +209,11 @@ class ReauthDialogDelegate : public UserManager::BaseReauthDialogDelegate,
   if ((self = [super initWithWindow:window])) {
     webContents_ = webContents;
 
-    reauthWebContents_.reset(content::WebContents::Create(
+    dialogWebContents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(profile)));
-    window.get().contentView = reauthWebContents_->GetNativeView();
-    webContentsDelegate_.reset(new ReauthDialogDelegate());
-    reauthWebContents_->SetDelegate(webContentsDelegate_.get());
+    window.get().contentView = dialogWebContents_->GetNativeView();
+    webContentsDelegate_.reset(new UserManagerProfileDialogDelegate());
+    dialogWebContents_->SetDelegate(webContentsDelegate_.get());
 
     base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
        [[CustomConstrainedWindowSheet alloc]
@@ -236,16 +235,13 @@ class ReauthDialogDelegate : public UserManager::BaseReauthDialogDelegate,
 }
 
 - (void)showURL:(const GURL&)url {
-  reauthWebContents_->GetController().LoadURL(url, content::Referrer(),
+  dialogWebContents_->GetController().LoadURL(url, content::Referrer(),
                                               ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                               std::string());
 }
 
 - (void)show {
-  GURL url = signin::GetReauthURLWithEmail(
-      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER, reason_,
-      emailAddress_);
-  [self showURL:url];
+  [self showURL:url_];
 }
 
 - (void)closeButtonClicked:(NSButton*)button {
@@ -271,7 +267,7 @@ class ReauthDialogDelegate : public UserManager::BaseReauthDialogDelegate,
   std::unique_ptr<UserManagerWebContentsDelegate> webContentsDelegate_;
   UserManagerMac* userManagerObserver_;  // Weak.
   std::unique_ptr<UserManagerModalManagerDelegate> modal_manager_delegate_;
-  base::scoped_nsobject<ReauthDialogWindowController> reauth_window_controller_;
+  base::scoped_nsobject<DialogWindowController> dialog_window_controller_;
 }
 - (void)windowWillClose:(NSNotification*)notification;
 - (void)dealloc;
@@ -281,11 +277,11 @@ class ReauthDialogDelegate : public UserManager::BaseReauthDialogDelegate,
 - (void)show;
 - (void)close;
 - (BOOL)isVisible;
-- (void)showReauthDialogWithProfile:(Profile*)profile
-                              email:(std::string)email
-                             reason:(signin_metrics::Reason)reason;
+- (void)showDialogWithProfile:(Profile*)profile
+                        email:(std::string)email
+                          url:(GURL)url;
 - (void)displayErrorMessage;
-- (void)closeReauthDialog;
+- (void)closeDialog;
 @end
 
 @implementation UserManagerWindowController
@@ -390,22 +386,22 @@ class ReauthDialogDelegate : public UserManager::BaseReauthDialogDelegate,
   userManagerObserver_->WindowWasClosed();
 }
 
-- (void)showReauthDialogWithProfile:(Profile*)profile
-                              email:(std::string)email
-                             reason:(signin_metrics::Reason)reason {
-  reauth_window_controller_.reset([[ReauthDialogWindowController alloc]
+- (void)showDialogWithProfile:(Profile*)profile
+                        email:(std::string)email
+                          url:(GURL)url {
+  dialog_window_controller_.reset([[DialogWindowController alloc]
       initWithProfile:profile
                 email:email
-               reason:reason
+                  url:url
           webContents:webContents_.get()]);
 }
 
 - (void)displayErrorMessage {
-  [reauth_window_controller_ showURL:GURL(chrome::kChromeUISigninErrorURL)];
+  [dialog_window_controller_ showURL:GURL(chrome::kChromeUISigninErrorURL)];
 }
 
-- (void)closeReauthDialog {
-  [reauth_window_controller_ close];
+- (void)closeDialog {
+  [dialog_window_controller_ close];
 }
 
 @end
@@ -471,26 +467,6 @@ void UserManager::OnUserManagerShown() {
 }
 
 // static
-void UserManager::ShowReauthDialog(content::BrowserContext* browser_context,
-                                   const std::string& email,
-                                   signin_metrics::Reason reason) {
-  // This method should only be called if the user manager is already showing.
-  if (!IsShowing())
-    return;
-
-  instance_->ShowReauthDialog(browser_context, email, reason);
-}
-
-// static
-void UserManager::HideReauthDialog() {
-  // This method should only be called if the user manager is already showing.
-  if (!IsShowing())
-    return;
-
-  instance_->CloseReauthDialog();
-}
-
-// static
 void UserManager::AddOnUserManagerShownCallbackForTesting(
     const base::Closure& callback) {
   if (!user_manager_shown_callbacks_for_testing_)
@@ -499,37 +475,71 @@ void UserManager::AddOnUserManagerShownCallbackForTesting(
 }
 
 // static
-void UserManager::ShowSigninDialog(content::BrowserContext* browser_context,
-                                   const base::FilePath& profile_path) {
-  if (!IsShowing())
-    return;
-  instance_->SetSigninProfilePath(profile_path);
-  ShowReauthDialog(browser_context, std::string(),
-                   signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
+base::FilePath UserManager::GetSigninProfilePath() {
+  return instance_->GetSigninProfilePath();
 }
 
 // static
-void UserManager::DisplayErrorMessage() {
+void UserManagerProfileDialog::ShowReauthDialog(
+    content::BrowserContext* browser_context,
+    const std::string& email,
+    signin_metrics::Reason reason) {
+  // This method should only be called if the user manager is already showing.
+  if (!UserManager::IsShowing())
+    return;
+  GURL url = signin::GetReauthURLWithEmail(
+      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER, reason, email);
+  instance_->ShowDialog(browser_context, email, url);
+}
+
+// static
+void UserManagerProfileDialog::ShowSigninDialog(
+    content::BrowserContext* browser_context,
+    const base::FilePath& profile_path) {
+  if (!UserManager::IsShowing())
+    return;
+  instance_->SetSigninProfilePath(profile_path);
+  GURL url = signin::GetPromoURL(
+      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
+      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, true, true);
+  instance_->ShowDialog(browser_context, std::string(), url);
+}
+
+// static
+void UserManagerProfileDialog::ShowDialogAndDisplayErrorMessage(
+    content::BrowserContext* browser_context) {
+  if (!UserManager::IsShowing())
+    return;
+  instance_->ShowDialog(browser_context, std::string(),
+                        GURL(chrome::kChromeUISigninErrorURL));
+}
+
+// static
+void UserManagerProfileDialog::DisplayErrorMessage() {
   DCHECK(instance_);
   instance_->DisplayErrorMessage();
 }
 
 // static
-base::FilePath UserManager::GetSigninProfilePath() {
-  return instance_->GetSigninProfilePath();
+void UserManagerProfileDialog::HideDialog() {
+  // This method should only be called if the user manager is already showing.
+  if (!UserManager::IsShowing())
+    return;
+
+  instance_->CloseDialog();
 }
 
-void UserManagerMac::ShowReauthDialog(content::BrowserContext* browser_context,
-                                      const std::string& email,
-                                      signin_metrics::Reason reason) {
+void UserManagerMac::ShowDialog(content::BrowserContext* browser_context,
+                                const std::string& email,
+                                const GURL& url) {
   [window_controller_
-      showReauthDialogWithProfile:Profile::FromBrowserContext(browser_context)
-                            email:email
-                           reason:reason];
+      showDialogWithProfile:Profile::FromBrowserContext(browser_context)
+                      email:email
+                        url:url];
 }
 
-void UserManagerMac::CloseReauthDialog() {
-  [window_controller_ closeReauthDialog];
+void UserManagerMac::CloseDialog() {
+  [window_controller_ closeDialog];
 }
 
 UserManagerMac::UserManagerMac(Profile* profile) {
@@ -561,7 +571,7 @@ void UserManagerMac::LogTimeToOpen() {
 }
 
 void UserManagerMac::WindowWasClosed() {
-  CloseReauthDialog();
+  CloseDialog();
   instance_ = NULL;
   delete this;
 }
