@@ -139,12 +139,13 @@ cast_test_group("cast_tests") {
 
   content_unittests_filter = {
     test_name = "content_unittests"
+    gtest_excludes = []
     if (target_os == "linux" && !is_cast_desktop_build) {
       # DesktopCaptureDeviceTest.*: No capture device on Eureka
       # Disable PepperGamepadHostTest.WaitForReply (pepper not supported on Eureka)
       # Disable GpuDataManagerImplPrivateTest.SetGLStrings and
       # RenderWidgetHostTest.Background because we disable the blacklist to enable WebGL (b/16142554)
-      gtest_excludes = [
+      gtest_excludes += [
         "DOMStorageDatabaseTest.TestCanOpenAndReadWebCoreDatabase",
         "DesktopCaptureDeviceTest.Capture",
         "GamepadProviderTest.PollingAccess",
@@ -152,6 +153,10 @@ cast_test_group("cast_tests") {
         "PepperGamepadHostTest.WaitForReply",
         "RenderWidgetHostTest.Background",
       ]
+    }
+    if (is_cast_audio_only) {
+      # No way to display URL's on audio only cast devices.
+      gtest_excludes += [ "NavigationEntryTest.NavigationEntryURLs" ]
     }
   }
   filters += [ content_unittests_filter ]
