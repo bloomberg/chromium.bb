@@ -223,7 +223,7 @@ inline bool isTextControlElement(const Element& element) {
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(TextControlElement);
 
 TextControlElement* enclosingTextControl(const Position&);
-TextControlElement* enclosingTextControl(Node*);
+TextControlElement* enclosingTextControl(const Node*);
 
 }  // namespace blink
 
