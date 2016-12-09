@@ -50,19 +50,22 @@ void IntersectionObservation::computeIntersectionObservations(
   //       intersection to have "crossed" a zero threshold, but not crossed
   //       any non-zero threshold.
   unsigned newThresholdIndex;
-  float newVisibleRatio = 0;
-  if (geometry.targetRect().isEmpty()) {
-    newThresholdIndex = geometry.doesIntersect() ? 1 : 0;
-  } else if (!geometry.doesIntersect()) {
-    newThresholdIndex = 0;
-  } else {
-    float intersectionArea =
-        geometry.intersectionRect().size().width().toFloat() *
-        geometry.intersectionRect().size().height().toFloat();
-    float targetArea = geometry.targetRect().size().width().toFloat() *
-                       geometry.targetRect().size().height().toFloat();
-    newVisibleRatio = intersectionArea / targetArea;
+  float newVisibleRatio;
+  if (geometry.doesIntersect()) {
+    if (geometry.targetRect().isEmpty()) {
+      newVisibleRatio = 1;
+    } else {
+      float intersectionArea =
+          geometry.intersectionRect().size().width().toFloat() *
+          geometry.intersectionRect().size().height().toFloat();
+      float targetArea = geometry.targetRect().size().width().toFloat() *
+                         geometry.targetRect().size().height().toFloat();
+      newVisibleRatio = intersectionArea / targetArea;
+    }
     newThresholdIndex = observer().firstThresholdGreaterThan(newVisibleRatio);
+  } else {
+    newVisibleRatio = 0;
+    newThresholdIndex = 0;
   }
   if (m_lastThresholdIndex != newThresholdIndex) {
     IntRect snappedRootBounds = geometry.rootIntRect();

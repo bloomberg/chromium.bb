@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<title>Ensure that a hidden zero-area element is treated correctly</title>
+
+<div id='target' style='width: 0px; height: 0px; position: fixed; top: -1000px'</div>"
+
+<script>
+'use strict';
+
+async_test(t => {
+  let target = document.getElementById('target');
+  let entries = [];
+  new IntersectionObserver(changes => {
+    entries.push(...changes);
+  }).observe(target);
+  waitForNotification(t.step_func_done(() => {
+    // Since the element is initially assumed to be hidden, there are no entries.
+    assert_equals(entries.length, 0);
+  }));
+});
+</script>
