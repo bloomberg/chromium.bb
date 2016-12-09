@@ -97,6 +97,8 @@ void InProcessWorkerObjectProxy::startPendingActivityTimer() {
 }
 
 void InProcessWorkerObjectProxy::countFeature(UseCounter::Feature feature) {
+  // TODO(nhiroki): Move this to ThreadedObjectProxyBase so that
+  // ThreadedWorklets can record API use (https://crbug.com/667357).
   getParentFrameTaskRunners()
       ->get(TaskType::Internal)
       ->postTask(BLINK_FROM_HERE,
@@ -105,6 +107,8 @@ void InProcessWorkerObjectProxy::countFeature(UseCounter::Feature feature) {
 }
 
 void InProcessWorkerObjectProxy::countDeprecation(UseCounter::Feature feature) {
+  // TODO(nhiroki): Move this to ThreadedObjectProxyBase so that
+  // ThreadedWorklets can record API use (https://crbug.com/667357).
   getParentFrameTaskRunners()
       ->get(TaskType::Internal)
       ->postTask(
@@ -126,37 +130,6 @@ void InProcessWorkerObjectProxy::reportException(
                           WTF::passed(location->clone()), exceptionId));
 }
 
-void InProcessWorkerObjectProxy::reportConsoleMessage(
-    MessageSource source,
-    MessageLevel level,
-    const String& message,
-    SourceLocation* location) {
-  getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
-      ->postTask(
-          BLINK_FROM_HERE,
-          crossThreadBind(&InProcessWorkerMessagingProxy::reportConsoleMessage,
-                          m_messagingProxyWeakPtr, source, level, message,
-                          WTF::passed(location->clone())));
-}
-
-void InProcessWorkerObjectProxy::postMessageToPageInspector(
-    const String& message) {
-  // The TaskType of Inspector tasks need to be Unthrottled because they need to
-  // run even on a suspended page.
-  getParentFrameTaskRunners()
-      ->get(TaskType::Unthrottled)
-      ->postTask(BLINK_FROM_HERE,
-                 crossThreadBind(
-                     &InProcessWorkerMessagingProxy::postMessageToPageInspector,
-                     m_messagingProxyWeakPtr, message));
-}
-
-ParentFrameTaskRunners*
-InProcessWorkerObjectProxy::getParentFrameTaskRunners() {
-  return m_parentFrameTaskRunners.get();
-}
-
 void InProcessWorkerObjectProxy::didCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* globalScope) {
   DCHECK(!m_workerGlobalScope);
@@ -169,35 +142,16 @@ void InProcessWorkerObjectProxy::didEvaluateWorkerScript(bool) {
   startPendingActivityTimer();
 }
 
-void InProcessWorkerObjectProxy::didCloseWorkerGlobalScope() {
-  getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
-      ->postTask(
-          BLINK_FROM_HERE,
-          crossThreadBind(&InProcessWorkerMessagingProxy::terminateGlobalScope,
-                          m_messagingProxyWeakPtr));
-}
-
 void InProcessWorkerObjectProxy::willDestroyWorkerGlobalScope() {
   m_timer.reset();
   m_workerGlobalScope = nullptr;
 }
 
-void InProcessWorkerObjectProxy::didTerminateWorkerThread() {
-  // This will terminate the MessagingProxy.
-  getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
-      ->postTask(BLINK_FROM_HERE,
-                 crossThreadBind(
-                     &InProcessWorkerMessagingProxy::workerThreadTerminated,
-                     m_messagingProxyWeakPtr));
-}
-
 InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(
     const WeakPtr<InProcessWorkerMessagingProxy>& messagingProxyWeakPtr,
     ParentFrameTaskRunners* parentFrameTaskRunners)
-    : m_messagingProxyWeakPtr(messagingProxyWeakPtr),
-      m_parentFrameTaskRunners(parentFrameTaskRunners),
+    : ThreadedObjectProxyBase(parentFrameTaskRunners),
+      m_messagingProxyWeakPtr(messagingProxyWeakPtr),
       m_defaultIntervalInSec(kDefaultIntervalInSec),
       m_nextIntervalInSec(kDefaultIntervalInSec),
       m_maxIntervalInSec(kMaxIntervalInSec) {}
@@ -222,6 +176,11 @@ void InProcessWorkerObjectProxy::checkPendingActivity(TimerBase*) {
 
   // There is still a pending activity. Check it later.
   startPendingActivityTimer();
+}
+
+WeakPtr<ThreadedMessagingProxyBase>
+InProcessWorkerObjectProxy::messagingProxyWeakPtr() {
+  return m_messagingProxyWeakPtr;
 }
 
 }  // namespace blink

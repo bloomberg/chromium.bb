@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
+#include "core/workers/ThreadedObjectProxyBase.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -44,18 +45,16 @@ namespace blink {
 
 class InProcessWorkerMessagingProxy;
 class ParentFrameTaskRunners;
+class ThreadedMessagingProxyBase;
 class WorkerGlobalScope;
 class WorkerOrWorkletGlobalScope;
 
-// A proxy to talk to the parent worker object. This object is created and
-// destroyed on the parent context thread (i.e. usually the main thread), and
-// used on the worker thread for proxying messages to the
-// InProcessWorkerMessagingProxy on the parent context thread.
-// InProcessWorkerMessagingProxy always outlives this proxy.
+// A proxy to talk to the parent worker object. See class comments on
+// ThreadedObjectProxyBase.h for lifetime of this class etc.
 //
 // This also checks pending activities on WorkerGlobalScope and reports a result
 // to the message proxy when an exponential backoff timer is fired.
-class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
+class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
   USING_FAST_MALLOC(InProcessWorkerObjectProxy);
   WTF_MAKE_NONCOPYABLE(InProcessWorkerObjectProxy);
 
@@ -70,27 +69,21 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
   void confirmMessageFromWorkerObject();
   void startPendingActivityTimer();
 
-  // WorkerReportingProxy overrides.
-  void countFeature(UseCounter::Feature) override;
-  void countDeprecation(UseCounter::Feature) override;
+  // ThreadedMessagingProxyBase overrides.
+  void countFeature(UseCounter::Feature) final;
+  void countDeprecation(UseCounter::Feature) final;
   void reportException(const String& errorMessage,
                        std::unique_ptr<SourceLocation>,
                        int exceptionId) override;
-  void reportConsoleMessage(MessageSource,
-                            MessageLevel,
-                            const String& message,
-                            SourceLocation*) override;
-  void postMessageToPageInspector(const String&) override;
-  ParentFrameTaskRunners* getParentFrameTaskRunners() override;
   void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
   void didEvaluateWorkerScript(bool success) override;
-  void didCloseWorkerGlobalScope() override;
   void willDestroyWorkerGlobalScope() override;
-  void didTerminateWorkerThread() override;
 
  protected:
   InProcessWorkerObjectProxy(const WeakPtr<InProcessWorkerMessagingProxy>&,
                              ParentFrameTaskRunners*);
+
+  WeakPtr<ThreadedMessagingProxyBase> messagingProxyWeakPtr() final;
 
  private:
   friend class InProcessWorkerMessagingProxyForTest;
@@ -101,10 +94,6 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
   // InProcessWorkerMessagingProxy so a weak pointer must be used when posting
   // the tasks.
   WeakPtr<InProcessWorkerMessagingProxy> m_messagingProxyWeakPtr;
-
-  // Used to post a task to InProcessWorkerMessagingProxy on the parent context
-  // thread.
-  CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 
   // Used for checking pending activities on the worker global scope. This is
   // cancelled when the worker global scope is destroyed.
