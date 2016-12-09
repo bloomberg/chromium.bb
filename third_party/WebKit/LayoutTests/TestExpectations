@@ -91,10 +91,10 @@ crbug.com/626748 paint/invalidation/table/cached-change-tbody-border-color.html 
 crbug.com/626748 virtual/spinvalidation/paint/invalidation/table/cached-change-row-border-color.html [ Skip ]
 crbug.com/626748 virtual/spinvalidation/paint/invalidation/table/cached-change-tbody-border-color.html [ Skip ]
 
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/outline-clip-change.html [ Crash ]
+crbug.com/645667 virtual/spinvalidation/paint/invalidation/outline-clip-change.html [ Crash Failure ]
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/filter-repaint-accelerated-on-accelerated-filter.html [ Crash ]
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/position-change-keeping-geometry.html [ Crash ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/marker-viewBox-changes.svg [ Crash ]
+crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/marker-viewBox-changes.svg [ Crash Failure ]
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Crash ]
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/resize-repaint.html [ Crash ]
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/shrink-layer.html [ Crash ]
