@@ -58,6 +58,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
         ['win', 'nvidia'], bug=631317)
+    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
+        ['win', 'nvidia'], bug=672380)
 
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
@@ -92,8 +94,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texture-offset-uniform-texture-coordinate.html',
         ['win', 'intel'], bug=662644) # WebGL 2.0.1
     self.Fail('conformance2/glsl3/unary-minus-operator-in-dynamic-loop.html',
-        ['win', 'intel'], bug=662644) # WebGL 2.0.1
-    self.Fail('conformance2/rendering/clear-srgb-color-buffer.html',
         ['win', 'intel'], bug=662644) # WebGL 2.0.1
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win', 'intel'], bug=617449)
@@ -520,6 +520,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac', 'intel'], bug=618464)
 
+    # Failed on OSX 10.10 and 10.11
+    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
+        ['mac', 'intel'], bug=672380)
+
     # Linux only.
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_byte.html',
@@ -545,8 +549,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
-    self.Fail('conformance2/rendering/clear-srgb-color-buffer.html',
-        ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
     self.Fail('conformance2/rendering/clipping-wide-points.html',
         ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
 
@@ -555,6 +557,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'nvidia'], bug=618447)
+    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
+        ['linux', 'nvidia'], bug=672380)
 
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',

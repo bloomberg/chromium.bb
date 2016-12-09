@@ -136,6 +136,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'nvidia', 'no_passthrough'], bug=626524)
     self.Flaky('conformance/textures/misc/texture-upload-size.html',
         ['win', 'nvidia'], bug=630860)
+    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
+        ['win', 'nvidia'], bug=672380)
 
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
@@ -362,6 +364,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
                '2d-rgb-rgb-unsigned_byte.html',
                ['mac', 'intel'], bug=648377)
 
+    # Failed on OSX 10.10 and 10.11
+    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
+        ['mac', 'intel'], bug=672380)
+
     # Mac Retina NVidia failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['mac', ('nvidia', 0xfe9)], bug=635081)
@@ -398,6 +404,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/image/' +
                'tex-2d-rgb-rgb-unsigned_byte.html',
                ['linux', 'nvidia'], bug=596622)
+    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
+        ['linux', 'nvidia'], bug=672380)
+
     # AMD
     self.Flaky('conformance/more/functions/uniformi.html',
                ['linux', 'amd'], bug=550989)
