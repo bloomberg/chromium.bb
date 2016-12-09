@@ -62,8 +62,10 @@ declare_args() {
 
   enable_supervised_users = !is_ios && !is_chromecast
 
-  # Enables vr shell.
-  enable_vr_shell = false
+  # Enables vr shell (enabled on same architectures as webvr).
+  # TODO(amp): Collapse webvr and vr shell build flags into a single vr flag.
+  enable_vr_shell =
+      is_android && (current_cpu == "arm" || current_cpu == "arm64")
 
   # Enables vr shell UI development on local or remote page.
   enable_vr_shell_ui_dev = false
