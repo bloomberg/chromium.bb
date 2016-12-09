@@ -234,6 +234,7 @@
       'GPU Win x64 Builder': 'gpu_tests_deqp_gles_release_trybot',
       'GPU Win x64 Builder (dbg)': 'gpu_tests_deqp_gles_debug_trybot',
       'Linux ChromiumOS Builder': 'gpu_fyi_tests_chromeos_release_trybot',
+      'Linux ChromiumOS Ozone Builder': 'gpu_fyi_tests_chromeos_ozone_release_trybot',
       'Mac GPU ASAN Release': 'gpu_fyi_tests_release_trybot_asan',
     },
 
@@ -1143,6 +1144,10 @@
 
     'debug_trybot_x86': [
       'debug_trybot', 'x86',
+    ],
+
+    'gpu_fyi_tests_chromeos_ozone_release_trybot': [
+      'gpu_fyi_tests', 'release_trybot', 'chromeos', 'ozone',
     ],
 
     'gpu_fyi_tests_chromeos_release_trybot': [

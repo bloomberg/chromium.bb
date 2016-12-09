@@ -2220,6 +2220,7 @@
       "All"
     ]
   },
+  "Linux ChromiumOS Ozone Builder": {},
   "Linux Debug (NVIDIA)": {
     "gtest_tests": [
       {
