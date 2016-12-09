@@ -475,7 +475,7 @@ static void predict_and_reconstruct_intra_block(AV1_COMMON *cm,
   (void)cm;
   (void)r;
 #endif
-  dst = &pd->dst.buf[4 * row * pd->dst.stride + 4 * col];
+  dst = &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
 
   if (mbmi->sb_type < BLOCK_8X8)
     if (plane == 0) mode = xd->mi[0]->bmi[(row << 1) + col].as_mode;
@@ -584,13 +584,14 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
   const int eob =
       av1_decode_block_tokens(xd, plane, scan_order, col, row, tx_size, tx_type,
                               &max_scan_line, r, segment_id);
+  uint8_t *dst =
+      &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
 #if CONFIG_ADAPT_SCAN
   av1_update_scan_count_facade(cm, tx_size, tx_type, pd->dqcoeff, eob);
 #endif
   if (eob)
-    inverse_transform_block(xd, plane, tx_type, tx_size,
-                            &pd->dst.buf[4 * row * pd->dst.stride + 4 * col],
-                            pd->dst.stride, max_scan_line, eob);
+    inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
+                            max_scan_line, eob);
 #else
   eob = av1_pvq_decode_helper2(xd, &xd->mi[0]->mbmi, plane, row, col, tx_size,
                                tx_type);
