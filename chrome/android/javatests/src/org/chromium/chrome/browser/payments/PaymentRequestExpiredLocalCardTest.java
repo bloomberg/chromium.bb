@@ -91,7 +91,7 @@ public class PaymentRequestExpiredLocalCardTest extends PaymentRequestTestBase {
     public void testCannotAddExpiredCard()
             throws InterruptedException, ExecutionException, TimeoutException {
         // If the current date is in January skip this test. It is not possible to select an expired
-        // data in the card editor in January.
+        // date in the card editor in January.
         Calendar now = Calendar.getInstance();
         if (now.get(Calendar.MONTH) == 0) return;
 
@@ -130,25 +130,34 @@ public class PaymentRequestExpiredLocalCardTest extends PaymentRequestTestBase {
                 new String[] {"10", "26", "123"}, mUnmaskValidationDone);
         assertTrue(getUnmaskPromptErrorMessage().equals(""));
 
-        // Set an invalid expiration date.
+        // Set an invalid expiration month.
+        setTextInExpiredCardUnmaskDialogAndWait(
+                new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
+                new String[] {"99", "25", "123"}, mUnmaskValidationDone);
+        assertTrue(getUnmaskPromptErrorMessage().equals(
+                "Check your expiration month and try again"));
+
+        // Set an invalid expiration year.
         setTextInExpiredCardUnmaskDialogAndWait(
                 new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
                 new String[] {"10", "14", "123"}, mUnmaskValidationDone);
         assertTrue(getUnmaskPromptErrorMessage().equals(
-                "Check your expiration date and try again"));
+                "Check your expiration year and try again"));
 
-        // Set an invalid CVC and expiration date.
-        setTextInExpiredCardUnmaskDialogAndWait(
-                new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
-                new String[] {"10", "14", "12312"}, mUnmaskValidationDone);
-        assertTrue(getUnmaskPromptErrorMessage().equals(
-                "Check your expiration date and CVC and try again"));
+        // If the current date is in January skip this test. It is not possible to select an expired
+        // date in January.
+        Calendar now = Calendar.getInstance();
+        if (now.get(Calendar.MONTH) != 0) {
+            String twoDigitsYear = Integer.toString(now.get(Calendar.YEAR)).substring(2);
 
-        // Set an invalid CVC.
-        setTextInExpiredCardUnmaskDialogAndWait(
-                new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
-                new String[] {"10", "26", "12312"}, mUnmaskValidationDone);
-        assertTrue(getUnmaskPromptErrorMessage().equals("Check your CVC and try again"));
+            // Set an invalid expiration year.
+            setTextInExpiredCardUnmaskDialogAndWait(
+                    new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
+                    new String[] {Integer.toString(now.get(Calendar.MONTH) - 1), twoDigitsYear,
+                            "123"}, mUnmaskValidationDone);
+            assertTrue(getUnmaskPromptErrorMessage().equals(
+                    "Check your expiration date and try again"));
+        }
 
         // Set valid arguments again.
         setTextInExpiredCardUnmaskDialogAndWait(

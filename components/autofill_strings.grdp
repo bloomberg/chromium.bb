@@ -233,11 +233,17 @@
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_CVC" desc="Error message that encourages the user to try to re-enter their credit card CVC after a previous failed attempt." formatter_data="android_java">
     Check your CVC and try again
   </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_EXPIRATION" desc="Error message that encourages the user to try to re-enter their credit card expiration date after a previous failed attempt." formatter_data="android_java">
+  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_EXPIRATION_DATE" desc="Error message that encourages the user to try to re-enter their credit card expiration date after a previous failed attempt." formatter_data="android_java">
     Check your expiration date and try again
   </message>
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_CVC_AND_EXPIRATION" desc="Error message that encourages the user to try to re-enter their credit card expiration date and CVC after a previous failed attempt." formatter_data="android_java">
     Check your expiration date and CVC and try again
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_EXPIRATION_MONTH" desc="Error message that encourages the user to try to re-enter their credit card expiration month after a previous failed attempt." formatter_data="android_java">
+    Check your expiration month and try again
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_EXPIRATION_YEAR" desc="Error message that encourages the user to try to re-enter their credit card expiration year after a previous failed attempt." formatter_data="android_java">
+    Check your expiration year and try again
   </message>
   <if expr="_google_chrome">
     <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_PERMANENT" desc="Error message to show when a credit card cannot be verified and the user isn't allowed to retry.">

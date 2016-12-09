@@ -78,23 +78,29 @@ public class CardUnmaskPrompt
     private boolean mValidationWaitsForCalendarTask;
 
     private String mCvcErrorMessage;
-    private String mExpirationErrorMessage;
+    private String mExpirationMonthErrorMessage;
+    private String mExpirationYearErrorMessage;
+    private String mExpirationDateErrorMessage;
     private String mCvcAndExpirationErrorMessage;
 
-    private boolean mFinishedTypingMonth;
-    private boolean mFinishedTypingYear;
-    private boolean mFinishedTypingCvc;
+    private boolean mStartedTypingMonth;
+    private boolean mStartedTypingYear;
+    private boolean mStartedTypingCvc;
 
-    public static final int ERROR_TYPE_EXPIRATION = 1;
-    public static final int ERROR_TYPE_CVC = 2;
-    public static final int ERROR_TYPE_BOTH = 3;
+    private static final int EXPIRATION_FIELDS_LENGTH = 2;
+
+    public static final int ERROR_TYPE_EXPIRATION_MONTH = 1;
+    public static final int ERROR_TYPE_EXPIRATION_YEAR = 2;
+    public static final int ERROR_TYPE_EXPIRATION_DATE = 3;
+    public static final int ERROR_TYPE_CVC = 4;
+    public static final int ERROR_TYPE_CVC_AND_EXPIRATION = 5;
+    public static final int ERROR_TYPE_NOT_ENOUGH_INFO = 6;
+    public static final int ERROR_TYPE_NONE = 7;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({
-        ERROR_TYPE_EXPIRATION,
-        ERROR_TYPE_CVC,
-        ERROR_TYPE_BOTH
-    })
+    @IntDef({ERROR_TYPE_EXPIRATION_MONTH, ERROR_TYPE_EXPIRATION_YEAR, ERROR_TYPE_EXPIRATION_DATE,
+            ERROR_TYPE_CVC, ERROR_TYPE_CVC_AND_EXPIRATION, ERROR_TYPE_NOT_ENOUGH_INFO,
+            ERROR_TYPE_NONE})
     public @interface ErrorType {}
 
     /**
@@ -194,43 +200,74 @@ public class CardUnmaskPrompt
         mThisMonth = -1;
         if (mShouldRequestExpirationDate) new CalendarTask().execute();
 
-        // Create the observers to be notified when the user has finished editing the input fields.
+        // Create the listeners to be notified when the user focuses out the input fields.
         mCardUnmaskInput.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus && !mCardUnmaskInput.getText().toString().isEmpty()
-                        && !mFinishedTypingCvc) {
-                    mFinishedTypingCvc = true;
-                    validate();
-                }
+                validate();
             }
         });
         mMonthInput.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus && !mMonthInput.getText().toString().isEmpty()
-                        && !mFinishedTypingMonth) {
-                    mFinishedTypingMonth = true;
-                    validate();
-                }
+                validate();
             }
         });
         mYearInput.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus && !mYearInput.getText().toString().isEmpty()
-                        && !mFinishedTypingYear) {
-                    mFinishedTypingYear = true;
-                    validate();
-                }
+                validate();
             }
         });
 
+        // Create the listeners to be notified when the user types into the input fields.
+        mCardUnmaskInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mStartedTypingCvc = true;
+            }
+        });
+        mMonthInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mStartedTypingMonth = true;
+            }
+        });
+        mYearInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mStartedTypingYear = true;
+            }
+        });
+
+        // Load the error messages to show to the user.
         Resources resources = context.getResources();
         mCvcErrorMessage =
                 resources.getString(R.string.autofill_card_unmask_prompt_error_try_again_cvc);
-        mExpirationErrorMessage = resources.getString(
-                R.string.autofill_card_unmask_prompt_error_try_again_expiration);
+        mExpirationMonthErrorMessage = resources.getString(
+                R.string.autofill_card_unmask_prompt_error_try_again_expiration_month);
+        mExpirationYearErrorMessage = resources.getString(
+                R.string.autofill_card_unmask_prompt_error_try_again_expiration_year);
+        mExpirationDateErrorMessage = resources.getString(
+                R.string.autofill_card_unmask_prompt_error_try_again_expiration_date);
         mCvcAndExpirationErrorMessage = resources.getString(
                 R.string.autofill_card_unmask_prompt_error_try_again_cvc_and_expiration);
     }
@@ -305,7 +342,7 @@ public class CardUnmaskPrompt
         if (errorMessage != null) {
             setOverlayVisibility(View.GONE);
             if (allowRetry) {
-                setInputError(errorMessage, ERROR_TYPE_BOTH);
+                showErrorMessage(errorMessage);
                 setInputsEnabled(true);
                 setInitialFocus();
 
@@ -343,18 +380,18 @@ public class CardUnmaskPrompt
         validate();
     }
 
+    /**
+     * Validates the values of the input fields to determine whether the submit button should be
+     * enabled. Also displays a detailed error message and highlights the fields for which the value
+     * is wrong. Finally checks whether the focuse should move to the next field.
+     */
     private void validate() {
         Button positiveButton = mDialog.getButton(AlertDialog.BUTTON_POSITIVE);
 
-        boolean hasValidExpiration = isExpirationDateValid();
-        boolean hasValidCvc = isCvcValid();
-
-        // Since the CVC input field is the last one, users won't necessarily focus out of it. It
-        // should be considered as finished once the CVC becomes valid.
-        if (hasValidCvc) mFinishedTypingCvc = true;
-
-        positiveButton.setEnabled(hasValidExpiration && hasValidCvc);
-        showDetailedErrorMessage(hasValidExpiration, hasValidCvc);
+        @ErrorType int errorType = getExpirationAndCvcErrorType();
+        positiveButton.setEnabled(errorType == ERROR_TYPE_NONE);
+        showDetailedErrorMessage(errorType);
+        moveFocus(errorType);
 
         if (sObserverForTest != null) {
             sObserverForTest.onCardUnmaskPromptValidationDone(this);
@@ -460,50 +497,168 @@ public class CardUnmaskPrompt
         }
     }
 
-    private void showDetailedErrorMessage(boolean hasValidExpiration, boolean hasValidCvc) {
-        // Only show an expiration date error if the user has finished typing both the month and
-        // year fields.
-        boolean shouldShowExpirationError =
-                !hasValidExpiration && mFinishedTypingMonth && mFinishedTypingYear;
-
-        // Only show a CVC error if the user has fininshed typing.
-        boolean shouldShowCvcError = !hasValidCvc && mFinishedTypingCvc;
-
-        if (shouldShowExpirationError && shouldShowCvcError) {
-            setInputError(mCvcAndExpirationErrorMessage, ERROR_TYPE_BOTH);
-        } else if (shouldShowExpirationError) {
-            setInputError(mExpirationErrorMessage, ERROR_TYPE_EXPIRATION);
-        } else if (shouldShowCvcError) {
-            setInputError(mCvcErrorMessage, ERROR_TYPE_CVC);
-        } else {
-            clearInputError();
+    /**
+     * Moves the focus to the next field based on the value of the fields and the specified type of
+     * error found for the unmask field(s).
+     *
+     * @param errorType The type of error detected.
+     */
+    private void moveFocus(@ErrorType int errorType) {
+        if (errorType == ERROR_TYPE_NOT_ENOUGH_INFO) {
+            if (mMonthInput.isFocused()
+                    && mMonthInput.getText().length() == EXPIRATION_FIELDS_LENGTH) {
+                mYearInput.requestFocus();
+            } else if (mYearInput.isFocused()
+                    && mYearInput.getText().length() == EXPIRATION_FIELDS_LENGTH) {
+                mCardUnmaskInput.requestFocus();
+            }
         }
     }
 
-    private boolean isExpirationDateValid() {
-        if (!mShouldRequestExpirationDate) return true;
+    /**
+     * Shows (or removes) the appropriate error message and apply the error filter to the
+     * appropriate fields depending on the error type.
+     *
+     * @param errorType The type of error detected.
+     */
+    private void showDetailedErrorMessage(@ErrorType int errorType) {
+        switch (errorType) {
+            case ERROR_TYPE_EXPIRATION_MONTH:
+                showErrorMessage(mExpirationMonthErrorMessage);
+                break;
 
-        if (mThisYear == -1 || mThisMonth == -1) {
-            mValidationWaitsForCalendarTask = true;
-            return false;
+            case ERROR_TYPE_EXPIRATION_YEAR:
+                showErrorMessage(mExpirationYearErrorMessage);
+                break;
+
+            case ERROR_TYPE_EXPIRATION_DATE:
+                showErrorMessage(mExpirationDateErrorMessage);
+                break;
+
+            case ERROR_TYPE_CVC:
+                showErrorMessage(mCvcErrorMessage);
+                break;
+
+            case ERROR_TYPE_CVC_AND_EXPIRATION:
+                showErrorMessage(mCvcAndExpirationErrorMessage);
+                break;
+
+            case ERROR_TYPE_NONE:
+            case ERROR_TYPE_NOT_ENOUGH_INFO:
+            default:
+                clearInputError();
+                return;
         }
 
-        int month = -1;
-        try {
-            month = Integer.parseInt(mMonthInput.getText().toString());
-            if (month < 1 || month > 12) return false;
-        } catch (NumberFormatException e) {
-            return false;
+        updateColorForInputs(errorType);
+    }
+
+    /**
+     * Applies the error filter to the invalid fields based on the errorType.
+     *
+     * @param The ErrorType value representing the type of error found for the unmask fields.
+     */
+    private void updateColorForInputs(@ErrorType int errorType) {
+        // The rest of this code makes L-specific assumptions about the background being used to
+        // draw the TextInput.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+
+        ColorFilter filter = new PorterDuffColorFilter(
+                ApiCompatibilityUtils.getColor(
+                        mDialog.getContext().getResources(), R.color.input_underline_error_color),
+                PorterDuff.Mode.SRC_IN);
+
+        // Decide on what field(s) to apply the filter.
+        boolean filterMonth = errorType == ERROR_TYPE_EXPIRATION_MONTH
+                || errorType == ERROR_TYPE_EXPIRATION_DATE
+                || errorType == ERROR_TYPE_CVC_AND_EXPIRATION;
+        boolean filterYear = errorType == ERROR_TYPE_EXPIRATION_YEAR
+                || errorType == ERROR_TYPE_EXPIRATION_DATE
+                || errorType == ERROR_TYPE_CVC_AND_EXPIRATION;
+        boolean filterCvc =
+                errorType == ERROR_TYPE_CVC || errorType == ERROR_TYPE_CVC_AND_EXPIRATION;
+
+        updateColorForInput(mMonthInput, filterMonth ? filter : null);
+        updateColorForInput(mYearInput, filterYear ? filter : null);
+        updateColorForInput(mCardUnmaskInput, filterCvc ? filter : null);
+    }
+
+    /**
+     * Determines what type of error, if any, is present in the cvc and expiration date fields of
+     * the prompt.
+     *
+     * @return The ErrorType value representing the type of error found for the unmask fields.
+     */
+    @ErrorType private int getExpirationAndCvcErrorType() {
+        @ErrorType int errorType = ERROR_TYPE_NONE;
+
+        if (mShouldRequestExpirationDate) errorType = getExpirationDateErrorType();
+
+        // If the CVC is valid, return the error type determined so far.
+        if (isCvcValid()) return errorType;
+
+        if (mStartedTypingCvc && !mCardUnmaskInput.isFocused()) {
+            // The CVC is invalid and the user has typed in the CVC field, but is not focused on it
+            // now. Add the CVC error to the current error.
+            if (errorType == ERROR_TYPE_NONE || errorType == ERROR_TYPE_NOT_ENOUGH_INFO) {
+                errorType = ERROR_TYPE_CVC;
+            } else {
+                errorType = ERROR_TYPE_CVC_AND_EXPIRATION;
+            }
+        } else {
+            // The CVC is invalid but the user is not done with the field.
+            // If no other errors were detected, set that there is not enough information.
+            if (errorType == ERROR_TYPE_NONE) errorType = ERROR_TYPE_NOT_ENOUGH_INFO;
+        }
+
+        return errorType;
+    }
+
+    /**
+     * Determines what type of error, if any, is present in the expiration date fields of the
+     * prompt.
+     *
+     * @return The ErrorType value representing the type of error found for the expiration date
+     *         unmask fields.
+     */
+    @ErrorType private int getExpirationDateErrorType() {
+        if (mThisYear == -1 || mThisMonth == -1) {
+            mValidationWaitsForCalendarTask = true;
+            return ERROR_TYPE_NOT_ENOUGH_INFO;
+        }
+
+        int month = getMonth();
+        if (month < 1 || month > 12) {
+            if (mMonthInput.getText().length() == EXPIRATION_FIELDS_LENGTH
+                    || (!mMonthInput.isFocused() && mStartedTypingMonth)) {
+                // mFinishedTypingMonth = true;
+                return ERROR_TYPE_EXPIRATION_MONTH;
+            }
+            return ERROR_TYPE_NOT_ENOUGH_INFO;
         }
 
         int year = getFourDigitYear();
-        if (year < mThisYear || year > mThisYear + 10) return false;
+        if (year < mThisYear || year > mThisYear + 10) {
+            if (mYearInput.getText().length() == EXPIRATION_FIELDS_LENGTH
+                    || (!mYearInput.isFocused() && mStartedTypingYear)) {
+                // mFinishedTypingYear = true;
+                return ERROR_TYPE_EXPIRATION_YEAR;
+            }
+            return ERROR_TYPE_NOT_ENOUGH_INFO;
+        }
 
-        if (year == mThisYear && month < mThisMonth) return false;
+        if (year == mThisYear && month < mThisMonth) {
+            return ERROR_TYPE_EXPIRATION_DATE;
+        }
 
-        return true;
+        return ERROR_TYPE_NONE;
     }
 
+    /**
+     * Makes a call to the native code to determine if the value in the CVC input field is valid.
+     *
+     * @return Whether the CVC is valid.
+     */
     private boolean isCvcValid() {
         return mDelegate.checkUserInputValidity(mCardUnmaskInput.getText().toString());
     }
@@ -545,9 +700,9 @@ public class CardUnmaskPrompt
 
     /**
      * Sets the error message on the inputs.
-     * @param message The error message to show, or null if the error state should be cleared.
+     * @param message The error message to show.
      */
-    private void setInputError(String message, @ErrorType int errorType) {
+    private void showErrorMessage(String message) {
         assert message != null;
 
         // Set the message to display;
@@ -557,28 +712,6 @@ public class CardUnmaskPrompt
         // A null message is passed in during card verification, which also makes an announcement.
         // Announcing twice in a row may cancel the first announcement.
         mErrorMessage.announceForAccessibility(message);
-
-        // The rest of this code makes L-specific assumptions about the background being used to
-        // draw the TextInput.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
-
-        ColorFilter filter = new PorterDuffColorFilter(ApiCompatibilityUtils.getColor(
-                mDialog.getContext().getResources(),
-                R.color.input_underline_error_color), PorterDuff.Mode.SRC_IN);
-
-        if (errorType == ERROR_TYPE_BOTH) {
-            updateColorForInput(mCardUnmaskInput, filter);
-            updateColorForInput(mMonthInput, filter);
-            updateColorForInput(mYearInput, filter);
-        } else if (errorType == ERROR_TYPE_CVC) {
-            updateColorForInput(mCardUnmaskInput, filter);
-            updateColorForInput(mMonthInput, null);
-            updateColorForInput(mYearInput, null);
-        } else if (errorType == ERROR_TYPE_EXPIRATION) {
-            updateColorForInput(mMonthInput, filter);
-            updateColorForInput(mYearInput, filter);
-            updateColorForInput(mCardUnmaskInput, null);
-        }
     }
 
     /**
@@ -617,9 +750,9 @@ public class CardUnmaskPrompt
     }
 
     /**
-     * Returns the expiration year the user entered.
-     * Two digit values (such as 17) will be converted to 4 digit years (such as 2017).
-     * Returns -1 if the input is empty or otherwise not a valid year.
+     * @return The expiration year the user entered.
+     *         Two digit values (such as 17) will be converted to 4 digit years (such as 2017).
+     *         Returns -1 if the input is empty or otherwise not a valid year.
      */
     private int getFourDigitYear() {
         try {
@@ -627,6 +760,18 @@ public class CardUnmaskPrompt
             if (year < 0) return -1;
             if (year < 100) year += mThisYear - mThisYear % 100;
             return year;
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /**
+     * @return The expiration month the user entered.
+     *         Returns -1 if the input is empty or not a number.
+     */
+    private int getMonth() {
+        try {
+            return Integer.parseInt(mMonthInput.getText().toString());
         } catch (NumberFormatException e) {
             return -1;
         }
