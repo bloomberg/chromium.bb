@@ -9,6 +9,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.provider.Settings;
+import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -16,15 +17,17 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.webapk.lib.client.WebApkVersion;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
  * WebApkUpdateManager manages when to check for updates to the WebAPK's Web Manifest, and sends
  * an update request to the WebAPK Server when an update is needed.
  */
-public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
+public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     private static final String TAG = "WebApkUpdateManager";
 
     /** Number of milliseconds between checks for whether the WebAPK's Web Manifest has changed. */
@@ -44,7 +47,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      */
     private boolean mPreviousUpdateSucceeded;
 
-    private ManifestUpgradeDetector mUpgradeDetector;
+    private WebApkUpdateDataFetcher mFetcher;
 
     /**
      * Checks whether the WebAPK's Web Manifest has changed. Requests an updated WebAPK if the
@@ -60,27 +63,28 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
 
         if (!shouldCheckIfWebManifestUpdated(storage, mInfo, mPreviousUpdateSucceeded)) return;
 
-        mUpgradeDetector = buildManifestUpgradeDetector(tab, mInfo);
-        mUpgradeDetector.start();
+        mFetcher = buildFetcher();
+        mFetcher.start(tab, mInfo, this);
     }
 
     public void destroy() {
-        destroyUpgradeDetector();
+        destroyFetcher();
     }
 
     @Override
     public void onFinishedFetchingWebManifestForInitialUrl(
-            boolean needsUpgrade, WebApkInfo info, String bestIconUrl) {
-        onGotManifestData(needsUpgrade, info, bestIconUrl);
+            WebApkInfo fetchedInfo, String bestIconUrl) {
+        onGotManifestData(fetchedInfo, bestIconUrl);
     }
 
     @Override
-    public void onGotManifestData(boolean needsUpgrade, WebApkInfo info, String bestIconUrl) {
+    public void onGotManifestData(WebApkInfo fetchedInfo, String bestIconUrl) {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(mInfo.id());
         storage.updateTimeOfLastCheckForUpdatedWebManifest();
 
-        boolean gotManifest = (info != null);
-        needsUpgrade |= isShellApkVersionOutOfDate(mInfo);
+        boolean gotManifest = (fetchedInfo != null);
+        boolean needsUpgrade = isShellApkVersionOutOfDate(mInfo)
+                || (gotManifest && needsUpdate(mInfo, fetchedInfo, bestIconUrl));
         Log.v(TAG, "Got Manifest: " + gotManifest);
         Log.v(TAG, "WebAPK upgrade needed: " + needsUpgrade);
 
@@ -97,7 +101,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
         // Web Manifests as the user navigates. For instance, the WebAPK's start_url might not
         // point to a Web Manifest because start_url redirects to the WebAPK's main page.
         if (gotManifest || needsUpgrade) {
-            destroyUpgradeDetector();
+            destroyFetcher();
         }
 
         if (!needsUpgrade) {
@@ -111,8 +115,8 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
         // {@link onBuiltWebApk} being called.
         recordUpdate(storage, false);
 
-        if (info != null) {
-            updateAsync(info, bestIconUrl);
+        if (fetchedInfo != null) {
+            updateAsync(fetchedInfo, bestIconUrl);
             return;
         }
 
@@ -122,10 +126,10 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
     }
 
     /**
-     * Builds {@link ManifestUpgradeDetector}. In a separate function for the sake of tests.
+     * Builds {@link WebApkUpdateDataFetcher}. In a separate function for the sake of tests.
      */
-    protected ManifestUpgradeDetector buildManifestUpgradeDetector(Tab tab, WebApkInfo info) {
-        return new ManifestUpgradeDetector(tab, info, this);
+    protected WebApkUpdateDataFetcher buildFetcher() {
+        return new WebApkUpdateDataFetcher();
     }
 
     /**
@@ -142,13 +146,13 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
     }
 
     /**
-     * Destroys {@link mUpgradeDetector}. In a separate function for the sake of tests.
+     * Destroys {@link mFetcher}. In a separate function for the sake of tests.
      */
-    protected void destroyUpgradeDetector() {
-        if (mUpgradeDetector == null) return;
+    protected void destroyFetcher() {
+        if (mFetcher == null) return;
 
-        mUpgradeDetector.destroy();
-        mUpgradeDetector = null;
+        mFetcher.destroy();
+        mFetcher = null;
     }
 
     /** Returns the current time. In a separate function for the sake of testing. */
@@ -201,17 +205,17 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      */
     private boolean shouldCheckIfWebManifestUpdated(
             WebappDataStorage storage, WebApkInfo info, boolean previousUpdateSucceeded) {
+        if (CommandLine.getInstance().hasSwitch(
+                    ChromeSwitches.CHECK_FOR_WEB_MANIFEST_UPDATE_ON_STARTUP)) {
+            return true;
+        }
+
         // Updating WebAPKs requires "installation from unknown sources" to be enabled. It is
         // confusing for a user to see a dialog asking them to enable "installation from unknown
         // sources" when they are in the middle of using the WebAPK (as opposed to after requesting
         // to add a WebAPK to the homescreen).
         if (!installingFromUnknownSourcesAllowed()) {
             return false;
-        }
-
-        if (CommandLine.getInstance().hasSwitch(
-                    ChromeSwitches.CHECK_FOR_WEB_MANIFEST_UPDATE_ON_STARTUP)) {
-            return true;
         }
 
         if (isShellApkVersionOutOfDate(info)) return true;
@@ -250,6 +254,55 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
         } catch (Settings.SettingNotFoundException e) {
             return false;
         }
+    }
+
+    /**
+     * Checks whether the WebAPK needs to be updated.
+     * @param info               Meta data from WebAPK's Android Manifest.
+     * @param fetchedInfo        Fetched data for Web Manifest.
+     * @param bestFetchedIconUrl The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
+     *                           suited for use as the launcher icon on this device.
+     */
+    private boolean needsUpdate(WebApkInfo info, WebApkInfo fetchedInfo, String bestIconUrl) {
+        // We should have computed the Murmur2 hash for the bitmap at the best icon URL for
+        // {@link fetchedInfo} (but not the other icon URLs.)
+        String fetchedBestIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap().get(bestIconUrl);
+        String bestIconMurmur2Hash =
+                findMurmur2HashForUrlIgnoringFragment(mInfo.iconUrlToMurmur2HashMap(), bestIconUrl);
+
+        return !TextUtils.equals(bestIconMurmur2Hash, fetchedBestIconMurmur2Hash)
+                || !urlsMatchIgnoringFragments(
+                           mInfo.scopeUri().toString(), fetchedInfo.scopeUri().toString())
+                || !urlsMatchIgnoringFragments(
+                           mInfo.manifestStartUrl(), fetchedInfo.manifestStartUrl())
+                || !TextUtils.equals(mInfo.shortName(), fetchedInfo.shortName())
+                || !TextUtils.equals(mInfo.name(), fetchedInfo.name())
+                || mInfo.backgroundColor() != fetchedInfo.backgroundColor()
+                || mInfo.themeColor() != fetchedInfo.themeColor()
+                || mInfo.orientation() != fetchedInfo.orientation()
+                || mInfo.displayMode() != fetchedInfo.displayMode();
+    }
+
+    /**
+     * Returns the Murmur2 hash for entry in {@link iconUrlToMurmur2HashMap} whose canonical
+     * representation, ignoring fragments, matches {@link iconUrlToMatch}.
+     */
+    private String findMurmur2HashForUrlIgnoringFragment(
+            Map<String, String> iconUrlToMurmur2HashMap, String iconUrlToMatch) {
+        for (Map.Entry<String, String> entry : iconUrlToMurmur2HashMap.entrySet()) {
+            if (urlsMatchIgnoringFragments(entry.getKey(), iconUrlToMatch)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns whether the urls match ignoring fragments. Canonicalizes the URLs prior to doing the
+     * comparison.
+     */
+    protected boolean urlsMatchIgnoringFragments(String url1, String url2) {
+        return UrlUtilities.urlsMatchIgnoringFragments(url1, url2);
     }
 
     /**

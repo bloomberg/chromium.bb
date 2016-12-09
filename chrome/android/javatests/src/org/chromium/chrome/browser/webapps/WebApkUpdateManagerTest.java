@@ -9,22 +9,28 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.webapk.lib.client.WebApkVersion;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Tests ManifestUpgradeDetector. This class contains tests which cannot be done as JUnit tests.
+ * Tests WebApkUpdateManager. This class contains tests which cannot be done as JUnit tests.
  */
-public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
+@CommandLineFlags.Add(ChromeSwitches.CHECK_FOR_WEB_MANIFEST_UPDATE_ON_STARTUP)
+public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
 
+    private static final String WEBAPK_PACKAGE = "test.package";
+    private static final String WEBAPK_ID = "webapk_id";
     private static final String WEBAPK_MANIFEST_URL =
             "/chrome/test/data/banners/manifest_one_icon.json";
 
@@ -44,29 +50,38 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
     private EmbeddedTestServer mTestServer;
     private Tab mTab;
 
-    // CallbackHelper which blocks until the {@link ManifestUpgradeDetector.Callback} callback is
-    // called.
-    private static class CallbackWaiter
-            extends CallbackHelper implements ManifestUpgradeDetector.Callback {
-        private String mName;
-        private boolean mNeedsUpgrade;
+    /**
+     * Subclass of {@link WebApkUpdateManager} which notifies the {@link CallbackHelper} passed to
+     * the constructor when it has been determined whether an update is needed.
+     */
+    private static class TestWebApkUpdateManager extends WebApkUpdateManager {
+        private CallbackHelper mWaiter;
+        private boolean mNeedsUpdate = false;
+
+        public TestWebApkUpdateManager(CallbackHelper waiter) {
+            mWaiter = waiter;
+        }
 
         @Override
         public void onFinishedFetchingWebManifestForInitialUrl(
-                boolean needsUpgrade, WebApkInfo info, String bestIconUrl) {}
-
-        public void onGotManifestData(boolean needsUpgrade, WebApkInfo info, String bestIconUrl) {
-            mName = info.name();
-            mNeedsUpgrade = needsUpgrade;
-            notifyCalled();
+                WebApkInfo fetchedInfo, String bestIconUrl) {
+            super.onFinishedFetchingWebManifestForInitialUrl(fetchedInfo, bestIconUrl);
+            mWaiter.notifyCalled();
         }
 
-        public String name() {
-            return mName;
+        @Override
+        public void onGotManifestData(WebApkInfo fetchedInfo, String bestIconUrl) {
+            super.onGotManifestData(fetchedInfo, bestIconUrl);
+            mWaiter.notifyCalled();
         }
 
-        public boolean needsUpgrade() {
-            return mNeedsUpgrade;
+        @Override
+        protected void updateAsync(WebApkInfo fetchedInfo, String bestIconUrl) {
+            mNeedsUpdate = true;
+        }
+
+        public boolean needsUpdate() {
+            return mNeedsUpdate;
         }
     }
 
@@ -108,6 +123,10 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
         Context context = getInstrumentation().getTargetContext();
         mTestServer = EmbeddedTestServer.createAndStartServer(context);
         mTab = getActivity().getActivityTab();
+
+        TestFetchStorageCallback callback = new TestFetchStorageCallback();
+        WebappRegistry.getInstance().register(WEBAPK_ID, callback);
+        callback.waitForCallback(0);
     }
 
     @Override
@@ -121,24 +140,26 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
         startMainActivityOnBlankPage();
     }
 
-    /**
-     * Starts a ManifestUpgradeDetector. Calls {@link callback} once the detector has fetched the
-     * Web Manifest and determined whether the WebAPK needs to be upgraded.
-     */
-    private void startManifestUpgradeDetector(
-            CreationData creationData, final ManifestUpgradeDetector.Callback callback) {
-        WebApkInfo info = WebApkInfo.create("", "", creationData.scope, null, creationData.name,
-                creationData.shortName, creationData.displayMode, creationData.orientation, 0,
-                creationData.themeColor, creationData.backgroundColor, "", 0,
-                creationData.manifestUrl, creationData.startUrl,
-                creationData.iconUrlToMurmur2HashMap);
-        final ManifestUpgradeDetector detector = new ManifestUpgradeDetector(mTab, info, callback);
+     /** Checks whether a WebAPK update is needed. */
+    private boolean checkUpdateNeeded(final CreationData creationData) throws Exception {
+        CallbackHelper waiter = new CallbackHelper();
+        final TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(waiter);
+
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                detector.start();
+                WebApkInfo info = WebApkInfo.create(WEBAPK_ID, "", creationData.scope, null,
+                        creationData.name, creationData.shortName, creationData.displayMode,
+                        creationData.orientation, 0, creationData.themeColor,
+                        creationData.backgroundColor, "", WebApkVersion.CURRENT_SHELL_APK_VERSION,
+                        creationData.manifestUrl, creationData.startUrl,
+                        creationData.iconUrlToMurmur2HashMap);
+                updateManager.updateIfNeeded(mTab, info);
             }
         });
+        waiter.waitForCallback(0);
+
+        return updateManager.needsUpdate();
     }
 
     /**
@@ -150,20 +171,14 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"WebApk"})
     public void testCanonicalUrlsIdenticalShouldNotUpgrade() throws Exception {
-        CallbackWaiter waiter = new CallbackWaiter();
-
         // URL canonicalization should replace "%74" with 't'.
         CreationData creationData = defaultCreationData(mTestServer);
         creationData.startUrl = mTestServer.getURL(
                 "/chrome/test/data/banners/manifest_%74est_page.html");
-        startManifestUpgradeDetector(creationData, waiter);
 
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
                 mTestServer, mTab, WEBAPK_MANIFEST_URL);
-        waiter.waitForCallback(0);
-
-        assertEquals(WEBAPK_NAME, waiter.name());
-        assertFalse(waiter.needsUpgrade());
+        assertFalse(checkUpdateNeeded(creationData));
     }
 
     /**
@@ -172,19 +187,13 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"WebApk"})
     public void testCanonicalUrlsDifferentShouldUpgrade() throws Exception {
-        CallbackWaiter waiter = new CallbackWaiter();
-
         // URL canonicalization should replace "%62" with 'b'.
         CreationData creationData = defaultCreationData(mTestServer);
         creationData.startUrl = mTestServer.getURL(
                 "/chrome/test/data/banners/manifest_%62est_page.html");
-        startManifestUpgradeDetector(creationData, waiter);
 
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
                 mTestServer, mTab, WEBAPK_MANIFEST_URL);
-        waiter.waitForCallback(0);
-
-        assertEquals(WEBAPK_NAME, waiter.name());
-        assertTrue(waiter.needsUpgrade());
+        assertTrue(checkUpdateNeeded(creationData));
     }
 }

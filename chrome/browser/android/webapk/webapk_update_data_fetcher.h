@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_WEBAPK_MANIFEST_UPGRADE_DETECTOR_FETCHER_H_
-#define CHROME_BROWSER_ANDROID_WEBAPK_MANIFEST_UPGRADE_DETECTOR_FETCHER_H_
+#ifndef CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_UPDATE_DATA_FETCHER_H_
+#define CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_UPDATE_DATA_FETCHER_H_
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
@@ -22,15 +22,15 @@ class GURL;
 struct InstallableData;
 class WebApkIconHasher;
 
-// ManifestUpgradeDetectorFetcher is the C++ counterpart of
-// org.chromium.chrome.browser's ManifestUpgradeDetectorFetcher in Java. It is
-// created via a JNI (Initialize) call and MUST BE DESTROYED via Destroy().
-class ManifestUpgradeDetectorFetcher : public content::WebContentsObserver {
+// WebApkUpdateDataFetcher is the C++ counterpart of
+// org.chromium.chrome.browser's WebApkUpdateDataFetcher in Java. It is created
+// via a JNI (Initialize) call and MUST BE DESTROYED via Destroy().
+class WebApkUpdateDataFetcher : public content::WebContentsObserver {
  public:
-  ManifestUpgradeDetectorFetcher(JNIEnv* env,
-                                 jobject obj,
-                                 const GURL& scope,
-                                 const GURL& web_manifest_url);
+  WebApkUpdateDataFetcher(JNIEnv* env,
+                          jobject obj,
+                          const GURL& scope,
+                          const GURL& web_manifest_url);
 
   // Replaces the WebContents that is being observed.
   void ReplaceWebContents(
@@ -50,7 +50,7 @@ class ManifestUpgradeDetectorFetcher : public content::WebContentsObserver {
   static bool Register(JNIEnv* env);
 
  private:
-  ~ManifestUpgradeDetectorFetcher() override;
+  ~WebApkUpdateDataFetcher() override;
 
   // content::WebContentsObserver:
   void DidStopLoading() override;
@@ -87,9 +87,9 @@ class ManifestUpgradeDetectorFetcher : public content::WebContentsObserver {
   ShortcutInfo info_;
   SkBitmap best_icon_;
 
-  base::WeakPtrFactory<ManifestUpgradeDetectorFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<WebApkUpdateDataFetcher> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManifestUpgradeDetectorFetcher);
+  DISALLOW_COPY_AND_ASSIGN(WebApkUpdateDataFetcher);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_WEBAPK_MANIFEST_UPGRADE_DETECTOR_FETCHER_H_
+#endif  // CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_UPDATE_DATA_FETCHER_H_

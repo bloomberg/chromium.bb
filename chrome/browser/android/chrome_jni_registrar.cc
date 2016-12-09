@@ -102,8 +102,8 @@
 #include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/android/warmup_manager.h"
 #include "chrome/browser/android/web_contents_factory.h"
-#include "chrome/browser/android/webapk/manifest_upgrade_detector_fetcher.h"
 #include "chrome/browser/android/webapk/webapk_installer.h"
+#include "chrome/browser/android/webapk/webapk_update_data_fetcher.h"
 #include "chrome/browser/android/webapk/webapk_update_manager.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_manager.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
@@ -311,8 +311,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"LayerTitleCache", RegisterLayerTitleCache},
     {"SpecialLocaleHandler", RegisterSpecialLocaleHandler},
     {"LogoBridge", RegisterLogoBridge},
-    {"ManifestUpgradeDetectorFetcher",
-     ManifestUpgradeDetectorFetcher::Register},
     {"MediaDrmCredentialManager",
      MediaDrmCredentialManager::RegisterMediaDrmCredentialManager},
     {"MostVisitedSites", MostVisitedSitesBridge::Register},
@@ -417,6 +415,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"WarmupManager", RegisterWarmupManager},
     {"WebApkInstaller", WebApkInstaller::Register},
     {"WebApkUpdateManager", WebApkUpdateManager::Register},
+    {"WebApkUpdateDataFetcher", WebApkUpdateDataFetcher::Register},
     {"WebContentsFactory", RegisterWebContentsFactory},
     {"WebsitePreferenceBridge", RegisterWebsitePreferenceBridge},
     {"WebsiteSettingsPopupAndroid",

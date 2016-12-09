@@ -18,50 +18,56 @@ import java.util.HashMap;
  * Downloads the Web Manifest if the web site still uses the {@link manifestUrl} passed to the
  * constructor.
  */
-public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
-
-    /**
-     * Called once the Web Manifest has been downloaded.
-     */
-    public interface Callback {
+public class WebApkUpdateDataFetcher extends EmptyTabObserver {
+    /** Observes fetching of the Web Manifest. */
+    public interface Observer {
         /**
-         * @param fetchedInfo The fetched Web Manifest data.
-         * @param bestIconUrl Icon URL in {@link data} which is best suited for use as the launcher
-         *                    icon on this device.
+         * Called when the Web Manifest for the initial URL load has been fetched (successfully or
+         * unsuccessfully).
+         * TODO(pkotwicz): Add calls to {@link #onFinishedFetchingWebManifestForInitialUrl()}.
+         * @param fetchedInfo  The fetched Web Manifest data. Null if the initial URL does not point
+         *                     to a Web Manifest.
+         * @param bestIconUrl  The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
+         *                     suited for use as the launcher icon on this device.
+         */
+        void onFinishedFetchingWebManifestForInitialUrl(WebApkInfo fetchedInfo, String bestIconUrl);
+
+        /**
+         * Called when the Web Manifest has been successfully fetched (including on the initial URL
+         * load).
+         * @param fetchedInfo  The fetched Web Manifest data.
+         * @param bestIconUrl  The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
+         *                     suited for use as the launcher icon on this device.
          */
         void onGotManifestData(WebApkInfo fetchedInfo, String bestIconUrl);
     }
 
     /**
-     * Pointer to the native side ManifestUpgradeDetectorFetcher. The Java side owns the native side
-     * ManifestUpgradeDetectorFetcher.
+     * Pointer to the native side WebApkUpdateDataFetcher. The Java side owns the native side
+     * WebApkUpdateDataFetcher.
      */
     private long mNativePointer;
 
     /** The tab that is being observed. */
     private Tab mTab;
 
-    /**
-     * Web Manifest data at time that the WebAPK was generated.
-     */
+    /** Web Manifest data at the time that the WebAPK was generated. */
     private WebApkInfo mOldInfo;
 
-    private Callback mCallback;
+    private Observer mObserver;
 
-    /**
-     * Starts fetching the web manifest resources.
-     * @param callback Called once the Web Manifest has been downloaded.
-     */
-    public boolean start(Tab tab, WebApkInfo oldInfo, Callback callback) {
+    /** Starts observing page loads in order to fetch the Web Manifest after each page load. */
+    public boolean start(Tab tab, WebApkInfo oldInfo, Observer observer) {
         if (tab.getWebContents() == null || TextUtils.isEmpty(oldInfo.manifestUrl())) {
             return false;
         }
 
         mTab = tab;
         mOldInfo = oldInfo;
-        mNativePointer = nativeInitialize(mOldInfo.scopeUri().toString(), mOldInfo.manifestUrl());
-        mCallback = callback;
+        mObserver = observer;
+
         mTab.addObserver(this);
+        mNativePointer = nativeInitialize(mOldInfo.scopeUri().toString(), mOldInfo.manifestUrl());
         nativeStart(mNativePointer, mTab.getWebContents());
         return true;
     }
@@ -87,7 +93,7 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
     }
 
     /**
-     * Updates which WebContents the native ManifestUpgradeDetectorFetcher is monitoring.
+     * Updates which WebContents the native WebApkUpdateDataFetcher is monitoring.
      */
     private void updatePointers() {
         nativeReplaceWebContents(mNativePointer, mTab.getWebContents());
@@ -112,13 +118,12 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
                 mOldInfo.source(), themeColor, backgroundColor, mOldInfo.webApkPackageName(),
                 mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(), startUrl,
                 iconUrlToMurmur2HashMap);
-        mCallback.onGotManifestData(info, bestIconUrl);
+        mObserver.onGotManifestData(info, bestIconUrl);
     }
 
     private native long nativeInitialize(String scope, String webManifestUrl);
     private native void nativeReplaceWebContents(
-            long nativeManifestUpgradeDetectorFetcher, WebContents webContents);
-    private native void nativeDestroy(long nativeManifestUpgradeDetectorFetcher);
-    private native void nativeStart(
-            long nativeManifestUpgradeDetectorFetcher, WebContents webContents);
+            long nativeWebApkUpdateDataFetcher, WebContents webContents);
+    private native void nativeDestroy(long nativeWebApkUpdateDataFetcher);
+    private native void nativeStart(long nativeWebApkUpdateDataFetcher, WebContents webContents);
 }

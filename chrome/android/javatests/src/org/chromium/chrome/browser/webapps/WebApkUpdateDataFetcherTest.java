@@ -19,9 +19,9 @@ import org.chromium.net.test.EmbeddedTestServer;
 import java.util.HashMap;
 
 /**
- * Tests the ManifestUpgradeDetectorFetcher.
+ * Tests the WebApkUpdateDataFetcher.
  */
-public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTestBase {
+public class WebApkUpdateDataFetcherTest extends ChromeTabbedActivityTestBase {
 
     private static final String WEB_MANIFEST_URL1 = "/chrome/test/data/banners/manifest.json";
     // Name for Web Manifest at {@link WEB_MANIFEST_URL1}.
@@ -48,9 +48,18 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
     // CallbackHelper which blocks until the {@link ManifestUpgradeDetectorFetcher.Callback}
     // callback is called.
     private static class CallbackWaiter
-            extends CallbackHelper implements ManifestUpgradeDetectorFetcher.Callback {
+            extends CallbackHelper implements WebApkUpdateDataFetcher.Observer {
         private String mName;
         private String mBestIconMurmur2Hash;
+
+        @Override
+        public void onFinishedFetchingWebManifestForInitialUrl(
+                WebApkInfo fetchedInfo, String bestIconUrl) {
+            assertNull(mName);
+            mName = fetchedInfo.name();
+            mBestIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap().get(bestIconUrl);
+            notifyCalled();
+        }
 
         @Override
         public void onGotManifestData(WebApkInfo fetchedInfo, String bestIconUrl) {
@@ -89,31 +98,30 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
     }
 
     /**
-     * Starts a ManifestUpgradeDetectorFetcher. Calls {@link callback} once the fetcher is done.
+     * Starts a WebApkUpdateDataFetcher. Calls {@link callback} once the fetcher is done.
      */
-    private void startManifestUpgradeDetectorFetcher(final String scopeUrl,
-            final String manifestUrl, final ManifestUpgradeDetectorFetcher.Callback callback) {
-        final ManifestUpgradeDetectorFetcher fetcher = new ManifestUpgradeDetectorFetcher();
+    private void startWebApkUpdateDataFetcher(final String scopeUrl,
+            final String manifestUrl, final WebApkUpdateDataFetcher.Observer observer) {
+        final WebApkUpdateDataFetcher fetcher = new WebApkUpdateDataFetcher();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 WebApkInfo oldInfo = WebApkInfo.create("", "", scopeUrl, null, null, null, -1, -1,
                         -1, -1, -1, "random.package", -1, manifestUrl, null,
                         new HashMap<String, String>());
-                fetcher.start(mTab, oldInfo, callback);
+                fetcher.start(mTab, oldInfo, observer);
             }
         });
     }
 
     /**
-     * Test starting ManifestUpgradeDetectorFetcher while a page with the desired manifest URL is
-     * loading.
+     * Test starting WebApkUpdateDataFetcher while a page with the desired manifest URL is loading.
      */
     @MediumTest
     @Feature({"WebApk"})
     public void testLaunchWithDesiredManifestUrl() throws Exception {
         CallbackWaiter waiter = new CallbackWaiter();
-        startManifestUpgradeDetectorFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
+        startWebApkUpdateDataFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
                 mTestServer.getURL(WEB_MANIFEST_URL1), waiter);
 
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
@@ -124,16 +132,16 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
     }
 
     /**
-     * Test starting ManifestUpgradeDetectorFetcher on page which uses a different manifest URL than
-     * the ManifestUpgradeDetectorFetcher is looking for. Check that the callback is only called
-     * once the user navigates to a page which uses the desired manifest URL.
+     * Test starting WebApkUpdateDataFetcher on page which uses a different manifest URL than the
+     * ManifestUpgradeDetectorFetcher is looking for. Check that the callback is only called once
+     * the user navigates to a page which uses the desired manifest URL.
      */
     @MediumTest
     @Feature({"Webapps"})
     @RetryOnFailure
     public void testLaunchWithDifferentManifestUrl() throws Exception {
         CallbackWaiter waiter = new CallbackWaiter();
-        startManifestUpgradeDetectorFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
+        startWebApkUpdateDataFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
                 mTestServer.getURL(WEB_MANIFEST_URL2), waiter);
 
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
@@ -153,7 +161,7 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
     @Feature({"Webapps"})
     public void testLargeIconMurmur2Hash() throws Exception {
         CallbackWaiter waiter = new CallbackWaiter();
-        startManifestUpgradeDetectorFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
+        startWebApkUpdateDataFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
                 mTestServer.getURL(WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH), waiter);
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
                 mTestServer, mTab, WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH);

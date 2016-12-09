@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/webapk/manifest_upgrade_detector_fetcher.h"
+#include "chrome/browser/android/webapk/webapk_update_data_fetcher.h"
 
 #include <jni.h>
 #include <vector>
@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/manifest.h"
-#include "jni/ManifestUpgradeDetectorFetcher_jni.h"
+#include "jni/WebApkUpdateDataFetcher_jni.h"
 #include "third_party/smhasher/src/MurmurHash2.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -42,12 +42,12 @@ jlong Initialize(JNIEnv* env,
   GURL scope(base::android::ConvertJavaStringToUTF8(env, java_scope_url));
   GURL web_manifest_url(base::android::ConvertJavaStringToUTF8(
       env, java_web_manifest_url));
-  ManifestUpgradeDetectorFetcher* fetcher =
-      new ManifestUpgradeDetectorFetcher(env, obj, scope, web_manifest_url);
+  WebApkUpdateDataFetcher* fetcher =
+      new WebApkUpdateDataFetcher(env, obj, scope, web_manifest_url);
   return reinterpret_cast<intptr_t>(fetcher);
 }
 
-ManifestUpgradeDetectorFetcher::ManifestUpgradeDetectorFetcher(
+WebApkUpdateDataFetcher::WebApkUpdateDataFetcher(
     JNIEnv* env,
     jobject obj,
     const GURL& scope,
@@ -60,15 +60,15 @@ ManifestUpgradeDetectorFetcher::ManifestUpgradeDetectorFetcher(
   java_ref_.Reset(env, obj);
 }
 
-ManifestUpgradeDetectorFetcher::~ManifestUpgradeDetectorFetcher() {
+WebApkUpdateDataFetcher::~WebApkUpdateDataFetcher() {
 }
 
 // static
-bool ManifestUpgradeDetectorFetcher::Register(JNIEnv* env) {
+bool WebApkUpdateDataFetcher::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void ManifestUpgradeDetectorFetcher::ReplaceWebContents(
+void WebApkUpdateDataFetcher::ReplaceWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& java_web_contents) {
@@ -77,12 +77,12 @@ void ManifestUpgradeDetectorFetcher::ReplaceWebContents(
   content::WebContentsObserver::Observe(web_contents);
 }
 
-void ManifestUpgradeDetectorFetcher::Destroy(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj) {
+void WebApkUpdateDataFetcher::Destroy(JNIEnv* env,
+                                      const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void ManifestUpgradeDetectorFetcher::Start(
+void WebApkUpdateDataFetcher::Start(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& java_web_contents) {
@@ -91,11 +91,11 @@ void ManifestUpgradeDetectorFetcher::Start(
     FetchInstallableData();
 }
 
-void ManifestUpgradeDetectorFetcher::DidStopLoading() {
+void WebApkUpdateDataFetcher::DidStopLoading() {
   FetchInstallableData();
 }
 
-void ManifestUpgradeDetectorFetcher::FetchInstallableData() {
+void WebApkUpdateDataFetcher::FetchInstallableData() {
   GURL url = web_contents()->GetLastCommittedURL();
 
   // DidStopLoading() can be called multiple times for a single URL. Only fetch
@@ -119,11 +119,11 @@ void ManifestUpgradeDetectorFetcher::FetchInstallableData() {
       InstallableManager::FromWebContents(web_contents());
   installable_manager->GetData(
       params,
-      base::Bind(&ManifestUpgradeDetectorFetcher::OnDidGetInstallableData,
+      base::Bind(&WebApkUpdateDataFetcher::OnDidGetInstallableData,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ManifestUpgradeDetectorFetcher::OnDidGetInstallableData(
+void WebApkUpdateDataFetcher::OnDidGetInstallableData(
     const InstallableData& data) {
   // If the manifest is empty, it means the current WebContents doesn't
   // associate with a Web Manifest. In such case, we ignore the empty manifest
@@ -154,11 +154,11 @@ void ManifestUpgradeDetectorFetcher::OnDidGetInstallableData(
   icon_hasher_->DownloadAndComputeMurmur2Hash(
       profile->GetRequestContext(),
       data.icon_url,
-      base::Bind(&ManifestUpgradeDetectorFetcher::OnGotIconMurmur2Hash,
+      base::Bind(&WebApkUpdateDataFetcher::OnGotIconMurmur2Hash,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ManifestUpgradeDetectorFetcher::OnGotIconMurmur2Hash(
+void WebApkUpdateDataFetcher::OnGotIconMurmur2Hash(
     const std::string& best_icon_murmur2_hash) {
   icon_hasher_.reset();
 
@@ -171,7 +171,7 @@ void ManifestUpgradeDetectorFetcher::OnGotIconMurmur2Hash(
   OnDataAvailable(info_, best_icon_murmur2_hash, best_icon_);
 }
 
-void ManifestUpgradeDetectorFetcher::OnDataAvailable(
+void WebApkUpdateDataFetcher::OnDataAvailable(
     const ShortcutInfo& info,
     const std::string& best_icon_murmur2_hash,
     const SkBitmap& best_icon_bitmap) {
@@ -195,7 +195,7 @@ void ManifestUpgradeDetectorFetcher::OnDataAvailable(
   ScopedJavaLocalRef<jobjectArray> java_icon_urls =
       base::android::ToJavaArrayOfStrings(env, info.icon_urls);
 
-  Java_ManifestUpgradeDetectorFetcher_onDataAvailable(
+  Java_WebApkUpdateDataFetcher_onDataAvailable(
       env, java_ref_, java_url, java_scope, java_name, java_short_name,
       java_best_icon_url, java_best_icon_murmur2_hash, java_best_bitmap,
       java_icon_urls, info.display, info.orientation, info.theme_color,
