@@ -178,7 +178,8 @@ AutomationTreeWalker.prototype = {
 
     var searchNode = node;
     while (searchNode) {
-      // We have crossed out of the initial node's subtree.
+      // We have crossed out of the initial node's subtree for either a
+      // sibling or parent move.
       if (searchNode == this.initialNode_)
         this.phase_ = AutomationTreeWalkerPhase.OTHER;
 
@@ -186,7 +187,16 @@ AutomationTreeWalker.prototype = {
         this.node_ = searchNode.nextSibling;
         return;
       }
-      if (searchNode.parent && this.rootPred_(searchNode.parent))
+
+      // Update the phase based on the parent if needed since we may exit below.
+      if (searchNode.parent == this.initialNode_)
+        this.phase_ = AutomationTreeWalkerPhase.OTHER;
+
+      // Exit if we encounter a root-like node and are not searching descendants
+      // of the initial node.
+      if (searchNode.parent &&
+          this.rootPred_(searchNode.parent) &&
+          this.phase_ != AutomationTreeWalkerPhase.DESCENDANT)
         break;
 
       searchNode = searchNode.parent;

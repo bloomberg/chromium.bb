@@ -126,6 +126,7 @@ TEST_F('AutomationTreeWalkerTest', 'RootLeafRestriction', function() {
       var walker = new AutomationTreeWalker(node2, 'forward', restrictions);
       while (walker.next().node) {}
       assertEquals('35', visited);
+      assertEquals(AutomationTreeWalkerPhase.OTHER, walker.phase);
 
       // And the reverse.
       // Note that walking into a root is allowed.
