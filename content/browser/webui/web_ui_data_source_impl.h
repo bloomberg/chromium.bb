@@ -54,6 +54,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   // When DisableI18nAndUseGzipForAllPaths is enabled, exclude the given |path|.
   void ExcludePathFromGzip(const std::string& path);
 
+  bool IsWebUIDataSourceImpl() const override;
+
  protected:
   ~WebUIDataSourceImpl() override;
 

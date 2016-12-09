@@ -63,6 +63,8 @@ class URLDataSourceImpl : public base::RefCountedThreadSafe<
   const std::string& source_name() const { return source_name_; }
   URLDataSource* source() const { return source_.get(); }
 
+  virtual bool IsWebUIDataSourceImpl() const;
+
  protected:
   virtual ~URLDataSourceImpl();
 

@@ -39,7 +39,7 @@ class MdHistoryUI : public content::WebUIController {
 
   static bool use_test_title_;
 
-  void CreateDataSource();
+  void UpdateDataSource();
 
   // Handler for the "menuPromoShown" message from the page. No arguments.
   void HandleMenuPromoShown(const base::ListValue* args);

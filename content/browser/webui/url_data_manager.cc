@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -46,6 +47,14 @@ static void AddDataSourceOnIOThread(
       data_source.get());
 }
 
+static void UpdateWebUIDataSourceOnIOThread(
+    ResourceContext* resource_context,
+    std::string source_name,
+    const base::DictionaryValue* update) {
+  GetURLDataManagerForResourceContext(resource_context)
+      ->UpdateWebUIDataSource(source_name, *update);
+}
+
 }  // namespace
 
 // static
@@ -65,6 +74,17 @@ void URLDataManager::AddDataSource(URLDataSourceImpl* source) {
       base::Bind(&AddDataSourceOnIOThread,
                  browser_context_->GetResourceContext(),
                  make_scoped_refptr(source)));
+}
+
+void URLDataManager::UpdateWebUIDataSource(
+    const std::string& source_name,
+    std::unique_ptr<base::DictionaryValue> update) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&UpdateWebUIDataSourceOnIOThread,
+                 browser_context_->GetResourceContext(), source_name,
+                 base::Owned(update.release())));
 }
 
 // static
@@ -120,6 +140,14 @@ void URLDataManager::AddWebUIDataSource(BrowserContext* browser_context,
                                         WebUIDataSource* source) {
   WebUIDataSourceImpl* impl = static_cast<WebUIDataSourceImpl*>(source);
   GetFromBrowserContext(browser_context)->AddDataSource(impl);
+}
+
+void URLDataManager::UpdateWebUIDataSource(
+    BrowserContext* browser_context,
+    const std::string& source_name,
+    std::unique_ptr<base::DictionaryValue> update) {
+  GetFromBrowserContext(browser_context)
+      ->UpdateWebUIDataSource(source_name, std::move(update));
 }
 
 // static

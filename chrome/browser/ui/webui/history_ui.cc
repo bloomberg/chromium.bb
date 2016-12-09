@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/history_ui.h"
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
@@ -60,20 +61,23 @@ const char kIncognitoModeShortcut[] = "(Ctrl+Shift+N)";
 const char kIncognitoModeShortcut[] = "(Shift+Ctrl+N)";
 #endif
 
-content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
-  PrefService* prefs = profile->GetPrefs();
+constexpr char kIsUserSignedInKey[] = "isUserSignedIn";
 
+bool IsSignedIn(Profile* profile) {
   // Check if the profile is authenticated.  Guest profiles or incognito
   // windows may not have a sign in manager, and are considered not
   // authenticated.
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
-  bool is_authenticated = signin_manager != nullptr &&
-      signin_manager->IsAuthenticated();
+  return signin_manager && signin_manager->IsAuthenticated();
+}
+
+content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryFrameHost);
-  source->AddBoolean("isUserSignedIn", is_authenticated);
+  source->AddBoolean(kIsUserSignedInKey, IsSignedIn(profile));
 #if !defined(OS_ANDROID)
   source->AddLocalizedString("collapseSessionMenuItemText",
       IDS_HISTORY_OTHER_SESSIONS_COLLAPSE_SESSION);
@@ -173,6 +177,10 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
 }  // namespace
 
 HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+  // Set up the chrome://history-frame/ source.
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource::Add(profile, CreateHistoryUIHTMLSource(profile));
+
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
   web_ui->AddMessageHandler(new MetricsHandler());
 
@@ -181,7 +189,7 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   if (search::IsInstantExtendedAPIEnabled()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new HistoryLoginHandler(
-        base::Bind(&HistoryUI::CreateDataSource, base::Unretained(this))));
+        base::Bind(&HistoryUI::UpdateDataSource, base::Unretained(this))));
   }
 #endif
 
@@ -193,14 +201,11 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   // This code should be removed as soon as the API is ready.
   GURL url = web_ui->GetWebContents()->GetVisibleURL();
   if (url.has_query() && url.query() == "reset_ofbh") {
-    Profile::FromWebUI(web_ui)->GetPrefs()->SetInteger(
+    profile->GetPrefs()->SetInteger(
         browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes, 0);
     browsing_data::testing::
         g_override_other_forms_of_browsing_history_query = true;
   }
-
-  // Set up the chrome://history-frame/ source.
-  CreateDataSource();
 }
 
 HistoryUI::~HistoryUI() {}
@@ -212,10 +217,11 @@ base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes(
       LoadDataResourceBytesForScale(IDR_HISTORY_FAVICON, scale_factor);
 }
 
-// TODO(lshang): Change to not re-create data source every time after we use
-// unique_ptr instead of raw pointers for data source.
-void HistoryUI::CreateDataSource() {
+void HistoryUI::UpdateDataSource() {
+  CHECK(web_ui());
   Profile* profile = Profile::FromWebUI(web_ui());
-  content::WebUIDataSource* data_source = CreateHistoryUIHTMLSource(profile);
-  content::WebUIDataSource::Add(profile, data_source);
+  std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);
+  update->SetBoolean(kIsUserSignedInKey, IsSignedIn(profile));
+  content::WebUIDataSource::Update(profile, chrome::kChromeUIHistoryFrameHost,
+                                   std::move(update));
 }

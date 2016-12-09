@@ -35,6 +35,14 @@ void WebUIDataSource::Add(BrowserContext* browser_context,
   URLDataManager::AddWebUIDataSource(browser_context, source);
 }
 
+// static
+void WebUIDataSource::Update(BrowserContext* browser_context,
+                             const std::string& source_name,
+                             std::unique_ptr<base::DictionaryValue> update) {
+  URLDataManager::UpdateWebUIDataSource(browser_context, source_name,
+                                        std::move(update));
+}
+
 // Internal class to hide the fact that WebUIDataSourceImpl implements
 // URLDataSource.
 class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
@@ -180,6 +188,10 @@ void WebUIDataSourceImpl::DisableReplaceExistingSource() {
 
 void WebUIDataSourceImpl::ExcludePathFromGzip(const std::string& path) {
   excluded_paths_.insert(path);
+}
+
+bool WebUIDataSourceImpl::IsWebUIDataSourceImpl() const {
+  return true;
 }
 
 void WebUIDataSourceImpl::DisableContentSecurityPolicy() {

@@ -33,6 +33,7 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/webui/shared_resources_data_source.h"
 #include "content/browser/webui/url_data_source_impl.h"
+#include "content/browser/webui/web_ui_data_source_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -648,6 +649,18 @@ void URLDataManagerBackend::AddDataSource(
   }
   data_sources_[source->source_name()] = source;
   source->backend_ = this;
+}
+
+void URLDataManagerBackend::UpdateWebUIDataSource(
+    const std::string& source_name,
+    const base::DictionaryValue& update) {
+  DataSourceMap::iterator it = data_sources_.find(source_name);
+  if (it == data_sources_.end() || !it->second->IsWebUIDataSourceImpl()) {
+    NOTREACHED();
+    return;
+  }
+  static_cast<WebUIDataSourceImpl*>(it->second.get())
+      ->AddLocalizedStrings(update);
 }
 
 bool URLDataManagerBackend::HasPendingJob(

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_WEBUI_URL_DATA_MANAGER_H_
 #define CONTENT_BROWSER_WEBUI_URL_DATA_MANAGER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace content {
 class BrowserContext;
@@ -41,6 +46,9 @@ class CONTENT_EXPORT URLDataManager : public base::SupportsUserData::Data {
   // destructed in the same thread as they are constructed (the UI thread).
   void AddDataSource(URLDataSourceImpl* source);
 
+  void UpdateWebUIDataSource(const std::string& source_name,
+                             std::unique_ptr<base::DictionaryValue> update);
+
   // Deletes any data sources no longer referenced. This is normally invoked
   // for you, but can be invoked to force deletion (such as during shutdown).
   static void DeleteDataSources();
@@ -54,6 +62,12 @@ class CONTENT_EXPORT URLDataManager : public base::SupportsUserData::Data {
   // Adds a WebUI data source to |browser_context|'s |URLDataManager|.
   static void AddWebUIDataSource(BrowserContext* browser_context,
                                  WebUIDataSource* source);
+
+  // Updates an existing WebUI data source.
+  static void UpdateWebUIDataSource(
+      BrowserContext* browser_context,
+      const std::string& source_name,
+      std::unique_ptr<base::DictionaryValue> update);
 
  private:
   friend class URLDataSourceImpl;

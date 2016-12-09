@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -34,6 +35,19 @@
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
+
+constexpr char kIsUserSignedInKey[] = "isUserSignedIn";
+constexpr char kShowMenuPromoKey[] = "showMenuPromo";
+
+bool IsUserSignedIn(Profile* profile) {
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  return signin_manager && signin_manager->IsAuthenticated();
+}
+
+bool MenuPromoShown(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(prefs::kMdHistoryMenuPromoShown);
+}
 
 content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
                                                       bool use_test_title) {
@@ -117,8 +131,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);
 
-  source->AddBoolean("showMenuPromo",
-      !prefs->GetBoolean(prefs::kMdHistoryMenuPromoShown));
+  source->AddBoolean(kShowMenuPromoKey, !MenuPromoShown(profile));
 
   bool group_by_domain = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kHistoryEnableGroupByDomain) || profile->IsSupervised();
@@ -126,11 +139,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
 
   source->AddBoolean("isGuestSession", profile->IsGuestSession());
 
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  bool is_authenticated = signin_manager != nullptr &&
-      signin_manager->IsAuthenticated();
-  source->AddBoolean("isUserSignedIn", is_authenticated);
+  source->AddBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
 
   source->AddResourcePath("constants.html", IDR_MD_HISTORY_CONSTANTS_HTML);
   source->AddResourcePath("constants.js", IDR_MD_HISTORY_CONSTANTS_JS);
@@ -214,16 +223,19 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
 bool MdHistoryUI::use_test_title_ = false;
 
 MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource* data_source =
+      CreateMdHistoryUIHTMLSource(profile, use_test_title_);
+  content::WebUIDataSource::Add(profile, data_source);
+
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
   web_ui->AddMessageHandler(new MetricsHandler());
 
   if (search::IsInstantExtendedAPIEnabled()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new HistoryLoginHandler(
-        base::Bind(&MdHistoryUI::CreateDataSource, base::Unretained(this))));
+        base::Bind(&MdHistoryUI::UpdateDataSource, base::Unretained(this))));
   }
-
-  CreateDataSource();
 
   web_ui->RegisterMessageCallback("menuPromoShown",
       base::Bind(&MdHistoryUI::HandleMenuPromoShown, base::Unretained(this)));
@@ -252,17 +264,21 @@ void MdHistoryUI::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-// TODO(lshang): Change to not re-create data source every time after we use
-// unique_ptr instead of raw pointers for data source.
-void MdHistoryUI::CreateDataSource() {
+void MdHistoryUI::UpdateDataSource() {
+  CHECK(web_ui());
+
   Profile* profile = Profile::FromWebUI(web_ui());
-  content::WebUIDataSource* data_source =
-      CreateMdHistoryUIHTMLSource(profile, use_test_title_);
-  content::WebUIDataSource::Add(profile, data_source);
+
+  std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);
+  update->SetBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
+  update->SetBoolean(kShowMenuPromoKey, !MenuPromoShown(profile));
+
+  content::WebUIDataSource::Update(profile, chrome::kChromeUIHistoryHost,
+                                   std::move(update));
 }
 
 void MdHistoryUI::HandleMenuPromoShown(const base::ListValue* args) {
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       prefs::kMdHistoryMenuPromoShown, true);
-  CreateDataSource();
+  UpdateDataSource();
 }

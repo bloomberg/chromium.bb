@@ -45,6 +45,10 @@ void URLDataSourceImpl::SendResponse(
                                      this, request_id, std::move(bytes)));
 }
 
+bool URLDataSourceImpl::IsWebUIDataSourceImpl() const {
+  return false;
+}
+
 void URLDataSourceImpl::SendResponseOnIOThread(
     int request_id,
     scoped_refptr<base::RefCountedMemory> bytes) {
