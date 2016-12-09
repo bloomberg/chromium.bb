@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/BindingSecurity.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -220,6 +221,25 @@ bool BindingSecurity::shouldAllowAccessToDetachedWindow(
   return canAccessFrame(accessingWindow,
                         target->document()->getSecurityOrigin(), target,
                         exceptionState);
+}
+
+void BindingSecurity::failedAccessCheckFor(v8::Isolate* isolate,
+                                           const Frame* target) {
+  // TODO(dcheng): See if this null check can be removed or hoisted to a
+  // different location.
+  if (!target)
+    return;
+
+  DOMWindow* targetWindow = target->domWindow();
+
+  // TODO(dcheng): Add ContextType, interface name, and property name as
+  // arguments, so the generated exception can be more descriptive.
+  ExceptionState exceptionState(isolate, ExceptionState::UnknownContext,
+                                nullptr, nullptr);
+  exceptionState.throwSecurityError(
+      targetWindow->sanitizedCrossDomainAccessErrorMessage(
+          currentDOMWindow(isolate)),
+      targetWindow->crossDomainAccessErrorMessage(currentDOMWindow(isolate)));
 }
 
 }  // namespace blink

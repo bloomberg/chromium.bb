@@ -26,7 +26,7 @@
 
 // https://html.spec.whatwg.org/#the-window-object
 
-// FIXME: explain all uses of [DoNotCheckSecurity]
+// FIXME: explain all uses of [CrossOrigin]
 [
     CheckSecurity=Receiver,
     ImplementedAs=DOMWindow,
@@ -34,11 +34,11 @@
 ] interface Window : EventTarget {
     // the current browsing context
     // FIXME: The spec uses the WindowProxy type for this and many other attributes.
-    [Unforgeable, CallWith=ScriptState, DoNotCheckSecurity] readonly attribute Window window;
-    [Replaceable, CallWith=ScriptState, DoNotCheckSecurity] readonly attribute Window self;
+    [Unforgeable, CallWith=ScriptState, CrossOrigin] readonly attribute Window window;
+    [Replaceable, CallWith=ScriptState, CrossOrigin] readonly attribute Window self;
     [Unforgeable, CachedAccessor] readonly attribute Document document;
     attribute DOMString name;
-    [PutForwards=href, Unforgeable, DoNotCheckSecurity] readonly attribute Location location;
+    [PutForwards=href, Unforgeable, CrossOrigin=(Getter,Setter)] readonly attribute Location location;
     readonly attribute History history;
     [Replaceable, MeasureAs=BarPropLocationbar] readonly attribute BarProp locationbar;
     [Replaceable, MeasureAs=BarPropMenubar] readonly attribute BarProp menubar;
@@ -47,25 +47,25 @@
     [Replaceable, MeasureAs=BarPropStatusbar] readonly attribute BarProp statusbar;
     [Replaceable, MeasureAs=BarPropToolbar] readonly attribute BarProp toolbar;
     attribute DOMString status;
-    [DoNotCheckSecurity, CallWith=ExecutionContext] void close();
-    [DoNotCheckSecurity] readonly attribute boolean closed;
+    [CrossOrigin, CallWith=ExecutionContext] void close();
+    [CrossOrigin] readonly attribute boolean closed;
     void stop();
-    [DoNotCheckSecurity, CallWith=ExecutionContext] void focus();
-    [DoNotCheckSecurity] void blur();
+    [CrossOrigin, CallWith=ExecutionContext] void focus();
+    [CrossOrigin] void blur();
 
     // other browsing contexts
-    [Replaceable, CallWith=ScriptState, DoNotCheckSecurity] readonly attribute Window frames;
-    [Replaceable, DoNotCheckSecurity] readonly attribute unsigned long length;
-    [Unforgeable, DoNotCheckSecurity] readonly attribute Window top;
+    [Replaceable, CallWith=ScriptState, CrossOrigin] readonly attribute Window frames;
+    [Replaceable, CrossOrigin] readonly attribute unsigned long length;
+    [Unforgeable, CrossOrigin] readonly attribute Window top;
     // FIXME: opener should be of type any.
-    [DoNotCheckSecurity, Custom=Setter] attribute Window opener;
-    [Replaceable, DoNotCheckSecurity] readonly attribute Window parent;
+    [CrossOrigin, Custom=Setter] attribute Window opener;
+    [Replaceable, CrossOrigin] readonly attribute Window parent;
     [CheckSecurity=ReturnValue, Custom=Getter] readonly attribute Element? frameElement;
     // FIXME: open() should have 4 optional arguments with defaults.
     [Custom] Window? open(DOMString url, DOMString target, optional DOMString features);
     // FIXME: These getters should not have [NotEnumerable].
-    [NotEnumerable, DoNotCheckSecurity] getter Window (unsigned long index);
-    [Custom, NotEnumerable, DoNotCheckSecurity] getter object (DOMString name);
+    [NotEnumerable, CrossOrigin] getter Window (unsigned long index);
+    [Custom, NotEnumerable, CrossOrigin] getter object (DOMString name);
 
     // the user agent
     [LogActivity=GetterOnly] readonly attribute Navigator navigator;
@@ -84,7 +84,7 @@
     [Measure] long requestIdleCallback(IdleRequestCallback callback, optional IdleRequestOptions options);
     void cancelIdleCallback(long handle);
 
-    [DoNotCheckSecurity, Custom, RaisesException] void postMessage(any message, DOMString targetOrigin, optional sequence<Transferable> transfer);
+    [CrossOrigin, Custom, RaisesException] void postMessage(any message, DOMString targetOrigin, optional sequence<Transferable> transfer);
 
     // Custom elements
     // https://w3c.github.io/webcomponents/spec/custom/#custom-elements-api

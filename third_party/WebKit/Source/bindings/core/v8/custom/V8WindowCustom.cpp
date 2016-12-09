@@ -142,6 +142,8 @@ void V8Window::openerAttributeSetterCustom(
     const v8::PropertyCallbackInfo<void>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   DOMWindow* impl = V8Window::toImpl(info.Holder());
+  // TODO(dcheng): Investigate removing this, since opener is not really a
+  // cross-origin property (so it shouldn't be accessible to begin with)
   ExceptionState exceptionState(ExceptionState::SetterContext, "opener",
                                 "Window", info.Holder(), isolate);
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()),
@@ -289,21 +291,18 @@ void V8Window::namedPropertyGetterCustom(
     return;
   }
 
-  // If the frame is remote, the caller will never be able to access further
+  // This is a cross-origin interceptor. Check that the caller has access to the
   // named results.
-  if (!frame->isLocalFrame())
+  if (!BindingSecurity::shouldAllowAccessTo(
+          currentDOMWindow(info.GetIsolate()), window,
+          BindingSecurity::ErrorReportOption::DoNotReport)) {
+    BindingSecurity::failedAccessCheckFor(info.GetIsolate(), frame);
     return;
+  }
 
   // Search named items in the document.
   Document* doc = toLocalFrame(frame)->document();
   if (!doc || !doc->isHTMLDocument())
-    return;
-
-  // This is an AllCanRead interceptor.  Check that the caller has access to the
-  // named results.
-  if (!BindingSecurity::shouldAllowAccessTo(
-          currentDOMWindow(info.GetIsolate()), window,
-          BindingSecurity::ErrorReportOption::DoNotReport))
     return;
 
   bool hasNamedItem = toHTMLDocument(doc)->hasNamedItem(name);

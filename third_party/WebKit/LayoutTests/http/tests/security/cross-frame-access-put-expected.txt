@@ -314,7 +314,7 @@ PASS: Unable to set property onsearch: SecurityError: Blocked a frame with origi
 PASS: Unable to set property onselect: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property onsubmit: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property onunload: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
-PASS: Unable to set property opener: SecurityError: Failed to set the 'opener' property on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
+PASS: Unable to set property opener: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property outerHeight: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property outerWidth: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property pageXOffset: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.

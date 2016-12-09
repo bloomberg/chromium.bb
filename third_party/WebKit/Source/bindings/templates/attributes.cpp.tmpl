@@ -259,7 +259,9 @@ void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::N
 {##############################################################################}
 {% macro attribute_setter(attribute, world_suffix) %}
 static void {{attribute.name}}AttributeSetter{{world_suffix}}(
-{%- if attribute.is_data_type_property %}
+{%- if attribute.has_cross_origin_setter %}
+v8::Local<v8::Value> v8Value, const V8CrossOriginSetterInfo& info
+{%- elif attribute.is_data_type_property %}
 v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 {%- else %}
 v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
@@ -412,6 +414,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.has_custom_setter %}
   {{v8_class}}::{{attribute.name}}AttributeSetterCustom(v8Value, info);
+  {% elif attribute.has_cross_origin_setter %}
+  {{cpp_class_or_partial}}V8Internal::{{attribute.name}}AttributeSetter(v8Value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
   {% else %}
   {{cpp_class_or_partial}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(v8Value, info);
   {% endif %}

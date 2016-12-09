@@ -34,12 +34,12 @@
     attribute long longAttribute;
     void voidMethod();
 
-    [DoNotCheckSecurity] attribute long doNotCheckSecurityLongAttribute;
-    [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute; // Separate read only attribute to check attribute configuration
-    [DoNotCheckSecurity=Setter] attribute long doNotCheckSecurityOnSetterLongAttribute;
-    [DoNotCheckSecurity, Replaceable] readonly attribute long doNotCheckSecurityReplaceableReadonlyLongAttribute;
+    [CrossOrigin] attribute long doNotCheckSecurityLongAttribute;
+    [CrossOrigin] readonly attribute long doNotCheckSecurityReadonlyLongAttribute; // Separate read only attribute to check attribute configuration
+    [CrossOrigin=Setter] attribute long doNotCheckSecurityOnSetterLongAttribute;
+    [CrossOrigin, Replaceable] readonly attribute long doNotCheckSecurityReplaceableReadonlyLongAttribute;
 
-    [DoNotCheckSecurity] void doNotCheckSecurityVoidMethod();
-    [DoNotCheckSecurity, PerWorldBindings] void doNotCheckSecurityPerWorldBindingsVoidMethod();
-    [DoNotCheckSecurity, Unforgeable] void doNotCheckSecurityUnforgeableVoidMethod();
+    [CrossOrigin] void doNotCheckSecurityVoidMethod();
+    [CrossOrigin, PerWorldBindings] void doNotCheckSecurityPerWorldBindingsVoidMethod();
+    [CrossOrigin, Unforgeable] void doNotCheckSecurityUnforgeableVoidMethod();
 };

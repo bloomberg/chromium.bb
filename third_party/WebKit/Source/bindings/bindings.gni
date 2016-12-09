@@ -142,6 +142,7 @@ bindings_core_v8_files =
                     "core/v8/V8BindingMacros.h",
                     "core/v8/V8CacheOptions.h",
                     "core/v8/V8CacheStrategiesForCacheStorage.h",
+                    "core/v8/V8CrossOriginSetterInfo.h",
                     "core/v8/V8DOMActivityLogger.cpp",
                     "core/v8/V8DOMActivityLogger.h",
                     "core/v8/V8DOMConfiguration.cpp",

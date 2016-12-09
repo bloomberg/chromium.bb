@@ -115,6 +115,8 @@ class CORE_EXPORT BindingSecurity {
       const LocalDOMWindow* accessingWindow,
       const DOMWindow* target,
       ExceptionState&);
+
+  static void failedAccessCheckFor(v8::Isolate*, const Frame* target);
 };
 
 }  // namespace blink

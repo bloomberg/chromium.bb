@@ -101,8 +101,6 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
   bool closed() const;
 
-  // FIXME: This is not listed as a cross-origin accessible attribute, but in
-  // Blink, it's currently marked as DoNotCheckSecurity.
   unsigned length() const;
 
   virtual const AtomicString& name() const = 0;

@@ -43,13 +43,6 @@ from v8_utilities import (has_extended_attribute_value, is_unforgeable,
                           is_legacy_interface_type_checking)
 
 
-# Methods with any of these require custom method registration code in the
-# interface's configure*Template() function.
-CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
-    'DoNotCheckSecurity',
-])
-
-
 def method_is_visible(method, interface_is_partial):
     if 'overloads' in method:
         return method['overloads']['visible'] and not (method['overloads']['has_partial_overloads'] and interface_is_partial)
@@ -68,12 +61,15 @@ def filter_conditionally_exposed(methods, interface_is_partial):
 
 
 def custom_registration(method):
+    # TODO(dcheng): Currently, bindings must create a function object for each
+    # realm as a hack to support the incumbent realm. Remove the need for custom
+    # registration when Blink properly supports the incumbent realm.
+    if method['is_cross_origin']:
+        return True
     if 'overloads' in method:
-        return (method['overloads']['has_custom_registration_all'] or
-                method['overloads']['runtime_determined_lengths'] or
+        return (method['overloads']['runtime_determined_lengths'] or
                 (method['overloads']['runtime_enabled_function_all'] and not conditionally_exposed(method)))
-    return (method['has_custom_registration'] or
-            (method['runtime_enabled_function'] and not conditionally_exposed(method)))
+    return method['runtime_enabled_function'] and not conditionally_exposed(method)
 
 
 def filter_custom_registration(methods, interface_is_partial):
@@ -149,10 +145,10 @@ def method_context(interface, method, is_visible=True):
         includes.add('bindings/core/v8/ScriptState.h')
 
     # [CheckSecurity]
-    is_do_not_check_security = 'DoNotCheckSecurity' in extended_attributes
+    is_cross_origin = 'CrossOrigin' in extended_attributes
     is_check_security_for_receiver = (
         has_extended_attribute_value(interface, 'CheckSecurity', 'Receiver') and
-        not is_do_not_check_security)
+        not is_cross_origin)
     is_check_security_for_return_value = (
         has_extended_attribute_value(method, 'CheckSecurity', 'ReturnValue'))
     if is_check_security_for_receiver or is_check_security_for_return_value:
@@ -191,17 +187,9 @@ def method_context(interface, method, is_visible=True):
                      if idl_type.is_explicit_nullable else idl_type.cpp_type),
         'cpp_value': this_cpp_value,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
-        'custom_registration_extended_attributes':
-            CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES.intersection(
-                extended_attributes.iterkeys()),
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
         'do_not_test_new_object': 'DoNotTestNewObject' in extended_attributes,
         'exposed_test': v8_utilities.exposed(method, interface),  # [Exposed]
-        # TODO(yukishiino): Retire has_custom_registration flag.  Should be
-        # replaced with V8DOMConfiguration::PropertyLocationConfiguration.
-        'has_custom_registration':
-            v8_utilities.has_extended_attribute(
-                method, CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES),
         'has_exception_state':
             is_raises_exception or
             is_check_security_for_receiver or
@@ -219,12 +207,12 @@ def method_context(interface, method, is_visible=True):
         'is_ce_reactions': is_ce_reactions,
         'is_check_security_for_receiver': is_check_security_for_receiver,
         'is_check_security_for_return_value': is_check_security_for_return_value,
+        'is_cross_origin': 'CrossOrigin' in extended_attributes,
         'is_custom': 'Custom' in extended_attributes and
             not (is_custom_call_prologue or is_custom_call_epilogue),
         'is_custom_call_prologue': is_custom_call_prologue,
         'is_custom_call_epilogue': is_custom_call_epilogue,
         'is_custom_element_callbacks': is_custom_element_callbacks,
-        'is_do_not_check_security': is_do_not_check_security,
         'is_explicit_nullable': idl_type.is_explicit_nullable,
         'is_implemented_in_private_script': is_implemented_in_private_script,
         'is_new_object': 'NewObject' in extended_attributes,

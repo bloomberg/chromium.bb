@@ -291,19 +291,9 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host,
                                                   v8::Local<v8::Value> data) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   Frame* target = findFrame(isolate, host, data);
-  if (!target)
-    return;
-  DOMWindow* targetWindow = target->domWindow();
-
   // FIXME: We should modify V8 to pass in more contextual information (context,
   // property, and object).
-  ExceptionState exceptionState(ExceptionState::UnknownContext, 0, 0,
-                                isolate->GetCurrentContext()->Global(),
-                                isolate);
-  exceptionState.throwSecurityError(
-      targetWindow->sanitizedCrossDomainAccessErrorMessage(
-          currentDOMWindow(isolate)),
-      targetWindow->crossDomainAccessErrorMessage(currentDOMWindow(isolate)));
+  BindingSecurity::failedAccessCheckFor(isolate, target);
 }
 
 static bool codeGenerationCheckCallbackInMainThread(

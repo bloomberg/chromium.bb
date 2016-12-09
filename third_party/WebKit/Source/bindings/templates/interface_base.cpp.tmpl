@@ -121,27 +121,6 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% endfor %}
 {% endfor %}
 {##############################################################################}
-{% block security_check_functions %}
-{% if has_access_check_callbacks and not is_partial %}
-bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data) {
-  {% if interface_name == 'Window' %}
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::Local<v8::Object> window = V8Window::findInstanceInPrototypeChain(accessedObject, isolate);
-  if (window.IsEmpty())
-    return false; // the frame is gone.
-
-  const DOMWindow* targetWindow = V8Window::toImpl(window);
-  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), targetWindow, BindingSecurity::ErrorReportOption::DoNotReport);
-  {% else %}{# if interface_name == 'Window' #}
-  {# Not 'Window' means it\'s Location. #}
-  {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);
-  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), impl, BindingSecurity::ErrorReportOption::DoNotReport);
-  {% endif %}{# if interface_name == 'Window' #}
-}
-
-{% endif %}
-{% endblock %}
-{##############################################################################}
 {# Methods #}
 {% from 'methods.cpp.tmpl' import generate_method, overload_resolution_method,
        method_callback, origin_safe_method_getter, generate_constructor,
@@ -176,7 +155,7 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
 {{method_callback(method, world_suffix)}}
 {% endif %}
 {% endif %}
-{% if method.is_do_not_check_security and method.visible %}
+{% if method.is_cross_origin and method.visible %}
 {{origin_safe_method_getter(method, world_suffix)}}
 {% endif %}
 {% endfor %}
@@ -209,6 +188,124 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
 {% block indexed_property_setter_callback %}{% endblock %}
 {% block indexed_property_deleter %}{% endblock %}
 {% block indexed_property_deleter_callback %}{% endblock %}
+{##############################################################################}
+{% block security_check_functions %}
+{% if has_access_check_callbacks and not is_partial %}
+bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data) {
+  {% if interface_name == 'Window' %}
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Local<v8::Object> window = V8Window::findInstanceInPrototypeChain(accessedObject, isolate);
+  if (window.IsEmpty())
+    return false;  // the frame is gone.
+
+  const DOMWindow* targetWindow = V8Window::toImpl(window);
+  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), targetWindow, BindingSecurity::ErrorReportOption::DoNotReport);
+  {% else %}{# if interface_name == 'Window' #}
+  {# Not 'Window' means it\'s Location. #}
+  {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);
+  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), impl, BindingSecurity::ErrorReportOption::DoNotReport);
+  {% endif %}{# if interface_name == 'Window' #}
+}
+
+{% if has_cross_origin_named_enumerator %}
+static const struct {
+  using GetterCallback = void(*)(const v8::PropertyCallbackInfo<v8::Value>&);
+  using SetterCallback = void(*)(v8::Local<v8::Value>, const V8CrossOriginSetterInfo&);
+
+  const char* const name;
+  const GetterCallback getter;
+  const SetterCallback setter;
+} kCrossOriginAttributeTable[] = {
+  {##### Cross-origin attributes #####}
+  {% for attribute in attributes if attribute.has_cross_origin_getter or attribute.has_cross_origin_setter %}
+  {
+    "{{attribute.name}}",
+    {%+ if attribute.has_cross_origin_getter %}&{{cpp_class}}V8Internal::{{attribute.name}}AttributeGetter{% else %}nullptr{% endif %},
+    {%+ if attribute.has_cross_origin_setter %}&{{cpp_class}}V8Internal::{{attribute.name}}AttributeSetter{% else %}nullptr{% endif %},
+  },
+  {% endfor %}
+  {##### Cross-origin methods #####}
+  {% for method in methods if method.is_cross_origin %}
+  {"{{method.name}}", &{{cpp_class}}V8Internal::{{method.name}}OriginSafeMethodGetter, nullptr},
+  {% endfor %}
+};
+{% endif %}
+
+{% if has_cross_origin_named_getter %}
+void crossOriginNamedGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  if (!name->IsString())
+    return;
+  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+  for (const auto& attribute : kCrossOriginAttributeTable) {
+    if (propertyName == attribute.name && attribute.getter) {
+      attribute.getter(info);
+      return;
+    }
+  }
+
+  {% if named_property_getter and named_property_getter.is_cross_origin %}
+  {% if named_property_getter.is_custom %}
+  {{v8_class}}::namedPropertyGetterCustom(propertyName, info);
+  {% else %}
+  {{cpp_class}}V8Internal::namedPropertyGetter(propertyName, info);
+  {% endif %}
+  {% else %}
+  BindingSecurity::failedAccessCheckFor(
+      info.GetIsolate(),
+      {{v8_class}}::toImpl(info.Holder())->frame());
+  {% endif %}
+}
+{% endif %}
+
+{% if has_cross_origin_named_setter %}
+void crossOriginNamedSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  if (!name->IsString())
+    return;
+  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+  for (const auto& attribute : kCrossOriginAttributeTable) {
+    if (propertyName == attribute.name && attribute.setter) {
+      attribute.setter(value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
+      return;
+    }
+  }
+
+  {# If there were no matches in the cross-origin attribute table, consider it
+     an access check failure: there are no custom named setters that are
+     accessible from a cross-origin context. #}
+
+  BindingSecurity::failedAccessCheckFor(
+      info.GetIsolate(),
+      {{v8_class}}::toImpl(info.Holder())->frame());
+}
+{% endif %}
+
+{% if has_cross_origin_named_enumerator %}
+void crossOriginNamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
+  Vector<String> names;
+  for (const auto& attribute : kCrossOriginAttributeTable)
+    names.append(attribute.name);
+
+  v8SetReturnValue(
+      info,
+      toV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
+}
+{% endif %}
+
+{% if has_cross_origin_indexed_getter %}
+void crossOriginIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {% if indexed_property_getter.is_custom %}
+  {{v8_class}}::indexedPropertyGetterCustom(index, info);
+  {% else %}
+  {{cpp_class}}V8Internal::indexedPropertyGetter(index, info);
+  {% endif %}
+}
+{% endif %}
+
+{% endif %}
+{% endblock %}
+{##############################################################################}
 } // namespace {{cpp_class_or_partial}}V8Internal
 
 {% block visit_dom_wrapper %}{% endblock %}
@@ -350,7 +447,11 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% endfilter %}
   {%- if has_access_check_callbacks and not is_partial %}{{newline}}
   // Cross-origin access check
-  instanceTemplate->SetAccessCheckCallback({{cpp_class}}V8Internal::securityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
+  {% set cross_origin_named_getter = '%sV8Internal::crossOriginNamedGetter' % cpp_class if has_cross_origin_named_getter else 'nullptr' %}
+  {% set cross_origin_named_setter = '%sV8Internal::crossOriginNamedSetter' % cpp_class if has_cross_origin_named_setter else 'nullptr' %}
+  {% set cross_origin_named_enumerator = '%sV8Internal::crossOriginNamedEnumerator' % cpp_class if has_cross_origin_named_enumerator else 'nullptr' %}
+  {% set cross_origin_indexed_getter = '%sV8Internal::crossOriginIndexedGetter' % cpp_class if has_cross_origin_indexed_getter else 'nullptr' %}
+  instanceTemplate->SetAccessCheckCallbackAndHandler({{cpp_class}}V8Internal::securityCheck, v8::NamedPropertyHandlerConfiguration({{cross_origin_named_getter}}, {{cross_origin_named_setter}}, nullptr, nullptr, {{cross_origin_named_enumerator}}), v8::IndexedPropertyHandlerConfiguration({{cross_origin_indexed_getter}}), v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
   {% endif %}
 
   {%- for group in attributes | purely_runtime_enabled_attributes | groupby('runtime_feature_name') %}{{newline}}
@@ -409,8 +510,11 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
                     if method.overloads else method.exposed_test) %}
   {% filter runtime_enabled(method.overloads.runtime_enabled_function_all
                             if method.overloads else method.runtime_enabled_function) %}
-  {% if method.is_do_not_check_security %}
-  {{install_do_not_check_security_method(method, '', 'instanceTemplate', 'prototypeTemplate') | indent(2)}}
+  {% if method.is_cross_origin %}
+  {# TODO(dcheng): Currently, bindings must create a function object for each
+     realm as a hack to support the incumbent realm. Remove this when Blink
+     properly supports the incumbent realm. #}
+  {{install_origin_safe_method(method, '', 'instanceTemplate', 'prototypeTemplate') | indent(2)}}
   {% else %}
   {{install_custom_signature(method, 'instanceTemplate', 'prototypeTemplate', 'interfaceTemplate', 'signature') | indent(2)}}
   {% endif %}

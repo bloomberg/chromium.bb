@@ -526,6 +526,9 @@ void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInf
 
 {##############################################################################}
 {% macro origin_safe_method_getter(method, world_suffix) %}
+{# TODO(dcheng): Currently, bindings must create a function object for each
+   realm as a hack to support the incumbent realm. Clean this up when Blink
+   properly supports the incumbent realm. #}
 static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info) {
   static int domTemplateKey; // This address is used for a key to look up the dom template.
   V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());

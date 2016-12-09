@@ -1388,44 +1388,91 @@ ScriptValue Object::attribute(ExecutionContext* context)
 
 ### [CheckSecurity] _(i, m, a)_
 
-### [DoNotCheckSecurity] _(m, a)_
-
-Summary: Check whether a given access is allowed or not, in terms of the same-origin security policy. Used in Location.idl, Window.idl, and a few HTML*Element.idl.
-
-If the security check is necessary, you should specify `[CheckSecurity]`.
+Summary: Check whether a given access is allowed or not in terms of the
+same-origin security policy.
 
 *** note
-This is very important for security.
+It is very important to use this attribute for interfaces and properties that
+are exposed cross-origin!
 ***
 
-Usage: `[CheckSecurity=Frame]` can be specified on interfaces, which enables a _frame_ security check for all members (methods and attributes) of the interface. This can then be selectively disabled with `[DoNotCheckSecurity]`; this is only done in Location.idl and Window.idl. On attributes, `[DoNotCheckSecurity]` takes an optional identifier, as `[DoNotCheckSecurity=Setter]` (used only one place, Location.href, since setting `href` _changes_ the page, which is ok, but reading `href` leaks information).
-
-* `[DoNotCheckSecurity]` on a method disables the security check for the method.
-* `[DoNotCheckSecurity]` on an attribute disables the security check for a getter and setter of the attribute; for read only attributes this is just the getter.
-* `[DoNotCheckSecurity=Setter]` on an attribute disables the security check for a setter of the attribute, but not the getter.
+Usage for interfaces: `[CheckSecurity=Receiver]` enables a security check for
+all methods of an interface. The security check verifies that the caller still
+has access to the receiver object of the method when it is invoked. This is
+security-critical for interfaces that can be returned cross-origin, such as the
+Location or Window interface.
 
 ```webidl
 [
-    CheckSecurity=Frame,
+    CheckSecurity=Receiver,
 ] interface DOMWindow {
-    attribute DOMString str1;
-    [DoNotCheckSecurity] attribute DOMString str2;
-    [DoNotCheckSecurity=Setter] attribute DOMString str3;
-    void func1();
-    [DoNotCheckSecurity] void func2();
+    Selection? getSelection();
 };
 ```
 
-Consider the case where you access `window.parent` from inside an iframe that comes from a different origin. While it is allowed to access window.parent, it is not allowed to access `window.parent.document`. In such cases, you need to specify `[CheckSecurity]` in order to check whether a given DOM object is allowed to access the attribute or method, in terms of the same-origin security policy.
+Forgetting this attribute would make it possible to cache a method reference and
+invoke it on a cross-origin object:
 
-`[CheckSecurity=Node]` can be specified on methods and attributes, which enables a _node_ security check on that member. In practice all attribute uses are read only, and method uses all also have `[RaisesException]`:
-
-```webidl
-[CheckSecurity=Node] readonly attribute Document contentDocument;
-[CheckSecurity=Node] SVGDocument getSVGDocument();
+```js
+var iframe = document.body.appendChild(document.createElement('iframe'));
+var addEventListenerMethod = iframe.contentWindow.addEventListener;
+iframe.src = 'https://example.com';
+iframe.onload = function () {
+  addEventListenerMethod('pointermove', function (event) {
+    event.target.ownerDocument.body.innerText = 'Text from a different origin.';
+  });
+};
 ```
 
-In terms of the same-origin security policy, node.contentDocument should return undefined if the parent frame and the child frame are from different origins.
+Usage for attributes and methods: `[CheckSecurity=ReturnValue]` enables a
+security check on that property. The security check verifies that the caller is
+allowed to access the returned value. If access is denied, the return value will
+be `undefined` and an exception will be raised. In practice, attribute uses are
+all `[readonly]`, and method uses are all `[RaisesException]`.
+
+```webidl
+[CheckSecurity=ReturnValue] readonly attribute Document contentDocument;
+[CheckSecurity=ReturnValue] SVGDocument getSVGDocument();
+```
+
+This is important because cross-origin access is not transitive. For example, if
+`window` and `window.parent` are cross-origin, access to `window.parent` is
+allowed, but access to `window.parent.document` is not.
+
+### [CrossOrigin] _(m, a)_
+
+Summary: Allows cross-origin access to an attribute or method. Used for
+implementing [CrossOriginProperties] from the spec in Location.idl and
+Window.idl.
+
+Usage for methods:
+```webidl
+[CrossOrigin] void blur();
+```
+
+Note that setting this attribute on a method will disable [security
+checks](#_CheckSecurity_i_m_a_), since this method can be invoked cross-origin.
+
+Usage for attributes:
+```webidl
+[CrossOrigin] readonly attribute unsigned long length;
+```
+With no arguments, defaults to allowing cross-origin reads, but
+not cross-origin writes.
+
+```webidl
+[CrossOrigin=Setter] attribute DOMString href;
+```
+With `Setter`, allows cross-origin writes, but not cross-origin reads. This is
+used for the `Location.href` attribute: cross-origin writes to this attribute
+are allowed, since it navigates the browsing context, but allowing cross-origin
+reads would leak cross-origin information.
+
+```webidl
+[CrossOrigin=(Getter,Setter)] readonly attribute Location location;
+```
+With both `Getter` and `Setter`, allows both cross-origin reads and cross-origin
+writes. This is used for the `Window.location` attribute.
 
 ### [CustomConstructor] _(i)_
 
@@ -1612,3 +1659,22 @@ Added to members of a partial interface definition (and implemented interfaces w
 * `[PerWorldBindings]` :: interacts with `[LogActivity]`
 * `[OverrideBuiltins]` :: used on named accessors
 * `[ImplementedInPrivateScript]`, `[OnlyExposedToPrivateScript]`
+
+-------------
+
+Derived from: [http://trac.webkit.org/wiki/WebKitIDL](http://trac.webkit.org/wiki/WebKitIDL) Licensed under [BSD](http://www.webkit.org/coding/bsd-license.html):
+
+*** aside
+BSD License
+Copyright (C) 2009 Apple Inc. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***
+
+[CrossOriginProperties]: https://html.spec.whatwg.org/multipage/browsers.html#crossoriginproperties-(-o-)

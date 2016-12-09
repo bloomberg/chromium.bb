@@ -68,14 +68,17 @@ def attribute_context(interface, attribute, interfaces):
         includes.add('core/inspector/ConsoleMessage.h')
 
     # [CheckSecurity]
-    is_do_not_check_security = 'DoNotCheckSecurity' in extended_attributes
+    is_cross_origin = 'CrossOrigin' in extended_attributes
     is_check_security_for_receiver = (
         has_extended_attribute_value(interface, 'CheckSecurity', 'Receiver') and
-        is_do_not_check_security)
+        is_cross_origin)
     is_check_security_for_return_value = (
         has_extended_attribute_value(attribute, 'CheckSecurity', 'ReturnValue'))
     if is_check_security_for_receiver or is_check_security_for_return_value:
         includes.add('bindings/core/v8/BindingSecurity.h')
+    # [CrossOrigin]
+    if has_extended_attribute_value(attribute, 'CrossOrigin', 'Setter'):
+        includes.add('bindings/core/v8/V8CrossOriginSetterInfo.h')
     # [Constructor]
     # TODO(yukishiino): Constructors are much like methods although constructors
     # are not methods.  Constructors must be data-type properties, and we can
@@ -138,6 +141,10 @@ def attribute_context(interface, attribute, interfaces):
         'enum_type': idl_type.enum_type,
         'enum_values': idl_type.enum_values,
         'exposed_test': v8_utilities.exposed(attribute, interface),  # [Exposed]
+        'has_cross_origin_getter':
+            has_extended_attribute_value(attribute, 'CrossOrigin', None) or
+            has_extended_attribute_value(attribute, 'CrossOrigin', 'Getter'),
+        'has_cross_origin_setter': has_extended_attribute_value(attribute, 'CrossOrigin', 'Setter'),
         'has_custom_getter': has_custom_getter(attribute),
         'has_custom_setter': has_custom_setter(attribute),
         'has_setter': has_setter(interface, attribute),
@@ -203,6 +210,20 @@ def attribute_context(interface, attribute, interfaces):
         getter_context(interface, attribute, context)
     if not has_custom_setter(attribute) and has_setter(interface, attribute):
         setter_context(interface, attribute, interfaces, context)
+
+    # [CrossOrigin] is incompatible with a number of other attributes, so check
+    # for them here.
+    if is_cross_origin:
+        if context['has_cross_origin_getter'] and context['has_custom_getter']:
+            raise Exception('[CrossOrigin] and [Custom] are incompatible on the same getter: %s.%s', interface.name, attribute.name)
+        if context['has_cross_origin_setter'] and context['has_custom_setter']:
+            raise Exception('[CrossOrigin] and [Custom] are incompatible on the same setter: %s.%s', interface.name, attribute.name)
+        if context['is_per_world_bindings']:
+            raise Exception('[CrossOrigin] and [PerWorldBindings] are incompatible: %s.%s', interface.name, attribute.name)
+        if context['constructor_type']:
+            raise Exception('[CrossOrigin] cannot be used for constructors: %s.%s', interface.name, attribute.name)
+        if not context['should_be_exposed_to_script']:
+            raise Exception('[CrossOrigin] attributes must be exposed to script: %s.%s', interface.name, attribute.name)
 
     return context
 
@@ -540,7 +561,7 @@ def is_data_type_property(interface, attribute):
     if 'CachedAccessor' in attribute.extended_attributes:
         return False
     return (is_constructor_attribute(attribute) or
-            'DoNotCheckSecurity' in attribute.extended_attributes)
+            'CrossOrigin' in attribute.extended_attributes)
 
 
 # [PutForwards], [Replaceable]
@@ -553,18 +574,10 @@ def has_setter(interface, attribute):
     return is_writable(attribute)
 
 
-# [DoNotCheckSecurity], [Unforgeable]
+# [Unforgeable]
 def access_control_list(interface, attribute):
     extended_attributes = attribute.extended_attributes
     access_control = []
-    if 'DoNotCheckSecurity' in extended_attributes:
-        do_not_check_security = extended_attributes['DoNotCheckSecurity']
-        if do_not_check_security == 'Setter':
-            access_control.append('v8::ALL_CAN_WRITE')
-        else:
-            access_control.append('v8::ALL_CAN_READ')
-            if has_setter(interface, attribute):
-                access_control.append('v8::ALL_CAN_WRITE')
     if is_unforgeable(interface, attribute):
         access_control.append('v8::PROHIBITS_OVERWRITING')
     return access_control or ['v8::DEFAULT']

@@ -37,8 +37,8 @@
     // property of an *existing* document at a different origin.
     // However, *reading* |href|, or accessing any component, is a security
     // problem, since that allows tracking navigation.
-    [CallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity, RaisesException] void assign(DOMString url);
-    [CallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity, RaisesException] void replace(DOMString url);
+    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void assign(DOMString url);
+    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void replace(DOMString url);
     [CallWith=CurrentWindow] void reload();
 
     // TODO(foolip): |ancestorOrigins| should have [Unforgeable, SameObject] and
@@ -48,7 +48,7 @@
     // TODO(foolip): Per spec, Location implements URLUtils. The below is
     // mostly like the URLUtils interface, but with some members missing and
     // using DOMString instead of USVString.
-    [SetterCallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity=Setter, RaisesException=Setter] attribute DOMString href;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), CrossOrigin=Setter, RaisesException=Setter] attribute DOMString href;
     [NotEnumerable, ImplementedAs=href] DOMString toString();
     readonly attribute DOMString origin;
 

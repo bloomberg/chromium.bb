@@ -488,6 +488,9 @@ void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& 
 
 
 {##############################################################################}
+{# TODO(dcheng): Currently, bindings must create a function object for each
+   realm as a hack to support the incumbent realm. Remove this when Blink
+   properly supports the incumbent realm. #}
 {% block origin_safe_method_setter %}
 {% if has_origin_safe_method_setter %}
 static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info) {
@@ -656,12 +659,11 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 
 
 {##############################################################################}
-{% macro install_do_not_check_security_method(method, world_suffix, instance_template, prototype_template) %}
+{% macro install_origin_safe_method(method, world_suffix, instance_template, prototype_template) %}
 {% from 'utilities.cpp.tmpl' import property_location %}
-{# Methods that are [DoNotCheckSecurity] are always readable, but if they are
-   changed and then accessed from a different origin, we do not return the
-   underlying value, but instead return a new copy of the original function.
-   This is achieved by storing the changed value as a hidden property. #}
+{# TODO(dcheng): Currently, bindings must create a function object for each
+   realm as a hack to support the incumbent realm. Clean this up when Blink
+   properly supports the incumbent realm. #}
 {% set getter_callback =
        '%sV8Internal::%sOriginSafeMethodGetterCallback%s' %
        (cpp_class, method.name, world_suffix) %}
@@ -682,7 +684,7 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 {% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
 {% set holder_check = 'V8DOMConfiguration::CheckHolder' %}
 const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {
-    "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, nullptr, &{{v8_class}}::wrapperTypeInfo, v8::ALL_CAN_READ, {{property_attribute}}, {{only_exposed_to_private_script}}, {{property_location(method)}}, {{holder_check}},
+    "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, nullptr, &{{v8_class}}::wrapperTypeInfo, v8::DEFAULT, {{property_attribute}}, {{only_exposed_to_private_script}}, {{property_location(method)}}, {{holder_check}},
 };
 V8DOMConfiguration::installAttribute(isolate, world, {{instance_template}}, {{prototype_template}}, {{method.name}}OriginSafeAttributeConfiguration);
 {%- endmacro %}
@@ -703,9 +705,7 @@ V8DOMConfiguration::installAttribute(isolate, world, {{instance_template}}, {{pr
        'indexedPropertyEnumerator<%s>' % cpp_class
        if indexed_property_getter.is_enumerable else '0' %}
 {% set property_handler_flags =
-       'v8::PropertyHandlerFlags::kAllCanRead'
-       if indexed_property_getter.do_not_check_security
-       else 'v8::PropertyHandlerFlags::kNone' %}
+       'v8::PropertyHandlerFlags::kNone' %}
 v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, {{indexed_property_enumerator_callback}}, v8::Local<v8::Value>(), {{property_handler_flags}});
 {{target}}->SetHandler(indexedPropertyHandlerConfig);
 {%- endmacro %}
@@ -729,10 +729,6 @@ v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig({{indexed_p
        if named_property_getter.is_enumerable else '0' %}
 {% set property_handler_flags_list =
        ['int(v8::PropertyHandlerFlags::kOnlyInterceptStrings)'] %}
-{% if named_property_getter.do_not_check_security %}
-{% set property_handler_flags_list =
-       property_handler_flags_list + ['int(v8::PropertyHandlerFlags::kAllCanRead)'] %}
-{% endif %}
 {% if not is_override_builtins %}
 {% set property_handler_flags_list =
        property_handler_flags_list + ['int(v8::PropertyHandlerFlags::kNonMasking)'] %}

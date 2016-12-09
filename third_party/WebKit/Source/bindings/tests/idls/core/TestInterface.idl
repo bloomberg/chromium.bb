@@ -73,12 +73,12 @@
     [PerWorldBindings] void voidMethod();
 
     // Anonymous indexed property operations
-    [DoNotCheckSecurity] getter DOMString (unsigned long index);
+    [CrossOrigin] getter DOMString (unsigned long index);
     setter DOMString (unsigned long index, DOMString value);
     deleter boolean (unsigned long index);
 
     // Anonymous named property operations
-    [DoNotCheckSecurity] getter DOMString (DOMString name);
+    [CrossOrigin] getter DOMString (DOMString name);
     setter DOMString (DOMString name, DOMString value);
     deleter boolean (DOMString name);
 

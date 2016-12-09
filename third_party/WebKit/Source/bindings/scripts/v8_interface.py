@@ -376,8 +376,7 @@ def interface_context(interface, interfaces):
     # Methods
     methods, iterator_method = methods_context(interface)
     context.update({
-        'has_origin_safe_method_setter': is_global and any(
-            method['is_check_security_for_receiver'] and not method['is_unforgeable']
+        'has_origin_safe_method_setter': any(method['is_cross_origin'] and not method['is_unforgeable']
             for method in methods),
         'has_private_script': (any(attribute['is_implemented_in_private_script'] for attribute in attributes) or
                                any(method['is_implemented_in_private_script'] for method in methods)),
@@ -423,6 +422,41 @@ def interface_context(interface, interfaces):
     context.update({
         'origin_trial_features': origin_trial_features(interface, context['constants'], context['attributes'], context['methods']),
     })
+
+    # Cross-origin interceptors
+    has_cross_origin_named_getter = False
+    has_cross_origin_named_setter = False
+    has_cross_origin_indexed_getter = False
+
+    for attribute in attributes:
+        if attribute['has_cross_origin_getter']:
+            has_cross_origin_named_getter = True
+        if attribute['has_cross_origin_setter']:
+            has_cross_origin_named_setter = True
+
+    # Methods are exposed as getter attributes on the interface: e.g.
+    # window.location gets the location attribute on the Window interface. For
+    # the cross-origin case, this attribute getter is guaranteed to only return
+    # a Function object, which the actual call is dispatched against.
+    for method in methods:
+        if method['is_cross_origin']:
+            has_cross_origin_named_getter = True
+
+    has_cross_origin_named_enumerator = has_cross_origin_named_getter or has_cross_origin_named_setter  # pylint: disable=invalid-name
+
+    if context['named_property_getter'] and context['named_property_getter']['is_cross_origin']:
+        has_cross_origin_named_getter = True
+
+    if context['indexed_property_getter'] and context['indexed_property_getter']['is_cross_origin']:
+        has_cross_origin_indexed_getter = True
+
+    context.update({
+        'has_cross_origin_named_getter': has_cross_origin_named_getter,
+        'has_cross_origin_named_setter': has_cross_origin_named_setter,
+        'has_cross_origin_named_enumerator': has_cross_origin_named_enumerator,
+        'has_cross_origin_indexed_getter': has_cross_origin_indexed_getter,
+    })
+
     return context
 
 
@@ -798,19 +832,6 @@ def overloads_context(interface, overloads):
             maxarg = ('%sV8Internal::%sMethodMaxArg()'
                       % (cpp_name_or_partial(interface), name))
 
-    # Check and fail if overloads disagree on any of the extended attributes
-    # that affect how the method should be registered.
-    # Skip the check for overloaded constructors, since they don't support any
-    # of the extended attributes in question.
-    if not overloads[0].get('is_constructor'):
-        overload_extended_attributes = [
-            method['custom_registration_extended_attributes']
-            for method in overloads]
-        for extended_attribute in v8_methods.CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES:
-            if common_key(overload_extended_attributes, extended_attribute) is None:
-                raise ValueError('Overloads of %s have conflicting extended attribute %s'
-                                 % (name, extended_attribute))
-
     # Check and fail if overloads disagree about whether the return type
     # is a Promise or not.
     promise_overload_count = sum(1 for method in overloads if method.get('returns_promise'))
@@ -835,7 +856,6 @@ def overloads_context(interface, overloads):
     return {
         'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
         'exposed_test_all': common_value(overloads, 'exposed_test'),  # [Exposed]
-        'has_custom_registration_all': common_value(overloads, 'has_custom_registration'),
         'length': function_length,
         'length_tests_methods': length_tests_methods(effective_overloads_by_length),
         # 1. Let maxarg be the length of the longest type list of the
@@ -1405,8 +1425,8 @@ def property_getter(getter, cpp_arguments):
     return {
         'cpp_type': idl_type.cpp_type,
         'cpp_value': cpp_value,
-        'do_not_check_security': 'DoNotCheckSecurity' in extended_attributes,
         'is_call_with_script_state': is_call_with_script_state,
+        'is_cross_origin': 'CrossOrigin' in extended_attributes,
         'is_custom':
             'Custom' in extended_attributes and
             (not extended_attributes['Custom'] or
