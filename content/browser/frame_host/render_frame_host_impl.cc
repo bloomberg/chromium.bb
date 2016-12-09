@@ -383,6 +383,10 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
+  // Destroying navigation handle may call into delegates/observers,
+  // so we do it early while |this| object is still in a sane state.
+  navigation_handle_.reset();
+
   // Release the WebUI instances before all else as the WebUI may accesses the
   // RenderFrameHost during cleanup.
   ClearAllWebUI();

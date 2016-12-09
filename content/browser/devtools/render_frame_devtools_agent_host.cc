@@ -912,6 +912,12 @@ void RenderFrameDevToolsAgentHost::
 
 void RenderFrameDevToolsAgentHost::UpdateProtocolHandlers(
     RenderFrameHostImpl* host) {
+#if DCHECK_IS_ON()
+  // Check that we don't have stale host object here by accessing some random
+  // properties inside.
+  if (handlers_frame_host_ && handlers_frame_host_->GetRenderWidgetHost())
+    handlers_frame_host_->GetRenderWidgetHost()->GetRoutingID();
+#endif
   handlers_frame_host_ = host;
   dom_handler_->SetRenderFrameHost(host);
   if (emulation_handler_)
