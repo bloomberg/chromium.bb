@@ -2176,3 +2176,6 @@ crbug.com/671618 virtual/mojo-loading/http/tests/websocket/workers/worker-shutdo
 
 # Added 2016-12-07
 crbug.com/672493 [ Linux ] http/tests/websocket/workers/worker-shutdown-race.html [ Pass Timeout ]
+
+# Added 2016-12-09
+crbug.com/672696 [ Linux ] virtual/android/media/mediadocument/media-document-with-download-button.html [ Failure Pass ]
