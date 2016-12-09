@@ -445,6 +445,10 @@ String Response::internalMIMEType() const {
   return m_response->internalMIMEType();
 }
 
+const Vector<KURL>& Response::internalURLList() const {
+  return m_response->internalURLList();
+}
+
 void Response::installBody() {
   if (!internalBodyBuffer())
     return;

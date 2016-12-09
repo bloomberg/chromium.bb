@@ -631,6 +631,8 @@ modules_testing_dependency_idl_files =
     get_path_info(
         [
           "accessibility/testing/InternalsAccessibility.idl",
+          "fetch/testing/InternalsFetch.idl",
+          "fetch/testing/WorkerInternalsFetch.idl",
           "navigatorcontentutils/testing/InternalsNavigatorContentUtils.idl",
           "peerconnection/testing/InternalsRTCCertificate.idl",
           "serviceworkers/testing/InternalsServiceWorker.idl",

@@ -87,6 +87,8 @@ class MODULES_EXPORT FetchResponseData final
   }
 
   void setURLList(const Vector<KURL>&);
+  const Vector<KURL>& internalURLList() const;
+
   void setStatus(unsigned short status) { m_status = status; }
   void setStatusMessage(AtomicString statusMessage) {
     m_statusMessage = statusMessage;

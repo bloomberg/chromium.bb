@@ -26,6 +26,7 @@
 #include "public/web/WebTestingSupport.h"
 
 #include "bindings/modules/v8/V8InternalsPartial.h"
+#include "bindings/modules/v8/V8WorkerInternalsPartial.h"
 #include "core/testing/v8/WebCoreTestSupport.h"
 #include "public/web/WebLocalFrame.h"
 #include <v8/include/v8.h>
@@ -45,6 +46,7 @@ void WebTestingSupport::resetInternalsObject(WebLocalFrame* frame) {
 
 void WebTestingSupport::injectInternalsObject(v8::Local<v8::Context> context) {
   V8InternalsPartial::initialize();
+  V8WorkerInternalsPartial::initialize();
   v8::HandleScope handleScope(v8::Isolate::GetCurrent());
   WebCoreTestSupport::injectInternalsObject(context);
 }

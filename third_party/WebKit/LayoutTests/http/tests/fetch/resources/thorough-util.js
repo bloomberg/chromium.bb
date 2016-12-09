@@ -65,6 +65,17 @@ var checkFetchResponseType = function(type, url, data) {
                 type,
                 'type must match. url: ' + url);
 };
+var checkURLList = function(redirectedURLList, url, data) {
+  if (!self.internals)
+    return;
+  var expectedURLList = [url].concat(redirectedURLList);
+  assert_equals(data.fetchResult,
+                'resolved',
+                'fetchResult must be resolved. url = ' + url);
+  assert_array_equals(data.urlList,
+                      expectedURLList,
+                      url + ' URL list should match');
+};
 
 var showComment = function(url, data) {
   assert_true(!data.comment, 'Show comment: ' + data.comment + ' url: ' + url);
@@ -354,6 +365,9 @@ function doFetch(request) {
                   status: response.status,
                   headers: headersToArray(response.headers),
                   type: response.type,
+                  urlList: self.internals ?
+                           self.internals.getInternalResponseURLList(response) :
+                           [],
                   response: response,
                   originalURL: originalURL
                 });
@@ -375,6 +389,12 @@ function report(data) {
   report_data = data;
 }
 
+// |test_target| is an array. The first element of |test_target| is the URL to
+// be fetched. The second element of |test_target| is an array of test functions
+// which will be called with the result of doFetch(). The third element of
+// |test_target| is an array of test functions which will be called with
+// |report_data| set by report() which is called while executing
+// "eval(message.body)".
 function executeTest(test_target) {
   if (test_target.length == 0) {
     return Promise.resolve();

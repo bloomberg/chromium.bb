@@ -5,10 +5,10 @@ if (isset($_GET['Count'])) {
   $count = intval($_GET['Count']) - 1;
   if ($count > 0) {
     $url = $path .
-           '?Redirect=' . rawurlencode($url) .
-           '&Count=' . $count ;
+           '?Redirect=' . rawurlencode($url);
     if (isset($_GET['ACAOrigin']))
       $url .= '&ACAOrigin=' . $_GET['ACAOrigin'];
+    $url .= '&Count=' . $count ;
   }
 }
 header("Location: $url");

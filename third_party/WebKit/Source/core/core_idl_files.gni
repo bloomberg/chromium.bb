@@ -587,13 +587,16 @@ webcore_testing_idl_files =
                     "testing/PrivateScriptTest.idl",
                     "testing/TypeConversions.idl",
                     "testing/UnionTypesTest.idl",
-                    "testing/WorkerInternals.idl",
                   ],
                   "abspath")
 
 # Testing IDL files that have partial interfaces in modules.
 webcore_testing_idl_with_modules_dependency_files =
-    get_path_info([ "testing/Internals.idl" ], "abspath")
+    get_path_info([
+                    "testing/Internals.idl",
+                    "testing/WorkerInternals.idl",
+                  ],
+                  "abspath")
 
 webcore_testing_dependency_idl_files =
     get_path_info([

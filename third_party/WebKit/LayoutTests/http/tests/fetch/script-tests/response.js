@@ -25,6 +25,11 @@ test(function() {
                   'Default Response.statusText should be \'OK\'');
     assert_equals(size(response.headers), 0,
                   'Default Response should not have any header.');
+    if (self.internals) {
+      var urlList = self.internals.getInternalResponseURLList(response);
+      assert_equals(urlList.length, 0,
+                    'The URL list of Default Response should be empty.');
+    }
 
     response.status = 394;
     response.statusText = 'Sesame Street';
@@ -98,6 +103,11 @@ test(function() {
                   'Response.headers should have Content-Type');
     assert_equals(response.headers.get('Content-Type'), 'audio/wav',
                   'Content-Type of Response.headers should be set');
+    if (self.internals) {
+      var urlList = self.internals.getInternalResponseURLList(response);
+      assert_equals(urlList.length, 0,
+                    'The URL list of generated Response should be empty.');
+    }
 
     response = new Response(new Blob(['dummy'], {type: 'audio/wav'}),
                             {

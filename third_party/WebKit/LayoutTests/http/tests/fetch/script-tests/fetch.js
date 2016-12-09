@@ -29,6 +29,11 @@ promise_test(function(t) {
           assert_equals(response.headers.get('Content-Type'),
                         'text/plain;charset=US-ASCII');
           assert_equals(size(response.headers), 1);
+          if (self.internals) {
+            assert_array_equals(
+                self.internals.getInternalResponseURLList(response),
+                ['data:,Foobar']);
+          }
           return response.text();
         })
       .then(function(text) {
@@ -63,6 +68,11 @@ promise_test(function(t) {
           assert_equals(response.headers.get('Content-Type'),
                         'text/html;charset=utf-8');
           assert_equals(size(response.headers), 1);
+          if (self.internals) {
+            assert_array_equals(
+                self.internals.getInternalResponseURLList(response),
+                ['data:text/html;charset=utf-8;base64,5paH5a2X']);
+          }
           return response.text();
         })
       .then(function(text) {
@@ -89,6 +99,10 @@ if ('createObjectURL' in URL) {
             assert_equals(response.headers.get('Content-Type'), 'text/fox');
             assert_equals(response.headers.get('Content-Length'), '3');
             assert_equals(size(response.headers), 2);
+            if (self.internals) {
+              assert_array_equals(
+                  self.internals.getInternalResponseURLList(response), [url]);
+            }
             return response.text();
           })
         .then(function(text) {
@@ -117,18 +131,30 @@ promise_test(function(t) {
   }, 'fetch of scheme not listed in basic fetch spec');
 
 promise_test(function(t) {
-    return fetch('/fetch/resources/fetch-status.php?status=200')
+    var request = new Request('/fetch/resources/fetch-status.php?status=200');
+    return fetch(request)
       .then(function(response) {
           assert_equals(response.status, 200);
           assert_equals(response.statusText, 'OK');
+          if (self.internals) {
+            assert_array_equals(
+                self.internals.getInternalResponseURLList(response),
+                [request.url]);
+          }
         });
   }, 'Fetch result of 200 response');
 
 promise_test(function(t) {
-    return fetch('/fetch/resources/fetch-status.php?status=404')
+    var request = new Request('/fetch/resources/fetch-status.php?status=404');
+    return fetch(request)
       .then(function(response) {
           assert_equals(response.status, 404);
           assert_equals(response.statusText, 'Not Found');
+          if (self.internals) {
+            assert_array_equals(
+                self.internals.getInternalResponseURLList(response),
+                [request.url]);
+          }
         });
   }, 'Fetch result of 404 response');
 
@@ -149,8 +175,13 @@ promise_test(function(t) {
           // if response's url is null and response's url,
           // serialized with the exclude fragment flag set, otherwise.
           assert_equals(response.url,
-            BASE_ORIGIN +
-            '/fetch/resources/fetch-status.php?status=200');
+            BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200');
+          if (self.internals) {
+            assert_array_equals(
+                self.internals.getInternalResponseURLList(response),
+                [BASE_ORIGIN +
+                 '/fetch/resources/fetch-status.php?status=200#fragment']);
+          }
         });
   }, 'Request/response url attribute getter with fragment');
 
@@ -174,6 +205,11 @@ promise_test(function(t) {
             'Response\'s url is locationURL');
           assert_equals(request.url, redirect_original_url,
             'Request\'s url remains the original URL');
+          if (self.internals) {
+            assert_array_equals(
+                self.internals.getInternalResponseURLList(response),
+                [request.url, response.url]);
+          }
         });
   }, 'Request/response url attribute getter with redirect');
 
@@ -194,6 +230,11 @@ promise_test(function(t) {
           assert_equals(response.status, 0);
           assert_equals(response.type, 'opaqueredirect');
           assert_equals(response.url, request.url);
+          if (self.internals) {
+            assert_array_equals(
+                self.internals.getInternalResponseURLList(response),
+                [redirect_original_url]);
+          }
         });
   }, 'Manual redirect fetch returns opaque redirect response');
 
@@ -244,6 +285,10 @@ promise_test(function(test) {
           assert_equals(response.status, 200);
           assert_equals(response.statusText, 'OK');
           assert_equals(response.url, url);
+          if (self.internals) {
+            assert_array_equals(
+                self.internals.getInternalResponseURLList(response), [url]);
+          }
           return response.text();
         })
       .then(function(text) { assert_equals(text, '<!DOCTYPE html>\n'); })
@@ -256,6 +301,10 @@ promise_test(function(test) {
           assert_equals(response.status, 200);
           assert_equals(response.statusText, 'OK');
           assert_equals(response.url, url);
+          if (self.internals) {
+            assert_array_equals(
+                self.internals.getInternalResponseURLList(response), [url]);
+          }
           return response.text();
         })
       .then(function(text) { assert_equals(text, '<!DOCTYPE html>\n'); })
