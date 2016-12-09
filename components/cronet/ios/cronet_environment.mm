@@ -29,32 +29,22 @@
 #include "components/prefs/pref_filter.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/web/public/user_agent.h"
-#include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_known_logs.h"
-#include "net/cert/ct_log_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/ct_verifier.h"
-#include "net/cert/multi_log_ct_verifier.h"
-#include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
-#include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_cache.h"
-#include "net/http/http_response_headers.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream_factory.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
-#include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/static_http_user_agent_settings.h"
+#include "net/url_request/http_user_agent_settings.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "url/scheme_host_port.h"
@@ -254,8 +244,6 @@ void CronetEnvironment::Start() {
         file_thread_->task_runner());
   }
 
-  proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
-      network_io_thread_->task_runner(), nullptr);
   main_context_getter_ = new CronetURLRequestContextGetter(
       this, network_io_thread_->task_runner());
   base::subtle::MemoryBarrier();
@@ -271,116 +259,67 @@ CronetEnvironment::~CronetEnvironment() {
 void CronetEnvironment::InitializeOnNetworkThread() {
   DCHECK(network_io_thread_->task_runner()->BelongsToCurrentThread());
   base::FeatureList::InitializeInstance(std::string(), std::string());
-  // TODO(mef): Use net:UrlRequestContextBuilder instead of manual build.
-  main_context_.reset(new net::URLRequestContext);
-  main_context_->set_net_log(net_log_.get());
 
   if (user_agent_partial_)
     user_agent_ = web::BuildUserAgentFromProduct(user_agent_);
-
-  main_context_->set_http_user_agent_settings(
-      new net::StaticHttpUserAgentSettings(accept_language_, user_agent_));
-
-  main_context_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
-  main_context_->set_transport_security_state(
-      new net::TransportSecurityState());
-  http_server_properties_.reset(new net::HttpServerPropertiesImpl());
-  main_context_->set_http_server_properties(http_server_properties_.get());
-
-  // TODO(rdsmith): Note that the ".release()" calls below are leaking
-  // the objects in question; this should be fixed by having an object
-  // corresponding to URLRequestContextStorage that actually owns those
-  // objects.  See http://crbug.com/523858.
-  std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
-      new net::MappedHostResolver(
-          net::HostResolver::CreateDefaultResolver(nullptr)));
-
-  main_context_->set_host_resolver(mapped_host_resolver.release());
-
-  if (!cert_verifier_)
-    cert_verifier_ = net::CertVerifier::CreateDefault();
-  main_context_->set_cert_verifier(cert_verifier_.get());
-
-  std::unique_ptr<net::MultiLogCTVerifier> ct_verifier =
-      base::MakeUnique<net::MultiLogCTVerifier>();
-  ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
-  main_context_->set_cert_transparency_verifier(ct_verifier.release());
-  main_context_->set_ct_policy_enforcer(new net::CTPolicyEnforcer());
-
-  main_context_->set_http_auth_handler_factory(
-      net::HttpAuthHandlerRegistryFactory::CreateDefault(
-          main_context_->host_resolver())
-          .release());
-  main_context_->set_proxy_service(
-      net::ProxyService::CreateUsingSystemProxyResolver(
-          std::move(proxy_config_service_), 0, nullptr)
-          .release());
 
   // Cache
   base::FilePath cache_path;
   if (!PathService::Get(base::DIR_CACHE, &cache_path))
     return;
   cache_path = cache_path.Append(FILE_PATH_LITERAL("cronet"));
-  std::unique_ptr<net::HttpCache::DefaultBackend> main_backend(
-      new net::HttpCache::DefaultBackend(net::DISK_CACHE,
-                                         net::CACHE_BACKEND_SIMPLE, cache_path,
-                                         0,  // Default cache size.
-                                         network_cache_thread_->task_runner()));
 
-  net::HttpNetworkSession::Params params;
+  std::unique_ptr<URLRequestContextConfig> config(new URLRequestContextConfig(
+      quic_enabled_,                  // Enable QUIC.
+      "",                             // QUIC User Agent ID.
+      http2_enabled_,                 // Enable SPDY.
+      false,                          // Enable SDCH
+      URLRequestContextConfig::DISK,  // Type of http cache.
+      0,                              // Max size of http cache in bytes.
+      false,                          // Disable caching for HTTP responses.
+      cache_path.value(),  // Storage path for http cache and cookie storage.
+      user_agent_,         // User-Agent request header field.
+      "{}",                // JSON encoded experimental options.
+      "",                  // Data reduction proxy key.
+      "",                  // Data reduction proxy.
+      "",                  // Fallback data reduction proxy.
+      "",                  // Data reduction proxy secure proxy check URL.
+      std::move(mock_cert_verifier_),  // MockCertVerifier to use for testing
+                                       // purposes.
+      false,                           // Enable network quality estimator.
+      true,  // Enable bypassing of public key pinning for local trust anchors
+      ""));  // Certificate verifier cache data.
 
-  params.host_resolver = main_context_->host_resolver();
-  params.cert_verifier = main_context_->cert_verifier();
-  params.cert_transparency_verifier =
-      main_context_->cert_transparency_verifier();
-  params.ct_policy_enforcer = main_context_->ct_policy_enforcer();
-  params.channel_id_service = main_context_->channel_id_service();
-  params.transport_security_state = main_context_->transport_security_state();
-  params.proxy_service = main_context_->proxy_service();
-  params.ssl_config_service = main_context_->ssl_config_service();
-  params.http_auth_handler_factory = main_context_->http_auth_handler_factory();
-  params.http_server_properties = main_context_->http_server_properties();
-  params.net_log = main_context_->net_log();
-  params.enable_http2 = http2_enabled();
-  params.enable_quic = quic_enabled();
+  net::URLRequestContextBuilder context_builder;
 
+  context_builder.set_accept_language(accept_language_);
+
+  config->ConfigureURLRequestContextBuilder(&context_builder, net_log_.get(),
+                                            file_thread_.get()->task_runner());
+
+  std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
+      new net::MappedHostResolver(
+          net::HostResolver::CreateDefaultResolver(nullptr)));
+
+  context_builder.set_host_resolver(std::move(mapped_host_resolver));
+
+  std::unordered_set<std::string> quic_host_whitelist;
+  std::unique_ptr<net::HttpServerProperties> http_server_properties(
+      new net::HttpServerPropertiesImpl());
   for (const auto& quic_hint : quic_hints_) {
     net::AlternativeService alternative_service(net::kProtoQUIC, "",
                                                 quic_hint.port());
     url::SchemeHostPort quic_hint_server("https", quic_hint.host(),
                                          quic_hint.port());
-    main_context_->http_server_properties()->SetAlternativeService(
+    http_server_properties->SetAlternativeService(
         quic_hint_server, alternative_service, base::Time::Max());
-    params.quic_host_whitelist.insert(quic_hint.host());
+    quic_host_whitelist.insert(quic_hint.host());
   }
 
-  if (!params.channel_id_service) {
-    // The main context may not have a ChannelIDService, since it is lazily
-    // constructed. If not, build an ephemeral ChannelIDService with no backing
-    // disk store.
-    // TODO(ellyjones): support persisting ChannelID.
-    params.channel_id_service =
-        new net::ChannelIDService(new net::DefaultChannelIDStore(NULL),
-                                  base::WorkerPool::GetTaskRunner(true));
-  }
+  context_builder.SetHttpServerProperties(std::move(http_server_properties));
+  context_builder.set_quic_host_whitelist(quic_host_whitelist);
 
-  // TODO(mmenke):  These really shouldn't be leaked.
-  //                See https://crbug.com/523858.
-  net::HttpNetworkSession* http_network_session =
-      new net::HttpNetworkSession(params);
-  net::HttpCache* main_cache =
-      new net::HttpCache(http_network_session, std::move(main_backend),
-                         true /* set_up_quic_server_info */);
-  main_context_->set_http_transaction_factory(main_cache);
-  // Cookies
-  cookie_store_ = net::CookieStoreIOS::CreateCookieStore(
-      [NSHTTPCookieStorage sharedHTTPCookieStorage]);
-  main_context_->set_cookie_store(cookie_store_.get());
-
-  net::URLRequestJobFactoryImpl* job_factory =
-      new net::URLRequestJobFactoryImpl;
-  main_context_->set_job_factory(job_factory);
-  main_context_->set_net_log(net_log_.get());
+  main_context_ = context_builder.Build();
 }
 
 std::string CronetEnvironment::user_agent() {

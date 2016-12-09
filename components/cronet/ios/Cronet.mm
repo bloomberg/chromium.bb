@@ -108,7 +108,7 @@ class CronetHttpProtocolHandlerDelegate
   if (gEnableTestCertVerifierForTesting) {
     std::unique_ptr<TestCertVerifier> test_cert_verifier =
         base::MakeUnique<TestCertVerifier>();
-    cronetEnvironment->set_cert_verifier(std::move(test_cert_verifier));
+    cronetEnvironment->set_mock_cert_verifier(std::move(test_cert_verifier));
   }
 }
 

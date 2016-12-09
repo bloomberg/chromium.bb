@@ -16,11 +16,8 @@
 #include "base/threading/thread.h"
 #include "components/cronet/url_request_context_config.h"
 #include "net/cert/cert_verifier.h"
-#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-
-class JsonPrefStore;
 
 namespace base {
 class WaitableEvent;
@@ -29,7 +26,6 @@ class WaitableEvent;
 namespace net {
 class CookieStore;
 class NetLog;
-class ProxyConfigService;
 class WriteToFileNetLogObserver;
 }  // namespace net
 
@@ -79,8 +75,9 @@ class CronetEnvironment {
     accept_language_ = accept_language;
   }
 
-  void set_cert_verifier(std::unique_ptr<net::CertVerifier> cert_verifier) {
-    cert_verifier_ = std::move(cert_verifier);
+  void set_mock_cert_verifier(
+      std::unique_ptr<net::CertVerifier> mock_cert_verifier) {
+    mock_cert_verifier_ = std::move(mock_cert_verifier);
   }
 
   void SetHostResolverRules(const std::string& host_resolver_rules);
@@ -133,10 +130,7 @@ class CronetEnvironment {
   std::unique_ptr<base::Thread> file_thread_;
   std::unique_ptr<base::Thread> file_user_blocking_thread_;
   scoped_refptr<base::SequencedTaskRunner> pref_store_worker_pool_;
-  scoped_refptr<JsonPrefStore> net_pref_store_;
-  std::unique_ptr<net::CertVerifier> cert_verifier_;
-  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
-  std::unique_ptr<net::HttpServerProperties> http_server_properties_;
+  std::unique_ptr<net::CertVerifier> mock_cert_verifier_;
   std::unique_ptr<net::CookieStore> cookie_store_;
   std::unique_ptr<net::URLRequestContext> main_context_;
   scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
