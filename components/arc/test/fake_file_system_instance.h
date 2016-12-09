@@ -20,6 +20,14 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // mojom::FileSystemInstance:
   ~FakeFileSystemInstance() override;
 
+  void GetChildDocuments(const std::string& authority,
+                         const std::string& document_id,
+                         const GetChildDocumentsCallback& callback) override;
+
+  void GetDocument(const std::string& authority,
+                   const std::string& document_id,
+                   const GetDocumentCallback& callback) override;
+
   void GetFileSize(const std::string& url,
                    const GetFileSizeCallback& callback) override;
 

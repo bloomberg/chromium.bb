@@ -10,6 +10,15 @@ FakeFileSystemInstance::FakeFileSystemInstance() = default;
 
 FakeFileSystemInstance::~FakeFileSystemInstance() = default;
 
+void FakeFileSystemInstance::GetChildDocuments(
+    const std::string& authority,
+    const std::string& document_id,
+    const GetChildDocumentsCallback& callback) {}
+
+void FakeFileSystemInstance::GetDocument(const std::string& authority,
+                                         const std::string& document_id,
+                                         const GetDocumentCallback& callback) {}
+
 void FakeFileSystemInstance::GetFileSize(const std::string& url,
                                          const GetFileSizeCallback& callback) {}
 

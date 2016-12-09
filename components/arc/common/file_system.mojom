@@ -2,14 +2,67 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 2
+// Next MinVersion: 3
 
 module arc.mojom;
 
-// Next method ID: 3
+// Represents a document in Android DocumentsProvider.
+// See Android docs of DocumentsContract.Document for details.
+struct Document {
+  // Opaque ID of the document.
+  string document_id;
+
+  // Display name of the document.
+  string display_name;
+
+  // MIME type of the document.
+  // A directory is represented by a document having MIME_TYPE_DIR MIME type.
+  string mime_type;
+
+  // Size of the document in bytes. If the size is unknown, -1 is set.
+  int64 size;
+
+  // Timestamp when the document was modified last time, in milliseconds
+  // since UNIX epoch.
+  // TODO(crbug.com/672737): Use mojo.common.mojom.Time once the type is
+  // converted to a non-native type so that it can be used from Java.
+  uint64 last_modified;
+};
+
+// Next method ID: 5
 interface FileSystemInstance {
+  // Notes about Android Documents Provider:
+  //
+  // In Android Storage Access Framework, a document is uniquely identified by
+  // a pair of "authority" and "document ID".
+  //
+  // - An authority specifies a Documents Provider that serves a document.
+  //   It is the origin part of a content:// URI used to access the Documents
+  //   Provider via Content Resolver protocol.
+  //   Example: "com.android.providers.media.documents"
+  // - A document ID is an opaque string that specifies a particular document
+  //   in a documents provider. Its format varies by providers.
+  //
+  // See the following documents for details about Documents Provider:
+  // https://developer.android.com/guide/topics/providers/document-provider.html
+  // https://developer.android.com/reference/android/provider/DocumentsContract.html
+
+  // Queries child documents of the directory specified by |authority| and
+  // |parent_document_id| in Documents Provider.
+  // If such a directory does not exist, null is returned.
+  [MinVersion=2] GetChildDocuments@4(string authority,
+                                     string parent_document_id) =>
+      (array<Document>? documents);
+
+  // Queries the document specified by |authority| and |document_id| in
+  // Documents Provider.
+  // If such a document does not exist, null is returned.
+  [MinVersion=2] GetDocument@3(string authority, string document_id) =>
+      (Document? document);
+
   // Asks the ContentResolver for the size of the file specified by the URL.
-  // If the file does not exist or the size is unknown, -1 is returned.
+  // If the file does not exist or the size is unknown (e.g. directories and
+  // streams), -1 is returned.
   [MinVersion=1] GetFileSize@1(string url) => (int64 size);
 
   // Asks the ContentResolver to get a FD to read the file specified by the
