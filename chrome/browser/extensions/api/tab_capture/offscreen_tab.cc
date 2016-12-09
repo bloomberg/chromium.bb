@@ -12,8 +12,10 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 
@@ -120,6 +122,13 @@ void OffscreenTab::Start(const GURL& start_url,
   if (!optional_presentation_id.empty()) {
     NOTIMPLEMENTED()
         << "Register with PresentationRouter, id=" << optional_presentation_id;
+
+    if (auto* render_view_host =
+            offscreen_tab_web_contents_->GetRenderViewHost()) {
+      auto web_prefs = render_view_host->GetWebkitPreferences();
+      web_prefs.presentation_receiver = true;
+      render_view_host->UpdateWebkitPreferences(web_prefs);
+    }
   }
 
   // Navigate to the initial URL.
