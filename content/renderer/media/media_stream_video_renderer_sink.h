@@ -47,7 +47,7 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
       const blink::WebMediaStreamTrack& video_track,
       const base::Closure& error_cb,
       const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-      const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       media::GpuVideoAcceleratorFactories* gpu_factories);
@@ -82,16 +82,12 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
   const RepaintCB repaint_cb_;
   const blink::WebMediaStreamTrack video_track_;
 
-  // Inner class used for trampolining received frames from IO thread to
-  // compositor thread.
-  class FrameReceiver;
-  std::unique_ptr<FrameReceiver> frame_receiver_;
   // Inner class used for transfering frames on compositor thread and running
   // |repaint_cb_|.
   class FrameDeliverer;
   std::unique_ptr<FrameDeliverer> frame_deliverer_;
 
-  const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   const scoped_refptr<base::TaskRunner> worker_task_runner_;
   media::GpuVideoAcceleratorFactories* const gpu_factories_;

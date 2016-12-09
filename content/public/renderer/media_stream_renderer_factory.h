@@ -37,14 +37,14 @@ class MediaStreamRendererFactory {
   virtual ~MediaStreamRendererFactory() {}
 
   // Returns a MediaStreamVideoRenderer that uses the given task runners.
-  // |compositor_task_runner| is used for passing video frames.
+  // |io_task_runner| is used for passing video frames.
   // |media_task_runner|, |worker_task_runner| and |gpu_factories| are used to
-  // create an GpuMemoryBufferVideoFramePool instance on supported platforms.
+  // create a GpuMemoryBufferVideoFramePool instance on supported platforms.
   virtual scoped_refptr<MediaStreamVideoRenderer> GetVideoRenderer(
       const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
       const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-      const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       media::GpuVideoAcceleratorFactories* gpu_factories) = 0;

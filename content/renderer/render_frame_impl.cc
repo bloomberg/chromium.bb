@@ -6038,8 +6038,8 @@ WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
   return new WebMediaPlayerMS(
       frame_, client, GetWebMediaPlayerDelegate()->AsWeakPtr(),
       new RenderMediaLog(url::Origin(security_origin).GetURL()),
-      CreateRendererFactory(), compositor_task_runner,
-      render_thread->GetMediaThreadTaskRunner(),
+      CreateRendererFactory(), render_thread->GetIOTaskRunner(),
+      compositor_task_runner, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),
       sink_id, security_origin);
 #else

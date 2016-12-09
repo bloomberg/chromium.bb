@@ -24,6 +24,7 @@ namespace content {
 class TestMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
  public:
   TestMediaStreamVideoRenderer(
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const gfx::Size& size,
       const base::TimeDelta& frame_duration,
       const base::Closure& error_cb,
@@ -48,6 +49,7 @@ class TestMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
   void GenerateFrame();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   gfx::Size size_;
   State state_;
 

@@ -55,7 +55,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&MediaStreamVideoRendererSinkTest::RepaintCallback,
                    base::Unretained(this)),
-        message_loop_.task_runner(), message_loop_.task_runner(),
+        child_process_->io_task_runner(), message_loop_.task_runner(),
         message_loop_.task_runner(), nullptr /* gpu_factories */);
     base::RunLoop().RunUntilIdle();
 
@@ -76,14 +76,17 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
   MOCK_METHOD0(ErrorCallback, void(void));
 
   bool IsInStartedState() const {
+    RunIOUntilIdle();
     return media_stream_video_renderer_sink_->GetStateForTesting() ==
            MediaStreamVideoRendererSink::STARTED;
   }
   bool IsInStoppedState() const {
+    RunIOUntilIdle();
     return media_stream_video_renderer_sink_->GetStateForTesting() ==
            MediaStreamVideoRendererSink::STOPPED;
   }
   bool IsInPausedState() const {
+    RunIOUntilIdle();
     return media_stream_video_renderer_sink_->GetStateForTesting() ==
            MediaStreamVideoRendererSink::PAUSED;
   }
@@ -92,13 +95,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
     mock_source_->DeliverVideoFrame(frame);
     base::RunLoop().RunUntilIdle();
 
-    // |blink_track_| uses IO thread to send frames to sinks. Make sure that
-    // tasks on IO thread are completed before moving on.
-    base::RunLoop run_loop;
-    child_process_->io_task_runner()->PostTaskAndReply(
-        FROM_HERE, base::Bind([] {}), run_loop.QuitClosure());
-    run_loop.Run();
-    base::RunLoop().RunUntilIdle();
+    RunIOUntilIdle();
   }
 
   void SetGpuMemoryBufferVideoForTesting(
@@ -118,6 +115,16 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
   blink::WebMediaStreamTrack blink_track_;
 
  private:
+  void RunIOUntilIdle() const {
+    // |blink_track_| uses IO thread to send frames to sinks. Make sure that
+    // tasks on IO thread are completed before moving on.
+    base::RunLoop run_loop;
+    child_process_->io_task_runner()->PostTaskAndReply(
+        FROM_HERE, base::Bind([] {}), run_loop.QuitClosure());
+    run_loop.Run();
+    base::RunLoop().RunUntilIdle();
+  }
+
   blink::WebMediaStreamSource blink_source_;
   MockMediaStreamVideoSource* mock_source_;
 
@@ -129,19 +136,15 @@ TEST_F(MediaStreamVideoRendererSinkTest, StartStop) {
   EXPECT_TRUE(IsInStoppedState());
 
   media_stream_video_renderer_sink_->Start();
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsInStartedState());
 
   media_stream_video_renderer_sink_->Pause();
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsInPausedState());
 
   media_stream_video_renderer_sink_->Resume();
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsInStartedState());
 
   media_stream_video_renderer_sink_->Stop();
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsInStoppedState());
 }
 
@@ -199,7 +202,7 @@ class MediaStreamVideoRendererSinkTransparencyTest
         base::Bind(&MediaStreamVideoRendererSinkTransparencyTest::
                        VerifyTransparentFrame,
                    base::Unretained(this)),
-        message_loop_.task_runner(), message_loop_.task_runner(),
+        child_process_->io_task_runner(), message_loop_.task_runner(),
         message_loop_.task_runner(), nullptr /* gpu_factories */);
   }
 

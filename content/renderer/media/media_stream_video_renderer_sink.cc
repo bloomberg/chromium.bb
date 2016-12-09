@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -24,10 +25,10 @@ const int kMinFrameSize = 2;
 namespace content {
 
 // FrameDeliverer is responsible for delivering frames received on
-// OnVideoFrame() to |repaint_cb_| on compositor thread.
+// OnVideoFrame() to |repaint_cb_| on the IO thread.
 //
 // It is created on the main thread, but methods should be called and class
-// should be destructed on the compositor thread.
+// should be destructed on the IO thread.
 class MediaStreamVideoRendererSink::FrameDeliverer {
  public:
   FrameDeliverer(const RepaintCB& repaint_cb,
@@ -39,8 +40,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
         frame_size_(kMinFrameSize, kMinFrameSize),
         media_task_runner_(media_task_runner),
         weak_factory_(this) {
-    compositor_thread_checker_.DetachFromThread();
-    weak_this_ = weak_factory_.GetWeakPtr();
+    io_thread_checker_.DetachFromThread();
     if (gpu_factories &&
         gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames() &&
         base::FeatureList::IsEnabled(
@@ -51,7 +51,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
   }
 
   ~FrameDeliverer() {
-    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
     DCHECK(state_ == STARTED || state_ == PAUSED) << state_;
 
     if (gpu_memory_buffer_pool_) {
@@ -62,7 +62,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
                     base::TimeTicks /*current_time*/) {
-    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
     DCHECK(frame);
     TRACE_EVENT_INSTANT1("webrtc",
                          "MediaStreamVideoRendererSink::"
@@ -77,7 +77,6 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
       FrameReady(frame);
       return;
     }
-
     //  |gpu_memory_buffer_pool_| deletion is going to be posted to
     //  |media_task_runner_|. base::Unretained() usage is fine since
     //  |gpu_memory_buffer_pool_| outlives the task.
@@ -86,12 +85,12 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
         base::Bind(
             &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
             base::Unretained(gpu_memory_buffer_pool_.get()), frame,
-            media::BindToCurrentLoop(
-                base::Bind(&FrameDeliverer::FrameReady, weak_this_))));
+            media::BindToCurrentLoop(base::Bind(&FrameDeliverer::FrameReady,
+                                                weak_factory_.GetWeakPtr()))));
   }
 
   void FrameReady(const scoped_refptr<media::VideoFrame>& frame) {
-    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
     DCHECK(frame);
     TRACE_EVENT_INSTANT1(
         "webrtc", "MediaStreamVideoRendererSink::FrameDeliverer::FrameReady",
@@ -103,7 +102,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
   }
 
   void RenderEndOfStream() {
-    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
     // This is necessary to make sure audio can play if the video tag src is a
     // MediaStream video track that has been rejected or ended. It also ensure
     // that the renderer doesn't hold a reference to a real video frame if no
@@ -121,25 +120,21 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
   }
 
   void Start() {
-    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
     DCHECK_EQ(state_, STOPPED);
     state_ = STARTED;
   }
 
   void Resume() {
-    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
     if (state_ == PAUSED)
       state_ = STARTED;
   }
 
   void Pause() {
-    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
     if (state_ == STARTED)
       state_ = PAUSED;
-  }
-
-  VideoCaptureDeliverFrameCB GetDeliverFrameCallback() {
-    return base::Bind(&FrameDeliverer::OnVideoFrame, weak_this_);
   }
 
  private:
@@ -147,7 +142,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
 
   void SetGpuMemoryBufferVideoForTesting(
       media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool) {
-    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
     gpu_memory_buffer_pool_.reset(gpu_memory_buffer_pool);
   }
 
@@ -160,60 +155,25 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   // Used for DCHECKs to ensure method calls are executed on the correct thread.
-  base::ThreadChecker compositor_thread_checker_;
+  base::ThreadChecker io_thread_checker_;
 
-  base::WeakPtr<FrameDeliverer> weak_this_;
   base::WeakPtrFactory<FrameDeliverer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
-};
-
-// FrameReceiver is responsible for trampolining frames from IO thread to
-// the compositor thread by posting a task on |deliver_frame_cb_|.
-//
-// It is created on main thread, but methods should be called and class should
-// be destructed on the IO thread.
-class MediaStreamVideoRendererSink::FrameReceiver {
- public:
-  FrameReceiver(
-      const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-      const VideoCaptureDeliverFrameCB& deliver_frame_cb)
-      : compositor_task_runner_(compositor_task_runner),
-        deliver_frame_cb_(deliver_frame_cb) {
-    io_thread_checker_.DetachFromThread();
-  }
-
-  ~FrameReceiver() { DCHECK(io_thread_checker_.CalledOnValidThread()); }
-
-  void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
-                    base::TimeTicks current_time) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
-    compositor_task_runner_->PostTask(
-        FROM_HERE, base::Bind(deliver_frame_cb_, frame, current_time));
-  }
-
- private:
-  const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  const VideoCaptureDeliverFrameCB deliver_frame_cb_;
-
-  // Used for DCHECKs to ensure method calls executed in the correct thread.
-  base::ThreadChecker io_thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameReceiver);
 };
 
 MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
     const blink::WebMediaStreamTrack& video_track,
     const base::Closure& error_cb,
     const RepaintCB& repaint_cb,
-    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories)
     : error_cb_(error_cb),
       repaint_cb_(repaint_cb),
       video_track_(video_track),
-      compositor_task_runner_(compositor_task_runner),
+      io_task_runner_(io_task_runner),
       media_task_runner_(media_task_runner),
       worker_task_runner_(worker_task_runner),
       gpu_factories_(gpu_factories) {}
@@ -225,26 +185,24 @@ void MediaStreamVideoRendererSink::Start() {
 
   frame_deliverer_.reset(new MediaStreamVideoRendererSink::FrameDeliverer(
       repaint_cb_, media_task_runner_, worker_task_runner_, gpu_factories_));
-  compositor_task_runner_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&FrameDeliverer::Start,
                             base::Unretained(frame_deliverer_.get())));
 
-  frame_receiver_.reset(new MediaStreamVideoRendererSink::FrameReceiver(
-      compositor_task_runner_, frame_deliverer_->GetDeliverFrameCallback()));
   MediaStreamVideoSink::ConnectToTrack(
       video_track_,
       // This callback is run on IO thread. It is safe to use base::Unretained
-      // here because |frame_receiver_| will be destroyed after sink is
-      // disconnected from track.
-      base::Bind(&FrameReceiver::OnVideoFrame,
-                 base::Unretained(frame_receiver_.get())),
+      // here because |frame_receiver_| will be destroyed on IO thread after
+      // sink is disconnected from track.
+      base::Bind(&FrameDeliverer::OnVideoFrame,
+                 base::Unretained(frame_deliverer_.get())),
       // Local display video rendering is considered a secure link.
       true);
 
   if (video_track_.source().getReadyState() ==
           blink::WebMediaStreamSource::ReadyStateEnded ||
       !video_track_.isEnabled()) {
-    compositor_task_runner_->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&FrameDeliverer::RenderEndOfStream,
                               base::Unretained(frame_deliverer_.get())));
   }
@@ -254,12 +212,8 @@ void MediaStreamVideoRendererSink::Stop() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   MediaStreamVideoSink::DisconnectFromTrack();
-  if (frame_receiver_) {
-    ChildProcess::current()->io_task_runner()->DeleteSoon(
-        FROM_HERE, frame_receiver_.release());
-  }
   if (frame_deliverer_)
-    compositor_task_runner_->DeleteSoon(FROM_HERE, frame_deliverer_.release());
+    io_task_runner_->DeleteSoon(FROM_HERE, frame_deliverer_.release());
 }
 
 void MediaStreamVideoRendererSink::Resume() {
@@ -267,7 +221,7 @@ void MediaStreamVideoRendererSink::Resume() {
   if (!frame_deliverer_)
     return;
 
-  compositor_task_runner_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&FrameDeliverer::Resume,
                             base::Unretained(frame_deliverer_.get())));
 }
@@ -277,7 +231,7 @@ void MediaStreamVideoRendererSink::Pause() {
   if (!frame_deliverer_)
     return;
 
-  compositor_task_runner_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&FrameDeliverer::Pause,
                             base::Unretained(frame_deliverer_.get())));
 }
@@ -287,7 +241,7 @@ void MediaStreamVideoRendererSink::OnReadyStateChanged(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (state == blink::WebMediaStreamSource::ReadyStateEnded &&
       frame_deliverer_) {
-    compositor_task_runner_->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&FrameDeliverer::RenderEndOfStream,
                               base::Unretained(frame_deliverer_.get())));
   }
@@ -305,7 +259,7 @@ void MediaStreamVideoRendererSink::SetGpuMemoryBufferVideoForTesting(
     media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   CHECK(frame_deliverer_);
-  compositor_task_runner_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&FrameDeliverer::SetGpuMemoryBufferVideoForTesting,
                             base::Unretained(frame_deliverer_.get()),
                             gpu_memory_buffer_pool));

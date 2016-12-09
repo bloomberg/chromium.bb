@@ -44,7 +44,7 @@ TestMediaStreamRendererFactory::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
     const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories) {
@@ -52,9 +52,8 @@ TestMediaStreamRendererFactory::GetVideoRenderer(
     return NULL;
 
   return new TestMediaStreamVideoRenderer(
-      gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
-      base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs),
-      error_cb,
+      io_task_runner, gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
+      base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs), error_cb,
       repaint_cb);
 }
 

@@ -16,6 +16,7 @@
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/layers/video_layer.h"
+#include "content/child/child_process.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
@@ -39,33 +40,28 @@
 namespace content {
 
 // FrameDeliverer is responsible for delivering frames received on
-// compositor thread by calling of EnqueueFrame() method of |compositor_|.
+// the IO thread by calling of EnqueueFrame() method of |compositor_|.
 //
 // It is created on the main thread, but methods should be called and class
-// should be destructed on the compositor thread.
+// should be destructed on the IO thread.
 class WebMediaPlayerMS::FrameDeliverer {
  public:
-  typedef base::Callback<void(scoped_refptr<media::VideoFrame>)>
-      EnqueueFrameCallback;
-
   FrameDeliverer(const base::WeakPtr<WebMediaPlayerMS>& player,
-                 const EnqueueFrameCallback& enqueue_frame_cb)
+                 const MediaStreamVideoRenderer::RepaintCB& enqueue_frame_cb)
       : last_frame_opaque_(true),
         last_frame_rotation_(media::VIDEO_ROTATION_0),
         received_first_frame_(false),
         main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         player_(player),
         enqueue_frame_cb_(enqueue_frame_cb),
-        weak_factory_for_compositor_(this) {
-    compositor_thread_checker_.DetachFromThread();
+        weak_factory_(this) {
+    io_thread_checker_.DetachFromThread();
   }
 
-  ~FrameDeliverer() {
-    DCHECK(compositor_thread_checker_.CalledOnValidThread());
-  }
+  ~FrameDeliverer() { DCHECK(io_thread_checker_.CalledOnValidThread()); }
 
   void OnVideoFrame(scoped_refptr<media::VideoFrame> frame) {
-    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
 
 #if defined(OS_ANDROID)
     if (render_frame_suspended_)
@@ -75,10 +71,10 @@ class WebMediaPlayerMS::FrameDeliverer {
     base::TimeTicks render_time;
     if (frame->metadata()->GetTimeTicks(
             media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
-      TRACE_EVENT1("webrtc", "WebMediaPlayerMS::OnFrameAvailable",
+      TRACE_EVENT1("webrtc", "WebMediaPlayerMS::OnVideoFrame",
                    "Ideal Render Instant", render_time.ToInternalValue());
     } else {
-      TRACE_EVENT0("webrtc", "WebMediaPlayerMS::OnFrameAvailable");
+      TRACE_EVENT0("webrtc", "WebMediaPlayerMS::OnVideoFrame");
     }
 
     const bool is_opaque = media::IsOpaque(frame->format());
@@ -113,14 +109,14 @@ class WebMediaPlayerMS::FrameDeliverer {
 
 #if defined(OS_ANDROID)
   void SetRenderFrameSuspended(bool render_frame_suspended) {
-    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
     render_frame_suspended_ = render_frame_suspended;
   }
 #endif  // defined(OS_ANDROID)
 
   MediaStreamVideoRenderer::RepaintCB GetRepaintCallback() {
     return base::Bind(&FrameDeliverer::OnVideoFrame,
-                      weak_factory_for_compositor_.GetWeakPtr());
+                      weak_factory_.GetWeakPtr());
   }
 
  private:
@@ -134,13 +130,12 @@ class WebMediaPlayerMS::FrameDeliverer {
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   const base::WeakPtr<WebMediaPlayerMS> player_;
-  const EnqueueFrameCallback enqueue_frame_cb_;
+  const MediaStreamVideoRenderer::RepaintCB enqueue_frame_cb_;
 
-  // Used for DCHECKs to ensure method calls executed on the correct thread,
-  // i.e. compositor thread.
-  base::ThreadChecker compositor_thread_checker_;
+  // Used for DCHECKs to ensure method calls are executed on the correct thread.
+  base::ThreadChecker io_thread_checker_;
 
-  base::WeakPtrFactory<FrameDeliverer> weak_factory_for_compositor_;
+  base::WeakPtrFactory<FrameDeliverer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
@@ -151,9 +146,10 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
     media::MediaLog* media_log,
     std::unique_ptr<MediaStreamRendererFactory> factory,
-    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const scoped_refptr<base::TaskRunner>& worker_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+    scoped_refptr<base::TaskRunner> worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories,
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin)
@@ -168,10 +164,11 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       video_rotation_(media::VIDEO_ROTATION_0),
       media_log_(media_log),
       renderer_factory_(std::move(factory)),
+      io_task_runner_(io_task_runner),
+      compositor_task_runner_(compositor_task_runner),
       media_task_runner_(media_task_runner),
       worker_task_runner_(worker_task_runner),
       gpu_factories_(gpu_factories),
-      compositor_task_runner_(compositor_task_runner),
       initial_audio_output_device_id_(sink_id.utf8()),
       initial_security_origin_(security_origin.isNull()
                                    ? url::Origin()
@@ -198,10 +195,10 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
     static_cast<cc::VideoLayer*>(video_weblayer_->layer())->StopUsingProvider();
 
   if (frame_deliverer_)
-    compositor_task_runner_->DeleteSoon(FROM_HERE, frame_deliverer_.release());
+    io_task_runner_->DeleteSoon(FROM_HERE, frame_deliverer_.release());
 
   if (compositor_)
-    compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_.release());
+    compositor_->StopUsingProvider();
 
   if (video_frame_provider_)
     video_frame_provider_->Stop();
@@ -230,8 +227,8 @@ void WebMediaPlayerMS::load(LoadType load_type,
   blink::WebMediaStream web_stream =
       GetWebMediaStreamFromWebMediaPlayerSource(source);
 
-  compositor_.reset(new WebMediaPlayerMSCompositor(compositor_task_runner_,
-                                                   web_stream, AsWeakPtr()));
+  compositor_ = new WebMediaPlayerMSCompositor(compositor_task_runner_,
+                                               web_stream, AsWeakPtr());
 
   SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
@@ -239,15 +236,13 @@ void WebMediaPlayerMS::load(LoadType load_type,
       web_stream.isNull() ? std::string() : web_stream.id().utf8();
   media_log_->AddEvent(media_log_->CreateLoadEvent(stream_id));
 
-  // base::Unretained usage is safe here because |compositor_| is destroyed
-  // after |frame_deliverer_|.
   frame_deliverer_.reset(new WebMediaPlayerMS::FrameDeliverer(
-      AsWeakPtr(), base::Bind(&WebMediaPlayerMSCompositor::EnqueueFrame,
-                              base::Unretained(compositor_.get()))));
+      AsWeakPtr(),
+      base::Bind(&WebMediaPlayerMSCompositor::EnqueueFrame, compositor_)));
   video_frame_provider_ = renderer_factory_->GetVideoRenderer(
       web_stream, media::BindToCurrentLoop(base::Bind(
                       &WebMediaPlayerMS::OnSourceError, AsWeakPtr())),
-      frame_deliverer_->GetRepaintCallback(), compositor_task_runner_,
+      frame_deliverer_->GetRepaintCallback(), io_task_runner_,
       media_task_runner_, worker_task_runner_, gpu_factories_);
 
   RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
@@ -519,7 +514,7 @@ void WebMediaPlayerMS::OnHidden() {
   // During undoable tab closures OnHidden() may be called back to back, so we
   // can't rely on |render_frame_suspended_| being false here.
   if (frame_deliverer_) {
-    compositor_task_runner_->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
                               base::Unretained(frame_deliverer_.get()), true));
   }
@@ -534,7 +529,7 @@ void WebMediaPlayerMS::OnShown() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (frame_deliverer_) {
-    compositor_task_runner_->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
                               base::Unretained(frame_deliverer_.get()), false));
   }
@@ -559,7 +554,7 @@ bool WebMediaPlayerMS::OnSuspendRequested(bool must_suspend) {
     delegate_->PlayerGone(delegate_id_);
 
   if (frame_deliverer_) {
-    compositor_task_runner_->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
                               base::Unretained(frame_deliverer_.get()), true));
   }

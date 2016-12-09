@@ -134,9 +134,9 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       last_render_length_(base::TimeDelta::FromSecondsD(1.0 / 60.0)),
       total_frame_count_(0),
       dropped_frame_count_(0),
-      stopped_(true),
-      weak_ptr_factory_(this) {
+      stopped_(true) {
   main_message_loop_ = base::MessageLoop::current();
+  io_thread_checker_.DetachFromThread();
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   if (!web_stream.isNull())
@@ -162,9 +162,8 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
 }
 
 WebMediaPlayerMSCompositor::~WebMediaPlayerMSCompositor() {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  if (video_frame_provider_client_)
-    video_frame_provider_client_->StopUsingProvider();
+  DCHECK(!video_frame_provider_client_)
+      << "Must call StopUsingProvider() before dtor!";
 }
 
 gfx::Size WebMediaPlayerMSCompositor::GetCurrentSize() {
@@ -204,7 +203,7 @@ void WebMediaPlayerMSCompositor::SetVideoFrameProviderClient(
 
 void WebMediaPlayerMSCompositor::EnqueueFrame(
     scoped_refptr<media::VideoFrame> frame) {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(current_frame_lock_);
   ++total_frame_count_;
 
@@ -317,41 +316,15 @@ WebMediaPlayerMSCompositor::GetCurrentFrameWithoutUpdatingStatistics() {
 void WebMediaPlayerMSCompositor::StartRendering() {
   DCHECK(thread_checker_.CalledOnValidThread());
   compositor_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&WebMediaPlayerMSCompositor::StartRenderingInternal,
-                            weak_ptr_factory_.GetWeakPtr()));
-}
-
-void WebMediaPlayerMSCompositor::StartRenderingInternal() {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  stopped_ = false;
-
-  if (video_frame_provider_client_)
-    video_frame_provider_client_->StartRendering();
+      FROM_HERE,
+      base::Bind(&WebMediaPlayerMSCompositor::StartRenderingInternal, this));
 }
 
 void WebMediaPlayerMSCompositor::StopRendering() {
   DCHECK(thread_checker_.CalledOnValidThread());
   compositor_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&WebMediaPlayerMSCompositor::StopRenderingInternal,
-                            weak_ptr_factory_.GetWeakPtr()));
-}
-
-void WebMediaPlayerMSCompositor::StopRenderingInternal() {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  stopped_ = true;
-
-  // It is possible that the video gets paused and then resumed. We need to
-  // reset VideoRendererAlgorithm, otherwise, VideoRendererAlgorithm will think
-  // there is a very long frame in the queue and then make totally wrong
-  // frame selection.
-  {
-    base::AutoLock auto_lock(current_frame_lock_);
-    if (rendering_frame_buffer_)
-      rendering_frame_buffer_->Reset();
-  }
-
-  if (video_frame_provider_client_)
-    video_frame_provider_client_->StopRendering();
+      FROM_HERE,
+      base::Bind(&WebMediaPlayerMSCompositor::StopRenderingInternal, this));
 }
 
 void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy() {
@@ -368,11 +341,19 @@ void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy() {
       CopyFrame(current_frame_, player_->GetSkCanvasVideoRenderer());
 }
 
+void WebMediaPlayerMSCompositor::StopUsingProvider() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&WebMediaPlayerMSCompositor::StopUsingProviderInternal, this));
+}
+
 bool WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks(
     const std::vector<base::TimeDelta>& timestamps,
     std::vector<base::TimeTicks>* wall_clock_times) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread() ||
-         thread_checker_.CalledOnValidThread());
+         thread_checker_.CalledOnValidThread() ||
+         io_thread_checker_.CalledOnValidThread());
   for (const base::TimeDelta& timestamp : timestamps) {
     DCHECK(timestamps_to_clock_times_.count(timestamp));
     wall_clock_times->push_back(timestamps_to_clock_times_[timestamp]);
@@ -428,6 +409,39 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
   }
   main_message_loop_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&WebMediaPlayerMS::ResetCanvasCache, player_));
+}
+
+void WebMediaPlayerMSCompositor::StartRenderingInternal() {
+  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  stopped_ = false;
+
+  if (video_frame_provider_client_)
+    video_frame_provider_client_->StartRendering();
+}
+
+void WebMediaPlayerMSCompositor::StopRenderingInternal() {
+  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  stopped_ = true;
+
+  // It is possible that the video gets paused and then resumed. We need to
+  // reset VideoRendererAlgorithm, otherwise, VideoRendererAlgorithm will think
+  // there is a very long frame in the queue and then make totally wrong
+  // frame selection.
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    if (rendering_frame_buffer_)
+      rendering_frame_buffer_->Reset();
+  }
+
+  if (video_frame_provider_client_)
+    video_frame_provider_client_->StopRendering();
+}
+
+void WebMediaPlayerMSCompositor::StopUsingProviderInternal() {
+  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  if (video_frame_provider_client_)
+    video_frame_provider_client_->StopUsingProvider();
+  video_frame_provider_client_ = nullptr;
 }
 
 void WebMediaPlayerMSCompositor::SetAlgorithmEnabledForTesting(

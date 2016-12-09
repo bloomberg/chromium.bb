@@ -13,17 +13,18 @@
 namespace content {
 
 TestMediaStreamVideoRenderer::TestMediaStreamVideoRenderer(
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const gfx::Size& size,
     const base::TimeDelta& frame_duration,
     const base::Closure& error_cb,
     const MediaStreamVideoRenderer::RepaintCB& repaint_cb)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      io_task_runner_(io_task_runner),
       size_(size),
       state_(kStopped),
       frame_duration_(frame_duration),
       error_cb_(error_cb),
-      repaint_cb_(repaint_cb) {
-}
+      repaint_cb_(repaint_cb) {}
 
 TestMediaStreamVideoRenderer::~TestMediaStreamVideoRenderer() {}
 
@@ -70,8 +71,7 @@ void TestMediaStreamVideoRenderer::GenerateFrame() {
 
     // TODO(wjia): set pixel data to pre-defined patterns if it's desired to
     // verify frame content.
-
-    repaint_cb_.Run(video_frame);
+    io_task_runner_->PostTask(FROM_HERE, base::Bind(repaint_cb_, video_frame));
   }
 
   current_time_ += frame_duration_;

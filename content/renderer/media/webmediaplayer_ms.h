@@ -74,9 +74,10 @@ class CONTENT_EXPORT WebMediaPlayerMS
       base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
       media::MediaLog* media_log,
       std::unique_ptr<MediaStreamRendererFactory> factory,
-      const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<base::TaskRunner>& worker_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+      scoped_refptr<base::TaskRunner> worker_task_runner,
       media::GpuVideoAcceleratorFactories* gpu_factories,
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin);
@@ -226,6 +227,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   std::unique_ptr<MediaStreamRendererFactory> renderer_factory_;
 
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   const scoped_refptr<base::TaskRunner> worker_task_runner_;
   media::GpuVideoAcceleratorFactories* gpu_factories_;
@@ -233,11 +236,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // Used for DCHECKs to ensure methods calls executed in the correct thread.
   base::ThreadChecker thread_checker_;
 
-  // WebMediaPlayerMS owns |compositor_| and destroys it on
-  // |compositor_task_runner_|.
-  std::unique_ptr<WebMediaPlayerMSCompositor> compositor_;
-
-  const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  scoped_refptr<WebMediaPlayerMSCompositor> compositor_;
 
   const std::string initial_audio_output_device_id_;
   const url::Origin initial_security_origin_;
