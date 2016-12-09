@@ -20,10 +20,12 @@
 #include <string.h>
 #include <wmcodecdsp.h>
 
+#include "base/atomicops.h"
 #include "base/base_paths_win.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -33,6 +35,7 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_local_storage.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_co_mem.h"
@@ -180,6 +183,48 @@ static const DWORD g_IntelLegacyGPUList[] = {
 
 constexpr const wchar_t* const kMediaFoundationVideoDecoderDLLs[] = {
     L"mf.dll", L"mfplat.dll", L"msmpeg2vdec.dll",
+};
+
+// Vectored exception handlers are global to the entire process, so use TLS to
+// ensure only the thread with the ScopedExceptionCatcher dumps anything.
+base::ThreadLocalStorage::StaticSlot g_catcher_tls_slot = TLS_INITIALIZER;
+
+base::subtle::Atomic32 g_dump_count;
+
+LONG CALLBACK VectoredCrashHandler(EXCEPTION_POINTERS* exception_pointers) {
+  if (g_catcher_tls_slot.Get()) {
+    // Only dump first time to ensure we don't spend a lot of time doing this
+    // if the driver continually causes exceptions.
+    if (base::subtle::Barrier_AtomicIncrement(&g_dump_count, 1) == 1)
+      base::debug::DumpWithoutCrashing();
+  }
+  return EXCEPTION_CONTINUE_SEARCH;
+}
+
+// The MS VP9 MFT swallows driver exceptions and later hangs because it gets
+// into a weird state. Add a vectored exception handler so a dump will be
+// reported. See http://crbug.com/636158
+class ScopedExceptionCatcher {
+ public:
+  explicit ScopedExceptionCatcher(bool handle_exception) {
+    if (handle_exception) {
+      DCHECK(g_catcher_tls_slot.initialized());
+      g_catcher_tls_slot.Set(static_cast<void*>(this));
+      handler_ = AddVectoredExceptionHandler(1, &VectoredCrashHandler);
+    }
+  }
+
+  ~ScopedExceptionCatcher() {
+    if (handler_) {
+      g_catcher_tls_slot.Set(nullptr);
+      RemoveVectoredExceptionHandler(handler_);
+    }
+  }
+
+ private:
+  void* handler_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedExceptionCatcher);
 };
 
 }  // namespace
@@ -1230,6 +1275,7 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
 
 // static
 void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
+  g_catcher_tls_slot.Initialize(nullptr);
   for (const wchar_t* mfdll : kMediaFoundationVideoDecoderDLLs)
     ::LoadLibrary(mfdll);
   ::LoadLibrary(L"dxva2.dll");
@@ -1744,9 +1790,13 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
 
   MFT_OUTPUT_DATA_BUFFER output_data_buffer = {0};
   DWORD status = 0;
-  HRESULT hr = decoder_->ProcessOutput(0,  // No flags
-                                       1,  // # of out streams to pull from
-                                       &output_data_buffer, &status);
+  HRESULT hr;
+  {
+    ScopedExceptionCatcher catcher(using_ms_vp9_mft_);
+    hr = decoder_->ProcessOutput(0,  // No flags
+                                 1,  // # of out streams to pull from
+                                 &output_data_buffer, &status);
+  }
   IMFCollection* events = output_data_buffer.pEvents;
   if (events != NULL) {
     DVLOG(1) << "Got events from ProcessOuput, but discarding";
@@ -2174,8 +2224,10 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
                              this);
   }
   inputs_before_decode_++;
-
-  hr = decoder_->ProcessInput(0, sample.get(), 0);
+  {
+    ScopedExceptionCatcher catcher(using_ms_vp9_mft_);
+    hr = decoder_->ProcessInput(0, sample.get(), 0);
+  }
   // As per msdn if the decoder returns MF_E_NOTACCEPTING then it means that it
   // has enough data to produce one or more output samples. In this case the
   // recommended options are to
