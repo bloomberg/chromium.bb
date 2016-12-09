@@ -83,8 +83,8 @@ class TestResourceHandler : public ResourceHandler {
   void set_on_read_completed_result(bool on_read_completed_result) {
     on_read_completed_result_ = on_read_completed_result;
   }
-  void set_on_on_read_eof_result(bool on_on_read_eof_result) {
-    on_on_read_eof_result_ = on_on_read_eof_result;
+  void set_on_read_eof_result(bool on_read_eof_result) {
+    on_read_eof_result_ = on_read_eof_result;
   }
 
   // Cause |defer| to be set to true when the specified method is invoked. The
@@ -146,6 +146,9 @@ class TestResourceHandler : public ResourceHandler {
   const std::string& body() const { return body_; }
   net::URLRequestStatus final_status() const { return final_status_; }
 
+  // Returns the current number of |this|'s methods on the callstack.
+  int call_depth() const { return call_depth_; }
+
   // Spins the message loop until the request is deferred.  Using this is
   // optional, but if used, must use it exclusively to wait for the request. If
   // the request was deferred and then resumed/canceled without calling this
@@ -169,7 +172,7 @@ class TestResourceHandler : public ResourceHandler {
   bool on_response_started_result_ = true;
   bool on_will_read_result_ = true;
   bool on_read_completed_result_ = true;
-  bool on_on_read_eof_result_ = true;
+  bool on_read_eof_result_ = true;
 
   bool defer_on_will_start_ = false;
   bool defer_on_request_redirected_ = false;
@@ -197,6 +200,9 @@ class TestResourceHandler : public ResourceHandler {
   net::URLRequestStatus final_status_ =
       net::URLRequestStatus::FromError(net::ERR_UNEXPECTED);
   bool canceled_ = false;
+
+  // Tracks recursive calls, which aren't allowed.
+  int call_depth_ = 0;
 
   std::unique_ptr<base::RunLoop> deferred_run_loop_;
 

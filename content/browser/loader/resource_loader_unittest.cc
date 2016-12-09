@@ -396,10 +396,16 @@ class ResourceLoaderTest : public testing::Test,
     test_url_request_context_.Init();
   }
 
-  // URL with a response body of test_data().
-  GURL test_direct_url() const { return net::URLRequestTestJob::test_url_1(); }
+  // URL with a response body of test_data() where reads complete synchronously.
+  GURL test_sync_url() const { return net::URLRequestTestJob::test_url_1(); }
 
-  // URL that redirects to test_direct_url(). The ResourceLoader is set up to
+  // URL with a response body of test_data() where reads complete
+  // asynchronously.
+  GURL test_async_url() const {
+    return net::URLRequestTestJob::test_url_auto_advance_async_reads_1();
+  }
+
+  // URL that redirects to test_sync_url(). The ResourceLoader is set up to
   // use this URL by default.
   GURL test_redirect_url() const {
     return net::URLRequestTestJob::test_url_redirect_to_url_1();
@@ -522,6 +528,11 @@ class ResourceLoaderTest : public testing::Test,
   void DidFinishLoading(ResourceLoader* loader) override {
     EXPECT_EQ(loader, loader_.get());
     EXPECT_EQ(0, did_finish_loading_);
+
+    // Shouldn't be in a recursive ResourceHandler call - this is normally where
+    // the ResourceLoader (And thus the ResourceHandler chain) is destroyed.
+    EXPECT_EQ(0, raw_ptr_resource_handler_->call_depth());
+
     ++did_finish_loading_;
   }
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
@@ -562,7 +573,7 @@ class ClientCertResourceLoaderTest : public ResourceLoaderTest {
   void SetUp() override {
     ResourceLoaderTest::SetUp();
     // These tests don't expect any redirects.
-    SetUpResourceLoaderForUrl(test_direct_url());
+    SetUpResourceLoaderForUrl(test_sync_url());
   }
 };
 
@@ -744,6 +755,22 @@ TEST_F(ResourceLoaderTest, SyncResourceHandler) {
   EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
 }
 
+// Same as above, except reads complete asynchronously, and there's no redirect.
+TEST_F(ResourceLoaderTest, SyncResourceHandlerAsyncReads) {
+  SetUpResourceLoaderForUrl(test_async_url());
+
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilResponseComplete();
+  EXPECT_EQ(1, did_start_request_);
+  EXPECT_EQ(0, did_received_redirect_);
+  EXPECT_EQ(1, did_receive_response_);
+  EXPECT_EQ(1, did_finish_loading_);
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+  EXPECT_EQ(net::OK, raw_ptr_resource_handler_->final_status().error());
+  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
+}
+
 // Test the case the ResourceHandler defers everything.
 TEST_F(ResourceLoaderTest, AsyncResourceHandler) {
   raw_ptr_resource_handler_->set_defer_on_will_start(true);
@@ -776,6 +803,85 @@ TEST_F(ResourceLoaderTest, AsyncResourceHandler) {
   EXPECT_EQ(0, did_receive_response_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_will_read_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+
+  // Resume and run until OnResponseStarted.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_started_called());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, did_receive_response_);
+  EXPECT_EQ(0, did_finish_loading_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_started_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_will_read_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+
+  // Resume and run until OnReadCompleted.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_read_called());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+
+  // Resume and run until the final 0-byte read, signalling EOF.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
+
+  // Resume and run until OnResponseCompleted is called, which again defers the
+  // request.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilResponseComplete();
+  EXPECT_EQ(0, did_finish_loading_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+  EXPECT_EQ(net::OK, raw_ptr_resource_handler_->final_status().error());
+  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
+
+  // Resume and run until all pending tasks. Note that OnResponseCompleted was
+  // invoked in the previous section, so can't use RunUntilCompleted().
+  raw_ptr_resource_handler_->Resume();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, did_finish_loading_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+  EXPECT_EQ(net::OK, raw_ptr_resource_handler_->final_status().error());
+  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
+}
+
+// Same as above, except reads complete asynchronously and there's no redirect.
+TEST_F(ResourceLoaderTest, AsyncResourceHandlerAsyncReads) {
+  SetUpResourceLoaderForUrl(test_async_url());
+
+  raw_ptr_resource_handler_->set_defer_on_will_start(true);
+  raw_ptr_resource_handler_->set_defer_on_response_started(true);
+  raw_ptr_resource_handler_->set_defer_on_read_completed(true);
+  raw_ptr_resource_handler_->set_defer_on_read_eof(true);
+  raw_ptr_resource_handler_->set_defer_on_response_completed(true);
+
+  // Start and run until OnWillStart.
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, did_start_request_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
 
   // Resume and run until OnResponseStarted.
@@ -925,7 +1031,42 @@ TEST_F(ResourceLoaderTest, SyncCancelOnReadCompleted) {
 }
 
 TEST_F(ResourceLoaderTest, SyncCancelOnReceivedEof) {
-  raw_ptr_resource_handler_->set_on_on_read_eof_result(false);
+  raw_ptr_resource_handler_->set_on_read_eof_result(false);
+
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilResponseComplete();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, did_receive_response_);
+  EXPECT_EQ(1, did_finish_loading_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+
+  EXPECT_EQ(net::ERR_ABORTED,
+            raw_ptr_resource_handler_->final_status().error());
+  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
+}
+
+TEST_F(ResourceLoaderTest, SyncCancelOnAsyncReadCompleted) {
+  SetUpResourceLoaderForUrl(test_async_url());
+  raw_ptr_resource_handler_->set_on_read_completed_result(false);
+
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilResponseComplete();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, did_receive_response_);
+  EXPECT_EQ(1, did_finish_loading_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+
+  EXPECT_EQ(net::ERR_ABORTED,
+            raw_ptr_resource_handler_->final_status().error());
+  EXPECT_LT(0u, raw_ptr_resource_handler_->body().size());
+}
+
+TEST_F(ResourceLoaderTest, SyncCancelOnAsyncReceivedEof) {
+  SetUpResourceLoaderForUrl(test_async_url());
+  raw_ptr_resource_handler_->set_on_read_eof_result(false);
 
   loader_->StartRequest();
   raw_ptr_resource_handler_->WaitUntilResponseComplete();
@@ -1013,6 +1154,41 @@ TEST_F(ResourceLoaderTest, AsyncCancelOnReadCompleted) {
 }
 
 TEST_F(ResourceLoaderTest, AsyncCancelOnReceivedEof) {
+  raw_ptr_resource_handler_->set_defer_on_read_eof(true);
+
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  raw_ptr_resource_handler_->CancelWithError(net::ERR_FAILED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, did_receive_response_);
+  EXPECT_EQ(1, did_finish_loading_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+
+  EXPECT_EQ(net::ERR_FAILED, raw_ptr_resource_handler_->final_status().error());
+  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
+}
+
+TEST_F(ResourceLoaderTest, AsyncCancelOnAsyncReadCompleted) {
+  SetUpResourceLoaderForUrl(test_async_url());
+  raw_ptr_resource_handler_->set_defer_on_read_completed(true);
+
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  raw_ptr_resource_handler_->CancelWithError(net::ERR_FAILED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, did_receive_response_);
+  EXPECT_EQ(1, did_finish_loading_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+
+  EXPECT_EQ(net::ERR_FAILED, raw_ptr_resource_handler_->final_status().error());
+  EXPECT_LT(0u, raw_ptr_resource_handler_->body().size());
+}
+
+TEST_F(ResourceLoaderTest, AsyncCancelOnAsyncReceivedEof) {
+  SetUpResourceLoaderForUrl(test_async_url());
   raw_ptr_resource_handler_->set_defer_on_read_eof(true);
 
   loader_->StartRequest();

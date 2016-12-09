@@ -11,6 +11,28 @@
 
 namespace content {
 
+namespace {
+
+class ScopedCallDepthTracker {
+ public:
+  explicit ScopedCallDepthTracker(int* call_depth) : call_depth_(call_depth) {
+    EXPECT_EQ(0, *call_depth_);
+    (*call_depth_)++;
+  }
+
+  ~ScopedCallDepthTracker() {
+    EXPECT_EQ(1, *call_depth_);
+    (*call_depth_)--;
+  }
+
+ private:
+  int* const call_depth_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedCallDepthTracker);
+};
+
+}  // namespace
+
 TestResourceHandler::TestResourceHandler(net::URLRequestStatus* request_status,
                                          std::string* body)
     : ResourceHandler(nullptr),
@@ -37,6 +59,8 @@ bool TestResourceHandler::OnRequestRedirected(
   EXPECT_EQ(1, on_will_start_called_);
   EXPECT_EQ(0, on_response_started_called_);
   EXPECT_EQ(0, on_response_completed_called_);
+  ScopedCallDepthTracker call_depth_tracker(&call_depth_);
+
   ++on_request_redirected_called_;
 
   if (!on_request_redirected_result_) {
@@ -57,6 +81,8 @@ bool TestResourceHandler::OnResponseStarted(ResourceResponse* response,
   EXPECT_EQ(1, on_will_start_called_);
   EXPECT_EQ(0, on_response_started_called_);
   EXPECT_EQ(0, on_response_completed_called_);
+  ScopedCallDepthTracker call_depth_tracker(&call_depth_);
+
   ++on_response_started_called_;
 
   EXPECT_FALSE(resource_response_);
@@ -79,6 +105,8 @@ bool TestResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   EXPECT_EQ(0, on_response_started_called_);
   EXPECT_EQ(0, on_will_start_called_);
   EXPECT_EQ(0, on_response_completed_called_);
+  ScopedCallDepthTracker call_depth_tracker(&call_depth_);
+
   ++on_will_start_called_;
 
   start_url_ = url;
@@ -100,6 +128,8 @@ bool TestResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   EXPECT_FALSE(canceled_);
   EXPECT_FALSE(expect_on_data_downloaded_);
   EXPECT_EQ(0, on_response_completed_called_);
+  ScopedCallDepthTracker call_depth_tracker(&call_depth_);
+
   ++on_will_read_called_;
 
   *buf = buffer_;
@@ -117,6 +147,7 @@ bool TestResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   EXPECT_EQ(1, on_response_started_called_);
   EXPECT_EQ(0, on_response_completed_called_);
   EXPECT_EQ(0, on_read_eof_);
+  ScopedCallDepthTracker call_depth_tracker(&call_depth_);
 
   ++on_read_completed_called_;
   if (bytes_read == 0)
@@ -127,8 +158,7 @@ bool TestResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
     body_ptr_->append(buffer_->data(), bytes_read);
   body_.append(buffer_->data(), bytes_read);
 
-  if (!on_read_completed_result_ ||
-      (!on_on_read_eof_result_ && bytes_read == 0)) {
+  if (!on_read_completed_result_ || (!on_read_eof_result_ && bytes_read == 0)) {
     canceled_ = true;
     return false;
   }
@@ -147,6 +177,8 @@ bool TestResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 void TestResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     bool* defer) {
+  ScopedCallDepthTracker call_depth_tracker(&call_depth_);
+
   EXPECT_EQ(0, on_response_completed_called_);
   if (status.is_success() && !expect_on_data_downloaded_ && expect_eof_read_)
     EXPECT_EQ(1, on_read_eof_);
@@ -170,10 +202,12 @@ void TestResourceHandler::OnDataDownloaded(int bytes_downloaded) {
 }
 
 void TestResourceHandler::Resume() {
+  ScopedCallDepthTracker call_depth_tracker(&call_depth_);
   controller_->Resume();
 }
 
 void TestResourceHandler::CancelWithError(net::Error net_error) {
+  ScopedCallDepthTracker call_depth_tracker(&call_depth_);
   canceled_ = true;
   controller_->CancelWithError(net_error);
 }
