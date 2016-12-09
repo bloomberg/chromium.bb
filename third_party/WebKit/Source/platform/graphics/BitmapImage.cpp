@@ -264,10 +264,11 @@ void BitmapImage::draw(
     const FloatRect& dstRect,
     const FloatRect& srcRect,
     RespectImageOrientationEnum shouldRespectImageOrientation,
-    ImageClampingMode clampMode) {
+    ImageClampingMode clampMode,
+    const ColorBehavior& colorBehavior) {
   TRACE_EVENT0("skia", "BitmapImage::draw");
 
-  sk_sp<SkImage> image = imageForCurrentFrame();
+  sk_sp<SkImage> image = imageForCurrentFrame(colorBehavior);
   if (!image)
     return;  // It's too early and we don't have an image yet.
 
@@ -370,11 +371,8 @@ float BitmapImage::frameDurationAtIndex(size_t index) const {
   return m_source.frameDurationAtIndex(index);
 }
 
-sk_sp<SkImage> BitmapImage::imageForCurrentFrame() {
-  // TODO(ccameron): Allow the caller of imageForCurrentFrame to specify the
-  // the desired ColorBehavior.
-  // https://crbug.com/667420
-  const ColorBehavior& colorBehavior = m_cachedFrameColorBehavior;
+sk_sp<SkImage> BitmapImage::imageForCurrentFrame(
+    const ColorBehavior& colorBehavior) {
   return frameAtIndex(currentFrame(), colorBehavior);
 }
 

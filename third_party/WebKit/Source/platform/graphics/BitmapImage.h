@@ -82,7 +82,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   ImageAnimationPolicy animationPolicy() override { return m_animationPolicy; }
   void advanceTime(double deltaTimeInSeconds) override;
 
-  sk_sp<SkImage> imageForCurrentFrame() override;
+  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
   PassRefPtr<Image> imageForDefaultFrame() override;
 
   bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
@@ -115,7 +115,8 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode) override;
+            ImageClampingMode,
+            const ColorBehavior&) override;
 
   size_t currentFrame() const { return m_currentFrame; }
   size_t frameCount();

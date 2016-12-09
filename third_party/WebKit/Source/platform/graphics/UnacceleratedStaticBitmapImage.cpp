@@ -34,12 +34,18 @@ void UnacceleratedStaticBitmapImage::draw(SkCanvas* canvas,
                                           const FloatRect& dstRect,
                                           const FloatRect& srcRect,
                                           RespectImageOrientationEnum,
-                                          ImageClampingMode clampMode) {
+                                          ImageClampingMode clampMode,
+                                          const ColorBehavior& colorBehavior) {
+  // TODO(ccameron): This function should not ignore |colorBehavior|.
+  // https://crbug.com/672306
   StaticBitmapImage::drawHelper(canvas, paint, dstRect, srcRect, clampMode,
                                 m_image);
 }
 
-sk_sp<SkImage> UnacceleratedStaticBitmapImage::imageForCurrentFrame() {
+sk_sp<SkImage> UnacceleratedStaticBitmapImage::imageForCurrentFrame(
+    const ColorBehavior& colorBehavior) {
+  // TODO(ccameron): This function should not ignore |colorBehavior|.
+  // https://crbug.com/672306
   return m_image;
 }
 

@@ -773,10 +773,13 @@ ImageData* WebGLRenderingContextBase::toImageData(SnapshotReason reason) const {
   // TODO: Furnish toImageData in webgl renderingcontext for jpeg and webp
   // images. See crbug.com/657531.
   ImageData* imageData = nullptr;
+  // TODO(ccameron): WebGL should produce sRGB images.
+  // https://crbug.com/672299
   if (this->drawingBuffer()) {
-    sk_sp<SkImage> snapshot = this->drawingBuffer()
-                                  ->transferToStaticBitmapImage()
-                                  ->imageForCurrentFrame();
+    sk_sp<SkImage> snapshot =
+        this->drawingBuffer()
+            ->transferToStaticBitmapImage()
+            ->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
     if (snapshot) {
       imageData = ImageData::create(this->getOffscreenCanvas()->size());
       SkImageInfo imageInfo = SkImageInfo::Make(
@@ -4527,8 +4530,11 @@ PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(
   IntRect srcRect(IntPoint(), image->size());
   IntRect destRect(0, 0, size.width(), size.height());
   SkPaint paint;
+  // TODO(ccameron): WebGL should produce sRGB images.
+  // https://crbug.com/672299
   image->draw(buf->canvas(), paint, destRect, srcRect,
-              DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect);
+              DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect,
+              ColorBehavior::transformToGlobalTarget());
   return buf->newImageSnapshot(PreferNoAcceleration,
                                SnapshotReasonWebGLDrawImageIntoBuffer);
 }
@@ -5292,7 +5298,10 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
     }
     return;
   }
-  sk_sp<SkImage> skImage = bitmap->bitmapImage()->imageForCurrentFrame();
+  // TODO(ccameron): WebGL should produce sRGB images.
+  // https://crbug.com/672299
+  sk_sp<SkImage> skImage = bitmap->bitmapImage()->imageForCurrentFrame(
+      ColorBehavior::transformToGlobalTarget());
   SkPixmap pixmap;
   uint8_t* pixelDataPtr = nullptr;
   RefPtr<Uint8Array> pixelData;

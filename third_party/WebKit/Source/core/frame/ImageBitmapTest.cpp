@@ -102,16 +102,24 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   ImageBitmap* imageBitmapOutsideCrop = ImageBitmap::create(
       imageElement, cropRect, &(imageElement->document()), defaultOptions);
 
-  ASSERT_EQ(imageBitmapNoCrop->bitmapImage()->imageForCurrentFrame(),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
-  ASSERT_NE(imageBitmapInteriorCrop->bitmapImage()->imageForCurrentFrame(),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
-  ASSERT_NE(imageBitmapExteriorCrop->bitmapImage()->imageForCurrentFrame(),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+  ASSERT_EQ(imageBitmapNoCrop->bitmapImage()->imageForCurrentFrame(
+                ColorBehavior::transformToTargetForTesting()),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame(
+                ColorBehavior::transformToTargetForTesting()));
+  ASSERT_NE(imageBitmapInteriorCrop->bitmapImage()->imageForCurrentFrame(
+                ColorBehavior::transformToTargetForTesting()),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame(
+                ColorBehavior::transformToTargetForTesting()));
+  ASSERT_NE(imageBitmapExteriorCrop->bitmapImage()->imageForCurrentFrame(
+                ColorBehavior::transformToTargetForTesting()),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame(
+                ColorBehavior::transformToTargetForTesting()));
 
   StaticBitmapImage* emptyImage = imageBitmapOutsideCrop->bitmapImage();
-  ASSERT_NE(emptyImage->imageForCurrentFrame(),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+  ASSERT_NE(emptyImage->imageForCurrentFrame(
+                ColorBehavior::transformToTargetForTesting()),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame(
+                ColorBehavior::transformToTargetForTesting()));
 }
 
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a
@@ -127,8 +135,10 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
       IntRect(0, 0, m_image->width(), m_image->height());
   ImageBitmap* imageBitmap = ImageBitmap::create(
       image, cropRect, &(image->document()), defaultOptions);
-  ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(),
-            originalImageResource->getImage()->imageForCurrentFrame());
+  ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(
+                ColorBehavior::transformToTargetForTesting()),
+            originalImageResource->getImage()->imageForCurrentFrame(
+                ColorBehavior::transformToTargetForTesting()));
 
   ImageResource* newImageResource =
       ImageResource::create(StaticBitmapImage::create(m_image2).get());
@@ -136,23 +146,37 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
 
   // The ImageBitmap should contain the same data as the original cached image
   {
-    ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(),
-              originalImageResource->getImage()->imageForCurrentFrame());
-    SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
+    ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(
+                  ColorBehavior::transformToTargetForTesting()),
+              originalImageResource->getImage()->imageForCurrentFrame(
+                  ColorBehavior::transformToTargetForTesting()));
+    SkImage* image1 =
+        imageBitmap->bitmapImage()
+            ->imageForCurrentFrame(ColorBehavior::transformToTargetForTesting())
+            .get();
     ASSERT_NE(image1, nullptr);
     SkImage* image2 =
-        originalImageResource->getImage()->imageForCurrentFrame().get();
+        originalImageResource->getImage()
+            ->imageForCurrentFrame(ColorBehavior::transformToTargetForTesting())
+            .get();
     ASSERT_NE(image2, nullptr);
     ASSERT_EQ(image1, image2);
   }
 
   {
-    ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(),
-              newImageResource->getImage()->imageForCurrentFrame());
-    SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
+    ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(
+                  ColorBehavior::transformToTargetForTesting()),
+              newImageResource->getImage()->imageForCurrentFrame(
+                  ColorBehavior::transformToTargetForTesting()));
+    SkImage* image1 =
+        imageBitmap->bitmapImage()
+            ->imageForCurrentFrame(ColorBehavior::transformToTargetForTesting())
+            .get();
     ASSERT_NE(image1, nullptr);
     SkImage* image2 =
-        newImageResource->getImage()->imageForCurrentFrame().get();
+        newImageResource->getImage()
+            ->imageForCurrentFrame(ColorBehavior::transformToTargetForTesting())
+            .get();
     ASSERT_NE(image2, nullptr);
     ASSERT_NE(image1, image2);
   }

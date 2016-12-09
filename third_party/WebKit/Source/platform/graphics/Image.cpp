@@ -255,7 +255,7 @@ void Image::drawPattern(GraphicsContext& context,
                         const FloatSize& repeatSpacing) {
   TRACE_EVENT0("skia", "Image::drawPattern");
 
-  sk_sp<SkImage> image = imageForCurrentFrame();
+  sk_sp<SkImage> image = imageForCurrentFrame(context.getColorBehavior());
   if (!image)
     return;
 
@@ -311,14 +311,19 @@ PassRefPtr<Image> Image::imageForDefaultFrame() {
 }
 
 bool Image::isTextureBacked() {
-  sk_sp<SkImage> image = imageForCurrentFrame();
+  // TODO(ccameron): It should not be necessary to specify color conversion for
+  // this query.
+  sk_sp<SkImage> image =
+      imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
   return image ? image->isTextureBacked() : false;
 }
 
-bool Image::applyShader(SkPaint& paint, const SkMatrix& localMatrix) {
+bool Image::applyShader(SkPaint& paint,
+                        const SkMatrix& localMatrix,
+                        const ColorBehavior& colorBehavior) {
   // Default shader impl: attempt to build a shader based on the current frame
   // SkImage.
-  sk_sp<SkImage> image = imageForCurrentFrame();
+  sk_sp<SkImage> image = imageForCurrentFrame(colorBehavior);
   if (!image)
     return false;
 

@@ -1078,8 +1078,11 @@ void BaseRenderingContext2D::drawImageInternal(SkCanvas* c,
 
   if (!imageSource->isVideoElement()) {
     imagePaint.setAntiAlias(shouldDrawImageAntialiased(dstRect));
+    // TODO(ccameron): Canvas should draw in sRGB by default.
+    // https://crbug.com/672299
     image->draw(c, imagePaint, dstRect, srcRect, DoNotRespectImageOrientation,
-                Image::DoNotClampImageToSourceRect);
+                Image::DoNotClampImageToSourceRect,
+                ColorBehavior::transformToGlobalTarget());
   } else {
     c->save();
     c->clipRect(dstRect);

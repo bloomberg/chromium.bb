@@ -1092,7 +1092,8 @@ void GraphicsLayer::setContentsRect(const IntRect& rect) {
 void GraphicsLayer::setContentsToImage(
     Image* image,
     RespectImageOrientationEnum respectImageOrientation) {
-  sk_sp<SkImage> skImage = image ? image->imageForCurrentFrame() : nullptr;
+  sk_sp<SkImage> skImage =
+      image ? image->imageForCurrentFrame(m_colorBehavior) : nullptr;
 
   if (image && skImage && image->isBitmapImage()) {
     if (respectImageOrientation == RespectImageOrientation) {

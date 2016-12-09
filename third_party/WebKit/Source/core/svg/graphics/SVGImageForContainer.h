@@ -81,7 +81,8 @@ class SVGImageForContainer final : public Image {
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,
-            ImageClampingMode) override;
+            ImageClampingMode,
+            const ColorBehavior&) override;
 
   void drawPattern(GraphicsContext&,
                    const FloatRect&,
@@ -96,7 +97,7 @@ class SVGImageForContainer final : public Image {
     return false;
   }
 
-  sk_sp<SkImage> imageForCurrentFrame() override;
+  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
 
  private:
   SVGImageForContainer(SVGImage* image,

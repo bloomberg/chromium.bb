@@ -33,14 +33,15 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
 
   IntSize size() const override { return m_size; }
 
-  sk_sp<SkImage> imageForCurrentFrame() override;
+  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
 
   void draw(SkCanvas*,
             const SkPaint&,
             const FloatRect& destRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode) override;
+            ImageClampingMode,
+            const ColorBehavior&) override;
 
   void destroyDecodedData() override;
 

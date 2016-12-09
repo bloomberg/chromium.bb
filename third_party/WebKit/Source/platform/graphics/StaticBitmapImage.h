@@ -22,14 +22,15 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   // Methods overrided by all sub-classes
   virtual ~StaticBitmapImage() {}
   bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) = 0;
-  sk_sp<SkImage> imageForCurrentFrame() = 0;
+  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) = 0;
   bool isTextureBacked() = 0;
   void draw(SkCanvas*,
             const SkPaint&,
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode) = 0;
+            ImageClampingMode,
+            const ColorBehavior&) = 0;
 
   // Methods have common implementation for all sub-classes
   bool currentFrameIsComplete() override { return true; }

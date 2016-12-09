@@ -57,7 +57,8 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,
-            ImageClampingMode) override;
+            ImageClampingMode,
+            const ColorBehavior&) override;
   void drawTile(GraphicsContext&, const FloatRect&) final;
 
   CrossfadeGeneratedImage(PassRefPtr<Image> fromImage,
@@ -67,7 +68,10 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
                           const IntSize&);
 
  private:
-  void drawCrossfade(SkCanvas*, const SkPaint&, ImageClampingMode);
+  void drawCrossfade(SkCanvas*,
+                     const SkPaint&,
+                     ImageClampingMode,
+                     const ColorBehavior&);
 
   RefPtr<Image> m_fromImage;
   RefPtr<Image> m_toImage;

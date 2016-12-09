@@ -50,7 +50,9 @@ class TestImage : public Image {
 
   IntSize size() const override { return m_size; }
 
-  sk_sp<SkImage> imageForCurrentFrame() override { return m_image; }
+  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override {
+    return m_image;
+  }
 
   void destroyDecodedData() override {
     // Image pure virtual stub.
@@ -61,7 +63,8 @@ class TestImage : public Image {
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,
-            ImageClampingMode) override {
+            ImageClampingMode,
+            const ColorBehavior&) override {
     // Image pure virtual stub.
   }
 

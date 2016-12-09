@@ -262,7 +262,10 @@ void SVGImage::drawForContainer(SkCanvas* canvas,
                ClampImageToSourceRect, url);
 }
 
-sk_sp<SkImage> SVGImage::imageForCurrentFrame() {
+sk_sp<SkImage> SVGImage::imageForCurrentFrame(
+    const ColorBehavior& colorBehavior) {
+  // TODO(ccameron): This function should not ignore |colorBehavior|.
+  // https://crbug.com/667431
   return imageForCurrentFrameForContainer(KURL(), size());
 }
 
@@ -342,7 +345,10 @@ void SVGImage::draw(SkCanvas* canvas,
                     const FloatRect& dstRect,
                     const FloatRect& srcRect,
                     RespectImageOrientationEnum shouldRespectImageOrientation,
-                    ImageClampingMode clampMode) {
+                    ImageClampingMode clampMode,
+                    const ColorBehavior& colorBehavior) {
+  // TODO(ccameron): This function should not ignore |colorBehavior|.
+  // https://crbug.com/667431
   if (!m_page)
     return;
 

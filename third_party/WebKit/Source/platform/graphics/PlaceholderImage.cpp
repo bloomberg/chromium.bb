@@ -27,7 +27,10 @@ const RGBA32 kFillColor = 0x66808080;
 
 PlaceholderImage::~PlaceholderImage() {}
 
-sk_sp<SkImage> PlaceholderImage::imageForCurrentFrame() {
+sk_sp<SkImage> PlaceholderImage::imageForCurrentFrame(
+    const ColorBehavior& colorBehavior) {
+  // TODO(ccameron): This function should not ignore |colorBehavior|.
+  // https://crbug.com/672306
   if (m_imageForCurrentFrame)
     return m_imageForCurrentFrame;
 
@@ -52,7 +55,10 @@ void PlaceholderImage::draw(SkCanvas* canvas,
                             const FloatRect& destRect,
                             const FloatRect& srcRect,
                             RespectImageOrientationEnum,
-                            ImageClampingMode) {
+                            ImageClampingMode,
+                            const ColorBehavior& colorBehavior) {
+  // TODO(ccameron): This function should not ignore |colorBehavior|.
+  // https://crbug.com/672306
   if (!srcRect.intersects(FloatRect(0.0f, 0.0f,
                                     static_cast<float>(m_size.width()),
                                     static_cast<float>(m_size.height())))) {

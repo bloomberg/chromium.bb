@@ -38,7 +38,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
 
   bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
   IntSize size() const override;
-  sk_sp<SkImage> imageForCurrentFrame() override;
+  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
   bool isTextureBacked() final { return true; }
 
   void draw(SkCanvas*,
@@ -46,7 +46,8 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode) override;
+            ImageClampingMode,
+            const ColorBehavior&) override;
 
   void copyToTexture(WebGraphicsContext3DProvider*,
                      GLuint destTextureId,

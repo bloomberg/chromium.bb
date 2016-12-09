@@ -18,8 +18,12 @@ PassRefPtr<ImagePattern> ImagePattern::create(PassRefPtr<Image> image,
   return adoptRef(new ImagePattern(std::move(image), repeatMode));
 }
 
+// TODO(ccameron): ImagePattern should not draw to a globally set color space.
+// https://crbug.com/672306
 ImagePattern::ImagePattern(PassRefPtr<Image> image, RepeatMode repeatMode)
-    : Pattern(repeatMode), m_tileImage(image->imageForCurrentFrame()) {
+    : Pattern(repeatMode),
+      m_tileImage(image->imageForCurrentFrame(
+          ColorBehavior::transformToGlobalTarget())) {
   m_previousLocalMatrix.setIdentity();
   if (m_tileImage) {
     // TODO(fmalita): mechanism to extract the actual SkImageInfo from an

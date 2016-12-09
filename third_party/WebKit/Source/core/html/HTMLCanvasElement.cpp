@@ -508,7 +508,10 @@ void HTMLCanvasElement::notifyListenersCanvasChanged() {
         FloatSize());
     if (status != NormalSourceImageStatus)
       return;
-    sk_sp<SkImage> image = sourceImage->imageForCurrentFrame();
+    // TODO(ccameron): Canvas should produce sRGB images.
+    // https://crbug.com/672299
+    sk_sp<SkImage> image = sourceImage->imageForCurrentFrame(
+        ColorBehavior::transformToGlobalTarget());
     for (CanvasDrawListener* listener : m_listeners) {
       if (listener->needsNewFrame()) {
         listener->sendNewFrame(image);
@@ -638,7 +641,10 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer,
   if (hasImageBuffer()) {
     snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
   } else if (placeholderFrame()) {
-    snapshot = placeholderFrame()->imageForCurrentFrame();
+    // TODO(ccameron): Canvas should produce sRGB images.
+    // https://crbug.com/672299
+    snapshot = placeholderFrame()->imageForCurrentFrame(
+        ColorBehavior::transformToGlobalTarget());
   }
 
   if (snapshot) {
@@ -1225,6 +1231,8 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
     return m_context->getImage(hint, reason);
 
   sk_sp<SkImage> skImage;
+  // TODO(ccameron): Canvas should produce sRGB images.
+  // https://crbug.com/672299
   if (m_context->is3d()) {
     // Because WebGL sources always require making a copy of the back buffer, we
     // use paintRenderingResultsToCanvas instead of getImage in order to keep a
@@ -1232,7 +1240,8 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
     renderingContext()->paintRenderingResultsToCanvas(BackBuffer);
     skImage = hasImageBuffer()
                   ? buffer()->newSkImageSnapshot(hint, reason)
-                  : createTransparentImage(size())->imageForCurrentFrame();
+                  : createTransparentImage(size())->imageForCurrentFrame(
+                        ColorBehavior::transformToGlobalTarget());
   } else {
     if (ExpensiveCanvasHeuristicParameters::
             DisableAccelerationToAvoidReadbacks &&
@@ -1241,8 +1250,11 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
         hasImageBuffer())
       buffer()->disableAcceleration();
     RefPtr<blink::Image> image = renderingContext()->getImage(hint, reason);
-    skImage = image ? image->imageForCurrentFrame()
-                    : createTransparentImage(size())->imageForCurrentFrame();
+    skImage = image
+                  ? image->imageForCurrentFrame(
+                        ColorBehavior::transformToGlobalTarget())
+                  : createTransparentImage(size())->imageForCurrentFrame(
+                        ColorBehavior::transformToGlobalTarget());
   }
 
   if (skImage) {

@@ -89,7 +89,10 @@ void AcceleratedStaticBitmapImage::copyToTexture(
   destGL->DeleteTextures(1, &sourceTextureId);
 }
 
-sk_sp<SkImage> AcceleratedStaticBitmapImage::imageForCurrentFrame() {
+sk_sp<SkImage> AcceleratedStaticBitmapImage::imageForCurrentFrame(
+    const ColorBehavior& colorBehavior) {
+  // TODO(ccameron): This function should not ignore |colorBehavior|.
+  // https://crbug.com/672306
   checkThread();
   if (!isValid())
     return nullptr;
@@ -102,7 +105,10 @@ void AcceleratedStaticBitmapImage::draw(SkCanvas* canvas,
                                         const FloatRect& dstRect,
                                         const FloatRect& srcRect,
                                         RespectImageOrientationEnum,
-                                        ImageClampingMode imageClampingMode) {
+                                        ImageClampingMode imageClampingMode,
+                                        const ColorBehavior& colorBehavior) {
+  // TODO(ccameron): This function should not ignore |colorBehavior|.
+  // https://crbug.com/672306
   checkThread();
   if (!isValid())
     return;

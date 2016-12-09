@@ -17,7 +17,7 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
 
   bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
   IntSize size() const override;
-  sk_sp<SkImage> imageForCurrentFrame() override;
+  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
   // In our current design, the SkImage in this class is always *not*
   // texture-backed.
   bool isTextureBacked() { return false; }
@@ -27,7 +27,8 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode) override;
+            ImageClampingMode,
+            const ColorBehavior&) override;
 
  private:
   UnacceleratedStaticBitmapImage(sk_sp<SkImage>);

@@ -192,7 +192,12 @@ sk_sp<SkImageFilter> FEImage::createImageFilter() {
   if (auto* layoutObject = referencedLayoutObject())
     return createImageFilterForLayoutObject(*layoutObject);
 
-  sk_sp<SkImage> image = m_image ? m_image->imageForCurrentFrame() : nullptr;
+  // TODO(ccameron): Determine the correct color behavior for this function.
+  // https://crbug.com/667431
+  sk_sp<SkImage> image = m_image
+                             ? m_image->imageForCurrentFrame(
+                                   ColorBehavior::transformToGlobalTarget())
+                             : nullptr;
   if (!image) {
     // "A href reference that is an empty image (zero width or zero height),
     //  that fails to download, is non-existent, or that cannot be displayed

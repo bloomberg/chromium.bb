@@ -150,7 +150,10 @@ std::unique_ptr<DragImage> DragImage::create(
   if (!image)
     return nullptr;
 
-  sk_sp<SkImage> skImage = image->imageForCurrentFrame();
+  // TODO(ccameron): DragImage needs to be color space aware.
+  // https://crbug.com/672316
+  sk_sp<SkImage> skImage =
+      image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
   if (!skImage)
     return nullptr;
 

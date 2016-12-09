@@ -32,7 +32,8 @@ class SVGImageTest : public ::testing::Test {
     FloatRect dummyRect(0, 0, 100, 100);
     image->draw(nullCanvas.get(), paint, dummyRect, dummyRect,
                 DoNotRespectImageOrientation,
-                Image::DoNotClampImageToSourceRect);
+                Image::DoNotClampImageToSourceRect,
+                ColorBehavior::transformToGlobalTarget());
   }
 
  private:

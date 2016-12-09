@@ -888,7 +888,9 @@ String AXLayoutObject::imageDataUrl(const IntSize& maxSize) const {
   if (!imageBitmap)
     return String();
 
-  sk_sp<SkImage> image = imageBitmap->bitmapImage()->imageForCurrentFrame();
+  // TODO(ccameron): AXLayoutObject::imageDataUrl should create sRGB images.
+  sk_sp<SkImage> image = imageBitmap->bitmapImage()->imageForCurrentFrame(
+      ColorBehavior::transformToGlobalTarget());
   if (!image || image->width() <= 0 || image->height() <= 0)
     return String();
 

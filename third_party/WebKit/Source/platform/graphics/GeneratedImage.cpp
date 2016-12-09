@@ -69,7 +69,8 @@ void GeneratedImage::drawPattern(GraphicsContext& destContext,
   destContext.drawRect(destRect, fillPaint);
 }
 
-sk_sp<SkImage> GeneratedImage::imageForCurrentFrame() {
+sk_sp<SkImage> GeneratedImage::imageForCurrentFrame(
+    const ColorBehavior& colorBehavior) {
   return nullptr;
 }
 
