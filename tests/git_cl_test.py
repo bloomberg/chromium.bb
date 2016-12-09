@@ -1242,7 +1242,7 @@ class TestGitCl(TestCase):
            'plugin.git-numberer.validate-disabled-refglob'],),
          'refs/heads/disabled\n'
          'refs/branch-heads/*\n'),
-    ] * 3  # 3 tests below have exactly same IO.
+    ] * 4  # 4 tests below have exactly same IO.
 
     res = git_cl._GitNumbererState.load(
         remote_url='https://chromium.googlesource.com/chromium/src',
@@ -1259,6 +1259,14 @@ class TestGitCl(TestCase):
     res = git_cl._GitNumbererState.load(
         remote_url='https://chromium.googlesource.com/chromium/src',
         remote_ref='refs/heads/disabled')
+    self.assertEqual(res.pending_prefix, None)
+    self.assertEqual(res.should_git_number, False)
+
+    # Validator is disabled by default, even if it's not explicitely in disabled
+    # refglobs.
+    res = git_cl._GitNumbererState.load(
+        remote_url='https://chromium.googlesource.com/chromium/src',
+        remote_ref='refs/arbitrary/ref')
     self.assertEqual(res.pending_prefix, None)
     self.assertEqual(res.should_git_number, False)
 
