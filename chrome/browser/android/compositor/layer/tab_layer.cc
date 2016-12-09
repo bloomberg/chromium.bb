@@ -235,13 +235,16 @@ void TabLayer::SetProperties(int id,
                                toolbar_textbox_resource_id,
                                toolbar_textbox_alpha,
                                view_height,
+                               // TODO(mdjones): Feels odd to pass 0 here when
+                               // we have access to toolbar_y_offset.
+                               0,
                                false,
                                false,
                                browser_controls_at_bottom);
   toolbar_layer_->UpdateProgressBar(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
   float toolbar_impact_height = 0;
-  if (show_toolbar && !back_visible)
+  if (show_toolbar && !back_visible && !browser_controls_at_bottom)
     toolbar_impact_height = toolbar_layer_->layer()->bounds().height();
 
   //----------------------------------------------------------------------------

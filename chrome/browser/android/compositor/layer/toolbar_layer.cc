@@ -31,7 +31,8 @@ void ToolbarLayer::PushResource(
     int toolbar_textbox_background_color,
     int url_bar_background_resource_id,
     float url_bar_alpha,
-    float view_height,
+    float window_height,
+    float y_offset,
     bool show_debug,
     bool clip_shadow,
     bool browser_controls_at_bottom) {
@@ -58,14 +59,19 @@ void ToolbarLayer::PushResource(
   // clipping of the shadow.
   toolbar_root_->SetBounds(resource->padding.size());
 
+  gfx::PointF root_layer_position(0, y_offset);
   gfx::PointF background_position(resource->padding.origin());
   if (browser_controls_at_bottom) {
+    // The toolbar's position as if it were completely shown.
+    float base_toolbar_y = window_height - resource->padding.size().height();
     float layer_offset =
         resource->size.height() - resource->padding.size().height();
-    layer_->SetPosition(gfx::PointF(0, view_height));
+
+    root_layer_position.set_y(base_toolbar_y + y_offset);
     toolbar_root_->SetPosition(gfx::PointF(0, -layer_offset));
     background_position.set_y(layer_offset);
   }
+  layer_->SetPosition(root_layer_position);
 
   toolbar_background_layer_->SetBounds(resource->padding.size());
   toolbar_background_layer_->SetPosition(background_position);

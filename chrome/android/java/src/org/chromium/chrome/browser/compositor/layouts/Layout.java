@@ -1110,7 +1110,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
             if (!mSceneOverlays.get(i).isSceneOverlayTreeShowing()) continue;
 
             SceneOverlayLayer overlayLayer = mSceneOverlays.get(i).getUpdatedSceneOverlayTree(
-                    layerTitleCache, resourceManager, offsetDp);
+                    viewport, visibleViewport, layerTitleCache, resourceManager, offsetDp);
 
             overlayLayer.setContentTree(content);
             content = overlayLayer;

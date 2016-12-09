@@ -32,10 +32,11 @@ class ToolbarLayer : public Layer {
   void PushResource(int toolbar_resource_id,
                     int toolbar_background_color,
                     bool anonymize,
-                    int  toolbar_textbox_background_color,
+                    int toolbar_textbox_background_color,
                     int url_bar_background_resource_id,
                     float url_bar_alpha,
-                    float view_height,
+                    float window_height,
+                    float y_offset,
                     bool show_debug,
                     bool clip_shadow,
                     bool browser_controls_at_bottom);

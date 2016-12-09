@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.overlays;
 
+import android.graphics.RectF;
+
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
@@ -20,14 +22,16 @@ public interface SceneOverlay {
     /**
      * Updates and gets a {@link SceneOverlayLayer} that represents an scene overlay.
      *
+     * @param viewport The viewport of the window.
+     * @param visibleViewport The viewport accounting for browser controls.
      * @param layerTitleCache A layer title cache.
      * @param resourceManager A resource manager.
      * @param yOffset Current browser controls offset in dp.
      * @return A {@link SceneOverlayLayer} that represents an scene overlay.
      * Or {@code null} if this {@link SceneOverlay} doesn't have a tree.
      */
-    SceneOverlayLayer getUpdatedSceneOverlayTree(LayerTitleCache layerTitleCache,
-            ResourceManager resourceManager, float yOffset);
+    SceneOverlayLayer getUpdatedSceneOverlayTree(RectF viewport, RectF visibleViewport,
+            LayerTitleCache layerTitleCache, ResourceManager resourceManager, float yOffset);
 
     /**
      * Notify the layout that a SceneOverlay is visible. If not visible, the content tree will not
