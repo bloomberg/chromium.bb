@@ -20,6 +20,7 @@
 #include "components/offline_pages/core/offline_page_model_query.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
@@ -38,9 +39,9 @@ const int kDefaultMaxSuggestionsCount = 5;
 const char* kMaxSuggestionsCountParamName = "recent_tabs_max_count";
 
 int GetMaxSuggestionsCount() {
-  return GetParamAsInt(kRecentOfflineTabSuggestionsFeature,
-                       kMaxSuggestionsCountParamName,
-                       kDefaultMaxSuggestionsCount);
+  return variations::GetVariationParamByFeatureAsInt(
+      kRecentOfflineTabSuggestionsFeature, kMaxSuggestionsCountParamName,
+      kDefaultMaxSuggestionsCount);
 }
 
 struct OrderOfflinePagesByMostRecentlyCreatedFirst {

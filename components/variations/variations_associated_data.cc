@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "components/variations/variations_http_header_provider.h"
 
@@ -188,6 +189,64 @@ std::string GetVariationParamValueByFeature(const base::Feature& feature,
     return std::string();
 
   return GetVariationParamValue(trial->trial_name(), param_name);
+}
+
+int GetVariationParamByFeatureAsInt(const base::Feature& feature,
+                                    const std::string& param_name,
+                                    int default_value) {
+  std::string value_as_string =
+      GetVariationParamValueByFeature(feature, param_name);
+  int value_as_int = 0;
+  if (!base::StringToInt(value_as_string, &value_as_int)) {
+    if (!value_as_string.empty()) {
+      DLOG(WARNING) << "Failed to parse variation param " << param_name
+                    << " with string value " << value_as_string
+                    << " under feature " << feature.name
+                    << " into an int. Falling back to default value of "
+                    << default_value;
+    }
+    value_as_int = default_value;
+  }
+  return value_as_int;
+}
+
+double GetVariationParamByFeatureAsDouble(const base::Feature& feature,
+                                          const std::string& param_name,
+                                          double default_value) {
+  std::string value_as_string =
+      GetVariationParamValueByFeature(feature, param_name);
+  double value_as_double = 0;
+  if (!base::StringToDouble(value_as_string, &value_as_double)) {
+    if (!value_as_string.empty()) {
+      DLOG(WARNING) << "Failed to parse variation param " << param_name
+                    << " with string value " << value_as_string
+                    << " under feature " << feature.name
+                    << " into a double. Falling back to default value of "
+                    << default_value;
+    }
+    value_as_double = default_value;
+  }
+  return value_as_double;
+}
+
+bool GetVariationParamByFeatureAsBool(const base::Feature& feature,
+                                      const std::string& param_name,
+                                      bool default_value) {
+  std::string value_as_string =
+      variations::GetVariationParamValueByFeature(feature, param_name);
+  if (value_as_string == "true")
+    return true;
+  if (value_as_string == "false")
+    return false;
+
+  if (!value_as_string.empty()) {
+    DLOG(WARNING) << "Failed to parse variation param " << param_name
+                  << " with string value " << value_as_string
+                  << " under feature " << feature.name
+                  << " into a bool. Falling back to default value of "
+                  << default_value;
+  }
+  return default_value;
 }
 
 // Functions below are exposed for testing explicitly behind this namespace.

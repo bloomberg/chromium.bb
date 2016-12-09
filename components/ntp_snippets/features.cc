@@ -4,7 +4,6 @@
 
 #include "components/ntp_snippets/features.h"
 
-#include "base/strings/string_number_conversions.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace ntp_snippets {
@@ -41,47 +40,5 @@ const base::Feature kForeignSessionsSuggestionsFeature{
 
 const base::Feature kFetchMoreFeature{"NTPSuggestionsFetchMore",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
-int GetParamAsInt(const base::Feature& feature,
-                  const std::string& param_name,
-                  const int default_value) {
-  std::string value_as_string =
-      variations::GetVariationParamValueByFeature(feature, param_name);
-  int value_as_int = 0;
-  if (!base::StringToInt(value_as_string, &value_as_int)) {
-    if (!value_as_string.empty()) {
-      LOG(WARNING) << "Failed to parse variation param " << param_name
-                   << " with string value " << value_as_string
-                   << " under feature " << feature.name
-                   << " into an int. Falling back to default value of "
-                   << default_value;
-    }
-    value_as_int = default_value;
-  }
-  return value_as_int;
-}
-
-
-bool GetParamAsBool(const base::Feature& feature,
-                    const std::string& param_name,
-                    bool default_value) {
-  std::string value_as_string =
-      variations::GetVariationParamValueByFeature(feature, param_name);
-  if (value_as_string == "true") {
-    return true;
-  }
-  if (value_as_string == "false") {
-    return false;
-  }
-
-  if (!value_as_string.empty()) {
-    LOG(WARNING) << "Failed to parse variation param " << param_name
-                 << " with string value " << value_as_string
-                 << " under feature " << feature.name
-                 << " into a bool. Falling back to default value of "
-                 << default_value;
-  }
-  return default_value;
-}
 
 }  // namespace ntp_snippets

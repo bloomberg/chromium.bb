@@ -91,22 +91,11 @@ static_assert(arraysize(kMetrics) ==
                       static_cast<int>(UserClassifier::Metric::COUNT),
               "Fill in info for all metrics.");
 
-double GetParamValue(const char* param_name, double default_value) {
-  std::string param_value_str = variations::GetVariationParamValueByFeature(
-      kArticleSuggestionsFeature, param_name);
-  double param_value = 0;
-  if (!base::StringToDouble(param_value_str, &param_value)) {
-    LOG_IF(WARNING, !param_value_str.empty())
-        << "Invalid variation parameter for " << param_name;
-    return default_value;
-  }
-  return param_value;
-}
-
 // Computes the discount rate.
 double GetDiscountRatePerHour() {
-  double discount_rate_per_day =
-      GetParamValue(kDiscountRatePerDayParam, kDiscountRatePerDay);
+  double discount_rate_per_day = variations::GetVariationParamByFeatureAsDouble(
+      kArticleSuggestionsFeature, kDiscountRatePerDayParam,
+      kDiscountRatePerDay);
   // Check for illegal values.
   if (discount_rate_per_day <= 0 || discount_rate_per_day >= 1) {
     DLOG(WARNING) << "Illegal value " << discount_rate_per_day
@@ -121,17 +110,20 @@ double GetDiscountRatePerHour() {
 }
 
 double GetInitialHoursBetweenEvents(UserClassifier::Metric metric) {
-  return GetParamValue(
+  return variations::GetVariationParamByFeatureAsDouble(
+      kArticleSuggestionsFeature,
       kInitialHoursBetweenEventsParams[static_cast<int>(metric)],
       kInitialHoursBetweenEvents[static_cast<int>(metric)]);
 }
 
 double GetMinHours() {
-  return GetParamValue(kMinHoursParam, kMinHours);
+  return variations::GetVariationParamByFeatureAsDouble(
+      kArticleSuggestionsFeature, kMinHoursParam, kMinHours);
 }
 
 double GetMaxHours() {
-  return GetParamValue(kMaxHoursParam, kMaxHours);
+  return variations::GetVariationParamByFeatureAsDouble(
+      kArticleSuggestionsFeature, kMaxHoursParam, kMaxHours);
 }
 
 // Returns the new value of the metric using its |old_value|, assuming
@@ -195,11 +187,15 @@ UserClassifier::UserClassifier(PrefService* pref_service)
       min_hours_(GetMinHours()),
       max_hours_(GetMaxHours()),
       active_consumer_scrolls_at_least_once_per_hours_(
-          GetParamValue(kActiveConsumerScrollsAtLeastOncePerHoursParam,
-                        kActiveConsumerScrollsAtLeastOncePerHours)),
+          variations::GetVariationParamByFeatureAsDouble(
+              kArticleSuggestionsFeature,
+              kActiveConsumerScrollsAtLeastOncePerHoursParam,
+              kActiveConsumerScrollsAtLeastOncePerHours)),
       rare_user_opens_ntp_at_most_once_per_hours_(
-          GetParamValue(kRareUserOpensNTPAtMostOncePerHoursParam,
-                        kRareUserOpensNTPAtMostOncePerHours)) {
+          variations::GetVariationParamByFeatureAsDouble(
+              kArticleSuggestionsFeature,
+              kRareUserOpensNTPAtMostOncePerHoursParam,
+              kRareUserOpensNTPAtMostOncePerHours)) {
   // The pref_service_ can be null in tests.
   if (!pref_service_) {
     return;

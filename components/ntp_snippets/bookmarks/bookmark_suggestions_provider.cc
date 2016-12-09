@@ -49,20 +49,22 @@ const char kDeprecatedBookmarksFirstM54StartPref[] =
 // Note that bookmarks can be shown that do not meet this threshold.
 base::Time GetThresholdTime() {
   return base::Time::Now() -
-         base::TimeDelta::FromDays(GetParamAsInt(
+         base::TimeDelta::FromDays(variations::GetVariationParamByFeatureAsInt(
              ntp_snippets::kBookmarkSuggestionsFeature,
              kMaxBookmarkAgeInDaysParamName, kMaxBookmarkAgeInDays));
 }
 
 // The maximum number of suggestions ever provided.
 int GetMaxCount() {
-  return GetParamAsInt(ntp_snippets::kBookmarkSuggestionsFeature,
-                       kMaxBookmarksParamName, kMaxBookmarks);
+  return variations::GetVariationParamByFeatureAsInt(
+      ntp_snippets::kBookmarkSuggestionsFeature, kMaxBookmarksParamName,
+      kMaxBookmarks);
 }
 
 bool AreDesktopVisitsConsidered() {
-  return GetParamAsBool(ntp_snippets::kBookmarkSuggestionsFeature,
-                        kConsiderDesktopVisitsParamName, false);
+  return variations::GetVariationParamByFeatureAsBool(
+      ntp_snippets::kBookmarkSuggestionsFeature,
+      kConsiderDesktopVisitsParamName, false);
 }
 
 }  // namespace

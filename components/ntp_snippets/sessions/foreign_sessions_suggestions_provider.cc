@@ -22,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync_sessions/synced_session.h"
+#include "components/variations/variations_associated_data.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
@@ -49,18 +50,19 @@ const char* kMaxForeignTabAgeInMinutesParamName =
     "max_foreign_tabs_age_in_minutes";
 
 int GetMaxForeignTabsTotal() {
-  return GetParamAsInt(ntp_snippets::kForeignSessionsSuggestionsFeature,
-                       kMaxForeignTabsTotalParamName, kMaxForeignTabsTotal);
+  return variations::GetVariationParamByFeatureAsInt(
+      ntp_snippets::kForeignSessionsSuggestionsFeature,
+      kMaxForeignTabsTotalParamName, kMaxForeignTabsTotal);
 }
 
 int GetMaxForeignTabsPerDevice() {
-  return GetParamAsInt(ntp_snippets::kForeignSessionsSuggestionsFeature,
-                       kMaxForeignTabsPerDeviceParamName,
-                       kMaxForeignTabsPerDevice);
+  return variations::GetVariationParamByFeatureAsInt(
+      ntp_snippets::kForeignSessionsSuggestionsFeature,
+      kMaxForeignTabsPerDeviceParamName, kMaxForeignTabsPerDevice);
 }
 
 TimeDelta GetMaxForeignTabAge() {
-  return TimeDelta::FromMinutes(GetParamAsInt(
+  return TimeDelta::FromMinutes(variations::GetVariationParamByFeatureAsInt(
       ntp_snippets::kForeignSessionsSuggestionsFeature,
       kMaxForeignTabAgeInMinutesParamName, kMaxForeignTabAgeInMinutes));
 }
