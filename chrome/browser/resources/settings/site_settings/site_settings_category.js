@@ -183,20 +183,4 @@ Polymer({
   isCookiesCategory_: function(category) {
     return category == settings.ContentSettingsTypes.COOKIES;
   },
-
-  /**
-   * Returns whether this is the Plugins category.
-   * @param {string} category The current category.
-   * @return {boolean} Whether this is the Plugins category.
-   * @private
-   */
-  isPluginCategory_: function(category) {
-    return category == settings.ContentSettingsTypes.PLUGINS;
-  },
-
-  /** @private */
-  onAdobeFlashStorageClicked_: function() {
-    window.open('https://www.macromedia.com/support/' +
-        'documentation/en/flashplayer/help/settings_manager07.html');
-  },
 });

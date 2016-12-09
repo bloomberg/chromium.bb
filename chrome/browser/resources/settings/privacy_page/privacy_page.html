@@ -251,7 +251,7 @@
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.COOKIES}}">
-            <div class="settings-box cookie-controls">
+            <div class="settings-box extra-options">
               <settings-toggle-button class="start"
                   label="$i18n{thirdPartyCookie}"
                   sub-label="$i18n{thirdPartyCookieSublabel}"
@@ -345,6 +345,12 @@
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.PLUGINS}}">
+<if expr="chromeos">
+            <div actionable class="settings-box extra-options"
+                on-tap="onAdobeFlashStorageClicked_">
+              <div class="list-item list-button">$i18n{adobeFlashStorage}</div>
+            </div>
+</if>
           </site-settings-category>
         </settings-subpage>
       </template>
