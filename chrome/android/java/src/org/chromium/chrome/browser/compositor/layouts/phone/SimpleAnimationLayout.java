@@ -81,8 +81,8 @@ public class SimpleAnimationLayout
     }
 
     @Override
-    public int getSizingFlags() {
-        return SizingFlags.HELPER_SUPPORTS_FULLSCREEN | SizingFlags.USE_PREVIOUS_TOOLBAR_STATE;
+    public ViewportMode getViewportMode() {
+        return ViewportMode.USE_PREVIOUS_BROWSER_CONTROLS_STATE;
     }
 
     @Override

@@ -10,7 +10,7 @@ import android.graphics.RectF;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
-import org.chromium.chrome.browser.compositor.layouts.Layout.SizingFlags;
+import org.chromium.chrome.browser.compositor.layouts.Layout.ViewportMode;
 import org.chromium.chrome.browser.compositor.layouts.LayoutProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
@@ -74,7 +74,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
      */
     private void update(int browserControlsBackgroundColor, float browserControlsUrlBarAlpha,
             ChromeFullscreenManager fullscreenManager, ResourceManager resourceManager,
-            boolean forceHideAndroidBrowserControls, int sizingFlags, boolean isTablet) {
+            boolean forceHideAndroidBrowserControls, ViewportMode viewportMode, boolean isTablet) {
         if (!DeviceClassManager.enableFullscreen()) return;
 
         if (fullscreenManager == null) return;
@@ -89,17 +89,10 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         mLayoutProvider.getViewportPixel(mViewport);
 
         // Texture is always used unless it is completely off-screen.
-        boolean useTexture = !fullscreenManager.areBrowserControlsOffScreen();
+        boolean useTexture = !fullscreenManager.areBrowserControlsOffScreen()
+                && viewportMode != ViewportMode.ALWAYS_FULLSCREEN;
         boolean showShadow = fullscreenManager.drawControlsAsTexture()
                 || forceHideAndroidBrowserControls;
-
-        fullscreenManager.setHideBrowserControlsAndroidView(forceHideAndroidBrowserControls);
-
-        if ((sizingFlags & SizingFlags.REQUIRE_FULLSCREEN_SIZE) != 0
-                && (sizingFlags & SizingFlags.ALLOW_TOOLBAR_HIDE) == 0
-                && (sizingFlags & SizingFlags.ALLOW_TOOLBAR_ANIMATE) == 0) {
-            useTexture = false;
-        }
 
         // Note that the bottom controls offset is not passed here. Conveniently, the viewport
         // size changes will push the controls off screen when they are at the bottom; see
@@ -152,11 +145,11 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
             ResourceManager resourceManager, float yOffset) {
         boolean forceHideBrowserControlsAndroidView =
                 mLayoutProvider.getActiveLayout().forceHideBrowserControlsAndroidView();
-        int flags = mLayoutProvider.getActiveLayout().getSizingFlags();
+        ViewportMode viewportMode = mLayoutProvider.getActiveLayout().getViewportMode();
 
         update(mRenderHost.getBrowserControlsBackgroundColor(),
                 mRenderHost.getBrowserControlsUrlBarAlpha(), mLayoutProvider.getFullscreenManager(),
-                resourceManager, forceHideBrowserControlsAndroidView, flags,
+                resourceManager, forceHideBrowserControlsAndroidView, viewportMode,
                 DeviceFormFactor.isTablet(mContext));
 
         return this;

@@ -83,8 +83,8 @@ public class StaticLayout extends Layout {
     }
 
     @Override
-    public int getSizingFlags() {
-        return SizingFlags.HELPER_SUPPORTS_FULLSCREEN;
+    public ViewportMode getViewportMode() {
+        return ViewportMode.DYNAMIC_BROWSER_CONTROLS;
     }
 
     /**

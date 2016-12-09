@@ -162,8 +162,13 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     }
 
     @Override
-    public int getSizingFlags() {
-        return SizingFlags.ALLOW_TOOLBAR_SHOW | SizingFlags.REQUIRE_FULLSCREEN_SIZE;
+    public boolean forceShowBrowserControlsAndroidView() {
+        return true;
+    }
+
+    @Override
+    public ViewportMode getViewportMode() {
+        return ViewportMode.ALWAYS_FULLSCREEN;
     }
 
     @Override

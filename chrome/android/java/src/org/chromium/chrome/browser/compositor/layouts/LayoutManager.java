@@ -19,7 +19,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
-import org.chromium.chrome.browser.compositor.layouts.Layout.SizingFlags;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -256,6 +255,10 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     public SceneLayer getUpdatedActiveSceneLayer(LayerTitleCache layerTitleCache,
             TabContentManager tabContentManager, ResourceManager resourceManager,
             ChromeFullscreenManager fullscreenManager) {
+        // Update the android browser controls state.
+        fullscreenManager.setHideBrowserControlsAndroidView(
+                mActiveLayout.forceHideBrowserControlsAndroidView());
+
         getViewportPixel(mCachedVisibleViewport);
         mHost.getWindowViewport(mCachedWindowViewport);
         return mActiveLayout.getUpdatedSceneLayer(mCachedWindowViewport, mCachedVisibleViewport,
@@ -318,17 +321,26 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             return;
         }
 
-        final int flags = getActiveLayout().getSizingFlags();
-        if ((flags & SizingFlags.REQUIRE_FULLSCREEN_SIZE) != 0) {
-            mHost.getWindowViewport(rect);
-        } else if ((flags & SizingFlags.USE_PREVIOUS_TOOLBAR_STATE) != 0) {
-            if (mPreviousLayoutShowingToolbar) {
-                mHost.getViewportFullControls(rect);
-            } else {
+        switch (getActiveLayout().getViewportMode()) {
+            case ALWAYS_FULLSCREEN:
                 mHost.getWindowViewport(rect);
-            }
-        } else {
-            mHost.getVisibleViewport(rect);
+                break;
+
+            case ALWAYS_SHOWING_BROWSER_CONTROLS:
+                mHost.getViewportFullControls(rect);
+                break;
+
+            case USE_PREVIOUS_BROWSER_CONTROLS_STATE:
+                if (mPreviousLayoutShowingToolbar) {
+                    mHost.getViewportFullControls(rect);
+                } else {
+                    mHost.getWindowViewport(rect);
+                }
+                break;
+
+            case DYNAMIC_BROWSER_CONTROLS:
+            default:
+                mHost.getVisibleViewport(rect);
         }
     }
 
@@ -402,15 +414,10 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             mFullscreenToken = FullscreenManager.INVALID_TOKEN;
 
             // Grab a new fullscreen token if this layout can't be in fullscreen.
-            final int flags = getActiveLayout().getSizingFlags();
-            if ((flags & SizingFlags.ALLOW_TOOLBAR_HIDE) == 0) {
+            if (getActiveLayout().forceShowBrowserControlsAndroidView()) {
                 mFullscreenToken =
                         fullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
             }
-
-            // Hide the toolbar immediately if the layout wants it gone quickly.
-            fullscreenManager.setBrowserControlsPermamentlyHidden(
-                    flags == SizingFlags.HELPER_HIDE_TOOLBAR_IMMEDIATE);
         }
 
         onViewportChanged();

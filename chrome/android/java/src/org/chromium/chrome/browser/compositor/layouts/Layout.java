@@ -53,58 +53,19 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
         public static final int LANDSCAPE = 2;
     }
 
-    /**
-     * The sizing requirements of each layout.  These flags allow each layout to specify certain
-     * sizing allowances/constraints by combining them.
-     *
-     * TODO(dtrainor): Flesh out support for all of these flag combinations.
-     */
-    public interface SizingFlags {
-        /**
-         * The toolbar is allowed to be hidden.
-         */
-        public static final int ALLOW_TOOLBAR_HIDE = 0x1;
+    /** The possible variations of the visible viewport that different layouts may need. */
+    public enum ViewportMode {
+        /** The viewport is assumed to be always fullscreen. */
+        ALWAYS_FULLSCREEN,
 
-        /**
-         * The toolbar is allowed to be shown.
-         */
-        public static final int ALLOW_TOOLBAR_SHOW = 0x10;
+        /** The viewport is assuming that browser controls are permenantly shown. */
+        ALWAYS_SHOWING_BROWSER_CONTROLS,
 
-        /**
-         * The toolbar is allowed to animate between the transitions. Note that this flag is not
-         * completely supported in all combinations with the other flags.  As functionality is
-         * added and required this will be improved.
-         */
-        public static final int ALLOW_TOOLBAR_ANIMATE = 0x100;
+        /** The viewport will account for animating browser controls (both shown and hidden). */
+        DYNAMIC_BROWSER_CONTROLS,
 
-        /**
-         * The layout requires a fullscreen size regardless of the toolbar position.
-         */
-        public static final int REQUIRE_FULLSCREEN_SIZE = 0x1000;
-
-        /** Use the state of the toolbar from the previous layout. */
-        public static final int USE_PREVIOUS_TOOLBAR_STATE = 0x10000;
-
-        /**
-         * The layout does not support fullscreen and it should animate the toolbar away.
-         * A helper flag to make it easier to specify restrictions.
-         */
-        public static final int HELPER_NO_FULLSCREEN_SUPPORT =
-                ALLOW_TOOLBAR_SHOW | ALLOW_TOOLBAR_ANIMATE;
-
-        /**
-         * The layout supports persistent fullscreen and should hide the toolbar immediately.
-         * A helper flag to make it easier to specify restrictions.
-         */
-        public static final int HELPER_HIDE_TOOLBAR_IMMEDIATE = ALLOW_TOOLBAR_HIDE;
-
-        /**
-         * The layout fully supports fullscreen and the toolbar is allowed to show, hide, and
-         * animate.
-         * A helper flag to make it easier to specify restrictions.
-         */
-        public static final int HELPER_SUPPORTS_FULLSCREEN =
-                ALLOW_TOOLBAR_HIDE | ALLOW_TOOLBAR_SHOW | ALLOW_TOOLBAR_ANIMATE;
+        /** Use a viewport that accounts for the browser controls state in the previous layout. */
+        USE_PREVIOUS_BROWSER_CONTROLS_STATE
     }
 
     // Defines to make the code easier to read.
@@ -407,10 +368,10 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
-     * @return Information about the sizing requirements of this layout.
+     * @return The sizing mode for the layout.
      */
-    public int getSizingFlags() {
-        return SizingFlags.HELPER_NO_FULLSCREEN_SUPPORT;
+    public ViewportMode getViewportMode() {
+        return ViewportMode.ALWAYS_SHOWING_BROWSER_CONTROLS;
     }
 
     /**
@@ -1166,6 +1127,13 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
             // If any overlay wants to hide tha Android version of the browser controls, hide them.
             if (mSceneOverlays.get(i).shouldHideAndroidBrowserControls()) return true;
         }
+        return false;
+    }
+
+    /**
+     * @return Whether or not the layout should permenantly show the browser controls.
+     */
+    public boolean forceShowBrowserControlsAndroidView() {
         return false;
     }
 

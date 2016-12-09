@@ -98,9 +98,20 @@ public class ToolbarSwipeLayout extends Layout implements Animatable<ToolbarSwip
     }
 
     @Override
-    public int getSizingFlags() {
-        return mMoveToolbar ? SizingFlags.HELPER_HIDE_TOOLBAR_IMMEDIATE
-                            : SizingFlags.HELPER_NO_FULLSCREEN_SUPPORT;
+    public ViewportMode getViewportMode() {
+        // This seems counter-intuitive, but if the toolbar moves the android view is not showing.
+        // That means the compositor has to draw it and therefore needs the fullscreen viewport.
+        // Likewise, when the android view is showing, the compositor controls do not draw and the
+        // content needs to pretend it does to draw correctly.
+        // TODO(mdjones): Remove toolbar_impact_height from tab_layer.cc so this makes more sense.
+        return mMoveToolbar ? ViewportMode.ALWAYS_FULLSCREEN
+                            : ViewportMode.ALWAYS_SHOWING_BROWSER_CONTROLS;
+    }
+
+    @Override
+    public boolean forceHideBrowserControlsAndroidView() {
+        // If the toolbar moves, the android browser controls need to be hidden.
+        return super.forceHideBrowserControlsAndroidView() || mMoveToolbar;
     }
 
     @Override

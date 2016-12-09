@@ -59,8 +59,8 @@ public class OverviewListLayout extends Layout implements AccessibilityTabModelA
     }
 
     @Override
-    public int getSizingFlags() {
-        return SizingFlags.REQUIRE_FULLSCREEN_SIZE;
+    public ViewportMode getViewportMode() {
+        return ViewportMode.ALWAYS_FULLSCREEN;
     }
 
     @Override
