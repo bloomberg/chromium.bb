@@ -208,6 +208,7 @@
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
+#include "ui/events/base_event_utils.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
 #include "url/url_util.h"
@@ -6472,7 +6473,8 @@ void RenderFrameImpl::HandlePepperImeCommit(const base::string16& text) {
     while (iterator.Advance()) {
       blink::WebKeyboardEvent char_event;
       char_event.type = blink::WebInputEvent::Char;
-      char_event.timeStampSeconds = base::Time::Now().ToDoubleT();
+      char_event.timeStampSeconds =
+          ui::EventTimeStampToSeconds(ui::EventTimeForNow());
       char_event.modifiers = 0;
       char_event.windowsKeyCode = text[i];
       char_event.nativeKeyCode = text[i];
