@@ -3023,8 +3023,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         _CQState.DRY_RUN: 1,
         _CQState.COMMIT : 2,
     }
-    gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(),
-                          labels={'Commit-Queue': vote_map[new_state]})
+    kwargs = {'labels': {'Commit-Queue': vote_map[new_state]}}
+    if new_state == _CQState.DRY_RUN:
+      # Don't spam everybody reviewer/owner.
+      kwargs['notify'] = 'NONE'
+    gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(), **kwargs)
 
   def CannotTriggerTryJobReason(self):
     try:

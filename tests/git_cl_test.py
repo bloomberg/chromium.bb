@@ -2051,10 +2051,11 @@ class TestGitCl(TestCase):
     ]
     self.assertEqual(0, git_cl.main(['set-commit']))
 
-  def _cmd_set_commit_gerrit_common(self, vote):
+  def _cmd_set_commit_gerrit_common(self, vote, notify=None):
     self.mock(git_cl.gerrit_util, 'SetReview',
-              lambda h, i, labels: self._mocked_call(
-                  ['SetReview', h, i, labels]))
+              lambda h, i, labels, notify=None:
+                  self._mocked_call(['SetReview', h, i, labels, notify]))
+
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
         ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
@@ -2062,7 +2063,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.feature.gerritserver'],),
          'https://chromium-review.googlesource.com'),
         ((['SetReview', 'chromium-review.googlesource.com', 123,
-           {'Commit-Queue': vote}],), ''),
+           {'Commit-Queue': vote}, notify],), ''),
     ]
 
   def test_cmd_set_commit_gerrit_clear(self):
@@ -2070,7 +2071,7 @@ class TestGitCl(TestCase):
     self.assertEqual(0, git_cl.main(['set-commit', '-c']))
 
   def test_cmd_set_commit_gerrit_dry(self):
-    self._cmd_set_commit_gerrit_common(1)
+    self._cmd_set_commit_gerrit_common(1, notify='NONE')
     self.assertEqual(0, git_cl.main(['set-commit', '-d']))
 
   def test_cmd_set_commit_gerrit(self):
