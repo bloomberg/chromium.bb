@@ -83,6 +83,9 @@ class CONTENT_EXPORT NavigationControllerImpl
   void ContinuePendingReload() override;
   bool IsInitialNavigation() const override;
   bool IsInitialBlankNavigation() const override;
+  void Reload(bool check_for_repost, ReloadType reload_type) override;
+  // TODO(toyoshim): Remove following Reload* methods once all callers to use
+  // new Reload() with ReloadType above. http://crbug.com/670232
   void Reload(bool check_for_repost) override;
   void ReloadBypassingCache(bool check_for_repost) override;
   void ReloadOriginalRequestURL(bool check_for_repost) override;
@@ -295,10 +298,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   bool RendererDidNavigateAutoSubframe(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
-
-  // Helper function for code shared between Reload() and
-  // ReloadBypassingCache().
-  void ReloadInternal(bool check_for_repost, ReloadType reload_type);
 
   // Actually issues the navigation held in pending_entry.
   void NavigateToPendingEntry(ReloadType reload_type);

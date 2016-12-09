@@ -264,7 +264,7 @@ void ReloadInternal(Browser* browser,
     return;
 
   if (bypass_cache)
-    new_tab->GetController().ReloadBypassingCache(true);
+    new_tab->GetController().Reload(true, content::ReloadType::BYPASSING_CACHE);
   else
     new_tab->GetController().Reload(true);
 }

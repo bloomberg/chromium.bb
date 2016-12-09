@@ -265,20 +265,20 @@ void NavigationControllerImpl::Restore(
 }
 
 void NavigationControllerImpl::Reload(bool check_for_repost) {
-  ReloadInternal(check_for_repost, ReloadType::NORMAL);
+  Reload(check_for_repost, ReloadType::NORMAL);
 }
 void NavigationControllerImpl::ReloadBypassingCache(bool check_for_repost) {
-  ReloadInternal(check_for_repost, ReloadType::BYPASSING_CACHE);
+  Reload(check_for_repost, ReloadType::BYPASSING_CACHE);
 }
 void NavigationControllerImpl::ReloadOriginalRequestURL(bool check_for_repost) {
-  ReloadInternal(check_for_repost, ReloadType::ORIGINAL_REQUEST_URL);
+  Reload(check_for_repost, ReloadType::ORIGINAL_REQUEST_URL);
 }
 void NavigationControllerImpl::ReloadDisableLoFi(bool check_for_repost) {
-  ReloadInternal(check_for_repost, ReloadType::DISABLE_LOFI_MODE);
+  Reload(check_for_repost, ReloadType::DISABLE_LOFI_MODE);
 }
 
-void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
-                                              ReloadType reload_type) {
+void NavigationControllerImpl::Reload(bool check_for_repost,
+                                      ReloadType reload_type) {
   if (transient_entry_index_ != -1) {
     // If an interstitial is showing, treat a reload as a navigation to the
     // transient entry's URL.
@@ -402,7 +402,7 @@ void NavigationControllerImpl::ContinuePendingReload() {
   if (pending_reload_ == ReloadType::NONE) {
     NOTREACHED();
   } else {
-    ReloadInternal(false, pending_reload_);
+    Reload(false, pending_reload_);
     pending_reload_ = ReloadType::NONE;
   }
 }

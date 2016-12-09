@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
@@ -348,6 +349,13 @@ class NavigationController {
   // Navigates to the specified offset from the "current entry". Does nothing if
   // the offset is out of bounds.
   virtual void GoToOffset(int offset) = 0;
+
+  // Reloads the current entry under the specified ReloadType.
+  // TODO(toyoshim): Change all callers to use this new Reload(), and remove
+  // old Reload* methods below. One motivation of this change is Reload(bool)
+  // interface is just confusing because in some contexts, the bool could be to
+  // specify bypassing cache. http://crbug.com/670232
+  virtual void Reload(bool check_for_repost, ReloadType reload_type) = 0;
 
   // Reloads the current entry. If |check_for_repost| is true and the current
   // entry has POST data the user is prompted to see if they really want to
