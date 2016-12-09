@@ -9,6 +9,7 @@
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_physical_fragment_base.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_layout_coordinator.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
@@ -33,11 +34,18 @@ class NGBlockLayoutAlgorithmTest : public ::testing::Test {
 
   NGPhysicalFragment* RunBlockLayoutAlgorithm(NGConstraintSpace* space,
                                               NGBlockNode* first_child) {
-    NGBlockLayoutAlgorithm algorithm(style_, first_child, space);
-    NGPhysicalFragmentBase* frag;
-    while (!algorithm.Layout(nullptr, &frag, nullptr))
-      continue;
-    return toNGPhysicalFragment(frag);
+    NGBlockNode parent(style_.get());
+    parent.SetFirstChild(first_child);
+
+    NGLayoutCoordinator coordinator(&parent, space);
+    NGPhysicalFragmentBase* fragment;
+    coordinator.Tick(&fragment);
+    EXPECT_EQ(kBlockLayoutAlgorithm,
+              coordinator.GetAlgorithmStackForTesting()[0]->algorithmType());
+    while (!coordinator.Tick(&fragment))
+      ;
+
+    return toNGPhysicalFragment(fragment);
   }
 
   RefPtr<ComputedStyle> style_;

@@ -36,7 +36,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                          NGConstraintSpace* space,
                          NGBreakToken* break_token = nullptr);
 
-  NGLayoutStatus Layout(NGFragmentBase*,
+  NGLayoutStatus Layout(NGPhysicalFragmentBase*,
                         NGPhysicalFragmentBase**,
                         NGLayoutAlgorithm**) override;
 
@@ -45,7 +45,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
  private:
   // Creates a new constraint space for the current child.
   NGConstraintSpace* CreateConstraintSpaceForCurrentChild() const;
-  bool LayoutCurrentChild();
+  void FinishCurrentChildLayout(NGFragmentBase* fragment);
 
   // Computes collapsed margins for 2 adjoining blocks and updates the resultant
   // fragment's MarginStrut if needed.
@@ -98,7 +98,12 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   const ComputedStyle& Style() const { return *style_; }
 
-  enum State { kStateInit, kStateChildLayout, kStateFinalize };
+  enum State {
+    kStateInit,
+    kStatePrepareForChildLayout,
+    kStateChildLayout,
+    kStateFinalize
+  };
   State state_;
 
   RefPtr<const ComputedStyle> style_;

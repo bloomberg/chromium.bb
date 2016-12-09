@@ -10,6 +10,7 @@
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
+#include "core/layout/ng/ng_legacy_block_layout_algorithm.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
@@ -23,12 +24,16 @@ NGLayoutAlgorithm* NGLayoutInputNode::AlgorithmForInputNode(
   DCHECK(input_node->Type() == kLegacyBlock);
   NGBlockNode* block = toNGBlockNode(input_node);
 
-  if (block->HasInlineChildren())
-    return new NGInlineLayoutAlgorithm(
-        block->Style(), toNGInlineNode(block->FirstChild()),
+  if (block->CanUseNewLayout()) {
+    if (block->HasInlineChildren())
+      return new NGInlineLayoutAlgorithm(
+          block->Style(), toNGInlineNode(block->FirstChild()),
+          constraint_space->ChildSpace(block->Style()));
+    return new NGBlockLayoutAlgorithm(
+        block->Style(), toNGBlockNode(block->FirstChild()),
         constraint_space->ChildSpace(block->Style()));
-  return new NGBlockLayoutAlgorithm(
-      block->Style(), toNGBlockNode(block->FirstChild()),
-      constraint_space->ChildSpace(block->Style()));
+  }
+
+  return new NGLegacyBlockLayoutAlgorithm(block, constraint_space);
 }
 }

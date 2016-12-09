@@ -30,7 +30,7 @@ class CORE_EXPORT NGTextLayoutAlgorithm : public NGLayoutAlgorithm {
                         NGConstraintSpace* space,
                         NGBreakToken* break_token = nullptr);
 
-  NGLayoutStatus Layout(NGFragmentBase*,
+  NGLayoutStatus Layout(NGPhysicalFragmentBase*,
                         NGPhysicalFragmentBase**,
                         NGLayoutAlgorithm**) override;
 

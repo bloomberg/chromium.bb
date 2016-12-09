@@ -313,6 +313,8 @@ blink_core_sources("layout") {
     "ng/ng_layout_opportunity_iterator.h",
     "ng/ng_layout_opportunity_tree_node.cc",
     "ng/ng_layout_opportunity_tree_node.h",
+    "ng/ng_legacy_block_layout_algorithm.cc",
+    "ng/ng_legacy_block_layout_algorithm.h",
     "ng/ng_length_utils.cc",
     "ng/ng_length_utils.h",
     "ng/ng_macros.h",

@@ -57,6 +57,13 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   DECLARE_VIRTUAL_TRACE();
 
+  // Runs layout on layout_box_ and creates a fragment for the resulting
+  // geometry.
+  NGPhysicalFragment* RunOldLayout(const NGConstraintSpace&);
+
+  void UpdateLayoutBox(NGPhysicalFragment* fragment,
+                       const NGConstraintSpace* constraint_space);
+
  private:
   // This is necessary for interop between old and new trees -- after our parent
   // positions us, it calls this function so we can store the position on the
@@ -69,10 +76,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // After we run the layout algorithm, this function copies back the geometry
   // data to the layout box.
   void CopyFragmentDataToLayoutBox(const NGConstraintSpace&);
-
-  // Runs layout on layout_box_ and creates a fragment for the resulting
-  // geometry.
-  NGPhysicalFragment* RunOldLayout(const NGConstraintSpace&);
 
   // We can either wrap a layout_box_ or a style_/next_sibling_/first_child_
   // combination.

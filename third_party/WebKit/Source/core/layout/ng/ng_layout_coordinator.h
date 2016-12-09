@@ -24,8 +24,14 @@ class CORE_EXPORT NGLayoutCoordinator final
 
   DECLARE_TRACE()
 
+  const HeapVector<Member<NGLayoutAlgorithm>>& GetAlgorithmStackForTesting()
+      const {
+    return layout_algorithms_;
+  };
+
  private:
   HeapVector<Member<NGLayoutAlgorithm>> layout_algorithms_;
+  Member<NGPhysicalFragmentBase> fragment_;
 };
 }
 

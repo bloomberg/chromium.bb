@@ -18,7 +18,8 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     NGInlineNode* first_child,
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
-    : style_(style),
+    : NGLayoutAlgorithm(kInlineLayoutAlgorithm),
+      style_(style),
       first_child_(first_child),
       constraint_space_(constraint_space),
       break_token_(break_token) {
@@ -26,7 +27,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
 }
 
 NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
-    NGFragmentBase*,
+    NGPhysicalFragmentBase*,
     NGPhysicalFragmentBase** fragment_out,
     NGLayoutAlgorithm**) {
   NGFragmentBuilder builder(NGPhysicalFragmentBase::kFragmentBox);

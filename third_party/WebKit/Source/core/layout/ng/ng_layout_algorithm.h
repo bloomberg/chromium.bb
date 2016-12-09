@@ -15,10 +15,16 @@ namespace blink {
 struct MinAndMaxContentSizes;
 class NGBlockNode;
 class NGConstraintSpace;
-class NGFragmentBase;
 class NGPhysicalFragmentBase;
 
 enum NGLayoutStatus { kNotFinished, kChildAlgorithmRequired, kNewFragment };
+
+enum NGLayoutAlgorithmType {
+  kBlockLayoutAlgorithm,
+  kInlineLayoutAlgorithm,
+  kLegacyBlockLayoutAlgorithm,
+  kTextLayoutAlgorithm
+};
 
 // Base class for all LayoutNG algorithms.
 class CORE_EXPORT NGLayoutAlgorithm
@@ -26,7 +32,7 @@ class CORE_EXPORT NGLayoutAlgorithm
   WTF_MAKE_NONCOPYABLE(NGLayoutAlgorithm);
 
  public:
-  NGLayoutAlgorithm() {}
+  NGLayoutAlgorithm(NGLayoutAlgorithmType type) : type_(type) {}
   virtual ~NGLayoutAlgorithm() {}
 
   // Actual layout function. Lays out the children and descendents within the
@@ -39,7 +45,7 @@ class CORE_EXPORT NGLayoutAlgorithm
   // be set with the NGBlockNode that needs to be layed out next.
   // If it returns NewFragment, the NGPhysicalFragmentBase out parameter
   // will contain the new fragment.
-  virtual NGLayoutStatus Layout(NGFragmentBase*,
+  virtual NGLayoutStatus Layout(NGPhysicalFragmentBase*,
                                 NGPhysicalFragmentBase**,
                                 NGLayoutAlgorithm**) = 0;
 
@@ -58,6 +64,11 @@ class CORE_EXPORT NGLayoutAlgorithm
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+  NGLayoutAlgorithmType algorithmType() const { return type_; }
+
+ private:
+  NGLayoutAlgorithmType type_;
 };
 
 }  // namespace blink

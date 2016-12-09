@@ -180,7 +180,8 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     NGBlockNode* first_child,
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
-    : state_(kStateInit),
+    : NGLayoutAlgorithm(kBlockLayoutAlgorithm),
+      state_(kStateInit),
       style_(style),
       first_child_(first_child),
       constraint_space_(constraint_space),
@@ -190,9 +191,9 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
 }
 
 NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
-    NGFragmentBase*,
+    NGPhysicalFragmentBase* child_fragment,
     NGPhysicalFragmentBase** fragment_out,
-    NGLayoutAlgorithm**) {
+    NGLayoutAlgorithm** algorithm_out) {
   switch (state_) {
     case kStateInit: {
       border_and_padding_ =
@@ -235,14 +236,12 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       builder_->SetDirection(constraint_space_->Direction());
       builder_->SetWritingMode(constraint_space_->WritingMode());
       builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
-      current_child_ = first_child_;
-      if (current_child_)
-        space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
 
-      state_ = kStateChildLayout;
+      current_child_ = first_child_;
+      state_ = kStatePrepareForChildLayout;
       return kNotFinished;
     }
-    case kStateChildLayout: {
+    case kStatePrepareForChildLayout: {
       if (current_child_) {
         // TODO(atotic): uncomment this code when implementing oof layout.
         // This code cannot be turned on because it prevents layout of
@@ -253,15 +252,30 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
         //   GetChildSpaceOffset());
         // }
         // else
-        if (!LayoutCurrentChild())
-          return kNotFinished;
-        current_child_ = current_child_->NextSibling();
-        if (current_child_) {
-          space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
-          return kNotFinished;
-        }
+        space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
+        *algorithm_out = NGLayoutInputNode::AlgorithmForInputNode(
+            current_child_, space_for_current_child_);
+        state_ = kStateChildLayout;
+        return kChildAlgorithmRequired;
       }
+
       state_ = kStateFinalize;
+      return kNotFinished;
+    }
+    case kStateChildLayout: {
+      DCHECK(current_child_);
+      DCHECK(child_fragment);
+
+      // TODO(layout_ng): Seems like a giant hack to call this here.
+      current_child_->UpdateLayoutBox(toNGPhysicalFragment(child_fragment),
+                                      space_for_current_child_);
+
+      FinishCurrentChildLayout(
+          new NGFragment(space_for_current_child_->WritingMode(),
+                         current_child_->Style()->direction(),
+                         toNGPhysicalFragment(child_fragment)));
+      current_child_ = current_child_->NextSibling();
+      state_ = kStatePrepareForChildLayout;
       return kNotFinished;
     }
     case kStateFinalize: {
@@ -284,11 +298,8 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
   return kNewFragment;
 }
 
-bool NGBlockLayoutAlgorithm::LayoutCurrentChild() {
-  NGFragmentBase* fragment;
-  if (!current_child_->Layout(space_for_current_child_, &fragment))
-    return false;
-
+void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
+    NGFragmentBase* fragment) {
   NGBoxStrut child_margins = ComputeMargins(
       *space_for_current_child_, CurrentChildStyle(),
       constraint_space_->WritingMode(), constraint_space_->Direction());
@@ -302,7 +313,6 @@ bool NGBlockLayoutAlgorithm::LayoutCurrentChild() {
     fragment_offset = PositionFragment(*fragment, child_margins);
   }
   builder_->AddChild(fragment, fragment_offset);
-  return true;
 }
 
 NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(

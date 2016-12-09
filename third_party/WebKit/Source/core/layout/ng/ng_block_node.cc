@@ -61,9 +61,7 @@ bool NGBlockNode::Layout(const NGConstraintSpace* constraint_space,
 
     fragment_ = toNGPhysicalFragment(fragment);
 
-    if (layout_box_) {
-      CopyFragmentDataToLayoutBox(*constraint_space);
-    }
+    UpdateLayoutBox(fragment_, constraint_space);
   } else {
     DCHECK(layout_box_);
     fragment_ = RunOldLayout(*constraint_space);
@@ -73,6 +71,14 @@ bool NGBlockNode::Layout(const NGConstraintSpace* constraint_space,
   // Reset coordinator for future use
   layout_coordinator_ = nullptr;
   return true;
+}
+
+void NGBlockNode::UpdateLayoutBox(NGPhysicalFragment* fragment,
+                                  const NGConstraintSpace* constraint_space) {
+  fragment_ = fragment;
+  if (layout_box_) {
+    CopyFragmentDataToLayoutBox(*constraint_space);
+  }
 }
 
 bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
@@ -94,19 +100,14 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   }
   DCHECK(!layout_coordinator_)
       << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
+
+  NGConstraintSpace* constraint_space =
+      NGConstraintSpaceBuilder(
+          FromPlatformWritingMode(Style()->getWritingMode()))
+          .SetTextDirection(Style()->direction())
+          .ToConstraintSpace();
+
   if (!minmax_algorithm_) {
-    NGConstraintSpaceBuilder builder(
-        FromPlatformWritingMode(Style()->getWritingMode()));
-
-    builder.SetAvailableSize(NGLogicalSize(LayoutUnit(), LayoutUnit()));
-    builder.SetPercentageResolutionSize(
-        NGLogicalSize(LayoutUnit(), LayoutUnit()));
-    NGConstraintSpace* constraint_space =
-        NGConstraintSpaceBuilder(
-            FromPlatformWritingMode(Style()->getWritingMode()))
-            .SetTextDirection(Style()->direction())
-            .ToConstraintSpace();
-
     minmax_algorithm_ = new NGBlockLayoutAlgorithm(
         Style(), toNGBlockNode(FirstChild()), constraint_space);
   }
@@ -122,9 +123,12 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   // TODO(cbiesinger): Replace the loops below with a state machine like in
   // Layout.
 
+  NGLayoutCoordinator* minmax_coordinator =
+      new NGLayoutCoordinator(this, constraint_space);
+
   // Have to synthesize this value.
   NGPhysicalFragmentBase* physical_fragment;
-  while (!minmax_algorithm_->Layout(nullptr, &physical_fragment, nullptr))
+  while (!minmax_coordinator->Tick(&physical_fragment))
     continue;
   NGFragment* fragment = new NGFragment(
       FromPlatformWritingMode(Style()->getWritingMode()), Style()->direction(),
@@ -133,7 +137,7 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   sizes->min_content = fragment->InlineOverflow();
 
   // Now, redo with infinite space for max_content
-  NGConstraintSpace* constraint_space =
+  constraint_space =
       NGConstraintSpaceBuilder(
           FromPlatformWritingMode(Style()->getWritingMode()))
           .SetTextDirection(Style()->direction())
@@ -141,9 +145,8 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .ToConstraintSpace();
 
-  minmax_algorithm_ = new NGBlockLayoutAlgorithm(
-      Style(), toNGBlockNode(FirstChild()), constraint_space);
-  while (!minmax_algorithm_->Layout(nullptr, &physical_fragment, nullptr))
+  minmax_coordinator = new NGLayoutCoordinator(this, constraint_space);
+  while (!minmax_coordinator->Tick(&physical_fragment))
     continue;
 
   fragment = new NGFragment(FromPlatformWritingMode(Style()->getWritingMode()),

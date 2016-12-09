@@ -14,14 +14,15 @@ NGTextLayoutAlgorithm::NGTextLayoutAlgorithm(
     NGInlineNode* inline_box,
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
-    : inline_box_(inline_box),
+    : NGLayoutAlgorithm(kTextLayoutAlgorithm),
+      inline_box_(inline_box),
       constraint_space_(constraint_space),
       break_token_(break_token) {
   DCHECK(inline_box_);
 }
 
 NGLayoutStatus NGTextLayoutAlgorithm::Layout(
-    NGFragmentBase*,
+    NGPhysicalFragmentBase*,
     NGPhysicalFragmentBase** fragment_out,
     NGLayoutAlgorithm**) {
   // TODO(layout-dev): implement.

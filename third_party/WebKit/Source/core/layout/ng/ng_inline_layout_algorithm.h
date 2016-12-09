@@ -35,7 +35,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
                           NGConstraintSpace* space,
                           NGBreakToken* break_token = nullptr);
 
-  NGLayoutStatus Layout(NGFragmentBase*,
+  NGLayoutStatus Layout(NGPhysicalFragmentBase*,
                         NGPhysicalFragmentBase**,
                         NGLayoutAlgorithm**) override;
 
