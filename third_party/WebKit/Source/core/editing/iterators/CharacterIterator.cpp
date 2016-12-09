@@ -189,6 +189,8 @@ CharacterIteratorAlgorithm<Strategy>::calculateCharacterSubrange(int offset,
   advance(offset);
   const PositionTemplate<Strategy> startPos = startPosition();
 
+  if (!length)
+    return EphemeralRangeTemplate<Strategy>(startPos, startPos);
   if (length > 1)
     advance(length - 1);
   return EphemeralRangeTemplate<Strategy>(startPos, endPosition());

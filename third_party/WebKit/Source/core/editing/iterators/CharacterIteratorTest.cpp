@@ -53,4 +53,21 @@ TEST_F(CharacterIteratorTest, SubrangeWithReplacedElements) {
   EXPECT_EQ(Position(textNode, 3), result.endPosition());
 }
 
+TEST_F(CharacterIteratorTest, CollapsedSubrange) {
+  static const char* bodyContent =
+      "<div id='div' contenteditable='true'>hello</div>";
+  setBodyContent(bodyContent);
+  document().view()->updateAllLifecyclePhases();
+
+  Node* textNode = document().getElementById("div")->lastChild();
+  Range* entireRange = Range::create(document(), textNode, 1, textNode, 4);
+  EXPECT_EQ(1, entireRange->startOffset());
+  EXPECT_EQ(4, entireRange->endOffset());
+
+  const EphemeralRange& result =
+      calculateCharacterSubrange(EphemeralRange(entireRange), 2, 0);
+  EXPECT_EQ(Position(textNode, 3), result.startPosition());
+  EXPECT_EQ(Position(textNode, 3), result.endPosition());
+}
+
 }  // namespace blink
