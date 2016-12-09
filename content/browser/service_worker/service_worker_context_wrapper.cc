@@ -570,7 +570,7 @@ void ServiceWorkerContextWrapper::CheckHasServiceWorker(
     return;
   }
   if (!context_core_) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(callback, false));
     return;
   }
