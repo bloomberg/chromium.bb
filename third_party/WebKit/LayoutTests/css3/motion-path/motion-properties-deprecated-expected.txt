@@ -1,0 +1,7 @@
+CONSOLE WARNING: motion-offset is deprecated and will be removed in M58, around April 2017. Please use offset-distance instead. See https://www.chromestatus.com/features/6390764217040896 for more details.
+CONSOLE WARNING: motion-path is deprecated and will be removed in M58, around April 2017. Please use offset-path instead. See https://www.chromestatus.com/features/6390764217040896 for more details.
+CONSOLE WARNING: motion-rotation is deprecated and will be removed in M58, around April 2017. Please use offset-rotate instead. See https://www.chromestatus.com/features/6390764217040896 for more details.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

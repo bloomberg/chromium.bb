@@ -1601,7 +1601,7 @@ static CSSValue* consumePathOrNone(CSSParserTokenRange& range) {
   return consumePath(range);
 }
 
-static CSSValue* consumeOffsetRotation(CSSParserTokenRange& range) {
+static CSSValue* consumeOffsetRotate(CSSParserTokenRange& range) {
   CSSValue* angle = consumeAngle(range);
   CSSValue* keyword = consumeIdent<CSSValueAuto, CSSValueReverse>(range);
   if (!angle && !keyword)
@@ -1662,7 +1662,7 @@ bool CSSPropertyParser::consumeOffsetShorthand(bool important) {
       consumeOffsetPath(m_range, m_context.useCounter(), false);
   const CSSValue* offsetDistance =
       consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeAll);
-  const CSSValue* offsetRotation = consumeOffsetRotation(m_range);
+  const CSSValue* offsetRotation = consumeOffsetRotate(m_range);
   if (!offsetPath || !offsetDistance || !offsetRotation || !m_range.atEnd())
     return false;
 
@@ -3661,7 +3661,7 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyOffsetRotate:
     case CSSPropertyOffsetRotation:
-      return consumeOffsetRotation(m_range);
+      return consumeOffsetRotate(m_range);
     case CSSPropertyWebkitTextEmphasisStyle:
       return consumeTextEmphasisStyle(m_range);
     case CSSPropertyOutlineColor:

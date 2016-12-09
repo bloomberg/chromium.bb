@@ -116,8 +116,8 @@ class StyleBuilderConverter {
   static TabSize convertLengthOrTabSpaces(StyleResolverState&, const CSSValue&);
   static Length convertLineHeight(StyleResolverState&, const CSSValue&);
   static float convertNumberOrPercentage(StyleResolverState&, const CSSValue&);
-  static StyleOffsetRotation convertOffsetRotation(StyleResolverState&,
-                                                   const CSSValue&);
+  static StyleOffsetRotation convertOffsetRotate(StyleResolverState&,
+                                                 const CSSValue&);
   static LengthPoint convertPosition(StyleResolverState&, const CSSValue&);
   static LengthPoint convertPositionOrAuto(StyleResolverState&,
                                            const CSSValue&);
@@ -185,7 +185,7 @@ class StyleBuilderConverter {
       const CSSValue&);
   static PassRefPtr<StylePath> convertPathOrNone(StyleResolverState&,
                                                  const CSSValue&);
-  static StyleOffsetRotation convertOffsetRotation(const CSSValue&);
+  static StyleOffsetRotation convertOffsetRotate(const CSSValue&);
   template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
   static Length convertPositionLength(StyleResolverState&, const CSSValue&);
   static Rotation convertRotation(const CSSValue&);

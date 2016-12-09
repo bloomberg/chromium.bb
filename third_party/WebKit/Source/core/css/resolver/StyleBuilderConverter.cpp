@@ -857,13 +857,13 @@ float StyleBuilderConverter::convertNumberOrPercentage(
   return primitiveValue.getFloatValue() / 100.0f;
 }
 
-StyleOffsetRotation StyleBuilderConverter::convertOffsetRotation(
+StyleOffsetRotation StyleBuilderConverter::convertOffsetRotate(
     StyleResolverState&,
     const CSSValue& value) {
-  return convertOffsetRotation(value);
+  return convertOffsetRotate(value);
 }
 
-StyleOffsetRotation StyleBuilderConverter::convertOffsetRotation(
+StyleOffsetRotation StyleBuilderConverter::convertOffsetRotate(
     const CSSValue& value) {
   StyleOffsetRotation result(0, OffsetRotationFixed);
 

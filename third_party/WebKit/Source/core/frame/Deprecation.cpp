@@ -54,8 +54,6 @@ String willBeRemoved(const char* feature,
       feature, milestoneString(milestone), details);
 }
 
-#if 0
-// TODO(jsbell): Currently unused, but likely to be needed in the future.
 String replacedWillBeRemoved(const char* feature,
                              const char* replacement,
                              Milestone milestone,
@@ -65,7 +63,6 @@ String replacedWillBeRemoved(const char* feature,
       "https://www.chromestatus.com/features/%s for more details.",
       feature, milestoneString(milestone), replacement, details);
 }
-#endif
 
 }  // anonymous namespace
 
@@ -116,10 +113,25 @@ void Deprecation::warnOnDeprecatedProperties(const LocalFrame* frame,
 }
 
 String Deprecation::deprecationMessage(CSSPropertyID unresolvedProperty) {
-  // TODO: Add a switch here when there are properties that we intend to
-  // deprecate.
-  // Returning an empty string for now.
-  return emptyString();
+  switch (unresolvedProperty) {
+    case CSSPropertyAliasMotionOffset:
+      return replacedWillBeRemoved("motion-offset", "offset-distance", M58,
+                                   "6390764217040896");
+    case CSSPropertyAliasMotionRotation:
+      return replacedWillBeRemoved("motion-rotation", "offset-rotate", M58,
+                                   "6390764217040896");
+    case CSSPropertyAliasMotionPath:
+      return replacedWillBeRemoved("motion-path", "offset-path", M58,
+                                   "6390764217040896");
+    case CSSPropertyMotion:
+      return replacedWillBeRemoved("motion", "offset", M58, "6390764217040896");
+    case CSSPropertyOffsetRotation:
+      return replacedWillBeRemoved("offset-rotation", "offset-rotate", M58,
+                                   "6390764217040896");
+
+    default:
+      return emptyString();
+  }
 }
 
 void Deprecation::countDeprecation(const LocalFrame* frame,
