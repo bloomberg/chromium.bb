@@ -395,17 +395,18 @@ cr.define('options', function() {
     },
 
     /**
-     * Intersects this.div with |otherDiv|. If there is a collision, modifies
-     * |deltaPos| to limit movement to a single axis and avoid the collision
-     * and returns true.
+     * Intersects this.div at |pos| with |otherDiv|. If there is a collision,
+     * modifies |deltaPos| to limit movement to a single axis and avoid the
+     * collision and returns true.
+     * @param {!options.DisplayPosition} pos
      * @param {?HTMLElement} otherDiv
      * @param {!options.DisplayPosition} deltaPos
      * @return {boolean} Whether there was a collision.
      */
-    collideWithDivAndModifyDelta: function(otherDiv, deltaPos) {
+    collideWithDivAndModifyDelta: function(pos, otherDiv, deltaPos) {
       var div = this.div;
-      var newX = div.offsetLeft + deltaPos.x;
-      var newY = div.offsetTop + deltaPos.y;
+      var newX = pos.x + deltaPos.x;
+      var newY = pos.y + deltaPos.y;
 
       if ((newX + div.offsetWidth <= otherDiv.offsetLeft) ||
           (newX >= otherDiv.offsetLeft + otherDiv.offsetWidth) ||
@@ -417,14 +418,14 @@ cr.define('options', function() {
       if (Math.abs(deltaPos.x) > Math.abs(deltaPos.y)) {
         if (deltaPos.x > 0) {
           var x = otherDiv.offsetLeft - div.offsetWidth;
-          if (x > div.offsetLeft)
-            deltaPos.x = x - div.offsetLeft;
+          if (x > pos.x)
+            deltaPos.x = x - pos.x;
           else
             deltaPos.x = 0;
         } else {
           var x = otherDiv.offsetLeft + otherDiv.offsetWidth;
-          if (x < div.offsetLeft)
-            deltaPos.x = x - div.offsetLeft;
+          if (x < pos.x)
+            deltaPos.x = x - pos.x;
           else
             deltaPos.x = 0;
         }
@@ -433,14 +434,14 @@ cr.define('options', function() {
         deltaPos.x = 0;
         if (deltaPos.y > 0) {
           var y = otherDiv.offsetTop - div.offsetHeight;
-          if (y > div.offsetTop)
-            deltaPos.y = y - div.offsetTop;
+          if (y > pos.y)
+            deltaPos.y = y - pos.y;
           else
             deltaPos.y = 0;
         } else if (deltaPos.y < 0) {
           var y = otherDiv.offsetTop + otherDiv.offsetTop;
-          if (y < div.offsetTop)
-            deltaPos.y = y - div.offsetTop;
+          if (y < pos.y)
+            deltaPos.y = y - pos.y;
           else
             deltaPos.y = 0;
         }

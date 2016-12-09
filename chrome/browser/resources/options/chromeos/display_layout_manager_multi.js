@@ -56,7 +56,7 @@ cr.define('options', function() {
       var deltaPos = {x: newPos.x - oldPos.x, y: newPos.y - oldPos.y};
 
       // Check for collisions.
-      this.collideAndModifyDelta_(layout, deltaPos);
+      this.collideAndModifyDelta_(layout, oldPos, deltaPos);
       if (deltaPos.x == 0 && deltaPos.y == 0)
         return;
 
@@ -194,7 +194,7 @@ cr.define('options', function() {
       var deltaPos = {x: pos.x - cornerPos.x, y: pos.y - cornerPos.y};
 
       // Check for collisions.
-      this.collideAndModifyDelta_(orphan, deltaPos);
+      this.collideAndModifyDelta_(orphan, cornerPos, deltaPos);
       pos = {x: cornerPos.x + deltaPos.x, y: cornerPos.y + deltaPos.y};
 
       // Update the div and adjust the corners.
@@ -279,13 +279,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Intersects |layout| with each other layout and reduces |deltaPos| to
-     * avoid any collisions (or sets it to [0,0] if the div can not be moved
-     * in the direction of |deltaPos|).
+     * Intersects |layout| at |pos| with each other layout and reduces
+     * |deltaPos| to avoid any collisions (or sets it to [0,0] if the div can
+     * not be moved in the direction of |deltaPos|).
      * @param {!options.DisplayLayout} layout
+     * @param {!options.DisplayPosition} pos
      * @param {!options.DisplayPosition} deltaPos
      */
-    collideAndModifyDelta_: function(layout, deltaPos) {
+    collideAndModifyDelta_: function(layout, pos, deltaPos) {
       var keys = Object.keys(
           /** @type {!Object<!options.DisplayLayout>}*/ (
               this.displayLayoutMap_));
@@ -296,7 +297,7 @@ cr.define('options', function() {
         checkCollisions = false;
         for (var tid of others) {
           var tlayout = this.displayLayoutMap_[tid];
-          if (layout.collideWithDivAndModifyDelta(tlayout.div, deltaPos)) {
+          if (layout.collideWithDivAndModifyDelta(pos, tlayout.div, deltaPos)) {
             if (deltaPos.x == 0 && deltaPos.y == 0)
               return;
             others.delete(tid);
