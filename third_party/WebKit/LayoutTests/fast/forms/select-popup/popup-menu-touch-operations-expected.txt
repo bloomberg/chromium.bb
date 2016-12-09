@@ -21,6 +21,12 @@ PASS window.internals.pagePopupWindow is not null
 PASS menuElement2.value is "2"
 ==> Test popup closes on outside GestureTapDawn
 PASS window.internals.pagePopupWindow is null
+==> Test popup doesn't reopen immediately after closing
+PASS window.internals.pagePopupWindow is null
+PASS window.internals.pagePopupWindow is null
+PASS window.internals.pagePopupWindow is not null
+PASS window.internals.pagePopupWindow is null
+PASS window.internals.pagePopupWindow is null
 PASS successfullyParsed is true
 
 TEST COMPLETE

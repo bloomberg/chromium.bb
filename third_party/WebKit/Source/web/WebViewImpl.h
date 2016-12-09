@@ -667,6 +667,11 @@ class WEB_EXPORT WebViewImpl final
   // The popup associated with an input/select element.
   RefPtr<WebPagePopupImpl> m_pagePopup;
 
+  // This stores the last hidden page popup. If a GestureTap attempts to open
+  // the popup that is closed by its previous GestureTapDown, the popup remains
+  // closed.
+  RefPtr<WebPagePopupImpl> m_lastHiddenPagePopup;
+
   Persistent<DevToolsEmulator> m_devToolsEmulator;
   std::unique_ptr<PageOverlay> m_pageColorOverlay;
 

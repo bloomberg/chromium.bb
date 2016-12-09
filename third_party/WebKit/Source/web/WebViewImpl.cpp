@@ -816,13 +816,6 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
 
   switch (event.type) {
     case WebInputEvent::GestureTap: {
-      // If there is a popup open, close it as the user is clicking on the page
-      // (outside of the popup). We also save it so we can prevent a tap on an
-      // element from immediately reopening the same popup.
-      RefPtr<WebPagePopupImpl> pagePopup = m_pagePopup;
-      hidePopups();
-      DCHECK(!m_pagePopup);
-
       m_client->cancelScheduledContentIntents();
       if (detectContentOnTouch(targetedEvent)) {
         eventResult = WebInputEventResult::HandledSystem;
@@ -874,13 +867,13 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
 
       eventResult = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(
           targetedEvent);
-
-      if (m_pagePopup && pagePopup &&
-          m_pagePopup->hasSamePopupClient(pagePopup.get())) {
+      if (m_pagePopup && m_lastHiddenPagePopup &&
+          m_pagePopup->hasSamePopupClient(m_lastHiddenPagePopup.get())) {
         // The tap triggered a page popup that is the same as the one we just
-        // closed.  It needs to be closed.
+        // closed. It needs to be closed.
         cancelPagePopup();
       }
+      m_lastHiddenPagePopup = nullptr;
       break;
     }
     case WebInputEvent::GestureTwoFingerTap:
@@ -900,21 +893,38 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
 
       break;
     }
-    case WebInputEvent::GestureShowPress:
-      m_client->cancelScheduledContentIntents();
-    case WebInputEvent::GestureTapDown:
-      // Touch pinch zoom and scroll must hide the popup. In case of a touch
-      // scroll or pinch zoom, this function is called with GestureTapDown
-      // rather than a GSB/GSU/GSE or GPB/GPU/GPE.
+    case WebInputEvent::GestureTapDown: {
+      // Touch pinch zoom and scroll on the page (outside of a popup) must hide
+      // the popup. In case of a touch scroll or pinch zoom, this function is
+      // called with GestureTapDown rather than a GSB/GSU/GSE or GPB/GPU/GPE.
+      // When we close a popup because of a GestureTapDown, we also save it so
+      // we can prevent the following GestureTap from immediately reopening the
+      // same popup.
+      m_lastHiddenPagePopup = m_pagePopup;
       hidePopups();
-    case WebInputEvent::GestureTapCancel:
+      DCHECK(!m_pagePopup);
+      eventResult = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(
+          targetedEvent);
+      break;
+    }
+    case WebInputEvent::GestureTapCancel: {
+      m_lastHiddenPagePopup = nullptr;
+      eventResult = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(
+          targetedEvent);
+      break;
+    }
+    case WebInputEvent::GestureShowPress: {
+      m_client->cancelScheduledContentIntents();
+      eventResult = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(
+          targetedEvent);
+      break;
+    }
     case WebInputEvent::GestureTapUnconfirmed: {
       eventResult = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(
           targetedEvent);
       break;
     }
-    default:
-      NOTREACHED();
+    default: { NOTREACHED(); }
   }
   m_client->didHandleGestureEvent(event, eventCancelled);
   return eventResult;
