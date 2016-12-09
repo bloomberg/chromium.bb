@@ -1076,6 +1076,8 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");
+  window->SetProperty(aura::client::kAccessibilityFocusFallsbackToWidgetKey,
+                      false);
   window->AddChild(surface_->window());
   window->SetEventTargeter(base::WrapUnique(new CustomWindowTargeter(widget_)));
   SetApplicationId(window, application_id_);

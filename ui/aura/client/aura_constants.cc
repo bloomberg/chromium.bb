@@ -27,6 +27,7 @@ namespace client {
 
 // Alphabetical sort.
 
+DEFINE_WINDOW_PROPERTY_KEY(bool, kAccessibilityFocusFallsbackToWidgetKey, true);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kAlwaysOnTopKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kAnimationsDisabledKey, false);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::ImageSkia, kAppIconKey, nullptr);

@@ -24,6 +24,11 @@ namespace client {
 
 // Alphabetical sort.
 
+// A property key to store whether accessibility focus falls back to widget or
+// not.
+AURA_EXPORT extern const WindowProperty<bool>* const
+    kAccessibilityFocusFallsbackToWidgetKey;
+
 // A property key to store always-on-top flag.
 AURA_EXPORT extern const WindowProperty<bool>* const kAlwaysOnTopKey;
 
