@@ -1536,6 +1536,8 @@ SBOX_TESTS_COMMAND int CheckWin10FontLoad(int argc, wchar_t** argv) {
 
   std::vector<char> font_data;
   int64_t len = file.GetLength();
+  if (len < 0)
+    return SBOX_TEST_NOT_FOUND;
   font_data.resize(len);
 
   int read = file.Read(0, &font_data[0], len);

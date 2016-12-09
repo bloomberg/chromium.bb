@@ -349,6 +349,8 @@ bool RulesetService::IndexRuleset(base::File unindexed_ruleset_file,
       "SubresourceFilter.IndexRuleset.CPUDuration");
 
   int64_t unindexed_ruleset_size = unindexed_ruleset_file.GetLength();
+  if (unindexed_ruleset_size < 0)
+    return false;
   CopyingFileInputStream copying_stream(std::move(unindexed_ruleset_file));
   google::protobuf::io::CopyingInputStreamAdaptor zero_copy_stream_adaptor(
       &copying_stream, 4096 /* buffer_size */);

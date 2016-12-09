@@ -83,6 +83,7 @@ class AudioInputDebugWriterTest
     //  0      4     "RIFF"
     EXPECT_EQ(0, strncmp(wav_header, "RIFF", 4));
     //  4      4     <file length - 8>
+    ASSERT_GT(file_length, 8);
     EXPECT_EQ(static_cast<uint64_t>(file_length - 8), ReadLE4(wav_header + 4));
     EXPECT_EQ(static_cast<uint32_t>(data_size + kWavHeaderSize - 8),
               ReadLE4(wav_header + 4));

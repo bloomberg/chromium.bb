@@ -94,7 +94,7 @@ void ExpectLogosEqual(const EncodedLogo& expected_logo,
 void ShortenFile(base::FilePath path) {
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_WRITE);
   int64_t file_length = file.GetLength();
-  ASSERT_NE(file_length, 0);
+  ASSERT_GT(file_length, 0);
   file.SetLength(file_length - 1);
 }
 
