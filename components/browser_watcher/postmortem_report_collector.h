@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "base/debug/activity_tracker.h"
+#include "base/debug/activity_analyzer.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -88,8 +88,9 @@ class PostmortemReportCollector {
   // TODO(manzagop): move this for reuse in live scenario.
   virtual CollectionStatus Collect(const base::FilePath& debug_state_file,
                                    std::unique_ptr<StabilityReport>* report);
-  void CollectThread(const base::debug::ActivitySnapshot& snapshot,
-                     ThreadState* thread_state);
+  void CollectThread(
+      const base::debug::ThreadActivityAnalyzer::Snapshot& snapshot,
+      ThreadState* thread_state);
 
   virtual bool WriteReportToMinidump(const StabilityReport& report,
                                      const crashpad::UUID& client_id,

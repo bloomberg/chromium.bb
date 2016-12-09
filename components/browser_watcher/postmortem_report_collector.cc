@@ -21,7 +21,7 @@ using base::FilePath;
 
 namespace browser_watcher {
 
-using base::debug::ActivitySnapshot;
+using ActivitySnapshot = base::debug::ThreadActivityAnalyzer::Snapshot;
 using base::debug::GlobalActivityAnalyzer;
 using base::debug::ThreadActivityAnalyzer;
 using crashpad::CrashReportDatabase;
@@ -199,7 +199,7 @@ PostmortemReportCollector::CollectionStatus PostmortemReportCollector::Collect(
 }
 
 void PostmortemReportCollector::CollectThread(
-    const base::debug::ActivitySnapshot& snapshot,
+    const base::debug::ThreadActivityAnalyzer::Snapshot& snapshot,
     ThreadState* thread_state) {
   DCHECK(thread_state);
 
