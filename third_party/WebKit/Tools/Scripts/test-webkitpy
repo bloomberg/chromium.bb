@@ -31,13 +31,8 @@
 import os
 import sys
 
-dirname = os.path.dirname
-scripts_dir = dirname(os.path.realpath(__file__))
-chromium_src_dir = dirname(dirname(dirname(dirname(scripts_dir))))
-
-path_to_typ = os.path.join(chromium_src_dir, 'third_party', 'typ')
-if path_to_typ not in sys.path:
-    sys.path.append(path_to_typ)
+from webkitpy.common import webkit_finder
+webkit_finder.add_typ_dir_to_sys_path()
 
 import typ
 
@@ -54,7 +49,7 @@ if sys.platform == 'win32':
         'webkitpy.layout_tests.layout_package.bot_test_expectations_unittest.*',
     ]
 
-sys.exit(typ.main(top_level_dir=scripts_dir,
+sys.exit(typ.main(top_level_dir=webkit_finder.get_scripts_dir(),
                   skip=skip,
-                  path=[os.path.join(scripts_dir, 'webkitpy', 'thirdparty')],
+                  path=[webkit_finder.get_webkitpy_thirdparty_dir()],
                   win_multiprocessing='spawn'))

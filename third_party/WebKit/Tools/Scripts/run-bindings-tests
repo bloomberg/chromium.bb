@@ -26,6 +26,10 @@
 import sys
 
 from webkitpy.bindings.bindings_tests import run_bindings_tests
+from webkitpy.common import webkit_finder
+webkit_finder.add_typ_dir_to_sys_path()
+
+import typ
 
 
 def main(argv):
@@ -44,6 +48,14 @@ def main(argv):
     reset_results = '--reset-results' in argv
     verbose = '--verbose' in argv
 
+    # First, run bindings unit tests.
+    return_code = typ.main(
+        top_level_dir=webkit_finder.get_bindings_scripts_dir(),
+        win_multiprocessing='spawn')
+    if return_code != 0:
+        return return_code
+
+    # Now run the bindings end-to-end tests.
     return run_bindings_tests(reset_results, verbose)
 
 

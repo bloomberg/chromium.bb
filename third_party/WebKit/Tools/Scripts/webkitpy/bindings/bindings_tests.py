@@ -27,18 +27,12 @@ import filecmp
 import fnmatch
 import os
 import shutil
-import sys
 import tempfile
 
 from webkitpy.common.system.executive import Executive
 
-# Source/ path is needed both to find input IDL files, and to import other
-# Python modules.
-module_path = os.path.dirname(__file__)
-source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
-                                            os.pardir, os.pardir, 'Source'))
-bindings_script_path = os.path.join(source_path, 'bindings', 'scripts')
-sys.path.append(bindings_script_path)  # for Source/bindings imports
+from webkitpy.common import webkit_finder
+webkit_finder.add_bindings_scripts_dir_to_sys_path()
 
 from code_generator_v8 import CodeGeneratorDictionaryImpl
 from code_generator_v8 import CodeGeneratorV8
@@ -88,8 +82,9 @@ NON_BLINK_IDL_FILES = frozenset([
 
 COMPONENT_DIRECTORY = frozenset(['core', 'modules'])
 
-test_input_directory = os.path.join(source_path, 'bindings', 'tests', 'idls')
-reference_directory = os.path.join(source_path, 'bindings', 'tests', 'results')
+SOURCE_PATH = webkit_finder.get_source_dir()
+TEST_INPUT_DIRECTORY = os.path.join(SOURCE_PATH, 'bindings', 'tests', 'idls')
+REFERENCE_DIRECTORY = os.path.join(SOURCE_PATH, 'bindings', 'tests', 'results')
 
 # component -> ComponentInfoProvider.
 # Note that this dict contains information about testing idl files, which live
@@ -127,7 +122,7 @@ def generate_interface_dependencies():
         """Returns IDL file paths which blink actually uses."""
         idl_paths = []
         for component in COMPONENT_DIRECTORY:
-            directory = os.path.join(source_path, component)
+            directory = os.path.join(SOURCE_PATH, component)
             idl_paths.extend(idl_paths_recursive(directory))
         return idl_paths
 
@@ -165,7 +160,7 @@ def generate_interface_dependencies():
     test_idl_paths = {}
     for component in COMPONENT_DIRECTORY:
         test_idl_paths[component] = idl_paths_recursive(
-            os.path.join(test_input_directory, component))
+            os.path.join(TEST_INPUT_DIRECTORY, component))
     # 2nd-stage computation: individual, then overall
     #
     # Properly should compute separately by component (currently test
@@ -258,7 +253,7 @@ def bindings_tests(output_directory, verbose):
         return True
 
     def identical_output_files(output_files):
-        reference_files = [os.path.join(reference_directory,
+        reference_files = [os.path.join(REFERENCE_DIRECTORY,
                                         os.path.relpath(path, output_directory))
                            for path in output_files]
         return all([identical_file(reference_filename, output_filename)
@@ -272,8 +267,8 @@ def bindings_tests(output_directory, verbose):
             generated_files.add(os.path.join(component, '.svn'))
 
         excess_files = []
-        for path in list_files(reference_directory):
-            relpath = os.path.relpath(path, reference_directory)
+        for path in list_files(REFERENCE_DIRECTORY):
+            relpath = os.path.relpath(path, REFERENCE_DIRECTORY)
             if relpath not in generated_files:
                 excess_files.append(relpath)
         if excess_files:
@@ -310,7 +305,7 @@ def bindings_tests(output_directory, verbose):
             idl_filenames = []
             dictionary_impl_filenames = []
             partial_interface_filenames = []
-            input_directory = os.path.join(test_input_directory, component)
+            input_directory = os.path.join(TEST_INPUT_DIRECTORY, component)
             for filename in os.listdir(input_directory):
                 if (filename.endswith('.idl') and
                         # Dependencies aren't built
@@ -380,6 +375,6 @@ def run_bindings_tests(reset_results, verbose):
     # a temp directory if not.
     if reset_results:
         print 'Resetting results'
-        return bindings_tests(reference_directory, verbose)
+        return bindings_tests(REFERENCE_DIRECTORY, verbose)
     with TemporaryDirectory() as temp_dir:
         return bindings_tests(temp_dir, verbose)
