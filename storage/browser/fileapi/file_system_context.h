@@ -282,10 +282,7 @@ class STORAGE_EXPORT FileSystemContext
                                            FileSystemType type,
                                            const base::FilePath& path) const;
 
-#if defined(OS_CHROMEOS)
-  // Used only on ChromeOS for now.
   void EnableTemporaryFileSystemInIncognito();
-#endif
 
   SandboxFileSystemBackendDelegate* sandbox_delegate() {
     return sandbox_delegate_.get();

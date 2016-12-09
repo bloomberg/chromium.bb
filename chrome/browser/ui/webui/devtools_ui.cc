@@ -15,6 +15,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_frontend_host.h"
+#include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -26,6 +28,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #include "third_party/WebKit/public/public_features.h"
 
 using content::BrowserThread;
@@ -438,8 +441,15 @@ DevToolsUI::DevToolsUI(content::WebUI* web_ui)
       new DevToolsDataSource(profile->GetRequestContext()));
 
   GURL url = web_ui->GetWebContents()->GetVisibleURL();
-  if (url.spec() == SanitizeFrontendURL(url).spec())
-    bindings_.reset(new DevToolsUIBindings(web_ui->GetWebContents()));
+  if (url.spec() != SanitizeFrontendURL(url).spec())
+    return;
+
+  if (profile->IsOffTheRecord()) {
+    GURL site = content::SiteInstance::GetSiteForURL(profile, url);
+    content::BrowserContext::GetStoragePartitionForSite(profile, site)->
+        GetFileSystemContext()->EnableTemporaryFileSystemInIncognito();
+  }
+  bindings_.reset(new DevToolsUIBindings(web_ui->GetWebContents()));
 }
 
 DevToolsUI::~DevToolsUI() {
