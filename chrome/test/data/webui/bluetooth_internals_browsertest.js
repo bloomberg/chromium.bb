@@ -144,56 +144,93 @@ BluetoothInternalsTest.prototype = {
         };
 
         frameInterfaces.addInterfaceOverrideForTesting(
-          adapter.AdapterFactory.name,
-          function(handle) {
-            var stub = connection.bindHandleToStub(
-                handle, adapter.AdapterFactory);
-            this.adapterFactory = new TestAdapterFactoryProxy();
-            bindings.StubBindings(stub).delegate = this.adapterFactory;
+            adapter.AdapterFactory.name, function(handle) {
+              var stub = connection.bindHandleToStub(
+                  handle, adapter.AdapterFactory);
 
-            this.setupResolver.resolve();
-          }.bind(this));
+              this.adapterFactory = new TestAdapterFactoryProxy();
+
+              this.adapterFactory.adapter.proxy.setTestDevices([
+                this.fakeDeviceInfo1(),
+                this.fakeDeviceInfo2(),
+              ]);
+              this.adapterFactory.adapter.proxy.setTestAdapter(
+                  this.fakeAdapterInfo());
+
+              bindings.StubBindings(stub).delegate = this.adapterFactory;
+
+              this.setupResolver.resolve();
+            }.bind(this));
+
       }.bind(this));
     }.bind(this);
   },
+
+  /**
+   * Returns a copy of fake adapter info object.
+   * @return {!Object}
+   */
+  fakeAdapterInfo: function() {
+    return {
+      address: '02:1C:7E:6A:11:5A',
+      discoverable: false,
+      discovering: false,
+      initialized: true,
+      name: 'computer.example.com-0',
+      powered: true,
+      present: true,
+    };
+  },
+
+  /**
+   * Returns a copy of a fake device info object (variant 1).
+   * @return {!Object}
+   */
+  fakeDeviceInfo1: function() {
+    return {
+      address: "AA:AA:84:96:92:84",
+      name: "AAA",
+      name_for_display: "AAA",
+      rssi: {value: -40},
+      services: [],
+    };
+  },
+
+  /**
+   * Returns a copy of a fake device info object (variant 2).
+   * @return {!Object}
+   */
+  fakeDeviceInfo2: function() {
+    return {
+      address: "BB:BB:84:96:92:84",
+      name: "BBB",
+      name_for_display: "BBB",
+      rssi: null,
+      services: [],
+    };
+  },
+
+  /**
+   * Returns a copy of fake device info object. The returned device info lack
+   * rssi and services properties.
+   * @return {!Object}
+   */
+  fakeDeviceInfo3: function() {
+    return {
+      address: "CC:CC:84:96:92:84",
+      name: "CCC",
+      name_for_display: "CCC",
+    };
+  },
 };
 
-// Times out. See https://crbug.com/667970.
-TEST_F('BluetoothInternalsTest', 'DISABLED_Startup_BluetoothInternals',
-    function() {
-  var fakeAdapterInfo = {
-    address: '02:1C:7E:6A:11:5A',
-    discoverable: false,
-    discovering: false,
-    initialized: true,
-    name: 'computer.example.com-0',
-    powered: true,
-    present: true,
-  };
-
-  var fakeDeviceInfo1 = {
-    address: "AA:AA:84:96:92:84",
-    name: "AAA",
-    name_for_display: "AAA",
-    rssi: {value: -40},
-    services: []
-  };
-
-  var fakeDeviceInfo2 = {
-    address: "BB:BB:84:96:92:84",
-    name: "BBB",
-    name_for_display: "BBB",
-    rssi: null,
-    services: []
-  };
-
-  var fakeDeviceInfo3 = {
-    address: "CC:CC:84:96:92:84",
-    name: "CCC",
-    name_for_display: "CCC",
-  };
-
+TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
   var adapterFactory = null;
+  var deviceTable = null;
+
+  var fakeDeviceInfo1 = this.fakeDeviceInfo1;
+  var fakeDeviceInfo2 = this.fakeDeviceInfo2;
+  var fakeDeviceInfo3 = this.fakeDeviceInfo3;
 
   // Before tests are run, make sure setup completes.
   var setupPromise = this.setupResolver.promise.then(function() {
@@ -206,12 +243,6 @@ TEST_F('BluetoothInternalsTest', 'DISABLED_Startup_BluetoothInternals',
 
     suiteSetup(function() {
       return setupPromise.then(function() {
-        adapterFactory.adapter.proxy.setTestDevices([
-          fakeDeviceInfo1,
-          fakeDeviceInfo2
-        ]);
-        adapterFactory.adapter.proxy.setTestAdapter(fakeAdapterInfo);
-
         return Promise.all([
           adapterFactory.whenCalled('getAdapter'),
           adapterFactory.adapter.proxy.whenCalled('getInfo'),
@@ -222,9 +253,10 @@ TEST_F('BluetoothInternalsTest', 'DISABLED_Startup_BluetoothInternals',
     });
 
     setup(function() {
+      deviceTable = document.querySelector('#devices table');
       devices.splice(0, devices.length);
-      adapterBroker.adapterClient_.deviceAdded(fakeDeviceInfo1);
-      adapterBroker.adapterClient_.deviceAdded(fakeDeviceInfo2);
+      adapterBroker.adapterClient_.deviceAdded(fakeDeviceInfo1());
+      adapterBroker.adapterClient_.deviceAdded(fakeDeviceInfo2());
     });
 
     teardown(function() {
@@ -236,7 +268,7 @@ TEST_F('BluetoothInternalsTest', 'DISABLED_Startup_BluetoothInternals',
      * @param {!device_collection.DeviceInfo} deviceInfo
      */
     function changeDevice(deviceInfo) {
-      var deviceRow = document.querySelector('#' + escapeDeviceAddress(
+      var deviceRow = deviceTable.querySelector('#' + escapeDeviceAddress(
           deviceInfo.address));
       var nameForDisplayColumn = deviceRow.children[0];
       var addressColumn = deviceRow.children[1];
@@ -280,7 +312,7 @@ TEST_F('BluetoothInternalsTest', 'DISABLED_Startup_BluetoothInternals',
      * @param {boolean} expectRemoved
      */
     function expectDeviceRemoved(address, expectRemoved) {
-      var removedRow = document.querySelector(
+      var removedRow = deviceTable.querySelector(
           '#' + escapeDeviceAddress(address));
 
       expectEquals(expectRemoved, removedRow.classList.contains('removed'));
@@ -290,17 +322,17 @@ TEST_F('BluetoothInternalsTest', 'DISABLED_Startup_BluetoothInternals',
      * Tests whether a device is added successfully and not duplicated.
      */
     test('DeviceAdded', function() {
-      var devices = document.querySelectorAll('#device-table tbody tr');
+      var devices = deviceTable.querySelectorAll('tbody tr');
       expectEquals(EXPECTED_DEVICES, devices.length);
 
       // Copy device info because device collection will not copy this object.
-      var infoCopy = Object.assign({}, fakeDeviceInfo3);
+      var infoCopy = fakeDeviceInfo3();
       adapterBroker.adapterClient_.deviceAdded(infoCopy);
 
       // Same device shouldn't appear twice.
       adapterBroker.adapterClient_.deviceAdded(infoCopy);
 
-      devices = document.querySelectorAll('#device-table tbody tr');
+      devices = deviceTable.querySelectorAll('tbody tr');
       expectEquals(EXPECTED_DEVICES + 1, devices.length);
     });
 
@@ -308,26 +340,28 @@ TEST_F('BluetoothInternalsTest', 'DISABLED_Startup_BluetoothInternals',
      * Tests whether a device is marked properly as removed.
      */
     test('DeviceSetToRemoved', function() {
-      var devices = document.querySelectorAll('#device-table tbody tr');
+      var devices = deviceTable.querySelectorAll('tbody tr');
       expectEquals(EXPECTED_DEVICES, devices.length);
-      adapterBroker.adapterClient_.deviceRemoved(fakeDeviceInfo2);
+
+      var fakeDevice = fakeDeviceInfo2();
+      adapterBroker.adapterClient_.deviceRemoved(fakeDevice);
 
       // The number of rows shouldn't change.
-      devices = document.querySelectorAll('#device-table tbody tr');
+      devices = deviceTable.querySelectorAll('tbody tr');
       expectEquals(EXPECTED_DEVICES, devices.length);
 
-      expectDeviceRemoved(fakeDeviceInfo2.address, true);
+      expectDeviceRemoved(fakeDevice.address, true);
     });
 
     /**
      * Tests whether a changed device updates the device table properly.
      */
     test('DeviceChanged', function() {
-      var devices = document.querySelectorAll('#device-table tbody tr');
+      var devices = deviceTable.querySelectorAll('tbody tr');
       expectEquals(EXPECTED_DEVICES, devices.length);
 
       // Copy device info because device collection will not copy this object.
-      var newDeviceInfo = Object.assign({}, fakeDeviceInfo1);
+      var newDeviceInfo = fakeDeviceInfo1();
       newDeviceInfo.name_for_display = 'DDDD';
       newDeviceInfo.rssi = { value: -20 };
       newDeviceInfo.services = ['service1', 'service2', 'service3'];
@@ -339,14 +373,14 @@ TEST_F('BluetoothInternalsTest', 'DISABLED_Startup_BluetoothInternals',
      * Tests the entire device cycle, added -> updated -> removed -> re-added.
      */
     test('DeviceUpdateCycle', function() {
-      var devices = document.querySelectorAll('#device-table tbody tr');
+      var devices = deviceTable.querySelectorAll('tbody tr');
       expectEquals(EXPECTED_DEVICES, devices.length);
 
       // Copy device info because device collection will not copy this object.
-      var originalDeviceInfo = Object.assign({}, fakeDeviceInfo3);
+      var originalDeviceInfo = fakeDeviceInfo3();
       adapterBroker.adapterClient_.deviceAdded(originalDeviceInfo);
 
-      var newDeviceInfo = Object.assign({}, fakeDeviceInfo3);
+      var newDeviceInfo = fakeDeviceInfo3();
       newDeviceInfo.name_for_display = 'DDDD';
       newDeviceInfo.rssi = { value: -20 };
       newDeviceInfo.services = ['service1', 'service2', 'service3'];
@@ -362,30 +396,30 @@ TEST_F('BluetoothInternalsTest', 'DISABLED_Startup_BluetoothInternals',
     });
 
     test('DeviceAddedRssiCheck', function() {
-      var devices = document.querySelectorAll('#device-table tbody tr');
+      var devices = deviceTable.querySelectorAll('tbody tr');
       expectEquals(EXPECTED_DEVICES, devices.length);
 
       // Copy device info because device collection will not copy this object.
-      var newDeviceInfo = Object.assign({}, fakeDeviceInfo3);
+      var newDeviceInfo = fakeDeviceInfo3();
       adapterBroker.adapterClient_.deviceAdded(newDeviceInfo);
 
-      var deviceRow = document.querySelector('#' + escapeDeviceAddress(
+      var deviceRow = deviceTable.querySelector('#' + escapeDeviceAddress(
           newDeviceInfo.address));
       var rssiColumn = deviceRow.children[2];
       expectEquals('Unknown', rssiColumn.textContent);
 
-      var newDeviceInfo1 = Object.assign({}, fakeDeviceInfo3);
+      var newDeviceInfo1 = fakeDeviceInfo3();
       newDeviceInfo1.rssi = {value: -42};
       adapterBroker.adapterClient_.deviceChanged(newDeviceInfo1);
       expectEquals('-42', rssiColumn.textContent);
 
       // Device table should keep last valid rssi value.
-      var newDeviceInfo2 = Object.assign({}, fakeDeviceInfo3);
+      var newDeviceInfo2 = fakeDeviceInfo3();
       newDeviceInfo2.rssi = null;
       adapterBroker.adapterClient_.deviceChanged(newDeviceInfo2);
       expectEquals('-42', rssiColumn.textContent);
 
-      var newDeviceInfo3 = Object.assign({}, fakeDeviceInfo3);
+      var newDeviceInfo3 = fakeDeviceInfo3();
       newDeviceInfo3.rssi = {value: -17};
       adapterBroker.adapterClient_.deviceChanged(newDeviceInfo3);
       expectEquals('-17', rssiColumn.textContent);
