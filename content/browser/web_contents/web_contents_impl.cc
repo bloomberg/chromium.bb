@@ -1471,14 +1471,8 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
 void WebContentsImpl::DidChangeVisibleSecurityState() {
   if (delegate_) {
     delegate_->VisibleSecurityStateChanged(this);
-
-    SecurityStyleExplanations security_style_explanations;
-    blink::WebSecurityStyle security_style =
-        delegate_->GetSecurityStyle(this, &security_style_explanations);
-    for (auto& observer : observers_) {
-      observer.SecurityStyleChanged(security_style,
-                                    security_style_explanations);
-    }
+    for (auto& observer : observers_)
+      observer.DidChangeVisibleSecurityState();
   }
 }
 

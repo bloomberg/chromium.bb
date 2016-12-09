@@ -32,9 +32,7 @@ class SecurityHandler : public WebContentsObserver {
   void AttachToRenderFrameHost();
 
   // WebContentsObserver overrides
-  void SecurityStyleChanged(
-      blink::WebSecurityStyle security_style,
-      const SecurityStyleExplanations& security_style_explanations) override;
+  void DidChangeVisibleSecurityState() override;
 
   std::unique_ptr<Client> client_;
   bool enabled_;

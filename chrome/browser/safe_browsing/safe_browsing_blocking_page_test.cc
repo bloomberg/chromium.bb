@@ -49,6 +49,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
@@ -1123,10 +1124,10 @@ class SecurityStyleTestObserver : public content::WebContentsObserver {
   }
 
   // WebContentsObserver:
-  void SecurityStyleChanged(blink::WebSecurityStyle security_style,
-                            const content::SecurityStyleExplanations&
-                                security_style_explanations) override {
-    latest_security_style_ = security_style;
+  void DidChangeVisibleSecurityState() override {
+    content::SecurityStyleExplanations security_style_explanations;
+    latest_security_style_ = web_contents()->GetDelegate()->GetSecurityStyle(
+        web_contents(), &security_style_explanations);
   }
 
  private:

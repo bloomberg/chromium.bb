@@ -75,13 +75,9 @@ void SecurityHandler::AttachToRenderFrameHost() {
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   WebContentsObserver::Observe(web_contents);
 
-  // Send an initial SecurityStyleChanged event.
+  // Send an initial DidChangeVisibleSecurityState event.
   DCHECK(enabled_);
-  SecurityStyleExplanations security_style_explanations;
-  blink::WebSecurityStyle security_style =
-      web_contents->GetDelegate()->GetSecurityStyle(
-          web_contents, &security_style_explanations);
-  SecurityStyleChanged(security_style, security_style_explanations);
+  DidChangeVisibleSecurityState();
 }
 
 void SecurityHandler::SetRenderFrameHost(RenderFrameHost* host) {
@@ -90,10 +86,13 @@ void SecurityHandler::SetRenderFrameHost(RenderFrameHost* host) {
     AttachToRenderFrameHost();
 }
 
-void SecurityHandler::SecurityStyleChanged(
-    blink::WebSecurityStyle security_style,
-    const SecurityStyleExplanations& security_style_explanations) {
+void SecurityHandler::DidChangeVisibleSecurityState() {
   DCHECK(enabled_);
+
+  SecurityStyleExplanations security_style_explanations;
+  blink::WebSecurityStyle security_style =
+      web_contents()->GetDelegate()->GetSecurityStyle(
+          web_contents(), &security_style_explanations);
 
   const std::string security_state =
       SecurityStyleToProtocolSecurityState(security_style);

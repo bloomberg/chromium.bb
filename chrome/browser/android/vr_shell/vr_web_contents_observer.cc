@@ -22,7 +22,7 @@ VrWebContentsObserver::VrWebContentsObserver(content::WebContents* web_contents,
       ui_interface_(ui_interface),
       vr_shell_(vr_shell) {
   ui_interface_->SetURL(web_contents->GetVisibleURL());
-  SetSecurityLevel();
+  DidChangeVisibleSecurityState();
 }
 
 VrWebContentsObserver::~VrWebContentsObserver() {}
@@ -60,16 +60,7 @@ void VrWebContentsObserver::DidFinishNavigation(
   }
 }
 
-// TODO(cjgrant): We care about security level, not style. Refactor
-// WebContentsObserver (or equivalent) to expose more general security
-// information, so we can stop abusing this callback.
-void VrWebContentsObserver::SecurityStyleChanged(
-    blink::WebSecurityStyle security_style,
-    const content::SecurityStyleExplanations& explanations) {
-  SetSecurityLevel();
-}
-
-void VrWebContentsObserver::SetSecurityLevel() {
+void VrWebContentsObserver::DidChangeVisibleSecurityState() {
   const auto* helper = SecurityStateTabHelper::FromWebContents(web_contents());
   DCHECK(helper);
   security_state::SecurityInfo security_info;

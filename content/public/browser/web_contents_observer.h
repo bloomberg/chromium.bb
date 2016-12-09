@@ -19,7 +19,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "third_party/WebKit/public/platform/WebSecurityStyle.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -41,7 +40,6 @@ struct LoadCommittedDetails;
 struct Referrer;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
-struct SecurityStyleExplanations;
 
 // An observer API implemented by classes which are interested in various page
 // load events from WebContents.  They also get a chance to filter IPC messages.
@@ -297,13 +295,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                            const base::string16& error_description,
                            bool was_ignored_by_handler) {}
 
-  // This method is invoked when the SecurityStyle of the WebContents changes.
-  // |security_style| is the new SecurityStyle. |security_style_explanations|
-  // contains human-readable strings explaining why the SecurityStyle of the
-  // page has been downgraded.
-  virtual void SecurityStyleChanged(
-      blink::WebSecurityStyle security_style,
-      const SecurityStyleExplanations& security_style_explanations) {}
+  // This method is invoked when the visible security state of the page changes.
+  virtual void DidChangeVisibleSecurityState() {}
 
   // This method is invoked when content was loaded from an in-memory cache.
   virtual void DidLoadResourceFromMemoryCache(

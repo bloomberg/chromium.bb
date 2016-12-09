@@ -63,9 +63,9 @@ enum CertificateStatus { VALID_CERTIFICATE, INVALID_CERTIFICATE };
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
-// A WebContentsObserver useful for testing the SecurityStyleChanged()
-// method: it keeps track of the latest security style and explanation
-// that was fired.
+// A WebContentsObserver useful for testing the DidChangeVisibleSecurityState()
+// method: it keeps track of the latest security style and explanation that was
+// fired.
 class SecurityStyleTestObserver : public content::WebContentsObserver {
  public:
   explicit SecurityStyleTestObserver(content::WebContents* web_contents)
@@ -73,11 +73,11 @@ class SecurityStyleTestObserver : public content::WebContentsObserver {
         latest_security_style_(blink::WebSecurityStyleUnknown) {}
   ~SecurityStyleTestObserver() override {}
 
-  void SecurityStyleChanged(blink::WebSecurityStyle security_style,
-                            const content::SecurityStyleExplanations&
-                                security_style_explanations) override {
-    latest_security_style_ = security_style;
-    latest_explanations_ = security_style_explanations;
+  void DidChangeVisibleSecurityState() override {
+    content::SecurityStyleExplanations explanations;
+    latest_security_style_ = web_contents()->GetDelegate()->GetSecurityStyle(
+        web_contents(), &explanations);
+    latest_explanations_ = explanations;
   }
 
   blink::WebSecurityStyle latest_security_style() const {
@@ -343,9 +343,9 @@ class SecurityStateTabHelperTestWithPasswordCcSwitch
   DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelperTestWithPasswordCcSwitch);
 };
 
-class SecurityStyleChangedTest : public InProcessBrowserTest {
+class DidChangeVisibleSecurityStateTest : public InProcessBrowserTest {
  public:
-  SecurityStyleChangedTest()
+  DidChangeVisibleSecurityStateTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     https_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   }
@@ -359,7 +359,7 @@ class SecurityStyleChangedTest : public InProcessBrowserTest {
   net::EmbeddedTestServer https_server_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SecurityStyleChangedTest);
+  DISALLOW_COPY_AND_ASSIGN(DidChangeVisibleSecurityStateTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HttpPage) {
@@ -1512,9 +1512,10 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, AddedTab) {
                              false /* expect cert status error */);
 }
 
-// Tests that the WebContentsObserver::SecurityStyleChanged event fires
+// Tests that the WebContentsObserver::DidChangeVisibleSecurityState event fires
 // with the current style on HTTP, broken HTTPS, and valid HTTPS pages.
-IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
+IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
+                       DidChangeVisibleSecurityStateObserver) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1650,14 +1651,14 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
 // and test that the observed security style matches.
 #if defined(OS_CHROMEOS)
 // Flaky on Chrome OS. See https://crbug.com/638576.
-#define MAYBE_SecurityStyleChangedObserverGoBack \
-  DISABLED_SecurityStyleChangedObserverGoBack
+#define MAYBE_DidChangeVisibleSecurityStateObserverGoBack \
+  DISABLED_DidChangeVisibleSecurityStateObserverGoBack
 #else
-#define MAYBE_SecurityStyleChangedObserverGoBack \
-  SecurityStyleChangedObserverGoBack
+#define MAYBE_DidChangeVisibleSecurityStateObserverGoBack \
+  DidChangeVisibleSecurityStateObserverGoBack
 #endif
-IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest,
-                       MAYBE_SecurityStyleChangedObserverGoBack) {
+IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
+                       MAYBE_DidChangeVisibleSecurityStateObserverGoBack) {
   ASSERT_TRUE(https_server_.Start());
 
   net::EmbeddedTestServer https_test_server_expired(
@@ -1856,7 +1857,7 @@ class BrowserTestNonsecureURLRequest : public InProcessBrowserTest {
 // Tests that a connection with obsolete TLS settings does not get a
 // secure connection explanation.
 IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
-                       SecurityStyleChangedObserverNonsecureConnection) {
+                       DidChangeVisibleSecurityStateObserverNonsecureConnection) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   SecurityStyleTestObserver observer(web_contents);
