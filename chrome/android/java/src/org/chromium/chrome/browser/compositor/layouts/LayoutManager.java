@@ -256,8 +256,10 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             TabContentManager tabContentManager, ResourceManager resourceManager,
             ChromeFullscreenManager fullscreenManager) {
         // Update the android browser controls state.
-        fullscreenManager.setHideBrowserControlsAndroidView(
-                mActiveLayout.forceHideBrowserControlsAndroidView());
+        if (fullscreenManager != null) {
+            fullscreenManager.setHideBrowserControlsAndroidView(
+                    mActiveLayout.forceHideBrowserControlsAndroidView());
+        }
 
         getViewportPixel(mCachedVisibleViewport);
         mHost.getWindowViewport(mCachedWindowViewport);
