@@ -450,6 +450,7 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
       'can_use_on_swarming_builders': True,
       'expiration': 21600,
       'hard_timeout': 7200,
+      'io_timeout': 3600,
       'dimension_sets': swarming_dimensions,
     }
   return result
