@@ -75,4 +75,3 @@ class FtpDirectoryListingParserTest : public testing::Test {
 }  // namespace net
 
 #endif  // NET_FTP_FTP_DIRECTORY_LISTING_PARSER_UNITTEST_H_
-

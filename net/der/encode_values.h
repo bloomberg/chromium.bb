@@ -26,4 +26,4 @@ NET_EXPORT bool EncodeTimeAsGeneralizedTime(const base::Time& time,
 
 }  // namespace net
 
-#endif  // NET_DER_ENCODE_VALUES_H
+#endif  // NET_DER_ENCODE_VALUES_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_SUSTAINED_BANDWIDTH_RECORDER_H_
-#define NET_QUIC_QUIC_SUSTAINED_BANDWIDTH_RECORDER_H_
+#ifndef NET_QUIC_CORE_QUIC_SUSTAINED_BANDWIDTH_RECORDER_H_
+#define NET_QUIC_CORE_QUIC_SUSTAINED_BANDWIDTH_RECORDER_H_
 
 #include <stdint.h>
 
@@ -91,4 +91,4 @@ class QUIC_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_SUSTAINED_BANDWIDTH_RECORDER_H_
+#endif  // NET_QUIC_CORE_QUIC_SUSTAINED_BANDWIDTH_RECORDER_H_

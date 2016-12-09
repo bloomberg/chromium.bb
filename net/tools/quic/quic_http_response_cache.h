@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_QUIC_QUIC_IN_MEMORY_CACHE_H_
-#define NET_TOOLS_QUIC_QUIC_IN_MEMORY_CACHE_H_
+#ifndef NET_TOOLS_QUIC_QUIC_HTTP_RESPONSE_CACHE_H_
+#define NET_TOOLS_QUIC_QUIC_HTTP_RESPONSE_CACHE_H_
 
 #include <list>
 #include <map>
@@ -218,4 +218,4 @@ class QuicHttpResponseCache {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_QUIC_IN_MEMORY_CACHE_H_
+#endif  // NET_TOOLS_QUIC_QUIC_HTTP_RESPONSE_CACHE_H_

@@ -44,4 +44,4 @@ SetCertificateWhitelistForTesting(const PublicKeyWhitelist* whitelist,
 
 }  // namespace net
 
-#endif  // NET_CERT_CERT_VERIFY_PROC_WHITELIST
+#endif  // NET_CERT_CERT_VERIFY_PROC_WHITELIST_H_

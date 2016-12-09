@@ -105,4 +105,4 @@ struct NET_EXPORT_PRIVATE NetworkID {
 }  // namespace nqe
 }  // namespace net
 
-#endif  // NET_NQE_NETWORK_QUALITY_ESTIMATOR_H_
+#endif  // NET_NQE_NETWORK_ID_H_
