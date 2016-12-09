@@ -337,7 +337,22 @@
   },
   {
     "prefix": "spinvalidation",
-    "base": "paint/invalidation",
+    "base": "compositing",
+    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
+  },
+  {
+    "prefix": "spinvalidation",
+    "base": "fast",
+    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
+  },
+  {
+    "prefix": "spinvalidation",
+    "base": "paint",
+    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
+  },
+  {
+    "prefix": "spinvalidation",
+    "base": "svg",
     "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
   }
 ]

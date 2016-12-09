@@ -1,6 +1,0 @@
-# Expectations for SlimmingPaintInvalidation feature
-
-# These tests run in virtual/spinvalidation suite.
-Bug(none) paint/invalidation [ Skip ]
-
-crbug.com/648274 fast/multicol/span/abspos-containing-block-outside-spanner.html [ Failure ]

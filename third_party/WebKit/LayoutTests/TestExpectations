@@ -91,6 +91,13 @@ crbug.com/626748 paint/invalidation/table/cached-change-tbody-border-color.html 
 crbug.com/626748 virtual/spinvalidation/paint/invalidation/table/cached-change-row-border-color.html [ Skip ]
 crbug.com/626748 virtual/spinvalidation/paint/invalidation/table/cached-change-tbody-border-color.html [ Skip ]
 
+# SlimmingPaintInvalidation failures (not including the skipped spinvalidation
+# tests which fail because of the same reasons as the base tests).
+# Skip SlimmingPaintInvalidation tests except paint/invalidation/ and
+# individually listed tests.
+crbug.com/646176 virtual/spinvalidation/ [ Skip ]
+crbug.com/646176 virtual/spinvalidation/paint/invalidation/ [ Pass ]
+
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/outline-clip-change.html [ Crash Failure ]
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/filter-repaint-accelerated-on-accelerated-filter.html [ Crash ]
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/position-change-keeping-geometry.html [ Crash ]
@@ -100,6 +107,10 @@ crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/resize-re
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/shrink-layer.html [ Crash ]
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/clipping-should-not-repaint-composited-descendants.html [ Crash ]
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/filter-repaint-on-accelerated-layer.html [ Crash ]
+
+crbug.com/672989 virtual/spinvalidation/fast/multicol/span/abspos-containing-block-outside-spanner.html [ Failure ]
+
+# --- End SlimmingPaintInvalidation Tests ---
 
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
