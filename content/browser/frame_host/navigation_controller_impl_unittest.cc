@@ -3853,8 +3853,8 @@ TEST_F(NavigationControllerTest, IsInPageNavigationWithUniversalFileAccess) {
   const GURL file_url("file:///foo/index.html");
   const url::Origin file_origin(file_url);
   main_test_rfh()->NavigateAndCommitRendererInitiated(true, file_url);
-  EXPECT_TRUE(file_origin.IsSameOriginWith(
-      main_test_rfh()->frame_tree_node()->current_origin()));
+  EXPECT_TRUE(
+      file_origin.IsSameOriginWith(main_test_rfh()->GetLastCommittedOrigin()));
   EXPECT_EQ(0, rph->bad_msg_count());
   EXPECT_TRUE(controller.IsURLInPageNavigation(
       different_origin_url, url::Origin(different_origin_url), true,
@@ -3880,8 +3880,8 @@ TEST_F(NavigationControllerTest, IsInPageNavigationWithUniversalFileAccess) {
 
   // At this point, we should still consider the current origin to be file://,
   // so that a file URL would still be in-page.  See https://crbug.com/553418.
-  EXPECT_TRUE(file_origin.IsSameOriginWith(
-      main_test_rfh()->frame_tree_node()->current_origin()));
+  EXPECT_TRUE(
+      file_origin.IsSameOriginWith(main_test_rfh()->GetLastCommittedOrigin()));
   EXPECT_TRUE(controller.IsURLInPageNavigation(file_url, url::Origin(file_url),
                                                true, main_test_rfh()));
   EXPECT_EQ(0, rph->bad_msg_count());

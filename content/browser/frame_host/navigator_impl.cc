@@ -634,10 +634,12 @@ void NavigatorImpl::DidNavigate(
         site_instance);
   }
 
-  // Keep track of each frame's URL in its FrameTreeNode, whether it's for a net
-  // error or not.
-  // TODO(creis): Move the last committed URL to RenderFrameHostImpl.
+  // Keep track of the last committed URL and origin in the RenderFrameHost
+  // itself.  These allow GetLastCommittedURL and GetLastCommittedOrigin to
+  // stay correct even if the render_frame_host later becomes pending deletion.
+  // The URL is set regardless of whether it's for a net error or not.
   render_frame_host->frame_tree_node()->SetCurrentURL(params.url);
+  render_frame_host->set_last_committed_origin(params.origin);
 
   // Separately, update the frame's last successful URL except for net error
   // pages, since those do not end up in the correct process after transfers

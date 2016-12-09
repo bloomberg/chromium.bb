@@ -2947,4 +2947,87 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
             shell()->web_contents()->GetMainFrame()->GetSiteInstance());
 }
 
+// Verify that GetLastCommittedOrigin() is correct for the full lifetime of a
+// RenderFrameHost, including when it's pending, current, and pending deletion.
+// This is checked both for main frames and subframes.  See
+// https://crbug.com/590035.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, LastCommittedOrigin) {
+  StartEmbeddedServer();
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  RenderFrameHostImpl* rfh_a = root->current_frame_host();
+  rfh_a->DisableSwapOutTimerForTesting();
+
+  EXPECT_EQ(url::Origin(url_a), rfh_a->GetLastCommittedOrigin());
+  EXPECT_EQ(rfh_a, web_contents->GetMainFrame());
+
+  // Start a navigation to a b.com URL, and don't wait for commit.
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  TestFrameNavigationObserver commit_observer(root);
+  RenderFrameDeletedObserver deleted_observer(rfh_a);
+  shell()->LoadURL(url_b);
+
+  // The pending RFH shouln't have a last committed origin (the default value
+  // is a unique origin). The current RFH shouldn't change its last committed
+  // origin before commit.
+  RenderFrameHostImpl* rfh_b =
+      IsBrowserSideNavigationEnabled()
+          ? root->render_manager()->speculative_frame_host()
+          : root->render_manager()->pending_frame_host();
+  EXPECT_EQ("null", rfh_b->GetLastCommittedOrigin().Serialize());
+  EXPECT_EQ(url::Origin(url_a), rfh_a->GetLastCommittedOrigin());
+
+  // Verify that the last committed origin is set for the b.com RHF once it
+  // commits.
+  commit_observer.WaitForCommit();
+  EXPECT_EQ(url::Origin(url_b), rfh_b->GetLastCommittedOrigin());
+  EXPECT_EQ(rfh_b, web_contents->GetMainFrame());
+
+  // The old RFH should now be pending deletion.  Verify it still has correct
+  // last committed origin.
+  EXPECT_EQ(url::Origin(url_a), rfh_a->GetLastCommittedOrigin());
+  EXPECT_FALSE(rfh_a->is_active());
+
+  // Wait for |rfh_a| to be deleted and double-check |rfh_b|'s origin.
+  deleted_observer.WaitUntilDeleted();
+  EXPECT_EQ(url::Origin(url_b), rfh_b->GetLastCommittedOrigin());
+
+  // Navigate to a same-origin page with an about:blank iframe.  The iframe
+  // should also have a b.com origin.
+  GURL url_b_with_frame(embedded_test_server()->GetURL(
+      "b.com", "/navigation_controller/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_b_with_frame));
+  EXPECT_EQ(rfh_b, web_contents->GetMainFrame());
+  EXPECT_EQ(url::Origin(url_b), rfh_b->GetLastCommittedOrigin());
+  FrameTreeNode* child = root->child_at(0);
+  RenderFrameHostImpl* child_rfh_b = root->child_at(0)->current_frame_host();
+  child_rfh_b->DisableSwapOutTimerForTesting();
+  EXPECT_EQ(url::Origin(url_b), child_rfh_b->GetLastCommittedOrigin());
+
+  // Navigate subframe to c.com.  Wait for commit but not full load, and then
+  // verify the subframe's origin.
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title3.html"));
+  {
+    TestFrameNavigationObserver commit_observer(root->child_at(0));
+    EXPECT_TRUE(
+        ExecuteScript(child, "location.href = '" + url_c.spec() + "';"));
+    commit_observer.WaitForCommit();
+  }
+  EXPECT_EQ(url::Origin(url_c),
+            child->current_frame_host()->GetLastCommittedOrigin());
+
+  // With OOPIFs, this navigation used a cross-process transfer.  Ensure that
+  // the iframe's old RFH still has correct origin, even though it's pending
+  // deletion.
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_FALSE(child_rfh_b->is_active());
+    EXPECT_NE(child_rfh_b, child->current_frame_host());
+    EXPECT_EQ(url::Origin(url_b), child_rfh_b->GetLastCommittedOrigin());
+  }
+}
+
 }  // namespace content

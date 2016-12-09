@@ -138,6 +138,10 @@ class CONTENT_EXPORT FrameTreeNode {
   }
 
   // Returns the origin of the last committed page in this frame.
+  // WARNING: To get the last committed origin for a particular
+  // RenderFrameHost, use RenderFrameHost::GetLastCommittedOrigin() instead,
+  // which will behave correctly even when the RenderFrameHost is not the
+  // current one for this frame (such as when it's pending deletion).
   const url::Origin& current_origin() const {
     return replication_state_.origin;
   }
