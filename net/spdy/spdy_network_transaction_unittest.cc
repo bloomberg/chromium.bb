@@ -4713,7 +4713,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
     std::unique_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
     proxy_delegate->set_trusted_spdy_proxy(net::ProxyServer::FromURI(
         "https://123.45.67.89:443", net::ProxyServer::SCHEME_HTTP));
-    session_deps->proxy_delegate.reset(proxy_delegate.release());
+    session_deps->proxy_delegate = std::move(proxy_delegate);
     NormalSpdyTransactionHelper helper(
         request, DEFAULT_PRIORITY, NetLogWithSource(), std::move(session_deps));
     helper.RunPreTestSetup();

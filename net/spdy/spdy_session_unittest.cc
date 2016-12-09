@@ -5077,7 +5077,7 @@ TEST_F(SpdySessionTest, TrustedSpdyProxy) {
   proxy_delegate->set_trusted_spdy_proxy(
       net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
                        HostPortPair(GURL(kDefaultUrl).host(), 443)));
-  session_deps_.proxy_delegate.reset(proxy_delegate.release());
+  session_deps_.proxy_delegate = std::move(proxy_delegate);
 
   AddSSLSocketData();
 
