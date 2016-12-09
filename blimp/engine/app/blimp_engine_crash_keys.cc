@@ -104,13 +104,13 @@ size_t RegisterEngineCrashKeys() {
       { "swdh_register_cannot_scope_url", crash_keys::kLargeSize },
       { "swdh_register_cannot_script_url", crash_keys::kLargeSize },
 
-      // Temporary for https://crbug.com/619294.
-      { "swdh_unregister_cannot_host_url", crash_keys::kLargeSize },
-      { "swdh_unregister_cannot_scope_url", crash_keys::kLargeSize },
-
       // Temporary for https://crbug.com/630496.
       { "swdh_get_registration_cannot_host_url", crash_keys::kLargeSize },
       { "swdh_get_registration_cannot_document_url", crash_keys::kLargeSize },
+
+      // Temporary for https://crbug.com/668633.
+      { "swdh_set_hosted_version_worker_pid", crash_keys::kSmallSize },
+      { "swdh_set_hosted_version_host_pid", crash_keys::kSmallSize },
     };
 
   return base::debug::InitCrashKeys(engine_keys, arraysize(engine_keys),

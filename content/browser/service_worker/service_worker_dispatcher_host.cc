@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -481,12 +482,6 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
   std::vector<GURL> urls = {provider_host->document_url(),
                             registration->pattern()};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
-    // Temporary debugging for https://crbug.com/619294
-    base::debug::ScopedCrashKey host_url_key(
-        "swdh_unregister_cannot_host_url",
-        provider_host->document_url().spec());
-    base::debug::ScopedCrashKey scope_url_key(
-        "swdh_unregister_cannot_scope_url", registration->pattern().spec());
     bad_message::ReceivedBadMessage(this, bad_message::SWDH_UNREGISTER_CANNOT);
     return;
   }
@@ -1081,6 +1076,13 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
 
   // A process for the worker must be equal to a process for the provider host.
   if (version->embedded_worker()->process_id() != provider_host->process_id()) {
+    // Temporary debugging for https://crbug.com/668633
+    base::debug::ScopedCrashKey scope_worker_pid(
+        "swdh_set_hosted_version_worker_pid",
+        base::IntToString(version->embedded_worker()->process_id()));
+    base::debug::ScopedCrashKey scope_provider_host_pid(
+        "swdh_set_hosted_version_host_pid",
+        base::IntToString(provider_host->process_id()));
     bad_message::ReceivedBadMessage(
         this, bad_message::SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH);
     return;
