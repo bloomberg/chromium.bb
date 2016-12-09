@@ -538,24 +538,6 @@ void fadst16_avx2(__m256i *in) {
   v15 = _mm256_sub_epi32(x7, x15);
 
   // low 256 bits rounding
-  u0 = _mm256_add_epi32(u0, dct_rounding);
-  u1 = _mm256_add_epi32(u1, dct_rounding);
-  u2 = _mm256_add_epi32(u2, dct_rounding);
-  u3 = _mm256_add_epi32(u3, dct_rounding);
-  u4 = _mm256_add_epi32(u4, dct_rounding);
-  u5 = _mm256_add_epi32(u5, dct_rounding);
-  u6 = _mm256_add_epi32(u6, dct_rounding);
-  u7 = _mm256_add_epi32(u7, dct_rounding);
-
-  u0 = _mm256_srai_epi32(u0, DCT_CONST_BITS);
-  u1 = _mm256_srai_epi32(u1, DCT_CONST_BITS);
-  u2 = _mm256_srai_epi32(u2, DCT_CONST_BITS);
-  u3 = _mm256_srai_epi32(u3, DCT_CONST_BITS);
-  u4 = _mm256_srai_epi32(u4, DCT_CONST_BITS);
-  u5 = _mm256_srai_epi32(u5, DCT_CONST_BITS);
-  u6 = _mm256_srai_epi32(u6, DCT_CONST_BITS);
-  u7 = _mm256_srai_epi32(u7, DCT_CONST_BITS);
-
   u8 = _mm256_add_epi32(u8, dct_rounding);
   u9 = _mm256_add_epi32(u9, dct_rounding);
   u10 = _mm256_add_epi32(u10, dct_rounding);
@@ -575,24 +557,6 @@ void fadst16_avx2(__m256i *in) {
   u15 = _mm256_srai_epi32(u15, DCT_CONST_BITS);
 
   // high 256 bits rounding
-  v0 = _mm256_add_epi32(v0, dct_rounding);
-  v1 = _mm256_add_epi32(v1, dct_rounding);
-  v2 = _mm256_add_epi32(v2, dct_rounding);
-  v3 = _mm256_add_epi32(v3, dct_rounding);
-  v4 = _mm256_add_epi32(v4, dct_rounding);
-  v5 = _mm256_add_epi32(v5, dct_rounding);
-  v6 = _mm256_add_epi32(v6, dct_rounding);
-  v7 = _mm256_add_epi32(v7, dct_rounding);
-
-  v0 = _mm256_srai_epi32(v0, DCT_CONST_BITS);
-  v1 = _mm256_srai_epi32(v1, DCT_CONST_BITS);
-  v2 = _mm256_srai_epi32(v2, DCT_CONST_BITS);
-  v3 = _mm256_srai_epi32(v3, DCT_CONST_BITS);
-  v4 = _mm256_srai_epi32(v4, DCT_CONST_BITS);
-  v5 = _mm256_srai_epi32(v5, DCT_CONST_BITS);
-  v6 = _mm256_srai_epi32(v6, DCT_CONST_BITS);
-  v7 = _mm256_srai_epi32(v7, DCT_CONST_BITS);
-
   v8 = _mm256_add_epi32(v8, dct_rounding);
   v9 = _mm256_add_epi32(v9, dct_rounding);
   v10 = _mm256_add_epi32(v10, dct_rounding);
@@ -612,14 +576,6 @@ void fadst16_avx2(__m256i *in) {
   v15 = _mm256_srai_epi32(v15, DCT_CONST_BITS);
 
   // Saturation pack 32-bit to 16-bit
-  x0 = _mm256_packs_epi32(u0, v0);
-  x1 = _mm256_packs_epi32(u1, v1);
-  x2 = _mm256_packs_epi32(u2, v2);
-  x3 = _mm256_packs_epi32(u3, v3);
-  x4 = _mm256_packs_epi32(u4, v4);
-  x5 = _mm256_packs_epi32(u5, v5);
-  x6 = _mm256_packs_epi32(u6, v6);
-  x7 = _mm256_packs_epi32(u7, v7);
   x8 = _mm256_packs_epi32(u8, v8);
   x9 = _mm256_packs_epi32(u9, v9);
   x10 = _mm256_packs_epi32(u10, v10);
@@ -630,15 +586,6 @@ void fadst16_avx2(__m256i *in) {
   x15 = _mm256_packs_epi32(u15, v15);
 
   // stage 2
-  s0 = x0;
-  s1 = x1;
-  s2 = x2;
-  s3 = x3;
-  s4 = x4;
-  s5 = x5;
-  s6 = x6;
-  s7 = x7;
-
   y0 = _mm256_unpacklo_epi16(x8, x9);
   y1 = _mm256_unpackhi_epi16(x8, x9);
   s8 = _mm256_madd_epi16(y0, cospi_p04_p28);
@@ -667,50 +614,23 @@ void fadst16_avx2(__m256i *in) {
   s15 = _mm256_madd_epi16(y0, cospi_p20_p12);
   x15 = _mm256_madd_epi16(y1, cospi_p20_p12);
 
-  x0 = _mm256_add_epi16(s0, s4);
-  x1 = _mm256_add_epi16(s1, s5);
-  x2 = _mm256_add_epi16(s2, s6);
-  x3 = _mm256_add_epi16(s3, s7);
-  x4 = _mm256_sub_epi16(s0, s4);
-  x5 = _mm256_sub_epi16(s1, s5);
-  x6 = _mm256_sub_epi16(s2, s6);
-  x7 = _mm256_sub_epi16(s3, s7);
+  x0 = _mm256_add_epi32(u0, u4);
+  s0 = _mm256_add_epi32(v0, v4);
+  x1 = _mm256_add_epi32(u1, u5);
+  s1 = _mm256_add_epi32(v1, v5);
+  x2 = _mm256_add_epi32(u2, u6);
+  s2 = _mm256_add_epi32(v2, v6);
+  x3 = _mm256_add_epi32(u3, u7);
+  s3 = _mm256_add_epi32(v3, v7);
 
-  u8 = _mm256_add_epi32(s8, s12);
-  u9 = _mm256_add_epi32(s9, s13);
-  u10 = _mm256_add_epi32(s10, s14);
-  u11 = _mm256_add_epi32(s11, s15);
-  u12 = _mm256_sub_epi32(s8, s12);
-  u13 = _mm256_sub_epi32(s9, s13);
-  u14 = _mm256_sub_epi32(s10, s14);
-  u15 = _mm256_sub_epi32(s11, s15);
-
-  v8 = _mm256_add_epi32(x8, x12);
-  v9 = _mm256_add_epi32(x9, x13);
-  v10 = _mm256_add_epi32(x10, x14);
-  v11 = _mm256_add_epi32(x11, x15);
-  v12 = _mm256_sub_epi32(x8, x12);
-  v13 = _mm256_sub_epi32(x9, x13);
-  v14 = _mm256_sub_epi32(x10, x14);
-  v15 = _mm256_sub_epi32(x11, x15);
-
-  u8 = _mm256_add_epi32(u8, dct_rounding);
-  u9 = _mm256_add_epi32(u9, dct_rounding);
-  u10 = _mm256_add_epi32(u10, dct_rounding);
-  u11 = _mm256_add_epi32(u11, dct_rounding);
-  u12 = _mm256_add_epi32(u12, dct_rounding);
-  u13 = _mm256_add_epi32(u13, dct_rounding);
-  u14 = _mm256_add_epi32(u14, dct_rounding);
-  u15 = _mm256_add_epi32(u15, dct_rounding);
-
-  u8 = _mm256_srai_epi32(u8, DCT_CONST_BITS);
-  u9 = _mm256_srai_epi32(u9, DCT_CONST_BITS);
-  u10 = _mm256_srai_epi32(u10, DCT_CONST_BITS);
-  u11 = _mm256_srai_epi32(u11, DCT_CONST_BITS);
-  u12 = _mm256_srai_epi32(u12, DCT_CONST_BITS);
-  u13 = _mm256_srai_epi32(u13, DCT_CONST_BITS);
-  u14 = _mm256_srai_epi32(u14, DCT_CONST_BITS);
-  u15 = _mm256_srai_epi32(u15, DCT_CONST_BITS);
+  v8 = _mm256_sub_epi32(u0, u4);
+  v9 = _mm256_sub_epi32(v0, v4);
+  v10 = _mm256_sub_epi32(u1, u5);
+  v11 = _mm256_sub_epi32(v1, v5);
+  v12 = _mm256_sub_epi32(u2, u6);
+  v13 = _mm256_sub_epi32(v2, v6);
+  v14 = _mm256_sub_epi32(u3, u7);
+  v15 = _mm256_sub_epi32(v3, v7);
 
   v8 = _mm256_add_epi32(v8, dct_rounding);
   v9 = _mm256_add_epi32(v9, dct_rounding);
@@ -730,21 +650,55 @@ void fadst16_avx2(__m256i *in) {
   v14 = _mm256_srai_epi32(v14, DCT_CONST_BITS);
   v15 = _mm256_srai_epi32(v15, DCT_CONST_BITS);
 
-  x8 = _mm256_packs_epi32(u8, v8);
-  x9 = _mm256_packs_epi32(u9, v9);
-  x10 = _mm256_packs_epi32(u10, v10);
-  x11 = _mm256_packs_epi32(u11, v11);
+  x4 = _mm256_packs_epi32(v8, v9);
+  x5 = _mm256_packs_epi32(v10, v11);
+  x6 = _mm256_packs_epi32(v12, v13);
+  x7 = _mm256_packs_epi32(v14, v15);
+
+  u8 = _mm256_add_epi32(s8, s12);
+  u9 = _mm256_add_epi32(s9, s13);
+  u10 = _mm256_add_epi32(s10, s14);
+  u11 = _mm256_add_epi32(s11, s15);
+  u12 = _mm256_sub_epi32(s8, s12);
+  u13 = _mm256_sub_epi32(s9, s13);
+  u14 = _mm256_sub_epi32(s10, s14);
+  u15 = _mm256_sub_epi32(s11, s15);
+
+  v8 = _mm256_add_epi32(x8, x12);
+  v9 = _mm256_add_epi32(x9, x13);
+  v10 = _mm256_add_epi32(x10, x14);
+  v11 = _mm256_add_epi32(x11, x15);
+  v12 = _mm256_sub_epi32(x8, x12);
+  v13 = _mm256_sub_epi32(x9, x13);
+  v14 = _mm256_sub_epi32(x10, x14);
+  v15 = _mm256_sub_epi32(x11, x15);
+
+  u12 = _mm256_add_epi32(u12, dct_rounding);
+  u13 = _mm256_add_epi32(u13, dct_rounding);
+  u14 = _mm256_add_epi32(u14, dct_rounding);
+  u15 = _mm256_add_epi32(u15, dct_rounding);
+
+  u12 = _mm256_srai_epi32(u12, DCT_CONST_BITS);
+  u13 = _mm256_srai_epi32(u13, DCT_CONST_BITS);
+  u14 = _mm256_srai_epi32(u14, DCT_CONST_BITS);
+  u15 = _mm256_srai_epi32(u15, DCT_CONST_BITS);
+
+  v12 = _mm256_add_epi32(v12, dct_rounding);
+  v13 = _mm256_add_epi32(v13, dct_rounding);
+  v14 = _mm256_add_epi32(v14, dct_rounding);
+  v15 = _mm256_add_epi32(v15, dct_rounding);
+
+  v12 = _mm256_srai_epi32(v12, DCT_CONST_BITS);
+  v13 = _mm256_srai_epi32(v13, DCT_CONST_BITS);
+  v14 = _mm256_srai_epi32(v14, DCT_CONST_BITS);
+  v15 = _mm256_srai_epi32(v15, DCT_CONST_BITS);
+
   x12 = _mm256_packs_epi32(u12, v12);
   x13 = _mm256_packs_epi32(u13, v13);
   x14 = _mm256_packs_epi32(u14, v14);
   x15 = _mm256_packs_epi32(u15, v15);
 
   // stage 3
-  s0 = x0;
-  s1 = x1;
-  s2 = x2;
-  s3 = x3;
-
   y0 = _mm256_unpacklo_epi16(x4, x5);
   y1 = _mm256_unpackhi_epi16(x4, x5);
   s4 = _mm256_madd_epi16(y0, cospi_p08_p24);
@@ -758,11 +712,6 @@ void fadst16_avx2(__m256i *in) {
   x6 = _mm256_madd_epi16(y1, cospi_m24_p08);
   s7 = _mm256_madd_epi16(y0, cospi_p08_p24);
   x7 = _mm256_madd_epi16(y1, cospi_p08_p24);
-
-  s8 = x8;
-  s9 = x9;
-  s10 = x10;
-  s11 = x11;
 
   y0 = _mm256_unpacklo_epi16(x12, x13);
   y1 = _mm256_unpackhi_epi16(x12, x13);
@@ -778,10 +727,37 @@ void fadst16_avx2(__m256i *in) {
   s15 = _mm256_madd_epi16(y0, cospi_p08_p24);
   x15 = _mm256_madd_epi16(y1, cospi_p08_p24);
 
-  in[0] = _mm256_add_epi16(s0, s2);
-  x1 = _mm256_add_epi16(s1, s3);
-  x2 = _mm256_sub_epi16(s0, s2);
-  x3 = _mm256_sub_epi16(s1, s3);
+  u0 = _mm256_add_epi32(x0, x2);
+  v0 = _mm256_add_epi32(s0, s2);
+  u1 = _mm256_add_epi32(x1, x3);
+  v1 = _mm256_add_epi32(s1, s3);
+  u2 = _mm256_sub_epi32(x0, x2);
+  v2 = _mm256_sub_epi32(s0, s2);
+  u3 = _mm256_sub_epi32(x1, x3);
+  v3 = _mm256_sub_epi32(s1, s3);
+
+  u0 = _mm256_add_epi32(u0, dct_rounding);
+  v0 = _mm256_add_epi32(v0, dct_rounding);
+  u1 = _mm256_add_epi32(u1, dct_rounding);
+  v1 = _mm256_add_epi32(v1, dct_rounding);
+  u2 = _mm256_add_epi32(u2, dct_rounding);
+  v2 = _mm256_add_epi32(v2, dct_rounding);
+  u3 = _mm256_add_epi32(u3, dct_rounding);
+  v3 = _mm256_add_epi32(v3, dct_rounding);
+
+  u0 = _mm256_srai_epi32(u0, DCT_CONST_BITS);
+  v0 = _mm256_srai_epi32(v0, DCT_CONST_BITS);
+  u1 = _mm256_srai_epi32(u1, DCT_CONST_BITS);
+  v1 = _mm256_srai_epi32(v1, DCT_CONST_BITS);
+  u2 = _mm256_srai_epi32(u2, DCT_CONST_BITS);
+  v2 = _mm256_srai_epi32(v2, DCT_CONST_BITS);
+  u3 = _mm256_srai_epi32(u3, DCT_CONST_BITS);
+  v3 = _mm256_srai_epi32(v3, DCT_CONST_BITS);
+
+  in[0] = _mm256_packs_epi32(u0, v0);
+  x1 = _mm256_packs_epi32(u1, v1);
+  x2 = _mm256_packs_epi32(u2, v2);
+  x3 = _mm256_packs_epi32(u3, v3);
 
   // Rounding on s4 + s6, s5 + s7, s4 - s6, s5 - s7
   u4 = _mm256_add_epi32(s4, s6);
@@ -819,10 +795,37 @@ void fadst16_avx2(__m256i *in) {
   x6 = _mm256_packs_epi32(u6, v6);
   x7 = _mm256_packs_epi32(u7, v7);
 
-  x8 = _mm256_add_epi16(s8, s10);
-  in[14] = _mm256_add_epi16(s9, s11);
-  x10 = _mm256_sub_epi16(s8, s10);
-  x11 = _mm256_sub_epi16(s9, s11);
+  u0 = _mm256_add_epi32(u8, u10);
+  v0 = _mm256_add_epi32(v8, v10);
+  u1 = _mm256_add_epi32(u9, u11);
+  v1 = _mm256_add_epi32(v9, v11);
+  u2 = _mm256_sub_epi32(u8, u10);
+  v2 = _mm256_sub_epi32(v8, v10);
+  u3 = _mm256_sub_epi32(u9, u11);
+  v3 = _mm256_sub_epi32(v9, v11);
+
+  u0 = _mm256_add_epi32(u0, dct_rounding);
+  v0 = _mm256_add_epi32(v0, dct_rounding);
+  u1 = _mm256_add_epi32(u1, dct_rounding);
+  v1 = _mm256_add_epi32(v1, dct_rounding);
+  u2 = _mm256_add_epi32(u2, dct_rounding);
+  v2 = _mm256_add_epi32(v2, dct_rounding);
+  u3 = _mm256_add_epi32(u3, dct_rounding);
+  v3 = _mm256_add_epi32(v3, dct_rounding);
+
+  u0 = _mm256_srai_epi32(u0, DCT_CONST_BITS);
+  v0 = _mm256_srai_epi32(v0, DCT_CONST_BITS);
+  u1 = _mm256_srai_epi32(u1, DCT_CONST_BITS);
+  v1 = _mm256_srai_epi32(v1, DCT_CONST_BITS);
+  u2 = _mm256_srai_epi32(u2, DCT_CONST_BITS);
+  v2 = _mm256_srai_epi32(v2, DCT_CONST_BITS);
+  u3 = _mm256_srai_epi32(u3, DCT_CONST_BITS);
+  v3 = _mm256_srai_epi32(v3, DCT_CONST_BITS);
+
+  x8 = _mm256_packs_epi32(u0, v0);
+  in[14] = _mm256_packs_epi32(u1, v1);
+  x10 = _mm256_packs_epi32(u2, v2);
+  x11 = _mm256_packs_epi32(u3, v3);
 
   // Rounding on s12 + s14, s13 + s15, s12 - s14, s13 - s15
   u12 = _mm256_add_epi32(s12, s14);
