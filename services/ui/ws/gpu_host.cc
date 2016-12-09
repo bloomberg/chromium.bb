@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/gpu_service_proxy.h"
+#include "services/ui/ws/gpu_host.h"
 
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/ui/common/server_gpu_memory_buffer_manager.h"
-#include "services/ui/ws/gpu_service_proxy_delegate.h"
+#include "services/ui/ws/gpu_host_delegate.h"
 #include "ui/gfx/buffer_format_util.h"
 
 namespace ui {
@@ -27,21 +27,21 @@ namespace {
 const int32_t kInternalGpuChannelClientId = 2;
 
 // The implementation that relays requests from clients to the real
-// service implementation in the GPU process over mojom.GpuServiceInternal.
-class GpuServiceImpl : public mojom::Gpu {
+// service implementation in the GPU process over mojom.GpuService.
+class GpuClient : public mojom::Gpu {
  public:
-  GpuServiceImpl(int client_id,
-                 gpu::GPUInfo* gpu_info,
-                 ServerGpuMemoryBufferManager* gpu_memory_buffer_manager,
-                 mojom::GpuServiceInternal* gpu_service_internal)
+  GpuClient(int client_id,
+            gpu::GPUInfo* gpu_info,
+            ServerGpuMemoryBufferManager* gpu_memory_buffer_manager,
+            mojom::GpuService* gpu_service)
       : client_id_(client_id),
         gpu_info_(gpu_info),
         gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-        gpu_service_internal_(gpu_service_internal) {
+        gpu_service_(gpu_service) {
     DCHECK(gpu_memory_buffer_manager_);
-    DCHECK(gpu_service_internal_);
+    DCHECK(gpu_service_);
   }
-  ~GpuServiceImpl() override {
+  ~GpuClient() override {
     gpu_memory_buffer_manager_->DestroyAllGpuMemoryBufferForClient(client_id_);
   }
 
@@ -58,10 +58,10 @@ class GpuServiceImpl : public mojom::Gpu {
     // tracing id.
     const uint64_t client_tracing_id = 0;
     constexpr bool is_gpu_host = false;
-    gpu_service_internal_->EstablishGpuChannel(
+    gpu_service_->EstablishGpuChannel(
         client_id_, client_tracing_id, is_gpu_host,
-        base::Bind(&GpuServiceImpl::OnGpuChannelEstablished,
-                   base::Unretained(this), callback));
+        base::Bind(&GpuClient::OnGpuChannelEstablished, base::Unretained(this),
+                   callback));
   }
 
   void CreateGpuMemoryBuffer(
@@ -83,18 +83,17 @@ class GpuServiceImpl : public mojom::Gpu {
 
   const int client_id_;
 
-  // The objects these pointers refer to are owned by the GpuServiceProxy
-  // object.
+  // The objects these pointers refer to are owned by the GpuHost object.
   const gpu::GPUInfo* gpu_info_;
   ServerGpuMemoryBufferManager* gpu_memory_buffer_manager_;
-  mojom::GpuServiceInternal* gpu_service_internal_;
+  mojom::GpuService* gpu_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(GpuClient);
 };
 
 }  // namespace
 
-GpuServiceProxy::GpuServiceProxy(GpuServiceProxyDelegate* delegate)
+GpuHost::GpuHost(GpuHostDelegate* delegate)
     : delegate_(delegate),
       next_client_id_(kInternalGpuChannelClientId + 1),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -109,41 +108,40 @@ GpuServiceProxy::GpuServiceProxy(GpuServiceProxyDelegate* delegate)
       gpu_service_.get(), next_client_id_++);
 }
 
-GpuServiceProxy::~GpuServiceProxy() {
-}
+GpuHost::~GpuHost() {}
 
-void GpuServiceProxy::Add(mojom::GpuRequest request) {
+void GpuHost::Add(mojom::GpuRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<GpuServiceImpl>(next_client_id_++, &gpu_info_,
-                                       gpu_memory_buffer_manager_.get(),
-                                       gpu_service_.get()),
+      base::MakeUnique<GpuClient>(next_client_id_++, &gpu_info_,
+                                  gpu_memory_buffer_manager_.get(),
+                                  gpu_service_.get()),
       std::move(request));
 }
 
-void GpuServiceProxy::CreateDisplayCompositor(
+void GpuHost::CreateDisplayCompositor(
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client) {
   gpu_main_->CreateDisplayCompositor(std::move(request), std::move(client));
 }
 
-void GpuServiceProxy::DidInitialize(const gpu::GPUInfo& gpu_info) {
+void GpuHost::DidInitialize(const gpu::GPUInfo& gpu_info) {
   gpu_info_ = gpu_info;
   delegate_->OnGpuServiceInitialized();
 }
 
-void GpuServiceProxy::DidCreateOffscreenContext(const GURL& url) {}
+void GpuHost::DidCreateOffscreenContext(const GURL& url) {}
 
-void GpuServiceProxy::DidDestroyOffscreenContext(const GURL& url) {}
+void GpuHost::DidDestroyOffscreenContext(const GURL& url) {}
 
-void GpuServiceProxy::DidDestroyChannel(int32_t client_id) {}
+void GpuHost::DidDestroyChannel(int32_t client_id) {}
 
-void GpuServiceProxy::DidLoseContext(bool offscreen,
-                                     gpu::error::ContextLostReason reason,
-                                     const GURL& active_url) {}
+void GpuHost::DidLoseContext(bool offscreen,
+                             gpu::error::ContextLostReason reason,
+                             const GURL& active_url) {}
 
-void GpuServiceProxy::StoreShaderToDisk(int32_t client_id,
-                                        const std::string& key,
-                                        const std::string& shader) {}
+void GpuHost::StoreShaderToDisk(int32_t client_id,
+                                const std::string& key,
+                                const std::string& shader) {}
 
 }  // namespace ws
 }  // namespace ui

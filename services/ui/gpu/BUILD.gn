@@ -12,8 +12,8 @@ source_set("gpu") {
   sources = [
     "gpu_main.cc",
     "gpu_main.h",
-    "gpu_service_internal.cc",
-    "gpu_service_internal.h",
+    "gpu_service.cc",
+    "gpu_service.h",
   ]
 
   defines = [ "NOTIMPLEMENTED_POLICY=5" ]

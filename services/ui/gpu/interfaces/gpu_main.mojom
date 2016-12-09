@@ -5,8 +5,8 @@
 module ui.mojom;
 
 import "cc/ipc/display_compositor.mojom";
-import "services/ui/gpu/interfaces/gpu_service_host.mojom";
-import "services/ui/gpu/interfaces/gpu_service_internal.mojom";
+import "services/ui/gpu/interfaces/gpu_host.mojom";
+import "services/ui/gpu/interfaces/gpu_service.mojom";
 
 // This is the primordial interface used to (re)start the mus-gpu bundle
 // of services.
@@ -15,6 +15,6 @@ interface GpuMain {
     cc.mojom.DisplayCompositor& display_compositor,
     cc.mojom.DisplayCompositorClient display_compositor_client);
 
-  CreateGpuService(GpuServiceInternal& gpu_service,
-                   GpuServiceHost gpu_host);
+  CreateGpuService(GpuService& gpu_service,
+                   GpuHost gpu_host);
 };

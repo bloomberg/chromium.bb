@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/gpu/gpu_service_internal.h"
+#include "services/ui/gpu/gpu_service.h"
 
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
@@ -36,11 +36,10 @@
 
 namespace ui {
 
-GpuServiceInternal::GpuServiceInternal(
-    const gpu::GPUInfo& gpu_info,
-    std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
-    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-    scoped_refptr<base::SingleThreadTaskRunner> io_runner)
+GpuService::GpuService(const gpu::GPUInfo& gpu_info,
+                       std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
+                       gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+                       scoped_refptr<base::SingleThreadTaskRunner> io_runner)
     : io_runner_(std::move(io_runner)),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -48,7 +47,7 @@ GpuServiceInternal::GpuServiceInternal(
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_info_(gpu_info) {}
 
-GpuServiceInternal::~GpuServiceInternal() {
+GpuService::~GpuService() {
   bindings_.CloseAllBindings();
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
@@ -61,7 +60,7 @@ GpuServiceInternal::~GpuServiceInternal() {
   shutdown_event_.Signal();
 }
 
-void GpuServiceInternal::InitializeWithHost(mojom::GpuServiceHostPtr gpu_host) {
+void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host) {
   DCHECK(CalledOnValidThread());
   DCHECK(!gpu_host_);
   gpu_host_ = std::move(gpu_host);
@@ -91,11 +90,11 @@ void GpuServiceInternal::InitializeWithHost(mojom::GpuServiceHostPtr gpu_host) {
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
 }
 
-void GpuServiceInternal::Bind(mojom::GpuServiceInternalRequest request) {
+void GpuService::Bind(mojom::GpuServiceRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void GpuServiceInternal::CreateGpuMemoryBuffer(
+void GpuService::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
@@ -108,53 +107,52 @@ void GpuServiceInternal::CreateGpuMemoryBuffer(
       id, size, format, usage, client_id, surface_handle));
 }
 
-void GpuServiceInternal::DestroyGpuMemoryBuffer(
-    gfx::GpuMemoryBufferId id,
-    int client_id,
-    const gpu::SyncToken& sync_token) {
+void GpuService::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                                        int client_id,
+                                        const gpu::SyncToken& sync_token) {
   DCHECK(CalledOnValidThread());
   if (gpu_channel_manager_)
     gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
-void GpuServiceInternal::DidCreateOffscreenContext(const GURL& active_url) {
+void GpuService::DidCreateOffscreenContext(const GURL& active_url) {
   gpu_host_->DidCreateOffscreenContext(active_url);
 }
 
-void GpuServiceInternal::DidDestroyChannel(int client_id) {
+void GpuService::DidDestroyChannel(int client_id) {
   media_gpu_channel_manager_->RemoveChannel(client_id);
   gpu_host_->DidDestroyChannel(client_id);
 }
 
-void GpuServiceInternal::DidDestroyOffscreenContext(const GURL& active_url) {
+void GpuService::DidDestroyOffscreenContext(const GURL& active_url) {
   gpu_host_->DidDestroyOffscreenContext(active_url);
 }
 
-void GpuServiceInternal::DidLoseContext(bool offscreen,
-                                        gpu::error::ContextLostReason reason,
-                                        const GURL& active_url) {
+void GpuService::DidLoseContext(bool offscreen,
+                                gpu::error::ContextLostReason reason,
+                                const GURL& active_url) {
   gpu_host_->DidLoseContext(offscreen, reason, active_url);
 }
 
-void GpuServiceInternal::StoreShaderToDisk(int client_id,
-                                           const std::string& key,
-                                           const std::string& shader) {
+void GpuService::StoreShaderToDisk(int client_id,
+                                   const std::string& key,
+                                   const std::string& shader) {
   gpu_host_->StoreShaderToDisk(client_id, key, shader);
 }
 
 #if defined(OS_WIN)
-void GpuServiceInternal::SendAcceleratedSurfaceCreatedChildWindow(
+void GpuService::SendAcceleratedSurfaceCreatedChildWindow(
     gpu::SurfaceHandle parent_window,
     gpu::SurfaceHandle child_window) {
   ::SetParent(child_window, parent_window);
 }
 #endif
 
-void GpuServiceInternal::SetActiveURL(const GURL& url) {
+void GpuService::SetActiveURL(const GURL& url) {
   // TODO(penghuang): implement this function.
 }
 
-void GpuServiceInternal::EstablishGpuChannel(
+void GpuService::EstablishGpuChannel(
     int32_t client_id,
     uint64_t client_tracing_id,
     bool is_gpu_host,

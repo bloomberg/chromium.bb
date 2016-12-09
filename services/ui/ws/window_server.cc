@@ -14,7 +14,7 @@
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/frame_generator.h"
-#include "services/ui/ws/gpu_service_proxy.h"
+#include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/operation.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
@@ -46,7 +46,7 @@ struct WindowServer::CurrentDragLoopState {
 };
 
 // TODO(fsamuel): DisplayCompositor should be a mojo interface dispensed by
-// GpuServiceProxy.
+// GpuHost.
 WindowServer::WindowServer(WindowServerDelegate* delegate)
     : delegate_(delegate),
       next_client_id_(1),
@@ -54,12 +54,12 @@ WindowServer::WindowServer(WindowServerDelegate* delegate)
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),
-      gpu_proxy_(new GpuServiceProxy(this)),
+      gpu_host_(new GpuHost(this)),
       window_manager_window_tree_factory_set_(this, &user_id_tracker_),
       display_compositor_client_binding_(this) {
   user_id_tracker_.AddObserver(this);
   OnUserIdAdded(user_id_tracker_.active_id());
-  gpu_proxy_->CreateDisplayCompositor(
+  gpu_host_->CreateDisplayCompositor(
       mojo::GetProxy(&display_compositor_),
       display_compositor_client_binding_.CreateInterfacePtrAndBind());
 }
@@ -761,7 +761,7 @@ void WindowServer::OnTransientWindowRemoved(ServerWindow* window,
 
 void WindowServer::OnGpuServiceInitialized() {
   // TODO(kylechar): When gpu channel is removed, this can instead happen
-  // earlier, after GpuServiceProxy::OnInitialized().
+  // earlier, after GpuHost::OnInitialized().
   delegate_->StartDisplayInit();
 }
 

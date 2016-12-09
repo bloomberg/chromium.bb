@@ -8,7 +8,7 @@ import "gpu/ipc/common/gpu_info.mojom";
 import "services/ui/gpu/interfaces/context_lost_reason.mojom";
 import "url/mojo/url.mojom";
 
-interface GpuServiceHost {
+interface GpuHost {
   DidInitialize(gpu.mojom.GpuInfo gpu_info);
   DidCreateOffscreenContext(url.mojom.Url url);
   DidDestroyOffscreenContext(url.mojom.Url url);

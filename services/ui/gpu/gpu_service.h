@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_GPU_GPU_SERVICE_INTERNAL_H_
-#define SERVICES_UI_GPU_GPU_SERVICE_INTERNAL_H_
+#ifndef SERVICES_UI_GPU_GPU_SERVICE_H_
+#define SERVICES_UI_GPU_GPU_SERVICE_H_
 
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
@@ -21,8 +21,8 @@
 #include "gpu/ipc/service/x_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/ui/gpu/interfaces/gpu_service_host.mojom.h"
-#include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
+#include "services/ui/gpu/interfaces/gpu_host.mojom.h"
+#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
@@ -42,19 +42,19 @@ class GpuMain;
 // This runs in the GPU process, and communicates with the gpu host (which is
 // the window server) over the mojom APIs. This is responsible for setting up
 // the connection to clients, allocating/free'ing gpu memory etc.
-class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
-                           public mojom::GpuServiceInternal,
-                           public base::NonThreadSafe {
+class GpuService : public gpu::GpuChannelManagerDelegate,
+                   public mojom::GpuService,
+                   public base::NonThreadSafe {
  public:
-  GpuServiceInternal(const gpu::GPUInfo& gpu_info,
-                     std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
-                     gpu::GpuMemoryBufferFactory* memory_buffer_factory,
-                     scoped_refptr<base::SingleThreadTaskRunner> io_runner);
+  GpuService(const gpu::GPUInfo& gpu_info,
+             std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
+             gpu::GpuMemoryBufferFactory* memory_buffer_factory,
+             scoped_refptr<base::SingleThreadTaskRunner> io_runner);
 
-  ~GpuServiceInternal() override;
+  ~GpuService() override;
 
-  void InitializeWithHost(mojom::GpuServiceHostPtr gpu_host);
-  void Bind(mojom::GpuServiceInternalRequest request);
+  void InitializeWithHost(mojom::GpuHostPtr gpu_host);
+  void Bind(mojom::GpuServiceRequest request);
 
  private:
   friend class GpuMain;
@@ -97,7 +97,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 #endif
   void SetActiveURL(const GURL& url) override;
 
-  // mojom::GpuServiceInternal:
+  // mojom::GpuService:
   void EstablishGpuChannel(
       int32_t client_id,
       uint64_t client_tracing_id,
@@ -129,15 +129,15 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
 
-  mojom::GpuServiceHostPtr gpu_host_;
+  mojom::GpuHostPtr gpu_host_;
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
   std::unique_ptr<media::MediaGpuChannelManager> media_gpu_channel_manager_;
-  mojo::BindingSet<mojom::GpuServiceInternal> bindings_;
+  mojo::BindingSet<mojom::GpuService> bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuServiceInternal);
+  DISALLOW_COPY_AND_ASSIGN(GpuService);
 };
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_GPU_GPU_SERVICE_INTERNAL_H_
+#endif  // SERVICES_UI_GPU_GPU_SERVICE_H_

@@ -10,9 +10,9 @@
 namespace ui {
 namespace ws {
 
-class GpuServiceProxyDelegate {
+class GpuHostDelegate {
  public:
-  virtual ~GpuServiceProxyDelegate() {}
+  virtual ~GpuHostDelegate() {}
 
   virtual void OnGpuServiceInitialized() = 0;
 };

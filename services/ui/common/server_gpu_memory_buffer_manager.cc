@@ -8,12 +8,12 @@
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
-#include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
+#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 
 namespace ui {
 
 ServerGpuMemoryBufferManager::ServerGpuMemoryBufferManager(
-    mojom::GpuServiceInternal* gpu_service,
+    mojom::GpuService* gpu_service,
     int client_id)
     : gpu_service_(gpu_service),
       client_id_(client_id),

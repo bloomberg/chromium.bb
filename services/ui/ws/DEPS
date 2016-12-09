@@ -8,7 +8,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "gpu_service_proxy.h": [
+  "gpu_host.h": [
     "+services/ui/gpu/gpu_main.h",
   ],
 }

@@ -31,7 +31,7 @@
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
-#include "services/ui/ws/gpu_service_proxy.h"
+#include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/user_activity_monitor.h"
 #include "services/ui/ws/user_display_manager.h"
 #include "services/ui/ws/window_server.h"
@@ -298,7 +298,7 @@ void Service::Create(const service_manager::Identity& remote_identity,
 
 void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::GpuRequest request) {
-  window_server_->gpu_proxy()->Add(std::move(request));
+  window_server_->gpu_host()->Add(std::move(request));
 }
 
 void Service::Create(const service_manager::Identity& remote_identity,

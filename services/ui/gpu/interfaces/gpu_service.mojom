@@ -11,7 +11,7 @@ import "gpu/ipc/common/sync_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
 
-interface GpuServiceInternal {
+interface GpuService {
   // Tells the GPU service to create a new channel for communication with a
   // client. The GPU service responds with an IPC handle.
   EstablishGpuChannel(int32 client_id,

@@ -12,7 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
-#include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
+#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 
 namespace ui {
 
@@ -21,8 +21,7 @@ namespace ui {
 class ServerGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager,
                                      public base::ThreadChecker {
  public:
-  ServerGpuMemoryBufferManager(mojom::GpuServiceInternal* gpu_service,
-                               int client_id);
+  ServerGpuMemoryBufferManager(mojom::GpuService* gpu_service, int client_id);
   ~ServerGpuMemoryBufferManager() override;
 
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
@@ -53,7 +52,7 @@ class ServerGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager,
                                const gpu::SyncToken& sync_token) override;
 
  private:
-  mojom::GpuServiceInternal* gpu_service_;
+  mojom::GpuService* gpu_service_;
   const int client_id_;
   int next_gpu_memory_id_ = 1;
 
