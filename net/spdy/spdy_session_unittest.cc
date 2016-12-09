@@ -3892,10 +3892,9 @@ TEST_F(SpdySessionTest, StreamFlowControlTooMuchData) {
 
   AddSSLSocketData();
 
+  session_deps_.stream_max_recv_window_size = stream_max_recv_window_size;
   CreateNetworkSession();
 
-  SpdySessionPoolPeer pool_peer(spdy_session_pool_);
-  pool_peer.SetStreamInitialRecvWindowSize(stream_max_recv_window_size);
   CreateSecureSpdySession();
 
   base::WeakPtr<SpdyStream> spdy_stream =
@@ -4030,9 +4029,8 @@ TEST_F(SpdySessionTest, StreamFlowControlTooMuchDataTwoDataFrames) {
 
   AddSSLSocketData();
 
+  session_deps_.stream_max_recv_window_size = stream_max_recv_window_size;
   CreateNetworkSession();
-  SpdySessionPoolPeer pool_peer(spdy_session_pool_);
-  pool_peer.SetStreamInitialRecvWindowSize(stream_max_recv_window_size);
 
   CreateSecureSpdySession();
 

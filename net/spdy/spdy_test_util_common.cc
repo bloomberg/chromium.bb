@@ -678,14 +678,6 @@ void SpdySessionPoolPeer::SetEnableSendingInitialData(bool enabled) {
   pool_->enable_sending_initial_data_ = enabled;
 }
 
-void SpdySessionPoolPeer::SetSessionMaxRecvWindowSize(size_t window) {
-  pool_->session_max_recv_window_size_ = window;
-}
-
-void SpdySessionPoolPeer::SetStreamInitialRecvWindowSize(size_t window) {
-  pool_->stream_max_recv_window_size_ = window;
-}
-
 SpdyTestUtil::SpdyTestUtil() : default_url_(GURL(kDefaultUrl)) {}
 
 SpdyTestUtil::~SpdyTestUtil() {}
