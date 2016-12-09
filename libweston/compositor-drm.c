@@ -1979,7 +1979,7 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 		return NULL;
 
 	/* Can't change formats with just a pageflip */
-	if (fb->format->format != output->gbm_format) {
+	if (!b->atomic_modeset && fb->format->format != output->gbm_format) {
 		drm_fb_unref(fb);
 		return NULL;
 	}
@@ -1998,13 +1998,16 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	if (!drm_plane_state_coords_for_view(state, ev))
 		goto err;
 
-	/* The legacy API does not let us perform cropping or scaling. */
-	if (state->src_x != 0 || state->src_y != 0 ||
-	    state->src_w != state->dest_w << 16 ||
-	    state->src_h != state->dest_h << 16 ||
-	    state->dest_x != 0 || state->dest_y != 0 ||
+	if (state->dest_x != 0 || state->dest_y != 0 ||
 	    state->dest_w != (unsigned) output->base.current_mode->width ||
 	    state->dest_h != (unsigned) output->base.current_mode->height)
+		goto err;
+
+	/* The legacy API does not let us perform cropping or scaling. */
+	if (!b->atomic_modeset &&
+	    (state->src_x != 0 || state->src_y != 0 ||
+	     state->src_w != state->dest_w << 16 ||
+	     state->src_h != state->dest_h << 16))
 		goto err;
 
 	/* In plane-only mode, we don't need to test the state now, as we
@@ -3109,8 +3112,9 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 			state = NULL;
 			continue;
 		}
-		if (state->src_w != state->dest_w << 16 ||
-		    state->src_h != state->dest_h << 16) {
+		if (!b->atomic_modeset &&
+		    (state->src_w != state->dest_w << 16 ||
+		     state->src_h != state->dest_h << 16)) {
 			drm_plane_state_put_back(state);
 			state = NULL;
 			continue;
