@@ -24,9 +24,8 @@
 #include "url/url_constants.h"
 
 using bookmarks::BookmarkMatch;
+using BookmarkMatches = std::vector<BookmarkMatch>;
 using bookmarks::BookmarkNode;
-
-typedef std::vector<BookmarkMatch> BookmarkMatches;
 
 namespace {
 
@@ -165,11 +164,11 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
   // unlikely to be what the user intends.
   AutocompleteMatch match(this, 0, false,
                           AutocompleteMatchType::BOOKMARK_TITLE);
-  base::string16 title(bookmark_match.node->GetTitle());
+  base::string16 title(bookmark_match.node->GetTitledUrlNodeTitle());
   BookmarkMatch::MatchPositions new_title_match_positions =
       bookmark_match.title_match_positions;
   CorrectTitleAndMatchPositions(&title, &new_title_match_positions);
-  const GURL& url(bookmark_match.node->url());
+  const GURL& url(bookmark_match.node->GetTitledUrlNodeUrl());
   const base::string16& url_utf16 = base::UTF8ToUTF16(url.spec());
   size_t inline_autocomplete_offset = URLPrefix::GetInlineAutocompleteOffset(
       input.text(), fixed_up_input_text, false, url_utf16);
@@ -281,7 +280,8 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
   ScoringFunctor url_position_functor =
       for_each(bookmark_match.url_match_positions.begin(),
                bookmark_match.url_match_positions.end(),
-               ScoringFunctor(bookmark_match.node->url().spec().length()));
+               ScoringFunctor(
+                   bookmark_match.node->GetTitledUrlNodeUrl().spec().length()));
   const double title_match_strength = title_position_functor.ScoringFactor();
   const double summed_factors = title_match_strength +
       url_position_functor.ScoringFactor();

@@ -19,7 +19,7 @@
 namespace bookmarks {
 
 class BookmarkClient;
-class BookmarkNode;
+class TitledUrlNode;
 struct BookmarkMatch;
 
 // BookmarkIndex maintains an index of the titles and URLs of bookmarks for
@@ -28,37 +28,38 @@ struct BookmarkMatch;
 //
 // BookmarkIndex maintains the index (index_) as a map of sets. The map (type
 // Index) maps from a lower case string to the set (type NodeSet) of
-// BookmarkNodes that contain that string in their title or URL.
+// TitledUrlNodes that contain that string in their title or URL.
 class BookmarkIndex {
  public:
   BookmarkIndex(BookmarkClient* client);
   ~BookmarkIndex();
 
-  // Invoked when a bookmark has been added to the model.
-  void Add(const BookmarkNode* node);
+  // Invoked when a title/URL pair has been added to the model.
+  void Add(const TitledUrlNode* node);
 
-  // Invoked when a bookmark has been removed from the model.
-  void Remove(const BookmarkNode* node);
+  // Invoked when a title/URL pair has been removed from the model.
+  void Remove(const TitledUrlNode* node);
 
-  // Returns up to |max_count| of bookmarks containing each term from the text
+  // Returns up to |max_count| of matches containing each term from the text
   // |query| in either the title or the URL.
-  void GetBookmarksMatching(const base::string16& query,
-                            size_t max_count,
-                            query_parser::MatchingAlgorithm matching_algorithm,
-                            std::vector<BookmarkMatch>* results);
+  void GetResultsMatching(const base::string16& query,
+                          size_t max_count,
+                          query_parser::MatchingAlgorithm matching_algorithm,
+                          std::vector<BookmarkMatch>* results);
 
  private:
-  typedef std::vector<const BookmarkNode*> Nodes;
-  typedef std::set<const BookmarkNode*> NodeSet;
-  typedef std::map<base::string16, NodeSet> Index;
+  using TitledUrlNodes = std::vector<const TitledUrlNode*>;
+  using TitledUrlNodeSet = std::set<const TitledUrlNode*>;
+  using Index = std::map<base::string16, TitledUrlNodeSet>;
 
   // Constructs |sorted_nodes| by taking the matches in |matches| and sorting
   // them in decreasing order of typed count (if supported by the client) and
   // deduping them.
-  void SortMatches(const NodeSet& matches, Nodes* sorted_nodes) const;
+  void SortMatches(const TitledUrlNodeSet& matches,
+                   TitledUrlNodes* sorted_nodes) const;
 
   // Add |node| to |results| if the node matches the query.
-  void AddMatchToResults(const BookmarkNode* node,
+  void AddMatchToResults(const TitledUrlNode* node,
                          query_parser::QueryParser* parser,
                          const query_parser::QueryNodeVector& query_nodes,
                          std::vector<BookmarkMatch>* results);
@@ -66,20 +67,20 @@ class BookmarkIndex {
   // Populates |matches| for the specified term. If |first_term| is true, this
   // is the first term in the query. Returns true if there is at least one node
   // matching the term.
-  bool GetBookmarksMatchingTerm(
+  bool GetResultsMatchingTerm(
       const base::string16& term,
       bool first_term,
       query_parser::MatchingAlgorithm matching_algorithm,
-      NodeSet* matches);
+      TitledUrlNodeSet* matches);
 
   // Returns the set of query words from |query|.
   std::vector<base::string16> ExtractQueryWords(const base::string16& query);
 
   // Adds |node| to |index_|.
-  void RegisterNode(const base::string16& term, const BookmarkNode* node);
+  void RegisterNode(const base::string16& term, const TitledUrlNode* node);
 
   // Removes |node| from |index_|.
-  void UnregisterNode(const base::string16& term, const BookmarkNode* node);
+  void UnregisterNode(const base::string16& term, const TitledUrlNode* node);
 
   Index index_;
 

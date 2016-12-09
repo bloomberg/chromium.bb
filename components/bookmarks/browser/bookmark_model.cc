@@ -730,7 +730,7 @@ void BookmarkModel::GetBookmarksMatching(
   if (!loaded_)
     return;
 
-  index_->GetBookmarksMatching(text, max_count, matching_algorithm, matches);
+  index_->GetResultsMatching(text, max_count, matching_algorithm, matches);
 }
 
 void BookmarkModel::ClearStore() {

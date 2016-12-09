@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "components/bookmarks/browser/titled_url_node.h"
 #include "components/favicon_base/favicon_types.h"
 #include "ui/base/models/tree_node_model.h"
 #include "ui/gfx/image/image.h"
@@ -25,7 +26,7 @@ class BookmarkModel;
 
 // BookmarkNode contains information about a starred entry: title, URL, favicon,
 // id and type. BookmarkNodes are returned from BookmarkModel.
-class BookmarkNode : public ui::TreeNode<BookmarkNode> {
+class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
  public:
   enum Type {
     URL,
@@ -114,6 +115,10 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
     sync_transaction_version_ = sync_transaction_version;
   }
   int64_t sync_transaction_version() const { return sync_transaction_version_; }
+
+  // TitledUrlNode interface methods.
+  const base::string16& GetTitledUrlNodeTitle() const override;
+  const GURL& GetTitledUrlNodeUrl() const override;
 
   // TODO(sky): Consider adding last visit time here, it'll greatly simplify
   // HistoryContentsProvider.

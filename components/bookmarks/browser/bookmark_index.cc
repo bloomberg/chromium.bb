@@ -6,11 +6,6 @@
 
 #include <stdint.h>
 
-#include <algorithm>
-#include <functional>
-#include <iterator>
-#include <list>
-
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -18,8 +13,8 @@
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_match.h"
-#include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/titled_url_node.h"
 #include "components/query_parser/snippet.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
@@ -30,7 +25,7 @@ using UrlTypedCountMap = BookmarkClient::UrlTypedCountMap;
 
 namespace {
 
-using UrlNodeMap = std::unordered_map<const GURL*, const BookmarkNode*>;
+using UrlNodeMap = std::unordered_map<const GURL*, const TitledUrlNode*>;
 using UrlTypedCountPair = std::pair<const GURL*, int>;
 using UrlTypedCountPairs = std::vector<UrlTypedCountPair>;
 
@@ -57,9 +52,8 @@ base::string16 Normalize(const base::string16& text) {
                         unicode_normalized_text.length());
 }
 
-// Sort functor for sorting bookmark URLs by typed count. We sort in decreasing
-// order of typed count so that the best matches will always be added to the
-// results.
+// Sort functor for UrlTypedCountPairs. We sort in decreasing order of typed
+// count so that the best matches will always be added to the results.
 struct UrlTypedCountPairSortFunctor {
   bool operator()(const UrlTypedCountPair& a,
                   const UrlTypedCountPair& b) const {
@@ -67,15 +61,15 @@ struct UrlTypedCountPairSortFunctor {
   }
 };
 
-// Extract the GURL stored in a BookmarkClient::UrlTypedCountPair and use it to
-// look up the corresponding BookmarkNode.
+// Extract the GURL stored in an UrlTypedCountPair and use it to look up the
+// corresponding TitledUrlNode.
 class UrlTypedCountPairNodeLookupFunctor {
  public:
   explicit UrlTypedCountPairNodeLookupFunctor(UrlNodeMap& url_node_map)
       : url_node_map_(url_node_map) {
   }
 
-  const BookmarkNode* operator()(const UrlTypedCountPair& pair) const {
+  const TitledUrlNode* operator()(const UrlTypedCountPair& pair) const {
     return url_node_map_[pair.first];
   }
 
@@ -93,34 +87,29 @@ BookmarkIndex::BookmarkIndex(BookmarkClient* client)
 BookmarkIndex::~BookmarkIndex() {
 }
 
-void BookmarkIndex::Add(const BookmarkNode* node) {
-  if (!node->is_url())
-    return;
+void BookmarkIndex::Add(const TitledUrlNode* node) {
   std::vector<base::string16> terms =
-      ExtractQueryWords(Normalize(node->GetTitle()));
+      ExtractQueryWords(Normalize(node->GetTitledUrlNodeTitle()));
   for (size_t i = 0; i < terms.size(); ++i)
     RegisterNode(terms[i], node);
-  terms =
-      ExtractQueryWords(CleanUpUrlForMatching(node->url(), nullptr));
+  terms = ExtractQueryWords(
+      CleanUpUrlForMatching(node->GetTitledUrlNodeUrl(), nullptr));
   for (size_t i = 0; i < terms.size(); ++i)
     RegisterNode(terms[i], node);
 }
 
-void BookmarkIndex::Remove(const BookmarkNode* node) {
-  if (!node->is_url())
-    return;
-
+void BookmarkIndex::Remove(const TitledUrlNode* node) {
   std::vector<base::string16> terms =
-      ExtractQueryWords(Normalize(node->GetTitle()));
+      ExtractQueryWords(Normalize(node->GetTitledUrlNodeTitle()));
   for (size_t i = 0; i < terms.size(); ++i)
     UnregisterNode(terms[i], node);
-  terms =
-      ExtractQueryWords(CleanUpUrlForMatching(node->url(), nullptr));
+  terms = ExtractQueryWords(
+      CleanUpUrlForMatching(node->GetTitledUrlNodeUrl(), nullptr));
   for (size_t i = 0; i < terms.size(); ++i)
     UnregisterNode(terms[i], node);
 }
 
-void BookmarkIndex::GetBookmarksMatching(
+void BookmarkIndex::GetResultsMatching(
     const base::string16& input_query,
     size_t max_count,
     query_parser::MatchingAlgorithm matching_algorithm,
@@ -130,15 +119,15 @@ void BookmarkIndex::GetBookmarksMatching(
   if (terms.empty())
     return;
 
-  NodeSet matches;
+  TitledUrlNodeSet matches;
   for (size_t i = 0; i < terms.size(); ++i) {
-    if (!GetBookmarksMatchingTerm(
-            terms[i], i == 0, matching_algorithm, &matches)) {
+    if (!GetResultsMatchingTerm(terms[i], i == 0, matching_algorithm,
+                                &matches)) {
       return;
     }
   }
 
-  Nodes sorted_nodes;
+  TitledUrlNodes sorted_nodes;
   SortMatches(matches, &sorted_nodes);
 
   // We use a QueryParser to fill in match positions for us. It's not the most
@@ -153,21 +142,22 @@ void BookmarkIndex::GetBookmarksMatching(
   // that calculates result relevance in HistoryContentsProvider::ConvertResults
   // will run backwards to assure higher relevance will be attributed to the
   // best matches.
-  for (Nodes::const_iterator i = sorted_nodes.begin();
+  for (TitledUrlNodes::const_iterator i = sorted_nodes.begin();
        i != sorted_nodes.end() && results->size() < max_count;
        ++i)
     AddMatchToResults(*i, &parser, query_nodes, results);
 }
 
-void BookmarkIndex::SortMatches(const NodeSet& matches,
-                                Nodes* sorted_nodes) const {
+void BookmarkIndex::SortMatches(const TitledUrlNodeSet& matches,
+                                TitledUrlNodes* sorted_nodes) const {
   sorted_nodes->reserve(matches.size());
   if (client_->SupportsTypedCountForUrls()) {
     UrlNodeMap url_node_map;
     UrlTypedCountMap url_typed_count_map;
     for (auto node : matches) {
-      url_node_map.insert(std::make_pair(&node->url(), node));
-      url_typed_count_map.insert(std::make_pair(&node->url(), 0));
+      const GURL& url = node->GetTitledUrlNodeUrl();
+      url_node_map.insert(std::make_pair(&url, node));
+      url_typed_count_map.insert(std::make_pair(&url, 0));
     }
 
     client_->GetTypedCountForUrls(&url_typed_count_map);
@@ -189,7 +179,7 @@ void BookmarkIndex::SortMatches(const NodeSet& matches,
 }
 
 void BookmarkIndex::AddMatchToResults(
-    const BookmarkNode* node,
+    const TitledUrlNode* node,
     query_parser::QueryParser* parser,
     const query_parser::QueryNodeVector& query_nodes,
     std::vector<BookmarkMatch>* results) {
@@ -199,15 +189,15 @@ void BookmarkIndex::AddMatchToResults(
   // Check that the result matches the query.  The previous search
   // was a simple per-word search, while the more complex matching
   // of QueryParser may filter it out.  For example, the query
-  // ["thi"] will match the bookmark titled [Thinking], but since
+  // ["thi"] will match the title [Thinking], but since
   // ["thi"] is quoted we don't want to do a prefix match.
   query_parser::QueryWordVector title_words, url_words;
   const base::string16 lower_title =
-      base::i18n::ToLower(Normalize(node->GetTitle()));
+      base::i18n::ToLower(Normalize(node->GetTitledUrlNodeTitle()));
   parser->ExtractQueryWords(lower_title, &title_words);
   base::OffsetAdjuster::Adjustments adjustments;
   parser->ExtractQueryWords(
-      CleanUpUrlForMatching(node->url(), &adjustments),
+      CleanUpUrlForMatching(node->GetTitledUrlNodeUrl(), &adjustments),
       &url_words);
   query_parser::Snippet::MatchPositions title_matches, url_matches;
   for (const auto& node : query_nodes) {
@@ -220,7 +210,7 @@ void BookmarkIndex::AddMatchToResults(
     query_parser::QueryParser::SortAndCoalesceMatchPositions(&url_matches);
   }
   BookmarkMatch match;
-  if (lower_title.length() == node->GetTitle().length()) {
+  if (lower_title.length() == node->GetTitledUrlNodeTitle().length()) {
     // Only use title matches if the lowercase string is the same length
     // as the original string, otherwise the matches are meaningless.
     // TODO(mpearson): revise match positions appropriately.
@@ -239,11 +229,11 @@ void BookmarkIndex::AddMatchToResults(
   results->push_back(match);
 }
 
-bool BookmarkIndex::GetBookmarksMatchingTerm(
+bool BookmarkIndex::GetResultsMatchingTerm(
     const base::string16& term,
     bool first_term,
     query_parser::MatchingAlgorithm matching_algorithm,
-    NodeSet* matches) {
+    TitledUrlNodeSet* matches) {
   Index::const_iterator i = index_.lower_bound(term);
   if (i == index_.end())
     return false;
@@ -252,20 +242,21 @@ bool BookmarkIndex::GetBookmarksMatchingTerm(
       term, matching_algorithm)) {
     // Term is too short for prefix match, compare using exact match.
     if (i->first != term)
-      return false;  // No bookmarks with this term.
+      return false;  // No title/URL pairs with this term.
 
     if (first_term) {
       (*matches) = i->second;
       return true;
     }
-    *matches = base::STLSetIntersection<NodeSet>(i->second, *matches);
+    *matches = base::STLSetIntersection<TitledUrlNodeSet>(i->second, *matches);
   } else {
     // Loop through index adding all entries that start with term to
     // |prefix_matches|.
-    NodeSet tmp_prefix_matches;
+    TitledUrlNodeSet tmp_prefix_matches;
     // If this is the first term, then store the result directly in |matches|
     // to avoid calling stl intersection (which requires a copy).
-    NodeSet* prefix_matches = first_term ? matches : &tmp_prefix_matches;
+    TitledUrlNodeSet* prefix_matches =
+        first_term ? matches : &tmp_prefix_matches;
     while (i != index_.end() &&
            i->first.size() >= term.size() &&
            term.compare(0, term.size(), i->first, 0, term.size()) == 0) {
@@ -274,14 +265,17 @@ bool BookmarkIndex::GetBookmarksMatchingTerm(
 #else
       // Work around a bug in the implementation of std::set::insert in the STL
       // used on android (http://crbug.com/367050).
-      for (NodeSet::const_iterator n = i->second.begin(); n != i->second.end();
+      for (TitledUrlNodeSet::const_iterator n = i->second.begin();
+           n != i->second.end();
            ++n)
         prefix_matches->insert(prefix_matches->end(), *n);
 #endif
       ++i;
     }
-    if (!first_term)
-      *matches = base::STLSetIntersection<NodeSet>(*prefix_matches, *matches);
+    if (!first_term) {
+      *matches =
+          base::STLSetIntersection<TitledUrlNodeSet>(*prefix_matches, *matches);
+    }
   }
   return !matches->empty();
 }
@@ -299,16 +293,16 @@ std::vector<base::string16> BookmarkIndex::ExtractQueryWords(
 }
 
 void BookmarkIndex::RegisterNode(const base::string16& term,
-                                 const BookmarkNode* node) {
+                                 const TitledUrlNode* node) {
   index_[term].insert(node);
 }
 
 void BookmarkIndex::UnregisterNode(const base::string16& term,
-                                   const BookmarkNode* node) {
+                                   const TitledUrlNode* node) {
   Index::iterator i = index_.find(term);
   if (i == index_.end()) {
     // We can get here if the node has the same term more than once. For
-    // example, a bookmark with the title 'foo foo' would end up here.
+    // example, a node with the title 'foo foo' would end up here.
     return;
   }
   i->second.erase(node);

@@ -39,6 +39,7 @@ static_library("browser") {
     "scoped_group_bookmark_actions.h",
     "startup_task_runner_service.cc",
     "startup_task_runner_service.h",
+    "titled_url_node.h",
   ]
 
   public_deps = [

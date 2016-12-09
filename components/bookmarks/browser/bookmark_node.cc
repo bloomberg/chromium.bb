@@ -103,6 +103,14 @@ const BookmarkNode::MetaInfoMap* BookmarkNode::GetMetaInfoMap() const {
   return meta_info_map_.get();
 }
 
+const base::string16& BookmarkNode::GetTitledUrlNodeTitle() const {
+  return GetTitle();
+}
+
+const GURL& BookmarkNode::GetTitledUrlNodeUrl() const {
+  return url_;
+}
+
 void BookmarkNode::Initialize(int64_t id) {
   id_ = id;
   type_ = url_.is_empty() ? FOLDER : URL;

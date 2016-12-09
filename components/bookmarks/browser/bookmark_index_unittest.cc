@@ -100,7 +100,8 @@ class BookmarkIndexTest : public testing::Test {
     for (size_t i = 0; i < expected_titles.size(); ++i) {
       bool found = false;
       for (size_t j = 0; j < matches.size(); ++j) {
-        if (ASCIIToUTF16(expected_titles[i]) == matches[j].node->GetTitle()) {
+        const base::string16& title = matches[j].node->GetTitledUrlNodeTitle();
+        if (ASCIIToUTF16(expected_titles[i]) == title) {
           matches.erase(matches.begin() + j);
           found = true;
           break;
@@ -532,7 +533,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
           base::MakeUnique<BookmarkClientMock>(typed_count_map));
 
   for (size_t i = 0; i < arraysize(data); ++i)
-    // Populate the BookmarkIndex.
+    // Populate the bookmark index.
     model->AddURL(
         model->other_node(), i, UTF8ToUTF16(data[i].title), data[i].url);
 
@@ -546,18 +547,18 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   // 3. Google Docs (docs.google.com) 50
   // 4. Google Maps (maps.google.com) 40
   ASSERT_EQ(4U, matches.size());
-  EXPECT_EQ(data[0].url, matches[0].node->url());
-  EXPECT_EQ(data[3].url, matches[1].node->url());
-  EXPECT_EQ(data[2].url, matches[2].node->url());
-  EXPECT_EQ(data[1].url, matches[3].node->url());
+  EXPECT_EQ(data[0].url, matches[0].node->GetTitledUrlNodeUrl());
+  EXPECT_EQ(data[3].url, matches[1].node->GetTitledUrlNodeUrl());
+  EXPECT_EQ(data[2].url, matches[2].node->GetTitledUrlNodeUrl());
+  EXPECT_EQ(data[1].url, matches[3].node->GetTitledUrlNodeUrl());
 
   matches.clear();
   // Select top two matches.
   model->GetBookmarksMatching(ASCIIToUTF16("google"), 2, &matches);
 
   ASSERT_EQ(2U, matches.size());
-  EXPECT_EQ(data[0].url, matches[0].node->url());
-  EXPECT_EQ(data[3].url, matches[1].node->url());
+  EXPECT_EQ(data[0].url, matches[0].node->GetTitledUrlNodeUrl());
+  EXPECT_EQ(data[3].url, matches[1].node->GetTitledUrlNodeUrl());
 }
 
 }  // namespace

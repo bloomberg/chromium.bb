@@ -593,7 +593,7 @@ void BookmarkBridge::SearchBookmarks(JNIEnv* env,
       query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH,
       &results);
   for (const bookmarks::BookmarkMatch& match : results) {
-    const BookmarkNode* node = match.node;
+    const BookmarkNode* node = static_cast<const BookmarkNode*>(match.node);
 
     std::vector<int> title_match_start_positions;
     std::vector<int> title_match_end_positions;
