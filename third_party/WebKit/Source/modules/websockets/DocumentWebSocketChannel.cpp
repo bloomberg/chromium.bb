@@ -49,6 +49,7 @@
 #include "platform/network/NetworkLog.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -174,7 +175,9 @@ bool DocumentWebSocketChannel::connect(const KURL& url,
     protocol.split(", ", true, protocols);
   }
 
-  if (document()->frame()) {
+  if (document()->frame() &&
+      document()->frame()->interfaceProvider() !=
+          InterfaceProvider::getEmptyInterfaceProvider()) {
     // Initialize the WebSocketHandle with the frame's InterfaceProvider to
     // provide the WebSocket implementation with context about this frame.
     // This is important so that the browser can show UI associated with
