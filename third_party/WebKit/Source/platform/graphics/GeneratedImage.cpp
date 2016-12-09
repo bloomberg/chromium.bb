@@ -32,7 +32,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -48,10 +48,11 @@ void GeneratedImage::drawPattern(GraphicsContext& destContext,
   FloatRect tileRect = srcRect;
   tileRect.expand(FloatSize(repeatSpacing));
 
-  SkPictureBuilder builder(tileRect, nullptr, &destContext);
-  builder.context().beginRecording(tileRect);
-  drawTile(builder.context(), srcRect);
-  sk_sp<SkPicture> tilePicture = builder.endRecording();
+  std::unique_ptr<PaintController> paintController = PaintController::create();
+  GraphicsContext context(*paintController);
+  context.beginRecording(tileRect);
+  drawTile(context, srcRect);
+  sk_sp<SkPicture> tilePicture = context.endRecording();
 
   SkMatrix patternMatrix = SkMatrix::MakeTrans(phase.x(), phase.y());
   patternMatrix.preScale(scale.width(), scale.height());
