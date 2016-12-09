@@ -375,6 +375,8 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::BGR_565;
     case DRM_FORMAT_UYVY:
       return gfx::BufferFormat::UYVY_422;
+    case DRM_FORMAT_NV12:
+      return gfx::BufferFormat::YUV_420_BIPLANAR;
     case DRM_FORMAT_YV12:
       return gfx::BufferFormat::YVU_420;
     default:
