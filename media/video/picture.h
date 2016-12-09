@@ -103,6 +103,18 @@ class MEDIA_EXPORT Picture {
 
   void set_size_changed(bool size_changed) { size_changed_ = size_changed; }
 
+  bool surface_texture() const { return surface_texture_; }
+
+  void set_surface_texture(bool surface_texture) {
+    surface_texture_ = surface_texture;
+  }
+
+  bool wants_promotion_hint() const { return wants_promotion_hint_; }
+
+  void set_wants_promotion_hint(bool wants_promotion_hint) {
+    wants_promotion_hint_ = wants_promotion_hint;
+  }
+
  private:
   int32_t picture_buffer_id_;
   int32_t bitstream_buffer_id_;
@@ -110,6 +122,8 @@ class MEDIA_EXPORT Picture {
   gfx::ColorSpace color_space_;
   bool allow_overlay_;
   bool size_changed_;
+  bool surface_texture_;
+  bool wants_promotion_hint_;
 };
 
 }  // namespace media

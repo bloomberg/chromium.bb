@@ -39,6 +39,10 @@ struct CC_EXPORT TransferableResource {
   gpu::MailboxHolder mailbox_holder;
   bool read_lock_fences_enabled;
   bool is_software;
+#if defined(OS_ANDROID)
+  bool is_backed_by_surface_texture;
+  bool wants_promotion_hint;
+#endif
   bool is_overlay_candidate;
   gfx::ColorSpace color_space;
 };

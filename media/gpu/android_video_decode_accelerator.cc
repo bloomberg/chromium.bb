@@ -739,6 +739,7 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
   if (size_changed)
     picture_buffer.set_size(size_);
 
+  // TODO(liberato): request a hint for promotability.  crbug.com/671365 .
   const bool allow_overlay = picture_buffer_manager_.ArePicturesOverlayable();
   UMA_HISTOGRAM_BOOLEAN("Media.AVDA.FrameSentAsOverlay", allow_overlay);
   // TODO(hubbe): Insert the correct color space. http://crbug.com/647725

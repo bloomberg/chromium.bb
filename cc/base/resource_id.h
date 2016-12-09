@@ -6,10 +6,12 @@
 #define CC_BASE_RESOURCE_ID_H_
 
 #include <stdint.h>
+#include <unordered_set>
 
 namespace cc {
 
 using ResourceId = uint32_t;
+using ResourceIdSet = std::unordered_set<ResourceId>;
 
 }  // namespace cc
 

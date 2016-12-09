@@ -44,6 +44,8 @@ IPC_STRUCT_BEGIN(AcceleratedVideoDecoderHostMsg_PictureReady_Params)
   IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
   IPC_STRUCT_MEMBER(bool, allow_overlay)
   IPC_STRUCT_MEMBER(bool, size_changed)
+  IPC_STRUCT_MEMBER(bool, surface_texture)
+  IPC_STRUCT_MEMBER(bool, wants_promotion_hint)
 IPC_STRUCT_END()
 
 //------------------------------------------------------------------------------

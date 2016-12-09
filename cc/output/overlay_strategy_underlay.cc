@@ -47,7 +47,19 @@ bool OverlayStrategyUnderlay::Attempt(ResourceProvider* resource_provider,
       replacement->SetAll(shared_quad_state, rect, rect, rect, false,
                           SK_ColorTRANSPARENT, true);
       candidate_list->swap(new_candidate_list);
+
+      // This quad will be promoted.  We clear the promotable hints here, since
+      // we can only promote a single quad.  Otherwise, somebody might try to
+      // back one of the promotable quads with a SurfaceView, and either it or
+      // |candidate| would have to fall back to a texture.
+      candidate_list->promotable_resource_hints_.clear();
+      candidate_list->promotable_resource_hints_.insert(candidate.resource_id);
       return true;
+    } else {
+      // If |candidate| should get a promotion hint, then rememeber that now.
+      candidate_list->promotable_resource_hints_.insert(
+          new_candidate_list.promotable_resource_hints_.begin(),
+          new_candidate_list.promotable_resource_hints_.end());
     }
   }
 

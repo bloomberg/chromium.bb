@@ -48,6 +48,27 @@ struct StructTraits<cc::mojom::TransferableResourceDataView,
     return resource.is_overlay_candidate;
   }
 
+  static bool is_backed_by_surface_texture(
+      const cc::TransferableResource& resource) {
+#if defined(OS_ANDROID)
+    // TransferableResource has this in an #ifdef, but mojo doesn't let us.
+    // TODO(https://crbug.com/671901)
+    return resource.is_backed_by_surface_texture;
+#else
+    return false;
+#endif
+  }
+
+  static bool wants_promotion_hint(const cc::TransferableResource& resource) {
+#if defined(OS_ANDROID)
+    // TransferableResource has this in an #ifdef, but mojo doesn't let us.
+    // TODO(https://crbug.com/671901)
+    return resource.wants_promotion_hint;
+#else
+    return false;
+#endif
+  }
+
   static bool Read(cc::mojom::TransferableResourceDataView data,
                    cc::TransferableResource* out);
 };

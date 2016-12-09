@@ -547,7 +547,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   }
   CHECK(debug_weak_this.get());
 
-  ResourceProvider::ResourceIdSet referenced_resources;
+  ResourceIdSet referenced_resources;
   size_t reserve_size = frame.resource_list.size();
   referenced_resources.reserve(reserve_size);
 

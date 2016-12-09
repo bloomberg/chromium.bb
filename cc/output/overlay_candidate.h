@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "cc/base/cc_export.h"
+#include "cc/base/resource_id.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_format.h"
 #include "ui/gfx/geometry/rect.h"
@@ -70,6 +71,18 @@ class CC_EXPORT OverlayCandidate {
   bool use_output_surface_for_resource;
   // Texture resource to present in an overlay.
   unsigned resource_id;
+
+#if defined(OS_ANDROID)
+  // For candidates from StreamVideoDrawQuads, this records whether the quad is
+  // marked as being backed by a SurfaceTexture or not.  If so, it's not really
+  // promotable to an overlay.
+  bool is_backed_by_surface_texture;
+
+  // Filled in by the OverlayCandidateValidator to indicate whether this is a
+  // promotable candidate or not.
+  bool is_promotable_hint;
+#endif
+
   // Stacking order of the overlay plane relative to the main surface,
   // which is 0. Signed to allow for "underlays".
   int plane_z_order;
@@ -91,7 +104,20 @@ class CC_EXPORT OverlayCandidate {
                                   OverlayCandidate* candidate);
 };
 
-typedef std::vector<OverlayCandidate> OverlayCandidateList;
+class CC_EXPORT OverlayCandidateList : public std::vector<OverlayCandidate> {
+ public:
+  OverlayCandidateList();
+  OverlayCandidateList(const OverlayCandidateList&);
+  OverlayCandidateList(OverlayCandidateList&&);
+  ~OverlayCandidateList();
+
+  OverlayCandidateList& operator=(const OverlayCandidateList&);
+  OverlayCandidateList& operator=(OverlayCandidateList&&);
+
+  // For android, this provides a set of resources that could be promoted to
+  // overlay, if one backs them with a SurfaceView.
+  ResourceIdSet promotable_resource_hints_;
+};
 
 }  // namespace cc
 

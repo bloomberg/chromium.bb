@@ -255,6 +255,8 @@ void GpuVideoDecodeAcceleratorHost::OnPictureReady(
                   params.visible_rect, params.color_space,
                   params.allow_overlay);
   picture.set_size_changed(params.size_changed);
+  picture.set_surface_texture(params.surface_texture);
+  picture.set_wants_promotion_hint(params.wants_promotion_hint);
   client_->PictureReady(picture);
 }
 

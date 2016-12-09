@@ -8,8 +8,34 @@
 #include "cc/output/overlay_strategy_single_on_top.h"
 #include "cc/output/overlay_strategy_underlay.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/resources/resource_provider.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
+
+namespace {
+
+#if defined(OS_ANDROID)
+// Utility class to make sure that we notify resource that they're promotable
+// before returning from ProcessForOverlays.
+class SendPromotionHintsBeforeReturning {
+ public:
+  SendPromotionHintsBeforeReturning(cc::ResourceProvider* resource_provider,
+                                    cc::OverlayCandidateList* candidates)
+      : resource_provider_(resource_provider), candidates_(candidates) {}
+  ~SendPromotionHintsBeforeReturning() {
+    resource_provider_->SendPromotionHints(
+        candidates_->promotable_resource_hints_);
+  }
+
+ private:
+  cc::ResourceProvider* resource_provider_;
+  cc::OverlayCandidateList* candidates_;
+
+  DISALLOW_COPY_AND_ASSIGN(SendPromotionHintsBeforeReturning);
+};
+#endif
+
+}  // namespace
 
 namespace cc {
 
@@ -62,6 +88,13 @@ void OverlayProcessor::ProcessForOverlays(ResourceProvider* resource_provider,
                                           OverlayCandidateList* candidates,
                                           CALayerOverlayList* ca_layer_overlays,
                                           gfx::Rect* damage_rect) {
+#if defined(OS_ANDROID)
+  // Be sure to send out notifications, regardless of whether we get to
+  // processing for overlays or not.  If we don't, then we should notify that
+  // they are not promotable.
+  SendPromotionHintsBeforeReturning notifier(resource_provider, candidates);
+#endif
+
   // If we have any copy requests, we can't remove any quads for overlays or
   // CALayers because the framebuffer would be missing the removed quads'
   // contents.

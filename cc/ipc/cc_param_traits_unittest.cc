@@ -207,6 +207,10 @@ class CCParamTraitsTest : public testing::Test {
     EXPECT_EQ(a.mailbox_holder.texture_target, b.mailbox_holder.texture_target);
     EXPECT_EQ(a.mailbox_holder.sync_token, b.mailbox_holder.sync_token);
     EXPECT_EQ(a.is_overlay_candidate, b.is_overlay_candidate);
+#if defined(OS_ANDROID)
+    EXPECT_EQ(a.is_backed_by_surface_texture, b.is_backed_by_surface_texture);
+    EXPECT_EQ(a.wants_promotion_hint, b.wants_promotion_hint);
+#endif
   }
 };
 
@@ -569,6 +573,10 @@ TEST_F(CCParamTraitsTest, Resources) {
   arbitrary_resource1.mailbox_holder.texture_target = GL_TEXTURE_2D;
   arbitrary_resource1.mailbox_holder.sync_token = arbitrary_token1;
   arbitrary_resource1.is_overlay_candidate = true;
+#if defined(OS_ANDROID)
+  arbitrary_resource1.is_backed_by_surface_texture = true;
+  arbitrary_resource1.wants_promotion_hint = true;
+#endif
 
   TransferableResource arbitrary_resource2;
   arbitrary_resource2.id = 789132;
@@ -579,6 +587,10 @@ TEST_F(CCParamTraitsTest, Resources) {
   arbitrary_resource2.mailbox_holder.texture_target = GL_TEXTURE_EXTERNAL_OES;
   arbitrary_resource2.mailbox_holder.sync_token = arbitrary_token2;
   arbitrary_resource2.is_overlay_candidate = false;
+#if defined(OS_ANDROID)
+  arbitrary_resource2.is_backed_by_surface_texture = false;
+  arbitrary_resource2.wants_promotion_hint = false;
+#endif
 
   std::unique_ptr<RenderPass> renderpass_in = RenderPass::Create();
   renderpass_in->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());

@@ -134,6 +134,10 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TransferableResource)
   IPC_STRUCT_TRAITS_MEMBER(is_software)
   IPC_STRUCT_TRAITS_MEMBER(is_overlay_candidate)
   IPC_STRUCT_TRAITS_MEMBER(color_space)
+#if defined(OS_ANDROID)
+  IPC_STRUCT_TRAITS_MEMBER(is_backed_by_surface_texture)
+  IPC_STRUCT_TRAITS_MEMBER(wants_promotion_hint)
+#endif
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::ReturnedResource)

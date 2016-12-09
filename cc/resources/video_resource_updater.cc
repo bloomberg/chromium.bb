@@ -768,6 +768,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
                                  media::VideoFrameMetadata::ALLOW_OVERLAY),
                              false);
       mailbox.set_color_space(video_frame->ColorSpace());
+#if defined(OS_ANDROID)
+      mailbox.set_is_backed_by_surface_texture(video_frame->metadata()->IsTrue(
+          media::VideoFrameMetadata::SURFACE_TEXTURE));
+      mailbox.set_wants_promotion_hint(video_frame->metadata()->IsTrue(
+          media::VideoFrameMetadata::WANTS_PROMOTION_HINT));
+#endif
       external_resources.mailboxes.push_back(mailbox);
       external_resources.release_callbacks.push_back(
           base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));

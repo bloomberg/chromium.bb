@@ -64,7 +64,6 @@ class CC_EXPORT ResourceProvider
 
  public:
   using ResourceIdArray = std::vector<ResourceId>;
-  using ResourceIdSet = std::unordered_set<ResourceId>;
   using ResourceIdMap = std::unordered_map<ResourceId, ResourceId>;
   enum TextureHint {
     TEXTURE_HINT_DEFAULT = 0x0,
@@ -206,6 +205,14 @@ class CC_EXPORT ResourceProvider
   // wait on it.
   void ReceiveReturnsFromParent(
       const ReturnedResourceArray& transferable_resources);
+
+#if defined(OS_ANDROID)
+  // Send an overlay promotion hint to all resources that requested it via
+  // |want_promotion_hint|.  |promotable_hints| contains all the resources that
+  // should be told that they're promotable.  Others will be told that they're
+  // not promotable right now.
+  void SendPromotionHints(const ResourceIdSet& promotable_hints);
+#endif
 
   // The following lock classes are part of the ResourceProvider API and are
   // needed to read and write the resource contents. The user must ensure
@@ -471,6 +478,18 @@ class CC_EXPORT ResourceProvider
   // Indicates if this resource may be used for a hardware overlay plane.
   bool IsOverlayCandidate(ResourceId id);
 
+#if defined(OS_ANDROID)
+  // Indicates if this resource is backed by an Android SurfaceTexture, and thus
+  // can't really be promoted to an overlay.
+  bool IsBackedBySurfaceTexture(ResourceId id);
+
+  // Indicates if this resource wants to receive promotion hints.
+  bool WantsPromotionHint(ResourceId id);
+
+  // Return the number of resources that request promotion hints.
+  size_t CountPromotionHintRequestsForTesting();
+#endif
+
   void WaitSyncTokenIfNeeded(ResourceId id);
 
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
@@ -574,6 +593,20 @@ class CC_EXPORT ResourceProvider
     bool read_lock_fences_enabled : 1;
     bool has_shared_bitmap_id : 1;
     bool is_overlay_candidate : 1;
+#if defined(OS_ANDROID)
+    // Indicates whether this resource may not be overlayed on Android, since
+    // it's not backed by a SurfaceView.  This may be set in combination with
+    // |is_overlay_candidate|, to find out if switching the resource to a
+    // a SurfaceView would result in overlay promotion.  It's good to find this
+    // out in advance, since one has no fallback path for displaying a
+    // SurfaceView except via promoting it to an overlay.  Ideally, one _could_
+    // promote SurfaceTexture via the overlay path, even if one ended up just
+    // drawing a quad in the compositor.  However, for now, we use this flag to
+    // refuse to promote so that the compositor will draw the quad.
+    bool is_backed_by_surface_texture : 1;
+    // Indicates that this resource would like a promotion hint.
+    bool wants_promotion_hint : 1;
+#endif
     scoped_refptr<Fence> read_lock_fence;
     gfx::Size size;
     Origin origin;
@@ -711,6 +744,10 @@ class CC_EXPORT ResourceProvider
   // A process-unique ID used for disambiguating memory dumps from different
   // resource providers.
   int tracing_id_;
+#if defined(OS_ANDROID)
+  // Set of resource Ids that would like to be notified about promotion hints.
+  ResourceIdSet wants_promotion_hints_set_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };

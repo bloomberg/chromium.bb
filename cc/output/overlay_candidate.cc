@@ -173,9 +173,14 @@ OverlayCandidate::OverlayCandidate()
       is_clipped(false),
       use_output_surface_for_resource(false),
       resource_id(0),
+#if defined(OS_ANDROID)
+      is_backed_by_surface_texture(false),
+      is_promotable_hint(false),
+#endif
       plane_z_order(0),
       is_unoccluded(false),
-      overlay_handled(false) {}
+      overlay_handled(false) {
+}
 
 OverlayCandidate::OverlayCandidate(const OverlayCandidate& other) = default;
 
@@ -282,6 +287,10 @@ bool OverlayCandidate::FromStreamVideoQuad(ResourceProvider* resource_provider,
   candidate->resource_id = quad->resource_id();
   candidate->resource_size_in_pixels = quad->resource_size_in_pixels();
   candidate->transform = overlay_transform;
+#if defined(OS_ANDROID)
+  candidate->is_backed_by_surface_texture =
+      resource_provider->IsBackedBySurfaceTexture(quad->resource_id());
+#endif
 
   gfx::Point3F uv0 = gfx::Point3F(0, 0, 0);
   gfx::Point3F uv1 = gfx::Point3F(1, 1, 0);
@@ -309,5 +318,21 @@ bool OverlayCandidate::FromStreamVideoQuad(ResourceProvider* resource_provider,
   }
   return true;
 }
+
+OverlayCandidateList::OverlayCandidateList() {}
+
+OverlayCandidateList::OverlayCandidateList(const OverlayCandidateList& other) =
+    default;
+
+OverlayCandidateList::OverlayCandidateList(OverlayCandidateList&& other) =
+    default;
+
+OverlayCandidateList::~OverlayCandidateList() {}
+
+OverlayCandidateList& OverlayCandidateList::operator=(
+    const OverlayCandidateList& other) = default;
+
+OverlayCandidateList& OverlayCandidateList::operator=(
+    OverlayCandidateList&& other) = default;
 
 }  // namespace cc

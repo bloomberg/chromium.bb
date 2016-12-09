@@ -701,7 +701,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     }
     EXPECT_EQ(list[0].mailbox_holder.sync_token,
               context3d_->last_waited_sync_token());
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(id1);
     resource_ids_to_receive.insert(id2);
     resource_ids_to_receive.insert(id3);
@@ -786,7 +786,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
 
     // Transfer resources back from the parent to the child. Set no resources as
     // being in use.
-    ResourceProvider::ResourceIdSet no_resources;
+    ResourceIdSet no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     ASSERT_EQ(4u, returned_to_child.size());
@@ -856,7 +856,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id3));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id4));
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(id1);
     resource_ids_to_receive.insert(id2);
     resource_ids_to_receive.insert(id3);
@@ -881,6 +881,104 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   EXPECT_FALSE(returned_to_child[2].lost);
   EXPECT_FALSE(returned_to_child[3].lost);
 }
+
+#if defined(OS_ANDROID)
+TEST_P(ResourceProviderTest, OverlayPromotionHint) {
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
+    return;
+
+  GLuint external_texture_id = child_context_->createExternalTexture();
+
+  gpu::Mailbox external_mailbox;
+  child_context_->genMailboxCHROMIUM(external_mailbox.name);
+  child_context_->produceTextureDirectCHROMIUM(
+      external_texture_id, GL_TEXTURE_EXTERNAL_OES, external_mailbox.name);
+  gpu::SyncToken external_sync_token;
+  child_context_->genSyncToken(child_context_->insertFenceSync(),
+                               external_sync_token.GetData());
+  EXPECT_TRUE(external_sync_token.HasData());
+
+  TextureMailbox id1_mailbox(external_mailbox, external_sync_token,
+                             GL_TEXTURE_EXTERNAL_OES);
+  id1_mailbox.set_wants_promotion_hint(true);
+  id1_mailbox.set_is_overlay_candidate(true);
+  id1_mailbox.set_is_backed_by_surface_texture(true);
+  ResourceId id1 = child_resource_provider_->CreateResourceFromTextureMailbox(
+      id1_mailbox,
+      SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
+
+  TextureMailbox id2_mailbox(external_mailbox, external_sync_token,
+                             GL_TEXTURE_EXTERNAL_OES);
+  id2_mailbox.set_wants_promotion_hint(false);
+  id2_mailbox.set_is_overlay_candidate(true);
+  id2_mailbox.set_is_backed_by_surface_texture(false);
+  ResourceId id2 = child_resource_provider_->CreateResourceFromTextureMailbox(
+      id2_mailbox,
+      SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
+
+  ReturnedResourceArray returned_to_child;
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+
+  {
+    // Transfer some resources to the parent.
+    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    resource_ids_to_transfer.push_back(id1);
+    resource_ids_to_transfer.push_back(id2);
+
+    child_resource_provider_->GenerateSyncTokenForResources(
+        resource_ids_to_transfer);
+
+    TransferableResourceArray list;
+    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                  &list);
+    ASSERT_EQ(2u, list.size());
+    resource_provider_->ReceiveFromChild(child_id, list);
+    {
+      resource_provider_->WaitSyncTokenIfNeeded(list[0].id);
+      ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                              list[0].id);
+    }
+
+    EXPECT_EQ(list[0].mailbox_holder.sync_token,
+              context3d_->last_waited_sync_token());
+    ResourceIdSet resource_ids_to_receive;
+    resource_ids_to_receive.insert(id1);
+    resource_ids_to_receive.insert(id2);
+    resource_provider_->DeclareUsedResourcesFromChild(child_id,
+                                                      resource_ids_to_receive);
+  }
+
+  EXPECT_EQ(2u, resource_provider_->num_resources());
+  ResourceProvider::ResourceIdMap resource_map =
+      resource_provider_->GetChildToParentMap(child_id);
+  ResourceId mapped_id1 = resource_map[id1];
+  ResourceId mapped_id2 = resource_map[id2];
+  EXPECT_NE(0u, mapped_id1);
+  EXPECT_NE(0u, mapped_id2);
+
+  // Make sure that the request for a promotion hint was noticed.
+  EXPECT_TRUE(resource_provider_->IsOverlayCandidate(mapped_id1));
+  EXPECT_TRUE(resource_provider_->IsBackedBySurfaceTexture(mapped_id1));
+  EXPECT_TRUE(resource_provider_->WantsPromotionHint(mapped_id1));
+
+  EXPECT_TRUE(resource_provider_->IsOverlayCandidate(mapped_id2));
+  EXPECT_FALSE(resource_provider_->IsBackedBySurfaceTexture(mapped_id2));
+  EXPECT_FALSE(resource_provider_->WantsPromotionHint(mapped_id2));
+
+  EXPECT_EQ(1u, resource_provider_->CountPromotionHintRequestsForTesting());
+
+  // ResourceProvider maintains a set of promotion hint requests that should be
+  // cleared when resources are deleted.
+  resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
+  EXPECT_EQ(2u, returned_to_child.size());
+  child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
+
+  EXPECT_EQ(0u, resource_provider_->CountPromotionHintRequestsForTesting());
+
+  resource_provider_->DestroyChild(child_id);
+}
+#endif
 
 class ResourceProviderTestNoSyncToken : public ResourceProviderTest {
  public:
@@ -951,7 +1049,7 @@ TEST_P(ResourceProviderTestNoSyncToken, TransferGLResources) {
     EXPECT_EQ(external_sync_token, list[2].mailbox_holder.sync_token);
     resource_provider_->ReceiveFromChild(child_id, list);
 
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(id1);
     resource_ids_to_receive.insert(id2);
     resource_ids_to_receive.insert(id3);
@@ -964,7 +1062,7 @@ TEST_P(ResourceProviderTestNoSyncToken, TransferGLResources) {
 
     // Transfer resources back from the parent to the child. Set no resources as
     // being in use.
-    ResourceProvider::ResourceIdSet no_resources;
+    ResourceIdSet no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     ASSERT_EQ(3u, returned_to_child.size());
@@ -1031,8 +1129,8 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
     ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                             list[0].id);
 
-    resource_provider_->DeclareUsedResourcesFromChild(
-        child_id, ResourceProvider::ResourceIdSet());
+    resource_provider_->DeclareUsedResourcesFromChild(child_id,
+                                                      ResourceIdSet());
     EXPECT_EQ(0u, returned_to_child.size());
   }
 
@@ -1106,17 +1204,14 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
     ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                             parent_id);
   }
-  resource_provider_->DeclareUsedResourcesFromChild(
-      child_id, ResourceProvider::ResourceIdSet());
+  resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
   EXPECT_EQ(0u, returned_to_child.size());
 
-  resource_provider_->DeclareUsedResourcesFromChild(
-      child_id, ResourceProvider::ResourceIdSet());
+  resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
   EXPECT_EQ(0u, returned_to_child.size());
   fence->passed = true;
 
-  resource_provider_->DeclareUsedResourcesFromChild(
-      child_id, ResourceProvider::ResourceIdSet());
+  resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
   EXPECT_EQ(1u, returned_to_child.size());
 
   child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
@@ -1306,7 +1401,7 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id3));
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(id1);
     resource_ids_to_receive.insert(id2);
     resource_ids_to_receive.insert(id3);
@@ -1365,7 +1460,7 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
 
     // Transfer resources back from the parent to the child. Set no resources as
     // being in use.
-    ResourceProvider::ResourceIdSet no_resources;
+    ResourceIdSet no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     ASSERT_EQ(3u, returned_to_child.size());
@@ -1427,7 +1522,7 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id3));
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(id1);
     resource_ids_to_receive.insert(id2);
     resource_ids_to_receive.insert(id3);
@@ -1616,7 +1711,7 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(id1);
     resource_ids_to_receive.insert(id2);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
@@ -1655,7 +1750,7 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
 
     // Release the resource in the parent. Set no resources as being in use. The
     // resources are exported so that can't be transferred back yet.
-    ResourceProvider::ResourceIdSet no_resources;
+    ResourceIdSet no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     EXPECT_EQ(0u, returned_to_child.size());
@@ -1722,7 +1817,7 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(id1);
     resource_ids_to_receive.insert(id2);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
@@ -1761,7 +1856,7 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
 
     // Release the resource in the parent. Set no resources as being in use. The
     // resources are exported so that can't be transferred back yet.
-    ResourceProvider::ResourceIdSet no_resources;
+    ResourceIdSet no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     // Destroy the child, the resources should not be returned yet.
@@ -1835,7 +1930,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
       EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id));
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(id);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_receive);
@@ -1849,7 +1944,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
 
     // Transfer resources back from the parent to the child. Set no resources as
     // being in use.
-    ResourceProvider::ResourceIdSet no_resources;
+    ResourceIdSet no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     ASSERT_EQ(1u, returned_to_child.size());
@@ -1890,7 +1985,7 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
                                                   &list);
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id));
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(id);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_receive);
@@ -1908,7 +2003,7 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
   }
   {
     // Stop using resource.
-    ResourceProvider::ResourceIdSet empty;
+    ResourceIdSet empty;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, empty);
     // Resource is not yet returned to the child, since it's in use by the
     // top-level.
@@ -1923,7 +2018,7 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
                                                   &list);
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id));
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(id);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_receive);
@@ -1965,7 +2060,7 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
   }
   {
     // Stop using resource.
-    ResourceProvider::ResourceIdSet empty;
+    ResourceIdSet empty;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, empty);
     // Resource should have been returned to the child, since it's no longer in
     // use by the top-level.
@@ -2092,7 +2187,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
       }
       Mock::VerifyAndClearExpectations(parent_context);
 
-      ResourceProvider::ResourceIdSet resource_ids_to_receive;
+      ResourceIdSet resource_ids_to_receive;
       resource_ids_to_receive.insert(id);
       parent_resource_provider->DeclareUsedResourcesFromChild(
           child_id, resource_ids_to_receive);
@@ -2129,7 +2224,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
 
       // Transfer resources back from the parent to the child. Set no resources
       // as being in use.
-      ResourceProvider::ResourceIdSet no_resources;
+      ResourceIdSet no_resources;
       parent_resource_provider->DeclareUsedResourcesFromChild(child_id,
                                                               no_resources);
       Mock::VerifyAndClearExpectations(parent_context);
@@ -2318,7 +2413,7 @@ TEST_P(ResourceProviderTest, LostResourceInParent) {
     EXPECT_EQ(1u, list.size());
 
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(resource);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_receive);
@@ -2332,7 +2427,7 @@ TEST_P(ResourceProviderTest, LostResourceInParent) {
 
     // Transfer resources back from the parent to the child. Set no resources as
     // being in use.
-    ResourceProvider::ResourceIdSet no_resources;
+    ResourceIdSet no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     // Expect a GL resource to be lost.
@@ -2371,7 +2466,7 @@ TEST_P(ResourceProviderTest, LostResourceInGrandParent) {
     EXPECT_EQ(1u, list.size());
 
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(resource);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_receive);
@@ -2411,7 +2506,7 @@ TEST_P(ResourceProviderTest, LostResourceInGrandParent) {
 
     // Transfer resources back from the parent to the child. Set no resources as
     // being in use.
-    ResourceProvider::ResourceIdSet no_resources;
+    ResourceIdSet no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     // Expect the resource to be lost.
@@ -2449,7 +2544,7 @@ TEST_P(ResourceProviderTest, LostMailboxInParent) {
     EXPECT_EQ(1u, list.size());
 
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(resource);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_receive);
@@ -2463,7 +2558,7 @@ TEST_P(ResourceProviderTest, LostMailboxInParent) {
 
     // Transfer resources back from the parent to the child. Set no resources as
     // being in use.
-    ResourceProvider::ResourceIdSet no_resources;
+    ResourceIdSet no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     ASSERT_EQ(1u, returned_to_child.size());
@@ -2502,7 +2597,7 @@ TEST_P(ResourceProviderTest, LostMailboxInGrandParent) {
     EXPECT_EQ(1u, list.size());
 
     resource_provider_->ReceiveFromChild(child_id, list);
-    ResourceProvider::ResourceIdSet resource_ids_to_receive;
+    ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(resource);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_receive);
@@ -2536,7 +2631,7 @@ TEST_P(ResourceProviderTest, LostMailboxInGrandParent) {
 
     // Transfer resources back from the parent to the child. Set no resources as
     // being in use.
-    ResourceProvider::ResourceIdSet no_resources;
+    ResourceIdSet no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     // Expect the resource to be lost.

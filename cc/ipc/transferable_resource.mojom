@@ -27,4 +27,6 @@ struct TransferableResource {
   bool read_lock_fences_enabled;
   bool is_software;
   bool is_overlay_candidate;
+  bool is_backed_by_surface_texture;
+  bool wants_promotion_hint;
 };
