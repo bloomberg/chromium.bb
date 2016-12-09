@@ -156,12 +156,6 @@ CA
                                     <action selector="commandDispatch:" target="-1" id="695"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="^IDS_MEDIA_ROUTER_MENU_ITEM_TITLE" tag="35011" id="OVr-QF-3s6">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="commandDispatch:" target="-1" id="i0s-9w-Djk"/>
-                                </connections>
-                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>
@@ -360,6 +354,13 @@ CA
                             <menuItem title="^IDS_TEXT_SMALLER_MAC" tag="38003" keyEquivalent="-" id="459">
                                 <connections>
                                     <action selector="commandDispatch:" target="-1" id="555"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="AAx-VM-UbD"/>
+                            <menuItem title="^IDS_MEDIA_ROUTER_MENU_ITEM_TITLE" tag="35011" id="OVr-QF-3s6">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="commandDispatch:" target="-1" id="i0s-9w-Djk"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="631"/>
