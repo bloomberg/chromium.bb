@@ -4,10 +4,16 @@
 
 #include "extensions/browser/api/system_display/system_display_api.h"
 
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 
+#include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/common/api/system_display.h"
 
@@ -23,6 +29,126 @@ const char SystemDisplayFunction::kCrosOnlyError[] =
     "Function available only on ChromeOS.";
 const char SystemDisplayFunction::kKioskOnlyError[] =
     "Only kiosk enabled extensions are allowed to use this function.";
+
+namespace {
+
+class OverscanTracker;
+
+// Singleton class to track overscan calibration overlays. An observer is
+// created per WebContents which tracks any calbiration overlays by id.
+// If the render frame is deleted (e.g. the tab is closed) before the overlay
+// calibraiton is completed, the observer will call the overscan complete
+// method to remove the overlay. When all observers are removed, the singleton
+// tracker will delete itself.
+class OverscanTracker {
+ public:
+  static void AddDisplay(content::WebContents* web_contents,
+                         const std::string& id);
+  static void RemoveDisplay(content::WebContents* web_contents,
+                            const std::string& id);
+  static void RemoveObserver(content::WebContents* web_contents);
+
+  OverscanTracker() {}
+  ~OverscanTracker() {}
+
+ private:
+  class OverscanWebObserver;
+
+  OverscanWebObserver* GetObserver(content::WebContents* web_contents,
+                                   bool create);
+  bool RemoveObserverImpl(content::WebContents* web_contents);
+
+  using ObserverMap =
+      std::map<content::WebContents*, std::unique_ptr<OverscanWebObserver>>;
+  ObserverMap observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverscanTracker);
+};
+
+class OverscanTracker::OverscanWebObserver
+    : public content::WebContentsObserver {
+ public:
+  explicit OverscanWebObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~OverscanWebObserver() override {}
+
+  // WebContentsObserver
+  void RenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) override {
+    for (const std::string& id : display_ids_) {
+      // Reset any uncomitted calibraiton changes and complete calibration to
+      // hide the overlay.
+      DisplayInfoProvider::Get()->OverscanCalibrationReset(id);
+      DisplayInfoProvider::Get()->OverscanCalibrationComplete(id);
+    }
+    OverscanTracker::RemoveObserver(web_contents());  // Deletes this.
+  }
+
+  void AddDisplay(const std::string& id) { display_ids_.insert(id); }
+
+  void RemoveDisplay(const std::string& id) {
+    display_ids_.erase(id);
+    if (display_ids_.empty())
+      OverscanTracker::RemoveObserver(web_contents());  // Deletes this.
+  }
+
+ private:
+  std::set<std::string> display_ids_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverscanWebObserver);
+};
+
+static OverscanTracker* g_overscan_tracker = nullptr;
+
+// static
+void OverscanTracker::AddDisplay(content::WebContents* web_contents,
+                                 const std::string& id) {
+  if (!g_overscan_tracker)
+    g_overscan_tracker = new OverscanTracker;
+  g_overscan_tracker->GetObserver(web_contents, true)->AddDisplay(id);
+}
+
+// static
+void OverscanTracker::RemoveDisplay(content::WebContents* web_contents,
+                                    const std::string& id) {
+  if (!g_overscan_tracker)
+    return;
+  OverscanWebObserver* observer =
+      g_overscan_tracker->GetObserver(web_contents, false);
+  if (observer)
+    observer->RemoveDisplay(id);
+}
+
+// static
+void OverscanTracker::RemoveObserver(content::WebContents* web_contents) {
+  if (!g_overscan_tracker)
+    return;
+  if (g_overscan_tracker->RemoveObserverImpl(web_contents)) {
+    delete g_overscan_tracker;
+    g_overscan_tracker = nullptr;
+  }
+}
+
+OverscanTracker::OverscanWebObserver* OverscanTracker::GetObserver(
+    content::WebContents* web_contents,
+    bool create) {
+  ObserverMap::iterator iter = observers_.find(web_contents);
+  if (iter != observers_.end())
+    return iter->second.get();
+  if (!create)
+    return nullptr;
+  auto owned_observer = base::MakeUnique<OverscanWebObserver>(web_contents);
+  auto observer_ptr = owned_observer.get();
+  observers_[web_contents] = std::move(owned_observer);
+  return observer_ptr;
+}
+
+bool OverscanTracker::RemoveObserverImpl(content::WebContents* web_contents) {
+  observers_.erase(web_contents);
+  return observers_.empty();
+}
+
+}  // namespace
 
 bool SystemDisplayFunction::PreRunValidation(std::string* error) {
   if (!UIThreadExtensionFunction::PreRunValidation(error))
@@ -100,6 +226,7 @@ SystemDisplayOverscanCalibrationStartFunction::Run() {
       display::OverscanCalibrationStart::Params::Create(*args_));
   if (!DisplayInfoProvider::Get()->OverscanCalibrationStart(params->id))
     return RespondNow(Error("Invalid display ID: " + params->id));
+  OverscanTracker::AddDisplay(GetSenderWebContents(), params->id);
   return RespondNow(NoArguments());
 }
 
@@ -135,6 +262,7 @@ SystemDisplayOverscanCalibrationCompleteFunction::Run() {
     return RespondNow(
         Error("Calibration not started for display ID: " + params->id));
   }
+  OverscanTracker::RemoveDisplay(GetSenderWebContents(), params->id);
   return RespondNow(NoArguments());
 }
 
