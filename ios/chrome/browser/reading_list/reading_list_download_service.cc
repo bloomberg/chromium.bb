@@ -84,7 +84,23 @@ void ReadingListDownloadService::ReadingListDidAddEntry(
     const ReadingListModel* model,
     const GURL& url) {
   DCHECK_EQ(reading_list_model_, model);
-  ScheduleDownloadEntry(url);
+  ProcessNewEntry(url);
+}
+
+void ReadingListDownloadService::ReadingListDidMoveEntry(
+    const ReadingListModel* model,
+    const GURL& url) {
+  DCHECK_EQ(reading_list_model_, model);
+  ProcessNewEntry(url);
+}
+
+void ReadingListDownloadService::ProcessNewEntry(const GURL& url) {
+  const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+  if (!entry || entry->IsRead()) {
+    url_downloader_->CancelDownloadOfflineURL(url);
+  } else {
+    ScheduleDownloadEntry(url);
+  }
 }
 
 void ReadingListDownloadService::DownloadAllEntries() {
@@ -98,7 +114,7 @@ void ReadingListDownloadService::ScheduleDownloadEntry(const GURL& url) {
   DCHECK(reading_list_model_->loaded());
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
   if (!entry || entry->DistilledState() == ReadingListEntry::ERROR ||
-      entry->DistilledState() == ReadingListEntry::PROCESSED)
+      entry->DistilledState() == ReadingListEntry::PROCESSED || entry->IsRead())
     return;
   GURL local_url(url);
   web::WebThread::PostDelayedTask(
@@ -112,7 +128,7 @@ void ReadingListDownloadService::DownloadEntry(const GURL& url) {
   DCHECK(reading_list_model_->loaded());
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
   if (!entry || entry->DistilledState() == ReadingListEntry::ERROR ||
-      entry->DistilledState() == ReadingListEntry::PROCESSED)
+      entry->DistilledState() == ReadingListEntry::PROCESSED || entry->IsRead())
     return;
 
   if (net::NetworkChangeNotifier::IsOffline()) {

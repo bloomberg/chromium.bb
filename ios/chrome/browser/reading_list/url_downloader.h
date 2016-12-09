@@ -68,6 +68,9 @@ class URLDownloader {
   // Asynchronously download an offline version of the URL.
   void DownloadOfflineURL(const GURL& url);
 
+  // Cancels the download job an offline version of the URL.
+  void CancelDownloadOfflineURL(const GURL& url);
+
   // Asynchronously remove the offline version of the URL if it exists.
   void RemoveOfflineURL(const GURL& url);
 

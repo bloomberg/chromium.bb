@@ -50,9 +50,7 @@ void URLDownloader::OfflineURLExists(const GURL& url,
 
 void URLDownloader::RemoveOfflineURL(const GURL& url) {
   // Remove all download tasks for this url as it would be pointless work.
-  tasks_.erase(
-      std::remove(tasks_.begin(), tasks_.end(), std::make_pair(DOWNLOAD, url)),
-      tasks_.end());
+  CancelDownloadOfflineURL(url);
   tasks_.push_back(std::make_pair(DELETE, url));
   HandleNextTask();
 }
@@ -63,6 +61,12 @@ void URLDownloader::DownloadOfflineURL(const GURL& url) {
     tasks_.push_back(std::make_pair(DOWNLOAD, url));
     HandleNextTask();
   }
+}
+
+void URLDownloader::CancelDownloadOfflineURL(const GURL& url) {
+  tasks_.erase(
+      std::remove(tasks_.begin(), tasks_.end(), std::make_pair(DOWNLOAD, url)),
+      tasks_.end());
 }
 
 void URLDownloader::DownloadCompletionHandler(const GURL& url,

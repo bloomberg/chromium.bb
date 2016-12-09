@@ -170,8 +170,11 @@ ReadingListEntry* ReadingListModelImpl::SyncMergeEntry(
   } else {
     unread_entry_count_++;
   }
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
+    observer.ReadingListDidMoveEntry(this, url);
     observer.ReadingListDidApplyChanges(this);
+  }
+
   return existing_entry;
 }
 
@@ -263,6 +266,7 @@ void ReadingListModelImpl::SetReadStatus(const GURL& url, bool read) {
     storage_layer_->SaveEntry(entry);
   }
   for (ReadingListModelObserver& observer : observers_) {
+    observer.ReadingListDidMoveEntry(this, url);
     observer.ReadingListDidApplyChanges(this);
   }
 }

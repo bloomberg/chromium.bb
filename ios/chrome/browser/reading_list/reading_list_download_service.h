@@ -50,11 +50,15 @@ class ReadingListDownloadService
                                   const GURL& url) override;
   void ReadingListDidAddEntry(const ReadingListModel* model,
                               const GURL& url) override;
+  void ReadingListDidMoveEntry(const ReadingListModel* model,
+                               const GURL& url) override;
 
  private:
   // Tries to save offline versions of all entries in the reading list that are
   // not yet saved. Must only be called after reading list model is loaded.
   void DownloadAllEntries();
+  // Processes a new entry and schedule a download if needed.
+  void ProcessNewEntry(const GURL& url);
   // Schedule a download of an offline version of the reading list entry,
   // according to the delay of the entry. Must only be called after reading list
   // model is loaded.
