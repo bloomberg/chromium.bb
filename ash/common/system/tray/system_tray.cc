@@ -216,7 +216,6 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
       tray_audio_(nullptr),
       tray_cast_(nullptr),
       tray_date_(nullptr),
-      tray_network_(nullptr),
       tray_tiles_(nullptr),
       tray_system_info_(nullptr),
       tray_update_(nullptr),
@@ -291,8 +290,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(tray_accessibility_);
   AddTrayItem(new TrayTracing(this));
   AddTrayItem(new TrayPower(this, message_center::MessageCenter::Get()));
-  tray_network_ = new TrayNetwork(this);
-  AddTrayItem(tray_network_);
+  AddTrayItem(new TrayNetwork(this));
   AddTrayItem(new TrayVPN(this));
   AddTrayItem(new TraySms(this));
   AddTrayItem(new TrayBluetooth(this));
@@ -808,10 +806,6 @@ TrayCast* SystemTray::GetTrayCastForTesting() const {
 
 TrayDate* SystemTray::GetTrayDateForTesting() const {
   return tray_date_;
-}
-
-TrayNetwork* SystemTray::GetTrayNetworkForTesting() const {
-  return tray_network_;
 }
 
 TraySystemInfo* SystemTray::GetTraySystemInfoForTesting() const {
