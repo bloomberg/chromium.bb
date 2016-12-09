@@ -2113,7 +2113,11 @@ void SimpleTestFunc() {
                                           CS_FINISHED};
 
   for (const auto& state : state_transitions) {
-    EXPECT_EQ(state, note->Wait());
+    ClientState wait_state = note->Wait();
+    EXPECT_EQ(state, wait_state);
+    if (state != wait_state) {
+      break;
+    }
   }
 
   encoder_thread.task_runner()->PostTask(
