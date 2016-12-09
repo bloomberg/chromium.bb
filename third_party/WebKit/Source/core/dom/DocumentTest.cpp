@@ -590,4 +590,23 @@ TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
   EXPECT_EQ(observer.updatedCharacterDataRecords()[3]->m_newLength, 3u);
 }
 
+// This tests that meta-theme-color can be found correctly
+TEST_F(DocumentTest, ThemeColor) {
+  {
+    setHtmlInnerHTML(
+        "<meta name=\"theme-color\" content=\"#00ff00\">"
+        "<body>");
+    EXPECT_EQ(Color(0, 255, 0), document().themeColor())
+        << "Theme color should be bright green.";
+  }
+
+  {
+    setHtmlInnerHTML(
+        "<body>"
+        "<meta name=\"theme-color\" content=\"#00ff00\">");
+    EXPECT_EQ(Color(0, 255, 0), document().themeColor())
+        << "Theme color should be bright green.";
+  }
+}
+
 }  // namespace blink

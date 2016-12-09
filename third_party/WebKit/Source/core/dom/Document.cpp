@@ -5396,14 +5396,15 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask) {
 }
 
 Color Document::themeColor() const {
-  for (HTMLMetaElement* metaElement =
-           head() ? Traversal<HTMLMetaElement>::firstChild(*head()) : 0;
-       metaElement;
-       metaElement = Traversal<HTMLMetaElement>::nextSibling(*metaElement)) {
+  auto rootElement = documentElement();
+  if (!rootElement)
+    return Color();
+  for (HTMLMetaElement& metaElement :
+       Traversal<HTMLMetaElement>::descendantsOf(*rootElement)) {
     Color color = Color::transparent;
-    if (equalIgnoringCase(metaElement->name(), "theme-color") &&
+    if (equalIgnoringCase(metaElement.name(), "theme-color") &&
         CSSParser::parseColor(
-            color, metaElement->content().getString().stripWhiteSpace(), true))
+            color, metaElement.content().getString().stripWhiteSpace(), true))
       return color;
   }
   return Color();
