@@ -324,7 +324,7 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
 
   int64_t first_read_time_us = 0;
   if (pb_entry.has_first_read_time_us()) {
-    creation_time_us = pb_entry.first_read_time_us();
+    first_read_time_us = pb_entry.first_read_time_us();
   }
 
   int64_t update_time_us = 0;
@@ -368,22 +368,27 @@ void ReadingListEntry::MergeWithEntry(const ReadingListEntry& other) {
   }
   if (creation_time_us_ < other.creation_time_us_) {
     creation_time_us_ = std::move(other.creation_time_us_);
-  }
-  if (state_ == UNSEEN) {
-    state_ = std::move(other.state_);
-  } else if (other.state_ != UNSEEN) {
-    // Both are not UNSEEN, take the newer one.
-    if (update_time_us_ < other.update_time_us_) {
-      state_ = std::move(other.state_);
-    } else if (update_time_us_ == other.update_time_us_) {
-      // Both states are likely the same, but if they are not, READ should win.
-      if (other.state_ == READ) {
-        state_ = std::move(other.state_);
-      }
+    first_read_time_us_ = std::move(other.first_read_time_us_);
+  } else if (creation_time_us_ == other.creation_time_us_) {
+    // The first_time_read_us from |other| is used if
+    // - this.first_time_read_us == 0: the entry was never read in this device.
+    // - this.first_time_read_us > other.first_time_read_us: the entry was
+    //       first read on another device.
+    if (first_read_time_us_ == 0 ||
+        (other.first_read_time_us_ != 0 &&
+         other.first_read_time_us_ < first_read_time_us_)) {
+      first_read_time_us_ = std::move(other.first_read_time_us_);
     }
   }
   if (update_time_us_ < other.update_time_us_) {
     update_time_us_ = std::move(other.update_time_us_);
+    state_ = std::move(other.state_);
+  } else if (update_time_us_ == other.update_time_us_) {
+    if (state_ == UNSEEN) {
+      state_ = std::move(other.state_);
+    } else if (other.state_ == READ) {
+      state_ = std::move(other.state_);
+    }
   }
 #if !defined(NDEBUG)
   std::unique_ptr<sync_pb::ReadingListSpecifics> new_this_pb(

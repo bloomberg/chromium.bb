@@ -317,6 +317,8 @@ TEST(ReadingListEntry, FromReadingListLocal) {
 }
 
 // Tests the merging of two ReadingListEntry.
+// Additional merging tests are done in
+// ReadingListStoreTest.CompareEntriesForSync
 TEST(ReadingListEntry, MergeWithEntry) {
   ReadingListEntry local_entry(GURL("http://example.com/"), "title");
   local_entry.SetDistilledState(ReadingListEntry::ERROR);
@@ -338,25 +340,4 @@ TEST(ReadingListEntry, MergeWithEntry) {
       base::Time::Now() + local_entry.TimeUntilNextTry();
   base::TimeDelta delta = merge_next_call - next_call;
   EXPECT_NEAR(delta.InMillisecondsRoundedUp(), 0, 10);
-}
-
-// Tests the merging of two ReadingListEntry, the oldest one SEEN and the newer
-// UNSEEN.
-TEST(ReadingListEntry, MergeWithEntrySeen) {
-  ReadingListEntry local_entry(GURL("http://example.com/"), "title");
-  local_entry.SetRead(true);
-  int64_t local_update_time_us = local_entry.UpdateTime();
-  local_entry.SetDistilledPath(base::FilePath("distilled/page.html"));
-
-  ReadingListEntry sync_entry(GURL("http://example.com/"), "title2");
-  int64_t sync_update_time_us = sync_entry.UpdateTime();
-  EXPECT_NE(local_update_time_us, sync_update_time_us);
-  local_entry.MergeWithEntry(sync_entry);
-  EXPECT_EQ(local_entry.URL().spec(), "http://example.com/");
-  EXPECT_EQ(local_entry.Title(), "title2");
-  EXPECT_TRUE(local_entry.HasBeenSeen());
-  EXPECT_EQ(local_entry.UpdateTime(), sync_update_time_us);
-  EXPECT_EQ(local_entry.FailedDownloadCounter(), 0);
-  EXPECT_EQ(local_entry.DistilledState(), ReadingListEntry::PROCESSED);
-  EXPECT_EQ(local_entry.DistilledPath().value(), "distilled/page.html");
 }

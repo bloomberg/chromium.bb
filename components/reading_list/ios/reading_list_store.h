@@ -79,11 +79,23 @@ class ReadingListStore : public syncer::ModelTypeSyncBridge,
   // Entries are in increasing order if all the fields respect increasing order.
   // - URL must be the same.
   // - title must verify rhs.title.compare(lhs.title) >= 0
-  // - rhs.creation_time_us >= lhs.creation_time_us
-  // - rhs.update_time_us >= lhs.update_time_us
-  // - if rhs.update_time_us > lhs.update_time_us, rhs.state can be anything.
-  // - if rhs.update_time_us == lhs.update_time_us, rhs.state >= lhs.state in
-  //          the order UNSEEN, UNREAD, READ.
+  // - creation_time_us:
+  //       rhs.creation_time_us >= lhs.creation_time_us
+  // - rhs.first_read_time_us:
+  //       if rhs.creation_time_us > lhs.creation_time_us,
+  //         rhs.first_read_time_us can be anything.
+  //       if rhs.creation_time_us == lhs.creation_time_us
+  //           and rhs.first_read_time_us == 0
+  //         rhs.first_read_time_us can be anything.
+  //       if rhs.creation_time_us == lhs.creation_time_us,
+  //         rhs.first_read_time_us <= lhs.first_read_time_us
+  // - update_time_us:
+  //       rhs.update_time_us >= lhs.update_time_us
+  // - state:
+  //       if rhs.update_time_us > lhs.update_time_us
+  //         rhs.state can be anything.
+  //       if rhs.update_time_us == lhs.update_time_us
+  //         rhs.state >= lhs.state in the order UNSEEN, UNREAD, READ.
   static bool CompareEntriesForSync(const sync_pb::ReadingListSpecifics& lhs,
                                     const sync_pb::ReadingListSpecifics& rhs);
 

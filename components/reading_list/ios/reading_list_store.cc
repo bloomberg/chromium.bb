@@ -442,5 +442,14 @@ bool ReadingListStore::CompareEntriesForSync(
          lhs.status() == sync_pb::ReadingListSpecifics::READ))
       return false;
   }
+  if (rhs.creation_time_us() == lhs.creation_time_us()) {
+    if (rhs.first_read_time_us() == 0 && lhs.first_read_time_us() != 0) {
+      return false;
+    }
+    if (rhs.first_read_time_us() > lhs.first_read_time_us() &&
+        lhs.first_read_time_us() != 0) {
+      return false;
+    }
+  }
   return true;
 }

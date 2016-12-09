@@ -17,6 +17,30 @@
 #include "components/sync/model/model_type_store_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Tests that the transition from |entryA| to |entryB| is possible (|possible|
+// is true) or not.
+void ExpectAB(const sync_pb::ReadingListSpecifics& entryA,
+              const sync_pb::ReadingListSpecifics& entryB,
+              bool possible) {
+  EXPECT_EQ(ReadingListStore::CompareEntriesForSync(entryA, entryB), possible);
+  std::unique_ptr<ReadingListEntry> a =
+      ReadingListEntry::FromReadingListSpecifics(entryA);
+  std::unique_ptr<ReadingListEntry> b =
+      ReadingListEntry::FromReadingListSpecifics(entryB);
+  a->MergeWithEntry(*b);
+  std::unique_ptr<sync_pb::ReadingListSpecifics> mergedEntry =
+      a->AsReadingListSpecifics();
+  if (possible) {
+    // If transition is possible, the merge should be B.
+    EXPECT_EQ(entryB.SerializeAsString(), mergedEntry->SerializeAsString());
+  } else {
+    // If transition is not possible, the transition shold be possible to the
+    // merged state.
+    EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, *mergedEntry));
+    EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryB, *mergedEntry));
+  }
+}
+
 class FakeModelTypeChangeProcessorObserver {
  public:
   virtual void Put(const std::string& client_tag,
@@ -293,48 +317,73 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneRemove) {
 TEST_F(ReadingListStoreTest, CompareEntriesForSync) {
   sync_pb::ReadingListSpecifics entryA;
   sync_pb::ReadingListSpecifics entryB;
-  entryA.set_url("http://foo.bar");
-  entryB.set_url("http://foo.bar");
+  entryA.set_entry_id("http://foo.bar/");
+  entryB.set_entry_id("http://foo.bar/");
+  entryA.set_url("http://foo.bar/");
+  entryB.set_url("http://foo.bar/");
   entryA.set_title("Foo Bar");
   entryB.set_title("Foo Bar");
   entryA.set_status(sync_pb::ReadingListSpecifics::UNREAD);
   entryB.set_status(sync_pb::ReadingListSpecifics::UNREAD);
   entryA.set_creation_time_us(10);
   entryB.set_creation_time_us(10);
+  entryA.set_first_read_time_us(50);
+  entryB.set_first_read_time_us(50);
   entryA.set_update_time_us(100);
   entryB.set_update_time_us(100);
   // Equal entries can be submitted.
-  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
-  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, true);
 
   // Try to update each field.
 
   // You cannot change the URL of an entry.
-  entryA.set_url("http://foo.foo");
+  entryA.set_url("http://foo.foo/");
   EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
   EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
-  entryA.set_url("http://foo.bar");
+  entryA.set_url("http://foo.bar/");
 
   // You can set a title to a title later in alphabetical order.
   entryA.set_title("");
-  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
-  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
   entryA.set_title("Foo Aar");
-  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
-  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
   entryA.set_title("Foo Ba");
-  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
-  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
   entryA.set_title("Foo Bar");
 
   entryA.set_creation_time_us(9);
-  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
-  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
+  entryA.set_first_read_time_us(51);
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
+  entryA.set_first_read_time_us(49);
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
+  entryA.set_first_read_time_us(0);
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
+  entryA.set_first_read_time_us(50);
+  entryB.set_first_read_time_us(0);
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
+  entryB.set_first_read_time_us(50);
   entryA.set_creation_time_us(10);
+  entryA.set_first_read_time_us(51);
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
+  entryA.set_first_read_time_us(0);
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
+  entryA.set_first_read_time_us(50);
 
   entryA.set_update_time_us(99);
-  EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
-  EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
   sync_pb::ReadingListSpecifics::ReadingListEntryStatus status_oder[3] = {
       sync_pb::ReadingListSpecifics::UNSEEN,
       sync_pb::ReadingListSpecifics::UNREAD,
@@ -343,20 +392,20 @@ TEST_F(ReadingListStoreTest, CompareEntriesForSync) {
     entryA.set_status(status_oder[index_a]);
     for (int index_b = 0; index_b < 3; index_b++) {
       entryB.set_status(status_oder[index_b]);
-      EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
-      EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+      ExpectAB(entryA, entryB, true);
+      ExpectAB(entryB, entryA, false);
     }
   }
   entryA.set_update_time_us(100);
   for (int index_a = 0; index_a < 3; index_a++) {
     entryA.set_status(status_oder[index_a]);
     entryB.set_status(status_oder[index_a]);
-    EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
-    EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+    ExpectAB(entryA, entryB, true);
+    ExpectAB(entryB, entryA, true);
     for (int index_b = index_a + 1; index_b < 3; index_b++) {
       entryB.set_status(status_oder[index_b]);
-      EXPECT_TRUE(ReadingListStore::CompareEntriesForSync(entryA, entryB));
-      EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
+      ExpectAB(entryA, entryB, true);
+      ExpectAB(entryB, entryA, false);
     }
   }
 }
