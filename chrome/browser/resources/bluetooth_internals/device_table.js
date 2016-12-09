@@ -77,6 +77,7 @@ cr.define('device_table', function() {
      */
     handleInspectBtn_: function(index) {
       var event = new CustomEvent('inspectpressed', {
+        bubbles: true,
         detail: {
           address: this.devices_.item(index).address,
         }
@@ -175,6 +176,7 @@ cr.define('device_table', function() {
       // notification system.
       var connectErrorCell = row.cells[COLUMNS.CONNECTION_ERROR];
       connectErrorCell.textContent = device.connectionMessage;
+      connectErrorCell.hidden = !device.connectionMessage;
 
       // Update the properties based on the header field path.
       for (var i = 0; i < this.headers_.length; i++) {

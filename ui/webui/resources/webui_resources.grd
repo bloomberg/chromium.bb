@@ -306,6 +306,12 @@ without changes to the corresponding grd file. -->
                  file="html/cr/ui/menu_item.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_OVERLAY"
                  file="html/cr/ui/overlay.html" type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_PAGE_MANAGER_PAGE"
+                 file="html/cr/ui/page_manager/page.html" type="chrome_html"
+                 flattenhtml="true" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_PAGE_MANAGER_PAGE_MANAGER"
+                 file="html/cr/ui/page_manager/page_manager.html"
+                 type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_POSITION_UTIL"
                  file="html/cr/ui/position_util.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_EVENT_TRACKER"

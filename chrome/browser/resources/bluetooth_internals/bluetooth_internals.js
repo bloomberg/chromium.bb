@@ -12,81 +12,133 @@ var adapterBroker = null;
 var devices = null;
 
 cr.define('bluetooth_internals', function() {
+  /** @const */ var DevicesPage = devices_page.DevicesPage;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
+
+  /**
+   * Observer for page changes. Used to update page title header.
+   * @extends {cr.ui.pageManager.PageManager.Observer}
+   */
+  var PageObserver = function() {};
+
+  PageObserver.prototype = {
+    __proto__: PageManager.Observer.prototype,
+
+    updateHistory: function(path) {
+      window.location.hash = '#' + path;
+    },
+
+    /**
+     * Sets the page title. Called by PageManager.
+     * @override
+     * @param {string} title
+     */
+    updateTitle: function(title) {
+      document.querySelector('.page-title').textContent = title;
+    },
+  };
 
   /** @type {!Map<string, !interfaces.BluetoothDevice.Device.proxyClass>} */
   var deviceAddressToProxy = new Map();
 
+  /** @type {!device_collection.DeviceCollection} */
+  devices = new device_collection.DeviceCollection([]);
+
+  /** @type {devices_page.DevicesPage} */
+  var devicesPage = null;
+
+  function setupDeviceSystem(response) {
+    // Hook up device collection events.
+    adapterBroker.addEventListener('deviceadded', function(event) {
+      devices.addOrUpdate(event.detail.deviceInfo);
+    });
+    adapterBroker.addEventListener('devicechanged', function(event) {
+      devices.addOrUpdate(event.detail.deviceInfo);
+    });
+    adapterBroker.addEventListener('deviceremoved', function(event) {
+      devices.remove(event.detail.deviceInfo);
+    });
+
+    response.devices.forEach(devices.addOrUpdate, devices /* this */);
+
+    devicesPage.setDevices(devices);
+    devicesPage.pageDiv.addEventListener('inspectpressed', function() {
+      // TODO(crbug.com/663470): Move connection logic to DeviceDetailsView
+      // when it's added in chrome://bluetooth-internals.
+      var address = event.detail.address;
+      var proxy = deviceAddressToProxy.get(address);
+
+      if (proxy) {
+        // Device is already connected, so disconnect.
+        proxy.disconnect();
+        deviceAddressToProxy.delete(address);
+        devices.updateConnectionStatus(
+            address, device_collection.ConnectionStatus.DISCONNECTED);
+        return;
+      }
+
+      devices.updateConnectionStatus(
+          address, device_collection.ConnectionStatus.CONNECTING);
+
+      adapterBroker.connectToDevice(address).then(function(deviceProxy) {
+        if (!devices.getByAddress(address)) {
+          // Device no longer in list, so drop the connection.
+          deviceProxy.disconnect();
+          return;
+        }
+
+        deviceAddressToProxy.set(address, deviceProxy);
+        devices.updateConnectionStatus(
+            address, device_collection.ConnectionStatus.CONNECTED);
+
+        // Fetch services asynchronously.
+        return deviceProxy.getServices();
+      }).then(function(response) {
+        if (!response) return;
+
+        var deviceInfo = devices.getByAddress(address);
+        deviceInfo.services = response.services;
+        devices.addOrUpdate(deviceInfo);
+      }).catch(function(error) {
+        devices.updateConnectionStatus(
+            address,
+            device_collection.ConnectionStatus.DISCONNECTED,
+            error);
+      });
+    });
+  }
+
+  function setupPages() {
+    var sidebar = new window.sidebar.Sidebar($('sidebar'));
+    $('menu-btn').addEventListener('click', function() { sidebar.open(); });
+    PageManager.addObserver(sidebar);
+    PageManager.addObserver(new PageObserver());
+
+    devicesPage = new DevicesPage();
+    PageManager.register(devicesPage);
+
+    // Set up hash-based navigation.
+    window.addEventListener('hashchange', function() {
+      PageManager.showPageByName(window.location.hash.substr(1));
+    });
+
+    if (!window.location.hash) {
+      PageManager.showPageByName(devicesPage.name);
+      return;
+    }
+
+    PageManager.showPageByName(window.location.hash.substr(1));
+  }
+
   function initializeViews() {
+    setupPages();
+
     adapter_broker.getAdapterBroker()
       .then(function(broker) { adapterBroker = broker; })
       .then(function() { return adapterBroker.getInfo(); })
       .then(function(response) { console.log('adapter', response.info); })
       .then(function() { return adapterBroker.getDevices(); })
-      .then(function(response) {
-        // Hook up device collection events.
-        devices = new device_collection.DeviceCollection([]);
-        adapterBroker.addEventListener('deviceadded', function(event) {
-          devices.addOrUpdate(event.detail.deviceInfo);
-        });
-        adapterBroker.addEventListener('devicechanged', function(event) {
-          devices.addOrUpdate(event.detail.deviceInfo);
-        });
-        adapterBroker.addEventListener('deviceremoved', function(event) {
-          devices.remove(event.detail.deviceInfo);
-        });
-
-        response.devices.forEach(devices.addOrUpdate,
-                                 devices /* this */);
-
-        var deviceTable = new device_table.DeviceTable();
-
-        deviceTable.addEventListener('inspectpressed', function(event) {
-          // TODO(crbug.com/663470): Move connection logic to DeviceDetailsView
-          // when it's added in chrome://bluetooth-internals.
-          var address = event.detail.address;
-          var proxy = deviceAddressToProxy.get(address);
-
-          if (proxy) {
-            // Device is already connected, so disconnect.
-            proxy.disconnect();
-            deviceAddressToProxy.delete(address);
-            devices.updateConnectionStatus(
-                address, device_collection.ConnectionStatus.DISCONNECTED);
-            return;
-          }
-
-          devices.updateConnectionStatus(
-              address, device_collection.ConnectionStatus.CONNECTING);
-          adapterBroker.connectToDevice(address).then(function(deviceProxy) {
-            if (!devices.getByAddress(address)) {
-              // Device no longer in list, so drop the connection.
-              deviceProxy.disconnect();
-              return;
-            }
-
-            deviceAddressToProxy.set(address, deviceProxy);
-            devices.updateConnectionStatus(
-                address, device_collection.ConnectionStatus.CONNECTED);
-
-            // Fetch services asynchronously.
-            return deviceProxy.getServices();
-          }).then(function(response) {
-            var deviceInfo = devices.getByAddress(address);
-            deviceInfo.services = response.services;
-            devices.addOrUpdate(deviceInfo);
-          }).catch(function(error) {
-            devices.updateConnectionStatus(
-                address,
-                device_collection.ConnectionStatus.DISCONNECTED,
-                error);
-          });
-        });
-
-        deviceTable.setDevices(devices);
-        deviceTable.id = 'device-table';
-
-        document.body.appendChild(deviceTable);
-      })
+      .then(setupDeviceSystem)
       .catch(function(error) { console.error(error); });
   }
 
