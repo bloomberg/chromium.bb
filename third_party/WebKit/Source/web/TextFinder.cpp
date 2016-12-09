@@ -379,7 +379,7 @@ void TextFinder::scopeStringMatches(int identifier,
       m_currentActiveMatchFrame = true;
       foundActiveMatch = true;
       // We also know which tickmark is active now.
-      m_activeMatchIndex = matchCount - 1;
+      m_activeMatchIndex = m_totalMatchCount + matchCount - 1;
       // To stop looking for the active tickmark, we set this flag.
       m_locatingActiveRect = false;
 

@@ -5004,6 +5004,88 @@ TEST_P(ParameterizedWebFrameTest, FindInPageJavaScriptUpdatesDOM) {
   EXPECT_FALSE(activeNow);
 }
 
+struct FakeTimerSetter {
+  FakeTimerSetter() {
+    s_timeElapsed = 0.0;
+    m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
+  }
+
+  ~FakeTimerSetter() { setTimeFunctionsForTesting(m_originalTimeFunction); }
+  static double returnMockTime() {
+    s_timeElapsed += 1.0;
+    return s_timeElapsed;
+  }
+
+ private:
+  TimeFunction m_originalTimeFunction;
+  static double s_timeElapsed;
+};
+double FakeTimerSetter::s_timeElapsed = 0.;
+
+TEST_P(ParameterizedWebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
+  FakeTimerSetter fakeTimer;
+
+  const WebString searchPattern = WebString::fromUTF8("abc");
+  // We have 2 occurrences of the pattern in our text.
+  const char* html =
+      "foo bar foo bar foo abc bar foo bar foo bar foo bar foo bar foo bar foo "
+      "bar foo bar foo bar foo bar foo bar foo bar foo bar foo bar foo bar foo "
+      "bar foo bar foo abc bar <div id='new_text'></div>";
+
+  FindUpdateWebFrameClient client;
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initialize(true, &client);
+
+  WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
+  FrameTestHelpers::loadHTMLString(frame, html,
+                                   URLTestHelpers::toKURL(m_baseURL));
+  webViewHelper.resize(WebSize(640, 480));
+  webViewHelper.webView()->setFocus(true);
+  runPendingTasks();
+
+  const int findIdentifier = 12345;
+  WebFindOptions options;
+
+  // The first search that will start the scoping process.
+  frame->requestFind(findIdentifier, searchPattern, options);
+  EXPECT_FALSE(client.findResultsAreReady());
+  EXPECT_EQ(1, client.count());
+  EXPECT_TRUE(frame->ensureTextFinder().scopingInProgress());
+
+  // The scoping won't find all the entries on the first run due to the fake
+  // timer.
+  while (frame->ensureTextFinder().scopingInProgress())
+    runPendingTasks();
+
+  EXPECT_EQ(2, client.count());
+  EXPECT_EQ(1, client.activeIndex());
+
+  options.findNext = true;
+
+  // The second search will jump to the next match without any scoping.
+  frame->requestFind(findIdentifier, searchPattern, options);
+
+  EXPECT_EQ(2, client.count());
+  EXPECT_EQ(2, client.activeIndex());
+  EXPECT_FALSE(frame->ensureTextFinder().scopingInProgress());
+
+  // Insert new text, which contains occurence of |searchText|.
+  frame->executeScript(
+      WebScriptSource("var textDiv = document.getElementById('new_text');"
+                      "textDiv.innerHTML = 'foo abc';"));
+
+  // The third search will find a new match and initiate a new scoping.
+  frame->requestFind(findIdentifier, searchPattern, options);
+
+  EXPECT_TRUE(frame->ensureTextFinder().scopingInProgress());
+
+  while (frame->ensureTextFinder().scopingInProgress())
+    runPendingTasks();
+
+  EXPECT_EQ(3, client.count());
+  EXPECT_EQ(3, client.activeIndex());
+}
+
 static WebPoint topLeft(const WebRect& rect) {
   return WebPoint(rect.x, rect.y);
 }
