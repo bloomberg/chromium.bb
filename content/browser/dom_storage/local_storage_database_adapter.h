@@ -30,6 +30,8 @@ class CONTENT_EXPORT LocalStorageDatabaseAdapter :
                      const DOMStorageValuesMap& changes) override;
   void DeleteFiles() override;
   void Reset() override;
+  void ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,
+                         const std::string& name) override;
 
  protected:
   // Constructor that uses an in-memory sqlite database, for testing.

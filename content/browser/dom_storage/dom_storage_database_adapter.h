@@ -9,8 +9,16 @@
 // the per-origin DOMStorageDatabases for localStorage and
 // SessionStorageDatabase which stores multiple origins.
 
+#include <string>
+
 #include "content/common/content_export.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+}
+}
 
 namespace content {
 
@@ -22,6 +30,9 @@ class CONTENT_EXPORT DOMStorageDatabaseAdapter {
       bool clear_all_first, const DOMStorageValuesMap& changes) = 0;
   virtual void DeleteFiles() {}
   virtual void Reset() {}
+  // Adds memory statistics to |pmd| object for tracing.
+  virtual void ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,
+                                 const std::string& name) {}
 };
 
 }  // namespace content

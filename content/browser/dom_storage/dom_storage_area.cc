@@ -374,6 +374,11 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
       pmd->AddSuballocation(commit_batch_mad->guid(), system_allocator_name);
   }
 
+  // Report memory usage for local storage backing. The session storage usage
+  // will be reported by DOMStorageContextImpl.
+  if (namespace_id_ == kLocalStorageNamespaceId && backing_)
+    backing_->ReportMemoryUsage(pmd, name + "/local_storage");
+
   // Do not add storage map usage if less than 1KB.
   if (map_->bytes_used() < 1024)
     return;
@@ -384,7 +389,6 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
                      map_->bytes_used());
   if (system_allocator_name)
     pmd->AddSuballocation(map_mad->guid(), system_allocator_name);
-  // TODO(ssid): Add memory usage of local backing storage crbug.com/605785.
 }
 
 void DOMStorageArea::InitialImportIfNeeded() {

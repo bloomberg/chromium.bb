@@ -135,6 +135,13 @@ bool DOMStorageDatabase::CommitChanges(bool clear_all_first,
   return success;
 }
 
+void DOMStorageDatabase::ReportMemoryUsage(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& name) {
+  if (IsOpen())
+    db_->ReportMemoryUsage(pmd, name);
+}
+
 bool DOMStorageDatabase::LazyOpen(bool create_if_needed) {
   if (failed_to_open_) {
     // Don't try to open a database that we know has failed

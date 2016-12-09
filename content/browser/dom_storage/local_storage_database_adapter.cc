@@ -33,6 +33,12 @@ void LocalStorageDatabaseAdapter::Reset() {
   db_.reset(new DOMStorageDatabase(db_->file_path()));
 }
 
+void LocalStorageDatabaseAdapter::ReportMemoryUsage(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& name) {
+  db_->ReportMemoryUsage(pmd, name);
+}
+
 LocalStorageDatabaseAdapter::LocalStorageDatabaseAdapter()
     : db_(new DOMStorageDatabase()) {
 }
