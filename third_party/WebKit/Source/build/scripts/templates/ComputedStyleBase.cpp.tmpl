@@ -7,21 +7,21 @@ namespace blink {
 
 void ComputedStyleBase::inheritFrom(const ComputedStyleBase& inheritParent,
                                     IsAtShadowBoundary isAtShadowBoundary) {
-  {% for field in fields if field.is_enum and field.property['inherited'] %}
+  {% for field in fields if field.is_enum and field.is_inherited %}
   {{field.name}} = inheritParent.{{field.name}};
   {% endfor %}
 }
 
 void ComputedStyleBase::copyNonInheritedFromCached(
     const ComputedStyleBase& other) {
-  {% for field in fields if (field.is_enum and not field.property['inherited']) or field.is_inherited_flag %}
+  {% for field in fields if (field.is_enum and not field.is_inherited) or field.is_inherited_flag %}
   {{field.name}} = other.{{field.name}};
   {% endfor %}
 }
 
 void ComputedStyleBase::propagateIndependentInheritedProperties(
     const ComputedStyleBase& parentStyle) {
-  {% for field in fields if field.is_enum and field.property['independent'] %}
+  {% for field in fields if field.is_enum and field.is_independent %}
   if ({{field.is_inherited_method_name}}())
     {{field.setter_method_name}}(parentStyle.{{field.getter_method_name}}());
   {% endfor %}

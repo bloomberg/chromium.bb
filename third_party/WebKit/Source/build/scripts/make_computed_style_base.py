@@ -33,8 +33,8 @@ class Field(object):
         # Values common to all fields
         # Name of field
         self.name = kwargs.pop('name')
-        # Property field is for
-        self.property = kwargs.pop('property')
+        # Name of property field is for
+        self.property_name = kwargs.pop('property_name')
         # Field storage type
         self.type = kwargs.pop('type')
         # Bits needed for storage
@@ -54,6 +54,10 @@ class Field(object):
 
         if self.is_enum:
             # Enum-only fields
+            self.is_inherited = kwargs.pop('inherited')
+            self.is_independent = kwargs.pop('independent')
+            assert self.is_inherited or not self.is_independent, 'Only inherited fields can be independent'
+
             self.is_inherited_method_name = kwargs.pop('is_inherited_method_name')
         elif self.is_inherited_flag:
             # Inherited flag-only fields
@@ -107,7 +111,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                     self._fields.append(Field(
                         'inherited_flag',
                         name='m_' + field_name_suffix_lower,
-                        property=property,
+                        property_name=property['name'],
                         type='bool',
                         size=1,
                         default_value='true',
@@ -121,7 +125,9 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 self._fields.append(Field(
                     'enum',
                     name=field_name,
-                    property=property,
+                    property_name=property['name'],
+                    inherited=property['inherited'],
+                    independent=property['independent'],
                     type=type_name,
                     size=int(math.ceil(bits_needed)),
                     default_value=default_value,
