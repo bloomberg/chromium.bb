@@ -51,6 +51,8 @@ source_set("lib") {
     "keyboard_ui_mus.h",
     "move_event_handler.cc",
     "move_event_handler.h",
+    "network_connect_delegate_mus.cc",
+    "network_connect_delegate_mus.h",
     "non_client_frame_controller.cc",
     "non_client_frame_controller.h",
     "property_util.cc",
@@ -67,6 +69,8 @@ source_set("lib") {
     "shelf_delegate_mus.h",
     "shell_delegate_mus.cc",
     "shell_delegate_mus.h",
+    "system_tray_delegate_mus.cc",
+    "system_tray_delegate_mus.h",
     "wallpaper_delegate_mus.cc",
     "wallpaper_delegate_mus.h",
     "window_manager.cc",
@@ -81,11 +85,15 @@ source_set("lib") {
   defines = [ "NOTIMPLEMENTED_POLICY=5" ]
 
   deps = [
+    "//chromeos",
+    "//chromeos:power_manager_proto",
     "//components/user_manager",
     "//components/wallpaper",
     "//content/public/common:service_names",
+    "//device/bluetooth",
     "//ui/app_list/presenter",
     "//ui/app_list/presenter:mojom",
+    "//ui/chromeos",
     "//ui/display/manager",
     "//ui/keyboard",
     "//ui/keyboard:mojom",
@@ -123,22 +131,6 @@ source_set("lib") {
   data_deps = [
     "//ash/touch_hud/mus:touch_hud",
   ]
-
-  if (is_chromeos) {
-    sources += [
-      "network_connect_delegate_mus.cc",
-      "network_connect_delegate_mus.h",
-      "system_tray_delegate_mus.cc",
-      "system_tray_delegate_mus.h",
-    ]
-
-    deps += [
-      "//chromeos",
-      "//chromeos:power_manager_proto",
-      "//device/bluetooth",
-      "//ui/chromeos",
-    ]
-  }
 }
 
 service("mus") {
@@ -180,6 +172,8 @@ repack("resources") {
   sources = [
     "$root_gen_dir/ash/common/strings/ash_strings_en-US.pak",
     "$root_gen_dir/ash/resources/ash_resources_100_percent.pak",
+    "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak",
+    "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
@@ -188,41 +182,29 @@ repack("resources") {
   deps = [
     "//ash/common/strings",
     "//ash/resources",
+    "//ui/chromeos/resources",
+    "//ui/chromeos/strings",
     "//ui/resources",
     "//ui/strings",
     "//ui/views/mus:resources",
     "//ui/views/resources",
   ]
-
-  if (is_chromeos) {
-    sources += [
-      "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak",
-      "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_en-US.pak",
-    ]
-    deps += [
-      "//ui/chromeos/resources",
-      "//ui/chromeos/strings",
-    ]
-  }
 }
 
 repack("resources_200") {
   output = "$root_out_dir/ash_mus_resources_200.pak"
   sources = [
     "$root_gen_dir/ash/resources/ash_resources_200_percent.pak",
+    "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_200_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
     "$root_gen_dir/ui/views/resources/views_resources_200_percent.pak",
   ]
   deps = [
     "//ash/resources",
+    "//ui/chromeos/resources",
     "//ui/resources",
     "//ui/views/resources",
   ]
-
-  if (is_chromeos) {
-    sources += [ "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_200_percent.pak" ]
-    deps += [ "//ui/chromeos/resources" ]
-  }
 }
 
 source_set("unittests") {

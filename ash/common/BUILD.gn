@@ -8,6 +8,11 @@ source_set("unittests") {
   testonly = true
   sources = [
     "accelerators/accelerator_table_unittest.cc",
+    "system/chromeos/audio/tray_audio_unittest.cc",
+    "system/chromeos/brightness/tray_brightness_unittest.cc",
+    "system/chromeos/network/vpn_list_unittest.cc",
+    "system/chromeos/screen_security/screen_tray_item_unittest.cc",
+    "system/chromeos/supervised/tray_supervised_user_unittest.cc",
     "system/date/date_view_unittest.cc",
     "system/update/tray_update_unittest.cc",
     "wm/container_finder_unittest.cc",
@@ -26,18 +31,8 @@ source_set("unittests") {
     "//ui/base",
     "//ui/display",
     "//ui/keyboard",
+    "//ui/message_center",
     "//ui/views",
     "//ui/wm",
   ]
-
-  if (is_chromeos) {
-    sources += [
-      "system/chromeos/audio/tray_audio_unittest.cc",
-      "system/chromeos/brightness/tray_brightness_unittest.cc",
-      "system/chromeos/network/vpn_list_unittest.cc",
-      "system/chromeos/screen_security/screen_tray_item_unittest.cc",
-      "system/chromeos/supervised/tray_supervised_user_unittest.cc",
-    ]
-    deps += [ "//ui/message_center" ]
-  }
 }
