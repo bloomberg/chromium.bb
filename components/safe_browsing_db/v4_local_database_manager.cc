@@ -81,13 +81,15 @@ ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
   switch (list_id.threat_type()) {
     case MALWARE_THREAT:
     case SOCIAL_ENGINEERING_PUBLIC:
+    case MALICIOUS_BINARY:
       return 0;
     case UNWANTED_SOFTWARE:
       return 1;
     case API_ABUSE:
       return 2;
     default:
-      NOTREACHED() << "Unexpected ThreatType encountered in GetThreatSeverity";
+      NOTREACHED() << "Unexpected ThreatType encountered: "
+                   << list_id.threat_type();
       return kLeastSeverity;
   }
 }
@@ -435,6 +437,7 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
   const base::TimeTicks before = TimeTicks::Now();
   if (check->client_callback_type == ClientCallbackType::CHECK_BROWSE_URL ||
       check->client_callback_type == ClientCallbackType::CHECK_DOWNLOAD_URLS ||
+      check->client_callback_type == ClientCallbackType::CHECK_RESOURCE_URL ||
       check->client_callback_type == ClientCallbackType::CHECK_EXTENSION_IDS ||
       check->client_callback_type == ClientCallbackType::CHECK_OTHER) {
     DCHECK(!check->full_hashes.empty());
@@ -450,7 +453,7 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
       }
     }
   } else {
-    NOTREACHED() << "Unexpected client_callback_type encountered";
+    NOTREACHED() << "Unexpected client_callback_type encountered.";
   }
 
   // TODO(vakh): Only log SafeBrowsing.V4GetPrefixMatches.Time once PVer3 code

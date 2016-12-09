@@ -16,7 +16,7 @@
 
 namespace safe_browsing {
 
-class V4LocalDatabaseManager;
+class SafeBrowsingDatabaseManager;
 
 // Actual ServicesDelegate implementation. Create via
 // ServicesDelegate::Create().
@@ -28,7 +28,7 @@ class ServicesDelegateImpl : public ServicesDelegate {
 
  private:
   // ServicesDelegate:
-  const scoped_refptr<V4LocalDatabaseManager>& v4_local_database_manager()
+  const scoped_refptr<SafeBrowsingDatabaseManager>& v4_local_database_manager()
       const override;
   void Initialize() override;
   void InitializeCsdService(
@@ -65,7 +65,7 @@ class ServicesDelegateImpl : public ServicesDelegate {
 
   // The Pver4 local database manager handles the database and download logic
   // Accessed on both UI and IO thread.
-  scoped_refptr<V4LocalDatabaseManager> v4_local_database_manager_;
+  scoped_refptr<SafeBrowsingDatabaseManager> v4_local_database_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesDelegateImpl);
 };

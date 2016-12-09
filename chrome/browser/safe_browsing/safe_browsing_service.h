@@ -125,13 +125,16 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   const scoped_refptr<SafeBrowsingUIManager>& ui_manager() const;
 
+  // This returns either the v3 or the v4 database manager, depending on
+  // the experiment settings.
   const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager() const;
 
   SafeBrowsingProtocolManager* protocol_manager() const;
 
   SafeBrowsingPingManager* ping_manager() const;
 
-  const scoped_refptr<V4LocalDatabaseManager>& v4_local_database_manager()
+  // This may be NULL if v4 is not enabled by experiment.
+  const scoped_refptr<SafeBrowsingDatabaseManager>& v4_local_database_manager()
       const;
 
   // Returns a preference validation delegate that adds incidents to the
@@ -262,6 +265,10 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // Whether SafeBrowsing is enabled by the current set of profiles.
   // Accessed on UI thread.
   bool enabled_by_prefs_;
+
+  // Whether SafeBrowsing needs to be enabled in V4Only mode. In this mode, all
+  // SafeBrowsing decisions are made using the PVer4 implementation.
+  bool enabled_v4_only_;
 
   // Tracks existing PrefServices, and the safe browsing preference on each.
   // This is used to determine if any profile is currently using the safe

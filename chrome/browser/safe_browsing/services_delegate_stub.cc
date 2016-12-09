@@ -31,7 +31,7 @@ ServicesDelegateStub::~ServicesDelegateStub() {}
 void ServicesDelegateStub::InitializeCsdService(
     net::URLRequestContextGetter* context_getter) {}
 
-const scoped_refptr<V4LocalDatabaseManager>&
+const scoped_refptr<SafeBrowsingDatabaseManager>&
 ServicesDelegateStub::v4_local_database_manager() const {
   return v4_local_database_manager_;
 }

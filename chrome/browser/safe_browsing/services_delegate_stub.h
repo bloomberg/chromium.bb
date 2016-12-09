@@ -10,8 +10,6 @@
 
 namespace safe_browsing {
 
-class V4LocalDatabaseManager;
-
 // Dummy ServicesDelegate implementation. Create via ServicesDelegate::Create().
 class ServicesDelegateStub : public ServicesDelegate {
  public:
@@ -20,7 +18,7 @@ class ServicesDelegateStub : public ServicesDelegate {
 
  private:
   // ServicesDelegate:
-  const scoped_refptr<V4LocalDatabaseManager>& v4_local_database_manager()
+  const scoped_refptr<SafeBrowsingDatabaseManager>& v4_local_database_manager()
       const override;
   void Initialize() override;
   void InitializeCsdService(
@@ -43,7 +41,7 @@ class ServicesDelegateStub : public ServicesDelegate {
     const V4ProtocolConfig& v4_config) override;
   void StopOnIOThread(bool shutdown) override;
 
-  scoped_refptr<V4LocalDatabaseManager> v4_local_database_manager_;
+  scoped_refptr<SafeBrowsingDatabaseManager> v4_local_database_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesDelegateStub);
 };

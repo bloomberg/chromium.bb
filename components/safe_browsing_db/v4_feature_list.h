@@ -11,12 +11,18 @@ namespace safe_browsing {
 // through Finch.
 namespace V4FeatureList {
 
-// Is the PVer4 database manager enabled?
+// Is the PVer4 database manager enabled? Should be true if either of those
+// below are true.
 bool IsLocalDatabaseManagerEnabled();
 
 // Is the PVer4 database being checked for resource reputation? If this returns
 // true, use PVer4 database for CheckBrowseUrl, otherwise use PVer3.
 bool IsV4HybridEnabled();
+
+// Is only the PVer4 database being checked for resource reputation? If this
+// returns true, use PVer4 database for all SafeBrowsing operations, and don't
+// update the PVer3 database at all.  This is the launch configuration.
+bool IsV4OnlyEnabled();
 
 }  // namespace V4FeatureList
 
