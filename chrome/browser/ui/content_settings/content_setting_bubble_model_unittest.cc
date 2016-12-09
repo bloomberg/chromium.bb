@@ -735,7 +735,7 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
   ASSERT_EQ(1U, bubble_content.list_items.size());
   EXPECT_EQ(plugin_name,
             base::ASCIIToUTF16(bubble_content.list_items[0].title));
-  EXPECT_EQ(2U, bubble_content.radio_group.radio_items.size());
+  EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
   EXPECT_FALSE(bubble_content.custom_link.empty());
   EXPECT_TRUE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_text.empty());
