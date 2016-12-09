@@ -151,6 +151,8 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
 
       var skipButton = this.ownerDocument.createElement('button');
       skipButton.id = 'arc-tos-skip-button';
+      skipButton.disabled = this.classList.contains('arc-tos-loading');
+      skipButton.classList.add('preserve-disabled-state');
       skipButton.textContent =
           loadTimeData.getString('arcTermsOfServiceSkipButton');
       skipButton.addEventListener('click', function(event) {
@@ -233,6 +235,9 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       this.classList.remove('arc-tos-loaded');
       this.classList.remove('error');
       this.classList.add('arc-tos-loading');
+
+      $('arc-tos-accept-button').disabled = true;
+      $('arc-tos-skip-button').disabled = true;
     },
 
     /**
@@ -250,10 +255,9 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       var acceptButton = $('arc-tos-accept-button');
       var skipButton = $('arc-tos-skip-button');
 
+      skipButton.disabled = false;
       acceptButton.disabled = false;
-      if (document.activeElement != skipButton) {
-        acceptButton.focus();
-      }
+      acceptButton.focus();
 
       var termsView = $('arc-tos-view');
       var termsViewContainer = $('arc-tos-view-container');
@@ -276,6 +280,8 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       this.classList.remove('arc-tos-loading');
       this.classList.remove('arc-tos-loaded');
       this.classList.add('error');
+
+      $('arc-tos-retry-button').focus();
     },
 
     /**
