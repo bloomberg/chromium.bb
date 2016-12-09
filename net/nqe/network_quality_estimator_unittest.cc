@@ -1455,9 +1455,18 @@ TEST(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
   }
 }
 
+#if defined(OS_IOS)
+// Flaky on iOS: crbug.com/672917.
+#define MAYBE_TestEffectiveConnectionTypeObserver \
+  DISABLED_TestEffectiveConnectionTypeObserver
+#else
+#define MAYBE_TestEffectiveConnectionTypeObserver \
+  TestEffectiveConnectionTypeObserver
+#endif
+
 // Tests that the effective connection type is computed at the specified
 // interval, and that the observers are notified of any change.
-TEST(NetworkQualityEstimatorTest, TestEffectiveConnectionTypeObserver) {
+TEST(NetworkQualityEstimatorTest, MAYBE_TestEffectiveConnectionTypeObserver) {
   base::HistogramTester histogram_tester;
   std::unique_ptr<base::SimpleTestTickClock> tick_clock(
       new base::SimpleTestTickClock());
