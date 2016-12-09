@@ -1993,7 +1993,7 @@ TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
   base::TimeTicks transmitted_start = std::get<1>(host_nav_params);
   EXPECT_FALSE(transmitted_start.is_null());
-  EXPECT_LT(lower_bound_navigation_start, transmitted_start);
+  EXPECT_LE(lower_bound_navigation_start, transmitted_start);
 }
 
 // Checks that a browser-initiated navigation in an initial document that was
