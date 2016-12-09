@@ -258,7 +258,7 @@ static bool isCacheableHTTPMethod(const AtomicString& method) {
 }
 
 bool RawResource::canReuse(const ResourceRequest& newRequest) const {
-  if (dataBufferingPolicy() == DoNotBufferData)
+  if (getDataBufferingPolicy() == DoNotBufferData)
     return false;
 
   if (!isCacheableHTTPMethod(resourceRequest().httpMethod()))

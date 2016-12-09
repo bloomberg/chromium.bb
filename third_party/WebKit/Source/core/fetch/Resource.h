@@ -383,9 +383,6 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   const HeapHashCountedSet<WeakMember<ResourceClient>>& clients() const {
     return m_clients;
   }
-  DataBufferingPolicy dataBufferingPolicy() const {
-    return m_options.dataBufferingPolicy;
-  }
 
   void setCachePolicyBypassingCache();
   void setLoFiStateOff();
