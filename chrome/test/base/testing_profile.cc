@@ -651,7 +651,7 @@ void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
     return;
   base::RunLoop run_loop;
   HistoryIndexRestoreObserver observer(
-      content::GetQuitTaskForRunLoop(&run_loop));
+      content::GetDeferredQuitTaskForRunLoop(&run_loop));
   index->set_restore_cache_observer(&observer);
   run_loop.Run();
   index->set_restore_cache_observer(NULL);

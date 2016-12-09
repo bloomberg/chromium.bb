@@ -213,7 +213,7 @@ class TabScrubberTest : public InProcessBrowserTest,
  private:
   void RunUntilTabActive(Browser* browser, int target) {
     base::RunLoop run_loop;
-    quit_closure_ = content::GetQuitTaskForRunLoop(&run_loop);
+    quit_closure_ = content::GetDeferredQuitTaskForRunLoop(&run_loop);
     browser->tab_strip_model()->AddObserver(this);
     target_index_ = target;
     content::RunThisRunLoop(&run_loop);

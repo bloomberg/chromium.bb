@@ -90,8 +90,10 @@ class AsyncRevalidationManagerBrowserTest : public ContentBrowserTest {
 
     // The second time this handler is run is the async revalidation. Tests can
     // use this for synchronisation.
-    if (version == 2)
-      run_loop_.Quit();
+    if (version == 2) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              run_loop_.QuitClosure());
+    }
     return std::move(http_response);
   }
 

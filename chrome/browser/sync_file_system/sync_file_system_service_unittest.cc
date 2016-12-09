@@ -73,12 +73,11 @@ void AssignValueAndQuit(base::RunLoop* run_loop,
   run_loop->Quit();
 }
 
-// This is called on IO thread.
-void VerifyFileError(base::RunLoop* run_loop,
+// This is called on IO thread. Posts |callback| to be called on UI thread.
+void VerifyFileError(base::Closure callback,
                      base::File::Error error) {
-  DCHECK(run_loop);
   EXPECT_EQ(base::File::FILE_OK, error);
-  run_loop->Quit();
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
 }  // namespace
@@ -430,7 +429,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
       base::Bind(&CannedSyncableFileSystem::DoCreateFile,
                  base::Unretained(file_system_.get()),
                  kFile, base::Bind(&VerifyFileError,
-                                   &verify_file_error_run_loop)));
+                                   verify_file_error_run_loop.QuitClosure())));
 
   run_loop.Run();
 
