@@ -163,7 +163,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
     }
 
     // The gfx::Image takes ownership.
-    image = gfx::Image(ui_image.release());
+    image = gfx::Image(ui_image, base::scoped_policy::RETAIN);
   }
 
   base::AutoLock lock(*images_and_fonts_lock_);

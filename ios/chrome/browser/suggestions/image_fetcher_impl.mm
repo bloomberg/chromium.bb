@@ -61,7 +61,7 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
           // Most likely always returns 1x images.
           UIImage* ui_image = [UIImage imageWithData:data scale:1];
           if (ui_image) {
-            gfx::Image gfx_image(ui_image);
+            gfx::Image gfx_image(ui_image, base::scoped_policy::ASSUME);
             callback.Run(fetch_id, gfx_image);
             if (delegate_) {
               delegate_->OnImageFetched(fetch_id, gfx_image);

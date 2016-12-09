@@ -148,7 +148,7 @@ void IOSImageDecoderImpl::CreateUIImageAndRunCallback(
       // This constructor does not retain the image, but expects to take the
       // ownership, therefore, |ui_image| is retained here, but not released
       // afterwards.
-      gfx::Image gfx_image([ui_image retain]);
+      gfx::Image gfx_image(ui_image, base::scoped_policy::RETAIN);
       callback.Run(gfx_image);
       return;
     }
