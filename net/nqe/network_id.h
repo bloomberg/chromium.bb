@@ -27,7 +27,7 @@ net::NetworkChangeNotifier::ConnectionType ConvertStringToConnectionType(
       base::StringToInt(connection_type_string, &connection_type_int);
 
   if (!connection_type_available || connection_type_int < 0 ||
-      connection_type_int >=
+      connection_type_int >
           static_cast<int>(net::NetworkChangeNotifier::CONNECTION_LAST)) {
     DCHECK(false);
     return net::NetworkChangeNotifier::CONNECTION_UNKNOWN;
