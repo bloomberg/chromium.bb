@@ -331,7 +331,12 @@ void ResourceDispatcher::OnReceivedInlinedDataChunk(
   DCHECK(!request_info->buffer.get());
 
   request_info->peer->OnReceivedData(
-      base::MakeUnique<content::FixedReceivedData>(data, encoded_data_length));
+      base::MakeUnique<content::FixedReceivedData>(data));
+
+  // Get the request info again as the client callback may modify the info.
+  request_info = GetPendingRequestInfo(request_id);
+  if (request_info && encoded_data_length > 0)
+    request_info->peer->OnTransferSizeUpdated(encoded_data_length);
 }
 
 void ResourceDispatcher::OnReceivedData(int request_id,
@@ -360,12 +365,16 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     }
 
     std::unique_ptr<RequestPeer::ReceivedData> data =
-        request_info->received_data_factory->Create(data_offset, data_length,
-                                                    encoded_data_length);
+        request_info->received_data_factory->Create(data_offset, data_length);
     // |data| takes care of ACKing.
     send_ack = false;
     request_info->peer->OnReceivedData(std::move(data));
   }
+
+  // Get the request info again as the client callback may modify the info.
+  request_info = GetPendingRequestInfo(request_id);
+  if (request_info && encoded_data_length > 0)
+    request_info->peer->OnTransferSizeUpdated(encoded_data_length);
 
   // Acknowledge the reception of this data.
   if (send_ack)

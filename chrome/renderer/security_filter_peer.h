@@ -39,6 +39,7 @@ class SecurityFilterPeer : public content::RequestPeer {
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const content::ResourceResponseInfo& info) override;
   void OnDownloadedData(int len, int encoded_data_length) override {}
+  void OnTransferSizeUpdated(int transfer_size_diff) override;
 
  protected:
   explicit SecurityFilterPeer(std::unique_ptr<content::RequestPeer> peer);

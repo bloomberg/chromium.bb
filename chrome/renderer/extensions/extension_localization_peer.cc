@@ -26,7 +26,6 @@ class StringData final : public content::RequestPeer::ReceivedData {
 
   const char* payload() const override { return data_.data(); }
   int length() const override { return data_.size(); }
-  int encoded_data_length() const override { return -1; }
 
  private:
   const std::string data_;
@@ -84,6 +83,10 @@ void ExtensionLocalizationPeer::OnReceivedResponse(
 void ExtensionLocalizationPeer::OnReceivedData(
     std::unique_ptr<ReceivedData> data) {
   data_.append(data->payload(), data->length());
+}
+
+void ExtensionLocalizationPeer::OnTransferSizeUpdated(int transfer_size_diff) {
+  original_peer_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
 void ExtensionLocalizationPeer::OnCompletedRequest(

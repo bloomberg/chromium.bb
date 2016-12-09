@@ -55,6 +55,8 @@ class TestRequestPeer : public RequestPeer {
     context_->run_loop_quit_closure.Run();
   }
 
+  void OnTransferSizeUpdated(int transfer_size_diff) override {}
+
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,

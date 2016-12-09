@@ -1,7 +1,7 @@
 <html>
 <head>
-<script src="../../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../../http/tests/inspector/timeline-test.js"></script>
+<script src="../inspector-test.js"></script>
+<script src="../timeline-test.js"></script>
 <script>
 
 function performActions()
@@ -10,13 +10,13 @@ function performActions()
     var promise = new Promise((fulfill) => callback = fulfill);
     var image = new Image();
     image.onload = bar;
-    image.src = "../resources/anImage.png";
+    image.src = "resources/anImage.png";
 
     function bar()
     {
         var image = new Image();
         image.onload = function(event) { callback(); }  // do not pass event argument to the callback.
-        image.src = "../resources/anotherImage.png";
+        image.src = "resources/anotherImage.png";
     }
     return promise;
 }

@@ -385,6 +385,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   void OnReceivedResponse(const ResourceResponseInfo& info);
   void OnDownloadedData(int len, int encoded_data_length);
   void OnReceivedData(std::unique_ptr<ReceivedData> data);
+  void OnTransferSizeUpdated(int transfer_size_diff);
   void OnReceivedCachedMetadata(const char* data, int len);
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
@@ -434,6 +435,7 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnReceivedResponse(const ResourceResponseInfo& info) override;
   void OnDownloadedData(int len, int encoded_data_length) override;
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
+  void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnReceivedCachedMetadata(const char* data, int len) override;
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
@@ -800,7 +802,6 @@ void WebURLLoaderImpl::Context::OnReceivedData(
     std::unique_ptr<ReceivedData> data) {
   const char* payload = data->payload();
   int data_length = data->length();
-  int encoded_data_length = data->encoded_data_length();
   if (!client_)
     return;
 
@@ -815,7 +816,7 @@ void WebURLLoaderImpl::Context::OnReceivedData(
   } else {
     // We dispatch the data even when |useStreamOnResponse()| is set, in order
     // to make Devtools work.
-    client_->didReceiveData(payload, data_length, encoded_data_length);
+    client_->didReceiveData(payload, data_length);
 
     if (request_.useStreamOnResponse()) {
       // We don't support ftp_listening_delegate_ for now.
@@ -823,6 +824,10 @@ void WebURLLoaderImpl::Context::OnReceivedData(
       body_stream_writer_->AddData(std::move(data));
     }
   }
+}
+
+void WebURLLoaderImpl::Context::OnTransferSizeUpdated(int transfer_size_diff) {
+  client_->didReceiveTransferSizeUpdate(transfer_size_diff);
 }
 
 void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
@@ -954,7 +959,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
     OnReceivedResponse(info);
     auto size = data.size();
     if (size != 0)
-      OnReceivedData(base::MakeUnique<FixedReceivedData>(data.data(), size, 0));
+      OnReceivedData(base::MakeUnique<FixedReceivedData>(data.data(), size));
   }
 
   OnCompletedRequest(error_code, false, false, base::TimeTicks::Now(), 0,
@@ -991,6 +996,11 @@ void WebURLLoaderImpl::RequestPeerImpl::OnDownloadedData(
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedData(
     std::unique_ptr<ReceivedData> data) {
   context_->OnReceivedData(std::move(data));
+}
+
+void WebURLLoaderImpl::RequestPeerImpl::OnTransferSizeUpdated(
+    int transfer_size_diff) {
+  context_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedCachedMetadata(

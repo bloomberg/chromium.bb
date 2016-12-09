@@ -129,10 +129,8 @@ class CORE_EXPORT ResourceFetcher
   void didReceiveResponse(Resource*,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>);
-  void didReceiveData(const Resource*,
-                      const char* data,
-                      int dataLength,
-                      int encodedDataLength);
+  void didReceiveData(const Resource*, const char* data, int dataLength);
+  void didReceiveTransferSizeUpdate(const Resource*, int transferSizeDiff);
   void didDownloadData(const Resource*, int dataLength, int encodedDataLength);
   bool defersLoading() const;
   bool isControlledByServiceWorker() const;

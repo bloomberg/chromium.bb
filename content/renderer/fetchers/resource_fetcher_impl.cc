@@ -80,9 +80,7 @@ class ResourceFetcherImpl::ClientImpl : public blink::WebURLLoaderClient {
     DCHECK(!completed_);
     DCHECK_GT(data_length, 0);
   }
-  void didReceiveData(const char* data,
-                      int data_length,
-                      int encoded_data_length) override {
+  void didReceiveData(const char* data, int data_length) override {
     DCHECK(!completed_);
     DCHECK_GT(data_length, 0);
 

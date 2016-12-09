@@ -45,10 +45,9 @@ TEST_F(DocumentLoaderTest, SingleChunk) {
    public:
     void didReceiveData(WebURLLoaderClient* originalClient,
                         const char* data,
-                        int dataLength,
-                        int encodedDataLength) override {
+                        int dataLength) override {
       EXPECT_EQ(34, dataLength) << "foo.html was not served in a single chunk";
-      originalClient->didReceiveData(data, dataLength, encodedDataLength);
+      originalClient->didReceiveData(data, dataLength);
     }
   } delegate;
 
@@ -68,12 +67,11 @@ TEST_F(DocumentLoaderTest, MultiChunkNoReentrancy) {
    public:
     void didReceiveData(WebURLLoaderClient* originalClient,
                         const char* data,
-                        int dataLength,
-                        int encodedDataLength) override {
+                        int dataLength) override {
       EXPECT_EQ(34, dataLength) << "foo.html was not served in a single chunk";
       // Chunk the reply into one byte chunks.
       for (int i = 0; i < dataLength; ++i)
-        originalClient->didReceiveData(&data[i], 1, 1);
+        originalClient->didReceiveData(&data[i], 1);
     }
   } delegate;
 
@@ -101,8 +99,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
     // WebURLLoaderTestDelegate overrides:
     void didReceiveData(WebURLLoaderClient* originalClient,
                         const char* data,
-                        int dataLength,
-                        int encodedDataLength) override {
+                        int dataLength) override {
       EXPECT_EQ(34, dataLength) << "foo.html was not served in a single chunk";
 
       m_loaderClient = originalClient;
@@ -141,7 +138,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
     void dispatchOneByte() {
       char c = m_data.front();
       m_data.pop();
-      m_loaderClient->didReceiveData(&c, 1, 1);
+      m_loaderClient->didReceiveData(&c, 1);
     }
 
     bool servedReentrantly() const { return m_servedReentrantly; }

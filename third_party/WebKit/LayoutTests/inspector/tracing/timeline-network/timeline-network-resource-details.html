@@ -11,7 +11,7 @@ function performActions()
     image.src = "../resources/anImage.png";
 
     var script = document.createElement("script");
-    script.src = "timeline-network-resource.js";
+    script.src = "../../../http/tests/inspector/tracing/resources/timeline-network-resource.js";
     document.body.appendChild(script);
     var scriptPromise = new Promise((fulfill) => window.timelineNetworkResourceEvaluated = fulfill);
 

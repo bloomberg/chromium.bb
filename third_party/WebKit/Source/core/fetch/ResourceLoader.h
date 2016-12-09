@@ -96,7 +96,8 @@ class CORE_EXPORT ResourceLoader final
   void didReceiveResponse(const WebURLResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
   void didReceiveCachedMetadata(const char* data, int length) override;
-  void didReceiveData(const char*, int, int encodedDataLength) override;
+  void didReceiveData(const char*, int) override;
+  void didReceiveTransferSizeUpdate(int transferSizeDiff) override;
   void didDownloadData(int, int) override;
   void didFinishLoading(double finishTime,
                         int64_t encodedDataLength,

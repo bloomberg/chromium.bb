@@ -214,13 +214,16 @@ void ResourceLoader::didReceiveResponse(const WebURLResponse& response) {
   didReceiveResponse(response, nullptr);
 }
 
-void ResourceLoader::didReceiveData(const char* data,
-                                    int length,
-                                    int encodedDataLength) {
+void ResourceLoader::didReceiveData(const char* data, int length) {
   CHECK_GE(length, 0);
-  m_fetcher->didReceiveData(m_resource.get(), data, length, encodedDataLength);
+  m_fetcher->didReceiveData(m_resource.get(), data, length);
   m_resource->addToDecodedBodyLength(length);
   m_resource->appendData(data, length);
+}
+
+void ResourceLoader::didReceiveTransferSizeUpdate(int transferSizeDiff) {
+  DCHECK_GT(transferSizeDiff, 0);
+  m_fetcher->didReceiveTransferSizeUpdate(m_resource.get(), transferSizeDiff);
 }
 
 void ResourceLoader::didFinishLoadingFirstPartInMultipart() {
@@ -294,8 +297,7 @@ void ResourceLoader::requestSynchronously(const ResourceRequest& request) {
   // empty buffer is a noop in most cases, but is destructive in the case of
   // a 304, where it will overwrite the cached data we should be reusing.
   if (dataOut.size()) {
-    m_fetcher->didReceiveData(m_resource.get(), dataOut.data(), dataOut.size(),
-                              encodedDataLength);
+    m_fetcher->didReceiveData(m_resource.get(), dataOut.data(), dataOut.size());
     m_resource->setResourceBuffer(dataOut);
   }
   didFinishLoading(monotonicallyIncreasingTime(), encodedDataLength,

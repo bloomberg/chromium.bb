@@ -443,8 +443,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   cachedImage->loader()->didReceiveResponse(
       WrappedResourceResponse(resourceResponse), nullptr);
   cachedImage->loader()->didReceiveData(
-      reinterpret_cast<const char*>(kJpegImage2), sizeof(kJpegImage2),
-      sizeof(kJpegImage2));
+      reinterpret_cast<const char*>(kJpegImage2), sizeof(kJpegImage2));
   cachedImage->loader()->didFinishLoading(0.0, sizeof(kJpegImage2),
                                           sizeof(kJpegImage2));
   EXPECT_FALSE(cachedImage->errorOccurred());
@@ -484,8 +483,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
   cachedImage->loader()->didReceiveResponse(
       WrappedResourceResponse(initialResourceResponse));
   cachedImage->loader()->didReceiveData(
-      reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage),
-      sizeof(kJpegImage));
+      reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
 
   EXPECT_FALSE(cachedImage->errorOccurred());
   ASSERT_TRUE(cachedImage->hasImage());
@@ -513,8 +511,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
           testURL, "image/jpeg", sizeof(kJpegImage2), nullAtom, String())),
       nullptr);
   cachedImage->loader()->didReceiveData(
-      reinterpret_cast<const char*>(kJpegImage2), sizeof(kJpegImage2),
-      sizeof(kJpegImage2));
+      reinterpret_cast<const char*>(kJpegImage2), sizeof(kJpegImage2));
   cachedImage->loader()->didFinishLoading(0.0, sizeof(kJpegImage2),
                                           sizeof(kJpegImage2));
 
@@ -556,7 +553,6 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
                                          sizeof(kJpegImage)));
   image->loader()->didReceiveResponse(WrappedResourceResponse(response));
   image->loader()->didReceiveData(reinterpret_cast<const char*>(kJpegImage),
-                                  kJpegImageSubrangeWithDimensionsLength,
                                   kJpegImageSubrangeWithDimensionsLength);
   image->loader()->didFinishLoading(0.0, kJpegImageSubrangeWithDimensionsLength,
                                     kJpegImageSubrangeWithDimensionsLength);
@@ -859,7 +855,7 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
       WrappedResourceResponse(
           ResourceResponse(testURL, "image/jpeg", 18, nullAtom, String())),
       nullptr);
-  cachedImage->loader()->didReceiveData("notactuallyanimage", 18, 18);
+  cachedImage->loader()->didReceiveData("notactuallyanimage", 18);
   EXPECT_EQ(Resource::DecodeError, cachedImage->getStatus());
   EXPECT_FALSE(cachedImage->isLoading());
 }
@@ -883,7 +879,7 @@ TEST(ImageResourceTest, FetchDisallowPlaceholder) {
       WrappedResourceResponse(ResourceResponse(
           testURL, "image/jpeg", sizeof(kJpegImage), nullAtom, String())));
   image->loader()->didReceiveData(reinterpret_cast<const char*>(kJpegImage),
-                                  sizeof(kJpegImage), sizeof(kJpegImage));
+                                  sizeof(kJpegImage));
   image->loader()->didFinishLoading(0.0, sizeof(kJpegImage),
                                     sizeof(kJpegImage));
 
@@ -979,7 +975,6 @@ TEST(ImageResourceTest, FetchAllowPlaceholderSuccessful) {
                                          sizeof(kJpegImage)));
   image->loader()->didReceiveResponse(WrappedResourceResponse(response));
   image->loader()->didReceiveData(reinterpret_cast<const char*>(kJpegImage),
-                                  kJpegImageSubrangeWithDimensionsLength,
                                   kJpegImageSubrangeWithDimensionsLength);
   image->loader()->didFinishLoading(0.0, kJpegImageSubrangeWithDimensionsLength,
                                     kJpegImageSubrangeWithDimensionsLength);
@@ -1024,7 +1019,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   image->loader()->didReceiveResponse(
       WrappedResourceResponse(ResourceResponse(
           testURL, "image/jpeg", sizeof(kBadData), nullAtom, String())));
-  image->loader()->didReceiveData(kBadData, sizeof(kBadData), sizeof(kBadData));
+  image->loader()->didReceiveData(kBadData, sizeof(kBadData));
 
   // The dimensions could not be extracted, so the full original image should be
   // loading.
@@ -1040,7 +1035,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
       WrappedResourceResponse(ResourceResponse(
           testURL, "image/jpeg", sizeof(kJpegImage), nullAtom, String())));
   image->loader()->didReceiveData(reinterpret_cast<const char*>(kJpegImage),
-                                  sizeof(kJpegImage), sizeof(kJpegImage));
+                                  sizeof(kJpegImage));
   image->loader()->didFinishLoading(0.0, sizeof(kJpegImage),
                                     sizeof(kJpegImage));
 
@@ -1108,7 +1103,6 @@ TEST(ImageResourceTest,
                                          sizeof(kJpegImage)));
   image->loader()->didReceiveResponse(WrappedResourceResponse(response));
   image->loader()->didReceiveData(reinterpret_cast<const char*>(kJpegImage),
-                                  kJpegImageSubrangeWithDimensionsLength,
                                   kJpegImageSubrangeWithDimensionsLength);
   image->loader()->didFinishLoading(0.0, kJpegImageSubrangeWithDimensionsLength,
                                     kJpegImageSubrangeWithDimensionsLength);

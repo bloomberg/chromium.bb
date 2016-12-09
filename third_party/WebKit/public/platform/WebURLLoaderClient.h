@@ -79,11 +79,11 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   // of bytes actually received from network to serve this chunk, including
   // HTTP headers and framing if relevant. It is 0 if the response was served
   // from cache, and -1 if this information is unavailable.
-  // TODO(ricea): -1 is problematic for consumers maintaining a running
-  //     total. Investigate using 0 for all unavailable cases.
-  virtual void didReceiveData(const char* data,
-                              int dataLength,
-                              int encodedDataLength) {}
+  virtual void didReceiveData(const char* data, int dataLength) {}
+
+  // Called when the number of bytes actually received from network including
+  // HTTP headers is updated. |transferSizeDiff| is positive.
+  virtual void didReceiveTransferSizeUpdate(int transferSizeDiff) {}
 
   // Called when a chunk of renderer-generated metadata is received from the
   // cache.

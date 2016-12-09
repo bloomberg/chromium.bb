@@ -208,7 +208,7 @@ class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
   // WebURLLoaderClient
   bool willFollowRedirect(WebURLRequest&, const WebURLResponse&) override;
   void didReceiveResponse(const WebURLResponse&) final;
-  void didReceiveData(const char*, int, int) final;
+  void didReceiveData(const char*, int) final;
   void didFinishLoading(double, int64_t, int64_t) final;
   void didFail(const WebURLError&, int64_t, int64_t) final;
 
@@ -342,7 +342,7 @@ void PingLoaderImpl::didReceiveResponse(const WebURLResponse& response) {
   dispose();
 }
 
-void PingLoaderImpl::didReceiveData(const char*, int, int) {
+void PingLoaderImpl::didReceiveData(const char*, int) {
   if (LocalFrame* frame = this->frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));

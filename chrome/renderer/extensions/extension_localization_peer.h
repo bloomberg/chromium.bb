@@ -42,6 +42,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
   void OnDownloadedData(int len, int encoded_data_length) override {}
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
+  void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,

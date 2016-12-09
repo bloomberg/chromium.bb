@@ -31,9 +31,7 @@ class CONTENT_EXPORT SharedMemoryReceivedDataFactory final
                                   int request_id,
                                   linked_ptr<base::SharedMemory> memory);
 
-  std::unique_ptr<RequestPeer::ReceivedData> Create(int offset,
-                                                    int length,
-                                                    int encoded_data_length);
+  std::unique_ptr<RequestPeer::ReceivedData> Create(int offset, int length);
 
   // Stops this factory. After calling this function, releasing issued data
   // won't send ack signal to the browser process.
