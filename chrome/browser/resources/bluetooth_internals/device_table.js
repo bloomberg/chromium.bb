@@ -13,7 +13,7 @@ cr.define('device_table', function() {
     RSSI: 2,
     SERVICES: 3,
     CONNECTION_STATE: 4,
-    INSPECT_BUTTON: 5,
+    INSPECT_LINK: 5,
     CONNECTION_ERROR: 6,
   };
 
@@ -75,7 +75,7 @@ cr.define('device_table', function() {
      * @private
      * @param {number} index
      */
-    handleInspectBtn_: function(index) {
+    handleInspectClick_: function(index) {
       var event = new CustomEvent('inspectpressed', {
         bubbles: true,
         detail: {
@@ -114,17 +114,17 @@ cr.define('device_table', function() {
         row.insertCell();
       }
 
-      // Make two extra cells for the inspect button and connect errors.
+      // Make two extra cells for the inspect link and connect errors.
       var inspectCell = row.insertCell();
 
       // TODO(crbug.com/663830): Replace connection error column with better
       // notification system.
       var connectErrorCell = row.insertCell();
 
-      var inspectButton = document.createElement('button');
-      inspectCell.appendChild(inspectButton);
-      inspectButton.addEventListener('click', function() {
-        this.handleInspectBtn_(row.sectionRowIndex);
+      var inspectLink = document.createElement('a', 'action-link');
+      inspectCell.appendChild(inspectLink);
+      inspectLink.addEventListener('click', function() {
+        this.handleInspectClick_(row.sectionRowIndex);
       }.bind(this));
 
       this.updateRow_(device, row.sectionRowIndex);
@@ -157,17 +157,17 @@ cr.define('device_table', function() {
 
       row.classList.toggle('removed', device.removed);
 
-      var inspectButton = row.cells[COLUMNS.INSPECT_BUTTON].children[0];
-      inspectButton.disabled = false;
+      var inspectLink = row.cells[COLUMNS.INSPECT_LINK].children[0];
+      inspectLink.disabled = false;
       switch (device.connectionStatus) {
         case device_collection.ConnectionStatus.DISCONNECTED:
-          inspectButton.textContent = 'Inspect';
+          inspectLink.textContent = 'Inspect';
           break;
         case device_collection.ConnectionStatus.CONNECTED:
-          inspectButton.textContent = 'Forget';
+          inspectLink.textContent = 'Forget';
           break;
         case device_collection.ConnectionStatus.CONNECTING:
-          inspectButton.disabled = true;
+          inspectLink.disabled = true;
           break;
         default: assert('case not handled');
       }
