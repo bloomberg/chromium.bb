@@ -790,9 +790,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
         ['linux', 'amd'], bug=655147)
 
-    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
-        ['linux', 'amd'], bug=634519) # WebGL 2.0.1
-
     # Uniform buffer related failures
     self.Fail('deqp/functional/gles3/uniformbuffers/single_struct_array.html',
         ['linux', 'amd'], bug=483282)
