@@ -72,7 +72,6 @@ class ImeAdapterAndroid {
                            bool immediateRequest, bool monitorRequest);
   bool RequestTextInputStateUpdate(JNIEnv*,
                                    const base::android::JavaParamRef<jobject>&);
-  bool IsImeThreadEnabled(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
   // Called from native -> java
   void CancelComposition();

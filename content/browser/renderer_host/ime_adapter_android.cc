@@ -12,7 +12,6 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -27,7 +26,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "jni/ImeAdapter_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebTextInputType.h"
@@ -308,12 +306,6 @@ void ImeAdapterAndroid::RequestCursorUpdate(
     return;
   rwhi->Send(new InputMsg_RequestCompositionUpdate(
       rwhi->GetRoutingID(), immediate_request, monitor_request));
-}
-
-bool ImeAdapterAndroid::IsImeThreadEnabled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>&) {
-  return base::FeatureList::IsEnabled(features::kImeThread);
 }
 
 void ImeAdapterAndroid::ResetImeAdapter(JNIEnv* env,

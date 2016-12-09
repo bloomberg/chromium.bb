@@ -372,9 +372,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       pending_window_rect_count_(0),
       screen_info_(screen_info),
       device_scale_factor_(screen_info_.device_scale_factor),
-#if defined(OS_ANDROID)
-      text_field_is_dirty_(false),
-#endif
       monitor_composition_info_(false),
       popup_origin_scale_for_emulation_(0.f),
       frame_swap_message_queue_(new FrameSwapMessageQueue()),
@@ -390,9 +387,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
   device_color_profile_.push_back('0');
-#if defined(OS_ANDROID)
-  text_input_info_history_.push_back(blink::WebTextInputInfo());
-#endif
 
   // In tests there may not be a RenderThreadImpl.
   if (RenderThreadImpl::current()) {
@@ -635,7 +629,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DragMsg_SourceSystemDragEnded,
                         OnDragSourceSystemDragEnded)
 #if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(InputMsg_ImeEventAck, OnImeEventAck)
     IPC_MESSAGE_HANDLER(InputMsg_RequestTextInputStateUpdate,
                         OnRequestTextInputStateUpdate)
 #endif
@@ -1049,14 +1042,10 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
   // Only sends text input params if they are changed or if the ime should be
   // shown.
   if (show_ime == ShowIme::IF_NEEDED ||
-      (IsUsingImeThread() && change_source == ChangeSource::FROM_IME) ||
-      (text_input_type_ != new_type || text_input_mode_ != new_mode ||
-       text_input_info_ != new_info ||
-       can_compose_inline_ != new_can_compose_inline)
-#if defined(OS_ANDROID)
-      || text_field_is_dirty_
-#endif
-      ) {
+      change_source == ChangeSource::FROM_IME ||
+      text_input_type_ != new_type || text_input_mode_ != new_mode ||
+      text_input_info_ != new_info ||
+      can_compose_inline_ != new_can_compose_inline) {
     TextInputState params;
     params.type = new_type;
     params.mode = new_mode;
@@ -1068,15 +1057,8 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
     params.composition_end = new_info.compositionEnd;
     params.can_compose_inline = new_can_compose_inline;
     params.show_ime_if_needed = (show_ime == ShowIme::IF_NEEDED);
-#if defined(USE_AURA)
-    params.is_non_ime_change = true;
-#endif
-#if defined(OS_ANDROID)
-    params.is_non_ime_change =
-        (change_source == ChangeSource::FROM_NON_IME) || text_field_is_dirty_;
-    if (params.is_non_ime_change)
-      OnImeEventSentForAck(new_info);
-    text_field_is_dirty_ = false;
+#if defined(OS_ANDROID) || defined(USE_AURA)
+    params.is_non_ime_change = (change_source == ChangeSource::FROM_NON_IME);
 #endif
     Send(new ViewHostMsg_TextInputStateChanged(routing_id(), params));
 
@@ -1532,7 +1514,7 @@ void RenderWidget::OnImeSetComposition(
         WebRange(replacement_range.start(), replacement_range.length()));
   }
 
-  if (!ShouldHandleImeEvent())
+  if (!GetWebWidget())
     return;
   ImeEventGuard guard(this);
   blink::WebInputMethodController* controller = GetInputMethodController();
@@ -1564,7 +1546,7 @@ void RenderWidget::OnImeCommitText(const base::string16& text,
         WebRange(replacement_range.start(), replacement_range.length()));
   }
 
-  if (!ShouldHandleImeEvent())
+  if (!GetWebWidget())
     return;
   ImeEventGuard guard(this);
   input_handler_->set_handling_input_event(true);
@@ -1583,7 +1565,7 @@ void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
   }
 #endif
 
-  if (!ShouldHandleImeEvent())
+  if (!GetWebWidget())
     return;
   ImeEventGuard guard(this);
   input_handler_->set_handling_input_event(true);
@@ -1801,15 +1783,6 @@ void RenderWidget::convertWindowToViewport(blink::WebFloatRect* rect) {
 }
 
 #if defined(OS_ANDROID)
-void RenderWidget::OnImeEventSentForAck(const blink::WebTextInputInfo& info) {
-  text_input_info_history_.push_back(info);
-}
-
-void RenderWidget::OnImeEventAck() {
-  DCHECK_GE(text_input_info_history_.size(), 1u);
-  text_input_info_history_.pop_front();
-}
-
 void RenderWidget::OnRequestTextInputStateUpdate() {
   DCHECK(!ime_event_guard_);
   UpdateSelectionBounds();
@@ -1823,29 +1796,6 @@ void RenderWidget::OnRequestCompositionUpdate(bool immediate_request,
   if (!immediate_request)
     return;
   UpdateCompositionInfo(true /* immediate request */);
-}
-
-bool RenderWidget::ShouldHandleImeEvent() {
-#if defined(OS_ANDROID)
-  if (!GetWebWidget())
-    return false;
-  if (IsUsingImeThread())
-    return true;
-
-  // We cannot handle IME events if there is any chance that the event we are
-  // receiving here from the browser is based on the state that is different
-  // from our current one as indicated by |text_input_info_|.
-  // The states the browser might be in are:
-  // text_input_info_history_[0] - current state ack'd by browser
-  // text_input_info_history_[1...N] - pending state changes
-  for (size_t i = 0u; i < text_input_info_history_.size() - 1u; ++i) {
-    if (text_input_info_history_[i] != text_input_info_)
-      return false;
-  }
-  return true;
-#else
-  return !!GetWebWidget();
-#endif
 }
 
 void RenderWidget::OnSetDeviceScaleFactor(float device_scale_factor) {
@@ -1914,14 +1864,6 @@ void RenderWidget::set_next_paint_is_resize_ack() {
 
 void RenderWidget::set_next_paint_is_repaint_ack() {
   next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK;
-}
-
-bool RenderWidget::IsUsingImeThread() {
-#if defined(OS_ANDROID)
-  return base::FeatureList::IsEnabled(features::kImeThread);
-#else
-  return false;
-#endif
 }
 
 void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
@@ -2230,13 +2172,6 @@ void RenderWidget::setTouchAction(
    content::TouchAction content_touch_action =
        static_cast<content::TouchAction>(web_touch_action);
   Send(new InputHostMsg_SetTouchAction(routing_id_, content_touch_action));
-}
-
-void RenderWidget::didUpdateTextOfFocusedElementByNonUserInput() {
-#if defined(OS_ANDROID)
-  if (!IsUsingImeThread())
-    text_field_is_dirty_ = true;
-#endif
 }
 
 void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {

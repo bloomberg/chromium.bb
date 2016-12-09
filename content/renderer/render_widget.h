@@ -356,21 +356,14 @@ class CONTENT_EXPORT RenderWidget
   // |policy| see the comment on MessageDeliveryPolicy.
   void QueueMessage(IPC::Message* msg, MessageDeliveryPolicy policy);
 
-  // Check whether IME thread is being used or not.
-  bool IsUsingImeThread();
-
   // Handle start and finish of IME event guard.
   void OnImeEventGuardStart(ImeEventGuard* guard);
   void OnImeEventGuardFinish(ImeEventGuard* guard);
-
-  // Returns whether we currently should handle an IME event.
-  bool ShouldHandleImeEvent();
 
   void SetPopupOriginAdjustmentsForEmulation(
       RenderWidgetScreenMetricsEmulator* emulator);
 
   gfx::Rect AdjustValidationMessageAnchor(const gfx::Rect& anchor);
-
 
   void ScheduleComposite();
   void ScheduleCompositeWithForcedRedraw();
@@ -537,12 +530,6 @@ class CONTENT_EXPORT RenderWidget
   void OnDragSourceSystemDragEnded();
 
 #if defined(OS_ANDROID)
-  // Called when we send IME event that expects an ACK.
-  void OnImeEventSentForAck(const blink::WebTextInputInfo& info);
-
-  // Called by the browser process for every required IME acknowledgement.
-  void OnImeEventAck();
-
   // Called by the browser process to update text input state.
   void OnRequestTextInputStateUpdate();
 #endif
@@ -622,10 +609,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Tell the browser about the actions permitted for a new touch point.
   void setTouchAction(blink::WebTouchAction touch_action) override;
-
-  // Called when value of focused text field gets dirty, e.g. value is modified
-  // by script, not by user input.
-  void didUpdateTextOfFocusedElementByNonUserInput() override;
 
   // Sends an ACK to the browser process during the next compositor frame.
   void OnWaitNextFrameForTests(int routing_id);
@@ -767,18 +750,6 @@ class CONTENT_EXPORT RenderWidget
   // completed gesture.
   std::queue<SyntheticGestureCompletionCallback>
       pending_synthetic_gesture_callbacks_;
-
-#if defined(OS_ANDROID)
-  // Indicates value in the focused text field is in dirty state, i.e. modified
-  // by script etc., not by user input.
-  bool text_field_is_dirty_;
-
-  // Stores the history of text input infos from the last ACK'ed one from the
-  // current one. The size is the number of pending ACKs plus one, since we
-  // intentionally keep the last ack'd value to know what the browser is
-  // currently aware of.
-  std::deque<blink::WebTextInputInfo> text_input_info_history_;
-#endif
 
   // True if the IME requests updated composition info.
   bool monitor_composition_info_;

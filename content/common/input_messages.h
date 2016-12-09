@@ -261,11 +261,6 @@ IPC_MESSAGE_ROUTED1(InputMsg_MoveCaret,
                     gfx::Point /* location */)
 
 #if defined(OS_ANDROID)
-// Sent by the browser as ACK to ViewHostMsg_TextInputState when necessary.
-// NOTE: ImeEventAck and other Ime* messages should be of the same type,
-// otherwise a race condition can happen.
-IPC_MESSAGE_ROUTED0(InputMsg_ImeEventAck)
-
 // Request from browser to update text input state.
 IPC_MESSAGE_ROUTED0(InputMsg_RequestTextInputStateUpdate)
 #endif

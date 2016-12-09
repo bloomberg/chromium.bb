@@ -206,33 +206,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
                                          &event_overscroll);
 
 #if defined(OS_ANDROID)
-  bool from_ime = false;
-
-  // For most keyboard events, we want the change source to be FROM_IME because
-  // we don't need to update IME states in ReplicaInputConnection.
-  if (!widget_->IsUsingImeThread() &&
-      WebInputEvent::isKeyboardEventType(input_event.type)) {
-    const WebKeyboardEvent& key_event =
-        *static_cast<const WebKeyboardEvent*>(&input_event);
-    // TODO(changwan): this if-condition is a stop-gap solution to update IME
-    // states in ReplicaInputConnection when using DPAD navigation. This is not
-    // a correct solution because InputConnection#getTextBeforeCursor()
-    // immediately after InputConnection#sendKeyEvent() will not return the
-    // correct value. The correct solution is either redesign the architecture
-    // or emulate the DPAD behavior in ReplicaInputConnection, either is
-    // non-trivial.
-    if (key_event.nativeKeyCode != AKEYCODE_TAB &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_CENTER &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_LEFT &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_RIGHT &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_UP &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_DOWN) {
-      from_ime = true;
-    }
-  }
-
   ImeEventGuard guard(widget_);
-  guard.set_from_ime(from_ime);
 #endif
 
   base::TimeTicks start_time;

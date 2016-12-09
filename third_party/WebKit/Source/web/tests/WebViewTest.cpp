@@ -3483,24 +3483,6 @@ TEST_P(WebViewTest, DeleteElementWithRegisteredHandler) {
   EXPECT_FALSE(registry.hasEventHandlers(EventHandlerRegistry::ScrollEvent));
 }
 
-class NonUserInputTextUpdateWebWidgetClient
-    : public FrameTestHelpers::TestWebWidgetClient {
- public:
-  NonUserInputTextUpdateWebWidgetClient() : m_textIsUpdated(false) {}
-
-  // WebWidgetClient methods
-  void didUpdateTextOfFocusedElementByNonUserInput() override {
-    m_textIsUpdated = true;
-  }
-
-  void reset() { m_textIsUpdated = false; }
-
-  bool textIsUpdated() const { return m_textIsUpdated; }
-
- private:
-  int m_textIsUpdated;
-};
-
 // This test verifies the text input flags are correctly exposed to script.
 TEST_P(WebViewTest, TextInputFlags) {
   std::string url = m_baseURL + "text_input_flags.html";
@@ -3553,103 +3535,6 @@ TEST_P(WebViewTest, TextInputFlags) {
   // (C) Verifies the WebTextInputInfo's don't equal.
   EXPECT_FALSE(info1.equals(info2));
   EXPECT_FALSE(info2.equals(info3));
-
-  // Free the webView before freeing the NonUserInputTextUpdateWebViewClient.
-  m_webViewHelper.reset();
-}
-
-// This test verifies that
-// WebWidgetClient::didUpdateTextOfFocusedElementByNonUserInput is called iff
-// value of a focused element is modified via script.
-TEST_P(WebViewTest, NonUserInputTextUpdate) {
-  NonUserInputTextUpdateWebWidgetClient client;
-  std::string url = m_baseURL + "non_user_input_text_update.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url),
-                                        "non_user_input_text_update.html");
-  WebViewImpl* webViewImpl =
-      m_webViewHelper.initializeAndLoad(url, true, nullptr, nullptr, &client);
-  webViewImpl->setInitialFocus(false);
-
-  WebLocalFrameImpl* frame = webViewImpl->mainFrameImpl();
-  Document* document = frame->frame()->document();
-  WebInputMethodController* activeInputMethodController =
-      frame->frameWidget()->getActiveWebInputMethodController();
-
-  // (A) <input>
-  // (A.1) Focused and value is changed by script.
-  client.reset();
-  EXPECT_FALSE(client.textIsUpdated());
-
-  HTMLInputElement* inputElement =
-      toHTMLInputElement(document->getElementById("input"));
-  document->setFocusedElement(
-      inputElement,
-      FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
-  webViewImpl->setFocus(true);
-  EXPECT_EQ(document->focusedElement(), static_cast<Element*>(inputElement));
-
-  // Emulate value change from script.
-  inputElement->setValue("testA");
-  EXPECT_TRUE(client.textIsUpdated());
-  WebTextInputInfo info = webViewImpl->textInputInfo();
-  EXPECT_EQ("testA", std::string(info.value.utf8().data()));
-
-  // (A.2) Focused and user input modifies value.
-  client.reset();
-  EXPECT_FALSE(client.textIsUpdated());
-
-  WebVector<WebCompositionUnderline> emptyUnderlines;
-  activeInputMethodController->setComposition(WebString::fromUTF8("2"),
-                                              emptyUnderlines, 1, 1);
-  activeInputMethodController->finishComposingText(
-      WebInputMethodController::KeepSelection);
-  EXPECT_FALSE(client.textIsUpdated());
-  info = webViewImpl->textInputInfo();
-  EXPECT_EQ("testA2", std::string(info.value.utf8().data()));
-
-  // (A.3) Unfocused and value is changed by script.
-  client.reset();
-  EXPECT_FALSE(client.textIsUpdated());
-  document->clearFocusedElement();
-  webViewImpl->setFocus(false);
-  EXPECT_NE(document->focusedElement(), static_cast<Element*>(inputElement));
-  inputElement->setValue("testA3");
-  EXPECT_FALSE(client.textIsUpdated());
-
-  // (B) <textarea>
-  // (B.1) Focused and value is changed by script.
-  client.reset();
-  EXPECT_FALSE(client.textIsUpdated());
-  HTMLTextAreaElement* textAreaElement =
-      toHTMLTextAreaElement(document->getElementById("textarea"));
-  document->setFocusedElement(
-      textAreaElement,
-      FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
-  webViewImpl->setFocus(true);
-  EXPECT_EQ(document->focusedElement(), static_cast<Element*>(textAreaElement));
-  textAreaElement->setValue("testB");
-  EXPECT_TRUE(client.textIsUpdated());
-  info = webViewImpl->textInputInfo();
-  EXPECT_EQ("testB", std::string(info.value.utf8().data()));
-
-  // (B.2) Focused and user input modifies value.
-  client.reset();
-  EXPECT_FALSE(client.textIsUpdated());
-  activeInputMethodController->setComposition(WebString::fromUTF8("2"),
-                                              emptyUnderlines, 1, 1);
-  activeInputMethodController->finishComposingText(
-      WebInputMethodController::KeepSelection);
-  info = webViewImpl->textInputInfo();
-  EXPECT_EQ("testB2", std::string(info.value.utf8().data()));
-
-  // (B.3) Unfocused and value is changed by script.
-  client.reset();
-  EXPECT_FALSE(client.textIsUpdated());
-  document->clearFocusedElement();
-  webViewImpl->setFocus(false);
-  EXPECT_NE(document->focusedElement(), static_cast<Element*>(textAreaElement));
-  inputElement->setValue("testB3");
-  EXPECT_FALSE(client.textIsUpdated());
 
   // Free the webView before freeing the NonUserInputTextUpdateWebViewClient.
   m_webViewHelper.reset();

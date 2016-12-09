@@ -1115,11 +1115,6 @@ void HTMLInputElement::setNonAttributeValue(const String& sanitizedValue) {
     pseudoStateChanged(CSSSelector::PseudoInRange);
     pseudoStateChanged(CSSSelector::PseudoOutOfRange);
   }
-  if (document().focusedElement() == this)
-    document()
-        .frameHost()
-        ->chromeClient()
-        .didUpdateTextOfFocusedElementByNonUserInput(*document().frame());
 }
 
 void HTMLInputElement::setNonDirtyValue(const String& newValue) {

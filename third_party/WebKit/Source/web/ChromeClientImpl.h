@@ -197,7 +197,6 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void didCancelCompositionOnSelectionChange() override;
   void willSetInputMethodState() override;
-  void didUpdateTextOfFocusedElementByNonUserInput(LocalFrame&) override;
   void showImeIfNeeded() override;
 
   void registerViewportLayers() const override;

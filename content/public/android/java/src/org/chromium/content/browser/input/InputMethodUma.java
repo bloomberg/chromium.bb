@@ -33,9 +33,4 @@ class InputMethodUma {
         RecordHistogram.recordEnumeratedHistogram(
                 UMA_REGISTER_PROXYVIEW, UMA_PROXYVIEW_DETECTION_FAILURE, UMA_PROXYVIEW_COUNT);
     }
-
-    void recordProxyViewReplicaInputConnection() {
-        RecordHistogram.recordEnumeratedHistogram(UMA_REGISTER_PROXYVIEW,
-                UMA_PROXYVIEW_REPLICA_INPUT_CONNECTION, UMA_PROXYVIEW_COUNT);
-    }
 }

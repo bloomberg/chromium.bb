@@ -37,8 +37,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * so 'extends' here should have no functional effect at all. See crbug.com/616334 for more
  * details.
  */
-public class ThreadedInputConnection extends BaseInputConnection
-        implements ChromiumBaseInputConnection {
+class ThreadedInputConnection extends BaseInputConnection implements ChromiumBaseInputConnection {
     private static final String TAG = "cr_Ime";
     private static final boolean DEBUG_LOGS = false;
 

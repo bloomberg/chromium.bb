@@ -13,8 +13,7 @@ namespace content {
 // it from other updates so that we can wait for it safely. So it is false by
 // default.
 ImeEventGuard::ImeEventGuard(RenderWidget* widget)
-    : widget_(widget), show_ime_(false),
-      from_ime_(!widget->IsUsingImeThread()) {
+    : widget_(widget), show_ime_(false), from_ime_(false) {
   widget_->OnImeEventGuardStart(this);
 }
 

@@ -828,21 +828,6 @@
             ]
         }
     ],
-    "ImeThread": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ImeThread"
-                    ]
-                }
-            ]
-        }
-    ],
     "ImportantSitesInCBD": [
         {
             "platforms": [

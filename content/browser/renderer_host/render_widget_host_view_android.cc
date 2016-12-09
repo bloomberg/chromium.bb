@@ -774,11 +774,6 @@ void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
       GetTextInputManager()->GetActiveWidget()
           ? *GetTextInputManager()->GetTextInputState()
           : TextInputState();
-  if (state.is_non_ime_change && updated_view->GetRenderWidgetHost()) {
-    // Sends an acknowledgement to the renderer of a processed IME event.
-    updated_view->GetRenderWidgetHost()->Send(
-        new InputMsg_ImeEventAck(host_->GetRoutingID()));
-  }
 
   if (!content_view_core_)
     return;

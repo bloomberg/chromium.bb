@@ -2080,8 +2080,6 @@ void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
 
 void RenderFrameImpl::OnSetEditableSelectionOffsets(int start, int end) {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  if (!GetRenderWidget()->ShouldHandleImeEvent())
-    return;
   ImeEventGuard guard(GetRenderWidget());
   frame_->setEditableSelectionOffsets(start, end);
 }
@@ -2089,8 +2087,6 @@ void RenderFrameImpl::OnSetEditableSelectionOffsets(int start, int end) {
 void RenderFrameImpl::OnSetCompositionFromExistingText(
     int start, int end,
     const std::vector<blink::WebCompositionUnderline>& underlines) {
-  if (!GetRenderWidget()->ShouldHandleImeEvent())
-    return;
   ImeEventGuard guard(GetRenderWidget());
   frame_->setCompositionFromExistingText(start, end, underlines);
 }
@@ -2100,17 +2096,11 @@ void RenderFrameImpl::OnExecuteNoValueEditCommand(const std::string& name) {
 }
 
 void RenderFrameImpl::OnExtendSelectionAndDelete(int before, int after) {
-  if (!GetRenderWidget()->ShouldHandleImeEvent())
-    return;
-
   ImeEventGuard guard(GetRenderWidget());
   frame_->extendSelectionAndDelete(before, after);
 }
 
 void RenderFrameImpl::OnDeleteSurroundingText(int before, int after) {
-  if (!GetRenderWidget()->ShouldHandleImeEvent())
-    return;
-
   ImeEventGuard guard(GetRenderWidget());
   frame_->deleteSurroundingText(before, after);
 }

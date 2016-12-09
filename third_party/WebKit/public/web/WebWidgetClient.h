@@ -146,10 +146,6 @@ class WebWidgetClient {
   // the embedder of the touch actions that are permitted for this touch.
   virtual void setTouchAction(WebTouchAction touchAction) {}
 
-  // Called when value of focused text field gets dirty, e.g. value is
-  // modified by script, not by user input.
-  virtual void didUpdateTextOfFocusedElementByNonUserInput() {}
-
   // Request the browser to show the IME for current input type.
   virtual void showImeIfNeeded() {}
 

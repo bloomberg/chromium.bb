@@ -158,21 +158,9 @@ public class ImeAdapter {
         }
     }
 
-    private boolean isImeThreadEnabled() {
-        if (mNativeImeAdapterAndroid == 0) return false;
-        return nativeIsImeThreadEnabled(mNativeImeAdapterAndroid);
-    }
-
     private void createInputConnectionFactory() {
         if (mInputConnectionFactory != null) return;
-        if (isImeThreadEnabled()) {
-            Log.i(TAG, "ImeThread is enabled.");
-            mInputConnectionFactory =
-                    new ThreadedInputConnectionFactory(mInputMethodManagerWrapper);
-        } else {
-            Log.i(TAG, "ImeThread is not enabled.");
-            mInputConnectionFactory = new ReplicaInputConnection.Factory();
-        }
+        mInputConnectionFactory = new ThreadedInputConnectionFactory(mInputMethodManagerWrapper);
     }
 
     /**
@@ -801,5 +789,4 @@ public class ImeAdapter {
     private native boolean nativeRequestTextInputStateUpdate(long nativeImeAdapterAndroid);
     private native void nativeRequestCursorUpdate(long nativeImeAdapterAndroid,
             boolean immediateRequest, boolean monitorRequest);
-    private native boolean nativeIsImeThreadEnabled(long nativeImeAdapterAndroid);
 }
