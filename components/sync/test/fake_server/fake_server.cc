@@ -11,6 +11,7 @@
 
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -52,100 +53,83 @@ static const char kSyncedBookmarksFolderServerTag[] = "synced_bookmarks";
 static const char kSyncedBookmarksFolderName[] = "Synced Bookmarks";
 
 // A filter used during GetUpdates calls to determine what information to
-// send back to the client. There is a 1:1 correspondence between any given
-// GetUpdates call and an UpdateSieve instance.
+// send back to the client; filtering out old entities and tracking versions to
+// use in response progress markers. Note that only the GetUpdatesMessage's
+// from_progress_marker is used to determine this; legacy fields are ignored.
 class UpdateSieve {
  public:
+  explicit UpdateSieve(const sync_pb::GetUpdatesMessage& message)
+      : UpdateSieve(MessageToVersionMap(message)) {}
   ~UpdateSieve() {}
 
-  // Factory method for creating an UpdateSieve.
-  static std::unique_ptr<UpdateSieve> Create(
-      const sync_pb::GetUpdatesMessage& get_updates_message);
-
-  // Sets the progress markers in |get_updates_response| given the progress
-  // markers from the original GetUpdatesMessage and |new_version| (the latest
-  // version in the entries sent back).
-  void UpdateProgressMarkers(
-      int64_t new_version,
+  // Sets the progress markers in |get_updates_response| based on the highest
+  // version between request progress markers and response entities.
+  void SetProgressMarkers(
       sync_pb::GetUpdatesResponse* get_updates_response) const {
-    ModelTypeToVersionMap::const_iterator it;
-    for (it = request_from_version_.begin(); it != request_from_version_.end();
-         ++it) {
+    for (const auto& kv : response_version_map_) {
       sync_pb::DataTypeProgressMarker* new_marker =
           get_updates_response->add_new_progress_marker();
       new_marker->set_data_type_id(
-          GetSpecificsFieldNumberFromModelType(it->first));
-
-      int64_t version = std::max(new_version, it->second);
-      new_marker->set_token(base::Int64ToString(version));
+          GetSpecificsFieldNumberFromModelType(kv.first));
+      new_marker->set_token(base::Int64ToString(kv.second));
     }
   }
 
   // Determines whether the server should send an |entity| to the client as
-  // part of a GetUpdatesResponse.
-  bool ClientWantsItem(const FakeServerEntity& entity) const {
+  // part of a GetUpdatesResponse. Update internal tracking of max versions as a
+  // side effect which will later be used to set response progress markers.
+  bool ClientWantsItem(const FakeServerEntity& entity) {
     int64_t version = entity.GetVersion();
-    if (version <= min_version_) {
-      return false;
-    } else if (entity.IsDeleted()) {
-      return true;
-    }
-
-    ModelTypeToVersionMap::const_iterator it =
-        request_from_version_.find(entity.model_type());
-
-    return it == request_from_version_.end() ? false : it->second < version;
+    ModelType type = entity.model_type();
+    response_version_map_[type] =
+        std::max(response_version_map_[type], version);
+    auto it = request_version_map_.find(type);
+    return it == request_version_map_.end() ? false : it->second < version;
   }
-
-  // Returns the minimum version seen across all types.
-  int64_t GetMinVersion() const { return min_version_; }
 
  private:
   typedef std::map<ModelType, int64_t> ModelTypeToVersionMap;
 
-  // Creates an UpdateSieve.
-  UpdateSieve(const ModelTypeToVersionMap request_from_version,
-              const int64_t min_version)
-      : request_from_version_(request_from_version),
-        min_version_(min_version) {}
+  static UpdateSieve::ModelTypeToVersionMap MessageToVersionMap(
+      const sync_pb::GetUpdatesMessage& get_updates_message) {
+    CHECK_GT(get_updates_message.from_progress_marker_size(), 0)
+        << "A GetUpdates request must have at least one progress marker.";
+    ModelTypeToVersionMap request_version_map;
 
-  // Maps data type IDs to the latest version seen for that type.
-  const ModelTypeToVersionMap request_from_version_;
+    for (int i = 0; i < get_updates_message.from_progress_marker_size(); i++) {
+      sync_pb::DataTypeProgressMarker marker =
+          get_updates_message.from_progress_marker(i);
 
-  // The minimum version seen among all data types.
-  const int min_version_;
-};
+      int64_t version = 0;
+      // Let the version remain zero if there is no token or an empty token (the
+      // first request for this type).
+      if (marker.has_token() && !marker.token().empty()) {
+        bool parsed = base::StringToInt64(marker.token(), &version);
+        CHECK(parsed) << "Unable to parse progress marker token.";
+      }
 
-std::unique_ptr<UpdateSieve> UpdateSieve::Create(
-    const sync_pb::GetUpdatesMessage& get_updates_message) {
-  CHECK_GT(get_updates_message.from_progress_marker_size(), 0)
-      << "A GetUpdates request must have at least one progress marker.";
-
-  UpdateSieve::ModelTypeToVersionMap request_from_version;
-  int64_t min_version = std::numeric_limits<int64_t>::max();
-  for (int i = 0; i < get_updates_message.from_progress_marker_size(); i++) {
-    sync_pb::DataTypeProgressMarker marker =
-        get_updates_message.from_progress_marker(i);
-
-    int64_t version = 0;
-    // Let the version remain zero if there is no token or an empty token (the
-    // first request for this type).
-    if (marker.has_token() && !marker.token().empty()) {
-      bool parsed = base::StringToInt64(marker.token(), &version);
-      CHECK(parsed) << "Unable to parse progress marker token.";
+      ModelType model_type =
+          syncer::GetModelTypeFromSpecificsFieldNumber(marker.data_type_id());
+      DCHECK(request_version_map.find(model_type) == request_version_map.end());
+      request_version_map[model_type] = version;
     }
-
-    ModelType model_type =
-        syncer::GetModelTypeFromSpecificsFieldNumber(marker.data_type_id());
-    request_from_version[model_type] = version;
-
-    if (version < min_version)
-      min_version = version;
+    return request_version_map;
   }
 
-  return std::unique_ptr<UpdateSieve>(
-      new UpdateSieve(request_from_version, min_version));
-}
+  explicit UpdateSieve(const ModelTypeToVersionMap request_version_map)
+      : request_version_map_(request_version_map),
+        response_version_map_(request_version_map) {}
+
+  // The largest versions the client has seen before this request, and is used
+  // to filter entities to send back to clients. The values in this map are not
+  // updated after being initially set. The presence of a type in this map is a
+  // proxy for the desire to receive results about this type.
+  const ModelTypeToVersionMap request_version_map_;
+
+  // The largest versions seen between client and server, ultimately used to
+  // send progress markers back to the client.
+  ModelTypeToVersionMap response_version_map_;
+};
 
 // Returns whether |entity| is deleted or permanent.
 bool IsDeletedOrPermanent(const FakeServerEntity& entity) {
@@ -338,7 +322,7 @@ bool FakeServer::HandleGetUpdatesRequest(
   // at once.
   response->set_changes_remaining(0);
 
-  std::unique_ptr<UpdateSieve> sieve = UpdateSieve::Create(get_updates);
+  auto sieve = base::MakeUnique<UpdateSieve>(get_updates);
 
   // This folder is called "Synced Bookmarks" by sync and is renamed
   // "Mobile Bookmarks" by the mobile client UIs.
@@ -349,16 +333,12 @@ bool FakeServer::HandleGetUpdatesRequest(
   }
 
   bool send_encryption_keys_based_on_nigori = false;
-  int64_t max_response_version = 0;
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     const FakeServerEntity& entity = *it->second;
     if (sieve->ClientWantsItem(entity)) {
       sync_pb::SyncEntity* response_entity = response->add_entries();
       entity.SerializeAsProto(response_entity);
-
-      max_response_version =
-          std::max(max_response_version, response_entity->version());
 
       if (entity.model_type() == syncer::NIGORI) {
         send_encryption_keys_based_on_nigori =
@@ -376,7 +356,7 @@ bool FakeServer::HandleGetUpdatesRequest(
     }
   }
 
-  sieve->UpdateProgressMarkers(max_response_version, response);
+  sieve->SetProgressMarkers(response);
   return true;
 }
 
