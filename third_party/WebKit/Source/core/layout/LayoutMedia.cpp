@@ -83,8 +83,7 @@ void LayoutMedia::layout() {
     LayoutUnit width = newRect.width();
     if (child->node()->isMediaControls()) {
       width = computePanelWidth(newRect);
-      if (width != oldSize.width())
-        newPanelWidth = width;
+      newPanelWidth = width;
     }
 
     LayoutBox* layoutBox = toLayoutBox(child);
@@ -102,8 +101,13 @@ void LayoutMedia::layout() {
   // Notify our MediaControls that a layout has happened.
   if (mediaElement() && mediaElement()->mediaControls() &&
       newPanelWidth.has_value()) {
-    mediaElement()->mediaControls()->notifyPanelWidthChanged(
-        newPanelWidth.value());
+    if (!m_lastReportedPanelWidth.has_value() ||
+        m_lastReportedPanelWidth.value() != newPanelWidth.value()) {
+      mediaElement()->mediaControls()->notifyPanelWidthChanged(
+          newPanelWidth.value());
+      // Store the last value we reported, so we know if it has changed.
+      m_lastReportedPanelWidth = newPanelWidth.value();
+    }
   }
 }
 
