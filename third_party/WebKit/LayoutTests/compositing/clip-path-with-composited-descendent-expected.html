@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<style type="text/css" media="screen">
+#parent {
+  position: absolute;
+  height: 256px;
+  width: 256px;
+  -webkit-clip-path: circle(128px at center);
+  clip-path: circle(128px at center);
+  background: #eee;
+  will-change: transform;
+}
+#child {
+  background: #222;
+  width: 64px;
+  height: 64px;
+  will-change: transform;
+}
+</style>
+
+<div id="parent">
+  <div id="child"></div>
+</div>

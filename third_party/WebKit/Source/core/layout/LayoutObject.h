@@ -805,7 +805,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool hasOverflowClip() const { return m_bitfields.hasOverflowClip(); }
   bool hasClipRelatedProperty() const {
-    return hasClip() || hasOverflowClip() || style()->containsPaint();
+    return hasClip() || hasOverflowClip() || hasClipPath() ||
+           style()->containsPaint();
   }
 
   bool hasTransformRelatedProperty() const {
