@@ -1403,7 +1403,9 @@ void CacheStorageCache::PopulateResponseMetadata(
     ServiceWorkerResponse* response) {
   std::unique_ptr<std::vector<GURL>> url_list =
       base::MakeUnique<std::vector<GURL>>();
-  // TODO(horo) Add UMA for the deprecated URL field.
+  // From Chrome 57, proto::CacheMetadata's url field was deprecated.
+  UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.Response.HasDeprecatedURL",
+                        metadata.response().has_url());
   if (metadata.response().has_url()) {
     url_list->push_back(GURL(metadata.response().url()));
   } else {
