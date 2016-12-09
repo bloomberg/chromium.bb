@@ -84,7 +84,6 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/display/display_switches.h"
-#include "ui/events/event_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/views/view.h"
@@ -3406,8 +3405,9 @@ class WebViewGuestScrollTouchTest : public WebViewGuestScrollTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebViewGuestScrollTest::SetUpCommandLine(command_line);
 
-    command_line->AppendSwitchASCII(switches::kTouchEvents,
-                                    switches::kTouchEventsEnabled);
+    command_line->AppendSwitchASCII(
+        switches::kTouchEventFeatureDetection,
+        switches::kTouchEventFeatureDetectionEnabled);
   }
 };
 
@@ -3528,8 +3528,9 @@ class WebViewGuestTouchFocusTest : public WebViewTestBase {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebViewTestBase::SetUpCommandLine(command_line);
 
-    command_line->AppendSwitchASCII(switches::kTouchEvents,
-                                    switches::kTouchEventsEnabled);
+    command_line->AppendSwitchASCII(
+        switches::kTouchEventFeatureDetection,
+        switches::kTouchEventFeatureDetectionEnabled);
   }
 
  private:
@@ -3696,8 +3697,9 @@ class WebViewScrollGuestContentTest : public WebViewTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebViewTest::SetUpCommandLine(command_line);
 
-    command_line->AppendSwitchASCII(switches::kTouchEvents,
-                                    switches::kTouchEventsEnabled);
+    command_line->AppendSwitchASCII(
+        switches::kTouchEventFeatureDetection,
+        switches::kTouchEventFeatureDetectionEnabled);
   }
 };
 
@@ -3772,8 +3774,9 @@ class WebViewFocusTest : public WebViewTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebViewTest::SetUpCommandLine(command_line);
 
-    command_line->AppendSwitchASCII(switches::kTouchEvents,
-                                    switches::kTouchEventsEnabled);
+    command_line->AppendSwitchASCII(
+        switches::kTouchEventFeatureDetection,
+        switches::kTouchEventFeatureDetectionEnabled);
   }
 
   void ForceCompositorFrame() {

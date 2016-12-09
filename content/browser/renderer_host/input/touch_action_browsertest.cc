@@ -31,7 +31,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "ui/events/event_switches.h"
 #include "ui/events/latency_info.h"
 
 using blink::WebInputEvent;
@@ -110,8 +109,8 @@ class TouchActionBrowserTest : public ContentBrowserTest {
 
   // ContentBrowserTest:
   void SetUpCommandLine(base::CommandLine* cmd) override {
-    cmd->AppendSwitchASCII(switches::kTouchEvents,
-                           switches::kTouchEventsEnabled);
+    cmd->AppendSwitchASCII(switches::kTouchEventFeatureDetection,
+                           switches::kTouchEventFeatureDetectionEnabled);
     // TODO(rbyers): Remove this switch once touch-action ships.
     // http://crbug.com/241964
     cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);

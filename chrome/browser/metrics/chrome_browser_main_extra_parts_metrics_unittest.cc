@@ -17,7 +17,7 @@
 
 namespace {
 
-const char kTouchEventsEnabledHistogramName[] =
+const char kTouchEventFeatureDetectionEnabledHistogramName[] =
     "Touchscreen.TouchEventsEnabled";
 
 }  // namespace
@@ -56,7 +56,8 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
        VerifyTouchEventsEnabledIsNotRecordedAfterConstruction) {
   base::HistogramTester histogram_tester;
   ChromeBrowserMainExtraPartsMetrics test_target;
-  histogram_tester.ExpectTotalCount(kTouchEventsEnabledHistogramName, 0);
+  histogram_tester.ExpectTotalCount(
+      kTouchEventFeatureDetectionEnabledHistogramName, 0);
 }
 
 #if defined(USE_OZONE) || defined(USE_X11)
@@ -70,7 +71,8 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
   ChromeBrowserMainExtraPartsMetrics test_target;
 
   test_target.PostBrowserStart();
-  histogram_tester.ExpectTotalCount(kTouchEventsEnabledHistogramName, 0);
+  histogram_tester.ExpectTotalCount(
+      kTouchEventFeatureDetectionEnabledHistogramName, 0);
 }
 
 // Verify a TouchEventsEnabled value is recorded during PostBrowserStart if the
@@ -84,7 +86,8 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
   ChromeBrowserMainExtraPartsMetrics test_target;
 
   test_target.PostBrowserStart();
-  histogram_tester.ExpectTotalCount(kTouchEventsEnabledHistogramName, 1);
+  histogram_tester.ExpectTotalCount(
+      kTouchEventFeatureDetectionEnabledHistogramName, 1);
 }
 
 // Verify a TouchEventsEnabled value is recorded when an asynchronous device
@@ -96,7 +99,8 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
 
   test_target.PostBrowserStart();
   device_data_manager_test_api_.NotifyObserversDeviceListsComplete();
-  histogram_tester.ExpectTotalCount(kTouchEventsEnabledHistogramName, 1);
+  histogram_tester.ExpectTotalCount(
+      kTouchEventFeatureDetectionEnabledHistogramName, 1);
 }
 
 // Verify a TouchEventsEnabled value is only recorded once if multiple
@@ -109,7 +113,8 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
   test_target.PostBrowserStart();
   device_data_manager_test_api_.NotifyObserversDeviceListsComplete();
   device_data_manager_test_api_.NotifyObserversDeviceListsComplete();
-  histogram_tester.ExpectTotalCount(kTouchEventsEnabledHistogramName, 1);
+  histogram_tester.ExpectTotalCount(
+      kTouchEventFeatureDetectionEnabledHistogramName, 1);
 }
 
 #else
@@ -121,7 +126,8 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
   ChromeBrowserMainExtraPartsMetrics test_target;
 
   test_target.PostBrowserStart();
-  histogram_tester.ExpectTotalCount(kTouchEventsEnabledHistogramName, 1);
+  histogram_tester.ExpectTotalCount(
+      kTouchEventFeatureDetectionEnabledHistogramName, 1);
 }
 
 #endif  // defined(USE_OZONE) || defined(USE_X11)

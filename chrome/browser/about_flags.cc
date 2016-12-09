@@ -134,14 +134,14 @@ namespace {
 const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid;
 const unsigned kOsDesktop = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 
-const FeatureEntry::Choice kTouchEventsChoices[] = {
+const FeatureEntry::Choice kTouchEventFeatureDetectionChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    switches::kTouchEvents,
-    switches::kTouchEventsEnabled },
+    switches::kTouchEventFeatureDetection,
+    switches::kTouchEventFeatureDetectionEnabled },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    switches::kTouchEvents,
-    switches::kTouchEventsDisabled }
+    switches::kTouchEventFeatureDetection,
+    switches::kTouchEventFeatureDetectionDisabled }
 };
 
 #if defined(USE_AURA)
@@ -869,7 +869,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kExtendMdToSecondaryUi)},
     {"touch-events", IDS_FLAGS_TOUCH_EVENTS_NAME,
      IDS_FLAGS_TOUCH_EVENTS_DESCRIPTION, kOsDesktop,
-     MULTI_VALUE_TYPE(kTouchEventsChoices)},
+     MULTI_VALUE_TYPE(kTouchEventFeatureDetectionChoices)},
     {"disable-touch-adjustment", IDS_FLAGS_TOUCH_ADJUSTMENT_NAME,
      IDS_FLAGS_TOUCH_ADJUSTMENT_DESCRIPTION,
      kOsWin | kOsLinux | kOsCrOS | kOsAndroid,

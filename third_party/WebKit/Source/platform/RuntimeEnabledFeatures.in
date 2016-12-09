@@ -240,7 +240,7 @@ TimerThrottlingForHiddenFrames status=stable
 // Chromium sets this conditionally (eg. based on the presence of a
 // touchscreen) in ApplyWebPreferences. "Touch events" themselves are always
 // enabled since they're a feature always supported by Chrome.
-TouchEventAPI status=stable
+TouchEventFeatureDetection status=stable
 TraceWrappables
 TrueColorRendering status=experimental, settable_from_internals=True
 TrustedEventsDefaultAction status=stable

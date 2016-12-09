@@ -23,10 +23,10 @@
 #include "chrome/browser/shell_integration.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
-#include "ui/events/event_switches.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/metrics/first_web_contents_profiler.h"
@@ -100,15 +100,15 @@ enum UMALinuxWindowManager {
   UMA_LINUX_WINDOW_MANAGER_COUNT
 };
 
-enum UMATouchEventsState {
-  UMA_TOUCH_EVENTS_ENABLED,
-  UMA_TOUCH_EVENTS_AUTO_ENABLED,
-  UMA_TOUCH_EVENTS_AUTO_DISABLED,
-  UMA_TOUCH_EVENTS_DISABLED,
+enum UMATouchEventFeatureDetectionState {
+  UMA_TOUCH_EVENT_FEATURE_DETECTION_ENABLED,
+  UMA_TOUCH_EVENT_FEATURE_DETECTION_AUTO_ENABLED,
+  UMA_TOUCH_EVENT_FEATURE_DETECTION_AUTO_DISABLED,
+  UMA_TOUCH_EVENT_FEATURE_DETECTION_DISABLED,
   // NOTE: Add states only immediately above this line. Make sure to
   // update the enum list in tools/metrics/histograms/histograms.xml
   // accordingly.
-  UMA_TOUCH_EVENTS_STATE_COUNT
+  UMA_TOUCH_EVENT_FEATURE_DETECTION_STATE_COUNT
 };
 
 #if defined(OS_ANDROID) && defined(__arm__)
@@ -258,28 +258,31 @@ void RecordTouchEventState() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   const std::string touch_enabled_switch =
-      command_line.HasSwitch(switches::kTouchEvents)
-          ? command_line.GetSwitchValueASCII(switches::kTouchEvents)
-          : switches::kTouchEventsAuto;
+      command_line.HasSwitch(switches::kTouchEventFeatureDetection)
+          ? command_line.GetSwitchValueASCII(
+                switches::kTouchEventFeatureDetection)
+          : switches::kTouchEventFeatureDetectionAuto;
 
-  UMATouchEventsState state;
+  UMATouchEventFeatureDetectionState state;
   if (touch_enabled_switch.empty() ||
-      touch_enabled_switch == switches::kTouchEventsEnabled) {
-    state = UMA_TOUCH_EVENTS_ENABLED;
-  } else if (touch_enabled_switch == switches::kTouchEventsAuto) {
+      touch_enabled_switch == switches::kTouchEventFeatureDetectionEnabled) {
+    state = UMA_TOUCH_EVENT_FEATURE_DETECTION_ENABLED;
+  } else if (touch_enabled_switch ==
+             switches::kTouchEventFeatureDetectionAuto) {
     state = (ui::GetTouchScreensAvailability() ==
              ui::TouchScreensAvailability::ENABLED)
-                ? UMA_TOUCH_EVENTS_AUTO_ENABLED
-                : UMA_TOUCH_EVENTS_AUTO_DISABLED;
-  } else if (touch_enabled_switch == switches::kTouchEventsDisabled) {
-    state = UMA_TOUCH_EVENTS_DISABLED;
+                ? UMA_TOUCH_EVENT_FEATURE_DETECTION_AUTO_ENABLED
+                : UMA_TOUCH_EVENT_FEATURE_DETECTION_AUTO_DISABLED;
+  } else if (touch_enabled_switch ==
+             switches::kTouchEventFeatureDetectionDisabled) {
+    state = UMA_TOUCH_EVENT_FEATURE_DETECTION_DISABLED;
   } else {
     NOTREACHED();
     return;
   }
 
   UMA_HISTOGRAM_ENUMERATION("Touchscreen.TouchEventsEnabled", state,
-                            UMA_TOUCH_EVENTS_STATE_COUNT);
+                            UMA_TOUCH_EVENT_FEATURE_DETECTION_STATE_COUNT);
 }
 
 #if defined(USE_OZONE) || defined(USE_X11)

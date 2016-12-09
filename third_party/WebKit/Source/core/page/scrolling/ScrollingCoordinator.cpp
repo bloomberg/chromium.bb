@@ -658,7 +658,10 @@ void ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded() {
   TRACE_EVENT0("input",
                "ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded");
 
-  if (!RuntimeEnabledFeatures::touchEventAPIEnabled())
+  // TODO(sunyunjia): remove all refs to touchEvenFeatureDetectionEnabled
+  // in this class since we are always firing touch events.
+  // crbug.com/671232
+  if (!RuntimeEnabledFeatures::touchEventFeatureDetectionEnabled())
     return;
 
   // TODO(chrishtr): implement touch event target rects for SPv2.
@@ -729,7 +732,7 @@ void ScrollingCoordinator::setTouchEventTargetRects(
 }
 
 void ScrollingCoordinator::touchEventTargetRectsDidChange() {
-  if (!RuntimeEnabledFeatures::touchEventAPIEnabled())
+  if (!RuntimeEnabledFeatures::touchEventFeatureDetectionEnabled())
     return;
 
   DCHECK(m_page);
@@ -1037,7 +1040,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects,
 void ScrollingCoordinator::computeTouchEventTargetRects(
     LayerHitTestRects& rects) {
   TRACE_EVENT0("input", "ScrollingCoordinator::computeTouchEventTargetRects");
-  DCHECK(RuntimeEnabledFeatures::touchEventAPIEnabled());
+  DCHECK(RuntimeEnabledFeatures::touchEventFeatureDetectionEnabled());
 
   Document* document = m_page->deprecatedLocalMainFrame()->document();
   if (!document || !document->view())

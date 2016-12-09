@@ -157,7 +157,7 @@ interface Document : Node {
     // Touch Events
     // https://w3c.github.io/touch-events/#extensions-to-the-document-interface
     // FIXME: The arguments should not be optional.
-    [RuntimeEnabled=TouchEventAPI, Measure, LegacyInterfaceTypeChecking, Custom=CallPrologue]
+    [RuntimeEnabled=TouchEventFeatureDetection, Measure, LegacyInterfaceTypeChecking, Custom=CallPrologue]
     Touch createTouch([Default=Undefined] optional Window window,
                       [Default=Undefined] optional EventTarget target,
                       [Default=Undefined] optional long identifier,
@@ -169,7 +169,7 @@ interface Document : Node {
                       [Default=Undefined] optional unrestricted double radiusY,
                       [Default=Undefined] optional unrestricted float rotationAngle,
                       [Default=Undefined] optional unrestricted float force);
-    [RuntimeEnabled=TouchEventAPI] TouchList createTouchList(Touch... touches);
+    [RuntimeEnabled=TouchEventFeatureDetection] TouchList createTouchList(Touch... touches);
 
     // Custom Elements
     // https://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-register

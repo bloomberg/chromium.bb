@@ -151,7 +151,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kTouchCalibration,
 #endif
     ::switches::kTouchDevices,
-    ::switches::kTouchEvents,
+    ::switches::kTouchEventFeatureDetection,
     ::switches::kTopChromeMD,
     ::switches::kTraceToConsole,
     ::switches::kUIDisablePartialSwap,
