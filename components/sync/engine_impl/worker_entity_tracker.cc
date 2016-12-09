@@ -29,13 +29,10 @@ void WorkerEntityTracker::PopulateCommitProto(
     sync_pb::SyncEntity* commit_entity) const {
   DCHECK(HasPendingCommit());
 
-  if (!id_.empty()) {
-    commit_entity->set_id_string(id_);
-  }
-
   const EntityData& entity = pending_commit_->entity.value();
   DCHECK_EQ(client_tag_hash_, entity.client_tag_hash);
 
+  commit_entity->set_id_string(id_);
   commit_entity->set_client_defined_unique_tag(client_tag_hash_);
   commit_entity->set_version(base_version_);
   commit_entity->set_deleted(entity.is_deleted());
@@ -111,6 +108,7 @@ void WorkerEntityTracker::ReceiveCommitResponse(CommitResponseData* ack) {
       << " id: " << id_;
 
   // Commit responses, especially after the first commit, can update our ID.
+  DCHECK(!ack->id.empty());
   id_ = ack->id;
   highest_commit_response_version_ = ack->response_version;
 
@@ -132,6 +130,7 @@ void WorkerEntityTracker::ReceiveUpdate(const UpdateResponseData& update) {
     return;
 
   highest_gu_response_version_ = update.response_version;
+  DCHECK(!update.entity->id.empty());
   id_ = update.entity->id;
 
   // Got an applicable update newer than any pending updates. It must be safe
