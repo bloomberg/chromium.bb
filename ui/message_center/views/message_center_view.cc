@@ -62,14 +62,12 @@ void SetViewHierarchyEnabled(views::View* view, bool enabled) {
 MessageCenterView::MessageCenterView(MessageCenter* message_center,
                                      MessageCenterTray* tray,
                                      int max_height,
-                                     bool initially_settings_visible,
-                                     bool top_down)
+                                     bool initially_settings_visible)
     : message_center_(message_center),
       tray_(tray),
       scroller_(NULL),
       settings_view_(NULL),
       button_bar_(NULL),
-      top_down_(top_down),
       settings_visible_(initially_settings_visible),
       source_view_(NULL),
       source_height_(0),
@@ -104,7 +102,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   scroller_->layer()->SetFillsBoundsOpaquely(false);
   scroller_->layer()->SetMasksToBounds(true);
 
-  message_list_view_.reset(new MessageListView(top_down));
+  message_list_view_.reset(new MessageListView());
   message_list_view_->set_owned_by_client();
   message_list_view_->AddObserver(this);
 
@@ -215,19 +213,16 @@ void MessageCenterView::Layout() {
   bool animating = settings_transition_animation_ &&
                    settings_transition_animation_->is_animating();
   if (animating && settings_transition_animation_->current_part_index() == 0) {
-    if (!top_down_) {
-      button_bar_->SetBounds(
-          0, height() - button_height, width(), button_height);
-    }
+    button_bar_->SetBounds(0, height() - button_height, width(), button_height);
     return;
   }
 
   scroller_->SetBounds(0,
-                       top_down_ ? button_height : 0,
+                       0,
                        width(),
                        height() - button_height);
   settings_view_->SetBounds(0,
-                            top_down_ ? button_height : 0,
+                            0,
                             width(),
                             height() - button_height);
 
@@ -242,15 +237,15 @@ void MessageCenterView::Layout() {
       // Draw separator line on the top of the button bar if it is on the bottom
       // or draw it at the bottom if the bar is on the top.
       button_bar_->SetBorder(views::CreateSolidSidedBorder(
-          top_down_ ? 0 : 1, 0, top_down_ ? 1 : 0, 0, kFooterDelimiterColor));
+          1, 0, 0, 0, kFooterDelimiterColor));
     } else {
       button_bar_->SetBorder(
-          views::CreateEmptyBorder(top_down_ ? 0 : 1, 0, top_down_ ? 1 : 0, 0));
+          views::CreateEmptyBorder(1, 0, 0, 0));
     }
     button_bar_->SchedulePaint();
   }
   button_bar_->SetBounds(0,
-                         top_down_ ? 0 : height() - button_height,
+                         height() - button_height,
                          width(),
                          button_height);
   if (GetWidget())

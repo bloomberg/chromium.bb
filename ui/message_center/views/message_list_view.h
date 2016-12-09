@@ -38,7 +38,7 @@ class MESSAGE_CENTER_EXPORT MessageListView
     virtual void OnAllNotificationsCleared() = 0;
   };
 
-  explicit MessageListView(bool top_down);
+  MessageListView();
   ~MessageListView() override;
 
   void AddNotificationAt(MessageView* view, int i);
@@ -98,7 +98,6 @@ class MESSAGE_CENTER_EXPORT MessageListView
   int fixed_height_;
   bool has_deferred_task_;
   bool clear_all_started_;
-  bool top_down_;
   std::set<views::View*> adding_views_;
   std::set<views::View*> deleting_views_;
   std::set<views::View*> deleted_when_done_;

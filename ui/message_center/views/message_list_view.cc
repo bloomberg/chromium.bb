@@ -23,12 +23,11 @@ namespace {
 const int kAnimateClearingNextNotificationDelayMS = 40;
 }  // namespace
 
-MessageListView::MessageListView(bool top_down)
+MessageListView::MessageListView()
     : reposition_top_(-1),
       fixed_height_(0),
       has_deferred_task_(false),
       clear_all_started_(false),
-      top_down_(top_down),
       animator_(this),
       quit_message_loop_after_animation_for_test_(false),
       weak_ptr_factory_(this) {
@@ -45,9 +44,9 @@ MessageListView::MessageListView(bool top_down)
   set_background(
       views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
   SetBorder(views::CreateEmptyBorder(
-      top_down ? 0 : kMarginBetweenItems - shadow_insets.top(),    /* top */
-      kMarginBetweenItems - shadow_insets.left(),                  /* left */
-      top_down ? kMarginBetweenItems - shadow_insets.bottom() : 0, /* bottom */
+      kMarginBetweenItems - shadow_insets.top(), /* top */
+      kMarginBetweenItems - shadow_insets.left(), /* left */
+      0, /* bottom */
       kMarginBetweenItems - shadow_insets.right() /* right */));
   animator_.AddObserver(this);
 }
@@ -287,8 +286,7 @@ void MessageListView::DoUpdateIfPossible() {
   int new_height = GetHeightForWidth(child_area.width() + GetInsets().width());
   SetSize(gfx::Size(child_area.width() + GetInsets().width(), new_height));
 
-  if (top_down_ ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval))
     AnimateNotificationsBelowTarget();
   else

@@ -45,8 +45,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView
   MessageCenterView(MessageCenter* message_center,
                     MessageCenterTray* tray,
                     int max_height,
-                    bool initially_settings_visible,
-                    bool top_down);
+                    bool initially_settings_visible);
   ~MessageCenterView() override;
 
   void SetNotifications(const NotificationList::Notifications& notifications);
@@ -123,7 +122,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterView
   std::unique_ptr<MessageListView> message_list_view_;
   NotifierSettingsView* settings_view_;
   MessageCenterButtonBar* button_bar_;
-  bool top_down_;
 
   // Data for transition animation between settings view and message list.
   bool settings_visible_;

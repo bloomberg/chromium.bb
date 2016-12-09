@@ -93,7 +93,7 @@ class MessageListViewTest : public views::ViewsTestBase,
   void SetUp() override {
     views::ViewsTestBase::SetUp();
 
-    message_list_view_.reset(new MessageListView(false /* top_down */));
+    message_list_view_.reset(new MessageListView());
     message_list_view_->AddObserver(this);
     message_list_view_->set_owned_by_client();
 
