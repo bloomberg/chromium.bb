@@ -134,6 +134,8 @@ component("ash") {
     "common/popup_message.h",
     "common/scoped_root_window_for_new_windows.cc",
     "common/scoped_root_window_for_new_windows.h",
+    "common/session/session_controller.cc",
+    "common/session/session_controller.h",
     "common/session/session_state_delegate.cc",
     "common/session/session_state_delegate.h",
     "common/session/session_state_observer.cc",
@@ -1216,6 +1218,7 @@ test("ash_unittests") {
     "aura/pointer_watcher_adapter_unittest.cc",
     "autoclick/autoclick_unittest.cc",
     "common/devtools/ash_devtools_unittest.cc",
+    "common/session/session_controller_unittest.cc",
 
     # TODO: convert to use AshTest http://crbug.com/654489.
     "common/frame/caption_buttons/frame_caption_button_container_view_unittest.cc",
@@ -1376,6 +1379,7 @@ test("ash_unittests") {
     "//ash/common/strings",
     "//ash/common/test:test_support",
     "//ash/public/cpp",
+    "//ash/public/interfaces",
     "//ash/resources",
     "//ash/test:ash_with_aura_test_support",
     "//ash/test:test_support_without_content",

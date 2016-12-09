@@ -16,6 +16,7 @@
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/new_window_controller.h"
 #include "ash/common/palette_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_controller.h"
@@ -254,6 +255,7 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
       locale_notification_controller_(
           base::MakeUnique<LocaleNotificationController>()),
       new_window_controller_(base::MakeUnique<NewWindowController>()),
+      session_controller_(base::MakeUnique<SessionController>()),
       shelf_controller_(base::MakeUnique<ShelfController>()),
       shutdown_controller_(base::MakeUnique<ShutdownController>()),
       system_tray_controller_(base::MakeUnique<SystemTrayController>()),

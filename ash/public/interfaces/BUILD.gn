@@ -11,6 +11,7 @@ mojom("interfaces") {
     "cast_config.mojom",
     "locale.mojom",
     "new_window.mojom",
+    "session_controller.mojom",
     "shelf.mojom",
     "shutdown.mojom",
     "system_tray.mojom",

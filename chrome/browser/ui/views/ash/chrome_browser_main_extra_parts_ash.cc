@@ -26,6 +26,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/volume_controller.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
@@ -47,6 +48,10 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   }
 
 #if defined(OS_CHROMEOS)
+  // TODO(xiyuan): Update after SesssionStateDelegate is deprecated.
+  if (chrome::IsRunningInMash())
+    session_controller_client_ = base::MakeUnique<SessionControllerClient>();
+
   // Must be available at login screen, so initialize before profile.
   system_tray_client_ = base::MakeUnique<SystemTrayClient>();
   new_window_client_ = base::MakeUnique<ChromeNewWindowClient>();
@@ -92,6 +97,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   new_window_client_.reset();
   system_tray_client_.reset();
   cast_config_client_media_router_.reset();
+  session_controller_client_.reset();
 #endif
   chrome::CloseAsh();
 }

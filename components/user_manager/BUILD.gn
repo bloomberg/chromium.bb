@@ -11,6 +11,7 @@ component("user_manager") {
     "user_manager_export.h",
     "user_names.cc",
     "user_names.h",
+    "user_type.h",
   ]
 
   deps = [
@@ -36,7 +37,6 @@ component("user_manager") {
       "user_manager.h",
       "user_manager_base.cc",
       "user_manager_base.h",
-      "user_type.h",
     ]
     deps += [
       "//components/prefs",

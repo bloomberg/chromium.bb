@@ -24,6 +24,7 @@
           "ash::mojom::CastConfig",
           "ash::mojom::LocaleNotificationController",
           "ash::mojom::NewWindowController",
+          "ash::mojom::SessionController",
           "ash::mojom::ShelfController",
           "ash::mojom::ShutdownController",
           "ash::mojom::SystemTray",

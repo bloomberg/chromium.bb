@@ -15,6 +15,7 @@ class ChromeLauncherControllerMus;
 class ChromeNewWindowClient;
 class ImmersiveContextMus;
 class ImmersiveHandlerFactoryMus;
+class SessionControllerClient;
 class SystemTrayClient;
 class VolumeController;
 class VpnListForwarder;
@@ -34,6 +35,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<CastConfigClientMediaRouter> cast_config_client_media_router_;
   std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory_;
   std::unique_ptr<ImmersiveContextMus> immersive_context_;
+  std::unique_ptr<SessionControllerClient> session_controller_client_;
   std::unique_ptr<SystemTrayClient> system_tray_client_;
   std::unique_ptr<ChromeNewWindowClient> new_window_client_;
   std::unique_ptr<VolumeController> volume_controller_;

@@ -18,14 +18,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
-#include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/session_util.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
-#include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
@@ -79,12 +75,7 @@ int SessionStateDelegateChromeos::NumberOfLoggedInUsers() const {
 
 ash::AddUserSessionPolicy
 SessionStateDelegateChromeos::GetAddUserSessionPolicy() const {
-  if (user_manager::UserManager::Get()
-          ->GetUsersAllowedForMultiProfile()
-          .size() == 0) {
-    return ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS;
-  }
-  return SessionStateDelegate::GetAddUserSessionPolicy();
+  return SessionControllerClient::GetAddUserSessionPolicy();
 }
 
 bool SessionStateDelegateChromeos::IsActiveUserSessionStarted() const {
@@ -93,9 +84,7 @@ bool SessionStateDelegateChromeos::IsActiveUserSessionStarted() const {
 }
 
 bool SessionStateDelegateChromeos::CanLockScreen() const {
-  const user_manager::UserList unlock_users =
-      user_manager::UserManager::Get()->GetUnlockUsers();
-  return !unlock_users.empty();
+  return SessionControllerClient::CanLockScreen();
 }
 
 bool SessionStateDelegateChromeos::IsScreenLocked() const {
@@ -104,28 +93,11 @@ bool SessionStateDelegateChromeos::IsScreenLocked() const {
 }
 
 bool SessionStateDelegateChromeos::ShouldLockScreenAutomatically() const {
-  const user_manager::UserList logged_in_users =
-      user_manager::UserManager::Get()->GetLoggedInUsers();
-  for (user_manager::UserList::const_iterator it = logged_in_users.begin();
-       it != logged_in_users.end();
-       ++it) {
-    user_manager::User* user = (*it);
-    Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
-    if (profile &&
-        profile->GetPrefs()->GetBoolean(prefs::kEnableAutoScreenLock)) {
-      return true;
-    }
-  }
-  return false;
+  return SessionControllerClient::ShouldLockScreenAutomatically();
 }
 
 void SessionStateDelegateChromeos::LockScreen() {
-  if (!CanLockScreen())
-    return;
-
-  VLOG(1) << "Requesting screen lock from SessionStateDelegate";
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-      RequestLockScreen();
+  return SessionControllerClient::DoLockScreen();
 }
 
 void SessionStateDelegateChromeos::UnlockScreen() {
@@ -168,58 +140,11 @@ gfx::ImageSkia SessionStateDelegateChromeos::GetAvatarImageForWindow(
 
 void SessionStateDelegateChromeos::SwitchActiveUser(
     const AccountId& account_id) {
-  // Disallow switching to an already active user since that might crash.
-  // Also check that we got a user id and not an email address.
-  DCHECK_EQ(
-      account_id.GetUserEmail(),
-      gaia::CanonicalizeEmail(gaia::SanitizeEmail(account_id.GetUserEmail())));
-  if (account_id ==
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId())
-    return;
-  TryToSwitchUser(account_id);
+  SessionControllerClient::DoSwitchActiveUser(account_id);
 }
 
 void SessionStateDelegateChromeos::CycleActiveUser(CycleUser cycle_user) {
-  // Make sure there is a user to switch to.
-  if (NumberOfLoggedInUsers() <= 1)
-    return;
-
-  const user_manager::UserList& logged_in_users =
-      user_manager::UserManager::Get()->GetLoggedInUsers();
-
-  AccountId account_id =
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
-
-  // Get an iterator positioned at the active user.
-  user_manager::UserList::const_iterator it;
-  for (it = logged_in_users.begin();
-       it != logged_in_users.end(); ++it) {
-    if ((*it)->GetAccountId() == account_id)
-      break;
-  }
-
-  // Active user not found.
-  if (it == logged_in_users.end())
-    return;
-
-  // Get the user's email to select, wrapping to the start/end of the list if
-  // necessary.
-  switch (cycle_user) {
-    case CYCLE_TO_NEXT_USER:
-      if (++it == logged_in_users.end())
-        account_id = (*logged_in_users.begin())->GetAccountId();
-      else
-        account_id = (*it)->GetAccountId();
-      break;
-    case CYCLE_TO_PREVIOUS_USER:
-      if (it == logged_in_users.begin())
-        it = logged_in_users.end();
-      account_id = (*(--it))->GetAccountId();
-      break;
-  }
-
-  // Switch using the transformed |account_id|.
-  TryToSwitchUser(account_id);
+  SessionControllerClient::DoCycleActiveUser(cycle_user == CYCLE_TO_NEXT_USER);
 }
 
 bool SessionStateDelegateChromeos::IsMultiProfileAllowedByPrimaryUserPolicy()
@@ -278,13 +203,4 @@ void SessionStateDelegateChromeos::SetSessionState(
 void SessionStateDelegateChromeos::NotifySessionStateChanged() {
   for (ash::SessionStateObserver& observer : session_state_observer_list_)
     observer.SessionStateChanged(session_state_);
-}
-
-void DoSwitchUser(const AccountId& account_id) {
-  user_manager::UserManager::Get()->SwitchActiveUser(account_id);
-}
-
-void SessionStateDelegateChromeos::TryToSwitchUser(
-    const AccountId& account_id) {
-  TrySwitchingActiveUser(base::Bind(&DoSwitchUser, account_id));
 }

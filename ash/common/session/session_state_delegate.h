@@ -25,6 +25,8 @@ class SessionStateObserver;
 class WmWindow;
 
 // Delegate for checking and modifying the session state.
+// DEPRECATED in favor of SessionController/SessionControllerClient for mash.
+// TODO(xiyuan): Remove this when SessionController etc are ready.
 class ASH_EXPORT SessionStateDelegate {
  public:
   // Defines the cycle direction for |CycleActiveUser|.
