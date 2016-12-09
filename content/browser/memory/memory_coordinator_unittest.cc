@@ -26,7 +26,7 @@ void RunUntilIdle() {
 class MockChildMemoryCoordinator : public mojom::ChildMemoryCoordinator {
  public:
   MockChildMemoryCoordinator()
-      : state_(mojom::MemoryState::UNKNOWN),
+      : state_(mojom::MemoryState::NORMAL),
         on_state_change_calls_(0) {}
 
   ~MockChildMemoryCoordinator() override {}
@@ -136,6 +136,35 @@ TEST_F(MemoryCoordinatorTest, SetMemoryStateDelivered) {
   // Child processes are considered as visible (foreground) by default,
   // and visible ones won't be suspended but throttled.
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc2->state());
+}
+
+TEST_F(MemoryCoordinatorTest, SetChildMemoryState) {
+  TestMemoryCoordinator mc;
+  auto cmc = mc.CreateChildMemoryCoordinator(1);
+  auto iter = mc.children().find(1);
+  ASSERT_TRUE(iter != mc.children().end());
+
+  // Foreground
+  iter->second.is_visible = true;
+  EXPECT_TRUE(mc.SetChildMemoryState(1, mojom::MemoryState::NORMAL));
+  EXPECT_EQ(mojom::MemoryState::NORMAL, cmc->state());
+  EXPECT_TRUE(mc.SetChildMemoryState(1, mojom::MemoryState::THROTTLED));
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
+  EXPECT_TRUE(mc.SetChildMemoryState(1, mojom::MemoryState::SUSPENDED));
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
+
+  // Background
+  iter->second.is_visible = false;
+  EXPECT_TRUE(mc.SetChildMemoryState(1, mojom::MemoryState::NORMAL));
+#if defined(OS_ANDROID)
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
+#else
+  EXPECT_EQ(mojom::MemoryState::NORMAL, cmc->state());
+#endif
+  EXPECT_TRUE(mc.SetChildMemoryState(1, mojom::MemoryState::THROTTLED));
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
+  EXPECT_TRUE(mc.SetChildMemoryState(1, mojom::MemoryState::SUSPENDED));
+  EXPECT_EQ(mojom::MemoryState::SUSPENDED, cmc->state());
 }
 
 }  // namespace content

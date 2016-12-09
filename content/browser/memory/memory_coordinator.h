@@ -100,7 +100,7 @@ class CONTENT_EXPORT MemoryCoordinator {
 
   ChildInfoMap& children() { return children_; }
 
-private:
+ private:
 #if !defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest, HandleAdded);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest, CanSuspendRenderer);
@@ -108,6 +108,12 @@ private:
 #endif
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest,
                            ChildRemovedOnConnectionError);
+  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest, SetChildMemoryState);
+
+  // Called by SetChildMemoryState() to determine a child memory state based on
+  // the current status of the child process.
+  mojom::MemoryState OverrideGlobalState(mojom::MemoryState memroy_state,
+                                         const ChildInfo& child);
 
   void SetDelegateForTesting(
       std::unique_ptr<MemoryCoordinatorDelegate> delegate);

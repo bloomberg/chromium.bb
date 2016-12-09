@@ -88,10 +88,7 @@ bool MemoryCoordinator::SetChildMemoryState(int render_process_id,
   if (!iter->second.handle->child().is_bound())
     return false;
 
-  // We don't suspend foreground renderers. Throttle them instead.
-  if (memory_state == mojom::MemoryState::SUSPENDED &&
-      iter->second.is_visible)
-    memory_state = mojom::MemoryState::THROTTLED;
+  memory_state = OverrideGlobalState(memory_state, iter->second);
 
   // A nop doesn't need to be sent, but is considered successful.
   if (iter->second.memory_state == memory_state)
@@ -171,6 +168,23 @@ bool MemoryCoordinator::CanSuspendRenderer(int render_process_id) {
   if (!render_process_host || !render_process_host->IsProcessBackgrounded())
     return false;
   return delegate_->CanSuspendBackgroundedRenderer(render_process_id);
+}
+
+mojom::MemoryState MemoryCoordinator::OverrideGlobalState(
+    mojom::MemoryState memory_state,
+    const ChildInfo& child) {
+  // We don't suspend foreground renderers. Throttle them instead.
+  if (child.is_visible && memory_state == mojom::MemoryState::SUSPENDED)
+    return mojom::MemoryState::THROTTLED;
+#if defined(OS_ANDROID)
+  // On Android, we throttle background renderers immediately.
+  // TODO(bashi): Create a specialized class of MemoryCoordinator for Android
+  // and move this ifdef to the class.
+  if (!child.is_visible && memory_state == mojom::MemoryState::NORMAL)
+    return mojom::MemoryState::THROTTLED;
+  // TODO(bashi): Suspend background renderers after a certain period of time.
+#endif  // defined(OS_ANDROID)
+  return memory_state;
 }
 
 void MemoryCoordinator::SetDelegateForTesting(
