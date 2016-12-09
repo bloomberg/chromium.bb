@@ -39,8 +39,7 @@ class TraceWrapperMember : public Member<T> {
    */
   TraceWrapperMember(const TraceWrapperMember& other) { *this = other; }
 
-  template <typename U>
-  TraceWrapperMember& operator=(const TraceWrapperMember<U>& other) {
+  TraceWrapperMember& operator=(const TraceWrapperMember& other) {
     DCHECK(other.m_parent);
     m_parent = other.m_parent;
     Member<T>::operator=(other);
@@ -48,16 +47,14 @@ class TraceWrapperMember : public Member<T> {
     return *this;
   }
 
-  template <typename U>
-  TraceWrapperMember& operator=(const Member<U>& other) {
+  TraceWrapperMember& operator=(const Member<T>& other) {
     DCHECK(!traceWrapperMemberIsNotInitialized());
     Member<T>::operator=(other);
     ScriptWrappableVisitor::writeBarrier(m_parent, other);
     return *this;
   }
 
-  template <typename U>
-  TraceWrapperMember& operator=(U* other) {
+  TraceWrapperMember& operator=(T* other) {
     DCHECK(!traceWrapperMemberIsNotInitialized());
     Member<T>::operator=(other);
     ScriptWrappableVisitor::writeBarrier(m_parent, other);
@@ -121,7 +118,7 @@ void swap(HeapVector<TraceWrapperMember<T>>& a,
   HeapVector<TraceWrapperMember<T>> temp;
   temp.reserveCapacity(a.size());
   for (auto item : a) {
-    temp.push_back(TraceWrapperMember<T>(nullptr, item.get()));
+    temp.push_back(TraceWrapperMember<T>(item.parent(), item.get()));
   }
   a.clear();
   a.reserveCapacity(b.size());
