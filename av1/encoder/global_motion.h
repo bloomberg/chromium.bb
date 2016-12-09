@@ -18,6 +18,34 @@
 extern "C" {
 #endif
 
+const double gm_advantage_thresh[TRANS_TYPES] = {
+  1.00,  // Identity (not used)
+  0.85,  // Translation
+  0.75,  // Rot zoom
+  0.65,  // Affine
+  0.50,  // Homography
+};
+
+void convert_to_params(const double *params, int32_t *model);
+
+void convert_model_to_params(const double *params, WarpedMotionParams *model);
+
+// Adds some offset to a global motion parameter and handles
+// all of the necessary precision shifts, clamping, and
+// zero-centering.
+int32_t add_param_offset(int param_index, int32_t param_value, int32_t offset);
+
+void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype);
+
+double refine_integerized_param(WarpedMotionParams *wm,
+                                TransformationType wmtype,
+#if CONFIG_AOM_HIGHBITDEPTH
+                                int use_hbd, int bd,
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+                                uint8_t *ref, int r_width, int r_height,
+                                int r_stride, uint8_t *dst, int d_width,
+                                int d_height, int d_stride, int n_refinements);
+
 /*
   Computes global motion parameters between two frames. The array
   "params" should be length 9, where the first 2 slots are translation
