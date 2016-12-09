@@ -596,6 +596,7 @@ const struct dmabuf_supported_format {
     {DRM_FORMAT_ABGR8888, gfx::BufferFormat::RGBA_8888},
     {DRM_FORMAT_XRGB8888, gfx::BufferFormat::BGRX_8888},
     {DRM_FORMAT_ARGB8888, gfx::BufferFormat::BGRA_8888},
+    {DRM_FORMAT_NV12, gfx::BufferFormat::YUV_420_BIPLANAR},
     {DRM_FORMAT_YVU420, gfx::BufferFormat::YVU_420}};
 
 struct LinuxBufferParams {
@@ -696,8 +697,7 @@ void linux_buffer_params_create(wl_client* client,
     }
     LinuxBufferParams::Plane& plane = plane_it->second;
     planes.emplace_back(plane.stride, plane.offset, 0, 0);
-    if (plane.fd.is_valid())
-      fds.push_back(std::move(plane.fd));
+    fds.push_back(std::move(plane.fd));
   }
 
   std::unique_ptr<Buffer> buffer =
