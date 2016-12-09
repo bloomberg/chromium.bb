@@ -199,6 +199,10 @@ found in the LICENSE file.
             if (vrDisplay.capabilities.canPresent)
               vrPresentButton = VRSamplesUtil.addButton("Enter VR", "E", "media/icons/cardboard64.png", onVRRequestPresent);
 
+            // For the benefit of automated testing. Safe to ignore.
+            if (vrDisplay.capabilities.canPresent && WGLUUrl.getBool('canvasClickPresents', false))
+              webglCanvas.addEventListener("click", onVRRequestPresent, false);
+
             window.addEventListener('vrdisplaypresentchange', onVRPresentChange, false);
             window.addEventListener('vrdisplayactivate', onVRRequestPresent, false);
             window.addEventListener('vrdisplaydeactivate', onVRExitPresent, false);
