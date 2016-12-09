@@ -1783,8 +1783,8 @@ crbug.com/662264 imported/wpt/html/browsers/sandboxing/sandbox-disallow-same-ori
 
 crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseline ]
 
-crbug.com/652187 [ Win7 Debug ] http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
-crbug.com/652187 [ Win7 Debug ] virtual/mojo-loading/http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
+crbug.com/652187 [ Debug ] http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
+crbug.com/652187 [ Debug ] virtual/mojo-loading/http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
 
 crbug.com/655458 imported/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/baseurl/alpha/worker.html [ Failure ]
