@@ -96,7 +96,8 @@ class ResourcePrefetchPredictor
     bool always_revalidate;
 
     // Initializes a |URLRequestSummary| from a |URLRequest| response.
-    // Returns true for success.
+    // Returns true for success. Note: NavigationID is NOT initialized
+    // by this function.
     static bool SummarizeResponse(const net::URLRequest& request,
                                   URLRequestSummary* summary);
   };

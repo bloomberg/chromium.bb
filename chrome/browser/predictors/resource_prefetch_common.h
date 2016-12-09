@@ -38,11 +38,11 @@ enum class PrefetchOrigin { NAVIGATION, EXTERNAL };
 // Represents a single navigation for a render frame.
 struct NavigationID {
   NavigationID();
-  NavigationID(int render_process_id,
-               int render_frame_id,
-               const GURL& main_frame_url);
-  NavigationID(const NavigationID& other);
   explicit NavigationID(content::WebContents* web_contents);
+  NavigationID(content::WebContents* web_contents,
+               const GURL& main_frame_url,
+               const base::TimeTicks& creation_time);
+  NavigationID(const NavigationID& other);
   bool operator<(const NavigationID& rhs) const;
   bool operator==(const NavigationID& rhs) const;
 

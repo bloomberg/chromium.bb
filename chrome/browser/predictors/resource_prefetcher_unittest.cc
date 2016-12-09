@@ -7,11 +7,13 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
 #include "chrome/browser/predictors/resource_prefetcher_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -164,7 +166,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
                             GURL("http://yahoo.com/resource4.png"),
                             GURL("http://yahoo.com/resource5.png")};
 
-  NavigationID navigation_id(1, 2, main_frame_url);
+  NavigationID navigation_id = CreateNavigationID(1, 2, main_frame_url.spec());
 
   prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_, config_,
                                                main_frame_url, urls));
@@ -236,7 +238,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
                             GURL("http://yahoo.com/resource3.png"),
                             GURL("http://m.google.com/resource1.jpg")};
 
-  NavigationID navigation_id(1, 2, main_frame_url);
+  NavigationID navigation_id = CreateNavigationID(1, 2, main_frame_url.spec());
 
   prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_, config_,
                                                main_frame_url, urls));

@@ -510,7 +510,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 
   if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestStarted(
-        request, resource_type, info->GetChildID(), info->GetRenderFrameID());
+        request, resource_type, info->GetWebContentsGetterForRequest());
   }
 }
 
@@ -776,7 +776,8 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
 #endif
 
   if (io_data->resource_prefetch_predictor_observer())
-    io_data->resource_prefetch_predictor_observer()->OnResponseStarted(request);
+    io_data->resource_prefetch_predictor_observer()->OnResponseStarted(
+        request, info->GetWebContentsGetterForRequest());
 
   mod_pagespeed::RecordMetrics(info->GetResourceType(), request->url(),
                                request->response_headers());
@@ -802,7 +803,7 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
 
   if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(
-        redirect_url, request);
+        request, redirect_url, info->GetWebContentsGetterForRequest());
   }
 
   if (io_data->policy_header_helper())

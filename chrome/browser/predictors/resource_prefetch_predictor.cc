@@ -325,20 +325,14 @@ ResourcePrefetchPredictor::URLRequestSummary::~URLRequestSummary() {
 bool ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
     const net::URLRequest& request,
     URLRequestSummary* summary) {
-  const content::ResourceRequestInfo* info =
+  const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
-  if (!info)
+  if (!request_info)
     return false;
 
-  int render_process_id, render_frame_id;
-  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id))
-    return false;
-
-  summary->navigation_id = NavigationID(render_process_id, render_frame_id,
-                                        request.first_party_for_cookies());
-  summary->navigation_id.creation_time = request.creation_time();
   summary->resource_url = request.original_url();
-  content::ResourceType resource_type_from_request = info->GetResourceType();
+  content::ResourceType resource_type_from_request =
+      request_info->GetResourceType();
   summary->priority = request.priority();
   request.GetMimeType(&summary->mime_type);
   summary->was_cached = request.was_cached();

@@ -81,13 +81,6 @@ NavigationID::NavigationID()
       render_frame_id(-1) {
 }
 
-NavigationID::NavigationID(int render_process_id,
-                           int render_frame_id,
-                           const GURL& main_frame_url)
-    : render_process_id(render_process_id),
-      render_frame_id(render_frame_id),
-      main_frame_url(main_frame_url) {}
-
 NavigationID::NavigationID(const NavigationID& other)
     : render_process_id(other.render_process_id),
       render_frame_id(other.render_frame_id),
@@ -100,6 +93,14 @@ NavigationID::NavigationID(content::WebContents* web_contents)
       render_frame_id(web_contents->GetMainFrame()->GetRoutingID()),
       main_frame_url(web_contents->GetURL()) {
 }
+
+NavigationID::NavigationID(content::WebContents* web_contents,
+                           const GURL& main_frame_url,
+                           const base::TimeTicks& creation_time)
+    : render_process_id(web_contents->GetRenderProcessHost()->GetID()),
+      render_frame_id(web_contents->GetMainFrame()->GetRoutingID()),
+      main_frame_url(main_frame_url),
+      creation_time(creation_time) {}
 
 bool NavigationID::is_valid() const {
   return render_process_id != -1 && render_frame_id != -1 &&

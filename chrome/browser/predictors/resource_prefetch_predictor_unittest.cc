@@ -1324,14 +1324,16 @@ TEST_F(ResourcePrefetchPredictorTest, SummarizeResponse) {
       url, net::MEDIUM, content::RESOURCE_TYPE_IMAGE, 1, 1, true);
   URLRequestSummary summary;
   EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request, &summary));
-  EXPECT_EQ(1, summary.navigation_id.render_process_id);
-  EXPECT_EQ(1, summary.navigation_id.render_frame_id);
-  EXPECT_EQ(url, summary.navigation_id.main_frame_url);
   EXPECT_EQ(url, summary.resource_url);
   EXPECT_EQ(content::RESOURCE_TYPE_IMAGE, summary.resource_type);
   EXPECT_TRUE(summary.was_cached);
   EXPECT_FALSE(summary.has_validators);
   EXPECT_FALSE(summary.always_revalidate);
+
+  // Navigation_id elements should be unset by default.
+  EXPECT_EQ(-1, summary.navigation_id.render_process_id);
+  EXPECT_EQ(-1, summary.navigation_id.render_frame_id);
+  EXPECT_EQ(GURL(), summary.navigation_id.main_frame_url);
 }
 
 TEST_F(ResourcePrefetchPredictorTest, SummarizeResponseContentType) {

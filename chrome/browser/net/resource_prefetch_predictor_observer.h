@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_NET_RESOURCE_PREFETCH_PREDICTOR_OBSERVER_H_
 #define CHROME_BROWSER_NET_RESOURCE_PREFETCH_PREDICTOR_OBSERVER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 
 namespace net {
@@ -22,8 +25,9 @@ namespace chrome_browser_net {
 // the ResourcePrefetchPredictor about the ones it is interested in.
 //  - Has an instance per profile, and is owned by the corresponding
 //    ProfileIOData.
-//  - Needs to be constructed on UI thread. Rest of the functions can only be
-//    called on the IO thread. Can be destroyed on UI or IO thread.
+//  - Needs to be constructed on UI thread. Can be destroyed on UI or IO thread.
+//    As for member functions, public members are meant to be called on the IO
+//    thread and private members from the UI thread.
 class ResourcePrefetchPredictorObserver {
  public:
   explicit ResourcePrefetchPredictorObserver(
@@ -33,12 +37,40 @@ class ResourcePrefetchPredictorObserver {
   // Parts of the ResourceDispatcherHostDelegate that we want to observe.
   void OnRequestStarted(net::URLRequest* request,
                         content::ResourceType resource_type,
-                        int child_id,
-                        int frame_id);
-  void OnRequestRedirected(const GURL& redirect_url, net::URLRequest* request);
-  void OnResponseStarted(net::URLRequest* request);
+                        const content::ResourceRequestInfo::WebContentsGetter&
+                            web_contents_getter);
+  void OnRequestRedirected(
+      net::URLRequest* request,
+      const GURL& redirect_url,
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter);
+  void OnResponseStarted(net::URLRequest* request,
+                         const content::ResourceRequestInfo::WebContentsGetter&
+                             web_contents_getter);
 
  private:
+  void OnRequestStartedOnUIThread(
+      std::unique_ptr<predictors::ResourcePrefetchPredictor::URLRequestSummary>
+          summary,
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter,
+      const GURL& main_frame_url,
+      const base::TimeTicks& creation_time) const;
+  void OnRequestRedirectedOnUIThread(
+      std::unique_ptr<predictors::ResourcePrefetchPredictor::URLRequestSummary>
+          summary,
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter,
+      const GURL& main_frame_url,
+      const base::TimeTicks& creation_time) const;
+  void OnResponseStartedOnUIThread(
+      std::unique_ptr<predictors::ResourcePrefetchPredictor::URLRequestSummary>
+          summary,
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter,
+      const GURL& main_frame_url,
+      const base::TimeTicks& creation_time) const;
+
   // Owned by profile.
   base::WeakPtr<predictors::ResourcePrefetchPredictor> predictor_;
 
