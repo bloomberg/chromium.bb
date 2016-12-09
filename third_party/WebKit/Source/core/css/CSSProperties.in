@@ -227,7 +227,7 @@ cy interpolable, svg, converter=convertLength
 d interpolable, svg, converter=convertPathOrNone
 display
 dominant-baseline inherited, svg
-empty-cells inherited, type_name=EEmptyCells, keyword_only, keywords=[show|hide], initial_keyword=show
+empty-cells inherited, independent, type_name=EEmptyCells, keyword_only, keywords=[show|hide], initial_keyword=show
 fill interpolable, inherited, svg, setter=setFillPaint, custom_all
 fill-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
 fill-rule inherited, svg, type_name=WindRule
