@@ -290,7 +290,7 @@ PaymentRequest::PaymentRequest(const PaymentRequest& other) = default;
 PaymentRequest::~PaymentRequest() = default;
 
 bool PaymentRequest::operator==(const PaymentRequest& other) const {
-  return this->payment_address == other.payment_address &&
+  return this->shipping_address == other.shipping_address &&
          this->shipping_option == other.shipping_option &&
          this->method_data == other.method_data &&
          this->details == other.details && this->options == other.options;

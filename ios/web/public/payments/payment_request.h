@@ -278,7 +278,7 @@ class PaymentRequest {
   bool FromDictionaryValue(const base::DictionaryValue& value);
 
   // Properties set in order to communicate user choices back to the page.
-  PaymentAddress payment_address;
+  PaymentAddress shipping_address;
   base::string16 shipping_option;
 
   // Properties set via the constructor for communicating from the page to the

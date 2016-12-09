@@ -601,13 +601,13 @@ TEST(PaymentRequestTest, PaymentRequestEquality) {
 
   PaymentAddress address1;
   address1.recipient = base::ASCIIToUTF16("Jessica Jones");
-  request1.payment_address = address1;
+  request1.shipping_address = address1;
   EXPECT_NE(request1, request2);
   PaymentAddress address2;
   address2.recipient = base::ASCIIToUTF16("Luke Cage");
-  request2.payment_address = address2;
+  request2.shipping_address = address2;
   EXPECT_NE(request1, request2);
-  request2.payment_address = address1;
+  request2.shipping_address = address1;
   EXPECT_EQ(request1, request2);
 
   request1.shipping_option = base::ASCIIToUTF16("2-Day");

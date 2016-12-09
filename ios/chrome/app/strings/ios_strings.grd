@@ -945,6 +945,18 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_PAYMENT_REQUEST_PAYMENT_ITEMS_TITLE" desc="Title of the view that displays the payment items in a payment request (for example subtotal, tax, shipping cost) to the user [iOS only].">
         Order Summary
       </message>
+      <message name="IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_HEADER" desc="Label of the header of the section which displays the currently selected shipping address and the available shipping options for satisfying a payment request [iOS only].">
+        Shipping
+      </message>
+      <message name="IDS_IOS_PAYMENT_REQUEST_ADD_SHIPPING_ADDRESS_BUTTON" desc="Label of the button to add a shipping address [iOS only].">
+        Add
+      </message>
+      <message name="IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_TITLE" desc="Title of the view that allows the user to select the shipping address for satisfying a payment request [iOS only].">
+        Shipping Address
+      </message>
+      <message name="IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_ADD_BUTTON" desc="Label of the button to add a new shipping address [iOS only].">
+        Add Address...
+      </message>
       <message name="IDS_IOS_PAYMENT_REQUEST_PAYMENT_METHOD_HEADER" desc="Label of the header of the section which displays the options (available credit cards or payment apps) for satisfying a payment request [iOS only].">
         Payment
       </message>
