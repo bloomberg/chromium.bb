@@ -268,11 +268,6 @@ static int av1_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
 
     if (x + step < w) return 1;
 
-#if CONFIG_CB4X4
-    // TODO(jingning): This condition is overly simplified. Need some fixes.
-    return 0;
-#endif
-
     mi_row = (mi_row & MAX_MIB_MASK) >> hl;
     mi_col = (mi_col & MAX_MIB_MASK) >> wl;
 
@@ -309,11 +304,6 @@ static int av1_has_bottom(BLOCK_SIZE bsize, int mi_row, int mi_col,
     if (ss_y == 0 && height < 2 && y == 0) return 1;
 
     if (y + step < h) return 1;
-
-#if CONFIG_CB4X4
-    // TODO(jingning): This condition is overly simplified. Need some fixes.
-    return 0;
-#endif
 
     mi_row = (mi_row & MAX_MIB_MASK) >> hl;
     mi_col = (mi_col & MAX_MIB_MASK) >> wl;
