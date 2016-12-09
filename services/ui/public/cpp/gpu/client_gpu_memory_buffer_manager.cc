@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/public/cpp/gpu/mojo_gpu_memory_buffer_manager.h"
+#include "services/ui/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -38,37 +38,37 @@ void NotifyDestructionOnCorrectThread(
 
 }  // namespace
 
-MojoGpuMemoryBufferManager::MojoGpuMemoryBufferManager(
+ClientGpuMemoryBufferManager::ClientGpuMemoryBufferManager(
     mojom::GpuServicePtr gpu_service)
     : thread_("GpuMemoryThread"), weak_ptr_factory_(this) {
   CHECK(thread_.Start());
   // The thread is owned by this object. Which means the task will not run if
   // the object has been destroyed. So Unretained() is safe.
   thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MojoGpuMemoryBufferManager::InitThread,
+      FROM_HERE, base::Bind(&ClientGpuMemoryBufferManager::InitThread,
                             base::Unretained(this),
                             base::Passed(gpu_service.PassInterface())));
 }
 
-MojoGpuMemoryBufferManager::~MojoGpuMemoryBufferManager() {
+ClientGpuMemoryBufferManager::~ClientGpuMemoryBufferManager() {
   thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MojoGpuMemoryBufferManager::TearDownThread,
+      FROM_HERE, base::Bind(&ClientGpuMemoryBufferManager::TearDownThread,
                             base::Unretained(this)));
   thread_.Stop();
 }
 
-void MojoGpuMemoryBufferManager::InitThread(
+void ClientGpuMemoryBufferManager::InitThread(
     mojo::InterfacePtrInfo<mojom::GpuService> gpu_service_info) {
   gpu_service_.Bind(std::move(gpu_service_info));
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
 
-void MojoGpuMemoryBufferManager::TearDownThread() {
+void ClientGpuMemoryBufferManager::TearDownThread() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   gpu_service_.reset();
 }
 
-void MojoGpuMemoryBufferManager::AllocateGpuMemoryBufferOnThread(
+void ClientGpuMemoryBufferManager::AllocateGpuMemoryBufferOnThread(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
@@ -83,13 +83,13 @@ void MojoGpuMemoryBufferManager::AllocateGpuMemoryBufferOnThread(
       base::Bind(&OnGpuMemoryBufferAllocated, handle, wait));
 }
 
-void MojoGpuMemoryBufferManager::DeletedGpuMemoryBuffer(
+void ClientGpuMemoryBufferManager::DeletedGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gpu::SyncToken& sync_token) {
   if (!thread_.task_runner()->BelongsToCurrentThread()) {
     thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&MojoGpuMemoryBufferManager::DeletedGpuMemoryBuffer,
+        base::Bind(&ClientGpuMemoryBufferManager::DeletedGpuMemoryBuffer,
                    base::Unretained(this), id, sync_token));
     return;
   }
@@ -97,7 +97,7 @@ void MojoGpuMemoryBufferManager::DeletedGpuMemoryBuffer(
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-MojoGpuMemoryBufferManager::CreateGpuMemoryBuffer(
+ClientGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
@@ -111,7 +111,7 @@ MojoGpuMemoryBufferManager::CreateGpuMemoryBuffer(
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&MojoGpuMemoryBufferManager::AllocateGpuMemoryBufferOnThread,
+      base::Bind(&ClientGpuMemoryBufferManager::AllocateGpuMemoryBufferOnThread,
                  base::Unretained(this), size, format, usage, &gmb_handle,
                  &wait));
   wait.Wait();
@@ -119,8 +119,8 @@ MojoGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     return nullptr;
 
   DestructionCallback callback =
-      base::Bind(&MojoGpuMemoryBufferManager::DeletedGpuMemoryBuffer, weak_ptr_,
-                 gmb_handle.id);
+      base::Bind(&ClientGpuMemoryBufferManager::DeletedGpuMemoryBuffer,
+                 weak_ptr_, gmb_handle.id);
   std::unique_ptr<gpu::GpuMemoryBufferImpl> buffer(
       gpu::GpuMemoryBufferImpl::CreateFromHandle(
           gmb_handle, size, format, usage,
@@ -134,7 +134,7 @@ MojoGpuMemoryBufferManager::CreateGpuMemoryBuffer(
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-MojoGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
+ClientGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format) {
@@ -142,7 +142,7 @@ MojoGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   return nullptr;
 }
 
-void MojoGpuMemoryBufferManager::SetDestructionSyncToken(
+void ClientGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {
   static_cast<gpu::GpuMemoryBufferImpl*>(buffer)->set_destruction_sync_token(

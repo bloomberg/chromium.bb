@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connection.h"
-#include "services/ui/common/mus_gpu_memory_buffer_manager.h"
+#include "services/ui/common/server_gpu_memory_buffer_manager.h"
 #include "services/ui/ws/gpu_service_proxy_delegate.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -32,7 +32,7 @@ class GpuServiceImpl : public mojom::GpuService {
  public:
   GpuServiceImpl(int client_id,
                  gpu::GPUInfo* gpu_info,
-                 MusGpuMemoryBufferManager* gpu_memory_buffer_manager,
+                 ServerGpuMemoryBufferManager* gpu_memory_buffer_manager,
                  mojom::GpuServiceInternal* gpu_service_internal)
       : client_id_(client_id),
         gpu_info_(gpu_info),
@@ -87,7 +87,7 @@ class GpuServiceImpl : public mojom::GpuService {
   // The objects these pointers refer to are owned by the GpuServiceProxy
   // object.
   const gpu::GPUInfo* gpu_info_;
-  MusGpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  ServerGpuMemoryBufferManager* gpu_memory_buffer_manager_;
   mojom::GpuServiceInternal* gpu_service_internal_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceImpl);
@@ -106,7 +106,7 @@ GpuServiceProxy::GpuServiceProxy(GpuServiceProxyDelegate* delegate)
   //   connector->ConnectToInterface("gpu", &gpu_main_);
   gpu_main_->CreateGpuService(GetProxy(&gpu_service_),
                               gpu_host_binding_.CreateInterfacePtrAndBind());
-  gpu_memory_buffer_manager_ = base::MakeUnique<MusGpuMemoryBufferManager>(
+  gpu_memory_buffer_manager_ = base::MakeUnique<ServerGpuMemoryBufferManager>(
       gpu_service_.get(), next_client_id_++);
 }
 

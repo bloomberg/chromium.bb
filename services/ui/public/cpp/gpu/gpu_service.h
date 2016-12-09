@@ -14,7 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ui/public/cpp/gpu/mojo_gpu_memory_buffer_manager.h"
+#include "services/ui/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
 namespace service_manager {
@@ -68,7 +68,7 @@ class GpuService : public gpu::GpuChannelHostFactory,
   service_manager::Connector* connector_;
   base::WaitableEvent shutdown_event_;
   std::unique_ptr<base::Thread> io_thread_;
-  std::unique_ptr<MojoGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<ClientGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   ui::mojom::GpuServicePtr gpu_service_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;

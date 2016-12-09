@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/cpp/gpu/mojo_gpu_memory_buffer_manager.h"
+#include "services/ui/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
@@ -26,8 +26,8 @@ GpuService::GpuService(service_manager::Connector* connector,
   DCHECK(connector_);
   mojom::GpuServicePtr gpu_service_ptr;
   connector_->ConnectToInterface(ui::mojom::kServiceName, &gpu_service_ptr);
-  gpu_memory_buffer_manager_ =
-      base::MakeUnique<MojoGpuMemoryBufferManager>(std::move(gpu_service_ptr));
+  gpu_memory_buffer_manager_ = base::MakeUnique<ClientGpuMemoryBufferManager>(
+      std::move(gpu_service_ptr));
   if (!io_task_runner_) {
     io_thread_.reset(new base::Thread("GPUIOThread"));
     base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);

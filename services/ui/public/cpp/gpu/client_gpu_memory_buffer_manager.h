@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_PUBLIC_CPP_GPU_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
-#define SERVICES_UI_PUBLIC_CPP_GPU_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_GPU_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
+#define SERVICES_UI_PUBLIC_CPP_GPU_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
 #include <vector>
@@ -25,10 +25,10 @@ namespace mojom {
 class GpuService;
 }
 
-class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
+class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
-  explicit MojoGpuMemoryBufferManager(mojom::GpuServicePtr gpu_service);
-  ~MojoGpuMemoryBufferManager() override;
+  explicit ClientGpuMemoryBufferManager(mojom::GpuServicePtr gpu_service);
+  ~ClientGpuMemoryBufferManager() override;
 
  private:
   void InitThread(mojo::InterfacePtrInfo<mojom::GpuService> gpu_service_info);
@@ -57,12 +57,12 @@ class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   // TODO(sad): Explore the option of doing this from an existing thread.
   base::Thread thread_;
   mojom::GpuServicePtr gpu_service_;
-  base::WeakPtr<MojoGpuMemoryBufferManager> weak_ptr_;
-  base::WeakPtrFactory<MojoGpuMemoryBufferManager> weak_ptr_factory_;
+  base::WeakPtr<ClientGpuMemoryBufferManager> weak_ptr_;
+  base::WeakPtrFactory<ClientGpuMemoryBufferManager> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoGpuMemoryBufferManager);
+  DISALLOW_COPY_AND_ASSIGN(ClientGpuMemoryBufferManager);
 };
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_PUBLIC_CPP_GPU_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_GPU_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_

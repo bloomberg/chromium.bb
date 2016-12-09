@@ -25,9 +25,9 @@ source_set("internal") {
   ]
 
   sources = [
+    "client_gpu_memory_buffer_manager.cc",
+    "client_gpu_memory_buffer_manager.h",
     "gpu_service.cc",
-    "mojo_gpu_memory_buffer_manager.cc",
-    "mojo_gpu_memory_buffer_manager.h",
   ]
 
   deps = [

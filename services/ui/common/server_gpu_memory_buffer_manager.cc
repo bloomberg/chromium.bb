@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/common/mus_gpu_memory_buffer_manager.h"
+#include "services/ui/common/server_gpu_memory_buffer_manager.h"
 
 #include "base/logging.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
@@ -12,7 +12,7 @@
 
 namespace ui {
 
-MusGpuMemoryBufferManager::MusGpuMemoryBufferManager(
+ServerGpuMemoryBufferManager::ServerGpuMemoryBufferManager(
     mojom::GpuServiceInternal* gpu_service,
     int client_id)
     : gpu_service_(gpu_service),
@@ -20,10 +20,10 @@ MusGpuMemoryBufferManager::MusGpuMemoryBufferManager(
       native_configurations_(gpu::GetNativeGpuMemoryBufferConfigurations()),
       weak_factory_(this) {}
 
-MusGpuMemoryBufferManager::~MusGpuMemoryBufferManager() {}
+ServerGpuMemoryBufferManager::~ServerGpuMemoryBufferManager() {}
 
 gfx::GpuMemoryBufferHandle
-MusGpuMemoryBufferManager::CreateGpuMemoryBufferHandle(
+ServerGpuMemoryBufferManager::CreateGpuMemoryBufferHandle(
     gfx::GpuMemoryBufferId id,
     int client_id,
     const gfx::Size& size,
@@ -51,7 +51,7 @@ MusGpuMemoryBufferManager::CreateGpuMemoryBufferHandle(
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-MusGpuMemoryBufferManager::CreateGpuMemoryBuffer(
+ServerGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
@@ -63,12 +63,12 @@ MusGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     return nullptr;
   return gpu::GpuMemoryBufferImpl::CreateFromHandle(
       handle, size, format, usage,
-      base::Bind(&MusGpuMemoryBufferManager::DestroyGpuMemoryBuffer,
+      base::Bind(&ServerGpuMemoryBufferManager::DestroyGpuMemoryBuffer,
                  weak_factory_.GetWeakPtr(), id, client_id_));
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-MusGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
+ServerGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format) {
@@ -76,7 +76,7 @@ MusGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   return nullptr;
 }
 
-void MusGpuMemoryBufferManager::SetDestructionSyncToken(
+void ServerGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {
   DCHECK(CalledOnValidThread());
@@ -84,7 +84,7 @@ void MusGpuMemoryBufferManager::SetDestructionSyncToken(
       sync_token);
 }
 
-void MusGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
+void ServerGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id,
     const gpu::SyncToken& sync_token) {
@@ -93,7 +93,7 @@ void MusGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
     gpu_service_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
-void MusGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
+void ServerGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
     int client_id) {
   DCHECK(CalledOnValidThread());
   for (gfx::GpuMemoryBufferId id : native_buffers_[client_id])

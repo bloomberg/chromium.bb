@@ -10,7 +10,7 @@
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
-#include "services/ui/common/mus_gpu_memory_buffer_manager.h"
+#include "services/ui/common/server_gpu_memory_buffer_manager.h"
 #include "services/ui/gpu/gpu_service_internal.h"
 
 namespace {
@@ -202,7 +202,7 @@ void GpuMain::CreateDisplayCompositorOnCompositorThread(
   gpu_internal_.Bind(std::move(gpu_service_info));
 
   display_compositor_ = base::MakeUnique<DisplayCompositor>(
-      gpu_command_service_, base::MakeUnique<MusGpuMemoryBufferManager>(
+      gpu_command_service_, base::MakeUnique<ServerGpuMemoryBufferManager>(
                                 gpu_internal_.get(), 1 /* client_id */),
       image_factory, std::move(request), std::move(client));
 }

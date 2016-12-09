@@ -19,7 +19,7 @@
 
 namespace ui {
 
-class MusGpuMemoryBufferManager;
+class ServerGpuMemoryBufferManager;
 
 namespace ws {
 
@@ -57,7 +57,7 @@ class GpuServiceProxy : public mojom::GpuServiceHost {
   mojom::GpuServiceInternalPtr gpu_service_;
   mojo::Binding<mojom::GpuServiceHost> gpu_host_binding_;
   gpu::GPUInfo gpu_info_;
-  std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<ServerGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   mojom::GpuMainPtr gpu_main_;
 

@@ -40,8 +40,8 @@ source_set("mus_common") {
 # process, display compositor in the gpu process).
 source_set("server_gpu") {
   sources = [
-    "mus_gpu_memory_buffer_manager.cc",
-    "mus_gpu_memory_buffer_manager.h",
+    "server_gpu_memory_buffer_manager.cc",
+    "server_gpu_memory_buffer_manager.h",
   ]
 
   deps = [
