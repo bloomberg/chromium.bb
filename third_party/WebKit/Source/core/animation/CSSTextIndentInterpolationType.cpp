@@ -128,7 +128,7 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertNeutral(
   IndentMode mode =
       toCSSTextIndentNonInterpolableValue(*underlying.nonInterpolableValue)
           .mode();
-  conversionCheckers.append(UnderlyingIndentModeChecker::create(mode));
+  conversionCheckers.push_back(UnderlyingIndentModeChecker::create(mode));
   return createValue(Length(0, Fixed), mode, 1);
 }
 
@@ -145,7 +145,7 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertInherit(
     ConversionCheckers& conversionCheckers) const {
   const ComputedStyle& parentStyle = *state.parentStyle();
   IndentMode mode(parentStyle);
-  conversionCheckers.append(InheritedIndentModeChecker::create(mode));
+  conversionCheckers.push_back(InheritedIndentModeChecker::create(mode));
   return createValue(parentStyle.textIndent(), mode,
                      parentStyle.effectiveZoom());
 }

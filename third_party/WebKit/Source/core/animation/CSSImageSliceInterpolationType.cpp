@@ -161,7 +161,7 @@ InterpolationValue CSSImageSliceInterpolationType::maybeConvertNeutral(
     ConversionCheckers& conversionCheckers) const {
   SliceTypes underlyingTypes =
       UnderlyingSliceTypesChecker::getUnderlyingSliceTypes(underlying);
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       UnderlyingSliceTypesChecker::create(underlyingTypes));
   LengthBox zeroBox(
       Length(0, underlyingTypes.isNumber[SideTop] ? Fixed : Percent),
@@ -184,7 +184,7 @@ InterpolationValue CSSImageSliceInterpolationType::maybeConvertInherit(
   const ImageSlice& inheritedImageSlice =
       ImageSlicePropertyFunctions::getImageSlice(cssProperty(),
                                                  *state.parentStyle());
-  conversionCheckers.append(InheritedSliceTypesChecker::create(
+  conversionCheckers.push_back(InheritedSliceTypesChecker::create(
       cssProperty(), SliceTypes(inheritedImageSlice)));
   return convertImageSlice(inheritedImageSlice,
                            state.parentStyle()->effectiveZoom());

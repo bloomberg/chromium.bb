@@ -119,10 +119,10 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(
                                       properties.propertyAt(j).value());
       }
     }
-    keyframes.append(keyframe);
+    keyframes.push_back(keyframe);
     // The last keyframe specified at a given offset is used.
     for (size_t j = 1; j < offsets.size(); ++j) {
-      keyframes.append(
+      keyframes.push_back(
           toStringKeyframe(keyframe->cloneWithOffset(offsets[j]).get()));
     }
   }
@@ -166,7 +166,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(
     endKeyframe = StringKeyframe::create();
     endKeyframe->setOffset(1);
     endKeyframe->setEasing(defaultTimingFunction);
-    keyframes.append(endKeyframe);
+    keyframes.push_back(endKeyframe);
   }
   DCHECK_GE(keyframes.size(), 2U);
   DCHECK(!keyframes.front()->offset());
@@ -521,7 +521,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
       animation->pause();
     animation->update(TimingUpdateOnDemand);
 
-    m_runningAnimations.append(new RunningAnimation(animation, entry));
+    m_runningAnimations.push_back(new RunningAnimation(animation, entry));
   }
 
   // Transitions that are run on the compositor only update main-thread state
@@ -598,9 +598,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
       const KeyframeVector& frames = oldEffect->getFrames();
 
       AnimatableValueKeyframeVector newFrames;
-      newFrames.append(toAnimatableValueKeyframe(frames[0]->clone().get()));
-      newFrames.append(toAnimatableValueKeyframe(frames[1]->clone().get()));
-      newFrames.append(toAnimatableValueKeyframe(frames[2]->clone().get()));
+      newFrames.push_back(toAnimatableValueKeyframe(frames[0]->clone().get()));
+      newFrames.push_back(toAnimatableValueKeyframe(frames[1]->clone().get()));
+      newFrames.push_back(toAnimatableValueKeyframe(frames[2]->clone().get()));
       newFrames[0]->clearPropertyValue(id);
       newFrames[1]->clearPropertyValue(id);
 
@@ -719,7 +719,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
       AnimatableValueKeyframe::create();
   delayKeyframe->setPropertyValue(id, from.get());
   delayKeyframe->setOffset(0);
-  keyframes.append(delayKeyframe);
+  keyframes.push_back(delayKeyframe);
 
   RefPtr<AnimatableValueKeyframe> startKeyframe =
       AnimatableValueKeyframe::create();
@@ -727,13 +727,13 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
   startKeyframe->setOffset(startKeyframeOffset);
   startKeyframe->setEasing(timing.timingFunction.release());
   timing.timingFunction = LinearTimingFunction::shared();
-  keyframes.append(startKeyframe);
+  keyframes.push_back(startKeyframe);
 
   RefPtr<AnimatableValueKeyframe> endKeyframe =
       AnimatableValueKeyframe::create();
   endKeyframe->setPropertyValue(id, to.get());
   endKeyframe->setOffset(1);
-  keyframes.append(endKeyframe);
+  keyframes.push_back(endKeyframe);
 
   AnimatableValueKeyframeEffectModel* model =
       AnimatableValueKeyframeEffectModel::create(keyframes);
@@ -878,11 +878,11 @@ void CSSAnimations::calculateAnimationActiveInterpolations(
 
   HeapVector<Member<const InertEffect>> newEffects;
   for (const auto& newAnimation : update.newAnimations())
-    newEffects.append(newAnimation.effect);
+    newEffects.push_back(newAnimation.effect);
 
   // Animations with updates use a temporary InertEffect for the current frame.
   for (const auto& updatedAnimation : update.animationsWithUpdates())
-    newEffects.append(updatedAnimation.effect);
+    newEffects.push_back(updatedAnimation.effect);
 
   ActiveInterpolationsMap activeInterpolationsForAnimations(
       EffectStack::activeInterpolations(
@@ -909,7 +909,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(
   } else {
     HeapVector<Member<const InertEffect>> newTransitions;
     for (const auto& entry : update.newTransitions())
-      newTransitions.append(entry.value.effect.get());
+      newTransitions.push_back(entry.value.effect.get());
 
     HeapHashSet<Member<const Animation>> cancelledAnimations;
     if (!update.cancelledTransitions().isEmpty()) {
@@ -1049,7 +1049,7 @@ const StylePropertyShorthand& CSSAnimations::propertiesForTransitionAll() {
           id == CSSPropertyWebkitTransformOriginZ)
         continue;
       if (CSSPropertyMetadata::isInterpolableProperty(id))
-        properties.append(id);
+        properties.push_back(id);
     }
     propertyShorthand = StylePropertyShorthand(
         CSSPropertyInvalid, properties.begin(), properties.size());

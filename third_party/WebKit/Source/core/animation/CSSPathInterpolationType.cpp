@@ -78,7 +78,7 @@ InterpolationValue CSSPathInterpolationType::maybeConvertInherit(
   if (!state.parentStyle())
     return nullptr;
 
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedPathChecker::create(state.parentStyle()->svgStyle().d()));
   return PathInterpolationFunctions::convertValue(
       state.parentStyle()->svgStyle().d());

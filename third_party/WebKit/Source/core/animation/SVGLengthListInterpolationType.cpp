@@ -17,7 +17,8 @@ InterpolationValue SVGLengthListInterpolationType::maybeConvertNeutral(
     ConversionCheckers& conversionCheckers) const {
   size_t underlyingLength =
       UnderlyingLengthChecker::getUnderlyingLength(underlying);
-  conversionCheckers.append(UnderlyingLengthChecker::create(underlyingLength));
+  conversionCheckers.push_back(
+      UnderlyingLengthChecker::create(underlyingLength));
 
   if (underlyingLength == 0)
     return nullptr;

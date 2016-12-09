@@ -39,7 +39,7 @@ AnimatableStrokeDasharrayList::AnimatableStrokeDasharrayList(
     float zoom) {
   RefPtr<SVGDashArray> lengths = passLengths;
   for (const Length& dashLength : lengths->vector())
-    m_values.append(AnimatableLength::create(dashLength, zoom));
+    m_values.push_back(AnimatableLength::create(dashLength, zoom));
 }
 
 PassRefPtr<SVGDashArray> AnimatableStrokeDasharrayList::toSVGDashArray(
@@ -81,12 +81,12 @@ PassRefPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(
     DEFINE_STATIC_REF(AnimatableLength, zeroPixels,
                       (AnimatableLength::create(Length(Fixed), 1)));
     if (from.isEmpty()) {
-      from.append(zeroPixels);
-      from.append(zeroPixels);
+      from.push_back(zeroPixels);
+      from.push_back(zeroPixels);
     }
     if (to.isEmpty()) {
-      to.append(zeroPixels);
-      to.append(zeroPixels);
+      to.push_back(zeroPixels);
+      to.push_back(zeroPixels);
     }
   }
 

@@ -107,7 +107,7 @@ InterpolationValue CSSFilterListInterpolationType::maybeConvertNeutral(
   // const_cast for taking refs.
   NonInterpolableList& nonInterpolableList = const_cast<NonInterpolableList&>(
       toNonInterpolableList(*underlying.nonInterpolableValue));
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       UnderlyingFilterListChecker::create(&nonInterpolableList));
   return InterpolationValue(underlying.interpolableValue->cloneAndZero(),
                             &nonInterpolableList);
@@ -126,7 +126,7 @@ InterpolationValue CSSFilterListInterpolationType::maybeConvertInherit(
   const FilterOperations& inheritedFilterOperations =
       FilterListPropertyFunctions::getFilterList(cssProperty(),
                                                  *state.parentStyle());
-  conversionCheckers.append(InheritedFilterListChecker::create(
+  conversionCheckers.push_back(InheritedFilterListChecker::create(
       cssProperty(), inheritedFilterOperations));
   return convertFilterList(inheritedFilterOperations,
                            state.style()->effectiveZoom());
@@ -286,7 +286,7 @@ void CSSFilterListInterpolationType::apply(
   FilterOperations filterOperations;
   filterOperations.operations().reserveCapacity(length);
   for (size_t i = 0; i < length; i++)
-    filterOperations.operations().append(
+    filterOperations.operations().push_back(
         FilterInterpolationFunctions::createFilter(*interpolableList.get(i),
                                                    *nonInterpolableList.get(i),
                                                    environment.state()));

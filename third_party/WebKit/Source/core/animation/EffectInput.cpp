@@ -165,7 +165,7 @@ bool exhaustDictionaryIterator(DictionaryIterator& iterator,
       exceptionState.throwTypeError("Keyframes must be objects.");
       return false;
     }
-    result.append(dictionary);
+    result.push_back(dictionary);
   }
   return !exceptionState.hadException();
 }
@@ -265,7 +265,7 @@ EffectModel* EffectInput::convertArrayForm(
       setKeyframeValue(element, *keyframe.get(), property, value,
                        executionContext);
     }
-    keyframes.append(keyframe);
+    keyframes.push_back(keyframe);
   }
 
   DCHECK(!exceptionState.hadException());
@@ -291,7 +291,7 @@ static bool getPropertyIndexedKeyframeValues(
     // Non-object.
     String value;
     DictionaryHelper::get(keyframeDictionary, property, value);
-    result.append(value);
+    result.push_back(value);
     return true;
   }
 
@@ -300,7 +300,7 @@ static bool getPropertyIndexedKeyframeValues(
     // Non-iterable object.
     String value;
     DictionaryHelper::get(keyframeDictionary, property, value);
-    result.append(value);
+    result.push_back(value);
     return true;
   }
 
@@ -311,7 +311,7 @@ static bool getPropertyIndexedKeyframeValues(
       exceptionState.throwTypeError("Unable to read keyframe value as string.");
       return false;
     }
-    result.append(value);
+    result.push_back(value);
   }
   return !exceptionState.hadException();
 }
@@ -379,7 +379,7 @@ EffectModel* EffectInput::convertObjectForm(
 
       setKeyframeValue(element, *keyframe.get(), property, values[i],
                        executionContext);
-      keyframes.append(keyframe);
+      keyframes.push_back(keyframe);
     }
   }
 

@@ -58,7 +58,7 @@ void copyToActiveInterpolationsMap(
         interpolation->isInvalidatableInterpolation() &&
         toInvalidatableInterpolation(*interpolation)
             .dependsOnUnderlyingValue()) {
-      activeInterpolations.append(interpolation.get());
+      activeInterpolations.push_back(interpolation.get());
     } else {
       activeInterpolations.at(0) = interpolation.get();
     }

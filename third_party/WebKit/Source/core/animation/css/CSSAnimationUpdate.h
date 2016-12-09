@@ -134,7 +134,7 @@ class CSSAnimationUpdate final {
                       const InertEffect& effect,
                       const Timing& timing,
                       StyleRuleKeyframes* styleRule) {
-    m_newAnimations.append(
+    m_newAnimations.push_back(
         NewCSSAnimation(animationName, nameIndex, effect, timing, styleRule));
   }
   // Returns whether animation has been suppressed and should be filtered during
@@ -143,23 +143,23 @@ class CSSAnimationUpdate final {
     return m_suppressedAnimations.contains(animation);
   }
   void cancelAnimation(size_t index, const Animation& animation) {
-    m_cancelledAnimationIndices.append(index);
+    m_cancelledAnimationIndices.push_back(index);
     m_suppressedAnimations.add(&animation);
   }
   void toggleAnimationIndexPaused(size_t index) {
-    m_animationIndicesWithPauseToggled.append(index);
+    m_animationIndicesWithPauseToggled.push_back(index);
   }
   void updateAnimation(size_t index,
                        Animation* animation,
                        const InertEffect& effect,
                        const Timing& specifiedTiming,
                        StyleRuleKeyframes* styleRule) {
-    m_animationsWithUpdates.append(UpdatedCSSAnimation(
+    m_animationsWithUpdates.push_back(UpdatedCSSAnimation(
         index, animation, effect, specifiedTiming, styleRule));
     m_suppressedAnimations.add(animation);
   }
   void updateCompositorKeyframes(Animation* animation) {
-    m_updatedCompositorKeyframes.append(animation);
+    m_updatedCompositorKeyframes.push_back(animation);
   }
 
   void startTransition(CSSPropertyID id,

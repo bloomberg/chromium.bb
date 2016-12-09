@@ -96,7 +96,7 @@ void CustomCompositorAnimations::applyUpdate(
   }
   if (mutation.isTransformMutated()) {
     TransformOperations ops;
-    ops.operations().append(Matrix3DTransformOperation::create(
+    ops.operations().push_back(Matrix3DTransformOperation::create(
         TransformationMatrix(mutation.transform())));
     RefPtr<AnimatableValue> animatableValue =
         AnimatableTransform::create(ops, 1);

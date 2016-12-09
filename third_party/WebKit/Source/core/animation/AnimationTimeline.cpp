@@ -110,7 +110,7 @@ HeapVector<Member<Animation>> AnimationTimeline::getAnimations() {
   for (const auto& animation : m_animations) {
     if (animation->effect() &&
         (animation->effect()->isCurrent() || animation->effect()->isInEffect()))
-      animations.append(animation);
+      animations.push_back(animation);
   }
   std::sort(animations.begin(), animations.end(), compareAnimations);
   return animations;
@@ -128,7 +128,7 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason) {
   HeapVector<Member<Animation>> animations;
   animations.reserveInitialCapacity(m_animationsNeedingUpdate.size());
   for (Animation* animation : m_animationsNeedingUpdate)
-    animations.append(animation);
+    animations.push_back(animation);
 
   std::sort(animations.begin(), animations.end(), Animation::hasLowerPriority);
 

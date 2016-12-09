@@ -226,7 +226,7 @@ InterpolationValue SVGTransformListInterpolationType::maybeConvertSVGValue(
       return nullptr;
     }
     result->set(i, toInterpolableValue(transform->clone(), transformType));
-    transformTypes.append(transformType);
+    transformTypes.push_back(transformType);
   }
   return InterpolationValue(
       std::move(result),
@@ -244,9 +244,9 @@ InterpolationValue SVGTransformListInterpolationType::maybeConvertSingle(
   if (keyframe.composite() == EffectModel::CompositeAdd) {
     if (underlying) {
       types.appendVector(getTransformTypes(underlying));
-      interpolableParts.append(underlying.interpolableValue->clone());
+      interpolableParts.push_back(underlying.interpolableValue->clone());
     }
-    conversionCheckers.append(SVGTransformListChecker::create(underlying));
+    conversionCheckers.push_back(SVGTransformListChecker::create(underlying));
   } else {
     DCHECK(!keyframe.isNeutral());
   }
@@ -258,7 +258,7 @@ InterpolationValue SVGTransformListInterpolationType::maybeConvertSingle(
     if (!value)
       return nullptr;
     types.appendVector(getTransformTypes(value));
-    interpolableParts.append(std::move(value.interpolableValue));
+    interpolableParts.push_back(std::move(value.interpolableValue));
   }
 
   std::unique_ptr<InterpolableList> interpolableList =

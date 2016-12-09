@@ -148,8 +148,8 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
     AnimatableValueKeyframeVector frames;
     RefPtr<Keyframe> second = frame->cloneWithOffset(1);
 
-    frames.append(frame);
-    frames.append(toAnimatableValueKeyframe(second.get()));
+    frames.push_back(frame);
+    frames.push_back(toAnimatableValueKeyframe(second.get()));
     return isCandidateForAnimationOnCompositor(
         m_timing, *AnimatableValueKeyframeEffectModel::create(frames));
   }
@@ -202,7 +202,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
   createCompositableFloatKeyframeVector(size_t n) {
     Vector<double> values;
     for (size_t i = 0; i < n; i++) {
-      values.append(static_cast<double>(i));
+      values.push_back(static_cast<double>(i));
     }
     return createCompositableFloatKeyframeVector(values);
   }
@@ -214,7 +214,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
     for (size_t i = 0; i < values.size(); i++) {
       double offset = 1.0 / (values.size() - 1) * i;
       RefPtr<AnimatableDouble> value = AnimatableDouble::create(values[i]);
-      frames->append(
+      frames->push_back(
           createReplaceOpKeyframe(CSSPropertyOpacity, value.get(), offset)
               .get());
     }
@@ -230,7 +230,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
       double offset = 1.0f / (values.size() - 1) * i;
       RefPtr<AnimatableTransform> value =
           AnimatableTransform::create(values[i], 1);
-      frames->append(
+      frames->push_back(
           createReplaceOpKeyframe(CSSPropertyTransform, value.get(), offset)
               .get());
     }
@@ -249,15 +249,15 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
 
     EXPECT_EQ(from->offset(), 0);
     AnimatableValueKeyframeVector frames;
-    frames.append(from);
+    frames.push_back(from);
     EXPECT_LE(from->offset(), to->offset());
-    frames.append(to);
+    frames.push_back(to);
     if (c) {
       EXPECT_LE(to->offset(), c->offset());
-      frames.append(c);
+      frames.push_back(c);
     }
     if (d) {
-      frames.append(d);
+      frames.push_back(d);
       EXPECT_LE(c->offset(), d->offset());
       EXPECT_EQ(d->offset(), 1.0);
     } else {
@@ -341,14 +341,14 @@ TEST_F(AnimationCompositorAnimationsTest,
 TEST_F(AnimationCompositorAnimationsTest,
        isNotCandidateForCompositorAnimationTransformDependsOnBoxSize) {
   TransformOperations ops;
-  ops.operations().append(TranslateTransformOperation::create(
+  ops.operations().push_back(TranslateTransformOperation::create(
       Length(2, Fixed), Length(2, Fixed), TransformOperation::TranslateX));
   RefPtr<AnimatableValueKeyframe> goodKeyframe = createReplaceOpKeyframe(
       CSSPropertyTransform, AnimatableTransform::create(ops, 1).get());
   EXPECT_TRUE(
       duplicateSingleKeyframeAndTestIsCandidateOnResult(goodKeyframe.get()));
 
-  ops.operations().append(TranslateTransformOperation::create(
+  ops.operations().push_back(TranslateTransformOperation::create(
       Length(50, Percent), Length(2, Fixed), TransformOperation::TranslateX));
   RefPtr<AnimatableValueKeyframe> badKeyframe = createReplaceOpKeyframe(
       CSSPropertyTransform, AnimatableTransform::create(ops, 1).get());
@@ -358,7 +358,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   TransformOperations ops2;
   Length calcLength =
       Length(100, Percent).blend(Length(100, Fixed), 0.5, ValueRangeAll);
-  ops2.operations().append(TranslateTransformOperation::create(
+  ops2.operations().push_back(TranslateTransformOperation::create(
       calcLength, Length(0, Fixed), TransformOperation::TranslateX));
   RefPtr<AnimatableValueKeyframe> badKeyframe2 = createReplaceOpKeyframe(
       CSSPropertyTransform, AnimatableTransform::create(ops2, 1).get());
@@ -370,22 +370,24 @@ TEST_F(
     AnimationCompositorAnimationsTest,
     isCandidateForAnimationOnCompositorKeyframeEffectModelMultipleFramesOkay) {
   AnimatableValueKeyframeVector framesSame;
-  framesSame.append(createDefaultKeyframe(CSSPropertyOpacity,
-                                          EffectModel::CompositeReplace, 0.0)
-                        .get());
-  framesSame.append(createDefaultKeyframe(CSSPropertyOpacity,
-                                          EffectModel::CompositeReplace, 1.0)
-                        .get());
+  framesSame.push_back(createDefaultKeyframe(CSSPropertyOpacity,
+                                             EffectModel::CompositeReplace, 0.0)
+                           .get());
+  framesSame.push_back(createDefaultKeyframe(CSSPropertyOpacity,
+                                             EffectModel::CompositeReplace, 1.0)
+                           .get());
   EXPECT_TRUE(isCandidateForAnimationOnCompositor(
       m_timing, *AnimatableValueKeyframeEffectModel::create(framesSame)));
 
   AnimatableValueKeyframeVector framesMixed;
-  framesMixed.append(createDefaultKeyframe(CSSPropertyOpacity,
-                                           EffectModel::CompositeReplace, 0.0)
-                         .get());
-  framesMixed.append(createDefaultKeyframe(CSSPropertyTransform,
-                                           EffectModel::CompositeReplace, 1.0)
-                         .get());
+  framesMixed.push_back(createDefaultKeyframe(CSSPropertyOpacity,
+                                              EffectModel::CompositeReplace,
+                                              0.0)
+                            .get());
+  framesMixed.push_back(createDefaultKeyframe(CSSPropertyTransform,
+                                              EffectModel::CompositeReplace,
+                                              1.0)
+                            .get());
   EXPECT_FALSE(isCandidateForAnimationOnCompositor(
       m_timing, *AnimatableValueKeyframeEffectModel::create(framesMixed)));
 }
@@ -393,21 +395,21 @@ TEST_F(
 TEST_F(AnimationCompositorAnimationsTest,
        isCandidateForAnimationOnCompositorKeyframeEffectModel) {
   AnimatableValueKeyframeVector framesSame;
-  framesSame.append(createDefaultKeyframe(CSSPropertyColor,
-                                          EffectModel::CompositeReplace, 0.0)
-                        .get());
-  framesSame.append(createDefaultKeyframe(CSSPropertyColor,
-                                          EffectModel::CompositeReplace, 1.0)
-                        .get());
+  framesSame.push_back(createDefaultKeyframe(CSSPropertyColor,
+                                             EffectModel::CompositeReplace, 0.0)
+                           .get());
+  framesSame.push_back(createDefaultKeyframe(CSSPropertyColor,
+                                             EffectModel::CompositeReplace, 1.0)
+                           .get());
   EXPECT_FALSE(isCandidateForAnimationOnCompositor(
       m_timing, *AnimatableValueKeyframeEffectModel::create(framesSame)));
 
   AnimatableValueKeyframeVector framesMixedProperties;
-  framesMixedProperties.append(
+  framesMixedProperties.push_back(
       createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace,
                             0.0)
           .get());
-  framesMixedProperties.append(
+  framesMixedProperties.push_back(
       createDefaultKeyframe(CSSPropertyColor, EffectModel::CompositeReplace,
                             1.0)
           .get());
@@ -418,13 +420,13 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox) {
   Vector<TransformOperations> transformVector;
-  transformVector.append(TransformOperations());
-  transformVector.back().operations().append(
+  transformVector.push_back(TransformOperations());
+  transformVector.back().operations().push_back(
       TranslateTransformOperation::create(Length(0, Fixed), Length(0, Fixed),
                                           0.0,
                                           TransformOperation::Translate3D));
-  transformVector.append(TransformOperations());
-  transformVector.back().operations().append(
+  transformVector.push_back(TransformOperations());
+  transformVector.back().operations().push_back(
       TranslateTransformOperation::create(Length(200, Fixed),
                                           Length(200, Fixed), 0.0,
                                           TransformOperation::Translate3D));
@@ -438,8 +440,8 @@ TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox) {
   EXPECT_TRUE(getAnimationBounds(
       bounds, *AnimatableValueKeyframeEffectModel::create(*frames), -1, 1));
   EXPECT_EQ(FloatBox(-200.0f, -200.0, 0.0, 400.0f, 400.0f, 0.0f), bounds);
-  transformVector.append(TransformOperations());
-  transformVector.back().operations().append(
+  transformVector.push_back(TransformOperations());
+  transformVector.back().operations().push_back(
       TranslateTransformOperation::create(Length(-300, Fixed),
                                           Length(-400, Fixed), 1.0f,
                                           TransformOperation::Translate3D));
@@ -732,25 +734,25 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor) {
   AnimatableValueKeyframeVector basicFramesVector;
-  basicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity,
-                                                 EffectModel::CompositeReplace,
-                                                 0.0)
-                               .get());
-  basicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity,
-                                                 EffectModel::CompositeReplace,
-                                                 1.0)
-                               .get());
-
-  AnimatableValueKeyframeVector nonBasicFramesVector;
-  nonBasicFramesVector.append(
+  basicFramesVector.push_back(
       createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace,
                             0.0)
           .get());
-  nonBasicFramesVector.append(
+  basicFramesVector.push_back(
+      createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace,
+                            1.0)
+          .get());
+
+  AnimatableValueKeyframeVector nonBasicFramesVector;
+  nonBasicFramesVector.push_back(
+      createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace,
+                            0.0)
+          .get());
+  nonBasicFramesVector.push_back(
       createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace,
                             0.5)
           .get());
-  nonBasicFramesVector.append(
+  nonBasicFramesVector.push_back(
       createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace,
                             1.0)
           .get());
@@ -925,13 +927,13 @@ TEST_F(AnimationCompositorAnimationsTest,
        createMultipleKeyframeOpacityAnimationChained) {
   // KeyframeEffect to convert
   AnimatableValueKeyframeVector frames;
-  frames.append(createReplaceOpKeyframe(
+  frames.push_back(createReplaceOpKeyframe(
       CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0));
-  frames.append(createReplaceOpKeyframe(
+  frames.push_back(createReplaceOpKeyframe(
       CSSPropertyOpacity, AnimatableDouble::create(-1.0).get(), 0.25));
-  frames.append(createReplaceOpKeyframe(
+  frames.push_back(createReplaceOpKeyframe(
       CSSPropertyOpacity, AnimatableDouble::create(20.0).get(), 0.5));
-  frames.append(createReplaceOpKeyframe(
+  frames.push_back(createReplaceOpKeyframe(
       CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
   frames[0]->setEasing(m_cubicEaseTimingFunction.get());
   frames[1]->setEasing(m_linearTimingFunction.get());
@@ -987,13 +989,13 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation) {
 
   // KeyframeEffect to convert
   AnimatableValueKeyframeVector frames;
-  frames.append(createReplaceOpKeyframe(
+  frames.push_back(createReplaceOpKeyframe(
       CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0));
-  frames.append(createReplaceOpKeyframe(
+  frames.push_back(createReplaceOpKeyframe(
       CSSPropertyOpacity, AnimatableDouble::create(-1.0).get(), 0.25));
-  frames.append(createReplaceOpKeyframe(
+  frames.push_back(createReplaceOpKeyframe(
       CSSPropertyOpacity, AnimatableDouble::create(20.0).get(), 0.5));
-  frames.append(createReplaceOpKeyframe(
+  frames.push_back(createReplaceOpKeyframe(
       CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
   frames[0]->setEasing(CubicBezierTimingFunction::preset(
       CubicBezierTimingFunction::EaseType::EASE_IN));
@@ -1197,12 +1199,12 @@ TEST_F(AnimationCompositorAnimationsTest,
   element->setLayoutObject(layoutObject);
 
   AnimatableValueKeyframeVector keyFrames;
-  keyFrames.append(createDefaultKeyframe(CSSPropertyOpacity,
-                                         EffectModel::CompositeReplace, 0.0)
-                       .get());
-  keyFrames.append(createDefaultKeyframe(CSSPropertyOpacity,
-                                         EffectModel::CompositeReplace, 1.0)
-                       .get());
+  keyFrames.push_back(createDefaultKeyframe(CSSPropertyOpacity,
+                                            EffectModel::CompositeReplace, 0.0)
+                          .get());
+  keyFrames.push_back(createDefaultKeyframe(CSSPropertyOpacity,
+                                            EffectModel::CompositeReplace, 1.0)
+                          .get());
   EffectModel* animationEffect1 =
       AnimatableValueKeyframeEffectModel::create(keyFrames);
   EffectModel* animationEffect2 =
@@ -1220,7 +1222,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   // simulate KeyframeEffect::maybeStartAnimationOnCompositor
   Vector<int> compositorAnimationIds;
-  compositorAnimationIds.append(1);
+  compositorAnimationIds.push_back(1);
   keyframeEffect1->setCompositorAnimationIdsForTesting(compositorAnimationIds);
   EXPECT_TRUE(animation1->hasActiveAnimationsOnCompositor());
 

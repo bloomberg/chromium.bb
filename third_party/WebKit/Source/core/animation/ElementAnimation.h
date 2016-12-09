@@ -110,7 +110,7 @@ class ElementAnimation {
       if (toKeyframeEffectReadOnly(animation->effect())->target() == element &&
           (animation->effect()->isCurrent() ||
            animation->effect()->isInEffect()))
-        animations.append(animation);
+        animations.push_back(animation);
     }
     return animations;
   }

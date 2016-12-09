@@ -9,7 +9,7 @@
 namespace blink {
 
 CSSTransitionData::CSSTransitionData() {
-  m_propertyList.append(initialProperty());
+  m_propertyList.push_back(initialProperty());
 }
 
 CSSTransitionData::CSSTransitionData(const CSSTransitionData& other)

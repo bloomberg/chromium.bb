@@ -40,9 +40,9 @@ class CORE_EXPORT InterpolationEffect {
                         double end,
                         double applyFrom,
                         double applyTo) {
-    m_interpolations.append(InterpolationRecord(std::move(interpolation),
-                                                std::move(easing), start, end,
-                                                applyFrom, applyTo));
+    m_interpolations.push_back(InterpolationRecord(std::move(interpolation),
+                                                   std::move(easing), start,
+                                                   end, applyFrom, applyTo));
   }
 
   void addInterpolationsFromKeyframes(

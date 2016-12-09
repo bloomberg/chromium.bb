@@ -36,9 +36,9 @@ TEST(AnimationEffectInputTest, SortedOffsets) {
   setV8ObjectPropertyAsString(scope.isolate(), keyframe2, "width", "0px");
   setV8ObjectPropertyAsString(scope.isolate(), keyframe2, "offset", "1");
 
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe1, scope.getExceptionState()));
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe2, scope.getExceptionState()));
 
   Element* element = appendElement(scope.document());
@@ -63,9 +63,9 @@ TEST(AnimationEffectInputTest, UnsortedOffsets) {
   setV8ObjectPropertyAsString(scope.isolate(), keyframe2, "width", "100px");
   setV8ObjectPropertyAsString(scope.isolate(), keyframe2, "offset", "0");
 
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe1, scope.getExceptionState()));
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe2, scope.getExceptionState()));
 
   Element* element = appendElement(scope.document());
@@ -90,11 +90,11 @@ TEST(AnimationEffectInputTest, LooslySorted) {
   setV8ObjectPropertyAsString(scope.isolate(), keyframe3, "width", "0px");
   setV8ObjectPropertyAsString(scope.isolate(), keyframe3, "offset", "1");
 
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe1, scope.getExceptionState()));
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe2, scope.getExceptionState()));
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe3, scope.getExceptionState()));
 
   Element* element = appendElement(scope.document());
@@ -124,13 +124,13 @@ TEST(AnimationEffectInputTest, OutOfOrderWithNullOffsets) {
   setV8ObjectPropertyAsString(scope.isolate(), keyframe4, "height", "300px");
   setV8ObjectPropertyAsString(scope.isolate(), keyframe4, "offset", "1");
 
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe1, scope.getExceptionState()));
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe2, scope.getExceptionState()));
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe3, scope.getExceptionState()));
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe4, scope.getExceptionState()));
 
   Element* element = appendElement(scope.document());
@@ -155,11 +155,11 @@ TEST(AnimationEffectInputTest, Invalid) {
   setV8ObjectPropertyAsString(scope.isolate(), keyframe3, "width", "100px");
   setV8ObjectPropertyAsString(scope.isolate(), keyframe3, "offset", "0");
 
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe1, scope.getExceptionState()));
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe2, scope.getExceptionState()));
-  jsKeyframes.append(
+  jsKeyframes.push_back(
       Dictionary(scope.isolate(), keyframe3, scope.getExceptionState()));
 
   Element* element = appendElement(scope.document());

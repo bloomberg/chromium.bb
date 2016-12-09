@@ -112,7 +112,8 @@ InterpolationValue CSSSizeListInterpolationType::maybeConvertNeutral(
     ConversionCheckers& conversionCheckers) const {
   const auto& underlyingList =
       toNonInterpolableList(*underlying.nonInterpolableValue);
-  conversionCheckers.append(UnderlyingSizeListChecker::create(underlyingList));
+  conversionCheckers.push_back(
+      UnderlyingSizeListChecker::create(underlyingList));
   return ListInterpolationFunctions::createList(
       underlyingList.length(), [&underlyingList](size_t index) {
         return SizeInterpolationFunctions::createNeutralValue(
@@ -132,7 +133,7 @@ InterpolationValue CSSSizeListInterpolationType::maybeConvertInherit(
     ConversionCheckers& conversionCheckers) const {
   SizeList inheritedSizeList = SizeListPropertyFunctions::getSizeList(
       cssProperty(), *state.parentStyle());
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedSizeListChecker::create(cssProperty(), inheritedSizeList));
   return convertSizeList(inheritedSizeList, state.style()->effectiveZoom());
 }

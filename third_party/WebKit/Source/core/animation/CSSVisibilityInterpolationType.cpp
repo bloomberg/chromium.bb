@@ -110,7 +110,7 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertNeutral(
   EVisibility underlyingVisibility =
       toCSSVisibilityNonInterpolableValue(*underlying.nonInterpolableValue)
           .visibility(underlyingFraction);
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       UnderlyingVisibilityChecker::create(underlyingVisibility));
   return createVisibilityValue(underlyingVisibility);
 }
@@ -127,7 +127,7 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertInherit(
   if (!state.parentStyle())
     return nullptr;
   EVisibility inheritedVisibility = state.parentStyle()->visibility();
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedVisibilityChecker::create(inheritedVisibility));
   return createVisibilityValue(inheritedVisibility);
 }

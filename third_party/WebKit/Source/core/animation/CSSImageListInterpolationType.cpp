@@ -41,7 +41,7 @@ class UnderlyingImageListChecker : public InterpolationType::ConversionChecker {
 InterpolationValue CSSImageListInterpolationType::maybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversionCheckers) const {
-  conversionCheckers.append(UnderlyingImageListChecker::create(underlying));
+  conversionCheckers.push_back(UnderlyingImageListChecker::create(underlying));
   return underlying.clone();
 }
 
@@ -103,7 +103,7 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertInherit(
   StyleImageList inheritedImageList;
   ImageListPropertyFunctions::getImageList(cssProperty(), *state.parentStyle(),
                                            inheritedImageList);
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedImageListChecker::create(cssProperty(), inheritedImageList));
   return maybeConvertStyleImageList(inheritedImageList);
 }

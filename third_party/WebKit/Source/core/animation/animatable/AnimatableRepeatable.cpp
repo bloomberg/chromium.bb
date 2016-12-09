@@ -71,7 +71,7 @@ bool AnimatableRepeatable::interpolateLists(
     // interpolable.
     if (AnimatableValue::usesDefaultInterpolation(from, to))
       return false;
-    interpolatedValues.append(interpolate(from, to, fraction));
+    interpolatedValues.push_back(interpolate(from, to, fraction));
   }
   return true;
 }

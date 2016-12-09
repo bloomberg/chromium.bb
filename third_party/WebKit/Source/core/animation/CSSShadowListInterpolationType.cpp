@@ -85,7 +85,7 @@ InterpolationValue CSSShadowListInterpolationType::maybeConvertInherit(
   const ShadowList* inheritedShadowList =
       ShadowListPropertyFunctions::getShadowList(cssProperty(),
                                                  *state.parentStyle());
-  conversionCheckers.append(InheritedShadowListChecker::create(
+  conversionCheckers.push_back(InheritedShadowListChecker::create(
       cssProperty(),
       const_cast<ShadowList*>(inheritedShadowList)));  // Take ref.
   return convertShadowList(inheritedShadowList,
@@ -152,7 +152,7 @@ static PassRefPtr<ShadowList> createShadowList(
       toNonInterpolableList(*nonInterpolableValue);
   ShadowDataVector shadows;
   for (size_t i = 0; i < length; i++)
-    shadows.append(ShadowInterpolationFunctions::createShadowData(
+    shadows.push_back(ShadowInterpolationFunctions::createShadowData(
         *interpolableList.get(i), nonInterpolableList.get(i), state));
   return ShadowList::adopt(shadows);
 }

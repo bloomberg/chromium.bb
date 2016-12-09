@@ -73,7 +73,7 @@ InterpolationValue CSSBasicShapeInterpolationType::maybeConvertNeutral(
   // const_cast is for taking refs.
   NonInterpolableValue* nonInterpolableValue =
       const_cast<NonInterpolableValue*>(underlying.nonInterpolableValue.get());
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       UnderlyingCompatibilityChecker::create(nonInterpolableValue));
   return InterpolationValue(
       BasicShapeInterpolationFunctions::createNeutralValue(
@@ -94,7 +94,7 @@ InterpolationValue CSSBasicShapeInterpolationType::maybeConvertInherit(
   const BasicShape* shape = BasicShapePropertyFunctions::getBasicShape(
       cssProperty(), *state.parentStyle());
   // const_cast to take a ref.
-  conversionCheckers.append(InheritedShapeChecker::create(
+  conversionCheckers.push_back(InheritedShapeChecker::create(
       cssProperty(), const_cast<BasicShape*>(shape)));
   return BasicShapeInterpolationFunctions::maybeConvertBasicShape(
       shape, state.parentStyle()->effectiveZoom());

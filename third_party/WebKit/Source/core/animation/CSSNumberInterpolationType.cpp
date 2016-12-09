@@ -65,7 +65,7 @@ InterpolationValue CSSNumberInterpolationType::maybeConvertInherit(
   if (!NumberPropertyFunctions::getNumber(cssProperty(), *state.parentStyle(),
                                           inheritedNumber))
     return nullptr;
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedNumberChecker::create(cssProperty(), inheritedNumber));
   return createNumberValue(inheritedNumber);
 }

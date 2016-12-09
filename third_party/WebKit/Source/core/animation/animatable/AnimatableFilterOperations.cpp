@@ -63,7 +63,7 @@ PassRefPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(
             : 0;
     FilterOperation* blendedOp = FilterOperation::blend(from, to, fraction);
     if (blendedOp)
-      result.operations().append(blendedOp);
+      result.operations().push_back(blendedOp);
     else
       NOTREACHED();
   }

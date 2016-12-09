@@ -9,11 +9,11 @@
 namespace blink {
 
 CSSAnimationData::CSSAnimationData() {
-  m_nameList.append(initialName());
-  m_iterationCountList.append(initialIterationCount());
-  m_directionList.append(initialDirection());
-  m_fillModeList.append(initialFillMode());
-  m_playStateList.append(initialPlayState());
+  m_nameList.push_back(initialName());
+  m_iterationCountList.push_back(initialIterationCount());
+  m_directionList.push_back(initialDirection());
+  m_fillModeList.push_back(initialFillMode());
+  m_playStateList.push_back(initialPlayState());
 }
 
 CSSAnimationData::CSSAnimationData(const CSSAnimationData& other)

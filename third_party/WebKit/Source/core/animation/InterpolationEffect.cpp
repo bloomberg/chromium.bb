@@ -28,7 +28,7 @@ void InterpolationEffect::getActiveInterpolations(
       if (resultIndex < existingSize)
         result[resultIndex++] = interpolation;
       else
-        result.append(interpolation);
+        result.push_back(interpolation);
     }
   }
   if (resultIndex < existingSize)

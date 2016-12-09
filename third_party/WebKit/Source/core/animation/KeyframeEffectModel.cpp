@@ -137,7 +137,7 @@ KeyframeEffectModelBase::normalizedKeyframes(const KeyframeVector& keyframes) {
       DCHECK_GE(offset, lastOffset);
       lastOffset = offset;
     }
-    result.append(keyframe->clone());
+    result.push_back(keyframe->clone());
   }
 
   if (result.isEmpty())
@@ -274,7 +274,7 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::appendKeyframe(
     PassRefPtr<Keyframe::PropertySpecificKeyframe> keyframe) {
   DCHECK(m_keyframes.isEmpty() ||
          m_keyframes.back()->offset() <= keyframe->offset());
-  m_keyframes.append(keyframe);
+  m_keyframes.push_back(keyframe);
 }
 
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::

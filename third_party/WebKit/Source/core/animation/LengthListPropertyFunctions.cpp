@@ -106,22 +106,22 @@ bool LengthListPropertyFunctions::getInitialLengthList(CSSPropertyID property,
 }
 
 static bool appendToVector(const LengthPoint& point, Vector<Length>& result) {
-  result.append(point.x());
-  result.append(point.y());
+  result.push_back(point.x());
+  result.push_back(point.y());
   return true;
 }
 
 static bool appendToVector(const LengthSize& size, Vector<Length>& result) {
-  result.append(size.width());
-  result.append(size.height());
+  result.push_back(size.width());
+  result.push_back(size.height());
   return true;
 }
 
 static bool appendToVector(const TransformOrigin& transformOrigin,
                            Vector<Length>& result) {
-  result.append(transformOrigin.x());
-  result.append(transformOrigin.y());
-  result.append(Length(transformOrigin.z(), Fixed));
+  result.push_back(transformOrigin.x());
+  result.push_back(transformOrigin.y());
+  result.push_back(Length(transformOrigin.z(), Fixed));
   return true;
 }
 
@@ -163,7 +163,7 @@ bool LengthListPropertyFunctions::getLengthList(CSSPropertyID property,
       const FillLayer* fillLayer = getFillLayer(property, style);
       FillLayerMethods fillLayerMethods(property);
       while (fillLayer && (fillLayer->*fillLayerMethods.isSet)()) {
-        result.append((fillLayer->*fillLayerMethods.getLength)());
+        result.push_back((fillLayer->*fillLayerMethods.getLength)());
         fillLayer = fillLayer->next();
       }
       return true;

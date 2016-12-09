@@ -71,7 +71,7 @@ InterpolationValue CSSInterpolationType::maybeConvertSingle(
     const CSSValue* resolvedValue =
         CSSVariableResolver::resolveVariableReferences(
             environment.state(), cssProperty(), *value, omitAnimationTainted);
-    conversionCheckers.append(
+    conversionCheckers.push_back(
         ResolvedVariableChecker::create(cssProperty(), value, resolvedValue));
     value = resolvedValue;
   }

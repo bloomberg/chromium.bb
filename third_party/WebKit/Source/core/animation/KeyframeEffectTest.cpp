@@ -82,8 +82,8 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation) {
   setV8ObjectPropertyAsString(scope.isolate(), keyframe2, "easing",
                               "cubic-bezier(1, 1, 0.3, 0.3)");
 
-  jsKeyframes.append(Dictionary(scope.isolate(), keyframe1, exceptionState));
-  jsKeyframes.append(Dictionary(scope.isolate(), keyframe2, exceptionState));
+  jsKeyframes.push_back(Dictionary(scope.isolate(), keyframe1, exceptionState));
+  jsKeyframes.push_back(Dictionary(scope.isolate(), keyframe2, exceptionState));
 
   String value1;
   ASSERT_TRUE(DictionaryHelper::get(jsKeyframes[0], "width", value1));

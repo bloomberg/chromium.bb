@@ -68,10 +68,10 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertInherit(
   StyleColor parentColor;
   if (!PaintPropertyFunctions::getColor(cssProperty(), *state.parentStyle(),
                                         parentColor)) {
-    conversionCheckers.append(InheritedPaintChecker::create(cssProperty()));
+    conversionCheckers.push_back(InheritedPaintChecker::create(cssProperty()));
     return nullptr;
   }
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedPaintChecker::create(cssProperty(), parentColor));
   return InterpolationValue(
       CSSColorInterpolationType::createInterpolableColor(parentColor));

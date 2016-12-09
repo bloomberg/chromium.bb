@@ -149,7 +149,7 @@ InterpolationValue CSSRotateInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
   Rotation inheritedRotation = getRotation(*state.parentStyle());
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedRotationChecker::create(inheritedRotation));
   return convertRotation(inheritedRotation);
 }

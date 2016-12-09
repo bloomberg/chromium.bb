@@ -37,7 +37,7 @@ class ImageListPropertyFunctions {
 
     result.clear();
     while (fillLayer && fillLayer->image()) {
-      result.append(fillLayer->image());
+      result.push_back(fillLayer->image());
       fillLayer = fillLayer->next();
     }
   }

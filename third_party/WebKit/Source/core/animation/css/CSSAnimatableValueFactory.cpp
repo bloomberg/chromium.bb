@@ -233,26 +233,26 @@ inline static PassRefPtr<AnimatableValue> createFromFillLayers(
         property == CSSPropertyWebkitMaskImage) {
       if (!fillLayer->isImageSet())
         break;
-      values.append(createFromStyleImage(fillLayer->image()));
+      values.push_back(createFromStyleImage(fillLayer->image()));
     } else if (property == CSSPropertyBackgroundPositionX ||
                property == CSSPropertyWebkitMaskPositionX) {
       if (!fillLayer->isXPositionSet())
         break;
-      values.append(createFromBackgroundPosition(
+      values.push_back(createFromBackgroundPosition(
           fillLayer->xPosition(), fillLayer->isBackgroundXOriginSet(),
           fillLayer->backgroundXOrigin(), style));
     } else if (property == CSSPropertyBackgroundPositionY ||
                property == CSSPropertyWebkitMaskPositionY) {
       if (!fillLayer->isYPositionSet())
         break;
-      values.append(createFromBackgroundPosition(
+      values.push_back(createFromBackgroundPosition(
           fillLayer->yPosition(), fillLayer->isBackgroundYOriginSet(),
           fillLayer->backgroundYOrigin(), style));
     } else if (property == CSSPropertyBackgroundSize ||
                property == CSSPropertyWebkitMaskSize) {
       if (!fillLayer->isSizeSet())
         break;
-      values.append(createFromFillSize(fillLayer->size(), style));
+      values.push_back(createFromFillSize(fillLayer->size(), style));
     } else {
       NOTREACHED();
     }
@@ -293,7 +293,7 @@ static PassRefPtr<AnimatableValue> createFromTransformProperties(
     double zoom,
     PassRefPtr<TransformOperation> initialTransform) {
   TransformOperations operation;
-  operation.operations().append(transform ? transform : initialTransform);
+  operation.operations().push_back(transform ? transform : initialTransform);
   return AnimatableTransform::create(operation, transform ? zoom : 1);
 }
 

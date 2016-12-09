@@ -188,7 +188,7 @@ CSSBorderImageLengthBoxInterpolationType::maybeConvertNeutral(
     ConversionCheckers& conversionCheckers) const {
   SideNumbers underlyingSideNumbers =
       UnderlyingSideNumbersChecker::getUnderlyingSideNumbers(underlying);
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       UnderlyingSideNumbersChecker::create(underlyingSideNumbers));
   const auto& zero = [&underlyingSideNumbers](size_t index) {
     return underlyingSideNumbers.isNumber[index]
@@ -217,7 +217,7 @@ CSSBorderImageLengthBoxInterpolationType::maybeConvertInherit(
   const BorderImageLengthBox& inherited =
       BorderImageLengthBoxPropertyFunctions::getBorderImageLengthBox(
           cssProperty(), *state.parentStyle());
-  conversionCheckers.append(InheritedSideNumbersChecker::create(
+  conversionCheckers.push_back(InheritedSideNumbersChecker::create(
       cssProperty(), SideNumbers(inherited)));
   return convertBorderImageLengthBox(inherited,
                                      state.parentStyle()->effectiveZoom());

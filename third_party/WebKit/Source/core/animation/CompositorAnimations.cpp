@@ -375,7 +375,7 @@ void CompositorAnimations::startAnimationOnCompositor(
     CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
     DCHECK(compositorPlayer);
     compositorPlayer->addAnimation(std::move(compositorAnimation));
-    startedAnimationIds.append(id);
+    startedAnimationIds.push_back(id);
   }
   DCHECK(!startedAnimationIds.isEmpty());
 }
@@ -617,7 +617,7 @@ void CompositorAnimations::getAnimationOnCompositor(
     animation->setDirection(compositorTiming.direction);
     animation->setPlaybackRate(compositorTiming.playbackRate);
     animation->setFillMode(compositorTiming.fillMode);
-    animations.append(std::move(animation));
+    animations.push_back(std::move(animation));
   }
   DCHECK(!animations.isEmpty());
 }

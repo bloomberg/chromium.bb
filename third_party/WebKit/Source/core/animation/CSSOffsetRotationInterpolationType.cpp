@@ -96,7 +96,7 @@ InterpolationValue CSSOffsetRotationInterpolationType::maybeConvertNeutral(
   OffsetRotationType underlyingRotationType =
       toCSSOffsetRotationNonInterpolableValue(*underlying.nonInterpolableValue)
           .rotationType();
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       UnderlyingRotationTypeChecker::create(underlyingRotationType));
   return convertOffsetRotate(StyleOffsetRotation(0, underlyingRotationType));
 }
@@ -112,7 +112,7 @@ InterpolationValue CSSOffsetRotationInterpolationType::maybeConvertInherit(
     ConversionCheckers& conversionCheckers) const {
   OffsetRotationType inheritedRotationType =
       state.parentStyle()->offsetRotation().type;
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedRotationTypeChecker::create(inheritedRotationType));
   return convertOffsetRotate(state.parentStyle()->offsetRotation());
 }

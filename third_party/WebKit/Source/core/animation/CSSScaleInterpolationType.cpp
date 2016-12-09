@@ -132,7 +132,7 @@ InterpolationValue CSSScaleInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
   Scale inheritedScale(state.parentStyle()->scale());
-  conversionCheckers.append(InheritedScaleChecker::create(inheritedScale));
+  conversionCheckers.push_back(InheritedScaleChecker::create(inheritedScale));
   return InterpolationValue(inheritedScale.createInterpolableValue());
 }
 

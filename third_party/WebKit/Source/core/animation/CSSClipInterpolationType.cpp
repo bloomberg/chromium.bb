@@ -162,7 +162,7 @@ InterpolationValue CSSClipInterpolationType::maybeConvertNeutral(
     ConversionCheckers& conversionCheckers) const {
   ClipAutos underlyingAutos =
       UnderlyingAutosChecker::getUnderlyingAutos(underlying);
-  conversionCheckers.append(UnderlyingAutosChecker::create(underlyingAutos));
+  conversionCheckers.push_back(UnderlyingAutosChecker::create(underlyingAutos));
   if (underlyingAutos.isAuto)
     return nullptr;
   LengthBox neutralBox(
@@ -183,7 +183,7 @@ InterpolationValue CSSClipInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
   ClipAutos inheritedAutos = getClipAutos(*state.parentStyle());
-  conversionCheckers.append(InheritedAutosChecker::create(inheritedAutos));
+  conversionCheckers.push_back(InheritedAutosChecker::create(inheritedAutos));
   if (inheritedAutos.isAuto)
     return nullptr;
   return createClipValue(state.parentStyle()->clip(),

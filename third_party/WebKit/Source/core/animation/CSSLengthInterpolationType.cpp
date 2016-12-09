@@ -77,7 +77,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertInherit(
   if (!LengthPropertyFunctions::getLength(cssProperty(), *state.parentStyle(),
                                           inheritedLength))
     return nullptr;
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedLengthChecker::create(cssProperty(), inheritedLength));
   return LengthInterpolationFunctions::maybeConvertLength(
       inheritedLength, effectiveZoom(*state.parentStyle()));

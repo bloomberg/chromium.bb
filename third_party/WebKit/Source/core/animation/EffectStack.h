@@ -57,7 +57,7 @@ class CORE_EXPORT EffectStack {
   EffectStack();
 
   void add(SampledEffect* sampledEffect) {
-    m_sampledEffects.append(sampledEffect);
+    m_sampledEffects.push_back(sampledEffect);
   }
   bool isEmpty() const { return m_sampledEffects.isEmpty(); }
   bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;

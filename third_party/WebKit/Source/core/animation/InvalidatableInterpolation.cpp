@@ -82,7 +82,7 @@ void InvalidatableInterpolation::addConversionCheckers(
     ConversionCheckers& conversionCheckers) const {
   for (size_t i = 0; i < conversionCheckers.size(); i++) {
     conversionCheckers[i]->setType(type);
-    m_conversionCheckers.append(std::move(conversionCheckers[i]));
+    m_conversionCheckers.push_back(std::move(conversionCheckers[i]));
   }
 }
 
