@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/error_utils.h"

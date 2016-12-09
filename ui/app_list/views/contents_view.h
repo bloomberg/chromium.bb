@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model.h"

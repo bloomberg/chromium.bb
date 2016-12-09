@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"

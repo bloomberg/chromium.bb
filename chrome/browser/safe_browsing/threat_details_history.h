@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/task/cancelable_task_tracker.h"

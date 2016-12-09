@@ -5,7 +5,6 @@
 #include "chrome/browser/browsing_data/local_data_container.h"
 
 #include "base/bind.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"

@@ -19,7 +19,6 @@
 #include "base/containers/stack_container.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
