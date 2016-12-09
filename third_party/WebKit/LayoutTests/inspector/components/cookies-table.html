@@ -1,0 +1,57 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script type="text/javascript">
+
+var test = function () {
+  function dumpResults(cookies) {
+    InspectorTest.addResult(cookies.map(x => x.name()).join(','));
+  }
+
+  function createCookie(data) {
+    const cookie = new SDK.Cookie(null, data.name, data.value);
+    for (let key in data) {
+      if (key === 'name' || key === 'value')
+        continue;
+
+      cookie.addAttribute(key, data[key]);
+    }
+    return cookie;
+  }
+
+  function createSortAndDumpCookies(cookieData, column, isAsc) {
+    const table = new Components.CookiesTable(true);
+    const cookies = cookieData.map(createCookie);
+    table._dataGrid = {isSortOrderAscending: () => isAsc, sortColumnId: () => column};
+    table._sortCookies(cookies);
+    InspectorTest.addResult(`params: ${column} ${isAsc ? 'asc' : 'desc'}`);
+    dumpResults(cookies);
+  }
+
+  function run() {
+    const cookieData = [
+      {name: 'cookieA', value: '11', path: '/zzz', domain: 'example.com'},
+      {name: 'cookieB', value: '2', path: '/abc', domain: '.example.com'},
+      {name: 'cookieC', value: 'foo', path: '/', domain: 'abc.example.com'},
+      {name: 'cookieD', value: '{other}', path: '/aa', domain: '.other.com'},
+      {name: 'cookieE', value: 'zz', path: '/gg', domain: 'z.example.com'},
+      {name: 'cookieF', value: 'null', path: '/', domain: 'example.com'},
+    ];
+
+    createSortAndDumpCookies(cookieData, 'name', false);
+    createSortAndDumpCookies(cookieData, 'value', true);
+    createSortAndDumpCookies(cookieData, 'path', false);
+    createSortAndDumpCookies(cookieData, 'domain', true);
+    createSortAndDumpCookies(cookieData, null, true);
+    InspectorTest.completeTest();
+  }
+
+  self.runtime.loadModulePromise('components_lazy').then(run);
+};
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests inspector cookies table</p>
+</body>
+</html>

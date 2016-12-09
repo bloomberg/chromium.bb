@@ -1,0 +1,13 @@
+Tests inspector cookies table
+
+params: name desc
+cookieF,cookieE,cookieD,cookieC,cookieB,cookieA
+params: value asc
+cookieA,cookieB,cookieC,cookieF,cookieE,cookieD
+params: path desc
+cookieA,cookieE,cookieB,cookieD,cookieC,cookieF
+params: domain asc
+cookieB,cookieD,cookieC,cookieA,cookieF,cookieE
+params: null asc
+cookieA,cookieB,cookieC,cookieD,cookieE,cookieF
+
