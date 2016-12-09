@@ -613,7 +613,7 @@ StringPiece GetSerializedHeaders(const SpdySerializedFrame& frame,
                      frame.size() - framer.GetHeadersMinimumSize());
 }
 
-enum DecoderChoice { DECODER_SELF, DECODER_NESTED };
+enum DecoderChoice { DECODER_SELF, DECODER_NESTED, DECODER_HTTP2 };
 enum HpackChoice { HPACK_DECODER_1, HPACK_DECODER_2 };
 
 class SpdyFramerTest
@@ -624,9 +624,15 @@ class SpdyFramerTest
     switch (std::get<0>(param)) {
       case DECODER_SELF:
         FLAGS_use_nested_spdy_framer_decoder = false;
+        FLAGS_use_http2_frame_decoder_adapter = false;
         break;
       case DECODER_NESTED:
         FLAGS_use_nested_spdy_framer_decoder = true;
+        FLAGS_use_http2_frame_decoder_adapter = false;
+        break;
+      case DECODER_HTTP2:
+        FLAGS_use_nested_spdy_framer_decoder = false;
+        FLAGS_use_http2_frame_decoder_adapter = true;
         break;
     }
     switch (std::get<1>(param)) {
@@ -661,11 +667,13 @@ class SpdyFramerTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(
-    SpdyFramerTests,
-    SpdyFramerTest,
-    ::testing::Combine(::testing::Values(DECODER_SELF, DECODER_NESTED),
-                       ::testing::Values(HPACK_DECODER_1, HPACK_DECODER_2)));
+INSTANTIATE_TEST_CASE_P(SpdyFramerTests,
+                        SpdyFramerTest,
+                        ::testing::Combine(::testing::Values(DECODER_SELF,
+                                                             DECODER_NESTED,
+                                                             DECODER_HTTP2),
+                                           ::testing::Values(HPACK_DECODER_1,
+                                                             HPACK_DECODER_2)));
 
 // Test that we can encode and decode a SpdyHeaderBlock in serialized form.
 TEST_P(SpdyFramerTest, HeaderBlockInBuffer) {
@@ -1133,9 +1141,8 @@ TEST_P(SpdyFramerTest, PushPromiseWithPromisedStreamIdZero) {
   push_promise.SetHeader("alpha", "beta");
   SpdySerializedFrame frame(framer.SerializePushPromise(push_promise));
 
-  // We shouldn't have to read the whole frame before we signal an error.
   EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
-  EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  framer.ProcessInput(frame.data(), frame.size());
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code())
       << SpdyFramer::ErrorCodeToString(framer.error_code());
@@ -2794,12 +2801,16 @@ TEST_P(SpdyFramerTest, ReadBogusLenSettingsFrame) {
   SpdyFramer framer;
   SpdySettingsIR settings_ir;
 
-  // Add a setting to pad the frame so that we don't get a buffer overflow when
-  // calling SimulateInFramer() below.
+  // Add settings to more than fill the frame so that we don't get a buffer
+  // overflow when calling SimulateInFramer() below.  These settings must be
+  // distinct parameters because SpdySettingsIR has a map for settings, and will
+  // collapse multiple copies of the same parameter.
   settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, false, false,
                          0x00000002);
+  settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS, false, false,
+                         0x00000002);
   SpdySerializedFrame control_frame(framer.SerializeSettings(settings_ir));
-  const size_t kNewLength = 14;
+  const size_t kNewLength = 8;
   SetFrameLength(&control_frame, kNewLength);
   TestSpdyVisitor visitor;
   visitor.use_compression_ = false;

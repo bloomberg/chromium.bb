@@ -553,6 +553,12 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   void SetEncoderHeaderTableDebugVisitor(
       std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor);
 
+  // For use in SpdyFramerDecoderAdapter implementations; returns a HPACK
+  // decoder to be used.
+  HpackDecoderInterface* GetHpackDecoderForAdapter() {
+    return GetHpackDecoder();
+  }
+
  protected:
   friend class BufferedSpdyFramer;
   friend class HttpNetworkLayer;  // This is temporary for the server.

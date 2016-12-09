@@ -1337,6 +1337,8 @@
       'spdy/hpack/hpack_output_stream.h',
       'spdy/hpack/hpack_static_table.cc',
       'spdy/hpack/hpack_static_table.h',
+      'spdy/http2_frame_decoder_adapter.cc',
+      'spdy/http2_frame_decoder_adapter.h',
       'spdy/http2_priority_dependencies.cc',
       'spdy/http2_priority_dependencies.h',
       'spdy/http2_write_scheduler.h',
