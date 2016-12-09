@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_switches.h"
@@ -46,9 +47,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 #endif
 #if BUILDFLAG(ENABLE_WEBRTC)
   gpu_preferences.disable_web_rtc_hw_encoding =
-      command_line->HasSwitch(switches::kDisableWebRtcHWEncoding) &&
-      command_line->GetSwitchValueASCII(switches::kDisableWebRtcHWEncoding)
-          .empty();
+      command_line->HasSwitch(switches::kDisableWebRtcHWVP8Encoding) &&
+      !base::FeatureList::IsEnabled(features::kWebRtcHWH264Encoding);
 #endif
 #if defined(OS_WIN)
   uint32_t enable_accelerated_vpx_decode_val =

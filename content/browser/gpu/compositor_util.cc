@@ -118,7 +118,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
 #if BUILDFLAG(ENABLE_WEBRTC)
     {"video_encode", manager->IsFeatureBlacklisted(
                          gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE),
-     command_line.HasSwitch(switches::kDisableWebRtcHWEncoding),
+     command_line.HasSwitch(switches::kDisableWebRtcHWVP8Encoding),
      "Accelerated video encode has been disabled, either via blacklist,"
      " about:flags or the command line.",
      true},

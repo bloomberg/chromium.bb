@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/public/common/features.h"
@@ -238,9 +239,8 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
     if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding))
       decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
 
-    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding) ||
-        !cmd_line->GetSwitchValueASCII(switches::kDisableWebRtcHWEncoding)
-             .empty()) {
+    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWVP8Encoding) ||
+        base::FeatureList::IsEnabled(features::kWebRtcHWH264Encoding)) {
       encoder_factory.reset(new RTCVideoEncoderFactory(gpu_factories));
     }
   }

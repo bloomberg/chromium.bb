@@ -119,7 +119,7 @@ static const char* const kSwitchNames[] = {
     switches::kDisableLogging,
     switches::kDisableSeccompFilterSandbox,
 #if BUILDFLAG(ENABLE_WEBRTC)
-    switches::kDisableWebRtcHWEncoding,
+    switches::kDisableWebRtcHWVP8Encoding,
 #endif
 #if defined(OS_WIN)
     switches::kEnableAcceleratedVpxDecode,

@@ -616,19 +616,6 @@ const FeatureEntry::Choice kSecurityChipAnimationChoices[] = {
      switches::kSecurityChipAnimationAll},
 };
 
-#if BUILDFLAG(ENABLE_WEBRTC)
-const FeatureEntry::Choice kDisableWebRtcHWEncodingChoices[] = {
-    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-    {IDS_FLAGS_WEBRTC_HW_ENCODING_ALL, switches::kDisableWebRtcHWEncoding, ""},
-    {IDS_FLAGS_WEBRTC_HW_ENCODING_VPX, switches::kDisableWebRtcHWEncoding,
-     switches::kDisableWebRtcHWEncodingVPx},
-    {IDS_FLAGS_WEBRTC_HW_ENCODING_H264, switches::kDisableWebRtcHWEncoding,
-     switches::kDisableWebRtcHWEncodingH264},
-    {IDS_FLAGS_WEBRTC_HW_ENCODING_NONE, switches::kDisableWebRtcHWEncoding,
-     switches::kDisableWebRtcHWEncodingNone},
-};
-#endif  // ENABLE_WEBRTC
-
 #if !defined(OS_ANDROID)
 const FeatureEntry::Choice kEnableDefaultMediaSessionChoices[] = {
     {IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_DISABLED, "", ""},
@@ -716,9 +703,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"disable-webrtc-hw-decoding", IDS_FLAGS_WEBRTC_HW_DECODING_NAME,
      IDS_FLAGS_WEBRTC_HW_DECODING_DESCRIPTION, kOsAndroid | kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableWebRtcHWDecoding)},
-    {"disable-webrtc-hw-encoding", IDS_FLAGS_WEBRTC_HW_ENCODING_NAME,
-     IDS_FLAGS_WEBRTC_HW_ENCODING_DESCRIPTION, kOsAndroid | kOsCrOS,
-     MULTI_VALUE_TYPE(kDisableWebRtcHWEncodingChoices)},
+    {"disable-webrtc-hw-vp8-encoding", IDS_FLAGS_WEBRTC_HW_VP8_ENCODING_NAME,
+     IDS_FLAGS_WEBRTC_HW_VP8_ENCODING_DESCRIPTION, kOsAndroid | kOsCrOS,
+     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableWebRtcHWVP8Encoding)},
+    {"enable-webrtc-hw-h264-encoding", IDS_FLAGS_WEBRTC_HW_H264_ENCODING_NAME,
+     IDS_FLAGS_WEBRTC_HW_H264_ENCODING_DESCRIPTION, kOsAndroid | kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kWebRtcHWH264Encoding)},
     {"enable-webrtc-stun-origin", IDS_FLAGS_WEBRTC_STUN_ORIGIN_NAME,
      IDS_FLAGS_WEBRTC_STUN_ORIGIN_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebRtcStunOrigin)},

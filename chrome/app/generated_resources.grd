@@ -5735,23 +5735,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_WEBRTC_HW_DECODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video decoding support.">
         Support in WebRTC for decoding video streams using platform hardware.
       </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_NAME" desc="Name of chrome:flags option to turn off WebRTC hardware video encoding support.">
-        WebRTC hardware video encoding
+      <message name="IDS_FLAGS_WEBRTC_HW_VP8_ENCODING_NAME" desc="Name of chrome:flags option to turn off WebRTC vp8 hardware video encoding support.">
+        WebRTC hardware vp8 video encoding
       </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video encoding support.">
-        Support in WebRTC for encoding video streams using platform hardware.
+      <message name="IDS_FLAGS_WEBRTC_HW_VP8_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC vp8 hardware video encoding support.">
+        Support in WebRTC for encoding vp8 video streams using platform hardware.
       </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_ALL">
-        Disable all hw encoding
+      <message name="IDS_FLAGS_WEBRTC_HW_H264_ENCODING_NAME" desc="Name of chrome:flags option to turn on WebRTC h264 hardware video encoding support.">
+        WebRTC hardware h264 video encoding
       </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_VPX">
-        Disable vpx hw encoding
-      </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_H264">
-        Disable h264 hw encoding
-      </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_NONE">
-        Disable none hw encoding
+      <message name="IDS_FLAGS_WEBRTC_HW_H264_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn on WebRTC hardware h264 video encoding support.">
+        Support in WebRTC for encoding h264 video streams using platform hardware.
       </message>
       <message name="IDS_FLAGS_WEBRTC_STUN_ORIGIN_NAME" desc="Name of chrome:flags option to turn on Origin header for WebRTC STUN messages">
         WebRTC Stun origin header

@@ -169,7 +169,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kEnableWebVR,
 #if BUILDFLAG(ENABLE_WEBRTC)
     ::switches::kDisableWebRtcHWDecoding,
-    ::switches::kDisableWebRtcHWEncoding,
+    ::switches::kDisableWebRtcHWVP8Encoding,
 #endif
     ::switches::kDisableVaapiAcceleratedVideoEncode,
 #if defined(USE_OZONE)

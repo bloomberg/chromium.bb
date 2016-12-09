@@ -59,6 +59,7 @@ CONTENT_EXPORT extern const base::Feature kVrShell;
 CONTENT_EXPORT extern const base::Feature kWebAssembly;
 CONTENT_EXPORT extern const base::Feature kWebGLImageChromium;
 CONTENT_EXPORT extern const base::Feature kWebRtcEcdsaDefault;
+CONTENT_EXPORT extern const base::Feature kWebRtcHWH264Encoding;
 CONTENT_EXPORT extern const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames;
 CONTENT_EXPORT extern const base::Feature kWebUsb;
 CONTENT_EXPORT

@@ -28,6 +28,7 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
@@ -692,8 +693,8 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
 #if BUILDFLAG(ENABLE_WEBRTC)
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE) &&
-      !command_line->HasSwitch(switches::kDisableWebRtcHWEncoding))
-    command_line->AppendSwitch(switches::kDisableWebRtcHWEncoding);
+      !command_line->HasSwitch(switches::kDisableWebRtcHWVP8Encoding))
+    command_line->AppendSwitch(switches::kDisableWebRtcHWVP8Encoding);
 #endif
 
 #if defined(USE_AURA)
@@ -775,11 +776,12 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE) &&
-      !command_line->HasSwitch(switches::kDisableWebRtcHWEncoding)) {
+      !command_line->HasSwitch(switches::kDisableWebRtcHWVP8Encoding) &&
+      !base::FeatureList::IsEnabled(features::kWebRtcHWH264Encoding)) {
     if (gpu_preferences) {
       gpu_preferences->disable_web_rtc_hw_encoding = true;
     } else {
-      command_line->AppendSwitch(switches::kDisableWebRtcHWEncoding);
+      command_line->AppendSwitch(switches::kDisableWebRtcHWVP8Encoding);
     }
   }
 #endif

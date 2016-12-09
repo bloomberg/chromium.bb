@@ -923,10 +923,7 @@ const char kDisableWebRtcHWDecoding[]       = "disable-webrtc-hw-decoding";
 const char kDisableWebRtcEncryption[]      = "disable-webrtc-encryption";
 
 // Disables HW encode acceleration for WebRTC.
-const char kDisableWebRtcHWEncoding[]       = "disable-webrtc-hw-encoding";
-const char kDisableWebRtcHWEncodingVPx[] = "vpx";
-const char kDisableWebRtcHWEncodingH264[] = "h264";
-const char kDisableWebRtcHWEncodingNone[] = "none";
+const char kDisableWebRtcHWVP8Encoding[]     = "disable-webrtc-hw-vp8-encoding";
 
 // Enables Origin header in Stun messages for WebRTC.
 const char kEnableWebRtcStunOrigin[]        = "enable-webrtc-stun-origin";
