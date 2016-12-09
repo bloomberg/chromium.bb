@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome_browser_net::PredictorTabHelper);
 
@@ -17,8 +18,8 @@ namespace chrome_browser_net {
 
 namespace {
 
-// Triggers the preconnector on the new navigation api. This captures more
-// navigations.
+// Triggers the preconnector on renderer-initiated navigations. This captures
+// more navigations.
 const base::Feature kPreconnectMore{"PreconnectMore",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -34,7 +35,9 @@ PredictorTabHelper::~PredictorTabHelper() {
 
 void PredictorTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!base::FeatureList::IsEnabled(kPreconnectMore))
+  if (!base::FeatureList::IsEnabled(kPreconnectMore) &&
+      (!content::IsBrowserSideNavigationEnabled() ||
+       navigation_handle->IsRendererInitiated()))
     return;
   // Subframe navigations are handled in WitnessURLRequest.
   if (!navigation_handle->IsInMainFrame())
@@ -49,6 +52,11 @@ void PredictorTabHelper::DidStartNavigation(
 void PredictorTabHelper::DidStartNavigationToPendingEntry(
     const GURL& url,
     content::ReloadType reload_type) {
+  // This method isn't needed with PlzNavigate (see comment in header for
+  // predicted_from_pending_entry_)
+  if (content::IsBrowserSideNavigationEnabled())
+    return;
+
   // The standard way to preconnect based on navigation.
   PreconnectUrl(url);
   predicted_from_pending_entry_ = true;
