@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -105,18 +106,29 @@ class CountingInterceptor : public net::URLRequestInterceptor {
   mutable base::WeakPtrFactory<CountingInterceptor> weak_factory_;
 };
 
-// URLRequestInterceptor which asserts that the request is prefetch only. Pings
-// |counter| after the flag is checked.
-class PrefetchOnlyInterceptor : public net::URLRequestInterceptor {
+class CountingInterceptorWithCallback : public net::URLRequestInterceptor {
  public:
-  explicit PrefetchOnlyInterceptor(const base::WeakPtr<RequestCounter>& counter)
-      : counter_(counter) {}
-  ~PrefetchOnlyInterceptor() override {}
+  // Inserts the interceptor object to intercept requests to |url|.  Can be
+  // called on any thread. Assumes that |counter| lives on the UI thread.  The
+  // |callback_io| will be called on IO thread with the net::URLrequest
+  // provided.
+  static void Initialize(const GURL& url,
+                         RequestCounter* counter,
+                         base::Callback<void(net::URLRequest*)> callback_io) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&CountingInterceptorWithCallback::CreateAndAddOnIO, url,
+                   counter->AsWeakPtr(), callback_io));
+  }
 
+  // net::URLRequestInterceptor:
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
-    EXPECT_TRUE(request->load_flags() & net::LOAD_PREFETCH);
+    // Run the callback.
+    callback_.Run(request);
+
+    // Ping the request counter.
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&RequestCounter::RequestStarted, counter_));
@@ -124,7 +136,27 @@ class PrefetchOnlyInterceptor : public net::URLRequestInterceptor {
   }
 
  private:
+  CountingInterceptorWithCallback(
+      const base::WeakPtr<RequestCounter>& counter,
+      base::Callback<void(net::URLRequest*)> callback)
+      : callback_(callback), counter_(counter) {}
+
+  static void CreateAndAddOnIO(
+      const GURL& url,
+      const base::WeakPtr<RequestCounter>& counter,
+      base::Callback<void(net::URLRequest*)> callback_io) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    // Create the object with base::WrapUnique to restrict access to the
+    // constructor.
+    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+        url, base::WrapUnique(
+                 new CountingInterceptorWithCallback(counter, callback_io)));
+  }
+
+  base::Callback<void(net::URLRequest*)> callback_;
   base::WeakPtr<RequestCounter> counter_;
+
+  DISALLOW_COPY_AND_ASSIGN(CountingInterceptorWithCallback);
 };
 
 // URLRequestJob (and associated handler) which hangs.
@@ -721,12 +753,11 @@ void CreateCountingInterceptorOnIO(
       url, base::MakeUnique<CountingInterceptor>(file, counter));
 }
 
-void CreatePrefetchOnlyInterceptorOnIO(
+void InterceptRequestAndCount(
     const GURL& url,
-    const base::WeakPtr<RequestCounter>& counter) {
-  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, base::MakeUnique<PrefetchOnlyInterceptor>(counter));
+    RequestCounter* counter,
+    base::Callback<void(net::URLRequest*)> callback_io) {
+  CountingInterceptorWithCallback::Initialize(url, counter, callback_io);
 }
 
 void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file) {

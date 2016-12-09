@@ -370,11 +370,13 @@ void CreateCountingInterceptorOnIO(
     const base::FilePath& file,
     const base::WeakPtr<RequestCounter>& counter);
 
-// Checks that |url| has been requested with net::LOAD_PREFETCH. Pings |counter|
-// after the flag is checked.
-void CreatePrefetchOnlyInterceptorOnIO(
+// When the |url| hits the net::URLRequestFilter (on the IO thread), executes
+// the |callback_io| providing the request to it, also pings the |counter| on UI
+// thread. Does not modify the behavior or the request job.
+void InterceptRequestAndCount(
     const GURL& url,
-    const base::WeakPtr<RequestCounter>& counter);
+    RequestCounter* counter,
+    base::Callback<void(net::URLRequest*)> callback_io);
 
 // Makes |url| respond to requests with the contents of |file|.
 void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file);

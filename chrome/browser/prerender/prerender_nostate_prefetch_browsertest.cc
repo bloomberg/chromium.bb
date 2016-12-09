@@ -23,13 +23,12 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using prerender::test_utils::CreateCountingInterceptorOnIO;
-using prerender::test_utils::CreatePrefetchOnlyInterceptorOnIO;
 using prerender::test_utils::DestructionWaiter;
 using prerender::test_utils::RequestCounter;
 using prerender::test_utils::TestPrerender;
@@ -82,8 +81,8 @@ class NoStatePrefetchBrowserTest
         base::FilePath(), base::FilePath::FromUTF8Unsafe(path_str));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&CreateCountingInterceptorOnIO, url, url_file,
-                   counter->AsWeakPtr()));
+        base::Bind(&prerender::test_utils::CreateCountingInterceptorOnIO, url,
+                   url_file, counter->AsWeakPtr()));
   }
 
  protected:
@@ -135,16 +134,16 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimple) {
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
   RequestCounter main_counter;
   RequestCounter script_counter;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreatePrefetchOnlyInterceptorOnIO,
-                 src_server()->GetURL(MakeAbsolute(kPrefetchPage)),
-                 main_counter.AsWeakPtr()));
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreatePrefetchOnlyInterceptorOnIO,
-                 src_server()->GetURL(MakeAbsolute(kPrefetchScript)),
-                 script_counter.AsWeakPtr()));
+  auto verify_prefetch_only = base::Bind([](net::URLRequest* request) {
+    EXPECT_TRUE(request->load_flags() & net::LOAD_PREFETCH);
+  });
+
+  prerender::test_utils::InterceptRequestAndCount(
+      src_server()->GetURL(MakeAbsolute(kPrefetchPage)), &main_counter,
+      verify_prefetch_only);
+  prerender::test_utils::InterceptRequestAndCount(
+      src_server()->GetURL(MakeAbsolute(kPrefetchScript)), &script_counter,
+      verify_prefetch_only);
 
   std::unique_ptr<TestPrerender> test_prerender =
       PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
@@ -302,15 +301,14 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
   GURL redirect_url = src_server()->GetURL(redirect_path);
   GURL page_url = src_server()->GetURL(MakeAbsolute(kPrefetchPage));
   RequestCounter redirect_counter;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreatePrefetchOnlyInterceptorOnIO, redirect_url,
-                 redirect_counter.AsWeakPtr()));
+  auto verify_prefetch_only = base::Bind([](net::URLRequest* request) {
+    EXPECT_TRUE(request->load_flags() & net::LOAD_PREFETCH);
+  });
+  prerender::test_utils::InterceptRequestAndCount(
+      redirect_url, &redirect_counter, verify_prefetch_only);
   RequestCounter page_counter;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreatePrefetchOnlyInterceptorOnIO, page_url,
-                 page_counter.AsWeakPtr()));
+  prerender::test_utils::InterceptRequestAndCount(page_url, &page_counter,
+                                                  verify_prefetch_only);
   PrefetchFromFile(redirect_path, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   redirect_counter.WaitForCount(1);
   page_counter.WaitForCount(1);
@@ -495,6 +493,25 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, HistoryUntouchedByPrefetch) {
 
   // The loader URL is the remaining entry.
   EXPECT_EQ(2U, urls.size());
+}
+
+// Checks that prefetch requests have net::IDLE priority.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
+  GURL script_url = src_server()->GetURL(MakeAbsolute(kPrefetchScript));
+  RequestCounter script_counter;
+  prerender::test_utils::InterceptRequestAndCount(
+      script_url, &script_counter, base::Bind([](net::URLRequest* request) {
+#if defined(OS_ANDROID)
+        // On Android requests from prerenders do not get downgraded priority.
+        // See: https://crbug.com/652746.
+        constexpr net::RequestPriority kExpectedPriority = net::HIGHEST;
+#else
+        constexpr net::RequestPriority kExpectedPriority = net::IDLE;
+#endif
+        EXPECT_EQ(kExpectedPriority, request->priority());
+      }));
+  PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  script_counter.WaitForCount(1);
 }
 
 }  // namespace prerender
