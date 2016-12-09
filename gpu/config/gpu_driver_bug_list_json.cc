@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.21",
+  "version": "9.22",
   "entries": [
     {
       "id": 1,
@@ -2233,6 +2233,42 @@ LONG_STRING_CONST(
       "disabled_extensions": [
         "GL_KHR_blend_equation_advanced",
         "GL_KHR_blend_equation_advanced_coherent"
+      ]
+    },
+    {
+      "id": 207,
+      "description": "Decode and Encode before generateMipmap for srgb format textures on Windows",
+      "cr_bugs": [634519],
+      "os" : {
+        "type": "win"
+      },
+      "features" : [
+        "decode_encode_srgb_for_generatemipmap"
+      ]
+    },
+    {
+      "id": 208,
+      "description": "Decode and Encode before generateMipmap for srgb format textures on Linux Mesa ANGLE path",
+      "cr_bugs": [634519],
+      "os": {
+        "type": "linux"
+      },
+      "gl_renderer": "ANGLE.*",
+      "vendor_id": "0x8086",
+      "features": [
+        "decode_encode_srgb_for_generatemipmap"
+      ]
+    },
+    {
+      "id": 209,
+      "description": "Decode and Encode before generateMipmap for srgb format textures on Chromeos Intel",
+      "cr_bugs": [634519],
+      "os": {
+        "type": "chromeos"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "decode_encode_srgb_for_generatemipmap"
       ]
     }
   ]

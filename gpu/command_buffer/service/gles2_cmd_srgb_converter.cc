@@ -41,10 +41,39 @@ void SRGBConverter::InitializeSRGBConverterProgram() {
 
   srgb_converter_program_ = glCreateProgram();
 
+  const char* kShaderPrecisionPreamble =
+      "#ifdef GL_ES\n"
+      "precision mediump float;\n"
+      "#define TexCoordPrecision mediump\n"
+      "#else\n"
+      "#define TexCoordPrecision\n"
+      "#endif\n";
+
+  std::string vs_source;
+  if (feature_info_->gl_version_info().is_es) {
+    if (feature_info_->gl_version_info().is_es3) {
+      vs_source += "#version 300 es\n";
+      vs_source +=
+          "#define ATTRIBUTE in\n"
+          "#define VARYING out\n";
+    } else {
+      vs_source +=
+          "#define ATTRIBUTE attribute\n"
+          "#define VARYING varying\n";
+    }
+  } else {
+    vs_source += "#version 150\n";
+    vs_source +=
+        "#define ATTRIBUTE in\n"
+        "#define VARYING out\n";
+  }
+
+  vs_source += kShaderPrecisionPreamble;
+
+  // TODO(yizhou): gles 2.0 does not support gl_VertexID.
   // Compile the vertex shader
-  const char* vs_source =
-      "#version 150\n"
-      "out vec2 v_texcoord;\n"
+  vs_source +=
+      "VARYING TexCoordPrecision vec2 v_texcoord;\n"
       "\n"
       "void main()\n"
       "{\n"
@@ -64,7 +93,7 @@ void SRGBConverter::InitializeSRGBConverterProgram() {
       "    v_texcoord = quad_positions[gl_VertexID];\n"
       "}\n";
   GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-  CompileShader(vs, vs_source);
+  CompileShader(vs, vs_source.c_str());
   glAttachShader(srgb_converter_program_, vs);
   glDeleteShader(vs);
 
@@ -80,20 +109,50 @@ void SRGBConverter::InitializeSRGBConverterProgram() {
   // encoding, we don't need to use the equation to explicitly encode linear
   // to srgb in fragment shader.
   // As a result, we just use a simple fragment shader to do srgb conversion.
-  const char* fs_source =
-      "#version 150\n"
-      "uniform sampler2D u_source_texture;\n"
-      "in vec2 v_texcoord;\n"
-      "out vec4 output_color;\n"
+  std::string fs_source;
+  if (feature_info_->gl_version_info().is_es) {
+    if (feature_info_->gl_version_info().is_es3) {
+      fs_source += "#version 300 es\n";
+    }
+  } else {
+    fs_source += "#version 150\n";
+  }
+
+  fs_source += kShaderPrecisionPreamble;
+
+  if (feature_info_->gl_version_info().is_es) {
+    if (feature_info_->gl_version_info().is_es3) {
+      fs_source +=
+          "#define VARYING in\n"
+          "out vec4 frag_color;\n"
+          "#define FRAGCOLOR frag_color\n"
+          "#define TextureLookup texture\n";
+    } else {
+      fs_source +=
+          "#define VARYING varying\n"
+          "#define FRAGCOLOR gl_FragColor\n"
+          "#define TextureLookup texture2D\n";
+    }
+  } else {
+    fs_source +=
+        "#define VARYING in\n"
+        "out vec4 frag_color;\n"
+        "#define FRAGCOLOR frag_color\n"
+        "#define TextureLookup texture\n";
+  }
+
+  fs_source +=
+      "uniform mediump sampler2D u_source_texture;\n"
+      "VARYING TexCoordPrecision vec2 v_texcoord;\n"
       "\n"
       "void main()\n"
       "{\n"
-      "    vec4 c = texture(u_source_texture, v_texcoord);\n"
-      "    output_color = c;\n"
+      "    vec4 c = TextureLookup(u_source_texture, v_texcoord);\n"
+      "    FRAGCOLOR = c;\n"
       "}\n";
 
   GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-  CompileShader(fs, fs_source);
+  CompileShader(fs, fs_source.c_str());
   glAttachShader(srgb_converter_program_, fs);
   glDeleteShader(fs);
 
@@ -243,9 +302,8 @@ void SRGBConverter::Blit(
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
     glBindTexture(GL_TEXTURE_2D, srgb_converter_textures_[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
-                 c.width(), c.height(),
-                 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, c.width(), c.height(), 0,
+                 GL_RGBA, GL_FLOAT, nullptr);
     glBindFramebufferEXT(GL_FRAMEBUFFER, srgb_decoder_fbo_);
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               GL_TEXTURE_2D, srgb_converter_textures_[1], 0);
@@ -277,10 +335,8 @@ void SRGBConverter::Blit(
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     glTexImage2D(
         GL_TEXTURE_2D, 0, decode ? GL_RGBA32F : src_framebuffer_internal_format,
-        width_draw, height_draw, 0,
-        decode ? GL_RGBA : src_framebuffer_format,
-        decode ? GL_FLOAT : src_framebuffer_type,
-        nullptr);
+        width_draw, height_draw, 0, decode ? GL_RGBA : src_framebuffer_format,
+        decode ? GL_FLOAT : src_framebuffer_type, nullptr);
 
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, srgb_encoder_fbo_);
     glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,

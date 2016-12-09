@@ -52,8 +52,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'integer-cubemap-specification-order-bug.html',
         bug=483282) # owner:cwallez, test might be buggy
     # Windows only.
-    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
-        ['win'], bug=634519)
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['win'], bug=644740)
 
@@ -585,8 +583,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
         ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
-        ['linux', 'intel', 'opengl'], bug=634519) # WebGL 2.0.1
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
