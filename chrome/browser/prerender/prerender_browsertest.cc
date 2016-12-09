@@ -91,6 +91,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/url_constants.h"
@@ -2834,6 +2835,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCapturedWebContents) {
 // a server redirect.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderCrossProcessServerRedirect) {
+  // Cross-process navigations don't happen for prerendering with PlzNavigate,
+  // since we decide on a process after redirects are followed.
+  if (content::IsBrowserSideNavigationEnabled())
+    return;
+
   // Force everything to be a process swap.
   SwapProcessesContentBrowserClient test_browser_client;
   content::ContentBrowserClient* original_browser_client =
@@ -2851,6 +2857,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // See http://crbug.com/341134
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderCrossProcessServerRedirectNoHang) {
+  // Cross-process navigations don't happen for prerendering with PlzNavigate,
+  // since we decide on a process after redirects are followed.
+  if (content::IsBrowserSideNavigationEnabled())
+    return;
+
   const char kDestPath[] = "/prerender/prerender_page.html";
   // Force everything to be a process swap.
   SwapProcessesContentBrowserClient test_browser_client;

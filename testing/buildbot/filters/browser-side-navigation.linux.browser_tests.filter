@@ -2,8 +2,6 @@
 -PDFExtensionTest.PdfAccessibilityInOOPIF
 -PlatformAppUrlRedirectorBrowserTest.PrerenderedClickInTabIntercepted
 -PredictorBrowserTest.RendererInitiatedNavigationPreconnect
--PrerenderBrowserTest.PrerenderCrossProcessServerRedirect
--PrerenderBrowserTest.PrerenderCrossProcessServerRedirectNoHang
 -ThreatDOMDetailsTest.Everything
 
 # https://crbug.com/652767: NavigationHandle::GetResponseHeaders sometimes
