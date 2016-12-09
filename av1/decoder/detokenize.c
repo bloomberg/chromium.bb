@@ -85,7 +85,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
       fc->coef_cdfs[tx_size_ctx][type][ref];
   aom_cdf_prob(*cdf)[ENTROPY_TOKENS];
 #endif  // CONFIG_EC_MULTISYMBOL
-  unsigned int(*coef_counts)[COEFF_CONTEXTS][UNCONSTRAINED_NODES + 1];
+  unsigned int(*coef_counts)[COEFF_CONTEXTS][UNCONSTRAINED_NODES + 1] = NULL;
   unsigned int(*eob_branch_count)[COEFF_CONTEXTS];
   uint8_t token_cache[MAX_TX_SQUARE];
   const uint8_t *band_translate = get_band_translate(tx_size);
