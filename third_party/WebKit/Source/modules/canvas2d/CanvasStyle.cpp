@@ -32,6 +32,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/html/HTMLCanvasElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
 #include "platform/graphics/skia/SkiaUtils.h"
@@ -71,7 +72,8 @@ static Color currentColor(HTMLCanvasElement* canvas) {
 bool parseColorOrCurrentColor(Color& parsedColor,
                               const String& colorString,
                               HTMLCanvasElement* canvas) {
-  ColorParseResult parseResult = parseColor(parsedColor, colorString);
+  ColorParseResult parseResult =
+      parseColor(parsedColor, colorString.stripWhiteSpace(isHTMLSpace<UChar>));
   switch (parseResult) {
     case ParsedRGBA:
     case ParsedSystemColor:
