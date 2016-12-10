@@ -13,13 +13,14 @@
 #include <wayland-server-protocol-core.h>
 
 // Note: core wayland headers need to be included before protocol headers.
-#include <alpha-compositing-unstable-v1-server-protocol.h>  // NOLINT
-#include <gaming-input-unstable-v1-server-protocol.h>       // NOLINT
-#include <remote-shell-unstable-v1-server-protocol.h>       // NOLINT
-#include <secure-output-unstable-v1-server-protocol.h>      // NOLINT
-#include <stylus-unstable-v1-server-protocol.h>             // NOLINT
-#include <vsync-feedback-unstable-v1-server-protocol.h>     // NOLINT
-#include <xdg-shell-unstable-v5-server-protocol.h>          // NOLINT
+#include <alpha-compositing-unstable-v1-server-protocol.h>       // NOLINT
+#include <keyboard-configuration-unstable-v1-server-protocol.h>  // NOLINT
+#include <gaming-input-unstable-v1-server-protocol.h>            // NOLINT
+#include <remote-shell-unstable-v1-server-protocol.h>            // NOLINT
+#include <secure-output-unstable-v1-server-protocol.h>           // NOLINT
+#include <stylus-unstable-v1-server-protocol.h>                  // NOLINT
+#include <vsync-feedback-unstable-v1-server-protocol.h>          // NOLINT
+#include <xdg-shell-unstable-v5-server-protocol.h>               // NOLINT
 
 #include <algorithm>
 #include <cstdlib>
@@ -47,6 +48,7 @@
 #include "components/exo/gamepad_delegate.h"
 #include "components/exo/keyboard.h"
 #include "components/exo/keyboard_delegate.h"
+#include "components/exo/keyboard_device_configuration_delegate.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/notification_surface_manager.h"
 #include "components/exo/pointer.h"
@@ -2984,6 +2986,7 @@ void stylus_get_pointer_stylus(wl_client* client,
                                wl_resource* resource,
                                uint32_t id,
                                wl_resource* pointer_resource) {
+  // TODO(yhanada): Produce an erorr if a delegate already exists.
   Pointer* pointer = GetUserDataAs<Pointer>(pointer_resource);
 
   wl_resource* stylus_resource =
@@ -3002,6 +3005,83 @@ void bind_stylus(wl_client* client, void* data, uint32_t version, uint32_t id) {
       wl_resource_create(client, &zcr_stylus_v1_interface, version, id);
   wl_resource_set_implementation(resource, &stylus_implementation, data,
                                  nullptr);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// keyboard_device_configuration interface:
+
+class WaylandKeyboardDeviceConfigurationDelegate
+    : public KeyboardDeviceConfigurationDelegate {
+ public:
+  WaylandKeyboardDeviceConfigurationDelegate(wl_resource* resource,
+                                             Keyboard* keyboard)
+      : resource_(resource), keyboard_(keyboard) {
+    keyboard_->SetDeviceConfigurationDelegate(this);
+  }
+  ~WaylandKeyboardDeviceConfigurationDelegate() override {
+    if (keyboard_)
+      keyboard_->SetDeviceConfigurationDelegate(nullptr);
+  }
+
+  void OnKeyboardDestroying(Keyboard* keyboard) override {
+    keyboard_ = nullptr;
+  }
+  void OnKeyboardTypeChanged(bool is_physical) override {
+    zcr_keyboard_device_configuration_v1_send_type_change(
+        resource_,
+        is_physical
+            ? ZCR_KEYBOARD_DEVICE_CONFIGURATION_V1_KEYBOARD_TYPE_PHYSICAL
+            : ZCR_KEYBOARD_DEVICE_CONFIGURATION_V1_KEYBOARD_TYPE_VIRTUAL);
+  }
+
+ private:
+  wl_resource* resource_;
+  Keyboard* keyboard_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandKeyboardDeviceConfigurationDelegate);
+};
+
+void keyboard_device_configuration_destroy(wl_client* client,
+                                           wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct zcr_keyboard_device_configuration_v1_interface
+    keyboard_device_configuration_implementation = {
+        keyboard_device_configuration_destroy};
+
+////////////////////////////////////////////////////////////////////////////////
+// keyboard_configuration interface:
+
+void keyboard_configuration_get_keyboard_device_configuration(
+    wl_client* client,
+    wl_resource* resource,
+    uint32_t id,
+    wl_resource* keyboard_resource) {
+  // TODO(yhanada): Produce an error if a delegate already exists.
+  wl_resource* keyboard_device_configuration_resource = wl_resource_create(
+      client, &zcr_keyboard_device_configuration_v1_interface, 1, id);
+
+  SetImplementation(
+      keyboard_device_configuration_resource,
+      &keyboard_device_configuration_implementation,
+      base::MakeUnique<WaylandKeyboardDeviceConfigurationDelegate>(
+          keyboard_device_configuration_resource,
+          GetUserDataAs<Keyboard>(keyboard_resource)));
+}
+
+const struct zcr_keyboard_configuration_v1_interface
+    keyboard_configuration_implementation = {
+        keyboard_configuration_get_keyboard_device_configuration};
+
+void bind_keyboard_configuration(wl_client* client,
+                                 void* data,
+                                 uint32_t version,
+                                 uint32_t id) {
+  wl_resource* resource = wl_resource_create(
+      client, &zcr_keyboard_configuration_v1_interface, version, id);
+  wl_resource_set_implementation(
+      resource, &keyboard_configuration_implementation, data, nullptr);
 }
 
 }  // namespace
@@ -3046,6 +3126,8 @@ Server::Server(Display* display)
                    display_, bind_gaming_input);
   wl_global_create(wl_display_.get(), &zcr_stylus_v1_interface, 1, display_,
                    bind_stylus);
+  wl_global_create(wl_display_.get(), &zcr_keyboard_configuration_v1_interface,
+                   1, display_, bind_keyboard_configuration);
 }
 
 Server::~Server() {}

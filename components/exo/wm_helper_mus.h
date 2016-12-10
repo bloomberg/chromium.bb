@@ -9,11 +9,13 @@
 #include "components/exo/wm_helper.h"
 #include "services/ui/public/cpp/window_tree_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
+#include "ui/events/devices/input_device_event_observer.h"
 
 namespace exo {
 
 // A helper class for accessing WindowManager related features.
 class WMHelperMus : public WMHelper,
+                    public ui::InputDeviceEventObserver,
                     public ui::WindowTreeClientObserver,
                     public aura::client::FocusChangeObserver {
  public:
@@ -43,6 +45,9 @@ class WMHelperMus : public WMHelper,
   // Overriden from ui::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
+
+  // Overriden from ui::InputDeviceEventObserver:
+  void OnKeyboardDeviceConfigurationChanged() override;
 
  private:
   aura::Window* active_window_;

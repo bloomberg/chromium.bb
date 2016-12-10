@@ -148,4 +148,8 @@ void WMHelperMus::OnWindowFocused(aura::Window* gained_focus,
   }
 }
 
+void WMHelperMus::OnKeyboardDeviceConfigurationChanged() {
+  NotifyKeyboardDeviceConfigurationChanged();
+}
+
 }  // namespace exo

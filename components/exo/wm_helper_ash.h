@@ -11,6 +11,7 @@
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
+#include "ui/events/devices/input_device_event_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace exo {
@@ -21,7 +22,8 @@ class WMHelperAsh : public WMHelper,
                     public aura::client::FocusChangeObserver,
                     public aura::client::CursorClientObserver,
                     public ash::AccessibilityObserver,
-                    public ash::ShellObserver {
+                    public ash::ShellObserver,
+                    public ui::InputDeviceEventObserver {
  public:
   WMHelperAsh();
   ~WMHelperAsh() override;
@@ -63,6 +65,9 @@ class WMHelperAsh : public WMHelper,
   // Overriden from ash::ShellObserver:
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
+
+  // Overriden from ui::InputDeviceEventObserver:
+  void OnKeyboardDeviceConfigurationChanged() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WMHelperAsh);

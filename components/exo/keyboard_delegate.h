@@ -36,7 +36,7 @@ class KeyboardDelegate {
   // Called when keyboard focus leaves a valid target surface.
   virtual void OnKeyboardLeave(Surface* surface) = 0;
 
-  // Called when pkeyboard key state changed. |pressed| is true when |key|
+  // Called when keyboard key state changed. |pressed| is true when |key|
   // was pressed and false if it was released.
   virtual void OnKeyboardKey(base::TimeTicks time_stamp,
                              ui::DomCode key,

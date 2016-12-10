@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace exo {
@@ -24,6 +25,7 @@ WMHelperAsh::WMHelperAsh() {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->AddObserver(this);
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
 }
 
 WMHelperAsh::~WMHelperAsh() {
@@ -34,6 +36,7 @@ WMHelperAsh::~WMHelperAsh() {
   focus_client->RemoveObserver(this);
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
   ash::WmShell::Get()->RemoveShellObserver(this);
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -131,6 +134,10 @@ void WMHelperAsh::OnMaximizeModeStarted() {
 
 void WMHelperAsh::OnMaximizeModeEnded() {
   NotifyMaximizeModeEnded();
+}
+
+void WMHelperAsh::OnKeyboardDeviceConfigurationChanged() {
+  NotifyKeyboardDeviceConfigurationChanged();
 }
 
 }  // namespace exo

@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/wm_helper.h"
-#include "ui/aura/client/focus_change_observer.h"
 #include "ui/events/event_handler.h"
 
 namespace ui {
@@ -20,16 +19,22 @@ class KeyEvent;
 
 namespace exo {
 class KeyboardDelegate;
+class KeyboardDeviceConfigurationDelegate;
 class Surface;
 
 // This class implements a client keyboard that represents one or more keyboard
 // devices.
 class Keyboard : public ui::EventHandler,
                  public WMHelper::FocusObserver,
+                 public WMHelper::InputDeviceEventObserver,
+                 public WMHelper::MaximizeModeObserver,
                  public SurfaceObserver {
  public:
   explicit Keyboard(KeyboardDelegate* delegate);
   ~Keyboard() override;
+
+  void SetDeviceConfigurationDelegate(
+      KeyboardDeviceConfigurationDelegate* delegate);
 
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -41,12 +46,24 @@ class Keyboard : public ui::EventHandler,
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
 
+  // Overridden from ui::InputDeviceEventObserver:
+  void OnKeyboardDeviceConfigurationChanged() override;
+
+  // Overridden from WMHelper::MaximizeModeObserver:
+  void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnded() override;
+
  private:
   // Returns the effective focus for |window|.
   Surface* GetEffectiveFocus(aura::Window* window) const;
 
-  // The delegate instance that all events are dispatched to.
+  // The delegate instance that all events except for events about device
+  // configuration are dispatched to.
   KeyboardDelegate* const delegate_;
+
+  // The delegate instance that events about device configuration are dispatched
+  // to.
+  KeyboardDeviceConfigurationDelegate* device_configuration_delegate_ = nullptr;
 
   // The current focus surface for the keyboard.
   Surface* focus_ = nullptr;

@@ -5,16 +5,20 @@
 #include "components/exo/keyboard.h"
 
 #include "components/exo/keyboard_delegate.h"
+#include "components/exo/keyboard_device_configuration_delegate.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 
 namespace exo {
+namespace {
 
 bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
   // Check if IME consumed the event, to avoid it to be doubly processed.
@@ -70,6 +74,21 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
   return false;
 }
 
+bool IsPhysicalKeyboardEnabled() {
+  // The internal keyboard is enabled if maximize mode is not enabled.
+  if (WMHelper::GetInstance()->IsMaximizeModeWindowManagerEnabled())
+    return true;
+
+  for (auto& keyboard :
+       ui::InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
+    if (keyboard.type != ui::InputDeviceType::INPUT_DEVICE_INTERNAL)
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // Keyboard, public:
 
@@ -77,16 +96,28 @@ Keyboard::Keyboard(KeyboardDelegate* delegate) : delegate_(delegate) {
   auto* helper = WMHelper::GetInstance();
   helper->AddPostTargetHandler(this);
   helper->AddFocusObserver(this);
+  helper->AddMaximizeModeObserver(this);
+  helper->AddInputDeviceEventObserver(this);
   OnWindowFocused(helper->GetFocusedWindow(), nullptr);
 }
 
 Keyboard::~Keyboard() {
   delegate_->OnKeyboardDestroying(this);
+  if (device_configuration_delegate_)
+    device_configuration_delegate_->OnKeyboardDestroying(this);
   if (focus_)
     focus_->RemoveSurfaceObserver(this);
   auto* helper = WMHelper::GetInstance();
   helper->RemoveFocusObserver(this);
   helper->RemovePostTargetHandler(this);
+  helper->RemoveMaximizeModeObserver(this);
+  helper->RemoveInputDeviceEventObserver(this);
+}
+
+void Keyboard::SetDeviceConfigurationDelegate(
+    KeyboardDeviceConfigurationDelegate* delegate) {
+  device_configuration_delegate_ = delegate;
+  OnKeyboardDeviceConfigurationChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -167,6 +198,27 @@ void Keyboard::OnSurfaceDestroying(Surface* surface) {
   DCHECK(surface == focus_);
   focus_ = nullptr;
   surface->RemoveSurfaceObserver(this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ui::InputDeviceEventObserver overrides:
+
+void Keyboard::OnKeyboardDeviceConfigurationChanged() {
+  if (device_configuration_delegate_) {
+    device_configuration_delegate_->OnKeyboardTypeChanged(
+        IsPhysicalKeyboardEnabled());
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WMHelper::MaximizeModeObserver overrides:
+
+void Keyboard::OnMaximizeModeStarted() {
+  OnKeyboardDeviceConfigurationChanged();
+}
+
+void Keyboard::OnMaximizeModeEnded() {
+  OnKeyboardDeviceConfigurationChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
