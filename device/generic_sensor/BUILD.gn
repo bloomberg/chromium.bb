@@ -77,8 +77,8 @@ component("generic_sensor") {
     ]
 
     sources += [
-      "linux/platform_sensor_manager.cc",
-      "linux/platform_sensor_manager.h",
+      "linux/sensor_device_manager.cc",
+      "linux/sensor_device_manager.h",
       "platform_sensor_provider_linux.cc",
       "platform_sensor_provider_linux.h",
     ]

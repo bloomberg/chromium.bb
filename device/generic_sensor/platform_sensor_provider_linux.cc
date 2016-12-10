@@ -202,7 +202,7 @@ void PlatformSensorProviderLinux::OnDeviceRemoved(
     const std::string& device_node) {
   DCHECK(CalledOnValidThread());
   auto it = sensor_devices_by_type_.find(type);
-  if (it == sensor_devices_by_type_.end() &&
+  if (it != sensor_devices_by_type_.end() &&
       it->second->device_node == device_node)
     sensor_devices_by_type_.erase(it);
 }

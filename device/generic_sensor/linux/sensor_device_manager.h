@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_GENERIC_SENSOR_LINUX_PLATFORM_SENSOR_MANAGER_H_
-#define DEVICE_GENERIC_SENSOR_LINUX_PLATFORM_SENSOR_MANAGER_H_
+#ifndef DEVICE_GENERIC_SENSOR_LINUX_SENSOR_DEVICE_MANAGER_H_
+#define DEVICE_GENERIC_SENSOR_LINUX_SENSOR_DEVICE_MANAGER_H_
 
 #include "base/scoped_observer.h"
 
@@ -80,4 +80,4 @@ class DEVICE_GENERIC_SENSOR_EXPORT SensorDeviceManager
 
 }  // namespace device
 
-#endif  // DEVICE_GENERIC_SENSOR_LINUX_PLATFORM_SENSOR_MANAGER_H_
+#endif  // DEVICE_GENERIC_SENSOR_LINUX_SENSOR_DEVICE_MANAGER_H_

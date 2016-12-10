@@ -10,8 +10,8 @@
 #include "base/strings/string_util.h"
 
 #include "device/generic_sensor/generic_sensor_consts.h"
-#include "device/generic_sensor/linux/platform_sensor_manager.h"
 #include "device/generic_sensor/linux/sensor_data_linux.h"
+#include "device/generic_sensor/linux/sensor_device_manager.h"
 #include "device/generic_sensor/platform_sensor_provider_linux.h"
 
 #include "testing/gmock/include/gmock/gmock.h"

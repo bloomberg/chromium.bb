@@ -7,7 +7,7 @@
 
 #include "device/generic_sensor/platform_sensor_provider.h"
 
-#include "device/generic_sensor/linux/platform_sensor_manager.h"
+#include "device/generic_sensor/linux/sensor_device_manager.h"
 
 namespace base {
 template <typename T>
