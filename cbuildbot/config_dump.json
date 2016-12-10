@@ -27465,7 +27465,6 @@
     },
     "x86-mario-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "x86-mario"
         ]

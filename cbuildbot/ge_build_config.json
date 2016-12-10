@@ -1286,18 +1286,6 @@
       ]
     },
     {
-      "name": "x86-mario",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "pineview",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "x86-zgb",
       "configs": [
         {
