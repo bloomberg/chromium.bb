@@ -149,7 +149,7 @@ executable("lifecycle_unittest_exe") {
     "//base",
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp:sources",
-    "//services/service_manager/runner/child:test_native_main",
+    "//services/service_manager/public/cpp/standalone_service:main",
   ]
 
   data_deps = [

@@ -26,6 +26,12 @@
 namespace service_manager {
 namespace {
 
+const char kTestServiceName[] = "host_test_service";
+
+const base::FilePath::CharType kPackagesPath[] = FILE_PATH_LITERAL("Packages");
+const base::FilePath::CharType kServiceExtension[] =
+    FILE_PATH_LITERAL(".service");
+
 void ProcessReadyCallbackAdapater(const base::Closure& callback,
                                   base::ProcessId process_id) {
   callback.Run();
@@ -71,8 +77,6 @@ class NativeRunnerDelegateImpl : public NativeRunnerDelegate {
 #else
 #define MAYBE_StartJoin StartJoin
 #endif  // defined(OS_ANDROID)
-// Just tests starting the child process and joining it (without starting an
-// app).
 TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   base::FilePath service_manager_dir;
   PathService::Get(base::DIR_MODULE, &service_manager_dir);
@@ -89,10 +93,14 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   ProcessDelegate delegate;
   mojo::edk::InitIPCSupport(&delegate, io_thread.task_runner());
 
+  base::FilePath test_service_path =
+      base::FilePath(kPackagesPath).AppendASCII(kTestServiceName)
+          .AppendASCII(kTestServiceName) .AddExtension(kServiceExtension);
+
   NativeRunnerDelegateImpl native_runner_delegate;
   ChildProcessHost child_process_host(blocking_pool.get(),
                                       &native_runner_delegate, false,
-                                      Identity(), base::FilePath());
+                                      Identity(), test_service_path);
   base::RunLoop run_loop;
   child_process_host.Start(
       Identity(),

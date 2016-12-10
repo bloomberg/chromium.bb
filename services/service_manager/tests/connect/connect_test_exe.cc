@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
-#include "base/command_line.h"
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/connection.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/runner/child/test_native_main.h"
-#include "services/service_manager/runner/init.h"
+#include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
 
 using service_manager::test::mojom::ConnectTestService;
@@ -47,6 +45,7 @@ class Target : public service_manager::Service,
   void GetTitle(const GetTitleCallback& callback) override {
     callback.Run("connect_test_exe");
   }
+
   void GetInstance(const GetInstanceCallback& callback) override {
     callback.Run(context()->identity().instance());
   }
@@ -56,12 +55,9 @@ class Target : public service_manager::Service,
   DISALLOW_COPY_AND_ASSIGN(Target);
 };
 
-}  // namespace
+}  // namespac
 
-int main(int argc, char** argv) {
-  base::AtExitManager at_exit;
-  base::CommandLine::Init(argc, argv);
-
-  service_manager::InitializeLogging();
-  return service_manager::TestNativeMain(base::MakeUnique<Target>());
+MojoResult ServiceMain(MojoHandle service_request_handle) {
+  service_manager::ServiceRunner runner(new Target);
+  return runner.Run(service_request_handle);
 }

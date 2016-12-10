@@ -214,8 +214,11 @@ class MojoTestConnector::NativeRunnerDelegateImpl
       const service_manager::Identity& target,
       base::CommandLine* command_line) override {
     if (target.name() != kTestName) {
-      if (target.name() == kTestRunnerName)
+      if (target.name() == kTestRunnerName) {
         RemoveMashFromBrowserTests(command_line);
+        command_line->SetProgram(
+            base::CommandLine::ForCurrentProcess()->GetProgram());
+      }
       command_line->AppendSwitch(MojoTestConnector::kMashApp);
       return;
     }

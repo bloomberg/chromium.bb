@@ -10,22 +10,13 @@
 #include "base/test/test_suite.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/service_manager/runner/common/switches.h"
-#include "services/service_manager/runner/host/child_process.h"
 #include "services/service_manager/runner/init.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
 
   service_manager::WaitForDebuggerIfNecessary();
-
-  if (command_line.HasSwitch(switches::kChildProcess)) {
-    base::AtExitManager at_exit;
-
-    return service_manager::ChildProcessMain();
-  }
 
   mojo::edk::Init();
 

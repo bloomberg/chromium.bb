@@ -59,7 +59,7 @@ executable("service_manager_unittest_target") {
     "//base",
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/runner/child:test_native_main",
+    "//services/service_manager/public/cpp/standalone_service:main",
   ]
 
   data_deps = [
@@ -99,9 +99,9 @@ service("service_manager_unittest_embedder") {
     "//build/win:default_exe_manifest",
     "//mojo/edk/system",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp/standalone_service:main",
     "//services/service_manager/public/interfaces",
     "//services/service_manager/runner:init",
-    "//services/service_manager/runner/child:test_native_main",
     "//services/service_manager/runner/common",
   ]
 
