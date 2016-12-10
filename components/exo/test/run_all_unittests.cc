@@ -6,8 +6,16 @@
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
 
+#if !defined(OS_IOS)
+#include "mojo/edk/embedder/embedder.h"
+#endif
+
 int main(int argc, char** argv) {
   ash::test::AuraShellTestSuite test_suite(argc, argv);
+
+#if !defined(OS_IOS)
+  mojo::edk::Init();
+#endif
 
   return base::LaunchUnitTestsSerially(
       argc, argv, base::Bind(&ash::test::AuraShellTestSuite::Run,

@@ -38,6 +38,12 @@ class DesktopMediaListAshTest : public ash::test::AshTestBase {
   DesktopMediaListAshTest() {}
   ~DesktopMediaListAshTest() override {}
 
+  void TearDown() override {
+    // Reset the unique_ptr so the list stops refreshing.
+    list_.reset();
+    ash::test::AshTestBase::TearDown();
+  }
+
   void CreateList(int source_types) {
     list_.reset(new DesktopMediaListAsh(source_types));
     list_->SetThumbnailSize(gfx::Size(kThumbnailSize, kThumbnailSize));

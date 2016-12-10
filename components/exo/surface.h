@@ -17,7 +17,9 @@
 #include "base/observer_list.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_id_allocator.h"
+#include "components/exo/compositor_frame_sink.h"
+#include "components/exo/compositor_frame_sink_holder.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"
@@ -31,7 +33,6 @@ class TracedValue;
 }
 
 namespace cc {
-class SurfaceFactory;
 class SurfaceIdAllocator;
 }
 
@@ -57,42 +58,9 @@ class PropertyHelper;
 // change in the future when better hardware cursor support is added.
 using CursorProvider = Pointer;
 
-// This class owns the SurfaceFactory and keeps track of references to the
-// contents of Buffers. It's keeped alive by references from
-// release_callbacks_. It's destroyed when its owning Surface is destroyed and
-// the last outstanding release callback is called.
-class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
-                            public cc::SurfaceFactoryClient {
- public:
-  SurfaceFactoryOwner();
-
-  // Overridden from cc::SurfaceFactoryClient:
-  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface(const cc::LocalFrameId& id,
-                       const gfx::Rect& damage_rect) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
-
- private:
-  friend class base::RefCounted<SurfaceFactoryOwner>;
-  friend class Surface;
-
-  ~SurfaceFactoryOwner() override;
-
-  std::map<int,
-           std::pair<scoped_refptr<SurfaceFactoryOwner>,
-                     std::unique_ptr<cc::SingleReleaseCallback>>>
-      release_callbacks_;
-  cc::FrameSinkId frame_sink_id_;
-  std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
-  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
-  Surface* surface_ = nullptr;
-};
-
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
-class Surface : public ui::ContextFactoryObserver,
-                public aura::WindowObserver,
-                public cc::BeginFrameObserver {
+class Surface : public ui::ContextFactoryObserver, public aura::WindowObserver {
  public:
   using PropertyDeallocator = void (*)(int64_t value);
 
@@ -104,8 +72,11 @@ class Surface : public ui::ContextFactoryObserver,
 
   aura::Window* window() { return window_.get(); }
 
-  const cc::LocalFrameId& local_frame_id() const { return local_frame_id_; }
   cc::SurfaceId GetSurfaceId() const;
+
+  CompositorFrameSinkHolder* compositor_frame_sink_holder() {
+    return compositor_frame_sink_holder_.get();
+  }
 
   // Set a buffer as the content of this surface. A buffer can only be attached
   // to one surface at a time.
@@ -229,11 +200,6 @@ class Surface : public ui::ContextFactoryObserver,
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override;
 
-  // Overridden from cc::BeginFrameObserver:
-  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
-  const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override {}
-
   // Sets the |value| of the given surface |property|. Setting to the default
   // value (e.g., NULL) removes the property. The caller is responsible for the
   // lifetime of any object set as a property on the Surface.
@@ -314,9 +280,6 @@ class Surface : public ui::ContextFactoryObserver,
   // current_resource_.
   void UpdateSurface(bool full_damage);
 
-  // Adds/Removes begin frame observer based on state.
-  void UpdateNeedsBeginFrame();
-
   int64_t SetPropertyInternal(const void* key,
                               const char* name,
                               PropertyDeallocator deallocator,
@@ -350,12 +313,12 @@ class Surface : public ui::ContextFactoryObserver,
   // The buffer that will become the content of surface when Commit() is called.
   BufferAttachment pending_buffer_;
 
-  cc::SurfaceManager* surface_manager_;
-
-  scoped_refptr<SurfaceFactoryOwner> factory_owner_;
-
-  // The Surface Id currently attached to the window.
+  const cc::FrameSinkId frame_sink_id_;
   cc::LocalFrameId local_frame_id_;
+
+  scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder_;
+
+  cc::SurfaceIdAllocator id_allocator_;
 
   // The next resource id the buffer will be attached to.
   int next_resource_id_ = 1;
@@ -370,7 +333,6 @@ class Surface : public ui::ContextFactoryObserver,
   // be drawn. They fire at the first begin frame notification after this.
   std::list<FrameCallback> pending_frame_callbacks_;
   std::list<FrameCallback> frame_callbacks_;
-  std::list<FrameCallback> active_frame_callbacks_;
 
   // This is the state that has yet to be committed.
   State pending_state_;
@@ -406,11 +368,6 @@ class Surface : public ui::ContextFactoryObserver,
   // can set this to handle Commit() and apply any double buffered state it
   // maintains.
   SurfaceDelegate* delegate_ = nullptr;
-
-  // The begin frame source being observed.
-  cc::BeginFrameSource* begin_frame_source_ = nullptr;
-  cc::BeginFrameArgs last_begin_frame_args_;
-  bool needs_begin_frame_ = false;
 
   struct Value {
     const char* name;
