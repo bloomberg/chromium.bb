@@ -109,7 +109,7 @@ struct WebKitGamepads {
 };
 
 // This is the structure store in shared memory. It must match
-// content/common/gamepad_hardware_buffer.h. The GamepadHost unit test has
+// device::GamepadHardwareBuffer. The GamepadHost unit test has
 // some compile asserts to validate this.
 struct ContentGamepadHardwareBuffer {
   base::subtle::Atomic32 sequence;

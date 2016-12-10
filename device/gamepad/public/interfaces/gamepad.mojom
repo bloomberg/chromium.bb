@@ -57,7 +57,7 @@ interface GamepadObserver {
 
 // Asks the browser process to start polling, and return a shared memory
 // handle that will hold the data from the hardware. See
-// gamepad_hardware_buffer.h for a description of how synchronization is
+// gamepad_shared_buffer.h for a description of how synchronization is
 // handled. The number of Starts should match the number of Stops.
 interface GamepadMonitor {
   [Sync]

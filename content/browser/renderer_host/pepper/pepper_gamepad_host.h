@@ -14,6 +14,10 @@
 #include "device/gamepad/gamepad_consumer.h"
 #include "ppapi/host/resource_host.h"
 
+namespace device {
+class GamepadService;
+}
+
 namespace ppapi {
 namespace host {
 struct ReplyMessageContext;
@@ -23,7 +27,6 @@ struct ReplyMessageContext;
 namespace content {
 
 class BrowserPpapiHost;
-class GamepadService;
 
 class CONTENT_EXPORT PepperGamepadHost :
     public ppapi::host::ResourceHost,
@@ -35,7 +38,7 @@ class CONTENT_EXPORT PepperGamepadHost :
 
   // Allows tests to specify a gamepad service to use rather than the global
   // singleton. The caller owns the gamepad_service pointer.
-  PepperGamepadHost(GamepadService* gamepad_service,
+  PepperGamepadHost(device::GamepadService* gamepad_service,
                     BrowserPpapiHost* host,
                     PP_Instance instance,
                     PP_Resource resource);
@@ -59,7 +62,7 @@ class CONTENT_EXPORT PepperGamepadHost :
 
   BrowserPpapiHost* browser_ppapi_host_;
 
-  GamepadService* gamepad_service_;
+  device::GamepadService* gamepad_service_;
 
   bool is_started_;
 

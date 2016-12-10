@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
+#include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "device/gamepad/public/interfaces/gamepad.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -17,7 +18,8 @@
 
 namespace content {
 
-struct GamepadHardwareBuffer;
+typedef device::SharedMemorySeqLockBuffer<blink::WebGamepads>
+    GamepadHardwareBuffer;
 
 class GamepadSharedMemoryReader : public RendererGamepadProvider,
                                   public device::mojom::GamepadObserver {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gamepad/gamepad_service.h"
+#include "device/gamepad/gamepad_service.h"
 
 #include <string.h>
 
@@ -10,12 +10,11 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace device {
 
 namespace {
 static const int kNumberOfGamepads = blink::WebGamepads::itemsLengthCap;
@@ -25,9 +24,7 @@ using blink::WebGamepads;
 
 class ConnectionListener : public device::GamepadConsumer {
  public:
-  ConnectionListener() {
-    ClearCounters();
-  }
+  ConnectionListener() { ClearCounters(); }
 
   void OnGamepadConnected(unsigned index,
                           const blink::WebGamepad& gamepad) override {
@@ -69,17 +66,16 @@ class GamepadServiceTest : public testing::Test {
   void SetUp() override;
 
  private:
+  base::MessageLoop message_loop_;
   device::MockGamepadDataFetcher* fetcher_;
   GamepadService* service_;
   std::unique_ptr<ConnectionListener> connection_listener_;
-  TestBrowserThreadBundle browser_thread_;
   WebGamepads test_data_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadServiceTest);
 };
 
-GamepadServiceTest::GamepadServiceTest()
-    : browser_thread_(TestBrowserThreadBundle::IO_MAINLOOP) {
+GamepadServiceTest::GamepadServiceTest() {
   memset(&test_data_, 0, sizeof(test_data_));
 
   // Set it so that we have user gesture.
@@ -94,8 +90,8 @@ GamepadServiceTest::~GamepadServiceTest() {
 
 void GamepadServiceTest::SetUp() {
   fetcher_ = new device::MockGamepadDataFetcher(test_data_);
-  service_ = new GamepadService(
-      std::unique_ptr<device::GamepadDataFetcher>(fetcher_));
+  service_ =
+      new GamepadService(std::unique_ptr<device::GamepadDataFetcher>(fetcher_));
   connection_listener_.reset((new ConnectionListener));
   service_->SetSanitizationEnabled(false);
   service_->ConsumerBecameActive(connection_listener_.get());
@@ -134,4 +130,4 @@ TEST_F(GamepadServiceTest, ConnectionsTest) {
   EXPECT_EQ(0, GetDisconnectedCounter());
 }
 
-}  // namespace content
+}  // namespace device

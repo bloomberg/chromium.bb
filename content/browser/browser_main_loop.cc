@@ -54,7 +54,6 @@
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
-#include "content/browser/gamepad/gamepad_service.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -90,6 +89,7 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "device/battery/battery_status_service.h"
+#include "device/gamepad/gamepad_service.h"
 #include "device/time_zone_monitor/time_zone_monitor.h"
 #include "media/base/media.h"
 #include "media/base/user_input_monitor.h"
@@ -1272,7 +1272,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // I/O thread and isn't threadsafe.
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:GamepadService");
-    GamepadService::GetInstance()->Terminate();
+    device::GamepadService::GetInstance()->Terminate();
   }
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:SensorService");

@@ -13,9 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "content/browser/gamepad/gamepad_service_test_helpers.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_test.h"
-#include "content/common/gamepad_hardware_buffer.h"
+#include "device/gamepad/gamepad_shared_buffer.h"
 #include "device/gamepad/gamepad_test_helpers.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/host_message_context.h"
@@ -36,13 +35,15 @@ class PepperGamepadHostTest : public testing::Test,
   ~PepperGamepadHostTest() override {}
 
   void ConstructService(const blink::WebGamepads& test_data) {
-    service_.reset(new GamepadServiceTestConstructor(test_data));
+    service_.reset(new device::GamepadServiceTestConstructor(test_data));
   }
 
-  GamepadService* gamepad_service() { return service_->gamepad_service(); }
+  device::GamepadService* gamepad_service() {
+    return service_->gamepad_service();
+  }
 
  protected:
-  std::unique_ptr<GamepadServiceTestConstructor> service_;
+  std::unique_ptr<device::GamepadServiceTestConstructor> service_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperGamepadHostTest);
 };
@@ -59,13 +60,13 @@ inline ptrdiff_t AddressDiff(const void* a, const void* b) {
 TEST_F(PepperGamepadHostTest, ValidateHardwareBuffersMatch) {
   // Hardware buffer.
   static_assert(sizeof(ppapi::ContentGamepadHardwareBuffer) ==
-                    sizeof(GamepadHardwareBuffer),
+                    sizeof(device::GamepadHardwareBuffer),
                 "gamepad hardware buffers must match");
   ppapi::ContentGamepadHardwareBuffer ppapi_buf;
-  GamepadHardwareBuffer content_buf;
-  EXPECT_EQ(AddressDiff(&content_buf.sequence, &content_buf),
+  device::GamepadHardwareBuffer content_buf;
+  EXPECT_EQ(AddressDiff(&content_buf.seqlock, &content_buf),
             AddressDiff(&ppapi_buf.sequence, &ppapi_buf));
-  EXPECT_EQ(AddressDiff(&content_buf.buffer, &content_buf),
+  EXPECT_EQ(AddressDiff(&content_buf.data, &content_buf),
             AddressDiff(&ppapi_buf.buffer, &ppapi_buf));
 }
 

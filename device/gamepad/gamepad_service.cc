@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gamepad/gamepad_service.h"
+#include "device/gamepad/gamepad_service.h"
 
 #include <utility>
 
@@ -10,35 +10,33 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "content/browser/gamepad/gamepad_shared_buffer_impl.h"
-#include "content/common/gamepad_hardware_buffer.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_provider.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
-namespace content {
+namespace device {
 
 namespace {
 GamepadService* g_gamepad_service = 0;
 }
 
 GamepadService::GamepadService()
-    : num_active_consumers_(0),
+    : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      num_active_consumers_(0),
       gesture_callback_pending_(false) {
   SetInstance(this);
 }
 
 GamepadService::GamepadService(
     std::unique_ptr<device::GamepadDataFetcher> fetcher)
-    : provider_(new device::GamepadProvider(
-        base::MakeUnique<GamepadSharedBufferImpl>(), this, std::move(fetcher))),
+    : provider_(new device::GamepadProvider(this, std::move(fetcher))),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       num_active_consumers_(0),
       gesture_callback_pending_(false) {
   SetInstance(this);
-  thread_checker_.DetachFromThread();
 }
 
 GamepadService::~GamepadService() {
@@ -60,11 +58,10 @@ GamepadService* GamepadService::GetInstance() {
 }
 
 void GamepadService::ConsumerBecameActive(device::GamepadConsumer* consumer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   if (!provider_)
-    provider_.reset(new device::GamepadProvider(
-        base::MakeUnique<GamepadSharedBufferImpl>(), this));
+    provider_.reset(new device::GamepadProvider(this));
 
   std::pair<ConsumerSet::iterator, bool> insert_result =
       consumers_.insert(consumer);
@@ -73,8 +70,7 @@ void GamepadService::ConsumerBecameActive(device::GamepadConsumer* consumer) {
       !gesture_callback_pending_) {
     gesture_callback_pending_ = true;
     provider_->RegisterForUserGesture(
-          base::Bind(&GamepadService::OnUserGesture,
-                     base::Unretained(this)));
+        base::Bind(&GamepadService::OnUserGesture, base::Unretained(this)));
   }
 
   if (num_active_consumers_++ == 0)
@@ -93,7 +89,7 @@ void GamepadService::ConsumerBecameInactive(device::GamepadConsumer* consumer) {
 }
 
 void GamepadService::RemoveConsumer(device::GamepadConsumer* consumer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   ConsumerSet::iterator it = consumers_.find(consumer);
   if (it->is_active && --num_active_consumers_ == 0)
@@ -103,7 +99,7 @@ void GamepadService::RemoveConsumer(device::GamepadConsumer* consumer) {
 
 void GamepadService::RegisterForUserGesture(const base::Closure& closure) {
   DCHECK(consumers_.size() > 0);
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   provider_->RegisterForUserGesture(closure);
 }
 
@@ -115,35 +111,33 @@ void GamepadService::OnGamepadConnectionChange(bool connected,
                                                int index,
                                                const blink::WebGamepad& pad) {
   if (connected) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&GamepadService::OnGamepadConnected,
-                                       base::Unretained(this), index, pad));
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&GamepadService::OnGamepadConnected,
+                              base::Unretained(this), index, pad));
   } else {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&GamepadService::OnGamepadDisconnected,
-                                       base::Unretained(this), index, pad));
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&GamepadService::OnGamepadDisconnected,
+                              base::Unretained(this), index, pad));
   }
 }
 
-void GamepadService::OnGamepadConnected(
-    int index,
-    const blink::WebGamepad& pad) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void GamepadService::OnGamepadConnected(int index,
+                                        const blink::WebGamepad& pad) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
-  for (ConsumerSet::iterator it = consumers_.begin();
-       it != consumers_.end(); ++it) {
+  for (ConsumerSet::iterator it = consumers_.begin(); it != consumers_.end();
+       ++it) {
     if (it->did_observe_user_gesture && it->is_active)
       it->consumer->OnGamepadConnected(index, pad);
   }
 }
 
-void GamepadService::OnGamepadDisconnected(
-    int index,
-    const blink::WebGamepad& pad) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void GamepadService::OnGamepadDisconnected(int index,
+                                           const blink::WebGamepad& pad) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
-  for (ConsumerSet::iterator it = consumers_.begin();
-       it != consumers_.end(); ++it) {
+  for (ConsumerSet::iterator it = consumers_.begin(); it != consumers_.end();
+       ++it) {
     if (it->did_observe_user_gesture && it->is_active)
       it->consumer->OnGamepadDisconnected(index, pad);
   }
@@ -151,12 +145,12 @@ void GamepadService::OnGamepadDisconnected(
 
 base::SharedMemoryHandle GamepadService::GetSharedMemoryHandleForProcess(
     base::ProcessHandle handle) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   return provider_->GetSharedMemoryHandleForProcess(handle);
 }
 
 mojo::ScopedSharedBufferHandle GamepadService::GetSharedBufferHandle() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   // TODO(heke): Use mojo::SharedBuffer rather than base::SharedMemory in
   // GamepadSharedBuffer. See crbug.com/670655 for details.
@@ -166,16 +160,15 @@ mojo::ScopedSharedBufferHandle GamepadService::GetSharedBufferHandle() {
 }
 
 void GamepadService::OnUserGesture() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   gesture_callback_pending_ = false;
 
-  if (!provider_ ||
-      num_active_consumers_ == 0)
+  if (!provider_ || num_active_consumers_ == 0)
     return;
 
-  for (ConsumerSet::iterator it = consumers_.begin();
-       it != consumers_.end(); ++it) {
+  for (ConsumerSet::iterator it = consumers_.begin(); it != consumers_.end();
+       ++it) {
     if (!it->did_observe_user_gesture && it->is_active) {
       const ConsumerInfo& info = *it;
       info.did_observe_user_gesture = true;
@@ -194,4 +187,4 @@ void GamepadService::SetSanitizationEnabled(bool sanitize) {
   provider_->SetSanitizationEnabled(sanitize);
 }
 
-}  // namespace content
+}  // namespace device

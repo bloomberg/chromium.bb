@@ -42,12 +42,10 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
       public base::SystemMonitor::DevicesChangedObserver {
  public:
   explicit GamepadProvider(
-      std::unique_ptr<GamepadSharedBuffer> buffer,
       GamepadConnectionChangeClient* connection_change_client);
 
   // Manually specifies the data fetcher. Used for testing.
   explicit GamepadProvider(
-      std::unique_ptr<GamepadSharedBuffer> buffer,
       GamepadConnectionChangeClient* connection_change_client,
       std::unique_ptr<GamepadDataFetcher> fetcher);
 

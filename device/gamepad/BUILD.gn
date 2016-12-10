@@ -23,6 +23,8 @@ component("gamepad") {
     "gamepad_data_fetcher.h",
     "gamepad_data_fetcher_manager.cc",
     "gamepad_data_fetcher_manager.h",
+    "gamepad_monitor.cc",
+    "gamepad_monitor.h",
     "gamepad_pad_state_provider.cc",
     "gamepad_pad_state_provider.h",
     "gamepad_platform_data_fetcher.h",
@@ -36,6 +38,10 @@ component("gamepad") {
     "gamepad_platform_data_fetcher_win.h",
     "gamepad_provider.cc",
     "gamepad_provider.h",
+    "gamepad_service.cc",
+    "gamepad_service.h",
+    "gamepad_shared_buffer.cc",
+    "gamepad_shared_buffer.h",
     "gamepad_standard_mappings.cc",
     "gamepad_standard_mappings.h",
     "gamepad_standard_mappings_linux.cc",
@@ -52,6 +58,9 @@ component("gamepad") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//device/base/synchronization",
+    "//device/gamepad/public/interfaces",
+    "//mojo/public/cpp/system",
     "//third_party/WebKit/public:blink_headers",
   ]
 

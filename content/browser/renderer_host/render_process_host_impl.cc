@@ -99,7 +99,6 @@
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
-#include "content/browser/renderer_host/gamepad_monitor.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
@@ -164,6 +163,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "device/battery/battery_monitor_impl.h"
+#include "device/gamepad/gamepad_monitor.h"
 #include "device/power_monitor/power_monitor_message_broadcaster.h"
 #include "device/time_zone_monitor/time_zone_monitor.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -1284,7 +1284,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(base::Bind(&DeviceOrientationAbsoluteHost::Create));
 #endif  // defined(OS_ANDROID)
 
-  registry->AddInterface(base::Bind(&GamepadMonitor::Create));
+  registry->AddInterface(base::Bind(&device::GamepadMonitor::Create));
 
   registry->AddInterface(
       base::Bind(&VideoCaptureHost::Create,

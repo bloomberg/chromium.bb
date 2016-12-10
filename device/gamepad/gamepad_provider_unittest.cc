@@ -45,9 +45,18 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
   GamepadProvider* CreateProvider(const WebGamepads& test_data) {
     mock_data_fetcher_ = new MockGamepadDataFetcher(test_data);
     provider_.reset(new GamepadProvider(
-        std::unique_ptr<GamepadSharedBuffer>(new MockGamepadSharedBuffer()),
         nullptr, std::unique_ptr<GamepadDataFetcher>(mock_data_fetcher_)));
     return provider_.get();
+  }
+
+  void ReadGamepadHardwareBuffer(GamepadHardwareBuffer* buffer,
+                                 WebGamepads* output) {
+    memset(output, 0, sizeof(WebGamepads));
+    base::subtle::Atomic32 version;
+    do {
+      version = buffer->seqlock.ReadBegin();
+      memcpy(output, &buffer->data, sizeof(WebGamepads));
+    } while (buffer->seqlock.ReadRetry(version));
   }
 
  protected:
@@ -70,6 +79,7 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
 #endif
 TEST_F(GamepadProviderTest, MAYBE_PollingAccess) {
   WebGamepads test_data;
+  memset(&test_data, 0, sizeof(WebGamepads));
   test_data.length = 1;
   test_data.items[0].connected = true;
   test_data.items[0].timestamp = 0;
@@ -93,18 +103,20 @@ TEST_F(GamepadProviderTest, MAYBE_PollingAccess) {
       base::GetCurrentProcessHandle());
   std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(handle, true));
-  EXPECT_TRUE(shared_memory->Map(sizeof(WebGamepads)));
-  void* mem = shared_memory->memory();
+  EXPECT_TRUE(shared_memory->Map(sizeof(GamepadHardwareBuffer)));
 
-  WebGamepads* output = static_cast<WebGamepads*>(mem);
+  GamepadHardwareBuffer* buffer =
+      static_cast<GamepadHardwareBuffer*>(shared_memory->memory());
+  WebGamepads output;
+  ReadGamepadHardwareBuffer(buffer, &output);
 
-  EXPECT_EQ(1u, output->length);
-  EXPECT_EQ(1u, output->items[0].buttonsLength);
-  EXPECT_EQ(1.f, output->items[0].buttons[0].value);
-  EXPECT_EQ(true, output->items[0].buttons[0].pressed);
-  EXPECT_EQ(2u, output->items[0].axesLength);
-  EXPECT_EQ(-1.f, output->items[0].axes[0]);
-  EXPECT_EQ(0.5f, output->items[0].axes[1]);
+  EXPECT_EQ(1u, output.length);
+  EXPECT_EQ(1u, output.items[0].buttonsLength);
+  EXPECT_EQ(1.f, output.items[0].buttons[0].value);
+  EXPECT_EQ(true, output.items[0].buttons[0].pressed);
+  EXPECT_EQ(2u, output.items[0].axesLength);
+  EXPECT_EQ(-1.f, output.items[0].axes[0]);
+  EXPECT_EQ(0.5f, output.items[0].axes[1]);
 }
 
 // Tests that waiting for a user gesture works properly.
@@ -191,43 +203,51 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
       base::GetCurrentProcessHandle());
   std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(handle, true));
-  EXPECT_TRUE(shared_memory->Map(sizeof(WebGamepads)));
-  void* mem = shared_memory->memory();
+  EXPECT_TRUE(shared_memory->Map(sizeof(GamepadHardwareBuffer)));
 
-  WebGamepads* output = static_cast<WebGamepads*>(mem);
+  GamepadHardwareBuffer* buffer =
+      static_cast<GamepadHardwareBuffer*>(shared_memory->memory());
+  WebGamepads output;
+  ReadGamepadHardwareBuffer(buffer, &output);
 
   // Initial data should all be zeroed out due to sanitization, even though the
   // gamepad reported input
-  EXPECT_EQ(1u, output->length);
-  EXPECT_EQ(1u, output->items[0].buttonsLength);
-  EXPECT_EQ(0.f, output->items[0].buttons[0].value);
-  EXPECT_FALSE(output->items[0].buttons[0].pressed);
-  EXPECT_EQ(1u, output->items[0].axesLength);
-  EXPECT_EQ(0.f, output->items[0].axes[0]);
+  EXPECT_EQ(1u, output.length);
+  EXPECT_EQ(1u, output.items[0].buttonsLength);
+  EXPECT_EQ(0.f, output.items[0].buttons[0].value);
+  EXPECT_FALSE(output.items[0].buttons[0].pressed);
+  EXPECT_EQ(1u, output.items[0].axesLength);
+  EXPECT_EQ(0.f, output.items[0].axes[0]);
 
   // Zero out the inputs
   mock_data_fetcher_->SetTestData(zero_data);
   mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
 
+  // Read updated data from shared memory
+  ReadGamepadHardwareBuffer(buffer, &output);
+
   // Should still read zero, which is now an accurate reflection of the data
-  EXPECT_EQ(1u, output->length);
-  EXPECT_EQ(1u, output->items[0].buttonsLength);
-  EXPECT_EQ(0.f, output->items[0].buttons[0].value);
-  EXPECT_FALSE(output->items[0].buttons[0].pressed);
-  EXPECT_EQ(1u, output->items[0].axesLength);
-  EXPECT_EQ(0.f, output->items[0].axes[0]);
+  EXPECT_EQ(1u, output.length);
+  EXPECT_EQ(1u, output.items[0].buttonsLength);
+  EXPECT_EQ(0.f, output.items[0].buttons[0].value);
+  EXPECT_FALSE(output.items[0].buttons[0].pressed);
+  EXPECT_EQ(1u, output.items[0].axesLength);
+  EXPECT_EQ(0.f, output.items[0].axes[0]);
 
   // Re-set the active inputs
   mock_data_fetcher_->SetTestData(active_data);
   mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
 
+  // Read updated data from shared memory
+  ReadGamepadHardwareBuffer(buffer, &output);
+
   // Should now accurately reflect the reported data.
-  EXPECT_EQ(1u, output->length);
-  EXPECT_EQ(1u, output->items[0].buttonsLength);
-  EXPECT_EQ(1.f, output->items[0].buttons[0].value);
-  EXPECT_TRUE(output->items[0].buttons[0].pressed);
-  EXPECT_EQ(1u, output->items[0].axesLength);
-  EXPECT_EQ(-1.f, output->items[0].axes[0]);
+  EXPECT_EQ(1u, output.length);
+  EXPECT_EQ(1u, output.items[0].buttonsLength);
+  EXPECT_EQ(1.f, output.items[0].buttons[0].value);
+  EXPECT_TRUE(output.items[0].buttons[0].pressed);
+  EXPECT_EQ(1u, output.items[0].axesLength);
+  EXPECT_EQ(-1.f, output.items[0].axes[0]);
 }
 
 }  // namespace

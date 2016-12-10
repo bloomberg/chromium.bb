@@ -39,20 +39,18 @@ GamepadProvider::ClosureAndThread::ClosureAndThread(
 GamepadProvider::ClosureAndThread::~ClosureAndThread() {}
 
 GamepadProvider::GamepadProvider(
-    std::unique_ptr<GamepadSharedBuffer> buffer,
     GamepadConnectionChangeClient* connection_change_client)
     : is_paused_(true),
       have_scheduled_do_poll_(false),
       devices_changed_(true),
       ever_had_user_gesture_(false),
       sanitize_(true),
-      gamepad_shared_buffer_(std::move(buffer)),
+      gamepad_shared_buffer_(new GamepadSharedBuffer()),
       connection_change_client_(connection_change_client) {
   Initialize(std::unique_ptr<GamepadDataFetcher>());
 }
 
 GamepadProvider::GamepadProvider(
-    std::unique_ptr<GamepadSharedBuffer> buffer,
     GamepadConnectionChangeClient* connection_change_client,
     std::unique_ptr<GamepadDataFetcher> fetcher)
     : is_paused_(true),
@@ -60,7 +58,7 @@ GamepadProvider::GamepadProvider(
       devices_changed_(true),
       ever_had_user_gesture_(false),
       sanitize_(true),
-      gamepad_shared_buffer_(std::move(buffer)),
+      gamepad_shared_buffer_(new GamepadSharedBuffer()),
       connection_change_client_(connection_change_client) {
   Initialize(std::move(fetcher));
 }
@@ -260,7 +258,7 @@ void GamepadProvider::DoPoll() {
     base::AutoLock lock(shared_memory_lock_);
 
     // Acquire the SeqLock. There is only ever one writer to this data.
-    // See gamepad_hardware_buffer.h.
+    // See gamepad_shared_buffer.h.
     gamepad_shared_buffer_->WriteBegin();
     buffer->length = 0;
     for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {

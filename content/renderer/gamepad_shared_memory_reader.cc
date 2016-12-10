@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/gamepad_hardware_buffer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -92,12 +91,12 @@ void GamepadSharedMemoryReader::SampleGamepads(blink::WebGamepads& gamepads) {
   int contention_count = -1;
   base::subtle::Atomic32 version;
   do {
-    version = gamepad_hardware_buffer_->sequence.ReadBegin();
-    memcpy(&read_into, &gamepad_hardware_buffer_->buffer, sizeof(read_into));
+    version = gamepad_hardware_buffer_->seqlock.ReadBegin();
+    memcpy(&read_into, &gamepad_hardware_buffer_->data, sizeof(read_into));
     ++contention_count;
     if (contention_count == kMaximumContentionCount)
       break;
-  } while (gamepad_hardware_buffer_->sequence.ReadRetry(version));
+  } while (gamepad_hardware_buffer_->seqlock.ReadRetry(version));
   UMA_HISTOGRAM_COUNTS("Gamepad.ReadContentionCount", contention_count);
 
   if (contention_count >= kMaximumContentionCount) {

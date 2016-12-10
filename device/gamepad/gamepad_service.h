@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H_
-#define CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H_
+#ifndef DEVICE_GAMEPAD_GAMEPAD_SERVICE_H_
+#define DEVICE_GAMEPAD_GAMEPAD_SERVICE_H_
 
 #include <memory>
 #include <set>
@@ -12,29 +12,31 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
-#include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
+#include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_provider.h"
 #include "mojo/public/cpp/system/buffer.h"
 
+namespace {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 class WebGamepad;
+}
+
+namespace content {
+class GamepadServiceTestConstructor;
 }
 
 namespace device {
 class GamepadConsumer;
 class GamepadDataFetcher;
 class GamepadProvider;
-}
-
-namespace content {
-
-class GamepadServiceTestConstructor;
 
 // Owns the GamepadProvider (the background polling thread) and keeps track of
 // the number of consumers currently using the data (and pausing the provider
 // when not in use).
-class CONTENT_EXPORT GamepadService
+class DEVICE_GAMEPAD_EXPORT GamepadService
     : public device::GamepadConnectionChangeClient {
  public:
   // Returns the GamepadService singleton.
@@ -96,8 +98,7 @@ class CONTENT_EXPORT GamepadService
 
   // Constructor for testing. This specifies the data fetcher to use for a
   // provider, bypassing the default platform one.
-  GamepadService(
-      std::unique_ptr<device::GamepadDataFetcher> fetcher);
+  GamepadService(std::unique_ptr<device::GamepadDataFetcher> fetcher);
 
   virtual ~GamepadService();
 
@@ -126,7 +127,7 @@ class CONTENT_EXPORT GamepadService
 
   std::unique_ptr<device::GamepadProvider> provider_;
 
-  base::ThreadChecker thread_checker_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   typedef std::set<ConsumerInfo> ConsumerSet;
   ConsumerSet consumers_;
@@ -140,4 +141,4 @@ class CONTENT_EXPORT GamepadService
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H_
+#endif  // DEVICE_GAMEPAD_GAMEPAD_SERVICE_H_
