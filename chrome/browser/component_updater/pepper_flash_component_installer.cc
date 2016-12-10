@@ -45,9 +45,9 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/feature_list.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
@@ -114,10 +114,7 @@ void ImageLoaderRegistration(const std::string& version,
 
 // Determine whether or not to skip registering flash component updates.
 bool SkipFlashRegistration(ComponentUpdateService* cus) {
-   const base::Feature kCrosCompUpdates {
-     "CrosCompUpdates", base::FEATURE_DISABLED_BY_DEFAULT
-   };
-   if (!base::FeatureList::IsEnabled(kCrosCompUpdates))
+   if (!base::FeatureList::IsEnabled(features::kCrosCompUpdates))
      return true;
 
    // If the version of Chrome is pinned on the device (probably via enterprise

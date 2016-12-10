@@ -2126,6 +2126,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_VARIATIONS_VALUE_TYPE(prerender::kNoStatePrefetchFeature,
                                         kNoStatePrefetchFeatureVariations,
                                         "NoStatePrefetchValidation")},
+#if defined(OS_CHROMEOS)
+    {"cros-comp-updates", IDS_FLAGS_CROS_COMP_UPDATES_NAME,
+     IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCrosCompUpdates)},
+#endif
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
