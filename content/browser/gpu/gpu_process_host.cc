@@ -31,7 +31,6 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
-#include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/common/child_process_host_impl.h"
@@ -57,6 +56,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/ipc/host/shader_disk_cache.h"
 #include "gpu/ipc/service/switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
@@ -1171,8 +1171,8 @@ void GpuProcessHost::LoadedShader(const std::string& key,
 void GpuProcessHost::CreateChannelCache(int32_t client_id) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateChannelCache");
 
-  scoped_refptr<ShaderDiskCache> cache =
-      ShaderCacheFactory::GetInstance()->Get(client_id);
+  scoped_refptr<gpu::ShaderDiskCache> cache =
+      gpu::ShaderCacheFactory::GetInstance()->Get(client_id);
   if (!cache.get())
     return;
 

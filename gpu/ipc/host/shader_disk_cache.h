@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GPU_SHADER_DISK_CACHE_H_
-#define CONTENT_BROWSER_GPU_SHADER_DISK_CACHE_H_
+#ifndef GPU_IPC_HOST_SHADER_DISK_CACHE_H_
+#define GPU_IPC_HOST_SHADER_DISK_CACHE_H_
 
 #include <stdint.h>
 
@@ -15,10 +15,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
 #include "net/disk_cache/disk_cache.h"
 
-namespace content {
+namespace gpu {
 
 class ShaderDiskCacheEntry;
 class ShaderDiskReadHelper;
@@ -26,8 +25,7 @@ class ShaderClearHelper;
 
 // ShaderDiskCache is the interface to the on disk cache for
 // GL shaders.
-class CONTENT_EXPORT ShaderDiskCache
-    : public base::RefCounted<ShaderDiskCache> {
+class ShaderDiskCache : public base::RefCounted<ShaderDiskCache> {
  public:
   using ShaderLoadedCallback =
       base::Callback<void(const std::string&, const std::string&)>;
@@ -44,10 +42,9 @@ class CONTENT_EXPORT ShaderDiskCache
   // The return value is a net error code. If this method returns
   // ERR_IO_PENDING, the |completion_callback| will be invoked when the
   // operation completes.
-  int Clear(
-      const base::Time begin_time,
-      const base::Time end_time,
-      const net::CompletionCallback& completion_callback);
+  int Clear(const base::Time begin_time,
+            const base::Time end_time,
+            const net::CompletionCallback& completion_callback);
 
   // Sets a callback for when the cache is available. If the cache is
   // already available the callback will not be called and net::OK is returned.
@@ -101,8 +98,7 @@ class CONTENT_EXPORT ShaderDiskCache
 
 // ShaderCacheFactory maintains a cache of ShaderDiskCache objects
 // so we only create one per profile directory.
-class CONTENT_EXPORT ShaderCacheFactory
-    : NON_EXPORTED_BASE(public base::ThreadChecker) {
+class ShaderCacheFactory : public base::ThreadChecker {
  public:
   // Initializes the ShaderCacheFactory singleton instance. The singleton
   // instance is created and used in the thread associated with |task_runner|.
@@ -168,7 +164,6 @@ class CONTENT_EXPORT ShaderCacheFactory
   DISALLOW_COPY_AND_ASSIGN(ShaderCacheFactory);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_BROWSER_GPU_SHADER_DISK_CACHE_H_
-
+#endif  // GPU_IPC_HOST_SHADER_DISK_CACHE_H_

@@ -13,7 +13,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/quota/mock_quota_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/local_storage_usage_info.h"
@@ -22,6 +21,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "gpu/ipc/host/shader_disk_cache.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
@@ -602,19 +602,19 @@ class StoragePartitionShaderClearTest : public testing::Test {
   StoragePartitionShaderClearTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()) {
-    ShaderCacheFactory::InitInstance(
+    gpu::ShaderCacheFactory::InitInstance(
         base::ThreadTaskRunnerHandle::Get(),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
-    ShaderCacheFactory::GetInstance()->SetCacheInfo(
+    gpu::ShaderCacheFactory::GetInstance()->SetCacheInfo(
         kDefaultClientId,
-        BrowserContext::GetDefaultStoragePartition(
-            browser_context())->GetPath());
-    cache_ = ShaderCacheFactory::GetInstance()->Get(kDefaultClientId);
+        BrowserContext::GetDefaultStoragePartition(browser_context())
+            ->GetPath());
+    cache_ = gpu::ShaderCacheFactory::GetInstance()->Get(kDefaultClientId);
   }
 
   ~StoragePartitionShaderClearTest() override {
     cache_ = NULL;
-    ShaderCacheFactory::GetInstance()->RemoveCacheInfo(kDefaultClientId);
+    gpu::ShaderCacheFactory::GetInstance()->RemoveCacheInfo(kDefaultClientId);
   }
 
   void InitCache() {
@@ -641,7 +641,7 @@ class StoragePartitionShaderClearTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
 
-  scoped_refptr<ShaderDiskCache> cache_;
+  scoped_refptr<gpu::ShaderDiskCache> cache_;
 };
 
 // Tests ---------------------------------------------------------------------

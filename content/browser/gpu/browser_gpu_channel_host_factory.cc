@@ -18,7 +18,6 @@
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/shader_disk_cache.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -26,6 +25,7 @@
 #include "content/public/common/content_client.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "gpu/ipc/host/shader_disk_cache.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
 #include "services/service_manager/runner/common/client_util.h"
@@ -371,7 +371,8 @@ void BrowserGpuChannelHostFactory::AddFilterOnIO(
 void BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO(
     int gpu_client_id,
     const base::FilePath& cache_dir) {
-  ShaderCacheFactory::GetInstance()->SetCacheInfo(gpu_client_id, cache_dir);
+  gpu::ShaderCacheFactory::GetInstance()->SetCacheInfo(gpu_client_id,
+                                                       cache_dir);
 }
 
 }  // namespace content

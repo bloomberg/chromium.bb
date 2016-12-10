@@ -73,7 +73,6 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/histogram_message_filter.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
@@ -170,6 +169,7 @@
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/ipc/host/shader_disk_cache.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_mojo.h"
@@ -261,13 +261,13 @@ const base::FilePath::CharType kAecDumpFileNameAddition[] =
 #endif
 
 void CacheShaderInfo(int32_t id, base::FilePath path) {
-  if (ShaderCacheFactory::GetInstance())
-    ShaderCacheFactory::GetInstance()->SetCacheInfo(id, path);
+  if (gpu::ShaderCacheFactory::GetInstance())
+    gpu::ShaderCacheFactory::GetInstance()->SetCacheInfo(id, path);
 }
 
 void RemoveShaderInfo(int32_t id) {
-  if (ShaderCacheFactory::GetInstance())
-    ShaderCacheFactory::GetInstance()->RemoveCacheInfo(id);
+  if (gpu::ShaderCacheFactory::GetInstance())
+    gpu::ShaderCacheFactory::GetInstance()->RemoveCacheInfo(id);
 }
 
 net::URLRequestContext* GetRequestContext(
