@@ -66,6 +66,9 @@ TEST_F(DesktopMediaListAshTest, Screen) {
       .WillRepeatedly(DoDefault());
   list_->StartUpdating(&observer_);
   base::RunLoop().Run();
+
+  // Reset the unique_ptr so the list stops refreshing.
+  list_.reset();
 }
 
 TEST_F(DesktopMediaListAshTest, OneWindow) {

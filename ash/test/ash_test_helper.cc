@@ -160,6 +160,10 @@ void AshTestHelper::SetUp(bool start_session,
 void AshTestHelper::TearDown() {
   // Tear down the shell.
   Shell::DeleteInstance();
+
+  // Suspend the tear down until all resources are returned via
+  // MojoCompositorFrameSinkClient::ReclaimResources()
+  RunAllPendingInMessageLoop();
   material_design_state_.reset();
   test::MaterialDesignControllerTestAPI::Uninitialize();
   ash_test_environment_->TearDown();

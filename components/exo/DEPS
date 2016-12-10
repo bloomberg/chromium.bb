@@ -4,8 +4,15 @@ include_rules = [
   "+chromeos/audio/chromeos_sounds.h",
   "+device/gamepad",
   "+gpu",
+  "+mojo/public/cpp",
   "+services/ui/public/cpp",
   "+third_party/khronos",
   "+third_party/skia",
   "+ui",
 ]
+
+specific_include_rules = {
+  "run_all_unittests\.cc": [
+    "+mojo/edk/embedder/embedder.h",
+  ],
+}

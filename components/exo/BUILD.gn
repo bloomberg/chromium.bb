@@ -9,6 +9,10 @@ source_set("exo") {
   sources = [
     "buffer.cc",
     "buffer.h",
+    "compositor_frame_sink.cc",
+    "compositor_frame_sink.h",
+    "compositor_frame_sink_holder.cc",
+    "compositor_frame_sink_holder.h",
     "display.cc",
     "display.h",
     "gamepad.cc",
@@ -154,6 +158,7 @@ test("exo_unittests") {
     "//base",
     "//base/test:test_support",
     "//device/gamepad:test_helpers",
+    "//mojo/edk/embedder:headers",
   ]
 
   data_deps = [
