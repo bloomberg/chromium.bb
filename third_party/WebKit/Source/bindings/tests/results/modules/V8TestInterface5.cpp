@@ -903,6 +903,7 @@ static void installV8TestInterface5Template(v8::Isolate* isolate, const DOMWrapp
   ALLOW_UNUSED_LOCAL(instanceTemplate);
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
+
   // Register DOM constants, attributes and operations.
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
       const V8DOMConfiguration::ConstantConfiguration V8TestInterface5Constants[] = {

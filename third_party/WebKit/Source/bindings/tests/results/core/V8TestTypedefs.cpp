@@ -363,6 +363,7 @@ static void installV8TestTypedefsTemplate(v8::Isolate* isolate, const DOMWrapper
   ALLOW_UNUSED_LOCAL(instanceTemplate);
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
+
   // Register DOM constants, attributes and operations.
   V8DOMConfiguration::installLazyDataAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestTypedefsLazyDataAttributes, WTF_ARRAY_LENGTH(V8TestTypedefsLazyDataAttributes));
   V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestTypedefsAccessors, WTF_ARRAY_LENGTH(V8TestTypedefsAccessors));

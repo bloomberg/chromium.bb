@@ -391,7 +391,6 @@ void {{v8_class_or_partial}}::install{{v8_class}}Template(v8::Isolate* isolate, 
 {% else %}
 static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
 {% endif %}
-  {% set newline = '' %}
   // Initialize the interface object's template.
   {% if is_partial %}
   {{v8_class}}::install{{v8_class}}Template(isolate, world, interfaceTemplate);
@@ -415,14 +414,16 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
 
-  {%- if interface_name == 'Window' and not is_partial %}{{newline}}
+  {% if interface_name == 'Window' and not is_partial %}
   prototypeTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
   {% endif %}
-  {% if is_immutable_prototype %}{{newline}}
+
+  {% if is_immutable_prototype %}
   // Global object prototype chain consists of Immutable Prototype Exotic Objects
   prototypeTemplate->SetImmutableProto();
   {% endif %}
-  {% if is_global %}{{newline}}
+
+  {% if is_global %}
   // Global objects are Immutable Prototype Exotic Objects
   instanceTemplate->SetImmutableProto();
   {% endif %}
@@ -445,7 +446,8 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sMethods' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sMethods)' % v8_class}});
   {% endif %}
   {% endfilter %}
-  {%- if has_access_check_callbacks and not is_partial %}{{newline}}
+
+  {% if has_access_check_callbacks and not is_partial %}
   // Cross-origin access check
   {% set cross_origin_named_getter = '%sV8Internal::crossOriginNamedGetter' % cpp_class if has_cross_origin_named_getter else 'nullptr' %}
   {% set cross_origin_named_setter = '%sV8Internal::crossOriginNamedSetter' % cpp_class if has_cross_origin_named_setter else 'nullptr' %}
@@ -454,7 +456,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   instanceTemplate->SetAccessCheckCallbackAndHandler({{cpp_class}}V8Internal::securityCheck, v8::NamedPropertyHandlerConfiguration({{cross_origin_named_getter}}, {{cross_origin_named_setter}}, nullptr, nullptr, {{cross_origin_named_enumerator}}), v8::IndexedPropertyHandlerConfiguration({{cross_origin_indexed_getter}}), v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
   {% endif %}
 
-  {%- for group in attributes | purely_runtime_enabled_attributes | groupby('runtime_feature_name') %}{{newline}}
+  {% for group in attributes | purely_runtime_enabled_attributes | groupby('runtime_feature_name') %}
   if ({{group.list[0].runtime_enabled_function}}()) {
     {% for attribute in group.list | unique_by('name') | sort %}
     {% if attribute.is_data_type_property %}
@@ -492,18 +494,18 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% endfilter %}
   {% endif %}
 
-  {%- if legacy_caller and not is_partial %}{{newline}}
+  {% if legacy_caller and not is_partial %}
   instanceTemplate->SetCallAsFunctionHandler({{cpp_class_or_partial}}V8Internal::{{legacy_caller.name}}MethodCallback);
-  {%- elif has_custom_legacy_call_as_function and not is_partial %}{{newline}}
+  {% elif has_custom_legacy_call_as_function and not is_partial %}
   instanceTemplate->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
   {% endif %}
 
-  {%- if interface_name == 'HTMLAllCollection' and not is_partial %}{{newline}}
+  {% if interface_name == 'HTMLAllCollection' and not is_partial %}
   // Needed for legacy support of document.all
   instanceTemplate->MarkAsUndetectable();
   {% endif %}
 
-  {%- if methods | custom_registration(is_partial) %}{{newline}}
+  {% if methods | custom_registration(is_partial) %}
   {% for method in methods | custom_registration(is_partial) %}
   {# install_custom_signature #}
   {% filter exposed(method.overloads.exposed_test_all
@@ -531,7 +533,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
 {% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
 {% from 'constants.cpp.tmpl' import constant_configuration with context %}
 {% from 'methods.cpp.tmpl' import method_configuration with context %}
-{% for origin_trial_feature in origin_trial_features %}{{newline}}
+{% for origin_trial_feature in origin_trial_features %}
 void {{v8_class_or_partial}}::install{{origin_trial_feature.name}}(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
   {% if attributes | for_origin_trial_feature(origin_trial_feature.name) or
         methods | method_for_origin_trial_feature(origin_trial_feature.name, is_partial) %}
@@ -576,6 +578,7 @@ void {{v8_class_or_partial}}::install{{origin_trial_feature.name}}(ScriptState* 
   install{{origin_trial_feature.name}}(scriptState, v8::Local<v8::Object>());
 }
 {% endif %}
+
 {% endfor %}
 {% endblock %}
 {##############################################################################}

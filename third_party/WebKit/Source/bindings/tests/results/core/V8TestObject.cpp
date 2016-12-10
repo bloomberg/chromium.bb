@@ -11984,6 +11984,7 @@ static void installV8TestObjectTemplate(v8::Isolate* isolate, const DOMWrapperWo
   ALLOW_UNUSED_LOCAL(instanceTemplate);
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
+
   // Register DOM constants, attributes and operations.
   V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestObjectAttributes, WTF_ARRAY_LENGTH(V8TestObjectAttributes));
   V8DOMConfiguration::installLazyDataAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestObjectLazyDataAttributes, WTF_ARRAY_LENGTH(V8TestObjectLazyDataAttributes));
@@ -12053,6 +12054,7 @@ void V8TestObject::installFeatureName(ScriptState* scriptState, v8::Local<v8::Ob
 void V8TestObject::installFeatureName(ScriptState* scriptState) {
   installFeatureName(scriptState, v8::Local<v8::Object>());
 }
+
 v8::Local<v8::FunctionTemplate> V8TestObject::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestObjectTemplate);
 }

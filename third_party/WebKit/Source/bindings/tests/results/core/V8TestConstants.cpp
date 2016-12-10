@@ -75,6 +75,7 @@ static void installV8TestConstantsTemplate(v8::Isolate* isolate, const DOMWrappe
   ALLOW_UNUSED_LOCAL(instanceTemplate);
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
+
   // Register DOM constants, attributes and operations.
   const V8DOMConfiguration::ConstantConfiguration V8TestConstantsConstants[] = {
       {"CONST_VALUE_ZERO", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
@@ -176,6 +177,7 @@ void V8TestConstants::installFeatureName2(ScriptState* scriptState, v8::Local<v8
 void V8TestConstants::installFeatureName2(ScriptState* scriptState) {
   installFeatureName2(scriptState, v8::Local<v8::Object>());
 }
+
 v8::Local<v8::FunctionTemplate> V8TestConstants::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestConstantsTemplate);
 }

@@ -173,6 +173,7 @@ static void installV8TestIntegerIndexedGlobalTemplate(v8::Isolate* isolate, cons
   ALLOW_UNUSED_LOCAL(instanceTemplate);
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
+
   // Global object prototype chain consists of Immutable Prototype Exotic Objects
   prototypeTemplate->SetImmutableProto();
 

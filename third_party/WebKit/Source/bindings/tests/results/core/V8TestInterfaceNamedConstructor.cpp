@@ -179,6 +179,7 @@ static void installV8TestInterfaceNamedConstructorTemplate(v8::Isolate* isolate,
   ALLOW_UNUSED_LOCAL(instanceTemplate);
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
+
   // Register DOM constants, attributes and operations.
   V8DOMConfiguration::installLazyDataAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestInterfaceNamedConstructorLazyDataAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceNamedConstructorLazyDataAttributes));
 }

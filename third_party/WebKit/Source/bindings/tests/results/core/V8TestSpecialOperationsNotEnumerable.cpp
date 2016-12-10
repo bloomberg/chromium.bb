@@ -94,6 +94,7 @@ static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Isolate* iso
   ALLOW_UNUSED_LOCAL(instanceTemplate);
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
+
   // Register DOM constants, attributes and operations.
 
   // Indexed properties

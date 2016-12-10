@@ -389,6 +389,7 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Isolate* isolate
   ALLOW_UNUSED_LOCAL(instanceTemplate);
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
+
   // Register DOM constants, attributes and operations.
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
       const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
@@ -426,6 +427,7 @@ void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scrip
 void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scriptState) {
   installOriginTrialPartialFeature(scriptState, v8::Local<v8::Object>());
 }
+
 void V8TestInterfacePartial::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
 #error No one is currently using a partial interface with context-dependent properties.  If you\'re planning to use it, please consult with the binding team: <blink-reviews-bindings@chromium.org>
   V8TestInterface::preparePrototypeAndInterfaceObject(context, world, prototypeObject, interfaceObject, interfaceTemplate);

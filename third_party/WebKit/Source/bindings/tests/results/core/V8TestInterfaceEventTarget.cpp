@@ -106,6 +106,7 @@ static void installV8TestInterfaceEventTargetTemplate(v8::Isolate* isolate, cons
   ALLOW_UNUSED_LOCAL(instanceTemplate);
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
+
   // Register DOM constants, attributes and operations.
 }
 

@@ -33,13 +33,15 @@ class {{v8_class_or_partial}} {
         methods | conditionally_exposed(is_partial) %}
   static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
   {% endif %}
-  {% for origin_trial_feature in origin_trial_features %}{{newline}}
+
+  {% for origin_trial_feature in origin_trial_features %}
   static void install{{origin_trial_feature.name}}(ScriptState*, v8::Local<v8::Object> instance);
   static void install{{origin_trial_feature.name}}(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
   {% if not origin_trial_feature.needs_instance %}
   static void install{{origin_trial_feature.name}}(ScriptState*);
   {% endif %}
   {% endfor %}
+
  private:
   static void install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 };
