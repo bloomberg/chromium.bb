@@ -18,6 +18,14 @@
 
 #include "./aom_config.h"
 
+#if CONFIG_OS_SUPPORT
+#if HAVE_UNISTD_H
+#include <unistd.h>  // NOLINT
+#elif !defined(STDOUT_FILENO)
+#define STDOUT_FILENO 1
+#endif
+#endif
+
 #if CONFIG_LIBYUV
 #include "third_party/libyuv/include/libyuv/scale.h"
 #endif
@@ -636,7 +644,7 @@ static int main_loop(int argc, const char **argv_) {
   }
 #if CONFIG_OS_SUPPORT
   /* Make sure we don't dump to the terminal, unless forced to with -o - */
-  if (!outfile_pattern && isatty(fileno(stdout)) && !do_md5 && !noblit) {
+  if (!outfile_pattern && isatty(STDOUT_FILENO) && !do_md5 && !noblit) {
     fprintf(stderr,
             "Not dumping raw video to your terminal. Use '-o -' to "
             "override.\n");
