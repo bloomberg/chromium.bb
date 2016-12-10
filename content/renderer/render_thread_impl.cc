@@ -600,7 +600,7 @@ void RenderThreadImpl::SetRenderMessageFilterForTesting(
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
     std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
-    scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue)
+    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue)
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
                           .AutoStartServiceManagerConnection(false)
@@ -636,7 +636,7 @@ RenderThreadImpl::RenderThreadImpl(
 }
 
 void RenderThreadImpl::Init(
-    scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Init");
 
   base::trace_event::TraceLog::GetInstance()->SetThreadSortIndex(
@@ -1231,7 +1231,7 @@ void RenderThreadImpl::InitializeCompositorThread() {
 }
 
 void RenderThreadImpl::InitializeWebKit(
-    scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
   DCHECK(!blink_platform_impl_);
 
   const base::CommandLine& command_line =

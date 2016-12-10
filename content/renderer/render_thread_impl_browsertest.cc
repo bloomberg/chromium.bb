@@ -127,13 +127,6 @@ class RenderThreadImplForTest : public RenderThreadImpl {
   ~RenderThreadImplForTest() override {}
 };
 
-class DummyListener : public IPC::Listener {
- public:
-  ~DummyListener() override {}
-
-  bool OnMessageReceived(const IPC::Message& message) override { return true; }
-};
-
 #if defined(COMPILER_MSVC)
 #pragma warning(pop)
 #endif
@@ -181,7 +174,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     browser_threads_.reset(
         new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP));
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+        base::ThreadTaskRunnerHandle::Get();
 
     InitializeMojo();
     ipc_support_.reset(new mojo::edk::test::ScopedIPCSupport(io_task_runner));
@@ -195,11 +188,10 @@ class RenderThreadImplBrowserTest : public testing::Test {
     IPC::mojom::ChannelBootstrapPtr channel_bootstrap;
     child_connection_->GetRemoteInterfaces()->GetInterface(&channel_bootstrap);
 
-    dummy_listener_.reset(new DummyListener);
     channel_ = IPC::ChannelProxy::Create(
         IPC::ChannelMojo::CreateServerFactory(
             channel_bootstrap.PassInterface().PassHandle(), io_task_runner),
-        dummy_listener_.get(), io_task_runner);
+        nullptr, io_task_runner);
 
     mock_process_.reset(new MockRenderProcess);
     test_task_counter_ = make_scoped_refptr(new TestTaskCounter());
@@ -239,7 +231,6 @@ class RenderThreadImplBrowserTest : public testing::Test {
   std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
   std::unique_ptr<TestServiceManagerContext> shell_context_;
   std::unique_ptr<ChildConnection> child_connection_;
-  std::unique_ptr<DummyListener> dummy_listener_;
   std::unique_ptr<IPC::ChannelProxy> channel_;
 
   std::unique_ptr<MockRenderProcess> mock_process_;

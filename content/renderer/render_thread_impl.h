@@ -486,7 +486,7 @@ class CONTENT_EXPORT RenderThreadImpl
   RenderThreadImpl(
       const InProcessChildThreadParams& params,
       std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
-      scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
+      const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
   RenderThreadImpl(
       std::unique_ptr<base::MessageLoop> main_message_loop,
       std::unique_ptr<blink::scheduler::RendererScheduler> scheduler);
@@ -517,12 +517,13 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void ClearMemory();
 
-  void Init(scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
+  void Init(
+      const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
 
   void InitializeCompositorThread();
 
   void InitializeWebKit(
-      scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
+      const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
 
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
   void OnGetAccessibilityTree();
