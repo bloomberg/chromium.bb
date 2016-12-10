@@ -33,6 +33,8 @@ PASS Historical DOM features must be removed: schemaTypeInfo
 PASS Historical DOM features must be removed: setIdAttribute 
 PASS Historical DOM features must be removed: setIdAttributeNS 
 PASS Historical DOM features must be removed: setIdAttributeNode 
+PASS Attr member must be nuked: schemaTypeInfo 
+PASS Attr member must be nuked: isId 
 PASS DocumentType member must be nuked: entities 
 PASS DocumentType member must be nuked: notations 
 PASS DocumentType member must be nuked: internalSubset 
