@@ -130,6 +130,7 @@ bool SetMouseEventType(blink::WebMouseEvent* event, const std::string& type) {
 
 InputHandler::InputHandler()
     : host_(NULL),
+      input_queued_(false),
       page_scale_factor_(1.0),
       weak_factory_(this) {
 }
@@ -137,8 +138,30 @@ InputHandler::InputHandler()
 InputHandler::~InputHandler() {
 }
 
+void InputHandler::OnInputEvent(const blink::WebInputEvent& event) {
+  input_queued_ = true;
+}
+
+void InputHandler::OnInputEventAck(const blink::WebInputEvent& event) {
+  if (blink::WebInputEvent::isKeyboardEventType(event.type) &&
+      !pending_key_command_ids_.empty()) {
+    SendDispatchKeyEventResponse(pending_key_command_ids_.front());
+    pending_key_command_ids_.pop_front();
+  } else if (blink::WebInputEvent::isMouseEventType(event.type) &&
+             !pending_mouse_command_ids_.empty()) {
+    SendDispatchMouseEventResponse(pending_mouse_command_ids_.front());
+    pending_mouse_command_ids_.pop_front();
+  }
+}
+
 void InputHandler::SetRenderWidgetHost(RenderWidgetHostImpl* host) {
+  ClearPendingKeyCommands();
+  ClearPendingMouseCommands();
+  if (host_)
+    host_->RemoveInputEventObserver(this);
   host_ = host;
+  if (host)
+    host->AddInputEventObserver(this);
 }
 
 void InputHandler::SetClient(std::unique_ptr<Client> client) {
@@ -151,7 +174,15 @@ void InputHandler::OnSwapCompositorFrame(
   scrollable_viewport_size_ = frame_metadata.scrollable_viewport_size;
 }
 
+void InputHandler::Detached() {
+  ClearPendingKeyCommands();
+  ClearPendingMouseCommands();
+  if (host_)
+    host_->RemoveInputEventObserver(this);
+}
+
 Response InputHandler::DispatchKeyEvent(
+    DevToolsCommandId command_id,
     const std::string& type,
     const int* modifiers,
     const double* timestamp,
@@ -213,11 +244,17 @@ Response InputHandler::DispatchKeyEvent(
     return Response::ServerError("Could not connect to view");
 
   host_->Focus();
+  input_queued_ = false;
   host_->ForwardKeyboardEvent(event);
+  if (input_queued_)
+    pending_key_command_ids_.push_back(command_id);
+  else
+    SendDispatchKeyEventResponse(command_id);
   return Response::OK();
 }
 
 Response InputHandler::DispatchMouseEvent(
+    DevToolsCommandId command_id,
     const std::string& type,
     int x,
     int y,
@@ -249,7 +286,12 @@ Response InputHandler::DispatchMouseEvent(
     return Response::ServerError("Could not connect to view");
 
   host_->Focus();
+  input_queued_ = false;
   host_->ForwardMouseEvent(event);
+  if (input_queued_)
+    pending_mouse_command_ids_.push_back(command_id);
+  else
+    SendDispatchMouseEventResponse(command_id);
   return Response::OK();
 }
 
@@ -479,6 +521,17 @@ Response InputHandler::DispatchTouchEvent(
   return Response::FallThrough();
 }
 
+void InputHandler::SendDispatchKeyEventResponse(DevToolsCommandId command_id) {
+  client_->SendDispatchKeyEventResponse(
+      command_id, DispatchKeyEventResponse::Create());
+}
+
+void InputHandler::SendDispatchMouseEventResponse(
+    DevToolsCommandId command_id) {
+  client_->SendDispatchMouseEventResponse(
+      command_id, DispatchMouseEventResponse::Create());
+}
+
 void InputHandler::SendSynthesizePinchGestureResponse(
     DevToolsCommandId command_id,
     SyntheticGesture::Result result) {
@@ -519,6 +572,18 @@ void InputHandler::SendSynthesizeTapGestureResponse(
                        Response::InternalError(base::StringPrintf(
                            "Synthetic tap failed, result was %d", result)));
   }
+}
+
+void InputHandler::ClearPendingKeyCommands() {
+  for (const DevToolsCommandId& command_id : pending_key_command_ids_)
+    SendDispatchKeyEventResponse(command_id);
+  pending_key_command_ids_.clear();
+}
+
+void InputHandler::ClearPendingMouseCommands() {
+  for (const DevToolsCommandId& command_id : pending_mouse_command_ids_)
+    SendDispatchMouseEventResponse(command_id);
+  pending_mouse_command_ids_.clear();
 }
 
 }  // namespace input

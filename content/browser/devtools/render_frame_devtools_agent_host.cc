@@ -584,6 +584,7 @@ void RenderFrameDevToolsAgentHost::OnClientDetached() {
     emulation_handler_->Detached();
   if (page_handler_)
     page_handler_->Detached();
+  input_handler_->Detached();
   service_worker_handler_->Detached();
   target_handler_->Detached();
   frame_trace_recorder_.reset();
