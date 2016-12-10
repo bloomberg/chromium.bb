@@ -729,81 +729,77 @@ void Directory::DeleteEntry(const ScopedKernelLock& lock,
   }
 }
 
-bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
+void Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
                                        ModelTypeSet types_to_journal,
                                        ModelTypeSet types_to_unapply) {
   disabled_types.RemoveAll(ProxyTypes());
-
   if (disabled_types.Empty())
-    return true;
+    return;
+
+  WriteTransaction trans(FROM_HERE, PURGE_ENTRIES, this);
+
+  OwnedEntryKernelSet entries_to_journal;
 
   {
-    WriteTransaction trans(FROM_HERE, PURGE_ENTRIES, this);
+    ScopedKernelLock lock(this);
 
-    OwnedEntryKernelSet entries_to_journal;
-
-    {
-      ScopedKernelLock lock(this);
-
-      bool found_progress = false;
-      for (ModelTypeSet::Iterator iter = disabled_types.First(); iter.Good();
-           iter.Inc()) {
-        if (!kernel_->persisted_info.HasEmptyDownloadProgress(iter.Get()))
-          found_progress = true;
-      }
-
-      // If none of the disabled types have progress markers, there's nothing to
-      // purge.
-      if (!found_progress)
-        return true;
-
-      for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
-           it != kernel_->metahandles_map.end();) {
-        EntryKernel* entry = it->second.get();
-        const sync_pb::EntitySpecifics& local_specifics = entry->ref(SPECIFICS);
-        const sync_pb::EntitySpecifics& server_specifics =
-            entry->ref(SERVER_SPECIFICS);
-        ModelType local_type = GetModelTypeFromSpecifics(local_specifics);
-        ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
-
-        // Increment the iterator before (potentially) calling DeleteEntry,
-        // otherwise our iterator may be invalidated.
-        ++it;
-
-        if ((IsRealDataType(local_type) && disabled_types.Has(local_type)) ||
-            (IsRealDataType(server_type) && disabled_types.Has(server_type))) {
-          if (types_to_unapply.Has(local_type) ||
-              types_to_unapply.Has(server_type)) {
-            UnapplyEntry(entry);
-          } else {
-            bool save_to_journal =
-                (types_to_journal.Has(local_type) ||
-                 types_to_journal.Has(server_type)) &&
-                (delete_journal_->IsDeleteJournalEnabled(local_type) ||
-                 delete_journal_->IsDeleteJournalEnabled(server_type));
-            DeleteEntry(lock, save_to_journal, entry, &entries_to_journal);
-          }
-        }
-      }
-
-      delete_journal_->AddJournalBatch(&trans, entries_to_journal);
-
-      // Ensure meta tracking for these data types reflects the purged state.
-      for (ModelTypeSet::Iterator it = disabled_types.First(); it.Good();
-           it.Inc()) {
-        kernel_->persisted_info.transaction_version[it.Get()] = 0;
-
-        // Don't discard progress markers or context for unapplied types.
-        if (!types_to_unapply.Has(it.Get())) {
-          kernel_->persisted_info.ResetDownloadProgress(it.Get());
-          kernel_->persisted_info.datatype_context[it.Get()].Clear();
-        }
-      }
-
-      kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
+    bool found_progress = false;
+    for (ModelTypeSet::Iterator iter = disabled_types.First(); iter.Good();
+         iter.Inc()) {
+      if (!kernel_->persisted_info.HasEmptyDownloadProgress(iter.Get()))
+        found_progress = true;
     }
+
+    // If none of the disabled types have progress markers, there's nothing to
+    // purge.
+    if (!found_progress)
+      return;
+
+    for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
+         it != kernel_->metahandles_map.end();) {
+      EntryKernel* entry = it->second.get();
+      const sync_pb::EntitySpecifics& local_specifics = entry->ref(SPECIFICS);
+      const sync_pb::EntitySpecifics& server_specifics =
+          entry->ref(SERVER_SPECIFICS);
+      ModelType local_type = GetModelTypeFromSpecifics(local_specifics);
+      ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
+
+      // Increment the iterator before (potentially) calling DeleteEntry,
+      // otherwise our iterator may be invalidated.
+      ++it;
+
+      if ((IsRealDataType(local_type) && disabled_types.Has(local_type)) ||
+          (IsRealDataType(server_type) && disabled_types.Has(server_type))) {
+        if (types_to_unapply.Has(local_type) ||
+            types_to_unapply.Has(server_type)) {
+          UnapplyEntry(entry);
+        } else {
+          bool save_to_journal =
+              (types_to_journal.Has(local_type) ||
+               types_to_journal.Has(server_type)) &&
+              (delete_journal_->IsDeleteJournalEnabled(local_type) ||
+               delete_journal_->IsDeleteJournalEnabled(server_type));
+          DeleteEntry(lock, save_to_journal, entry, &entries_to_journal);
+        }
+      }
+    }
+
+    delete_journal_->AddJournalBatch(&trans, entries_to_journal);
+
+    // Ensure meta tracking for these data types reflects the purged state.
+    for (ModelTypeSet::Iterator it = disabled_types.First(); it.Good();
+         it.Inc()) {
+      kernel_->persisted_info.transaction_version[it.Get()] = 0;
+
+      // Don't discard progress markers or context for unapplied types.
+      if (!types_to_unapply.Has(it.Get())) {
+        kernel_->persisted_info.ResetDownloadProgress(it.Get());
+        kernel_->persisted_info.datatype_context[it.Get()].Clear();
+      }
+    }
+
+    kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
   }
-  return true;
 }
 
 bool Directory::ResetVersionsForType(BaseWriteTransaction* trans,

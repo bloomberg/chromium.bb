@@ -102,13 +102,6 @@ DoInitializeOptions::DoInitializeOptions(
 
 DoInitializeOptions::~DoInitializeOptions() {}
 
-DoConfigureSyncerTypes::DoConfigureSyncerTypes() {}
-
-DoConfigureSyncerTypes::DoConfigureSyncerTypes(
-    const DoConfigureSyncerTypes& other) = default;
-
-DoConfigureSyncerTypes::~DoConfigureSyncerTypes() {}
-
 SyncBackendHostCore::SyncBackendHostCore(
     const std::string& name,
     const base::FilePath& sync_data_folder_path,
@@ -202,9 +195,10 @@ void SyncBackendHostCore::OnInitializationComplete(
   ModelTypeSet types_to_purge =
       Difference(ModelTypeSet::All(), GetRoutingInfoTypes(routing_info));
 
+  sync_manager_->PurgeDisabledTypes(types_to_purge, ModelTypeSet(),
+                                    ModelTypeSet());
   sync_manager_->ConfigureSyncer(
-      reason, new_control_types, types_to_purge, ModelTypeSet(), ModelTypeSet(),
-      routing_info,
+      reason, new_control_types, routing_info,
       base::Bind(&SyncBackendHostCore::DoInitialProcessControlTypes,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Closure());
@@ -554,24 +548,29 @@ void SyncBackendHostCore::DoDestroySyncManager(ShutdownReason reason) {
   }
 }
 
+void SyncBackendHostCore::DoPurgeDisabledTypes(const ModelTypeSet& to_purge,
+                                               const ModelTypeSet& to_journal,
+                                               const ModelTypeSet& to_unapply) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  sync_manager_->PurgeDisabledTypes(to_purge, to_journal, to_unapply);
+}
+
 void SyncBackendHostCore::DoConfigureSyncer(
     ConfigureReason reason,
-    const DoConfigureSyncerTypes& config_types,
+    const ModelTypeSet& to_download,
     const ModelSafeRoutingInfo routing_info,
     const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!ready_task.is_null());
   DCHECK(!retry_callback.is_null());
-  base::Closure chained_ready_task(base::Bind(
-      &SyncBackendHostCore::DoFinishConfigureDataTypes,
-      weak_ptr_factory_.GetWeakPtr(), config_types.to_download, ready_task));
+  base::Closure chained_ready_task(
+      base::Bind(&SyncBackendHostCore::DoFinishConfigureDataTypes,
+                 weak_ptr_factory_.GetWeakPtr(), to_download, ready_task));
   base::Closure chained_retry_task(
       base::Bind(&SyncBackendHostCore::DoRetryConfiguration,
                  weak_ptr_factory_.GetWeakPtr(), retry_callback));
-  sync_manager_->ConfigureSyncer(reason, config_types.to_download,
-                                 config_types.to_purge, config_types.to_journal,
-                                 config_types.to_unapply, routing_info,
+  sync_manager_->ConfigureSyncer(reason, to_download, routing_info,
                                  chained_ready_task, chained_retry_task);
 }
 

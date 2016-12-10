@@ -2767,11 +2767,13 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
     SetProgressMarkerForType(iter.Get(), true);
   }
 
+  sync_manager_.PurgeDisabledTypes(disabled_types, ModelTypeSet(),
+                                   ModelTypeSet());
   CallbackCounter ready_task_counter, retry_task_counter;
   sync_manager_.ConfigureSyncer(
-      reason, types_to_download, disabled_types, ModelTypeSet(), ModelTypeSet(),
-      new_routing_info, base::Bind(&CallbackCounter::Callback,
-                                   base::Unretained(&ready_task_counter)),
+      reason, types_to_download, new_routing_info,
+      base::Bind(&CallbackCounter::Callback,
+                 base::Unretained(&ready_task_counter)),
       base::Bind(&CallbackCounter::Callback,
                  base::Unretained(&retry_task_counter)));
   EXPECT_EQ(0, ready_task_counter.times_called());
@@ -2822,10 +2824,12 @@ TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
   cycle_context()->SetRoutingInfo(old_routing_info);
 
   CallbackCounter ready_task_counter, retry_task_counter;
+  sync_manager_.PurgeDisabledTypes(ModelTypeSet(), ModelTypeSet(),
+                                   ModelTypeSet());
   sync_manager_.ConfigureSyncer(
-      reason, types_to_download, ModelTypeSet(), ModelTypeSet(), ModelTypeSet(),
-      new_routing_info, base::Bind(&CallbackCounter::Callback,
-                                   base::Unretained(&ready_task_counter)),
+      reason, types_to_download, new_routing_info,
+      base::Bind(&CallbackCounter::Callback,
+                 base::Unretained(&ready_task_counter)),
       base::Bind(&CallbackCounter::Callback,
                  base::Unretained(&retry_task_counter)));
   EXPECT_EQ(0, ready_task_counter.times_called());
@@ -2908,7 +2912,7 @@ TEST_F(SyncManagerTest, PurgePartiallySyncedTypes) {
                                  pref_hashed_tag, pref_specifics);
 
   // And now, the purge.
-  EXPECT_TRUE(sync_manager_.PurgePartiallySyncedTypes());
+  sync_manager_.PurgePartiallySyncedTypes();
 
   // Ensure that autofill lost its progress marker, but preferences did not.
   ModelTypeSet empty_tokens =

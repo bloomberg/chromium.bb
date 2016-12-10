@@ -139,10 +139,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   virtual void RequestConfigureSyncer(
       ConfigureReason reason,
       ModelTypeSet to_download,
-      ModelTypeSet to_purge,
-      ModelTypeSet to_journal,
-      ModelTypeSet to_unapply,
-      ModelTypeSet to_ignore,
       const ModelSafeRoutingInfo& routing_info,
       const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
       const base::Closure& retry_callback);

@@ -184,9 +184,6 @@ ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
 void SyncManagerImpl::ConfigureSyncer(
     ConfigureReason reason,
     ModelTypeSet to_download,
-    ModelTypeSet to_purge,
-    ModelTypeSet to_journal,
-    ModelTypeSet to_unapply,
     const ModelSafeRoutingInfo& new_routing_info,
     const base::Closure& ready_task,
     const base::Closure& retry_task) {
@@ -203,19 +200,7 @@ void SyncManagerImpl::ConfigureSyncer(
            << "current types: "
            << ModelTypeSetToString(GetRoutingInfoTypes(new_routing_info))
            << "\n\t"
-           << "types to download: " << ModelTypeSetToString(to_download)
-           << "\n\t"
-           << "types to purge: " << ModelTypeSetToString(to_purge) << "\n\t"
-           << "types to journal: " << ModelTypeSetToString(to_journal) << "\n\t"
-           << "types to unapply: " << ModelTypeSetToString(to_unapply);
-  if (!PurgeDisabledTypes(to_purge, to_journal, to_unapply)) {
-    // We failed to cleanup the types. Invoke the ready task without actually
-    // configuring any types. The caller should detect this as a configuration
-    // failure and act appropriately.
-    ready_task.Run();
-    return;
-  }
-
+           << "types to download: " << ModelTypeSetToString(to_download);
   ConfigurationParams params(GetSourceFromReason(reason), to_download,
                              new_routing_info, ready_task, retry_task);
 
@@ -460,13 +445,11 @@ bool SyncManagerImpl::OpenDirectory(const std::string& username) {
   // trigger the migration logic before the backend is initialized, resulting
   // in crashes. We therefore detect and purge any partially synced types as
   // part of initialization.
-  if (!PurgePartiallySyncedTypes())
-    return false;
-
+  PurgePartiallySyncedTypes();
   return true;
 }
 
-bool SyncManagerImpl::PurgePartiallySyncedTypes() {
+void SyncManagerImpl::PurgePartiallySyncedTypes() {
   ModelTypeSet partially_synced_types = ModelTypeSet::All();
   partially_synced_types.RemoveAll(directory()->InitialSyncEndedTypes());
   partially_synced_types.RemoveAll(
@@ -476,21 +459,22 @@ bool SyncManagerImpl::PurgePartiallySyncedTypes() {
            << ModelTypeSetToString(partially_synced_types);
   UMA_HISTOGRAM_COUNTS("Sync.PartiallySyncedTypes",
                        partially_synced_types.Size());
-  if (partially_synced_types.Empty())
-    return true;
-  return directory()->PurgeEntriesWithTypeIn(partially_synced_types,
-                                             ModelTypeSet(), ModelTypeSet());
+  directory()->PurgeEntriesWithTypeIn(partially_synced_types, ModelTypeSet(),
+                                      ModelTypeSet());
 }
 
-bool SyncManagerImpl::PurgeDisabledTypes(ModelTypeSet to_purge,
+void SyncManagerImpl::PurgeDisabledTypes(ModelTypeSet to_purge,
                                          ModelTypeSet to_journal,
                                          ModelTypeSet to_unapply) {
-  if (to_purge.Empty())
-    return true;
-  DVLOG(1) << "Purging disabled types " << ModelTypeSetToString(to_purge);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(initialized_);
+  DVLOG(1) << "Purging disabled types:\n\t"
+           << "types to purge: " << ModelTypeSetToString(to_purge) << "\n\t"
+           << "types to journal: " << ModelTypeSetToString(to_journal) << "\n\t"
+           << "types to unapply: " << ModelTypeSetToString(to_unapply);
   DCHECK(to_purge.HasAll(to_journal));
   DCHECK(to_purge.HasAll(to_unapply));
-  return directory()->PurgeEntriesWithTypeIn(to_purge, to_journal, to_unapply);
+  directory()->PurgeEntriesWithTypeIn(to_purge, to_journal, to_unapply);
 }
 
 void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {

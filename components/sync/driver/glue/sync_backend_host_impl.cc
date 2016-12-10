@@ -366,9 +366,11 @@ ModelTypeSet SyncBackendHostImpl::ConfigureDataTypes(
   //   from the directory.
   // - Everything else (enabled types and already disabled types) is not
   //   touched.
-  RequestConfigureSyncer(reason, types_to_download, types_to_purge, fatal_types,
-                         unapply_types, inactive_types, routing_info,
-                         ready_task, retry_callback);
+  sync_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SyncBackendHostCore::DoPurgeDisabledTypes, core_,
+                            types_to_purge, fatal_types, unapply_types));
+  RequestConfigureSyncer(reason, types_to_download, routing_info, ready_task,
+                         retry_callback);
 
   DCHECK(Intersection(active_types, types_to_purge).Empty());
   DCHECK(Intersection(active_types, fatal_types).Empty());
@@ -499,22 +501,13 @@ void SyncBackendHostImpl::InitCore(
 void SyncBackendHostImpl::RequestConfigureSyncer(
     ConfigureReason reason,
     ModelTypeSet to_download,
-    ModelTypeSet to_purge,
-    ModelTypeSet to_journal,
-    ModelTypeSet to_unapply,
-    ModelTypeSet to_ignore,
     const ModelSafeRoutingInfo& routing_info,
     const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
-  DoConfigureSyncerTypes config_types;
-  config_types.to_download = to_download;
-  config_types.to_purge = to_purge;
-  config_types.to_journal = to_journal;
-  config_types.to_unapply = to_unapply;
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHostCore::DoConfigureSyncer, core_, reason,
-                 config_types, routing_info, ready_task, retry_callback));
+                 to_download, routing_info, ready_task, retry_callback));
 }
 
 void SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop(

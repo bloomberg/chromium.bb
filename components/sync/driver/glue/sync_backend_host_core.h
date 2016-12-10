@@ -82,18 +82,6 @@ struct DoInitializeOptions {
   const std::map<ModelType, int64_t> invalidation_versions;
 };
 
-// Helper struct to handle currying params to
-// SyncBackendHostCore::DoConfigureSyncer.
-struct DoConfigureSyncerTypes {
-  DoConfigureSyncerTypes();
-  DoConfigureSyncerTypes(const DoConfigureSyncerTypes& other);
-  ~DoConfigureSyncerTypes();
-  ModelTypeSet to_download;
-  ModelTypeSet to_purge;
-  ModelTypeSet to_journal;
-  ModelTypeSet to_unapply;
-};
-
 class SyncBackendHostCore
     : public base::RefCountedThreadSafe<SyncBackendHostCore>,
       public base::trace_event::MemoryDumpProvider,
@@ -205,9 +193,12 @@ class SyncBackendHostCore
   void DoDestroySyncManager(ShutdownReason reason);
 
   // Configuration methods that must execute on sync loop.
+  void DoPurgeDisabledTypes(const ModelTypeSet& to_purge,
+                            const ModelTypeSet& to_journal,
+                            const ModelTypeSet& to_unapply);
   void DoConfigureSyncer(
       ConfigureReason reason,
-      const DoConfigureSyncerTypes& config_types,
+      const ModelTypeSet& to_download,
       const ModelSafeRoutingInfo routing_info,
       const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
       const base::Closure& retry_callback);

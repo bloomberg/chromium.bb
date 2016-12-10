@@ -464,11 +464,9 @@ class Directory {
   // Note: "Purge" is just meant to distinguish from "deleting" entries, which
   // means something different in the syncable namespace.
   // WARNING! This can be real slow, as it iterates over all entries.
-  // WARNING! Performs synchronous I/O.
-  // Returns: true on success, false if an error was encountered.
-  virtual bool PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
-                                      ModelTypeSet types_to_journal,
-                                      ModelTypeSet types_to_unapply);
+  void PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
+                              ModelTypeSet types_to_journal,
+                              ModelTypeSet types_to_unapply);
 
   // Resets the base_versions and server_versions of all synced entities
   // associated with |type| to 1.

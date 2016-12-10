@@ -44,10 +44,6 @@ class SyncEngineForProfileSyncTest : public SyncBackendHostImpl {
   void RequestConfigureSyncer(
       syncer::ConfigureReason reason,
       syncer::ModelTypeSet to_download,
-      syncer::ModelTypeSet to_purge,
-      syncer::ModelTypeSet to_journal,
-      syncer::ModelTypeSet to_unapply,
-      syncer::ModelTypeSet to_ignore,
       const syncer::ModelSafeRoutingInfo& routing_info,
       const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
           ready_task,
@@ -107,10 +103,6 @@ void SyncEngineForProfileSyncTest::InitCore(
 void SyncEngineForProfileSyncTest::RequestConfigureSyncer(
     syncer::ConfigureReason reason,
     syncer::ModelTypeSet to_download,
-    syncer::ModelTypeSet to_purge,
-    syncer::ModelTypeSet to_journal,
-    syncer::ModelTypeSet to_unapply,
-    syncer::ModelTypeSet to_ignore,
     const syncer::ModelSafeRoutingInfo& routing_info,
     const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
         ready_task,

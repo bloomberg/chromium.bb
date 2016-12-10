@@ -67,15 +67,15 @@ class SyncManagerImpl
   ModelTypeSet InitialSyncEndedTypes() override;
   ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
       ModelTypeSet types) override;
-  bool PurgePartiallySyncedTypes() override;
+  void PurgePartiallySyncedTypes() override;
+  void PurgeDisabledTypes(ModelTypeSet to_purge,
+                          ModelTypeSet to_journal,
+                          ModelTypeSet to_unapply) override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
   void StartSyncingNormally(const ModelSafeRoutingInfo& routing_info,
                             base::Time last_poll_time) override;
   void ConfigureSyncer(ConfigureReason reason,
                        ModelTypeSet to_download,
-                       ModelTypeSet to_purge,
-                       ModelTypeSet to_journal,
-                       ModelTypeSet to_unapply,
                        const ModelSafeRoutingInfo& new_routing_info,
                        const base::Closure& ready_task,
                        const base::Closure& retry_task) override;
@@ -218,14 +218,6 @@ class SyncManagerImpl
 
   // Open the directory named with |username|.
   bool OpenDirectory(const std::string& username);
-
-  // Purge those disabled types as specified by |to_purge|. |to_journal| and
-  // |to_unapply| specify subsets that require special handling. |to_journal|
-  // types are saved into the delete journal, while |to_unapply| have only
-  // their local data deleted, while their server data is preserved.
-  bool PurgeDisabledTypes(ModelTypeSet to_purge,
-                          ModelTypeSet to_journal,
-                          ModelTypeSet to_unapply);
 
   void RequestNudgeForDataTypes(const tracked_objects::Location& nudge_location,
                                 ModelTypeSet type);

@@ -290,7 +290,15 @@ class SyncManager {
   // Purge from the directory those types with non-empty progress markers
   // but without initial synced ended set.
   // Returns false if an error occurred, true otherwise.
-  virtual bool PurgePartiallySyncedTypes() = 0;
+  virtual void PurgePartiallySyncedTypes() = 0;
+
+  // Purge those disabled types as specified by |to_purge|. |to_journal| and
+  // |to_unapply| specify subsets that require special handling. |to_journal|
+  // types are saved into the delete journal, while |to_unapply| have only
+  // their local data deleted, while their server data is preserved.
+  virtual void PurgeDisabledTypes(ModelTypeSet to_purge,
+                                  ModelTypeSet to_journal,
+                                  ModelTypeSet to_unapply) = 0;
 
   // Update tokens that we're using in Sync. Email must stay the same.
   virtual void UpdateCredentials(const SyncCredentials& credentials) = 0;
@@ -303,20 +311,12 @@ class SyncManager {
   // any configuration tasks needed as determined by the params. Once complete,
   // syncer will remain in CONFIGURATION_MODE until StartSyncingNormally is
   // called.
-  // Data whose types are not in |new_routing_info| are purged from sync
-  // directory, unless they're part of |to_ignore|, in which case they're left
-  // untouched. The purged data is backed up in delete journal for recovery in
-  // next session if its type is in |to_journal|. If in |to_unapply|
-  // only the local data is removed; the server data is preserved.
   // |ready_task| is invoked when the configuration completes.
   // |retry_task| is invoked if the configuration job could not immediately
   //              execute. |ready_task| will still be called when it eventually
   //              does finish.
   virtual void ConfigureSyncer(ConfigureReason reason,
                                ModelTypeSet to_download,
-                               ModelTypeSet to_purge,
-                               ModelTypeSet to_journal,
-                               ModelTypeSet to_unapply,
                                const ModelSafeRoutingInfo& new_routing_info,
                                const base::Closure& ready_task,
                                const base::Closure& retry_task) = 0;

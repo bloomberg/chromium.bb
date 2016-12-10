@@ -106,7 +106,7 @@ ModelTypeSet FakeSyncManager::GetTypesWithEmptyProgressMarkerToken(
   return empty_types;
 }
 
-bool FakeSyncManager::PurgePartiallySyncedTypes() {
+void FakeSyncManager::PurgePartiallySyncedTypes() {
   ModelTypeSet partial_types;
   for (ModelTypeSet::Iterator i = progress_marker_types_.First(); i.Good();
        i.Inc()) {
@@ -115,7 +115,20 @@ bool FakeSyncManager::PurgePartiallySyncedTypes() {
   }
   progress_marker_types_.RemoveAll(partial_types);
   cleaned_types_.PutAll(partial_types);
-  return true;
+}
+
+void FakeSyncManager::PurgeDisabledTypes(ModelTypeSet to_purge,
+                                         ModelTypeSet to_journal,
+                                         ModelTypeSet to_unapply) {
+  // Simulate cleaning up disabled types.
+  // TODO(sync): consider only cleaning those types that were recently disabled,
+  // if this isn't the first cleanup, which more accurately reflects the
+  // behavior of the real cleanup logic.
+  GetUserShare()->directory->PurgeEntriesWithTypeIn(to_purge, to_journal,
+                                                    to_unapply);
+  initial_sync_ended_types_.RemoveAll(to_purge);
+  progress_marker_types_.RemoveAll(to_purge);
+  cleaned_types_.PutAll(to_purge);
 }
 
 void FakeSyncManager::UpdateCredentials(const SyncCredentials& credentials) {
@@ -131,9 +144,6 @@ void FakeSyncManager::StartSyncingNormally(
 void FakeSyncManager::ConfigureSyncer(
     ConfigureReason reason,
     ModelTypeSet to_download,
-    ModelTypeSet to_purge,
-    ModelTypeSet to_journal,
-    ModelTypeSet to_unapply,
     const ModelSafeRoutingInfo& new_routing_info,
     const base::Closure& ready_task,
     const base::Closure& retry_task) {
@@ -143,26 +153,16 @@ void FakeSyncManager::ConfigureSyncer(
   success_types.RemoveAll(configure_fail_types_);
 
   DVLOG(1) << "Faking configuration. Downloading: "
-           << ModelTypeSetToString(success_types)
-           << ". Cleaning: " << ModelTypeSetToString(to_purge);
+           << ModelTypeSetToString(success_types);
 
   // Update our fake directory by clearing and fake-downloading as necessary.
   UserShare* share = GetUserShare();
-  share->directory->PurgeEntriesWithTypeIn(to_purge, to_journal, to_unapply);
   for (ModelTypeSet::Iterator it = success_types.First(); it.Good(); it.Inc()) {
     // We must be careful to not create the same root node twice.
     if (!initial_sync_ended_types_.Has(it.Get())) {
       TestUserShare::CreateRoot(it.Get(), share);
     }
   }
-
-  // Simulate cleaning up disabled types.
-  // TODO(sync): consider only cleaning those types that were recently disabled,
-  // if this isn't the first cleanup, which more accurately reflects the
-  // behavior of the real cleanup logic.
-  initial_sync_ended_types_.RemoveAll(to_purge);
-  progress_marker_types_.RemoveAll(to_purge);
-  cleaned_types_.PutAll(to_purge);
 
   // Now simulate the actual configuration for those types that successfully
   // download + apply.
