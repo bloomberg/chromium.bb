@@ -1,5 +1,6 @@
 == chromeos ==
 amd64-gcc-toolchain (gce_beefy)
+amd64-generic-cheets-release (baremetal)
 amd64-generic-chromium-pfq (baremetal)
 amd64-generic-goofy-release (baremetal)
 amd64-llvm-next-toolchain (gce_beefy)

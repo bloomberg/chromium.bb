@@ -1342,6 +1342,7 @@
     },
     "amd64-generic-cheets-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "amd64-generic-cheets"
         ],
