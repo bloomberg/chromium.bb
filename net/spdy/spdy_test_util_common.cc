@@ -678,7 +678,11 @@ void SpdySessionPoolPeer::SetEnableSendingInitialData(bool enabled) {
   pool_->enable_sending_initial_data_ = enabled;
 }
 
-SpdyTestUtil::SpdyTestUtil() : default_url_(GURL(kDefaultUrl)) {}
+SpdyTestUtil::SpdyTestUtil()
+    : headerless_spdy_framer_(SpdyFramer::ENABLE_COMPRESSION),
+      request_spdy_framer_(SpdyFramer::ENABLE_COMPRESSION),
+      response_spdy_framer_(SpdyFramer::ENABLE_COMPRESSION),
+      default_url_(GURL(kDefaultUrl)) {}
 
 SpdyTestUtil::~SpdyTestUtil() {}
 
@@ -1044,7 +1048,7 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyPostReply(
 
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(int stream_id,
                                                          bool fin) {
-  SpdyFramer framer;
+  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdyDataIR data_ir(stream_id,
                      base::StringPiece(kUploadData, kUploadDataSize));
   data_ir.set_fin(fin);
@@ -1055,7 +1059,7 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(int stream_id,
                                                          const char* data,
                                                          uint32_t len,
                                                          bool fin) {
-  SpdyFramer framer;
+  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdyDataIR data_ir(stream_id, base::StringPiece(data, len));
   data_ir.set_fin(fin);
   return SpdySerializedFrame(framer.SerializeData(data_ir));
@@ -1066,7 +1070,7 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(int stream_id,
                                                          uint32_t len,
                                                          bool fin,
                                                          int padding_length) {
-  SpdyFramer framer;
+  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdyDataIR data_ir(stream_id, base::StringPiece(data, len));
   data_ir.set_fin(fin);
   data_ir.set_padding_len(padding_length);

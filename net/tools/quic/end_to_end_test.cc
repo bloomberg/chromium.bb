@@ -1771,7 +1771,7 @@ TEST_P(EndToEndTest, FlowControlsSynced) {
   ExpectFlowControlsSynced(
       QuicSessionPeer::GetCryptoStream(client_session)->flow_controller(),
       QuicSessionPeer::GetCryptoStream(server_session)->flow_controller());
-  SpdyFramer spdy_framer;
+  SpdyFramer spdy_framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdySettingsIR settings_frame;
   settings_frame.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE, false, false,
                             kDefaultMaxUncompressedHeaderSize);

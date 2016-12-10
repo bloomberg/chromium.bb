@@ -153,13 +153,14 @@ bool SpdyFramerVisitorInterface::OnRstStreamFrameData(
   return true;
 }
 
-SpdyFramer::SpdyFramer(SpdyFramer::DecoderAdapterFactoryFn adapter_factory)
+SpdyFramer::SpdyFramer(SpdyFramer::DecoderAdapterFactoryFn adapter_factory,
+                       CompressionOption option)
     : current_frame_buffer_(kControlFrameBufferSize),
       expect_continuation_(0),
       visitor_(NULL),
       debug_visitor_(NULL),
       header_handler_(nullptr),
-      enable_compression_(true),
+      compression_option_(option),
       probable_http_response_(false),
       end_stream_when_done_(false) {
   // TODO(bnc): The way kMaxControlFrameSize is currently interpreted, it
@@ -174,7 +175,8 @@ SpdyFramer::SpdyFramer(SpdyFramer::DecoderAdapterFactoryFn adapter_factory)
   }
 }
 
-SpdyFramer::SpdyFramer() : SpdyFramer(&DecoderAdapterFactory) {}
+SpdyFramer::SpdyFramer(CompressionOption option)
+    : SpdyFramer(&DecoderAdapterFactory, option) {}
 
 SpdyFramer::~SpdyFramer() {
 }
@@ -1782,7 +1784,7 @@ SpdyFramer::SpdyHeaderFrameIterator::SpdyHeaderFrameIterator(
       is_first_frame_(true),
       has_next_frame_(true) {
   encoder_ = framer_->GetHpackEncoder()->EncodeHeaderSet(
-      headers_ir_->header_block(), framer_->enable_compression_);
+      headers_ir_->header_block(), framer_->compression_enabled());
 }
 
 SpdyFramer::SpdyHeaderFrameIterator::~SpdyHeaderFrameIterator() {}
@@ -2004,7 +2006,7 @@ SpdySerializedFrame SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers) {
   }
 
   string hpack_encoding;
-  if (enable_compression_) {
+  if (compression_enabled()) {
     GetHpackEncoder()->EncodeHeaderSet(headers.header_block(), &hpack_encoding);
   } else {
     GetHpackEncoder()->EncodeHeaderSetWithoutCompression(headers.header_block(),
@@ -2081,7 +2083,7 @@ SpdySerializedFrame SpdyFramer::SerializePushPromise(
   }
 
   string hpack_encoding;
-  if (enable_compression_) {
+  if (compression_enabled()) {
     GetHpackEncoder()->EncodeHeaderSet(push_promise.header_block(),
                                        &hpack_encoding);
   } else {

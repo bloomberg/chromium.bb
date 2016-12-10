@@ -25,6 +25,8 @@ QuicTestPacketMaker::QuicTestPacketMaker(QuicVersion version,
       connection_id_(connection_id),
       clock_(clock),
       host_(host),
+      spdy_request_framer_(SpdyFramer::ENABLE_COMPRESSION),
+      spdy_response_framer_(SpdyFramer::ENABLE_COMPRESSION),
       perspective_(perspective) {}
 
 QuicTestPacketMaker::~QuicTestPacketMaker() {}
