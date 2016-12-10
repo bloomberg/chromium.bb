@@ -45,6 +45,11 @@
         };
       }
 
+      /**
+       * This is currently necessary because a link inside a disabled
+       * paper-checkbox inherits `pointer-events: none;` and will not work.
+       * See: https://github.com/PolymerElements/paper-checkbox/issues/166
+       */
       #paymentLearnMore {
         pointer-events: initial;
       }
