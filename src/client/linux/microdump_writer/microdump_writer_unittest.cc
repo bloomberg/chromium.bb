@@ -246,7 +246,7 @@ TEST(MicrodumpWriterTest, NoOutputIfUninteresting) {
   MappingList no_mappings;
 
   CrashAndGetMicrodump(no_mappings, kMicrodumpExtraInfo, &buf);
-  ASSERT_EQ(0, buf.size());
+  ASSERT_EQ(0U, buf.size());
 }
 
 // Ensure that output occurs if the interest region is set, and
@@ -268,7 +268,7 @@ TEST(MicrodumpWriterTest, OutputIfInteresting) {
   MappingList no_mappings;
 
   CrashAndGetMicrodump(no_mappings, kMicrodumpExtraInfo, &buf);
-  ASSERT_LT(0, buf.size());
+  ASSERT_LT(0U, buf.size());
 }
 
 // Ensure that the product info and build fingerprint metadata show up in the
