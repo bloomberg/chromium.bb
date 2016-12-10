@@ -442,6 +442,10 @@ class DOMMessageQueue : public NotificationObserver,
   // message. Returns true on success.
   bool WaitForMessage(std::string* message) WARN_UNUSED_RESULT;
 
+  // If there is a message in the queue, then copies it to |message| and returns
+  // true.  Otherwise (if the queue is empty), returns false.
+  bool PopMessage(std::string* message) WARN_UNUSED_RESULT;
+
   // Overridden NotificationObserver methods.
   void Observe(int type,
                const NotificationSource& source,

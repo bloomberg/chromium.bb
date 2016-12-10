@@ -1327,7 +1327,11 @@ bool DOMMessageQueue::WaitForMessage(std::string* message) {
         new MessageLoopRunner(MessageLoopRunner::QuitMode::IMMEDIATE);
     message_loop_runner_->Run();
   }
-  // The queue should not be empty, unless we were quit because of a timeout.
+  return PopMessage(message);
+}
+
+bool DOMMessageQueue::PopMessage(std::string* message) {
+  DCHECK(message);
   if (message_queue_.empty())
     return false;
   *message = message_queue_.front();
