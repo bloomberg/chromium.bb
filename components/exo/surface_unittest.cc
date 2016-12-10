@@ -50,11 +50,6 @@ TEST_F(SurfaceTest, Attach) {
   // attached buffer.
   surface->Attach(nullptr);
   surface->Commit();
-  // CompositorFrameSinkHolder::ReclaimResources() gets called via
-  // MojoCompositorFrameSinkClient interface. We need to wait here for the mojo
-  // call to finish so that the release callback finishes running before
-  // the assertion below.
-  RunAllPendingInMessageLoop();
   ASSERT_EQ(1, release_buffer_call_count);
 }
 
@@ -210,7 +205,6 @@ TEST_F(SurfaceTest, SetBlendMode) {
   surface->Attach(buffer.get());
   surface->SetBlendMode(SkBlendMode::kSrc);
   surface->Commit();
-  RunAllPendingInMessageLoop();
 
   const cc::CompositorFrame& frame = GetFrameFromSurface(surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
@@ -228,7 +222,6 @@ TEST_F(SurfaceTest, OverlayCandidate) {
 
   surface->Attach(buffer.get());
   surface->Commit();
-  RunAllPendingInMessageLoop();
 
   const cc::CompositorFrame& frame = GetFrameFromSurface(surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
