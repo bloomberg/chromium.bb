@@ -703,6 +703,7 @@ TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
   aura::WindowTreeClient second_client(connector(), this);
   second_client.ConnectViaWindowTreeFactory();
   aura::WindowTreeHostMus window_tree_host_in_second_client(&second_client);
+  window_tree_host_in_second_client.InitHost();
   ASSERT_TRUE(second_client.GetRoots().count(
                   window_tree_host_in_second_client.window()) > 0);
   // Wait for the window to appear in the wm.
