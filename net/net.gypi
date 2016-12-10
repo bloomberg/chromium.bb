@@ -1910,7 +1910,7 @@
       'quic/core/crypto/quic_crypto_server_config_test.cc',
       'quic/core/crypto/quic_random_test.cc',
       'quic/core/crypto/strike_register_test.cc',
-      'quic/core/frames/quic_frame_test.cc',
+      'quic/core/frames/quic_frames_test.cc',
       'quic/core/interval_set_test.cc',
       'quic/core/interval_test.cc',
       'quic/core/quic_address_mismatch_test.cc',

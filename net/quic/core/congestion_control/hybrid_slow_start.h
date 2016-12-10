@@ -16,7 +16,7 @@
 #ifndef NET_QUIC_CORE_CONGESTION_CONTROL_HYBRID_SLOW_START_H_
 #define NET_QUIC_CORE_CONGESTION_CONTROL_HYBRID_SLOW_START_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "base/macros.h"
 #include "net/quic/core/quic_packets.h"

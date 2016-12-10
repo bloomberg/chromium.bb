@@ -7,9 +7,8 @@
 #ifndef NET_QUIC_CORE_CONGESTION_CONTROL_RTT_STATS_H_
 #define NET_QUIC_CORE_CONGESTION_CONTROL_RTT_STATS_H_
 
-#include <stdint.h>
-
 #include <algorithm>
+#include <cstdint>
 
 #include "base/macros.h"
 #include "net/quic/core/quic_bug_tracker.h"

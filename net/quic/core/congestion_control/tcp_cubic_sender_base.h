@@ -7,7 +7,7 @@
 #ifndef NET_QUIC_CORE_CONGESTION_CONTROL_TCP_CUBIC_SENDER_BASE_H_
 #define NET_QUIC_CORE_CONGESTION_CONTROL_TCP_CUBIC_SENDER_BASE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -39,6 +39,7 @@ class QUIC_EXPORT_PRIVATE TcpCubicSenderBase : public SendAlgorithmInterface {
                      const RttStats* rtt_stats,
                      bool reno,
                      QuicConnectionStats* stats);
+
   ~TcpCubicSenderBase() override;
 
   // Start implementation of SendAlgorithmInterface.

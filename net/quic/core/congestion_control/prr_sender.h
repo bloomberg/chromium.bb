@@ -7,8 +7,6 @@
 #ifndef NET_QUIC_CORE_CONGESTION_CONTROL_PRR_SENDER_H_
 #define NET_QUIC_CORE_CONGESTION_CONTROL_PRR_SENDER_H_
 
-#include <stddef.h>
-
 #include "net/quic/core/quic_bandwidth.h"
 #include "net/quic/core/quic_time.h"
 #include "net/quic/platform/api/quic_export.h"

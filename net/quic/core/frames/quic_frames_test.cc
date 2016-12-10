@@ -2,8 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/quic/core/frames/quic_ack_frame.h"
+#include "net/quic/core/frames/quic_blocked_frame.h"
+#include "net/quic/core/frames/quic_connection_close_frame.h"
 #include "net/quic/core/frames/quic_frame.h"
-
+#include "net/quic/core/frames/quic_goaway_frame.h"
+#include "net/quic/core/frames/quic_mtu_discovery_frame.h"
+#include "net/quic/core/frames/quic_padding_frame.h"
+#include "net/quic/core/frames/quic_path_close_frame.h"
+#include "net/quic/core/frames/quic_ping_frame.h"
+#include "net/quic/core/frames/quic_rst_stream_frame.h"
+#include "net/quic/core/frames/quic_stop_waiting_frame.h"
+#include "net/quic/core/frames/quic_stream_frame.h"
+#include "net/quic/core/frames/quic_window_update_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

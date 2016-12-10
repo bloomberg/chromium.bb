@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <ostream>
 
+#include "base/macros.h"
 #include "net/quic/core/congestion_control/bandwidth_sampler.h"
 #include "net/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/quic/core/congestion_control/windowed_filter.h"

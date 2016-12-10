@@ -7,7 +7,7 @@
 #ifndef NET_QUIC_CORE_CONGESTION_CONTROL_TCP_CUBIC_SENDER_BYTES_H_
 #define NET_QUIC_CORE_CONGESTION_CONTROL_TCP_CUBIC_SENDER_BYTES_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "base/macros.h"
 #include "net/quic/core/congestion_control/cubic_bytes.h"

@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_CORE_FRAMES_QUIC_FRAME_H_
 #define NET_QUIC_CORE_FRAMES_QUIC_FRAME_H_
 
+#include <ostream>
 #include <vector>
 
 #include "net/quic/core/frames/quic_ack_frame.h"
@@ -20,7 +21,6 @@
 #include "net/quic/core/frames/quic_stop_waiting_frame.h"
 #include "net/quic/core/frames/quic_stream_frame.h"
 #include "net/quic/core/frames/quic_window_update_frame.h"
-#include "net/quic/core/quic_constants.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
 

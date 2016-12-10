@@ -7,7 +7,7 @@
 #ifndef NET_QUIC_CORE_CONGESTION_CONTROL_TCP_CUBIC_SENDER_PACKETS_H_
 #define NET_QUIC_CORE_CONGESTION_CONTROL_TCP_CUBIC_SENDER_PACKETS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"

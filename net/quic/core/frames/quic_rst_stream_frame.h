@@ -5,6 +5,8 @@
 #ifndef NET_QUIC_CORE_FRAMES_QUIC_RST_STREAM_FRAME_H_
 #define NET_QUIC_CORE_FRAMES_QUIC_RST_STREAM_FRAME_H_
 
+#include <ostream>
+
 #include "net/quic/core/quic_error_codes.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"

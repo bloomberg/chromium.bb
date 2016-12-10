@@ -5,6 +5,8 @@
 #ifndef NET_QUIC_CORE_FRAMES_QUIC_WINDOW_UPDATE_FRAME_H_
 #define NET_QUIC_CORE_FRAMES_QUIC_WINDOW_UPDATE_FRAME_H_
 
+#include <ostream>
+
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
 

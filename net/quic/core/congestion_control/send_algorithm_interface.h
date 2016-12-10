@@ -29,7 +29,7 @@ const QuicPacketCount kDefaultMaxCongestionWindowPackets = 2000;
 
 class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
-  // A sorted std::vector of packets.
+  // A sorted vector of packets.
   typedef std::vector<std::pair<QuicPacketNumber, QuicPacketLength>>
       CongestionVector;
 

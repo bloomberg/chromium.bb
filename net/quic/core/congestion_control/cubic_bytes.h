@@ -8,7 +8,7 @@
 #ifndef NET_QUIC_CORE_CONGESTION_CONTROL_CUBIC_BYTES_H_
 #define NET_QUIC_CORE_CONGESTION_CONTROL_CUBIC_BYTES_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "base/macros.h"
 #include "net/quic/core/quic_bandwidth.h"

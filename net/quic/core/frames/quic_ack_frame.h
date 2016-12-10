@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_CORE_FRAMES_QUIC_ACK_FRAME_H_
 #define NET_QUIC_CORE_FRAMES_QUIC_ACK_FRAME_H_
 
+#include <ostream>
 #include <string>
 
 #include "base/strings/string_piece.h"

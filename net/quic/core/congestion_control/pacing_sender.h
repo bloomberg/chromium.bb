@@ -11,8 +11,7 @@
 #ifndef NET_QUIC_CORE_CONGESTION_CONTROL_PACING_SENDER_H_
 #define NET_QUIC_CORE_CONGESTION_CONTROL_PACING_SENDER_H_
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <map>
 #include <memory>
 

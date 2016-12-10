@@ -5,6 +5,8 @@
 #ifndef NET_QUIC_CORE_FRAMES_QUIC_STOP_WAITING_FRAME_H_
 #define NET_QUIC_CORE_FRAMES_QUIC_STOP_WAITING_FRAME_H_
 
+#include <ostream>
+
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
 
@@ -17,6 +19,7 @@ struct QUIC_EXPORT_PRIVATE QuicStopWaitingFrame {
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
       std::ostream& os,
       const QuicStopWaitingFrame& s);
+
   // Path which this stop waiting frame belongs to.
   QuicPathId path_id;
   // The lowest packet we've sent which is unacked, and we expect an ack for.

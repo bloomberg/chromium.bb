@@ -6,6 +6,7 @@
 #define NET_QUIC_CORE_FRAMES_QUIC_STREAM_FRAME_H_
 
 #include <memory>
+#include <ostream>
 
 #include "base/strings/string_piece.h"
 #include "net/quic/core/quic_buffer_allocator.h"
