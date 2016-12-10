@@ -140,10 +140,10 @@ class SlaveStatus(object):
       self.build_info_dict = self._GetSlaveStatusesFromBuildbucket()
       self._SetStatusBuildsDict()
 
-    self.missing_builds = self.GetMissingBuilds()
-    self.scheduled_builds = self.GetScheduledBuilds()
-    self.builds_to_retry = self.GetBuildsToRetry()
-    self.completed_builds = self.GetCompletedBuilds()
+    self.missing_builds = self._GetMissingBuilds()
+    self.scheduled_builds = self._GetScheduledBuilds()
+    self.builds_to_retry = self._GetBuildsToRetry()
+    self.completed_builds = self._GetCompletedBuilds()
 
   def GetBuildbucketBuilds(self, build_status):
     """Get the buildbucket builds which are in the build_status status.
@@ -162,7 +162,7 @@ class SlaveStatus(object):
 
     return self.status_buildset_dict.get(build_status, set())
 
-  def GetMissingBuilds(self):
+  def _GetMissingBuilds(self):
     """Returns the missing builds.
 
     For builds scheduled by Buildbucket, missing refers to builds without
@@ -180,7 +180,7 @@ class SlaveStatus(object):
       return (set(self.builders_array) - set(self.cidb_status.keys()) -
               self.completed_builds)
 
-  def GetScheduledBuilds(self):
+  def _GetScheduledBuilds(self):
     """Returns the scheduled builds.
 
     Returns:
@@ -194,7 +194,7 @@ class SlaveStatus(object):
     else:
       return None
 
-  def GetRetriableBuilds(self, completed_builds):
+  def _GetRetriableBuilds(self, completed_builds):
     """Get retriable builds from completed builds.
 
     Args:
@@ -228,7 +228,7 @@ class SlaveStatus(object):
 
     return builds_to_retry
 
-  def GetBuildsToRetry(self):
+  def _GetBuildsToRetry(self):
     """Get the config names of the builds to retry.
 
     Returns:
@@ -238,11 +238,11 @@ class SlaveStatus(object):
       current_completed_all = self.GetBuildbucketBuilds(
           constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED)
 
-      return self.GetRetriableBuilds(current_completed_all)
+      return self._GetRetriableBuilds(current_completed_all)
     else:
       return None
 
-  def GetCompletedBuilds(self):
+  def _GetCompletedBuilds(self):
     """Returns the builds that have completed and will not be retried.
 
     Returns:
@@ -250,10 +250,12 @@ class SlaveStatus(object):
     """
     current_completed = None
     if self.build_info_dict is not None:
+      assert self.builds_to_retry is not None
+
       current_completed_all = self.GetBuildbucketBuilds(
           constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED)
 
-      current_completed = current_completed_all - self.GetBuildsToRetry()
+      current_completed = current_completed_all - self.builds_to_retry
     else:
       current_completed = set(
           b for b, s in self.cidb_status.iteritems()
@@ -272,7 +274,7 @@ class SlaveStatus(object):
 
     return completed_builds
 
-  def Completed(self):
+  def _Completed(self):
     """Returns a bool if all builds have completed successfully.
 
     Returns:
@@ -280,7 +282,7 @@ class SlaveStatus(object):
     """
     return len(self.completed_builds) == len(self.builders_array)
 
-  def ShouldFailForBuilderStartTimeout(self, current_time):
+  def _ShouldFailForBuilderStartTimeout(self, current_time):
     """Decides if we should fail if a build hasn't started within 5 mins.
 
     If a build hasn't started within BUILD_START_TIMEOUT_MIN and the rest of
@@ -322,11 +324,14 @@ class SlaveStatus(object):
       return (past_deadline and other_builders_completed and
               self.missing_builds)
 
-  def RetryBuilds(self, builds):
+  def _RetryBuilds(self, builds):
     """Retry builds with Buildbucket.
 
     Args:
       builds: config names of the builds to retry with Buildbucket.
+
+    Returns:
+      A set of retried builds.
     """
     assert builds is not None
 
@@ -363,6 +368,8 @@ class SlaveStatus(object):
       self.metadata.ExtendKeyListWithList(
           constants.METADATA_SCHEDULED_SLAVES, new_scheduled_slaves)
 
+    return set([build for build, _, _ in new_scheduled_slaves])
+
   def ShouldWait(self):
     """Decides if we should continue to wait for the builds to finish.
 
@@ -376,13 +383,13 @@ class SlaveStatus(object):
       A bool of True if we should continue to wait and False if we should not.
     """
     # Check if all builders completed.
-    if self.Completed():
+    if self._Completed():
       return False
 
     current_time = datetime.datetime.now()
 
     # Guess there are some builders building, check if there is a problem.
-    if self.ShouldFailForBuilderStartTimeout(current_time):
+    if self._ShouldFailForBuilderStartTimeout(current_time):
       logging.error('Ending build since at least one builder has not started '
                     'within 5 mins.')
       return False
@@ -391,9 +398,8 @@ class SlaveStatus(object):
     logging.info('Still waiting for the following builds to complete: %r',
                  sorted(set(self.builders_array) - self.completed_builds))
 
-    self.builds_to_retry = self.GetBuildsToRetry()
-
     if self.builds_to_retry:
-      self.RetryBuilds(self.builds_to_retry)
+      retried_builds = self._RetryBuilds(self.builds_to_retry)
+      self.builds_to_retry -= retried_builds
 
     return True

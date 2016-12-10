@@ -130,7 +130,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     slave_status = self._GetSlaveStatus(
         builders_array=['build1', 'build2', 'missing_builder'])
 
-    self.assertEqual(slave_status.GetMissingBuilds(), set(['missing_builder']))
+    self.assertEqual(slave_status._GetMissingBuilds(), set(['missing_builder']))
 
   def testGetMissingBuildsWithBuildbucket(self):
     """Tests GetMissingBuilds returns the missing builders with Buildbucket."""
@@ -149,7 +149,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client)
 
-    self.assertEqual(slave_status.GetMissingBuilds(), set(['missing']))
+    self.assertEqual(slave_status._GetMissingBuilds(), set(['missing']))
 
   def testGetMissingBuildsNone(self):
     """Tests GetMissingBuilds returns None."""
@@ -160,7 +160,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     slave_status = self._GetSlaveStatus(
         builders_array=['build1', 'build2'])
 
-    self.assertEqual(slave_status.GetMissingBuilds(), set())
+    self.assertEqual(slave_status._GetMissingBuilds(), set())
 
   def testGetMissingBuildsNoneWithBuildbucket(self):
     """Tests GetMissing returns None with Buildbucket."""
@@ -179,7 +179,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client)
 
-    self.assertEqual(slave_status.GetMissingBuilds(), set())
+    self.assertEqual(slave_status._GetMissingBuilds(), set())
 
   def testGetCompletedBuilds(self):
     """Tests GetCompletedBuilds returns the completed builds."""
@@ -197,7 +197,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         builders_array=['passed', 'failed', 'aborted', 'skipped', 'forgiven',
                         'inflight', 'missing', 'planning'])
 
-    self.assertEqual(slave_status.GetCompletedBuilds(),
+    self.assertEqual(slave_status._GetCompletedBuilds(),
                      set(['passed', 'failed', 'aborted', 'skipped',
                           'forgiven']))
 
@@ -226,10 +226,9 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
                         'completed_failure', 'completed_canceled'],
         config=self.master_cq_config,
         metadata=self.metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
+        buildbucket_client=self.buildbucket_client)
 
-    self.assertEqual(slave_status.GetRetriableBuilds(completed_all), set())
+    self.assertEqual(slave_status._GetRetriableBuilds(completed_all), set())
 
   def testGetRetriableBuilds(self):
     """Retry failed and canceled builds."""
@@ -254,9 +253,8 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
                         'completed_failure', 'completed_canceled'],
         config=self.master_cq_config,
         metadata=self.metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
-    retry_builds = slave_status.GetRetriableBuilds(completed_all)
+        buildbucket_client=self.buildbucket_client)
+    retry_builds = slave_status._GetRetriableBuilds(completed_all)
 
     self.assertEqual(retry_builds,
                      set(['completed_failure', 'completed_canceled']))
@@ -286,7 +284,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         config=self.master_cq_config,
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client)
-    retry_builds = slave_status.GetRetriableBuilds(completed_all)
+    retry_builds = slave_status._GetRetriableBuilds(completed_all)
 
     self.assertEqual(retry_builds, set(['completed_canceled']))
 
@@ -313,7 +311,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client)
 
-    self.assertEqual(slave_status.GetCompletedBuilds(),
+    self.assertEqual(slave_status._GetCompletedBuilds(),
                      set(['completed_success', 'completed_failure',
                           'completed_canceled']))
 
@@ -327,7 +325,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     slave_status = self._GetSlaveStatus(
         builders_array=['scheduled', 'started', 'completed_success',
                         'completed_failure', 'completed_canceled'])
-    self.assertEqual(slave_status.GetBuildsToRetry(), None)
+    self.assertEqual(slave_status._GetBuildsToRetry(), None)
 
   def testGetBuildsToRetryWithBuildbucket(self):
     """Test GetBuildsToRetry with Buildbucket."""
@@ -349,10 +347,9 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
                         'completed_failure', 'completed_canceled'],
         config=self.master_cq_config,
         metadata=self.metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
+        buildbucket_client=self.buildbucket_client)
 
-    self.assertEqual(slave_status.GetBuildsToRetry(),
+    self.assertEqual(slave_status._GetBuildsToRetry(),
                      set(['completed_failure']))
 
   def testCompleted(self):
@@ -363,14 +360,14 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self._Mock_GetSlaveStatusesFromCIDB(statusNotCompleted)
     slaveStatusNotCompleted = self._GetSlaveStatus(
         builders_array=builders_array)
-    self.assertFalse(slaveStatusNotCompleted.Completed())
+    self.assertFalse(slaveStatusNotCompleted._Completed())
 
     statusCompleted = {'build1': constants.BUILDER_STATUS_FAILED,
                        'build2': constants.BUILDER_STATUS_PASSED}
     self._Mock_GetSlaveStatusesFromCIDB(statusCompleted)
     slaveStatusCompleted = self._GetSlaveStatus(
         builders_array=builders_array)
-    self.assertTrue(slaveStatusCompleted.Completed())
+    self.assertTrue(slaveStatusCompleted._Completed())
 
   def testCompletedWithBuildbucket(self):
     """Tests Completed returns proper bool with Buildbucket."""
@@ -392,7 +389,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client)
 
-    self.assertFalse(slaveStatusNotCompleted.Completed())
+    self.assertFalse(slaveStatusNotCompleted._Completed())
 
     status_completed = {
         'success': constants.BUILDER_STATUS_PASSED,
@@ -411,7 +408,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client)
 
-    self.assertTrue(slaveStatusCompleted.Completed())
+    self.assertTrue(slaveStatusCompleted._Completed())
 
   def testShouldFailForBuilderStartTimeoutTrue(self):
     """Tests that ShouldFailForBuilderStartTimeout says fail when it should."""
@@ -424,7 +421,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     check_time = start_time + datetime.timedelta(
         minutes=slave_status.BUILD_START_TIMEOUT_MIN + 1)
 
-    self.assertTrue(slave_status.ShouldFailForBuilderStartTimeout(check_time))
+    self.assertTrue(slave_status._ShouldFailForBuilderStartTimeout(check_time))
 
   def testShouldFailForBuilderStartTimeoutTrueWithBuildbucket(self):
     """Tests that ShouldFailForBuilderStartTimeout says fail when it should."""
@@ -443,12 +440,11 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         builders_array=['success', 'scheduled'],
         config=self.master_cq_config,
         metadata=self.metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
+        buildbucket_client=self.buildbucket_client)
     check_time = start_time + datetime.timedelta(
         minutes=slave_status.BUILD_START_TIMEOUT_MIN + 1)
 
-    self.assertTrue(slave_status.ShouldFailForBuilderStartTimeout(check_time))
+    self.assertTrue(slave_status._ShouldFailForBuilderStartTimeout(check_time))
 
   def testShouldFailForBuilderStartTimeoutFalseTooEarly(self):
     """Tests that ShouldFailForBuilderStartTimeout doesn't fail.
@@ -464,7 +460,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         start_time=start_time,
         builders_array=['build1', 'build2'])
 
-    self.assertFalse(slave_status.ShouldFailForBuilderStartTimeout(start_time))
+    self.assertFalse(slave_status._ShouldFailForBuilderStartTimeout(start_time))
 
   def testShouldFailForBuilderStartTimeoutFalseTooEarlyWithBuildbucket(self):
     """Tests that ShouldFailForBuilderStartTimeout doesn't fail.
@@ -488,7 +484,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client)
 
-    self.assertFalse(slave_status.ShouldFailForBuilderStartTimeout(start_time))
+    self.assertFalse(slave_status._ShouldFailForBuilderStartTimeout(start_time))
 
   def testShouldFailForBuilderStartTimeoutFalseNotCompleted(self):
     """Tests that ShouldFailForBuilderStartTimeout doesn't fail.
@@ -505,12 +501,11 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         builders_array=['build1', 'build2'],
         config=self.master_cq_config,
         metadata=self.metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
+        buildbucket_client=self.buildbucket_client)
     check_time = start_time + datetime.timedelta(
         minutes=slave_status.BUILD_START_TIMEOUT_MIN + 1)
 
-    self.assertFalse(slave_status.ShouldFailForBuilderStartTimeout(check_time))
+    self.assertFalse(slave_status._ShouldFailForBuilderStartTimeout(check_time))
 
   def testShouldFailForStartTimeoutFalseNotCompletedWithBuildbucket(self):
     """Tests that ShouldWait doesn't fail with Buildbucket.
@@ -533,12 +528,11 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         builders_array=['started', 'missing'],
         config=self.master_cq_config,
         metadata=self.metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
+        buildbucket_client=self.buildbucket_client)
     check_time = start_time + datetime.timedelta(
         minutes=slave_status.BUILD_START_TIMEOUT_MIN + 1)
 
-    self.assertFalse(slave_status.ShouldFailForBuilderStartTimeout(check_time))
+    self.assertFalse(slave_status._ShouldFailForBuilderStartTimeout(check_time))
 
   def testShouldWaitAllBuildersCompleted(self):
     """Tests that ShouldWait says no waiting because all builders finished."""
@@ -616,8 +610,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         builders_array=['build1', 'build2'],
         config=self.master_cq_config,
         metadata=self.metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
+        buildbucket_client=self.buildbucket_client)
 
     self.assertFalse(slave_status.ShouldWait())
 
@@ -636,8 +629,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         builders_array=['failure', 'missing'],
         config=self.master_cq_config,
         metadata=self.metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
+        buildbucket_client=self.buildbucket_client)
 
     self.assertTrue(slave_status.ShouldWait())
 
@@ -668,10 +660,34 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         builders_array=['started', 'failure'],
         config=self.master_cq_config,
         metadata=self.metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
+        buildbucket_client=self.buildbucket_client)
 
     self.assertTrue(slave_status.ShouldWait())
+
+  def testShouldWaitSetsBuildsToRetry(self):
+    """ShouldWait should update slave_status.builds_to_retry."""
+    self.PatchObject(build_status.SlaveStatus,
+                     '_Completed',
+                     return_value=False)
+    self.PatchObject(build_status.SlaveStatus,
+                     '_ShouldFailForBuilderStartTimeout',
+                     return_value=False)
+    slave_status = self._GetSlaveStatus(
+        builders_array=['started', 'failure'],
+        config=self.master_cq_config,
+        metadata=self.metadata,
+        buildbucket_client=self.buildbucket_client)
+    slave_status.builds_to_retry = set(['slave1', 'slave2'])
+
+    self.PatchObject(build_status.SlaveStatus, '_RetryBuilds',
+                     return_value=set(['slave1']))
+    slave_status.ShouldWait()
+    self.assertEqual(slave_status.builds_to_retry, set(['slave2']))
+
+    self.PatchObject(build_status.SlaveStatus, '_RetryBuilds',
+                     return_value=set(['slave2']))
+    slave_status.ShouldWait()
+    self.assertEqual(slave_status.builds_to_retry, set([]))
 
   def testRetryBuilds(self):
     """Test RetryBuilds."""
@@ -687,8 +703,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         builders_array=['failure', 'canceled'],
         config=self.master_cq_config,
         metadata=metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
+        buildbucket_client=self.buildbucket_client)
 
     builds_to_retry = set(['failure', 'canceled'])
     updated_build_info_dict = {
@@ -706,12 +721,14 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     }
     slave_status.buildbucket_client.RetryBuildRequest.return_value = content
 
-    slave_status.RetryBuilds(builds_to_retry)
+    retried_builds = slave_status._RetryBuilds(builds_to_retry)
+    self.assertEqual(retried_builds, builds_to_retry)
     build_info_dict = buildbucket_lib.GetBuildInfoDict(slave_status.metadata)
     self.assertEqual(build_info_dict['failure']['buildbucket_id'], 'retry_id')
     self.assertEqual(build_info_dict['failure']['retry'], 1)
 
-    slave_status.RetryBuilds(builds_to_retry)
+    retried_builds = slave_status._RetryBuilds(builds_to_retry)
+    self.assertEqual(retried_builds, builds_to_retry)
     build_info_dict = buildbucket_lib.GetBuildInfoDict(slave_status.metadata)
     self.assertEqual(build_info_dict['canceled']['buildbucket_id'], 'retry_id')
     self.assertEqual(build_info_dict['canceled']['retry'], 2)
@@ -742,8 +759,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         builders_array=['build1', 'build2'],
         config=self.master_cq_config,
         metadata=self.metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
+        buildbucket_client=self.buildbucket_client)
     slave_status.buildbucket_client.GetBuildRequest.return_value = content
     updated_build_info_dict = slave_status._GetSlaveStatusesFromBuildbucket()
 
@@ -799,8 +815,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         builders_array=[slave1, slave2],
         config=self.master_cq_config,
         metadata=self.metadata,
-        buildbucket_client=self.buildbucket_client,
-        dry_run=True)
+        buildbucket_client=self.buildbucket_client)
 
     cidb_status = slave_status._GetSlaveStatusesFromCIDB()
     self.assertEqual(set(cidb_status.keys()), set([slave1, slave2]))

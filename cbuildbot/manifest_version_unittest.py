@@ -476,7 +476,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     """Tests GetBuilderStatus where both Buildbucket builds have finished."""
     self.manager = self._CreateCQMasterManager()
     retry_patch = self.PatchObject(build_status.SlaveStatus,
-                                   'RetryBuilds')
+                                   '_RetryBuilds')
 
     status_runs = [{'build1': constants.BUILDER_STATUS_INFLIGHT,
                     'build2': constants.BUILDER_STATUS_INFLIGHT},
@@ -510,7 +510,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     """Tests GetBuilderStatus loop with buildbucket retry."""
     self.manager = self._CreateCQMasterManager()
     retry_patch = self.PatchObject(build_status.SlaveStatus,
-                                   'RetryBuilds')
+                                   '_RetryBuilds')
 
     status_runs = [{'build1': constants.BUILDER_STATUS_INFLIGHT},
                    {'build1': constants.BUILDER_STATUS_INFLIGHT},
@@ -542,7 +542,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     """Tests GetBuilderStatus loop with buildbucket retry."""
     self.manager = self._CreateCQMasterManager()
     retry_patch = self.PatchObject(build_status.SlaveStatus,
-                                   'RetryBuilds')
+                                   '_RetryBuilds')
 
     status_runs = [{'build1': constants.BUILDER_STATUS_INFLIGHT},
                    {'build1': constants.BUILDER_STATUS_INFLIGHT},
