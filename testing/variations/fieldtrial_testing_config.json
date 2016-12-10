@@ -1950,7 +1950,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "animation": "animate-all",
+                        "animation": "animate-nonsecure-only",
                         "visibility": "show-all"
                     },
                     "enable_features": [
