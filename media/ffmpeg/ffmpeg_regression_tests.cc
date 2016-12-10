@@ -173,6 +173,20 @@ FFMPEG_TEST_CASE(Cr599625,
                  "security/599625.mp4",
                  PIPELINE_OK,
                  PIPELINE_ERROR_DECODE);
+FFMPEG_TEST_CASE(Cr635422,
+                 "security/635422.ogg",
+                 DEMUXER_ERROR_COULD_NOT_OPEN,
+                 DEMUXER_ERROR_COULD_NOT_OPEN);
+FFMPEG_TEST_CASE(Cr637428,
+                 "security/637428.ogg",
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
+FFMPEG_TEST_CASE(Cr639961,
+                 "security/639961.flac",
+                 PIPELINE_ERROR_INITIALIZATION_FAILED,
+                 PIPELINE_ERROR_INITIALIZATION_FAILED);
+FFMPEG_TEST_CASE(Cr640889, "security/640889.flac", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr640912, "security/640912.flac", PIPELINE_OK, PIPELINE_OK);
 // TODO(liberato): before crbug.com/658440 was fixed, this would fail if run
 // twice under ASAN.  If run once, then it doesn't.  However, it still catches
 // issues in crbug.com/662118, so it's included anyway.
@@ -191,6 +205,10 @@ FFMPEG_TEST_CASE(Cr666874,
                  DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
 FFMPEG_TEST_CASE(Cr667063, "security/667063.mp4", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr668346,
+                 "security/668346.flac",
+                 PIPELINE_ERROR_INITIALIZATION_FAILED,
+                 PIPELINE_ERROR_INITIALIZATION_FAILED);
 
 // General MP4 test cases.
 FFMPEG_TEST_CASE(MP4_0,
