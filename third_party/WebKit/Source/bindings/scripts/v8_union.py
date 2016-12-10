@@ -121,7 +121,7 @@ def _update_includes_and_forward_decls(member, interface_info):
         cpp_includes.update(interface_info.get(
             'dependencies_include_paths', []))
         # We need complete types for IDL dictionaries in union containers.
-        if member.is_dictionary:
+        if member.is_dictionary or member.is_typed_array:
             header_includes.update(member.includes_for_type())
         else:
             cpp_includes.update(member.includes_for_type())

@@ -11,13 +11,15 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8Uint8Array.h"
 #include "core/CoreExport.h"
+#include "core/dom/FlexibleArrayBufferView.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class DOMUint8Array;
 class TestInterface2;
 
 class CORE_EXPORT TestInterface2OrUint8Array final {
