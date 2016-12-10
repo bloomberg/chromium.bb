@@ -1,4 +1,4 @@
-Verify that tabs get merged and split when binding is added and removed.
+Verify that tabs get merged when binding is added and removed.
 
 
 Running: addFileSystem
@@ -13,7 +13,7 @@ Running: openFileSystemTab
 SourceFrame: file:///var/www/inspector/persistence/resources/foo.js
     selection: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":0}
     firstVisibleLine: 0
-    isDirty: true
+    isDirty: false
 Opened tabs: 
     file:///var/www/inspector/persistence/resources/foo.js
     http://127.0.0.1:8000/inspector/persistence/resources/foo.js
@@ -24,7 +24,7 @@ Opened tabs:
 SourceFrame: file:///var/www/inspector/persistence/resources/foo.js
     selection: {"startLine":2,"startColumn":0,"endLine":2,"endColumn":5}
     firstVisibleLine: 2
-    isDirty: true
+    isDirty: false
 
 Running: removeFileMapping
 Opened tabs: 
@@ -32,5 +32,5 @@ Opened tabs:
 SourceFrame: file:///var/www/inspector/persistence/resources/foo.js
     selection: {"startLine":2,"startColumn":0,"endLine":2,"endColumn":5}
     firstVisibleLine: 2
-    isDirty: true
+    isDirty: false
 

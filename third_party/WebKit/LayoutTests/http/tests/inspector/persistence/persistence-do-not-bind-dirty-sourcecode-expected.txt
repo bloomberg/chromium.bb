@@ -4,7 +4,9 @@ Verify that dirty uiSourceCodes are not bound.
 Running: waitForUISourceCodes
 
 Running: addFileSystemMapping
-
-Running: dumpConsoleMessages
-foo.js can not be persisted to file system due to unsaved changes.
+Failed to create binding: {
+       network: http://127.0.0.1:8000/inspector/persistence/resources/foo.js
+    fileSystem: file:///var/www/inspector/persistence/resources/foo.js
+    exactMatch: false
+}
 

@@ -52,9 +52,9 @@ function test()
     var testSuite = [
         function addNetworkUISourceCodeRevision(next)
         {
-            nodeContent = nodeContent.replace("//TODO", "network();\n//TODO");
+            var newContent = nodeContent.replace("//TODO", "network();\n//TODO");
             InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
-            binding.network.addRevision(nodeContent);
+            binding.network.addRevision(newContent);
 
             function onSynced()
             {
@@ -65,9 +65,9 @@ function test()
 
         function setNetworkUISourceCodeWorkingCopy(next)
         {
-            nodeContent = nodeContent.replace("//TODO", "workingCopy1();\n//TODO");
+            var newContent = nodeContent.replace("//TODO", "workingCopy1();\n//TODO");
             InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
-            binding.network.setWorkingCopy(nodeContent);
+            binding.network.setWorkingCopy(newContent);
 
             function onSynced()
             {
@@ -78,9 +78,9 @@ function test()
 
         function changeFileSystemFile(next)
         {
-            fsContent = fsContent.replace("//TODO", "filesystem();\n//TODO");
+            var newContent = fsContent.replace("//TODO", "filesystem();\n//TODO");
             InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
-            fsEntry.setContent(fsContent);
+            fsEntry.setContent(newContent);
 
             function onSynced()
             {
@@ -91,9 +91,9 @@ function test()
 
         function setFileSystemUISourceCodeWorkingCopy(next)
         {
-            nodeContent = fsContent.replace("//TODO", "workingCopy2();\n//TODO");
+            var newContent = fsContent.replace("//TODO", "workingCopy2();\n//TODO");
             InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
-            binding.fileSystem.setWorkingCopy(nodeContent);
+            binding.fileSystem.setWorkingCopy(newContent);
 
             function onSynced()
             {

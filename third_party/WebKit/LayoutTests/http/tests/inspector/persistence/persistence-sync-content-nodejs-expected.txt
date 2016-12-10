@@ -40,7 +40,6 @@ Network:
     (function (exports, require, module, __filename, __dirname) { 
     
     var express = require("express");
-    network();
     workingCopy1();
     //TODO
     });
@@ -49,7 +48,6 @@ FileSystem:
     #!/usr/bin/env node
     
     var express = require("express");
-    network();
     workingCopy1();
     //TODO
 
@@ -76,7 +74,6 @@ Network:
     (function (exports, require, module, __filename, __dirname) { 
     
     var express = require("express");
-    filesystem();
     workingCopy2();
     //TODO
     });
@@ -85,7 +82,6 @@ FileSystem:
     #!/usr/bin/env node
     
     var express = require("express");
-    filesystem();
     workingCopy2();
     //TODO
 

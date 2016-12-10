@@ -26,14 +26,14 @@ function test()
 
         function addFileSystemMapping(next)
         {
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, '_prevalidationFailedForTest', onPrevalidationFailed);
             Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
-            next();
-        },
 
-        function dumpConsoleMessages(next)
-        {
-            InspectorTest.dumpConsoleMessages();
-            next();
+            function onPrevalidationFailed(binding)
+            {
+                InspectorTest.addResult("Failed to create binding: " + binding);
+                next();
+            }
         },
     ]);
 };

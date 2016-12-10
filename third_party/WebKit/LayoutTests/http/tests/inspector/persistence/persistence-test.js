@@ -3,6 +3,8 @@ var initialize_PersistenceTest = function() {
 InspectorTest.preloadModule("persistence");
 InspectorTest.preloadModule("sources");
 
+Runtime.experiments.enableForTest("persistenceValidation");
+
 Persistence.PersistenceBinding.prototype.toString = function()
 {
     var lines = [
