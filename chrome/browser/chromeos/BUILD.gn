@@ -1152,6 +1152,8 @@ source_set("chromeos") {
     "printing/cups_print_job_notification_manager.h",
     "printing/fake_cups_print_job_manager.cc",
     "printing/fake_cups_print_job_manager.h",
+    "printing/ppd_provider_factory.cc",
+    "printing/ppd_provider_factory.h",
     "printing/printer_pref_manager.cc",
     "printing/printer_pref_manager.h",
     "printing/printer_pref_manager_factory.cc",

@@ -12,28 +12,45 @@
 #include "base/values.h"
 #include "printing/backend/print_backend.h"
 
+#if defined(OS_CHROMEOS)
 class Profile;
+#endif
 
 namespace printing {
+
+using DefaultPrinterCallback =
+    base::Callback<void(const std::string& printer_name)>;
 
 using EnumeratePrintersCallback = base::Callback<void(const PrinterList&)>;
 
 using PrinterSetupCallback =
-    base::Callback<void(std::unique_ptr<base::DictionaryValue>)>;
+    base::Callback<void(std::unique_ptr<base::DictionaryValue> settings)>;
 
-// Returns the name of the default printer.
-std::string GetDefaultPrinterOnBlockingPoolThread();
+class PrinterBackendProxy {
+ public:
+#if defined(OS_CHROMEOS)
+  static std::unique_ptr<PrinterBackendProxy> Create(Profile* profile);
+#else
+  static std::unique_ptr<PrinterBackendProxy> Create();
+#endif
 
-// Retrieves printers for display in the print dialog and calls |cb| with the
-// list.  This method expects to be called on the UI thread.
-void EnumeratePrinters(Profile* profile, const EnumeratePrintersCallback& cb);
+  virtual ~PrinterBackendProxy() = default;
 
-// Verifies printer setup if needed then retrieves printer capabilities for
-// |printer_name|.  |cb| is called with the capabilities dictionary or nullptr
-// if one of the steps failed.
-void ConfigurePrinterAndFetchCapabilities(Profile* profile,
-                                          const std::string& printer_name,
-                                          const PrinterSetupCallback& cb);
+  // Returns the name of the default printer through |cb|.  This method expects
+  // to be called on the UI thread.
+  virtual void GetDefaultPrinter(const DefaultPrinterCallback& cb) = 0;
+
+  // Retrieves printers for display in the print dialog and calls |cb| with the
+  // list.  This method expects to be called on the UI thread.
+  virtual void EnumeratePrinters(const EnumeratePrintersCallback& cb) = 0;
+
+  // Verifies printer setup if needed then retrieves printer capabilities for
+  // |printer_name|.  |cb| is called with the capabilities dictionary or nullptr
+  // if one of the steps failed.
+  virtual void ConfigurePrinterAndFetchCapabilities(
+      const std::string& printer_name,
+      const PrinterSetupCallback& cb) = 0;
+};
 
 }  // namespace printing
 

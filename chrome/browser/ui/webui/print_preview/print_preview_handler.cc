@@ -518,7 +518,8 @@ PrintPreviewHandler::PrintPreviewHandler()
       manage_cloud_printers_dialog_request_count_(0),
       reported_failed_preview_(false),
       has_logged_printers_count_(false),
-      gaia_cookie_manager_service_(NULL),
+      gaia_cookie_manager_service_(nullptr),
+      printer_backend_proxy_(nullptr),
       weak_factory_(this) {
   ReportUserActionHistogram(PREVIEW_STARTED);
 }
@@ -611,11 +612,27 @@ PrintPreviewUI* PrintPreviewHandler::print_preview_ui() const {
   return static_cast<PrintPreviewUI*>(web_ui()->GetController());
 }
 
+printing::PrinterBackendProxy* PrintPreviewHandler::printer_backend_proxy() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!printer_backend_proxy_) {
+#if defined(OS_CHROMEOS)
+    // ChromeOS stores printer information in printer prefs which requires a
+    // profile.  Other plaforms retrieve printer information from OS resources.
+    printer_backend_proxy_ =
+        printing::PrinterBackendProxy::Create(Profile::FromWebUI(web_ui()));
+#else
+    printer_backend_proxy_ = printing::PrinterBackendProxy::Create();
+#endif
+  }
+
+  return printer_backend_proxy_.get();
+}
+
 void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* /*args*/) {
   VLOG(1) << "Enumerate printers start";
-  printing::EnumeratePrinters(Profile::FromWebUI(web_ui()),
-                              base::Bind(&PrintPreviewHandler::SetupPrinterList,
-                                         weak_factory_.GetWeakPtr()));
+  printer_backend_proxy()->EnumeratePrinters(base::Bind(
+      &PrintPreviewHandler::SetupPrinterList, weak_factory_.GetWeakPtr()));
 }
 
 void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
@@ -1029,8 +1046,8 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
       base::Bind(&PrintPreviewHandler::SendPrinterCapabilities,
                  weak_factory_.GetWeakPtr(), printer_name);
 
-  printing::ConfigurePrinterAndFetchCapabilities(Profile::FromWebUI(web_ui()),
-                                                 printer_name, cb);
+  printer_backend_proxy()->ConfigurePrinterAndFetchCapabilities(printer_name,
+                                                                cb);
 }
 
 void PrintPreviewHandler::OnSigninComplete() {
@@ -1152,11 +1169,8 @@ void PrintPreviewHandler::HandleGetInitialSettings(
     const base::ListValue* /*args*/) {
   // Send before SendInitialSettings() to allow cloud printer auto select.
   SendCloudPrintEnabled();
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(), FROM_HERE,
-      base::Bind(&printing::GetDefaultPrinterOnBlockingPoolThread),
-      base::Bind(&PrintPreviewHandler::SendInitialSettings,
-                 weak_factory_.GetWeakPtr()));
+  printer_backend_proxy()->GetDefaultPrinter(base::Bind(
+      &PrintPreviewHandler::SendInitialSettings, weak_factory_.GetWeakPtr()));
 }
 
 void PrintPreviewHandler::HandleForceOpenNewTab(const base::ListValue* args) {

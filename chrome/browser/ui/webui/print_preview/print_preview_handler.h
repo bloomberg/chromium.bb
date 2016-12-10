@@ -41,6 +41,10 @@ namespace gfx {
 class Size;
 }
 
+namespace printing {
+class PrinterBackendProxy;
+}
+
 // The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler
     : public content::WebUIMessageHandler,
@@ -110,6 +114,8 @@ class PrintPreviewHandler
   content::WebContents* preview_web_contents() const;
 
   PrintPreviewUI* print_preview_ui() const;
+
+  printing::PrinterBackendProxy* printer_backend_proxy();
 
   // Gets the list of printers. |args| is unused.
   void HandleGetPrinters(const base::ListValue* args);
@@ -379,6 +385,10 @@ class PrintPreviewHandler
   // Notifies tests that want to know if the PDF has been saved. This doesn't
   // notify the test if it was a successful save, only that it was attempted.
   base::Closure pdf_file_saved_closure_;
+
+  // Proxy for calls to the print backend.  Lazily initialized since web_ui() is
+  // not available at construction time.
+  std::unique_ptr<printing::PrinterBackendProxy> printer_backend_proxy_;
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
 

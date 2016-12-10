@@ -15,6 +15,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -80,13 +81,7 @@ CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
     : printer_discoverer_(nullptr),
       profile_(Profile::FromWebUI(webui)),
       weak_factory_(this) {
-  base::FilePath ppd_cache_path =
-      profile_->GetPath().Append(FILE_PATH_LITERAL("PPDCache"));
-  ppd_provider_ = chromeos::printing::PpdProvider::Create(
-      google_apis::GetAPIKey(), g_browser_process->system_request_context(),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::FILE),
-      chromeos::printing::PpdCache::Create(ppd_cache_path));
+  ppd_provider_ = printing::CreateProvider(profile_);
 }
 
 CupsPrintersHandler::~CupsPrintersHandler() {}
