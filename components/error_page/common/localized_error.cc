@@ -970,7 +970,13 @@ void LocalizedError::GetStrings(
 
   // Add the reload suggestion, if needed for pages that didn't come
   // from a post.
+#if defined(OS_ANDROID)
+  bool reload_visible = false;
+#endif  // defined(OS_ANDROID)
   if (params->suggest_reload && !is_post) {
+#if defined(OS_ANDROID)
+    reload_visible = true;
+#endif  // defined(OS_ANDROID)
     base::DictionaryValue* reload_button = new base::DictionaryValue;
     reload_button->SetString(
         "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
@@ -1023,8 +1029,8 @@ void LocalizedError::GetStrings(
   }
 
 #if defined(OS_ANDROID)
-  if (!show_saved_copy_visible && !is_incognito &&
-      failed_url.SchemeIsHTTPOrHTTPS() &&
+  if (!reload_visible && !show_saved_copy_visible && !is_incognito &&
+      failed_url.is_valid() && failed_url.SchemeIsHTTPOrHTTPS() &&
       offline_pages::IsOfflinePagesAsyncDownloadEnabled()) {
     std::unique_ptr<base::DictionaryValue> download_button =
         base::MakeUnique<base::DictionaryValue>();
