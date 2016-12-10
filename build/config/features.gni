@@ -89,8 +89,6 @@ enable_rlz = is_chrome_branded && enable_rlz_support
 # Chrome OS: whether to also build the upcoming version of
 # ChromeVox, which can then be enabled via a command-line switch.
 enable_chromevox_next = false
-
-enable_configuration_policy = !is_ios
 #
 # =============================================
 #   PLEASE DO NOT ADD MORE FLAGS TO THIS FILE

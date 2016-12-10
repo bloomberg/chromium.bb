@@ -4,6 +4,8 @@
 
 import("//build/config/features.gni")
 
+assert(!is_ios, "Policy should not be referenced on iOS")
+
 group("browser") {
   if (is_component_build) {
     public_deps = [
@@ -19,11 +21,30 @@ group("browser") {
 source_set("internal") {
   visibility = [ "//components/policy/*" ]
   sources = [
-    # Note that these sources are always included, even for builds that disable
-    # policy. Most source files should go in the conditional sources list
-    # below. url_blacklist_manager.h is used by managed mode.
+    "autofill_policy_handler.cc",
+    "autofill_policy_handler.h",
+    "browser_policy_connector.cc",
+    "browser_policy_connector.h",
+    "browser_policy_connector_base.cc",
+    "browser_policy_connector_base.h",
+    "browser_policy_connector_ios.h",
+    "browser_policy_connector_ios.mm",
+    "cloud/message_util.cc",
+    "cloud/message_util.h",
+    "configuration_policy_handler.cc",
+    "configuration_policy_handler.h",
+    "configuration_policy_handler_list.cc",
+    "configuration_policy_handler_list.h",
+    "configuration_policy_pref_store.cc",
+    "configuration_policy_pref_store.h",
+    "policy_error_map.cc",
+    "policy_error_map.h",
+    "proxy_policy_handler.cc",
+    "proxy_policy_handler.h",
     "url_blacklist_manager.cc",
     "url_blacklist_manager.h",
+    "url_blacklist_policy_handler.cc",
+    "url_blacklist_policy_handler.h",
   ]
 
   configs += [ "//components/policy:component_implementation" ]
@@ -56,91 +77,62 @@ source_set("internal") {
     deps += [ "//components/policy/android:jni_headers" ]
   }
 
-  if (enable_configuration_policy) {
-    sources += [
-      "autofill_policy_handler.cc",
-      "autofill_policy_handler.h",
-      "browser_policy_connector.cc",
-      "browser_policy_connector.h",
-      "browser_policy_connector_base.cc",
-      "browser_policy_connector_base.h",
-      "browser_policy_connector_ios.h",
-      "browser_policy_connector_ios.mm",
-      "cloud/message_util.cc",
-      "cloud/message_util.h",
-      "configuration_policy_handler.cc",
-      "configuration_policy_handler.h",
-      "configuration_policy_handler_list.cc",
-      "configuration_policy_handler_list.h",
-      "configuration_policy_pref_store.cc",
-      "configuration_policy_pref_store.h",
-      "policy_error_map.cc",
-      "policy_error_map.h",
-      "proxy_policy_handler.cc",
-      "proxy_policy_handler.h",
-      "url_blacklist_policy_handler.cc",
-      "url_blacklist_policy_handler.h",
-    ]
-
-    public_deps += [ "//components/policy/core/common:internal" ]
-    deps += [
-      "//components/autofill/core/common",
-      "//components/proxy_config",
-      "//google_apis",
-      "//net",
-      "//third_party/icu",
-    ]
-  }
+  public_deps += [ "//components/policy/core/common:internal" ]
+  deps += [
+    "//components/autofill/core/common",
+    "//components/proxy_config",
+    "//google_apis",
+    "//net",
+    "//third_party/icu",
+  ]
 }
 
-if (enable_configuration_policy) {
-  static_library("test_support") {
-    testonly = true
-    sources = [
-      "configuration_policy_pref_store_test.cc",
-      "configuration_policy_pref_store_test.h",
-    ]
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "configuration_policy_pref_store_test.cc",
+    "configuration_policy_pref_store_test.h",
+  ]
 
-    public_deps = [
-      ":browser",
-      "//base",
+  public_deps = [
+    ":browser",
+    "//base",
 
-      # Explicitly link in the generated policy target into the test support
-      # so it will be linked to dependent targets. Otherwise in component
-      # build, it will be hidden inside the policy component.
-      "//components/policy:generated",
-      "//components/policy/core/common:test_support",
-    ]
-    deps = [
-      "//testing/gtest",
-    ]
-  }
+    # Explicitly link in the generated policy target into the test support
+    # so it will be linked to dependent targets. Otherwise in component
+    # build, it will be hidden inside the policy component.
+    "//components/policy:generated",
+    "//components/policy/core/common:test_support",
+  ]
+  deps = [
+    "//testing/gtest",
+  ]
+}
 
-  source_set("unit_tests") {
-    testonly = true
-    sources = [
-      "android/android_combined_policy_provider_unittest.cc",
-      "android/policy_converter_unittest.cc",
-      "autofill_policy_handler_unittest.cc",
-      "browser_policy_connector_unittest.cc",
-      "configuration_policy_handler_unittest.cc",
-      "configuration_policy_pref_store_unittest.cc",
-      "proxy_policy_handler_unittest.cc",
-      "url_blacklist_manager_unittest.cc",
-      "url_blacklist_policy_handler_unittest.cc",
-    ]
-    deps = [
-      ":test_support",
-      "//base",
-      "//components/autofill/core/common",
-      "//components/policy:generated",
-      "//components/prefs:test_support",
-      "//components/proxy_config",
-      "//components/url_formatter",
-      "//google_apis",
-      "//net",
-      "//testing/gmock",
-      "//testing/gtest",
-    ]
-  }
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "android/android_combined_policy_provider_unittest.cc",
+    "android/policy_converter_unittest.cc",
+    "autofill_policy_handler_unittest.cc",
+    "browser_policy_connector_unittest.cc",
+    "configuration_policy_handler_unittest.cc",
+    "configuration_policy_pref_store_unittest.cc",
+    "proxy_policy_handler_unittest.cc",
+    "url_blacklist_manager_unittest.cc",
+    "url_blacklist_policy_handler_unittest.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//base",
+    "//components/autofill/core/common",
+    "//components/policy:generated",
+    "//components/prefs:test_support",
+    "//components/proxy_config",
+    "//components/url_formatter",
+    "//google_apis",
+    "//net",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }

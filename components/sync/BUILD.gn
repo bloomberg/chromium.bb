@@ -623,7 +623,7 @@ static_library("sync") {
     ]
   }
 
-  if (enable_configuration_policy) {
+  if (!is_ios) {
     sources += [
       "driver/sync_policy_handler.cc",
       "driver/sync_policy_handler.h",
@@ -990,7 +990,7 @@ source_set("unit_tests") {
     sources += [ "engine_impl/loopback_server/loopback_server_unittest.cc" ]
   }
 
-  if (enable_configuration_policy) {
+  if (!is_ios) {
     sources += [ "driver/sync_policy_handler_unittest.cc" ]
     deps += [
       "//components/policy:generated",

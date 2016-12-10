@@ -325,7 +325,7 @@ static_library("host") {
 
   public_deps = []
 
-  if (enable_configuration_policy) {
+  if (!is_ios) {
     deps += [ "//components/policy:generated" ]
   }
 
@@ -567,7 +567,7 @@ source_set("unit_tests") {
     deps += [ "//remoting/host/win:unit_tests" ]
   }
 
-  if (enable_configuration_policy) {
+  if (!is_ios) {
     deps += [ "//components/policy/core/browser:test_support" ]
   }
 }
@@ -737,7 +737,7 @@ if (enable_me2me_host) {
       "//third_party/webrtc/modules/desktop_capture",
     ]
 
-    if (enable_configuration_policy) {
+    if (!is_ios) {
       deps += [ "//components/policy:generated" ]
     }
 

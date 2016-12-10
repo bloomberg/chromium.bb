@@ -287,6 +287,7 @@ group("both_gn_and_gyp") {
       "//chrome/test:telemetry_perf_unittests",
       "//chrome/test:unit_tests",
       "//components:components_browsertests",
+      "//components/policy:policy_templates",
       "//content/shell:content_shell",
       "//content/test:content_browsertests",
       "//content/test:content_perftests",
@@ -382,10 +383,6 @@ group("both_gn_and_gyp") {
 
   if (use_x11 || ozone_platform_x11) {
     deps += [ "//tools/xdisplaycheck" ]
-  }
-
-  if (enable_configuration_policy) {
-    deps += [ "//components/policy:policy_templates" ]
   }
 
   if (v8_use_external_startup_data) {

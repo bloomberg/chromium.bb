@@ -198,6 +198,8 @@ test("components_unittests") {
       "//components/offline_pages/content/background_loader:unit_tests",
       "//components/packed_ct_ev_whitelist:unit_tests",
       "//components/password_manager/content/browser:unit_tests",
+      "//components/policy/core/browser:unit_tests",
+      "//components/policy/core/common:unit_tests",
       "//components/precache/content:unit_tests",
       "//components/safe_browsing_db:unit_tests",
       "//components/safe_json:unit_tests",
@@ -236,6 +238,7 @@ test("components_unittests") {
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
       "//components/invalidation/impl",
       "//components/invalidation/impl:java",
+      "//components/policy/android:policy_java",
       "//components/safe_json",
       "//components/safe_json/android:safe_json_java",
       "//components/signin/core/browser",
@@ -253,10 +256,6 @@ test("components_unittests") {
       "//ui/gfx",
       "//v8:v8_external_startup_data_assets",
     ]
-
-    if (enable_configuration_policy) {
-      deps += [ "//components/policy/android:policy_java" ]
-    }
   }
 
   # Desktop-only deps.
@@ -282,13 +281,6 @@ test("components_unittests") {
       "//components/sync_wifi:unit_tests",
       "//components/timers:unit_tests",
       "//components/user_manager:unit_tests",
-    ]
-  }
-
-  if (enable_configuration_policy) {
-    deps += [
-      "//components/policy/core/browser:unit_tests",
-      "//components/policy/core/common:unit_tests",
     ]
   }
 

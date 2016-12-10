@@ -118,7 +118,7 @@ group("test_support") {
     "//testing/gtest",
   ]
 
-  if (enable_configuration_policy) {
+  if (!is_ios) {
     deps += [ "//components/policy/core/browser:test_support" ]
   }
 
@@ -176,10 +176,6 @@ test("remoting_unittests") {
       "rpcrt4.lib",
       "wtsapi32.lib",
     ]
-  }
-
-  if (enable_configuration_policy) {
-    #deps += [ "//components/policy/core/browser:test_support" ]
   }
 }
 

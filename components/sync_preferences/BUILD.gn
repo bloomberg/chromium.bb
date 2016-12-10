@@ -26,10 +26,7 @@ static_library("sync_preferences") {
     "//components/sync",
   ]
 
-  if (enable_configuration_policy) {
-    # This define is only used for compiling the .cc files in this target.
-    defines = [ "SYNC_PREFERENCES_USE_POLICY" ]
-
+  if (!is_ios) {
     deps += [ "//components/policy/core/browser" ]
   }
 }

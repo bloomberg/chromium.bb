@@ -4063,11 +4063,9 @@ if (is_win) {
     ]
     deps = [
       "//base",
+      "//chrome/browser/policy:path_parser",
       "//chrome/common:constants",
     ]
-    if (enable_configuration_policy) {
-      deps += [ "//chrome/browser/policy:path_parser" ]
-    }
   }
 }
 
@@ -4192,6 +4190,8 @@ static_library("test_support") {
     "notifications/notification_test_util.h",
     "notifications/stub_notification_platform_bridge.cc",
     "notifications/stub_notification_platform_bridge.h",
+    "policy/test/local_policy_test_server.cc",
+    "policy/test/local_policy_test_server.h",
     "search_engines/template_url_service_factory_test_util.cc",
     "search_engines/template_url_service_factory_test_util.h",
     "search_engines/template_url_service_test_util.cc",
@@ -4234,6 +4234,7 @@ static_library("test_support") {
     "//components/invalidation/impl",
     "//components/invalidation/impl:test_support",
     "//components/password_manager/core/browser:test_support",
+    "//components/policy/core/browser:test_support",
     "//components/prefs:test_support",
     "//components/search_engines:test_support",
     "//components/sessions:test_support",
@@ -4330,14 +4331,6 @@ static_library("test_support") {
     ]
     configs += [ "//build/config/linux/dbus" ]
     deps += [ "//chromeos:test_support" ]
-  }
-
-  if (enable_configuration_policy) {
-    sources += [
-      "policy/test/local_policy_test_server.cc",
-      "policy/test/local_policy_test_server.h",
-    ]
-    public_deps += [ "//components/policy/core/browser:test_support" ]
   }
 
   if (safe_browsing_mode == 1) {

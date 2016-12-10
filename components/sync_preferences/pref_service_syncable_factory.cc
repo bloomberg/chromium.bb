@@ -5,13 +5,14 @@
 #include "components/sync_preferences/pref_service_syncable_factory.h"
 
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/default_pref_store.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 
-#if defined(SYNC_PREFERENCES_USE_POLICY)
+#if !defined(OS_IOS)
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/common/policy_service.h"  // nogncheck
@@ -27,7 +28,7 @@ PrefServiceSyncableFactory::~PrefServiceSyncableFactory() {}
 void PrefServiceSyncableFactory::SetManagedPolicies(
     policy::PolicyService* service,
     policy::BrowserPolicyConnector* connector) {
-#if defined(SYNC_PREFERENCES_USE_POLICY)
+#if !defined(OS_IOS)
   set_managed_prefs(new policy::ConfigurationPolicyPrefStore(
       service, connector->GetHandlerList(), policy::POLICY_LEVEL_MANDATORY));
 #else
@@ -38,7 +39,7 @@ void PrefServiceSyncableFactory::SetManagedPolicies(
 void PrefServiceSyncableFactory::SetRecommendedPolicies(
     policy::PolicyService* service,
     policy::BrowserPolicyConnector* connector) {
-#if defined(SYNC_PREFERENCES_USE_POLICY)
+#if !defined(OS_IOS)
   set_recommended_prefs(new policy::ConfigurationPolicyPrefStore(
       service, connector->GetHandlerList(), policy::POLICY_LEVEL_RECOMMENDED));
 #else

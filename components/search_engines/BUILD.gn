@@ -83,7 +83,7 @@ static_library("search_engines") {
     "//url",
   ]
 
-  if (enable_configuration_policy) {
+  if (!is_ios) {
     sources += [
       "default_search_policy_handler.cc",
       "default_search_policy_handler.h",
@@ -140,7 +140,7 @@ source_set("unit_tests") {
     "//url",
   ]
 
-  if (enable_configuration_policy) {
+  if (!is_ios) {
     sources += [ "default_search_policy_handler_unittest.cc" ]
 
     deps += [

@@ -132,7 +132,7 @@ source_set("win") {
     "//ui/events/platform",
   ]
 
-  if (enable_configuration_policy) {
+  if (!is_ios) {
     deps += [ "//components/policy:generated" ]
   }
 
