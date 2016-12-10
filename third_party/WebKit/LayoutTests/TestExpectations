@@ -108,8 +108,6 @@ crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/shrink-la
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/clipping-should-not-repaint-composited-descendants.html [ Crash ]
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/filter-repaint-on-accelerated-layer.html [ Crash ]
 
-crbug.com/672989 virtual/spinvalidation/fast/multicol/span/abspos-containing-block-outside-spanner.html [ Failure ]
-
 # --- End SlimmingPaintInvalidation Tests ---
 
 # Very slight rendering changes caused by Skia rect clipping change.
