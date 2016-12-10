@@ -6,6 +6,8 @@ Upstream cherry-picks, most recent cherry-picks at end of list:
   90da187f1d334422477886a19eca3c1da29c59a7 lavf/utils update_stream_timings() fix for start/end out of range
   c72fa432349881d5a445cd110abf698cc94d490d lavc/get_bits: Fix get_sbits_long(x, 0)
   1f5630af51f24d79053b6bef5b8b3ba93d637306 lavc/flacdec: Fix undefined shift in decode_subframe()
+  ee2a6f5df8c6a151c3e3826872f1b0a07401c62a lavf/oggdec: Skip streams in duration correction that did not had their duration set.
+  8258e363851434ad5662c19d036fddb3e3f27683 lavc/mpeg4videodec: Fix undefined shifts in mpeg4_decode_sprite_trajectory()
 
 
 Autorename:
