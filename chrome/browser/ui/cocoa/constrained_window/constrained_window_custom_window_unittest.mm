@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #import "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 
 class ConstrainedWindowCustomWindowTest : public CocoaTest {
 };

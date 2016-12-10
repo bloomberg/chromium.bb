@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_COCOA_TEST_HELPER_H_
-#define CHROME_BROWSER_UI_COCOA_COCOA_TEST_HELPER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TEST_COCOA_TEST_HELPER_H_
+#define CHROME_BROWSER_UI_COCOA_TEST_COCOA_TEST_HELPER_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -27,4 +27,4 @@ class CocoaTest : public ui::CocoaTest {
   CocoaTest();
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_COCOA_TEST_HELPER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TEST_COCOA_TEST_HELPER_H_

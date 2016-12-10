@@ -10,9 +10,9 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
-#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/download/download_item_button.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "content/public/test/mock_download_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

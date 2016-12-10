@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

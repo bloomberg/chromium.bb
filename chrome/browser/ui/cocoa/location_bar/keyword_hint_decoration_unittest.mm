@@ -7,7 +7,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
 
 #include "base/strings/utf_string_conversions.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

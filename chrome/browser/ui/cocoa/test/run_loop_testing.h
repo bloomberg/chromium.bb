@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_RUN_LOOP_TESTING_H_
-#define CHROME_BROWSER_UI_COCOA_RUN_LOOP_TESTING_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TEST_RUN_LOOP_TESTING_H_
+#define CHROME_BROWSER_UI_COCOA_TEST_RUN_LOOP_TESTING_H_
 
 namespace chrome {
 namespace testing {
@@ -26,4 +26,4 @@ void NSRunLoopRunAllPending();
 }  // namespace testing
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_UI_COCOA_RUN_LOOP_TESTING_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TEST_RUN_LOOP_TESTING_H_

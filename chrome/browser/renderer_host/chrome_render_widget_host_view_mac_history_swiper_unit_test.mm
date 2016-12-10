@@ -6,7 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #import "third_party/ocmock/OCMock/OCMock.h"

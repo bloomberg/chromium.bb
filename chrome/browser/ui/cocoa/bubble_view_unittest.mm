@@ -5,7 +5,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bubble_view.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #import "testing/gtest_mac.h"
 
 class BubbleViewTest : public CocoaTest {

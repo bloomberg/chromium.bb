@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_
-#define CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TEST_COCOA_PROFILE_TEST_H_
+#define CHROME_BROWSER_UI_COCOA_TEST_COCOA_PROFILE_TEST_H_
 
 #include <memory>
 
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/test/base/testing_profile_manager.h"
 
 namespace content {
@@ -44,9 +44,7 @@ class CocoaProfileTest : public CocoaTest {
 
   void TearDown() override;
 
-  TestingProfileManager* testing_profile_manager() {
-    return &profile_manager_;
-  }
+  TestingProfileManager* testing_profile_manager() { return &profile_manager_; }
   TestingProfile* profile() { return profile_; }
   Browser* browser() { return browser_.get(); }
 
@@ -77,4 +75,4 @@ class CocoaProfileTest : public CocoaTest {
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TEST_COCOA_PROFILE_TEST_H_

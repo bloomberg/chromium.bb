@@ -4,8 +4,8 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 
 @interface MenuButtonTestDelegate : NSObject<NSMenuDelegate> {
  @private

@@ -4,9 +4,9 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 

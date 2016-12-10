@@ -4,7 +4,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

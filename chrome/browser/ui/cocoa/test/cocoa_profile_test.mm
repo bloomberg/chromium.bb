@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,8 +23,7 @@
 CocoaProfileTest::CocoaProfileTest()
     : profile_manager_(TestingBrowserProcess::GetGlobal()),
       profile_(NULL),
-      thread_bundle_(new content::TestBrowserThreadBundle) {
-}
+      thread_bundle_(new content::TestBrowserThreadBundle) {}
 
 CocoaProfileTest::~CocoaProfileTest() {
   // Delete the testing profile on the UI thread. But first release the

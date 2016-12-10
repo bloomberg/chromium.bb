@@ -8,7 +8,7 @@
 #include "base/mac/mac_util.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 
 @interface ScreenCaptureNotificationController (ExposedForTesting)
 - (NSButton*)stopButton;

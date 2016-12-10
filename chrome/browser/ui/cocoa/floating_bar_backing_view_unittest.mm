@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #import "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 
 namespace {
 

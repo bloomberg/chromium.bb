@@ -4,8 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
 

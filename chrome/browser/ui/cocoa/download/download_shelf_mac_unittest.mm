@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #import "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/download/download_shelf_mac.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

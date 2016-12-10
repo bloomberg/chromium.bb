@@ -8,7 +8,7 @@
 
 #include "base/debug/debugger.h"
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

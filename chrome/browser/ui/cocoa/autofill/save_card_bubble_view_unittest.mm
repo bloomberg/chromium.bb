@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/save_card_bubble_view_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/events/test/cocoa_test_event_utils.h"

@@ -6,7 +6,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button_cocoa.h"
 #import "testing/gtest_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"

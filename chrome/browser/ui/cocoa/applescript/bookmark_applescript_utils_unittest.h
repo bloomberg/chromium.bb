@@ -11,7 +11,7 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_folder_applescript.h"
-#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "testing/platform_test.h"
 
 // The fake object that acts as our app's delegate, useful for testing purposes.

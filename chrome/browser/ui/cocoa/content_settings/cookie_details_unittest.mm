@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 #include "net/cookies/canonical_cookie.h"

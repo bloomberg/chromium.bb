@@ -6,7 +6,7 @@
 
 #import "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"

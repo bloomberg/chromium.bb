@@ -10,10 +10,10 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/infobars/confirm_infobar_controller.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #include "chrome/browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/test/base/testing_profile.h"
 #import "content/public/browser/web_contents.h"

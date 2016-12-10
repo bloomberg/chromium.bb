@@ -6,7 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

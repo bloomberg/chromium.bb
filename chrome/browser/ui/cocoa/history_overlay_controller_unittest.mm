@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 
 class HistoryOverlayControllerTest : public CocoaTest {
  public:

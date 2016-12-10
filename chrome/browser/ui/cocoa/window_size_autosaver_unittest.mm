@@ -7,7 +7,7 @@
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"

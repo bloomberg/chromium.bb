@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_text_field.h"
-#import "chrome/browser/ui/cocoa/run_loop_testing.h"
+#import "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"

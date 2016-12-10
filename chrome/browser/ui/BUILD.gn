@@ -3418,10 +3418,10 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "cocoa/cocoa_test_helper.h",
-    "cocoa/cocoa_test_helper.mm",
-    "cocoa/run_loop_testing.h",
-    "cocoa/run_loop_testing.mm",
+    "cocoa/test/cocoa_test_helper.h",
+    "cocoa/test/cocoa_test_helper.mm",
+    "cocoa/test/run_loop_testing.h",
+    "cocoa/test/run_loop_testing.mm",
     "find_bar/find_bar_host_unittest_util.h",
     "login/login_handler_test_utils.cc",
     "login/login_handler_test_utils.h",

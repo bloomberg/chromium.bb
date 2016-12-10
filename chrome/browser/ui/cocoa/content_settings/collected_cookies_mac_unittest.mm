@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #import "testing/gtest_mac.h"
 
 class CollectedCookiesMacTest : public CocoaTest {

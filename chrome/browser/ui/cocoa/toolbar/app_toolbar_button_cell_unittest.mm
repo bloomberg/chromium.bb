@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 
 @interface TestAppToolbarButton : NSButton
 @end

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #import "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "ui/events/test/cocoa_test_event_utils.h"

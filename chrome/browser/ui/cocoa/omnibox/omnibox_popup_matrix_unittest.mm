@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {

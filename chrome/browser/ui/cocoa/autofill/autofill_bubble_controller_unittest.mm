@@ -4,8 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_bubble_controller.h"
 
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 
 class AutofillBubbleControllerTest : public CocoaTest {
 };

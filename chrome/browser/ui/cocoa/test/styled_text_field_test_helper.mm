@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
-#import "chrome/browser/ui/cocoa/styled_text_field_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/styled_text_field_test_helper.h"
 
 @implementation StyledTextFieldTestCell
 @synthesize leftMargin = leftMargin_;

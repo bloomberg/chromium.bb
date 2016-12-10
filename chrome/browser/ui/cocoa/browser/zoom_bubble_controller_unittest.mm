@@ -7,9 +7,9 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/time/time.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 typedef CocoaTest ZoomBubbleControllerTest;

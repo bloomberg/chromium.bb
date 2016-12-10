@@ -7,9 +7,9 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/info_bubble_window.h"
-#include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 
 // Mock BaseBubbleController to pick up -cancel:, but don't call the designated

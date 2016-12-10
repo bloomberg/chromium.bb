@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 
 #import <Foundation/Foundation.h>
 
@@ -47,9 +47,7 @@ void NSRunLoopRunAllPending() {
   base::scoped_nsobject<CocoaQuitTask> quit_task(
       [[CocoaQuitTask alloc] initWithMessagePump:message_pump.get()]);
 
-  [quit_task performSelector:@selector(doQuit)
-                  withObject:nil
-                  afterDelay:0];
+  [quit_task performSelector:@selector(doQuit) withObject:nil afterDelay:0];
 
   // Spin the internal loop, running it until the quit task is pumped. Pass NULL
   // because there is no delegate MessageLoop; only the Cocoa work queues will

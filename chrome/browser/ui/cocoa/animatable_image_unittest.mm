@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "chrome/browser/ui/cocoa/animatable_image.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
