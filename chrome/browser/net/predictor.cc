@@ -312,9 +312,13 @@ std::vector<GURL> Predictor::GetPredictedUrlListAtStartup(
 
 void Predictor::DiscardAllResultsAndClearPrefsOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&Predictor::DiscardAllResults,
-                                     io_weak_factory_->GetWeakPtr()));
+  // The post task here is guaranteed to execute before the post task in
+  // ShutdownOnUIThread, because the caller has a valid profile here. Note that
+  // the ChromeNetBenchmarkingMessageFilter calls unsafely (an existing bug)
+  // into the profile, but doing so would crash before this point anyways.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&Predictor::DiscardAllResults, base::Unretained(this)));
   ClearPrefsOnUIThread();
 }
 
@@ -688,11 +692,12 @@ void Predictor::SaveStateForNextStartup() {
   base::ListValue* startup_list_raw = startup_list.get();
   base::ListValue* referral_list_raw = referral_list.get();
 
+  // The first post task here is guaranteed to execute before the post task in
+  // ShutdownOnUIThread, because the caller has a valid profile.
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&Predictor::WriteDnsPrefetchState,
-                 io_weak_factory_->GetWeakPtr(), startup_list_raw,
-                 referral_list_raw),
+      base::Bind(&Predictor::WriteDnsPrefetchState, base::Unretained(this),
+                 startup_list_raw, referral_list_raw),
       base::Bind(&Predictor::UpdatePrefsOnUIThread,
                  ui_weak_factory_->GetWeakPtr(),
                  base::Passed(std::move(startup_list)),
