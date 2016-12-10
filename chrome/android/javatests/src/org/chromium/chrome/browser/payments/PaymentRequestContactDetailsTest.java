@@ -131,6 +131,40 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         expectResultContains(new String[] {"Request cancelled"});
     }
 
+    /** Test that going into the editor and cancelling will leave the row checked. */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testEditContactAndCancelEditorShouldKeepContactSelected()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        expectContactDetailsRowIsSelected(0);
+        clickInContactInfoAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+
+        // Cancel the editor.
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+
+        // Expect the row to still be selected in the Contact Details section.
+        expectContactDetailsRowIsSelected(0);
+    }
+
+    /** Test that going into the "add" flow and cancelling will leave existing row checked. */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testAddContactAndCancelEditorShouldKeepContactSelected()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        expectContactDetailsRowIsSelected(0);
+        clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
+
+        // Cancel the editor.
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+
+        // Expect the existing row to still be selected in the Contact Details section.
+        expectContactDetailsRowIsSelected(0);
+    }
+
     /** Quickly pressing on "add contact info" and then "cancel" should not crash. */
     @MediumTest
     @Feature({"Payments"})

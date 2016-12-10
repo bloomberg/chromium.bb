@@ -67,7 +67,7 @@
     <item type="id" name="payments_edit_cancel_button" />
     <item type="id" name="payments_edit_done_button" />
     <item type="id" name="payments_edit_checkbox" />
-    
+
     <!-- Password update prompt -->
     <item type="id" name="password_infobar_accounts_spinner" />
 </resources>

@@ -321,7 +321,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         });
     }
 
-    /**  Returns the the number of payment instruments. */
+    /**  Returns the number of payment instruments. */
     protected int getNumberOfPaymentInstruments() throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
             @Override
@@ -332,7 +332,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         });
     }
 
-    /**  Returns the the number of contact detail suggestions. */
+    /**  Returns the number of contact detail suggestions. */
     protected int getNumberOfContactDetailSuggestions() throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
             @Override
@@ -591,6 +591,57 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
                     updateFailureReason(e2.getMessage());
                     return false;
                 }
+            }
+        });
+    }
+
+    /**  Will fail if the OptionRow at |index| is not selected in Contact Details.*/
+    protected void expectContactDetailsRowIsSelected(final int index)
+            throws ExecutionException, InterruptedException {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                boolean isSelected = ((OptionSection) mUI.getContactDetailsSectionForTest())
+                                             .getOptionRowAtIndex(index)
+                                             .isChecked();
+                if (!isSelected) {
+                    updateFailureReason("Contact Details row at " + index + " was not selected.");
+                }
+                return isSelected;
+            }
+        });
+    }
+
+    /**  Will fail if the OptionRow at |index| is not selected in Shipping Address section.*/
+    protected void expectShippingAddressRowIsSelected(final int index)
+            throws ExecutionException, InterruptedException {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                boolean isSelected = ((OptionSection) mUI.getShippingAddressSectionForTest())
+                                             .getOptionRowAtIndex(index)
+                                             .isChecked();
+                if (!isSelected) {
+                    updateFailureReason("Shipping Address row at " + index + " was not selected.");
+                }
+                return isSelected;
+            }
+        });
+    }
+
+    /**  Will fail if the OptionRow at |index| is not selected in PaymentMethod section.*/
+    protected void expectPaymentMethodRowIsSelected(final int index)
+            throws ExecutionException, InterruptedException {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                boolean isSelected = ((OptionSection) mUI.getPaymentMethodSectionForTest())
+                                             .getOptionRowAtIndex(index)
+                                             .isChecked();
+                if (!isSelected) {
+                    updateFailureReason("Payment Method row at " + index + " was not selected.");
+                }
+                return isSelected;
             }
         });
     }

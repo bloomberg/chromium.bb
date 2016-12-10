@@ -427,6 +427,9 @@ public class EditorView extends AlwaysDismissedDialog
                     if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
                 }
             });
+        } else {
+            // The first field will be focused, we are ready to edit.
+            if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
         }
     }
 

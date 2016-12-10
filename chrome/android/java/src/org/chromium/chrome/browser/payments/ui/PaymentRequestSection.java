@@ -893,6 +893,11 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 }
             }
 
+            /** Returns whether this OptionRow's RadioButton is checked. */
+            public boolean isChecked() {
+                return ((RadioButton) mButton).isChecked();
+            }
+
             /** Change the label for the row. */
             public void setLabel(int stringId) {
                 setLabel(getContext().getString(stringId));

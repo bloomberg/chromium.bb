@@ -293,11 +293,12 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         // Allow saving new cards on disk.
         if (isNewCard) addSaveCardCheckbox(editor);
 
-        // If the user clicks [Cancel], send a null card back to the caller.
+        // If the user clicks [Cancel], send |toEdit| card back to the caller (will return original
+        // state, which could be null, a full card, or a partial card).
         editor.setCancelCallback(new Runnable() {
             @Override
             public void run() {
-                callback.onResult(null);
+                callback.onResult(toEdit);
             }
         });
 

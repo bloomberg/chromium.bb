@@ -96,7 +96,8 @@ public class ContactEditor extends EditorBase<AutofillContact> {
     }
 
     @Override
-    public void edit(@Nullable AutofillContact toEdit, final Callback<AutofillContact> callback) {
+    public void edit(
+            @Nullable final AutofillContact toEdit, final Callback<AutofillContact> callback) {
         super.edit(toEdit, callback);
 
         final AutofillContact contact = toEdit == null
@@ -135,10 +136,12 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         if (phoneField != null) editor.addField(phoneField);
         if (emailField != null) editor.addField(emailField);
 
+        // If the user clicks [Cancel], send |toEdit| contact back to the caller, which was the
+        // original state (could be null, a complete contact, a partial contact).
         editor.setCancelCallback(new Runnable() {
             @Override
             public void run() {
-                callback.onResult(null);
+                callback.onResult(toEdit);
             }
         });
 

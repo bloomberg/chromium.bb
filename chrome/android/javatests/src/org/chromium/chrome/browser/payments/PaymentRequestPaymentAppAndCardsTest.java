@@ -85,6 +85,40 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
         runTest(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
     }
 
+    /** Test that going into the editor and cancelling will leave the row checked. */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testEditPaymentMethodAndCancelEditorShouldKeepCardSelected()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        expectPaymentMethodRowIsSelected(0);
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+
+        // Cancel the editor.
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+
+        // Expect the existing row to still be selected in the Shipping Address section.
+        expectPaymentMethodRowIsSelected(0);
+    }
+
+    /** Test that going into "add" flow editor and cancelling will leave existing row checked. */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testAddPaymentMethodAndCancelEditorShouldKeepExistingCardSelected()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        expectPaymentMethodRowIsSelected(0);
+        clickInPaymentMethodAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+
+        // Cancel the editor.
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+
+        // Expect the row to still be selected in the Shipping Address section.
+        expectPaymentMethodRowIsSelected(0);
+    }
+
     private void runTest(int instrumentPresence, int responseSpeed) throws InterruptedException,
             ExecutionException, TimeoutException  {
         installPaymentApp(instrumentPresence, responseSpeed);
