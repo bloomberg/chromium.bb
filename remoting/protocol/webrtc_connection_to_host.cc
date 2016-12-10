@@ -37,7 +37,8 @@ void WebrtcConnectionToHost::Connect(
   transport_.reset(new WebrtcTransport(
       jingle_glue::JingleThreadWrapper::current(), transport_context, this));
 
-  transport_->audio_module()->SetAudioTaskRunner(audio_decode_task_runner_);
+  if (audio_decode_task_runner_)
+    transport_->audio_module()->SetAudioTaskRunner(audio_decode_task_runner_);
 
   session_ = std::move(session);
   session_->SetEventHandler(this);

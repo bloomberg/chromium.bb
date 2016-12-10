@@ -45,6 +45,21 @@ const int kBigFrameThresholdPixels = 300000;
 // encoded "big" frame may be too large to be delivered to the client quickly.
 const int kEstimatedBytesPerMegapixel = 100000;
 
+// Interval over which the bandwidth estimates is averaged to set target encoder
+// bitrate.
+constexpr base::TimeDelta kBandwidthAveragingInterval =
+    base::TimeDelta::FromSeconds(1);
+
+// Only update encoder bitrate when bandwidth changes by more than 33%. This
+// value is chosen such that the codec is notified about significant changes in
+// bandwidth, while ignoring bandwidth estimate noise. This is necessary because
+// the encoder drops quality every time it's being reconfigured. When using VP8
+// encoder in realtime mode encoded frame size correlates very poorly with the
+// target bitrate, so it's not necessary to set target bitrate to match
+// bandwidth exactly. Send bitrate is controlled more precisely by adjusting
+// time intervals between frames (i.e. FPS).
+const int kEncoderBitrateChangePercentage = 33;
+
 int64_t GetRegionArea(const webrtc::DesktopRegion& region) {
   int64_t result = 0;
   for (webrtc::DesktopRegion::Iterator r(region); !r.IsAtEnd(); r.Advance()) {
@@ -55,11 +70,52 @@ int64_t GetRegionArea(const webrtc::DesktopRegion& region) {
 
 }  // namespace
 
+WebrtcFrameSchedulerSimple::EncoderBitrateFilter::EncoderBitrateFilter() {}
+WebrtcFrameSchedulerSimple::EncoderBitrateFilter::~EncoderBitrateFilter() {}
+
+void WebrtcFrameSchedulerSimple::EncoderBitrateFilter::SetBandwidthEstimate(
+    int bandwidth_kbps,
+    base::TimeTicks now) {
+  while (!bandwidth_samples_.empty() &&
+         now - bandwidth_samples_.front().first > kBandwidthAveragingInterval) {
+    bandwidth_samples_sum_ -= bandwidth_samples_.front().second;
+    bandwidth_samples_.pop();
+  }
+
+  bandwidth_samples_.push(std::make_pair(now, bandwidth_kbps));
+  bandwidth_samples_sum_ += bandwidth_kbps;
+}
+
+int WebrtcFrameSchedulerSimple::EncoderBitrateFilter::GetTargetBitrateKbps(
+    webrtc::DesktopSize size,
+    base::TimeTicks now) {
+  DCHECK(!bandwidth_samples_.empty());
+
+  // TODO(sergeyu): This logic is applicable only to VP8. Reconsider it for
+  // VP9.
+  int bandwidth_estimate = bandwidth_samples_sum_ / bandwidth_samples_.size();
+  int minimum_bitrate =
+      static_cast<int64_t>(kVp8MinimumTargetBitrateKbpsPerMegapixel) *
+      size.width() * size.height() / 1000000LL;
+  int target_bitrate = std::max(minimum_bitrate, bandwidth_estimate);
+
+  // Update encoder bitrate only when it changes by more than 30%. This is
+  // necessary because the encoder resets internal state when it's reconfigured
+  // and this causes visible drop in quality.
+  if (current_target_bitrate_ == 0 ||
+      std::abs(target_bitrate - current_target_bitrate_) >
+          current_target_bitrate_ * kEncoderBitrateChangePercentage / 100) {
+    current_target_bitrate_ = target_bitrate;
+  }
+  return current_target_bitrate_;
+}
+
 WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple()
     : pacing_bucket_(LeakyBucket::kUnlimitedDepth, 0),
       frame_processing_delay_us_(kStatsWindow),
       updated_region_area_(kStatsWindow),
       weak_factory_(this) {}
+
 WebrtcFrameSchedulerSimple::~WebrtcFrameSchedulerSimple() {}
 
 void WebrtcFrameSchedulerSimple::OnKeyFrameRequested() {
@@ -75,10 +131,11 @@ void WebrtcFrameSchedulerSimple::OnChannelParameters(int packet_loss,
   rtt_estimate_ = rtt;
 }
 
-void WebrtcFrameSchedulerSimple::OnTargetBitrateChanged(int bitrate_kbps) {
+void WebrtcFrameSchedulerSimple::OnTargetBitrateChanged(int bandwidth_kbps) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::TimeTicks now = base::TimeTicks::Now();
-  pacing_bucket_.UpdateRate(bitrate_kbps * 1000 / 8, now);
+  pacing_bucket_.UpdateRate(bandwidth_kbps * 1000 / 8, now);
+  encoder_bitrate_.SetBandwidthEstimate(bandwidth_kbps, now);
   ScheduleNextFrame(now);
 }
 
@@ -116,12 +173,8 @@ bool WebrtcFrameSchedulerSimple::GetEncoderFrameParams(
     return false;
   }
 
-  // TODO(sergeyu): This logic is applicable only to VP8. Reconsider it for VP9.
-  int minimum_bitrate =
-      static_cast<int64_t>(kVp8MinimumTargetBitrateKbpsPerMegapixel) *
-      frame.size().width() * frame.size().height() / 1000000LL;
   params_out->bitrate_kbps =
-      std::max(minimum_bitrate, pacing_bucket_.rate() * 8 / 1000);
+      encoder_bitrate_.GetTargetBitrateKbps(frame.size(), now);
 
   params_out->duration = kTargetFrameInterval;
   params_out->key_frame = key_frame_request_;

@@ -7,6 +7,8 @@
 
 #include "remoting/protocol/webrtc_frame_scheduler.h"
 
+#include <queue>
+
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/base/leaky_bucket.h"
@@ -43,6 +45,22 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
                       HostFrameStats* frame_stats) override;
 
  private:
+  // Helper class used to calculate target encoder bitrate.
+  class EncoderBitrateFilter {
+   public:
+    EncoderBitrateFilter();
+    ~EncoderBitrateFilter();
+
+    void SetBandwidthEstimate(int bandwidth_kbps, base::TimeTicks now);
+    int GetTargetBitrateKbps(webrtc::DesktopSize size, base::TimeTicks now);
+
+   private:
+    std::queue<std::pair<base::TimeTicks, int>> bandwidth_samples_;
+    int bandwidth_samples_sum_ = 0;
+
+    int current_target_bitrate_;
+  };
+
   void ScheduleNextFrame(base::TimeTicks now);
   void CaptureNextFrame();
 
@@ -53,6 +71,8 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   base::TimeTicks last_capture_started_time_;
 
   LeakyBucket pacing_bucket_;
+
+  EncoderBitrateFilter encoder_bitrate_;
 
   // Set to true when a frame is being captured or encoded.
   bool frame_pending_ = false;
