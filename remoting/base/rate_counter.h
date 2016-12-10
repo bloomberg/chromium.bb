@@ -12,6 +12,8 @@
 
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 
 namespace remoting {
@@ -32,18 +34,16 @@ class RateCounter : public base::NonThreadSafe {
   // Note that rates reported before |time_window| has elapsed are not accurate.
   double Rate();
 
-  // Overrides the current time for testing.
-  void SetCurrentTimeForTest(base::Time current_time);
+  void set_tick_clock_for_tests(base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
 
  private:
   // Type used to store data points with timestamps.
-  typedef std::pair<base::Time, int64_t> DataPoint;
+  typedef std::pair<base::TimeTicks, int64_t> DataPoint;
 
   // Removes data points more than |time_window| older than |current_time|.
-  void EvictOldDataPoints(base::Time current_time);
-
-  // Returns the current time specified for test, if set, or base::Time::Now().
-  base::Time CurrentTime() const;
+  void EvictOldDataPoints(base::TimeTicks current_time);
 
   // Time window over which to calculate the rate.
   const base::TimeDelta time_window_;
@@ -54,8 +54,8 @@ class RateCounter : public base::NonThreadSafe {
   // Sum of values in |data_points_|.
   int64_t sum_;
 
-  // If set, used to calculate the running average, in place of Now().
-  base::Time current_time_for_test_;
+  base::DefaultTickClock default_tick_clock_;
+  base::TickClock* tick_clock_ = &default_tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(RateCounter);
 };
