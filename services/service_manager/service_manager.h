@@ -119,6 +119,10 @@ class ServiceManager {
   // running as a different user if one is available that services all users.
   Instance* GetExistingInstance(const Identity& identity) const;
 
+  // Erases any identities mapping to |instance|. Following this call it is
+  // impossible for any call to GetExistingInstance() to return |instance|.
+  void EraseInstanceIdentity(Instance* instance);
+
   void NotifyServiceStarted(const Identity& identity, base::ProcessId pid);
   void NotifyServiceFailedToStart(const Identity& identity);
 
