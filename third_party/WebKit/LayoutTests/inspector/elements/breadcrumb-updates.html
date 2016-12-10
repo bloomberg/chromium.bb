@@ -21,7 +21,8 @@ function test()
 
     function step0()
     {
-        InspectorTest.selectNodeWithId("target", step1);
+        InspectorTest.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step1);
+        InspectorTest.selectNodeWithId("target");
     }
 
     function step1()

@@ -48,7 +48,8 @@ function test()
         InspectorTest.findNode(matchFunction, callback);
         function callback(node)
         {
-            Common.Revealer.revealPromise(node).then(next);
+            InspectorTest.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", next);
+            Common.Revealer.revealPromise(node);
         }
     }
 
