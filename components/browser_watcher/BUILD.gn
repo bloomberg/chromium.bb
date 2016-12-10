@@ -83,6 +83,13 @@ static_library("stability") {
   ]
 }
 
+static_library("stability_data") {
+  sources = [
+    "stability_data_names.cc",
+    "stability_data_names.h",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [

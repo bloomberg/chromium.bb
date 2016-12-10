@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chrome_browser_field_trials_desktop.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include <map>
 #include <string>
 
@@ -24,6 +28,8 @@
 #include "media/media_features.h"
 
 #if defined(OS_WIN)
+#include "chrome/install_static/install_util.h"
+#include "components/browser_watcher/stability_data_names.h"
 #include "components/browser_watcher/stability_debugging_win.h"
 #endif
 
@@ -102,6 +108,35 @@ void SetupStabilityDebugging() {
   base::debug::GlobalActivityTracker::CreateWithFile(
       stability_file, kMemorySize, kAllocatorId,
       browser_watcher::kStabilityDebuggingFeature.name, kStackDepth);
+
+  // Record basic information: product, version, channel, special build and
+  // platform.
+  base::debug::GlobalActivityTracker* global_tracker =
+      base::debug::GlobalActivityTracker::Get();
+  if (global_tracker) {
+    wchar_t exe_file[MAX_PATH] = {};
+    CHECK(::GetModuleFileName(nullptr, exe_file, arraysize(exe_file)));
+
+    base::string16 product_name;
+    base::string16 version_number;
+    base::string16 channel_name;
+    base::string16 special_build;
+    install_static::GetExecutableVersionDetails(exe_file, &product_name,
+                                                &version_number, &special_build,
+                                                &channel_name);
+
+    base::debug::ActivityUserData& global_data = global_tracker->user_data();
+    global_data.SetString(browser_watcher::kStabilityProduct, product_name);
+    global_data.SetString(browser_watcher::kStabilityVersion, version_number);
+    global_data.SetString(browser_watcher::kStabilityChannel, channel_name);
+    global_data.SetString(browser_watcher::kStabilitySpecialBuild,
+                          special_build);
+#if defined(ARCH_CPU_X86)
+    global_data.SetString(browser_watcher::kStabilityPlatform, "Win32");
+#elif defined(ARCH_CPU_X86_64)
+    global_data.SetString(browser_watcher::kStabilityPlatform, "Win64");
+#endif
+  }
 }
 #endif  // defined(OS_WIN)
 

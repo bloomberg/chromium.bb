@@ -26,6 +26,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_local_storage.h"
@@ -360,6 +361,9 @@ class BASE_EXPORT ActivityUserData {
   }
   void SetString(StringPiece name, StringPiece value) {
     Set(name, STRING_VALUE, value.data(), value.length());
+  }
+  void SetString(StringPiece name, StringPiece16 value) {
+    SetString(name, UTF16ToUTF8(value));
   }
   void SetBool(StringPiece name, bool value) {
     char cvalue = value ? 1 : 0;
