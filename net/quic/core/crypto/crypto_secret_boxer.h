@@ -12,8 +12,8 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "base/synchronization/lock.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_mutex.h"
 
 namespace net {
 
@@ -51,9 +51,8 @@ class QUIC_EXPORT_PRIVATE CryptoSecretBoxer {
              base::StringPiece* out) const;
 
  private:
-  mutable base::Lock lock_;
-  //  GUARDED_BY(lock_).mutable Mutex lock_;
-  std::vector<std::string> keys_;
+  mutable QuicMutex lock_;
+  std::vector<std::string> keys_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(CryptoSecretBoxer);
 };

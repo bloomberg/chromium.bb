@@ -9,11 +9,11 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "base/synchronization/lock.h"
 #include "net/quic/core/crypto/strike_register.h"
 #include "net/quic/core/crypto/strike_register_client.h"
 #include "net/quic/core/quic_time.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_mutex.h"
 
 namespace net {
 
@@ -34,8 +34,8 @@ class QUIC_EXPORT_PRIVATE LocalStrikeRegisterClient
                                    ResultCallback* cb) override;
 
  private:
-  mutable base::Lock m_;
-  StrikeRegister strike_register_;
+  mutable QuicMutex m_;
+  StrikeRegister strike_register_ GUARDED_BY(m_);
 
   DISALLOW_COPY_AND_ASSIGN(LocalStrikeRegisterClient);
 };
