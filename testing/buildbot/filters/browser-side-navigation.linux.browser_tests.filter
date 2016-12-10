@@ -1,8 +1,5 @@
 -ChromeServiceWorkerTest.FallbackMainResourceRequestWhenJSDisabled
 -PDFExtensionTest.PdfAccessibilityInOOPIF
--PlatformAppUrlRedirectorBrowserTest.PrerenderedClickInTabIntercepted
--PredictorBrowserTest.RendererInitiatedNavigationPreconnect
--ThreatDOMDetailsTest.Everything
 
 # https://crbug.com/652767: NavigationHandle::GetResponseHeaders sometimes
 # returns null for browser-side navigations
