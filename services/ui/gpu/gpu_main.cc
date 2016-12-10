@@ -15,14 +15,6 @@
 
 namespace {
 
-#if defined(OS_WIN)
-std::unique_ptr<base::MessagePump> CreateMessagePumpWin() {
-  base::MessagePumpForGpu::InitFactory();
-  return base::MessageLoop::CreateMessagePumpForType(
-      base::MessageLoop::TYPE_UI);
-}
-#endif  // defined(OS_WIN)
-
 #if defined(USE_X11)
 std::unique_ptr<base::MessagePump> CreateMessagePumpX11() {
   // TODO(sad): This should create a TYPE_UI message pump, and create a
@@ -50,7 +42,7 @@ GpuMain::GpuMain(mojom::GpuMainRequest request)
   base::Thread::Options thread_options;
 
 #if defined(OS_WIN)
-  thread_options.message_pump_factory = base::Bind(&CreateMessagePumpWin);
+  thread_options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 #elif defined(USE_X11)
   thread_options.message_pump_factory = base::Bind(&CreateMessagePumpX11);
 #elif defined(USE_OZONE)
