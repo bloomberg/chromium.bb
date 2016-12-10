@@ -97,19 +97,6 @@ class CORE_EXPORT ExceptionState {
 #endif  // ENABLE(ASSERT)
   }
 
-  ExceptionState(ContextType context,
-                 const char* propertyName,
-                 const char* interfaceName,
-                 const v8::Local<v8::Object>& creationContext,
-                 v8::Isolate* isolate)  // DEPRECATED
-      : ExceptionState(isolate, context, interfaceName, propertyName) {}
-
-  ExceptionState(ContextType context,
-                 const char* interfaceName,
-                 const v8::Local<v8::Object>& creationContext,
-                 v8::Isolate* isolate)  // DEPRECATED
-      : ExceptionState(isolate, context, interfaceName) {}
-
   ~ExceptionState() {
     if (!m_exception.isEmpty()) {
       V8ThrowException::throwException(m_isolate,

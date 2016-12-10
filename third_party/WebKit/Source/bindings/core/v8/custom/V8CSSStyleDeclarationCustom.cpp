@@ -226,9 +226,8 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(
 
   TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, propertyValue, value);
   ExceptionState exceptionState(
-      ExceptionState::SetterContext,
-      getPropertyName(resolveCSSPropertyID(unresolvedProperty)),
-      "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
+      info.GetIsolate(), ExceptionState::SetterContext, "CSSStyleDeclaration",
+      getPropertyName(resolveCSSPropertyID(unresolvedProperty)));
   impl->setPropertyInternal(unresolvedProperty, String(), propertyValue, false,
                             exceptionState);
 

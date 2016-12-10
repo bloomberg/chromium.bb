@@ -95,9 +95,9 @@ PermissionDescriptorPtr parsePermission(ScriptState* scriptState,
 
 ScriptPromise Permissions::query(ScriptState* scriptState,
                                  const Dictionary& rawPermission) {
-  ExceptionState exceptionState(ExceptionState::GetterContext, "query",
-                                "Permissions", scriptState->context()->Global(),
-                                scriptState->isolate());
+  ExceptionState exceptionState(scriptState->isolate(),
+                                ExceptionState::GetterContext, "Permissions",
+                                "query");
   PermissionDescriptorPtr descriptor =
       parsePermission(scriptState, rawPermission, exceptionState);
   if (exceptionState.hadException())
@@ -132,9 +132,9 @@ ScriptPromise Permissions::query(ScriptState* scriptState,
 
 ScriptPromise Permissions::request(ScriptState* scriptState,
                                    const Dictionary& rawPermission) {
-  ExceptionState exceptionState(ExceptionState::GetterContext, "request",
-                                "Permissions", scriptState->context()->Global(),
-                                scriptState->isolate());
+  ExceptionState exceptionState(scriptState->isolate(),
+                                ExceptionState::GetterContext, "Permissions",
+                                "request");
   PermissionDescriptorPtr descriptor =
       parsePermission(scriptState, rawPermission, exceptionState);
   if (exceptionState.hadException())
@@ -165,9 +165,9 @@ ScriptPromise Permissions::request(ScriptState* scriptState,
 
 ScriptPromise Permissions::revoke(ScriptState* scriptState,
                                   const Dictionary& rawPermission) {
-  ExceptionState exceptionState(ExceptionState::GetterContext, "revoke",
-                                "Permissions", scriptState->context()->Global(),
-                                scriptState->isolate());
+  ExceptionState exceptionState(scriptState->isolate(),
+                                ExceptionState::GetterContext, "Permissions",
+                                "revoke");
   PermissionDescriptorPtr descriptor =
       parsePermission(scriptState, rawPermission, exceptionState);
   if (exceptionState.hadException())
@@ -198,9 +198,9 @@ ScriptPromise Permissions::revoke(ScriptState* scriptState,
 ScriptPromise Permissions::requestAll(
     ScriptState* scriptState,
     const Vector<Dictionary>& rawPermissions) {
-  ExceptionState exceptionState(ExceptionState::GetterContext, "request",
-                                "Permissions", scriptState->context()->Global(),
-                                scriptState->isolate());
+  ExceptionState exceptionState(scriptState->isolate(),
+                                ExceptionState::GetterContext, "Permissions",
+                                "requestAll");
   Vector<PermissionDescriptorPtr> internalPermissions;
   Vector<int> callerIndexToInternalIndex;
   callerIndexToInternalIndex.resize(rawPermissions.size());

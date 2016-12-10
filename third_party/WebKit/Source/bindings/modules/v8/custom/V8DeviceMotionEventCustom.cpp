@@ -125,9 +125,9 @@ DeviceMotionData::RotationRate* readRotationRateArgument(
 void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   // TODO(haraken): This custom binding should mimic auto-generated code more.
-  ExceptionState exceptionState(ExceptionState::ExecutionContext,
-                                "initDeviceMotionEvent", "DeviceMotionEvent",
-                                info.Holder(), info.GetIsolate());
+  ExceptionState exceptionState(info.GetIsolate(),
+                                ExceptionState::ExecutionContext,
+                                "DeviceMotionEvent", "initDeviceMotionEvent");
   DeviceMotionEvent* impl = V8DeviceMotionEvent::toImpl(info.Holder());
   v8::Isolate* isolate = info.GetIsolate();
   V8StringResource<> type(info[0]);

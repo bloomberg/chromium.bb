@@ -95,9 +95,9 @@ void V8MessageEvent::dataAttributeGetterCustom(
 
 void V8MessageEvent::initMessageEventMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(ExceptionState::ExecutionContext,
-                                "initMessageEvent", "MessageEvent",
-                                info.Holder(), info.GetIsolate());
+  ExceptionState exceptionState(info.GetIsolate(),
+                                ExceptionState::ExecutionContext,
+                                "MessageEvent", "initMessageEvent");
   MessageEvent* event = V8MessageEvent::toImpl(info.Holder());
   TOSTRING_VOID(V8StringResource<>, typeArg, info[0]);
   bool canBubbleArg = false;

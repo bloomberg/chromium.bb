@@ -347,9 +347,8 @@ static void constructCustomElement(
       scriptState, data, V8HiddenValue::customElementType(isolate));
   TOSTRING_VOID(V8StringResource<>, type, maybeType);
 
-  ExceptionState exceptionState(ExceptionState::ConstructionContext,
-                                "CustomElement", info.Holder(),
-                                info.GetIsolate());
+  ExceptionState exceptionState(
+      info.GetIsolate(), ExceptionState::ConstructionContext, "CustomElement");
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
   Element* element = document->createElementNS(
       namespaceURI, tagName,

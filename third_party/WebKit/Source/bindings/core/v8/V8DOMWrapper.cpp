@@ -117,9 +117,8 @@ void V8WrapperInstantiationScope::securityCheck(
     DOMWindow* targetWindow = toDOMWindow(contextForWrapper);
     // TODO(jochen): Currently, Location is the only object for which we can
     // reach this code path. Should be generalized.
-    ExceptionState exceptionState(ExceptionState::ConstructionContext,
-                                  "Location", contextForWrapper->Global(),
-                                  isolate);
+    ExceptionState exceptionState(isolate, ExceptionState::ConstructionContext,
+                                  "Location");
     if (BindingSecurity::shouldAllowAccessToDetachedWindow(
             callingWindow, targetWindow, exceptionState))
       return;
@@ -131,8 +130,8 @@ void V8WrapperInstantiationScope::securityCheck(
   RELEASE_ASSERT(currentWorld.worldId() ==
                  DOMWrapperWorld::world(contextForWrapper).worldId());
   // TODO(jochen): Add the interface name here once this is generalized.
-  ExceptionState exceptionState(ExceptionState::ConstructionContext, nullptr,
-                                contextForWrapper->Global(), isolate);
+  ExceptionState exceptionState(isolate, ExceptionState::ConstructionContext,
+                                nullptr);
   if (currentWorld.isMainWorld() &&
       !BindingSecurity::shouldAllowAccessToFrame(currentDOMWindow(isolate),
                                                  frame, exceptionState)) {
@@ -145,9 +144,8 @@ void V8WrapperInstantiationScope::convertException() {
   v8::Isolate* isolate = m_context->GetIsolate();
   // TODO(jochen): Currently, Location is the only object for which we can reach
   // this code path. Should be generalized.
-  ExceptionState exceptionState(ExceptionState::ConstructionContext, "Location",
-                                isolate->GetCurrentContext()->Global(),
-                                isolate);
+  ExceptionState exceptionState(isolate, ExceptionState::ConstructionContext,
+                                "Location");
   LocalDOMWindow* callingWindow = currentDOMWindow(isolate);
   DOMWindow* targetWindow = toDOMWindow(m_context);
   exceptionState.throwSecurityError(

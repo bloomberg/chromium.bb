@@ -179,8 +179,8 @@ HTMLElement* ScriptCustomElementDefinition::createElementSync(
   ScriptState::Scope scope(m_scriptState.get());
   v8::Isolate* isolate = m_scriptState->isolate();
 
-  ExceptionState exceptionState(ExceptionState::ConstructionContext,
-                                "CustomElement", constructor(), isolate);
+  ExceptionState exceptionState(isolate, ExceptionState::ConstructionContext,
+                                "CustomElement");
 
   // Create an element with the synchronous custom elements flag set.
   // https://dom.spec.whatwg.org/#concept-create-element

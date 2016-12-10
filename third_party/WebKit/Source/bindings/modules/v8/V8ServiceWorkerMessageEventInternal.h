@@ -25,9 +25,8 @@ template <typename EventType, typename DictType>
 void V8ServiceWorkerMessageEventInternal::constructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(
-      ExceptionState::ConstructionContext,
-      V8TypeOf<EventType>::Type::wrapperTypeInfo.interfaceName, info.Holder(),
-      info.GetIsolate());
+      info.GetIsolate(), ExceptionState::ConstructionContext,
+      V8TypeOf<EventType>::Type::wrapperTypeInfo.interfaceName);
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.throwTypeError(
         ExceptionMessages::notEnoughArguments(1, info.Length()));

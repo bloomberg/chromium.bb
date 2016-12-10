@@ -369,9 +369,9 @@ void MainThreadDebugger::querySelectorCallback(
   Node* node = secondArgumentAsNode(info);
   if (!node || !node->isContainerNode())
     return;
-  ExceptionState exceptionState(ExceptionState::ExecutionContext, "$",
-                                "CommandLineAPI", info.Holder(),
-                                info.GetIsolate());
+  ExceptionState exceptionState(info.GetIsolate(),
+                                ExceptionState::ExecutionContext,
+                                "CommandLineAPI", "$");
   Element* element = toContainerNode(node)->querySelector(
       AtomicString(selector), exceptionState);
   if (exceptionState.hadException())
@@ -392,9 +392,9 @@ void MainThreadDebugger::querySelectorAllCallback(
   Node* node = secondArgumentAsNode(info);
   if (!node || !node->isContainerNode())
     return;
-  ExceptionState exceptionState(ExceptionState::ExecutionContext, "$$",
-                                "CommandLineAPI", info.Holder(),
-                                info.GetIsolate());
+  ExceptionState exceptionState(info.GetIsolate(),
+                                ExceptionState::ExecutionContext,
+                                "CommandLineAPI", "$$");
   // toV8(elementList) doesn't work here, since we need a proper Array instance,
   // not NodeList.
   StaticElementList* elementList = toContainerNode(node)->querySelectorAll(
@@ -425,9 +425,9 @@ void MainThreadDebugger::xpathSelectorCallback(
   if (!node || !node->isContainerNode())
     return;
 
-  ExceptionState exceptionState(ExceptionState::ExecutionContext, "$x",
-                                "CommandLineAPI", info.Holder(),
-                                info.GetIsolate());
+  ExceptionState exceptionState(info.GetIsolate(),
+                                ExceptionState::ExecutionContext,
+                                "CommandLineAPI", "$x");
   XPathResult* result = XPathEvaluator::create()->evaluate(
       selector, node, nullptr, XPathResult::kAnyType, ScriptValue(),
       exceptionState);

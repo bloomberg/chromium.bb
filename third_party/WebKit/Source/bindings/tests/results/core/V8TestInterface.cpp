@@ -3077,7 +3077,7 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeGetter(LocalFrame* 
 
   ScriptState::Scope scope(scriptState);
   v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttribute", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
+  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::GetterContext, "TestInterfaceImplementation", "stringAttribute");
   v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "stringAttribute", holder);
   if (v8Value.IsEmpty())
     return false;
@@ -3103,7 +3103,7 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeSetter(LocalFrame* 
 
   ScriptState::Scope scope(scriptState);
   v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(ExceptionState::SetterContext, "stringAttribute", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
+  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::SetterContext, "TestInterfaceImplementation", "stringAttribute");
   return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
 }
 

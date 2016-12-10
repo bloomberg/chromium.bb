@@ -43,9 +43,9 @@ namespace blink {
 
 void V8MutationObserver::constructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(ExceptionState::ConstructionContext,
-                                "MutationObserver", info.Holder(),
-                                info.GetIsolate());
+  ExceptionState exceptionState(info.GetIsolate(),
+                                ExceptionState::ConstructionContext,
+                                "MutationObserver");
   if (info.Length() < 1) {
     exceptionState.throwTypeError(
         ExceptionMessages::notEnoughArguments(1, info.Length()));

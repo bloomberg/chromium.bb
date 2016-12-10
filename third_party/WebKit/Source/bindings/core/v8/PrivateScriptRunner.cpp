@@ -332,9 +332,8 @@ void rethrowExceptionInPrivateScript(v8::Isolate* isolate,
     RELEASE_ASSERT(code->IsInt32());
     int exceptionCode = code.As<v8::Int32>()->Value();
     ScriptState::Scope scope(scriptStateInUserScript);
-    ExceptionState exceptionState(errorContext, propertyName, interfaceName,
-                                  context->Global(),
-                                  scriptStateInUserScript->isolate());
+    ExceptionState exceptionState(scriptStateInUserScript->isolate(),
+                                  errorContext, interfaceName, propertyName);
     exceptionState.throwDOMException(exceptionCode, messageString);
     return;
   }
@@ -346,9 +345,8 @@ void rethrowExceptionInPrivateScript(v8::Isolate* isolate,
   if (exceptionName == "RangeError" &&
       messageString.contains("Maximum call stack size exceeded")) {
     ScriptState::Scope scope(scriptStateInUserScript);
-    ExceptionState exceptionState(errorContext, propertyName, interfaceName,
-                                  scriptStateInUserScript->context()->Global(),
-                                  scriptStateInUserScript->isolate());
+    ExceptionState exceptionState(scriptStateInUserScript->isolate(),
+                                  errorContext, interfaceName, propertyName);
     exceptionState.throwDOMException(V8RangeError, messageString);
     return;
   }

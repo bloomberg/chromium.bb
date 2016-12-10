@@ -121,9 +121,9 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(
   if (info.Length() < 3)
     return;
 
-  ExceptionState exceptionState(ExceptionState::ExecutionContext,
-                                "showContextMenuAtPoint", "DevToolsHost",
-                                info.Holder(), info.GetIsolate());
+  ExceptionState exceptionState(info.GetIsolate(),
+                                ExceptionState::ExecutionContext,
+                                "DevToolsHost", "showContextMenuAtPoint");
   v8::Isolate* isolate = info.GetIsolate();
 
   float x = toRestrictedFloat(isolate, info[0], exceptionState);

@@ -67,8 +67,8 @@ namespace blink {
 void V8Window::eventAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
-  ExceptionState exceptionState(ExceptionState::GetterContext, "event",
-                                "Window", info.Holder(), info.GetIsolate());
+  ExceptionState exceptionState(
+      info.GetIsolate(), ExceptionState::GetterContext, "Window", "event");
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()),
                                             impl, exceptionState)) {
     return;
@@ -94,8 +94,8 @@ void V8Window::eventAttributeSetterCustom(
     v8::Local<v8::Value> value,
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
-  ExceptionState exceptionState(ExceptionState::SetterContext, "event",
-                                "Window", info.Holder(), info.GetIsolate());
+  ExceptionState exceptionState(
+      info.GetIsolate(), ExceptionState::SetterContext, "Window", "event");
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()),
                                             impl, exceptionState)) {
     return;
@@ -144,8 +144,8 @@ void V8Window::openerAttributeSetterCustom(
   DOMWindow* impl = V8Window::toImpl(info.Holder());
   // TODO(dcheng): Investigate removing this, since opener is not really a
   // cross-origin property (so it shouldn't be accessible to begin with)
-  ExceptionState exceptionState(ExceptionState::SetterContext, "opener",
-                                "Window", info.Holder(), isolate);
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext,
+                                "Window", "opener");
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()),
                                             impl, exceptionState)) {
     return;
@@ -177,8 +177,9 @@ void V8Window::openerAttributeSetterCustom(
 
 void V8Window::postMessageMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage",
-                                "Window", info.Holder(), info.GetIsolate());
+  ExceptionState exceptionState(info.GetIsolate(),
+                                ExceptionState::ExecutionContext, "Window",
+                                "postMessage");
   if (UNLIKELY(info.Length() < 2)) {
     exceptionState.throwTypeError(
         ExceptionMessages::notEnoughArguments(2, info.Length()));
@@ -237,8 +238,8 @@ void V8Window::postMessageMethodCustom(
 void V8Window::openMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   DOMWindow* impl = V8Window::toImpl(info.Holder());
-  ExceptionState exceptionState(ExceptionState::ExecutionContext, "open",
-                                "Window", info.Holder(), info.GetIsolate());
+  ExceptionState exceptionState(
+      info.GetIsolate(), ExceptionState::ExecutionContext, "Window", "open");
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()),
                                             impl, exceptionState)) {
     return;
