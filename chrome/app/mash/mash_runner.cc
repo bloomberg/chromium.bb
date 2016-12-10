@@ -32,10 +32,9 @@
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/service_manager/runner/common/switches.h"
-#include "services/service_manager/runner/host/child_process.h"
-#include "services/service_manager/runner/host/child_process_base.h"
 #include "services/service_manager/runner/init.h"
 #include "services/service_manager/standalone/context.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -93,6 +92,11 @@ class NativeRunnerDelegateImpl : public service_manager::NativeRunnerDelegate {
   void AdjustCommandLineArgumentsForTarget(
       const service_manager::Identity& target,
       base::CommandLine* command_line) override {
+    if (target.name() == kChromeMashServiceName ||
+        target.name() == content::mojom::kBrowserServiceName) {
+      command_line->SetProgram(
+          base::CommandLine::ForCurrentProcess()->GetProgram());
+    }
     if (target.name() != content::mojom::kBrowserServiceName) {
       // If running anything other than the browser process, launch a mash
       // child process. The new process will execute MashRunner::RunChild().
@@ -189,16 +193,9 @@ int MashRunner::RunChild() {
 
   service_manager::WaitForDebuggerIfNecessary();
 
-  base::FilePath path =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          switches::kChildProcess);
-  if (base::PathExists(path))
-    return service_manager::ChildProcessMain();
-
-  // If the path doesn't exist - try launching this as a packaged service.
   base::i18n::InitializeICU();
   InitializeResources();
-  service_manager::ChildProcessMainWithCallback(
+  service_manager::RunStandaloneService(
       base::Bind(&MashRunner::StartChildApp, base::Unretained(this)));
   return 0;
 }

@@ -18,8 +18,6 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
-#include "services/service_manager/runner/child/test_native_main.h"
-#include "services/service_manager/runner/init.h"
 
 namespace {
 

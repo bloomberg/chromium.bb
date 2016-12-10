@@ -8,12 +8,14 @@
 
 #include <utility>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/synchronization/lock.h"
@@ -23,6 +25,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
 #include "services/service_manager/native_runner_delegate.h"
+#include "services/service_manager/public/cpp/standalone_service/switches.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
 
@@ -35,7 +38,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "services/service_manager/runner/host/mach_broker.h"
+#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
 #endif
 
 namespace service_manager {
@@ -44,23 +47,24 @@ ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
                                    NativeRunnerDelegate* delegate,
                                    bool start_sandboxed,
                                    const Identity& target,
-                                   const base::FilePath& app_path)
+                                   const base::FilePath& service_path)
     : launch_process_runner_(launch_process_runner),
       delegate_(delegate),
       start_sandboxed_(start_sandboxed),
       target_(target),
-      app_path_(app_path),
+      service_path_(service_path),
       child_token_(mojo::edk::GenerateRandomToken()),
       start_child_process_event_(
           base::WaitableEvent::ResetPolicy::AUTOMATIC,
           base::WaitableEvent::InitialState::NOT_SIGNALED),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  if (service_path_.empty())
+    service_path_ = base::CommandLine::ForCurrentProcess()->GetProgram();
+}
 
 ChildProcessHost::~ChildProcessHost() {
-  if (!app_path_.empty()) {
-    CHECK(!mojo_ipc_channel_)
-        << "Destroying ChildProcessHost before calling Join";
-  }
+  DCHECK(!mojo_ipc_channel_)
+      << "Destroying ChildProcessHost before calling Join";
 }
 
 mojom::ServicePtr ChildProcessHost::Start(
@@ -69,30 +73,21 @@ mojom::ServicePtr ChildProcessHost::Start(
     const base::Closure& quit_closure) {
   DCHECK(!child_process_.IsValid());
 
-  const base::CommandLine* parent_command_line =
-      base::CommandLine::ForCurrentProcess();
-  base::FilePath target_path = parent_command_line->GetProgram();
-  // |app_path_| can be empty in tests.
-  if (!app_path_.MatchesExtension(FILE_PATH_LITERAL(".library")) &&
-      !app_path_.empty()) {
-    target_path = app_path_;
-  }
+  const base::CommandLine& parent_command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   std::unique_ptr<base::CommandLine> child_command_line(
-      new base::CommandLine(target_path));
+      new base::CommandLine(service_path_));
 
-  child_command_line->AppendArguments(*parent_command_line, false);
+  child_command_line->AppendArguments(parent_command_line, false);
 
 #ifndef NDEBUG
   child_command_line->AppendSwitchASCII("n", target.name());
   child_command_line->AppendSwitchASCII("u", target.user_id());
 #endif
 
-  if (target_path != app_path_)
-    child_command_line->AppendSwitchPath(switches::kChildProcess, app_path_);
-
   if (start_sandboxed_)
-    child_command_line->AppendSwitch(switches::kEnableSandbox);
+    child_command_line->AppendSwitch(::switches::kEnableSandbox);
 
   mojo_ipc_channel_.reset(new mojo::edk::PlatformChannelPair);
   mojo_ipc_channel_->PrepareToPassClientHandleToChildProcess(
@@ -140,6 +135,24 @@ void ChildProcessHost::DoLaunch(
   }
 
   base::LaunchOptions options;
+
+  base::FilePath exe_dir;
+  base::PathService::Get(base::DIR_EXE, &exe_dir);
+  options.current_directory = exe_dir;
+
+  // The service should look for ICU data next to the service runner's
+  // executable rather than its own.
+  child_command_line->AppendSwitchPath(switches::kIcuDataDir, exe_dir);
+
+#if defined(OS_POSIX)
+  // We need the dynamic loader to be able to locate things like libbase.so
+  // in component builds, as well as some other dynamic runtime dependencies in
+  // other build environments (e.g. libosmesa.so). For this we set
+  // LD_LIBRARY_PATH to the service runner's executable path where such
+  // artifacts are typically expected to reside.
+  options.environ["LD_LIBRARY_PATH"] = exe_dir.value();
+#endif
+
 #if defined(OS_WIN)
   options.handles_to_inherit = &handle_passing_info_;
 #if defined(OFFICIAL_BUILD)

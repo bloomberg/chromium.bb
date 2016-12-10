@@ -37,7 +37,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
-#include "services/service_manager/runner/host/in_process_native_runner.h"
 #include "services/service_manager/service_manager.h"
 
 namespace content {
@@ -134,6 +133,22 @@ class BuiltinManifestProvider : public catalog::ManifestProvider {
   DISALLOW_COPY_AND_ASSIGN(BuiltinManifestProvider);
 };
 
+class NullNativeRunnerFactory : public service_manager::NativeRunnerFactory {
+ public:
+  NullNativeRunnerFactory() {}
+  ~NullNativeRunnerFactory() override {}
+
+  std::unique_ptr<service_manager::NativeRunner> Create(
+      const base::FilePath& service_path) override {
+    LOG(ERROR) << "Attempting to run unsupported native service: "
+               << service_path.value();
+    return nullptr;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NullNativeRunnerFactory);
+};
+
 }  // namespace
 
 // State which lives on the IO thread and drives the ServiceManager.
@@ -174,12 +189,10 @@ class ServiceManagerContext::InProcessServiceManagerContext
     manifest_provider_ = std::move(manifest_provider);
 
     base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
-    std::unique_ptr<service_manager::NativeRunnerFactory> native_runner_factory(
-        new service_manager::InProcessNativeRunnerFactory(blocking_pool));
     catalog_.reset(
         new catalog::Catalog(blocking_pool, nullptr, manifest_provider_.get()));
     service_manager_.reset(new service_manager::ServiceManager(
-        std::move(native_runner_factory), catalog_->TakeService()));
+        base::MakeUnique<NullNativeRunnerFactory>(), catalog_->TakeService()));
 
     service_manager::mojom::ServiceRequest request =
         service_manager_->StartEmbedderService(mojom::kBrowserServiceName);

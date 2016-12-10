@@ -36,26 +36,25 @@ class NativeRunnerDelegate;
 
 // This class represents a "child process host". Handles launching and
 // connecting a platform-specific "pipe" to the child, and supports joining the
-// child process. Currently runs a single app (loaded from the file system).
+// child process. Currently runs a single service, loaded from a standalone
+// service executable on the file system.
 //
 // This class is not thread-safe. It should be created/used/destroyed on a
 // single thread.
 //
 // Note: Does not currently work on Windows before Vista.
-// Note: After |Start()|, |StartApp| must be called and this object must
-// remained alive until the |on_app_complete| callback is called.
 class ChildProcessHost {
  public:
   using ProcessReadyCallback = base::Callback<void(base::ProcessId)>;
 
   // |name| is just for debugging ease. We will spawn off a process so that it
-  // can be sandboxed if |start_sandboxed| is true. |app_path| is a path to the
-  // service we wish to start.
+  // can be sandboxed if |start_sandboxed| is true. |service_path| is a path to
+  // the service executable we wish to start.
   ChildProcessHost(base::TaskRunner* launch_process_runner,
                    NativeRunnerDelegate* delegate,
                    bool start_sandboxed,
                    const Identity& target,
-                   const base::FilePath& app_path);
+                   const base::FilePath& service_path);
   virtual ~ChildProcessHost();
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
@@ -77,7 +76,7 @@ class ChildProcessHost {
   NativeRunnerDelegate* delegate_ = nullptr;
   bool start_sandboxed_ = false;
   Identity target_;
-  const base::FilePath app_path_;
+  base::FilePath service_path_;
   base::Process child_process_;
 
   // Used to initialize the Mojo IPC channel between parent and child.

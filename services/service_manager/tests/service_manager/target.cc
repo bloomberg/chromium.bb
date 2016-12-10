@@ -6,12 +6,12 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/runner/child/test_native_main.h"
-#include "services/service_manager/runner/init.h"
+#include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
 
 using service_manager::test::mojom::CreateInstanceTestPtr;
@@ -42,10 +42,7 @@ class Target : public service_manager::Service {
 
 }  // namespace
 
-int main(int argc, char** argv) {
-  base::AtExitManager at_exit;
-  base::CommandLine::Init(argc, argv);
-
-  service_manager::InitializeLogging();
-  return service_manager::TestNativeMain(base::MakeUnique<Target>());
+MojoResult ServiceMain(MojoHandle service_request_handle) {
+  service_manager::ServiceRunner runner(new Target);
+  return runner.Run(service_request_handle);
 }

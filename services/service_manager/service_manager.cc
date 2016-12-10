@@ -190,15 +190,19 @@ class ServiceManager::Instance
     StartWithService(std::move(service));
   }
 
-  void StartWithFilePath(const base::FilePath& path) {
-    CHECK(!service_);
+  bool StartWithFilePath(const base::FilePath& path) {
+    DCHECK(!service_);
+    DCHECK(!path.empty());
     runner_ = service_manager_->native_runner_factory_->Create(path);
+    if (!runner_)
+      return false;
     bool start_sandboxed = false;
     mojom::ServicePtr service = runner_->Start(
-        path, identity_, start_sandboxed,
+        identity_, start_sandboxed,
         base::Bind(&Instance::PIDAvailable, weak_factory_.GetWeakPtr()),
         base::Bind(&Instance::OnRunnerCompleted, weak_factory_.GetWeakPtr()));
     StartWithService(std::move(service));
+    return true;
   }
 
   mojom::RunningServiceInfoPtr CreateRunningServiceInfo() const {
@@ -947,9 +951,10 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
         package_path = result->package_path;
       }
 
-      // TODO(rockot): Find a way to block this code path for content but allow
-      // it for chrome_mash.
-      instance->StartWithFilePath(package_path);
+      if (!instance->StartWithFilePath(package_path)) {
+        OnInstanceError(instance);
+        return;
+      }
     }
   }
 

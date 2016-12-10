@@ -24,9 +24,8 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
+#include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
 #include "services/service_manager/runner/common/switches.h"
-#include "services/service_manager/runner/host/child_process.h"
-#include "services/service_manager/runner/host/child_process_base.h"
 #include "services/service_manager/runner/init.h"
 
 namespace {
@@ -150,20 +149,8 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
     base::AtExitManager exit_manager;
 #endif
     base::i18n::InitializeICU();
-    service_manager::ChildProcessMainWithCallback(base::Bind(&StartChildApp));
+    service_manager::RunStandaloneService(base::Bind(&StartChildApp));
     *exit_code = 0;
-    return true;
-  }
-
-  if (command_line.HasSwitch(switches::kChildProcess) &&
-      !command_line.HasSwitch(MojoTestConnector::kTestSwitch)) {
-    base::AtExitManager at_exit;
-    service_manager::InitializeLogging();
-    service_manager::WaitForDebuggerIfNecessary();
-#if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
-    base::RouteStdioToConsole(false);
-#endif
-    *exit_code = service_manager::ChildProcessMain();
     return true;
   }
 

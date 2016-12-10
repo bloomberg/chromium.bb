@@ -71,12 +71,7 @@ MojoResult ServiceRunner::Run(MojoHandle service_request_handle,
 }
 
 MojoResult ServiceRunner::Run(MojoHandle service_request_handle) {
-  bool init_base = true;
-  if (base::CommandLine::InitializedForCurrentProcess()) {
-    init_base =
-        !base::CommandLine::ForCurrentProcess()->HasSwitch("single-process");
-  }
-  return Run(service_request_handle, init_base);
+  return Run(service_request_handle, false);
 }
 
 void ServiceRunner::Quit() {

@@ -10,8 +10,6 @@ service("tracing") {
     "main.cc",
   ]
 
-  avoid_runner_cycle = true
-
   deps = [
     ":lib",
     "//mojo/public/cpp/system",

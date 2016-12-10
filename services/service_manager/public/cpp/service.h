@@ -5,6 +5,8 @@
 #ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_H_
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_H_
 
+#include "base/macros.h"
+
 namespace service_manager {
 
 class InterfaceRegistry;
@@ -65,6 +67,8 @@ class Service {
   void set_context(ServiceContext* context) { service_context_ = context; }
 
   ServiceContext* service_context_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(Service);
 };
 
 // TODO(rockot): Remove this. It's here to satisfy a few remaining use cases
@@ -75,14 +79,16 @@ class ForwardingService : public Service {
   explicit ForwardingService(Service* target);
   ~ForwardingService() override;
 
- private:
   // Service:
   void OnStart() override;
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override;
   bool OnStop() override;
 
+ private:
   Service* const target_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ForwardingService);
 };
 
 }  // namespace service_manager

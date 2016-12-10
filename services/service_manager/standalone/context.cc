@@ -38,7 +38,6 @@
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/connect_util.h"
 #include "services/service_manager/runner/common/switches.h"
-#include "services/service_manager/runner/host/in_process_native_runner.h"
 #include "services/service_manager/runner/host/out_of_process_native_runner.h"
 #include "services/service_manager/standalone/tracer.h"
 #include "services/service_manager/switches.h"
@@ -48,7 +47,7 @@
 #include "services/tracing/public/interfaces/tracing.mojom.h"
 
 #if defined(OS_MACOSX)
-#include "services/service_manager/runner/host/mach_broker.h"
+#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
 #endif
 
 namespace service_manager {
@@ -137,21 +136,10 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
 #endif
   }
 
-  std::unique_ptr<NativeRunnerFactory> runner_factory;
-  if (command_line.HasSwitch(switches::kSingleProcess)) {
-#if defined(COMPONENT_BUILD)
-    LOG(ERROR) << "Running Mojo in single process component build, which isn't "
-               << "supported because statics in apps interact. Use static build"
-               << " or don't pass --single-process.";
-#endif
-    runner_factory.reset(
-        new InProcessNativeRunnerFactory(blocking_pool_.get()));
-  } else {
-    NativeRunnerDelegate* native_runner_delegate = init_params ?
-        init_params->native_runner_delegate : nullptr;
-    runner_factory.reset(new OutOfProcessNativeRunnerFactory(
-        blocking_pool_.get(), native_runner_delegate));
-  }
+  std::unique_ptr<NativeRunnerFactory> runner_factory =
+      base::MakeUnique<OutOfProcessNativeRunnerFactory>(
+          blocking_pool_.get(),
+          init_params ? init_params->native_runner_delegate : nullptr);
   std::unique_ptr<catalog::Store> store;
   if (init_params)
     store = std::move(init_params->catalog_store);

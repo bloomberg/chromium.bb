@@ -12,7 +12,6 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kEnableTracing[];
 extern const char kNoSandbox[];
-extern const char kSingleProcess[];
 
 }  // namespace switches
 }  // namespace service_manager

@@ -38,6 +38,7 @@ source_set("lib") {
     "//services/catalog:lib",
     "//services/service_manager",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp/standalone_service",
     "//services/service_manager/runner/host:lib",
     "//services/tracing/public/cpp",
     "//services/tracing/public/interfaces",

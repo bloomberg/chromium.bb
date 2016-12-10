@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
@@ -15,81 +16,19 @@ group("host") {
   ]
 }
 
-source_set("native_library_runner") {
-  sources = [
-    "native_library_runner.cc",
-    "native_library_runner.h",
-  ]
-
-  deps = [
-    "//base",
-    "//mojo/edk/system",
-    "//services/service_manager",
-  ]
-
-  # This target has to include the public thunk headers, which generally
-  # shouldn't be included without picking an implementation. We are providing
-  # the implementation but the thunk header target cannot declare that we are
-  # permitted to include it since it's in the public SDK and we are not.
-  # Suppress include checking so we can still check the rest of the targets in
-  # this file.
-  check_includes = false
-}
-
-source_set("child_process_base") {
-  sources = [
-    "child_process_base.cc",
-    "child_process_base.h",
-  ]
-
-  deps = [
-    "//base",
-    "//mojo/edk/system",
-    "//services/service_manager",
-    "//services/service_manager/public/interfaces",
-    "//services/service_manager/runner:init",
-    "//services/service_manager/runner/common",
-  ]
-
-  if (is_linux && !is_android) {
-    sources += [
-      "linux_sandbox.cc",
-      "linux_sandbox.h",
-    ]
-
-    deps += [
-      "//sandbox/linux:sandbox",
-      "//sandbox/linux:sandbox_services",
-      "//sandbox/linux:seccomp_bpf",
-    ]
-  }
-
-  if (is_mac) {
-    sources += [
-      "mach_broker.cc",
-      "mach_broker.h",
-    ]
-  }
-}
-
 source_set("lib") {
   sources = [
-    "child_process.cc",
-    "child_process.h",
     "child_process_host.cc",
     "child_process_host.h",
-    "in_process_native_runner.cc",
-    "in_process_native_runner.h",
     "out_of_process_native_runner.cc",
     "out_of_process_native_runner.h",
   ]
 
   deps = [
-    ":child_process_base",
-    ":native_library_runner",
     "//base:base_static",
     "//base:i18n",
     "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp/standalone_service",
     "//services/service_manager/runner:init",
     "//services/service_manager/runner/common",
   ]
@@ -111,7 +50,6 @@ test("mojo_runner_host_unittests") {
   sources = [
     "child_process_host_unittest.cc",
     "host_unittests.cc",
-    "in_process_native_runner_unittest.cc",
   ]
 
   deps = [
@@ -124,4 +62,28 @@ test("mojo_runner_host_unittests") {
     "//services/service_manager/runner/common",
     "//testing/gtest",
   ]
+
+  data_deps = [
+    ":host_test_service",
+  ]
+}
+
+service("host_test_service") {
+  sources = [
+    "host_test_service_main.cc",
+  ]
+
+  deps = [
+    "//mojo/public/cpp/system",
+    "//services/service_manager/public/cpp/standalone_service:main",
+  ]
+
+  data_deps = [
+    ":host_test_service_manifest",
+  ]
+}
+
+service_manifest("host_test_service_manifest") {
+  name = "host_test_service"
+  source = "host_test_service_manifest.json"
 }

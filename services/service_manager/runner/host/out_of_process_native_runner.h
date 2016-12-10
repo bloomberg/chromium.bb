@@ -24,17 +24,17 @@ namespace service_manager {
 class ChildProcessHost;
 class NativeRunnerDelegate;
 
-// An implementation of |NativeRunner| that loads/runs the given app (from the
-// file system) in a separate process (of its own).
+// An implementation of |NativeRunner| that runs a given service executable
+// in a separate, dedicated process.
 class OutOfProcessNativeRunner : public NativeRunner {
  public:
-  OutOfProcessNativeRunner(base::TaskRunner* launch_process_runner,
+  OutOfProcessNativeRunner(const base::FilePath& service_path,
+                           base::TaskRunner* launch_process_runner,
                            NativeRunnerDelegate* delegate);
   ~OutOfProcessNativeRunner() override;
 
   // NativeRunner:
   mojom::ServicePtr Start(
-      const base::FilePath& app_path,
       const Identity& identity,
       bool start_sandboxed,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
@@ -46,7 +46,7 @@ class OutOfProcessNativeRunner : public NativeRunner {
   base::TaskRunner* const launch_process_runner_;
   NativeRunnerDelegate* delegate_;
 
-  base::FilePath app_path_;
+  const base::FilePath service_path_;
   base::Closure app_completed_callback_;
 
   std::unique_ptr<ChildProcessHost> child_process_host_;
@@ -60,7 +60,8 @@ class OutOfProcessNativeRunnerFactory : public NativeRunnerFactory {
                                   NativeRunnerDelegate* delegate);
   ~OutOfProcessNativeRunnerFactory() override;
 
-  std::unique_ptr<NativeRunner> Create(const base::FilePath& app_path) override;
+  std::unique_ptr<NativeRunner> Create(
+      const base::FilePath& service_path) override;
 
  private:
   base::TaskRunner* const launch_process_runner_;

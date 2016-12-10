@@ -25,22 +25,21 @@ class NativeRunner {
  public:
   virtual ~NativeRunner() {}
 
-  // Loads the app in the file at |app_path| and runs it on some other
+  // Loads the app in the file at |service_path| and runs it on some other
   // thread/process. Returns a Service handle the service manager can use to
   // connect to the the app.
   virtual mojom::ServicePtr Start(
-      const base::FilePath& app_path,
       const Identity& target,
       bool start_sandboxed,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
-      const base::Closure& app_completed_callback) = 0;
+      const base::Closure& service_completed_callback) = 0;
 };
 
 class NativeRunnerFactory {
  public:
   virtual ~NativeRunnerFactory() {}
   virtual std::unique_ptr<NativeRunner> Create(
-      const base::FilePath& app_path) = 0;
+      const base::FilePath& service_path) = 0;
 };
 
 }  // namespace service_manager
