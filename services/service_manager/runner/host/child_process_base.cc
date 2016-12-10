@@ -1,33 +1,35 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
+#include "services/service_manager/runner/host/child_process_base.h"
 
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
 
 #if defined(OS_LINUX)
 #include "base/rand_util.h"
 #include "base/sys_info.h"
-#include "services/service_manager/public/cpp/standalone_service/linux_sandbox.h"
+#include "services/service_manager/runner/host/linux_sandbox.h"
 #endif
 
 #if defined(OS_MACOSX)
-#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
+#include "services/service_manager/runner/host/mach_broker.h"
 #endif
 
 namespace service_manager {
+
 namespace {
 
 #if defined(OS_LINUX)
@@ -63,10 +65,16 @@ class ScopedAppContext : public mojo::edk::ProcessDelegate {
         wait_for_shutdown_event_(
             base::WaitableEvent::ResetPolicy::MANUAL,
             base::WaitableEvent::InitialState::NOT_SIGNALED) {
+    // Initialize Mojo before starting any threads.
     mojo::edk::Init();
-    DCHECK(io_thread_.StartWithOptions(
-              base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
-    mojo::edk::InitIPCSupport(this, io_thread_.task_runner());
+
+    // Create and start our I/O thread.
+    base::Thread::Options io_thread_options(base::MessageLoop::TYPE_IO, 0);
+    CHECK(io_thread_.StartWithOptions(io_thread_options));
+    io_runner_ = io_thread_.task_runner().get();
+    CHECK(io_runner_.get());
+
+    mojo::edk::InitIPCSupport(this, io_runner_);
     mojo::edk::SetParentPipeHandleFromCommandLine();
   }
 
@@ -82,6 +90,7 @@ class ScopedAppContext : public mojo::edk::ProcessDelegate {
   }
 
   base::Thread io_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
   // Used to unblock the main thread on shutdown.
   base::WaitableEvent wait_for_shutdown_event_;
@@ -91,7 +100,7 @@ class ScopedAppContext : public mojo::edk::ProcessDelegate {
 
 }  // namespace
 
-void RunStandaloneService(const StandaloneServiceCallback& callback) {
+void ChildProcessMainWithCallback(const RunCallback& callback) {
   DCHECK(!base::MessageLoop::current());
 
 #if defined(OS_MACOSX)

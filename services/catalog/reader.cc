@@ -34,7 +34,7 @@ base::FilePath GetManifestPath(const base::FilePath& package_dir,
 
 base::FilePath GetExecutablePath(const base::FilePath& package_dir,
                                  const std::string& name) {
-  return package_dir.AppendASCII(name + "/" + name + ".service");
+  return package_dir.AppendASCII(name + "/" + name + ".library");
 }
 
 std::unique_ptr<Entry> ProcessManifest(

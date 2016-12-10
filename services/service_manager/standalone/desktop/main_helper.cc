@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/runner/common/switches.h"
+#include "services/service_manager/runner/host/child_process.h"
 #include "services/service_manager/runner/init.h"
 #include "services/service_manager/standalone/desktop/launcher_process.h"
 
@@ -28,6 +29,8 @@ namespace service_manager {
 
 int StandaloneServiceManagerMain(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   base::AtExitManager at_exit;
   InitializeLogging();
@@ -36,6 +39,9 @@ int StandaloneServiceManagerMain(int argc, char** argv) {
 #if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
   base::RouteStdioToConsole(false);
 #endif
+
+  if (command_line.HasSwitch(switches::kChildProcess))
+    return ChildProcessMain();
 
   return LauncherProcessMain();
 }

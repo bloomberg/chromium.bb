@@ -97,20 +97,22 @@ class PackagedApp
   DISALLOW_COPY_AND_ASSIGN(PackagedApp);
 };
 
-class Package : public service_manager::ForwardingService,
+class Package : public service_manager::Service,
                 public service_manager::InterfaceFactory<
                     service_manager::mojom::ServiceFactory>,
                 public service_manager::mojom::ServiceFactory {
  public:
-  Package() : ForwardingService(&app_client_) {}
+  Package() {}
   ~Package() override {}
 
  private:
-  // ForwardingService:
+  // service_manager::Service:
+  void OnStart() override { app_client_.OnStart(); }
+
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
-    return ForwardingService::OnConnect(remote_info, registry);
+    return app_client_.OnConnect(remote_info, registry);
   }
 
   // service_manager::InterfaceFactory<service_manager::mojom::ServiceFactory>:

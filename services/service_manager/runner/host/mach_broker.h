@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_MACH_BROKER_H_
-#define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_MACH_BROKER_H_
+#ifndef SERVICES_SERVICE_MANAGER_RUNNER_HOST_MACH_BROKER_H_
+#define SERVICES_SERVICE_MANAGER_RUNNER_HOST_MACH_BROKER_H_
 
 #include "base/mac/mach_port_broker.h"
 
@@ -50,4 +50,4 @@ class MachBroker {
 
 }  // namespace service_manager
 
-#endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_MACH_BROKER_H_
+#endif  // SERVICES_SERVICE_MANAGER_RUNNER_HOST_MACH_BROKER_H_

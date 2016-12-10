@@ -13,5 +13,8 @@ const char kEnableTracing[] = "enable-service-manager-tracing";
 // Disables the sandbox for debugging.
 const char kNoSandbox[] = "no-sandbox";
 
+// Load apps in a single processes.
+const char kSingleProcess[] = "single-process";
+
 }  // namespace switches
 }  // namespace service_manager

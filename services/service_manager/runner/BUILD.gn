@@ -5,6 +5,7 @@
 group("runner") {
   testonly = true
   deps = [
+    "//services/service_manager/runner/child",
     "//services/service_manager/runner/host",
   ]
 }

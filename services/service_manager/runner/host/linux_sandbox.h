@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_LINUX_SANDBOX_H_
-#define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_LINUX_SANDBOX_H_
+#ifndef SERVICES_SERVICE_MANAGER_RUNNER_HOST_LINUX_SANDBOX_H_
+#define SERVICES_SERVICE_MANAGER_RUNNER_HOST_LINUX_SANDBOX_H_
 
 #include <memory>
 
@@ -15,8 +15,7 @@
 
 namespace service_manager {
 
-// Encapsulates all tasks related to raising the sandbox for a standalone
-// service.
+// Encapsulates all tasks related to raising the sandbox for mojo runner.
 class LinuxSandbox {
  public:
   explicit LinuxSandbox(
@@ -49,4 +48,4 @@ class LinuxSandbox {
 
 }  // namespace service_manager
 
-#endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_LINUX_SANDBOX_H_
+#endif  // SERVICES_SERVICE_MANAGER_RUNNER_HOST_LINUX_SANDBOX_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
+#include "services/service_manager/runner/host/mach_broker.h"
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
