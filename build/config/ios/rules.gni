@@ -795,7 +795,7 @@ set_defaults("ios_appex_bundle") {
 #       string, path of the xib or storyboard to compile.
 #
 # Forwards all variables to the bundle_data target.
-template("bundle_data_xib") {
+template("bundle_data_ib_file") {
   assert(defined(invoker.source), "source needs to be defined for $target_name")
 
   _source_extension = get_path_info(invoker.source, "extension")
@@ -803,12 +803,19 @@ template("bundle_data_xib") {
          "source must be a .xib or .storyboard for $target_name")
 
   _target_name = target_name
-  _compile_xib = target_name + "_compile_xib"
+  if (_source_extension == "xib") {
+    _compile_ib_file = target_name + "_compile_xib"
+    _output_extension = "nib"
+  } else {
+    _compile_ib_file = target_name + "_compile_storyboard"
+    _output_extension = "storyboardc"
+  }
 
-  compile_xibs(_compile_xib) {
+  compile_ib_files(_compile_ib_file) {
     sources = [
       invoker.source,
     ]
+    output_extension = _output_extension
     visibility = [ ":$_target_name" ]
     ibtool_flags = [
       "--minimum-deployment-target",
@@ -827,9 +834,9 @@ template("bundle_data_xib") {
     if (!defined(public_deps)) {
       public_deps = []
     }
-    public_deps += [ ":$_compile_xib" ]
+    public_deps += [ ":$_compile_ib_file" ]
 
-    sources = get_target_outputs(":$_compile_xib")
+    sources = get_target_outputs(":$_compile_ib_file")
 
     outputs = [
       "{{bundle_resources_dir}}/{{source_file_part}}",

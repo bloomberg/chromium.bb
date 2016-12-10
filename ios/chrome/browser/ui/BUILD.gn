@@ -77,7 +77,7 @@ source_set("unit_tests") {
   ]
 }
 
-bundle_data_xib("native_content_controller_test_xib") {
+bundle_data_ib_file("native_content_controller_test_xib") {
   visibility = [ ":unit_tests" ]
   testonly = true
   source = "native_content_controller_test.xib"
