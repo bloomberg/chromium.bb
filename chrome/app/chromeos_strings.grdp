@@ -1752,6 +1752,15 @@ Press any key to continue exploring.
   <message name="IDS_OOBE_OTHER_KEYBOARD_LAYOUTS" desc="Option group name dividing vendor-configured keyboard layouts from other available layouts in out-of-box 'Select your keyboard' select control.">
     Other keyboards
   </message>
+  <message name="IDS_TIMEZONE_BUTTON_TEXT" desc="Label on a button that opens timezone selection screen" meaning="Label on a button that opens timezone selection screen during initial device configuration">
+    Timezone
+  </message>
+  <message name="IDS_TIMEZONE_SECTION_TITLE" desc="Title of timezone selection screen" meaning="A title of the dialog where user should select device timezone during initial device configuration">
+    Select timezone
+  </message>
+  <message name="IDS_TIMEZONE_DROPDOWN_TITLE" desc="Title of timezone selection dropdown menu" meaning="Small title near timezone dropdown menu suggesting that this is a timezone selector.">
+    Timezone
+  </message>
   <message name="IDS_OOBE_EULA_SECTION_TITLE" desc="Title of Terms of Service screen">
     Google Chrome OS Terms
   </message>

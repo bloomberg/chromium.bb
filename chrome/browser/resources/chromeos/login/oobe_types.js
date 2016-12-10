@@ -48,3 +48,19 @@ OobeTypes.A11yStatuses;
  * @typedef {!Object}
  */
 OobeTypes.Screen;
+
+/**
+ * Timezone ID.
+ * @typedef {!String}
+ */
+OobeTypes.Timezone;
+
+/**
+ * ChromeOS timezone descriptor.
+ * @typedef {{
+ *   value: (OobeTypes.Timezone|undefined),
+ *   title: (String|undefined),
+ *   selected: (Boolean|undefined),
+ * }}
+ */
+OobeTypes.TimezoneDsc;

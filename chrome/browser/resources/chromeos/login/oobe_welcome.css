@@ -36,7 +36,27 @@
   padding: 0 24px;
 }
 
-/************* Accessibility Screen **************/
+/************* Network Selection Screen **************/
 #networkSelectionScreen .bottom-buttons {
   padding: 0 6px; /* = 8px - 2px back button border */
+}
+
+/************* Timezone Screen **************/
+#timezoneScreen .timezone-selection-entry {
+  border-top: 1px solid lightgrey;
+  height: 44px;
+  padding: 0 20px;
+}
+
+#timezoneScreen .timezone-selection-entry:last-of-type {
+  border-bottom: 1px solid lightgrey;
+}
+
+#timezoneScreen .timezone-selection-title {
+  color: rgba(0, 0, 0, 0.87);
+  font: 13px Roboto, sans-serif;
+}
+
+#timezoneScreen .bottom-buttons {
+  padding: 0 24px;
 }

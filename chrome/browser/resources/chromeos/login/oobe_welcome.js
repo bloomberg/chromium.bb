@@ -59,6 +59,14 @@ Polymer({
     },
 
     /**
+     * Flag that shows Timezone Selection screen.
+     */
+    timezoneScreenShown: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Flag that shows Network Selection screen.
      */
     networkSelectionScreenShown: {
@@ -81,6 +89,23 @@ Polymer({
     a11yStatus: {
       type: Object,
     },
+
+    /**
+     * A list of timezones for Timezone Selection screen.
+     * @type {!Array<OobeTypes.TimezoneDsc>}
+     */
+    timezones: {
+      type: Object,
+      value: [],
+    },
+
+    /**
+     * If UI uses forced keyboard navigation.
+     */
+    highlightStrength: {
+      type: String,
+      value: '',
+    },
   },
 
   /**
@@ -91,6 +116,7 @@ Polymer({
     this.networkSelectionScreenShown = false;
     this.languageSelectionScreenShown = false;
     this.accessibilityOptionsScreenShown = false;
+    this.timezoneScreenShown = false;
   },
 
   /**
@@ -146,6 +172,14 @@ Polymer({
   },
 
   /**
+   * Returns true if timezone button should be visible.
+   * @private
+   */
+  isTimezoneButtonVisible_: function(highlightStrength) {
+    return highlightStrength === 'strong';
+  },
+
+  /**
    * Handle "Next" button for "Welcome" screen.
    *
    * @private
@@ -173,6 +207,16 @@ Polymer({
   onWelcomeAccessibilityButtonClicked_: function() {
     this.hideAllScreens_();
     this.accessibilityOptionsScreenShown = true;
+  },
+
+  /**
+   * Handle "Timezone" button for "Welcome" screen.
+   *
+   * @private
+   */
+  onWelcomeTimezoneButtonClicked_: function() {
+    this.hideAllScreens_();
+    this.timezoneScreenShown = true;
   },
 
   /**
@@ -344,5 +388,31 @@ Polymer({
   onA11yOptionChanged_: function(event) {
     chrome.send(
         event.currentTarget.chromeMessage, [event.currentTarget.checked]);
+  },
+
+  /** ******************** Timezone section ******************* */
+
+  /**
+   * Handle "OK" button for "Timezone Selection" screen.
+   *
+   * @private
+   */
+  closeTimezoneSection_: function() {
+    this.hideAllScreens_();
+    this.welcomeScreenShown = true;
+  },
+
+  /**
+   * Handle timezone selection.
+   *
+   * @param {!{detail: {!OobeTypes.Timezone}}} event
+   * @private
+   */
+  onTimezoneSelected_: function(event) {
+    var item = event.detail;
+    if (!item)
+      return;
+
+    this.screen.onTimezoneSelected_(item.value);
   },
 });

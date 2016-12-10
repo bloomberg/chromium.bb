@@ -12,6 +12,13 @@ Polymer({
       type: String,
       value: '',
     },
+    /**
+     * Controls visibility of "Timezone" button.
+     */
+    timezoneButtonVisible: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   onLanguageClicked_: function() {
@@ -20,6 +27,10 @@ Polymer({
 
   onAccessibilityClicked_: function() {
     this.fire('accessibility-button-clicked');
+  },
+
+  onTimezoneClicked_: function() {
+    this.fire('timezone-button-clicked');
   },
 
   onNextClicked_: function() {

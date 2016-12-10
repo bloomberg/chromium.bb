@@ -47,6 +47,12 @@ login.createScreen('NetworkScreen', 'connect', function() {
 
       var inputMethodsList = loadTimeData.getValue('inputMethodsList');
       welcomeScreen.keyboards = inputMethodsList;
+
+      var timezoneList = loadTimeData.getValue('timezoneList');
+      welcomeScreen.timezones = timezoneList;
+
+      welcomeScreen.highlightStrength =
+          loadTimeData.getValue('highlightStrength');
       // -------------------------
 
       this.dropdown_ = $('networks-list');
@@ -183,6 +189,12 @@ login.createScreen('NetworkScreen', 'connect', function() {
 
         welcomeScreen.keyboards = loadTimeData.getValue('inputMethodsList');
         welcomeScreen.enabled = true;
+
+        var timezoneList = loadTimeData.getValue('timezoneList');
+        welcomeScreen.timezones = timezoneList;
+
+        welcomeScreen.highlightStrength =
+            loadTimeData.getValue('highlightStrength');
       }
     },
   };

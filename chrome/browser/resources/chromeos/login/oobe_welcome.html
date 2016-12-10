@@ -40,6 +40,17 @@
     </defs>
   </svg>
 </iron-iconset-svg>
+<iron-iconset-svg name="oobe-welcome-64" size="64">
+  <svg>
+    <defs>
+      <g id="timezone" fill="none" fill-rule="evenodd">
+        <path d="M0 0h64v64H0"></path>
+        <path d="M31.987 5.333C17.253 5.333 5.333 17.267 5.333 32c0 14.733 11.92 26.667 26.654 26.667 14.733 0 26.68-11.934 26.68-26.667 0-14.733-11.947-26.667-26.68-26.667zm.013 48c-11.787 0-21.333-9.546-21.333-21.333 0-11.787 9.546-21.333 21.333-21.333 11.787 0 21.333 9.546 21.333 21.333 0 11.787-9.546 21.333-21.333 21.333z" fill="#5A5A5A"></path>
+        <path fill="#5A5A5A" d="M33.333 18.667h-4v16l13.987 8.4 2.013-3.28-12-7.12"></path>
+      </g>
+    </defs>
+  </svg>
+</iron-iconset-svg>
 
 <dom-module name="oobe-welcome-md">
   <template>
@@ -50,7 +61,10 @@
         current-language="[[currentLanguage]]"
         on-language-button-clicked="onWelcomeSelectLanguageButtonClicked_"
         on-accessibility-button-clicked="onWelcomeAccessibilityButtonClicked_"
-        on-next-button-clicked="onWelcomeNextButtonClicked_">
+        on-timezone-button-clicked="onWelcomeTimezoneButtonClicked_"
+        on-next-button-clicked="onWelcomeNextButtonClicked_"
+        timezone-button-visible="[[isTimezoneButtonVisible_(highlightStrength)]]"
+        >
     </oobe-welcome-dialog>
     <oobe-dialog id="languageScreen" hidden="[[!languageSelectionScreenShown]]"
        has-buttons>
@@ -144,6 +158,29 @@
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
         <oobe-text-button inverse on-tap="closeAccessibilitySection_">
+          <div i18n-content="oobeOKButtonText"></div>
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+    <oobe-dialog id="timezoneScreen" hidden="[[!timezoneScreenShown]]"
+       has-buttons>
+      <iron-icon icon="oobe-welcome-64:timezone" class="oobe-icon"></iron-icon>
+      <div class="header">
+        <h1 class="title" i18n-content="timezoneSectionTitle"></h1>
+      </div>
+      <div class="footer layout vertical">
+        <div class="flex layout horizontal justified timezone-selection-entry">
+          <div class="timezone-selection-title layout vertical center-justified"
+              i18n-content="timezoneDropdownTitle">
+          </div>
+          <oobe-i18n-dropdown id="timezoneSelect" items="[[timezones]]"
+              on-select-item="onTimezoneSelected_"
+              label="$i18n{timezoneDropdownTitle}">
+          </oobe-i18n-dropdown>
+        </div>
+      </div>
+      <div class="bottom-buttons layout horizontal end-justified">
+        <oobe-text-button inverse on-tap="closeTimezoneSection_">
           <div i18n-content="oobeOKButtonText"></div>
         </oobe-text-button>
       </div>
