@@ -35,6 +35,8 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/os_crypt/os_crypt_mocker.h"
+#include "components/sync/protocol/entity_metadata.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2014,6 +2016,92 @@ TEST_F(AutofillTableTest, GetFormValuesForElementName_SubstringMatchEnabled) {
     changes.clear();
     table_->RemoveFormElementsAddedBetween(t1, Time(), &changes);
   }
+}
+
+TEST_F(AutofillTableTest, GetAllSyncMetadata) {
+  sync_pb::EntityMetadata metadata;
+  std::string storage_key = "storage_key";
+  std::string storage_key2 = "storage_key2";
+  metadata.set_sequence_number(1);
+
+  EXPECT_TRUE(
+      table_->UpdateSyncMetadata(syncer::AUTOFILL, storage_key, metadata));
+
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.set_initial_sync_done(true);
+
+  EXPECT_TRUE(table_->UpdateModelTypeState(syncer::AUTOFILL, model_type_state));
+
+  metadata.set_sequence_number(2);
+  EXPECT_TRUE(
+      table_->UpdateSyncMetadata(syncer::AUTOFILL, storage_key2, metadata));
+
+  syncer::MetadataBatch metadata_batch;
+  EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+
+  EXPECT_TRUE(metadata_batch.GetModelTypeState().initial_sync_done());
+
+  syncer::EntityMetadataMap metadata_records = metadata_batch.TakeAllMetadata();
+
+  EXPECT_EQ(metadata_records.size(), 2u);
+  EXPECT_EQ(metadata_records[storage_key].sequence_number(), 1);
+  EXPECT_EQ(metadata_records[storage_key2].sequence_number(), 2);
+
+  // Now check that a model type state update replaces the old value
+  model_type_state.set_initial_sync_done(false);
+  EXPECT_TRUE(table_->UpdateModelTypeState(syncer::AUTOFILL, model_type_state));
+
+  EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+  EXPECT_FALSE(metadata_batch.GetModelTypeState().initial_sync_done());
+}
+
+TEST_F(AutofillTableTest, WriteThenDeleteSyncMetadata) {
+  sync_pb::EntityMetadata metadata;
+  syncer::MetadataBatch metadata_batch;
+  std::string storage_key = "storage_key";
+  sync_pb::ModelTypeState model_type_state;
+
+  model_type_state.set_initial_sync_done(true);
+
+  metadata.set_client_tag_hash("client_hash");
+
+  // Write the data into the store.
+  EXPECT_TRUE(
+      table_->UpdateSyncMetadata(syncer::AUTOFILL, storage_key, metadata));
+  EXPECT_TRUE(table_->UpdateModelTypeState(syncer::AUTOFILL, model_type_state));
+  // Delete the data we just wrote.
+  EXPECT_TRUE(table_->ClearSyncMetadata(syncer::AUTOFILL, storage_key));
+  // It shouldn't be there any more.
+  EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+
+  syncer::EntityMetadataMap metadata_records = metadata_batch.TakeAllMetadata();
+  EXPECT_EQ(metadata_records.size(), 0u);
+
+  // Now delete the model type state.
+  EXPECT_TRUE(table_->ClearModelTypeState(syncer::AUTOFILL));
+  EXPECT_FALSE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+}
+
+TEST_F(AutofillTableTest, CorruptSyncMetadata) {
+  syncer::MetadataBatch metadata_batch;
+  sync_pb::ModelTypeState state;
+  std::string storage_key = "storage_key";
+
+  sql::Statement s(db_->GetSQLConnection()->GetUniqueStatement(
+      "INSERT OR REPLACE INTO autofill_sync_metadata "
+      "(storage_key, value) VALUES(?, ?)"));
+  s.BindString(0, storage_key);
+  s.BindString(1, "unparseable");
+
+  sql::Statement s2(db_->GetSQLConnection()->GetUniqueStatement(
+      "INSERT OR REPLACE INTO autofill_model_type_state "
+      "(rowid, value) VALUES(1, ?)"));
+  s2.BindString(0, "unparseable");
+
+  EXPECT_TRUE(s.Run());
+  EXPECT_TRUE(s2.Run());
+
+  EXPECT_FALSE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
 }
 
 }  // namespace autofill

@@ -35,6 +35,10 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/os_crypt/os_crypt.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/model/metadata_batch.h"
+#include "components/sync/protocol/entity_metadata.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -416,7 +420,8 @@ bool AutofillTable::CreateTablesIfNecessary() {
           InitProfilePhonesTable() && InitProfileTrashTable() &&
           InitMaskedCreditCardsTable() && InitUnmaskedCreditCardsTable() &&
           InitServerCardMetadataTable() && InitServerAddressesTable() &&
-          InitServerAddressMetadataTable());
+          InitServerAddressMetadataTable() && InitAutofillSyncMetadataTable() &&
+          InitModelTypeStateTable());
 }
 
 bool AutofillTable::IsSyncable() {
@@ -463,6 +468,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 67:
       *update_compatible_version = false;
       return MigrateToVersion67AddMaskedCardBillingAddress();
+    case 70:
+      *update_compatible_version = false;
+      return MigrateToVersion70AddSyncMetadata();
   }
   return true;
 }
@@ -1680,6 +1688,122 @@ bool AutofillTable::IsAutofillGUIDInTrash(const std::string& guid) {
   return s.Step();
 }
 
+bool AutofillTable::GetAllSyncMetadata(syncer::ModelType model_type,
+                                       syncer::MetadataBatch* metadata_batch) {
+  DCHECK_EQ(model_type, syncer::AUTOFILL)
+      << "Only the AUTOFILL model type is supported";
+  syncer::EntityMetadataMap metadata_records;
+  if (GetAllSyncEntityMetadata(model_type, &metadata_records)) {
+    for (const auto& pair : metadata_records) {
+      // todo(pnoland): add batch transfer of metadata map
+      metadata_batch->AddMetadata(pair.first, pair.second);
+    }
+  } else {
+    return false;
+  }
+
+  sync_pb::ModelTypeState model_type_state;
+  if (GetModelTypeState(model_type, &model_type_state)) {
+    metadata_batch->SetModelTypeState(model_type_state);
+  } else {
+    return false;
+  }
+
+  return true;
+}
+
+bool AutofillTable::GetAllSyncEntityMetadata(
+    syncer::ModelType model_type,
+    syncer::EntityMetadataMap* metadata_records) {
+  DCHECK_EQ(model_type, syncer::AUTOFILL)
+      << "Only the AUTOFILL model type is supported";
+
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT storage_key, value FROM autofill_sync_metadata"));
+
+  while (s.Step()) {
+    std::string storage_key = s.ColumnString(0);
+    std::string serialized_metadata = s.ColumnString(1);
+    sync_pb::EntityMetadata metadata_record;
+    if (metadata_record.ParseFromString(serialized_metadata)) {
+      metadata_records->insert(std::make_pair(storage_key, metadata_record));
+    } else {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AutofillTable::UpdateSyncMetadata(
+    syncer::ModelType model_type,
+    const std::string& storage_key,
+    const sync_pb::EntityMetadata& metadata) {
+  DCHECK_EQ(model_type, syncer::AUTOFILL)
+      << "Only the AUTOFILL model type is supported";
+
+  sql::Statement s(
+      db_->GetUniqueStatement("INSERT OR REPLACE INTO autofill_sync_metadata "
+                              "(storage_key, value) VALUES(?, ?)"));
+  s.BindString(0, storage_key);
+  s.BindString(1, metadata.SerializeAsString());
+
+  return s.Run();
+}
+
+bool AutofillTable::ClearSyncMetadata(syncer::ModelType model_type,
+                                      const std::string& storage_key) {
+  DCHECK_EQ(model_type, syncer::AUTOFILL)
+      << "Only the AUTOFILL model type is supported";
+
+  sql::Statement s(db_->GetUniqueStatement(
+      "DELETE FROM autofill_sync_metadata WHERE storage_key=?"));
+  s.BindString(0, storage_key);
+
+  return s.Run();
+}
+
+bool AutofillTable::GetModelTypeState(syncer::ModelType model_type,
+                                      sync_pb::ModelTypeState* state) {
+  DCHECK_EQ(model_type, syncer::AUTOFILL)
+      << "Only the AUTOFILL model type is supported";
+
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT value FROM autofill_model_type_state WHERE id=1"));
+
+  if (!s.Step()) {
+    return false;
+  }
+
+  std::string serialized_state = s.ColumnString(0);
+  return state->ParseFromString(serialized_state);
+}
+
+bool AutofillTable::UpdateModelTypeState(
+    syncer::ModelType model_type,
+    const sync_pb::ModelTypeState& model_type_state) {
+  DCHECK_EQ(model_type, syncer::AUTOFILL)
+      << "Only the AUTOFILL model type is supported";
+
+  // Hardcode the id to force a collision, ensuring that there remains only a
+  // single entry.
+  sql::Statement s(db_->GetUniqueStatement(
+      "INSERT OR REPLACE INTO autofill_model_type_state (id, value) "
+      "VALUES(1,?)"));
+  s.BindString(0, model_type_state.SerializeAsString());
+
+  return s.Run();
+}
+
+bool AutofillTable::ClearModelTypeState(syncer::ModelType model_type) {
+  DCHECK_EQ(model_type, syncer::AUTOFILL)
+      << "Only the AUTOFILL model type is supported";
+
+  sql::Statement s(db_->GetUniqueStatement(
+      "DELETE FROM autofill_model_type_state WHERE id=1"));
+
+  return s.Run();
+}
+
 bool AutofillTable::InitMainTable() {
   if (!db_->DoesTableExist("autofill")) {
     if (!db_->Execute("CREATE TABLE autofill ("
@@ -1872,6 +1996,29 @@ bool AutofillTable::InitServerAddressMetadataTable() {
                       "id VARCHAR NOT NULL,"
                       "use_count INTEGER NOT NULL DEFAULT 0, "
                       "use_date INTEGER NOT NULL DEFAULT 0)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AutofillTable::InitAutofillSyncMetadataTable() {
+  if (!db_->DoesTableExist("autofill_sync_metadata")) {
+    if (!db_->Execute("CREATE TABLE autofill_sync_metadata ("
+                      "storage_key VARCHAR PRIMARY KEY NOT NULL,"
+                      "value BLOB)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AutofillTable::InitModelTypeStateTable() {
+  if (!db_->DoesTableExist("autofill_model_type_state")) {
+    if (!db_->Execute("CREATE TABLE autofill_model_type_state (id INTEGER "
+                      "PRIMARY KEY, value BLOB)")) {
       NOTREACHED();
       return false;
     }
@@ -2313,6 +2460,17 @@ bool AutofillTable::MigrateToVersion67AddMaskedCardBillingAddress() {
   // returns an empty string for that.
   return db_->Execute(
       "ALTER TABLE masked_credit_cards ADD COLUMN billing_address_id VARCHAR");
+}
+
+bool AutofillTable::MigrateToVersion70AddSyncMetadata() {
+  if (!db_->Execute("CREATE TABLE autofill_sync_metadata ("
+                    "storage_key VARCHAR PRIMARY KEY NOT NULL,"
+                    "value BLOB)")) {
+    return false;
+  }
+  return db_->Execute(
+      "CREATE TABLE autofill_model_type_state (id INTEGER PRIMARY KEY, value "
+      "BLOB)");
 }
 
 }  // namespace autofill

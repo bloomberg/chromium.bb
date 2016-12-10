@@ -13,12 +13,19 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/model/metadata_batch.h"
 #include "components/webdata/common/web_database_table.h"
 
 class WebDatabase;
 
 namespace base {
 class Time;
+}
+
+namespace sync_pb {
+class EntityMetadata;
+class ModelTypeState;
 }
 
 namespace autofill {
@@ -228,6 +235,18 @@ struct FormFieldData;
 //                      a form.
 //   use_date           The date this address was last used to fill a form,
 //                      in internal t.
+// autofill_sync_metadata
+//                      Sync-specific metadata for autofill records.
+//
+//   storage_key        A string that uniquely identifies the metadata record
+//                      as well as the corresponding autofill record.
+//   value              The serialized EntityMetadata record.
+//
+// autofill_model_type_state
+//                      Single row table that contains the sync ModelTypeState
+//                      for the autofill model type.
+//
+//   value              The serialized ModelTypeState record.
 
 class AutofillTable : public WebDatabaseTable {
  public:
@@ -403,6 +422,28 @@ class AutofillTable : public WebDatabaseTable {
   // Clear all profiles.
   bool ClearAutofillProfiles();
 
+  // Read all the stored metadata for |model_type| and fill |metadata_batch|
+  // with it.
+  bool GetAllSyncMetadata(syncer::ModelType model_type,
+                          syncer::MetadataBatch* metadata_batch);
+
+  // Update the metadata row for |model_type|, keyed by |storage_key|, to
+  // contain the contents of |metadata|.
+  bool UpdateSyncMetadata(syncer::ModelType model_type,
+                          const std::string& storage_key,
+                          const sync_pb::EntityMetadata& metadata);
+
+  // Remove the metadata row of type |model_type| keyed by |storage|key|.
+  bool ClearSyncMetadata(syncer::ModelType model_type,
+                         const std::string& storage_key);
+
+  // Update the stored sync state for the |model_type|.
+  bool UpdateModelTypeState(syncer::ModelType model_type,
+                            const sync_pb::ModelTypeState& model_type_state);
+
+  // Clear the stored sync state for |model_type|.
+  bool ClearModelTypeState(syncer::ModelType model_type);
+
   // Table migration functions. NB: These do not and should not rely on other
   // functions in this class. The implementation of a function such as
   // GetCreditCard may change over time, but MigrateToVersionXX should never
@@ -419,6 +460,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion65AddServerMetadataTables();
   bool MigrateToVersion66AddCardBillingAddress();
   bool MigrateToVersion67AddMaskedCardBillingAddress();
+  bool MigrateToVersion70AddSyncMetadata();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
@@ -474,6 +516,12 @@ class AutofillTable : public WebDatabaseTable {
                              std::vector<AutofillChange>* changes,
                              base::Time time);
 
+  bool GetAllSyncEntityMetadata(syncer::ModelType model_type,
+                                syncer::EntityMetadataMap* metadata_records);
+
+  bool GetModelTypeState(syncer::ModelType model_type,
+                         sync_pb::ModelTypeState* state);
+
   // Insert a single AutofillEntry into the autofill table.
   bool InsertAutofillEntry(const AutofillEntry& entry);
 
@@ -496,6 +544,8 @@ class AutofillTable : public WebDatabaseTable {
   bool InitServerCardMetadataTable();
   bool InitServerAddressesTable();
   bool InitServerAddressMetadataTable();
+  bool InitAutofillSyncMetadataTable();
+  bool InitModelTypeStateTable();
 
   DISALLOW_COPY_AND_ASSIGN(AutofillTable);
 };
