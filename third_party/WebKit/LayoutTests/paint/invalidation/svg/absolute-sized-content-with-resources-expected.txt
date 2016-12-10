@@ -19,7 +19,7 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [42, 117, 334, 268],
-          "reason": "bounds change"
+          "reason": "SVG resource change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -54,7 +54,7 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [17, 217, 84, 68],
-          "reason": "bounds change"
+          "reason": "SVG resource change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -109,7 +109,7 @@
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "SVG resource change"
     }
   ]
 }

@@ -28,6 +28,7 @@
 namespace blink {
 
 class SVGElement;
+enum class SVGTransformChange;
 
 class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
  public:
@@ -156,7 +157,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   void descendantIsolationRequirementsChanged(DescendantIsolationState) final;
 
   void updateCachedBoundaries();
-  void buildLocalToBorderBoxTransform();
+  SVGTransformChange buildLocalToBorderBoxTransform();
 
   PositionWithAffinity positionForPoint(const LayoutPoint&) final;
 
