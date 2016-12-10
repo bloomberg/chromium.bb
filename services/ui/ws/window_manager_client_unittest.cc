@@ -730,6 +730,7 @@ TEST_F(WindowServerTest, OnWindowHierarchyChangedIncludesTransientParent) {
   aura::WindowTreeClient second_client(connector(), this);
   second_client.ConnectViaWindowTreeFactory();
   aura::WindowTreeHostMus window_tree_host_in_second_client(&second_client);
+  window_tree_host_in_second_client.InitHost();
   aura::Window* second_client_child = NewVisibleWindow(
       window_tree_host_in_second_client.window(), &second_client);
   std::unique_ptr<aura::WindowPortMus> window_port_mus =
