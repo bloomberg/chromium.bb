@@ -11,9 +11,11 @@ Before interstitial is shown:
         </STYLE>
         <DIV class=tree-outline-disclosure >
             <OL class=tree-outline tabindex=0 >
-                <LI class=security-main-view-sidebar-tree-item selected >
+                <LI class=security-main-view-sidebar-tree-item selected force-white-icons >
                     <DIV class=selection fill >
                     </DIV>
+                    <SPAN class=tree-element-title >
+                    </SPAN>
                     <DIV class=icon lock-icon lock-icon-unknown >
                     </DIV>
                     <SPAN class=title >
@@ -60,6 +62,8 @@ Secure Origins
                     <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
+                        <SPAN class=tree-element-title >
+                        </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
                         <SPAN class=title >
@@ -71,6 +75,8 @@ https://foo.test
                     <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
+                        <SPAN class=tree-element-title >
+                        </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
                         <SPAN class=title >
@@ -108,9 +114,11 @@ After interstitial is shown:
         </STYLE>
         <DIV class=tree-outline-disclosure >
             <OL class=tree-outline tabindex=0 >
-                <LI class=security-main-view-sidebar-tree-item selected >
+                <LI class=security-main-view-sidebar-tree-item selected force-white-icons >
                     <DIV class=selection fill >
                     </DIV>
+                    <SPAN class=tree-element-title >
+                    </SPAN>
                     <DIV class=icon lock-icon lock-icon-unknown >
                     </DIV>
                     <SPAN class=title >
@@ -157,6 +165,8 @@ Secure Origins
                     <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
+                        <SPAN class=tree-element-title >
+                        </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
                         <SPAN class=title >
@@ -168,6 +178,8 @@ https://foo.test
                     <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
+                        <SPAN class=tree-element-title >
+                        </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
                         <SPAN class=title >
@@ -205,9 +217,11 @@ After interstitial is hidden:
         </STYLE>
         <DIV class=tree-outline-disclosure >
             <OL class=tree-outline tabindex=0 >
-                <LI class=security-main-view-sidebar-tree-item selected >
+                <LI class=security-main-view-sidebar-tree-item selected force-white-icons >
                     <DIV class=selection fill >
                     </DIV>
+                    <SPAN class=tree-element-title >
+                    </SPAN>
                     <DIV class=icon lock-icon lock-icon-unknown >
                     </DIV>
                     <SPAN class=title >
@@ -254,6 +268,8 @@ Secure Origins
                     <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
+                        <SPAN class=tree-element-title >
+                        </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
                         <SPAN class=title >
@@ -265,6 +281,8 @@ https://foo.test
                     <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
+                        <SPAN class=tree-element-title >
+                        </SPAN>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
                         <SPAN class=title >
