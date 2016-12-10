@@ -125,9 +125,6 @@ snapshotReasonToFallbackReason(SnapshotReason reason) {
       return RecordingImageBufferSurface::FallbackReasonUnknown;
     case SnapshotReasonGetImageData:
       return RecordingImageBufferSurface::FallbackReasonSnapshotForGetImageData;
-    case SnapshotReasonCopyToWebGLTexture:
-      return RecordingImageBufferSurface::
-          FallbackReasonSnapshotForCopyToWebGLTexture;
     case SnapshotReasonPaint:
       return RecordingImageBufferSurface::FallbackReasonSnapshotForPaint;
     case SnapshotReasonToDataURL:
@@ -152,8 +149,26 @@ snapshotReasonToFallbackReason(SnapshotReason reason) {
     case SnapshotReasonWebGLDrawImageIntoBuffer:
       return RecordingImageBufferSurface::
           FallbackReasonSnapshotWebGLDrawImageIntoBuffer;
+    case SnapshotReasonWebGLTexImage2D:
+      return RecordingImageBufferSurface::
+          FallbackReasonSnapshotForWebGLTexImage2D;
+    case SnapshotReasonWebGLTexSubImage2D:
+      return RecordingImageBufferSurface::
+          FallbackReasonSnapshotForWebGLTexSubImage2D;
+    case SnapshotReasonWebGLTexImage3D:
+      return RecordingImageBufferSurface::
+          FallbackReasonSnapshotForWebGLTexImage3D;
+    case SnapshotReasonWebGLTexSubImage3D:
+      return RecordingImageBufferSurface::
+          FallbackReasonSnapshotForWebGLTexSubImage3D;
+    case SnapshotReasonCopyToClipboard:
+      return RecordingImageBufferSurface::
+          FallbackReasonSnapshotForCopyToClipboard;
+    case SnapshotReasonCreateImageBitmap:
+      return RecordingImageBufferSurface::
+          FallbackReasonSnapshotForCreateImageBitmap;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return RecordingImageBufferSurface::FallbackReasonUnknown;
 }
 

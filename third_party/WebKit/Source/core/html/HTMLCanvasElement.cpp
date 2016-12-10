@@ -1123,7 +1123,8 @@ void HTMLCanvasElement::ensureUnacceleratedImageBuffer() {
 
 PassRefPtr<Image> HTMLCanvasElement::copiedImage(
     SourceDrawingBuffer sourceBuffer,
-    AccelerationHint hint) const {
+    AccelerationHint hint,
+    SnapshotReason snapshotReason) const {
   if (!isPaintable())
     return nullptr;
   if (!m_context)
@@ -1131,10 +1132,9 @@ PassRefPtr<Image> HTMLCanvasElement::copiedImage(
 
   if (m_context->getContextType() ==
       CanvasRenderingContext::ContextImageBitmap) {
-    RefPtr<Image> image =
-        m_context->getImage(hint, SnapshotReasonGetCopiedImage);
+    RefPtr<Image> image = m_context->getImage(hint, snapshotReason);
     if (image)
-      return m_context->getImage(hint, SnapshotReasonGetCopiedImage);
+      return m_context->getImage(hint, snapshotReason);
     // Special case: transferFromImageBitmap is not yet called.
     sk_sp<SkSurface> surface =
         SkSurface::MakeRasterN32Premul(width(), height());
@@ -1146,8 +1146,7 @@ PassRefPtr<Image> HTMLCanvasElement::copiedImage(
   if (m_context->is3d())
     needToUpdate |= m_context->paintRenderingResultsToCanvas(sourceBuffer);
   if (needToUpdate && buffer()) {
-    m_copiedImage =
-        buffer()->newImageSnapshot(hint, SnapshotReasonGetCopiedImage);
+    m_copiedImage = buffer()->newImageSnapshot(hint, snapshotReason);
     updateExternallyAllocatedMemory();
   }
   return m_copiedImage;

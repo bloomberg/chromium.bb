@@ -208,7 +208,8 @@ WebLayer* ImageBuffer::platformLayer() const {
   return m_surface->layer();
 }
 
-bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
+bool ImageBuffer::copyToPlatformTexture(SnapshotReason reason,
+                                        gpu::gles2::GLES2Interface* gl,
                                         GLuint texture,
                                         GLenum internalFormat,
                                         GLenum destType,
@@ -224,8 +225,8 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
   if (!isSurfaceValid())
     return false;
 
-  sk_sp<const SkImage> textureImage = m_surface->newImageSnapshot(
-      PreferAcceleration, SnapshotReasonCopyToWebGLTexture);
+  sk_sp<const SkImage> textureImage =
+      m_surface->newImageSnapshot(PreferAcceleration, reason);
   if (!textureImage)
     return false;
 

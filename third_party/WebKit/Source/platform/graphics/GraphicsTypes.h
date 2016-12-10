@@ -88,7 +88,10 @@ enum AccelerationHint {
 enum SnapshotReason {
   SnapshotReasonUnknown,
   SnapshotReasonGetImageData,
-  SnapshotReasonCopyToWebGLTexture,
+  SnapshotReasonWebGLTexImage2D,
+  SnapshotReasonWebGLTexSubImage2D,
+  SnapshotReasonWebGLTexImage3D,
+  SnapshotReasonWebGLTexSubImage3D,
   SnapshotReasonPaint,
   SnapshotReasonToDataURL,
   SnapshotReasonToBlob,
@@ -99,6 +102,8 @@ enum SnapshotReason {
   SnapshotReasonUnitTests,
   SnapshotReasonGetCopiedImage,
   SnapshotReasonWebGLDrawImageIntoBuffer,
+  SnapshotReasonCopyToClipboard,
+  SnapshotReasonCreateImageBitmap,
 };
 
 // Note: enum used directly for histogram, values must not change

@@ -143,7 +143,9 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
 
   void ensureUnacceleratedImageBuffer();
   ImageBuffer* buffer() const;
-  PassRefPtr<Image> copiedImage(SourceDrawingBuffer, AccelerationHint) const;
+  PassRefPtr<Image> copiedImage(SourceDrawingBuffer,
+                                AccelerationHint,
+                                SnapshotReason) const;
   void clearCopiedImage();
 
   SecurityOrigin* getSecurityOrigin() const;

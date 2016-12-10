@@ -987,11 +987,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     TexImage3D,
     TexSubImage3D
   };
-  enum TexImageByGPUType {
-    TexImage2DByGPU,
-    TexSubImage2DByGPU,
-    TexSubImage3DByGPU
-  };
+
+  static SnapshotReason functionIDToSnapshotReason(TexImageFunctionID);
+
   enum TexImageDimension { Tex2D, Tex3D };
   void texImage2DBase(GLenum target,
                       GLint level,
@@ -1102,7 +1100,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // Copy from the source directly to the texture via the gpu, without a
   // read-back to system memory.  Source could be canvas or imageBitmap.
-  void texImageByGPU(TexImageByGPUType,
+  void texImageByGPU(TexImageFunctionID,
                      WebGLTexture*,
                      GLenum target,
                      GLint level,
@@ -1646,7 +1644,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                 ScriptState*,
                                 const CanvasContextCreationAttributes&,
                                 unsigned);
-  void texImageCanvasByGPU(HTMLCanvasElement*,
+  void texImageCanvasByGPU(TexImageFunctionID,
+                           HTMLCanvasElement*,
                            GLuint,
                            GLenum,
                            GLenum,

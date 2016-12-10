@@ -475,10 +475,12 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
                          const ImageBitmapOptions& options) {
   ASSERT(canvas->isPaintable());
   RefPtr<Image> input;
-  if (canvas->placeholderFrame())
+  if (canvas->placeholderFrame()) {
     input = canvas->placeholderFrame();
-  else
-    input = canvas->copiedImage(BackBuffer, PreferAcceleration);
+  } else {
+    input = canvas->copiedImage(BackBuffer, PreferAcceleration,
+                                SnapshotReasonCreateImageBitmap);
+  }
   ParsedOptions parsedOptions =
       parseOptions(options, cropRect, IntSize(input->width(), input->height()));
   if (dstBufferSizeHasOverflow(parsedOptions))

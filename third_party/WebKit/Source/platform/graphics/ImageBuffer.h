@@ -145,7 +145,8 @@ class PLATFORM_EXPORT ImageBuffer {
   // FIXME: Current implementations of this method only work with textures that
   // are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
   // Extensions3D::canUseCopyTextureCHROMIUM().
-  bool copyToPlatformTexture(gpu::gles2::GLES2Interface*,
+  bool copyToPlatformTexture(SnapshotReason,
+                             gpu::gles2::GLES2Interface*,
                              GLuint texture,
                              GLenum internalFormat,
                              GLenum destType,

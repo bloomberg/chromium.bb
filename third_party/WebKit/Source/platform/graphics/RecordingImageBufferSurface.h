@@ -95,7 +95,6 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
     FallbackReasonFlushInitialClear = 4,
     FallbackReasonFlushForDrawImageOfWebGL = 5,
     FallbackReasonSnapshotForGetImageData = 6,
-    FallbackReasonSnapshotForCopyToWebGLTexture = 7,
     FallbackReasonSnapshotForPaint = 8,
     FallbackReasonSnapshotForToDataURL = 9,
     FallbackReasonSnapshotForToBlob = 10,
@@ -113,6 +112,12 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
         21,  // This value should never appear in production histograms
     FallbackReasonSnapshotGetCopiedImage = 22,
     FallbackReasonSnapshotWebGLDrawImageIntoBuffer = 23,
+    FallbackReasonSnapshotForWebGLTexImage2D = 24,
+    FallbackReasonSnapshotForWebGLTexSubImage2D = 25,
+    FallbackReasonSnapshotForWebGLTexImage3D = 26,
+    FallbackReasonSnapshotForWebGLTexSubImage3D = 27,
+    FallbackReasonSnapshotForCopyToClipboard = 28,
+    FallbackReasonSnapshotForCreateImageBitmap = 29,
     FallbackReasonCount,
   };
 

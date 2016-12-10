@@ -886,8 +886,7 @@ int HTMLImageElement::sourceWidth() {
   SourceImageStatus status;
   FloatSize defaultObjectSize(width(), height());
   RefPtr<Image> image = getSourceImageForCanvas(
-      &status, PreferNoAcceleration, SnapshotReasonCopyToWebGLTexture,
-      defaultObjectSize);
+      &status, PreferNoAcceleration, SnapshotReasonUnknown, defaultObjectSize);
   return image->width();
 }
 
@@ -895,8 +894,7 @@ int HTMLImageElement::sourceHeight() {
   SourceImageStatus status;
   FloatSize defaultObjectSize(width(), height());
   RefPtr<Image> image = getSourceImageForCanvas(
-      &status, PreferNoAcceleration, SnapshotReasonCopyToWebGLTexture,
-      defaultObjectSize);
+      &status, PreferNoAcceleration, SnapshotReasonUnknown, defaultObjectSize);
   return image->height();
 }
 
