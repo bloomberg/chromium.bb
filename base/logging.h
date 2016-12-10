@@ -426,9 +426,19 @@ const LogSeverity LOG_0 = LOG_ERROR;
 #define PLOG_IF(severity, condition) \
   LAZY_STREAM(PLOG_STREAM(severity), LOG_IS_ON(severity) && (condition))
 
-// The actual stream used isn't important.
-#define EAT_STREAM_PARAMETERS                                           \
-  true ? (void) 0 : ::logging::LogMessageVoidify() & LOG_STREAM(FATAL)
+// Note that the null ostream is used instead of an arbitrary LOG() stream to
+// avoid the creation of an object with a non-trivial destructor (LogMessage).
+// On MSVC x86 (checked on 2015 Update 3), doing so causes a few additional
+// pointless instructions to be emitted even at full optimization level, even
+// though the : arm of the ternary operator is clearly never executed. Using a
+// simpler POD object with a templated operator<< also works to avoid these
+// instructions. However, this causes warnings on statically defined
+// implementations of operator<<(std::ostream, ...) in some .cc files, because
+// they become defined-but-unreferenced functions.
+#define EAT_STREAM_PARAMETERS \
+  true                        \
+      ? (void)0               \
+      : ::logging::LogMessageVoidify() & (*reinterpret_cast<std::ostream*>(0))
 
 // Captures the result of a CHECK_EQ (for example) and facilitates testing as a
 // boolean.
