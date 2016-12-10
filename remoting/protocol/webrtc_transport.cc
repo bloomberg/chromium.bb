@@ -18,6 +18,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "remoting/protocol/authenticator.h"
@@ -194,7 +195,13 @@ class WebrtcTransport::PeerConnectionWrapper
     peer_connection_ = peer_connection_factory_->CreatePeerConnection(
         rtc_config, &constraints, std::move(port_allocator), nullptr, this);
   }
-  virtual ~PeerConnectionWrapper() { peer_connection_->Close(); }
+  virtual ~PeerConnectionWrapper() {
+    // PeerConnection creates threads internally, which are stopped when the
+    // connection is closed. Thread.Stop() is a blocking operation.
+    // See crbug.com/660081.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    peer_connection_->Close();
+  }
 
   WebrtcAudioModule* audio_module() {
     return audio_module_.get();

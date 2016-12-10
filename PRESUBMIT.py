@@ -216,6 +216,7 @@ _BANNED_CPP_FUNCTIONS = (
         r"^net[\\\/]test[\\\/]spawned_test_server[\\\/]local_test_server\.cc$",
         r"^net[\\\/]test[\\\/]test_data_directory\.cc$",
         r"^net[\\\/]url_request[\\\/]test_url_fetcher_factory\.cc$",
+        r"^remoting[\\\/]protocol[\\\/]webrtc_transport\.cc$",
         r"^ui[\\\/]base[\\\/]material_design[\\\/]"
             "material_design_controller\.cc$",
         r"^ui[\\\/]gl[\\\/]init[\\\/]gl_initializer_mac\.cc$",
