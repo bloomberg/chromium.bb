@@ -345,8 +345,8 @@ class MotionEvents {
   const base::TimeDelta benchmark_interval_;
   const std::string* use_drm_;
 
-  Globals globals_;
   std::unique_ptr<wl_display> display_;
+  Globals globals_;
 
 #if defined(OZONE_PLATFORM_GBM)
   base::ScopedFD drm_fd_;
