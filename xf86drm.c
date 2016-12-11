@@ -3582,7 +3582,7 @@ char *drmGetDeviceNameFromFd2(int fd)
     FILE *f;
     char buf[512];
     static const char match[9] = "\nDEVNAME=";
-    int expected = 1;
+    size_t expected = 1;
 
 
     if (fstat(fd, &sbuf))
