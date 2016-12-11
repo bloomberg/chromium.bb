@@ -9,12 +9,18 @@
 namespace blink {
 
 DetectedFace* DetectedFace::create() {
-  return new DetectedFace();
+  return new DetectedFace(DOMRect::create());
+}
+
+DetectedFace* DetectedFace::create(DOMRect* boundingBox) {
+  return new DetectedFace(boundingBox);
 }
 
 DOMRect* DetectedFace::boundingBox() const {
   return m_boundingBox.get();
 }
+
+DetectedFace::DetectedFace(DOMRect* boundingBox) : m_boundingBox(boundingBox) {}
 
 DEFINE_TRACE(DetectedFace) {
   visitor->trace(m_boundingBox);

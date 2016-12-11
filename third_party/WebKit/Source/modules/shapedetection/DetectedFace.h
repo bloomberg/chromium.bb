@@ -18,10 +18,14 @@ class MODULES_EXPORT DetectedFace final : public GarbageCollected<DetectedFace>,
 
  public:
   static DetectedFace* create();
+  static DetectedFace* create(DOMRect*);
+
   DOMRect* boundingBox() const;
   DECLARE_TRACE();
 
  private:
+  explicit DetectedFace(DOMRect*);
+
   Member<DOMRect> m_boundingBox;
 };
 

@@ -27,7 +27,7 @@ class MODULES_EXPORT DetectedBarcode final
   DECLARE_TRACE();
 
  private:
-  DetectedBarcode(String rawValue, DOMRect* boundingBox);
+  DetectedBarcode(String, DOMRect*);
 
   const String m_rawValue;
   const Member<DOMRect> m_boundingBox;

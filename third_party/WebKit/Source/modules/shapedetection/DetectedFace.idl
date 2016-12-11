@@ -8,6 +8,6 @@
     Constructor,
     RuntimeEnabled=ShapeDetection,
 ] interface DetectedFace {
-    // TODO(xianglu): Implement missing fields. https://crbug.com/646083
+    // TODO(xianglu): Implement any other fields. https://crbug.com/646083
     readonly attribute DOMRect boundingBox;
 };

@@ -9,6 +9,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "modules/shapedetection/DetectedFace.h"
 #include "public/platform/InterfaceProvider.h"
 
 namespace blink {
@@ -55,11 +56,11 @@ void FaceDetector::onDetectFaces(
   DCHECK(m_faceServiceRequests.contains(resolver));
   m_faceServiceRequests.remove(resolver);
 
-  HeapVector<Member<DOMRect>> detectedFaces;
+  HeapVector<Member<DetectedFace>> detectedFaces;
   for (const auto& boundingBox : faceDetectionResult->bounding_boxes) {
-    detectedFaces.append(DOMRect::create(boundingBox->x, boundingBox->y,
-                                         boundingBox->width,
-                                         boundingBox->height));
+    detectedFaces.append(DetectedFace::create(
+        DOMRect::create(boundingBox->x, boundingBox->y, boundingBox->width,
+                        boundingBox->height)));
   }
 
   resolver->resolve(detectedFaces);
