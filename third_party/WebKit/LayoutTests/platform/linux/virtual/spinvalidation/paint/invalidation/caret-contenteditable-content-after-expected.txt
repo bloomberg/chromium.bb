@@ -1,0 +1,295 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='editor'",
+          "rect": [7, 47, 786, 22],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='editor'",
+          "rect": [7, 47, 786, 22],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='editor'",
+          "rect": [7, 47, 786, 22],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='editor'",
+          "rect": [7, 47, 786, 22],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 48, 22, 19],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 48, 15, 19],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTextFragment (anonymous)",
+          "rect": [30, 48, 7, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTextFragment (anonymous)",
+          "rect": [23, 48, 7, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTextFragment (anonymous)",
+          "rect": [23, 48, 7, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTextFragment (anonymous)",
+          "rect": [15, 48, 7, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTextFragment (anonymous)",
+          "rect": [15, 48, 7, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 48, 7, 19],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTextFragment (anonymous)",
+          "rect": [8, 48, 7, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='editor'",
+          "rect": [7, 47, 3, 22],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='editor'",
+          "rect": [7, 47, 3, 22],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='editor'",
+          "rect": [7, 47, 3, 22],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='editor'",
+          "rect": [7, 47, 3, 22],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [29, 47, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [29, 47, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [29, 47, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [22, 47, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [22, 47, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [22, 47, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [22, 47, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 47, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 47, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 47, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 47, 3, 21],
+          "reason": "invalidate paint rectangle"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='editor'",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='editor'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'a'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTextFragment (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'x'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='editor'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'ab'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutTextFragment (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'x'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='editor'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'abc'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutTextFragment (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'x'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

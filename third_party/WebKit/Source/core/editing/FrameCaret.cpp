@@ -187,11 +187,12 @@ void FrameCaret::invalidateCaretRect(bool forceInvalidation) {
       m_caretVisibility == m_previousCaretVisibility)
     return;
 
-  if (m_previousCaretNode && shouldRepaintCaret(*m_previousCaretAnchorNode)) {
+  if (m_previousCaretAnchorNode &&
+      shouldRepaintCaret(*m_previousCaretAnchorNode)) {
     invalidateLocalCaretRect(m_previousCaretAnchorNode.get(),
                              m_previousCaretRect);
   }
-  if (newNode && shouldRepaintCaret(*newAnchorNode))
+  if (newAnchorNode && shouldRepaintCaret(*newAnchorNode))
     invalidateLocalCaretRect(newAnchorNode, newRect);
   m_previousCaretNode = newNode;
   m_previousCaretAnchorNode = newAnchorNode;
