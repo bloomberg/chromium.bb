@@ -408,7 +408,7 @@ void Surface::CommitSurfaceHierarchy() {
     local_frame_id_ = id_allocator_.GenerateId();
   }
 
-  UpdateSurface(true);
+  UpdateSurface(false);
 
   if (old_local_frame_id != local_frame_id_) {
     float contents_surface_to_layer_scale = 1.0;
@@ -553,7 +553,7 @@ void Surface::OnLostResources() {
     return;
 
   UpdateResource(false);
-  UpdateSurface(false);
+  UpdateSurface(true);
 }
 
 void Surface::OnWindowAddedToRootWindow(aura::Window* window) {
