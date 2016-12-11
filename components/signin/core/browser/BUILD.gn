@@ -162,8 +162,9 @@ source_set("unit_tests") {
     ":test_support",
     "//components/content_settings/core/browser",
     "//components/os_crypt:test_support",
-    "//components/pref_registry:test_support",
+    "//components/pref_registry:pref_registry",
     "//components/signin/core/common",
+    "//components/sync_preferences:test_support",
     "//testing/gmock",
   ]
 

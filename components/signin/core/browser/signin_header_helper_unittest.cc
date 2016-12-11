@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/common/signin_switches.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -58,7 +58,7 @@ class SigninHeaderHelperTest : public testing::Test {
 
   base::MessageLoop loop_;
 
-  user_prefs::TestingPrefServiceSyncable prefs_;
+  sync_preferences::TestingPrefServiceSyncable prefs_;
   net::TestURLRequestContext url_request_context_;
 
   scoped_refptr<HostContentSettingsMap> settings_map_;

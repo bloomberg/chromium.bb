@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace dom_distiller {
@@ -49,12 +49,12 @@ class TestingObserver : public DistilledPagePrefs::Observer {
 class DistilledPagePrefsTest : public testing::Test {
  protected:
   void SetUp() override {
-    pref_service_.reset(new user_prefs::TestingPrefServiceSyncable());
+    pref_service_.reset(new sync_preferences::TestingPrefServiceSyncable());
     DistilledPagePrefs::RegisterProfilePrefs(pref_service_->registry());
     distilled_page_prefs_.reset(new DistilledPagePrefs(pref_service_.get()));
   }
 
-  std::unique_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<DistilledPagePrefs> distilled_page_prefs_;
 
  private:

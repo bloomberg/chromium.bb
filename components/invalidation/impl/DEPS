@@ -6,6 +6,7 @@ include_rules = [
   "+components/keyed_service",
   "+components/pref_registry",
   "+components/signin",
+  "+components/sync_preferences",
 
   "+google_apis/gaia",
   "+google_apis/gcm",

@@ -13,8 +13,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +29,8 @@ namespace translate {
 
 class TranslatePrefTest : public testing::Test {
  protected:
-  TranslatePrefTest() : prefs_(new user_prefs::TestingPrefServiceSyncable()) {
+  TranslatePrefTest()
+      : prefs_(new sync_preferences::TestingPrefServiceSyncable()) {
 #if defined(OS_CHROMEOS)
     const char* preferred_languages_prefs =
         "settings.language.preferred_languages";
@@ -53,7 +54,7 @@ class TranslatePrefTest : public testing::Test {
     return update.GetOldestDenialTime();
   }
 
-  std::unique_ptr<user_prefs::TestingPrefServiceSyncable> prefs_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
   std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
 
   // Shared time constants.

@@ -18,7 +18,7 @@
 #include "components/ntp_tiles/json_unsafe_parser.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
@@ -139,7 +139,7 @@ class PopularSitesTest : public ::testing::Test {
   base::SequencedWorkerPoolOwner worker_pool_owner_;
   base::ScopedTempDir scoped_cache_dir_;
   base::FilePath cache_dir_;
-  user_prefs::TestingPrefServiceSyncable prefs_;
+  sync_preferences::TestingPrefServiceSyncable prefs_;
   net::FakeURLFetcherFactory url_fetcher_factory_;
 };
 

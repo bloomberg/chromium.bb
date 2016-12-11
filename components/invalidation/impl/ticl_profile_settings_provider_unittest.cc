@@ -16,8 +16,8 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/impl/ticl_invalidation_service.h"
 #include "components/invalidation/impl/ticl_settings_provider.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/identity_provider.h"
@@ -41,7 +41,7 @@ class TiclProfileSettingsProviderTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   gcm::FakeGCMDriver gcm_driver_;
-  user_prefs::TestingPrefServiceSyncable pref_service_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
   FakeOAuth2TokenService token_service_;
 
   std::unique_ptr<TiclInvalidationService> invalidation_service_;

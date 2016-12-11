@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/mock_translate_driver.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
@@ -77,7 +77,7 @@ class TranslateUIDelegateTest : public ::testing::Test {
   TranslateUIDelegateTest() : ::testing::Test() {}
 
   void SetUp() override {
-    pref_service_.reset(new user_prefs::TestingPrefServiceSyncable());
+    pref_service_.reset(new sync_preferences::TestingPrefServiceSyncable());
     pref_service_->registry()->RegisterStringPref(
         "settings.language.preferred_languages", std::string());
     pref_service_->registry()->RegisterStringPref("intl.accept_languages",
@@ -97,7 +97,7 @@ class TranslateUIDelegateTest : public ::testing::Test {
 
   MockTranslateDriver driver_;
   std::unique_ptr<MockTranslateClient> client_;
-  std::unique_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<TranslateManager> manager_;
   std::unique_ptr<TranslateUIDelegate> delegate_;
 

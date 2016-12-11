@@ -6,11 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,7 +27,7 @@ class SyncPrefsTest : public testing::Test {
     SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
   }
 
-  user_prefs::TestingPrefServiceSyncable pref_service_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
 
  private:
   base::MessageLoop loop_;

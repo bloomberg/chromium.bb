@@ -8,6 +8,7 @@ include_rules = [
   "+components/prefs",
   "+components/signin/core/browser",
   "+components/sync/driver",
+  "+components/sync_preferences",
   "+components/variations",
   "+google_apis",
   "+net",

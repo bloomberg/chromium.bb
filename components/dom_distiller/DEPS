@@ -5,6 +5,7 @@ include_rules = [
   "+components/prefs",
   "+components/sync/model",
   "+components/sync/protocol",
+  "+components/sync_preferences",
   "+components/variations",
   "+google", # For third_party/protobuf.
   "+grit",  # For generated headers.

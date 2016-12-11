@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/test_browser_context.h"
 #include "extensions/browser/extension_registry.h"
@@ -118,7 +118,7 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
   }
 
  private:
-  user_prefs::TestingPrefServiceSyncable testing_pref_service_;
+  sync_preferences::TestingPrefServiceSyncable testing_pref_service_;
 
   // The total number of pending tasks that have been executed.
   int task_run_count_;

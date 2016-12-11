@@ -48,7 +48,6 @@ source_set("unit_tests") {
     "//components/autofill/core/common",
     "//components/password_manager/core/browser:test_support",
     "//components/password_manager/core/common",
-    "//components/pref_registry:test_support",
     "//components/prefs",
     "//components/signin/core/browser:test_support",
     "//components/signin/core/common",

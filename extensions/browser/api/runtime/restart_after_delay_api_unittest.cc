@@ -5,7 +5,7 @@
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/api_unittest.h"
@@ -72,7 +72,7 @@ class DelayedRestartExtensionsBrowserClient
     return base::WrapUnique(api_delegate_);
   }
 
-  user_prefs::TestingPrefServiceSyncable* testing_pref_service() {
+  sync_preferences::TestingPrefServiceSyncable* testing_pref_service() {
     return &testing_pref_service_;
   }
 
@@ -84,7 +84,7 @@ class DelayedRestartExtensionsBrowserClient
  private:
   DelayedRestartTestApiDelegate* api_delegate_ = nullptr;  // Not owned.
 
-  user_prefs::TestingPrefServiceSyncable testing_pref_service_;
+  sync_preferences::TestingPrefServiceSyncable testing_pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayedRestartExtensionsBrowserClient);
 };

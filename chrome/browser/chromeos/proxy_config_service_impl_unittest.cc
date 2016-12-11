@@ -29,9 +29,9 @@
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/network/proxy/ui_proxy_config.h"
 #include "components/onc/onc_pref_names.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
@@ -373,7 +373,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<ProxyConfigServiceImpl> config_service_impl_;
   TestingPrefServiceSimple pref_service_;
-  user_prefs::TestingPrefServiceSyncable profile_prefs_;
+  sync_preferences::TestingPrefServiceSyncable profile_prefs_;
 
  private:
   ScopedTestDeviceSettingsService test_device_settings_service_;

@@ -10,11 +10,11 @@
 
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/suggestions/proto/suggestions.pb.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using user_prefs::TestingPrefServiceSyncable;
+using sync_preferences::TestingPrefServiceSyncable;
 
 namespace suggestions {
 
@@ -53,18 +53,18 @@ void ValidateSuggestions(const SuggestionsProfile& expected,
 class BlacklistStoreTest : public testing::Test {
  public:
   BlacklistStoreTest()
-    : pref_service_(new user_prefs::TestingPrefServiceSyncable) {}
+      : pref_service_(new sync_preferences::TestingPrefServiceSyncable) {}
 
   void SetUp() override {
     BlacklistStore::RegisterProfilePrefs(pref_service()->registry());
   }
 
-  user_prefs::TestingPrefServiceSyncable* pref_service() {
+  sync_preferences::TestingPrefServiceSyncable* pref_service() {
     return pref_service_.get();
   }
 
  private:
-  std::unique_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BlacklistStoreTest);
 };

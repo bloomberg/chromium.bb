@@ -11,8 +11,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/metrics/proto/translate_event.pb.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/proto/translate_ranker_model.pb.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -32,7 +32,7 @@ class TranslateRankerTest : public ::testing::Test {
     // prefs and translate prefs.
     base::DictionaryValue lang_count;
     lang_count.SetInteger("en", 50);
-    prefs_.reset(new user_prefs::TestingPrefServiceSyncable());
+    prefs_.reset(new sync_preferences::TestingPrefServiceSyncable());
     TranslatePrefs::RegisterProfilePrefs(prefs_->registry());
     prefs_->Set(TranslatePrefs::kPrefTranslateAcceptedCount, lang_count);
     prefs_->Set(TranslatePrefs::kPrefTranslateDeniedCount, lang_count);
@@ -98,7 +98,7 @@ class TranslateRankerTest : public ::testing::Test {
 
   static const char* const kPreferredLanguagePrefs;
 
-  std::unique_ptr<user_prefs::TestingPrefServiceSyncable> prefs_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
   std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
 
  private:

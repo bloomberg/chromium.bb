@@ -14,20 +14,3 @@ static_library("pref_registry") {
     "//components/prefs",
   ]
 }
-
-static_library("test_support") {
-  testonly = true
-  sources = [
-    "testing_pref_service_syncable.cc",
-    "testing_pref_service_syncable.h",
-  ]
-
-  public_deps = [
-    ":pref_registry",
-  ]
-
-  deps = [
-    "//base",
-    "//components/prefs:test_support",
-  ]
-}

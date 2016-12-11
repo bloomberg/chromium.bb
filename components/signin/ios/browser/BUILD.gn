@@ -55,11 +55,11 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
-    "//components/pref_registry:test_support",
     "//components/prefs:test_support",
     "//components/signin/core/browser",
     "//components/signin/core/browser:test_support",
     "//components/signin/core/common",
+    "//components/sync_preferences:test_support",
     "//ios/web",
     "//ios/web:test_support",
     "//third_party/ocmock",

@@ -11,7 +11,6 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_manager_setting_migrator_service.h"
-#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
