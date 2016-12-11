@@ -131,7 +131,8 @@ void ChromeBrowserMainExtraPartsExo::PreProfileInit() {
   display_ =
       base::MakeUnique<exo::Display>(arc_notification_surface_manager_.get());
   wayland_server_ = exo::wayland::Server::Create(display_.get());
-  wayland_watcher_ = base::MakeUnique<WaylandWatcher>(wayland_server_.get());
+  if (wayland_server_)
+    wayland_watcher_ = base::MakeUnique<WaylandWatcher>(wayland_server_.get());
 }
 
 void ChromeBrowserMainExtraPartsExo::PostMainMessageLoopRun() {
