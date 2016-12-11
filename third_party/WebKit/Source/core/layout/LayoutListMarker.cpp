@@ -43,7 +43,7 @@ const int cMarkerPaddingPx = 7;
 const int cUAMarkerMarginEm = 1;
 
 LayoutListMarker::LayoutListMarker(LayoutListItem* item)
-    : LayoutBox(nullptr), m_listItem(item) {
+    : LayoutBox(nullptr), m_listItem(item), m_lineOffset() {
   setInline(true);
   setIsAtomicInlineLevel(true);
 }
@@ -139,6 +139,17 @@ void LayoutListMarker::layout() {
   ASSERT(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
+  LayoutUnit blockOffset;
+  for (LayoutBox* o = parentBox(); o && o != listItem(); o = o->parentBox()) {
+    blockOffset += o->logicalTop();
+  }
+  if (listItem()->style()->isLeftToRightDirection()) {
+    m_lineOffset = listItem()->logicalLeftOffsetForLine(
+        blockOffset, DoNotIndentText, LayoutUnit());
+  } else {
+    m_lineOffset = listItem()->logicalRightOffsetForLine(
+        blockOffset, DoNotIndentText, LayoutUnit());
+  }
   if (isImage()) {
     updateMarginsAndContent();
     LayoutSize imageSize(imageBulletSize());

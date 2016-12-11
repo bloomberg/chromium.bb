@@ -62,6 +62,8 @@ class LayoutListMarker final : public LayoutBox {
 
   const char* name() const override { return "LayoutListMarker"; }
 
+  LayoutUnit lineOffset() const { return m_lineOffset; }
+
  protected:
   void willBeDestroyed() override;
 
@@ -112,6 +114,7 @@ class LayoutListMarker final : public LayoutBox {
   String m_text;
   Persistent<StyleImage> m_image;
   LayoutListItem* m_listItem;
+  LayoutUnit m_lineOffset;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListMarker, isListMarker());

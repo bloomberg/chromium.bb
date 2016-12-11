@@ -358,10 +358,7 @@ void LayoutListItem::positionListMarker() {
     // pretty wrong (https://crbug.com/554160).
     // FIXME: Need to account for relative positioning in the layout overflow.
     if (style()->isLeftToRightDirection()) {
-      LayoutUnit leftLineOffset = logicalLeftOffsetForLine(
-          blockOffset, logicalLeftOffsetForLine(blockOffset, DoNotIndentText),
-          DoNotIndentText);
-      markerLogicalLeft = leftLineOffset - lineOffset - paddingStart() -
+      markerLogicalLeft = m_marker->lineOffset() - lineOffset - paddingStart() -
                           borderStart() + m_marker->marginStart();
       m_marker->inlineBoxWrapper()->moveInInlineDirection(markerLogicalLeft -
                                                           markerOldLogicalLeft);
@@ -393,10 +390,7 @@ void LayoutListItem::positionListMarker() {
           hitSelfPaintingLayer = true;
       }
     } else {
-      LayoutUnit rightLineOffset = logicalRightOffsetForLine(
-          blockOffset, logicalRightOffsetForLine(blockOffset, DoNotIndentText),
-          DoNotIndentText);
-      markerLogicalLeft = rightLineOffset - lineOffset + paddingStart() +
+      markerLogicalLeft = m_marker->lineOffset() - lineOffset + paddingStart() +
                           borderStart() + m_marker->marginEnd();
       m_marker->inlineBoxWrapper()->moveInInlineDirection(markerLogicalLeft -
                                                           markerOldLogicalLeft);
