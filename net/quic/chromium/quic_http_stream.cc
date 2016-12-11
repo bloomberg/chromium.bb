@@ -497,11 +497,10 @@ bool QuicHttpStream::HasSendHeadersComplete() {
 void QuicHttpStream::OnCryptoHandshakeConfirmed() {
   was_handshake_confirmed_ = true;
   if (next_state_ == STATE_WAIT_FOR_CONFIRMATION_COMPLETE) {
-    int rv = DoLoop(OK);
-
-    if (rv != ERR_IO_PENDING && !callback_.is_null()) {
-      DoCallback(rv);
-    }
+    // Post a task to avoid reentrant calls into the session.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&QuicHttpStream::OnIOComplete,
+                              weak_factory_.GetWeakPtr(), OK));
   }
 }
 
