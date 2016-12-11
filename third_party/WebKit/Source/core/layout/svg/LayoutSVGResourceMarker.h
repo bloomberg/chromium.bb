@@ -54,7 +54,9 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
   SVGMarkerUnitsType markerUnits() const;
   SVGMarkerOrientType orientType() const;
 
-  const FloatRect& viewport() const { return m_viewport; }
+  // The viewport origin is (0,0) and not the reference point because each
+  // marker instance includes the reference in markerTransformation().
+  FloatRect viewport() const { return FloatRect(FloatPoint(), m_viewportSize); }
 
   static const LayoutSVGResourceType s_resourceType = MarkerResourceType;
   LayoutSVGResourceType resourceType() const override { return s_resourceType; }
@@ -66,7 +68,7 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
 
   AffineTransform viewportTransform() const;
 
-  FloatRect m_viewport;
+  FloatSize m_viewportSize;
 };
 
 DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceMarker,

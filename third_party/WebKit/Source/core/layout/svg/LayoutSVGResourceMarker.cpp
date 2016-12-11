@@ -73,8 +73,7 @@ FloatRect LayoutSVGResourceMarker::markerBoundaries(
 }
 
 AffineTransform LayoutSVGResourceMarker::localToSVGParentTransform() const {
-  return AffineTransform::translation(m_viewport.x(), m_viewport.y()) *
-         viewportTransform();
+  return viewportTransform();
 }
 
 FloatPoint LayoutSVGResourceMarker::referencePoint() const {
@@ -117,8 +116,8 @@ AffineTransform LayoutSVGResourceMarker::markerTransformation(
   transform.rotate(orientType() == SVGMarkerOrientAngle ? angle() : autoAngle);
   transform.scale(markerScale);
 
-  // The 'origin' coordinate maps to SVGs refX/refY, given in coordinates
-  // relative to the viewport established by the marker.
+  // The reference point (refX, refY) is in the coordinate space of the marker's
+  // contents so we include the value in each marker's transform.
   FloatPoint mappedReferencePoint =
       viewportTransform().mapPoint(referencePoint());
   transform.translate(-mappedReferencePoint.x(), -mappedReferencePoint.y());
@@ -138,8 +137,8 @@ AffineTransform LayoutSVGResourceMarker::viewportTransform() const {
   SVGMarkerElement* marker = toSVGMarkerElement(element());
   ASSERT(marker);
 
-  return marker->viewBoxToViewTransform(m_viewport.width(),
-                                        m_viewport.height());
+  return marker->viewBoxToViewTransform(m_viewportSize.width(),
+                                        m_viewportSize.height());
 }
 
 void LayoutSVGResourceMarker::calcViewport() {
@@ -150,9 +149,9 @@ void LayoutSVGResourceMarker::calcViewport() {
   ASSERT(marker);
 
   SVGLengthContext lengthContext(marker);
-  float w = marker->markerWidth()->currentValue()->value(lengthContext);
-  float h = marker->markerHeight()->currentValue()->value(lengthContext);
-  m_viewport = FloatRect(0, 0, w, h);
+  float width = marker->markerWidth()->currentValue()->value(lengthContext);
+  float height = marker->markerHeight()->currentValue()->value(lengthContext);
+  m_viewportSize = FloatSize(width, height);
 }
 
 SVGTransformChange LayoutSVGResourceMarker::calculateLocalTransform() {
