@@ -370,16 +370,6 @@ int MotionEvents::Run() {
     return 1;
   }
 
-  bool gl_initialized = gl::init::InitializeGLOneOff();
-  DCHECK(gl_initialized);
-  gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
-  gl_context_ =
-      gl::init::CreateGLContext(nullptr,  // share_group
-                                gl_surface_.get(), gl::GLContextAttribs());
-
-  make_current_.reset(
-      new ui::ScopedMakeCurrent(gl_context_.get(), gl_surface_.get()));
-
   wl_registry_listener registry_listener = {RegistryHandler, RegistryRemover};
 
   wl_registry* registry = wl_display_get_registry(display_.get());
@@ -445,6 +435,16 @@ int MotionEvents::Run() {
       LOG(ERROR) << "Can't create gbm device";
       return 1;
     }
+
+    bool gl_initialized = gl::init::InitializeGLOneOff();
+    DCHECK(gl_initialized);
+    gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+    gl_context_ =
+        gl::init::CreateGLContext(nullptr,  // share_group
+                                  gl_surface_.get(), gl::GLContextAttribs());
+
+    make_current_.reset(
+        new ui::ScopedMakeCurrent(gl_context_.get(), gl_surface_.get()));
 
     if (gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_flush_external") ||
         gl::GLSurfaceEGL::HasEGLExtension("EGL_ARM_implicit_external_sync")) {
