@@ -5,6 +5,7 @@
 import("//build/config/ios/rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
+import("//ios/public/provider/chrome/browser/build_config.gni")
 
 source_set("app") {
   sources = [
@@ -19,6 +20,7 @@ source_set("app") {
   deps = [
     ":resources",
     "//base",
+    ios_packed_resources_target,
   ]
 
   libs = [ "Foundation.framework" ]
