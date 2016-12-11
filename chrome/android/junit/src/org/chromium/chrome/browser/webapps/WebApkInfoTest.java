@@ -129,6 +129,34 @@ public class WebApkInfoTest {
     }
 
     /**
+     * Test that if the scope is empty that the scope is computed from the "start URL specified from
+     * the Web Manifest" not the "URL the WebAPK initially navigated to". Deep links can open a
+     * WebAPK at an arbitrary URL.
+     */
+    @Test
+    public void testDefaultScopeFromManifestStartUrl() {
+        String manifestStartUrl = START_URL;
+        String intentStartUrl = "https://www.google.com/a/b/c";
+
+        String scopeFromManifestStartUrl = ShortcutHelper.getScopeFromUrl(manifestStartUrl);
+        String scopeFromIntentStartUrl = ShortcutHelper.getScopeFromUrl(intentStartUrl);
+        Assert.assertNotEquals(scopeFromManifestStartUrl, scopeFromIntentStartUrl);
+
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, manifestStartUrl);
+        bundle.putString(WebApkMetaDataKeys.SCOPE, "");
+        WebApkTestHelper.registerWebApkWithMetaData(bundle);
+
+        Intent intent = new Intent();
+        intent.putExtra(
+                ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, intentStartUrl);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertEquals(scopeFromManifestStartUrl, info.scopeUri().toString());
+    }
+
+    /**
      * Test that {@link WebApkInfo#create} can read multiple icon URLs and multiple icon murmur2
      * hashes from the WebAPK's meta data.
      */
@@ -140,6 +168,7 @@ public class WebApkInfoTest {
         String murmur2Hash2 = "2";
 
         Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
         bundle.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES,
                 iconUrl1 + " " + murmur2Hash1 + " " + iconUrl2 + " " + murmur2Hash2);
         WebApkTestHelper.registerWebApkWithMetaData(bundle);
@@ -165,6 +194,7 @@ public class WebApkInfoTest {
         String hash = "18446744073709551615"; // 2^64 - 1
 
         Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
         bundle.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES, "randomUrl " + hash);
         WebApkTestHelper.registerWebApkWithMetaData(bundle);
         Intent intent = new Intent();

@@ -122,9 +122,18 @@ public class WebApkInfo extends WebappInfo {
             String shortName, int displayMode, int orientation, int source, long themeColor,
             long backgroundColor, String webApkPackageName, int shellApkVersion, String manifestUrl,
             String manifestStartUrl, Map<String, String> iconUrlToMurmur2HashMap) {
-        if (id == null || url == null || webApkPackageName == null) {
-            Log.e(TAG, "Incomplete data provided: " + id + ", " + url + ", " + webApkPackageName);
+        if (id == null || url == null || manifestStartUrl == null || webApkPackageName == null) {
+            Log.e(TAG,
+                    "Incomplete data provided: " + id + ", " + url + ", " + manifestStartUrl + ", "
+                            + webApkPackageName);
             return null;
+        }
+
+        // The default scope should be computed from the Web Manifest start URL. If the WebAPK was
+        // launched from a deep link {@link startUrl} may be different from the Web Manifest start
+        // URL.
+        if (TextUtils.isEmpty(scope)) {
+            scope = ShortcutHelper.getScopeFromUrl(manifestStartUrl);
         }
 
         return new WebApkInfo(id, url, scope, icon, name, shortName, displayMode,

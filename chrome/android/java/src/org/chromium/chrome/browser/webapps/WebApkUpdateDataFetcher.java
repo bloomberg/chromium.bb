@@ -103,8 +103,8 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
      * Called when the updated Web Manifest has been fetched.
      */
     @CalledByNative
-    protected void onDataAvailable(String startUrl, String scopeUrl, String name, String shortName,
-            String bestIconUrl, String bestIconMurmur2Hash, Bitmap bestIconBitmap,
+    protected void onDataAvailable(String manifestStartUrl, String scopeUrl, String name,
+            String shortName, String bestIconUrl, String bestIconMurmur2Hash, Bitmap bestIconBitmap,
             String[] iconUrls, int displayMode, int orientation, long themeColor,
             long backgroundColor) {
         HashMap<String, String> iconUrlToMurmur2HashMap = new HashMap<String, String>();
@@ -113,10 +113,10 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
             iconUrlToMurmur2HashMap.put(iconUrl, murmur2Hash);
         }
 
-        WebApkInfo info = WebApkInfo.create(mOldInfo.id(), startUrl, scopeUrl,
+        WebApkInfo info = WebApkInfo.create(mOldInfo.id(), mOldInfo.uri().toString(), scopeUrl,
                 new WebApkInfo.Icon(bestIconBitmap), name, shortName, displayMode, orientation,
                 mOldInfo.source(), themeColor, backgroundColor, mOldInfo.webApkPackageName(),
-                mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(), startUrl,
+                mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(), manifestStartUrl,
                 iconUrlToMurmur2HashMap);
         mObserver.onGotManifestData(info, bestIconUrl);
     }

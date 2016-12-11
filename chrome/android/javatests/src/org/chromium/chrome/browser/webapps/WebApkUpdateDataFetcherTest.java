@@ -107,7 +107,7 @@ public class WebApkUpdateDataFetcherTest extends ChromeTabbedActivityTestBase {
             @Override
             public void run() {
                 WebApkInfo oldInfo = WebApkInfo.create("", "", scopeUrl, null, null, null, -1, -1,
-                        -1, -1, -1, "random.package", -1, manifestUrl, null,
+                        -1, -1, -1, "random.package", -1, manifestUrl, "",
                         new HashMap<String, String>());
                 fetcher.start(mTab, oldInfo, observer);
             }
