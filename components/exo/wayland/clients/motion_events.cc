@@ -159,6 +159,14 @@ struct DeleteEglImageTraits {
   }
 };
 using ScopedEglImage = base::ScopedGeneric<EGLImageKHR, DeleteEglImageTraits>;
+
+struct DeleteEglSyncTraits {
+  static EGLSyncKHR InvalidValue() { return 0; }
+  static void Free(EGLSyncKHR sync) {
+    eglDestroySyncKHR(eglGetCurrentDisplay(), sync);
+  }
+};
+using ScopedEglSync = base::ScopedGeneric<EGLSyncKHR, DeleteEglSyncTraits>;
 #endif
 
 struct Buffer {
@@ -167,6 +175,7 @@ struct Buffer {
 #if defined(OZONE_PLATFORM_GBM)
   std::unique_ptr<gbm_bo> bo;
   std::unique_ptr<ScopedEglImage> egl_image;
+  std::unique_ptr<ScopedEglSync> egl_sync;
   std::unique_ptr<ScopedTexture> texture;
 #endif
   std::unique_ptr<zwp_linux_buffer_params_v1> params;
@@ -399,8 +408,8 @@ int MotionEvents::Run() {
     return 1;
   }
 
-  EGLenum egl_sync_type = 0;
 #if defined(OZONE_PLATFORM_GBM)
+  EGLenum egl_sync_type = 0;
   if (use_drm_) {
     // Number of files to look for when discovering DRM devices.
     const uint32_t kDrmMaxMinor = 15;
@@ -436,6 +445,14 @@ int MotionEvents::Run() {
       LOG(ERROR) << "Can't create gbm device";
       return 1;
     }
+
+    if (gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_flush_external") ||
+        gl::GLSurfaceEGL::HasEGLExtension("EGL_ARM_implicit_external_sync")) {
+      egl_sync_type = EGL_SYNC_FENCE_KHR;
+    }
+    if (gl::GLSurfaceEGL::HasEGLExtension("EGL_ANDROID_native_fence_sync")) {
+      egl_sync_type = EGL_SYNC_NATIVE_FENCE_ANDROID;
+    }
   }
 
   sk_sp<const GrGLInterface> native_interface(GrGLCreateNativeInterface());
@@ -444,14 +461,6 @@ int MotionEvents::Run() {
       kOpenGL_GrBackend,
       reinterpret_cast<GrBackendContext>(native_interface.get())));
   DCHECK(gr_context_);
-
-  if (gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_flush_external") ||
-      gl::GLSurfaceEGL::HasEGLExtension("EGL_ARM_implicit_external_sync")) {
-    egl_sync_type = EGL_SYNC_FENCE_KHR;
-  }
-  if (gl::GLSurfaceEGL::HasEGLExtension("EGL_ANDROID_native_fence_sync")) {
-    egl_sync_type = EGL_SYNC_NATIVE_FENCE_ANDROID;
-  }
 #endif
 
   wl_buffer_listener buffer_listener = {BufferRelease};
@@ -533,7 +542,7 @@ int MotionEvents::Run() {
   Frame frame;
   std::unique_ptr<wl_callback> frame_callback;
   wl_callback_listener frame_listener = {FrameCallback};
-  std::deque<wl_buffer*> pending_frames;
+  std::deque<Buffer*> pending_frames;
 
   uint32_t frames = 0;
   size_t num_benchmark_runs_left = num_benchmark_runs_;
@@ -646,21 +655,20 @@ int MotionEvents::Run() {
 
       if (gr_context_) {
         gr_context_->flush();
-        glFlush();
 
+#if defined(OZONE_PLATFORM_GBM)
         if (egl_sync_type) {
-          EGLSyncKHR sync =
-              eglCreateSyncKHR(eglGetCurrentDisplay(), egl_sync_type, nullptr);
-          DCHECK(sync != EGL_NO_SYNC_KHR);
-          eglClientWaitSyncKHR(eglGetCurrentDisplay(), sync,
-                               EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
-                               EGL_FOREVER_KHR);
-          eglDestroySyncKHR(eglGetCurrentDisplay(), sync);
+          buffer->egl_sync.reset(new ScopedEglSync(eglCreateSyncKHR(
+              eglGetCurrentDisplay(), egl_sync_type, nullptr)));
+          DCHECK(buffer->egl_sync->is_valid());
         }
+#endif
+
+        glFlush();
       }
 
       buffer->busy = true;
-      pending_frames.push_back(buffer->buffer.get());
+      pending_frames.push_back(buffer);
 
       if (num_benchmark_runs_ || show_fps_counter_) {
         ++frames;
@@ -672,10 +680,19 @@ int MotionEvents::Run() {
 
     if (!frame.callback_pending) {
       DCHECK_GT(pending_frames.size(), 0u);
+      Buffer* buffer = pending_frames.front();
+      pending_frames.pop_front();
+
       wl_surface_set_buffer_scale(surface.get(), scale_);
       wl_surface_damage(surface.get(), 0, 0, width_ / scale_, height_ / scale_);
-      wl_surface_attach(surface.get(), pending_frames.front(), 0, 0);
-      pending_frames.pop_front();
+      wl_surface_attach(surface.get(), buffer->buffer.get(), 0, 0);
+
+#if defined(OZONE_PLATFORM_GBM)
+      if (buffer->egl_sync) {
+        eglClientWaitSyncKHR(eglGetCurrentDisplay(), buffer->egl_sync->get(),
+                             EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, EGL_FOREVER_KHR);
+      }
+#endif
 
       frame_callback.reset(wl_surface_frame(surface.get()));
       wl_callback_add_listener(frame_callback.get(), &frame_listener, &frame);
