@@ -1138,8 +1138,6 @@
       'quic/core/quic_flags.h',
       'quic/core/quic_flow_controller.cc',
       'quic/core/quic_flow_controller.h',
-      'quic/core/quic_frame_list.cc',
-      'quic/core/quic_frame_list.h',
       'quic/core/quic_framer.cc',
       'quic/core/quic_framer.h',
       'quic/core/quic_header_list.cc',
