@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
+#include "chrome/browser/ui/webui/theme_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -26,10 +27,6 @@
 #include "extensions/browser/extension_system.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#if defined(ENABLE_THEMES)
-#include "chrome/browser/ui/webui/theme_handler.h"
-#endif
 
 class ExtensionService;
 
@@ -53,12 +50,10 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
     web_ui->AddMessageHandler(new MetricsHandler());
   }
 
-#if defined(ENABLE_THEMES)
   // The theme handler can require some CPU, so do it after hooking up the most
   // visited handler. This allows the DB query for the new tab thumbs to happen
   // earlier.
   web_ui->AddMessageHandler(new ThemeHandler());
-#endif
 
   std::unique_ptr<HTMLSource> html_source(
       new HTMLSource(GetProfile()->GetOriginalProfile()));

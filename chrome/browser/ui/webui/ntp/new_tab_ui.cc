@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
+#include "chrome/browser/ui/webui/theme_handler.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -29,10 +30,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
-
-#if defined(ENABLE_THEMES)
-#include "chrome/browser/ui/webui/theme_handler.h"
-#endif
 
 using content::BrowserThread;
 using content::WebUIController;
@@ -74,10 +71,8 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
       web_ui->AddMessageHandler(new AppLauncherHandler(service));
   }
 
-#if defined(ENABLE_THEMES)
   if (!profile->IsGuestSession())
     web_ui->AddMessageHandler(new ThemeHandler());
-#endif
 
   std::unique_ptr<NewTabHTMLSource> html_source(
       new NewTabHTMLSource(profile->GetOriginalProfile()));

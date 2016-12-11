@@ -3249,7 +3249,6 @@ test("unit_tests") {
     "../browser/policy/file_selection_dialogs_policy_handler_unittest.cc",
     "../browser/policy/javascript_policy_handler_unittest.cc",
     "../browser/policy/managed_bookmarks_policy_handler_unittest.cc",
-    "../browser/policy/policy_path_parser_unittest.cc",
     "../browser/policy/profile_policy_connector_unittest.cc",
     "../browser/predictors/autocomplete_action_predictor_table_unittest.cc",
     "../browser/predictors/autocomplete_action_predictor_unittest.cc",
@@ -3527,8 +3526,8 @@ test("unit_tests") {
   }
 
   if (is_android) {
-    # Offline pages are currently only on Android.
     sources += [
+      # Offline pages are currently only on Android.
       "../browser/android/offline_pages/offline_page_mhtml_archiver_unittest.cc",
       "../browser/android/offline_pages/offline_page_request_job_unittest.cc",
       "../browser/android/offline_pages/offline_page_utils_unittest.cc",
@@ -3541,8 +3540,13 @@ test("unit_tests") {
       "../browser/android/offline_pages/test_offline_page_model_builder.h",
       "../browser/android/offline_pages/test_request_coordinator_builder.cc",
       "../browser/android/offline_pages/test_request_coordinator_builder.h",
+      "../browser/autofill/autofill_credit_card_filling_infobar_delegate_mobile_unittest.cc",
+      "../browser/autofill/autofill_save_card_infobar_delegate_mobile_unittest.cc",
+      "../browser/password_manager/account_chooser_dialog_android_unittest.cc",
+      "../browser/password_manager/auto_signin_first_run_dialog_android_unittest.cc",
+      "../browser/password_manager/save_password_infobar_delegate_android_unittest.cc",
+      "../browser/permissions/permission_queue_controller_unittest.cc",
     ]
-    sources -= [ "../browser/policy/policy_path_parser_unittest.cc" ]
     deps += [
       ":unit_tests_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
@@ -3551,12 +3555,12 @@ test("unit_tests") {
       "//components/offline_pages/core/background:test_support",
       "//v8:v8_external_startup_data_assets",
     ]
-    deps -= [ "//third_party/libaddressinput" ]
 
     android_manifest =
         "//chrome/test/android/unit_tests_apk/AndroidManifest.xml"
     enable_multidex = true
   } else {
+    # !is_android
     sources += [
       # Bookmark export/import are handled via the BookmarkColumns
       # ContentProvider.
@@ -3595,6 +3599,7 @@ test("unit_tests") {
       "../browser/notifications/message_center_settings_controller_unittest.cc",
       "../browser/permissions/permission_request_manager_unittest.cc",
       "../browser/platform_util_unittest.cc",
+      "../browser/policy/policy_path_parser_unittest.cc",
       "../browser/power_usage_monitor/power_usage_monitor_unittest.cc",
       "../browser/process_singleton_posix_unittest.cc",
       "../browser/profile_resetter/profile_resetter_unittest.cc",
@@ -3619,7 +3624,12 @@ test("unit_tests") {
       "../browser/task_manager/task_manager_observer_unittest.cc",
       "../browser/task_manager/test_task_manager.cc",
       "../browser/task_manager/test_task_manager.h",
+      "../browser/themes/browser_theme_pack_unittest.cc",
+      "../browser/themes/theme_properties_unittest.cc",
+      "../browser/themes/theme_service_unittest.cc",
+      "../browser/themes/theme_syncable_service_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_unittest.cc",
+      "../browser/ui/webui/theme_source_unittest.cc",
 
       # The autofill popup is implemented in mostly native code on Android.
       "../browser/ui/autofill/autofill_popup_controller_unittest.cc",
@@ -3721,7 +3731,10 @@ test("unit_tests") {
     ]
     sources -=
         [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
-    deps += [ "//device/battery:mojo_bindings" ]
+    deps += [
+      "//device/battery:mojo_bindings",
+      "//third_party/libaddressinput",
+    ]
   }
 
   if (!is_ios && !is_android) {
@@ -4647,16 +4660,6 @@ test("unit_tests") {
     # other things like the ui and startup tests. *shrug*
     ldflags = [ "-Wl,-ObjC" ]
   }
-  if (is_android) {
-    sources += [
-      "../browser/autofill/autofill_credit_card_filling_infobar_delegate_mobile_unittest.cc",
-      "../browser/autofill/autofill_save_card_infobar_delegate_mobile_unittest.cc",
-      "../browser/password_manager/account_chooser_dialog_android_unittest.cc",
-      "../browser/password_manager/auto_signin_first_run_dialog_android_unittest.cc",
-      "../browser/password_manager/save_password_infobar_delegate_android_unittest.cc",
-      "../browser/permissions/permission_queue_controller_unittest.cc",
-    ]
-  }
   if (!is_mac && !is_ios) {
     deps += [
       "//chrome:packed_resources",
@@ -4741,15 +4744,6 @@ test("unit_tests") {
       "../browser/ui/webui/signin/signin_create_profile_handler_unittest.cc",
       "../browser/ui/webui/signin/sync_confirmation_handler_unittest.cc",
       "../browser/upgrade_detector_impl_unittest.cc",
-    ]
-  }
-  if (enable_themes) {
-    sources += [
-      "../browser/themes/browser_theme_pack_unittest.cc",
-      "../browser/themes/theme_properties_unittest.cc",
-      "../browser/themes/theme_service_unittest.cc",
-      "../browser/themes/theme_syncable_service_unittest.cc",
-      "../browser/ui/webui/theme_source_unittest.cc",
     ]
   }
   if (toolkit_views) {

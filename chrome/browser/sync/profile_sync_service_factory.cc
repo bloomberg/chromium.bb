@@ -111,6 +111,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
 #if !defined(OS_ANDROID)
   DependsOn(GlobalErrorServiceFactory::GetInstance());
+  DependsOn(ThemeServiceFactory::GetInstance());
 #endif
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
@@ -118,9 +119,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());
-#if defined(ENABLE_THEMES)
-  DependsOn(ThemeServiceFactory::GetInstance());
-#endif
   DependsOn(WebDataServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   DependsOn(

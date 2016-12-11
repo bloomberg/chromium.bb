@@ -71,7 +71,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_THEMES)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/theme_source.h"
 #endif
 
@@ -855,7 +855,7 @@ AboutUI::AboutUI(content::WebUI* web_ui, const std::string& name)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
 
-#if defined(ENABLE_THEMES)
+#if !defined(OS_ANDROID)
   // Set up the chrome://theme/ source.
   ThemeSource* theme = new ThemeSource(profile);
   content::URLDataSource::Add(profile, theme);

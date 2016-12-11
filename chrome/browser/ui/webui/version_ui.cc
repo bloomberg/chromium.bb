@@ -28,13 +28,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "v8/include/v8.h"
 
-#if defined(ENABLE_THEMES)
-#include "chrome/browser/ui/webui/theme_source.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #include "chrome/browser/ui/android/android_about_app_info.h"
+#else  // !defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/theme_source.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -167,7 +165,7 @@ VersionUI::VersionUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new VersionHandler());
 #endif
 
-#if defined(ENABLE_THEMES)
+#if !defined(OS_ANDROID)
   // Set up the chrome://theme/ source.
   ThemeSource* theme = new ThemeSource(profile);
   content::URLDataSource::Add(profile, theme);

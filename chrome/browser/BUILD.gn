@@ -2283,25 +2283,6 @@ split_static_library("browser") {
       sources -= [ "net/nss_context_linux.cc" ]
     }
   }
-  if (enable_themes) {
-    sources += [
-      "sync/glue/theme_data_type_controller.cc",
-      "sync/glue/theme_data_type_controller.h",
-      "themes/browser_theme_pack.cc",
-      "themes/browser_theme_pack.h",
-      "themes/custom_theme_supplier.cc",
-      "themes/custom_theme_supplier.h",
-      "themes/theme_properties.cc",
-      "themes/theme_service.cc",
-      "themes/theme_service.h",
-      "themes/theme_service_factory.cc",
-      "themes/theme_service_factory.h",
-      "themes/theme_service_mac.mm",
-      "themes/theme_syncable_service.cc",
-      "themes/theme_syncable_service.h",
-    ]
-    deps += [ ":theme_properties" ]
-  }
 
   if (enable_basic_printing || enable_print_preview) {
     # Some form of printing support.
@@ -2765,6 +2746,8 @@ split_static_library("browser") {
       "sync/glue/extension_data_type_controller.h",
       "sync/glue/extension_setting_data_type_controller.cc",
       "sync/glue/extension_setting_data_type_controller.h",
+      "sync/glue/theme_data_type_controller.cc",
+      "sync/glue/theme_data_type_controller.h",
       "sync/sync_ui_util.cc",
       "sync/sync_ui_util.h",
       "task_manager/providers/browser_process_task.cc",
@@ -2833,6 +2816,18 @@ split_static_library("browser") {
       "task_manager/task_manager_interface.h",
       "task_manager/task_manager_observer.cc",
       "task_manager/task_manager_observer.h",
+      "themes/browser_theme_pack.cc",
+      "themes/browser_theme_pack.h",
+      "themes/custom_theme_supplier.cc",
+      "themes/custom_theme_supplier.h",
+      "themes/theme_properties.cc",
+      "themes/theme_service.cc",
+      "themes/theme_service.h",
+      "themes/theme_service_factory.cc",
+      "themes/theme_service_factory.h",
+      "themes/theme_service_mac.mm",
+      "themes/theme_syncable_service.cc",
+      "themes/theme_syncable_service.h",
       "upgrade_detector.cc",
       "upgrade_detector.h",
       "usb/usb_chooser_controller.cc",
@@ -2843,6 +2838,7 @@ split_static_library("browser") {
       "usb/web_usb_detector.h",
     ]
     deps += [
+      ":theme_properties",
       "//apps",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
@@ -3675,9 +3671,9 @@ split_static_library("browser") {
     ]
   }
   if (enable_supervised_users && !is_android) {
-    # TODO(bauerb): This code should be removed (on desktop) once child account
-    # support has launched (https://crbug.com/505443).
     sources += [
+      # TODO(bauerb): The legacy code should be removed (on desktop) once child
+      # account support has launched (https://crbug.com/505443).
       "supervised_user/legacy/custodian_profile_downloader_service.cc",
       "supervised_user/legacy/custodian_profile_downloader_service.h",
       "supervised_user/legacy/custodian_profile_downloader_service_factory.cc",
@@ -3705,10 +3701,6 @@ split_static_library("browser") {
       "supervised_user/legacy/supervised_user_sync_service_factory.cc",
       "supervised_user/legacy/supervised_user_sync_service_factory.h",
       "supervised_user/legacy/supervised_user_sync_service_observer.h",
-    ]
-  }
-  if (enable_supervised_users && enable_themes) {
-    sources += [
       "supervised_user/supervised_user_theme.cc",
       "supervised_user/supervised_user_theme.h",
     ]

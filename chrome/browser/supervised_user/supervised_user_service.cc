@@ -62,6 +62,8 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_pref_mapping_service_factory.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service_factory.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -76,11 +78,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#endif
-
-#if defined(ENABLE_THEMES)
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #endif
 
 using base::DictionaryValue;
@@ -588,7 +585,7 @@ void SupervisedUserService::SetActive(bool active) {
 
   // Now activate/deactivate anything not handled by the delegate yet.
 
-#if defined(ENABLE_THEMES)
+#if !defined(OS_ANDROID)
   // Re-set the default theme to turn the SU theme on/off.
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
   if (theme_service->UsingDefaultTheme() || theme_service->UsingSystemTheme())

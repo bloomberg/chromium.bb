@@ -48,11 +48,9 @@ MDUserManagerUI::MDUserManagerUI(content::WebUI* web_ui)
   // Set up the chrome://md-user-manager/ source.
   content::WebUIDataSource::Add(profile, CreateUIDataSource(localized_strings));
 
-#if defined(ENABLE_THEMES)
   // Set up the chrome://theme/ source
   ThemeSource* theme = new ThemeSource(profile);
   content::URLDataSource::Add(profile, theme);
-#endif
 }
 
 MDUserManagerUI::~MDUserManagerUI() {}

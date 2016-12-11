@@ -27,9 +27,7 @@ NTPResourceCacheFactory::NTPResourceCacheFactory()
         "NTPResourceCache",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(SigninManagerFactory::GetInstance());
-#if defined(ENABLE_THEMES)
   DependsOn(ThemeServiceFactory::GetInstance());
-#endif
 }
 
 NTPResourceCacheFactory::~NTPResourceCacheFactory() {}

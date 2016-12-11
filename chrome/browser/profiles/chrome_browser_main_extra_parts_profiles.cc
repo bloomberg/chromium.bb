@@ -289,6 +289,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   PasswordManagerSettingMigratorServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)
   PinnedTabServiceFactory::GetInstance();
+  ThemeServiceFactory::GetInstance();
 #endif
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginPrefsFactory::GetInstance();
@@ -334,9 +335,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   TabRestoreServiceFactory::GetInstance();
   TemplateURLFetcherFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();
-#if defined(ENABLE_THEMES)
-  ThemeServiceFactory::GetInstance();
-#endif
 #if defined(OS_WIN)
   TriggeredProfileResetterFactory::GetInstance();
 #endif

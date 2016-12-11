@@ -2101,13 +2101,6 @@ split_static_library("ui") {
       "webui/settings/native_certificates_handler.h",
     ]
   }
-  if (enable_themes) {
-    sources += [
-      "webui/theme_source.cc",
-      "webui/theme_source.h",
-    ]
-    deps += [ "//chrome/browser:theme_properties" ]
-  }
   if (enable_print_preview) {
     sources += [
       "webui/print_preview/extension_printer_handler.cc",
@@ -2274,7 +2267,13 @@ split_static_library("ui") {
       deps -= [ "//ui/events" ]
     }
   } else {
-    sources += [ "browser_window.h" ]
+    # !is_android
+    sources += [
+      "browser_window.h",
+      "webui/theme_source.cc",
+      "webui/theme_source.h",
+    ]
+    deps += [ "//chrome/browser:theme_properties" ]
   }
 
   if (is_mac) {

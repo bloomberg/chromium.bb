@@ -25,9 +25,7 @@ AppResourceCacheFactory::AppResourceCacheFactory()
     : BrowserContextKeyedServiceFactory(
         "AppResourceCache",
         BrowserContextDependencyManager::GetInstance()) {
-#if defined(ENABLE_THEMES)
   DependsOn(ThemeServiceFactory::GetInstance());
-#endif
 }
 
 AppResourceCacheFactory::~AppResourceCacheFactory() {}

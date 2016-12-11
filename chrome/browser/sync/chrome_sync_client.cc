@@ -346,7 +346,7 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
 #endif
-#if defined(ENABLE_THEMES)
+#if !defined(OS_ANDROID)
     case syncer::THEMES:
       return ThemeServiceFactory::GetForProfile(profile_)->
           GetThemeSyncableService()->AsWeakPtr();
@@ -543,7 +543,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
   }
 #endif
 
-#if defined(ENABLE_THEMES)
+#if !defined(OS_ANDROID)
   // Theme sync is enabled by default.  Register unless explicitly disabled.
   if (!disabled_types.Has(syncer::THEMES)) {
     sync_service->RegisterDataTypeController(

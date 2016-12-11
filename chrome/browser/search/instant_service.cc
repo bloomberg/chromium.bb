@@ -51,13 +51,10 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/search/local_ntp_source.h"
-#endif
-
-#if defined(ENABLE_THEMES)
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#endif  // defined(ENABLE_THEMES)
+#endif
 
 namespace {
 
@@ -136,18 +133,15 @@ InstantService::InstantService(Profile* profile)
   }
 
   // Set up the data sources that Instant uses on the NTP.
-#if defined(ENABLE_THEMES)
+  // TODO(aurimas) remove this #if once instant_service.cc is no longer compiled
+  // on Android.
+#if !defined(OS_ANDROID)
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile_)));
 
   content::URLDataSource::Add(profile_, new ThemeSource(profile_));
-#endif  // defined(ENABLE_THEMES)
-
-  // TODO(aurimas) remove this #if once instant_service.cc is no longer compiled
-  // on Android.
-#if !defined(OS_ANDROID)
   content::URLDataSource::Add(profile_, new LocalNtpSource(profile_));
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, false));
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, true));
@@ -228,7 +222,7 @@ void InstantService::UndoAllMostVisitedDeletions() {
 }
 
 void InstantService::UpdateThemeInfo() {
-#if defined(ENABLE_THEMES)
+#if !defined(OS_ANDROID)
   // Update theme background info.
   // Initialize |theme_info| if necessary.
   if (!theme_info_) {
@@ -237,7 +231,7 @@ void InstantService::UpdateThemeInfo() {
     for (InstantServiceObserver& observer : observers_)
       observer.ThemeInfoChanged(*theme_info_);
   }
-#endif  // defined(ENABLE_THEMES)
+#endif  // !defined(OS_ANDROID)
 }
 
 void InstantService::UpdateMostVisitedItemsInfo() {
@@ -288,11 +282,11 @@ void InstantService::Observe(int type,
       OnRendererProcessTerminated(
           content::Source<content::RenderProcessHost>(source)->GetID());
       break;
-#if defined(ENABLE_THEMES)
+#if !defined(OS_ANDROID)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
       OnThemeChanged();
       break;
-#endif  // defined(ENABLE_THEMES)
+#endif  // !defined(OS_ANDROID)
     default:
       NOTREACHED() << "Unexpected notification type in InstantService.";
   }
@@ -347,7 +341,7 @@ void InstantService::NotifyAboutMostVisitedItems() {
     observer.MostVisitedItemsChanged(most_visited_items_);
 }
 
-#if defined(ENABLE_THEMES)
+#if !defined(OS_ANDROID)
 
 namespace {
 
@@ -466,7 +460,7 @@ void InstantService::OnThemeChanged() {
   for (InstantServiceObserver& observer : observers_)
     observer.ThemeInfoChanged(*theme_info_);
 }
-#endif  // defined(ENABLE_THEMES)
+#endif  // !defined(OS_ANDROID)
 
 void InstantService::OnTemplateURLServiceChanged() {
   // Check whether the default search provider was changed.

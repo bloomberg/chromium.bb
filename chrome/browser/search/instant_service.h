@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -145,7 +146,7 @@ class InstantService : public KeyedService,
   // Notifies the observer about the last known most visited items.
   void NotifyAboutMostVisitedItems();
 
-#if defined(ENABLE_THEMES)
+#if !defined(OS_ANDROID)
   // Theme changed notification handler.
   void OnThemeChanged();
 #endif
