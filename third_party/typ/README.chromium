@@ -1,7 +1,7 @@
 Name: typ
 URL: https://github.com/dpranke/typ.git
-Version: 0.9.8
-Revision: 3df460d1b6d83594e75f6b50f889a240a2e1925e
+Version: 0.9.9
+Revision: d77f1a5b246a0bbf04eee73c0bef134bf7a7dbcd
 Security Critical: no
 License: Apache 2.0
 License File: NOT_SHIPPED
