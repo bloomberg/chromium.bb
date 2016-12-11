@@ -420,16 +420,11 @@ template("ios_app_bundle") {
     _output_name = invoker.output_name
   }
 
-  # TODO(sdefresne): some target downstream manually pack an PkgInfo, so
-  # allow controlling the generation of the PkgInfo file via an undocumented
-  # parameter until they are fixed.
-  _write_pkg_info = false
   if (defined(invoker.write_pkg_info)) {
-    _write_pkg_info = invoker.write_pkg_info
+    # TODO(sdefresne): remove once all downstream target have been fixed to
+    # not override this variable anymore.
+    assert(invoker.write_pkg_info, "write_pkg_info cannot be overridden")
   }
-
-  assert(_write_pkg_info || !_write_pkg_info,
-         "prevents 'Assignment had no effect.' errors")
 
   _arch_executable_source = _target_name + "_arch_executable_sources"
   _arch_executable_target = _target_name + "_arch_executable"
@@ -645,6 +640,23 @@ template("ios_app_bundle") {
       ]
     }
 
+    _app_product_type = "com.apple.product-type.application"
+    _product_type = _app_product_type
+    if (defined(invoker.product_type)) {
+      _product_type = invoker.product_type
+    }
+
+    _app_bundle_extension = ".app"
+    _bundle_extension = _app_bundle_extension
+    if (defined(invoker.bundle_extension)) {
+      _bundle_extension = invoker.bundle_extension
+    }
+
+    # Only write PkgInfo for real application, not application extension (they
+    # have the same product type but a different extension).
+    _write_pkg_info = _product_type == _app_product_type &&
+                      _bundle_extension == _app_bundle_extension
+
     if (_write_pkg_info) {
       _create_pkg_info = target_name + "_pkg_info"
       action(_create_pkg_info) {
@@ -682,14 +694,12 @@ template("ios_app_bundle") {
                              [
                                "bundle_deps",
                                "bundle_deps_filter",
-                               "bundle_extension",
                                "data_deps",
                                "deps",
                                "enable_code_signing",
                                "entitlements_path",
                                "entitlements_target",
                                "extra_system_frameworks",
-                               "product_type",
                                "public_configs",
                                "public_deps",
                                "testonly",
@@ -699,6 +709,8 @@ template("ios_app_bundle") {
       output_name = _output_name
       bundle_binary_target = ":$_lipo_executable_target"
       bundle_binary_output = _output_name
+      bundle_extension = _bundle_extension
+      product_type = _product_type
 
       if (!defined(bundle_deps)) {
         bundle_deps = []
@@ -713,14 +725,6 @@ template("ios_app_bundle") {
           data_deps = []
         }
         data_deps += [ "//testing/iossim" ]
-      }
-
-      if (!defined(product_type)) {
-        product_type = "com.apple.product-type.application"
-      }
-
-      if (!defined(bundle_extension)) {
-        bundle_extension = ".app"
       }
     }
   }
