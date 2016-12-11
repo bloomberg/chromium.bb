@@ -907,6 +907,10 @@
     "label": "//services/ui/ime:mus_ime_unittests",
     "type": "windowed_test_launcher",
   },
+  "native_theme_unittests": {
+    "label": "//ui/native_theme:native_theme_unittests",
+    "type": "windowed_test_launcher",
+  },
   "ui_android_unittests": {
     "label": "//ui/android:ui_android_unittests",
     "type": "console_test_launcher",
