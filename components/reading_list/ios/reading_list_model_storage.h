@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "components/reading_list/ios/reading_list_entry.h"
 
 class ReadingListModel;
@@ -21,6 +22,9 @@ class ModelTypeSyncBridge;
 class ReadingListModelStorage {
  public:
   class ScopedBatchUpdate;
+
+  ReadingListModelStorage() {}
+  virtual ~ReadingListModelStorage() {}
 
   // Sets the model the Storage is backing.
   // This will trigger store initalization and load persistent entries.
@@ -48,8 +52,15 @@ class ReadingListModelStorage {
 
   class ScopedBatchUpdate {
    public:
+    ScopedBatchUpdate() {}
     virtual ~ScopedBatchUpdate() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ScopedBatchUpdate);
   };
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ReadingListModelStorage);
 };
 
 #endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_STORAGE_H_
