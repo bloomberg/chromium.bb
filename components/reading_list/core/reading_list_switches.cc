@@ -6,12 +6,23 @@
 
 #include "build/build_config.h"
 #include "base/command_line.h"
-#include "components/reading_list/core/reading_list_enable_flags.h"
 
 namespace reading_list {
 namespace switches {
+// Enables the reading list.
+const char kEnableReadingList[] = "enable-reading-list";
+
+// Disables the reading list.
+const char kDisableReadingList[] = "disable-reading-list";
+
 bool IsReadingListEnabled() {
-  return BUILDFLAG(ENABLE_READING_LIST);
+  // Reading list is only enabled on iOS.
+#if defined(OS_IOS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableReadingList)) {
+    return true;
+  }
+#endif
+  return false;
 }
 }  // namespace switches
 }  // namespace reading_list

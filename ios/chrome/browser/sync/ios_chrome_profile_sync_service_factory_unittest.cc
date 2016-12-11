@@ -45,7 +45,6 @@ class IOSChromeProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::PASSWORDS);
     datatypes.push_back(syncer::PREFERENCES);
     datatypes.push_back(syncer::PRIORITY_PREFERENCES);
-    datatypes.push_back(syncer::READING_LIST);
     datatypes.push_back(syncer::SESSIONS);
     datatypes.push_back(syncer::PROXY_TABS);
     datatypes.push_back(syncer::TYPED_URLS);

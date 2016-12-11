@@ -234,6 +234,13 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisablePaymentRequest);
   }
 
+  // Populate command line flags from Reading List.
+  if ([defaults boolForKey:@"EnableReadingList"]) {
+    command_line->AppendSwitch(reading_list::switches::kEnableReadingList);
+  } else {
+    command_line->AppendSwitch(reading_list::switches::kDisableReadingList);
+  }
+
   // Populate command line flag for Spotlight Actions.
   if ([defaults boolForKey:@"DisableSpotlightActions"]) {
     command_line->AppendSwitch(switches::kDisableSpotlightActions);
