@@ -673,6 +673,7 @@ int MotionEvents::Run() {
     if (!frame.callback_pending) {
       DCHECK_GT(pending_frames.size(), 0u);
       wl_surface_set_buffer_scale(surface.get(), scale_);
+      wl_surface_damage(surface.get(), 0, 0, width_ / scale_, height_ / scale_);
       wl_surface_attach(surface.get(), pending_frames.front(), 0, 0);
       pending_frames.pop_front();
 
