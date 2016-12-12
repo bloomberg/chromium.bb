@@ -155,8 +155,6 @@ blink_core_sources("dom") {
     "IgnoreDestructiveWriteCountIncrementer.h",
     "IncrementLoadEventDelayCount.cpp",
     "IncrementLoadEventDelayCount.h",
-    "IntersectionGeometry.cpp",
-    "IntersectionGeometry.h",
     "IntersectionObservation.cpp",
     "IntersectionObservation.h",
     "IntersectionObserver.cpp",

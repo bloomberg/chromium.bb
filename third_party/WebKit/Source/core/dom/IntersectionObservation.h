@@ -6,7 +6,6 @@
 #define IntersectionObservation_h
 
 #include "core/dom/DOMHighResTimeStamp.h"
-#include "core/dom/IntersectionGeometry.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -17,10 +16,9 @@ class IntersectionObserver;
 class IntersectionObservation final
     : public GarbageCollected<IntersectionObservation> {
  public:
-  IntersectionObservation(
-      IntersectionObserver&,
-      Element&,
-      IntersectionGeometry::ReportRootBounds shouldReportRootBounds);
+  IntersectionObservation(IntersectionObserver&,
+                          Element&,
+                          bool shouldReportRootBounds);
 
   IntersectionObserver& observer() const { return *m_observer; }
   Element* target() const { return m_target; }

@@ -39,7 +39,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/Fullscreen.h"
-#include "core/dom/IntersectionGeometry.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
@@ -66,6 +65,7 @@
 #include "core/html/track/VideoTrack.h"
 #include "core/html/track/VideoTrackList.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/IntersectionGeometry.h"
 #include "core/layout/LayoutMedia.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -4069,9 +4069,9 @@ DEFINE_TRACE(HTMLMediaElement::AudioSourceProviderImpl) {
 void HTMLMediaElement::checkViewportIntersectionChanged() {
   // TODO(xjz): Early return if we not in tab mirroring.
 
-  IntersectionGeometry geometry(
-      document().frame()->localFrameRoot()->document(), this, Vector<Length>(),
-      IntersectionGeometry::ReportRootBounds::kShouldReportRootBounds);
+  bool shouldReportRootBounds = true;
+  IntersectionGeometry geometry(nullptr, *this, Vector<Length>(),
+                                shouldReportRootBounds);
   geometry.computeGeometry();
   IntRect intersectRect = geometry.intersectionIntRect();
   if (m_currentIntersectRect == intersectRect)

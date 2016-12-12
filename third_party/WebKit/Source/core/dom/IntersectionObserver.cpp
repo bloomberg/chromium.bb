@@ -270,11 +270,8 @@ void IntersectionObserver::observe(Element* target,
     isDOMDescendant = (targetFrame->tree().top() == rootFrame);
   }
 
-  IntersectionObservation* observation = new IntersectionObservation(
-      *this, *target,
-      shouldReportRootBounds
-          ? IntersectionGeometry::ReportRootBounds::kShouldReportRootBounds
-          : IntersectionGeometry::ReportRootBounds::kShouldNotReportRootBounds);
+  IntersectionObservation* observation =
+      new IntersectionObservation(*this, *target, shouldReportRootBounds);
   target->ensureIntersectionObserverData().addObservation(*observation);
   m_observations.add(observation);
 
