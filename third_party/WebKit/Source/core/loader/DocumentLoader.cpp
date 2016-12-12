@@ -148,6 +148,10 @@ unsigned long DocumentLoader::mainResourceIdentifier() const {
   return m_mainResource ? m_mainResource->identifier() : 0;
 }
 
+ResourceTimingInfo* DocumentLoader::getNavigationTimingInfo() const {
+  return fetcher()->getNavigationTimingInfo();
+}
+
 const ResourceRequest& DocumentLoader::originalRequest() const {
   return m_originalRequest;
 }

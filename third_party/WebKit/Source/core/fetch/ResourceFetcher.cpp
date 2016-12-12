@@ -103,6 +103,18 @@ bool IsCrossOrigin(const KURL& a, const KURL& b) {
   return !originB->isSameSchemeHostPort(originA.get());
 }
 
+void addRedirectsToTimingInfo(Resource* resource, ResourceTimingInfo* info) {
+  // Store redirect responses that were packed inside the final response.
+  const auto& responses = resource->response().redirectResponses();
+  for (size_t i = 0; i < responses.size(); ++i) {
+    const KURL& newURL = i + 1 < responses.size()
+                             ? KURL(responses[i + 1].url())
+                             : resource->resourceRequest().url();
+    bool crossOrigin = IsCrossOrigin(responses[i].url(), newURL);
+    info->addRedirect(responses[i], crossOrigin);
+  }
+}
+
 }  // namespace
 
 static void RecordSriResourceIntegrityMismatchEvent(
@@ -597,7 +609,6 @@ Resource* ResourceFetcher::requestResource(
         resource->setLinkPreload(false);
       break;
   }
-
   if (!resource)
     return nullptr;
   if (resource->getType() != factory.type()) {
@@ -641,7 +652,6 @@ Resource* ResourceFetcher::requestResource(
 
   if (!startLoad(resource))
     return nullptr;
-
   scopedResourceLoadTracker.resourceLoadContinuesBeyondScope();
 
   DCHECK(!resource->errorOccurred() ||
@@ -757,7 +767,7 @@ Resource* ResourceFetcher::createResourceForLoading(
   return resource;
 }
 
-void ResourceFetcher::storeResourceTimingInitiatorInformation(
+void ResourceFetcher::storePerformanceTimingInitiatorInformation(
     Resource* resource) {
   const AtomicString& fetchInitiator = resource->options().initiatorInfo.name;
   if (fetchInitiator == FetchInitiatorTypeNames::internal)
@@ -771,6 +781,14 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(
                          ? resource->resourceRequest().navigationStartTime()
                          : monotonicallyIncreasingTime();
 
+  // This buffer is created and populated for providing transferSize
+  // and redirect timing opt-in information.
+  if (isMainResource) {
+    DCHECK(!m_navigationTimingInfo);
+    m_navigationTimingInfo =
+        ResourceTimingInfo::create(fetchInitiator, startTime, isMainResource);
+  }
+
   std::unique_ptr<ResourceTimingInfo> info =
       ResourceTimingInfo::create(fetchInitiator, startTime, isMainResource);
 
@@ -782,8 +800,9 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(
   }
 
   if (!isMainResource ||
-      context().updateTimingInfoForIFrameNavigation(info.get()))
+      context().updateTimingInfoForIFrameNavigation(info.get())) {
     m_resourceTimingInfoMap.add(resource, std::move(info));
+  }
 }
 
 ResourceFetcher::RevalidationPolicy
@@ -1125,6 +1144,10 @@ ArchiveResource* ResourceFetcher::createArchive(Resource* resource) {
   return m_archive ? m_archive->mainResource() : nullptr;
 }
 
+ResourceTimingInfo* ResourceFetcher::getNavigationTimingInfo() {
+  return m_navigationTimingInfo.get();
+}
+
 void ResourceFetcher::didFinishLoading(Resource* resource,
                                        double finishTime,
                                        DidFinishLoadingReason finishReason) {
@@ -1143,18 +1166,19 @@ void ResourceFetcher::didFinishLoading(Resource* resource,
   DCHECK(finishReason == DidFinishFirstPartInMultipart ||
          !m_nonBlockingLoaders.contains(resource->loader()));
 
+  if (resource->getType() == Resource::MainResource) {
+    DCHECK(m_navigationTimingInfo);
+    // Store redirect responses that were packed inside the final response.
+    addRedirectsToTimingInfo(resource, m_navigationTimingInfo.get());
+    if (resource->response().isHTTP()) {
+      m_navigationTimingInfo->addFinalTransferSize(
+          encodedDataLength == -1 ? 0 : encodedDataLength);
+    }
+  }
   if (std::unique_ptr<ResourceTimingInfo> info =
           m_resourceTimingInfoMap.take(resource)) {
     // Store redirect responses that were packed inside the final response.
-    const Vector<ResourceResponse>& responses =
-        resource->response().redirectResponses();
-    for (size_t i = 0; i < responses.size(); ++i) {
-      const KURL& newURL = i + 1 < responses.size()
-                               ? KURL(responses[i + 1].url())
-                               : resource->resourceRequest().url();
-      bool crossOrigin = IsCrossOrigin(responses[i].url(), newURL);
-      info->addRedirect(responses[i], crossOrigin);
-    }
+    addRedirectsToTimingInfo(resource, info.get());
 
     if (resource->response().isHTTP() &&
         resource->response().httpStatusCode() < 400) {
@@ -1326,7 +1350,7 @@ bool ResourceFetcher::startLoad(Resource* resource) {
   else
     m_nonBlockingLoaders.add(loader);
 
-  storeResourceTimingInitiatorInformation(resource);
+  storePerformanceTimingInitiatorInformation(resource);
   resource->setFetcherSecurityOrigin(sourceOrigin);
 
   loader->activateCacheAwareLoadingIfNeeded(request);
@@ -1419,6 +1443,13 @@ ResourceRequestBlockedReason ResourceFetcher::willFollowRedirect(
     bool crossOrigin = IsCrossOrigin(redirectResponse.url(), newRequest.url());
     it->value->addRedirect(redirectResponse, crossOrigin);
   }
+
+  if (resource->getType() == Resource::MainResource) {
+    DCHECK(m_navigationTimingInfo);
+    bool crossOrigin = IsCrossOrigin(redirectResponse.url(), newRequest.url());
+    m_navigationTimingInfo->addRedirect(redirectResponse, crossOrigin);
+  }
+
   newRequest.setAllowStoredCredentials(resource->options().allowCredentials ==
                                        AllowStoredCredentials);
   willSendRequest(resource->identifier(), newRequest, redirectResponse,

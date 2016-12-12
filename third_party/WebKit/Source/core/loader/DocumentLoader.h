@@ -60,6 +60,7 @@ class ResourceFetcher;
 class DocumentInit;
 class LocalFrame;
 class FrameLoader;
+class ResourceTimingInfo;
 class WebDocumentSubresourceFilter;
 struct ViewportDescriptionWrapper;
 
@@ -78,6 +79,8 @@ class CORE_EXPORT DocumentLoader
   ~DocumentLoader() override;
 
   LocalFrame* frame() const { return m_frame; }
+
+  ResourceTimingInfo* getNavigationTimingInfo() const;
 
   virtual void detachFromFrame();
 

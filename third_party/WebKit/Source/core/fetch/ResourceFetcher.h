@@ -152,6 +152,9 @@ class CORE_EXPORT ResourceFetcher
 
   void reloadLoFiImages();
 
+  // Calling this method before main document resource is fetched is invalid.
+  ResourceTimingInfo* getNavigationTimingInfo();
+
   // This is only exposed for testing purposes.
   HeapListHashSet<Member<Resource>>* preloads() { return m_preloads.get(); }
 
@@ -171,7 +174,7 @@ class CORE_EXPORT ResourceFetcher
   Resource* createResourceForLoading(FetchRequest&,
                                      const String& charset,
                                      const ResourceFactory&);
-  void storeResourceTimingInitiatorInformation(Resource*);
+  void storePerformanceTimingInitiatorInformation(Resource*);
   ResourceLoadPriority computeLoadPriority(Resource::Type,
                                            const FetchRequest&,
                                            ResourcePriority::VisibilityStatus);
@@ -236,6 +239,8 @@ class CORE_EXPORT ResourceFetcher
   using ResourceTimingInfoMap =
       HeapHashMap<Member<Resource>, std::unique_ptr<ResourceTimingInfo>>;
   ResourceTimingInfoMap m_resourceTimingInfoMap;
+
+  std::unique_ptr<ResourceTimingInfo> m_navigationTimingInfo;
 
   Vector<std::unique_ptr<ResourceTimingInfo>> m_scheduledResourceTimingReports;
 

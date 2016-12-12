@@ -144,6 +144,47 @@ TEST_F(ResourceFetcherTest, Vary) {
   memoryCache()->remove(resource);
 }
 
+TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
+  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+  ResourceResponse response;
+  response.setURL(url);
+  response.setHTTPStatusCode(200);
+
+  ResourceFetcher* fetcher = ResourceFetcher::create(
+      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceRequest resourceRequest(url);
+  resourceRequest.setFrameType(WebURLRequest::FrameTypeNested);
+  resourceRequest.setRequestContext(WebURLRequest::RequestContextForm);
+  FetchRequest fetchRequest =
+      FetchRequest(resourceRequest, FetchInitiatorInfo());
+  Platform::current()->getURLLoaderMockFactory()->registerURL(
+      url, WebURLResponse(), "");
+  Resource* resource =
+      RawResource::fetchMainResource(fetchRequest, fetcher, SubstituteData());
+  resource->responseReceived(response, nullptr);
+  EXPECT_EQ(resource->getType(), Resource::MainResource);
+
+  ResourceTimingInfo* navigationTimingInfo = fetcher->getNavigationTimingInfo();
+  ASSERT_TRUE(navigationTimingInfo);
+  long long encodedDataLength = 123;
+  resource->loader()->didFinishLoading(0.0, encodedDataLength, 0);
+  EXPECT_EQ(navigationTimingInfo->transferSize(), encodedDataLength);
+
+  // When there are redirects.
+  KURL redirectURL(ParsedURLString, "http://127.0.0.1:8000/redirect.html");
+  ResourceResponse redirectResponse;
+  redirectResponse.setURL(redirectURL);
+  redirectResponse.setHTTPStatusCode(200);
+  long long redirectEncodedDataLength = 123;
+  redirectResponse.setEncodedDataLength(redirectEncodedDataLength);
+  ResourceRequest redirectResourceRequest(url);
+  fetcher->willFollowRedirect(resource, redirectResourceRequest,
+                              redirectResponse);
+  EXPECT_EQ(navigationTimingInfo->transferSize(),
+            encodedDataLength + redirectEncodedDataLength);
+  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
+}
+
 TEST_F(ResourceFetcherTest, VaryOnBack) {
   MockFetchContext* context =
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource);

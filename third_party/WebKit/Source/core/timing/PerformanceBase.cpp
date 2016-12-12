@@ -336,12 +336,17 @@ void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
   DCHECK(frame);
   const DocumentLoader* documentLoader = frame->loader().documentLoader();
   DCHECK(documentLoader);
+
   const DocumentLoadTiming& documentLoadTiming = documentLoader->timing();
 
   const DocumentTiming* documentTiming =
       frame->document() ? &(frame->document()->timing()) : nullptr;
 
   const ResourceResponse& finalResponse = documentLoader->response();
+  ResourceTimingInfo* navigationTimingInfo =
+      documentLoader->getNavigationTimingInfo();
+  if (!navigationTimingInfo)
+    return;
 
   ResourceLoadTiming* resourceLoadTiming = finalResponse.resourceLoadTiming();
   // Don't create a navigation timing instance when
@@ -352,8 +357,7 @@ void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
   double lastRedirectEndTime = documentLoadTiming.redirectEnd();
   double finishTime = documentLoadTiming.loadEventEnd();
 
-  // TODO(sunjian) Implement transfer size. crbug/663187
-  unsigned long long transferSize = 0;
+  unsigned long long transferSize = navigationTimingInfo->transferSize();
   unsigned long long encodedBodyLength = finalResponse.encodedBodyLength();
   unsigned long long decodedBodyLength = finalResponse.decodedBodyLength();
   bool didReuseConnection = finalResponse.connectionReused();
