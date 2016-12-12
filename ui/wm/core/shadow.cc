@@ -15,10 +15,6 @@ namespace wm {
 
 namespace {
 
-// The opacity used for active shadow when animating between
-// inactive/active shadow.
-const float kInactiveShadowAnimationOpacity = 0.2f;
-
 // Rounded corners are overdrawn on top of the window's content layer,
 // we need to exclude them from the occlusion area.
 const int kRoundedCornerRadius = 2;
@@ -73,18 +69,16 @@ Shadow::~Shadow() {}
 
 void Shadow::Init(Style style) {
   style_ = style;
-
   layer_.reset(new ui::Layer(ui::LAYER_NOT_DRAWN));
-  shadow_layer_.reset(new ui::Layer(ui::LAYER_NINE_PATCH));
-  layer()->Add(shadow_layer_.get());
-
-  UpdateImagesForStyle();
-  shadow_layer_->set_name("Shadow");
-  shadow_layer_->SetVisible(true);
-  shadow_layer_->SetFillsBoundsOpaquely(false);
+  RecreateShadowLayer();
 }
 
 void Shadow::SetContentBounds(const gfx::Rect& content_bounds) {
+  // When the window moves but doesn't change size, this is a no-op. (The
+  // origin stays the same in this case.)
+  if (content_bounds == content_bounds_)
+    return;
+
   content_bounds_ = content_bounds;
   UpdateLayerBounds();
 }
@@ -93,64 +87,49 @@ void Shadow::SetStyle(Style style) {
   if (style_ == style)
     return;
 
-  Style old_style = style_;
   style_ = style;
 
   // Stop waiting for any as yet unfinished implicit animations.
   StopObservingImplicitAnimations();
 
-  // If we're switching to or from the small style, don't bother with
-  // animations.
-  if (style == STYLE_SMALL || old_style == STYLE_SMALL) {
-    UpdateImagesForStyle();
-    // Make sure the shadow is fully opaque.
-    shadow_layer_->SetOpacity(1.0f);
-    return;
-  }
-
-  // If we're becoming active, switch images now.  Because the inactive image
-  // has a very low opacity the switch isn't noticeable and this approach
-  // allows us to use only a single set of shadow images at a time.
-  if (style == STYLE_ACTIVE) {
-    UpdateImagesForStyle();
-    // Opacity was baked into inactive image, start opacity low to match.
-    shadow_layer_->SetOpacity(kInactiveShadowAnimationOpacity);
-  }
+  // The old shadow layer is the new fading out layer.
+  DCHECK(shadow_layer_);
+  fading_layer_ = std::move(shadow_layer_);
+  RecreateShadowLayer();
+  shadow_layer_->SetOpacity(0.f);
 
   {
-    // Property sets within this scope will be implicitly animated.
-    ui::ScopedLayerAnimationSettings settings(shadow_layer_->GetAnimator());
+    // Observe the fade out animation so we can clean up the layer when done.
+    ui::ScopedLayerAnimationSettings settings(fading_layer_->GetAnimator());
     settings.AddObserver(this);
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kShadowAnimationDurationMs));
-    switch (style_) {
-      case STYLE_ACTIVE:
-        // Animate the active shadow from kInactiveShadowAnimationOpacity to
-        // 1.0f.
-        shadow_layer_->SetOpacity(1.0f);
-        break;
-      case STYLE_INACTIVE:
-        // The opacity will be reset to 1.0f when animation is completed.
-        shadow_layer_->SetOpacity(kInactiveShadowAnimationOpacity);
-        break;
-      default:
-        NOTREACHED() << "Unhandled style " << style_;
-        break;
-    }
+    fading_layer_->SetOpacity(0.f);
+  }
+
+  {
+    // We don't care to observe this one.
+    ui::ScopedLayerAnimationSettings settings(shadow_layer_->GetAnimator());
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kShadowAnimationDurationMs));
+    shadow_layer_->SetOpacity(1.f);
   }
 }
 
 void Shadow::OnImplicitAnimationsCompleted() {
-  // If we just finished going inactive, switch images.  This doesn't cause
-  // a visual pop because the inactive image opacity is so low.
-  if (style_ == STYLE_INACTIVE) {
-    UpdateImagesForStyle();
-    // Opacity is baked into inactive image, so set fully opaque.
-    shadow_layer_->SetOpacity(1.0f);
-  }
+  fading_layer_.reset();
+  // The size needed for layer() may be smaller now that |fading_layer_| is
+  // removed.
+  UpdateLayerBounds();
 }
 
-void Shadow::UpdateImagesForStyle() {
+void Shadow::RecreateShadowLayer() {
+  shadow_layer_.reset(new ui::Layer(ui::LAYER_NINE_PATCH));
+  shadow_layer_->set_name("Shadow");
+  shadow_layer_->SetVisible(true);
+  shadow_layer_->SetFillsBoundsOpaquely(false);
+  layer()->Add(shadow_layer_.get());
+
   const ShadowDetails& details = GetDetailsForElevation(ElevationForStyle());
   shadow_layer_->UpdateNinePatchLayerImage(details.ninebox_image);
   // The ninebox grid is defined in terms of the image size. The shadow blurs in
@@ -170,15 +149,37 @@ void Shadow::UpdateLayerBounds() {
   // Shadow margins are negative, so this expands outwards from
   // |content_bounds_|.
   const gfx::Insets margins = gfx::ShadowValue::GetMargin(details.values);
-  gfx::Rect layer_bounds = content_bounds_;
-  layer_bounds.Inset(margins);
-  layer()->SetBounds(layer_bounds);
-  const gfx::Rect shadow_layer_bounds(layer_bounds.size());
+  gfx::Rect new_layer_bounds = content_bounds_;
+  new_layer_bounds.Inset(margins);
+  gfx::Rect shadow_layer_bounds(new_layer_bounds.size());
+
+  // When there's an old shadow fading out, the bounds of layer() have to be
+  // big enough to encompass both shadows.
+  if (fading_layer_) {
+    const gfx::Rect old_layer_bounds = layer()->bounds();
+    gfx::Rect combined_layer_bounds = old_layer_bounds;
+    combined_layer_bounds.Union(new_layer_bounds);
+    layer()->SetBounds(combined_layer_bounds);
+
+    // If this is reached via SetContentBounds, we might hypothetically need
+    // to change the size of the fading layer, but the fade is so fast it's
+    // not really an issue.
+    gfx::Rect fading_layer_bounds(fading_layer_->bounds());
+    fading_layer_bounds.Offset(old_layer_bounds.origin() -
+                               combined_layer_bounds.origin());
+    fading_layer_->SetBounds(fading_layer_bounds);
+
+    shadow_layer_bounds.Offset(new_layer_bounds.origin() -
+                               combined_layer_bounds.origin());
+  } else {
+    layer()->SetBounds(new_layer_bounds);
+  }
+
   shadow_layer_->SetBounds(shadow_layer_bounds);
 
   // Occlude the region inside the bounding box. Occlusion uses shadow layer
   // space. See nine_patch_layer.h for more context on what's going on here.
-  gfx::Rect occlusion_bounds = shadow_layer_bounds;
+  gfx::Rect occlusion_bounds(shadow_layer_bounds.size());
   occlusion_bounds.Inset(-margins + gfx::Insets(kRoundedCornerRadius));
   shadow_layer_->UpdateNinePatchOcclusion(occlusion_bounds);
 

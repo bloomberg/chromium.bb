@@ -62,8 +62,8 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   void OnImplicitAnimationsCompleted() override;
 
  private:
-  // Updates the shadow images to the current |style_|.
-  void UpdateImagesForStyle();
+  // Updates the shadow layer and its image to the current |style_|.
+  void RecreateShadowLayer();
 
   // Updates the shadow layer bounds based on the inteior inset and the current
   // |content_bounds_|.
@@ -83,6 +83,10 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
 
   // The actual shadow layer corresponding to a cc::NinePatchLayer.
   std::unique_ptr<ui::Layer> shadow_layer_;
+
+  // When the style changes, the old shadow cross-fades with the new one.
+  // When non-null, this is an old |shadow_layer_| that's being animated out.
+  std::unique_ptr<ui::Layer> fading_layer_;
 
   // Bounds of the content that the shadow encloses.
   gfx::Rect content_bounds_;
