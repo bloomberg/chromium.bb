@@ -36,13 +36,6 @@ ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
 
 ScriptSourceCode::~ScriptSourceCode() {}
 
-void ScriptSourceCode::dispose() {
-  m_source = String();
-  m_resource = nullptr;
-  m_streamer = nullptr;
-  m_url = KURL();
-}
-
 DEFINE_TRACE(ScriptSourceCode) {
   visitor->trace(m_resource);
   visitor->trace(m_streamer);

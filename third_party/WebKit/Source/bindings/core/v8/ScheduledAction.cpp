@@ -61,17 +61,7 @@ DEFINE_TRACE(ScheduledAction) {
   visitor->trace(m_code);
 }
 
-ScheduledAction::~ScheduledAction() {
-  // Verify that owning DOMTimer has eagerly disposed.
-  DCHECK(m_info.IsEmpty());
-}
-
-void ScheduledAction::dispose() {
-  m_code.dispose();
-  m_info.Clear();
-  m_function.clear();
-  m_scriptState.clear();
-}
+ScheduledAction::~ScheduledAction() {}
 
 void ScheduledAction::execute(ExecutionContext* context) {
   if (context->isDocument()) {

@@ -56,7 +56,6 @@ class CORE_EXPORT ScriptSourceCode final {
   ScriptSourceCode(ScriptStreamer*, ScriptResource*);
 
   ~ScriptSourceCode();
-  void dispose();
   DECLARE_TRACE();
 
   bool isEmpty() const { return m_source.isEmpty(); }
@@ -66,13 +65,13 @@ class CORE_EXPORT ScriptSourceCode final {
   bool isNull() const { return m_source.isNull(); }
 
   const String& source() const { return m_source; }
-  ScriptResource* resource() const { return m_resource; }
+  ScriptResource* resource() const { return m_resource.get(); }
   const KURL& url() const;
   int startLine() const { return m_startPosition.m_line.oneBasedInt(); }
   const TextPosition& startPosition() const { return m_startPosition; }
   String sourceMapUrl() const;
 
-  ScriptStreamer* streamer() const { return m_streamer; }
+  ScriptStreamer* streamer() const { return m_streamer.get(); }
 
  private:
   void treatNullSourceAsEmpty();
