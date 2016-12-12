@@ -11,19 +11,17 @@
 #include "base/memory/weak_ptr.h"
 #include "components/payments/payment_app.mojom.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 
-class PaymentAppContext;
-class ServiceWorkerRegistration;
+class PaymentAppContextImpl;
 
 class CONTENT_EXPORT PaymentAppManager
     : public NON_EXPORTED_BASE(payments::mojom::PaymentAppManager) {
  public:
   PaymentAppManager(
-      PaymentAppContext* payment_app_context,
+      PaymentAppContextImpl* payment_app_context,
       mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request);
 
   ~PaymentAppManager() override;
@@ -38,29 +36,11 @@ class CONTENT_EXPORT PaymentAppManager
   void GetManifest(const std::string& scope,
                    const GetManifestCallback& callback) override;
 
-  // SetManifest callbacks
-  void DidFindRegistrationToSetManifest(
-      payments::mojom::PaymentAppManifestPtr manifest,
-      const SetManifestCallback& callback,
-      ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
-  void DidSetManifest(const SetManifestCallback& callback,
-                      ServiceWorkerStatusCode status);
-
-  // GetManifest callbacks
-  void DidFindRegistrationToGetManifest(
-      const GetManifestCallback& callback,
-      ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
-  void DidGetManifest(const GetManifestCallback& callback,
-                      const std::vector<std::string>& data,
-                      ServiceWorkerStatusCode status);
-
   // Called when an error is detected on binding_.
   void OnConnectionError();
 
-  // PaymentAppContext owns PaymentAppManager
-  PaymentAppContext* payment_app_context_;
+  // PaymentAppContextImpl owns PaymentAppManager
+  PaymentAppContextImpl* payment_app_context_;
 
   mojo::Binding<payments::mojom::PaymentAppManager> binding_;
 
