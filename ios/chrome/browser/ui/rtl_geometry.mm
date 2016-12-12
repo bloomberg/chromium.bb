@@ -10,10 +10,6 @@
 #include "base/logging.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 bool UseRTLLayout() {
   return base::i18n::IsRTL();
 }

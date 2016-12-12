@@ -5,7 +5,6 @@
 import("//build/config/ios/rules.gni")
 
 source_set("ui") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "UIView+SizeClassSupport.h",
     "UIView+SizeClassSupport.mm",

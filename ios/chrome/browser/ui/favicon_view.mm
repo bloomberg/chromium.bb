@@ -4,11 +4,8 @@
 
 #import "ios/chrome/browser/ui/favicon_view.h"
 
+#include "base/mac/objc_property_releaser.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 // Default corner radius for the favicon image view.
@@ -17,12 +14,13 @@ const CGFloat kDefaultCornerRadius = 3;
 
 @interface FaviconViewNew () {
   // Property releaser for FaviconViewNew.
+  base::mac::ObjCPropertyReleaser _propertyReleaser_FaviconViewNew;
 }
 
 // Image view for the favicon.
-@property(nonatomic, strong) UIImageView* faviconImageView;
+@property(nonatomic, retain) UIImageView* faviconImageView;
 // Label for fallback favicon placeholder.
-@property(nonatomic, strong) UILabel* faviconFallbackLabel;
+@property(nonatomic, retain) UILabel* faviconFallbackLabel;
 
 @end
 
@@ -33,6 +31,7 @@ const CGFloat kDefaultCornerRadius = 3;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
+    _propertyReleaser_FaviconViewNew.Init(self, [FaviconViewNew class]);
     _faviconImageView = [[UIImageView alloc] initWithFrame:self.bounds];
     _faviconImageView.clipsToBounds = YES;
     _faviconImageView.layer.cornerRadius = kDefaultCornerRadius;
