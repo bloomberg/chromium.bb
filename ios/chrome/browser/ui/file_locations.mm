@@ -9,6 +9,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/application_context.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // English is the default locale for the Terms of Service.
 const char kEnglishLocale[] = "en";

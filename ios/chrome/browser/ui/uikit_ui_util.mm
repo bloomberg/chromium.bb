@@ -15,7 +15,6 @@
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/web/public/web_thread.h"
@@ -23,6 +22,10 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/ios/uikit_util.h"
 #include "ui/gfx/scoped_cg_context_save_gstate_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -552,8 +555,8 @@ void ApplyVisualConstraintsWithMetricsAndOptions(
     NSDictionary* subviewsDictionary,
     NSDictionary* metrics,
     NSLayoutFormatOptions options) {
-  base::scoped_nsobject<NSMutableArray> layoutConstraints(
-      [[NSMutableArray arrayWithCapacity:constraints.count * 3] retain]);
+  NSMutableArray* layoutConstraints =
+      [NSMutableArray arrayWithCapacity:constraints.count * 3];
   for (NSString* constraint in constraints) {
     DCHECK([constraint isKindOfClass:[NSString class]]);
     [layoutConstraints addObjectsFromArray:

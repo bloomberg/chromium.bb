@@ -9,6 +9,10 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 UIColor* DominantColorForImage(const gfx::Image& image, CGFloat opacity) {
   SkColor color = color_utils::CalculateKMeanColorOfBitmap(*image.ToSkBitmap());
   UIColor* result = [UIColor colorWithRed:SkColorGetR(color) / 255.0

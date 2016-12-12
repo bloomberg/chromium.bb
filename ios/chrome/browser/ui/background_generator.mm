@@ -10,8 +10,11 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/ui_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // This is a utility function that may be used as a standalone helper function
 // to generate a radial gradient UIImage.
@@ -48,8 +51,7 @@ UIImage* GetRadialGradient(CGRect backgroundRect,
 }
 
 void InstallBackgroundInView(UIView* view) {
-  UIImageView* imageView =
-      [[[UIImageView alloc] initWithFrame:view.bounds] autorelease];
+  UIImageView* imageView = [[UIImageView alloc] initWithFrame:view.bounds];
   imageView.image = [UIImage imageNamed:@"stack_view_background_noise.jpg"];
   imageView.contentMode = UIViewContentModeScaleAspectFill;
   imageView.autoresizingMask =
