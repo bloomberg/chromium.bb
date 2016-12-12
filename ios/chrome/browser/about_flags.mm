@@ -31,16 +31,13 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#include "ios/chrome/browser/google_api_keys.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_view_creation_util.h"
 
 #if !defined(OFFICIAL_BUILD)
 #include "components/variations/variations_switches.h"
-#endif
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
 #endif
 
 namespace {
@@ -79,19 +76,22 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   NSString* gaia_environment = [defaults stringForKey:kGAIAEnvironment];
   if ([gaia_environment isEqualToString:@"Staging"]) {
     command_line->AppendSwitchASCII(switches::kGoogleApisUrl,
-                                    GOOGLE_STAGING_API_URL);
-    command_line->AppendSwitchASCII(switches::kLsoUrl, GOOGLE_STAGING_LSO_URL);
+                                    BUILDFLAG(GOOGLE_STAGING_API_URL));
+    command_line->AppendSwitchASCII(switches::kLsoUrl,
+                                    BUILDFLAG(GOOGLE_STAGING_LSO_URL));
   } else if ([gaia_environment isEqualToString:@"Test"]) {
-    command_line->AppendSwitchASCII(switches::kGaiaUrl, GOOGLE_TEST_OAUTH_URL);
+    command_line->AppendSwitchASCII(switches::kGaiaUrl,
+                                    BUILDFLAG(GOOGLE_TEST_OAUTH_URL));
     command_line->AppendSwitchASCII(switches::kGoogleApisUrl,
-                                    GOOGLE_TEST_API_URL);
-    command_line->AppendSwitchASCII(switches::kLsoUrl, GOOGLE_TEST_LSO_URL);
+                                    BUILDFLAG(GOOGLE_TEST_API_URL));
+    command_line->AppendSwitchASCII(switches::kLsoUrl,
+                                    BUILDFLAG(GOOGLE_TEST_LSO_URL));
     command_line->AppendSwitchASCII(switches::kSyncServiceURL,
-                                    GOOGLE_TEST_SYNC_URL);
+                                    BUILDFLAG(GOOGLE_TEST_SYNC_URL));
     command_line->AppendSwitchASCII(switches::kOAuth2ClientID,
-                                    GOOGLE_TEST_OAUTH_CLIENT_ID);
+                                    BUILDFLAG(GOOGLE_TEST_OAUTH_CLIENT_ID));
     command_line->AppendSwitchASCII(switches::kOAuth2ClientSecret,
-                                    GOOGLE_TEST_OAUTH_CLIENT_SECRET);
+                                    BUILDFLAG(GOOGLE_TEST_OAUTH_CLIENT_SECRET));
   }
 
   // Populate command line flag for the Tab Switcher experiment from the

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ios/rules.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -21,6 +22,8 @@ declare_args() {
 
 source_set("browser") {
   sources = [
+    "about_flags.h",
+    "about_flags.mm",
     "app_startup_parameters.h",
     "app_startup_parameters.mm",
     "application_context.cc",
@@ -74,10 +77,14 @@ source_set("browser") {
     "xcallback_parameters.mm",
   ]
   deps = [
+    ":google_api_keys_header",
     ":settings_resources",
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
+    "//components/dom_distiller/core",
+    "//components/flags_ui",
+    "//components/flags_ui:switches",
     "//components/gcm_driver",
     "//components/handoff",
     "//components/keyed_service/core",
@@ -95,12 +102,16 @@ source_set("browser") {
     "//components/search_engines",
     "//components/signin/core/browser",
     "//components/ssl_config",
+    "//components/strings",
+    "//components/sync",
     "//components/translate/core/browser",
     "//components/url_formatter",
     "//components/variations",
     "//components/variations/service",
     "//components/version_info",
     "//components/webdata_services",
+    "//google_apis",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/common",
@@ -128,7 +139,6 @@ source_set("browser_impl") {
     "ios_chrome_main_parts.mm",
   ]
   deps = [
-    ":about_flags",
     ":browser",
     "//base",
     "//components/component_updater",
@@ -180,35 +190,9 @@ source_set("browser_impl") {
   }
 }
 
-# This is a separate target so that the 'defines' does not leak to the
-# other files (which would increase the compilation time when changing
-# the value).
-source_set("about_flags") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "about_flags.h",
-    "about_flags.mm",
-  ]
-
-  deps = [
-    ":browser",
-    "//base",
-    "//components/autofill/core/common",
-    "//components/dom_distiller/core",
-    "//components/flags_ui",
-    "//components/flags_ui:switches",
-    "//components/ntp_tiles",
-    "//components/reading_list/core",
-    "//components/strings",
-    "//components/sync",
-    "//components/variations",
-    "//google_apis",
-    "//ios/chrome/app/strings",
-    "//ios/web",
-    "//ios/web:user_agent",
-  ]
-
-  defines = [
+buildflag_header("google_api_keys_header") {
+  header = "google_api_keys.h"
+  flags = [
     "GOOGLE_STAGING_API_URL=\"$google_staging_api_url\"",
     "GOOGLE_STAGING_LSO_URL=\"$google_staging_lso_url\"",
     "GOOGLE_TEST_API_URL=\"$google_test_api_url\"",
