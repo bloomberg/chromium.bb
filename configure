@@ -298,6 +298,8 @@ EXPERIMENT_LIST="
     rd_debug
     reference_buffer
     coef_interleave
+    entropy_stats
+    masked_tx
 "
 CONFIG_LIST="
     dependency_tracking
