@@ -397,11 +397,12 @@ Output.RULES = {
       leave: '@exited_container($role)'
     },
     alert: {
-      speak: '$earcon(ALERT_NONMODAL) $role $descendants $state'
+      enter: '$name $role $state',
+      speak: '$earcon(ALERT_NONMODAL) $role $nameOrTextContent $state'
     },
     alertDialog: {
       enter: '$earcon(ALERT_MODAL) $name $state',
-      speak: '$earcon(ALERT_MODAL) $name $descendants $state $role'
+      speak: '$earcon(ALERT_MODAL) $name $nameOrTextContent $state $role'
     },
     cell: {
       enter: '@cell_summary($tableCellRowIndex, $tableCellColumnIndex) ' +
@@ -524,7 +525,7 @@ Output.RULES = {
       enter: '$node(tableRowHeader)'
     },
     rowHeader: {
-      speak: '$descendants $state'
+      speak: '$nameOrTextContent $state'
     },
     slider: {
       speak: '$earcon(SLIDER) @describe_slider($value, $name) $description ' +
@@ -547,7 +548,7 @@ Output.RULES = {
           '$node(tableHeader)'
     },
     tableHeaderContainer: {
-      speak: '$descendants $state $description'
+      speak: '$nameOrTextContent $state $description'
     },
     textField: {
       speak: '$name $value $if($multiline, @tag_textarea, $if(' +
@@ -601,7 +602,7 @@ Output.RULES = {
   alert: {
     default: {
       speak: '$earcon(ALERT_NONMODAL) @role_alert ' +
-          '$if($name, $name, $descendants) $description'
+          '$nameOrTextContent $description'
     }
   }
 };
@@ -1236,11 +1237,14 @@ Output.prototype = {
                 Dir.FORWARD,
                 {visit: AutomationPredicate.leafOrStaticText,
                  leaf: AutomationPredicate.leafOrStaticText});
+            var outputStrings = [];
             while (walker.next().node &&
                 walker.phase == AutomationTreeWalkerPhase.DESCENDANT) {
               if (walker.node.name)
-                this.append_(buff, walker.node.name, options);
+                outputStrings.push(walker.node.name);
             }
+            var joinedOutput = outputStrings.join(' ');
+            this.append_(buff, joinedOutput, options);
           }
         } else if (node[token] !== undefined) {
           options.annotation.push(token);

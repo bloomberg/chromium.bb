@@ -997,7 +997,7 @@ TEST_F('BackgroundTest', 'ContentEditableJumpSyncsRange', function() {
     };
 
     mockFeedback.call(doCmd('nextEditText'))
-        .expectSpeech('Top News')
+        .expectSpeech('Top News Most Popular Sports')
         .call(doCmd('nextHeading'))
         .expectSpeech('Top News')
         .call(assertRangeHasText('Top News'))

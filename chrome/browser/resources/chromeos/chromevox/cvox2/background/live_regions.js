@@ -134,6 +134,10 @@ LiveRegions.prototype = {
       return;
     }
 
+    // Alerts should be announced as a result of focus.
+    if (node.role == RoleType.alert)
+      return;
+
     var range = cursors.Range.fromNode(node);
     var output = new Output();
     if (opt_prependFormatStr)
