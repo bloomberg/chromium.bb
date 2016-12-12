@@ -14,6 +14,7 @@ namespace blink {
 class ComputedStyle;
 class NGBreakToken;
 class NGConstraintSpace;
+class NGFragmentBuilder;
 class NGInlineNode;
 
 // A class for inline layout (e.g. a anonymous block with inline-level children
@@ -45,10 +46,19 @@ class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
   // Read-only Getters.
   const ComputedStyle& Style() const { return *style_; }
 
+  bool LayoutCurrentChild();
+  NGConstraintSpace* CreateConstraintSpaceForCurrentChild() const;
+
+  enum State { kStateInit, kStateChildLayout, kStateFinalize };
+  State state_ = kStateInit;
+
   RefPtr<const ComputedStyle> style_;
   Member<NGInlineNode> first_child_;
   Member<NGConstraintSpace> constraint_space_;
   Member<NGBreakToken> break_token_;
+  Member<NGFragmentBuilder> builder_;
+  Member<NGConstraintSpace> space_for_current_child_;
+  Member<NGInlineNode> current_child_;
 };
 
 }  // namespace blink

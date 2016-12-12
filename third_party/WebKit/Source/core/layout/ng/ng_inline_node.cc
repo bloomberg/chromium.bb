@@ -7,9 +7,12 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/ng/ng_bidi_paragraph.h"
+#include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_inline_items_builder.h"
 #include "core/layout/ng/ng_text_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
+#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/style/ComputedStyle.h"
@@ -26,7 +29,6 @@ NGInlineNode::NGInlineNode(LayoutObject* start_inline,
       last_inline_(nullptr),
       block_style_(block_style) {
   DCHECK(start_inline);
-  PrepareLayout();  // TODO(layout-dev): Shouldn't be called here.
 }
 
 NGInlineNode::NGInlineNode()
@@ -55,6 +57,8 @@ void NGInlineNode::PrepareLayout() {
 // parent LayoutInline where possible, and joining all text content in a single
 // string to allow bidi resolution and shaping of the entire block.
 void NGInlineNode::CollectInlines(LayoutObject* start, LayoutObject* last) {
+  DCHECK(text_content_.isNull());
+  DCHECK(items_.isEmpty());
   NGLayoutInlineItemsBuilder builder(&items_);
   builder.EnterBlock(block_style_.get());
   CollectInlines(start, last, &builder);
@@ -198,9 +202,35 @@ void NGInlineNode::ShapeText() {
   }
 }
 
+unsigned NGInlineNode::CreateLine(unsigned start,
+                                  NGConstraintSpace* constraint_space,
+                                  NGFragmentBuilder* builder) {
+  // TODO(kojii): |unsigned start| should be BreakToken.
+  // TODO(kojii): implement line breaker and bidi reordering.
+  for (unsigned i = start; i < items_.size(); i++) {
+    const NGLayoutInlineItem& item = items_[i];
+    // TODO(kojii): handle bidi controls and atomic inlines properly.
+    if (!item.style_)
+      continue;
+    // TODO(kojii): There should be only one oof descendants list for a
+    // NGInlineNode. Attach to the first NGPhysicalTextFragment and leave the
+    // rest empty, or attach to line box/root line box fragment?
+    HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_descendants;
+    Vector<NGStaticPosition> out_of_flow_positions;
+    //  TODO(kojii): Create NGTextFragment from |item|.
+    NGPhysicalTextFragment* fragment = new NGPhysicalTextFragment(
+        NGPhysicalSize(), NGPhysicalSize(), out_of_flow_descendants,
+        out_of_flow_positions);
+    builder->AddChild(new NGTextFragment(constraint_space->WritingMode(),
+                                         item.Direction(), fragment),
+                      NGLogicalOffset());
+  }
+  return 0;  // All items are consumed.
+}
+
 bool NGInlineNode::Layout(NGConstraintSpace* constraint_space,
                           NGFragmentBase** out) {
-  // TODO(layout-dev): Perform pre-layout text step.
+  PrepareLayout();
 
   // NOTE: We don't need to change the coordinate system here as we are an
   // inline.
@@ -219,9 +249,9 @@ bool NGInlineNode::Layout(NGConstraintSpace* constraint_space,
 
   // TODO(layout-dev): Implement copying of fragment data to LayoutObject tree.
 
-  *out = new NGTextFragment(constraint_space->WritingMode(),
-                            constraint_space->Direction(),
-                            toNGPhysicalTextFragment(fragment));
+  *out = new NGFragment(constraint_space->WritingMode(),
+                        constraint_space->Direction(),
+                        toNGPhysicalFragment(fragment));
 
   // Reset algorithm for future use
   layout_algorithm_ = nullptr;

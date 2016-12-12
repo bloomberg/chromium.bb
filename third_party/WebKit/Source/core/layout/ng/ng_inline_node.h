@@ -21,6 +21,7 @@ class ComputedStyle;
 class LayoutObject;
 class NGConstraintSpace;
 class NGFragmentBase;
+class NGFragmentBuilder;
 class NGLayoutAlgorithm;
 class NGLayoutInlineItem;
 class NGLayoutInlineItemsBuilder;
@@ -37,6 +38,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
   void PrepareLayout();
+
+  unsigned CreateLine(unsigned start, NGConstraintSpace*, NGFragmentBuilder*);
 
   String Text(unsigned start_offset, unsigned end_offset) const {
     return text_content_.substring(start_offset, end_offset);

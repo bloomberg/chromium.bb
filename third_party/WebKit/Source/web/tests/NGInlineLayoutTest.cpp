@@ -51,11 +51,13 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   NGInlineLayoutAlgorithm* layoutAlgorithm = new NGInlineLayoutAlgorithm(
       blockFlow->style(), inlineBox, constraintSpace);
 
+  NGPhysicalFragmentBase* fragment;
+  while (layoutAlgorithm->Layout(nullptr, &fragment, nullptr) != kNewFragment) {
+    // Repeat until layout completes.
+  }
+
   String expectedText("Hello World!");
   EXPECT_EQ(expectedText, inlineBox->Text(0, 12));
-
-  NGPhysicalFragmentBase* fragment;
-  layoutAlgorithm->Layout(nullptr, &fragment, nullptr);
 }
 
 TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
@@ -78,13 +80,15 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   NGInlineLayoutAlgorithm* layoutAlgorithm = new NGInlineLayoutAlgorithm(
       blockFlow->style(), inlineBox, constraintSpace);
 
+  NGPhysicalFragmentBase* fragment;
+  while (layoutAlgorithm->Layout(nullptr, &fragment, nullptr) != kNewFragment) {
+    // Repeat until layout completes.
+  }
+
   String expectedText("Hello ");
   expectedText.append(objectReplacementCharacter);
   expectedText.append(".");
   EXPECT_EQ(expectedText, inlineBox->Text(0, 8));
-
-  NGPhysicalFragmentBase* fragment;
-  layoutAlgorithm->Layout(nullptr, &fragment, nullptr);
 }
 
 }  // namespace blink
