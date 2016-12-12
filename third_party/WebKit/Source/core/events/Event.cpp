@@ -301,12 +301,9 @@ HeapVector<Member<EventTarget>> Event::pathInternal(ScriptState* scriptState,
 
   if (Node* node = m_currentTarget->toNode()) {
     DCHECK(m_eventPath);
-    size_t eventPathSize = m_eventPath->size();
-    for (size_t i = 0; i < eventPathSize; ++i) {
-      if (node == (*m_eventPath)[i].node()) {
-        return (*m_eventPath)[i].treeScopeEventContext().ensureEventPath(
-            *m_eventPath);
-      }
+    for (auto& context : m_eventPath->nodeEventContexts()) {
+      if (node == context.node())
+        return context.treeScopeEventContext().ensureEventPath(*m_eventPath);
     }
     NOTREACHED();
   }

@@ -481,9 +481,10 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
     // Event path could be null if pointer event is not dispatched and
     // that happens for example when pointer event feature is not enabled.
     if (!isInDocument(mouseTarget) && pointerEvent->hasEventPath()) {
-      for (size_t i = 0; i < pointerEvent->eventPath().size(); i++) {
-        if (isInDocument(pointerEvent->eventPath()[i].node())) {
-          mouseTarget = pointerEvent->eventPath()[i].node();
+      for (const auto& context :
+           pointerEvent->eventPath().nodeEventContexts()) {
+        if (isInDocument(context.node())) {
+          mouseTarget = context.node();
           break;
         }
       }

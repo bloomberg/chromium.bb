@@ -410,14 +410,14 @@ Element* TreeScope::adjustedFocusedElement() const {
   }
 
   EventPath* eventPath = new EventPath(*element);
-  for (size_t i = 0; i < eventPath->size(); ++i) {
-    if (eventPath->at(i).node() == rootNode()) {
-      // eventPath->at(i).target() is one of the followings:
+  for (const auto& context : eventPath->nodeEventContexts()) {
+    if (context.node() == rootNode()) {
+      // context.target() is one of the followings:
       // - InsertionPoint
       // - shadow host
       // - Document::focusedElement()
       // So, it's safe to do toElement().
-      return toElement(eventPath->at(i).target()->toNode());
+      return toElement(context.target()->toNode());
     }
   }
   return nullptr;

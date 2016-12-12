@@ -69,9 +69,9 @@ HeapVector<Member<EventTarget>>& TreeScopeEventContext::ensureEventPath(
   LocalDOMWindow* window = path.windowEventContext().window();
   m_eventPath->reserveCapacity(path.size() + (window ? 1 : 0));
 
-  for (size_t i = 0; i < path.size(); ++i) {
-    if (path[i].treeScopeEventContext().isUnclosedTreeOf(*this))
-      m_eventPath->append(path[i].node());
+  for (auto& context : path.nodeEventContexts()) {
+    if (context.treeScopeEventContext().isUnclosedTreeOf(*this))
+      m_eventPath->append(context.node());
   }
   if (window)
     m_eventPath->append(window);

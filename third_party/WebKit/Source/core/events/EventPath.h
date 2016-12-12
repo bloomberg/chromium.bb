@@ -52,6 +52,12 @@ class CORE_EXPORT EventPath final : public GarbageCollected<EventPath> {
 
   void initializeWith(Node&, Event*);
 
+  const HeapVector<NodeEventContext>& nodeEventContexts() const {
+    return m_nodeEventContexts;
+  }
+  HeapVector<NodeEventContext>& nodeEventContexts() {
+    return m_nodeEventContexts;
+  }
   NodeEventContext& operator[](size_t index) {
     return m_nodeEventContexts[index];
   }
