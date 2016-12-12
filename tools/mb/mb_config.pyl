@@ -186,7 +186,7 @@
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
       'Site Isolation Linux': 'release_trybot',
       'Site Isolation Win': 'release_trybot_x86',
-      'ThinLTO Linux ToT': 'thin_lto_clang_tot_release_static',
+      'ThinLTO Linux ToT': 'thin_lto_clang_tot_release_static_use_lld',
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
       'WebKit Linux - TraceWrappables': 'debug_bot',
       'WebKit Linux - WPTServe': 'release_bot',
@@ -1405,8 +1405,8 @@
       'syzyasan', 'no_pch', 'release', 'x86',
     ],
 
-    'thin_lto_clang_tot_release_static': [
-      'thin_lto', 'clang_tot', 'release', 'static',
+    'thin_lto_clang_tot_release_static_use_lld': [
+      'thin_lto', 'clang_tot', 'release', 'static', 'use_lld',
     ],
 
     'tsan_disable_nacl_debug_bot': [
