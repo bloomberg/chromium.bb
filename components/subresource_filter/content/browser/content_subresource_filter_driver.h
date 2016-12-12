@@ -27,7 +27,8 @@ class ContentSubresourceFilterDriver {
   // Instructs the agent on the renderer to set up the subresource filter for
   // the currently ongoing provisional document load in the frame.
   virtual void ActivateForProvisionalLoad(ActivationState activation_state,
-                                          const GURL& url);
+                                          const GURL& url,
+                                          bool measure_performance);
 
  private:
   // The RenderFrameHost that this driver belongs to.

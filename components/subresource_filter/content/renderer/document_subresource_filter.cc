@@ -77,10 +77,12 @@ proto::ElementType ToElementType(
 
 DocumentSubresourceFilter::DocumentSubresourceFilter(
     ActivationState activation_state,
+    bool measure_performance,
     const scoped_refptr<const MemoryMappedRuleset>& ruleset,
     const std::vector<GURL>& ancestor_document_urls,
     const base::Closure& first_disallowed_load_callback)
     : activation_state_(activation_state),
+      measure_performance_(measure_performance),
       ruleset_(ruleset),
       ruleset_matcher_(ruleset_->data(), ruleset_->length()),
       first_disallowed_load_callback_(first_disallowed_load_callback) {
@@ -132,13 +134,14 @@ bool DocumentSubresourceFilter::allowLoad(
                resourceUrl.string().utf8());
 
   auto wall_duration_timer = ScopedTimers::StartIf(
-      ScopedThreadTimers::IsSupported(), [this](base::TimeDelta delta) {
+      measure_performance_ && ScopedThreadTimers::IsSupported(),
+      [this](base::TimeDelta delta) {
         statistics_.evaluation_total_wall_duration += delta;
         UMA_HISTOGRAM_MICRO_TIMES(
             "SubresourceFilter.SubresourceLoad.Evaluation.WallDuration", delta);
       });
-  auto cpu_duration_timer =
-      ScopedThreadTimers::Start([this](base::TimeDelta delta) {
+  auto cpu_duration_timer = ScopedThreadTimers::StartIf(
+      measure_performance_, [this](base::TimeDelta delta) {
         statistics_.evaluation_total_cpu_duration += delta;
         UMA_HISTOGRAM_MICRO_TIMES(
             "SubresourceFilter.SubresourceLoad.Evaluation.CPUDuration", delta);

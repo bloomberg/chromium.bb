@@ -58,7 +58,8 @@ class SubresourceFilterAgent
 
  private:
   void OnActivateForProvisionalLoad(ActivationState activation_state,
-                                    const GURL& url);
+                                    const GURL& url,
+                                    bool measure_performance);
   void RecordHistogramsOnLoadCommitted();
   void RecordHistogramsOnLoadFinished();
 
@@ -75,6 +76,7 @@ class SubresourceFilterAgent
 
   ActivationState activation_state_for_provisional_load_;
   GURL url_for_provisional_load_;
+  bool measure_performance_ = false;
   base::WeakPtr<DocumentSubresourceFilter> filter_for_last_committed_load_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgent);

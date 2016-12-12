@@ -142,7 +142,8 @@ class MockSubresourceFilterDriver : public ContentSubresourceFilterDriver {
 
   ~MockSubresourceFilterDriver() override = default;
 
-  MOCK_METHOD2(ActivateForProvisionalLoad, void(ActivationState, const GURL&));
+  MOCK_METHOD3(ActivateForProvisionalLoad,
+               void(ActivationState, const GURL&, bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterDriver);
@@ -233,7 +234,7 @@ class ContentSubresourceFilterDriverFactoryTest
       rfh_tester->SimulateRedirect(url);
     }
     EXPECT_CALL(*driver(),
-                ActivateForProvisionalLoad(::testing::_, ::testing::_))
+                ActivateForProvisionalLoad(::testing::_, ::testing::_, true))
         .Times(expected_activation);
     if (!content::IsBrowserSideNavigationEnabled()) {
       factory()->ReadyToCommitNavigationInternal(main_rfh(),
@@ -260,7 +261,7 @@ class ContentSubresourceFilterDriverFactoryTest
 
   void NavigateAndCommitSubframe(const GURL& url, bool expected_activation) {
     EXPECT_CALL(*subframe_driver(),
-                ActivateForProvisionalLoad(::testing::_, ::testing::_))
+                ActivateForProvisionalLoad(::testing::_, ::testing::_, true))
         .Times(expected_activation);
     EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
 
@@ -307,8 +308,8 @@ class ContentSubresourceFilterDriverFactoryTest
 
     NavigateAndExpectActivation(blacklisted_urls, {GURL(kExampleUrl)},
                                 extected_pattern, expected_activation);
-    EXPECT_CALL(*driver(),
-                ActivateForProvisionalLoad(::testing::_, ::testing::_))
+    EXPECT_CALL(*driver(), ActivateForProvisionalLoad(
+                               ::testing::_, ::testing::_, ::testing::_))
         .Times(0);
     EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(1);
     content::RenderFrameHostTester::For(main_rfh())

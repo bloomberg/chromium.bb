@@ -58,6 +58,7 @@ class DocumentSubresourceFilter
   //     first disallowed subresource load.
   DocumentSubresourceFilter(
       ActivationState activation_state,
+      bool measure_performance,
       const scoped_refptr<const MemoryMappedRuleset>& ruleset,
       const std::vector<GURL>& ancestor_document_urls,
       const base::Closure& first_disallowed_load_callback);
@@ -70,7 +71,9 @@ class DocumentSubresourceFilter
                  blink::WebURLRequest::RequestContext) override;
 
  private:
-  ActivationState activation_state_;
+  const ActivationState activation_state_;
+  const bool measure_performance_;
+
   scoped_refptr<const MemoryMappedRuleset> ruleset_;
   IndexedRulesetMatcher ruleset_matcher_;
 

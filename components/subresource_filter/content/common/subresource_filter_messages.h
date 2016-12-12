@@ -30,9 +30,10 @@ IPC_MESSAGE_CONTROL1(SubresourceFilterMsg_SetRulesetForProcess,
 // ongoing provisional document load in a frame. The message must arrive after
 // the provisional load starts, but before it is committed on the renderer side.
 // If no message arrives, the default behavior is ActivationState::DISABLED.
-IPC_MESSAGE_ROUTED2(SubresourceFilterMsg_ActivateForProvisionalLoad,
+IPC_MESSAGE_ROUTED3(SubresourceFilterMsg_ActivateForProvisionalLoad,
                     subresource_filter::ActivationState /* activation_state */,
-                    GURL /* url */);
+                    GURL /* url */,
+                    bool /* measure_performance */);
 
 // ----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.

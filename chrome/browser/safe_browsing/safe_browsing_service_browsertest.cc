@@ -112,8 +112,8 @@ class MockSubresourceFilterDriver
 
   ~MockSubresourceFilterDriver() override = default;
 
-  MOCK_METHOD2(ActivateForProvisionalLoad,
-               void(subresource_filter::ActivationState, const GURL&));
+  MOCK_METHOD3(ActivateForProvisionalLoad,
+               void(subresource_filter::ActivationState, const GURL&, bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterDriver);
@@ -958,7 +958,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
 
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
       .Times(1);
-  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_, ::testing::_))
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_, ::testing::_,
+                                                    ::testing::_))
       .Times(0);
   ui_test_utils::NavigateToURL(browser(), bad_url);
   Mock::VerifyAndClearExpectations(&observer_);
@@ -967,7 +968,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
   content::WaitForInterstitialAttach(main_contents);
   EXPECT_TRUE(ShowingInterstitialPage());
   testing::Mock::VerifyAndClearExpectations(driver());
-  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_, ::testing::_))
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_, ::testing::_,
+                                                    ::testing::_))
       .Times(1);
   InterstitialPage* interstitial_page = main_contents->GetInterstitialPage();
   ASSERT_TRUE(interstitial_page);
@@ -998,7 +1000,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SocEngReportingBlacklistEmpty) {
 
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
       .Times(1);
-  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_, ::testing::_))
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_, ::testing::_,
+                                                    ::testing::_))
       .Times(0);
   ui_test_utils::NavigateToURL(browser(), bad_url);
   testing::Mock::VerifyAndClearExpectations(driver());
@@ -1007,7 +1010,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SocEngReportingBlacklistEmpty) {
   content::WaitForInterstitialAttach(main_contents);
   EXPECT_TRUE(ShowingInterstitialPage());
   testing::Mock::VerifyAndClearExpectations(driver());
-  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_, ::testing::_))
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_, ::testing::_,
+                                                    ::testing::_))
       .Times(0);
   InterstitialPage* interstitial_page = main_contents->GetInterstitialPage();
   ASSERT_TRUE(interstitial_page);

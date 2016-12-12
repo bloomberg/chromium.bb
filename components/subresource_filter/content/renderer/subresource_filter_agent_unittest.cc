@@ -121,11 +121,12 @@ class SubresourceFilterAgentTest : public ::testing::Test {
         true /* is_new_navigation */, false /* is_same_page_navigation */);
   }
 
-  void StartLoadAndSetActivationState(ActivationState activation_state) {
+  void StartLoadAndSetActivationState(ActivationState activation_state,
+                                      bool measure_performance = false) {
     agent_as_rfo()->DidStartProvisionalLoad();
     EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
-        SubresourceFilterMsg_ActivateForProvisionalLoad(0, activation_state,
-                                                        GURL())));
+        SubresourceFilterMsg_ActivateForProvisionalLoad(
+            0, activation_state, GURL(), measure_performance)));
     agent_as_rfo()->DidCommitProvisionalLoad(
         true /* is_new_navigation */, false /* is_same_page_navigation */);
   }
@@ -252,7 +253,7 @@ TEST_F(SubresourceFilterAgentTest,
   agent_as_rfo()->DidStartProvisionalLoad();
   EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
       SubresourceFilterMsg_ActivateForProvisionalLoad(
-          0, ActivationState::ENABLED, GURL())));
+          0, ActivationState::ENABLED, GURL(), true)));
   agent_as_rfo()->DidStartProvisionalLoad();
   agent_as_rfo()->DidCommitProvisionalLoad(true /* is_new_navigation */,
                                            false /* is_same_page_navigation */);
@@ -388,9 +389,37 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamples) {
   EXPECT_THAT(histogram_tester.GetAllSamples(kSubresourcesDisallowed),
               ::testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
 
-  histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration, 2);
+  // Performance measurement is switched off.
+  histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration, 0);
+  histogram_tester.ExpectTotalCount(kEvaluationTotalCPUDuration, 0);
+}
+
+TEST_F(SubresourceFilterAgentTest, Enabled_PerformanceMeasurementSamples) {
+  base::HistogramTester histogram_tester;
+  ASSERT_NO_FATAL_FAILURE(
+      SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
+  ExpectSubresourceFilterGetsInjected();
+  StartLoadAndSetActivationState(ActivationState::ENABLED, true);
+  ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
+
+  ExpectSignalAboutFirstSubresourceDisallowed();
+  ExpectLoadAllowed(kTestFirstURL, false);
+  ExpectLoadAllowed(kTestFirstURL, false);
+  ExpectLoadAllowed(kTestSecondURL, true);
+  FinishLoad();
+
+  ExpectSubresourceFilterGetsInjected();
+  StartLoadAndSetActivationState(ActivationState::ENABLED, true);
+  ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
+
+  ExpectSignalAboutFirstSubresourceDisallowed();
+  ExpectLoadAllowed(kTestFirstURL, false);
+  ExpectLoadAllowed(kTestSecondURL, true);
+  FinishLoad();
+
   const base::HistogramBase::Count total_count =
       base::ThreadTicks::IsSupported() ? 2 : 0;
+  histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration, total_count);
   histogram_tester.ExpectTotalCount(kEvaluationTotalCPUDuration, total_count);
 }
 
@@ -420,10 +449,9 @@ TEST_F(SubresourceFilterAgentTest, DryRun_HistogramSamples) {
   histogram_tester.ExpectUniqueSample(kSubresourcesMatchedRules, 2, 1);
   histogram_tester.ExpectUniqueSample(kSubresourcesDisallowed, 0, 1);
 
-  histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration, 1);
-  const base::HistogramBase::Count total_count =
-      base::ThreadTicks::IsSupported() ? 1 : 0;
-  histogram_tester.ExpectTotalCount(kEvaluationTotalCPUDuration, total_count);
+  // Performance measurement is switched off.
+  histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration, 0);
+  histogram_tester.ExpectTotalCount(kEvaluationTotalCPUDuration, 0);
 }
 
 }  // namespace subresource_filter

@@ -62,9 +62,11 @@ void SubresourceFilterAgent::
 
 void SubresourceFilterAgent::OnActivateForProvisionalLoad(
     ActivationState activation_state,
-    const GURL& url) {
+    const GURL& url,
+    bool measure_performance) {
   activation_state_for_provisional_load_ = activation_state;
   url_for_provisional_load_ = url;
+  measure_performance_ = measure_performance;
 }
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted() {
@@ -96,9 +98,9 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed",
       statistics.num_loads_disallowed);
 
-  // If ThreadTicks is not supported, then no CPU time measurements have been
-  // collected. Don't report both CPU and wall duration to be consistent.
-  if (ScopedThreadTimers::IsSupported()) {
+  // If ThreadTicks is not supported or performance measuring is switched off,
+  // then no time measurements have been collected.
+  if (measure_performance_ && ScopedThreadTimers::IsSupported()) {
     UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
         "SubresourceFilter.DocumentLoad.SubresourceEvaluation."
         "TotalWallDuration",
@@ -131,6 +133,7 @@ void SubresourceFilterAgent::DidStartProvisionalLoad() {
       (!ds ||
        static_cast<GURL>(ds->request().url()) != url_for_provisional_load_)) {
     activation_state_for_provisional_load_ = ActivationState::DISABLED;
+    measure_performance_ = false;
   } else {
     url_for_provisional_load_ = GURL();
   }
@@ -149,10 +152,10 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
                        SignalFirstSubresourceDisallowedForCommittedLoad,
                    AsWeakPtr()));
     std::unique_ptr<DocumentSubresourceFilter> filter(
-        new DocumentSubresourceFilter(activation_state_for_provisional_load_,
-                                      ruleset_dealer_->GetRuleset(),
-                                      ancestor_document_urls,
-                                      first_disallowed_load_callback));
+        new DocumentSubresourceFilter(
+            activation_state_for_provisional_load_, measure_performance_,
+            ruleset_dealer_->GetRuleset(), ancestor_document_urls,
+            first_disallowed_load_callback));
     filter_for_last_committed_load_ = filter->AsWeakPtr();
     SetSubresourceFilterForCommittedLoad(std::move(filter));
   }

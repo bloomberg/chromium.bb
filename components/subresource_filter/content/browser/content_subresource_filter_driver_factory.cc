@@ -122,8 +122,14 @@ void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
     content::RenderFrameHost* render_frame_host,
     const GURL& url) {
   if (activation_state_ != ActivationState::DISABLED) {
-    DriverFromFrameHost(render_frame_host)
-        ->ActivateForProvisionalLoad(GetMaximumActivationState(), url);
+    // TODO(pkalinnikov): Introduce a variation parameter controlling how often
+    // the |measure_performance| bit is set. crbug/672519
+    constexpr bool measure_performance = true;
+
+    auto* driver = DriverFromFrameHost(render_frame_host);
+    DCHECK(driver);
+    driver->ActivateForProvisionalLoad(GetMaximumActivationState(), url,
+                                       measure_performance);
   }
 }
 
