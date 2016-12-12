@@ -181,8 +181,12 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
             return this;
         }
 
+        /**
+         * Returns delegate, only for testing.
+         * @hide
+         */
         @VisibleForTesting
-        ICronetEngineBuilder getBuilderDelegate() {
+        public ICronetEngineBuilder getBuilderDelegate() {
             return mBuilderDelegate;
         }
 
