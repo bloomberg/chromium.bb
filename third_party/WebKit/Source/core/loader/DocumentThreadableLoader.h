@@ -110,8 +110,6 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void dataDownloaded(Resource*, int) override;
   void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override;
 
-  void cancelWithError(const ResourceError&);
-
   // Notify Inspector and log to console about resource response. Use this
   // method if response is not going to be finished normally.
   void reportResponseReceived(unsigned long identifier,
@@ -142,7 +140,9 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // Investigates the response for the preflight request. If successful,
   // the actual request will be made later in handleSuccessfulFinish().
   void handlePreflightResponse(const ResourceResponse&);
-  void handleError(const ResourceError&);
+
+  void dispatchDidFailAccessControlCheck(const ResourceError&);
+  void dispatchDidFail(const ResourceError&);
 
   void loadRequestAsync(const ResourceRequest&, ResourceLoaderOptions);
   void loadRequestSync(const ResourceRequest&, ResourceLoaderOptions);

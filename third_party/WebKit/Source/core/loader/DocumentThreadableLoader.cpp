@@ -322,9 +322,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
     InspectorInstrumentation::
         documentThreadableLoaderFailedToStartLoadingForClient(m_document,
                                                               m_client);
-    ThreadableLoaderClient* client = m_client;
-    clear();
-    client->didFailAccessControlCheck(ResourceError(
+    dispatchDidFailAccessControlCheck(ResourceError(
         errorDomainBlinkInternal, 0, request.url().getString(),
         "Cross origin requests are only supported for protocol schemes: " +
             SchemeRegistry::listOfCORSEnabledURLSchemes() + "."));
@@ -334,9 +332,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
   // Non-secure origins may not make "external requests":
   // https://mikewest.github.io/cors-rfc1918/#integration-fetch
   if (!document().isSecureContext() && request.isExternalRequest()) {
-    ThreadableLoaderClient* client = m_client;
-    clear();
-    client->didFailAccessControlCheck(
+    dispatchDidFailAccessControlCheck(
         ResourceError(errorDomainBlinkInternal, 0, request.url().getString(),
                       "Requests to internal network resources are not allowed "
                       "from non-secure contexts (see https://goo.gl/Y0ZkNV). "
@@ -439,29 +435,20 @@ void DocumentThreadableLoader::overrideTimeout(
 }
 
 void DocumentThreadableLoader::cancel() {
-  cancelWithError(ResourceError());
-}
-
-void DocumentThreadableLoader::cancelWithError(const ResourceError& error) {
-  // Cancel can re-enter and m_resource might be null here as a result.
+  // Cancel can re-enter, and therefore |resource()| might be null here as a
+  // result.
   if (!m_client || !resource()) {
     clear();
     return;
   }
 
-  ResourceError errorForCallback = error;
-  if (errorForCallback.isNull()) {
-    // FIXME: This error is sent to the client in didFail(), so it should not be
-    // an internal one. Use FrameLoaderClient::cancelledError() instead.
-    errorForCallback =
-        ResourceError(errorDomainBlinkInternal, 0,
-                      resource()->url().getString(), "Load cancelled");
-    errorForCallback.setIsCancellation(true);
-  }
+  // FIXME: This error is sent to the client in didFail(), so it should not be
+  // an internal one. Use FrameLoaderClient::cancelledError() instead.
+  ResourceError error(errorDomainBlinkInternal, 0, resource()->url(),
+                      "Load cancelled");
+  error.setIsCancellation(true);
 
-  ThreadableLoaderClient* client = m_client;
-  clear();
-  client->didFail(errorForCallback);
+  dispatchDidFail(error);
 }
 
 void DocumentThreadableLoader::setDefersLoading(bool value) {
@@ -580,9 +567,7 @@ bool DocumentThreadableLoader::redirectReceived(
   }
 
   if (!allowRedirect) {
-    ThreadableLoaderClient* client = m_client;
-    clear();
-    client->didFailAccessControlCheck(ResourceError(
+    dispatchDidFailAccessControlCheck(ResourceError(
         errorDomainBlinkInternal, 0, redirectResponse.url().getString(),
         accessControlErrorDescription));
     return false;
@@ -809,9 +794,7 @@ void DocumentThreadableLoader::handleResponse(
             accessControlErrorDescription, m_requestContext)) {
       reportResponseReceived(identifier, response);
 
-      ThreadableLoaderClient* client = m_client;
-      clear();
-      client->didFailAccessControlCheck(
+      dispatchDidFailAccessControlCheck(
           ResourceError(errorDomainBlinkInternal, 0, response.url().getString(),
                         accessControlErrorDescription));
       return;
@@ -868,7 +851,7 @@ void DocumentThreadableLoader::notifyFinished(Resource* resource) {
   m_checker.notifyFinished(resource);
 
   if (resource->errorOccurred()) {
-    handleError(resource->resourceError());
+    dispatchDidFail(resource->resourceError());
   } else {
     handleSuccessfulFinish(resource->identifier(), resource->loadFinishTime());
   }
@@ -897,7 +880,16 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier,
 }
 
 void DocumentThreadableLoader::didTimeout(TimerBase* timer) {
+  DCHECK(m_async);
   DCHECK_EQ(timer, &m_timeoutTimer);
+  // clearResource() may be called in clear() and some other places. clear()
+  // calls stop() on |m_timeoutTimer|. In the other places, the resource is set
+  // again. If the creation fails, clear() is called. So, here, resource() is
+  // always non-nullptr.
+  DCHECK(resource());
+  // When |m_client| is set to nullptr only in clear() where |m_timeoutTimer|
+  // is stopped. So, |m_client| is always non-nullptr here.
+  DCHECK(m_client);
 
   // Using values from net/base/net_error_list.h ERR_TIMED_OUT, Same as existing
   // FIXME above - this error should be coming from FrameLoaderClient to be
@@ -905,7 +897,8 @@ void DocumentThreadableLoader::didTimeout(TimerBase* timer) {
   static const int timeoutError = -7;
   ResourceError error("net", timeoutError, resource()->url(), String());
   error.setIsTimeout(true);
-  cancelWithError(error);
+
+  dispatchDidFail(error);
 }
 
 void DocumentThreadableLoader::loadFallbackRequestForServiceWorker() {
@@ -941,12 +934,17 @@ void DocumentThreadableLoader::handlePreflightFailure(
   // Prevent handleSuccessfulFinish() from bypassing access check.
   m_actualRequest = ResourceRequest();
 
+  dispatchDidFailAccessControlCheck(error);
+}
+
+void DocumentThreadableLoader::dispatchDidFailAccessControlCheck(
+    const ResourceError& error) {
   ThreadableLoaderClient* client = m_client;
   clear();
   client->didFailAccessControlCheck(error);
 }
 
-void DocumentThreadableLoader::handleError(const ResourceError& error) {
+void DocumentThreadableLoader::dispatchDidFail(const ResourceError& error) {
   ThreadableLoaderClient* client = m_client;
   clear();
   client->didFail(error);
