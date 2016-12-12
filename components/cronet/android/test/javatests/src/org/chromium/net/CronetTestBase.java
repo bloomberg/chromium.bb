@@ -152,7 +152,7 @@ public class CronetTestBase extends AndroidTestCase {
         }
     }
 
-    void assertResponseEquals(UrlResponseInfo expected, UrlResponseInfo actual) {
+    public void assertResponseEquals(UrlResponseInfo expected, UrlResponseInfo actual) {
         assertEquals(expected.getAllHeaders(), actual.getAllHeaders());
         assertEquals(expected.getAllHeadersAsList(), actual.getAllHeadersAsList());
         assertEquals(expected.getHttpStatusCode(), actual.getHttpStatusCode());
@@ -168,7 +168,7 @@ public class CronetTestBase extends AndroidTestCase {
         }
     }
 
-    static void assertContains(String expectedSubstring, String actualString) {
+    public static void assertContains(String expectedSubstring, String actualString) {
         assertNotNull(actualString);
         if (!actualString.contains(expectedSubstring)) {
             fail("String [" + actualString + "] doesn't contain substring [" + expectedSubstring
