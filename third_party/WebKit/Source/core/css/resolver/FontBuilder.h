@@ -70,6 +70,7 @@ class CORE_EXPORT FontBuilder {
   void setTextRendering(TextRenderingMode);
   void setKerning(FontDescription::Kerning);
   void setFontSmoothing(FontSmoothingMode);
+  void setVariationSettings(PassRefPtr<FontVariationSettings>);
 
   // FIXME: These need to just vend a Font object eventually.
   void createFont(FontSelector*, ComputedStyle&);
@@ -82,6 +83,7 @@ class CORE_EXPORT FontBuilder {
     return FontDescription::FamilyDescription(initialGenericFamily());
   }
   static FontFeatureSettings* initialFeatureSettings() { return nullptr; }
+  static FontVariationSettings* initialVariationSettings() { return nullptr; }
   static FontDescription::GenericFamilyType initialGenericFamily() {
     return FontDescription::StandardFamily;
   }
@@ -141,6 +143,7 @@ class CORE_EXPORT FontBuilder {
     VariantCaps,
     VariantLigatures,
     VariantNumeric,
+    VariationSettings,
     TextRendering,
     Kerning,
     FontSmoothing,

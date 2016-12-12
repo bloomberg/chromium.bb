@@ -151,6 +151,7 @@ font-variant-caps inherited, font, name_for_methods=VariantCaps, converter=conve
 font-variant-numeric inherited, font, name_for_methods=VariantNumeric, converter=convertFontVariantNumeric
 font-weight interpolable, inherited, font, type_name=FontWeight, name_for_methods=Weight, converter=convertFontWeight
 font-feature-settings inherited, font, name_for_methods=FeatureSettings, converter=convertFontFeatureSettings
+font-variation-settings runtime_flag=CSSVariableFonts, inherited, font, name_for_methods=VariationSettings, converter=convertFontVariationSettings
 -webkit-font-smoothing inherited, font, type_name=FontSmoothingMode
 -webkit-locale inherited, font, custom_value
 text-orientation inherited, custom_value, type_name=TextOrientation

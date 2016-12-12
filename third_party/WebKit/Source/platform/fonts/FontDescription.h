@@ -228,6 +228,9 @@ class PLATFORM_EXPORT FontDescription {
   FontFeatureSettings* featureSettings() const {
     return m_featureSettings.get();
   }
+  FontVariationSettings* variationSettings() const {
+    return m_variationSettings.get();
+  }
 
   float effectiveFontSize()
       const;  // Returns either the computedSize or the computedPixelSize
@@ -277,6 +280,9 @@ class PLATFORM_EXPORT FontDescription {
   void setFeatureSettings(PassRefPtr<FontFeatureSettings> settings) {
     m_featureSettings = settings;
   }
+  void setVariationSettings(PassRefPtr<FontVariationSettings> settings) {
+    m_variationSettings = settings;
+  }
   void setTraits(FontTraits);
   void setWordSpacing(float s) { m_wordSpacing = s; }
   void setLetterSpacing(float s) {
@@ -315,6 +321,7 @@ class PLATFORM_EXPORT FontDescription {
  private:
   FontFamily m_familyList;  // The list of font families to be used.
   RefPtr<FontFeatureSettings> m_featureSettings;
+  RefPtr<FontVariationSettings> m_variationSettings;
   RefPtr<const LayoutLocale> m_locale;
 
   void updateTypesettingFeatures();

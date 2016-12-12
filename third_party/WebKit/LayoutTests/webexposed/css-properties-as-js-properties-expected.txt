@@ -132,6 +132,7 @@ fontVariant
 fontVariantCaps
 fontVariantLigatures
 fontVariantNumeric
+fontVariationSettings
 fontWeight
 getPropertyPriority
 getPropertyValue

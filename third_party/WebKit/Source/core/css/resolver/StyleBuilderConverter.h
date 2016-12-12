@@ -81,6 +81,9 @@ class StyleBuilderConverter {
   static PassRefPtr<FontFeatureSettings> convertFontFeatureSettings(
       StyleResolverState&,
       const CSSValue&);
+  static PassRefPtr<FontVariationSettings> convertFontVariationSettings(
+      StyleResolverState&,
+      const CSSValue&);
   static FontDescription::Size convertFontSize(StyleResolverState&,
                                                const CSSValue&);
   static float convertFontSizeAdjust(StyleResolverState&, const CSSValue&);

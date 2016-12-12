@@ -80,7 +80,7 @@ inline CSSPropertyID CSSPropertyPriorityData<HighPropertyPriority>::first() {
 template <>
 inline CSSPropertyID CSSPropertyPriorityData<HighPropertyPriority>::last() {
   static_assert(
-      CSSPropertyZoom == CSSPropertyColor + 20,
+      CSSPropertyZoom == CSSPropertyColor + 21,
       "CSSPropertyZoom should be the end of the high priority property range");
   static_assert(
       CSSPropertyTextRendering == CSSPropertyZoom - 1,

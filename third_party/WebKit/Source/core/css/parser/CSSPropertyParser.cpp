@@ -14,6 +14,7 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSFontVariationValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridAutoRepeatValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
@@ -364,7 +365,7 @@ static CSSFontFeatureValue* consumeFontFeatureTag(CSSParserTokenRange& range) {
   AtomicString tag = token.value().toAtomicString();
   for (unsigned i = 0; i < tagNameLength; ++i) {
     // Limits the range of characters to 0x20-0x7E, following the tag name rules
-    // defiend in the OpenType specification.
+    // defined in the OpenType specification.
     UChar character = tag[i];
     if (character < 0x20 || character > 0x7E)
       return nullptr;
@@ -396,6 +397,45 @@ static CSSValue* consumeFontFeatureSettings(CSSParserTokenRange& range) {
     settings->append(*fontFeatureValue);
   } while (consumeCommaIncludingWhitespace(range));
   return settings;
+}
+
+static CSSFontVariationValue* consumeFontVariationTag(
+    CSSParserTokenRange& range) {
+  // Feature tag name consists of 4-letter characters.
+  static const unsigned tagNameLength = 4;
+
+  const CSSParserToken& token = range.consumeIncludingWhitespace();
+  // Feature tag name comes first
+  if (token.type() != StringToken)
+    return nullptr;
+  if (token.value().length() != tagNameLength)
+    return nullptr;
+  AtomicString tag = token.value().toAtomicString();
+  for (unsigned i = 0; i < tagNameLength; ++i) {
+    // Limits the range of characters to 0x20-0x7E, following the tag name rules
+    // defined in the OpenType specification.
+    UChar character = tag[i];
+    if (character < 0x20 || character > 0x7E)
+      return nullptr;
+  }
+
+  double tagValue = 0;
+  if (!consumeNumberRaw(range, tagValue))
+    return nullptr;
+  return CSSFontVariationValue::create(tag, clampTo<float>(tagValue));
+}
+
+static CSSValue* consumeFontVariationSettings(CSSParserTokenRange& range) {
+  if (range.peek().id() == CSSValueNormal)
+    return consumeIdent(range);
+  CSSValueList* variationSettings = CSSValueList::createCommaSeparated();
+  do {
+    CSSFontVariationValue* fontVariationValue = consumeFontVariationTag(range);
+    if (!fontVariationValue)
+      return nullptr;
+    variationSettings->append(*fontVariationValue);
+  } while (consumeCommaIncludingWhitespace(range));
+  return variationSettings;
 }
 
 static CSSValue* consumePage(CSSParserTokenRange& range) {
@@ -3444,6 +3484,9 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeFontFeatureSettings(m_range);
     case CSSPropertyFontFamily:
       return consumeFontFamily(m_range);
+    case CSSPropertyFontVariationSettings:
+      DCHECK(RuntimeEnabledFeatures::cssVariableFontsEnabled());
+      return consumeFontVariationSettings(m_range);
     case CSSPropertyFontWeight:
       return consumeFontWeight(m_range);
     case CSSPropertyLetterSpacing:

@@ -32,6 +32,7 @@
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSFontVariationValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridAutoRepeatValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
@@ -246,6 +247,24 @@ StyleBuilderConverter::convertFontFeatureSettings(StyleResolverState& state,
   for (int i = 0; i < len; ++i) {
     const CSSFontFeatureValue& feature = toCSSFontFeatureValue(list.item(i));
     settings->append(FontFeature(feature.tag(), feature.value()));
+  }
+  return settings;
+}
+
+PassRefPtr<FontVariationSettings>
+StyleBuilderConverter::convertFontVariationSettings(StyleResolverState& state,
+                                                    const CSSValue& value) {
+  if (value.isIdentifierValue() &&
+      toCSSIdentifierValue(value).getValueID() == CSSValueNormal)
+    return FontBuilder::initialVariationSettings();
+
+  const CSSValueList& list = toCSSValueList(value);
+  RefPtr<FontVariationSettings> settings = FontVariationSettings::create();
+  int len = list.length();
+  for (int i = 0; i < len; ++i) {
+    const CSSFontVariationValue& feature =
+        toCSSFontVariationValue(list.item(i));
+    settings->append(FontVariationAxis(feature.tag(), feature.value()));
   }
   return settings;
 }

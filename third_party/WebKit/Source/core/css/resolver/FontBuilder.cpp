@@ -182,8 +182,13 @@ void FontBuilder::setFontSmoothing(FontSmoothingMode foontSmoothingMode) {
 
 void FontBuilder::setFeatureSettings(PassRefPtr<FontFeatureSettings> settings) {
   set(PropertySetFlag::FeatureSettings);
-
   m_fontDescription.setFeatureSettings(std::move(settings));
+}
+
+void FontBuilder::setVariationSettings(
+    PassRefPtr<FontVariationSettings> settings) {
+  set(PropertySetFlag::VariationSettings);
+  m_fontDescription.setVariationSettings(std::move(settings));
 }
 
 void FontBuilder::setFamilyDescription(
@@ -380,6 +385,8 @@ void FontBuilder::createFont(FontSelector* fontSelector, ComputedStyle& style) {
     description.setVariantLigatures(m_fontDescription.getVariantLigatures());
   if (isSet(PropertySetFlag::VariantNumeric))
     description.setVariantNumeric(m_fontDescription.variantNumeric());
+  if (isSet(PropertySetFlag::VariationSettings))
+    description.setVariationSettings(m_fontDescription.variationSettings());
   if (isSet(PropertySetFlag::TextRendering))
     description.setTextRendering(m_fontDescription.textRendering());
   if (isSet(PropertySetFlag::Kerning))

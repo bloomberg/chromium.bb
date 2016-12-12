@@ -38,6 +38,7 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSFontVariationValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridAutoRepeatValue.h"
@@ -147,6 +148,8 @@ bool CSSValue::equals(const CSSValue& other) const {
         return compareCSSValues<CSSFontFamilyValue>(*this, other);
       case FontFeatureClass:
         return compareCSSValues<CSSFontFeatureValue>(*this, other);
+      case FontVariationClass:
+        return compareCSSValues<CSSFontVariationValue>(*this, other);
       case FunctionClass:
         return compareCSSValues<CSSFunctionValue>(*this, other);
       case LinearGradientClass:
@@ -241,6 +244,8 @@ String CSSValue::cssText() const {
       return toCSSFontFamilyValue(this)->customCSSText();
     case FontFeatureClass:
       return toCSSFontFeatureValue(this)->customCSSText();
+    case FontVariationClass:
+      return toCSSFontVariationValue(this)->customCSSText();
     case FunctionClass:
       return toCSSFunctionValue(this)->customCSSText();
     case LinearGradientClass:
@@ -342,6 +347,9 @@ void CSSValue::finalizeGarbageCollectedObject() {
       return;
     case FontFeatureClass:
       toCSSFontFeatureValue(this)->~CSSFontFeatureValue();
+      return;
+    case FontVariationClass:
+      toCSSFontVariationValue(this)->~CSSFontVariationValue();
       return;
     case FunctionClass:
       toCSSFunctionValue(this)->~CSSFunctionValue();
@@ -475,6 +483,9 @@ DEFINE_TRACE(CSSValue) {
       return;
     case FontFeatureClass:
       toCSSFontFeatureValue(this)->traceAfterDispatch(visitor);
+      return;
+    case FontVariationClass:
+      toCSSFontVariationValue(this)->traceAfterDispatch(visitor);
       return;
     case FunctionClass:
       toCSSFunctionValue(this)->traceAfterDispatch(visitor);

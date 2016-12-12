@@ -1284,7 +1284,11 @@ static inline bool isValidCueStyleProperty(CSSPropertyID id) {
     case CSSPropertyTextDecorationStyle:
     case CSSPropertyTextDecorationColor:
     case CSSPropertyTextDecorationSkip:
-      return RuntimeEnabledFeatures::css3TextDecorationsEnabled();
+      DCHECK(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+      return true;
+    case CSSPropertyFontVariationSettings:
+      DCHECK(RuntimeEnabledFeatures::cssVariableFontsEnabled());
+      return true;
     default:
       break;
   }
@@ -1386,6 +1390,9 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyWebkitMarginStart:
     case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyWordSpacing:
+      return true;
+    case CSSPropertyFontVariationSettings:
+      DCHECK(RuntimeEnabledFeatures::cssVariableFontsEnabled());
       return true;
     case CSSPropertyTextDecoration:
       DCHECK(!RuntimeEnabledFeatures::css3TextDecorationsEnabled());

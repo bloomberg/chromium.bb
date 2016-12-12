@@ -75,6 +75,7 @@ CSSStickyPosition status=stable
 CSSTouchActionPanDirections status=stable
 CSSTouchActionPinchZoom status=stable
 CSSTypedOM status=experimental
+CSSVariableFonts status=experimental
 CSSVariables2 status=experimental
 CSSViewport status=experimental
 CSSScrollSnapPoints status=test

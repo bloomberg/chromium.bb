@@ -39,6 +39,7 @@
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSFontVariationValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
@@ -2360,6 +2361,21 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
         CSSFontFeatureValue* featureValue =
             CSSFontFeatureValue::create(feature.tag(), feature.value());
         list->append(*featureValue);
+      }
+      return list;
+    }
+    case CSSPropertyFontVariationSettings: {
+      DCHECK(RuntimeEnabledFeatures::cssVariableFontsEnabled());
+      const FontVariationSettings* variationSettings =
+          style.getFontDescription().variationSettings();
+      if (!variationSettings || !variationSettings->size())
+        return CSSIdentifierValue::create(CSSValueNormal);
+      CSSValueList* list = CSSValueList::createCommaSeparated();
+      for (unsigned i = 0; i < variationSettings->size(); ++i) {
+        const FontVariationAxis& variationAxis = variationSettings->at(i);
+        CSSFontVariationValue* variationValue = CSSFontVariationValue::create(
+            variationAxis.tag(), variationAxis.value());
+        list->append(*variationValue);
       }
       return list;
     }

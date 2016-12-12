@@ -41,6 +41,7 @@ struct SameSizeAsFontDescription {
   DISALLOW_NEW();
   FontFamily familyList;
   RefPtr<FontFeatureSettings> m_featureSettings;
+  RefPtr<FontVariationSettings> m_variationSettings;
   AtomicString locale;
   float sizes[6];
   FieldsAsUnsignedType bitfields;
@@ -102,7 +103,10 @@ bool FontDescription::operator==(const FontDescription& other) const {
          m_fieldsAsUnsigned.parts[1] == other.m_fieldsAsUnsigned.parts[1] &&
          (m_featureSettings == other.m_featureSettings ||
           (m_featureSettings && other.m_featureSettings &&
-           *m_featureSettings == *other.m_featureSettings));
+           *m_featureSettings == *other.m_featureSettings)) &&
+         (m_variationSettings == other.m_variationSettings ||
+          (m_variationSettings && other.m_variationSettings &&
+           *m_variationSettings == *other.m_variationSettings));
 }
 
 FontWeight FontDescription::lighterWeight(FontWeight weight) {
@@ -307,6 +311,17 @@ unsigned FontDescription::styleHashWithoutFamilyList() const {
       addToHash(hash, settings->at(i).value());
     }
   }
+  const FontVariationSettings* varSettings = variationSettings();
+  if (varSettings) {
+    unsigned numFeatures = varSettings->size();
+    for (unsigned i = 0; i < numFeatures; ++i) {
+      const AtomicString& tag = varSettings->at(i).tag();
+      for (unsigned j = 0; j < tag.length(); j++)
+        stringHasher.addCharacter(tag[j]);
+      addToHash(hash, varSettings->at(i).value());
+    }
+  }
+
   if (m_locale) {
     const AtomicString& locale = m_locale->localeString();
     for (unsigned i = 0; i < locale.length(); i++)

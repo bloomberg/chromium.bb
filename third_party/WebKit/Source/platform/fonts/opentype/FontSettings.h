@@ -64,7 +64,7 @@ class PLATFORM_EXPORT FontFeatureSettings
 
  public:
   static PassRefPtr<FontFeatureSettings> create() {
-    return adoptRef(new FontFeatureSettings);
+    return adoptRef(new FontFeatureSettings());
   }
 
  private:
@@ -79,7 +79,7 @@ class PLATFORM_EXPORT FontVariationSettings
  public:
   static PassRefPtr<FontVariationSettings> create() {
     return adoptRef(new FontVariationSettings());
-  };
+  }
 
  private:
   FontVariationSettings() = default;

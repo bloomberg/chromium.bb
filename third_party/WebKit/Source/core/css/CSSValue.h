@@ -85,6 +85,9 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool isFontFeatureValue() const { return m_classType == FontFeatureClass; }
   bool isFontFamilyValue() const { return m_classType == FontFamilyClass; }
   bool isFontFaceSrcValue() const { return m_classType == FontFaceSrcClass; }
+  bool isFontVariationValue() const {
+    return m_classType == FontVariationClass;
+  }
   bool isFunctionValue() const { return m_classType == FunctionClass; }
   bool isCustomIdentValue() const { return m_classType == CustomIdentClass; }
   bool isImageGeneratorValue() const {
@@ -197,6 +200,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     FontFeatureClass,
     FontFaceSrcClass,
     FontFamilyClass,
+    FontVariationClass,
 
     InheritedClass,
     InitialClass,
