@@ -15,6 +15,8 @@
     <uses-feature android:name="android.hardware.touchscreen"
             android:required="false"/>
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application android:label="Android System WebView"
         android:icon="@drawable/icon_webview"
         android:multiArch="true"
