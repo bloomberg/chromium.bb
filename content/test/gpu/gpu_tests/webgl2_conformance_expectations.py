@@ -44,13 +44,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
-    # This next one fails reliably on Linux AMD and is flaky everywhere
-    # else. Unfortunately, this means the expectation needs to be
-    # complicated to avoid collisions (and unit test failures).
-    self.Flaky('conformance2/misc/uninitialized-test-2.html',
-        ['win', 'mac', 'chromeos', 'android'], bug=671791)
-    self.Flaky('conformance2/misc/uninitialized-test-2.html',
-        ['linux', 'intel', 'nvidia'], bug=671791)
     self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance2/rendering/rendering-sampling-feedback-loop.html',
