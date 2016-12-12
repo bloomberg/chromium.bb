@@ -404,7 +404,13 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
 void ServiceWorkerControlleeRequestHandler::PrepareForSubResource() {
   DCHECK(job_.get());
   DCHECK(context_);
-  DCHECK(provider_host_->active_version());
+
+  if (!provider_host_->active_version()) {
+    // TODO(falken): For debugging. Remove once https://crbug.com/655910 is
+    // resolved.
+    CHECK(provider_host_->controller_was_deleted());
+  }
+
   MaybeForwardToServiceWorker(job_.get(), provider_host_->active_version());
 }
 
@@ -441,7 +447,7 @@ bool ServiceWorkerControlleeRequestHandler::RequestStillValid(
 void ServiceWorkerControlleeRequestHandler::MainResourceLoadFailed() {
   DCHECK(provider_host_);
   // Detach the controller so subresource requests also skip the worker.
-  provider_host_->NotifyControllerLost();
+  provider_host_->NotifyControllerLost(false /* was_deleted */);
 }
 
 void ServiceWorkerControlleeRequestHandler::ClearJob() {

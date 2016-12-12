@@ -260,7 +260,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Called when our controller has been terminated and doomed due to an
   // exceptional condition like it could no longer be read from the script
   // cache.
-  void NotifyControllerLost();
+  void NotifyControllerLost(bool was_deleted);
+  bool controller_was_deleted() { return controller_was_deleted_; }
 
  private:
   friend class ForeignFetchRequestHandlerTest;
@@ -374,6 +375,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;
   bool allow_association_;
+  // TODO(falken): Remove once https://crbug.com/655910 is resolved.
+  bool controller_was_deleted_;
 
   std::vector<base::Closure> queued_events_;
 

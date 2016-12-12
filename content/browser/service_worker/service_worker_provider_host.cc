@@ -116,7 +116,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       parent_frame_security_level_(parent_frame_security_level),
       context_(context),
       dispatcher_host_(dispatcher_host),
-      allow_association_(true) {
+      allow_association_(true),
+      controller_was_deleted_(false) {
   DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, provider_type_);
 
   // PlzNavigate
@@ -208,6 +209,9 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
   if (!controlling_version_)
     return;
   ServiceWorkerVersion* active_version = registration->active_version();
+  // TODO(falken): Change to DCHECK once https://crbug.com/655910 is
+  // resolved.
+  CHECK(active_version);
   DCHECK_EQ(active_version->status(), ServiceWorkerVersion::ACTIVATING);
   SetControllerVersionAttribute(active_version,
                                 true /* notify_controllerchange */);
@@ -354,7 +358,9 @@ ServiceWorkerProviderHost::MatchRegistration() const {
   return nullptr;
 }
 
-void ServiceWorkerProviderHost::NotifyControllerLost() {
+void ServiceWorkerProviderHost::NotifyControllerLost(bool was_deleted) {
+  if (was_deleted)
+    controller_was_deleted_ = true;
   SetControllerVersionAttribute(nullptr, true /* notify_controllerchange */);
 }
 
@@ -450,7 +456,8 @@ void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(
 
 void ServiceWorkerProviderHost::ClaimedByRegistration(
     ServiceWorkerRegistration* registration) {
-  DCHECK(registration->active_version());
+  // TODO(falken): Change to DCHECK once https://crbug.com/655910 is resolved.
+  CHECK(registration->active_version());
   if (registration == associated_registration_) {
     SetControllerVersionAttribute(registration->active_version(),
                                   true /* notify_controllerchange */);

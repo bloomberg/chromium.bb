@@ -291,7 +291,7 @@ class ServiceWorkerURLRequestJobTest
   void MainResourceLoadFailed() override {
     CHECK(provider_host_);
     // Detach the controller so subresource requests also skip the worker.
-    provider_host_->NotifyControllerLost();
+    provider_host_->NotifyControllerLost(false /* was_deleted */);
   }
 
   // Runs a request where the active worker starts a request in ACTIVATING state
