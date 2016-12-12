@@ -2155,3 +2155,7 @@ crbug.com/671618 virtual/mojo-loading/http/tests/websocket/workers/worker-shutdo
 
 # Added 2016-12-07
 crbug.com/672493 [ Linux ] http/tests/websocket/workers/worker-shutdown-race.html [ Pass Timeout ]
+
+# Added 2016-12-12
+crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
+crbug.com/610835 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
