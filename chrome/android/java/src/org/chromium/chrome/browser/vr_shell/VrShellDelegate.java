@@ -68,7 +68,7 @@ public class VrShellDelegate {
     private final Intent mEnterVRIntent;
 
     private boolean mVrAvailable;
-    private boolean mDaydreamReadyDevice;
+    private boolean mCardboardSupportOnly;
     private Boolean mVrShellEnabled;
 
     private VrClassesBuilder mVrClassesBuilder;
@@ -90,30 +90,42 @@ public class VrShellDelegate {
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
 
-        mVrAvailable = createVrClassesBuilder() && isVrCoreCompatible() && createVrDaydreamApi()
-                && mVrDaydreamApi.isDaydreamReadyDevice();
-        if (mVrAvailable) {
-            mEnterVRIntent = mVrDaydreamApi.createVrIntent(
-                    new ComponentName(mActivity, VR_ACTIVITY_ALIAS));
+        // TODO(bshe): refactor code so that mCardboardSupportOnly does not depend on mVrAvailable
+        // and mVrAvailable does not depend on createVrDaydreamApi.
+        mVrAvailable = createVrClassesBuilder() && isVrCoreCompatible() && createVrDaydreamApi();
+        // Make sure mVrDaydreamApi is created as createVrDaydreamApi might not get called above.
+        if (mVrDaydreamApi == null) createVrDaydreamApi();
+        // Only Cardboard mode is supported on non-daydream devices.
+        mCardboardSupportOnly = !mVrDaydreamApi.isDaydreamReadyDevice();
+
+        if (mVrAvailable && !mCardboardSupportOnly) {
+            mEnterVRIntent =
+                    mVrDaydreamApi.createVrIntent(new ComponentName(mActivity, VR_ACTIVITY_ALIAS));
         } else {
             mEnterVRIntent = null;
         }
-        mTabObserver = new EmptyTabObserver() {
-            @Override
-            public void onContentChanged(Tab tab) {
-                if (tab.getNativePage() != null || tab.isShowingSadTab()) {
-                    // For now we don't handle native pages. crbug.com/661609
-                    shutdownVR(false, true);
+        if (mVrAvailable) {
+            mTabObserver = new EmptyTabObserver() {
+                @Override
+                public void onContentChanged(Tab tab) {
+                    if (tab.getNativePage() != null || tab.isShowingSadTab()) {
+                        // For now we don't handle native pages. crbug.com/661609.
+                        shutdownVR(false, !mCardboardSupportOnly /* showTransition */);
+                    }
                 }
-            }
 
-            @Override
-            public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
-                // TODO(mthiesse): Update the native WebContents pointer and compositor. This
-                // doesn't seem to get triggered in VR Shell currently, but that's likely to change
-                // when we have omnibar navigation.
-            }
-        };
+                @Override
+                public void onWebContentsSwapped(
+                        Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+                    // TODO(mthiesse): Update the native WebContents pointer and compositor. This
+                    // doesn't seem to get triggered in VR Shell currently, but that's likely to
+                    // change
+                    // when we have omnibar navigation.
+                }
+            };
+        } else {
+            mTabObserver = null;
+        }
     }
 
     /**
@@ -149,7 +161,8 @@ public class VrShellDelegate {
      * Handle a VR intent, entering VR in the process unless we're unable to.
      */
     public void enterVRFromIntent(Intent intent) {
-        if (!mVrAvailable) return;
+        // Vr Intent is only used on Daydream devices.
+        if (!mVrAvailable || mCardboardSupportOnly) return;
         assert isVrIntent(intent);
         if (mListeningForWebVrActivateBeforePause && !mRequestedWebVR) {
             nativeDisplayActivate(mNativeVrShellDelegate);
@@ -269,7 +282,7 @@ public class VrShellDelegate {
         if (mInVr) return ENTER_VR_NOT_NECESSARY;
         if (!canEnterVR(mActivity.getActivityTab())) return ENTER_VR_CANCELLED;
 
-        if (!mVrDaydreamApi.isDaydreamCurrentViewer()) {
+        if (mCardboardSupportOnly || !mVrDaydreamApi.isDaydreamCurrentViewer()) {
             // Avoid using launchInVr which would trigger DON flow regardless current viewer type
             // due to the lack of support for unexported activities.
             return enterVR() ? ENTER_VR_SUCCEEDED : ENTER_VR_CANCELLED;
@@ -283,10 +296,16 @@ public class VrShellDelegate {
     private boolean exitWebVR() {
         if (!mInVr) return false;
         mVrShell.setWebVrModeEnabledOnUI(false);
-        // TODO(bajones): Once VR Shell can be invoked outside of WebVR this
-        // should no longer exit the shell outright. Need a way to determine
-        // how VrShell was created.
-        shutdownVR(false, !isVrShellEnabled());
+        if (mCardboardSupportOnly) {
+            // Transition screen is not available for Cardboard only (non-Daydream) devices.
+            // TODO(bshe): Fix this once b/33490788 is fixed.
+            shutdownVR(false, false);
+        } else {
+            // TODO(bajones): Once VR Shell can be invoked outside of WebVR this
+            // should no longer exit the shell outright. Need a way to determine
+            // how VrShell was created.
+            shutdownVR(false, !isVrShellEnabled());
+        }
         return true;
     }
 
@@ -300,7 +319,8 @@ public class VrShellDelegate {
      */
     public void maybeResumeVR() {
         if (!mVrAvailable) return;
-        if (isVrShellEnabled() || mListeningForWebVrActivateBeforePause) {
+        if ((isVrShellEnabled() || mListeningForWebVrActivateBeforePause)
+                && !mCardboardSupportOnly) {
             registerDaydreamIntent();
         }
         // If this is still set, it means the user backed out of the DON flow, and we won't be
@@ -334,7 +354,7 @@ public class VrShellDelegate {
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
             }
-        } else if (mVrDaydreamApi.isDaydreamCurrentViewer()
+        } else if (!mCardboardSupportOnly && mVrDaydreamApi.isDaydreamCurrentViewer()
                 && mLastVRExit + REENTER_VR_TIMEOUT_MS > SystemClock.uptimeMillis()) {
             enterVRIfNecessary();
         }
@@ -345,16 +365,19 @@ public class VrShellDelegate {
      */
     public void maybePauseVR() {
         if (!mVrAvailable) return;
-        unregisterDaydreamIntent();
 
-        // When the active web page has a vrdisplayactivate event handler,
-        // mListeningForWebVrActivate should be set to true, which means a vrdisplayactive event
-        // should be fired once DON flow finished. However, DON flow will pause our activity, which
-        // makes the active page becomes invisible. And the event fires before the active page
-        // becomes visible again after DON finished. So here we remember the value of
-        // mListeningForWebVrActivity before pause and use this value to decide if vrdisplayactivate
-        // event should be dispatched in enterVRFromIntent.
-        mListeningForWebVrActivateBeforePause = mListeningForWebVrActivate;
+        if (!mCardboardSupportOnly) {
+            unregisterDaydreamIntent();
+
+            // When the active web page has a vrdisplayactivate event handler,
+            // mListeningForWebVrActivate should be set to true, which means a vrdisplayactive event
+            // should be fired once DON flow finished. However, DON flow will pause our activity,
+            // which makes the active page becomes invisible. And the event fires before the active
+            // page becomes visible again after DON finished. So here we remember the value of
+            // mListeningForWebVrActivity before pause and use this value to decide if
+            // vrdisplayactivate event should be dispatched in enterVRFromIntent.
+            mListeningForWebVrActivateBeforePause = mListeningForWebVrActivate;
+        }
         if (mNonPresentingGvrContext != null) {
             mNonPresentingGvrContext.pause();
         }
@@ -422,7 +445,9 @@ public class VrShellDelegate {
 
     @CalledByNative
     private void setListeningForWebVrActivate(boolean listening) {
-        if (!mVrAvailable) return;
+        // Non-Daydream devices may not have the concept of display activate. So disable
+        // mListeningForWebVrActivate for them.
+        if (!mVrAvailable || mCardboardSupportOnly) return;
         mListeningForWebVrActivate = listening;
         if (listening) {
             registerDaydreamIntent();
@@ -548,10 +573,13 @@ public class VrShellDelegate {
      * @return Whether or not VR Shell is currently enabled.
      */
     public boolean isVrShellEnabled() {
+        // Disable VR Shell for Cardboard only (non-Daydream) devices.
+        // TODO(amp|bshe): Investigate if removing LibraryLoader.isInitialized from the check is
+        // possible.
+        if (!mVrAvailable || mCardboardSupportOnly || !LibraryLoader.isInitialized()) {
+            return false;
+        }
         if (mVrShellEnabled == null) {
-            if (!LibraryLoader.isInitialized()) {
-                return false;
-            }
             mVrShellEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.VR_SHELL);
         }
         return mVrShellEnabled;
