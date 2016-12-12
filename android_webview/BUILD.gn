@@ -597,6 +597,9 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/JsResultReceiver.java",
     "java/src/org/chromium/android_webview/NullAwViewMethods.java",
     "java/src/org/chromium/android_webview/OverScrollGlow.java",
+
+    # TODO(gsennton): remove PlatformServiceBridge after downstream has been updated to depend on
+    # android_webview_platform_services_java
     "java/src/org/chromium/android_webview/PlatformServiceBridge.java",
     "java/src/org/chromium/android_webview/PopupTouchHandleDrawable.java",
     "java/src/org/chromium/android_webview/ResourcesContextWrapperFactory.java",
@@ -678,6 +681,17 @@ java_strings_grd("strings_grd") {
     "values-zh-rCN/android_webview_strings.xml",
     "values-zh-rTW/android_webview_strings.xml",
     "values/android_webview_strings.xml",
+  ]
+}
+
+# Separate target to allow for a dependency on GmsCore without pulling in all of
+# android_webview_java.
+android_library("android_webview_platform_services_java") {
+  java_files =
+      [ "java/src/org/chromium/android_webview/PlatformServiceBridge.java" ]
+
+  deps = [
+    "//base:base_java",
   ]
 }
 
