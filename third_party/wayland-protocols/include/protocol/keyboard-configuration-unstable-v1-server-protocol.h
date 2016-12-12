@@ -99,6 +99,16 @@ extern const struct wl_interface zcr_keyboard_configuration_v1_interface;
  */
 extern const struct wl_interface zcr_keyboard_device_configuration_v1_interface;
 
+#ifndef ZCR_KEYBOARD_CONFIGURATION_V1_ERROR_ENUM
+#define ZCR_KEYBOARD_CONFIGURATION_V1_ERROR_ENUM
+enum zcr_keyboard_configuration_v1_error {
+	/**
+	 * the keyboard already has a device configuration object associated
+	 */
+	ZCR_KEYBOARD_CONFIGURATION_V1_ERROR_DEVICE_CONFIGURATION_EXISTS = 0,
+};
+#endif /* ZCR_KEYBOARD_CONFIGURATION_V1_ERROR_ENUM */
+
 /**
  * @ingroup iface_zcr_keyboard_configuration_v1
  * @struct zcr_keyboard_configuration_v1_interface
@@ -108,7 +118,10 @@ struct zcr_keyboard_configuration_v1_interface {
 	 * get keyboard_device_configuration interface for a keyboard
 	 *
 	 * Create keyboard_device_configuration object. See
-	 * zcr_keyboard_device_configuration interface for details.
+	 * zcr_keyboard_device_configuration interface for details. If the
+	 * given wl_keyboard object already has a device configuration
+	 * object associated, the keyboard_device_configuration_exists
+	 * protocol error is raised.
 	 */
 	void (*get_keyboard_device_configuration)(struct wl_client *client,
 						  struct wl_resource *resource,

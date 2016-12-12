@@ -41,7 +41,7 @@ static const struct wl_message zcr_keyboard_configuration_v1_requests[] = {
 };
 
 WL_EXPORT const struct wl_interface zcr_keyboard_configuration_v1_interface = {
-	"zcr_keyboard_configuration_v1", 1,
+	"zcr_keyboard_configuration_v1", 2,
 	1, zcr_keyboard_configuration_v1_requests,
 	0, NULL,
 };
