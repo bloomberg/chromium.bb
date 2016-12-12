@@ -1018,8 +1018,14 @@ const char kOpenAsh[]                       = "open-ash";
 const char kHelp[]                          = "help";
 const char kHelpShort[]                     = "h";
 
-// Specifies which password store to use
-// (detect, default, gnome-keyring, gnome-libsecret, kwallet).
+// Specifies which encryption storage backend to use. Possible values are
+// kwallet, kwallet5, gnome, gnome-keyring, gnome-libsecret, basic. Any other
+// value will lead to Chrome detecting the best backend automatically.
+// TODO(crbug.com/571003): Once PasswordStore no longer uses the Keyring or
+// KWallet for storing passwords, rename this flag to stop referencing
+// passwords. Do not rename it sooner, though; developers and testers might
+// rely on it keeping large amounts of testing passwords out of their Keyrings
+// or KWallets.
 const char kPasswordStore[]                 = "password-store";
 
 // The same as the --class argument in X applications.  Overrides the WM_CLASS
