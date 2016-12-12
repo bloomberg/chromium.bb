@@ -196,7 +196,8 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
 
 void DataReductionProxyIOData::InitializeOnIOThread() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  config_->InitializeOnIOThread(basic_url_request_context_getter_.get());
+  config_->InitializeOnIOThread(basic_url_request_context_getter_.get(),
+                                url_request_context_getter_);
   bypass_stats_->InitializeOnIOThread();
   proxy_delegate_->InitializeOnIOThread();
   if (config_client_.get())

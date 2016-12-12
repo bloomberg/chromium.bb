@@ -282,6 +282,62 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(SecureProxyChecker);
 };
 
+// URLFetcherDelegate for fetching the warmup URL.
+class WarmupURLFetcher : public net::URLFetcherDelegate {
+ public:
+  explicit WarmupURLFetcher(const scoped_refptr<net::URLRequestContextGetter>&
+                                url_request_context_getter)
+      : url_request_context_getter_(url_request_context_getter) {
+    DCHECK(url_request_context_getter_);
+  }
+
+  ~WarmupURLFetcher() override {}
+
+  // Creates and starts a URLFetcher that fetches the warmup URL.
+  void FetchWarmupURL() {
+    UMA_HISTOGRAM_EXACT_LINEAR("DataReductionProxy.WarmupURL.FetchInitiated", 1,
+                               2);
+
+    fetcher_ = net::URLFetcher::Create(params::GetWarmupURL(),
+                                       net::URLFetcher::GET, this);
+    data_use_measurement::DataUseUserData::AttachToFetcher(
+        fetcher_.get(),
+        data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
+    fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE);
+    fetcher_->SetRequestContext(url_request_context_getter_.get());
+    // |fetcher| should not retry on 5xx errors.
+    fetcher_->SetAutomaticallyRetryOn5xx(false);
+    fetcher_->SetAutomaticallyRetryOnNetworkChanges(0);
+    fetcher_->Start();
+  }
+
+  void SetWarmupURLFetcherCallbackForTesting(
+      base::Callback<void()> warmup_url_fetched_callback) {
+    fetch_completion_callback_ = warmup_url_fetched_callback;
+  }
+
+ private:
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
+    DCHECK_EQ(source, fetcher_.get());
+    UMA_HISTOGRAM_BOOLEAN(
+        "DataReductionProxy.WarmupURL.FetchSuccessful",
+        source->GetStatus().status() == net::URLRequestStatus::SUCCESS);
+
+    if (fetch_completion_callback_)
+      fetch_completion_callback_.Run();
+  }
+
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  // The URLFetcher being used for fetching the warmup URL.
+  std::unique_ptr<net::URLFetcher> fetcher_;
+
+  // Called upon the completion of fetching of the warmup URL. May be null.
+  base::Callback<void()> fetch_completion_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(WarmupURLFetcher);
+};
+
 DataReductionProxyConfig::DataReductionProxyConfig(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     net::NetLog* net_log,
@@ -320,10 +376,16 @@ DataReductionProxyConfig::~DataReductionProxyConfig() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
-void DataReductionProxyConfig::InitializeOnIOThread(const scoped_refptr<
-    net::URLRequestContextGetter>& url_request_context_getter) {
+void DataReductionProxyConfig::InitializeOnIOThread(
+    const scoped_refptr<net::URLRequestContextGetter>&
+        basic_url_request_context_getter,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        url_request_context_getter) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   secure_proxy_checker_.reset(
-      new SecureProxyChecker(url_request_context_getter));
+      new SecureProxyChecker(basic_url_request_context_getter));
+  warmup_url_fetcher_.reset(new WarmupURLFetcher(url_request_context_getter));
 
   if (!config_values_->allowed())
     return;
@@ -647,6 +709,7 @@ void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
 
   if (enabled) {
     HandleCaptivePortal();
+    FetchWarmupURL();
 
     // Check if the proxy has been restricted explicitly by the carrier.
     // It is safe to use base::Unretained here, since it gets executed
@@ -732,6 +795,8 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
 }
 
 void DataReductionProxyConfig::OnIPAddressChanged() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (enabled_by_user_) {
     DCHECK(config_values_->allowed());
     RecordNetworkChangeEvent(IP_CHANGED);
@@ -741,6 +806,7 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
     network_quality_at_last_query_ = NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN;
 
     HandleCaptivePortal();
+    FetchWarmupURL();
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives
     // |secure_proxy_checker_|.
@@ -789,6 +855,23 @@ void DataReductionProxyConfig::SecureProxyCheck(
 
   secure_proxy_checker_->CheckIfSecureProxyIsAllowed(secure_proxy_check_url,
                                                      fetcher_callback);
+}
+
+void DataReductionProxyConfig::FetchWarmupURL() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!enabled_by_user_ || !params::FetchWarmupURLEnabled())
+    return;
+
+  warmup_url_fetcher_->FetchWarmupURL();
+}
+
+void DataReductionProxyConfig::SetWarmupURLFetcherCallbackForTesting(
+    base::Callback<void()> warmup_url_fetched_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  warmup_url_fetcher_->SetWarmupURLFetcherCallbackForTesting(
+      warmup_url_fetched_callback);
 }
 
 void DataReductionProxyConfig::SetLoFiModeOff() {

@@ -51,6 +51,7 @@ class DataReductionProxyConfigValues;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
 class SecureProxyChecker;
+class WarmupURLFetcher;
 struct DataReductionProxyTypeInfo;
 
 // Values of the UMA DataReductionProxy.ProbeURL histogram.
@@ -103,7 +104,13 @@ class DataReductionProxyConfig
   ~DataReductionProxyConfig() override;
 
   // Performs initialization on the IO thread.
+  // |basic_url_request_context_getter| is the net::URLRequestContextGetter that
+  // disables the use of alternative protocols and proxies.
+  // |url_request_context_getter| is the default net::URLRequestContextGetter
+  // used for making URL requests.
   void InitializeOnIOThread(const scoped_refptr<net::URLRequestContextGetter>&
+                                basic_url_request_context_getter,
+                            const scoped_refptr<net::URLRequestContextGetter>&
                                 url_request_context_getter);
 
   // Sets the proxy configs, enabling or disabling the proxy according to
@@ -214,6 +221,10 @@ class DataReductionProxyConfig
   // Updates the Data Reduction Proxy configurator with the current config.
   void UpdateConfigForTesting(bool enabled, bool restricted);
 
+  // Updates the callback that is called when the warmup URL has been fetched.
+  void SetWarmupURLFetcherCallbackForTesting(
+      base::Callback<void()> warmup_url_fetched_callback);
+
  private:
   friend class MockDataReductionProxyConfig;
   friend class TestDataReductionProxyConfig;
@@ -230,6 +241,7 @@ class DataReductionProxyConfig
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, LoFiAccuracy);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            LoFiAccuracyNonZeroDelay);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, WarmupURL);
 
   // Values of the estimated network quality at the beginning of the most
   // recent query of the Network Quality Estimator.
@@ -308,7 +320,14 @@ class DataReductionProxyConfig
   // for testing.
   virtual bool GetIsCaptivePortal() const;
 
+  // Fetches the warmup URL.
+  void FetchWarmupURL();
+
+  // URL fetcher used for performing the secure proxy check.
   std::unique_ptr<SecureProxyChecker> secure_proxy_checker_;
+
+  // URL fetcher used for fetching the warmup URL.
+  std::unique_ptr<WarmupURLFetcher> warmup_url_fetcher_;
 
   // Indicates if the secure Data Reduction Proxy can be used or not.
   bool secure_proxy_allowed_;

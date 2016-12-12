@@ -118,6 +118,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   void SetIsCaptivePortal(bool is_captive_portal);
 
   using DataReductionProxyConfig::UpdateConfigForTesting;
+  using DataReductionProxyConfig::SetWarmupURLFetcherCallbackForTesting;
 
  private:
   bool GetIsCaptivePortal() const override;

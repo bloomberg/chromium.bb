@@ -33,7 +33,7 @@ const char kCarrierTestOrigin[] =
     "http://o-o.preferred.nttdocomodcp-hnd1.proxy-dev.googlezip.net:80";
 const char kDefaultFallbackOrigin[] = "compress.googlezip.net:80";
 const char kDefaultSecureProxyCheckUrl[] = "http://check.googlezip.net/connect";
-const char kDefaultWarmupUrl[] = "http://www.gstatic.com/generate_204";
+const char kDefaultWarmupUrl[] = "http://check.googlezip.net/generate_204";
 
 const char kAndroidOneIdentifier[] = "sprout";
 
@@ -136,6 +136,29 @@ bool IsIncludedInTamperDetectionExperiment() {
          base::StartsWith(
              FieldTrialList::FindFullName(kServerExperimentsFieldTrial),
              "TamperDetection_Enabled", base::CompareCase::SENSITIVE);
+}
+
+bool FetchWarmupURLEnabled() {
+  // Fetching of the warmup URL can be enabled only for Enabled* and Control*
+  // groups.
+  if (!base::StartsWith(FieldTrialList::FindFullName(kQuicFieldTrial), kEnabled,
+                        base::CompareCase::SENSITIVE) &&
+      !base::StartsWith(FieldTrialList::FindFullName(kQuicFieldTrial), kControl,
+                        base::CompareCase::SENSITIVE)) {
+    return false;
+  }
+
+  std::map<std::string, std::string> params;
+  variations::GetVariationParams(GetQuicFieldTrialName(), &params);
+  return GetStringValueForVariationParamWithDefaultValue(
+             params, "enable_warmup", "false") == "true";
+}
+
+GURL GetWarmupURL() {
+  std::map<std::string, std::string> params;
+  variations::GetVariationParams(GetQuicFieldTrialName(), &params);
+  return GURL(GetStringValueForVariationParamWithDefaultValue(
+      params, "warmup_url", kDefaultWarmupUrl));
 }
 
 bool IsLoFiOnViaFlags() {
@@ -427,8 +450,6 @@ void DataReductionProxyParams::InitWithoutChecks() {
     fallback_origin = GetDefaultFallbackOrigin();
   if (secure_proxy_check_url.empty())
     secure_proxy_check_url = GetDefaultSecureProxyCheckURL();
-  if (warmup_url.empty())
-    warmup_url = GetDefaultWarmupURL();
 
   origin_ = net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP);
   fallback_origin_ =
@@ -439,7 +460,6 @@ void DataReductionProxyParams::InitWithoutChecks() {
     proxies_for_http_.push_back(fallback_origin_);
 
   secure_proxy_check_url_ = GURL(secure_proxy_check_url);
-  warmup_url_ = GURL(warmup_url);
 }
 
 const std::vector<net::ProxyServer>&
@@ -495,8 +515,5 @@ std::string DataReductionProxyParams::GetDefaultSecureProxyCheckURL() const {
   return kDefaultSecureProxyCheckUrl;
 }
 
-std::string DataReductionProxyParams::GetDefaultWarmupURL() const {
-  return kDefaultWarmupUrl;
-}
 
 }  // namespace data_reduction_proxy

@@ -148,6 +148,12 @@ bool GetOverrideProxiesForHttpFromCommandLine(
 // Returns the name of the server side experiment field trial.
 const char* GetServerExperimentsFieldTrialName();
 
+// Returns true if fetching of the warmup URL is enabled.
+bool FetchWarmupURLEnabled();
+
+// Returns the warmup URL.
+GURL GetWarmupURL();
+
 }  // namespace params
 
 // Contains information about a given proxy server. |proxies_for_http| contains
@@ -222,7 +228,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   virtual std::string GetDefaultOrigin() const;
   virtual std::string GetDefaultFallbackOrigin() const;
   virtual std::string GetDefaultSecureProxyCheckURL() const;
-  virtual std::string GetDefaultWarmupURL() const;
 
   std::vector<net::ProxyServer> proxies_for_http_;
 
@@ -231,7 +236,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   net::ProxyServer fallback_origin_;
 
   GURL secure_proxy_check_url_;
-  GURL warmup_url_;
 
   bool allowed_;
   bool fallback_allowed_;

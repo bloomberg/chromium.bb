@@ -377,20 +377,31 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
     bool expected_enabled;
     std::string zero_rtt_param;
     bool expected_zero_rtt;
+    bool enable_warmup_url;
+    bool expect_warmup_url_enabled;
+    std::string warmup_url;
   } tests[] = {
-      {"Enabled", true, "true", true},
-      {"Enabled_Control", true, "true", true},
-      {"Enabled_Control", true, "false", false},
-      {"Enabled_Control", true, std::string(), false},
-      {"Control", false, "true", false},
-      {"Disabled", false, "false", false},
-      {"enabled", false, "false", false},
+      {"Enabled", true, "true", true, true, true, std::string()},
+      {"Enabled", true, "true", true, false, false, std::string()},
+      {"Enabled_Control", true, "true", true, true, true, std::string()},
+      {"Enabled_Control", true, "false", false, true, true, std::string()},
+      {"Enabled_Control", true, std::string(), false, true, true,
+       std::string()},
+      {"Control", false, "true", false, true, true, std::string()},
+      {"Disabled", false, "false", false, true, false, std::string()},
+      {"enabled", false, "false", false, true, false, std::string()},
+      {"Enabled", true, "true", true, true, true, "example.com/test.html"},
   };
 
   for (const auto& test : tests) {
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
     variation_params["enable_zero_rtt"] = test.zero_rtt_param;
+    if (test.enable_warmup_url)
+      variation_params["enable_warmup"] = "true";
+
+    if (!test.warmup_url.empty())
+      variation_params["warmup_url"] = test.warmup_url;
     ASSERT_TRUE(variations::AssociateVariationParams(
         params::GetQuicFieldTrialName(), test.trial_group_name,
         variation_params));
@@ -401,6 +412,13 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
 
     EXPECT_EQ(test.expected_enabled, params::IsIncludedInQuicFieldTrial());
     EXPECT_EQ(test.expected_zero_rtt, params::IsZeroRttQuicEnabled());
+    if (!test.warmup_url.empty()) {
+      EXPECT_EQ(GURL(test.warmup_url), params::GetWarmupURL());
+    } else {
+      EXPECT_EQ(GURL("http://check.googlezip.net/generate_204"),
+                params::GetWarmupURL());
+    }
+    EXPECT_EQ(test.expect_warmup_url_enabled, params::FetchWarmupURLEnabled());
   }
 }
 

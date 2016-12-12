@@ -14,10 +14,13 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -44,8 +47,10 @@
 #include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/proxy/proxy_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 
 using testing::_;
@@ -167,6 +172,17 @@ class DataReductionProxyConfigTest : public testing::Test {
         1);
   }
 
+  void WarmupURLFetchedCallBack() const {
+    warmup_url_fetched_run_loop_->Quit();
+  }
+
+  void WarmUpURLFetchedRunLoop() {
+    warmup_url_fetched_run_loop_.reset(new base::RunLoop());
+    // |warmup_url_fetched_run_loop_| will run until WarmupURLFetchedCallBack()
+    // is called.
+    warmup_url_fetched_run_loop_->Run();
+  }
+
   void RunUntilIdle() {
     test_context_->RunUntilIdle();
   }
@@ -204,6 +220,7 @@ class DataReductionProxyConfigTest : public testing::Test {
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   base::MessageLoopForIO message_loop_;
+  std::unique_ptr<base::RunLoop> warmup_url_fetched_run_loop_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<TestDataReductionProxyParams> expected_params_;
 };
@@ -302,6 +319,103 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
       "Bad", false, net::HTTP_FOUND,
       net::URLRequestStatus(net::URLRequestStatus::CANCELED, net::ERR_ABORTED),
       FAILED_PROXY_DISABLED, std::vector<net::ProxyServer>(1, kHttpProxy));
+}
+
+// Verifies that the warm up URL is fetched correctly.
+TEST_F(DataReductionProxyConfigTest, WarmupURL) {
+  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
+  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
+      "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
+  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
+      "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
+
+  // Set up the embedded test server from where the warm up URL will be fetched.
+  net::EmbeddedTestServer embedded_test_server;
+  embedded_test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+  EXPECT_TRUE(embedded_test_server.Start());
+
+  GURL warmup_url = embedded_test_server.GetURL("/simple.html");
+
+  const struct {
+    bool data_reduction_proxy_enabled;
+    bool enabled_via_field_trial;
+  } tests[] = {
+      {
+          false, false,
+      },
+      {
+          false, true,
+      },
+      {
+          true, false,
+      },
+      {
+          true, true,
+      },
+  };
+  for (const auto& test : tests) {
+    base::HistogramTester histogram_tester;
+    SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
+
+    ResetSettings(true, true, true, false);
+
+    variations::testing::ClearAllVariationParams();
+    std::map<std::string, std::string> variation_params;
+    variation_params["enable_warmup"] =
+        test.enabled_via_field_trial ? "true" : "false";
+    variation_params["warmup_url"] = warmup_url.spec();
+
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        params::GetQuicFieldTrialName(), "Enabled", variation_params));
+
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
+                                           "Enabled");
+
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    TestDataReductionProxyConfig config(
+        DataReductionProxyParams::kAllowed |
+            DataReductionProxyParams::kFallbackAllowed,
+        TestDataReductionProxyParams::HAS_EVERYTHING, task_runner(), nullptr,
+        configurator(), event_creator());
+
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter_ =
+        new net::TestURLRequestContextGetter(task_runner());
+    config.InitializeOnIOThread(request_context_getter_.get(),
+                                request_context_getter_.get());
+    config.SetWarmupURLFetcherCallbackForTesting(
+        base::Bind(&DataReductionProxyConfigTest::WarmupURLFetchedCallBack,
+                   base::Unretained(this)));
+    config.SetProxyConfig(test.data_reduction_proxy_enabled, true);
+    bool warmup_url_enabled =
+        test.data_reduction_proxy_enabled && test.enabled_via_field_trial;
+
+    if (warmup_url_enabled) {
+      // Block until warm up URL is fetched successfully.
+      WarmUpURLFetchedRunLoop();
+      histogram_tester.ExpectUniqueSample(
+          "DataReductionProxy.WarmupURL.FetchInitiated", 1, 1);
+      histogram_tester.ExpectUniqueSample(
+          "DataReductionProxy.WarmupURL.FetchSuccessful", 1, 1);
+    }
+
+    config.OnIPAddressChanged();
+
+    if (warmup_url_enabled) {
+      // Block until warm up URL is fetched successfully.
+      WarmUpURLFetchedRunLoop();
+      histogram_tester.ExpectUniqueSample(
+          "DataReductionProxy.WarmupURL.FetchInitiated", 1, 2);
+      histogram_tester.ExpectUniqueSample(
+          "DataReductionProxy.WarmupURL.FetchSuccessful", 1, 2);
+    } else {
+      histogram_tester.ExpectTotalCount(
+          "DataReductionProxy.WarmupURL.FetchInitiated", 0);
+      histogram_tester.ExpectTotalCount(
+          "DataReductionProxy.WarmupURL.FetchSuccessful", 0);
+    }
+  }
 }
 
 TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
