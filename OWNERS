@@ -4,6 +4,7 @@ cpu@chromium.org
 darin@chromium.org
 jam@chromium.org
 
+per-file .gitattributes=*
 per-file .gitignore=*
 per-file .git-blame-ignore-revs=mgiuca@chromium.org
 per-file .git-blame-ignore-revs=thakis@chromium.org
