@@ -609,9 +609,8 @@ TEST_F(AudioRendererHostTest, CreateDeviceWithBadSecurityOrigin) {
 }
 
 TEST_F(AudioRendererHostTest, CreateInvalidDevice) {
-  Create(kInvalidDeviceId, url::Origin(GURL(kSecurityOrigin)), true, false);
+  Create(kInvalidDeviceId, url::Origin(GURL(kSecurityOrigin)), true, true);
   Close();
-  AssertBadMsgReported();
 }
 
 TEST_F(AudioRendererHostTest, CreateFailsForInvalidRenderFrame) {

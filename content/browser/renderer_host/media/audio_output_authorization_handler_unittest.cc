@@ -260,8 +260,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   SyncWithAllThreads();
 }
 
-TEST_F(AudioOutputAuthorizationHandlerTest,
-       AuthorizeInvalidDeviceId_BadMessage) {
+TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeInvalidDeviceId_NotFound) {
   std::unique_ptr<TestBrowserContext> context =
       base::MakeUnique<TestBrowserContext>();
   std::unique_ptr<MockRenderProcessHost> RPH =
@@ -272,7 +271,10 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
           GetAudioManager(), GetMediaStreamManager(), RPH->GetID(), kSalt);
   EXPECT_EQ(RPH->bad_msg_count(), 0);
 
-  EXPECT_CALL(listener, MockAuthorizationCallback(_, _, _, _)).Times(0);
+  EXPECT_CALL(listener,
+              MockAuthorizationCallback(
+                  media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND, _, _, _))
+      .Times(1);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -281,7 +283,9 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
                   kInvalidDeviceId, SecurityOrigin(), listener.GetCallback())));
 
   SyncWithAllThreads();
-  EXPECT_EQ(RPH->bad_msg_count(), 1);
+  // It is possible to request an invalid device id from JS APIs,
+  // so we don't want to crash the renderer for this.
+  EXPECT_EQ(RPH->bad_msg_count(), 0);
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
   SyncWithAllThreads();
   RPH.reset();
