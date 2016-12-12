@@ -11,23 +11,37 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Builds instances of payment apps.
  */
 public class PaymentAppFactory {
+    private static PaymentAppFactory sInstance;
+
     /**
      * Can be used to build additional types of payment apps without Chrome knowing about their
      * types.
      */
-    private static PaymentAppFactoryAddition sAdditionalFactory;
+    private final List<PaymentAppFactoryAddition> mAdditionalFactories;
 
     /**
-     * Native bridge that can be used to retrieve information about installed service worker
-     * payment apps.
+     * Interface for receiving newly created apps.
      */
-    private static ServiceWorkerPaymentAppBridge sServiceWorkerPaymentAppBridge;
+    public interface PaymentAppCreatedCallback {
+        /**
+         * Called when the factory has create a payment app. This method may be called
+         * zero, one, or many times before the app creation is finished.
+         */
+        void onPaymentAppCreated(PaymentApp paymentApp);
+
+        /**
+         * Called when the factory is finished creating payment apps.
+         */
+        void onAllPaymentAppsCreated();
+    }
 
     /**
      * The interface for additional payment app factories.
@@ -38,27 +52,35 @@ public class PaymentAppFactory {
          *
          * @param context     The application context.
          * @param webContents The web contents that invoked PaymentRequest.
+         * @param callback    The callback to invoke when apps are created.
          */
-        List<PaymentApp> create(Context context, WebContents webContents);
+        void create(Context context, WebContents webContents, PaymentAppCreatedCallback callback);
+    }
+
+    private PaymentAppFactory() {
+        mAdditionalFactories = new ArrayList<>();
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
+            mAdditionalFactories.add(new ServiceWorkerPaymentAppBridge());
+        }
     }
 
     /**
-     * Sets the additional factory that can build instances of payment apps.
+     * @return The singleton PaymentAppFactory instance.
+     */
+    public static PaymentAppFactory getInstance() {
+        if (sInstance == null) sInstance = new PaymentAppFactory();
+        return sInstance;
+    }
+
+    /**
+     * Add an additional factory that can build instances of payment apps.
      *
      * @param additionalFactory Can build instances of payment apps.
      */
     @VisibleForTesting
-    public static void setAdditionalFactory(PaymentAppFactoryAddition additionalFactory) {
-        sAdditionalFactory = additionalFactory;
-    }
-
-    /**
-     * Set a custom native bridge for service worker payment apps for testing.
-     */
-    @VisibleForTesting
-    public static void setServiceWorkerPaymentAppBridgeForTest(
-            ServiceWorkerPaymentAppBridge bridge) {
-        sServiceWorkerPaymentAppBridge = bridge;
+    public void addAdditionalFactory(PaymentAppFactoryAddition additionalFactory) {
+        mAdditionalFactories.add(additionalFactory);
     }
 
     /**
@@ -66,40 +88,34 @@ public class PaymentAppFactory {
      *
      * @param context     The context.
      * @param webContents The web contents where PaymentRequest was invoked.
+     * @param callback    The callback to invoke when apps are created.
      */
-    public static List<PaymentApp> create(Context context, WebContents webContents) {
-        List<PaymentApp> result = new ArrayList<>(2);
-        result.add(new AutofillPaymentApp(context, webContents));
+    public void create(
+            Context context, WebContents webContents, final PaymentAppCreatedCallback callback) {
+        callback.onPaymentAppCreated(new AutofillPaymentApp(context, webContents));
 
-        result.addAll(createServiceWorkerPaymentApps());
-
-        if (sAdditionalFactory != null) {
-            result.addAll(
-                    sAdditionalFactory.create(context, webContents));
-        }
-        return result;
-    }
-
-    /**
-     * Build a ServiceWorkerPaymentApp instance for each installed service
-     * worker based payment app.
-     */
-    private static List<ServiceWorkerPaymentApp> createServiceWorkerPaymentApps() {
-        if (sServiceWorkerPaymentAppBridge == null) {
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
-                sServiceWorkerPaymentAppBridge = new ServiceWorkerPaymentAppBridge();
-            } else {
-                return new ArrayList<>();
-            }
+        if (mAdditionalFactories.isEmpty()) {
+            callback.onAllPaymentAppsCreated();
+            return;
         }
 
-        List<ServiceWorkerPaymentApp> result = new ArrayList<>();
+        final Set<PaymentAppFactoryAddition> mPendingTasks =
+                new HashSet<PaymentAppFactoryAddition>(mAdditionalFactories);
 
-        for (ServiceWorkerPaymentAppBridge.Manifest manifest :
-                sServiceWorkerPaymentAppBridge.getAllAppManifests()) {
-            result.add(new ServiceWorkerPaymentApp(manifest));
+        for (int i = 0; i < mAdditionalFactories.size(); i++) {
+            final PaymentAppFactoryAddition additionalFactory = mAdditionalFactories.get(i);
+            additionalFactory.create(context, webContents, new PaymentAppCreatedCallback() {
+                @Override
+                public void onPaymentAppCreated(PaymentApp paymentApp) {
+                    callback.onPaymentAppCreated(paymentApp);
+                }
+
+                @Override
+                public void onAllPaymentAppsCreated() {
+                    mPendingTasks.remove(additionalFactory);
+                    if (mPendingTasks.isEmpty()) callback.onAllPaymentAppsCreated();
+                }
+            });
         }
-
-        return result;
     }
 }

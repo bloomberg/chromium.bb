@@ -37,7 +37,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
      *                       ONE_OPTION or TWO_OPTIONS
      */
     private void installServiceWorkerPaymentApp(final int instrumentPresence) {
-        PaymentAppFactory.setServiceWorkerPaymentAppBridgeForTest(
+        PaymentAppFactory.getInstance().addAdditionalFactory(
                 new ServiceWorkerPaymentAppBridge() {
                     @Override
                     public List<Manifest> getAllAppManifests() {

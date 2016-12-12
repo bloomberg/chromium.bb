@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +19,9 @@ import java.util.List;
  */
 // TODO(tommyt): crbug.com/669876. Remove these suppressions when we actually
 // start using all of the functionality in this class.
-@SuppressFBWarnings({
-        "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD",
-        "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"})
-public class ServiceWorkerPaymentAppBridge {
+@SuppressFBWarnings(
+        {"UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"})
+public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentAppFactoryAddition {
     /**
      * This class represents a payment app manifest as defined in the Payment
      * App API specification.
@@ -52,10 +54,25 @@ public class ServiceWorkerPaymentAppBridge {
     }
 
     /**
-     * Get a list of all the installed app manifests.
+     * Fetch all the installed service worker app manifests.
+     *
+     * This method is protected so that it can be overridden by tests.
+     *
+     * @return The installed service worker app manifests.
      */
-    public List<Manifest> getAllAppManifests() {
+    @VisibleForTesting
+    protected List<Manifest> getAllAppManifests() {
         // TODO(tommyt): crbug.com/669876. Implement this function.
         return new ArrayList<Manifest>();
+    }
+
+    @Override
+    public void create(Context context, WebContents webContents,
+            PaymentAppFactory.PaymentAppCreatedCallback callback) {
+        List<Manifest> manifests = getAllAppManifests();
+        for (int i = 0; i < manifests.size(); i++) {
+            callback.onPaymentAppCreated(new ServiceWorkerPaymentApp(manifests.get(i)));
+        }
+        callback.onAllPaymentAppsCreated();
     }
 }

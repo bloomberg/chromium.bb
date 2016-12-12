@@ -65,6 +65,12 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     /** Flag for installing a slow payment app. */
     protected static final int DELAYED_RESPONSE = 1;
 
+    /** Flag for immediately installing a payment app. */
+    protected static final int IMMEDIATE_CREATION = 0;
+
+    /** Flag for installing a payment app with a delay. */
+    protected static final int DELAYED_CREATION = 1;
+
     /** The expiration month dropdown index for December. */
     protected static final int DECEMBER = 11;
 
@@ -122,7 +128,9 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     }
 
     @Override
-    public void startMainActivity() throws InterruptedException {}
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityWithURL(mTestFilePath);
+    }
 
     protected abstract void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException;
@@ -146,7 +154,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
 
     protected void openPageAndClickNodeAndWait(String nodeId, CallbackHelper helper)
             throws InterruptedException, ExecutionException, TimeoutException {
-        startMainActivityWithURL(mTestFilePath);
         onMainActivityStarted();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -776,7 +783,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
      * @param instrumentPresence Whether the app has any payment instruments. Either NO_INSTRUMENTS
      *                           or HAVE_INSTRUMENTS.
      * @param responseSpeed      How quickly the app will respond to "get instruments" query. Either
-     *                           IMMEDIATE_RESPONSE, DELAYED_RESPONSE, or NO_RESPONSE.
+     *                           IMMEDIATE_RESPONSE or DELAYED_RESPONSE.
      * @return The installed payment app.
      */
     protected TestPay installPaymentApp(final int instrumentPresence, final int responseSpeed) {
@@ -790,18 +797,45 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
      * @param instrumentPresence Whether the app has any payment instruments. Either NO_INSTRUMENTS
      *                           or HAVE_INSTRUMENTS.
      * @param responseSpeed      How quickly the app will respond to "get instruments" query. Either
-     *                           IMMEDIATE_RESPONSE, DELAYED_RESPONSE, or NO_RESPONSE.
+     *                           IMMEDIATE_RESPONSE or DELAYED_RESPONSE.
      * @return The installed payment app.
      */
     protected TestPay installPaymentApp(final String methodName, final int instrumentPresence,
             final int responseSpeed) {
+        return installPaymentApp(methodName, instrumentPresence, responseSpeed, IMMEDIATE_CREATION);
+    }
+
+    /**
+     * Installs a payment app for testing.
+     *
+     * @param methodName         The name of the payment method used in the payment app.
+     * @param instrumentPresence Whether the app has any payment instruments. Either NO_INSTRUMENTS
+     *                           or HAVE_INSTRUMENTS.
+     * @param responseSpeed      How quickly the app will respond to "get instruments" query. Either
+     *                           IMMEDIATE_RESPONSE or DELAYED_RESPONSE.
+     * @param creationSpeed      How quickly the app factory will create this app. Either
+     *                           IMMEDIATE_CREATION or DELAYED_CREATION.
+     * @return The installed payment app.
+     */
+    protected TestPay installPaymentApp(final String methodName, final int instrumentPresence,
+            final int responseSpeed, final int creationSpeed) {
         final TestPay app = new TestPay(methodName, instrumentPresence, responseSpeed);
-        PaymentAppFactory.setAdditionalFactory(new PaymentAppFactoryAddition() {
+        PaymentAppFactory.getInstance().addAdditionalFactory(new PaymentAppFactoryAddition() {
             @Override
-            public List<PaymentApp> create(Context context, WebContents webContents) {
-                List<PaymentApp> additionalApps = new ArrayList<>();
-                additionalApps.add(app);
-                return additionalApps;
+            public void create(Context context, WebContents webContents,
+                    final PaymentAppFactory.PaymentAppCreatedCallback callback) {
+                if (creationSpeed == IMMEDIATE_CREATION) {
+                    callback.onPaymentAppCreated(app);
+                    callback.onAllPaymentAppsCreated();
+                } else {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onPaymentAppCreated(app);
+                            callback.onAllPaymentAppsCreated();
+                        }
+                    }, 100);
+                }
             }
         });
         return app;
