@@ -42,6 +42,7 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
                                    base::string16* body) override;
   bool RemoveSuggestion(const base::string16& value, int identifier) override;
   void ClearPreviewedForm() override;
+  bool IsCreditCardPopup() override;
 
   // Invoked when a password mapping is added.
   void OnAddPasswordFormMapping(

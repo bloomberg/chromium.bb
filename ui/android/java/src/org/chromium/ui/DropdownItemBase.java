@@ -40,6 +40,11 @@ public class DropdownItemBase implements DropdownItem {
     }
 
     @Override
+    public boolean isBoldLabel() {
+        return false;
+    }
+
+    @Override
     public int getLabelFontColorResId() {
         return R.drawable.dropdown_label_color;
     }

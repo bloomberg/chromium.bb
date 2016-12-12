@@ -10,7 +10,8 @@ namespace autofill {
 
 Suggestion::Suggestion()
     : frontend_id(0),
-      match(PREFIX_MATCH) {
+      match(PREFIX_MATCH),
+      is_value_bold(false) {
 }
 
 Suggestion::Suggestion(const Suggestion& other)
@@ -19,13 +20,15 @@ Suggestion::Suggestion(const Suggestion& other)
       value(other.value),
       label(other.label),
       icon(other.icon),
-      match(other.match) {
+      match(other.match),
+      is_value_bold(other.is_value_bold) {
 }
 
 Suggestion::Suggestion(const base::string16& v)
     : frontend_id(0),
       value(v),
-      match(PREFIX_MATCH) {
+      match(PREFIX_MATCH),
+      is_value_bold(false) {
 }
 
 Suggestion::Suggestion(const std::string& v,
@@ -36,7 +39,8 @@ Suggestion::Suggestion(const std::string& v,
       value(base::UTF8ToUTF16(v)),
       label(base::UTF8ToUTF16(l)),
       icon(base::UTF8ToUTF16(i)),
-      match(PREFIX_MATCH) {
+      match(PREFIX_MATCH),
+      is_value_bold(false) {
 }
 
 Suggestion::~Suggestion() {

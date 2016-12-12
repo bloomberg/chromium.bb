@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import android.graphics.Color;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 
@@ -67,7 +68,9 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
                 mWindowAndroid = new ActivityWindowAndroid(activity);
                 mAutofillPopup = new AutofillPopup(activity, anchorView, mMockAutofillCallback);
-                mAutofillPopup.filterAndShow(new AutofillSuggestion[0], false);
+                mAutofillPopup.filterAndShow(new AutofillSuggestion[0], false /* isRtl */,
+                        Color.TRANSPARENT /* backgroundColor */,
+                        Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */);
             }
         });
     }
@@ -107,21 +110,24 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private AutofillSuggestion[] createTwoAutofillSuggestionArray() {
         return new AutofillSuggestion[] {
                 new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
-                        42, false, false),
-                new AutofillSuggestion(
-                        "Arthur Dent", "West Country", DropdownItem.NO_ICON, 43, false, false),
+                        false, 42, false, false, false),
+                new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON,
+                        false, 43, false, false, false),
         };
     }
 
     private AutofillSuggestion[] createFiveAutofillSuggestionArray() {
         return new AutofillSuggestion[] {
                 new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
-                        42, false, false),
-                new AutofillSuggestion(
-                        "Arthur Dent", "West Country", DropdownItem.NO_ICON, 43, false, false),
-                new AutofillSuggestion("Arthos", "France", DropdownItem.NO_ICON, 44, false, false),
-                new AutofillSuggestion("Porthos", "France", DropdownItem.NO_ICON, 45, false, false),
-                new AutofillSuggestion("Aramis", "France", DropdownItem.NO_ICON, 46, false, false),
+                        false, 42, false, false, false),
+                new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON,
+                        false, 43, false, false, false),
+                new AutofillSuggestion("Arthos", "France", DropdownItem.NO_ICON,
+                        false, 44, false, false, false),
+                new AutofillSuggestion("Porthos", "France", DropdownItem.NO_ICON,
+                        false, 45, false, false, false),
+                new AutofillSuggestion("Aramis", "France", DropdownItem.NO_ICON,
+                        false, 46, false, false, false),
         };
     }
 
@@ -130,7 +136,9 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mAutofillPopup.filterAndShow(suggestions, false);
+                mAutofillPopup.filterAndShow(suggestions, false /* isRtl */,
+                        Color.TRANSPARENT /* backgroundColor */,
+                        Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */);
             }
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {

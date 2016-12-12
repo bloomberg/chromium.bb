@@ -51,6 +51,9 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
                                    base::string16* body) override;
   bool RemoveSuggestion(const base::string16& value, int identifier) override;
   void ClearPreviewedForm() override;
+  // Returns false for all popups prior to |onQuery|, true for credit card
+  // popups after call to |onQuery|.
+  bool IsCreditCardPopup() override;
 
   // Records and associates a query_id with web form data.  Called
   // when the renderer posts an Autofill query to the browser. |bounds|
@@ -115,6 +118,9 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // version.
   void InsertDataListValues(std::vector<Suggestion>* suggestions);
 
+  // Returns the text (i.e. |Suggestion| value) for Chrome autofill options.
+  base::string16 GetSettingsSuggestionValue() const;
+
   AutofillManager* manager_;  // weak.
 
   // Provides driver-level context to the shared code of the component. Must
@@ -139,8 +145,8 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // currently editing?  Used to keep track of state for metrics logging.
   bool has_shown_popup_for_current_edit_;
 
-  // FIXME
   bool should_show_scan_credit_card_;
+  bool is_credit_card_popup_;
 
   // Whether the credit card signin promo should be shown to the user.
   bool should_show_cc_signin_promo_;

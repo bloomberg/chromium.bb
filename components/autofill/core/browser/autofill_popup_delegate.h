@@ -43,6 +43,9 @@ class AutofillPopupDelegate {
 
   // Informs the delegate that the Autofill previewed form should be cleared.
   virtual void ClearPreviewedForm() = 0;
+
+  // Returns true if popup is for credit card.
+  virtual bool IsCreditCardPopup() = 0;
 };
 
 }  // namespace autofill

@@ -96,6 +96,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   virtual bool ShouldShowScanCreditCard(const FormData& form,
                                         const FormFieldData& field);
 
+  // Whether the |field| belongs to CREDIT_CARD |FieldTypeGroup|.
+  virtual bool IsCreditCardPopup(const FormData& form,
+                                 const FormFieldData& field);
+
   // Whether we should show the signin promo, based on the triggered |field|
   // inside the |form|.
   virtual bool ShouldShowCreditCardSigninPromo(const FormData& form,

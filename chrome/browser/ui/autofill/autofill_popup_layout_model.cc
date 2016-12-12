@@ -10,10 +10,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/grit/components_scaled_resources.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -70,8 +72,8 @@ int GetRowHeightFromId(int identifier) {
 }  // namespace
 
 AutofillPopupLayoutModel::AutofillPopupLayoutModel(
-    AutofillPopupViewDelegate* delegate)
-    : delegate_(delegate) {
+    AutofillPopupViewDelegate* delegate, bool is_credit_card_popup)
+    : delegate_(delegate), is_credit_card_popup_(is_credit_card_popup) {
 #if !defined(OS_ANDROID)
   smaller_font_list_ =
       normal_font_list_.DeriveWithSizeDelta(kSmallerFontSizeDelta);
@@ -280,6 +282,30 @@ int AutofillPopupLayoutModel::GetIconResourceID(
 
 const gfx::Rect AutofillPopupLayoutModel::RoundedElementBounds() const {
   return gfx::ToEnclosingRect(delegate_->element_bounds());
+}
+
+bool AutofillPopupLayoutModel::IsPopupLayoutExperimentEnabled() const {
+  return is_credit_card_popup_ &&
+      IsAutofillCreditCardPopupLayoutExperimentEnabled();
+}
+
+SkColor AutofillPopupLayoutModel::GetBackgroundColor() const {
+  return is_credit_card_popup_ ?
+      GetCreditCardPopupBackgroundColor() : SK_ColorTRANSPARENT;
+}
+
+SkColor AutofillPopupLayoutModel::GetDividerColor() const {
+  return is_credit_card_popup_ ?
+      GetCreditCardPopupDividerColor() : SK_ColorTRANSPARENT;
+}
+
+unsigned int AutofillPopupLayoutModel::GetDropdownItemHeight() const {
+  return GetPopupDropdownItemHeight();
+}
+
+bool AutofillPopupLayoutModel::IsIconAtStart(int frontend_id) const {
+  return frontend_id == POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE ||
+      (is_credit_card_popup_ && IsIconInCreditCardPopupAtStart());
 }
 
 }  // namespace autofill

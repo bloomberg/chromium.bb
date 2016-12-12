@@ -12,7 +12,6 @@
     android:orientation="horizontal" >
 
     <!-- These layout params are overwritten in DropdownAdapter.java -->
-
     <ImageView
         android:id="@+id/start_dropdown_icon"
         android:layout_width="wrap_content"

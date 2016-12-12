@@ -1626,6 +1626,8 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
         suggestion->value = credit_card->TypeAndLastFourDigits();
         suggestion->label = credit_card->GetInfo(
             AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale_);
+        if (IsAutofillCreditCardPopupLayoutExperimentEnabled())
+          ModifyAutofillCreditCardSuggestion(suggestion);
       } else if (credit_card->number().empty()) {
         if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
           suggestion->label = credit_card->GetInfo(

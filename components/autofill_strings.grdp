@@ -157,6 +157,17 @@
     </message>
   </if>
 
+  <if expr="_google_chrome">
+    <message name="IDS_AUTOFILL_CREDIT_CARD_OPTIONS_POPUP" desc="The label of the text displayed in the Autofill Credit Card popup to direct the user to the Autofill settings UI.">
+     Chrome Autofill settings...    
+    </message>
+  </if>
+  <if expr="not _google_chrome">
+    <message name="IDS_AUTOFILL_CREDIT_CARD_OPTIONS_POPUP" desc="The label of the text displayed in the Autofill Credit Card popup to direct the user to the Autofill settings UI.">    
+      Chromium Autofill settings...
+    </message>
+  </if>    
+
   <message name="IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION" desc="The text verbalised by a screen reader for the button that directs the user to the Autofill settings UI. This string is not displayed.">
     settings
   </message>
@@ -227,6 +238,10 @@
 
   <message name="IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR" desc="Abbreviated label for credit card expiration date. [CHAR-LIMIT=32]">
     Exp: <ph name="EXPIRATION_MONTH">$1<ex>06</ex></ph>/<ph name="EXPIRATION_YEAR">$2<ex>17</ex></ph>
+  </message>
+
+  <message name="IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_LABEL_AND_ABBR" desc="text displayed in the Autofill Credit Card popup before the credit card expiration date and the abbreviated expiration date.">
+    , exp <ph name="EXPIRATION_DATE_ABBR">$1<ex>06/17</ex></ph>
   </message>
 
   <!-- Autofill credit card unmask prompt -->

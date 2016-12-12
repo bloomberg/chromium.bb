@@ -74,7 +74,8 @@ class AutofillPopupLayoutModelTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     delegate_.reset(new TestAutofillPopupViewDelegate(web_contents()));
-    layout_model_.reset(new AutofillPopupLayoutModel(delegate_.get()));
+    layout_model_.reset(new AutofillPopupLayoutModel(
+        delegate_.get(), false /* is_credit_card_field */));
   }
 
   AutofillPopupLayoutModel* layout_model() { return layout_model_.get(); }

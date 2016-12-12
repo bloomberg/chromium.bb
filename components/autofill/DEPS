@@ -4,6 +4,7 @@ include_rules = [
   "+grit",  # For generated headers
   "+jni",
   "+net",
+  "+third_party/skia",
   "+third_party/zlib/google",
   "+ui",
 

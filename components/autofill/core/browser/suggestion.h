@@ -47,6 +47,7 @@ struct Suggestion {
   base::string16 label;
   base::string16 icon;
   MatchMode match;
+  bool is_value_bold;  // true if |value| should be displayed in bold type face.
 };
 
 }  // namespace autofill

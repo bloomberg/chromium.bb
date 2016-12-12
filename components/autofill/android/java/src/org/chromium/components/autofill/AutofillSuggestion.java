@@ -12,34 +12,42 @@ import org.chromium.ui.DropdownItemBase;
 public class AutofillSuggestion extends DropdownItemBase {
     /**
      * The constant used to specify a http warning message in a list of Autofill suggestions.
-     * Has to be kept in sync with enum in popup_item_ids.h
-     * TODO(crbug.com/666529): Generate java constants from C++ enum.
+     * Has to be kept in sync with {@code POPUP_ITEM_ID_SEPARATOR} enum in
+     * components/autofill/core/browser/popup_item_ids.h
      */
     private static final int ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE = -10;
 
     private final String mLabel;
     private final String mSublabel;
     private final int mIconId;
+    private final boolean mIsIconAtStart;
     private final int mSuggestionId;
-    private final boolean mDeletable;
+    private final boolean mIsDeletable;
     private final boolean mIsMultilineLabel;
+    private final boolean mIsBoldLabel;
 
     /**
      * Constructs a Autofill suggestion container.
      * @param label The main label of the Autofill suggestion.
      * @param sublabel The describing sublabel of the Autofill suggestion.
+     * @param iconId The resource ID for the icon associated with the suggestion, or
+     * {@code DropdownItem.NO_ICON} for no icon.
+     * @param isIconAtStart {@code true} if {@param iconId} is displayed before {@param label}.
      * @param suggestionId The type of suggestion.
-     * @param deletable Whether the item can be deleted by the user.
-     * @param multilineLabel Whether the label is displayed over multiple lines.
+     * @param isDeletable Whether the item can be deleted by the user.
+     * @param isMultilineLabel Whether the label is displayed over multiple lines.
+     * @param isBoldLabel Whether the label is displayed in {@code Typeface.BOLD}.
      */
-    public AutofillSuggestion(String label, String sublabel, int iconId, int suggestionId,
-            boolean deletable, boolean multilineLabel) {
+    public AutofillSuggestion(String label, String sublabel, int iconId, boolean isIconAtStart,
+            int suggestionId, boolean isDeletable, boolean isMultilineLabel, boolean isBoldLabel) {
         mLabel = label;
         mSublabel = sublabel;
         mIconId = iconId;
+        mIsIconAtStart = isIconAtStart;
         mSuggestionId = suggestionId;
-        mDeletable = deletable;
-        mIsMultilineLabel = multilineLabel;
+        mIsDeletable = isDeletable;
+        mIsMultilineLabel = isMultilineLabel;
+        mIsBoldLabel = isBoldLabel;
     }
 
     @Override
@@ -60,6 +68,11 @@ public class AutofillSuggestion extends DropdownItemBase {
     @Override
     public boolean isMultilineLabel() {
         return mIsMultilineLabel;
+    }
+
+    @Override
+    public boolean isBoldLabel() {
+        return mIsBoldLabel;
     }
 
     @Override
@@ -88,7 +101,7 @@ public class AutofillSuggestion extends DropdownItemBase {
 
     @Override
     public boolean isIconAtStart() {
-        if (mSuggestionId == ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+        if (mIsIconAtStart) {
             return true;
         }
         return super.isIconAtStart();
@@ -99,7 +112,7 @@ public class AutofillSuggestion extends DropdownItemBase {
     }
 
     public boolean isDeletable() {
-        return mDeletable;
+        return mIsDeletable;
     }
 
     public boolean isFillable() {

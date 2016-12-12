@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -64,7 +65,8 @@ public class AwAutofillClient {
                     public void deleteSuggestion(int listIndex) { }
                 });
         }
-        mAutofillPopup.filterAndShow(suggestions, isRtl);
+        mAutofillPopup.filterAndShow(suggestions, isRtl, Color.TRANSPARENT /* backgroundColor */,
+                Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */);
     }
 
     @CalledByNative
@@ -89,8 +91,9 @@ public class AwAutofillClient {
     @CalledByNative
     private static void addToAutofillSuggestionArray(AutofillSuggestion[] array, int index,
             String name, String label, int uniqueId) {
-        array[index] =
-                new AutofillSuggestion(name, label, DropdownItem.NO_ICON, uniqueId, false, false);
+        array[index] = new AutofillSuggestion(name, label, DropdownItem.NO_ICON,
+                false /* isIconAtLeft */, uniqueId, false /* isDeletable */,
+                false /* isMultilineLabel */, false /* isBoldLabel */);
     }
 
     private native void nativeDismissed(long nativeAwAutofillClient);

@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -48,6 +49,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
       has_autofill_suggestions_(false),
       has_shown_popup_for_current_edit_(false),
       should_show_scan_credit_card_(false),
+      is_credit_card_popup_(false),
       should_show_cc_signin_promo_(false),
       has_shown_address_book_prompt(false),
       weak_ptr_factory_(this) {
@@ -69,6 +71,8 @@ void AutofillExternalDelegate::OnQuery(int query_id,
   element_bounds_ = element_bounds;
   should_show_scan_credit_card_ =
       manager_->ShouldShowScanCreditCard(query_form_, query_field_);
+  is_credit_card_popup_ =
+      manager_->IsCreditCardPopup(query_form_, query_field_);
   should_show_cc_signin_promo_ =
       manager_->ShouldShowCreditCardSigninPromo(query_form_, query_field_);
 }
@@ -275,6 +279,10 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
   driver_->RendererShouldClearPreviewedForm();
 }
 
+bool AutofillExternalDelegate::IsCreditCardPopup() {
+  return is_credit_card_popup_;
+}
+
 void AutofillExternalDelegate::Reset() {
   manager_->client()->HideAutofillPopup();
 }
@@ -325,8 +333,6 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   if (query_field_.is_autofilled) {
     base::string16 value =
         l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM);
-    // TODO(rouslan): Remove manual upper-casing when keyboard accessory becomes
-    // default on Android.
     if (IsKeyboardAccessoryEnabled())
       value = base::i18n::ToUpper(value);
 
@@ -334,12 +340,9 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
     suggestions->back().frontend_id = POPUP_ITEM_ID_CLEAR_FORM;
   }
 
-  // Append the 'Chrome Autofill options' menu item;
-  // TODO(rouslan): Switch on the platform in the GRD file when keyboard
-  // accessory becomes default on Android.
-  suggestions->push_back(Suggestion(l10n_util::GetStringUTF16(
-      IsKeyboardAccessoryEnabled() ? IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION
-                                   : IDS_AUTOFILL_OPTIONS_POPUP)));
+  // Append the 'Chrome Autofill options' menu item, or the menu item specified
+  // in the popup layout experiment.
+  suggestions->push_back(Suggestion(GetSettingsSuggestionValue()));
   suggestions->back().frontend_id = POPUP_ITEM_ID_AUTOFILL_OPTIONS;
   if (IsKeyboardAccessoryEnabled())
     suggestions->back().icon = base::ASCIIToUTF16("settings");
@@ -380,6 +383,16 @@ void AutofillExternalDelegate::InsertDataListValues(
     (*suggestions)[i].label = data_list_labels_[i];
     (*suggestions)[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
   }
+}
+
+base::string16 AutofillExternalDelegate::GetSettingsSuggestionValue()
+    const {
+  if (IsKeyboardAccessoryEnabled()) {
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION);
+  }
+  return l10n_util::GetStringUTF16(is_credit_card_popup_ ?
+                                   IDS_AUTOFILL_CREDIT_CARD_OPTIONS_POPUP :
+                                   IDS_AUTOFILL_OPTIONS_POPUP);
 }
 
 }  // namespace autofill

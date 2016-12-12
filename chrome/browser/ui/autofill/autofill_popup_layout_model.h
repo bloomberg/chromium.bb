@@ -25,7 +25,9 @@ namespace autofill {
 // TODO(mathp): investigate moving ownership of this class to the view.
 class AutofillPopupLayoutModel {
  public:
-  explicit AutofillPopupLayoutModel(AutofillPopupViewDelegate* delegate);
+  AutofillPopupLayoutModel(AutofillPopupViewDelegate* delegate,
+                           bool is_credit_card_popup);
+
   ~AutofillPopupLayoutModel();
 
   // The minimum amount of padding between the Autofill name and subtext,
@@ -92,6 +94,27 @@ class AutofillPopupLayoutModel {
   // resource isn't recognized.
   int GetIconResourceID(const base::string16& resource_name) const;
 
+  // Returns whether |GetBackgroundColor, GetDividerColor| returns a custom
+  // color configured in an experiment to tweak autofill popup layout.
+  bool IsPopupLayoutExperimentEnabled() const;
+
+  // Returns the background color for the autofill popup, or
+  // |SK_ColorTRANSPARENT| if not in an experiment to tweak autofill popup
+  // layout.
+  SkColor GetBackgroundColor() const;
+
+  // Returns the divider color for the autofill popup, or
+  // |SK_ColorTRANSPARENT| if not in an experiment to tweak autofill popup
+  // layout.
+  SkColor GetDividerColor() const;
+
+  // Returns the dropdown item height, or 0 if the dropdown item height isn't
+  // configured in an experiment to tweak autofill popup layout.
+  unsigned int GetDropdownItemHeight() const;
+
+  // Returns true if suggestion icon must be displayed before suggestion text.
+  bool IsIconAtStart(int frontend_id) const;
+
  private:
   // Returns the enclosing rectangle for the element_bounds.
   const gfx::Rect RoundedElementBounds() const;
@@ -115,6 +138,8 @@ class AutofillPopupLayoutModel {
   PopupViewCommon view_common_;
 
   AutofillPopupViewDelegate* delegate_;  // Weak reference.
+
+  const bool is_credit_card_popup_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupLayoutModel);
 };

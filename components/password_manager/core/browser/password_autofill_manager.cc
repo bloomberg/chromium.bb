@@ -310,6 +310,10 @@ void PasswordAutofillManager::ClearPreviewedForm() {
   password_manager_driver_->ClearPreviewedForm();
 }
 
+bool PasswordAutofillManager::IsCreditCardPopup() {
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillManager, private:
 

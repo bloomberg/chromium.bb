@@ -44,7 +44,9 @@ public class SelectPopupDropdown implements SelectPopup {
             initialSelection = selected[0];
         }
         mDropdownPopupWindow.setInitialSelection(initialSelection);
-        mDropdownPopupWindow.setAdapter(new DropdownAdapter(mContext, items, null));
+        mDropdownPopupWindow.setAdapter(new DropdownAdapter(
+                mContext, items, null /* separators */, null /* backgroundColor */,
+                null /* dividerColor */, null /* dropdownItemHeight */));
         mDropdownPopupWindow.setRtl(rightAligned);
         mDropdownPopupWindow.setOnDismissListener(
                 new PopupWindow.OnDismissListener() {

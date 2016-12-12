@@ -36,6 +36,10 @@ public interface DropdownItem {
      */
     boolean isMultilineLabel();
     /**
+     * Returns whether the label should be displayed in bold.
+     */
+    boolean isBoldLabel();
+    /**
      * Returns resource ID of label's font color.
      */
     int getLabelFontColorResId();

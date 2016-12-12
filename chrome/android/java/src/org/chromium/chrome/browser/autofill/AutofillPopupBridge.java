@@ -92,10 +92,19 @@ public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.On
     /**
      * Shows an Autofill popup with specified suggestions.
      * @param suggestions Autofill suggestions to be displayed.
+     * @param isRtl @code true if right-to-left text.
+     * @param backgroundColor popup background color, or {@code Color.TRANSPARENT} if not specified
+     * in experiment.
+     * @param dividerColor color for divider between popup items, or {@code Color.TRANSPARENT} if
+     * not specified in experiment.
+     * @param dropdownItemHeight height of each dropdown item in dimension independent pixel units,
+     * 0 if not specified in experiment.
      */
     @CalledByNative
-    private void show(AutofillSuggestion[] suggestions, boolean isRtl) {
-        if (mAutofillPopup != null) mAutofillPopup.filterAndShow(suggestions, isRtl);
+    private void show(AutofillSuggestion[] suggestions, boolean isRtl, int backgroundColor,
+            int dividerColor, int dropdownItemHeight) {
+        if (mAutofillPopup != null) mAutofillPopup.filterAndShow(suggestions, isRtl,
+                backgroundColor, dividerColor, dropdownItemHeight);
     }
 
     @CalledByNative
@@ -122,17 +131,20 @@ public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.On
      * @param label First line of the suggestion.
      * @param sublabel Second line of the suggestion.
      * @param iconId The resource ID for the icon associated with the suggestion, or 0 for no icon.
+     * @param isIconAtStart {@code true} if {@param iconId} is displayed before {@param label}.
      * @param suggestionId Identifier for the suggestion type.
-     * @param deletable Whether this item is deletable.
+     * @param isDeletable Whether the item can be deleted by the user.
      * @param isLabelMultiline Whether the label should be should over multiple lines.
+     * @param isLabelBold true if {@param label} should be displayed in {@code Typeface.BOLD},
+     * false if {@param label} should be displayed in {@code Typeface.NORMAL}.
      */
     @CalledByNative
     private static void addToAutofillSuggestionArray(AutofillSuggestion[] array, int index,
-            String label, String sublabel, int iconId, int suggestionId, boolean deletable,
-            boolean isLabelMultiline) {
+            String label, String sublabel, int iconId, boolean isIconAtStart,
+            int suggestionId, boolean isDeletable, boolean isLabelMultiline, boolean isLabelBold) {
         int drawableId = iconId == 0 ? DropdownItem.NO_ICON : ResourceId.mapToDrawableId(iconId);
-        array[index] = new AutofillSuggestion(
-                label, sublabel, drawableId, suggestionId, deletable, isLabelMultiline);
+        array[index] = new AutofillSuggestion(label, sublabel, drawableId, isIconAtStart,
+                suggestionId, isDeletable, isLabelMultiline, isLabelBold);
     }
 
     private native void nativeSuggestionSelected(long nativeAutofillPopupViewAndroid,

@@ -94,7 +94,7 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
           controller_->layout_model().GetIconResourceID(suggestion.icon));
     }
 
-    bool deletable =
+    bool is_deletable =
         controller_->GetRemovalConfirmationText(i, nullptr, nullptr);
     bool is_label_multiline =
         suggestion.frontend_id ==
@@ -102,11 +102,16 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
         suggestion.frontend_id == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO;
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
         env, data_array, i, value, label, android_icon_id,
-        suggestion.frontend_id, deletable, is_label_multiline);
+        controller_->layout_model().IsIconAtStart(suggestion.frontend_id),
+        suggestion.frontend_id, is_deletable, is_label_multiline,
+        suggestion.is_value_bold);
   }
 
-  Java_AutofillPopupBridge_show(env, java_object_, data_array,
-                                controller_->IsRTL());
+  Java_AutofillPopupBridge_show(
+      env, java_object_, data_array, controller_->IsRTL(),
+      controller_->layout_model().GetBackgroundColor(),
+      controller_->layout_model().GetDividerColor(),
+      controller_->layout_model().GetDropdownItemHeight());
 }
 
 void AutofillPopupViewAndroid::SuggestionSelected(

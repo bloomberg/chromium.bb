@@ -30,14 +30,34 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
     private final Context mContext;
     private final Set<Integer> mSeparators;
     private final boolean mAreAllItemsEnabled;
+    private final Integer mBackgroundColor;
+    private final Integer mDividerColor;
+    private final Integer mDropdownItemHeight;
 
-    public DropdownAdapter(
-            Context context, List<? extends DropdownItem> items, Set<Integer> separators) {
+    /**
+     * Creates an {@code ArrayAdapter} with specified parameters.
+     * @param context Application context.
+     * @param items List of labels and icons to display.
+     * @param separators Set of positions that separate {@code items}.
+     * @param backgroundColor Popup background color, or {@code null} to use default background
+     * color. The default color is {@code Color.TRANSPARENT}.
+     * @param dividerColor If {@code null}, use the values in colors.xml for the divider
+     * between items. Otherwise, uses {@param dividerColor} for the divider between items. Always
+     * uses the values in colors.xml for the dark divider for the separators.
+     * @param dropdownItemHeight If {@code null}, uses the {@code dropdown_item_height} in
+     * dimens.xml. Otherwise, uses {@param dropdownItemHeight}.
+     */
+    public DropdownAdapter(Context context, List<? extends DropdownItem> items,
+            Set<Integer> separators, Integer backgroundColor, Integer dividerColor,
+            Integer dropdownItemHeight) {
         super(context, R.layout.dropdown_item);
+        mContext = context;
         addAll(items);
         mSeparators = separators;
-        mContext = context;
         mAreAllItemsEnabled = checkAreAllItemsEnabled();
+        mBackgroundColor = backgroundColor;
+        mDividerColor = dividerColor;
+        mDropdownItemHeight = dropdownItemHeight;
     }
 
     private boolean checkAreAllItemsEnabled() {
@@ -57,25 +77,35 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
             LayoutInflater inflater =
                     (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             layout = inflater.inflate(R.layout.dropdown_item, null);
-            layout.setBackground(new DropdownDividerDrawable());
+            layout.setBackground(new DropdownDividerDrawable(mBackgroundColor));
+        }
+        DropdownDividerDrawable divider = (DropdownDividerDrawable) layout.getBackground();
+        int height;
+        if (mDropdownItemHeight == null) {
+            height = mContext.getResources().getDimensionPixelSize(R.dimen.dropdown_item_height);
+        } else {
+            height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    mDropdownItemHeight, mContext.getResources().getDisplayMetrics());
         }
 
-        DropdownDividerDrawable divider = (DropdownDividerDrawable) layout.getBackground();
-        int height = mContext.getResources().getDimensionPixelSize(R.dimen.dropdown_item_height);
         if (position == 0) {
-            divider.setColor(Color.TRANSPARENT);
+            divider.setDividerColor(Color.TRANSPARENT);
         } else {
             int dividerHeight = mContext.getResources().getDimensionPixelSize(
                     R.dimen.dropdown_item_divider_height);
             height += dividerHeight;
             divider.setHeight(dividerHeight);
+            int dividerColor;
             if (mSeparators != null && mSeparators.contains(position)) {
-                divider.setColor(ApiCompatibilityUtils.getColor(mContext.getResources(),
-                        R.color.dropdown_dark_divider_color));
+                dividerColor = ApiCompatibilityUtils.getColor(mContext.getResources(),
+                        R.color.dropdown_dark_divider_color);
+            } else if (mDividerColor == null) {
+                dividerColor = ApiCompatibilityUtils.getColor(mContext.getResources(),
+                        R.color.dropdown_divider_color);
             } else {
-                divider.setColor(ApiCompatibilityUtils.getColor(mContext.getResources(),
-                        R.color.dropdown_divider_color));
+                dividerColor = mDividerColor;
             }
+            divider.setDividerColor(dividerColor);
         }
 
         DropdownItem item = getItem(position);
@@ -113,7 +143,7 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         }
 
         labelView.setEnabled(item.isEnabled());
-        if (item.isGroupHeader()) {
+        if (item.isGroupHeader() || item.isBoldLabel()) {
             labelView.setTypeface(null, Typeface.BOLD);
         } else {
             labelView.setTypeface(null, Typeface.NORMAL);

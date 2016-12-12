@@ -308,6 +308,12 @@ bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
   return field.value.size() <= kShowScanCreditCardMaxValueLength;
 }
 
+bool AutofillManager::IsCreditCardPopup(const FormData& form,
+                                        const FormFieldData& field) {
+  AutofillField* autofill_field = GetAutofillField(form, field);
+  return autofill_field && autofill_field->Type().group() == CREDIT_CARD;
+}
+
 bool AutofillManager::ShouldShowCreditCardSigninPromo(
     const FormData& form,
     const FormFieldData& field) {
@@ -528,8 +534,6 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
-  std::vector<Suggestion> suggestions;
-
   gfx::RectF transformed_box =
       driver_->TransformBoundingBoxToViewportCoordinates(bounding_box);
   external_delegate_->OnQuery(query_id, form, field, transformed_box);
@@ -553,6 +557,8 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       address_form_event_logger_->OnDidInteractWithAutofillableForm();
     }
   }
+
+  std::vector<Suggestion> suggestions;
 
   if (is_autofill_possible &&
       driver_->RendererIsAvailable() &&
@@ -1790,6 +1796,7 @@ std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
   for (size_t i = 0; i < suggestions.size(); i++) {
     suggestions[i].frontend_id =
         MakeFrontendID(suggestions[i].backend_id, std::string());
+    suggestions[i].is_value_bold = IsCreditCardPopupValueBold();
   }
   return suggestions;
 }

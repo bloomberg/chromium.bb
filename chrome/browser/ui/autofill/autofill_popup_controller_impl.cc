@@ -70,7 +70,7 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
                                                    container_view,
                                                    web_contents)),
       view_(NULL),
-      layout_model_(this),
+      layout_model_(this, delegate->IsCreditCardPopup()),
       delegate_(delegate),
       weak_ptr_factory_(this) {
   ClearState();
