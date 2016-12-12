@@ -90,8 +90,8 @@ static std::string SerializeMediaStreamComponent(
 
 static std::string SerializeMediaDescriptor(
     const blink::WebMediaStream& stream) {
-  std::string label = base::UTF16ToUTF8(base::StringPiece16(stream.id()));
-  std::string result = "label: " + label;
+  std::string id = base::UTF16ToUTF8(base::StringPiece16(stream.id()));
+  std::string result = "id: " + id;
   blink::WebVector<blink::WebMediaStreamTrack> tracks;
   stream.audioTracks(tracks);
   if (!tracks.isEmpty()) {
