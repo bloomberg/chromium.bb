@@ -38,12 +38,12 @@ using testing::AllOf;
 using testing::AnyNumber;
 using testing::ElementsAre;
 using testing::IsEmpty;
+using testing::Lt;
 using testing::Mock;
 using testing::Return;
 using testing::SizeIs;
 using testing::StrictMock;
 using testing::UnorderedElementsAre;
-using testing::Lt;
 
 namespace ntp_snippets {
 // These functions are implicitly used to print out values during the tests.
@@ -924,5 +924,89 @@ TEST_F(DownloadSuggestionsProviderTest,
       OnNewSuggestions(_, downloads_category(),
                        UnorderedElementsAre(HasUrl("http://download.com/1"),
                                             HasUrl("http://download.com/2"))));
+  CreateProvider(/*show_assets=*/true, /*show_offline_pages=*/false);
+}
+
+TEST_F(DownloadSuggestionsProviderTest,
+       ShouldNotPruneDismissedSuggestionsOnStartup) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+
+  // We dismiss an item to store it in the list of dismissed items.
+  *(downloads_manager()->mutable_items()) = CreateDummyAssetDownloads({1});
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(), _));
+  CreateProvider(/*show_assets=*/true, /*show_offline_pages=*/false);
+  provider()->DismissSuggestion(
+      GetDummySuggestionId(1, /*is_offline_page=*/false));
+  DestroyProvider();
+
+  // We simulate current DownloadManager behaviour;
+  // The download manager has not started reading the list yet, so it is empty.
+  downloads_manager()->mutable_items()->clear();
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(), _));
+  CreateProvider(/*show_assets=*/true, /*show_offline_pages=*/false);
+  Mock::VerifyAndClearExpectations(observer());
+
+  // The first download is being read.
+  *(downloads_manager()->mutable_items()) = CreateDummyAssetDownloads({1});
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(), _))
+      .Times(0);
+  FireDownloadCreated(downloads_manager()->items()[0].get());
+  // The first download should not be reported, because it is dismissed.
+}
+
+TEST_F(DownloadSuggestionsProviderTest, ShouldStoreDismissedSuggestions) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+
+  // Dismiss items to store them in the list of dismissed items.
+  *(offline_pages_model()->mutable_items()) = CreateDummyOfflinePages({1});
+  *(downloads_manager()->mutable_items()) = CreateDummyAssetDownloads({1});
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(), _));
+  CreateProvider(/*show_assets=*/true, /*show_offline_pages=*/true);
+  provider()->DismissSuggestion(
+      GetDummySuggestionId(1, /*is_offline_page=*/true));
+  provider()->DismissSuggestion(
+      GetDummySuggestionId(1, /*is_offline_page=*/false));
+  // Destroy and create provider to simulate turning off Chrome.
+  DestroyProvider();
+
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(), _));
+  CreateProvider(/*show_assets=*/true, /*show_offline_pages=*/true);
+  EXPECT_THAT(GetDismissedSuggestions(),
+              UnorderedElementsAre(HasUrl("http://dummy.com/1"),
+                                   HasUrl("http://download.com/1")));
+}
+
+// TODO(vitaliii): Remove this test once the dismissed ids are pruned. See
+// crbug.com/672758.
+TEST_F(DownloadSuggestionsProviderTest, ShouldRemoveOldDismissedIdsIfTooMany) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+
+  const int kMaxDismissedIdCount =
+      DownloadSuggestionsProvider::GetMaxDismissedCountForTesting();
+  std::vector<int> ids;
+  for (int i = 0; i < kMaxDismissedIdCount + 1; ++i) {
+    ids.push_back(i);
+  }
+
+  *(downloads_manager()->mutable_items()) = CreateDummyAssetDownloads(ids);
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(), _));
+  CreateProvider(/*show_assets=*/true, /*show_offline_pages=*/false);
+
+  for (int i = 0; i < static_cast<int>(ids.size()); ++i) {
+    provider()->DismissSuggestion(
+        GetDummySuggestionId(i, /*is_offline_page=*/false));
+  }
+
+  EXPECT_THAT(GetDismissedSuggestions(), SizeIs(kMaxDismissedIdCount));
+  DestroyProvider();
+  // The oldest dismissed suggestion must become undismissed now. This is a
+  // temporary workaround and not what we want in long term. This test must be
+  // removed once we start pruning dismissed asset downloads on startup.
+  EXPECT_CALL(*observer(),
+              OnNewSuggestions(_, downloads_category(),
+                               ElementsAre(HasUrl("http://download.com/0"))));
   CreateProvider(/*show_assets=*/true, /*show_offline_pages=*/false);
 }

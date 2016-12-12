@@ -75,6 +75,8 @@ class DownloadSuggestionsProvider
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  static int GetMaxDismissedCountForTesting();
+
  private:
   friend class DownloadSuggestionsProviderTest;
 
@@ -171,11 +173,11 @@ class DownloadSuggestionsProvider
   void InvalidateSuggestion(const std::string& id_within_category);
 
   // Reads dismissed IDs related to asset downloads from prefs.
-  std::set<std::string> ReadAssetDismissedIDsFromPrefs() const;
+  std::vector<std::string> ReadAssetDismissedIDsFromPrefs() const;
 
   // Writes |dismissed_ids| into prefs for asset downloads.
   void StoreAssetDismissedIDsToPrefs(
-      const std::set<std::string>& dismissed_ids);
+      const std::vector<std::string>& dismissed_ids);
 
   // Reads dismissed IDs related to offline page downloads from prefs.
   std::set<std::string> ReadOfflinePageDismissedIDsFromPrefs() const;
@@ -184,15 +186,15 @@ class DownloadSuggestionsProvider
   void StoreOfflinePageDismissedIDsToPrefs(
       const std::set<std::string>& dismissed_ids);
 
-  // Reads from prefs dismissed IDs related to either offline page or asset
-  // downloads (given by |for_offline_page_downloads|).
-  std::set<std::string> ReadDismissedIDsFromPrefs(
-      bool for_offline_page_downloads) const;
+  // Adds a suggestion ID to the dismissed list in prefs, if it is not there.
+  // Works for both Offline Page and Asset downloads.
+  void AddToDismissedStorageIfNeeded(
+      const ntp_snippets::ContentSuggestion::ID& suggestion_id);
 
-  // Writes |dismissed_ids| into prefs for either offline page or asset
-  // downloads (given by |for_offline_page_downloads|).
-  void StoreDismissedIDsToPrefs(bool for_offline_page_downloads,
-                                const std::set<std::string>& dismissed_ids);
+  // Removes a suggestion ID from the dismissed list in prefs, if it is there.
+  // Works for both Offline Page and Asset downloads.
+  void RemoveFromDismissedStorageIfNeeded(
+      const ntp_snippets::ContentSuggestion::ID& suggestion_id);
 
   void UnregisterDownloadItemObservers();
 
