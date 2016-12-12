@@ -47,7 +47,7 @@ static const double oneMillisecond = 0.001;
 static const double minimumInterval = 0.004;
 
 static inline bool shouldForwardUserGesture(int interval, int nestingLevel) {
-  return UserGestureIndicator::processingUserGesture() &&
+  return UserGestureIndicator::processingUserGestureThreadSafe() &&
          interval <= maxIntervalForUserGestureForwarding &&
          nestingLevel ==
              1;  // Gestures should not be forwarded to nested timers.
@@ -90,8 +90,11 @@ DOMTimer::DOMTimer(ExecutionContext* context,
       m_nestingLevel(context->timers()->timerNestingLevel() + 1),
       m_action(action) {
   ASSERT(timeoutID > 0);
-  if (shouldForwardUserGesture(interval, m_nestingLevel))
+  if (shouldForwardUserGesture(interval, m_nestingLevel)) {
+    // Thread safe because shouldForwardUserGesture will only return true if
+    // execution is on the the main thread.
     m_userGestureToken = UserGestureIndicator::currentToken();
+  }
 
   InspectorInstrumentation::asyncTaskScheduled(
       context, singleShot ? "setTimeout" : "setInterval", this, !singleShot);

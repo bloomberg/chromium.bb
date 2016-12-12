@@ -94,11 +94,17 @@ class PLATFORM_EXPORT UserGestureIndicator final {
   WTF_MAKE_NONCOPYABLE(UserGestureIndicator);
 
  public:
+  // Note: All *ThreadSafe methods are safe to call from any thread. Their
+  // non-suffixed counterparts *must* be called on the main thread. Consider
+  // always using the non-suffixed one unless the code really
+  // needs to be thread-safe
+
   // Returns whether a user gesture is currently in progress.
   // Does not invoke the UserGestureUtilizedCallback.  Consider calling
   // utilizeUserGesture instead if you know for sure that the return value
   // will have an effect.
   static bool processingUserGesture();
+  static bool processingUserGestureThreadSafe();
 
   // Indicates that a user gesture (if any) is being used, without preventing it
   // from being used again.  Returns whether a user gesture is currently in
@@ -111,8 +117,10 @@ class PLATFORM_EXPORT UserGestureIndicator final {
   // operations like creating a new process.
   // Like utilizeUserGesture, may invoke/clear any UserGestureUtilizedCallback.
   static bool consumeUserGesture();
+  static bool consumeUserGestureThreadSafe();
 
   static UserGestureToken* currentToken();
+  static UserGestureToken* currentTokenThreadSafe();
 
   explicit UserGestureIndicator(PassRefPtr<UserGestureToken>);
   ~UserGestureIndicator();

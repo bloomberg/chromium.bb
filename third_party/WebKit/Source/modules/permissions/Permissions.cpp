@@ -156,7 +156,7 @@ ScriptPromise Permissions::request(ScriptState* scriptState,
   service->RequestPermission(
       std::move(descriptor),
       scriptState->getExecutionContext()->getSecurityOrigin(),
-      UserGestureIndicator::processingUserGesture(),
+      UserGestureIndicator::processingUserGestureThreadSafe(),
       convertToBaseCallback(WTF::bind(
           &Permissions::taskComplete, wrapPersistent(this),
           wrapPersistent(resolver), WTF::passed(std::move(descriptorCopy)))));
@@ -247,7 +247,7 @@ ScriptPromise Permissions::requestAll(
   service->RequestPermissions(
       std::move(internalPermissions),
       scriptState->getExecutionContext()->getSecurityOrigin(),
-      UserGestureIndicator::processingUserGesture(),
+      UserGestureIndicator::processingUserGestureThreadSafe(),
       convertToBaseCallback(
           WTF::bind(&Permissions::batchTaskComplete, wrapPersistent(this),
                     wrapPersistent(resolver),

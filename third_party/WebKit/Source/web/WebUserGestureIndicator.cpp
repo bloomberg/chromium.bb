@@ -40,8 +40,15 @@ bool WebUserGestureIndicator::isProcessingUserGesture() {
   return UserGestureIndicator::processingUserGesture();
 }
 
+bool WebUserGestureIndicator::isProcessingUserGestureThreadSafe() {
+  return UserGestureIndicator::processingUserGestureThreadSafe();
+}
+
+// TODO(csharrison): consumeUserGesture() and currentUserGestureToken() use
+// the thread-safe API, which many callers probably do not need. Consider
+// updating them if they are in any sort of critical path or called often.
 bool WebUserGestureIndicator::consumeUserGesture() {
-  return UserGestureIndicator::consumeUserGesture();
+  return UserGestureIndicator::consumeUserGestureThreadSafe();
 }
 
 bool WebUserGestureIndicator::processedUserGestureSinceLoad(
@@ -51,7 +58,7 @@ bool WebUserGestureIndicator::processedUserGestureSinceLoad(
 }
 
 WebUserGestureToken WebUserGestureIndicator::currentUserGestureToken() {
-  return WebUserGestureToken(UserGestureIndicator::currentToken());
+  return WebUserGestureToken(UserGestureIndicator::currentTokenThreadSafe());
 }
 
 }  // namespace blink

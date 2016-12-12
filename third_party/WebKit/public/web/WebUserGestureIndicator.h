@@ -40,8 +40,13 @@ class WebUserGestureToken;
 
 class WebUserGestureIndicator {
  public:
-  // Returns true if a user gesture is currently being processed.
+  // Returns true if a user gesture is currently being processed. Must be called
+  // on the main thread.
   BLINK_EXPORT static bool isProcessingUserGesture();
+  // Can be called from any thread. Note that this is slower than the non
+  // thread-safe version due to thread id lookups. Prefer the non thread-safe
+  // version for code that will only execute on the main thread.
+  BLINK_EXPORT static bool isProcessingUserGestureThreadSafe();
 
   // Returns true if a consumable gesture exists and has been successfully
   // consumed.

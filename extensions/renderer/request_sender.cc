@@ -102,7 +102,7 @@ bool RequestSender::StartRequest(Source* source,
   params.request_id = request_id;
   params.has_callback = has_callback;
   params.user_gesture =
-      blink::WebUserGestureIndicator::isProcessingUserGesture();
+      blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe();
 
   // Set Service Worker specific params to default values.
   params.worker_thread_id = -1;

@@ -42,7 +42,7 @@ UserGestureToken::UserGestureToken(Status status)
       m_timestamp(WTF::currentTime()),
       m_timeoutPolicy(Default),
       m_usageCallback(nullptr) {
-  if (status == NewGesture || !UserGestureIndicator::currentToken())
+  if (status == NewGesture || !UserGestureIndicator::currentTokenThreadSafe())
     m_consumableGestures++;
 }
 
@@ -151,18 +151,18 @@ bool UserGestureIndicator::utilizeUserGesture() {
 }
 
 bool UserGestureIndicator::processingUserGesture() {
-  if (auto* token = currentToken()) {
-    ASSERT(isMainThread());
+  if (auto* token = currentToken())
     return token->hasGestures();
-  }
-
   return false;
+}
+
+bool UserGestureIndicator::processingUserGestureThreadSafe() {
+  return isMainThread() && processingUserGesture();
 }
 
 // static
 bool UserGestureIndicator::consumeUserGesture() {
   if (auto* token = currentToken()) {
-    ASSERT(isMainThread());
     if (token->consumeGesture()) {
       token->userGestureUtilized();
       return true;
@@ -171,11 +171,17 @@ bool UserGestureIndicator::consumeUserGesture() {
   return false;
 }
 
-// static
+bool UserGestureIndicator::consumeUserGestureThreadSafe() {
+  return isMainThread() && consumeUserGesture();
+}
+
 UserGestureToken* UserGestureIndicator::currentToken() {
-  if (!isMainThread() || !s_rootToken)
-    return nullptr;
+  DCHECK(isMainThread());
   return s_rootToken;
+}
+
+UserGestureToken* UserGestureIndicator::currentTokenThreadSafe() {
+  return isMainThread() ? currentToken() : nullptr;
 }
 
 }  // namespace blink
