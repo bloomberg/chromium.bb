@@ -28,7 +28,15 @@ class TraceWrapperMember : public Member<T> {
 #if DCHECK_IS_ON()
     DCHECK(!m_parent || HeapObjectHeader::fromPayload(m_parent)->checkHeader());
 #endif
-    ScriptWrappableVisitor::writeBarrier(m_parent, raw);
+    // We don't require a write barrier here as TraceWrapperMember is used for
+    // the following scenarios:
+    // - Initial initialization: The write barrier will not fire as the parent
+    //   is initially white.
+    // - Wrapping when inserting into a container: The write barrier will fire
+    //   upon establishing the move into the container.
+    // - Assignment to a field: The regular assignment operator will fire the
+    //   write barrier.
+    // Note that support for black allocation would require a barrier here.
   }
   TraceWrapperMember(WTF::HashTableDeletedValueType x)
       : Member<T>(x), m_parent(nullptr) {}
