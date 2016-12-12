@@ -1180,9 +1180,11 @@ void RenderThreadImpl::RemoveFilter(IPC::MessageFilter* filter) {
 
 void RenderThreadImpl::AddObserver(RenderThreadObserver* observer) {
   observers_.AddObserver(observer);
+  observer->RegisterMojoInterfaces(&associated_interfaces_);
 }
 
 void RenderThreadImpl::RemoveObserver(RenderThreadObserver* observer) {
+  observer->UnregisterMojoInterfaces(&associated_interfaces_);
   observers_.RemoveObserver(observer);
 }
 

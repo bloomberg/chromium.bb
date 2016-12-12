@@ -252,11 +252,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_ChromeIdentityCheckResult,
                     base::string16 /* identity */,
                     bool /* identity_match */)
 
-// Sent on process startup to indicate whether this process is running in
-// incognito mode.
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetIsIncognitoProcess,
-                     bool /* is_incognito_processs */)
-
 // Sent in response to FrameHostMsg_DidBlockRunningInsecureContent.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
                     bool /* allowed */)

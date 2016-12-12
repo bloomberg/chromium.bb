@@ -12,9 +12,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "chrome/common/renderer_configuration.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/variations/child_process_field_trial_syncer.h"
 #include "content/public/renderer/render_thread_observer.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace content {
 class ResourceDispatcherDelegate;
@@ -29,7 +31,8 @@ class VisitedLinkSlave;
 // happen.  If a few messages are related, they should probably have their own
 // observer.
 class ChromeRenderThreadObserver : public content::RenderThreadObserver,
-                                   public base::FieldTrialList::Observer {
+                                   public base::FieldTrialList::Observer,
+                                   public chrome::mojom::RendererConfiguration {
  public:
   ChromeRenderThreadObserver();
   ~ChromeRenderThreadObserver() override;
@@ -46,6 +49,10 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
 
  private:
   // content::RenderThreadObserver:
+  void RegisterMojoInterfaces(
+      content::AssociatedInterfaceRegistry* associated_interfaces) override;
+  void UnregisterMojoInterfaces(
+      content::AssociatedInterfaceRegistry* associated_interfaces) override;
   bool OnControlMessageReceived(const IPC::Message& message) override;
   void OnRenderProcessShutdown() override;
 
@@ -53,7 +60,12 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   void OnFieldTrialGroupFinalized(const std::string& trial_name,
                                   const std::string& group_name) override;
 
-  void OnSetIsIncognitoProcess(bool is_incognito_process);
+  // chrome::mojom::RendererConfiguration:
+  void SetInitialConfiguration(bool is_incognito_process) override;
+
+  void OnRendererInterfaceRequest(
+      chrome::mojom::RendererConfigurationAssociatedRequest request);
+
   void OnSetContentSettingRules(const RendererContentSettingRules& rules);
   void OnSetFieldTrialGroup(const std::string& trial_name,
                             const std::string& group_name);
@@ -64,6 +76,9 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   variations::ChildProcessFieldTrialSyncer field_trial_syncer_;
 
   std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
+
+  mojo::AssociatedBinding<chrome::mojom::RendererConfiguration>
+      renderer_configuration_binding_;
 
   base::WeakPtrFactory<ChromeRenderThreadObserver> weak_factory_;
 

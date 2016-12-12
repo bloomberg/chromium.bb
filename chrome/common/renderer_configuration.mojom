@@ -1,0 +1,15 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module chrome.mojom;
+
+// Configures the renderer.
+interface RendererConfiguration {
+  // Configures the renderer, queued to send when the render process will
+  // launch.
+  //
+  // TODO(nigeltao): port the ChromeViewMsg_SetContentSettingRules legacy IPC
+  // message to be an additional arg here.
+  SetInitialConfiguration(bool is_incognito_process);
+};

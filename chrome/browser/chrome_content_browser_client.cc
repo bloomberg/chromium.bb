@@ -109,6 +109,7 @@
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/renderer_configuration.mojom.h"
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/stack_sampling_configuration.h"
 #include "chrome/common/url_constants.h"
@@ -1082,8 +1083,11 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new cdm::CdmMessageFilterAndroid());
 #endif
 
-  host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
-      profile->IsOffTheRecord()));
+  bool is_incognito_process = profile->IsOffTheRecord();
+
+  chrome::mojom::RendererConfigurationAssociatedPtr rc_interface;
+  host->GetChannel()->GetRemoteAssociatedInterface(&rc_interface);
+  rc_interface->SetInitialConfiguration(is_incognito_process);
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->RenderProcessWillLaunch(host);
@@ -1091,7 +1095,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   RendererContentSettingRules rules;
   if (host->IsForGuestsOnly()) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    GetGuestViewDefaultContentSettingRules(profile->IsOffTheRecord(), &rules);
+    GetGuestViewDefaultContentSettingRules(is_incognito_process, &rules);
 #else
     NOTREACHED();
 #endif
@@ -1099,6 +1103,8 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
     GetRendererContentSettingRules(
         HostContentSettingsMapFactory::GetForProfile(profile), &rules);
   }
+  // TODO(nigeltao): eliminate this legacy IPC. Instead, add an extra arg to
+  // the rc_interface->SetInitialConfiguration call.
   host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
 }
 

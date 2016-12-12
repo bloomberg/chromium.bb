@@ -40,6 +40,7 @@
 #include "chrome/renderer/security_filter_peer.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
+#include "content/public/common/associated_interface_registry.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -236,6 +237,7 @@ bool ChromeRenderThreadObserver::is_incognito_process_ = false;
 ChromeRenderThreadObserver::ChromeRenderThreadObserver()
     : field_trial_syncer_(this),
       visited_link_slave_(new visitedlink::VisitedLinkSlave),
+      renderer_configuration_binding_(this),
       weak_factory_(this) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -274,12 +276,23 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
 
 ChromeRenderThreadObserver::~ChromeRenderThreadObserver() {}
 
+void ChromeRenderThreadObserver::RegisterMojoInterfaces(
+    content::AssociatedInterfaceRegistry* associated_interfaces) {
+  associated_interfaces->AddInterface(
+      base::Bind(&ChromeRenderThreadObserver::OnRendererInterfaceRequest,
+                 base::Unretained(this)));
+}
+
+void ChromeRenderThreadObserver::UnregisterMojoInterfaces(
+    content::AssociatedInterfaceRegistry* associated_interfaces) {
+  associated_interfaces->RemoveInterface(
+      chrome::mojom::RendererConfiguration::Name_);
+}
+
 bool ChromeRenderThreadObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderThreadObserver, message)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsIncognitoProcess,
-                        OnSetIsIncognitoProcess)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingRules,
                         OnSetContentSettingRules)
@@ -290,6 +303,10 @@ bool ChromeRenderThreadObserver::OnControlMessageReceived(
 
 void ChromeRenderThreadObserver::OnRenderProcessShutdown() {
   visited_link_slave_.reset();
+
+  // Workaround for http://crbug.com/672646
+  if (renderer_configuration_binding_.is_bound())
+    renderer_configuration_binding_.Unbind();
 }
 
 void ChromeRenderThreadObserver::OnFieldTrialGroupFinalized(
@@ -301,9 +318,15 @@ void ChromeRenderThreadObserver::OnFieldTrialGroupFinalized(
   field_trial_recorder->FieldTrialActivated(trial_name);
 }
 
-void ChromeRenderThreadObserver::OnSetIsIncognitoProcess(
+void ChromeRenderThreadObserver::SetInitialConfiguration(
     bool is_incognito_process) {
   is_incognito_process_ = is_incognito_process;
+}
+
+void ChromeRenderThreadObserver::OnRendererInterfaceRequest(
+    chrome::mojom::RendererConfigurationAssociatedRequest request) {
+  DCHECK(!renderer_configuration_binding_.is_bound());
+  renderer_configuration_binding_.Bind(std::move(request));
 }
 
 void ChromeRenderThreadObserver::OnSetContentSettingRules(
