@@ -68,7 +68,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
     }
 
     /** Attempt to add an invalid address and cancel the transaction. */
-    @MediumTest
+    @FlakyTest(message = "crbug.com/673136")
     @Feature({"Payments"})
     public void testAddInvalidAddressAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
