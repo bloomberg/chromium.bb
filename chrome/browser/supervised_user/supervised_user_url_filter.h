@@ -61,7 +61,11 @@ class SupervisedUserURLFilter
 
   class Observer {
    public:
+    // Called whenever the filter changes.
+    // TODO(treib,bauerb): Rename to OnURLFilterUpdated.
     virtual void OnSiteListUpdated() = 0;
+    // Called whenever a check started via
+    // GetFilteringBehaviorForURLWithAsyncChecks completes.
     virtual void OnURLChecked(
         const GURL& url,
         FilteringBehavior behavior,
@@ -105,6 +109,13 @@ class SupervisedUserURLFilter
   // This method is public for testing.
   static bool HostMatchesPattern(const std::string& canonical_host,
                                  const std::string& pattern);
+
+  // Returns whether the filter is enabled. If this is false, all URL checks
+  // will return ALLOW.
+  bool enabled() const { return enabled_; }
+
+  // Enables or disables the filter. Notifies observers if the state changed.
+  void SetEnabled(bool enabled);
 
   // Returns the filtering behavior for a given URL, based on the default
   // behavior and whether it is on a site list.
@@ -197,6 +208,10 @@ class SupervisedUserURLFilter
 
   // This is mutable to allow notification in const member functions.
   mutable base::ObserverList<Observer> observers_;
+
+  // Whether this filter is enabled. True for supervised user profiles, false
+  // otherwise.
+  bool enabled_;
 
   FilteringBehavior default_behavior_;
   std::unique_ptr<Contents> contents_;

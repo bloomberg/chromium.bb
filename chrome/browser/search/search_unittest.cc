@@ -443,6 +443,7 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsBlockedForSupervisedUser) {
   std::map<std::string, bool> hosts;
   hosts["foo.com"] = false;
   url_filter->SetManualHosts(&hosts);
+  url_filter->SetEnabled(true);
 
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
             GetNewTabPageURL(profile()));
