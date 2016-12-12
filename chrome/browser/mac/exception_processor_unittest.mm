@@ -95,7 +95,7 @@ void RaiseExceptionInRunLoop() {
   CFRunLoopRef run_loop = CFRunLoopGetCurrent();
 
   CFRunLoopPerformBlock(run_loop, kCFRunLoopCommonModes, ^{
-    [NSException raise:@"ThrowExceptionInRunLoop" format:nil];
+    [NSException raise:@"ThrowExceptionInRunLoop" format:@""];
   });
   CFRunLoopPerformBlock(run_loop, kCFRunLoopCommonModes, ^{
     CFRunLoopStop(run_loop);
@@ -129,7 +129,7 @@ void ThrowAndCatchExceptionInRunLoop() {
   CFRunLoopRef run_loop = CFRunLoopGetCurrent();
   CFRunLoopPerformBlock(run_loop, kCFRunLoopCommonModes, ^{
     @try {
-      [NSException raise:@"ObjcExceptionPreprocessCaught" format:nil];
+      [NSException raise:@"ObjcExceptionPreprocessCaught" format:@""];
     } @catch (id exception) {
     }
   });
