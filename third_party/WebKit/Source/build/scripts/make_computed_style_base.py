@@ -138,6 +138,10 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                     is_inherited_method_name=property_name_lower + 'IsInherited',
                 ))
 
+        # Small optimization: order fields by size, from largest to smallest,
+        # to reduce wasted space from alignment.
+        self._fields.sort(key=lambda f: f.size, reverse=True)
+
     @template_expander.use_jinja('ComputedStyleBase.h.tmpl')
     def generate_base_computed_style_h(self):
         return {
