@@ -286,7 +286,7 @@ class Worker(object):
         self._update_test_input(test_input)
         start = time.time()
 
-        _log.debug("%s %s started", self._name, test_input.test_name)
+        # TODO(qyearsley): Re-add logging if it doesn't create too much load (crbug.com/673207).
         self._caller.post('started_test', test_input)
         result = single_test_runner.run_single_test(
             self._port, self._options, self._results_directory, self._name,
