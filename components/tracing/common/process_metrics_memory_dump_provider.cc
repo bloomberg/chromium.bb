@@ -298,7 +298,20 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
                                               nullptr /* shared_bytes */);
   if (res)
     pmd->process_totals()->SetExtraFieldInBytes("private_bytes", private_bytes);
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#elif defined(OS_WIN)
+  if (args.level_of_detail ==
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
+    uint64_t pss_bytes = 0;
+    bool res = process_metrics_->GetProportionalSetSizeBytes(&pss_bytes);
+    if (res) {
+      base::trace_event::ProcessMemoryMaps::VMRegion region;
+      region.byte_stats_proportional_resident = pss_bytes;
+      pmd->process_mmaps()->AddVMRegion(region);
+      pmd->set_has_process_mmaps();
+    }
+  }
+
+#endif
 #endif  // !defined(OS_IOS)
 
   pmd->process_totals()->set_resident_set_bytes(rss_bytes);
