@@ -3166,6 +3166,17 @@ void UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
   }
 }
 
+void OverlayPromotionHintCHROMIUM(GLuint texture,
+                                  GLboolean promotion_hint,
+                                  GLint display_x,
+                                  GLint display_y) {
+  gles2::cmds::OverlayPromotionHintCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::OverlayPromotionHintCHROMIUM>();
+  if (c) {
+    c->Init(texture, promotion_hint, display_x, display_y);
+  }
+}
+
 void SwapBuffersWithDamageCHROMIUM(GLint x,
                                    GLint y,
                                    GLint width,

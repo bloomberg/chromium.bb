@@ -1709,6 +1709,13 @@ GLES2UniformMatrix4fvStreamTextureMatrixCHROMIUM(GLint location,
   gles2::GetGLContext()->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
       location, transpose, transform);
 }
+void GL_APIENTRY GLES2OverlayPromotionHintCHROMIUM(GLuint texture,
+                                                   GLboolean promotion_hint,
+                                                   GLint display_x,
+                                                   GLint display_y) {
+  gles2::GetGLContext()->OverlayPromotionHintCHROMIUM(texture, promotion_hint,
+                                                      display_x, display_y);
+}
 void GL_APIENTRY GLES2SwapBuffersWithDamageCHROMIUM(GLint x,
                                                     GLint y,
                                                     GLint width,
@@ -3013,6 +3020,10 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glUniformMatrix4fvStreamTextureMatrixCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glUniformMatrix4fvStreamTextureMatrixCHROMIUM),
+    },
+    {
+        "glOverlayPromotionHintCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glOverlayPromotionHintCHROMIUM),
     },
     {
         "glSwapBuffersWithDamageCHROMIUM",

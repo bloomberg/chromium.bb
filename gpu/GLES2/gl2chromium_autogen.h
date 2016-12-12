@@ -382,6 +382,8 @@
 #define glGetFragDataIndexEXT GLES2_GET_FUN(GetFragDataIndexEXT)
 #define glUniformMatrix4fvStreamTextureMatrixCHROMIUM \
   GLES2_GET_FUN(UniformMatrix4fvStreamTextureMatrixCHROMIUM)
+#define glOverlayPromotionHintCHROMIUM \
+  GLES2_GET_FUN(OverlayPromotionHintCHROMIUM)
 #define glSwapBuffersWithDamageCHROMIUM \
   GLES2_GET_FUN(SwapBuffersWithDamageCHROMIUM)
 

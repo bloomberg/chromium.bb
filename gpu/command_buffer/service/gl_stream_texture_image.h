@@ -25,6 +25,10 @@ class GPU_EXPORT GLStreamTextureImage : public gl::GLImage {
 
   void Flush() override {}
 
+  virtual void NotifyPromotionHint(bool promotion_hint,
+                                   int display_x,
+                                   int display_y) {}
+
  protected:
   ~GLStreamTextureImage() override {}
 

@@ -5107,6 +5107,20 @@ GLES2DecoderImpl::HandleUniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleOverlayPromotionHintCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::OverlayPromotionHintCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::OverlayPromotionHintCHROMIUM*>(
+          cmd_data);
+  GLuint texture = c.texture;
+  GLboolean promotion_hint = static_cast<GLboolean>(c.promotion_hint);
+  GLint display_x = static_cast<GLint>(c.display_x);
+  GLint display_y = static_cast<GLint>(c.display_y);
+  DoOverlayPromotionHintCHROMIUM(texture, promotion_hint, display_x, display_y);
+  return error::kNoError;
+}
+
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
     case GL_BLEND:

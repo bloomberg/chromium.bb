@@ -1677,18 +1677,30 @@ void ResourceProvider::ReceiveReturnsFromParent(
 
 #if defined(OS_ANDROID)
 void ResourceProvider::SendPromotionHints(
-    const ResourceIdSet& promotable_hints) {
+    const OverlayCandidateList::PromotionHintInfoMap& promotion_hints) {
+  GLES2Interface* gl = ContextGL();
+  if (!gl)
+    return;
+
   for (const auto& id : wants_promotion_hints_set_) {
+    const ResourceMap::iterator it = resources_.find(id);
+    if (it == resources_.end())
+      continue;
+
+    if (it->second.marked_for_deletion)
+      continue;
+
     const Resource* resource = LockForRead(id);
     DCHECK(resource->wants_promotion_hint);
 
     // Insist that this is backed by a GPU texture.
     if (IsGpuResourceType(resource->type)) {
       DCHECK(resource->gl_id);
-      // TODO(liberato): Here we would either construct a set to send all at
-      // once, or send the promotion hint individually to resource->gl_id, based
-      // on whether promtable_hints.count(it->first) > 0 .
-      // crbug.com/671357
+      auto iter = promotion_hints.find(id);
+      bool promotable = iter != promotion_hints.end();
+      gl->OverlayPromotionHintCHROMIUM(resource->gl_id, promotable,
+                                       promotable ? iter->second.x() : 0,
+                                       promotable ? iter->second.y() : 0);
     }
     UnlockForRead(id);
   }

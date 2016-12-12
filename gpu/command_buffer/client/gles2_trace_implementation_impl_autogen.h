@@ -2488,6 +2488,17 @@ void GLES2TraceImplementation::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
                                                    transform);
 }
 
+void GLES2TraceImplementation::OverlayPromotionHintCHROMIUM(
+    GLuint texture,
+    GLboolean promotion_hint,
+    GLint display_x,
+    GLint display_y) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::OverlayPromotionHintCHROMIUM");
+  gl_->OverlayPromotionHintCHROMIUM(texture, promotion_hint, display_x,
+                                    display_y);
+}
+
 void GLES2TraceImplementation::SwapBuffersWithDamageCHROMIUM(GLint x,
                                                              GLint y,
                                                              GLint width,

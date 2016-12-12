@@ -1672,6 +1672,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Wrapper for glLinkProgram
   void DoLinkProgram(GLuint program);
 
+  // Wrapper for glOverlayPromotionHintCHROMIUIM
+  void DoOverlayPromotionHintCHROMIUM(GLuint client_id,
+                                      GLboolean promotion_hint,
+                                      GLint display_x,
+                                      GLint display_y);
+
   // Wrapper for glReadBuffer
   void DoReadBuffer(GLenum src);
 
@@ -8554,6 +8560,31 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
   // LinkProgram can be very slow.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
+}
+
+void GLES2DecoderImpl::DoOverlayPromotionHintCHROMIUM(GLuint client_id,
+                                                      GLboolean promotion_hint,
+                                                      GLint display_x,
+                                                      GLint display_y) {
+  if (client_id == 0)
+    return;
+
+  TextureRef* texture_ref = GetTexture(client_id);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glOverlayPromotionHintCHROMIUM",
+                       "invalid texture id");
+    return;
+  }
+  GLStreamTextureImage* image =
+      texture_ref->texture()->GetLevelStreamTextureImage(
+          GL_TEXTURE_EXTERNAL_OES, 0);
+  if (!image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glOverlayPromotionHintCHROMIUM",
+                       "texture has no StreamTextureImage");
+    return;
+  }
+
+  image->NotifyPromotionHint(promotion_hint != GL_FALSE, display_x, display_y);
 }
 
 void GLES2DecoderImpl::DoReadBuffer(GLenum src) {

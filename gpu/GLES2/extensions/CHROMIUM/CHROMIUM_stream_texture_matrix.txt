@@ -23,6 +23,8 @@ Overview
     of a stream texture.  Intended for use with Android SurfaceTexture, which
     doesn't provide the value until the front buffer is latched.
 
+    Also allows hints about whether an image could be promoted to an overlay.
+
 New Procedures and Functions
 
     The command
@@ -43,6 +45,29 @@ New Procedures and Functions
     <transpose> Specifies whether the matrix should be transposed.
     <transform> Provides an additional transform matrix that is applied
       prior to the the stream texture transformation matrix.
+
+    The command
+
+       void OverlayPromotionHintCHROMIUM(
+               GLuint texture,
+               GLboolean promotion_hint,
+               GLint display_x,
+               GLint display_y)
+
+    Provides a hint about whether the GLImage bound to texture could be promoted
+    to an overlay or not.
+
+    <texture> is the texture id, which should have a stream texture image bound
+      to it.
+    <promotion_hint> indicates whether the GLImage could be promoted.
+    <display_x> is the x coordinate of the origin of the overlay if the image
+      could be promoted.  Otherwise, it is 0.
+    <display_y> is the y coordinate of the origin of the overlay if the image
+      could be promoted.  Otherwise, it is 0.
+
+
+    If <texture> is not a valid texture, or if it doesn't have a stream texture
+    image bound to it, then no action is taken.
 
 Errors
 

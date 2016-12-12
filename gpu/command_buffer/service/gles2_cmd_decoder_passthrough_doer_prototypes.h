@@ -945,3 +945,8 @@ error::Error DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint location,
     GLboolean transpose,
     const volatile GLfloat* defaultValue);
+
+error::Error DoOverlayPromotionHintCHROMIUM(GLuint texture,
+                                            GLboolean promotion_hint,
+                                            GLint display_x,
+                                            GLint display_y);

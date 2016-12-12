@@ -15553,6 +15553,60 @@ static_assert(offsetof(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate,
               "offset of UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate "
               "transpose should be 8");
 
+struct OverlayPromotionHintCHROMIUM {
+  typedef OverlayPromotionHintCHROMIUM ValueType;
+  static const CommandId kCmdId = kOverlayPromotionHintCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _texture,
+            GLboolean _promotion_hint,
+            GLint _display_x,
+            GLint _display_y) {
+    SetHeader();
+    texture = _texture;
+    promotion_hint = _promotion_hint;
+    display_x = _display_x;
+    display_y = _display_y;
+  }
+
+  void* Set(void* cmd,
+            GLuint _texture,
+            GLboolean _promotion_hint,
+            GLint _display_x,
+            GLint _display_y) {
+    static_cast<ValueType*>(cmd)->Init(_texture, _promotion_hint, _display_x,
+                                       _display_y);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture;
+  uint32_t promotion_hint;
+  int32_t display_x;
+  int32_t display_y;
+};
+
+static_assert(sizeof(OverlayPromotionHintCHROMIUM) == 20,
+              "size of OverlayPromotionHintCHROMIUM should be 20");
+static_assert(offsetof(OverlayPromotionHintCHROMIUM, header) == 0,
+              "offset of OverlayPromotionHintCHROMIUM header should be 0");
+static_assert(offsetof(OverlayPromotionHintCHROMIUM, texture) == 4,
+              "offset of OverlayPromotionHintCHROMIUM texture should be 4");
+static_assert(
+    offsetof(OverlayPromotionHintCHROMIUM, promotion_hint) == 8,
+    "offset of OverlayPromotionHintCHROMIUM promotion_hint should be 8");
+static_assert(offsetof(OverlayPromotionHintCHROMIUM, display_x) == 12,
+              "offset of OverlayPromotionHintCHROMIUM display_x should be 12");
+static_assert(offsetof(OverlayPromotionHintCHROMIUM, display_y) == 16,
+              "offset of OverlayPromotionHintCHROMIUM display_y should be 16");
+
 struct SwapBuffersWithDamageCHROMIUM {
   typedef SwapBuffersWithDamageCHROMIUM ValueType;
   static const CommandId kCmdId = kSwapBuffersWithDamageCHROMIUM;

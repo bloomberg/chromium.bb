@@ -52,14 +52,14 @@ bool OverlayStrategyUnderlay::Attempt(ResourceProvider* resource_provider,
       // we can only promote a single quad.  Otherwise, somebody might try to
       // back one of the promotable quads with a SurfaceView, and either it or
       // |candidate| would have to fall back to a texture.
-      candidate_list->promotable_resource_hints_.clear();
-      candidate_list->promotable_resource_hints_.insert(candidate.resource_id);
+      candidate_list->promotion_hint_info_map_.clear();
+      candidate_list->AddPromotionHint(candidate);
       return true;
     } else {
       // If |candidate| should get a promotion hint, then rememeber that now.
-      candidate_list->promotable_resource_hints_.insert(
-          new_candidate_list.promotable_resource_hints_.begin(),
-          new_candidate_list.promotable_resource_hints_.end());
+      candidate_list->promotion_hint_info_map_.insert(
+          new_candidate_list.promotion_hint_info_map_.begin(),
+          new_candidate_list.promotion_hint_info_map_.end());
     }
   }
 

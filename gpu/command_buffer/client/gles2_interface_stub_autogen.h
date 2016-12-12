@@ -860,6 +860,10 @@ void UniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint location,
     GLboolean transpose,
     const GLfloat* transform) override;
+void OverlayPromotionHintCHROMIUM(GLuint texture,
+                                  GLboolean promotion_hint,
+                                  GLint display_x,
+                                  GLint display_y) override;
 void SwapBuffersWithDamageCHROMIUM(GLint x,
                                    GLint y,
                                    GLint width,

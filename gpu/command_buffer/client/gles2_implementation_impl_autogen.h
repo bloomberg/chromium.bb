@@ -3488,4 +3488,18 @@ void GLES2Implementation::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
   CheckGLError();
 }
 
+void GLES2Implementation::OverlayPromotionHintCHROMIUM(GLuint texture,
+                                                       GLboolean promotion_hint,
+                                                       GLint display_x,
+                                                       GLint display_y) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glOverlayPromotionHintCHROMIUM("
+                     << texture << ", "
+                     << GLES2Util::GetStringBool(promotion_hint) << ", "
+                     << display_x << ", " << display_y << ")");
+  helper_->OverlayPromotionHintCHROMIUM(texture, promotion_hint, display_x,
+                                        display_y);
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

@@ -208,10 +208,11 @@ class CC_EXPORT ResourceProvider
 
 #if defined(OS_ANDROID)
   // Send an overlay promotion hint to all resources that requested it via
-  // |want_promotion_hint|.  |promotable_hints| contains all the resources that
-  // should be told that they're promotable.  Others will be told that they're
-  // not promotable right now.
-  void SendPromotionHints(const ResourceIdSet& promotable_hints);
+  // |wants_promotion_hints_set_|.  |promotable_hints| contains all the
+  // resources that should be told that they're promotable.  Others will be told
+  // that they're not promotable right now.
+  void SendPromotionHints(
+      const OverlayCandidateList::PromotionHintInfoMap& promotion_hints);
 #endif
 
   // The following lock classes are part of the ResourceProvider API and are

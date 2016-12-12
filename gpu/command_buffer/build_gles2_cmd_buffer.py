@@ -3480,6 +3480,12 @@ _FUNCTION_INFO = {
     'result': ['uint32_t'],
     'trace_level': 1,
   },
+  'OverlayPromotionHintCHROMIUM': {
+    'decoder_func': 'DoOverlayPromotionHintCHROMIUM',
+    'extension': "CHROMIUM_uniform_stream_texture_matrix",
+    'unit_test': False,
+    'client_test': False,
+  },
   'PauseTransformFeedback': {
     'decoder_func': 'DoPauseTransformFeedback',
     'unit_test': False,

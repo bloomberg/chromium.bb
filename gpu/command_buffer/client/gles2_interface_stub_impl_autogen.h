@@ -1163,6 +1163,11 @@ void GLES2InterfaceStub::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint /* location */,
     GLboolean /* transpose */,
     const GLfloat* /* transform */) {}
+void GLES2InterfaceStub::OverlayPromotionHintCHROMIUM(
+    GLuint /* texture */,
+    GLboolean /* promotion_hint */,
+    GLint /* display_x */,
+    GLint /* display_y */) {}
 void GLES2InterfaceStub::SwapBuffersWithDamageCHROMIUM(GLint /* x */,
                                                        GLint /* y */,
                                                        GLint /* width */,

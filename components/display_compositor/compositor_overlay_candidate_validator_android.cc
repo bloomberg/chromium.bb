@@ -37,7 +37,7 @@ void CompositorOverlayCandidateValidatorAndroid::CheckOverlaySupport(
 
     // This quad either will be promoted, or would be if it were backed by a
     // SurfaceView.  Record that it should get a promotion hint.
-    candidates->promotable_resource_hints_.insert(candidate.resource_id);
+    candidates->AddPromotionHint(candidate);
 
     if (candidate.is_backed_by_surface_texture) {
       // This quad would be promoted if it were backed by a SurfaceView.  Since
