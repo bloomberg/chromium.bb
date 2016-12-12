@@ -88,7 +88,7 @@ bool GetClientCertInfo(const X509Certificate* certificate,
           *out_type = SSLPrivateKey::Type::ECDSA_P384;
           break;
         case NID_secp521r1:
-          *out_type = SSLPrivateKey::Type::ECDSA_P384;
+          *out_type = SSLPrivateKey::Type::ECDSA_P521;
           break;
         default:
           LOG(ERROR) << "Unsupported curve type " << curve;
