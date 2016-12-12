@@ -96,8 +96,6 @@ void VRController::onGetDisplays() {
 
 void VRController::contextDestroyed() {
   dispose();
-  // The context is not automatically cleared, so do it manually.
-  ContextLifecycleObserver::clearContext();
 }
 
 void VRController::dispose() {
