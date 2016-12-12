@@ -65,10 +65,7 @@ ScriptPromise BudgetService::getCost(ScriptState* scriptState,
         scriptState, DOMException::create(SecurityError, errorMessage));
 
   mojom::blink::BudgetOperationType type = stringToOperationType(operation);
-  if (type == mojom::blink::BudgetOperationType::INVALID_OPERATION)
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(NotSupportedError,
-                                          "Invalid operation type specified"));
+  DCHECK_NE(type, mojom::blink::BudgetOperationType::INVALID_OPERATION);
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
@@ -129,10 +126,7 @@ ScriptPromise BudgetService::reserve(ScriptState* scriptState,
   DCHECK(m_service);
 
   mojom::blink::BudgetOperationType type = stringToOperationType(operation);
-  if (type == mojom::blink::BudgetOperationType::INVALID_OPERATION)
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(NotSupportedError,
-                                          "Invalid operation type specified"));
+  DCHECK_NE(type, mojom::blink::BudgetOperationType::INVALID_OPERATION);
 
   String errorMessage;
   if (!scriptState->getExecutionContext()->isSecureContext(errorMessage))
