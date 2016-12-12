@@ -118,6 +118,13 @@ SyncError DeviceInfoSyncBridge::MergeSyncData(
     EntityDataMap entity_data_map) {
   DCHECK(has_provider_initialized_);
   DCHECK(change_processor()->IsTrackingMetadata());
+  const DeviceInfo* local_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
+  // If our dependency was yanked out from beneath us, we cannot correctly
+  // handle this request, and all our data will be deleted soon.
+  if (local_info == nullptr) {
+    return SyncError();
+  }
 
   // Local data should typically be near empty, with the only possible value
   // corresponding to this device. This is because on signout all device info
@@ -130,8 +137,6 @@ SyncError DeviceInfoSyncBridge::MergeSyncData(
   }
 
   bool has_changes = false;
-  const DeviceInfo* local_info =
-      local_device_info_provider_->GetLocalDeviceInfo();
   std::string local_guid = local_info->guid();
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& kv : entity_data_map) {
@@ -166,6 +171,13 @@ SyncError DeviceInfoSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
   DCHECK(has_provider_initialized_);
+  const DeviceInfo* local_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
+  // If our dependency was yanked out from beneath us, we cannot correctly
+  // handle this request, and all our data will be deleted soon.
+  if (local_info == nullptr) {
+    return SyncError();
+  }
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   bool has_changes = false;
@@ -173,7 +185,7 @@ SyncError DeviceInfoSyncBridge::ApplySyncChanges(
     const std::string guid = change.storage_key();
     // Each device is the authoritative source for itself, ignore any remote
     // changes that have our local cache guid.
-    if (guid == local_device_info_provider_->GetLocalDeviceInfo()->guid()) {
+    if (guid == local_info->guid()) {
       continue;
     }
 
@@ -315,6 +327,8 @@ void DeviceInfoSyncBridge::OnProviderInitialized() {
   // should only need to give the processor metadata upon initialization. If
   // sync is disabled and enabled, our provider will try to retrigger this
   // event, but we do not want to send any more metadata to the processor.
+  // TODO(skym, crbug.com/672600): Handle re-initialization and start the pulse
+  // timer.
   subscription_.reset();
 
   has_provider_initialized_ = true;
@@ -387,6 +401,15 @@ void DeviceInfoSyncBridge::ReconcileLocalAndStored() {
 
   const DeviceInfo* current_info =
       local_device_info_provider_->GetLocalDeviceInfo();
+  // Must ensure |pulse_timer_| is started even if sync is in the process of
+  // being disabled. TODO(skym, crbug.com/672600): Remove this timer Start(), as
+  // it should be started when the provider re-initializes instead.
+  if (current_info == nullptr) {
+    pulse_timer_.Start(FROM_HERE, DeviceInfoUtil::kPulseInterval,
+                       base::Bind(&DeviceInfoSyncBridge::SendLocalData,
+                                  base::Unretained(this)));
+    return;
+  }
   auto iter = all_data_.find(current_info->guid());
 
   // Convert to DeviceInfo for Equals function.
