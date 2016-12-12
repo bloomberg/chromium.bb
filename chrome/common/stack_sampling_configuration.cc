@@ -128,7 +128,8 @@ void StackSamplingConfiguration::AppendCommandLineSwitchForChildProcess(
   DCHECK(IsBrowserProcess());
 
   if (process_type == switches::kGpuProcess &&
-      (configuration_ == PROFILE_GPU_PROCESS ||
+      (configuration_ == PROFILE_CONTROL ||
+       configuration_ == PROFILE_GPU_PROCESS ||
        configuration_ == PROFILE_BROWSER_AND_GPU_PROCESS)) {
     command_line->AppendSwitch(switches::kStartStackProfiler);
   }
@@ -180,18 +181,18 @@ StackSamplingConfiguration::GenerateConfiguration() {
       return ChooseConfiguration({
         { PROFILE_BROWSER_PROCESS, 0},
         { PROFILE_GPU_PROCESS, 0},
-        { PROFILE_BROWSER_AND_GPU_PROCESS, 50},
-        { PROFILE_CONTROL, 50},
-        { PROFILE_DISABLED, 0}
+        { PROFILE_BROWSER_AND_GPU_PROCESS, 80},
+        { PROFILE_CONTROL, 10},
+        { PROFILE_DISABLED, 10}
       });
 
     case version_info::Channel::DEV:
       return ChooseConfiguration({
         { PROFILE_BROWSER_PROCESS, 0},
         { PROFILE_GPU_PROCESS, 0},
-        { PROFILE_BROWSER_AND_GPU_PROCESS, 50},
-        { PROFILE_CONTROL, 50},
-        { PROFILE_DISABLED, 0}
+        { PROFILE_BROWSER_AND_GPU_PROCESS, 80},
+        { PROFILE_CONTROL, 10},
+        { PROFILE_DISABLED, 10}
       });
 
     default:
