@@ -43,7 +43,11 @@ void BrowsingHistoryBridge::QueryHistory(
 
   history::QueryOptions options;
   options.max_count = kMaxQueryCount;
-  options.end_time = base::Time::FromJavaTime(j_query_end_time);
+  if (j_query_end_time == 0) {
+    options.end_time = base::Time();
+  } else {
+    options.end_time = base::Time::FromJavaTime(j_query_end_time);
+  }
   options.duplicate_policy = history::QueryOptions::REMOVE_DUPLICATES_PER_DAY;
 
   browsing_history_service_->QueryHistory(
@@ -138,7 +142,9 @@ void BrowsingHistoryBridge::HistoryDeleted() {
 
 void BrowsingHistoryBridge::HasOtherFormsOfBrowsingHistory(
     bool has_other_forms, bool has_synced_results) {
-  // TODO(twellington): implement
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_BrowsingHistoryBridge_hasOtherFormsOfBrowsingData(
+      env, j_history_service_obj_.obj(), has_other_forms, has_synced_results);
 }
 
 bool RegisterBrowsingHistoryBridge(JNIEnv* env) {

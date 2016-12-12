@@ -340,6 +340,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         mRegularDownloadItems.filter(mFilter, mFilteredItems);
         mIncognitoDownloadItems.filter(mFilter, mFilteredItems);
         mOfflinePageItems.filter(mFilter, mFilteredItems);
+        clear(false);
         loadItems(mFilteredItems);
     }
 

@@ -30,6 +30,14 @@ public class BrowsingHistoryBridge {
          * via this method.
          */
         public void onHistoryDeleted();
+
+        /**
+         * Called after querying history to indicate whether other forms of browsing history were
+         * found.
+         * @param hasOtherForms Whether other forms of browsing history were found.
+         * @param hasSyncedResults Whether synced results were found.
+         */
+        public void hasOtherFormsOfBrowsingData(boolean hasOtherForms, boolean hasSyncedResults);
     }
 
     private final BrowsingHistoryObserver mObserver;
@@ -112,6 +120,11 @@ public class BrowsingHistoryBridge {
     @CalledByNative
     public void onHistoryDeleted() {
         mObserver.onHistoryDeleted();
+    }
+
+    @CalledByNative
+    public void hasOtherFormsOfBrowsingData(boolean hasOtherForms, boolean hasSyncedResults) {
+        mObserver.hasOtherFormsOfBrowsingData(hasOtherForms, hasSyncedResults);
     }
 
     private native long nativeInit(Profile profile);

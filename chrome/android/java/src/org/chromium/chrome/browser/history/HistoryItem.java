@@ -85,7 +85,7 @@ public class HistoryItem extends TimedItem {
      * Navigates a tab to this item's URL.
      */
     public void open() {
-        if (mManager != null) mManager.openItem(mUrl, null, false);
+        if (mManager != null) mManager.openUrl(mUrl, null, false);
     }
 
     /**

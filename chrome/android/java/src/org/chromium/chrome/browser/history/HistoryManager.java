@@ -17,6 +17,8 @@ import android.view.ViewGroup;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
@@ -114,14 +116,14 @@ public class HistoryManager implements OnMenuItemClickListener {
     }
 
     /**
-     * Open the history item.
-     * @param url The URL of the history item.
-     * @param isIncognito Whether to open the history item in an incognito tab. If null, the tab
+     * Open the provided url.
+     * @param url The url to open.
+     * @param isIncognito Whether to open the url in an incognito tab. If null, the tab
      *                    will open in the current tab model.
      * @param createNewTab Whether a new tab should be created. If false, the item will clobber the
      *                     the current tab.
      */
-    public void openItem(String url, Boolean isIncognito, boolean createNewTab) {
+    public void openUrl(String url, Boolean isIncognito, boolean createNewTab) {
         // Construct basic intent.
         Intent viewIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         viewIntent.putExtra(Browser.EXTRA_APPLICATION_ID,
@@ -151,9 +153,18 @@ public class HistoryManager implements OnMenuItemClickListener {
         IntentHandler.startActivityForTrustedIntent(viewIntent, mActivity);
     }
 
+    /**
+     * Opens the clear browsing data preference.
+     */
+    public void openClearBrowsingDataPreference() {
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(mActivity,
+                ClearBrowsingDataPreferences.class.getName());
+        IntentUtils.safeStartActivity(mActivity, intent);
+    }
+
     private void openItemsInNewTabs(List<HistoryItem> items, boolean isIncognito) {
         for (HistoryItem item : items) {
-            openItem(item.getUrl(), isIncognito, true);
+            openUrl(item.getUrl(), isIncognito, true);
         }
     }
 }
