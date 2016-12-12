@@ -9,8 +9,10 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -106,13 +108,43 @@ void RecordProcessingState(AudioTrackProcessingStates state) {
 
 // Checks if the default minimum starting volume value for the AGC is overridden
 // on the command line.
-bool GetStartupMinVolumeForAgc(int* startup_min_volume) {
-  DCHECK(startup_min_volume);
+base::Optional<int> GetStartupMinVolumeForAgc() {
   std::string min_volume_str(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kAgcStartupMinVolume));
-  return !min_volume_str.empty() &&
-         base::StringToInt(min_volume_str, startup_min_volume);
+  int startup_min_volume;
+  if (min_volume_str.empty() ||
+      !base::StringToInt(min_volume_str, &startup_min_volume)) {
+    return base::Optional<int>();
+  }
+  return base::Optional<int>(startup_min_volume);
+}
+
+// Features for http://crbug.com/672476. These values will be given to WebRTC's
+// gain control (AGC) as lower bounds for the gain reduction during clipping.
+const base::Feature kTunedClippingLevelMin30{
+    "TunedClippingLevelMin30", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTunedClippingLevelMin70{
+    "TunedClippingLevelMin70", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTunedClippingLevelMin110{
+    "TunedClippingLevelMin110", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTunedClippingLevelMin150{
+    "TunedClippingLevelMin150", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTunedClippingLevelMin170{
+    "TunedClippingLevelMin170", base::FEATURE_DISABLED_BY_DEFAULT};
+
+base::Optional<int> GetClippingLevelMin() {
+  if (base::FeatureList::IsEnabled(kTunedClippingLevelMin30))
+    return base::Optional<int>(30);
+  if (base::FeatureList::IsEnabled(kTunedClippingLevelMin70))
+    return base::Optional<int>(70);
+  if (base::FeatureList::IsEnabled(kTunedClippingLevelMin110))
+    return base::Optional<int>(110);
+  if (base::FeatureList::IsEnabled(kTunedClippingLevelMin150))
+    return base::Optional<int>(150);
+  if (base::FeatureList::IsEnabled(kTunedClippingLevelMin170))
+    return base::Optional<int>(170);
+  return base::Optional<int>();
 }
 
 // Checks if the AEC's refined adaptive filter tuning was enabled on the command
@@ -620,10 +652,12 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   // If the experimental AGC is enabled, check for overridden config params.
   if (audio_constraints.GetGoogExperimentalAutoGainControl()) {
-    int startup_min_volume = 0;
-    if (GetStartupMinVolumeForAgc(&startup_min_volume)) {
-      config.Set<webrtc::ExperimentalAgc>(
-          new webrtc::ExperimentalAgc(true, startup_min_volume));
+    auto startup_min_volume = GetStartupMinVolumeForAgc();
+    auto clipping_level_min = GetClippingLevelMin();
+    if (startup_min_volume || clipping_level_min) {
+      config.Set<webrtc::ExperimentalAgc>(new webrtc::ExperimentalAgc(
+          true, startup_min_volume.value_or(0),
+          clipping_level_min.value_or(webrtc::kClippedLevelMin)));
     }
   }
 
