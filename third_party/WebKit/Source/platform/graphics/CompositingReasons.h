@@ -84,16 +84,18 @@ const uint64_t CompositingReasonLayerForForeground = UINT64_C(1) << 43;
 const uint64_t CompositingReasonLayerForBackground = UINT64_C(1) << 44;
 const uint64_t CompositingReasonLayerForMask = UINT64_C(1) << 45;
 const uint64_t CompositingReasonLayerForClippingMask = UINT64_C(1) << 46;
+const uint64_t CompositingReasonLayerForAncestorClippingMask = UINT64_C(1)
+                                                               << 47;
 const uint64_t CompositingReasonLayerForScrollingBlockSelection = UINT64_C(1)
-                                                                  << 47;
+                                                                  << 48;
 // Composited layer painted on top of all other layers as decoration
-const uint64_t CompositingReasonLayerForDecoration = UINT64_C(1) << 48;
+const uint64_t CompositingReasonLayerForDecoration = UINT64_C(1) << 49;
 
 // Composited elements with inline transforms trigger assumed overlap so that
 // we can update their transforms quickly.
-const uint64_t CompositingReasonInlineTransform = UINT64_C(1) << 49;
+const uint64_t CompositingReasonInlineTransform = UINT64_C(1) << 50;
 
-const uint64_t CompositingReasonCompositorProxy = UINT64_C(1) << 50;
+const uint64_t CompositingReasonCompositorProxy = UINT64_C(1) << 51;
 
 // Various combinations of compositing reasons are defined here also, for more
 // intutive and faster bitwise logic.

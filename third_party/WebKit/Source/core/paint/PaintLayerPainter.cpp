@@ -371,7 +371,8 @@ PaintResult PaintLayerPainter::paintLayerContents(
   // scrolling contents and scrollbars.
   if (m_paintLayer.layoutObject()->hasClipPath() &&
       (!m_paintLayer.needsCompositedScrolling() ||
-       (paintFlags & PaintLayerPaintingChildClippingMaskPhase))) {
+       (paintFlags & (PaintLayerPaintingChildClippingMaskPhase |
+                      PaintLayerPaintingAncestorClippingMaskPhase)))) {
     paintingInfo.ancestorHasClipPathClipping = true;
 
     LayoutRect referenceBox(m_paintLayer.boxForClipPath());
@@ -427,22 +428,51 @@ PaintResult PaintLayerPainter::paintLayerContents(
     ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects)
                                        ? UncachedClipRects
                                        : PaintingClipRects;
+    LayoutPoint offsetToClipper;
+    PaintLayer* paintLayerForFragments = &m_paintLayer;
+    if (paintFlags & PaintLayerPaintingAncestorClippingMaskPhase) {
+      // Compute fragments and their clips with respect to the clipping
+      // container. The paint rect is in this layer's space, so convert it
+      // to the clipper's layer's space. The rootLayer is also changed to
+      // the clipper's layer to simplify coordinate system adjustments.
+      // The change to rootLayer must persist to correctly record the clips.
+      paintLayerForFragments =
+          m_paintLayer.clippingContainer()->enclosingLayer();
+      localPaintingInfo.rootLayer = paintLayerForFragments;
+      m_paintLayer.convertToLayerCoords(localPaintingInfo.rootLayer,
+                                        offsetToClipper);
+      localPaintingInfo.paintDirtyRect.moveBy(offsetToClipper);
+    }
+
     // TODO(trchen): We haven't decided how to handle visual fragmentation with
     // SPv2.  Related thread
     // https://groups.google.com/a/chromium.org/forum/#!topic/graphics-dev/81XuWFf-mxM
     if (fragmentPolicy == ForceSingleFragment ||
-        RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-      m_paintLayer.appendSingleFragmentIgnoringPagination(
+        RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      paintLayerForFragments->appendSingleFragmentIgnoringPagination(
           layerFragments, localPaintingInfo.rootLayer,
           localPaintingInfo.paintDirtyRect, cacheSlot,
           IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot,
           localPaintingInfo.subPixelAccumulation);
-    else
-      m_paintLayer.collectFragments(layerFragments, localPaintingInfo.rootLayer,
-                                    localPaintingInfo.paintDirtyRect, cacheSlot,
-                                    IgnoreOverlayScrollbarSize,
-                                    respectOverflowClip, &offsetFromRoot,
-                                    localPaintingInfo.subPixelAccumulation);
+    } else {
+      paintLayerForFragments->collectFragments(
+          layerFragments, localPaintingInfo.rootLayer,
+          localPaintingInfo.paintDirtyRect, cacheSlot,
+          IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot,
+          localPaintingInfo.subPixelAccumulation);
+    }
+
+    if (paintFlags & PaintLayerPaintingAncestorClippingMaskPhase) {
+      // Fragment offsets have been computed in the clipping container's
+      // layer's coordinate system, but for the rest of painting we need
+      // them in the layer coordinate. So move them and the foreground rect
+      // that is also in the clipper's space.
+      LayoutSize negativeOffset(-offsetToClipper.x(), -offsetToClipper.y());
+      for (auto& fragment : layerFragments) {
+        fragment.foregroundRect.move(negativeOffset);
+        fragment.paginationOffset.move(negativeOffset);
+      }
+    }
 
     if (shouldPaintContent) {
       // TODO(wangxianzhu): This is for old slow scrolling. Implement similar
@@ -546,7 +576,8 @@ PaintResult PaintLayerPainter::paintLayerContents(
       shouldPaintContent && m_paintLayer.layoutObject()->hasMask() &&
       !selectionOnly;
   bool shouldPaintClippingMask =
-      (paintFlags & PaintLayerPaintingChildClippingMaskPhase) &&
+      (paintFlags & (PaintLayerPaintingChildClippingMaskPhase |
+                     PaintLayerPaintingAncestorClippingMaskPhase)) &&
       shouldPaintContent && !selectionOnly;
 
   if (shouldPaintMask)
@@ -721,7 +752,7 @@ PaintResult PaintLayerPainter::paintLayerWithTransform(
                             UseCounter::ClipCssOfFixedPositionElement);
         clipRecorder.emplace(context, *parentLayer->layoutObject(),
                              DisplayItem::kClipLayerParent, clipRectForFragment,
-                             &paintingInfo, fragment.paginationOffset,
+                             paintingInfo.rootLayer, fragment.paginationOffset,
                              paintFlags);
       }
     }
@@ -859,7 +890,7 @@ void PaintLayerPainter::paintOverflowControlsForFragments(
     if (needsToClip(localPaintingInfo, fragment.backgroundRect)) {
       clipRecorder.emplace(context, *m_paintLayer.layoutObject(),
                            DisplayItem::kClipLayerOverflowControls,
-                           fragment.backgroundRect, &localPaintingInfo,
+                           fragment.backgroundRect, localPaintingInfo.rootLayer,
                            fragment.paginationOffset, paintFlags);
     }
 
@@ -909,9 +940,12 @@ void PaintLayerPainter::paintFragmentWithPhase(
         break;
     }
 
+    // TODO(schenney): Nested border-radius clips are not applied to composited
+    // children, probably due to an incorrect clipRoot.
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=672561
     clipRecorder.emplace(context, *m_paintLayer.layoutObject(), clipType,
-                         clipRect, &paintingInfo, fragment.paginationOffset,
-                         paintFlags, clippingRule);
+                         clipRect, paintingInfo.rootLayer,
+                         fragment.paginationOffset, paintFlags, clippingRule);
   }
 
   LayoutRect newCullRect(clipRect.rect());
@@ -983,7 +1017,8 @@ void PaintLayerPainter::paintForegroundForFragments(
       needsToClip(localPaintingInfo, layerFragments[0].foregroundRect)) {
     clipRecorder.emplace(context, *m_paintLayer.layoutObject(),
                          DisplayItem::kClipLayerForeground,
-                         layerFragments[0].foregroundRect, &localPaintingInfo,
+                         layerFragments[0].foregroundRect,
+                         localPaintingInfo.rootLayer,
                          layerFragments[0].paginationOffset, paintFlags);
     clipState = HasClipped;
   }

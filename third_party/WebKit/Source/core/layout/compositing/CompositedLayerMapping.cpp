@@ -202,7 +202,7 @@ CompositedLayerMapping::~CompositedLayerMapping() {
     }
   }
 
-  updateClippingLayers(false, false);
+  updateClippingLayers(false, false, false);
   updateOverflowControlsLayers(false, false, false, false);
   updateChildTransformLayer(false);
   updateForegroundLayer(false);
@@ -246,6 +246,7 @@ void CompositedLayerMapping::destroyGraphicsLayers() {
     m_graphicsLayer->removeFromParent();
 
   m_ancestorClippingLayer = nullptr;
+  m_ancestorClippingMaskLayer = nullptr;
   m_graphicsLayer = nullptr;
   m_foregroundLayer = nullptr;
   m_backgroundLayer = nullptr;
@@ -472,29 +473,34 @@ void CompositedLayerMapping::updateCompositingReasons() {
       m_owningLayer.getSquashingDisallowedReasons());
 }
 
-bool CompositedLayerMapping::
-    owningLayerClippedByLayerNotAboveCompositedAncestor(
-        const PaintLayer* scrollParent) {
+void CompositedLayerMapping::
+    owningLayerClippedOrMaskedByLayerNotAboveCompositedAncestor(
+        const PaintLayer* scrollParent,
+        bool& owningLayerIsClipped,
+        bool& owningLayerIsMasked) {
+  owningLayerIsClipped = false;
+  owningLayerIsMasked = false;
+
   if (!m_owningLayer.parent())
-    return false;
+    return;
 
   const PaintLayer* compositingAncestor =
       m_owningLayer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf);
   if (!compositingAncestor)
-    return false;
+    return;
 
   const LayoutObject* clippingContainer = m_owningLayer.clippingContainer();
   if (!clippingContainer)
-    return false;
+    return;
 
   if (clippingContainer->enclosingLayer() == scrollParent)
-    return false;
+    return;
 
   if (clippingContainer->enclosingLayer()->hasRootScrollerAsDescendant())
-    return false;
+    return;
 
   if (compositingAncestor->layoutObject()->isDescendantOf(clippingContainer))
-    return false;
+    return;
 
   // We ignore overflow clip here; we want composited overflow content to
   // behave as if it lives in an unclipped universe so it can prepaint, etc.
@@ -509,7 +515,14 @@ bool CompositedLayerMapping::
   clipRectsContext.setIgnoreOverflowClip();
   IntRect parentClipRect = pixelSnappedIntRect(
       m_owningLayer.clipper().backgroundClipRect(clipRectsContext).rect());
-  return parentClipRect != LayoutRect::infiniteIntRect();
+  owningLayerIsClipped = parentClipRect != LayoutRect::infiniteIntRect();
+
+  // TODO(schenney): CSS clips are not applied to composited children, and
+  // should be via mask or by compositing the parent too.
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=615870
+  DCHECK(clippingContainer->style());
+  owningLayerIsMasked =
+      owningLayerIsClipped && clippingContainer->style()->hasBorderRadius();
 }
 
 const PaintLayer* CompositedLayerMapping::scrollParent() {
@@ -565,10 +578,12 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
   // layoutObject hierarchy, but a sibling in the z-order hierarchy. Further,
   // that sibling need not be composited at all. In such scenarios, an ancestor
   // clipping layer is necessary to apply the composited clip for this layer.
-  bool needsAncestorClip =
-      owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent);
-
-  if (updateClippingLayers(needsAncestorClip, needsDescendantsClippingLayer))
+  bool needsAncestorClip = false;
+  bool needsAncestorClippingMask = false;
+  owningLayerClippedOrMaskedByLayerNotAboveCompositedAncestor(
+      scrollParent, needsAncestorClip, needsAncestorClippingMask);
+  if (updateClippingLayers(needsAncestorClip, needsAncestorClippingMask,
+                           needsDescendantsClippingLayer))
     layerConfigChanged = true;
 
   bool scrollingConfigChanged = false;
@@ -1099,6 +1114,13 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(
   // to get back to local coords.
   m_ancestorClippingLayer->setOffsetFromLayoutObject(
       parentClipRect.location() - snappedOffsetFromCompositedAncestor);
+
+  if (m_ancestorClippingMaskLayer) {
+    m_ancestorClippingMaskLayer->setOffsetFromLayoutObject(
+        m_ancestorClippingLayer->offsetFromLayoutObject());
+    m_ancestorClippingMaskLayer->setSize(m_ancestorClippingLayer->size());
+    m_ancestorClippingMaskLayer->setNeedsDisplay();
+  }
 
   // The primary layer is then parented in, and positioned relative to this
   // clipping layer.
@@ -1651,6 +1673,9 @@ void CompositedLayerMapping::updateDrawsContent() {
   if (m_decorationOutlineLayer)
     m_decorationOutlineLayer->setDrawsContent(true);
 
+  if (m_ancestorClippingMaskLayer)
+    m_ancestorClippingMaskLayer->setDrawsContent(true);
+
   if (m_maskLayer)
     m_maskLayer->setDrawsContent(true);
 
@@ -1668,8 +1693,10 @@ void CompositedLayerMapping::updateChildrenTransform() {
 }
 
 // Return true if the layers changed.
-bool CompositedLayerMapping::updateClippingLayers(bool needsAncestorClip,
-                                                  bool needsDescendantClip) {
+bool CompositedLayerMapping::updateClippingLayers(
+    bool needsAncestorClip,
+    bool needsAncestorClippingMask,
+    bool needsDescendantClip) {
   bool layersChanged = false;
 
   if (needsAncestorClip) {
@@ -1681,8 +1708,29 @@ bool CompositedLayerMapping::updateClippingLayers(bool needsAncestorClip,
       layersChanged = true;
     }
   } else if (m_ancestorClippingLayer) {
+    if (m_ancestorClippingMaskLayer) {
+      m_ancestorClippingMaskLayer->removeFromParent();
+      m_ancestorClippingMaskLayer = nullptr;
+    }
     m_ancestorClippingLayer->removeFromParent();
     m_ancestorClippingLayer = nullptr;
+    layersChanged = true;
+  }
+
+  if (needsAncestorClippingMask) {
+    DCHECK(m_ancestorClippingLayer);
+    if (!m_ancestorClippingMaskLayer) {
+      m_ancestorClippingMaskLayer =
+          createGraphicsLayer(CompositingReasonLayerForAncestorClippingMask);
+      m_ancestorClippingMaskLayer->setPaintingPhase(
+          GraphicsLayerPaintAncestorClippingMask);
+      m_ancestorClippingLayer->setMaskLayer(m_ancestorClippingMaskLayer.get());
+      layersChanged = true;
+    }
+  } else if (m_ancestorClippingMaskLayer) {
+    m_ancestorClippingMaskLayer->removeFromParent();
+    m_ancestorClippingMaskLayer = nullptr;
+    m_ancestorClippingLayer->setMaskLayer(nullptr);
     layersChanged = true;
   }
 
@@ -1915,6 +1963,10 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping,
        (mode & ApplyToNonScrollingContentLayers)) &&
       mapping->childClippingMaskLayer())
     f(mapping->childClippingMaskLayer());
+  if (((mode & ApplyToMaskLayers) || (mode & ApplyToContentLayers) ||
+       (mode & ApplyToNonScrollingContentLayers)) &&
+      mapping->ancestorClippingMaskLayer())
+    f(mapping->ancestorClippingMaskLayer());
 
   if (((mode & ApplyToBackgroundLayer) || (mode & ApplyToContentLayers) ||
        (mode & ApplyToNonScrollingContentLayers)) &&
@@ -1950,7 +2002,7 @@ void CompositedLayerMapping::updateRenderingContext() {
   // Some compositing reasons depend on the compositing state of ancestors. So
   // if we want a rendering context id for the context root, we cannot ask for
   // the id of its associated WebLayer now; it may not have one yet. We could do
-  // a second past after doing the compositing updates to get these ids, but
+  // a second pass after doing the compositing updates to get these ids, but
   // this would actually be harmful. We do not want to attach any semantic
   // meaning to the context id other than the fact that they group a number of
   // layers together for the sake of 3d sorting. So instead we will ask the
@@ -2254,7 +2306,11 @@ static void updateClipParentForGraphicsLayer(
 
 void CompositedLayerMapping::updateClipParent(const PaintLayer* scrollParent) {
   const PaintLayer* clipParent = nullptr;
-  if (!owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent)) {
+  bool haveAncestorClipLayer = false;
+  bool haveAncestorMaskLayer = false;
+  owningLayerClippedOrMaskedByLayerNotAboveCompositedAncestor(
+      scrollParent, haveAncestorClipLayer, haveAncestorMaskLayer);
+  if (!haveAncestorClipLayer) {
     clipParent = m_owningLayer.clipParent();
     if (clipParent)
       clipParent =
@@ -2794,6 +2850,8 @@ void CompositedLayerMapping::doPaintTask(
   if (!(paintLayerFlags & PaintLayerPaintingOverflowContents)) {
     LayoutRect bounds = paintInfo.compositedBounds;
     bounds.move(paintInfo.paintLayer->subpixelAccumulation());
+    if (paintLayerFlags & PaintLayerPaintingAncestorClippingMaskPhase)
+      bounds.move(offset);
     dirtyRect.intersect(pixelSnappedIntRect(bounds));
   } else {
     dirtyRect.move(
@@ -3071,6 +3129,8 @@ void CompositedLayerMapping::paintContents(
     paintLayerFlags |= PaintLayerPaintingCompositingMaskPhase;
   if (graphicsLayerPaintingPhase & GraphicsLayerPaintChildClippingMask)
     paintLayerFlags |= PaintLayerPaintingChildClippingMaskPhase;
+  if (graphicsLayerPaintingPhase & GraphicsLayerPaintAncestorClippingMask)
+    paintLayerFlags |= PaintLayerPaintingAncestorClippingMaskPhase;
   if (graphicsLayerPaintingPhase & GraphicsLayerPaintOverflowContents)
     paintLayerFlags |= PaintLayerPaintingOverflowContents;
   if (graphicsLayerPaintingPhase & GraphicsLayerPaintCompositedScroll)
@@ -3090,7 +3150,8 @@ void CompositedLayerMapping::paintContents(
       graphicsLayer == m_maskLayer.get() ||
       graphicsLayer == m_childClippingMaskLayer.get() ||
       graphicsLayer == m_scrollingContentsLayer.get() ||
-      graphicsLayer == m_decorationOutlineLayer.get()) {
+      graphicsLayer == m_decorationOutlineLayer.get() ||
+      graphicsLayer == m_ancestorClippingMaskLayer.get()) {
     bool paintRootBackgroundOntoScrollingContentsLayer =
         m_backgroundPaintsOntoScrollingContentsLayer;
     DCHECK(!paintRootBackgroundOntoScrollingContentsLayer ||
@@ -3345,6 +3406,8 @@ String CompositedLayerMapping::debugName(
            ")";
   } else if (graphicsLayer == m_ancestorClippingLayer.get()) {
     name = "Ancestor Clipping Layer";
+  } else if (graphicsLayer == m_ancestorClippingMaskLayer.get()) {
+    name = "Ancestor Clipping Mask Layer";
   } else if (graphicsLayer == m_foregroundLayer.get()) {
     name = m_owningLayer.debugName() + " (foreground) Layer";
   } else if (graphicsLayer == m_backgroundLayer.get()) {

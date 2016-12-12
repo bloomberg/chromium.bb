@@ -15,24 +15,22 @@
 
 namespace blink {
 
-LayerClipRecorder::LayerClipRecorder(
-    GraphicsContext& graphicsContext,
-    const LayoutBoxModelObject& layoutObject,
-    DisplayItem::Type clipType,
-    const ClipRect& clipRect,
-    const PaintLayerPaintingInfo* localPaintingInfo,
-    const LayoutPoint& fragmentOffset,
-    PaintLayerFlags paintFlags,
-    BorderRadiusClippingRule rule)
+LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext,
+                                     const LayoutBoxModelObject& layoutObject,
+                                     DisplayItem::Type clipType,
+                                     const ClipRect& clipRect,
+                                     const PaintLayer* clipRoot,
+                                     const LayoutPoint& fragmentOffset,
+                                     PaintLayerFlags paintFlags,
+                                     BorderRadiusClippingRule rule)
     : m_graphicsContext(graphicsContext),
       m_layoutObject(layoutObject),
       m_clipType(clipType) {
   IntRect snappedClipRect = pixelSnappedIntRect(clipRect.rect());
   Vector<FloatRoundedRect> roundedRects;
-  if (localPaintingInfo && clipRect.hasRadius()) {
-    collectRoundedRectClips(*layoutObject.layer(), *localPaintingInfo,
-                            graphicsContext, fragmentOffset, paintFlags, rule,
-                            roundedRects);
+  if (clipRoot && clipRect.hasRadius()) {
+    collectRoundedRectClips(*layoutObject.layer(), clipRoot, graphicsContext,
+                            fragmentOffset, paintFlags, rule, roundedRects);
   }
 
   m_graphicsContext.getPaintController().createAndAppend<ClipDisplayItem>(
@@ -58,7 +56,7 @@ static bool inContainingBlockChain(PaintLayer* startLayer,
 
 void LayerClipRecorder::collectRoundedRectClips(
     PaintLayer& paintLayer,
-    const PaintLayerPaintingInfo& localPaintingInfo,
+    const PaintLayer* clipRoot,
     GraphicsContext& context,
     const LayoutPoint& fragmentOffset,
     PaintLayerFlags paintFlags,
@@ -79,14 +77,15 @@ void LayerClipRecorder::collectRoundedRectClips(
     // is properly clipped so that it can in turn clip the scrolled contents in
     // the compositor.
     if (layer->needsCompositedScrolling() &&
-        !(paintFlags & PaintLayerPaintingChildClippingMaskPhase))
+        !(paintFlags & PaintLayerPaintingChildClippingMaskPhase ||
+          paintFlags & PaintLayerPaintingAncestorClippingMaskPhase))
       break;
 
     if (layer->layoutObject()->hasOverflowClip() &&
         layer->layoutObject()->style()->hasBorderRadius() &&
         inContainingBlockChain(&paintLayer, layer)) {
       LayoutPoint delta(fragmentOffset);
-      layer->convertToLayerCoords(localPaintingInfo.rootLayer, delta);
+      layer->convertToLayerCoords(clipRoot, delta);
 
       // The PaintLayer's size is pixel-snapped if it is a LayoutBox. We can't
       // use a pre-snapped border rect for clipping, since
@@ -99,7 +98,7 @@ void LayerClipRecorder::collectRoundedRectClips(
               LayoutRect(delta, size)));
     }
 
-    if (layer == localPaintingInfo.rootLayer)
+    if (layer == clipRoot)
       break;
   }
 }

@@ -56,7 +56,7 @@ FilterPainter::FilterPainter(PaintLayer& layer,
   if (clipRect.rect() != paintingInfo.paintDirtyRect || clipRect.hasRadius()) {
     m_clipRecorder = WTF::wrapUnique(new LayerClipRecorder(
         context, *layer.layoutObject(), DisplayItem::kClipLayerFilter, clipRect,
-        &paintingInfo, LayoutPoint(), paintFlags));
+        paintingInfo.rootLayer, LayoutPoint(), paintFlags));
   }
 
   if (!context.getPaintController().displayItemConstructionIsDisabled()) {

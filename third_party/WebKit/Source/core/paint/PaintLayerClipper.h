@@ -182,7 +182,7 @@ class CORE_EXPORT PaintLayerClipper {
   LayoutRect localClipRect(const PaintLayer* ancestorLayer) const;
 
   // Computes the same thing as backgroundRect in calculateRects(), but skips
-  // apllying CSS clip and the visualOverflowRect() of |m_layer|.
+  // applying CSS clip and the visualOverflowRect() of |m_layer|.
   ClipRect backgroundClipRect(const ClipRectsContext&) const;
 
   // This method figures out our layerBounds in coordinates relative to

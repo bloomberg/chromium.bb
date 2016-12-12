@@ -2257,6 +2257,13 @@ bool LayoutBox::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
       return false;
   }
 
+  // If the box paints into its own backing, we can assume that it's painting
+  // may have some effect. For example, honoring the border-radius clip on
+  // a composited child paints into a mask for an otherwise non-painting
+  // element, because children of that element will require the mask.
+  if (hasLayer() && layer()->compositingState() == PaintsIntoOwnBacking)
+    return false;
+
   return true;
 }
 
