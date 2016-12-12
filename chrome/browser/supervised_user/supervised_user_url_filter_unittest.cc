@@ -22,7 +22,6 @@ class SupervisedUserURLFilterTest : public ::testing::Test,
  public:
   SupervisedUserURLFilterTest() : filter_(new SupervisedUserURLFilter) {
     filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
-    filter_->SetEnabled(true);
     filter_->AddObserver(this);
   }
 
@@ -69,11 +68,6 @@ TEST_F(SupervisedUserURLFilterTest, Basic) {
   EXPECT_TRUE(IsURLWhitelisted("chrome://extensions/"));
   EXPECT_TRUE(IsURLWhitelisted("chrome-extension://foo/main.html"));
   EXPECT_TRUE(IsURLWhitelisted("file:///home/chronos/user/Downloads/img.jpg"));
-
-  // If the filter is disabled, everything should be allowed.
-  filter_->SetEnabled(false);
-  EXPECT_TRUE(IsURLWhitelisted("http://google.com"));
-  EXPECT_TRUE(IsURLWhitelisted("http://notgoogle.com/"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, EffectiveURL) {

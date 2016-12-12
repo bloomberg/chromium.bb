@@ -117,7 +117,7 @@ SupervisedUserResourceThrottle::MaybeCreate(
     const SupervisedUserURLFilter* url_filter) {
   // Only treat main frame requests (ignoring subframes and subresources).
   bool is_main_frame = resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
-  if (!is_main_frame || !url_filter->enabled())
+  if (!is_main_frame)
     return nullptr;
 
   // Can't use base::MakeUnique because the constructor is private.

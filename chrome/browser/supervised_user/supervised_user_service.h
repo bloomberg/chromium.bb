@@ -250,7 +250,6 @@ class SupervisedUserService : public KeyedService,
     SupervisedUserURLFilter* ui_url_filter() const;
     SupervisedUserURLFilter* io_url_filter() const;
 
-    void SetEnabled(bool enabled);
     void SetDefaultFilteringBehavior(
         SupervisedUserURLFilter::FilteringBehavior behavior);
     void LoadWhitelists(

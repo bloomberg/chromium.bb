@@ -231,8 +231,7 @@ GURL BuildURL(bool is_https, const std::string& host_and_path) {
 }  // namespace
 
 SupervisedUserURLFilter::SupervisedUserURLFilter()
-    : enabled_(false),
-      default_behavior_(ALLOW),
+    : default_behavior_(ALLOW),
       contents_(new Contents()),
       blacklist_(nullptr),
       amp_cache_path_regex_(kAmpCachePathPattern),
@@ -324,16 +323,6 @@ bool SupervisedUserURLFilter::HostMatchesPattern(
   return trimmed_host == trimmed_pattern;
 }
 
-void SupervisedUserURLFilter::SetEnabled(bool enabled) {
-  if (enabled_ == enabled)
-    return;
-
-  enabled_ = enabled;
-
-  for (Observer& observer : observers_)
-    observer.OnSiteListUpdated();
-}
-
 SupervisedUserURLFilter::FilteringBehavior
 SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
   supervised_user_error_page::FilteringBehaviorReason reason;
@@ -353,11 +342,6 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
     bool manual_only,
     supervised_user_error_page::FilteringBehaviorReason* reason) const {
   DCHECK(CalledOnValidThread());
-
-  if (!enabled_) {
-    *reason = supervised_user_error_page::DEFAULT;
-    return ALLOW;
-  }
 
   GURL effective_url = GetEmbeddedURL(url);
   if (!effective_url.is_valid())
@@ -661,10 +645,8 @@ GURL SupervisedUserURLFilter::GetEmbeddedURL(const GURL& url) const {
 void SupervisedUserURLFilter::SetContents(std::unique_ptr<Contents> contents) {
   DCHECK(CalledOnValidThread());
   contents_ = std::move(contents);
-  if (enabled_) {
-    for (Observer& observer : observers_)
-      observer.OnSiteListUpdated();
-  }
+  for (Observer& observer : observers_)
+    observer.OnSiteListUpdated();
 }
 
 void SupervisedUserURLFilter::CheckCallback(

@@ -441,13 +441,6 @@ SupervisedUserService::URLFilterContext::io_url_filter() const {
   return io_url_filter_.get();
 }
 
-void SupervisedUserService::URLFilterContext::SetEnabled(bool enabled) {
-  ui_url_filter_->SetEnabled(enabled);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SupervisedUserURLFilter::SetEnabled,
-                                     io_url_filter_, enabled));
-}
-
 void SupervisedUserService::URLFilterContext::SetDefaultFilteringBehavior(
     SupervisedUserURLFilter::FilteringBehavior behavior) {
   ui_url_filter_->SetDefaultFilteringBehavior(behavior);
@@ -679,8 +672,6 @@ void SupervisedUserService::SetActive(bool active) {
     BrowserList::RemoveObserver(this);
 #endif
   }
-
-  url_filter_context_.SetEnabled(active_);
 }
 
 #if !defined(OS_ANDROID)
