@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_IME_DRIVER_MUS_H_
-#define CHROME_BROWSER_UI_VIEWS_IME_DRIVER_MUS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_IME_DRIVER_IME_DRIVER_MUS_H_
+#define CHROME_BROWSER_UI_VIEWS_IME_DRIVER_IME_DRIVER_MUS_H_
 
 #include <stdint.h>
 
@@ -15,14 +15,13 @@
 
 class IMEDriver : public ui::mojom::IMEDriver {
  public:
+  IMEDriver();
   ~IMEDriver() override;
 
   // Instantiate the IME driver and register it to the UI service.
   static void Register();
 
  private:
-  IMEDriver();
-
   // ui::mojom::IMEDriver:
   void StartSession(
       int32_t session_id,
@@ -36,4 +35,4 @@ class IMEDriver : public ui::mojom::IMEDriver {
   DISALLOW_COPY_AND_ASSIGN(IMEDriver);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_IME_DRIVER_MUS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_IME_DRIVER_IME_DRIVER_MUS_H_

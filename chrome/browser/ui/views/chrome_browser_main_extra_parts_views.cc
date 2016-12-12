@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
-#include "chrome/browser/ui/views/ime_driver_mus.h"
+#include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 #include "components/constrained_window/constrained_window_views.h"
 
 #if defined(USE_AURA)

@@ -38,9 +38,7 @@ void TextInputClientImpl::InsertText(const std::string& text) {
 
 void TextInputClientImpl::InsertChar(std::unique_ptr<ui::Event> event) {
   DCHECK(event->IsKeyEvent());
-  ui::KeyEvent* key_event = event->AsKeyEvent();
-  DCHECK(key_event->is_char());
-  text_input_client_->InsertChar(*key_event);
+  text_input_client_->InsertChar(*event->AsKeyEvent());
 }
 
 }  // namespace views

@@ -57,34 +57,9 @@ InputMethodChromeOS::~InputMethodChromeOS() {
     ui::IMEBridge::Get()->SetInputContextHandler(NULL);
 }
 
-bool InputMethodChromeOS::OnUntranslatedIMEMessage(
-    const base::NativeEvent& event,
-    NativeEventResult* result) {
-  return false;
-}
-
-void InputMethodChromeOS::ProcessKeyEventDone(ui::KeyEvent* event,
-                                              bool is_handled) {
-  DCHECK(event);
-  if (event->type() == ET_KEY_PRESSED) {
-    if (is_handled) {
-      // IME event has a priority to be handled, so that character composer
-      // should be reset.
-      character_composer_.Reset();
-    } else {
-      // If IME does not handle key event, passes keyevent to character composer
-      // to be able to compose complex characters.
-      is_handled = ExecuteCharacterComposer(*event);
-    }
-  }
-
-  if (event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED)
-    ProcessKeyEventPostIME(event, is_handled);
-
-  handling_key_event_ = false;
-}
-
-void InputMethodChromeOS::DispatchKeyEvent(ui::KeyEvent* event) {
+void InputMethodChromeOS::DispatchKeyEvent(
+    ui::KeyEvent* event,
+    std::unique_ptr<AckCallback> ack_callback) {
   DCHECK(event->IsKeyEvent());
   DCHECK(!(event->flags() & ui::EF_IS_SYNTHESIZED));
 
@@ -114,26 +89,66 @@ void InputMethodChromeOS::DispatchKeyEvent(ui::KeyEvent* event) {
         // Treating as PostIME event if character composer handles key event and
         // generates some IME event,
         ProcessKeyEventPostIME(event, true);
+        if (ack_callback)
+          ack_callback->Run(true);
         return;
       }
       ProcessUnfilteredKeyPressEvent(event);
     } else {
       ignore_result(DispatchKeyEventPostIME(event));
     }
+    if (ack_callback)
+      ack_callback->Run(false);
     return;
   }
 
   handling_key_event_ = true;
   if (GetEngine()->IsInterestedInKeyEvent()) {
-    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
-        base::Bind(&InputMethodChromeOS::ProcessKeyEventDone,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   // Pass the ownership of the new copied event.
-                   base::Owned(new ui::KeyEvent(*event)));
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback = base::Bind(
+        &InputMethodChromeOS::ProcessKeyEventDone,
+        weak_ptr_factory_.GetWeakPtr(),
+        // Pass the ownership of the new copied event.
+        base::Owned(new ui::KeyEvent(*event)), Passed(&ack_callback));
     GetEngine()->ProcessKeyEvent(*event, callback);
   } else {
-    ProcessKeyEventDone(event, false);
+    ProcessKeyEventDone(event, std::move(ack_callback), false);
   }
+}
+
+bool InputMethodChromeOS::OnUntranslatedIMEMessage(
+    const base::NativeEvent& event,
+    NativeEventResult* result) {
+  return false;
+}
+
+void InputMethodChromeOS::ProcessKeyEventDone(
+    ui::KeyEvent* event,
+    std::unique_ptr<AckCallback> ack_callback,
+    bool is_handled) {
+  DCHECK(event);
+  if (event->type() == ET_KEY_PRESSED) {
+    if (is_handled) {
+      // IME event has a priority to be handled, so that character composer
+      // should be reset.
+      character_composer_.Reset();
+    } else {
+      // If IME does not handle key event, passes keyevent to character composer
+      // to be able to compose complex characters.
+      is_handled = ExecuteCharacterComposer(*event);
+    }
+  }
+
+  if (ack_callback)
+    ack_callback->Run(is_handled);
+
+  if (event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED)
+    ProcessKeyEventPostIME(event, is_handled);
+
+  handling_key_event_ = false;
+}
+
+void InputMethodChromeOS::DispatchKeyEvent(ui::KeyEvent* event) {
+  DispatchKeyEvent(event, nullptr);
 }
 
 void InputMethodChromeOS::OnTextInputTypeChanged(

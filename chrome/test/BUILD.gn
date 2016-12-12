@@ -4757,6 +4757,9 @@ test("unit_tests") {
       "../browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc",
       "../browser/ui/views/website_settings/website_settings_popup_view_unittest.cc",
     ]
+    if (is_chromeos) {
+      sources += [ "../browser/ui/views/ime_driver/input_method_bridge_chromeos_unittest.cc" ]
+    }
     if (!is_chromeos && (!is_mac || mac_views_browser)) {
       sources += [
         "../browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc",

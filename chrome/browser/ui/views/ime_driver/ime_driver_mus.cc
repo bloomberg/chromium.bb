@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ime_driver_mus.h"
+#include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
@@ -10,41 +10,17 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "ui/base/ime/ime_bridge.h"
 
-namespace {
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/ime_driver/input_method_bridge_chromeos.h"
+#else
+#include "chrome/browser/ui/views/ime_driver/simple_input_method.h"
+#endif  // defined(OS_CHROMEOS)
 
-class InputMethod : public ui::mojom::InputMethod {
- public:
-  explicit InputMethod(ui::mojom::TextInputClientPtr client)
-      : client_(std::move(client)) {}
-  ~InputMethod() override {}
-
- private:
-  // ui::mojom::InputMethod:
-  void OnTextInputModeChanged(
-      ui::mojom::TextInputMode text_input_mode) override {}
-  void OnTextInputTypeChanged(
-      ui::mojom::TextInputType text_input_type) override {}
-  void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {}
-  void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
-                       const ProcessKeyEventCallback& callback) override {
-    DCHECK(key_event->IsKeyEvent());
-
-    if (key_event->AsKeyEvent()->is_char()) {
-      client_->InsertChar(std::move(key_event));
-      callback.Run(true);
-    } else {
-      callback.Run(false);
-    }
-  }
-  void CancelComposition() override {}
-
-  ui::mojom::TextInputClientPtr client_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputMethod);
-};
-
-}  // namespace
+IMEDriver::IMEDriver() {
+  ui::IMEBridge::Initialize();
+}
 
 IMEDriver::~IMEDriver() {}
 
@@ -52,7 +28,7 @@ IMEDriver::~IMEDriver() {}
 void IMEDriver::Register() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ui::mojom::IMEDriverPtr ime_driver_ptr;
-  mojo::MakeStrongBinding(base::WrapUnique(new IMEDriver),
+  mojo::MakeStrongBinding(base::MakeUnique<IMEDriver>(),
                           GetProxy(&ime_driver_ptr));
   ui::mojom::IMERegistrarPtr ime_registrar;
   content::ServiceManagerConnection::GetForProcess()
@@ -65,12 +41,17 @@ void IMEDriver::StartSession(
     int32_t session_id,
     ui::mojom::TextInputClientPtr client,
     ui::mojom::InputMethodRequest input_method_request) {
+#if defined(OS_CHROMEOS)
   input_method_bindings_[session_id] =
       base::MakeUnique<mojo::Binding<ui::mojom::InputMethod>>(
-          new InputMethod(std::move(client)), std::move(input_method_request));
+          new InputMethodBridge(std::move(client)),
+          std::move(input_method_request));
+#else
+  input_method_bindings_[session_id] =
+      base::MakeUnique<mojo::Binding<ui::mojom::InputMethod>>(
+          new SimpleInputMethod());
+#endif
 }
-
-IMEDriver::IMEDriver() {}
 
 void IMEDriver::CancelSession(int32_t session_id) {
   input_method_bindings_.erase(session_id);
