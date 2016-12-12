@@ -155,7 +155,7 @@ FontFace* FontFace::create(Document* document,
 
 FontFace::FontFace(ExecutionContext* context)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_status(Unloaded) {
   suspendIfNeeded();
 }
@@ -164,7 +164,7 @@ FontFace::FontFace(ExecutionContext* context,
                    const AtomicString& family,
                    const FontFaceDescriptors& descriptors)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_family(family),
       m_status(Unloaded) {
   Document* document = toDocument(context);
@@ -644,7 +644,7 @@ DEFINE_TRACE(FontFace) {
   visitor->trace(m_loadedProperty);
   visitor->trace(m_cssFontFace);
   visitor->trace(m_callbacks);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 bool FontFace::hadBlankText() const {

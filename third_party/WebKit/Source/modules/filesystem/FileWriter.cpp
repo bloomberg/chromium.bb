@@ -51,7 +51,7 @@ FileWriter* FileWriter::create(ExecutionContext* context) {
 
 FileWriter::FileWriter(ExecutionContext* context)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_readyState(kInit),
       m_operationInProgress(OperationNone),
       m_queuedOperation(OperationNone),
@@ -312,7 +312,7 @@ DEFINE_TRACE(FileWriter) {
   visitor->trace(m_blobBeingWritten);
   EventTargetWithInlineData::trace(visitor);
   FileWriterBase::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

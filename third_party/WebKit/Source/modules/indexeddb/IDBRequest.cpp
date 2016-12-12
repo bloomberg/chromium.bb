@@ -67,7 +67,7 @@ IDBRequest::IDBRequest(ScriptState* scriptState,
                        IDBAny* source,
                        IDBTransaction* transaction)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(scriptState->getExecutionContext()),
+      SuspendableObject(scriptState->getExecutionContext()),
       m_transaction(transaction),
       m_source(source) {}
 
@@ -86,7 +86,7 @@ DEFINE_TRACE(IDBRequest) {
   visitor->trace(m_cursorKey);
   visitor->trace(m_cursorPrimaryKey);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 ScriptValue IDBRequest::result(ScriptState* scriptState,
@@ -415,7 +415,7 @@ const AtomicString& IDBRequest::interfaceName() const {
 }
 
 ExecutionContext* IDBRequest::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 DispatchEventResult IDBRequest::dispatchEventInternal(Event* event) {

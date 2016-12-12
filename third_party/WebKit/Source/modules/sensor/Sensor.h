@@ -7,8 +7,8 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/frame/PlatformEventController.h"
 #include "modules/EventTargetModules.h"
 #include "modules/sensor/SensorOptions.h"

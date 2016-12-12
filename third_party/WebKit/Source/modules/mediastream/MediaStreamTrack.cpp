@@ -53,7 +53,7 @@ MediaStreamTrack* MediaStreamTrack::create(ExecutionContext* context,
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_readyState(MediaStreamSource::ReadyStateLive),
       m_isIteratingRegisteredMediaStreams(false),
       m_stopped(false),
@@ -250,14 +250,14 @@ const AtomicString& MediaStreamTrack::interfaceName() const {
 }
 
 ExecutionContext* MediaStreamTrack::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 DEFINE_TRACE(MediaStreamTrack) {
   visitor->trace(m_registeredMediaStreams);
   visitor->trace(m_component);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

@@ -114,7 +114,7 @@ MediaSource* MediaSource::create(ExecutionContext* context) {
 
 MediaSource::MediaSource(ExecutionContext* context)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_readyState(closedKeyword()),
       m_asyncEventQueue(GenericEventQueue::create(this)),
       m_attachedElement(nullptr),
@@ -320,7 +320,7 @@ const AtomicString& MediaSource::interfaceName() const {
 }
 
 ExecutionContext* MediaSource::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 DEFINE_TRACE(MediaSource) {
@@ -330,7 +330,7 @@ DEFINE_TRACE(MediaSource) {
   visitor->trace(m_activeSourceBuffers);
   visitor->trace(m_liveSeekableRange);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 void MediaSource::setWebMediaSourceAndOpen(

@@ -44,7 +44,7 @@ BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(
     ExecutionContext* context,
     std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic,
     BluetoothRemoteGATTService* service)
-    : ActiveDOMObject(context),
+    : SuspendableObject(context),
       m_webCharacteristic(std::move(webCharacteristic)),
       m_service(service),
       m_stopped(false) {
@@ -63,7 +63,7 @@ BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::create(
   BluetoothRemoteGATTCharacteristic* characteristic =
       new BluetoothRemoteGATTCharacteristic(
           context, std::move(webCharacteristic), service);
-  // See note in ActiveDOMObject about suspendIfNeeded.
+  // See note in SuspendableObject about suspendIfNeeded.
   characteristic->suspendIfNeeded();
   return characteristic;
 }
@@ -90,7 +90,7 @@ void BluetoothRemoteGATTCharacteristic::notifyCharacteristicObjectRemoved() {
   if (!m_stopped) {
     m_stopped = true;
     WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(
-        ActiveDOMObject::getExecutionContext());
+        SuspendableObject::getExecutionContext());
     webbluetooth->characteristicObjectRemoved(
         m_webCharacteristic->characteristicInstanceID, this);
   }
@@ -103,7 +103,7 @@ const WTF::AtomicString& BluetoothRemoteGATTCharacteristic::interfaceName()
 
 ExecutionContext* BluetoothRemoteGATTCharacteristic::getExecutionContext()
     const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void BluetoothRemoteGATTCharacteristic::addedEventListener(
@@ -403,7 +403,7 @@ DEFINE_TRACE(BluetoothRemoteGATTCharacteristic) {
   visitor->trace(m_properties);
   visitor->trace(m_value);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

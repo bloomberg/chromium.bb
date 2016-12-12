@@ -224,7 +224,7 @@ XMLHttpRequest::XMLHttpRequest(
     ExecutionContext* context,
     PassRefPtr<SecurityOrigin> isolatedWorldSecurityOrigin)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_timeoutMilliseconds(0),
       m_responseBlob(this, nullptr),
       m_state(kUnsent),
@@ -1825,7 +1825,7 @@ const AtomicString& XMLHttpRequest::interfaceName() const {
 }
 
 ExecutionContext* XMLHttpRequest::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 DEFINE_TRACE(XMLHttpRequest) {
@@ -1839,7 +1839,7 @@ DEFINE_TRACE(XMLHttpRequest) {
   visitor->trace(m_blobLoader);
   XMLHttpRequestEventTarget::trace(visitor);
   DocumentParserClient::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(XMLHttpRequest) {

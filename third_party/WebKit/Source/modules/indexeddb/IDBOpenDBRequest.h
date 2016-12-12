@@ -58,7 +58,7 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
                  const IDBDatabaseMetadata&) override;
   void onSuccess(int64_t oldVersion) override;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void contextDestroyed() final;
 
   // EventTarget

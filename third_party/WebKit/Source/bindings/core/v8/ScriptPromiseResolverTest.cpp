@@ -281,7 +281,7 @@ TEST_F(ScriptPromiseResolverTest, suspend) {
       BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
   ASSERT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
-  getExecutionContext()->suspendActiveDOMObjects();
+  getExecutionContext()->suspendSuspendableObjects();
   resolver->resolve("hello");
   ThreadState::current()->collectGarbage(
       BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);

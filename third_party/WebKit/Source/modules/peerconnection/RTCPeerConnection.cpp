@@ -488,7 +488,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
                                      WebMediaConstraints constraints,
                                      ExceptionState& exceptionState)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_signalingState(SignalingStateStable),
       m_iceGatheringState(ICEGatheringStateNew),
       m_iceConnectionState(ICEConnectionStateNew),
@@ -1364,7 +1364,7 @@ const AtomicString& RTCPeerConnection::interfaceName() const {
 }
 
 ExecutionContext* RTCPeerConnection::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void RTCPeerConnection::suspend() {
@@ -1494,7 +1494,7 @@ DEFINE_TRACE(RTCPeerConnection) {
   visitor->trace(m_dispatchScheduledEventRunner);
   visitor->trace(m_scheduledEvents);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

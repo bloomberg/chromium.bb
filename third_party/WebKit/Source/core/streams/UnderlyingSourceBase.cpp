@@ -66,7 +66,7 @@ void UnderlyingSourceBase::contextDestroyed() {
 }
 
 DEFINE_TRACE(UnderlyingSourceBase) {
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
   visitor->trace(m_controller);
 }
 

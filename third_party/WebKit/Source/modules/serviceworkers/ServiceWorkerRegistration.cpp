@@ -127,7 +127,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
     ExecutionContext* executionContext,
     std::unique_ptr<WebServiceWorkerRegistration::Handle> handle)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(executionContext),
+      SuspendableObject(executionContext),
       m_handle(std::move(handle)),
       m_stopped(false) {
   ASSERT(m_handle);
@@ -153,7 +153,7 @@ DEFINE_TRACE(ServiceWorkerRegistration) {
   visitor->trace(m_active);
   visitor->trace(m_navigationPreload);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
   Supplementable<ServiceWorkerRegistration>::trace(visitor);
 }
 

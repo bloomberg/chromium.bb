@@ -20,7 +20,7 @@ IntersectionObserverController* IntersectionObserverController::create(
 
 IntersectionObserverController::IntersectionObserverController(
     Document* document)
-    : ActiveDOMObject(document),
+    : SuspendableObject(document),
       m_weakPtrFactory(this),
       m_callbackFiredWhileSuspended(false) {}
 
@@ -95,7 +95,7 @@ void IntersectionObserverController::removeTrackedObserversForRoot(
 DEFINE_TRACE(IntersectionObserverController) {
   visitor->trace(m_trackedIntersectionObservers);
   visitor->trace(m_pendingIntersectionObservers);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

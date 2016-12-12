@@ -37,7 +37,7 @@ PermissionStatus::PermissionStatus(ExecutionContext* executionContext,
                                    MojoPermissionStatus status,
                                    MojoPermissionDescriptor descriptor)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(executionContext),
+      SuspendableObject(executionContext),
       m_status(status),
       m_descriptor(std::move(descriptor)) {}
 
@@ -50,7 +50,7 @@ const AtomicString& PermissionStatus::interfaceName() const {
 }
 
 ExecutionContext* PermissionStatus::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void PermissionStatus::permissionChanged(MojoPermissionStatus status) {
@@ -113,7 +113,7 @@ String PermissionStatus::state() const {
 
 DEFINE_TRACE(PermissionStatus) {
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

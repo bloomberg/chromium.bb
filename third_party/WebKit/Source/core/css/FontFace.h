@@ -37,8 +37,8 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/SuspendableObject.h"
 #include "platform/fonts/FontTraits.h"
 #include "wtf/text/WTFString.h"
 
@@ -58,7 +58,7 @@ class StyleRuleFontFace;
 class FontFace : public GarbageCollectedFinalized<FontFace>,
                  public ScriptWrappable,
                  public ActiveScriptWrappable,
-                 public ActiveDOMObject {
+                 public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FontFace);
   WTF_MAKE_NONCOPYABLE(FontFace);

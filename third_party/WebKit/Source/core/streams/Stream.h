@@ -32,7 +32,7 @@
 #define Stream_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
@@ -42,7 +42,7 @@ namespace blink {
 class ExecutionContext;
 
 class CORE_EXPORT Stream final : public GarbageCollectedFinalized<Stream>,
-                                 public ActiveDOMObject {
+                                 public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(Stream);
 
  public:
@@ -76,7 +76,7 @@ class CORE_EXPORT Stream final : public GarbageCollectedFinalized<Stream>,
   void neuter() { m_isNeutered = true; }
   bool isNeutered() const { return m_isNeutered; }
 
-  // Implementation of ActiveDOMObject.
+  // Implementation of SuspendableObject.
   //
   // FIXME: Implement suspend() and resume() when necessary.
   void suspend() override;

@@ -93,38 +93,38 @@ intptr_t RetainedDOMInfo::GetEquivalenceClass() {
   return reinterpret_cast<intptr_t>(m_root.get());
 }
 
-ActiveDOMObjectsInfo::ActiveDOMObjectsInfo(
+SuspendableObjectsInfo::SuspendableObjectsInfo(
     int numberOfObjectsWithPendingActivity)
     : m_numberOfObjectsWithPendingActivity(numberOfObjectsWithPendingActivity) {
 }
 
-ActiveDOMObjectsInfo::~ActiveDOMObjectsInfo() {}
+SuspendableObjectsInfo::~SuspendableObjectsInfo() {}
 
-void ActiveDOMObjectsInfo::Dispose() {
+void SuspendableObjectsInfo::Dispose() {
   delete this;
 }
 
-bool ActiveDOMObjectsInfo::IsEquivalent(v8::RetainedObjectInfo* other) {
+bool SuspendableObjectsInfo::IsEquivalent(v8::RetainedObjectInfo* other) {
   return this == other;
 }
 
-intptr_t ActiveDOMObjectsInfo::GetHash() {
+intptr_t SuspendableObjectsInfo::GetHash() {
   return PtrHash<void>::hash(this);
 }
 
-const char* ActiveDOMObjectsInfo::GetGroupLabel() {
+const char* SuspendableObjectsInfo::GetGroupLabel() {
   return "(Pending activities group)";
 }
 
-const char* ActiveDOMObjectsInfo::GetLabel() {
+const char* SuspendableObjectsInfo::GetLabel() {
   return "Pending activities";
 }
 
-intptr_t ActiveDOMObjectsInfo::GetElementCount() {
+intptr_t SuspendableObjectsInfo::GetElementCount() {
   return m_numberOfObjectsWithPendingActivity;
 }
 
-intptr_t ActiveDOMObjectsInfo::GetEquivalenceClass() {
+intptr_t SuspendableObjectsInfo::GetEquivalenceClass() {
   return reinterpret_cast<intptr_t>(this);
 }
 

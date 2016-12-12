@@ -361,7 +361,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
                                    Document& document)
     : HTMLElement(tagName, document),
       ActiveScriptWrappable(this),
-      ActiveDOMObject(&document),
+      SuspendableObject(&document),
       m_loadTimer(this, &HTMLMediaElement::loadTimerFired),
       m_progressEventTimer(this, &HTMLMediaElement::progressEventTimerFired),
       m_playbackProgressTimer(this,
@@ -505,7 +505,7 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument) {
   // load event from within the destructor.
   oldDocument.decrementLoadEventDelayCount();
 
-  ActiveDOMObject::didMoveToNewExecutionContext(&document());
+  SuspendableObject::didMoveToNewExecutionContext(&document());
   HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
@@ -3769,7 +3769,7 @@ DEFINE_TRACE(HTMLMediaElement) {
       this);
   Supplementable<HTMLMediaElement>::trace(visitor);
   HTMLElement::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(HTMLMediaElement) {

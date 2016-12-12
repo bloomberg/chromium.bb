@@ -7,8 +7,8 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/MessagePort.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/workers/AbstractWorker.h"
@@ -37,7 +37,7 @@ class CORE_EXPORT InProcessWorkerBase : public AbstractWorker,
   static bool canTransferArrayBuffersAndImageBitmaps() { return true; }
   void terminate();
 
-  // ActiveDOMObject
+  // SuspendableObject
   void contextDestroyed() override;
 
   // ScriptWrappable

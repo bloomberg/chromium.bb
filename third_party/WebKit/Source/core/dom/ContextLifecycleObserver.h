@@ -40,7 +40,7 @@ class CORE_EXPORT ContextLifecycleObserver
 
   enum Type {
     GenericType,
-    ActiveDOMObjectType,
+    SuspendableObjectType,
   };
 
   Type observerType() const { return m_observerType; }

@@ -30,8 +30,8 @@
 
 #include "bindings/core/v8/ActiveDOMCallback.h"
 
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace blink {

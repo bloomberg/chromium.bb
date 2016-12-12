@@ -117,7 +117,7 @@ SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> webSourceBuffer,
                            MediaSource* source,
                            GenericEventQueue* asyncEventQueue)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(source->getExecutionContext()),
+      SuspendableObject(source->getExecutionContext()),
       m_webSourceBuffer(std::move(webSourceBuffer)),
       m_source(source),
       m_trackDefaults(TrackDefaultList::create()),
@@ -1047,7 +1047,7 @@ void SourceBuffer::contextDestroyed() {
 }
 
 ExecutionContext* SourceBuffer::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 const AtomicString& SourceBuffer::interfaceName() const {
@@ -1309,7 +1309,7 @@ DEFINE_TRACE(SourceBuffer) {
   visitor->trace(m_audioTracks);
   visitor->trace(m_videoTracks);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

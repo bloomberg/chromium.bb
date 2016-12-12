@@ -29,8 +29,8 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMArrayPiece.h"
+#include "core/dom/SuspendableObject.h"
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebEncryptedMediaTypes.h"
@@ -53,7 +53,7 @@ class WebContentDecryptionModule;
 // The WebContentDecryptionModule has the same lifetime as this object.
 class MediaKeys : public GarbageCollectedFinalized<MediaKeys>,
                   public ActiveScriptWrappable,
-                  public ActiveDOMObject,
+                  public SuspendableObject,
                   public ScriptWrappable {
   USING_GARBAGE_COLLECTED_MIXIN(MediaKeys);
   DEFINE_WRAPPERTYPEINFO();
@@ -92,7 +92,7 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>,
 
   DECLARE_VIRTUAL_TRACE();
 
-  // ActiveDOMObject implementation.
+  // SuspendableObject implementation.
   // FIXME: This class could derive from ContextLifecycleObserver
   // again (http://crbug.com/483722).
   void contextDestroyed() override;

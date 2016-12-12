@@ -227,10 +227,11 @@ class MajorGCWrapperVisitor : public v8::PersistentHandleVisitor {
         alreadyAdded = root;
       }
     }
-    if (m_liveRootGroupIdSet)
+    if (m_liveRootGroupIdSet) {
       profiler->SetRetainedObjectInfo(
           liveRootId(),
-          new ActiveDOMObjectsInfo(m_domObjectsWithPendingActivity));
+          new SuspendableObjectsInfo(m_domObjectsWithPendingActivity));
+    }
   }
 
  private:

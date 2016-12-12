@@ -30,7 +30,7 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/CoreExport.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "public/platform/WebMessagePortChannel.h"
@@ -53,7 +53,7 @@ typedef Vector<WebMessagePortChannelUniquePtr, 1> MessagePortChannelArray;
 
 class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
                                 public ActiveScriptWrappable,
-                                public ActiveDOMObject,
+                                public SuspendableObject,
                                 public WebMessagePortChannelClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
@@ -97,14 +97,14 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override {
-    return ActiveDOMObject::getExecutionContext();
+    return SuspendableObject::getExecutionContext();
   }
   MessagePort* toMessagePort() override { return this; }
 
   // ScriptWrappable implementation.
   bool hasPendingActivity() const final;
 
-  // ActiveDOMObject implementation.
+  // SuspendableObject implementation.
   void contextDestroyed() override { close(); }
 
   void setOnmessage(EventListener* listener) {

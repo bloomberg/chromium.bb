@@ -283,7 +283,7 @@ void LocalDOMWindow::clearDocument() {
 
   ASSERT(!m_document->isActive());
 
-  // FIXME: This should be part of ActiveDOMObject shutdown
+  // FIXME: This should be part of SuspendableObject shutdown
   clearEventQueue();
 
   m_unusedPreloadsTimer.stop();

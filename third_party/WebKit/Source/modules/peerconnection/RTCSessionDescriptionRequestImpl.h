@@ -31,7 +31,7 @@
 #ifndef RTCSessionDescriptionRequestImpl_h
 #define RTCSessionDescriptionRequestImpl_h
 
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "platform/heap/Handle.h"
 #include "platform/peerconnection/RTCSessionDescriptionRequest.h"
 #include "wtf/PassRefPtr.h"
@@ -45,7 +45,7 @@ class WebRTCSessionDescription;
 
 class RTCSessionDescriptionRequestImpl final
     : public RTCSessionDescriptionRequest,
-      public ActiveDOMObject {
+      public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
 
  public:
@@ -59,7 +59,7 @@ class RTCSessionDescriptionRequestImpl final
   void requestSucceeded(const WebRTCSessionDescription&) override;
   void requestFailed(const String& error) override;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();

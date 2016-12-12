@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "media/midi/midi_service.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessInitializer.h"
@@ -53,7 +53,7 @@ class MIDIOutputMap;
 
 class MIDIAccess final : public EventTargetWithInlineData,
                          public ActiveScriptWrappable,
-                         public ActiveDOMObject,
+                         public SuspendableObject,
                          public MIDIAccessorClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
@@ -85,13 +85,13 @@ class MIDIAccess final : public EventTargetWithInlineData,
     return EventTargetNames::MIDIAccess;
   }
   ExecutionContext* getExecutionContext() const override {
-    return ActiveDOMObject::getExecutionContext();
+    return SuspendableObject::getExecutionContext();
   }
 
   // ScriptWrappable
   bool hasPendingActivity() const final;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void contextDestroyed() override;
 
   // MIDIAccessorClient

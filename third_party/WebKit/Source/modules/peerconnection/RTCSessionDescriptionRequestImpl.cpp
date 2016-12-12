@@ -58,7 +58,7 @@ RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(
     RTCPeerConnection* requester,
     RTCSessionDescriptionCallback* successCallback,
     RTCPeerConnectionErrorCallback* errorCallback)
-    : ActiveDOMObject(context),
+    : SuspendableObject(context),
       m_successCallback(successCallback),
       m_errorCallback(errorCallback),
       m_requester(requester) {
@@ -101,7 +101,7 @@ DEFINE_TRACE(RTCSessionDescriptionRequestImpl) {
   visitor->trace(m_errorCallback);
   visitor->trace(m_requester);
   RTCSessionDescriptionRequest::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

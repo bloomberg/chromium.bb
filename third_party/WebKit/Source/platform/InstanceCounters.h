@@ -42,7 +42,7 @@ class InstanceCounters {
 
  public:
   enum CounterType {
-    ActiveDOMObjectCounter,
+    SuspendableObjectCounter,
     AudioHandlerCounter,
     DocumentCounter,
     FrameCounter,

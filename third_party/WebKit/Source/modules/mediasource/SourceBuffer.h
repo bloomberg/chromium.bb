@@ -32,7 +32,7 @@
 #define SourceBuffer_h
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediasource/TrackDefaultList.h"
 #include "platform/AsyncMethodRunner.h"
@@ -55,7 +55,7 @@ class WebSourceBuffer;
 
 class SourceBuffer final : public EventTargetWithInlineData,
                            public ActiveScriptWrappable,
-                           public ActiveDOMObject,
+                           public SuspendableObject,
                            public WebSourceBufferClient {
   USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
   DEFINE_WRAPPERTYPEINFO();
@@ -102,7 +102,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   // ScriptWrappable
   bool hasPendingActivity() const final;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void suspend() override;
   void resume() override;
   void contextDestroyed() override;

@@ -6,7 +6,7 @@
 #define MediaRecorder_h
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/events/EventTarget.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
@@ -26,7 +26,7 @@ class ExceptionState;
 class MODULES_EXPORT MediaRecorder final : public EventTargetWithInlineData,
                                            public WebMediaRecorderHandlerClient,
                                            public ActiveScriptWrappable,
-                                           public ActiveDOMObject {
+                                           public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -73,7 +73,7 @@ class MODULES_EXPORT MediaRecorder final : public EventTargetWithInlineData,
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void suspend() override;
   void resume() override;
   void contextDestroyed() override;

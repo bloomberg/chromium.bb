@@ -31,8 +31,8 @@
 #ifndef RTCVoidRequestImpl_h
 #define RTCVoidRequestImpl_h
 
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/SuspendableObject.h"
 #include "platform/heap/Handle.h"
 #include "platform/peerconnection/RTCVoidRequest.h"
 
@@ -42,7 +42,8 @@ class RTCPeerConnection;
 class RTCPeerConnectionErrorCallback;
 class VoidCallback;
 
-class RTCVoidRequestImpl final : public RTCVoidRequest, public ActiveDOMObject {
+class RTCVoidRequestImpl final : public RTCVoidRequest,
+                                 public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(RTCVoidRequestImpl);
 
  public:
@@ -56,7 +57,7 @@ class RTCVoidRequestImpl final : public RTCVoidRequest, public ActiveDOMObject {
   void requestSucceeded() override;
   void requestFailed(const String& error) override;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();

@@ -11,7 +11,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
 
@@ -23,7 +23,7 @@ class CORE_EXPORT UnderlyingSourceBase
     : public GarbageCollectedFinalized<UnderlyingSourceBase>,
       public ScriptWrappable,
       public ActiveScriptWrappable,
-      public ActiveDOMObject {
+      public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
 
@@ -45,13 +45,13 @@ class CORE_EXPORT UnderlyingSourceBase
   // ScriptWrappable
   bool hasPendingActivity() const;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void contextDestroyed() override;
 
  protected:
   explicit UnderlyingSourceBase(ScriptState* scriptState)
       : ActiveScriptWrappable(this),
-        ActiveDOMObject(scriptState->getExecutionContext()) {
+        SuspendableObject(scriptState->getExecutionContext()) {
     this->suspendIfNeeded();
   }
 

@@ -193,7 +193,7 @@ FileReader* FileReader::create(ExecutionContext* context) {
 
 FileReader::FileReader(ExecutionContext* context)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_state(kEmpty),
       m_loadingState(LoadingStateNone),
       m_stillFiringEvents(false),
@@ -472,7 +472,7 @@ void FileReader::fireEvent(const AtomicString& type) {
 DEFINE_TRACE(FileReader) {
   visitor->trace(m_error);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

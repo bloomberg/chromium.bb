@@ -31,8 +31,8 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/track/TextTrack.h"
@@ -78,7 +78,7 @@ class WebRemotePlaybackClient;
 class CORE_EXPORT HTMLMediaElement : public HTMLElement,
                                      public Supplementable<HTMLMediaElement>,
                                      public ActiveScriptWrappable,
-                                     public ActiveDOMObject,
+                                     public SuspendableObject,
                                      private WebMediaPlayerClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
@@ -242,7 +242,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   void disableAutomaticTextTrackSelection();
 
   // EventTarget function.
-  // Both Node (via HTMLElement) and ActiveDOMObject define this method, which
+  // Both Node (via HTMLElement) and SuspendableObject define this method, which
   // causes an ambiguity error at compile time. This class's constructor
   // ensures that both implementations return document, so return the result
   // of one of them here.
@@ -357,7 +357,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
 
   bool isInteractiveContent() const final;
 
-  // ActiveDOMObject functions.
+  // SuspendableObject functions.
   void contextDestroyed() final;
 
   virtual void updateDisplayState() {}

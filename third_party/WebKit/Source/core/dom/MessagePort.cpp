@@ -52,7 +52,7 @@ MessagePort* MessagePort::create(ExecutionContext& executionContext) {
 
 MessagePort::MessagePort(ExecutionContext& executionContext)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(&executionContext),
+      SuspendableObject(&executionContext),
       m_started(false),
       m_closed(false) {}
 
@@ -291,7 +291,7 @@ MessagePortArray* MessagePort::entanglePorts(
 }
 
 DEFINE_TRACE(MessagePort) {
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
   EventTargetWithInlineData::trace(visitor);
 }
 

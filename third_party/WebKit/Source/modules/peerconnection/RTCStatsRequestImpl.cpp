@@ -44,7 +44,7 @@ RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context,
                                          RTCPeerConnection* requester,
                                          RTCStatsCallback* callback,
                                          MediaStreamTrack* selector)
-    : ActiveDOMObject(context),
+    : SuspendableObject(context),
       m_successCallback(callback),
       m_component(selector ? selector->component() : 0),
       m_requester(requester) {
@@ -87,7 +87,7 @@ DEFINE_TRACE(RTCStatsRequestImpl) {
   visitor->trace(m_component);
   visitor->trace(m_requester);
   RTCStatsRequest::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

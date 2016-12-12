@@ -148,7 +148,7 @@ const AtomicString& SpeechRecognition::interfaceName() const {
 }
 
 ExecutionContext* SpeechRecognition::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void SpeechRecognition::contextDestroyed() {
@@ -163,7 +163,7 @@ bool SpeechRecognition::hasPendingActivity() const {
 
 SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_grammars(SpeechGrammarList::create()),  // FIXME: The spec is not clear
                                                 // on the default value for the
                                                 // grammars attribute.
@@ -186,7 +186,7 @@ DEFINE_TRACE(SpeechRecognition) {
   visitor->trace(m_controller);
   visitor->trace(m_finalResults);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

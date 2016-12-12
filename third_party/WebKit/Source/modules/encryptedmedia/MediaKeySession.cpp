@@ -365,7 +365,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState,
                                  MediaKeys* mediaKeys,
                                  WebEncryptedMediaSessionType sessionType)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(scriptState->getExecutionContext()),
+      SuspendableObject(scriptState->getExecutionContext()),
       m_asyncEventQueue(GenericEventQueue::create(this)),
       m_mediaKeys(mediaKeys),
       m_sessionType(sessionType),
@@ -1014,7 +1014,7 @@ const AtomicString& MediaKeySession::interfaceName() const {
 }
 
 ExecutionContext* MediaKeySession::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 bool MediaKeySession::hasPendingActivity() const {
@@ -1048,7 +1048,7 @@ DEFINE_TRACE(MediaKeySession) {
   visitor->trace(m_keyStatusesMap);
   visitor->trace(m_closedPromise);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

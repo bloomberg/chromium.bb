@@ -38,8 +38,8 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffectReadOnly.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/events/EventTarget.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
@@ -57,7 +57,7 @@ class TreeScope;
 
 class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                                     public ActiveScriptWrappable,
-                                    public ActiveDOMObject,
+                                    public SuspendableObject,
                                     public CompositorAnimationDelegate,
                                     public CompositorAnimationPlayerClient {
   DEFINE_WRAPPERTYPEINFO();

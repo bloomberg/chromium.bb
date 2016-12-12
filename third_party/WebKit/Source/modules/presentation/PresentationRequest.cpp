@@ -87,7 +87,7 @@ const AtomicString& PresentationRequest::interfaceName() const {
 }
 
 ExecutionContext* PresentationRequest::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void PresentationRequest::addedEventListener(
@@ -205,13 +205,13 @@ const KURL& PresentationRequest::url() const {
 
 DEFINE_TRACE(PresentationRequest) {
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 PresentationRequest::PresentationRequest(ExecutionContext* executionContext,
                                          const KURL& url)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(executionContext),
+      SuspendableObject(executionContext),
       m_url(url) {}
 
 }  // namespace blink

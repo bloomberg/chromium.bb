@@ -69,7 +69,7 @@ class IdleRequestCallbackWrapper
 
 ScriptedIdleTaskController::ScriptedIdleTaskController(
     ExecutionContext* context)
-    : ActiveDOMObject(context),
+    : SuspendableObject(context),
       m_scheduler(Platform::current()->currentThread()->scheduler()),
       m_nextCallbackId(0),
       m_suspended(false) {
@@ -80,7 +80,7 @@ ScriptedIdleTaskController::~ScriptedIdleTaskController() {}
 
 DEFINE_TRACE(ScriptedIdleTaskController) {
   visitor->trace(m_callbacks);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 int ScriptedIdleTaskController::nextCallbackId() {

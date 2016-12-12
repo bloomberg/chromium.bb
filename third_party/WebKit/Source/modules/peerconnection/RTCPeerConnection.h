@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "modules/mediastream/MediaStream.h"
@@ -65,7 +65,7 @@ struct WebRTCConfiguration;
 class RTCPeerConnection final : public EventTargetWithInlineData,
                                 public WebRTCPeerConnectionHandlerClient,
                                 public ActiveScriptWrappable,
-                                public ActiveDOMObject {
+                                public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCPeerConnection);
   USING_PRE_FINALIZER(RTCPeerConnection, dispose);
@@ -186,7 +186,7 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void suspend() override;
   void resume() override;
   void contextDestroyed() override;

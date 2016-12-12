@@ -22,7 +22,7 @@ BatteryManager::~BatteryManager() {}
 
 BatteryManager::BatteryManager(ExecutionContext* context)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       PlatformEventController(toDocument(context)->page()) {}
 
 ScriptPromise BatteryManager::startRequest(ScriptState* scriptState) {
@@ -123,7 +123,7 @@ DEFINE_TRACE(BatteryManager) {
   visitor->trace(m_batteryProperty);
   PlatformEventController::trace(visitor);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

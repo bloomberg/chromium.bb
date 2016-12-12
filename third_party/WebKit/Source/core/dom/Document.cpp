@@ -2418,7 +2418,7 @@ void Document::shutdown() {
         ->sharedWorkerRepositoryClient()
         ->documentDetached(this);
 
-  // FIXME: consider using ActiveDOMObject.
+  // FIXME: consider using SuspendableObject.
   if (m_scriptedAnimationController)
     m_scriptedAnimationController->clearDocumentPointer();
   m_scriptedAnimationController.clear();

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
@@ -38,44 +38,45 @@
 
 namespace blink {
 
-class MockActiveDOMObject final
-    : public GarbageCollectedFinalized<MockActiveDOMObject>,
-      public ActiveDOMObject {
-  USING_GARBAGE_COLLECTED_MIXIN(MockActiveDOMObject);
+class MockSuspendableObject final
+    : public GarbageCollectedFinalized<MockSuspendableObject>,
+      public SuspendableObject {
+  USING_GARBAGE_COLLECTED_MIXIN(MockSuspendableObject);
 
  public:
-  explicit MockActiveDOMObject(ExecutionContext* context)
-      : ActiveDOMObject(context) {}
+  explicit MockSuspendableObject(ExecutionContext* context)
+      : SuspendableObject(context) {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { ActiveDOMObject::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { SuspendableObject::trace(visitor); }
 
   MOCK_METHOD0(suspend, void());
   MOCK_METHOD0(resume, void());
   MOCK_METHOD0(contextDestroyed, void());
 };
 
-class ActiveDOMObjectTest : public ::testing::Test {
+class SuspendableObjectTest : public ::testing::Test {
  protected:
-  ActiveDOMObjectTest();
+  SuspendableObjectTest();
 
   Document& srcDocument() const { return m_srcPageHolder->document(); }
   Document& destDocument() const { return m_destPageHolder->document(); }
-  MockActiveDOMObject& activeDOMObject() { return *m_activeDOMObject; }
+  MockSuspendableObject& activeDOMObject() { return *m_activeDOMObject; }
 
  private:
   std::unique_ptr<DummyPageHolder> m_srcPageHolder;
   std::unique_ptr<DummyPageHolder> m_destPageHolder;
-  Persistent<MockActiveDOMObject> m_activeDOMObject;
+  Persistent<MockSuspendableObject> m_activeDOMObject;
 };
 
-ActiveDOMObjectTest::ActiveDOMObjectTest()
+SuspendableObjectTest::SuspendableObjectTest()
     : m_srcPageHolder(DummyPageHolder::create(IntSize(800, 600))),
       m_destPageHolder(DummyPageHolder::create(IntSize(800, 600))),
-      m_activeDOMObject(new MockActiveDOMObject(&m_srcPageHolder->document())) {
+      m_activeDOMObject(
+          new MockSuspendableObject(&m_srcPageHolder->document())) {
   m_activeDOMObject->suspendIfNeeded();
 }
 
-TEST_F(ActiveDOMObjectTest, NewContextObserved) {
+TEST_F(SuspendableObjectTest, NewContextObserved) {
   unsigned initialSrcCount = srcDocument().activeDOMObjectCount();
   unsigned initialDestCount = destDocument().activeDOMObjectCount();
 
@@ -86,19 +87,19 @@ TEST_F(ActiveDOMObjectTest, NewContextObserved) {
   EXPECT_EQ(initialDestCount + 1, destDocument().activeDOMObjectCount());
 }
 
-TEST_F(ActiveDOMObjectTest, MoveToActiveDocument) {
+TEST_F(SuspendableObjectTest, MoveToActiveDocument) {
   EXPECT_CALL(activeDOMObject(), resume());
   activeDOMObject().didMoveToNewExecutionContext(&destDocument());
 }
 
-TEST_F(ActiveDOMObjectTest, MoveToSuspendedDocument) {
+TEST_F(SuspendableObjectTest, MoveToSuspendedDocument) {
   destDocument().suspendScheduledTasks();
 
   EXPECT_CALL(activeDOMObject(), suspend());
   activeDOMObject().didMoveToNewExecutionContext(&destDocument());
 }
 
-TEST_F(ActiveDOMObjectTest, MoveToStoppedDocument) {
+TEST_F(SuspendableObjectTest, MoveToStoppedDocument) {
   destDocument().shutdown();
 
   EXPECT_CALL(activeDOMObject(), contextDestroyed());

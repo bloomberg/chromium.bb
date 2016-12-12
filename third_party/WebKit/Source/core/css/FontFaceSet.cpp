@@ -113,7 +113,7 @@ DEFINE_TRACE(LoadFontPromiseResolver) {
 }
 
 FontFaceSet::FontFaceSet(Document& document)
-    : ActiveDOMObject(&document),
+    : SuspendableObject(&document),
       m_shouldFireLoadingEvent(false),
       m_isLoading(false),
       m_ready(
@@ -146,7 +146,7 @@ const AtomicString& FontFaceSet::interfaceName() const {
 }
 
 ExecutionContext* FontFaceSet::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 AtomicString FontFaceSet::status() const {
@@ -561,7 +561,7 @@ DEFINE_TRACE(FontFaceSet) {
   visitor->trace(m_asyncRunner);
   EventTargetWithInlineData::trace(visitor);
   Supplement<Document>::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
   FontFace::LoadFontCallback::trace(visitor);
 }
 

@@ -22,7 +22,7 @@ namespace blink {
 
 class BodyStreamBuffer::LoaderClient final
     : public GarbageCollectedFinalized<LoaderClient>,
-      public ActiveDOMObject,
+      public SuspendableObject,
       public FetchDataLoader::Client {
   WTF_MAKE_NONCOPYABLE(LoaderClient);
   USING_GARBAGE_COLLECTED_MIXIN(LoaderClient);
@@ -31,7 +31,9 @@ class BodyStreamBuffer::LoaderClient final
   LoaderClient(ExecutionContext* executionContext,
                BodyStreamBuffer* buffer,
                FetchDataLoader::Client* client)
-      : ActiveDOMObject(executionContext), m_buffer(buffer), m_client(client) {
+      : SuspendableObject(executionContext),
+        m_buffer(buffer),
+        m_client(client) {
     suspendIfNeeded();
   }
 
@@ -64,7 +66,7 @@ class BodyStreamBuffer::LoaderClient final
   DEFINE_INLINE_TRACE() {
     visitor->trace(m_buffer);
     visitor->trace(m_client);
-    ActiveDOMObject::trace(visitor);
+    SuspendableObject::trace(visitor);
     FetchDataLoader::Client::trace(visitor);
   }
 

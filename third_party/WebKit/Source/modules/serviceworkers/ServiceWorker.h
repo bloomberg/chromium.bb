@@ -85,7 +85,7 @@ class MODULES_EXPORT ServiceWorker final : public AbstractWorker,
                                     std::unique_ptr<WebServiceWorker::Handle>);
   ServiceWorker(ExecutionContext*, std::unique_ptr<WebServiceWorker::Handle>);
 
-  // ActiveDOMObject overrides.
+  // SuspendableObject overrides.
   void contextDestroyed() override;
 
   // A handle to the service worker representation in the embedder.

@@ -66,7 +66,7 @@ inline EventSource::EventSource(ExecutionContext* context,
                                 const KURL& url,
                                 const EventSourceInit& eventSourceInit)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_url(url),
       m_currentURL(url),
       m_withCredentials(eventSourceInit.withCredentials()),
@@ -223,7 +223,7 @@ void EventSource::close() {
     m_parser->stop();
 
   // Stop trying to reconnect if EventSource was explicitly closed or if
-  // ActiveDOMObject::stop() was called.
+  // SuspendableObject::stop() was called.
   if (m_connectTimer.isActive()) {
     m_connectTimer.stop();
   }
@@ -241,7 +241,7 @@ const AtomicString& EventSource::interfaceName() const {
 }
 
 ExecutionContext* EventSource::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void EventSource::didReceiveResponse(
@@ -380,7 +380,7 @@ DEFINE_TRACE(EventSource) {
   visitor->trace(m_parser);
   visitor->trace(m_loader);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
   EventSourceParser::Client::trace(visitor);
 }
 

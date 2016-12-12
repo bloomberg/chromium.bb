@@ -43,7 +43,7 @@ PublicURLManager* PublicURLManager::create(ExecutionContext* context) {
 }
 
 PublicURLManager::PublicURLManager(ExecutionContext* context)
-    : ActiveDOMObject(context), m_isStopped(false) {}
+    : SuspendableObject(context), m_isStopped(false) {}
 
 String PublicURLManager::registerURL(ExecutionContext* context,
                                      URLRegistrable* registrable,
@@ -107,7 +107,7 @@ void PublicURLManager::contextDestroyed() {
 }
 
 DEFINE_TRACE(PublicURLManager) {
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

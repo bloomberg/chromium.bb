@@ -6,7 +6,7 @@
 #define PresentationAvailability_h
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/events/EventTarget.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "modules/ModulesExport.h"
@@ -26,7 +26,7 @@ class ScriptPromiseResolver;
 class MODULES_EXPORT PresentationAvailability final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable,
-      public ActiveDOMObject,
+      public SuspendableObject,
       public PageVisibilityObserver,
       public WebPresentationAvailabilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
@@ -49,7 +49,7 @@ class MODULES_EXPORT PresentationAvailability final
   // ScriptWrappable implementation.
   bool hasPendingActivity() const final;
 
-  // ActiveDOMObject implementation.
+  // SuspendableObject implementation.
   void suspend() override;
   void resume() override;
   void contextDestroyed() override;
@@ -69,7 +69,7 @@ class MODULES_EXPORT PresentationAvailability final
                           RegisteredEventListener&) override;
 
  private:
-  // Current state of the ActiveDOMObject. It is Active when created. It
+  // Current state of the SuspendableObject. It is Active when created. It
   // becomes Suspended when suspend() is called and moves back to Active if
   // resume() is called. It becomes Inactive when stop() is called or at
   // destruction time.

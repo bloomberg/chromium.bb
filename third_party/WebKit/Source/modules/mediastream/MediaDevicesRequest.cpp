@@ -43,7 +43,7 @@ MediaDevicesRequest* MediaDevicesRequest::create(
 
 MediaDevicesRequest::MediaDevicesRequest(ScriptState* state,
                                          UserMediaController* controller)
-    : ActiveDOMObject(state->getExecutionContext()),
+    : SuspendableObject(state->getExecutionContext()),
       m_controller(controller),
       m_resolver(ScriptPromiseResolver::create(state)) {}
 
@@ -79,7 +79,7 @@ void MediaDevicesRequest::contextDestroyed() {
 DEFINE_TRACE(MediaDevicesRequest) {
   visitor->trace(m_controller);
   visitor->trace(m_resolver);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

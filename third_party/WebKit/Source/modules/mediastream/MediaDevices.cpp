@@ -71,7 +71,7 @@ MediaDevices* MediaDevices::create(ExecutionContext* context) {
 
 MediaDevices::MediaDevices(ExecutionContext* context)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_observing(false),
       m_stopped(false),
       m_dispatchScheduledEventRunner(AsyncMethodRunner<MediaDevices>::create(
@@ -153,7 +153,7 @@ const AtomicString& MediaDevices::interfaceName() const {
 }
 
 ExecutionContext* MediaDevices::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void MediaDevices::removeAllEventListeners() {
@@ -252,7 +252,7 @@ DEFINE_TRACE(MediaDevices) {
   visitor->trace(m_dispatchScheduledEventRunner);
   visitor->trace(m_scheduledEvents);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

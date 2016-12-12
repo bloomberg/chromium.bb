@@ -82,7 +82,7 @@ Animation::Animation(ExecutionContext* executionContext,
                      AnimationTimeline& timeline,
                      AnimationEffectReadOnly* content)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(executionContext),
+      SuspendableObject(executionContext),
       m_playState(Idle),
       m_playbackRate(1),
       m_startTime(nullValue()),
@@ -647,7 +647,7 @@ const AtomicString& Animation::interfaceName() const {
 }
 
 ExecutionContext* Animation::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 bool Animation::hasPendingActivity() const {
@@ -1127,7 +1127,7 @@ DEFINE_TRACE(Animation) {
   visitor->trace(m_finishedPromise);
   visitor->trace(m_readyPromise);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

@@ -37,7 +37,7 @@ const double kNextFireIntervalInvalid = -1.0;
 
 SuspendableTimer::SuspendableTimer(ExecutionContext* context)
     : TimerBase(TaskRunnerHelper::get(TaskType::Timer, context)),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_nextFireInterval(kNextFireIntervalInvalid),
       m_repeatInterval(0)
 #if ENABLE(ASSERT)

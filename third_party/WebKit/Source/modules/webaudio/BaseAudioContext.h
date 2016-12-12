@@ -29,8 +29,8 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMTypedArray.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/events/EventListener.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
@@ -87,7 +87,7 @@ class WaveShaperNode;
 
 class MODULES_EXPORT BaseAudioContext : public EventTargetWithInlineData,
                                         public ActiveScriptWrappable,
-                                        public ActiveDOMObject {
+                                        public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(BaseAudioContext);
   DEFINE_WRAPPERTYPEINFO();
 

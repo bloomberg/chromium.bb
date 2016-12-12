@@ -219,7 +219,7 @@ const char* DOMWebSocket::subprotocolSeperator() {
 
 DOMWebSocket::DOMWebSocket(ExecutionContext* context)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_state(kConnecting),
       m_bufferedAmount(0),
       m_consumedBufferedAmount(0),
@@ -650,7 +650,7 @@ const AtomicString& DOMWebSocket::interfaceName() const {
 }
 
 ExecutionContext* DOMWebSocket::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void DOMWebSocket::contextDestroyed() {
@@ -863,7 +863,7 @@ DEFINE_TRACE(DOMWebSocket) {
   visitor->trace(m_eventQueue);
   WebSocketChannelClient::trace(visitor);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

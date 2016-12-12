@@ -365,7 +365,7 @@ void RenderViewTest::onLeakDetectionComplete(const Result& result) {
   EXPECT_EQ(0u, result.numberOfLiveNodes);
   EXPECT_EQ(0u, result.numberOfLiveLayoutObjects);
   EXPECT_EQ(0u, result.numberOfLiveResources);
-  EXPECT_EQ(0u, result.numberOfLiveActiveDOMObjects);
+  EXPECT_EQ(0u, result.numberOfLiveSuspendableObjects);
   EXPECT_EQ(0u, result.numberOfLiveScriptPromises);
   EXPECT_EQ(0u, result.numberOfLiveFrames);
   EXPECT_EQ(0u, result.numberOfLiveV8PerContextData);

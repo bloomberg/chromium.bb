@@ -27,7 +27,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -50,7 +50,7 @@ class MODULES_EXPORT RTCDataChannel final
     : public EventTargetWithInlineData,
       NON_EXPORTED_BASE(public WebRTCDataChannelHandlerClient),
       public ActiveScriptWrappable,
-      public ActiveDOMObject {
+      public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(RTCDataChannel, dispose);
@@ -104,7 +104,7 @@ class MODULES_EXPORT RTCDataChannel final
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void suspend() override;
   void resume() override;
   void contextDestroyed() override;

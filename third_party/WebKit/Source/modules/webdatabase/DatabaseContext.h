@@ -28,7 +28,7 @@
 #ifndef DatabaseContext_h
 #define DatabaseContext_h
 
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ class ExecutionContext;
 class SecurityOrigin;
 
 class DatabaseContext final : public GarbageCollectedFinalized<DatabaseContext>,
-                              public ActiveDOMObject {
+                              public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(DatabaseContext);
 
  public:
@@ -50,7 +50,7 @@ class DatabaseContext final : public GarbageCollectedFinalized<DatabaseContext>,
   ~DatabaseContext() override;
   DECLARE_VIRTUAL_TRACE();
 
-  // For life-cycle management (inherited from ActiveDOMObject):
+  // For life-cycle management (inherited from SuspendableObject):
   void contextDestroyed() override;
 
   DatabaseContext* backend();

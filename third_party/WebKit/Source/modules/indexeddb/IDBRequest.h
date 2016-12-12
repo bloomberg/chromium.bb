@@ -32,8 +32,8 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMStringList.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "modules/EventModules.h"
@@ -58,7 +58,7 @@ class IDBValue;
 
 class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
                                   public ActiveScriptWrappable,
-                                  public ActiveDOMObject {
+                                  public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
 
@@ -125,7 +125,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   // ScriptWrappable
   bool hasPendingActivity() const final;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void contextDestroyed() override;
 
   // EventTarget

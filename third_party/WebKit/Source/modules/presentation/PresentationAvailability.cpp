@@ -48,7 +48,7 @@ PresentationAvailability::PresentationAvailability(
     const KURL& url,
     bool value)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(executionContext),
+      SuspendableObject(executionContext),
       PageVisibilityObserver(toDocument(executionContext)->page()),
       m_url(url),
       m_value(value),
@@ -63,7 +63,7 @@ const AtomicString& PresentationAvailability::interfaceName() const {
 }
 
 ExecutionContext* PresentationAvailability::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void PresentationAvailability::addedEventListener(
@@ -134,7 +134,7 @@ bool PresentationAvailability::value() const {
 DEFINE_TRACE(PresentationAvailability) {
   EventTargetWithInlineData::trace(visitor);
   PageVisibilityObserver::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

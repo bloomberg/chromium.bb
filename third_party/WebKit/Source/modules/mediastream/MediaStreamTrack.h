@@ -27,7 +27,7 @@
 #define MediaStreamTrack_h
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
@@ -46,7 +46,7 @@ class MediaTrackSettings;
 
 class MODULES_EXPORT MediaStreamTrack : public EventTargetWithInlineData,
                                         public ActiveScriptWrappable,
-                                        public ActiveDOMObject,
+                                        public SuspendableObject,
                                         public MediaStreamSource::Observer {
   USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
   DEFINE_WRAPPERTYPEINFO();
@@ -95,7 +95,7 @@ class MODULES_EXPORT MediaStreamTrack : public EventTargetWithInlineData,
   // ScriptWrappable
   bool hasPendingActivity() const final;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void contextDestroyed() override;
 
   std::unique_ptr<AudioSourceProvider> createWebAudioSource();

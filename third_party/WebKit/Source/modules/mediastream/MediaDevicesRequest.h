@@ -27,7 +27,7 @@
 #define MediaDevicesRequest_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/MediaDeviceInfo.h"
 #include "platform/heap/Handle.h"
@@ -41,7 +41,7 @@ class ScriptPromiseResolver;
 
 class MODULES_EXPORT MediaDevicesRequest final
     : public GarbageCollectedFinalized<MediaDevicesRequest>,
-      public ActiveDOMObject {
+      public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(MediaDevicesRequest);
 
  public:
@@ -54,7 +54,7 @@ class MODULES_EXPORT MediaDevicesRequest final
 
   void succeed(const MediaDeviceInfoVector&);
 
-  // ActiveDOMObject
+  // SuspendableObject
   void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();

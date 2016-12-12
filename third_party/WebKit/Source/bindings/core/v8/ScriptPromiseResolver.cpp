@@ -9,7 +9,7 @@
 namespace blink {
 
 ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
-    : ActiveDOMObject(scriptState->getExecutionContext()),
+    : SuspendableObject(scriptState->getExecutionContext()),
       m_state(Pending),
       m_scriptState(scriptState),
       m_timer(this, &ScriptPromiseResolver::onTimerFired),
@@ -86,7 +86,7 @@ void ScriptPromiseResolver::resolveOrRejectImmediately() {
 }
 
 DEFINE_TRACE(ScriptPromiseResolver) {
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

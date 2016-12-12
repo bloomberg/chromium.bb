@@ -39,7 +39,7 @@ MediaQueryList::MediaQueryList(ExecutionContext* context,
                                MediaQueryMatcher* matcher,
                                MediaQuerySet* media)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_matcher(matcher),
       m_media(media),
       m_matchesDirty(true),
@@ -121,7 +121,7 @@ DEFINE_TRACE(MediaQueryList) {
   visitor->trace(m_media);
   visitor->trace(m_listeners);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 const AtomicString& MediaQueryList::interfaceName() const {
@@ -129,7 +129,7 @@ const AtomicString& MediaQueryList::interfaceName() const {
 }
 
 ExecutionContext* MediaQueryList::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 }  // namespace blink

@@ -28,8 +28,8 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMArrayPiece.h"
+#include "core/dom/SuspendableObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/encryptedmedia/MediaKeyStatusMap.h"
 #include "platform/Timer.h"
@@ -64,7 +64,7 @@ class MediaKeys;
 class MediaKeySession final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable,
-      public ActiveDOMObject,
+      public SuspendableObject,
       private WebContentDecryptionModuleSession::Client {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
@@ -99,7 +99,7 @@ class MediaKeySession final
   // ScriptWrappable
   bool hasPendingActivity() const final;
 
-  // ActiveDOMObject
+  // SuspendableObject
   void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();

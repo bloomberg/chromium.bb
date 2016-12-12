@@ -90,7 +90,7 @@ BaseAudioContext* BaseAudioContext::create(Document& document,
 // Constructor for rendering to the audio hardware.
 BaseAudioContext::BaseAudioContext(Document* document)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(document),
+      SuspendableObject(document),
       m_destinationNode(nullptr),
       m_isCleared(false),
       m_isResolvingResumePromises(false),
@@ -123,7 +123,7 @@ BaseAudioContext::BaseAudioContext(Document* document,
                                    size_t numberOfFrames,
                                    float sampleRate)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(document),
+      SuspendableObject(document),
       m_destinationNode(nullptr),
       m_isCleared(false),
       m_isResolvingResumePromises(false),
@@ -850,7 +850,7 @@ const AtomicString& BaseAudioContext::interfaceName() const {
 }
 
 ExecutionContext* BaseAudioContext::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void BaseAudioContext::startRendering() {
@@ -877,7 +877,7 @@ DEFINE_TRACE(BaseAudioContext) {
   visitor->trace(m_periodicWaveSawtooth);
   visitor->trace(m_periodicWaveTriangle);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 SecurityOrigin* BaseAudioContext::getSecurityOrigin() const {

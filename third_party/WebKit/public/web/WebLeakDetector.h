@@ -45,7 +45,7 @@ class WebLeakDetectorClient {
     unsigned numberOfLiveNodes;
     unsigned numberOfLiveLayoutObjects;
     unsigned numberOfLiveResources;
-    unsigned numberOfLiveActiveDOMObjects;
+    unsigned numberOfLiveSuspendableObjects;
     unsigned numberOfLiveScriptPromises;
     unsigned numberOfLiveFrames;
     unsigned numberOfLiveV8PerContextData;

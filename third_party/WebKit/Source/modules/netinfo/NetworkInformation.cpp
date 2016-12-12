@@ -93,7 +93,7 @@ const AtomicString& NetworkInformation::interfaceName() const {
 }
 
 ExecutionContext* NetworkInformation::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void NetworkInformation::addedEventListener(
@@ -147,7 +147,7 @@ void NetworkInformation::stopObserving() {
 
 NetworkInformation::NetworkInformation(ExecutionContext* context)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_type(networkStateNotifier().connectionType()),
       m_downlinkMaxMbps(networkStateNotifier().maxBandwidth()),
       m_observing(false),
@@ -155,7 +155,7 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
 
 DEFINE_TRACE(NetworkInformation) {
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

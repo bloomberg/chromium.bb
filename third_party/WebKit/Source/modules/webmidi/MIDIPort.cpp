@@ -47,7 +47,7 @@ MIDIPort::MIDIPort(MIDIAccess* access,
                    const String& version,
                    PortState state)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(access->getExecutionContext()),
+      SuspendableObject(access->getExecutionContext()),
       m_id(id),
       m_manufacturer(manufacturer),
       m_name(name),
@@ -164,7 +164,7 @@ void MIDIPort::contextDestroyed() {
 DEFINE_TRACE(MIDIPort) {
   visitor->trace(m_access);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(MIDIPort) {

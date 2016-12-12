@@ -43,7 +43,7 @@
 
 namespace blink {
 
-class ActiveDOMObject;
+class SuspendableObject;
 class ConsoleMessage;
 class DOMTimerCoordinator;
 class ErrorEvent;
@@ -126,16 +126,16 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   virtual void removeURLFromMemoryCache(const KURL&);
 
-  void suspendActiveDOMObjects();
-  void resumeActiveDOMObjects();
-  void stopActiveDOMObjects();
+  void suspendSuspendableObjects();
+  void resumeSuspendableObjects();
+  void stopSuspendableObjects();
   void notifyContextDestroyed() override;
 
   void suspendScheduledTasks();
   void resumeScheduledTasks();
 
   // TODO(haraken): Remove these methods by making the customers inherit from
-  // ActiveDOMObject. ActiveDOMObject is a standard way to observe context
+  // SuspendableObject. SuspendableObject is a standard way to observe context
   // suspension/resumption.
   virtual bool tasksNeedSuspension() { return false; }
   virtual void tasksWereSuspended() {}
@@ -146,9 +146,10 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   }
   bool isContextDestroyed() const { return m_isContextDestroyed; }
 
-  // Called after the construction of an ActiveDOMObject to synchronize suspend
+  // Called after the construction of an SuspendableObject to synchronize
+  // suspend
   // state.
-  void suspendActiveDOMObjectIfNeeded(ActiveDOMObject*);
+  void suspendSuspendableObjectIfNeeded(SuspendableObject*);
 
   // Gets the next id in a circular sequence from 1 to 2^31-1.
   int circularSequentialID();

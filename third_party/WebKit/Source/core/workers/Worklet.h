@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/heap/Handle.h"
 
@@ -21,7 +21,7 @@ class WorkletScriptLoader;
 
 class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
                             public ScriptWrappable,
-                            public ActiveDOMObject {
+                            public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Worklet);
   WTF_MAKE_NONCOPYABLE(Worklet);
@@ -37,7 +37,7 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
 
   void notifyFinished(WorkletScriptLoader*);
 
-  // ActiveDOMObject
+  // SuspendableObject
   void contextDestroyed() final;
 
   DECLARE_VIRTUAL_TRACE();

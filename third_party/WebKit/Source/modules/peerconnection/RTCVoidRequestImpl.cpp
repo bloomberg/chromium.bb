@@ -54,7 +54,7 @@ RTCVoidRequestImpl::RTCVoidRequestImpl(
     RTCPeerConnection* requester,
     VoidCallback* successCallback,
     RTCPeerConnectionErrorCallback* errorCallback)
-    : ActiveDOMObject(context),
+    : SuspendableObject(context),
       m_successCallback(successCallback),
       m_errorCallback(errorCallback),
       m_requester(requester) {
@@ -99,7 +99,7 @@ DEFINE_TRACE(RTCVoidRequestImpl) {
   visitor->trace(m_errorCallback);
   visitor->trace(m_requester);
   RTCVoidRequest::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

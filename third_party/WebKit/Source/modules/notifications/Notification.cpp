@@ -135,7 +135,7 @@ Notification::Notification(ExecutionContext* context,
                            Type type,
                            const WebNotificationData& data)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_type(type),
       m_state(State::Loading),
       m_data(data) {
@@ -404,7 +404,7 @@ DEFINE_TRACE(Notification) {
   visitor->trace(m_prepareShowMethodRunner);
   visitor->trace(m_loader);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

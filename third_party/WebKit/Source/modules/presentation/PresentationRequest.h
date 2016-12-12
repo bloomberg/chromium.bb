@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
@@ -19,7 +19,7 @@ namespace blink {
 // which websites can start or join presentation connections.
 class PresentationRequest final : public EventTargetWithInlineData,
                                   public ActiveScriptWrappable,
-                                  public ActiveDOMObject {
+                                  public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationRequest);
   DEFINE_WRAPPERTYPEINFO();
 

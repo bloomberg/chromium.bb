@@ -102,7 +102,7 @@ IDBDatabase::IDBDatabase(ExecutionContext* context,
                          std::unique_ptr<WebIDBDatabase> backend,
                          IDBDatabaseCallbacks* callbacks)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_backend(std::move(backend)),
       m_databaseCallbacks(callbacks) {
   m_databaseCallbacks->connect(this);
@@ -120,7 +120,7 @@ DEFINE_TRACE(IDBDatabase) {
   visitor->trace(m_enqueuedEvents);
   visitor->trace(m_databaseCallbacks);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 int64_t IDBDatabase::nextTransactionId() {
@@ -579,7 +579,7 @@ const AtomicString& IDBDatabase::interfaceName() const {
 }
 
 ExecutionContext* IDBDatabase::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void IDBDatabase::recordApiCallsHistogram(IndexedDatabaseMethods method) {

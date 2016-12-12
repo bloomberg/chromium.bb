@@ -10,7 +10,6 @@ blink_core_sources("dom") {
   sources = [
     "AXObjectCache.cpp",
     "AXObjectCache.h",
-    "ActiveDOMObject.cpp",
     "Attr.cpp",
     "AttributeCollection.h",
     "CDATASection.cpp",
@@ -266,6 +265,7 @@ blink_core_sources("dom") {
     "StyleSheetCandidate.h",
     "StyleSheetCollection.cpp",
     "StyleSheetCollection.h",
+    "SuspendableObject.cpp",
     "SynchronousMutationNotifier.cpp",
     "SynchronousMutationNotifier.h",
     "SynchronousMutationObserver.cpp",

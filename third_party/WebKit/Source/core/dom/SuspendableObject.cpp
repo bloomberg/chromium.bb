@@ -24,42 +24,62 @@
  *
  */
 
-#ifndef ActiveDOMObject_h
-#define ActiveDOMObject_h
+#include "core/dom/SuspendableObject.h"
 
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "wtf/Assertions.h"
+#include "core/dom/ExecutionContext.h"
+#include "platform/InstanceCounters.h"
 
 namespace blink {
 
-class CORE_EXPORT ActiveDOMObject : public ContextLifecycleObserver {
- public:
-  ActiveDOMObject(ExecutionContext*);
-
-  // suspendIfNeeded() should be called exactly once after object construction
-  // to synchronize the suspend state with that in ExecutionContext.
-  void suspendIfNeeded();
+SuspendableObject::SuspendableObject(ExecutionContext* executionContext)
+    : ContextLifecycleObserver(executionContext, SuspendableObjectType)
 #if DCHECK_IS_ON()
-  bool suspendIfNeededCalled() const { return m_suspendIfNeededCalled; }
+      ,
+      m_suspendIfNeededCalled(false)
 #endif
+{
+  DCHECK(!executionContext || executionContext->isContextThread());
+  InstanceCounters::incrementCounter(
+      InstanceCounters::SuspendableObjectCounter);
+}
 
-  // These methods have an empty default implementation so that subclasses
-  // which don't need special treatment can skip implementation.
-  virtual void suspend();
-  virtual void resume();
+SuspendableObject::~SuspendableObject() {
+  InstanceCounters::decrementCounter(
+      InstanceCounters::SuspendableObjectCounter);
 
-  void didMoveToNewExecutionContext(ExecutionContext*);
-
- protected:
-  virtual ~ActiveDOMObject();
-
- private:
 #if DCHECK_IS_ON()
-  bool m_suspendIfNeededCalled;
+  DCHECK(m_suspendIfNeededCalled);
 #endif
-};
+}
+
+void SuspendableObject::suspendIfNeeded() {
+#if DCHECK_IS_ON()
+  DCHECK(!m_suspendIfNeededCalled);
+  m_suspendIfNeededCalled = true;
+#endif
+  if (ExecutionContext* context = getExecutionContext())
+    context->suspendSuspendableObjectIfNeeded(this);
+}
+
+void SuspendableObject::suspend() {}
+
+void SuspendableObject::resume() {}
+
+void SuspendableObject::didMoveToNewExecutionContext(
+    ExecutionContext* context) {
+  setContext(context);
+
+  if (context->isContextDestroyed()) {
+    contextDestroyed();
+    return;
+  }
+
+  if (context->activeDOMObjectsAreSuspended()) {
+    suspend();
+    return;
+  }
+
+  resume();
+}
 
 }  // namespace blink
-
-#endif  // ActiveDOMObject_h

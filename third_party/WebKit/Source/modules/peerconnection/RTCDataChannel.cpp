@@ -85,7 +85,7 @@ RTCDataChannel::RTCDataChannel(
     ExecutionContext* context,
     std::unique_ptr<WebRTCDataChannelHandler> handler)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_handler(std::move(handler)),
       m_readyState(ReadyStateConnecting),
       m_binaryType(BinaryTypeArrayBuffer),
@@ -296,10 +296,10 @@ const AtomicString& RTCDataChannel::interfaceName() const {
 }
 
 ExecutionContext* RTCDataChannel::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
-// ActiveDOMObject
+// SuspendableObject
 void RTCDataChannel::suspend() {
   m_scheduledEventTimer.stop();
 }
@@ -375,7 +375,7 @@ void RTCDataChannel::scheduledEventTimerFired(TimerBase*) {
 DEFINE_TRACE(RTCDataChannel) {
   visitor->trace(m_scheduledEvents);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

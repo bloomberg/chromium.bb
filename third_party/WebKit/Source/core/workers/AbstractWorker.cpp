@@ -39,7 +39,7 @@
 namespace blink {
 
 AbstractWorker::AbstractWorker(ExecutionContext* context)
-    : ActiveDOMObject(context) {}
+    : SuspendableObject(context) {}
 
 AbstractWorker::~AbstractWorker() {}
 
@@ -84,7 +84,7 @@ KURL AbstractWorker::resolveURL(const String& url,
 
 DEFINE_TRACE(AbstractWorker) {
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

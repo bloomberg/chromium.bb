@@ -161,7 +161,7 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
                              const MediaRecorderOptions& options,
                              ExceptionState& exceptionState)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_stream(stream),
       m_streamAmountOfTracks(stream->getTracks().size()),
       m_mimeType(options.hasMimeType() ? options.mimeType() : kDefaultMimeType),
@@ -304,7 +304,7 @@ const AtomicString& MediaRecorder::interfaceName() const {
 }
 
 ExecutionContext* MediaRecorder::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 void MediaRecorder::suspend() {
@@ -396,7 +396,7 @@ DEFINE_TRACE(MediaRecorder) {
   visitor->trace(m_dispatchScheduledEventRunner);
   visitor->trace(m_scheduledEvents);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 }  // namespace blink

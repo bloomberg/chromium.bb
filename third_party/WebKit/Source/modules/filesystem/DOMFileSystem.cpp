@@ -95,7 +95,7 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context,
                              const KURL& rootURL)
     : DOMFileSystemBase(context, name, type, rootURL),
       ActiveScriptWrappable(this),
-      ActiveDOMObject(context),
+      SuspendableObject(context),
       m_numberOfPendingCallbacks(0),
       m_rootEntry(DirectoryEntry::create(this, DOMFilePath::root)) {}
 
@@ -194,7 +194,7 @@ void DOMFileSystem::createFile(const FileEntry* fileEntry,
 
 DEFINE_TRACE(DOMFileSystem) {
   DOMFileSystemBase::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
   visitor->trace(m_rootEntry);
 }
 

@@ -5,8 +5,8 @@
 #ifndef IntersectionObserverController_h
 #define IntersectionObserverController_h
 
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/IntersectionObserver.h"
+#include "core/dom/SuspendableObject.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/WeakPtr.h"
@@ -20,7 +20,7 @@ class Document;
 
 class IntersectionObserverController
     : public GarbageCollectedFinalized<IntersectionObserverController>,
-      public ActiveDOMObject {
+      public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
 
  public:

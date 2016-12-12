@@ -55,16 +55,16 @@ ExecutionContext::ExecutionContext()
 
 ExecutionContext::~ExecutionContext() {}
 
-void ExecutionContext::suspendActiveDOMObjects() {
+void ExecutionContext::suspendSuspendableObjects() {
   DCHECK(!m_activeDOMObjectsAreSuspended);
-  notifySuspendingActiveDOMObjects();
+  notifySuspendingSuspendableObjects();
   m_activeDOMObjectsAreSuspended = true;
 }
 
-void ExecutionContext::resumeActiveDOMObjects() {
+void ExecutionContext::resumeSuspendableObjects() {
   DCHECK(m_activeDOMObjectsAreSuspended);
   m_activeDOMObjectsAreSuspended = false;
-  notifyResumingActiveDOMObjects();
+  notifyResumingSuspendableObjects();
 }
 
 void ExecutionContext::notifyContextDestroyed() {
@@ -73,20 +73,21 @@ void ExecutionContext::notifyContextDestroyed() {
 }
 
 void ExecutionContext::suspendScheduledTasks() {
-  suspendActiveDOMObjects();
+  suspendSuspendableObjects();
   tasksWereSuspended();
 }
 
 void ExecutionContext::resumeScheduledTasks() {
-  resumeActiveDOMObjects();
+  resumeSuspendableObjects();
   tasksWereResumed();
 }
 
-void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object) {
+void ExecutionContext::suspendSuspendableObjectIfNeeded(
+    SuspendableObject* object) {
 #if DCHECK_IS_ON()
   DCHECK(contains(object));
 #endif
-  // Ensure all ActiveDOMObjects are suspended also newly created ones.
+  // Ensure all SuspendableObjects are suspended also newly created ones.
   if (m_activeDOMObjectsAreSuspended)
     object->suspend();
 }

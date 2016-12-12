@@ -103,7 +103,7 @@ IDBTransaction::IDBTransaction(ScriptState* scriptState,
                                WebIDBTransactionMode mode,
                                IDBDatabase* db)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(scriptState->getExecutionContext()),
+      SuspendableObject(scriptState->getExecutionContext()),
       m_id(id),
       m_database(db),
       m_mode(mode),
@@ -128,7 +128,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* executionContext,
                                IDBOpenDBRequest* openDBRequest,
                                const IDBDatabaseMetadata& oldMetadata)
     : ActiveScriptWrappable(this),
-      ActiveDOMObject(executionContext),
+      SuspendableObject(executionContext),
       m_id(id),
       m_database(db),
       m_openDBRequest(openDBRequest),
@@ -156,7 +156,7 @@ DEFINE_TRACE(IDBTransaction) {
   visitor->trace(m_oldStoreMetadata);
   visitor->trace(m_deletedIndexes);
   EventTargetWithInlineData::trace(visitor);
-  ActiveDOMObject::trace(visitor);
+  SuspendableObject::trace(visitor);
 }
 
 void IDBTransaction::setError(DOMException* error) {
@@ -459,7 +459,7 @@ const AtomicString& IDBTransaction::interfaceName() const {
 }
 
 ExecutionContext* IDBTransaction::getExecutionContext() const {
-  return ActiveDOMObject::getExecutionContext();
+  return SuspendableObject::getExecutionContext();
 }
 
 DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event) {

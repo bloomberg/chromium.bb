@@ -227,7 +227,7 @@ void SuspendableScriptExecutor::executeAndDestroySelf() {
 
 void SuspendableScriptExecutor::dispose() {
   // Remove object as a ContextLifecycleObserver.
-  ActiveDOMObject::clearContext();
+  SuspendableObject::clearContext();
   m_keepAlive.clear();
   stop();
 }
