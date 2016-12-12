@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
@@ -52,8 +53,9 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     }
 
     /** Attempt to add invalid contact information and cancel the transaction. */
-    @MediumTest
-    @Feature({"Payments"})
+    // @MediumTest
+    // @Feature({"Payments"})
+    @DisabledTest
     public void testAddInvalidContactAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
