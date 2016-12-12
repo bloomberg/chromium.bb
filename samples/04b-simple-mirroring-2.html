@@ -139,7 +139,9 @@ found in the LICENSE file.
         var textureLoader = new WGLUTextureLoader(gl);
         var texture = textureLoader.loadTexture("media/textures/cube-sea.png");
         cubeSea = new VRCubeSea(gl, texture);
-        stats = new WGLUStats(gl);
+        var enablePerformanceMonitoring = WGLUUrl.getBool(
+            'enablePerformanceMonitoring', false);
+        stats = new WGLUStats(gl, enablePerformanceMonitoring);
 
         window.addEventListener("resize", onResize, false);
         onResize();

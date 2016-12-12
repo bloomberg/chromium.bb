@@ -105,7 +105,9 @@ found in the LICENSE file.
       var texture = textureLoader.loadTexture("media/textures/cube-sea.png");
       var cubeSea = new VRCubeSea(gl, texture);
 
-      var stats = new WGLUStats(gl);
+      var enablePerformanceMonitoring = WGLUUrl.getBool(
+          'enablePerformanceMonitoring', false);
+      var stats = new WGLUStats(gl, enablePerformanceMonitoring);
 
       function onResize () {
         webglCanvas.width = webglCanvas.offsetWidth * window.devicePixelRatio;

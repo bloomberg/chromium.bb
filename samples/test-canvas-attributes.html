@@ -26,6 +26,7 @@ found in the LICENSE file.
     <script src="js/third-party/wglu/wglu-program.js"></script>
     <script src="js/third-party/wglu/wglu-stats.js"></script>
     <script src="js/third-party/wglu/wglu-texture.js"></script>
+    <script src="js/third-party/wglu/wglu-url.js"></script>
 
     <script src="js/vr-cube-sea.js"></script>
     <script src="js/vr-samples-util.js"></script>
@@ -111,7 +112,9 @@ found in the LICENSE file.
         var texture = textureLoader.loadTexture("media/textures/cube-sea.png");
         var cubeSea = new VRCubeSea(gl, texture);
 
-        var stats = new WGLUStats(gl);
+        var enablePerformanceMonitoring = WGLUUrl.getBool(
+            'enablePerformanceMonitoring', false);
+        var stats = new WGLUStats(gl, enablePerformanceMonitoring);
 
         function onAnimationFrame (t) {
           stats.begin();

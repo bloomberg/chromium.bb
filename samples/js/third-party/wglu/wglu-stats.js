@@ -448,8 +448,9 @@ var WGLUStats = (function() {
 
   var now = (window.performance && performance.now) ? performance.now.bind(performance) : Date.now;
 
-  var Stats = function(gl) {
+  var Stats = function(gl, enablePerformanceMonitoring) {
     this.gl = gl;
+    this.enablePerformanceMonitoring = enablePerformanceMonitoring;
 
     this.sevenSegmentText = new SevenSegmentText(gl);
 
@@ -460,6 +461,7 @@ var WGLUStats = (function() {
     this.fpsAverage = 0;
     this.fpsSum = 0;
     this.fpsMin = 0;
+    this.fpsStep = enablePerformanceMonitoring ? 1000 : 250;
 
     this.orthoProjMatrix = new Float32Array(16);
     this.orthoViewMatrix = new Float32Array(16);
@@ -551,12 +553,16 @@ var WGLUStats = (function() {
     this.fpsSum += frameFps;
     this.frames++;
 
-    if (time > this.prevGraphUpdateTime + 250) {
+    if (time > this.prevGraphUpdateTime + this.fpsStep) {
       this.fpsAverage = Math.round(this.fpsSum / this.frames);
 
       // Draw both average and minimum FPS for this period
       // so that dropped frames are more clearly visible.
       this.updateGraph(this.fpsMin, this.fpsAverage);
+      if (this.enablePerformanceMonitoring) {
+        console.log("Average FPS: " + this.fpsAverage + " " +
+                    "Min FPS: " + this.fpsMin);
+      }
 
       this.prevGraphUpdateTime = time;
       this.frames = 0;

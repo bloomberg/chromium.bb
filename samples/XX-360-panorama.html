@@ -113,7 +113,9 @@ found in the LICENSE file.
         panorama = new VRPanorama(gl);
         panorama.setImage("media/textures/pano_4k.jpg");
 
-        stats = new WGLUStats(gl);
+        var enablePerformanceMonitoring = WGLUUrl.getBool(
+            'enablePerformanceMonitoring', false);
+        stats = new WGLUStats(gl, enablePerformanceMonitoring);
 
         // Wait until we have a WebGL context to resize and start rendering.
         window.addEventListener("resize", onResize, false);

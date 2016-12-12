@@ -117,7 +117,9 @@ found in the LICENSE file.
         var textureLoader = new WGLUTextureLoader(gl);
         var texture = textureLoader.loadTexture("media/textures/cube-sea.png");
         cubeSea = new VRCubeSea(gl, texture, heavyGpu ? 12 : 10, heavyGpu);
-        stats = new WGLUStats(gl);
+        var enablePerformanceMonitoring = WGLUUrl.getBool(
+            'enablePerformanceMonitoring', false);
+        stats = new WGLUStats(gl, enablePerformanceMonitoring);
 
         // Wait until we have a WebGL context to resize and start rendering.
         window.addEventListener("resize", onResize, false);

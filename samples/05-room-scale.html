@@ -123,7 +123,9 @@ found in the LICENSE file.
         // default space size like 2 meters by 2 meters as a placeholder.
         cubeIsland = new VRCubeIsland(gl, texture, 2, 2);
 
-        stats = new WGLUStats(gl);
+        var enablePerformanceMonitoring = WGLUUrl.getBool(
+            'enablePerformanceMonitoring', false);
+        stats = new WGLUStats(gl, enablePerformanceMonitoring);
         debugGeom = new WGLUDebugGeometry(gl);
 
         // Wait until we have a WebGL context to resize and start rendering.
