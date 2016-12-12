@@ -269,6 +269,13 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
 
 void UserSelectionScreen::SetHandler(LoginDisplayWebUIHandler* handler) {
   handler_ = handler;
+
+  if (handler_) {
+    // Forcibly refresh all of the user images, as the |handler_| instance may
+    // have been reused.
+    for (user_manager::User* user : users_)
+      handler_->OnUserImageChanged(*user);
+  }
 }
 
 void UserSelectionScreen::SetView(UserBoardView* view) {

@@ -23,6 +23,10 @@ class OobeUI;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
+//
+// This class is allocated when the signin or lock screen is actually visible to
+// the user. It is a 'per-session' class; SignInScreenHandler, in comparsion, is
+// tied to the WebContents lifetime and therefore may live beyond this class.
 class SignInScreenController : public user_manager::RemoveUserDelegate,
                                public content::NotificationObserver {
  public:

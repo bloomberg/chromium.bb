@@ -894,6 +894,21 @@ void SigninScreenHandler::ReloadGaia(bool force_reload) {
 }
 
 void SigninScreenHandler::Initialize() {
+  // Preload PIN keyboard if any of the users can authenticate via PIN.
+  if (user_manager::UserManager::IsInitialized()) {
+    for (user_manager::User* user :
+         user_manager::UserManager::Get()->GetLoggedInUsers()) {
+
+      chromeos::PinStorage* pin_storage =
+          chromeos::PinStorageFactory::GetForUser(user);
+      if (pin_storage && pin_storage->IsPinAuthenticationAvailable()) {
+        CallJS("cr.ui.Oobe.preloadPinKeyboard");
+        break;
+      }
+    }
+  }
+
+  // |delegate_| is null when we are preloading the lock screen.
   if (delegate_ && show_on_init_) {
     show_on_init_ = false;
     ShowImpl();

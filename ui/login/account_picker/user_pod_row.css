@@ -54,6 +54,10 @@ pin-keyboard {
   top: -87px !important;
 }
 
+.disable-pin-animation .pod.pin-enabled {
+  transition: none;
+}
+
 .pod .pin-container {
   height: 204px;
   position: absolute;
