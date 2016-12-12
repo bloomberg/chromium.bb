@@ -14,7 +14,7 @@
 {%- for method in interface.methods %}
   {{interface.name}}Ptr.prototype.{{method.name|stylize_method}} = function() {
     return {{interface.name}}Proxy.prototype.{{method.name|stylize_method}}
-        .apply(this.ptr.connection.remote, arguments);
+        .apply(this.ptr.getProxy(), arguments);
   };
 
   {{interface.name}}Proxy.prototype.{{method.name|stylize_method}} = function(

@@ -16,7 +16,7 @@ define("mojo/public/js/bindings", [
 
   InterfacePtrInfo.prototype.isValid = function() {
     return core.isHandle(this.handle);
-  }
+  };
 
   // ---------------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ define("mojo/public/js/bindings", [
 
   InterfaceRequest.prototype.isValid = function() {
     return core.isHandle(this.handle);
-  }
+  };
 
   // ---------------------------------------------------------------------------
 
@@ -42,50 +42,77 @@ define("mojo/public/js/bindings", [
   // |ptr| field of generated interface pointer classes.
   function InterfacePtrController(interfaceType) {
     this.version = 0;
-    this.connection = null;
 
     this.interfaceType_ = interfaceType;
+    this.connection_ = null;
+    // |connection_| is lazily initialized. |handle_| is valid between bind()
+    // and the initialization of |connection_|.
+    this.handle_ = null;
   }
 
   InterfacePtrController.prototype.bind = function(interfacePtrInfo) {
     this.reset();
+
     this.version = interfacePtrInfo.version;
-    this.connection = new connection.Connection(
-      interfacePtrInfo.handle, undefined, this.interfaceType_.proxyClass);
-  }
+    this.handle_ = interfacePtrInfo.handle;
+  };
 
   InterfacePtrController.prototype.isBound = function() {
-    return this.connection !== null;
-  }
+    return this.connection_ !== null || this.handle_ !== null;
+  };
 
   // Although users could just discard the object, reset() closes the pipe
   // immediately.
   InterfacePtrController.prototype.reset = function() {
-    if (!this.isBound())
-      return;
-
     this.version = 0;
-    this.connection.close();
-    this.connection = null;
-  }
+    if (this.connection_) {
+      this.connection_.close();
+      this.connection_ = null;
+    }
+    if (this.handle_) {
+      core.close(this.handle_);
+      this.handle_ = null;
+    }
+  };
 
   InterfacePtrController.prototype.setConnectionErrorHandler
       = function(callback) {
     if (!this.isBound())
       throw new Error("Cannot set connection error handler if not bound.");
-    this.connection.router_.setErrorHandler(callback);
-  }
+
+    this.configureProxyIfNecessary_();
+    this.connection_.router_.setErrorHandler(callback);
+  };
 
   InterfacePtrController.prototype.passInterface = function() {
-    if (!this.isBound())
-      return new InterfacePtrInfo(null, 0);
+    var result;
+    if (this.connection_) {
+      result = new InterfacePtrInfo(
+          this.connection_.router_.connector_.handle_, this.version);
+      this.connection_.router_.connector_.handle_ = null;
+    } else {
+      // This also handles the case when this object is not bound.
+      result = new InterfacePtrInfo(this.handle_, this.version);
+      this.handle_ = null;
+    }
 
-    var result = new InterfacePtrInfo(
-        this.connection.router_.connector_.handle_, this.version);
-    this.connection.router_.connector_.handle_ = null;
     this.reset();
     return result;
-  }
+  };
+
+  InterfacePtrController.prototype.getProxy = function() {
+    this.configureProxyIfNecessary_();
+    return this.connection_.remote;
+  };
+
+  InterfacePtrController.prototype.configureProxyIfNecessary_ = function() {
+    if (!this.handle_)
+      return;
+
+    this.connection_ = new connection.Connection(
+        this.handle_, undefined, this.interfaceType_.proxyClass);
+    this.handle_ = null;
+  };
 
   // TODO(yzshen): Implement the following methods.
   //   InterfacePtrController.prototype.queryVersion
@@ -119,21 +146,23 @@ define("mojo/public/js/bindings", [
 
   Binding.prototype.isBound = function() {
     return this.stub_ !== null;
-  }
+  };
 
   Binding.prototype.bind = function(request) {
     this.close();
-    this.stub_ = connection.bindHandleToStub(request.handle,
-                                             this.interfaceType_);
-    connection.StubBindings(this.stub_).delegate = this.impl_;
-  }
+    if (request.isValid()) {
+      this.stub_ = connection.bindHandleToStub(request.handle,
+                                               this.interfaceType_);
+      connection.StubBindings(this.stub_).delegate = this.impl_;
+    }
+  };
 
   Binding.prototype.close = function() {
     if (!this.isBound())
       return;
     connection.StubBindings(this.stub_).close();
     this.stub_ = null;
-  }
+  };
 
   Binding.prototype.setConnectionErrorHandler
       = function(callback) {
@@ -141,7 +170,7 @@ define("mojo/public/js/bindings", [
       throw new Error("Cannot set connection error handler if not bound.");
     connection.StubBindings(this.stub_).connection.router_.setErrorHandler(
         callback);
-  }
+  };
 
   Binding.prototype.unbind = function() {
     if (!this.isBound())
@@ -154,7 +183,7 @@ define("mojo/public/js/bindings", [
         null;
     this.close();
     return result;
-  }
+  };
 
   var exports = {};
   exports.InterfacePtrInfo = InterfacePtrInfo;
