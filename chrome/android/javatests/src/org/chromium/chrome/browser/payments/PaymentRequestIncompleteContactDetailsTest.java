@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -40,7 +41,11 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
     }
 
     /** Attempt to update the contact information with invalid data and cancel the transaction. */
-    @MediumTest
+    /*
+     * @MediumTest
+     * Bug=crbug.com/673299
+     */
+    @FlakyTest
     @Feature({"Payments"})
     public void testEditIncompleteContactAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
