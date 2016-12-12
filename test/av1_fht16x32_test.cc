@@ -137,7 +137,7 @@ const Ht16x32Param kArrayHt16x32Param_sse2[] = {
              512)
 #endif  // CONFIG_EXT_TX
 };
-INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans16x32HT,
+INSTANTIATE_TEST_CASE_P(DISABLED_SSE2, AV1Trans16x32HT,
                         ::testing::ValuesIn(kArrayHt16x32Param_sse2));
 #endif  // HAVE_SSE2
 

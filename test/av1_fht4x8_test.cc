@@ -78,6 +78,29 @@ TEST_P(AV1Trans4x8HT, InvAccuracyCheck) { RunInvAccuracyCheck(0); }
 
 using std::tr1::make_tuple;
 
+const Ht4x8Param kArrayHt4x8Param_c[] = {
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 0, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 1, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 2, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 3, AOM_BITS_8, 32),
+#if CONFIG_EXT_TX
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 4, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 5, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 6, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 7, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 8, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 9, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 10, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 11, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 12, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 13, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 14, AOM_BITS_8, 32),
+  make_tuple(&av1_fht4x8_c, &av1_iht4x8_32_add_c, 15, AOM_BITS_8, 32)
+#endif  // CONFIG_EXT_TX
+};
+INSTANTIATE_TEST_CASE_P(C, AV1Trans4x8HT,
+                        ::testing::ValuesIn(kArrayHt4x8Param_c));
+
 #if HAVE_SSE2
 const Ht4x8Param kArrayHt4x8Param_sse2[] = {
   make_tuple(&av1_fht4x8_sse2, &av1_iht4x8_32_add_sse2, 0, AOM_BITS_8, 32),
@@ -99,7 +122,7 @@ const Ht4x8Param kArrayHt4x8Param_sse2[] = {
   make_tuple(&av1_fht4x8_sse2, &av1_iht4x8_32_add_sse2, 15, AOM_BITS_8, 32)
 #endif  // CONFIG_EXT_TX
 };
-INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans4x8HT,
+INSTANTIATE_TEST_CASE_P(DISABLED_SSE2, AV1Trans4x8HT,
                         ::testing::ValuesIn(kArrayHt4x8Param_sse2));
 #endif  // HAVE_SSE2
 

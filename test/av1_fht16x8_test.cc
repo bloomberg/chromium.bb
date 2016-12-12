@@ -70,13 +70,36 @@ class AV1Trans16x8HT : public libaom_test::TransformTestBase,
   IhtFunc inv_txfm_;
 };
 
-TEST_P(AV1Trans16x8HT, AccuracyCheck) { RunAccuracyCheck(0); }
+TEST_P(AV1Trans16x8HT, AccuracyCheck) { RunAccuracyCheck(1); }
 TEST_P(AV1Trans16x8HT, CoeffCheck) { RunCoeffCheck(); }
 TEST_P(AV1Trans16x8HT, MemCheck) { RunMemCheck(); }
 TEST_P(AV1Trans16x8HT, InvCoeffCheck) { RunInvCoeffCheck(); }
-TEST_P(AV1Trans16x8HT, InvAccuracyCheck) { RunInvAccuracyCheck(0); }
+TEST_P(AV1Trans16x8HT, InvAccuracyCheck) { RunInvAccuracyCheck(1); }
 
 using std::tr1::make_tuple;
+
+const Ht16x8Param kArrayHt16x8Param_c[] = {
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 0, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 1, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 2, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 3, AOM_BITS_8, 128),
+#if CONFIG_EXT_TX
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 4, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 5, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 6, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 7, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 8, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 9, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 10, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 11, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 12, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 13, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 14, AOM_BITS_8, 128),
+  make_tuple(&av1_fht16x8_c, &av1_iht16x8_128_add_c, 15, AOM_BITS_8, 128)
+#endif  // CONFIG_EXT_TX
+};
+INSTANTIATE_TEST_CASE_P(C, AV1Trans16x8HT,
+                        ::testing::ValuesIn(kArrayHt16x8Param_c));
 
 #if HAVE_SSE2
 const Ht16x8Param kArrayHt16x8Param_sse2[] = {
@@ -99,7 +122,7 @@ const Ht16x8Param kArrayHt16x8Param_sse2[] = {
   make_tuple(&av1_fht16x8_sse2, &av1_iht16x8_128_add_sse2, 15, AOM_BITS_8, 128)
 #endif  // CONFIG_EXT_TX
 };
-INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans16x8HT,
+INSTANTIATE_TEST_CASE_P(DISABLED_SSE2, AV1Trans16x8HT,
                         ::testing::ValuesIn(kArrayHt16x8Param_sse2));
 #endif  // HAVE_SSE2
 
