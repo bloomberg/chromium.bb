@@ -331,42 +331,40 @@ AffineTransform SVGElement::calculateTransform(
     TransformationMatrix transform;
     float zoom = style->effectiveZoom();
 
+    FloatRect boundingBox = layoutObject()->objectBoundingBox();
+    ComputedStyle::ApplyTransformOrigin applyTransformOrigin =
+        ComputedStyle::IncludeTransformOrigin;
     // SVGTextElements need special handling for the text positioning code.
     if (isSVGTextElement(this)) {
-      // Do not take into account SVG's zoom rules, transform-origin, or
-      // percentage values.
+      // Do not take into account transform-origin, or percentage values.
+      boundingBox = FloatRect();
+      applyTransformOrigin = ComputedStyle::ExcludeTransformOrigin;
+    }
+
+    // CSS transforms operate with pre-scaled lengths. To make this work with
+    // SVG (which applies the zoom factor globally, at the root level) we
+    //
+    //   * pre-scale the bounding box (to bring it into the same space as the
+    //     other CSS values)
+    //   * invert the zoom factor (to effectively compute the CSS transform
+    //     under a 1.0 zoom)
+    //
+    // Note: objectBoundingBox is an emptyRect for elements like pattern or
+    // clipPath. See the "Object bounding box units" section of
+    // http://dev.w3.org/csswg/css3-transforms/
+    if (zoom != 1) {
+      boundingBox.scale(zoom);
+      transform.scale(1 / zoom);
       style->applyTransform(
-          transform, LayoutSize(0, 0), ComputedStyle::ExcludeTransformOrigin,
+          transform, boundingBox, applyTransformOrigin,
           ComputedStyle::IncludeMotionPath,
           ComputedStyle::IncludeIndependentTransformProperties);
+      transform.scale(zoom);
     } else {
-      // CSS transforms operate with pre-scaled lengths. To make this work with
-      // SVG (which applies the zoom factor globally, at the root level) we
-      //
-      //   * pre-scale the bounding box (to bring it into the same space as the
-      //     other CSS values)
-      //   * invert the zoom factor (to effectively compute the CSS transform
-      //     under a 1.0 zoom)
-      //
-      // Note: objectBoundingBox is an emptyRect for elements like pattern or
-      // clipPath.  See the "Object bounding box units" section of
-      // http://dev.w3.org/csswg/css3-transforms/
-      if (zoom != 1) {
-        FloatRect scaledBBox = layoutObject()->objectBoundingBox();
-        scaledBBox.scale(zoom);
-        transform.scale(1 / zoom);
-        style->applyTransform(
-            transform, scaledBBox, ComputedStyle::IncludeTransformOrigin,
-            ComputedStyle::IncludeMotionPath,
-            ComputedStyle::IncludeIndependentTransformProperties);
-        transform.scale(zoom);
-      } else {
-        style->applyTransform(
-            transform, layoutObject()->objectBoundingBox(),
-            ComputedStyle::IncludeTransformOrigin,
-            ComputedStyle::IncludeMotionPath,
-            ComputedStyle::IncludeIndependentTransformProperties);
-      }
+      style->applyTransform(
+          transform, boundingBox, applyTransformOrigin,
+          ComputedStyle::IncludeMotionPath,
+          ComputedStyle::IncludeIndependentTransformProperties);
     }
     // Flatten any 3D transform.
     matrix = transform.toAffineTransform();
