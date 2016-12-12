@@ -217,7 +217,6 @@ display::mojom::DisplayController* WindowManager::GetDisplayController() {
 RootWindowController* WindowManager::CreateRootWindowController(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
-  window_tree_host->InitCompositor();
   // TODO(sky): this is temporary, should use RootWindowController directly.
   aura::client::SetCaptureClient(window_tree_host->window(),
                                  wm_state_->capture_controller());
