@@ -8,16 +8,12 @@
 #include <string>
 #include <vector>
 
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/memory/free_deleter.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local.h"
-#include "base/time/time.h"
 #include "crypto/capi_util.h"
 #include "crypto/scoped_capi_types.h"
 #include "crypto/sha2.h"
@@ -899,47 +895,6 @@ class ScopedThreadLocalCRLSet {
   ~ScopedThreadLocalCRLSet() { g_revocation_injector.Get().SetCRLSet(nullptr); }
 };
 
-// Sends a crash dump (without actually crashing) when the system time
-// falls within the validity period of every certificate in
-// |verified_cert|'s chain. This is to investigate reports of odd
-// certificate errors that report ERR_CERT_DATE_INVALID when the
-// certificate chain's dates appear to be valid.
-//
-// TODO(estark): remove this after obtaining diagnostic data from
-// Canary. https://crbug.com/672906
-void MaybeDumpCertificateDateError(
-    const scoped_refptr<X509Certificate>& verified_cert,
-    DWORD error_status,
-    DWORD info_status) {
-  const base::Time now = base::Time::NowFromSystemTime();
-  // If the leaf certificate is expired or not yet valid, nothing is odd.
-  if (now >= verified_cert->valid_expiry() ||
-      now <= verified_cert->valid_start()) {
-    return;
-  }
-  // Repeat the check for the rest of the certificates in the chain; if
-  // any of them is expired or not yet valid, nothing is odd.
-  X509Certificate::OSCertHandles intermediates =
-      verified_cert->GetIntermediateCertificates();
-  for (const auto& intermediate : intermediates) {
-    base::Time valid_start =
-        base::Time::FromFileTime(intermediate->pCertInfo->NotBefore);
-    base::Time valid_expiry =
-        base::Time::FromFileTime(intermediate->pCertInfo->NotAfter);
-    if (now >= valid_expiry || now <= valid_start)
-      return;
-  }
-  // None of the certificates in the chain appear to be expired or
-  // not-yet-valid, so send a crash dump for diagnostics.
-  base::debug::ScopedCrashKey error_status_crash_key(
-      "cert_verify_proc_win_date_error_error_status",
-      base::IntToString(error_status));
-  base::debug::ScopedCrashKey info_status_crash_key(
-      "cert_verify_proc_win_date_error_info_status",
-      base::IntToString(info_status));
-  base::debug::DumpWithoutCrashing();
-}
-
 }  // namespace
 
 CertVerifyProcWin::CertVerifyProcWin() {}
@@ -1214,17 +1169,6 @@ int CertVerifyProcWin::VerifyInternal(
 
   verify_result->cert_status |= MapCertChainErrorStatusToCertStatus(
       chain_context->TrustStatus.dwErrorStatus);
-
-  // Send some diagnostic data in the event of certificate date errors
-  // that occur on chains with validity periods that are valid according
-  // to the system clock.
-  // TODO(estark): remove this after obtaining diagnostic data from
-  // Canary. https://crbug.com/672906
-  if (verify_result->cert_status & CERT_STATUS_DATE_INVALID) {
-    MaybeDumpCertificateDateError(verify_result->verified_cert,
-                                  chain_context->TrustStatus.dwErrorStatus,
-                                  chain_context->TrustStatus.dwInfoStatus);
-  }
 
   // Flag certificates that have a Subject common name with a NULL character.
   if (CertSubjectCommonNameHasNull(cert_handle))
