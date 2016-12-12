@@ -60,8 +60,12 @@ void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
       fetcher, data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER);
   // Tell feedback server about the variation state of this install.
   net::HttpRequestHeaders headers;
-  variations::AppendVariationHeaders(
-      fetcher->GetOriginalURL(), context_->IsOffTheRecord(), false, &headers);
+  // Note: It's fine to pass in |is_signed_in| false, which does not affect
+  // transmission of experiment ids coming from the variations server.
+  bool is_signed_in = false;
+  variations::AppendVariationHeaders(fetcher->GetOriginalURL(),
+                                     context_->IsOffTheRecord(), false,
+                                     is_signed_in, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
 
   fetcher->SetUploadData(kProtoBufMimeType, data);

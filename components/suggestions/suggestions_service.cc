@@ -420,8 +420,11 @@ std::unique_ptr<net::URLFetcher> SuggestionsService::CreateSuggestionsRequest(
   request->SetRequestContext(url_request_context_);
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
+  // Note: It's fine to pass in |is_signed_in| false, which does not affect
+  // transmission of experiment ids coming from the variations server.
+  bool is_signed_in = false;
   variations::AppendVariationHeaders(request->GetOriginalURL(), false, false,
-                                     &headers);
+                                     is_signed_in, &headers);
   request->SetExtraRequestHeaders(headers.ToString());
   if (!access_token.empty()) {
     request->AddExtraRequestHeader(

@@ -168,8 +168,11 @@ static void RegisterExternalExperiment(
   active_group.name = metrics::HashName(trial_name_utf8);
   for (int experiment_id : experiment_ids) {
     active_group.group = metrics::HashName(base::IntToString(experiment_id));
+    // Since external experiments are not based on Chrome's low entropy source,
+    // they are only sent to Google web properties for signed in users to make
+    // sure that this couldn't be used to identify a user that's not signed in.
     variations::AssociateGoogleVariationIDForceHashes(
-        variations::GOOGLE_WEB_PROPERTIES, active_group,
+        variations::GOOGLE_WEB_PROPERTIES_SIGNED_IN, active_group,
         static_cast<variations::VariationID>(experiment_id));
     group_name_hashes.push_back(active_group.group);
   }
