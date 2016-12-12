@@ -5,6 +5,7 @@
 #include "chrome/app/mash/mash_runner.h"
 
 #include "base/at_exit.h"
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -13,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/task_scheduler.h"
@@ -94,8 +96,9 @@ class NativeRunnerDelegateImpl : public service_manager::NativeRunnerDelegate {
       base::CommandLine* command_line) override {
     if (target.name() == kChromeMashServiceName ||
         target.name() == content::mojom::kBrowserServiceName) {
-      command_line->SetProgram(
-          base::CommandLine::ForCurrentProcess()->GetProgram());
+      base::FilePath exe_path;
+      base::PathService::Get(base::FILE_EXE, &exe_path);
+      command_line->SetProgram(exe_path);
     }
     if (target.name() != content::mojom::kBrowserServiceName) {
       // If running anything other than the browser process, launch a mash
