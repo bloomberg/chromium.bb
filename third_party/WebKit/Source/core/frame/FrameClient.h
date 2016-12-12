@@ -35,8 +35,6 @@ class CORE_EXPORT FrameClient : public GarbageCollectedFinalized<FrameClient> {
 
   virtual void frameFocused() const = 0;
 
-  virtual BlameContext* frameBlameContext() { return nullptr; }
-
   virtual ~FrameClient() {}
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}

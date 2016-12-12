@@ -342,6 +342,8 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
   // Overwrites the given URL to use an HTML5 embed if possible. An empty URL is
   // returned if the URL is not overriden.
   virtual KURL overrideFlashEmbedWithHTML(const KURL&) { return KURL(); }
+
+  virtual BlameContext* frameBlameContext() { return nullptr; }
 };
 
 }  // namespace blink
