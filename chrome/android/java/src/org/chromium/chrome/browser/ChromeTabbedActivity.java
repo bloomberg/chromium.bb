@@ -369,7 +369,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance(this);
             // Promos can only be shown when we start with ACTION_MAIN intent and
             // after FRE is complete.
-            if (!mIntentWithEffect && FirstRunStatus.getFirstRunFlowComplete()) {
+            if (!mIntentWithEffect && FirstRunStatus.getFirstRunFlowComplete(this)) {
                 // Only show promos on the second oppurtunity. This is because we show FRE on the
                 // first oppurtunity, and we don't want to show such content back to back.
                 if (preferenceManager.getPromosSkippedOnFirstStart()) {

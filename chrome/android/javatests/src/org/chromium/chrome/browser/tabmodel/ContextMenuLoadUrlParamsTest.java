@@ -11,7 +11,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager.TabModelSelectorFactory;
@@ -75,24 +74,12 @@ public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
             }
         });
         super.setUp();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(true);
-            }
-        });
 
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override
     protected void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(false);
-            }
-        });
         mTestServer.stopAndDestroyServer();
         super.tearDown();
     }

@@ -260,7 +260,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         UmaUtils.recordForegroundStartTime();
         stopProgressionIfNotAcceptedTermsOfService();
         if (!mFreProperties.getBoolean(EXTRA_USE_FRE_FLOW_SEQUENCER)) {
-            if (FirstRunStatus.getFirstRunFlowComplete()) {
+            if (FirstRunStatus.getFirstRunFlowComplete(this)) {
                 // This is a parallel flow that needs to be refreshed/re-fired.
                 // Signal the FRE flow completion and re-launch the original intent.
                 completeFirstRunExperience();

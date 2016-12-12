@@ -104,6 +104,6 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
 
     @Override
     public boolean shouldSkipPageOnCreate(Context appContext) {
-        return FirstRunStatus.shouldSkipWelcomePage();
+        return FirstRunStatus.shouldSkipWelcomePage(appContext);
     }
 }

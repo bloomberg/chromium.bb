@@ -86,7 +86,7 @@ public class EmbedContentViewActivity extends FullScreenActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean retVal = super.onCreateOptionsMenu(menu);
-        if (!FirstRunStatus.getFirstRunFlowComplete()) return retVal;
+        if (!FirstRunStatus.getFirstRunFlowComplete(this)) return retVal;
         return true;
     }
 
