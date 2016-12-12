@@ -1209,7 +1209,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::Bind(&PaymentAppContextImpl::CreateService,
+      base::Bind(&PaymentAppContext::CreateService,
                  base::Unretained(
                      storage_partition_impl_->GetPaymentAppContext())));
 
