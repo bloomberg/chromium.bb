@@ -377,6 +377,10 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
 
   void RunPostedTasks() { base::RunLoop().RunUntilIdle(); }
 
+private:
+  // Needs to outlive |db_|.
+  content::TestBrowserThreadBundle thread_bundle_;
+
  protected:
   scoped_refptr<IndexedDBFakeBackingStore> backing_store_;
   scoped_refptr<IndexedDBDatabase> db_;
@@ -389,7 +393,6 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
 
  private:
   scoped_refptr<MockIndexedDBFactory> factory_;
-  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseOperationTest);
 };
