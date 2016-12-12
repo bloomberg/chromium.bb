@@ -141,6 +141,7 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
       LayoutUnit contentLogicalHeight) const;
 
   virtual bool isPageLogicalHeightKnown() const { return true; }
+  virtual bool mayHaveNonUniformPageLogicalHeight() const = 0;
   bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }
 
   // Return the visual bounding box based on the supplied flow-thread bounding

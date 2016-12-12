@@ -216,6 +216,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
   virtual bool needsNewWidth() const;
 
   bool isPageLogicalHeightKnown() const final;
+  bool mayHaveNonUniformPageLogicalHeight() const final;
 
   LayoutSize flowThreadTranslationAtOffset(LayoutUnit,
                                            PageBoundaryRule,

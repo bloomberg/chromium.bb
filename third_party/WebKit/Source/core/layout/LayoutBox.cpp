@@ -4720,6 +4720,7 @@ bool LayoutBox::childNeedsRelayoutForPagination(const LayoutBox& child) const {
   // just marking and bailing here.
   if (child.isFloating())
     return true;
+  const LayoutFlowThread* flowThread = child.flowThreadContainingBlock();
   LayoutUnit logicalTop = child.logicalTop();
   // Figure out if we really need to force re-layout of the child. We only need
   // to do this if there's a chance that we need to recalculate pagination
@@ -4732,6 +4733,10 @@ bool LayoutBox::childNeedsRelayoutForPagination(const LayoutBox& child) const {
       // We need to relayout unless we're going to break at the exact same
       // location as before.
       if (child.offsetToNextPage() != remainingSpace)
+        return true;
+      // If column height isn't guaranteed to be uniform, we have no way of
+      // telling what has happened after the first break.
+      if (flowThread && flowThread->mayHaveNonUniformPageLogicalHeight())
         return true;
     } else if (logicalHeight > remainingSpace) {
       // Last time we laid out this child, we didn't need to break, but now we
@@ -4747,7 +4752,6 @@ bool LayoutBox::childNeedsRelayoutForPagination(const LayoutBox& child) const {
   // It seems that we can skip layout of this child, but we need to ask the flow
   // thread for permission first. We currently cannot skip over objects
   // containing column spanners.
-  LayoutFlowThread* flowThread = child.flowThreadContainingBlock();
   return flowThread && !flowThread->canSkipLayout(child);
 }
 

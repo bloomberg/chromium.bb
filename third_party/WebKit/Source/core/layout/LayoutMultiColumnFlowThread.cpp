@@ -365,6 +365,15 @@ bool LayoutMultiColumnFlowThread::isPageLogicalHeightKnown() const {
   return false;
 }
 
+bool LayoutMultiColumnFlowThread::mayHaveNonUniformPageLogicalHeight() const {
+  const LayoutMultiColumnSet* columnSet = firstMultiColumnSet();
+  if (!columnSet)
+    return false;
+  if (columnSet->nextSiblingMultiColumnSet())
+    return true;
+  return enclosingFragmentationContext();
+}
+
 LayoutSize LayoutMultiColumnFlowThread::flowThreadTranslationAtOffset(
     LayoutUnit offsetInFlowThread,
     PageBoundaryRule rule,
