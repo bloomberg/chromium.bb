@@ -1229,6 +1229,36 @@ now we are only interested in H264, VP8 and VP9.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="NTP.SuggestionsImpressions.IconsColor"
+    type="UMA_RAPPOR_TYPE">
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a most visited tile displayed in the NTP, for cases where the
+    fallback color was used (as opposed to having an icon, or simply being
+    gray).
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="NTP.SuggestionsImpressions.IconsGray"
+    type="UMA_RAPPOR_TYPE">
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a most visited tile displayed in the NTP, for cases where the
+    gray fallback icon was used (as opposed to having an icon, or a fallback
+    color).
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="NTP.SuggestionsImpressions.IconsReal"
+    type="UMA_RAPPOR_TYPE">
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a most visited tile displayed in the NTP, for cases where the
+    real icon was used (as opposed to having a fallback color or simply being
+    gray).
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Navigation.Scheme.Data" type="ETLD_PLUS_ONE">
   <owner>meacer@chromium.org</owner>
   <summary>

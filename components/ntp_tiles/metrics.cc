@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
+#include "components/rappor/public/rappor_utils.h"
 
 namespace ntp_tiles {
 namespace metrics {
@@ -55,15 +56,16 @@ std::string GetSourceHistogramName(NTPTileSource source) {
 
 }  // namespace
 
-void RecordPageImpression(
-    const std::vector<std::pair<NTPTileSource, MostVisitedTileType>>& tiles) {
+void RecordPageImpression(const std::vector<TileImpression>& tiles,
+                          rappor::RapporService* rappor_service) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", tiles.size());
 
   int counts_per_type[NUM_RECORDED_TILE_TYPES] = {0};
   bool have_tile_types = false;
   for (int index = 0; index < static_cast<int>(tiles.size()); index++) {
-    NTPTileSource source = tiles[index].first;
-    MostVisitedTileType tile_type = tiles[index].second;
+    NTPTileSource source = tiles[index].source;
+    MostVisitedTileType tile_type = tiles[index].type;
+    const GURL& url = tiles[index].url;
 
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestionsImpression", index,
                               kMaxNumTiles);
@@ -86,6 +88,27 @@ void RecordPageImpression(
     std::string tile_type_histogram =
         base::StringPrintf("NewTabPage.TileType.%s", source_name.c_str());
     LogHistogramEvent(tile_type_histogram, tile_type, NUM_RECORDED_TILE_TYPES);
+
+    switch (tile_type) {
+      case NONE:
+        break;
+      case ICON_COLOR:
+        rappor::SampleDomainAndRegistryFromGURL(
+            rappor_service, "NTP.SuggestionsImpressions.IconsColor", url);
+        break;
+      case ICON_DEFAULT:
+        rappor::SampleDomainAndRegistryFromGURL(
+            rappor_service, "NTP.SuggestionsImpressions.IconsGray", url);
+        break;
+      case ICON_REAL:
+        rappor::SampleDomainAndRegistryFromGURL(
+            rappor_service, "NTP.SuggestionsImpressions.IconsReal", url);
+        break;
+      case NUM_RECORDED_TILE_TYPES:  // Fall through.
+      case THUMBNAIL:  // Fall through.
+      case UNKNOWN_TILE_TYPE:
+        NOTREACHED();
+    }
   }
 
   if (have_tile_types) {

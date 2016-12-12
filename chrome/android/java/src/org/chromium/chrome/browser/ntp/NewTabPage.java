@@ -637,13 +637,15 @@ public class NewTabPage
 
             int tileTypes[] = new int[items.length];
             int sources[] = new int[items.length];
+            String tileUrls[] = new String[items.length];
 
             for (int i = 0; i < items.length; i++) {
                 tileTypes[i] = items[i].getTileType();
                 sources[i] = items[i].getSource();
+                tileUrls[i] = items[i].getUrl();
             }
 
-            mMostVisitedSites.recordPageImpression(tileTypes, sources);
+            mMostVisitedSites.recordPageImpression(tileTypes, sources, tileUrls);
 
             if (isNtpOfflinePagesEnabled()) {
                 final int maxNumTiles = 12;

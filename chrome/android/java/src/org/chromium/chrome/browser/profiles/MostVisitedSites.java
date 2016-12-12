@@ -110,9 +110,10 @@ public class MostVisitedSites {
      *                  tile that's currently showing.
      * @param sources An array of values from NTPTileSource indicating the source of each tile
      *                that's currently showing.
+     * @param tileUrls An array of strings indicating the URL of each tile.
      */
-    public void recordPageImpression(int[] tileTypes, int[] sources) {
-        nativeRecordPageImpression(mNativeMostVisitedSitesBridge, tileTypes, sources);
+    public void recordPageImpression(int[] tileTypes, int[] sources, String[] tileUrls) {
+        nativeRecordPageImpression(mNativeMostVisitedSitesBridge, tileTypes, sources, tileUrls);
     }
 
     /**
@@ -131,8 +132,8 @@ public class MostVisitedSites {
     private native void nativeAddOrRemoveBlacklistedUrl(
             long nativeMostVisitedSitesBridge, String url,
             boolean addUrl);
-    private native void nativeRecordPageImpression(long nativeMostVisitedSitesBridge,
-            int[] tileTypes, int[] sources);
+    private native void nativeRecordPageImpression(
+            long nativeMostVisitedSitesBridge, int[] tileTypes, int[] sources, String[] tileUrls);
     private native void nativeRecordOpenedMostVisitedItem(
             long nativeMostVisitedSitesBridge, int index, int tileType, int source);
 }
