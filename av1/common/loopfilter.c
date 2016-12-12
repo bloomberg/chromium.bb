@@ -1260,8 +1260,8 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
                                        int mi_col) {
   const int ss_x = plane->subsampling_x;
   const int ss_y = plane->subsampling_y;
-  const int row_step = 1 << ss_y;
-  const int col_step = 1 << ss_x;
+  const int row_step = mi_size_high[BLOCK_8X8] << ss_y;
+  const int col_step = mi_size_wide[BLOCK_8X8] << ss_x;
   const int row_step_stride = cm->mi_stride * row_step;
   struct buf_2d *const dst = &plane->dst;
   uint8_t *const dst0 = dst->buf;
@@ -1270,21 +1270,27 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
   unsigned int mask_4x4[MAX_MIB_SIZE] = { 0 };
   unsigned int mask_4x4_int[MAX_MIB_SIZE] = { 0 };
   uint8_t lfl[MAX_MIB_SIZE][MAX_MIB_SIZE] = { { 0 } };
-  int r, c;
+  int idx_r, idx_c;
   MODE_INFO **tmp_mi = mib;
 
-  for (r = 0; r < cm->mib_size && mi_row + r < cm->mi_rows; r += row_step) {
+  for (idx_r = 0; idx_r < cm->mib_size && mi_row + idx_r < cm->mi_rows;
+       idx_r += row_step) {
     unsigned int mask_16x16_c = 0;
     unsigned int mask_8x8_c = 0;
     unsigned int mask_4x4_c = 0;
     unsigned int border_mask;
+    int r = idx_r >> mi_height_log2_lookup[BLOCK_8X8];
 
     // Determine the vertical edges that need filtering
-    for (c = 0; c < cm->mib_size && mi_col + c < cm->mi_cols; c += col_step) {
-      const MODE_INFO *mi = tmp_mi[c];
+    for (idx_c = 0; idx_c < cm->mib_size && mi_col + idx_c < cm->mi_cols;
+         idx_c += col_step) {
+      const MODE_INFO *mi = tmp_mi[idx_c];
       const MB_MODE_INFO *mbmi = &mi[0].mbmi;
       const BLOCK_SIZE sb_type = mbmi->sb_type;
       const int skip_this = mbmi->skip && is_inter_block(mbmi);
+      // Map index to 8x8 unit
+      int c = idx_c >> mi_width_log2_lookup[BLOCK_8X8];
+
       const int blk_row = r & (num_8x8_blocks_high_lookup[sb_type] - 1);
       const int blk_col = c & (num_8x8_blocks_wide_lookup[sb_type] - 1);
 
@@ -1422,7 +1428,7 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
                             mask_8x8_c & border_mask, mask_4x4_c & border_mask,
                             mask_4x4_int[r], &cm->lf_info, &lfl[r][0]);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-    dst->buf += MI_SIZE * dst->stride;
+    dst->buf += 8 * dst->stride;
     tmp_mi += row_step_stride;
   }
 
@@ -1436,8 +1442,8 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
                                        int mi_col) {
   const int ss_x = plane->subsampling_x;
   const int ss_y = plane->subsampling_y;
-  const int row_step = 1 << ss_y;
-  const int col_step = 1 << ss_x;
+  const int row_step = mi_size_high[BLOCK_8X8] << ss_y;
+  const int col_step = mi_size_wide[BLOCK_8X8] << ss_x;
   const int row_step_stride = cm->mi_stride * row_step;
   struct buf_2d *const dst = &plane->dst;
   uint8_t *const dst0 = dst->buf;
@@ -1446,19 +1452,24 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
   unsigned int mask_4x4[MAX_MIB_SIZE] = { 0 };
   unsigned int mask_4x4_int[MAX_MIB_SIZE] = { 0 };
   uint8_t lfl[MAX_MIB_SIZE][MAX_MIB_SIZE];
-  int r, c;
+  int idx_r, idx_c;
   MODE_INFO **tmp_mi = mib;
-  for (r = 0; r < cm->mib_size && mi_row + r < cm->mi_rows; r += row_step) {
+  for (idx_r = 0; idx_r < cm->mib_size && mi_row + idx_r < cm->mi_rows;
+       idx_r += row_step) {
     unsigned int mask_16x16_c = 0;
     unsigned int mask_8x8_c = 0;
     unsigned int mask_4x4_c = 0;
+    const int r = idx_r >> mi_height_log2_lookup[BLOCK_8X8];
 
     // Determine the vertical edges that need filtering
-    for (c = 0; c < cm->mib_size && mi_col + c < cm->mi_cols; c += col_step) {
-      const MODE_INFO *mi = tmp_mi[c];
+    for (idx_c = 0; idx_c < cm->mib_size && mi_col + idx_c < cm->mi_cols;
+         idx_c += col_step) {
+      const MODE_INFO *mi = tmp_mi[idx_c];
       const MB_MODE_INFO *mbmi = &mi[0].mbmi;
       const BLOCK_SIZE sb_type = mbmi->sb_type;
       const int skip_this = mbmi->skip && is_inter_block(mbmi);
+      const int c = idx_c >> mi_width_log2_lookup[BLOCK_8X8];
+
       const int blk_row = r & (num_8x8_blocks_high_lookup[sb_type] - 1);
       const int blk_col = c & (num_8x8_blocks_wide_lookup[sb_type] - 1);
 
@@ -1576,15 +1587,17 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
     }
     tmp_mi += row_step_stride;
   }
-  for (r = 0; r < cm->mib_size && mi_row + r < cm->mi_rows; r += row_step) {
-    const int skip_border_4x4_r = ss_y && mi_row + r == cm->mi_rows - 1;
+  for (idx_r = 0; idx_r < cm->mib_size && mi_row + idx_r < cm->mi_rows;
+       idx_r += row_step) {
+    const int skip_border_4x4_r = ss_y && mi_row + idx_r == cm->mi_rows - 1;
+    const int r = idx_r >> mi_width_log2_lookup[BLOCK_8X8];
     const unsigned int mask_4x4_int_r = skip_border_4x4_r ? 0 : mask_4x4_int[r];
 
     unsigned int mask_16x16_r;
     unsigned int mask_8x8_r;
     unsigned int mask_4x4_r;
 
-    if (mi_row + r == 0) {
+    if (mi_row + idx_r == 0) {
       mask_16x16_r = 0;
       mask_8x8_r = 0;
       mask_4x4_r = 0;
@@ -1609,7 +1622,7 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
                              mask_4x4_r, mask_4x4_int_r, &cm->lf_info,
                              &lfl[r][0]);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-    dst->buf += MI_SIZE * dst->stride;
+    dst->buf += 8 * dst->stride;
   }
   dst->buf = dst0;
 }
@@ -1848,7 +1861,8 @@ void av1_filter_block_plane_ss11_hor(AV1_COMMON *const cm,
 void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
                           struct macroblockd_plane planes[MAX_MB_PLANE],
                           int start, int stop, int y_only) {
-#if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_EXT_PARTITION_TYPES || \
+    CONFIG_CB4X4
   const int num_planes = y_only ? 1 : MAX_MB_PLANE;
   int mi_row, mi_col;
 
