@@ -243,24 +243,8 @@ class VisitorHelper {
   void registerWeakMembers(const T* obj) {
     registerWeakMembers(obj, &TraceMethodDelegate<T, method>::trampoline);
   }
-
   void registerWeakMembers(const void* object, WeakCallback callback) {
     Derived::fromHelper(this)->registerWeakMembers(object, object, callback);
-  }
-
-  template <typename T>
-  void registerBackingStoreReference(T** slot) {
-    Derived::fromHelper(this)->registerMovingObjectReference(
-        reinterpret_cast<MovableReference*>(slot));
-  }
-
-  template <typename T>
-  void registerBackingStoreCallback(T* backingStore,
-                                    MovingObjectCallback callback,
-                                    void* callbackData) {
-    Derived::fromHelper(this)->registerMovingObjectCallback(
-        reinterpret_cast<MovableReference>(backingStore), callback,
-        callbackData);
   }
 
   inline ThreadState* state() const { return m_state; }
@@ -270,7 +254,7 @@ class VisitorHelper {
   template <typename T>
   static void handleWeakCell(Visitor* self, void* object);
 
-  ThreadState* const m_state;
+  ThreadState* m_state;
 };
 
 // Visitor is used to traverse the Blink object graph. Used for the
@@ -300,13 +284,6 @@ class PLATFORM_EXPORT Visitor : public VisitorHelper<Visitor> {
     // This visitor is used to trace objects during weak processing.
     // This visitor is allowed to trace only already marked objects.
     WeakProcessing,
-    // Perform global marking along with preparing for additional sweep
-    // compaction of heap arenas afterwards. Compared to the GlobalMarking
-    // visitor, this visitor will also register references to objects
-    // that might be moved during arena compaction -- the compaction
-    // pass will then fix up those references when the object move goes
-    // ahead.
-    GlobalMarkingWithCompaction,
   };
 
   static std::unique_ptr<Visitor> create(ThreadState*, BlinkGC::GCType);
@@ -367,20 +344,9 @@ class PLATFORM_EXPORT Visitor : public VisitorHelper<Visitor> {
 
   virtual bool ensureMarked(const void*) = 0;
 
-  virtual void registerMovingObjectReference(MovableReference*) = 0;
-
-  virtual void registerMovingObjectCallback(MovableReference,
-                                            MovingObjectCallback,
-                                            void*) = 0;
-
   virtual void registerWeakCellWithCallback(void**, WeakCallback) = 0;
 
   inline MarkingMode getMarkingMode() const { return m_markingMode; }
-
-  inline bool isGlobalMarking() const {
-    return m_markingMode == GlobalMarking ||
-           m_markingMode == GlobalMarkingWithCompaction;
-  }
 
  protected:
   Visitor(ThreadState*, MarkingMode);
@@ -390,6 +356,7 @@ class PLATFORM_EXPORT Visitor : public VisitorHelper<Visitor> {
     return static_cast<Visitor*>(helper);
   }
 
+  ThreadState* m_state;
   const MarkingMode m_markingMode;
 };
 

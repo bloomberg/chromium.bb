@@ -35,7 +35,6 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"
-#include "platform/heap/HeapCompact.h"
 #include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/PageMemory.h"
 #include "platform/heap/PagePool.h"
@@ -411,25 +410,6 @@ void ThreadHeap::commitCallbackStacks() {
   m_postMarkingCallbackStack->commit();
   m_globalWeakCallbackStack->commit();
   m_ephemeronStack->commit();
-}
-
-HeapCompact* ThreadHeap::compaction() {
-  if (!m_compaction)
-    m_compaction = HeapCompact::create();
-  return m_compaction.get();
-}
-
-void ThreadHeap::registerMovingObjectReference(MovableReference* slot) {
-  DCHECK(slot);
-  DCHECK(*slot);
-  compaction()->registerMovingObjectReference(slot);
-}
-
-void ThreadHeap::registerMovingObjectCallback(MovableReference reference,
-                                              MovingObjectCallback callback,
-                                              void* callbackData) {
-  DCHECK(reference);
-  compaction()->registerMovingObjectCallback(reference, callback, callbackData);
 }
 
 void ThreadHeap::decommitCallbackStacks() {

@@ -656,10 +656,8 @@ void Deque<T, inlineCapacity, Allocator>::trace(VisitorDispatcher visitor) {
             visitor, *const_cast<T*>(bufferEntry));
     }
   }
-  if (m_buffer.hasOutOfLineBuffer()) {
+  if (m_buffer.hasOutOfLineBuffer())
     Allocator::markNoTracing(visitor, m_buffer.buffer());
-    Allocator::registerBackingStoreReference(visitor, m_buffer.bufferSlot());
-  }
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>

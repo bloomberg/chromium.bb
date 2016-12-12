@@ -35,7 +35,6 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"
-#include "platform/heap/HeapCompact.h"
 #include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/PageMemory.h"
 #include "platform/heap/PagePool.h"
@@ -202,17 +201,6 @@ void BaseArena::makeConsistentForGC() {
     m_firstUnsweptPage = nullptr;
   }
   ASSERT(!m_firstUnsweptPage);
-
-  HeapCompact* heapCompactor = getThreadState()->heap().compaction();
-  if (!heapCompactor->isCompactingArena(arenaIndex()))
-    return;
-
-  BasePage* nextPage = m_firstPage;
-  while (nextPage) {
-    if (!nextPage->isLargeObjectPage())
-      heapCompactor->addCompactingPage(nextPage);
-    nextPage = nextPage->next();
-  }
 }
 
 void BaseArena::makeConsistentForMutator() {
@@ -452,125 +440,6 @@ void NormalPageArena::clearFreeLists() {
   m_freeList.clear();
 }
 
-size_t NormalPageArena::arenaSize() {
-  size_t size = 0;
-  BasePage* page = m_firstPage;
-  while (page) {
-    size += page->size();
-    page = page->next();
-  }
-  LOG_HEAP_FREELIST_VERBOSE("Heap size: %zu (%d)\n", size, arenaIndex());
-  return size;
-}
-
-size_t NormalPageArena::freeListSize() {
-  size_t freeSize = m_freeList.freeListSize();
-  LOG_HEAP_FREELIST_VERBOSE("Free size: %zu (%d)\n", freeSize, arenaIndex());
-  return freeSize;
-}
-
-void NormalPageArena::sweepAndCompact() {
-  ThreadHeap& heap = getThreadState()->heap();
-  if (!heap.compaction()->isCompactingArena(arenaIndex()))
-    return;
-
-  if (!m_firstUnsweptPage) {
-    heap.compaction()->finishedArenaCompaction(this, 0, 0);
-    return;
-  }
-
-  // Compaction is performed in-place, sliding objects down over unused
-  // holes for a smaller heap page footprint and improved locality.
-  // A "compaction pointer" is consequently kept, pointing to the next
-  // available address to move objects down to. It will belong to one
-  // of the already sweep-compacted pages for this arena, but as compaction
-  // proceeds, it will not belong to the same page as the one being
-  // currently compacted.
-  //
-  // The compaction pointer is represented by the
-  // |(currentPage, allocationPoint)| pair, with |allocationPoint|
-  // being the offset into |currentPage|, making up the next
-  // available location. When the compaction of an arena page causes the
-  // compaction pointer to exhaust the current page it is compacting into,
-  // page compaction will advance the current page of the compaction
-  // pointer, as well as the allocation point.
-  //
-  // By construction, the page compaction can be performed without having
-  // to allocate any new pages. So to arrange for the page compaction's
-  // supply of freed, available pages, we chain them together after each
-  // has been "compacted from". The page compaction will then reuse those
-  // as needed, and once finished, the chained, available pages can be
-  // released back to the OS.
-  //
-  // To ease the passing of the compaction state when iterating over an
-  // arena's pages, package it up into a |CompactionContext|.
-  NormalPage::CompactionContext context;
-  context.m_compactedPages = &m_firstPage;
-
-  while (m_firstUnsweptPage) {
-    BasePage* page = m_firstUnsweptPage;
-    if (page->isEmpty()) {
-      page->unlink(&m_firstUnsweptPage);
-      page->removeFromHeap();
-      continue;
-    }
-    // Large objects do not belong to this arena.
-    DCHECK(!page->isLargeObjectPage());
-    NormalPage* normalPage = static_cast<NormalPage*>(page);
-    normalPage->unlink(&m_firstUnsweptPage);
-    normalPage->markAsSwept();
-    // If not the first page, add |normalPage| onto the available pages chain.
-    if (!context.m_currentPage)
-      context.m_currentPage = normalPage;
-    else
-      normalPage->link(&context.m_availablePages);
-    normalPage->sweepAndCompact(context);
-  }
-
-  size_t freedSize = 0;
-  size_t freedPageCount = 0;
-
-  DCHECK(context.m_currentPage);
-  // If the current page hasn't been allocated into, add it to the available
-  // list, for subsequent release below.
-  size_t allocationPoint = context.m_allocationPoint;
-  if (!allocationPoint) {
-    context.m_currentPage->link(&context.m_availablePages);
-  } else {
-    NormalPage* currentPage = context.m_currentPage;
-    currentPage->link(&m_firstPage);
-    if (allocationPoint != currentPage->payloadSize()) {
-      // Put the remainder of the page onto the free list.
-      freedSize = currentPage->payloadSize() - allocationPoint;
-      Address payload = currentPage->payload();
-      SET_MEMORY_INACCESSIBLE(payload + allocationPoint, freedSize);
-      currentPage->arenaForNormalPage()->addToFreeList(
-          payload + allocationPoint, freedSize);
-    }
-  }
-
-  // Return available pages to the free page pool, decommitting them from
-  // the pagefile.
-  BasePage* availablePages = context.m_availablePages;
-  while (availablePages) {
-    size_t pageSize = availablePages->size();
-#if DEBUG_HEAP_COMPACTION
-    if (!freedPageCount)
-      LOG_HEAP_COMPACTION("Releasing:");
-    LOG_HEAP_COMPACTION(" [%p, %p]", availablePages, availablePages + pageSize);
-#endif
-    freedSize += pageSize;
-    freedPageCount++;
-    BasePage* nextPage;
-    availablePages->unlink(&nextPage);
-    availablePages->removeFromHeap();
-    availablePages = static_cast<NormalPage*>(nextPage);
-  }
-  if (freedPageCount)
-    LOG_HEAP_COMPACTION("\n");
-  heap.compaction()->finishedArenaCompaction(this, freedPageCount, freedSize);
-}
-
 #if ENABLE(ASSERT)
 bool NormalPageArena::isConsistentForGC() {
   // A thread heap is consistent for sweeping if none of the pages to be swept
@@ -645,6 +514,7 @@ void NormalPageArena::allocatePage() {
       }
     }
   }
+
   NormalPage* page =
       new (pageMemory->writableStart()) NormalPage(pageMemory, this);
   page->link(&m_firstPage);
@@ -1207,37 +1077,6 @@ void NEVER_INLINE FreeList::checkFreedMemoryIsZapped(Address address,
 }
 #endif
 
-size_t FreeList::freeListSize() const {
-  size_t freeSize = 0;
-  for (unsigned i = 0; i < blinkPageSizeLog2; ++i) {
-    FreeListEntry* entry = m_freeLists[i];
-    while (entry) {
-      freeSize += entry->size();
-      entry = entry->next();
-    }
-  }
-#if DEBUG_HEAP_FREELIST
-  if (freeSize) {
-    LOG_HEAP_FREELIST_VERBOSE("FreeList(%p): %zu\n", this, freeSize);
-    for (unsigned i = 0; i < blinkPageSizeLog2; ++i) {
-      FreeListEntry* entry = m_freeLists[i];
-      size_t bucket = 0;
-      size_t count = 0;
-      while (entry) {
-        bucket += entry->size();
-        count++;
-        entry = entry->next();
-      }
-      if (bucket) {
-        LOG_HEAP_FREELIST_VERBOSE("[%d, %d]: %zu (%zu)\n", 0x1 << i,
-                                  0x1 << (i + 1), bucket, count);
-      }
-    }
-  }
-#endif
-  return freeSize;
-}
-
 void FreeList::clear() {
   m_biggestFreeListIndex = 0;
   for (size_t i = 0; i < blinkPageSizeLog2; ++i)
@@ -1405,114 +1244,6 @@ void NormalPage::sweep() {
 
   if (markedObjectSize)
     pageArena->getThreadState()->increaseMarkedObjectSize(markedObjectSize);
-}
-
-void NormalPage::sweepAndCompact(CompactionContext& context) {
-  NormalPage*& currentPage = context.m_currentPage;
-  size_t& allocationPoint = context.m_allocationPoint;
-
-  size_t markedObjectSize = 0;
-  NormalPageArena* pageArena = arenaForNormalPage();
-#if defined(ADDRESS_SANITIZER)
-  bool isVectorArena = ThreadState::isVectorArenaIndex(pageArena->arenaIndex());
-#endif
-  HeapCompact* compact = pageArena->getThreadState()->heap().compaction();
-  for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
-    HeapObjectHeader* header =
-        reinterpret_cast<HeapObjectHeader*>(headerAddress);
-    size_t size = header->size();
-    DCHECK(size > 0 && size < blinkPagePayloadSize());
-
-    if (header->isPromptlyFreed())
-      pageArena->decreasePromptlyFreedSize(size);
-    if (header->isFree()) {
-      // Unpoison the freelist entry so that we
-      // can compact into it as wanted.
-      ASAN_UNPOISON_MEMORY_REGION(headerAddress, size);
-      headerAddress += size;
-      continue;
-    }
-    // This is a fast version of header->payloadSize().
-    size_t payloadSize = size - sizeof(HeapObjectHeader);
-    Address payload = header->payload();
-    if (!header->isMarked()) {
-      // For ASan, unpoison the object before calling the finalizer. The
-      // finalized object will be zero-filled and poison'ed afterwards.
-      // Given all other unmarked objects are poisoned, ASan will detect
-      // an error if the finalizer touches any other on-heap object that
-      // die at the same GC cycle.
-      ASAN_UNPOISON_MEMORY_REGION(headerAddress, size);
-      header->finalize(payload, payloadSize);
-
-// As compaction is under way, leave the freed memory accessible
-// while compacting the rest of the page. We just zap the payload
-// to catch out other finalizers trying to access it.
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
-    defined(MEMORY_SANITIZER)
-      FreeList::zapFreedMemory(payload, payloadSize);
-#endif
-      headerAddress += size;
-      continue;
-    }
-    header->unmark();
-    // Allocate and copy over the live object.
-    Address compactFrontier = currentPage->payload() + allocationPoint;
-    if (compactFrontier + size > currentPage->payloadEnd()) {
-      // Can't fit on current allocation page; add remaining onto the
-      // freelist and advance to next available page.
-      //
-      // TODO(sof): be more clever & compact later objects into
-      // |currentPage|'s unused slop.
-      currentPage->link(context.m_compactedPages);
-      size_t freeSize = currentPage->payloadSize() - allocationPoint;
-      if (freeSize) {
-        SET_MEMORY_INACCESSIBLE(compactFrontier, freeSize);
-        currentPage->arenaForNormalPage()->addToFreeList(compactFrontier,
-                                                         freeSize);
-      }
-
-      BasePage* nextAvailablePage;
-      context.m_availablePages->unlink(&nextAvailablePage);
-      currentPage = reinterpret_cast<NormalPage*>(context.m_availablePages);
-      context.m_availablePages = nextAvailablePage;
-      allocationPoint = 0;
-      compactFrontier = currentPage->payload();
-    }
-    if (LIKELY(compactFrontier != headerAddress)) {
-#if defined(ADDRESS_SANITIZER)
-      // Unpoison the header + if it is a vector backing
-      // store object, let go of the container annotations.
-      // Do that by unpoisoning the payload entirely.
-      ASAN_UNPOISON_MEMORY_REGION(header, sizeof(HeapObjectHeader));
-      if (isVectorArena)
-        ASAN_UNPOISON_MEMORY_REGION(payload, payloadSize);
-#endif
-      // Use a non-overlapping copy, if possible.
-      if (currentPage == this)
-        memmove(compactFrontier, headerAddress, size);
-      else
-        memcpy(compactFrontier, headerAddress, size);
-      compact->relocate(payload, compactFrontier + sizeof(HeapObjectHeader));
-    }
-    headerAddress += size;
-    markedObjectSize += size;
-    allocationPoint += size;
-    DCHECK(allocationPoint <= currentPage->payloadSize());
-  }
-  if (markedObjectSize)
-    pageArena->getThreadState()->increaseMarkedObjectSize(markedObjectSize);
-
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
-    defined(MEMORY_SANITIZER)
-  // Zap the page, which is now available and will either be compacted into
-  // or freed.
-  if (currentPage != this) {
-    FreeList::zapFreedMemory(payload(), payloadSize());
-  } else {
-    FreeList::zapFreedMemory(payload() + allocationPoint,
-                             payloadSize() - allocationPoint);
-  }
-#endif
 }
 
 void NormalPage::makeConsistentForGC() {

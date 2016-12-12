@@ -81,7 +81,6 @@ class PLATFORM_EXPORT HeapAllocHooks {
 };
 
 class CrossThreadPersistentRegion;
-class HeapCompact;
 template <typename T>
 class Member;
 template <typename T>
@@ -382,27 +381,6 @@ class PLATFORM_EXPORT ThreadHeap {
   bool weakTableRegistered(const void*);
 #endif
 
-  // Heap compaction registration methods:
-
-  // Register |slot| as containing a reference to a movable heap object.
-  //
-  // When compaction moves the object pointed to by |*slot| to |newAddress|,
-  // |*slot| must be updated to hold |newAddress| instead.
-  void registerMovingObjectReference(MovableReference*);
-
-  // Register a callback to be invoked upon moving the object starting at
-  // |reference|; see |MovingObjectCallback| documentation for details.
-  //
-  // This callback mechanism is needed to account for backing store objects
-  // containing intra-object pointers, all of which must be relocated/rebased
-  // with respect to the moved-to location.
-  //
-  // For Blink, |HeapLinkedHashSet<>| is currently the only abstraction which
-  // relies on this feature.
-  void registerMovingObjectCallback(MovableReference,
-                                    MovingObjectCallback,
-                                    void* callbackData);
-
   BlinkGC::GCReason lastGCReason() { return m_lastGCReason; }
   RegionTree* getRegionTree() { return m_regionTree.get(); }
 
@@ -460,8 +438,6 @@ class PLATFORM_EXPORT ThreadHeap {
   static void reportMemoryUsageHistogram();
   static void reportMemoryUsageForTracing();
 
-  HeapCompact* compaction();
-
  private:
   // Reset counters that track live and allocated-since-last-GC sizes.
   void resetHeapCounters();
@@ -486,8 +462,6 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<CallbackStack> m_ephemeronStack;
   BlinkGC::GCReason m_lastGCReason;
   StackFrameDepth m_stackFrameDepth;
-
-  std::unique_ptr<HeapCompact> m_compaction;
 
   static ThreadHeap* s_mainThreadHeap;
 

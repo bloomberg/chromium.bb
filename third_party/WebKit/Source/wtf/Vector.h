@@ -492,8 +492,6 @@ class VectorBuffer<T, 0, Allocator>
     return buffer();
   }
 
-  T** bufferSlot() { return &m_buffer; }
-
  protected:
   using Base::m_size;
 
@@ -772,8 +770,6 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   bool hasOutOfLineBuffer() const {
     return buffer() && buffer() != inlineBuffer();
   }
-
-  T** bufferSlot() { return &m_buffer; }
 
  protected:
   using Base::m_size;
@@ -1607,7 +1603,6 @@ void Vector<T, inlineCapacity, Allocator>::trace(VisitorDispatcher visitor) {
     if (Allocator::isHeapObjectAlive(buffer()))
       return;
     Allocator::markNoTracing(visitor, buffer());
-    Allocator::registerBackingStoreReference(visitor, Base::bufferSlot());
   }
   const T* bufferBegin = buffer();
   const T* bufferEnd = buffer() + size();

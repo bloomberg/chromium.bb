@@ -88,21 +88,6 @@ class MarkingVisitorImpl {
   }
 #endif
 
-  inline void registerMovingObjectReference(MovableReference* slot) {
-    if (toDerived()->getMarkingMode() != Visitor::GlobalMarkingWithCompaction)
-      return;
-    toDerived()->heap().registerMovingObjectReference(slot);
-  }
-
-  inline void registerMovingObjectCallback(MovableReference reference,
-                                           MovingObjectCallback callback,
-                                           void* callbackData) {
-    if (toDerived()->getMarkingMode() != Visitor::GlobalMarkingWithCompaction)
-      return;
-    toDerived()->heap().registerMovingObjectCallback(reference, callback,
-                                                     callbackData);
-  }
-
   inline bool ensureMarked(const void* objectPointer) {
     if (!objectPointer)
       return false;

@@ -349,12 +349,6 @@ class CountingVisitor : public Visitor {
     return true;
   }
 
-  void registerMovingObjectReference(MovableReference*) override {}
-
-  void registerMovingObjectCallback(MovableReference,
-                                    MovingObjectCallback,
-                                    void*) override {}
-
   size_t count() { return m_count; }
   void reset() { m_count = 0; }
 
@@ -3771,7 +3765,6 @@ TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers) {
       pointer1 = object1.get();
       pointer2 = object2.get();
       void* objects[2] = {object1.get(), object2.get()};
-      ThreadState::GCForbiddenScope gcScope(ThreadState::current());
       RefCountedGarbageCollectedVisitor visitor(ThreadState::current(), 2,
                                                 objects);
       ThreadState::current()->visitPersistents(&visitor);
@@ -3789,7 +3782,6 @@ TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers) {
       // At this point, the reference counts of object1 and object2 are 0.
       // Only pointer1 and pointer2 keep references to object1 and object2.
       void* objects[] = {0};
-      ThreadState::GCForbiddenScope gcScope(ThreadState::current());
       RefCountedGarbageCollectedVisitor visitor(ThreadState::current(), 0,
                                                 objects);
       ThreadState::current()->visitPersistents(&visitor);
@@ -3800,7 +3792,6 @@ TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers) {
       Persistent<RefCountedAndGarbageCollected> object1(pointer1);
       Persistent<RefCountedAndGarbageCollected2> object2(pointer2);
       void* objects[2] = {object1.get(), object2.get()};
-      ThreadState::GCForbiddenScope gcScope(ThreadState::current());
       RefCountedGarbageCollectedVisitor visitor(ThreadState::current(), 2,
                                                 objects);
       ThreadState::current()->visitPersistents(&visitor);
@@ -3964,7 +3955,6 @@ TEST(HeapTest, CheckAndMarkPointer) {
   // checkAndMarkPointer tests.
   {
     TestGCScope scope(BlinkGC::HeapPointersOnStack);
-    ThreadState::GCForbiddenScope gcScope(ThreadState::current());
     CountingVisitor visitor(ThreadState::current());
     EXPECT_TRUE(scope.allThreadsParked());  // Fail the test if we could not
                                             // park all threads.
@@ -3986,7 +3976,6 @@ TEST(HeapTest, CheckAndMarkPointer) {
   clearOutOldGarbage();
   {
     TestGCScope scope(BlinkGC::HeapPointersOnStack);
-    ThreadState::GCForbiddenScope gcScope(ThreadState::current());
     CountingVisitor visitor(ThreadState::current());
     EXPECT_TRUE(scope.allThreadsParked());
     heap.flushHeapDoesNotContainCache();
@@ -5885,7 +5874,6 @@ class PartObject {
 };
 
 TEST(HeapTest, TraceIfNeeded) {
-  ThreadState::GCForbiddenScope scope(ThreadState::current());
   CountingVisitor visitor(ThreadState::current());
 
   {

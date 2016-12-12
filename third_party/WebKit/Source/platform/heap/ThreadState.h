@@ -284,8 +284,6 @@ class PLATFORM_EXPORT ThreadState {
   // the executions of mutators.
   void makeConsistentForMutator();
 
-  void compact();
-
   // Support for disallowing allocation. Mainly used for sanity
   // checks asserts.
   bool isAllocationAllowed() const {
@@ -319,20 +317,6 @@ class PLATFORM_EXPORT ThreadState {
       m_threadState->enterGCForbiddenScope();
     }
     ~MainThreadGCForbiddenScope() { m_threadState->leaveGCForbiddenScope(); }
-
-   private:
-    ThreadState* const m_threadState;
-  };
-
-  class GCForbiddenScope final {
-    STACK_ALLOCATED();
-
-   public:
-    explicit GCForbiddenScope(ThreadState* threadState)
-        : m_threadState(threadState) {
-      m_threadState->enterGCForbiddenScope();
-    }
-    ~GCForbiddenScope() { m_threadState->leaveGCForbiddenScope(); }
 
    private:
     ThreadState* const m_threadState;
@@ -577,13 +561,9 @@ class PLATFORM_EXPORT ThreadState {
 
   v8::Isolate* isolate() const { return m_isolate; }
 
-  BlinkGC::StackState stackState() const { return m_stackState; }
-
   void collectGarbage(BlinkGC::StackState, BlinkGC::GCType, BlinkGC::GCReason);
   void collectGarbageForTerminatingThread();
   void collectAllGarbage();
-
-  static const char* gcReasonString(BlinkGC::GCReason);
 
  private:
   enum SnapshotType { HeapSnapshot, FreelistSnapshot };
