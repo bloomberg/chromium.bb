@@ -112,6 +112,19 @@ void SetValidNavigationID(NavigationID* navigation_id) {
   navigation_id->main_frame_url = GURL("http://127.0.0.1");
 }
 
+void ModifySubresourceForComparison(URLRequestSummary* subresource,
+                                    bool match_navigation_id) {
+  if (!match_navigation_id)
+    SetValidNavigationID(&subresource->navigation_id);
+  if (subresource->resource_type == content::RESOURCE_TYPE_IMAGE &&
+      subresource->priority == net::LOWEST) {
+    // Fuzzy comparison for images because an image priority can be
+    // boosted during layout via
+    // ResourceFetcher::updateAllImageResourcePriorities().
+    subresource->priority = net::MEDIUM;
+  }
+}
+
 // Does a custom comparison of subresources of URLRequestSummary
 // and fail the test if the expectation is not met.
 void CompareSubresources(std::vector<URLRequestSummary> actual_subresources,
@@ -121,12 +134,11 @@ void CompareSubresources(std::vector<URLRequestSummary> actual_subresources,
   // ResourcePrefetchPredictor only cares about the first occurrence of each.
   RemoveDuplicateSubresources(&actual_subresources);
 
-  if (!match_navigation_id) {
-    for (auto& subresource : actual_subresources)
-      SetValidNavigationID(&subresource.navigation_id);
-    for (auto& subresource : expected_subresources)
-      SetValidNavigationID(&subresource.navigation_id);
-  }
+  for (auto& subresource : actual_subresources)
+    ModifySubresourceForComparison(&subresource, match_navigation_id);
+  for (auto& subresource : expected_subresources)
+    ModifySubresourceForComparison(&subresource, match_navigation_id);
+
   EXPECT_THAT(actual_subresources,
               testing::UnorderedElementsAreArray(expected_subresources));
 }
