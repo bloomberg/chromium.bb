@@ -45,14 +45,9 @@ class AutoplayUmaHelperTest : public testing::Test {
     return toHTMLVideoElement(*element);
   }
 
-  MockAutoplayUmaHelper& umaHelper() {
-    return *(static_cast<MockAutoplayUmaHelper*>(
-        mediaElement().m_autoplayUmaHelper.get()));
-  }
+  MockAutoplayUmaHelper& umaHelper() { return *m_umaHelper; }
 
   std::unique_ptr<DummyPageHolder>& pageHolder() { return m_pageHolder; }
-
-  MOCK_METHOD0(TestEnded, void());
 
  private:
   void SetUp() override {
@@ -60,22 +55,24 @@ class AutoplayUmaHelperTest : public testing::Test {
     document().documentElement()->setInnerHTML("<video id=video></video>",
                                                ASSERT_NO_EXCEPTION);
     HTMLMediaElement& element = mediaElement();
-    element.m_autoplayUmaHelper = new MockAutoplayUmaHelper(&element);
+    m_umaHelper = new MockAutoplayUmaHelper(&element);
+    element.m_autoplayUmaHelper = m_umaHelper;
   }
 
+  void TearDown() override { m_umaHelper.clear(); }
+
   std::unique_ptr<DummyPageHolder> m_pageHolder;
+  Persistent<MockAutoplayUmaHelper> m_umaHelper;
 };
 
 TEST_F(AutoplayUmaHelperTest, VisibilityChangeWhenUnload) {
-  // This is to avoid handleContextDestroyed() to be called during TearDown().
-  EXPECT_CALL(*this, TestEnded())
-      .After(EXPECT_CALL(umaHelper(), handleContextDestroyed()));
+  EXPECT_CALL(umaHelper(), handleContextDestroyed());
 
   mediaElement().setMuted(true);
   umaHelper().onAutoplayInitiated(AutoplaySource::Attribute);
   umaHelper().handlePlayingEvent();
   pageHolder().reset();
-  TestEnded();
+  ::testing::Mock::VerifyAndClear(&umaHelper());
 }
 
 }  // namespace blink
