@@ -402,7 +402,7 @@ fuzzer_test("gpu_fuzzer") {
   libfuzzer_options = [ "max_len=16384" ]
 }
 
-fuzzer_test("gpu_fuzzer_angle") {
+fuzzer_test("gpu_angle_fuzzer") {
   sources = [
     "command_buffer/tests/fuzzer_main.cc",
   ]
