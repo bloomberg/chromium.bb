@@ -152,7 +152,13 @@ def get_fyi_waterfall_config():
       {
        'gpu': '8086:22b1',
        'os': 'Windows-10-10586',
-       'device_ids': ['build47-b4', 'build48-b4'],
+       'device_ids': [
+           'build136-b1', 'build137-b1', 'build138-b1', 'build139-b1',
+           'build140-b1', 'build141-b1', 'build142-b1', 'build143-b1',
+           'build144-b1', 'build145-b1', 'build146-b1', 'build147-b1',
+           'build148-b1', 'build149-b1', 'build150-b1', 'build151-b1',
+           'build152-b1', 'build153-b1', 'build154-b1', 'build155-b1',
+           'build47-b4', 'build48-b4'],
        'perf_tests': [
          ('cc_perftests', 0),
          ('gpu_perftests', 0),
@@ -161,8 +167,7 @@ def get_fyi_waterfall_config():
          ('performance_browser_tests', 1),
          ('tracing_perftests', 1)]
       }
-    ],
-    use_whitelist=True)
+    ])
   waterfall = add_tester(
     waterfall, 'Android Swarming N5X Tester',
     'fyi-android-swarming-n5x', 'android',
@@ -177,8 +182,7 @@ def get_fyi_waterfall_config():
            'build245-m4--device7'
         ]
       }
-    ],
-    use_whitelist=True)
+    ])
   return waterfall
 
 
@@ -692,6 +696,7 @@ def generate_all_tests(waterfall):
   benchmark_sharding_map['22'] = shard_benchmarks(22, all_benchmarks)
   benchmark_sharding_map['5'] = shard_benchmarks(5, all_benchmarks)
   benchmark_sharding_map['1'] = shard_benchmarks(1, all_benchmarks)
+  benchmark_sharding_map['7'] = shard_benchmarks(7, all_benchmarks)
 
   for name, config in waterfall['testers'].iteritems():
     use_whitelist = config['use_whitelist']
