@@ -19,6 +19,7 @@
 #include "content/browser/android/content_view_statics.h"
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
+#include "content/browser/android/joystick_scroll_provider.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/android/web_contents_observer_proxy.h"
@@ -54,6 +55,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"InterstitialPageDelegateAndroid",
      content::InterstitialPageDelegateAndroid::
          RegisterInterstitialPageDelegateAndroid},
+    {"JoystickScrollProvider", content::RegisterJoystickScrollProvider},
     {"LoadUrlParams", content::RegisterLoadUrlParams},
     {"MediaSessionImpl", content::MediaSessionAndroid::Register},
     {"NavigationControllerAndroid",

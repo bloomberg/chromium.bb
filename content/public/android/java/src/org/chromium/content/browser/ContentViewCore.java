@@ -344,7 +344,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private final RenderCoordinates mRenderCoordinates;
 
     // Provides smooth gamepad joystick-driven scrolling.
-    private final JoystickScrollProvider mJoystickScrollProvider;
+    private JoystickScrollProvider mJoystickScrollProvider;
 
     // Provides smooth gamepad joystick-driven zooming.
     private JoystickZoomProvider mJoystickZoomProvider;
@@ -386,10 +386,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     // Temporary notification to tell onSizeChanged to focus a form element,
     // because the OSK was just brought up.
     private final Rect mFocusPreOSKViewportRect = new Rect();
-
-    // Store the x, y coordinates of the last touch or mouse event.
-    private float mLastFocalEventX;
-    private float mLastFocalEventY;
 
     // Whether a touch scroll sequence is active, used to hide text selection
     // handles. Note that a scroll sequence will *always* bound a pinch
@@ -453,7 +449,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mContext = context;
         mProductVersion = productVersion;
         mRenderCoordinates = new RenderCoordinates();
-        mJoystickScrollProvider = new JoystickScrollProvider(this);
         mAccessibilityManager = (AccessibilityManager)
                 getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
         mSystemCaptioningBridge = CaptioningBridgeFactory.getSystemCaptioningBridge(mContext);
@@ -635,6 +630,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mRenderCoordinates.reset();
         mRenderCoordinates.setDeviceScaleFactor(dipScale, windowAndroid.getContext());
 
+        mJoystickScrollProvider =
+                new JoystickScrollProvider(webContents, getContainerView(), windowAndroid);
+
         mNativeContentViewCore = nativeInit(webContents, mViewAndroidDelegate, windowNativePointer,
                 dipScale, mRetainedJavaScriptObjects);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
@@ -669,6 +667,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         destroyPastePopup();
 
         addDisplayAndroidObserverIfNeeded();
+
+        mJoystickScrollProvider.updateWindowAndroid(windowAndroid);
 
         for (WindowAndroidChangedObserver observer : mWindowAndroidChangedObservers) {
             observer.onWindowAndroidChanged(windowAndroid);
@@ -1390,6 +1390,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         GamepadList.onAttachedToWindow(mContext);
         mAccessibilityManager.addAccessibilityStateChangeListener(this);
         mSystemCaptioningBridge.addListener(this);
+        mJoystickScrollProvider.onViewAttachedToWindow();
         mImeAdapter.onViewAttachedToWindow();
     }
 
@@ -1418,6 +1419,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     public void onDetachedFromWindow() {
         mAttachedToWindow = false;
         mImeAdapter.onViewDetachedFromWindow();
+        mJoystickScrollProvider.onViewDetachedFromWindow();
         mZoomControlsDelegate.dismissZoomPicker();
         removeDisplayAndroidObserver();
         GamepadList.onDetachedFromWindow();
@@ -1542,7 +1544,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
     public void onFocusChanged(boolean gainFocus) {
         mImeAdapter.onViewFocusChanged(gainFocus);
-        mJoystickScrollProvider.setEnabled(gainFocus && !isFocusedNodeEditable());
+
+        // Used in test that bypasses initialize().
+        if (mJoystickScrollProvider != null) {
+            mJoystickScrollProvider.setEnabled(gainFocus && !isFocusedNodeEditable());
+        }
 
         if (gainFocus) {
             restoreSelectionPopupsIfNecessary();
@@ -1643,8 +1649,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     public boolean onGenericMotionEvent(MotionEvent event) {
         if (GamepadList.onGenericMotionEvent(event)) return true;
         if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0) {
-            mLastFocalEventX = event.getX();
-            mLastFocalEventY = event.getY();
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_SCROLL:
                     if (mNativeContentViewCore == 0) return false;
@@ -1713,7 +1717,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      * are overridden, so that View's mScrollX and mScrollY will be unchanged at
      * (0, 0). This is critical for drawing ContentView correctly.
      */
-    public void scrollBy(float dxPix, float dyPix, boolean useLastFocalEventLocation) {
+    public void scrollBy(float dxPix, float dyPix) {
         if (mNativeContentViewCore == 0) return;
         if (dxPix == 0 && dyPix == 0) return;
         long time = SystemClock.uptimeMillis();
@@ -1722,11 +1726,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         // such cases ensures a consistent gesture event stream.
         if (mPotentiallyActiveFlingCount > 0) nativeFlingCancel(mNativeContentViewCore, time);
         // x/y represents starting location of scroll.
-        final float x = useLastFocalEventLocation ? mLastFocalEventX : 0f;
-        final float y = useLastFocalEventLocation ? mLastFocalEventY : 0f;
-        nativeScrollBegin(
-                mNativeContentViewCore, time, x, y, -dxPix, -dyPix, !useLastFocalEventLocation);
-        nativeScrollBy(mNativeContentViewCore, time, x, y, dxPix, dyPix);
+        nativeScrollBegin(mNativeContentViewCore, time, 0f, 0f, -dxPix, -dyPix, true);
+        nativeScrollBy(mNativeContentViewCore, time, 0f, 0f, dxPix, dyPix);
         nativeScrollEnd(mNativeContentViewCore, time);
     }
 
@@ -1739,7 +1740,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         final float yCurrentPix = mRenderCoordinates.getScrollYPix();
         final float dxPix = xPix - xCurrentPix;
         final float dyPix = yPix - yCurrentPix;
-        scrollBy(dxPix, dyPix, false);
+        scrollBy(dxPix, dyPix);
     }
 
     // NOTE: this can go away once ContentView.getScrollX() reports correct values.
@@ -1833,8 +1834,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         }
 
         if (!mPopupZoomer.isShowing()) mPopupZoomer.setLastTouch(xPix, yPix);
-        mLastFocalEventX = xPix;
-        mLastFocalEventY = yPix;
     }
 
     public void setZoomControlsDelegate(ZoomControlsDelegate zoomControlsDelegate) {
