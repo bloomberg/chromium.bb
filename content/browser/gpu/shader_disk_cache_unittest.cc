@@ -4,14 +4,15 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "gpu/ipc/host/shader_disk_cache.h"
+#include "content/browser/browser_thread_impl.h"
+#include "content/browser/gpu/shader_disk_cache.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gpu {
+namespace content {
 namespace {
 
 const int kDefaultClientId = 42;
@@ -23,13 +24,10 @@ const char kCacheValue[] = "cached value";
 class ShaderDiskCacheTest : public testing::Test {
  public:
   ShaderDiskCacheTest()
-      : cache_thread_("CacheThread") {
-    base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
-    CHECK(cache_thread_.StartWithOptions(options));
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
     ShaderCacheFactory::InitInstance(
         base::ThreadTaskRunnerHandle::Get(),
-        cache_thread_.task_runner());
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
   }
 
   ~ShaderDiskCacheTest() override {}
@@ -39,7 +37,7 @@ class ShaderDiskCacheTest : public testing::Test {
   void InitCache() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ShaderCacheFactory::GetInstance()->SetCacheInfo(kDefaultClientId,
-                                                    cache_path());
+                                                        cache_path());
   }
 
  private:
@@ -48,8 +46,7 @@ class ShaderDiskCacheTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  base::Thread cache_thread_;
-  base::MessageLoopForIO message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderDiskCacheTest);
 };
@@ -80,4 +77,4 @@ TEST_F(ShaderDiskCacheTest, ClearsCache) {
   EXPECT_EQ(0, cache->Size());
 };
 
-}  // namespace gpu
+}  // namespace content

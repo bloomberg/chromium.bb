@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
+#include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
@@ -25,7 +26,6 @@
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
-#include "gpu/ipc/host/shader_disk_cache.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
@@ -132,7 +132,7 @@ void ClearShaderCacheOnIOThread(const base::FilePath& path,
                                 const base::Time end,
                                 const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  gpu::ShaderCacheFactory::GetInstance()->ClearByPath(
+  ShaderCacheFactory::GetInstance()->ClearByPath(
       path, begin, end, base::Bind(&ClearedShaderCache, callback));
 }
 
