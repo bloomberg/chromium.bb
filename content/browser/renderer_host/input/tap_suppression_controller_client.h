@@ -18,9 +18,14 @@ class TapSuppressionControllerClient {
   // Called whenever the deferred tap down (if saved) should be dropped totally.
   virtual void DropStashedTapDown() = 0;
 
-  // Called whenever the deferred tap down (if saved) should be forwarded to the
-  // renderer. The tap down should go back to normal path it was
-  // on before being deferred.
+  // Called whenever the deferred tap down and other gesture events (if saved)
+  // should be forwarded to the renderer. The tap down (and possibly other
+  // gesture events) should go back to normal path they were on before being
+  // deferred.
+  virtual void ForwardStashedGestureEvents() = 0;
+
+  // Called whenever only the deferred tap down (if saved) should be forwarded
+  // to the renderer. Other saved gesture events will be dropped.
   virtual void ForwardStashedTapDown() = 0;
 
  protected:

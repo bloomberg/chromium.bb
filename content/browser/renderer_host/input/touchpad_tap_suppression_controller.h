@@ -54,6 +54,7 @@ class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
 
   // TapSuppressionControllerClient implementation.
   void DropStashedTapDown() override;
+  void ForwardStashedGestureEvents() override;
   void ForwardStashedTapDown() override;
 
   TouchpadTapSuppressionControllerClient* client_;

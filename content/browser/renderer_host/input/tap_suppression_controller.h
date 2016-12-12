@@ -70,6 +70,12 @@ class CONTENT_EXPORT TapSuppressionController {
     GFC_IN_PROGRESS,
     TAP_DOWN_STASHED,
     LAST_CANCEL_STOPPED_FLING,
+    // When the stashed TapDown event is dropped or forwarded due to tap down
+    // timer expiration, the controller enters the SUPPRESSING_TAPS state.
+    // This state shows that the controller will suppress LongTap,
+    // TwoFingerTap, and TapCancel gesture events until the next tapDown event
+    // arrives.
+    SUPPRESSING_TAPS,
   };
 
   TapSuppressionControllerClient* client_;

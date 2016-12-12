@@ -40,6 +40,7 @@ class TouchscreenTapSuppressionController
  private:
   // TapSuppressionControllerClient implementation.
   void DropStashedTapDown() override;
+  void ForwardStashedGestureEvents() override;
   void ForwardStashedTapDown() override;
 
   GestureEventQueue* gesture_event_queue_;
@@ -47,6 +48,7 @@ class TouchscreenTapSuppressionController
   typedef std::unique_ptr<GestureEventWithLatencyInfo> ScopedGestureEvent;
   ScopedGestureEvent stashed_tap_down_;
   ScopedGestureEvent stashed_show_press_;
+  ScopedGestureEvent stashed_long_press_;
 
   // The core controller of tap suppression.
   TapSuppressionController controller_;

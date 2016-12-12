@@ -163,6 +163,9 @@ bool GestureEventQueue::ShouldForwardForTapSuppression(
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTap:
     case WebInputEvent::GestureDoubleTap:
+    case WebInputEvent::GestureLongPress:
+    case WebInputEvent::GestureLongTap:
+    case WebInputEvent::GestureTwoFingerTap:
       if (gesture_event.event.sourceDevice ==
           blink::WebGestureDeviceTouchscreen) {
         return !touchscreen_tap_suppression_controller_.FilterTapEvent(

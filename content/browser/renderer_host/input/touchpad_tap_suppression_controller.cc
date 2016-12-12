@@ -37,6 +37,12 @@ bool TouchpadTapSuppressionController::ShouldSuppressMouseUp() {
 void TouchpadTapSuppressionController::DropStashedTapDown() {
 }
 
+void TouchpadTapSuppressionController::ForwardStashedGestureEvents() {
+  // Mouse downs are not handled by gesture event filter; so, they are
+  // immediately forwarded to the renderer.
+  client_->SendMouseEventImmediately(stashed_mouse_down_);
+}
+
 void TouchpadTapSuppressionController::ForwardStashedTapDown() {
   // Mouse downs are not handled by gesture event filter; so, they are
   // immediately forwarded to the renderer.

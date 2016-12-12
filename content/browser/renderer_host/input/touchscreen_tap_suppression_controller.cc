@@ -44,12 +44,24 @@ bool TouchscreenTapSuppressionController::FilterTapEvent(
       stashed_show_press_.reset(new GestureEventWithLatencyInfo(event));
       return true;
 
+    case WebInputEvent::GestureLongPress:
+      // It is possible that a GestureLongPress arrives after tapDownTimer
+      // expiration, in this case it should still get filtered if the
+      // controller suppresses the tap end events.
+      if (!stashed_tap_down_)
+        return controller_.ShouldSuppressTapEnd();
+
+      stashed_long_press_.reset(new GestureEventWithLatencyInfo(event));
+      return true;
+
     case WebInputEvent::GestureTapUnconfirmed:
       return !!stashed_tap_down_;
 
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTap:
     case WebInputEvent::GestureDoubleTap:
+    case WebInputEvent::GestureLongTap:
+    case WebInputEvent::GestureTwoFingerTap:
       return controller_.ShouldSuppressTapEnd();
 
     default:
@@ -61,15 +73,27 @@ bool TouchscreenTapSuppressionController::FilterTapEvent(
 void TouchscreenTapSuppressionController::DropStashedTapDown() {
   stashed_tap_down_.reset();
   stashed_show_press_.reset();
+  stashed_long_press_.reset();
+}
+
+void TouchscreenTapSuppressionController::ForwardStashedGestureEvents() {
+  DCHECK(stashed_tap_down_);
+  ScopedGestureEvent tap_down = std::move(stashed_tap_down_);
+  ScopedGestureEvent show_press = std::move(stashed_show_press_);
+  ScopedGestureEvent long_press = std::move(stashed_long_press_);
+  gesture_event_queue_->ForwardGestureEvent(*tap_down);
+  if (show_press)
+    gesture_event_queue_->ForwardGestureEvent(*show_press);
+  if (long_press)
+    gesture_event_queue_->ForwardGestureEvent(*long_press);
 }
 
 void TouchscreenTapSuppressionController::ForwardStashedTapDown() {
   DCHECK(stashed_tap_down_);
   ScopedGestureEvent tap_down = std::move(stashed_tap_down_);
-  ScopedGestureEvent show_press = std::move(stashed_show_press_);
   gesture_event_queue_->ForwardGestureEvent(*tap_down);
-  if (show_press)
-    gesture_event_queue_->ForwardGestureEvent(*show_press);
+  stashed_show_press_.reset();
+  stashed_long_press_.reset();
 }
 
 }  // namespace content

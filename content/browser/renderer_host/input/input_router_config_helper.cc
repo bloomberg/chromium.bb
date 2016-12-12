@@ -49,9 +49,16 @@ GestureEventQueue::Config GetGestureEventQueueConfig() {
   config.touchscreen_tap_suppression_config.max_cancel_to_down_time =
       base::TimeDelta::FromMilliseconds(
           gesture_config->fling_max_cancel_to_down_time_in_ms());
+
+  // Tap suppression controller forwards the stashed tapDown and drops the rest
+  // of the stashed events when the tapDownTimer expires. If a fling cancel ack
+  // with |processed = false| arrives before the timer expiration, all stashed
+  // events will be forwarded. The timer is used to avoid waiting for an
+  // arbitrarily late fling cancel ack. Its delay should be large enough for
+  // a long press to get stashed and forwarded if needed.
   config.touchscreen_tap_suppression_config.max_tap_gap_time =
       base::TimeDelta::FromMilliseconds(
-          gesture_config->long_press_time_in_ms());
+          gesture_config->long_press_time_in_ms() + 50);
 
   config.touchpad_tap_suppression_config.enabled =
       gesture_config->fling_touchpad_tap_suppression_enabled();
