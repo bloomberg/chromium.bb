@@ -18,8 +18,9 @@ class InlinedGlobalMarkingVisitor final
   friend class MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
   using Impl = MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
 
-  explicit InlinedGlobalMarkingVisitor(ThreadState* state)
-      : VisitorHelper(state) {}
+  InlinedGlobalMarkingVisitor(ThreadState* state,
+                              Visitor::MarkingMode markingMode)
+      : VisitorHelper(state), m_markingMode(markingMode) {}
 
   // Hack to unify interface to visitor->trace().
   // Without this hack, we need to use visitor.trace() for
@@ -54,14 +55,15 @@ class InlinedGlobalMarkingVisitor final
     return true;
   }
 
-  inline Visitor::MarkingMode getMarkingMode() const {
-    return Visitor::GlobalMarking;
-  }
+  inline Visitor::MarkingMode getMarkingMode() const { return m_markingMode; }
 
  private:
   static InlinedGlobalMarkingVisitor fromHelper(Helper* helper) {
     return *static_cast<InlinedGlobalMarkingVisitor*>(helper);
   }
+
+  // TODO(sof): attempt to unify this field with Visitor::m_markingMode.
+  const Visitor::MarkingMode m_markingMode;
 };
 
 inline void GarbageCollectedMixin::trace(InlinedGlobalMarkingVisitor) {}

@@ -231,9 +231,10 @@ class TraceTrait<const T> : public TraceTrait<T> {};
 template <typename T>
 void TraceTrait<T>::trace(Visitor* visitor, void* self) {
   static_assert(WTF::IsTraceable<T>::value, "T should not be traced");
-  if (visitor->getMarkingMode() == Visitor::GlobalMarking) {
+  if (visitor->isGlobalMarking()) {
     // Switch to inlined global marking dispatch.
-    static_cast<T*>(self)->trace(InlinedGlobalMarkingVisitor(visitor->state()));
+    static_cast<T*>(self)->trace(InlinedGlobalMarkingVisitor(
+        visitor->state(), visitor->getMarkingMode()));
   } else {
     static_cast<T*>(self)->trace(visitor);
   }

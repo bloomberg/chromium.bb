@@ -115,6 +115,7 @@ GamepadExtensions origin_trial_feature_name=WebVR
 GeometryInterfaces status=experimental, implied_by=CompositorWorker
 GetUserMedia status=stable
 GlobalCacheStorage status=stable
+HeapCompaction status=experimental
 IDBObserver status=experimental
 ImageCapture status=experimental, origin_trial_feature_name=ImageCapture
 ImageOrientation status=test

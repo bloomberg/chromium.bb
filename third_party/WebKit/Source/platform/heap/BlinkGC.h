@@ -25,6 +25,22 @@ using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
 using PreFinalizerCallback = bool (*)(void*);
 
+// Simple alias to avoid heap compaction type signatures turning into
+// a sea of generic |void*|s.
+using MovableReference = void*;
+
+// Heap compaction supports registering callbacks that are to be invoked
+// when an object is moved during compaction. This is to support internal
+// location fixups that need to happen as a result.
+//
+// i.e., when the object residing at |from| is moved to |to| by the compaction
+// pass, invoke the callback to adjust any internal references that now need
+// to be |to|-relative.
+using MovingObjectCallback = void (*)(void* callbackData,
+                                      MovableReference from,
+                                      MovableReference to,
+                                      size_t);
+
 // List of typed arenas. The list is used to generate the implementation
 // of typed arena related methods.
 //
@@ -53,6 +69,10 @@ class PLATFORM_EXPORT BlinkGC final {
     // Only the marking task runs in ThreadHeap::collectGarbage().
     // The sweeping task is split into chunks and scheduled lazily.
     GCWithoutSweep,
+    // After the marking task has run in ThreadHeap::collectGarbage(),
+    // sweep compaction of some heap arenas is performed. The sweeping
+    // of the remaining arenas is split into chunks and scheduled lazily.
+    GCWithSweepCompaction,
     // Only the marking task runs just to take a heap snapshot.
     // The sweeping task doesn't run. The marks added in the marking task
     // are just cleared.
@@ -77,7 +97,7 @@ class PLATFORM_EXPORT BlinkGC final {
     NumberOfGCReason,
   };
 
-  enum HeapIndices {
+  enum ArenaIndices {
     EagerSweepArenaIndex = 0,
     NormalPage1ArenaIndex,
     NormalPage2ArenaIndex,

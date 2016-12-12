@@ -2105,6 +2105,11 @@ void HashTable<Key,
                                       Extractor, HashFunctions, Traits,
                                       KeyTraits, Allocator>::process);
   }
+  // If the backing store will be moved by sweep compaction, register the
+  // table reference pointing to the backing store object, so that the
+  // reference is updated upon object relocation. A no-op if not enabled
+  // by the visitor.
+  Allocator::registerBackingStoreReference(visitor, &m_table);
   if (!IsTraceableInCollectionTrait<Traits>::value)
     return;
   if (Traits::weakHandlingFlag == WeakHandlingInCollections) {

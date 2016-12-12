@@ -17,6 +17,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/imports/HTMLImportsController.h"
+#include "platform/heap/HeapCompact.h"
 #include "platform/heap/HeapPage.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
@@ -203,6 +204,10 @@ bool ScriptWrappableVisitor::markWrapperHeader(HeapObjectHeader* header) const {
   if (header->isWrapperHeaderMarked())
     return false;
 
+  // Verify that no compactable & movable objects are slated for
+  // lazy unmarking.
+  DCHECK(!HeapCompact::isCompactableArena(
+      pageFromObject(header)->arena()->arenaIndex()));
   header->markWrapperHeader();
   m_headersToUnmark.push_back(header);
   return true;

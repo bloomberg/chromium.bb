@@ -188,6 +188,20 @@ class PLATFORM_EXPORT HeapAllocator {
   }
 #endif
 
+  template <typename T, typename VisitorDispatcher>
+  static void registerBackingStoreReference(VisitorDispatcher visitor,
+                                            T** slot) {
+    visitor->registerBackingStoreReference(slot);
+  }
+
+  template <typename T, typename VisitorDispatcher>
+  static void registerBackingStoreCallback(VisitorDispatcher visitor,
+                                           T* backingStore,
+                                           MovingObjectCallback callback,
+                                           void* callbackData) {
+    visitor->registerBackingStoreCallback(backingStore, callback, callbackData);
+  }
+
   static void enterGCForbiddenScope() {
     ThreadState::current()->enterGCForbiddenScope();
   }
