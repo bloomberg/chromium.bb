@@ -366,6 +366,9 @@ def PrintPakAnalysis(apk_filename, min_pak_resource_size):
   print 'Total uncompressed size: %s' % _FormatBytes(total_file_size)
   print
 
+  if not paks:
+    return
+
   # Output the table of details about all pak files.
   print '%25s%11s%21s%21s' % (
       'FILENAME', 'RESOURCES', 'COMPRESSED SIZE', 'UNCOMPRESSED SIZE')
