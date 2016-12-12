@@ -167,20 +167,11 @@ enum aome_enc_control_id {
   AOME_SET_ENABLEAUTOBWDREF,
 #endif  // CONFIG_EXT_REFS
 
-  /*!\brief control function to set noise sensitivity
-   *
-   * 0: off, 1: OnYOnly, 2: OnYUV,
-   * 3: OnYUVAggressive, 4: Adaptive
-   *
-   * Supported in codecs: VP8
-   */
-  AOME_SET_NOISE_SENSITIVITY,
-
   /*!\brief Codec control function to set sharpness.
    *
    * Supported in codecs: VP8, AV1
    */
-  AOME_SET_SHARPNESS,
+  AOME_SET_SHARPNESS = AOME_SET_ENABLEAUTOALTREF + 2,
 
   /*!\brief Codec control function to set the threshold for MBs treated static.
    *
@@ -188,19 +179,13 @@ enum aome_enc_control_id {
    */
   AOME_SET_STATIC_THRESHOLD,
 
-  /*!\brief Codec control function to set the number of token partitions.
-   *
-   * Supported in codecs: VP8
-   */
-  AOME_SET_TOKEN_PARTITIONS,
-
   /*!\brief Codec control function to get last quantizer chosen by the encoder.
    *
    * Return value uses internal quantizer scale defined by the codec.
    *
    * Supported in codecs: VP8, AV1
    */
-  AOME_GET_LAST_QUANTIZER,
+  AOME_GET_LAST_QUANTIZER = AOME_SET_STATIC_THRESHOLD + 2,
 
   /*!\brief Codec control function to get last quantizer chosen by the encoder.
    *
@@ -257,12 +242,6 @@ enum aome_enc_control_id {
    */
   AOME_SET_MAX_INTRA_BITRATE_PCT,
 
-  /*!\brief Codec control function to set reference and update frame flags.
-   *
-   *  Supported in codecs: VP8
-   */
-  AOME_SET_FRAME_FLAGS,
-
   /*!\brief Codec control function to set max data rate for Inter frames.
    *
    * This value controls additional clamping on the maximum size of an
@@ -276,7 +255,7 @@ enum aome_enc_control_id {
    *
    * Supported in codecs: AV1
    */
-  AV1E_SET_MAX_INTER_BITRATE_PCT,
+  AV1E_SET_MAX_INTER_BITRATE_PCT = AOME_SET_MAX_INTRA_BITRATE_PCT + 2,
 
   /*!\brief Boost percentage for Golden Frame in CBR mode.
    *
@@ -293,14 +272,6 @@ enum aome_enc_control_id {
    */
   AV1E_SET_GF_CBR_BOOST_PCT,
 
-  /*!\brief Codec control function to set encoder screen content mode.
-   *
-   * 0: off, 1: On, 2: On with more aggressive rate control.
-   *
-   * Supported in codecs: VP8
-   */
-  AOME_SET_SCREEN_CONTENT_MODE,
-
   /*!\brief Codec control function to set lossless encoding mode.
    *
    * AV1 can operate in lossless encoding mode, in which the bitstream
@@ -314,7 +285,7 @@ enum aome_enc_control_id {
    *
    * Supported in codecs: AV1
    */
-  AV1E_SET_LOSSLESS,
+  AV1E_SET_LOSSLESS = AV1E_SET_GF_CBR_BOOST_PCT + 2,
 #if CONFIG_AOM_QM
   /*!\brief Codec control function to encode with quantisation matrices.
    *
@@ -616,20 +587,6 @@ typedef struct aom_scaling_mode {
   AOM_SCALING_MODE v_scaling_mode; /**< vertical scaling mode   */
 } aom_scaling_mode_t;
 
-/*!\brief VP8 token partition mode
- *
- * This defines VP8 partitioning mode for compressed data, i.e., the number of
- * sub-streams in the bitstream. Used for parallelized decoding.
- *
- */
-
-typedef enum {
-  AOM_ONE_TOKENPARTITION = 0,
-  AOM_TWO_TOKENPARTITION = 1,
-  AOM_FOUR_TOKENPARTITION = 2,
-  AOM_EIGHT_TOKENPARTITION = 3
-} aome_token_partitions;
-
 /*!brief AV1 encoder content type */
 typedef enum {
   AOM_CONTENT_DEFAULT,
@@ -654,8 +611,6 @@ typedef enum { AOM_TUNE_PSNR, AOM_TUNE_SSIM } aom_tune_metric;
 
 AOM_CTRL_USE_TYPE_DEPRECATED(AOME_USE_REFERENCE, int)
 #define AOM_CTRL_AOME_USE_REFERENCE
-AOM_CTRL_USE_TYPE(AOME_SET_FRAME_FLAGS, int)
-#define AOM_CTRL_AOME_SET_FRAME_FLAGS
 AOM_CTRL_USE_TYPE(AOME_SET_ROI_MAP, aom_roi_map_t *)
 #define AOM_CTRL_AOME_SET_ROI_MAP
 AOM_CTRL_USE_TYPE(AOME_SET_ACTIVEMAP, aom_active_map_t *)
@@ -673,14 +628,10 @@ AOM_CTRL_USE_TYPE(AOME_SET_ENABLEAUTOBWDREF, unsigned int)
 #define AOM_CTRL_AOME_SET_ENABLEAUTOBWDREF
 #endif  // CONFIG_EXT_REFS
 
-AOM_CTRL_USE_TYPE(AOME_SET_NOISE_SENSITIVITY, unsigned int)
-#define AOM_CTRL_AOME_SET_NOISE_SENSITIVITY
 AOM_CTRL_USE_TYPE(AOME_SET_SHARPNESS, unsigned int)
 #define AOM_CTRL_AOME_SET_SHARPNESS
 AOM_CTRL_USE_TYPE(AOME_SET_STATIC_THRESHOLD, unsigned int)
 #define AOM_CTRL_AOME_SET_STATIC_THRESHOLD
-AOM_CTRL_USE_TYPE(AOME_SET_TOKEN_PARTITIONS, int) /* aome_token_partitions */
-#define AOM_CTRL_AOME_SET_TOKEN_PARTITIONS
 
 AOM_CTRL_USE_TYPE(AOME_SET_ARNR_MAXFRAMES, unsigned int)
 #define AOM_CTRL_AOME_SET_ARNR_MAXFRAMES
@@ -707,9 +658,6 @@ AOM_CTRL_USE_TYPE(AOME_SET_MAX_INTRA_BITRATE_PCT, unsigned int)
 #define AOM_CTRL_AOME_SET_MAX_INTRA_BITRATE_PCT
 AOM_CTRL_USE_TYPE(AOME_SET_MAX_INTER_BITRATE_PCT, unsigned int)
 #define AOM_CTRL_AOME_SET_MAX_INTER_BITRATE_PCT
-
-AOM_CTRL_USE_TYPE(AOME_SET_SCREEN_CONTENT_MODE, unsigned int)
-#define AOM_CTRL_AOME_SET_SCREEN_CONTENT_MODE
 
 AOM_CTRL_USE_TYPE(AV1E_SET_GF_CBR_BOOST_PCT, unsigned int)
 #define AOM_CTRL_AV1E_SET_GF_CBR_BOOST_PCT
