@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 
+#include <set>
+
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
@@ -94,6 +96,8 @@ user_manager::User* FakeChromeUserManager::AddArcKioskAppUser(
     const AccountId& account_id) {
   user_manager::User* user =
       user_manager::User::CreateArcKioskAppUser(account_id);
+  user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
+      account_id.GetUserEmail()));
   users_.push_back(user);
   return user;
 }

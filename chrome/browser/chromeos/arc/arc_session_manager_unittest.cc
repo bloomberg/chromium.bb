@@ -48,12 +48,12 @@
 
 namespace arc {
 
-class ArcSessionManagerTest : public testing::Test {
+class ArcSessionManagerTestBase : public testing::Test {
  public:
-  ArcSessionManagerTest()
+  ArcSessionManagerTestBase()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        user_manager_enabler_(new chromeos::FakeChromeUserManager) {}
-  ~ArcSessionManagerTest() override = default;
+        user_manager_enabler_(new chromeos::FakeChromeUserManager()) {}
+  ~ArcSessionManagerTestBase() override = default;
 
   void SetUp() override {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
@@ -67,6 +67,7 @@ class ArcSessionManagerTest : public testing::Test {
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
+    profile_builder.SetProfileName("user@gmail.com");
     profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestArcProfile"));
 
     profile_ = profile_builder.Build();
@@ -80,11 +81,6 @@ class ArcSessionManagerTest : public testing::Test {
 
     // Check initial conditions.
     EXPECT_TRUE(bridge_service()->stopped());
-
-    const AccountId account_id(
-        AccountId::FromUserEmailGaiaId("user@gmail.com", "1234567890"));
-    GetFakeUserManager()->AddUser(account_id);
-    GetFakeUserManager()->LoginUser(account_id);
 
     chromeos::WallpaperManager::Initialize();
   }
@@ -127,11 +123,10 @@ class ArcSessionManagerTest : public testing::Test {
   void StartPreferenceSyncing() const {
     PrefServiceSyncableFromProfile(profile_.get())
         ->GetSyncableService(syncer::PREFERENCES)
-        ->MergeDataAndStartSyncing(syncer::PREFERENCES, syncer::SyncDataList(),
-                                   std::unique_ptr<syncer::SyncChangeProcessor>(
-                                       new syncer::FakeSyncChangeProcessor),
-                                   std::unique_ptr<syncer::SyncErrorFactory>(
-                                       new syncer::SyncErrorFactoryMock()));
+        ->MergeDataAndStartSyncing(
+            syncer::PREFERENCES, syncer::SyncDataList(),
+            base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
+            base::MakeUnique<syncer::SyncErrorFactoryMock>());
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -141,6 +136,23 @@ class ArcSessionManagerTest : public testing::Test {
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
 
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTestBase);
+};
+
+class ArcSessionManagerTest : public ArcSessionManagerTestBase {
+ public:
+  ArcSessionManagerTest() = default;
+
+  void SetUp() override {
+    ArcSessionManagerTestBase::SetUp();
+
+    const AccountId account_id(AccountId::FromUserEmailGaiaId(
+        profile()->GetProfileUserName(), "1234567890"));
+    GetFakeUserManager()->AddUser(account_id);
+    GetFakeUserManager()->LoginUser(account_id);
+  }
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTest);
 };
 
@@ -483,6 +495,40 @@ TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   arc_session_manager()->Shutdown();
+}
+
+class ArcSessionManagerKioskTest : public ArcSessionManagerTestBase {
+ public:
+  ArcSessionManagerKioskTest() = default;
+
+  void SetUp() override {
+    ArcSessionManagerTestBase::SetUp();
+    const AccountId account_id(
+        AccountId::FromUserEmail(profile()->GetProfileUserName()));
+    GetFakeUserManager()->AddArcKioskAppUser(account_id);
+    GetFakeUserManager()->LoginUser(account_id);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerKioskTest);
+};
+
+TEST_F(ArcSessionManagerKioskTest, AuthFailure) {
+  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  // Replace chrome::AttemptUserExit() for testing.
+  // At the end of test, leave the dangling pointer |terminated|,
+  // assuming the callback is invoked exactly once in OnProvisioningFinished()
+  // and not invoked then, including TearDown().
+  bool terminated = false;
+  arc_session_manager()->SetAttemptUserExitCallbackForTesting(
+      base::Bind([](bool* terminated) { *terminated = true; }, &terminated));
+
+  arc_session_manager()->OnProvisioningFinished(
+      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
+  EXPECT_TRUE(terminated);
 }
 
 }  // namespace arc

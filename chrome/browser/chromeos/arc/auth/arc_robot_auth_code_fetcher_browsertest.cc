@@ -12,15 +12,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/auth/arc_robot_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/common/auth.mojom.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
@@ -66,16 +64,6 @@ net::URLRequestJob* ResponseJob(net::URLRequest* request,
                                     response_data, true);
 }
 
-class FakeAuthInstance : public arc::mojom::AuthInstance {
- public:
-  void Init(arc::mojom::AuthHostPtr host_ptr) override {}
-  void OnAccountInfoReady(arc::mojom::AccountInfoPtr account_info) override {
-    ASSERT_FALSE(callback.is_null());
-    callback.Run(account_info);
-  }
-  base::Callback<void(const arc::mojom::AccountInfoPtr&)> callback;
-};
-
 }  // namespace
 
 class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
@@ -93,12 +81,13 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    interceptor_.reset(new policy::TestRequestInterceptor(
+    interceptor_ = base::MakeUnique<policy::TestRequestInterceptor>(
         "localhost", content::BrowserThread::GetTaskRunnerForThread(
-                         content::BrowserThread::IO)));
+                         content::BrowserThread::IO));
 
-    user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
-        new chromeos::FakeChromeUserManager));
+    user_manager_enabler_ =
+        base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
+            new chromeos::FakeChromeUserManager());
 
     const AccountId account_id(AccountId::FromUserEmail(kFakeUserName));
     GetFakeUserManager()->AddArcKioskAppUser(account_id);
@@ -118,14 +107,9 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
             cloud_policy_manager->core()->client());
     cloud_policy_client->SetDMToken("fake-dm-token");
     cloud_policy_client->client_id_ = "client-id";
-
-    ArcBridgeService::Get()->auth()->SetInstance(&auth_instance_);
   }
 
   void TearDownOnMainThread() override {
-    ArcBridgeService::Get()->auth()->SetInstance(nullptr);
-    ArcSessionManager::Get()->Shutdown();
-    ArcServiceManager::Get()->Shutdown();
     user_manager_enabler_.reset();
 
     // Verify that all the expected requests were handled.
@@ -138,10 +122,26 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
         user_manager::UserManager::Get());
   }
 
-  std::unique_ptr<policy::TestRequestInterceptor> interceptor_;
-  FakeAuthInstance auth_instance_;
+  policy::TestRequestInterceptor* interceptor() { return interceptor_.get(); }
+
+  static void FetchAuthCode(ArcRobotAuthCodeFetcher* fetcher,
+                            std::string* output_auth_code) {
+    base::RunLoop run_loop;
+    fetcher->Fetch(base::Bind(
+        [](std::string* output_auth_code, base::RunLoop* run_loop,
+           const std::string& auth_code) {
+          *output_auth_code = auth_code;
+          run_loop->Quit();
+        },
+        output_auth_code, &run_loop));
+    // Because the Fetch() operation needs to interact with other threads,
+    // RunUntilIdle() won't work here. Instead, use Run() and Quit() explicitly
+    // in the callback.
+    run_loop.Run();
+  }
 
  private:
+  std::unique_ptr<policy::TestRequestInterceptor> interceptor_;
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcRobotAuthCodeFetcherBrowserTest);
@@ -149,33 +149,27 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ArcRobotAuthCodeFetcherBrowserTest,
                        RequestAccountInfoSuccess) {
-  interceptor_->PushJobCallback(base::Bind(&ResponseJob));
+  interceptor()->PushJobCallback(base::Bind(&ResponseJob));
 
-  auth_instance_.callback =
-      base::Bind([](const mojom::AccountInfoPtr& account_info) {
-        EXPECT_EQ(kFakeAuthCode, account_info->auth_code.value());
-        EXPECT_EQ(mojom::ChromeAccountType::ROBOT_ACCOUNT,
-                  account_info->account_type);
-        EXPECT_FALSE(account_info->is_managed);
-      });
-
-  ArcAuthService::GetForTest()->RequestAccountInfo();
-  base::RunLoop().RunUntilIdle();
+  std::string auth_code;
+  auto robot_fetcher = base::MakeUnique<ArcRobotAuthCodeFetcher>();
+  FetchAuthCode(robot_fetcher.get(), &auth_code);
+  EXPECT_EQ(kFakeAuthCode, auth_code);
 }
 
 IN_PROC_BROWSER_TEST_F(ArcRobotAuthCodeFetcherBrowserTest,
                        RequestAccountInfoError) {
-  interceptor_->PushJobCallback(
+  interceptor()->PushJobCallback(
       policy::TestRequestInterceptor::BadRequestJob());
 
-  auth_instance_.callback =
-      base::Bind([](const mojom::AccountInfoPtr&) { FAIL(); });
+  // We expect auth_code is empty in this case. So initialize with non-empty
+  // value.
+  std::string auth_code = "NOT-YET-FETCHED";
+  auto robot_fetcher = base::MakeUnique<ArcRobotAuthCodeFetcher>();
+  FetchAuthCode(robot_fetcher.get(), &auth_code);
 
-  ArcSessionManager::Get()->StartArc();
-  ArcAuthService::GetForTest()->RequestAccountInfo();
-  // This MessageLoop will be stopped by AttemptUserExit(), that is called as
-  // a result of error of auth code fetching.
-  base::RunLoop().Run();
+  // Use EXPECT_EQ for better logging in case of failure.
+  EXPECT_EQ(std::string(), auth_code);
 }
 
 }  // namespace arc

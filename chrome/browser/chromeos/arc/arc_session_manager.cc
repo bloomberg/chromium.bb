@@ -81,7 +81,9 @@ ash::ShelfDelegate* GetShelfDelegate() {
 }  // namespace
 
 ArcSessionManager::ArcSessionManager(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), weak_ptr_factory_(this) {
+    : ArcService(bridge_service),
+      attempt_user_exit_callback_(base::Bind(chrome::AttemptUserExit)),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!g_arc_session_manager);
   g_arc_session_manager = this;
@@ -291,7 +293,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       VLOG(1) << "Robot account auth code fetching error";
       // Log out the user. All the cleanup will be done in Shutdown() method.
       // The callback is not called because auth code is empty.
-      chrome::AttemptUserExit();
+      attempt_user_exit_callback_.Run();
       return;
     }
 
@@ -896,6 +898,12 @@ void ArcSessionManager::OnRetryClicked() {
 void ArcSessionManager::OnSendFeedbackClicked() {
   DCHECK(support_host_);
   chrome::OpenFeedbackDialog(nullptr);
+}
+
+void ArcSessionManager::SetAttemptUserExitCallbackForTesting(
+    const base::Closure& callback) {
+  DCHECK(!callback.is_null());
+  attempt_user_exit_callback_ = callback;
 }
 
 std::ostream& operator<<(std::ostream& os,

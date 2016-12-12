@@ -206,6 +206,8 @@ class ArcSessionManager : public ArcService,
 
   void OnProvisioningFinished(ProvisioningResult result);
 
+  void SetAttemptUserExitCallbackForTesting(const base::Closure& callback);
+
  private:
   // Negotiates the terms of service to user.
   void StartTermsOfServiceNegotiation();
@@ -254,6 +256,7 @@ class ArcSessionManager : public ArcService,
   std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;
 
   base::Time sign_in_time_;
+  base::Closure attempt_user_exit_callback_;
 
   base::WeakPtrFactory<ArcSessionManager> weak_ptr_factory_;
 
