@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.browser.JavaScriptCallback;
@@ -178,6 +179,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     @CommandLineFlags.Add("js-flags=--expose-gc")
     @RetryOnFailure
+    @DisabledTest(message = "https://crbug.com/646843")
     public void testHolderFrame() throws Throwable {
         class Test {
             WeakReference<Object> mWeakRefForInner;
