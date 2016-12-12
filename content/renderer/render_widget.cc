@@ -1518,7 +1518,6 @@ void RenderWidget::OnImeSetComposition(
     return;
   ImeEventGuard guard(this);
   blink::WebInputMethodController* controller = GetInputMethodController();
-  DCHECK(controller);
   if (!controller ||
       !controller->setComposition(
           text, WebVector<WebCompositionUnderline>(underlines), selection_start,
