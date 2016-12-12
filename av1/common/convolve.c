@@ -172,8 +172,8 @@ void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
         av1_get_interp_filter_params(interp_filter);
 #endif
     assert(filter_params.taps <= MAX_FILTER_TAP);
-    av1_convolve_horiz(src, src_stride, dst, dst_stride, w, h, filter_params,
-                       subpel_x_q4, x_step_q4, ref_idx);
+    av1_convolve_horiz_facade(src, src_stride, dst, dst_stride, w, h,
+                              filter_params, subpel_x_q4, x_step_q4, ref_idx);
   } else if (ignore_horiz) {
 #if CONFIG_DUAL_FILTER
     InterpFilterParams filter_params =
@@ -183,8 +183,8 @@ void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
         av1_get_interp_filter_params(interp_filter);
 #endif
     assert(filter_params.taps <= MAX_FILTER_TAP);
-    av1_convolve_vert(src, src_stride, dst, dst_stride, w, h, filter_params,
-                      subpel_y_q4, y_step_q4, ref_idx);
+    av1_convolve_vert_facade(src, src_stride, dst, dst_stride, w, h,
+                             filter_params, subpel_y_q4, y_step_q4, ref_idx);
   } else {
     // temp's size is set to a 256 aligned value to facilitate SIMD
     // implementation. The value is greater than (maximum possible intermediate
