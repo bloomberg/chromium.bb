@@ -34,7 +34,6 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "core/frame/DOMWindowProperty.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
