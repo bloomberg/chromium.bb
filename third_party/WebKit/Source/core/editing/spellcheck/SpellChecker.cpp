@@ -52,6 +52,7 @@
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
 #include "core/page/SpellCheckerClient.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextCheckerClient.h"
 
@@ -187,6 +188,9 @@ void SpellChecker::toggleSpellCheckingEnabled() {
 }
 
 void SpellChecker::didBeginEditing(Element* element) {
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+
   if (!isSpellCheckingEnabled())
     return;
 
@@ -366,6 +370,9 @@ void SpellChecker::clearMisspellingsForMovingParagraphs(
 
 void SpellChecker::markMisspellingsForMovingParagraphs(
     const VisibleSelection& movingSelection) {
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // In the long term we should use idle time spell checker to prevent
@@ -398,6 +405,9 @@ void SpellChecker::markMisspellingsInternal(const VisibleSelection& selection) {
 
 void SpellChecker::markMisspellingsAfterApplyingCommand(
     const CompositeEditCommand& cmd) {
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+
   if (!isSpellCheckingEnabled())
     return;
   if (!isSpellCheckingEnabledFor(cmd.endingSelection()))
@@ -868,6 +878,9 @@ static bool shouldCheckOldSelection(const Position& oldSelectionStart) {
 void SpellChecker::respondToChangedSelection(
     const Position& oldSelectionStart,
     FrameSelection::SetSelectionOptions options) {
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+
   TRACE_EVENT0("blink", "SpellChecker::respondToChangedSelection");
   if (!isSpellCheckingEnabledFor(oldSelectionStart))
     return;
@@ -924,6 +937,9 @@ void SpellChecker::removeSpellingMarkersUnderWords(
 }
 
 void SpellChecker::spellCheckAfterBlur() {
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+
   if (!frame().selection().selection().isContentEditable())
     return;
 

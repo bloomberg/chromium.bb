@@ -116,6 +116,7 @@ GeometryInterfaces status=experimental, implied_by=CompositorWorker
 GetUserMedia status=stable
 GlobalCacheStorage status=stable
 IDBObserver status=experimental
+IdleTimeSpellChecking
 ImageCapture status=experimental, origin_trial_feature_name=ImageCapture
 ImageOrientation status=test
 IndexedDBExperimental status=experimental
