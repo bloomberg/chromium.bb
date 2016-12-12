@@ -74,7 +74,7 @@ SIMD_INLINE c_v256 c_v256_load_unaligned(const void *p) {
 }
 
 SIMD_INLINE c_v256 c_v256_load_aligned(const void *p) {
-  if (simd_check && (uintptr_t)p & 31) {
+  if (SIMD_CHECK && (uintptr_t)p & 31) {
     fprintf(stderr, "Error: unaligned v256 load at %p\n", p);
     abort();
   }
@@ -89,7 +89,7 @@ SIMD_INLINE void c_v256_store_unaligned(void *p, c_v256 a) {
 }
 
 SIMD_INLINE void c_v256_store_aligned(void *p, c_v256 a) {
-  if (simd_check && (uintptr_t)p & 31) {
+  if (SIMD_CHECK && (uintptr_t)p & 31) {
     fprintf(stderr, "Error: unaligned v256 store at %p\n", p);
     abort();
   }
@@ -609,7 +609,7 @@ SIMD_INLINE c_v256 c_v256_shr_n_byte(c_v256 a, const unsigned int n) {
 }
 
 SIMD_INLINE c_v256 c_v256_align(c_v256 a, c_v256 b, const unsigned int c) {
-  if (simd_check && c > 31) {
+  if (SIMD_CHECK && c > 31) {
     fprintf(stderr, "Error: undefined alignment %d\n", c);
     abort();
   }

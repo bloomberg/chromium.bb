@@ -19,8 +19,6 @@
 #include <stdlib.h>
 #include "./aom_config.h"
 
-extern const int simd_check;
-
 typedef union {
   uint8_t u8[8];
   uint16_t u16[4];
@@ -93,7 +91,7 @@ SIMD_INLINE void c_u32_store_unaligned(void *p, uint32_t a) {
 }
 
 SIMD_INLINE uint32_t c_u32_load_aligned(const void *p) {
-  if (simd_check && (uintptr_t)p & 3) {
+  if (SIMD_CHECK && (uintptr_t)p & 3) {
     fprintf(stderr, "Error: Unaligned u32 load at %p\n", p);
     abort();
   }
@@ -101,7 +99,7 @@ SIMD_INLINE uint32_t c_u32_load_aligned(const void *p) {
 }
 
 SIMD_INLINE void c_u32_store_aligned(void *p, uint32_t a) {
-  if (simd_check && (uintptr_t)p & 3) {
+  if (SIMD_CHECK && (uintptr_t)p & 3) {
     fprintf(stderr, "Error: Unaligned u32 store at %p\n", p);
     abort();
   }
@@ -118,7 +116,7 @@ SIMD_INLINE c_v64 c_v64_load_unaligned(const void *p) {
 }
 
 SIMD_INLINE c_v64 c_v64_load_aligned(const void *p) {
-  if (simd_check && (uintptr_t)p & 7) {
+  if (SIMD_CHECK && (uintptr_t)p & 7) {
     fprintf(stderr, "Error: Unaligned c_v64 load at %p\n", p);
     abort();
   }
@@ -133,7 +131,7 @@ SIMD_INLINE void c_v64_store_unaligned(void *p, c_v64 a) {
 }
 
 SIMD_INLINE void c_v64_store_aligned(void *p, c_v64 a) {
-  if (simd_check && (uintptr_t)p & 7) {
+  if (SIMD_CHECK && (uintptr_t)p & 7) {
     fprintf(stderr, "Error: Unaligned c_v64 store at %p\n", p);
     abort();
   }
@@ -495,7 +493,7 @@ SIMD_INLINE c_v64 c_v64_shuffle_8(c_v64 a, c_v64 pattern) {
   c_v64 t;
   int c;
   for (c = 0; c < 8; c++) {
-    if (simd_check && (pattern.u8[c] & ~7)) {
+    if (SIMD_CHECK && (pattern.u8[c] & ~7)) {
       fprintf(stderr, "Error: Undefined v64_shuffle_8 index %d/%d\n",
               pattern.u8[c], c);
       abort();
@@ -732,7 +730,7 @@ SIMD_INLINE c_v64 c_v64_cmpeq_16(c_v64 a, c_v64 b) {
 SIMD_INLINE c_v64 c_v64_shl_8(c_v64 a, unsigned int n) {
   c_v64 t;
   int c;
-  if (simd_check && n > 7) {
+  if (SIMD_CHECK && n > 7) {
     fprintf(stderr, "Error: Undefined u8 shift left %d\n", n);
     abort();
   }
@@ -743,7 +741,7 @@ SIMD_INLINE c_v64 c_v64_shl_8(c_v64 a, unsigned int n) {
 SIMD_INLINE c_v64 c_v64_shr_u8(c_v64 a, unsigned int n) {
   c_v64 t;
   int c;
-  if (simd_check && n > 7) {
+  if (SIMD_CHECK && n > 7) {
     fprintf(stderr, "Error: Undefined u8 shift right %d\n", n);
     abort();
   }
@@ -754,7 +752,7 @@ SIMD_INLINE c_v64 c_v64_shr_u8(c_v64 a, unsigned int n) {
 SIMD_INLINE c_v64 c_v64_shr_s8(c_v64 a, unsigned int n) {
   c_v64 t;
   int c;
-  if (simd_check && n > 7) {
+  if (SIMD_CHECK && n > 7) {
     fprintf(stderr, "Error: Undefined s8 shift right %d\n", n);
     abort();
   }
@@ -765,7 +763,7 @@ SIMD_INLINE c_v64 c_v64_shr_s8(c_v64 a, unsigned int n) {
 SIMD_INLINE c_v64 c_v64_shl_16(c_v64 a, unsigned int n) {
   c_v64 t;
   int c;
-  if (simd_check && n > 15) {
+  if (SIMD_CHECK && n > 15) {
     fprintf(stderr, "Error: Undefined u16 shift left %d\n", n);
     abort();
   }
@@ -776,7 +774,7 @@ SIMD_INLINE c_v64 c_v64_shl_16(c_v64 a, unsigned int n) {
 SIMD_INLINE c_v64 c_v64_shr_u16(c_v64 a, unsigned int n) {
   c_v64 t;
   int c;
-  if (simd_check && n > 15) {
+  if (SIMD_CHECK && n > 15) {
     fprintf(stderr, "Error: Undefined u16 shift right %d\n", n);
     abort();
   }
@@ -787,7 +785,7 @@ SIMD_INLINE c_v64 c_v64_shr_u16(c_v64 a, unsigned int n) {
 SIMD_INLINE c_v64 c_v64_shr_s16(c_v64 a, unsigned int n) {
   c_v64 t;
   int c;
-  if (simd_check && n > 15) {
+  if (SIMD_CHECK && n > 15) {
     fprintf(stderr, "Error: undefined s16 shift right %d\n", n);
     abort();
   }
@@ -797,7 +795,7 @@ SIMD_INLINE c_v64 c_v64_shr_s16(c_v64 a, unsigned int n) {
 
 SIMD_INLINE c_v64 c_v64_shl_32(c_v64 a, unsigned int n) {
   c_v64 t;
-  if (simd_check && n > 31) {
+  if (SIMD_CHECK && n > 31) {
     fprintf(stderr, "Error: undefined u32 shift left %d\n", n);
     abort();
   }
@@ -808,7 +806,7 @@ SIMD_INLINE c_v64 c_v64_shl_32(c_v64 a, unsigned int n) {
 
 SIMD_INLINE c_v64 c_v64_shr_u32(c_v64 a, unsigned int n) {
   c_v64 t;
-  if (simd_check && n > 31) {
+  if (SIMD_CHECK && n > 31) {
     fprintf(stderr, "Error: undefined u32 shift right %d\n", n);
     abort();
   }
@@ -819,7 +817,7 @@ SIMD_INLINE c_v64 c_v64_shr_u32(c_v64 a, unsigned int n) {
 
 SIMD_INLINE c_v64 c_v64_shr_s32(c_v64 a, unsigned int n) {
   c_v64 t;
-  if (simd_check && n > 31) {
+  if (SIMD_CHECK && n > 31) {
     fprintf(stderr, "Error: undefined s32 shift right %d\n", n);
     abort();
   }
@@ -841,7 +839,7 @@ SIMD_INLINE c_v64 c_v64_shl_n_byte(c_v64 x, const unsigned int i) {
 }
 
 SIMD_INLINE c_v64 c_v64_align(c_v64 a, c_v64 b, const unsigned int c) {
-  if (simd_check && c > 7) {
+  if (SIMD_CHECK && c > 7) {
     fprintf(stderr, "Error: undefined alignment %d\n", c);
     abort();
   }

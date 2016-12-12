@@ -21,6 +21,8 @@
 #include "./aom_config.h"
 #include "./aom_simd_inline.h"
 
+#define SIMD_CHECK 1  // Sanity checks in C equivalents
+
 #if HAVE_NEON
 #include "simd/v256_intrinsics_arm.h"
 #elif HAVE_SSE2

@@ -69,7 +69,7 @@ SIMD_INLINE c_v128 c_v128_load_unaligned(const void *p) {
 }
 
 SIMD_INLINE c_v128 c_v128_load_aligned(const void *p) {
-  if (simd_check && (uintptr_t)p & 15) {
+  if (SIMD_CHECK && (uintptr_t)p & 15) {
     fprintf(stderr, "Error: unaligned v128 load at %p\n", p);
     abort();
   }
@@ -84,7 +84,7 @@ SIMD_INLINE void c_v128_store_unaligned(void *p, c_v128 a) {
 }
 
 SIMD_INLINE void c_v128_store_aligned(void *p, c_v128 a) {
-  if (simd_check && (uintptr_t)p & 15) {
+  if (SIMD_CHECK && (uintptr_t)p & 15) {
     fprintf(stderr, "Error: unaligned v128 store at %p\n", p);
     abort();
   }
@@ -597,7 +597,7 @@ SIMD_INLINE c_v128 c_v128_shr_n_byte(c_v128 a, const unsigned int n) {
 }
 
 SIMD_INLINE c_v128 c_v128_align(c_v128 a, c_v128 b, const unsigned int c) {
-  if (simd_check && c > 15) {
+  if (SIMD_CHECK && c > 15) {
     fprintf(stderr, "Error: undefined alignment %d\n", c);
     abort();
   }

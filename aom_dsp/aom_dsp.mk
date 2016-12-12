@@ -422,7 +422,6 @@ DSP_SRCS-no += $(DSP_SRCS_REMOVE-yes)
 DSP_SRCS-yes += aom_dsp_rtcd.c
 DSP_SRCS-yes += aom_dsp_rtcd_defs.pl
 
-DSP_SRCS-yes += aom_simd.c
 DSP_SRCS-yes += aom_simd.h
 DSP_SRCS-yes += aom_simd_inline.h
 DSP_SRCS-yes += simd/v64_intrinsics.h
