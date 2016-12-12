@@ -131,6 +131,7 @@ void ChromeBrowserMainExtraPartsExo::PreProfileInit() {
   display_ =
       base::MakeUnique<exo::Display>(arc_notification_surface_manager_.get());
   wayland_server_ = exo::wayland::Server::Create(display_.get());
+  // Wayland server creation can fail if XDG_RUNTIME_DIR is not set correctly.
   if (wayland_server_)
     wayland_watcher_ = base::MakeUnique<WaylandWatcher>(wayland_server_.get());
 }
