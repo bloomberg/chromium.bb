@@ -184,7 +184,8 @@ class _FileGroup(object):
     return len(self._zip_infos)
 
   def FindByPattern(self, pattern):
-    return next(i for i in self._zip_infos if re.match(pattern, i.filename))
+    return next((i for i in self._zip_infos if re.match(pattern, i.filename)),
+                None)
 
   def FindLargest(self):
     return max(self._zip_infos, key=lambda i: i.file_size)
