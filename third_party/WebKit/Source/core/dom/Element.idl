@@ -34,6 +34,7 @@ interface Element : Node {
     [CEReactions, Reflect] attribute DOMString id;
     [CEReactions, Reflect=class] attribute DOMString className;
     [SameObject, CEReactions, PerWorldBindings, PutForwards=value] readonly attribute DOMTokenList classList;
+    [Unscopable, CEReactions, Reflect] attribute DOMString slot;
 
     // PointerEvent
     //https://www.w3.org/TR/pointerevents/#extensions-to-the-element-interface
@@ -67,6 +68,9 @@ interface Element : Node {
     [RaisesException] boolean matches(DOMString selectors);
     [RaisesException, ImplementedAs=matches, MeasureAs=ElementPrefixedMatchesSelector] boolean webkitMatchesSelector(DOMString selectors); // historical alias of .matches
 
+    [RaisesException, CallWith=ScriptState, MeasureAs=ElementAttachShadow] ShadowRoot attachShadow(ShadowRootInit shadowRootInitDict);
+    [PerWorldBindings, ImplementedAs=openShadowRoot] readonly attribute ShadowRoot? shadowRoot;
+
     HTMLCollection getElementsByTagName(DOMString localName);
     HTMLCollection getElementsByTagNameNS(DOMString? namespaceURI, DOMString localName);
     HTMLCollection getElementsByClassName(DOMString classNames);
@@ -74,20 +78,15 @@ interface Element : Node {
     [RaisesException, CEReactions, CustomElementCallbacks] Element? insertAdjacentElement(DOMString where, Element element);
     [RaisesException] void insertAdjacentText(DOMString where, DOMString data);
 
+    // Mixin Slotable
+    // https://dom.spec.whatwg.org/#mixin-slotable
+    [ImplementedAs=assignedSlotForBinding] readonly attribute HTMLSlotElement? assignedSlot;
+
     // DOM Parsing and Serialization
     // https://dvcs.w3.org/hg/innerhtml/raw-file/tip/index.html#extensions-to-the-element-interface
     [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
     [CEReactions, CustomElementCallbacks, RaisesException] void insertAdjacentHTML(DOMString position, DOMString text);
-
-    // Shadow DOM
-    // https://w3c.github.io/webcomponents/spec/shadow/#extensions-to-element-interface
-    [RaisesException, CallWith=ScriptState, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
-    [RaisesException, CallWith=ScriptState, MeasureAs=ElementAttachShadow] ShadowRoot attachShadow(ShadowRootInit shadowRootInitDict);
-    NodeList getDestinationInsertionPoints();
-    [PerWorldBindings, ImplementedAs=openShadowRoot] readonly attribute ShadowRoot? shadowRoot;
-    [Unscopable, CEReactions, Reflect] attribute DOMString slot;
-    [ImplementedAs=assignedSlotForBinding] readonly attribute HTMLSlotElement assignedSlot;
 
     // Pointer Lock
     // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-element-interface
@@ -122,6 +121,8 @@ interface Element : Node {
 
     // Non-standard API
     [MeasureAs=ElementScrollIntoViewIfNeeded] void scrollIntoViewIfNeeded(optional boolean centerIfNeeded);
+    [RaisesException, CallWith=ScriptState, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
+    NodeList getDestinationInsertionPoints();
 
     // Experimental accessibility API
     [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedRole;
