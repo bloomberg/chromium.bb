@@ -8,7 +8,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/omnibox_decoration_bubble_controller.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -31,7 +31,7 @@ struct SecurityInfo;
 //
 // TODO(palmer): Normalize all WebsiteSettings*, SiteSettings*, PageInfo*, et c.
 // to OriginInfo*.
-@interface WebsiteSettingsBubbleController : BaseBubbleController {
+@interface WebsiteSettingsBubbleController : OmniboxDecorationBubbleController {
  @private
   content::WebContents* webContents_;
 

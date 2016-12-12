@@ -235,6 +235,12 @@ bool IsInternalURL(const GURL& url) {
   return self;
 }
 
+- (LocationBarDecoration*)decorationForBubble {
+  BrowserWindowController* controller = [[self parentWindow] windowController];
+  LocationBarViewMac* location_bar = [controller locationBarBridge];
+  return location_bar ? location_bar->GetPageInfoDecoration() : nullptr;
+}
+
 - (Profile*)profile {
   return Profile::FromBrowserContext(webContents_->GetBrowserContext());
 }
