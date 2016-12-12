@@ -29,31 +29,6 @@
 - (void)setErrorStatus:(BOOL)hasError;
 @end
 
-// Subclassing AvatarButtonController to be able to control the state of
-// keyboard modifierFlags.
-@interface AvatarButtonControllerForTesting : AvatarButtonController {
- @private
-  bool isCtrlPressed_;
-}
-@end
-
-@interface AvatarButtonControllerForTesting (ExposedForTesting)
-- (void)setIsCtrlPressed:(BOOL)isPressed;
-- (BOOL)isCtrlPressed;
-@end
-
-@implementation AvatarButtonControllerForTesting
-- (void)setIsCtrlPressed:(BOOL)isPressed {
-  isCtrlPressed_ = isPressed;
-}
-
-- (BOOL)isCtrlPressed {
- // Always report that Cmd is not pressed since that's the case we're testing
- // and otherwise running the test while holding the Cmd key makes it fail.
- return isCtrlPressed_;
-}
-@end
-
 class AvatarButtonControllerTest : public CocoaProfileTest {
  public:
   void SetUp() override {
@@ -63,8 +38,7 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
     ASSERT_TRUE(browser());
 
     controller_.reset(
-        [[AvatarButtonControllerForTesting alloc] initWithBrowser:browser()]);
-    [controller_ setIsCtrlPressed:false];
+        [[AvatarButtonController alloc] initWithBrowser:browser()]);
   }
 
   void TearDown() override {
@@ -76,10 +50,10 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
 
   NSView* view() { return [controller_ view]; }
 
-  AvatarButtonControllerForTesting* controller() { return controller_.get(); }
+  AvatarButtonController* controller() { return controller_.get(); }
 
  private:
-  base::scoped_nsobject<AvatarButtonControllerForTesting> controller_;
+  base::scoped_nsobject<AvatarButtonController> controller_;
 };
 
 TEST_F(AvatarButtonControllerTest, GenericButtonShown) {
@@ -123,35 +97,6 @@ TEST_F(AvatarButtonControllerTest, DoubleOpen) {
 
   [button() performClick:button()];
   EXPECT_EQ(menu, [controller() menuController]);
-
-  // Do not animate out because that is hard to test around.
-  static_cast<InfoBubbleWindow*>(menu.window).allowedAnimations =
-      info_bubble::kAnimateNone;
-  [menu close];
-  EXPECT_FALSE([controller() menuController]);
-}
-
-TEST_F(AvatarButtonControllerTest, DontOpenFastSwitcherWithoutTarget) {
-  EXPECT_FALSE([controller() menuController]);
-
-  [controller() setIsCtrlPressed:YES];
-  [button() performClick:button()];
-
-  // If there's only one profile and the fast user switcher is requested,
-  // nothing should happen.
-  EXPECT_FALSE([controller() menuController]);
-}
-
-TEST_F(AvatarButtonControllerTest, OpenFastUserSwitcherWithTarget) {
-  testing_profile_manager()->CreateTestingProfile("batman");
-  EXPECT_FALSE([controller() menuController]);
-
-  [controller() setIsCtrlPressed:YES];
-  [button() performClick:button()];
-
-  BaseBubbleController* menu = [controller() menuController];
-  EXPECT_TRUE(menu);
-  EXPECT_TRUE([menu isKindOfClass:[ProfileChooserController class]]);
 
   // Do not animate out because that is hard to test around.
   static_cast<InfoBubbleWindow*>(menu.window).allowedAnimations =

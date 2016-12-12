@@ -171,13 +171,6 @@ bool ProfileUpdateObserver::HasAvatarError() {
   profiles::TutorialMode tutorialMode;
   profiles::BubbleViewModeFromAvatarBubbleMode(
       mode, &viewMode, &tutorialMode);
-  // Don't start creating the view if it would be an empty fast user switcher.
-  // It has to happen here to prevent the view system from creating an empty
-  // container.
-  if (viewMode == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER &&
-      !profiles::HasProfileSwitchTargets(browser_->profile())) {
-    return;
-  }
 
   menuController_ =
       [[ProfileChooserController alloc] initWithBrowser:browser_
@@ -197,29 +190,9 @@ bool ProfileUpdateObserver::HasAvatarError() {
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
-- (BOOL)isCtrlPressed {
-  return [NSEvent modifierFlags] & NSControlKeyMask ? YES : NO;
-}
-
 - (IBAction)buttonClicked:(id)sender {
-  BrowserWindow::AvatarBubbleMode mode =
-      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
-  if ([self isCtrlPressed])
-    mode = BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH;
-
   [self showAvatarBubbleAnchoredAt:button_
-                          withMode:mode
-                   withServiceType:signin::GAIA_SERVICE_TYPE_NONE
-                   fromAccessPoint:signin_metrics::AccessPoint::
-                                       ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN];
-}
-
-- (IBAction)buttonRightClicked:(id)sender {
-  BrowserWindow::AvatarBubbleMode mode =
-      BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH;
-
-  [self showAvatarBubbleAnchoredAt:button_
-                          withMode:mode
+                          withMode:BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT
                    withServiceType:signin::GAIA_SERVICE_TYPE_NONE
                    fromAccessPoint:signin_metrics::AccessPoint::
                                        ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN];

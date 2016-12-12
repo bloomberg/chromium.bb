@@ -185,7 +185,7 @@ const CGFloat kTitleKern = 0.25;
       [avatarButton setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
     [avatarButton setTarget:self];
     [avatarButton setAction:@selector(buttonClicked:)];
-    [avatarButton setRightAction:@selector(buttonRightClicked:)];
+    [avatarButton setRightAction:@selector(buttonClicked:)];
 
     // Check if the account already has an authentication or sync error and
     // initialize the avatar button UI.
@@ -298,12 +298,13 @@ const CGFloat kTitleKern = 0.25;
                           withMode:(BrowserWindow::AvatarBubbleMode)mode
                    withServiceType:(signin::GAIAServiceType)serviceType
                    fromAccessPoint:(signin_metrics::AccessPoint)accessPoint {
-  AvatarButton* button = base::mac::ObjCCastStrict<AvatarButton>(button_);
-  [button setIsActive:YES];
   [super showAvatarBubbleAnchoredAt:anchor
                            withMode:mode
                     withServiceType:serviceType
                     fromAccessPoint:accessPoint];
+
+  AvatarButton* button = base::mac::ObjCCastStrict<AvatarButton>(button_);
+  [button setIsActive:[[menuController_ window] isVisible]];
 }
 
 - (void)bubbleWillClose:(NSNotification*)notif {
