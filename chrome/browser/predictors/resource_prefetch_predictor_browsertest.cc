@@ -456,8 +456,9 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   NavigateToURLAndCheckSubresources(GetURL(kHtmlDocumentWritePath));
 }
 
+// Disabled due to flakiness (crbug.com/673028).
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
-                       LearningJavascriptAppendChild) {
+                       DISABLED_LearningJavascriptAppendChild) {
   auto externalScript =
       AddExternalResource(GetURL(kScriptAppendChildPath),
                           content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
