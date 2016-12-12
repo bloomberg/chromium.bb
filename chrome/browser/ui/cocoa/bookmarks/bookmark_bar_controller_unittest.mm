@@ -1568,6 +1568,46 @@ TEST_F(BookmarkBarControllerTest, ShrinkOrHideView) {
   EXPECT_TRUE([view isHidden]);
 }
 
+// Simulate coarse browser window width change and ensure that the bookmark
+// buttons that should be visible are visible.
+TEST_F(BookmarkBarControllerTest, RedistributeButtonsOnBarAsNeeded) {
+  // Hide the apps shortcut.
+  profile()->GetPrefs()->SetBoolean(
+      bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
+  ASSERT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
+
+  // Add three buttons to the bookmark bar.
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  const BookmarkNode* root = model->bookmark_bar_node();
+  // Make long labels to test coarse resizes. After 16 digits, text eliding
+  // starts.
+  const std::string model_string(
+      "0000000000000000 1111111111111111 2222222222222222 ");
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
+  NSRect frame = [[bar_ view] frame];
+  frame.size.width = 400;  // Typical minimum browser size.
+  [[bar_ view] setFrame:frame];
+  EXPECT_EQ(2, [bar_ displayedButtonCount]);
+
+  {
+    base::mac::ScopedNSAutoreleasePool pool;
+    frame.size.width = 800;
+    [[bar_ view] setFrame:frame];
+    EXPECT_EQ(3, [bar_ displayedButtonCount]);
+
+    const BookmarkNode* last = model->bookmark_bar_node()->GetChild(2);
+    EXPECT_TRUE(last);
+    [bar_ startPulsingBookmarkNode:last];
+
+    frame.size.width = 400;
+    [[bar_ view] setFrame:frame];
+    EXPECT_EQ(2, [bar_ displayedButtonCount]);
+  }
+
+  // Regression test for http://crbug.com/616051.
+  [bar_ stopPulsingBookmarkNode];
+}
+
 // Simiulate browser window width change and ensure that the bookmark buttons
 // that should be visible are visible.
 // Appears to fail on Mac 10.11 bot on the waterfall; http://crbug.com/612640.

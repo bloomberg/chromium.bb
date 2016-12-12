@@ -294,10 +294,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
   base::scoped_nsobject<BookmarkContextMenuCocoaController>
       contextMenuController_;
 
-  // Weak pointer to the pulsed button for the currently pulsing node. We need
-  // to store this as it may not be possible to determine the pulsing button if
-  // the pulsing node is deleted. Nil if there is no pulsing node.
-  BookmarkButton* pulsingButton_;
+  // The pulsed button for the currently pulsing node. We need to store this as
+  // it may not be possible to determine the pulsing button if the pulsing node
+  // is deleted. Nil if there is no pulsing node.
+  base::scoped_nsobject<BookmarkButton> pulsingButton_;
 
   // Specifically watch the currently pulsing node. This lets us stop pulsing
   // when anything happens to the node. Null if there is no pulsing node.

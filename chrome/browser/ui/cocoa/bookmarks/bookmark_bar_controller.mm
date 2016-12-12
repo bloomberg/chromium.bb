@@ -361,7 +361,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)startPulsingBookmarkNode:(const BookmarkNode*)node {
   [self stopPulsingBookmarkNode];
 
-  pulsingButton_ = [self bookmarkButtonToPulseForNode:node];
+  pulsingButton_.reset([self bookmarkButtonToPulseForNode:node],
+                       base::scoped_policy::RETAIN);
   if (!pulsingButton_)
     return;
 
@@ -379,7 +380,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return;
 
   [pulsingButton_ setPulseIsStuckOn:NO];
-  pulsingButton_ = nil;
+  pulsingButton_.reset();
   pulsingBookmarkObserver_.reset();
 }
 
