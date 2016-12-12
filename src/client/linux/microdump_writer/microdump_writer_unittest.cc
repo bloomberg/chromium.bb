@@ -75,9 +75,9 @@ MicrodumpExtraInfo MakeMicrodumpExtraInfo(
   return info;
 }
 
-void AssertContainsMicrodump(const std::string& buf) {
-  ASSERT_NE(std::string::npos, buf.find("-----BEGIN BREAKPAD MICRODUMP-----"));
-  ASSERT_NE(std::string::npos, buf.find("-----END BREAKPAD MICRODUMP-----"));
+bool ContainsMicrodump(const std::string& buf) {
+  return std::string::npos != buf.find("-----BEGIN BREAKPAD MICRODUMP-----") &&
+         std::string::npos != buf.find("-----END BREAKPAD MICRODUMP-----");
 }
 
 void CrashAndGetMicrodump(const MappingList& mappings,
@@ -213,7 +213,7 @@ TEST(MicrodumpWriterTest, BasicWithMappings) {
 
   std::string buf;
   CrashAndGetMicrodump(mappings, MicrodumpExtraInfo(), &buf);
-  AssertContainsMicrodump(buf);
+  ASSERT_TRUE(ContainsMicrodump(buf));
 
 #ifdef __LP64__
   ASSERT_NE(std::string::npos,
@@ -246,7 +246,7 @@ TEST(MicrodumpWriterTest, NoOutputIfUninteresting) {
   MappingList no_mappings;
 
   CrashAndGetMicrodump(no_mappings, kMicrodumpExtraInfo, &buf);
-  ASSERT_EQ(0U, buf.size());
+  ASSERT_FALSE(ContainsMicrodump(buf));
 }
 
 // Ensure that output occurs if the interest region is set, and
@@ -268,7 +268,7 @@ TEST(MicrodumpWriterTest, OutputIfInteresting) {
   MappingList no_mappings;
 
   CrashAndGetMicrodump(no_mappings, kMicrodumpExtraInfo, &buf);
-  ASSERT_LT(0U, buf.size());
+  ASSERT_TRUE(ContainsMicrodump(buf));
 }
 
 // Ensure that the product info and build fingerprint metadata show up in the
@@ -285,7 +285,7 @@ TEST(MicrodumpWriterTest, BuildFingerprintAndProductInfo) {
   MappingList no_mappings;
 
   CrashAndGetMicrodump(no_mappings, kMicrodumpExtraInfo, &buf);
-  AssertContainsMicrodump(buf);
+  ASSERT_TRUE(ContainsMicrodump(buf));
   CheckMicrodumpContents(buf, kMicrodumpExtraInfo);
 }
 
@@ -299,7 +299,7 @@ TEST(MicrodumpWriterTest, NoProductInfo) {
       MakeMicrodumpExtraInfo(kBuildFingerprint, NULL, kGPUFingerprint));
 
   CrashAndGetMicrodump(no_mappings, kMicrodumpExtraInfoNoProductInfo, &buf);
-  AssertContainsMicrodump(buf);
+  ASSERT_TRUE(ContainsMicrodump(buf));
   CheckMicrodumpContents(buf, kBuildFingerprint, "UNKNOWN:0.0.0.0",
                          kGPUFingerprint);
 }
@@ -314,7 +314,7 @@ TEST(MicrodumpWriterTest, NoGPUInfo) {
       MakeMicrodumpExtraInfo(kBuildFingerprint, kProductInfo, NULL));
 
   CrashAndGetMicrodump(no_mappings, kMicrodumpExtraInfoNoGPUInfo, &buf);
-  AssertContainsMicrodump(buf);
+  ASSERT_TRUE(ContainsMicrodump(buf));
   CheckMicrodumpContents(buf, kBuildFingerprint, kProductInfo, "UNKNOWN");
 }
 }  // namespace
