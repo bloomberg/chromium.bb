@@ -174,14 +174,14 @@ void StorageArea::dispatchLocalStorageEvent(
       if (!frame->isLocalFrame())
         continue;
       LocalFrame* localFrame = toLocalFrame(frame);
-      LocalDOMWindow* localWindow = localFrame->localDOMWindow();
+      LocalDOMWindow* localWindow = localFrame->domWindow();
       Storage* storage =
           DOMWindowStorage::from(*localWindow).optionalLocalStorage();
       if (storage &&
           localFrame->document()->getSecurityOrigin()->canAccess(
               securityOrigin) &&
           !isEventSource(storage, sourceAreaInstance))
-        localFrame->localDOMWindow()->enqueueWindowEvent(
+        localFrame->domWindow()->enqueueWindowEvent(
             StorageEvent::create(EventTypeNames::storage, key, oldValue,
                                  newValue, pageURL, storage));
     }
@@ -225,14 +225,14 @@ void StorageArea::dispatchSessionStorageEvent(
     if (!frame->isLocalFrame())
       continue;
     LocalFrame* localFrame = toLocalFrame(frame);
-    LocalDOMWindow* localWindow = localFrame->localDOMWindow();
+    LocalDOMWindow* localWindow = localFrame->domWindow();
     Storage* storage =
         DOMWindowStorage::from(*localWindow).optionalSessionStorage();
     if (storage &&
         localFrame->document()->getSecurityOrigin()->canAccess(
             securityOrigin) &&
         !isEventSource(storage, sourceAreaInstance))
-      localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(
+      localFrame->domWindow()->enqueueWindowEvent(StorageEvent::create(
           EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
   }
   if (InspectorDOMStorageAgent* agent =

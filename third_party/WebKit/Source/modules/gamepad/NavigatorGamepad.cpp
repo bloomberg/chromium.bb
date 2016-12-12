@@ -174,7 +174,7 @@ NavigatorGamepad::NavigatorGamepad(LocalFrame* frame)
           this,
           &NavigatorGamepad::dispatchOneEvent)) {
   if (frame)
-    frame->localDOMWindow()->registerEventListenerObserver(this);
+    frame->domWindow()->registerEventListenerObserver(this);
 }
 
 NavigatorGamepad::~NavigatorGamepad() {}

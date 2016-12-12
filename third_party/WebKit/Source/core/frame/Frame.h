@@ -74,7 +74,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   virtual bool isLocalFrame() const = 0;
   virtual bool isRemoteFrame() const = 0;
 
-  virtual DOMWindow* domWindow() const = 0;
   virtual WindowProxy* windowProxy(DOMWrapperWorld&) = 0;
 
   virtual void navigate(Document& originDocument,
@@ -106,6 +105,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   FrameOwner* owner() const;
   void setOwner(FrameOwner* owner) { m_owner = owner; }
   HTMLFrameOwnerElement* deprecatedLocalOwner() const;
+
+  DOMWindow* domWindow() const { return m_domWindow; }
 
   FrameTree& tree() const;
   ChromeClient& chromeClient() const;
@@ -153,6 +154,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   Member<FrameHost> m_host;
   Member<FrameOwner> m_owner;
+  Member<DOMWindow> m_domWindow;
 
   bool m_isDetaching = false;
 

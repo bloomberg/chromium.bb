@@ -764,8 +764,7 @@ DocumentWriter* DocumentLoader::createWriterFor(
   if (!init.shouldReuseDefaultView())
     frame->setDOMWindow(LocalDOMWindow::create(*frame));
 
-  Document* document =
-      frame->localDOMWindow()->installNewDocument(mimeType, init);
+  Document* document = frame->domWindow()->installNewDocument(mimeType, init);
 
   if (!init.shouldReuseDefaultView())
     frame->page()->chromeClient().installSupplements(*frame);

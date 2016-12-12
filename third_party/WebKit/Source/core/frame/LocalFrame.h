@@ -106,7 +106,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Frame overrides:
   ~LocalFrame() override;
   DECLARE_VIRTUAL_TRACE();
-  DOMWindow* domWindow() const override;
   WindowProxy* windowProxy(DOMWrapperWorld&) override;
   void navigate(Document& originDocument,
                 const KURL&,
@@ -125,7 +124,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void detachChildren();
   void documentAttached();
 
-  LocalDOMWindow* localDOMWindow() const;
+  LocalDOMWindow* domWindow() const;
   void setDOMWindow(LocalDOMWindow*);
   FrameView* view() const;
   Document* document() const;
@@ -249,7 +248,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<NavigationScheduler> m_navigationScheduler;
 
   Member<FrameView> m_view;
-  Member<LocalDOMWindow> m_domWindow;
   // Usually 0. Non-null if this is the top frame of PagePopup.
   Member<Element> m_pagePopupOwner;
 
@@ -277,10 +275,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
 inline void LocalFrame::init() {
   m_loader.init();
-}
-
-inline LocalDOMWindow* LocalFrame::localDOMWindow() const {
-  return m_domWindow.get();
 }
 
 inline FrameLoader& LocalFrame::loader() const {

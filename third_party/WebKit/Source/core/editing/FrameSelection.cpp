@@ -276,7 +276,7 @@ void FrameSelection::setSelectionAlgorithm(
   notifyAccessibilityForSelectionChange();
   notifyCompositorForSelectionChange();
   notifyEventHandlerForSelectionChange();
-  m_frame->localDOMWindow()->enqueueDocumentEvent(
+  m_frame->domWindow()->enqueueDocumentEvent(
       Event::create(EventTypeNames::selectionchange));
 }
 

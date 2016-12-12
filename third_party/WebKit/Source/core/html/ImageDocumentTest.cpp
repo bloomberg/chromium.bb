@@ -98,7 +98,7 @@ void ImageDocumentTest::createDocumentWithoutLoadingImage(int viewWidth,
   LocalFrame& frame = m_dummyPageHolder->frame();
   frame.document()->shutdown();
   DocumentInit init(KURL(), &frame);
-  frame.localDOMWindow()->installNewDocument("image/jpeg", init);
+  frame.domWindow()->installNewDocument("image/jpeg", init);
 }
 
 void ImageDocumentTest::createDocument(int viewWidth, int viewHeight) {

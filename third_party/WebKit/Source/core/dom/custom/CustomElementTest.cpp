@@ -208,7 +208,7 @@ TEST(CustomElementTest,
   // register a definition
   std::unique_ptr<DummyPageHolder> holder(DummyPageHolder::create());
   CustomElementRegistry* registry =
-      holder->frame().localDOMWindow()->customElements();
+      holder->frame().domWindow()->customElements();
   NonThrowableExceptionState shouldNotThrow;
   {
     CEReactionsScope reactions;

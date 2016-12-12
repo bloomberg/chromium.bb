@@ -409,7 +409,9 @@ Document::Document(const DocumentInit& initializer,
       m_evaluateMediaQueriesOnStyleRecalc(false),
       m_pendingSheetLayout(NoLayoutWithPendingSheets),
       m_frame(initializer.frame()),
-      m_domWindow(m_frame ? m_frame->localDOMWindow() : 0),
+      // TODO(dcheng): Why does this need both a LocalFrame and LocalDOMWindow
+      // pointer?
+      m_domWindow(m_frame ? m_frame->domWindow() : nullptr),
       m_importsController(this, initializer.importsController()),
       m_contextFeatures(ContextFeatures::defaultSwitch()),
       m_wellFormed(false),
@@ -499,10 +501,10 @@ Document::Document(const DocumentInit& initializer,
     m_fetcher = m_frame->loader().documentLoader()->fetcher();
     FrameFetchContext::provideDocumentToContext(m_fetcher->context(), this);
 
+    // TODO(dcheng): Why does this need to check that DOMWindow is non-null?
     CustomElementRegistry* registry =
-        m_frame->localDOMWindow()
-            ? m_frame->localDOMWindow()->maybeCustomElements()
-            : nullptr;
+        m_frame->domWindow() ? m_frame->domWindow()->maybeCustomElements()
+                             : nullptr;
     if (registry && m_registrationContext)
       registry->entangle(m_registrationContext);
   } else if (m_importsController) {
@@ -3028,11 +3030,10 @@ void Document::dispatchUnloadEvents() {
         DocumentLoadTiming& timing = documentLoader->timing();
         DCHECK(timing.navigationStart());
         timing.markUnloadEventStart();
-        m_frame->localDOMWindow()->dispatchEvent(unloadEvent, this);
+        m_frame->domWindow()->dispatchEvent(unloadEvent, this);
         timing.markUnloadEventEnd();
       } else {
-        m_frame->localDOMWindow()->dispatchEvent(unloadEvent,
-                                                 m_frame->document());
+        m_frame->domWindow()->dispatchEvent(unloadEvent, m_frame->document());
       }
     }
     m_loadEventProgress = UnloadEventHandled;

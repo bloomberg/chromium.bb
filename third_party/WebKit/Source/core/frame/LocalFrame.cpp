@@ -349,10 +349,6 @@ DEFINE_TRACE(LocalFrame) {
   Supplementable<LocalFrame>::trace(visitor);
 }
 
-DOMWindow* LocalFrame::domWindow() const {
-  return m_domWindow.get();
-}
-
 WindowProxy* LocalFrame::windowProxy(DOMWrapperWorld& world) {
   return m_script->windowProxy(world);
 }
@@ -429,9 +425,9 @@ void LocalFrame::detach(FrameDetachType type) {
   script().clearForClose();
   setView(nullptr);
 
-  m_host->eventHandlerRegistry().didRemoveAllEventHandlers(*localDOMWindow());
+  m_host->eventHandlerRegistry().didRemoveAllEventHandlers(*domWindow());
 
-  localDOMWindow()->frameDestroyed();
+  domWindow()->frameDestroyed();
 
   // TODO: Page should take care of updating focus/scrolling instead of Frame.
   // TODO: It's unclear as to why this is called more than once, but it is,
@@ -474,7 +470,7 @@ void LocalFrame::printNavigationErrorMessage(const Frame& targetFrame,
       targetFrameDescription + " from frame with URL '" +
       document()->url().getString() + "'. " + reason + "\n";
 
-  localDOMWindow()->printErrorMessage(message);
+  domWindow()->printErrorMessage(message);
 }
 
 WindowProxyManager* LocalFrame::getWindowProxyManager() const {
@@ -500,6 +496,10 @@ void LocalFrame::documentAttached() {
   inputMethodController().documentAttached(document());
 }
 
+LocalDOMWindow* LocalFrame::domWindow() const {
+  return toLocalDOMWindow(m_domWindow);
+}
+
 void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow) {
   // TODO(haraken): Update this comment.
   // Oilpan: setDOMWindow() cannot be used when finalizing. Which
@@ -519,8 +519,8 @@ void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow) {
   if (domWindow)
     script().clearWindowProxy();
 
-  if (m_domWindow)
-    m_domWindow->reset();
+  if (this->domWindow())
+    this->domWindow()->reset();
   m_domWindow = domWindow;
 }
 

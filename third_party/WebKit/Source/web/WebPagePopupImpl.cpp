@@ -304,7 +304,7 @@ bool WebPagePopupImpl::initializePage() {
           m_popupClient->ownerElement().document().existingAXObjectCache())
     cache->childrenChanged(&m_popupClient->ownerElement());
 
-  DCHECK(frame->localDOMWindow());
+  DCHECK(frame->domWindow());
   PagePopupSupplement::install(*frame, *this, m_popupClient);
   DCHECK_EQ(m_popupClient->ownerElement().document().existingAXObjectCache(),
             frame->document()->existingAXObjectCache());
@@ -322,8 +322,7 @@ void WebPagePopupImpl::postMessage(const String& message) {
   if (!m_page)
     return;
   ScriptForbiddenScope::AllowUserAgentScript allowScript;
-  if (LocalDOMWindow* window =
-          toLocalFrame(m_page->mainFrame())->localDOMWindow())
+  if (LocalDOMWindow* window = toLocalFrame(m_page->mainFrame())->domWindow())
     window->dispatchEvent(MessageEvent::create(message));
 }
 
@@ -545,7 +544,7 @@ void WebPagePopupImpl::closePopup() {
 }
 
 LocalDOMWindow* WebPagePopupImpl::window() {
-  return m_page->deprecatedLocalMainFrame()->localDOMWindow();
+  return m_page->deprecatedLocalMainFrame()->domWindow();
 }
 
 void WebPagePopupImpl::layoutAndPaintAsync(

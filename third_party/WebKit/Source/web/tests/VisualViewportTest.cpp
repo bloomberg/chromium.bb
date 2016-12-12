@@ -1749,8 +1749,7 @@ TEST_P(VisualViewportTest, bodyAndWindowScrollPropertiesAccountForViewport) {
   // body element as the viewport and don't apply scrolling to the HTML element.
   RuntimeEnabledFeatures::setScrollTopLeftInteropEnabled(false);
 
-  LocalDOMWindow* window =
-      webViewImpl()->mainFrameImpl()->frame()->localDOMWindow();
+  LocalDOMWindow* window = webViewImpl()->mainFrameImpl()->frame()->domWindow();
   window->scrollTo(100, 150);
   EXPECT_EQ(100, window->scrollX());
   EXPECT_EQ(150, window->scrollY());

@@ -97,7 +97,7 @@ DEFINE_TRACE(NavigatorVR) {
 
 NavigatorVR::NavigatorVR(LocalFrame* frame)
     : DOMWindowProperty(frame), PageVisibilityObserver(frame->page()) {
-  frame->localDOMWindow()->registerEventListenerObserver(this);
+  frame->domWindow()->registerEventListenerObserver(this);
 }
 
 NavigatorVR::~NavigatorVR() {}
@@ -107,17 +107,19 @@ const char* NavigatorVR::supplementName() {
 }
 
 void NavigatorVR::enqueueVREvent(VRDisplayEvent* event) {
-  if (frame() && frame()->localDOMWindow()) {
-    frame()->localDOMWindow()->enqueueWindowEvent(event);
+  // TODO(dcheng): Why does this need to check both frame and domWindow?
+  if (frame() && frame()->domWindow()) {
+    frame()->domWindow()->enqueueWindowEvent(event);
   }
 }
 
 void NavigatorVR::dispatchVRGestureEvent(VRDisplayEvent* event) {
-  if (frame() && frame()->localDOMWindow()) {
+  // TODO(dcheng): Why does this need to check both frame and domWindow?
+  if (frame() && frame()->domWindow()) {
     UserGestureIndicator gestureIndicator(
         DocumentUserGestureToken::create(frame()->document()));
-    event->setTarget(frame()->localDOMWindow());
-    frame()->localDOMWindow()->dispatchEvent(event);
+    event->setTarget(frame()->domWindow());
+    frame()->domWindow()->dispatchEvent(event);
   }
 }
 

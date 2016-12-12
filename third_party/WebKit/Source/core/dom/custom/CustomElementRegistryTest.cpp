@@ -35,7 +35,7 @@ class CustomElementRegistryTest : public ::testing::Test {
   Document& document() { return m_page->document(); }
 
   CustomElementRegistry& registry() {
-    return *m_page->frame().localDOMWindow()->customElements();
+    return *m_page->frame().domWindow()->customElements();
   }
 
   ScriptState* scriptState() {

@@ -15,7 +15,6 @@ namespace blink {
 class Event;
 class IntRect;
 class LocalFrame;
-class RemoteDOMWindow;
 class RemoteFrameClient;
 class RemoteFrameView;
 class WebLayer;
@@ -30,7 +29,6 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   // Frame overrides:
   DECLARE_VIRTUAL_TRACE();
-  DOMWindow* domWindow() const override;
   WindowProxy* windowProxy(DOMWrapperWorld&) override;
   void navigate(Document& originDocument,
                 const KURL&,
@@ -81,7 +79,6 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   Member<RemoteFrameView> m_view;
   Member<RemoteSecurityContext> m_securityContext;
-  Member<RemoteDOMWindow> m_domWindow;
   Member<WindowProxyManager> m_windowProxyManager;
   WebLayer* m_webLayer = nullptr;
 };

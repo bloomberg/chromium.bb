@@ -941,7 +941,7 @@ WebAssociatedURLLoader* WebLocalFrameImpl::createAssociatedURLLoader(
 }
 
 unsigned WebLocalFrameImpl::unloadListenerCount() const {
-  return frame()->localDOMWindow()->pendingUnloadEventListeners();
+  return frame()->domWindow()->pendingUnloadEventListeners();
 }
 
 void WebLocalFrameImpl::replaceSelection(const WebString& text) {
@@ -2062,7 +2062,7 @@ void WebLocalFrameImpl::sendOrientationChangeEvent() {
 
   // Legacy window.orientation API
   if (RuntimeEnabledFeatures::orientationEventEnabled() && frame()->domWindow())
-    frame()->localDOMWindow()->sendOrientationChangeEvent();
+    frame()->domWindow()->sendOrientationChangeEvent();
 }
 
 void WebLocalFrameImpl::didCallAddSearchProvider() {
@@ -2179,7 +2179,7 @@ void WebLocalFrameImpl::dispatchMessageEventWithOriginCheck(
     const WebSecurityOrigin& intendedTargetOrigin,
     const WebDOMEvent& event) {
   DCHECK(!event.isNull());
-  frame()->localDOMWindow()->dispatchMessageEventWithOriginCheck(
+  frame()->domWindow()->dispatchMessageEventWithOriginCheck(
       intendedTargetOrigin.get(), event,
       SourceLocation::create(String(), 0, 0, nullptr));
 }

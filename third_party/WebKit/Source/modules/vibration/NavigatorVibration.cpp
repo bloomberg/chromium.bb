@@ -82,11 +82,11 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
   // runtime flag.
   if (!isFeatureEnabledInFrame(blink::kVibrateFeature, frame)) {
     if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
-      frame->localDOMWindow()->printErrorMessage(
+      frame->domWindow()->printErrorMessage(
           "Navigator.vibrate() is not enabled in feature policy for this "
           "frame.");
     } else {
-      frame->localDOMWindow()->printErrorMessage(
+      frame->domWindow()->printErrorMessage(
           "A call of navigator.vibrate will be no-op inside cross-origin "
           "iframes: https://www.chromestatus.com/feature/5682658461876224.");
     }

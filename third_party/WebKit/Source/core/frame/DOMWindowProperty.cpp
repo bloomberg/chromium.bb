@@ -38,7 +38,7 @@ DOMWindowProperty::DOMWindowProperty(LocalFrame* frame) : m_frame(frame) {
   if (m_frame) {
     // FIXME: Need to figure out what to do with DOMWindowProperties on
     // remote DOM windows.
-    m_frame->localDOMWindow()->registerProperty(this);
+    m_frame->domWindow()->registerProperty(this);
   }
 }
 

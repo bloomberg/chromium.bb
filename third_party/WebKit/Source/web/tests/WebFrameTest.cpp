@@ -1001,7 +1001,7 @@ TEST_P(ParameterizedWebFrameTest, PostMessageThenDetach) {
   NonThrowableExceptionState exceptionState;
   MessagePortArray messagePorts;
   frame->domWindow()->postMessage(SerializedScriptValue::serialize("message"),
-                                  messagePorts, "*", frame->localDOMWindow(),
+                                  messagePorts, "*", frame->domWindow(),
                                   exceptionState);
   webViewHelper.reset();
   EXPECT_FALSE(exceptionState.hadException());
@@ -9144,7 +9144,7 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
   ASSERT_TRUE(mainFrame()->isWebLocalFrame());
   ASSERT_TRUE(mainFrame()->firstChild()->isWebRemoteFrame());
   LocalDOMWindow* mainWindow =
-      toWebLocalFrameImpl(mainFrame())->frame()->localDOMWindow();
+      toWebLocalFrameImpl(mainFrame())->frame()->domWindow();
 
   KURL destination = toKURL("data:text/html:destination");
   mainWindow->open(destination.getString(), "frame1", "", mainWindow,

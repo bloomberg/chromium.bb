@@ -109,8 +109,8 @@ class ScreenWakeLockTest : public testing::Test {
 
   blink::Screen* screen() {
     DCHECK(frame());
-    DCHECK(frame()->localDOMWindow());
-    return frame()->localDOMWindow()->screen();
+    DCHECK(frame()->domWindow());
+    return frame()->domWindow()->screen();
   }
 
   bool screenKeepAwake() {

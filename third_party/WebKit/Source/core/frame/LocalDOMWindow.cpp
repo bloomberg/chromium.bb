@@ -532,7 +532,7 @@ void LocalDOMWindow::sendOrientationChangeEvent() {
     if (!frames[i]->isLocalFrame())
       continue;
     toLocalFrame(frames[i].get())
-        ->localDOMWindow()
+        ->domWindow()
         ->dispatchEvent(Event::create(EventTypeNames::orientationchange));
   }
 }

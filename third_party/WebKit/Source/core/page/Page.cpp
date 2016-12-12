@@ -481,7 +481,7 @@ void Page::acceptLanguagesChanged() {
   }
 
   for (unsigned i = 0; i < frames.size(); ++i)
-    frames[i]->localDOMWindow()->acceptLanguagesChanged();
+    frames[i]->domWindow()->acceptLanguagesChanged();
 }
 
 DEFINE_TRACE(Page) {

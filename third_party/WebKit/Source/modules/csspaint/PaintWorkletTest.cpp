@@ -22,7 +22,7 @@ class PaintWorkletTest : public testing::Test {
   PaintWorkletTest() : m_page(DummyPageHolder::create()) {}
 
   PaintWorklet* paintWorklet() {
-    return WindowPaintWorklet::from(*m_page->frame().localDOMWindow())
+    return WindowPaintWorklet::from(*m_page->frame().domWindow())
         .paintWorklet();
   }
 

@@ -7,6 +7,7 @@
 
 #include "core/frame/DOMWindow.h"
 #include "core/frame/RemoteFrame.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -108,6 +109,12 @@ class RemoteDOMWindow final : public DOMWindow {
 
   Member<RemoteFrame> m_frame;
 };
+
+DEFINE_TYPE_CASTS(RemoteDOMWindow,
+                  DOMWindow,
+                  x,
+                  x->isRemoteDOMWindow(),
+                  x.isRemoteDOMWindow());
 
 }  // namespace blink
 

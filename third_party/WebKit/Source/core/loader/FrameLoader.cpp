@@ -747,7 +747,7 @@ void FrameLoader::checkCompleted() {
     restoreScrollPositionAndViewState();
 
     m_loadType = FrameLoadTypeStandard;
-    m_frame->localDOMWindow()->finishedLoading();
+    m_frame->domWindow()->finishedLoading();
   }
 
   Frame* parent = m_frame->tree().parent();
@@ -870,7 +870,7 @@ void FrameLoader::loadInSameDocument(
     // If we were in the autoscroll/middleClickAutoscroll mode we want to stop
     // it before following the link to the anchor
     m_frame->eventHandler().stopAutoscroll();
-    m_frame->localDOMWindow()->enqueueHashchangeEvent(oldURL, url);
+    m_frame->domWindow()->enqueueHashchangeEvent(oldURL, url);
   }
   m_documentLoader->setIsClientRedirect(clientRedirect ==
                                         ClientRedirectPolicy::ClientRedirect);
@@ -882,9 +882,9 @@ void FrameLoader::loadInSameDocument(
 
   checkCompleted();
 
-  m_frame->localDOMWindow()->statePopped(
-      stateObject ? std::move(stateObject)
-                  : SerializedScriptValue::nullValue());
+  m_frame->domWindow()->statePopped(stateObject
+                                        ? std::move(stateObject)
+                                        : SerializedScriptValue::nullValue());
 
   if (historyLoadType == HistorySameDocumentLoad)
     restoreScrollPositionAndViewState();

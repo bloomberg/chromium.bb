@@ -30,8 +30,9 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
                                 FrameOwner* owner)
     : Frame(client, host, owner),
       m_securityContext(RemoteSecurityContext::create()),
-      m_domWindow(RemoteDOMWindow::create(*this)),
-      m_windowProxyManager(WindowProxyManager::create(*this)) {}
+      m_windowProxyManager(WindowProxyManager::create(*this)) {
+  m_domWindow = RemoteDOMWindow::create(*this);
+}
 
 RemoteFrame* RemoteFrame::create(RemoteFrameClient* client,
                                  FrameHost* host,
@@ -46,13 +47,8 @@ RemoteFrame::~RemoteFrame() {
 DEFINE_TRACE(RemoteFrame) {
   visitor->trace(m_view);
   visitor->trace(m_securityContext);
-  visitor->trace(m_domWindow);
   visitor->trace(m_windowProxyManager);
   Frame::trace(visitor);
-}
-
-DOMWindow* RemoteFrame::domWindow() const {
-  return m_domWindow.get();
 }
 
 WindowProxy* RemoteFrame::windowProxy(DOMWrapperWorld& world) {
@@ -155,7 +151,7 @@ void RemoteFrame::setView(RemoteFrameView* view) {
   // persistent strong references to RemoteDOMWindow will prevent the GCing
   // of all these objects. Break the cycle by notifying of detachment.
   if (!m_view)
-    m_domWindow->frameDetached();
+    toRemoteDOMWindow(m_domWindow)->frameDetached();
 }
 
 void RemoteFrame::createView() {
