@@ -1586,8 +1586,9 @@ def _CheckMojoUsesNewWrapperTypes(input_api, output_api):
 
 
 def _CheckUselessForwardDeclarations(input_api, output_api):
-  """Checks that added or removed lines in affected header files
-     do not lead to new useless class or struct forward declaration.
+  """Checks that added or removed lines in non third party affected
+     header files do not lead to new useless class or struct forward
+     declaration.
   """
   results = []
   class_pattern = input_api.re.compile(r'^class\s+(\w+);$',
@@ -1595,6 +1596,11 @@ def _CheckUselessForwardDeclarations(input_api, output_api):
   struct_pattern = input_api.re.compile(r'^struct\s+(\w+);$',
                                         input_api.re.MULTILINE)
   for f in input_api.AffectedFiles(include_deletes=False):
+    if (f.LocalPath().startswith('third_party') and
+        not f.LocalPath().startswith('third_party/WebKit') and
+        not f.LocalPath().startswith('third_party\\WebKit')):
+      continue
+
     if not f.LocalPath().endswith('.h'):
       continue
 

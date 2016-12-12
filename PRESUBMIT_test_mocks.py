@@ -120,7 +120,7 @@ class MockFile(object):
     return self._local_path
 
   def GenerateScmDiff(self):
-    return self._scm_diff;
+    return self._scm_diff
 
   def rfind(self, p):
     """os.path.basename is called on MockFile so we need an rfind method."""

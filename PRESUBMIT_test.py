@@ -1115,10 +1115,13 @@ class HardcodedGoogleHostsTest(unittest.TestCase):
 
 
 class ForwardDeclarationTest(unittest.TestCase):
-  def testCheckHeadersOnly(self):
+  def testCheckHeadersOnlyOutsideThirdParty(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockAffectedFile('somewhere/file.cc', [
+        'class DummyClass;'
+      ]),
+      MockAffectedFile('third_party/header.h', [
         'class DummyClass;'
       ])
     ]
@@ -1130,9 +1133,9 @@ class ForwardDeclarationTest(unittest.TestCase):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockAffectedFile('somewhere/header.h', [
-        'class SomeClass {'
-        ' protected:'
-        '  class NotAMatch;'
+        'class SomeClass {',
+        ' protected:',
+        '  class NotAMatch;',
         '};'
       ])
     ]
@@ -1162,11 +1165,27 @@ class ForwardDeclarationTest(unittest.TestCase):
         'struct DummyStruct;',
         'class UsefulClass;',
         'std::unique_ptr<UsefulClass> p;'
-      ]),
+      ])
     ]
     warnings = PRESUBMIT._CheckUselessForwardDeclarations(mock_input_api,
       MockOutputApi())
     self.assertEqual(2, len(warnings))
+
+  def testBlinkHeaders(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('third_party/WebKit/header.h', [
+        'class DummyClass;',
+        'struct DummyStruct;',
+      ]),
+      MockAffectedFile('third_party\\WebKit\\header.h', [
+        'class DummyClass;',
+        'struct DummyStruct;',
+      ])
+    ]
+    warnings = PRESUBMIT._CheckUselessForwardDeclarations(mock_input_api,
+      MockOutputApi())
+    self.assertEqual(4, len(warnings))
 
 
 if __name__ == '__main__':
