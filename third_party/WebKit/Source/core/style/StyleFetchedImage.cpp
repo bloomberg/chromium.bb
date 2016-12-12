@@ -24,14 +24,14 @@
 #include "core/style/StyleFetchedImage.h"
 
 #include "core/css/CSSImageValue.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
 
 namespace blink {
 
-StyleFetchedImage::StyleFetchedImage(ImageResource* image,
+StyleFetchedImage::StyleFetchedImage(ImageResourceContent* image,
                                      const Document& document,
                                      const KURL& url)
     : m_image(image), m_document(&document), m_url(url) {
@@ -54,7 +54,7 @@ WrappedImagePtr StyleFetchedImage::data() const {
   return m_image.get();
 }
 
-ImageResource* StyleFetchedImage::cachedImage() const {
+ImageResourceContent* StyleFetchedImage::cachedImage() const {
   return m_image.get();
 }
 
@@ -110,7 +110,7 @@ void StyleFetchedImage::removeClient(LayoutObject* layoutObject) {
   m_image->removeObserver(layoutObject);
 }
 
-void StyleFetchedImage::imageNotifyFinished(ImageResource*) {
+void StyleFetchedImage::imageNotifyFinished(ImageResourceContent*) {
   if (m_document && m_image && m_image->getImage() &&
       m_image->getImage()->isSVGImage())
     toSVGImage(m_image->getImage())->updateUseCounters(*m_document);

@@ -31,7 +31,7 @@
 namespace blink {
 
 class CSSValue;
-class ImageResource;
+class ImageResourceContent;
 class IntSize;
 class LayoutObject;
 class LayoutSize;
@@ -72,7 +72,7 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   virtual WrappedImagePtr data() const = 0;
   virtual float imageScaleFactor() const { return 1; }
   virtual bool knownToBeOpaque(const LayoutObject&) const = 0;
-  virtual ImageResource* cachedImage() const { return 0; }
+  virtual ImageResourceContent* cachedImage() const { return 0; }
 
   ALWAYS_INLINE bool isImageResource() const { return m_isImageResource; }
   ALWAYS_INLINE bool isPendingImage() const { return m_isPendingImage; }

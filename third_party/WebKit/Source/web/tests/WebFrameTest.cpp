@@ -10055,7 +10055,7 @@ TEST_F(WebFrameTest, ImageDocumentLoadFinishTime) {
   EXPECT_TRUE(document->isImageDocument());
 
   ImageDocument* imgDocument = toImageDocument(document);
-  ImageResource* resource = imgDocument->cachedImage();
+  ImageResource* resource = imgDocument->cachedImageResourceDeprecated();
 
   EXPECT_TRUE(resource);
   EXPECT_NE(0, resource->loadFinishTime());

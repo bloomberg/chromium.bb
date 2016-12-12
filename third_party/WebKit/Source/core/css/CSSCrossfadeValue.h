@@ -29,13 +29,12 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/fetch/ImageResourceObserver.h"
 #include "platform/graphics/Image.h"
 
 namespace blink {
 
-class ImageResource;
 class CrossfadeSubimageObserverProxy;
 class LayoutObject;
 
@@ -88,7 +87,7 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
     ~CrossfadeSubimageObserverProxy() override {}
     DEFINE_INLINE_TRACE() { visitor->trace(m_ownerValue); }
 
-    void imageChanged(ImageResource*, const IntRect* = nullptr) override;
+    void imageChanged(ImageResourceContent*, const IntRect* = nullptr) override;
     bool willRenderImage() override;
     String debugName() const override {
       return "CrossfadeSubimageObserverProxy";
@@ -107,8 +106,8 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
   Member<CSSValue> m_toValue;
   Member<CSSPrimitiveValue> m_percentageValue;
 
-  Member<ImageResource> m_cachedFromImage;
-  Member<ImageResource> m_cachedToImage;
+  Member<ImageResourceContent> m_cachedFromImage;
+  Member<ImageResourceContent> m_cachedToImage;
 
   CrossfadeSubimageObserverProxy m_crossfadeSubimageObserver;
 };

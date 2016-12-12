@@ -22,7 +22,7 @@
 #define SVGFEImageElement_h
 
 #include "core/SVGNames.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/fetch/ImageResourceObserver.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
@@ -55,7 +55,7 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
   explicit SVGFEImageElement(Document&);
 
   void svgAttributeChanged(const QualifiedName&) override;
-  void imageNotifyFinished(ImageResource*) override;
+  void imageNotifyFinished(ImageResourceContent*) override;
   String debugName() const override { return "SVGFEImageElement"; }
 
   FilterEffect* build(SVGFilterBuilder*, Filter*) override;
@@ -69,7 +69,7 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
 
   Member<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
 
-  Member<ImageResource> m_cachedImage;
+  Member<ImageResourceContent> m_cachedImage;
 };
 
 }  // namespace blink

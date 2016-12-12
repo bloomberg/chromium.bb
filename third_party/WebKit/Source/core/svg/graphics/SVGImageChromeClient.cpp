@@ -112,7 +112,7 @@ void SVGImageChromeClient::animationTimerFired(TimerBase*) {
     return;
 
   // The SVGImageChromeClient object's lifetime is dependent on
-  // the ImageObserver (an ImageResource) of its image. Should it
+  // the ImageObserver (an ImageResourceContent) of its image. Should it
   // be dead and about to be lazily swept out, do not proceed.
   //
   // TODO(Oilpan): move (SVG)Image to the Oilpan heap, and avoid

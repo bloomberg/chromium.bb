@@ -37,7 +37,7 @@ class CORE_EXPORT HTMLImageLoader final : public ImageLoader {
 
   void dispatchLoadEvent() override;
 
-  void imageNotifyFinished(ImageResource*) override;
+  void imageNotifyFinished(ImageResourceContent*) override;
   String debugName() const override { return "HTMLImageLoader"; }
 
  private:

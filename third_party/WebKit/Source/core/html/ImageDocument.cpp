@@ -148,12 +148,13 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length) {
           !settings || settings->imagesEnabled(), document()->url()))
     return;
 
-  if (document()->cachedImage()) {
+  if (document()->cachedImageResourceDeprecated()) {
     RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
     // If decoding has already failed, there's no point in sending additional
     // data to the ImageResource.
-    if (document()->cachedImage()->getStatus() != Resource::DecodeError)
-      document()->cachedImage()->appendData(data, length);
+    if (document()->cachedImageResourceDeprecated()->getStatus() !=
+        Resource::DecodeError)
+      document()->cachedImageResourceDeprecated()->appendData(data, length);
   }
 
   if (!isDetached())
@@ -161,8 +162,10 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length) {
 }
 
 void ImageDocumentParser::finish() {
-  if (!isStopped() && document()->imageElement() && document()->cachedImage()) {
-    ImageResource* cachedImage = document()->cachedImage();
+  if (!isStopped() && document()->imageElement() &&
+      document()->cachedImageResourceDeprecated()) {
+    // TODO(hiroshige): Use ImageResourceContent instead of ImageResource.
+    ImageResource* cachedImage = document()->cachedImageResourceDeprecated();
     DocumentLoader* loader = document()->loader();
     cachedImage->setResponse(loader->response());
     cachedImage->finish(loader->timing().responseEnd());
@@ -264,9 +267,10 @@ void ImageDocument::createDocumentStructure() {
   m_imageElement->setLoadingImageDocument();
   m_imageElement->setSrc(url().getString());
   body->appendChild(m_imageElement.get());
-  if (loader() && m_imageElement->cachedImage())
-    m_imageElement->cachedImage()->responseReceived(loader()->response(),
-                                                    nullptr);
+  if (loader() && m_imageElement->cachedImageResourceForImageDocument()) {
+    m_imageElement->cachedImageResourceForImageDocument()->responseReceived(
+        loader()->response(), nullptr);
+  }
 
   if (shouldShrinkToFit()) {
     // Add event listeners
@@ -565,7 +569,7 @@ void ImageDocument::windowSizeChanged() {
   }
 }
 
-ImageResource* ImageDocument::cachedImage() {
+ImageResourceContent* ImageDocument::cachedImage() {
   if (!m_imageElement) {
     createDocumentStructure();
     if (isStopped()) {
@@ -575,6 +579,18 @@ ImageResource* ImageDocument::cachedImage() {
   }
 
   return m_imageElement->cachedImage();
+}
+
+ImageResource* ImageDocument::cachedImageResourceDeprecated() {
+  if (!m_imageElement) {
+    createDocumentStructure();
+    if (isStopped()) {
+      m_imageElement = nullptr;
+      return nullptr;
+    }
+  }
+
+  return m_imageElement->cachedImageResourceForImageDocument();
 }
 
 bool ImageDocument::shouldShrinkToFit() const {

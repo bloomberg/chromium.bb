@@ -53,7 +53,7 @@ void LayoutImageResource::shutdown() {
   m_cachedImage->removeObserver(m_layoutObject);
 }
 
-void LayoutImageResource::setImageResource(ImageResource* newImage) {
+void LayoutImageResource::setImageResource(ImageResourceContent* newImage) {
   ASSERT(m_layoutObject);
 
   if (m_cachedImage == newImage)

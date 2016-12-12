@@ -5,6 +5,7 @@
 #include "core/fetch/MockResourceClients.h"
 
 #include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -48,32 +49,32 @@ MockImageResourceClient::MockImageResourceClient(ImageResource* resource)
       m_encodedSizeOnLastImageChanged(0),
       m_imageNotifyFinishedCount(0),
       m_encodedSizeOnImageNotifyFinished(0) {
-  toImageResource(m_resource.get())->addObserver(this);
+  toImageResource(m_resource)->getContent()->addObserver(this);
 }
 
 MockImageResourceClient::~MockImageResourceClient() {}
 
 void MockImageResourceClient::removeAsClient() {
-  toImageResource(m_resource.get())->removeObserver(this);
+  toImageResource(m_resource)->getContent()->removeObserver(this);
   MockResourceClient::removeAsClient();
 }
 
 void MockImageResourceClient::dispose() {
   if (m_resource)
-    toImageResource(m_resource.get())->removeObserver(this);
+    toImageResource(m_resource)->getContent()->removeObserver(this);
   MockResourceClient::dispose();
 }
 
-void MockImageResourceClient::imageChanged(ImageResource* image,
+void MockImageResourceClient::imageChanged(ImageResourceContent* image,
                                            const IntRect*) {
   m_imageChangedCount++;
-  m_encodedSizeOnLastImageChanged = image->encodedSize();
+  m_encodedSizeOnLastImageChanged = m_resource->encodedSize();
 }
 
-void MockImageResourceClient::imageNotifyFinished(ImageResource* image) {
+void MockImageResourceClient::imageNotifyFinished(ImageResourceContent* image) {
   ASSERT_EQ(0, m_imageNotifyFinishedCount);
   m_imageNotifyFinishedCount++;
-  m_encodedSizeOnImageNotifyFinished = image->encodedSize();
+  m_encodedSizeOnImageNotifyFinished = m_resource->encodedSize();
 }
 
 bool MockImageResourceClient::notifyFinishedCalled() const {

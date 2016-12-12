@@ -24,7 +24,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/fetch/ResourceLoadingLog.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -68,8 +68,8 @@ void HTMLImageLoader::noImageResourceToLoad() {
     toHTMLInputElement(element())->ensureFallbackContent();
 }
 
-void HTMLImageLoader::imageNotifyFinished(ImageResource*) {
-  ImageResource* cachedImage = image();
+void HTMLImageLoader::imageNotifyFinished(ImageResourceContent*) {
+  ImageResourceContent* cachedImage = image();
   Element* element = this->element();
   ImageLoader::imageNotifyFinished(cachedImage);
 

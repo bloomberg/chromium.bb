@@ -75,7 +75,7 @@ void SVGFEImageElement::clearResourceReferences() {
 void SVGFEImageElement::fetchImageResource() {
   FetchRequest request(
       ResourceRequest(ownerDocument()->completeURL(hrefString())), localName());
-  m_cachedImage = ImageResource::fetch(request, document().fetcher());
+  m_cachedImage = ImageResourceContent::fetch(request, document().fetcher());
 
   if (m_cachedImage)
     m_cachedImage->addObserver(this);
@@ -135,7 +135,7 @@ void SVGFEImageElement::removedFrom(ContainerNode* rootParent) {
     clearResourceReferences();
 }
 
-void SVGFEImageElement::imageNotifyFinished(ImageResource*) {
+void SVGFEImageElement::imageNotifyFinished(ImageResourceContent*) {
   if (!isConnected())
     return;
 

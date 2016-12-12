@@ -33,7 +33,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -372,9 +372,9 @@ void HTMLImageElement::attachLayoutTree(const AttachContext& context) {
     if (m_isFallbackImage) {
       float deviceScaleFactor = blink::deviceScaleFactor(layoutImage->frame());
       std::pair<Image*, float> brokenImageAndImageScaleFactor =
-          ImageResource::brokenImage(deviceScaleFactor);
-      ImageResource* newImageResource =
-          ImageResource::create(brokenImageAndImageScaleFactor.first);
+          ImageResourceContent::brokenImage(deviceScaleFactor);
+      ImageResourceContent* newImageResource =
+          ImageResourceContent::create(brokenImageAndImageScaleFactor.first);
       layoutImage->imageResource()->setImageResource(newImageResource);
     }
     if (layoutImageResource->hasImage())
@@ -493,7 +493,7 @@ unsigned HTMLImageElement::naturalWidth() const {
       .image()
       ->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()),
                   m_imageDevicePixelRatio,
-                  ImageResource::IntrinsicCorrectedToDPR)
+                  ImageResourceContent::IntrinsicCorrectedToDPR)
       .width()
       .toUnsigned();
 }
@@ -506,7 +506,7 @@ unsigned HTMLImageElement::naturalHeight() const {
       .image()
       ->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()),
                   m_imageDevicePixelRatio,
-                  ImageResource::IntrinsicCorrectedToDPR)
+                  ImageResourceContent::IntrinsicCorrectedToDPR)
       .height()
       .toUnsigned();
 }
@@ -660,7 +660,7 @@ bool HTMLImageElement::isSVGSource() const {
 
 bool HTMLImageElement::wouldTaintOrigin(
     SecurityOrigin* destinationSecurityOrigin) const {
-  ImageResource* image = cachedImage();
+  ImageResourceContent* image = cachedImage();
   if (!image)
     return false;
   return !image->isAccessAllowed(destinationSecurityOrigin);
@@ -668,7 +668,7 @@ bool HTMLImageElement::wouldTaintOrigin(
 
 FloatSize HTMLImageElement::elementSize(
     const FloatSize& defaultObjectSize) const {
-  ImageResource* image = cachedImage();
+  ImageResourceContent* image = cachedImage();
   if (!image)
     return FloatSize();
 
@@ -682,7 +682,7 @@ FloatSize HTMLImageElement::elementSize(
 
 FloatSize HTMLImageElement::defaultDestinationSize(
     const FloatSize& defaultObjectSize) const {
-  ImageResource* image = cachedImage();
+  ImageResourceContent* image = cachedImage();
   if (!image)
     return FloatSize();
 
@@ -794,7 +794,7 @@ void HTMLImageElement::selectSourceURL(
 
   // Icky special case for deferred images:
   // A deferred image is not loading, does have pending activity, does not
-  // have an error, but it does have an ImageResource associated
+  // have an error, but it does have an ImageResourceContent associated
   // with it, so imageHasLoaded will be true even though the image hasn't
   // actually loaded. Fixing the definition of imageHasLoaded isn't
   // sufficient, because a deferred image does have pending activity, does not
@@ -802,8 +802,8 @@ void HTMLImageElement::selectSourceURL(
   // was correct, imageStillLoading would become wrong.
   //
   // Instead of dealing with that, there's a separate check that the
-  // ImageResource has non-null image data associated with it, which isn't
-  // folded into imageHasLoaded above.
+  // ImageResourceContent has non-null image data associated with it, which
+  // isn't folded into imageHasLoaded above.
   if ((imageHasLoaded && imageHasImage) || imageStillLoading || imageIsDocument)
     ensurePrimaryContent();
   else
@@ -899,7 +899,7 @@ int HTMLImageElement::sourceHeight() {
 }
 
 IntSize HTMLImageElement::bitmapSourceSize() const {
-  ImageResource* image = cachedImage();
+  ImageResourceContent* image = cachedImage();
   if (!image)
     return IntSize();
   LayoutSize lSize = image->imageSize(

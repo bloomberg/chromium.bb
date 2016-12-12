@@ -51,7 +51,7 @@ class SVGImageElement final : public SVGGraphicsElement,
   }
 
   // Exposed for testing.
-  ImageResource* cachedImage() const { return imageLoader().image(); }
+  ImageResourceContent* cachedImage() const { return imageLoader().image(); }
 
  private:
   explicit SVGImageElement(Document&);

@@ -41,7 +41,11 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
     return new ImageDocument(initializer);
   }
 
-  ImageResource* cachedImage();
+  ImageResourceContent* cachedImage();
+
+  // TODO(hiroshige): Remove this.
+  ImageResource* cachedImageResourceDeprecated();
+
   HTMLImageElement* imageElement() const { return m_imageElement.get(); }
 
   void windowSizeChanged();

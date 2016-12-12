@@ -32,7 +32,7 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/serializers/Serialization.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
@@ -228,7 +228,7 @@ void DataTransfer::clearDragImage() {
   m_dragImageElement = nullptr;
 }
 
-void DataTransfer::setDragImageResource(ImageResource* img,
+void DataTransfer::setDragImageResource(ImageResourceContent* img,
                                         const IntPoint& loc) {
   setDragImage(img, 0, loc);
 }
@@ -252,8 +252,8 @@ std::unique_ptr<DragImage> DataTransfer::createDragImage(
   return nullptr;
 }
 
-static ImageResource* getImageResource(Element* element) {
-  // Attempt to pull ImageResource from element
+static ImageResourceContent* getImageResourceContent(Element* element) {
+  // Attempt to pull ImageResourceContent from element
   ASSERT(element);
   LayoutObject* layoutObject = element->layoutObject();
   if (!layoutObject || !layoutObject->isImage())
@@ -270,7 +270,7 @@ static void writeImageToDataObject(DataObject* dataObject,
                                    Element* element,
                                    const KURL& url) {
   // Shove image data into a DataObject for use as a file
-  ImageResource* cachedImage = getImageResource(element);
+  ImageResourceContent* cachedImage = getImageResourceContent(element);
   if (!cachedImage || !cachedImage->getImage() || !cachedImage->isLoaded())
     return;
 
@@ -449,7 +449,7 @@ DataTransfer::DataTransfer(DataTransferType type,
       m_transferType(type),
       m_dataObject(dataObject) {}
 
-void DataTransfer::setDragImage(ImageResource* image,
+void DataTransfer::setDragImage(ImageResourceContent* image,
                                 Node* node,
                                 const IntPoint& loc) {
   if (!canSetDragImage())

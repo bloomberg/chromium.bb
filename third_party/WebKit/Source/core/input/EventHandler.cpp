@@ -51,7 +51,7 @@
 #include "core/events/TextEvent.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
@@ -425,7 +425,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result) {
       StyleImage* styleImage = (*cursors)[i].image();
       if (!styleImage)
         continue;
-      ImageResource* cachedImage = styleImage->cachedImage();
+      ImageResourceContent* cachedImage = styleImage->cachedImage();
       if (!cachedImage)
         continue;
       float scale = styleImage->imageScaleFactor();

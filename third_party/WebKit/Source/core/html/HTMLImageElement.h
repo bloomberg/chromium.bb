@@ -76,8 +76,11 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement,
 
   String altText() const final;
 
-  ImageResource* cachedImage() const { return imageLoader().image(); }
-  void setImageResource(ImageResource* i) { imageLoader().setImage(i); }
+  ImageResourceContent* cachedImage() const { return imageLoader().image(); }
+  ImageResource* cachedImageResourceForImageDocument() const {
+    return imageLoader().imageResourceForImageDocument();
+  }
+  void setImageResource(ImageResourceContent* i) { imageLoader().setImage(i); }
 
   void setLoadingImageDocument() { imageLoader().setLoadingImageDocument(); }
 

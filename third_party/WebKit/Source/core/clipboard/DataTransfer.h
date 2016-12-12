@@ -27,7 +27,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/page/DragActions.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
@@ -93,7 +93,7 @@ class CORE_EXPORT DataTransfer final
   IntPoint dragLocation() const { return m_dragLoc; }
   void setDragImage(Element*, int x, int y);
   void clearDragImage();
-  void setDragImageResource(ImageResource*, const IntPoint&);
+  void setDragImageResource(ImageResourceContent*, const IntPoint&);
   void setDragImageElement(Node*, const IntPoint&);
 
   std::unique_ptr<DragImage> createDragImage(IntPoint& dragLocation,
@@ -129,7 +129,7 @@ class CORE_EXPORT DataTransfer final
  private:
   DataTransfer(DataTransferType, DataTransferAccessPolicy, DataObject*);
 
-  void setDragImage(ImageResource*, Node*, const IntPoint&);
+  void setDragImage(ImageResourceContent*, Node*, const IntPoint&);
 
   bool hasFileOfType(const String&) const;
   bool hasStringOfType(const String&) const;
@@ -143,7 +143,7 @@ class CORE_EXPORT DataTransfer final
   Member<DataObject> m_dataObject;
 
   IntPoint m_dragLoc;
-  Member<ImageResource> m_dragImage;
+  Member<ImageResourceContent> m_dragImage;
   Member<Node> m_dragImageElement;
 };
 

@@ -898,7 +898,7 @@ std::unique_ptr<TracedValue> InspectorPaintImageEvent::data(
     const LayoutImage& layoutImage) {
   std::unique_ptr<TracedValue> value = TracedValue::create();
   setGeneratingNodeInfo(value.get(), &layoutImage, "nodeId");
-  if (const ImageResource* resource = layoutImage.cachedImage())
+  if (const ImageResourceContent* resource = layoutImage.cachedImage())
     value->setString("url", resource->url().getString());
   return value;
 }
@@ -908,14 +908,14 @@ std::unique_ptr<TracedValue> InspectorPaintImageEvent::data(
     const StyleImage& styleImage) {
   std::unique_ptr<TracedValue> value = TracedValue::create();
   setGeneratingNodeInfo(value.get(), &owningLayoutObject, "nodeId");
-  if (const ImageResource* resource = styleImage.cachedImage())
+  if (const ImageResourceContent* resource = styleImage.cachedImage())
     value->setString("url", resource->url().getString());
   return value;
 }
 
 std::unique_ptr<TracedValue> InspectorPaintImageEvent::data(
     const LayoutObject* owningLayoutObject,
-    const ImageResource& imageResource) {
+    const ImageResourceContent& imageResource) {
   std::unique_ptr<TracedValue> value = TracedValue::create();
   setGeneratingNodeInfo(value.get(), owningLayoutObject, "nodeId");
   value->setString("url", imageResource.url().getString());

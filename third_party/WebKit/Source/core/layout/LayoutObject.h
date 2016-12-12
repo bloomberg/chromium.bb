@@ -1446,7 +1446,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual int caretMaxOffset() const;
 
   // ImageResourceClient override.
-  void imageChanged(ImageResource*, const IntRect* = nullptr) final;
+  void imageChanged(ImageResourceContent*, const IntRect* = nullptr) final;
   bool willRenderImage() final;
   bool getImageAnimationPolicy(ImageAnimationPolicy&) final;
 

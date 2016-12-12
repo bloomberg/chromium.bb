@@ -92,7 +92,8 @@ FloatSize SVGImagePainter::computeImageViewportSize() const {
           ->align() != SVGPreserveAspectRatio::kSvgPreserveaspectratioNone)
     return m_layoutSVGImage.objectBoundingBox().size();
 
-  ImageResource* cachedImage = m_layoutSVGImage.imageResource()->cachedImage();
+  ImageResourceContent* cachedImage =
+      m_layoutSVGImage.imageResource()->cachedImage();
 
   // Images with preserveAspectRatio=none should force non-uniform scaling. This
   // can be achieved by setting the image's container size to its viewport size

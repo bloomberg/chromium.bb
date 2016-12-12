@@ -53,7 +53,8 @@ PassRefPtr<Image> CSSStyleImageValue::image() const {
   if (isCachePending())
     return nullptr;
   // cachedImage can be null if image is StyleInvalidImage
-  ImageResource* cachedImage = m_imageValue->cachedImage()->cachedImage();
+  ImageResourceContent* cachedImage =
+      m_imageValue->cachedImage()->cachedImage();
   if (cachedImage) {
     // getImage() returns the nullImage() if the image is not available yet
     return cachedImage->getImage()->imageForDefaultFrame();

@@ -68,7 +68,7 @@ static float resolveHeightForRatio(float width,
 }
 
 FloatSize LayoutSVGImage::calculateObjectSize() const {
-  ImageResource* cachedImage = m_imageResource->cachedImage();
+  ImageResourceContent* cachedImage = m_imageResource->cachedImage();
   if (!cachedImage || cachedImage->errorOccurred())
     return m_objectBoundingBox.size();
 

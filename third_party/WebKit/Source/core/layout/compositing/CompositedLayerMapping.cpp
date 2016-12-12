@@ -27,7 +27,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/DOMNodeIds.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
@@ -2480,7 +2480,7 @@ bool CompositedLayerMapping::isDirectlyCompositedImage() const {
       imageLayoutObject->hasObjectFit())
     return false;
 
-  if (ImageResource* cachedImage = imageLayoutObject->cachedImage()) {
+  if (ImageResourceContent* cachedImage = imageLayoutObject->cachedImage()) {
     if (!cachedImage->hasImage())
       return false;
 
@@ -2511,7 +2511,7 @@ void CompositedLayerMapping::updateImageContents() {
   ASSERT(layoutObject()->isImage());
   LayoutImage* imageLayoutObject = toLayoutImage(layoutObject());
 
-  ImageResource* cachedImage = imageLayoutObject->cachedImage();
+  ImageResourceContent* cachedImage = imageLayoutObject->cachedImage();
   if (!cachedImage)
     return;
 

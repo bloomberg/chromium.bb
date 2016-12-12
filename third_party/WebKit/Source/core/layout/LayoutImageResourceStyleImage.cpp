@@ -28,7 +28,6 @@
 
 #include "core/layout/LayoutImageResourceStyleImage.h"
 
-#include "core/fetch/ImageResource.h"
 #include "core/layout/LayoutReplaced.h"
 #include "core/style/StyleFetchedImage.h"
 

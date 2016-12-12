@@ -27,7 +27,6 @@
 #include "core/layout/LayoutTableRow.h"
 
 #include "core/HTMLNames.h"
-#include "core/fetch/ImageResource.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutState.h"

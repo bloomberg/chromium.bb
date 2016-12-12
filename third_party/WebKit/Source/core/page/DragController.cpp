@@ -46,7 +46,7 @@
 #include "core/editing/commands/DragAndDropCommand.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/TextEvent.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -829,7 +829,7 @@ Node* DragController::draggableNode(const LocalFrame* src,
   return node;
 }
 
-static ImageResource* getImageResource(Element* element) {
+static ImageResourceContent* getImageResource(Element* element) {
   DCHECK(element);
   LayoutObject* layoutObject = element->layoutObject();
   if (!layoutObject || !layoutObject->isImage())
@@ -840,7 +840,7 @@ static ImageResource* getImageResource(Element* element) {
 
 static Image* getImage(Element* element) {
   DCHECK(element);
-  ImageResource* cachedImage = getImageResource(element);
+  ImageResourceContent* cachedImage = getImageResource(element);
   return (cachedImage && !cachedImage->errorOccurred())
              ? cachedImage->getImage()
              : nullptr;

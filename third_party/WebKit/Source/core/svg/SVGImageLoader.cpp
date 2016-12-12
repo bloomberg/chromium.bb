@@ -21,7 +21,6 @@
 #include "core/svg/SVGImageLoader.h"
 
 #include "core/events/Event.h"
-#include "core/fetch/ImageResource.h"
 #include "core/svg/SVGImageElement.h"
 
 namespace blink {

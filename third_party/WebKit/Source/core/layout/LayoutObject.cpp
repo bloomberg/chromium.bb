@@ -3145,7 +3145,8 @@ bool LayoutObject::isInert() const {
   return layoutObject->node()->isInert();
 }
 
-void LayoutObject::imageChanged(ImageResource* image, const IntRect* rect) {
+void LayoutObject::imageChanged(ImageResourceContent* image,
+                                const IntRect* rect) {
   ASSERT(m_node);
 
   // Image change notifications should not be received during paint because

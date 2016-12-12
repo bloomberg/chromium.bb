@@ -30,7 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/frame/Settings.h"
@@ -120,8 +120,8 @@ StyleImage* CSSImageSetValue::cacheImage(
     if (document.settings() && document.settings()->fetchImagePlaceholders())
       request.setAllowImagePlaceholder();
 
-    if (ImageResource* cachedImage =
-            ImageResource::fetch(request, document.fetcher()))
+    if (ImageResourceContent* cachedImage =
+            ImageResourceContent::fetch(request, document.fetcher()))
       m_cachedImage = StyleFetchedImageSet::create(
           cachedImage, image.scaleFactor, this, request.url());
     else
@@ -165,7 +165,7 @@ String CSSImageSetValue::customCSSText() const {
 bool CSSImageSetValue::hasFailedOrCanceledSubresources() const {
   if (!m_cachedImage)
     return false;
-  if (Resource* cachedResource = m_cachedImage->cachedImage())
+  if (ImageResourceContent* cachedResource = m_cachedImage->cachedImage())
     return cachedResource->loadFailedOrCanceled();
   return true;
 }

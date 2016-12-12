@@ -24,7 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Settings.h"
 #include "core/style/StyleFetchedImage.h"
@@ -67,8 +67,8 @@ StyleImage* CSSImageValue::cacheImage(const Document& document,
     if (document.settings() && document.settings()->fetchImagePlaceholders())
       request.setAllowImagePlaceholder();
 
-    if (ImageResource* cachedImage =
-            ImageResource::fetch(request, document.fetcher()))
+    if (ImageResourceContent* cachedImage =
+            ImageResourceContent::fetch(request, document.fetcher()))
       m_cachedImage =
           StyleFetchedImage::create(cachedImage, document, request.url());
     else
@@ -83,13 +83,12 @@ void CSSImageValue::restoreCachedResourceIfNeeded(
   if (!m_cachedImage || !document.fetcher() || m_absoluteURL.isNull())
     return;
 
-  ImageResource* resource = m_cachedImage->cachedImage();
+  ImageResourceContent* resource = m_cachedImage->cachedImage();
   if (!resource)
     return;
 
-  document.fetcher()->emulateLoadStartedForInspector(
-      resource, KURL(ParsedURLString, m_absoluteURL),
-      WebURLRequest::RequestContextImage,
+  resource->emulateLoadStartedForInspector(
+      document.fetcher(), KURL(ParsedURLString, m_absoluteURL),
       m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css
                                 : m_initiatorName);
 }
@@ -97,7 +96,7 @@ void CSSImageValue::restoreCachedResourceIfNeeded(
 bool CSSImageValue::hasFailedOrCanceledSubresources() const {
   if (!m_cachedImage)
     return false;
-  if (Resource* cachedResource = m_cachedImage->cachedImage())
+  if (ImageResourceContent* cachedResource = m_cachedImage->cachedImage())
     return cachedResource->loadFailedOrCanceled();
   return true;
 }

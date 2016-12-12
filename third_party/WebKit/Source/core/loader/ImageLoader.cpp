@@ -182,10 +182,11 @@ void ImageLoader::dispose() {
 
 DEFINE_TRACE(ImageLoader) {
   visitor->trace(m_image);
+  visitor->trace(m_imageResourceForImageDocument);
   visitor->trace(m_element);
 }
 
-void ImageLoader::setImage(ImageResource* newImage) {
+void ImageLoader::setImage(ImageResourceContent* newImage) {
   setImageWithoutConsideringPendingLoadEvent(newImage);
 
   // Only consider updating the protection ref-count of the Element immediately
@@ -195,9 +196,9 @@ void ImageLoader::setImage(ImageResource* newImage) {
 }
 
 void ImageLoader::setImageWithoutConsideringPendingLoadEvent(
-    ImageResource* newImage) {
+    ImageResourceContent* newImage) {
   DCHECK(m_failedLoadURL.isEmpty());
-  ImageResource* oldImage = m_image.get();
+  ImageResourceContent* oldImage = m_image.get();
   if (newImage != oldImage) {
     m_image = newImage;
     if (m_hasPendingLoadEvent) {
@@ -289,7 +290,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
     return;
 
   AtomicString imageSourceURL = m_element->imageSourceURL();
-  ImageResource* newImage = nullptr;
+  ImageResourceContent* newImage = nullptr;
   if (!url.isNull()) {
     // Unlike raw <img>, we block mixed content inside of <picture> or
     // <img srcset>.
@@ -319,7 +320,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
       request.setAllowImagePlaceholder();
     }
 
-    newImage = ImageResource::fetch(request, document.fetcher());
+    newImage = ImageResourceContent::fetch(request, document.fetcher());
 
     if (!newImage && !pageIsBeingDismissed(&document)) {
       crossSiteOrCSPViolationOccurred(imageSourceURL);
@@ -335,7 +336,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
     noImageResourceToLoad();
   }
 
-  ImageResource* oldImage = m_image.get();
+  ImageResourceContent* oldImage = m_image.get();
   if (updateBehavior == UpdateSizeChanged && m_element->layoutObject() &&
       m_element->layoutObject()->isImage() && newImage == oldImage) {
     toLayoutImage(m_element->layoutObject())->intrinsicSizeChanged();
@@ -398,9 +399,11 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior,
   // funneling the main resource bytes into m_image, so just create an
   // ImageResource to be populated later.
   if (m_loadingImageDocument && updateBehavior != UpdateForcedReload) {
-    setImage(
-        ImageResource::create(imageSourceToKURL(m_element->imageSourceURL())));
-    m_image->setStatus(Resource::Pending);
+    ImageResource* imageResource =
+        ImageResource::create(imageSourceToKURL(m_element->imageSourceURL()));
+    imageResource->setStatus(Resource::Pending);
+    m_imageResourceForImageDocument = imageResource;
+    setImage(imageResource->getContent());
     return;
   }
 
@@ -420,7 +423,7 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior,
   // Allow the idiom "img.src=''; img.src='.." to clear down the image before an
   // asynchronous load completes.
   if (imageSourceURL.isEmpty()) {
-    ImageResource* image = m_image.get();
+    ImageResourceContent* image = m_image.get();
     if (image) {
       image->removeObserver(this);
     }
@@ -468,7 +471,7 @@ bool ImageLoader::shouldLoadImmediately(const KURL& url) const {
           url.protocolIsData());
 }
 
-void ImageLoader::imageNotifyFinished(ImageResource* resource) {
+void ImageLoader::imageNotifyFinished(ImageResourceContent* resource) {
   RESOURCE_LOADING_DVLOG(1)
       << "ImageLoader::imageNotifyFinished " << this
       << "; m_hasPendingLoadEvent=" << m_hasPendingLoadEvent;
@@ -511,7 +514,6 @@ void ImageLoader::imageNotifyFinished(ImageResource* resource) {
     updatedHasPendingEvent();
     return;
   }
-  DCHECK(!resource->wasCanceled());
   loadEventSender().dispatchEventSoon(this);
 }
 
@@ -545,7 +547,7 @@ void ImageLoader::updateLayoutObject() {
   // Only update the layoutObject if it doesn't have an image or if what we have
   // is a complete image.  This prevents flickering in the case where a dynamic
   // change is happening between two images.
-  ImageResource* cachedImage = imageResource->cachedImage();
+  ImageResourceContent* cachedImage = imageResource->cachedImage();
   if (m_image != cachedImage && (m_imageComplete || !cachedImage))
     imageResource->setImageResource(m_image.get());
 }

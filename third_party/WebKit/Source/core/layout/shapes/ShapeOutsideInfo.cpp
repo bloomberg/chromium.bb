@@ -98,7 +98,7 @@ static bool checkShapeImageOrigin(Document& document,
     return true;
 
   ASSERT(styleImage.cachedImage());
-  ImageResource& imageResource = *(styleImage.cachedImage());
+  ImageResourceContent& imageResource = *(styleImage.cachedImage());
   if (imageResource.isAccessAllowed(document.getSecurityOrigin()))
     return true;
 

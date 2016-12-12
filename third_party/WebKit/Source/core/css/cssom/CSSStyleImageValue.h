@@ -10,7 +10,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/cssom/CSSResourceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "core/style/StyleImage.h"
@@ -57,7 +57,7 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
   virtual LayoutSize imageLayoutSize() const {
     DCHECK(!isCachePending());
     return m_imageValue->cachedImage()->cachedImage()->imageSize(
-        DoNotRespectImageOrientation, 1, ImageResource::IntrinsicSize);
+        DoNotRespectImageOrientation, 1, ImageResourceContent::IntrinsicSize);
   }
 
   virtual bool isCachePending() const { return m_imageValue->isCachePending(); }

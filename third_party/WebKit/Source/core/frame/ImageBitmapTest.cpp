@@ -32,7 +32,7 @@
 
 #include "SkPixelRef.h"  // FIXME: qualify this skia header file.
 #include "core/dom/Document.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -81,8 +81,8 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   const ImageBitmapOptions defaultOptions;
   HTMLImageElement* imageElement =
       HTMLImageElement::create(*Document::create());
-  ImageResource* image =
-      ImageResource::create(StaticBitmapImage::create(m_image).get());
+  ImageResourceContent* image =
+      ImageResourceContent::create(StaticBitmapImage::create(m_image).get());
   imageElement->setImageResource(image);
 
   Optional<IntRect> cropRect =
@@ -126,8 +126,8 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
 // reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
   HTMLImageElement* image = HTMLImageElement::create(*Document::create());
-  ImageResource* originalImageResource =
-      ImageResource::create(StaticBitmapImage::create(m_image).get());
+  ImageResourceContent* originalImageResource =
+      ImageResourceContent::create(StaticBitmapImage::create(m_image).get());
   image->setImageResource(originalImageResource);
 
   const ImageBitmapOptions defaultOptions;
@@ -140,8 +140,8 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
             originalImageResource->getImage()->imageForCurrentFrame(
                 ColorBehavior::transformToTargetForTesting()));
 
-  ImageResource* newImageResource =
-      ImageResource::create(StaticBitmapImage::create(m_image2).get());
+  ImageResourceContent* newImageResource =
+      ImageResourceContent::create(StaticBitmapImage::create(m_image2).get());
   image->setImageResource(newImageResource);
 
   // The ImageBitmap should contain the same data as the original cached image

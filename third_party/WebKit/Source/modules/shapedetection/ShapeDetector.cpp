@@ -7,7 +7,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMRect.h"
 #include "core/dom/Document.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
@@ -151,7 +151,7 @@ ScriptPromise ShapeDetector::detectShapesOnImageElement(
     return promise;
   }
 
-  ImageResource* const imageResource = img->cachedImage();
+  ImageResourceContent* const imageResource = img->cachedImage();
   if (!imageResource || imageResource->errorOccurred()) {
     resolver->reject(DOMException::create(
         InvalidStateError, "Failed to load or decode HTMLImageElement."));

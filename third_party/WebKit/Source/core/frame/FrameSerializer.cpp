@@ -47,7 +47,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/editing/serializers/MarkupAccumulator.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLImageElement.h"
@@ -318,14 +318,14 @@ void FrameSerializer::serializeFrame(const LocalFrame& frame) {
       HTMLImageElement& imageElement = toHTMLImageElement(element);
       KURL url =
           document.completeURL(imageElement.getAttribute(HTMLNames::srcAttr));
-      ImageResource* cachedImage = imageElement.cachedImage();
+      ImageResourceContent* cachedImage = imageElement.cachedImage();
       addImageToResources(cachedImage, url);
     } else if (isHTMLInputElement(element)) {
       HTMLInputElement& inputElement = toHTMLInputElement(element);
       if (inputElement.type() == InputTypeNames::image &&
           inputElement.imageLoader()) {
         KURL url = inputElement.src();
-        ImageResource* cachedImage = inputElement.imageLoader()->image();
+        ImageResourceContent* cachedImage = inputElement.imageLoader()->image();
         addImageToResources(cachedImage, url);
       }
     } else if (isHTMLLinkElement(element)) {
@@ -459,10 +459,12 @@ bool FrameSerializer::shouldAddURL(const KURL& url) {
          !url.protocolIsData() && !m_delegate.shouldSkipResourceWithURL(url);
 }
 
-void FrameSerializer::addToResources(const Resource& resource,
-                                     PassRefPtr<const SharedBuffer> data,
-                                     const KURL& url) {
-  if (m_delegate.shouldSkipResource(resource))
+void FrameSerializer::addToResources(
+    const String& mimeType,
+    ResourceHasCacheControlNoStoreHeader hasCacheControlNoStoreHeader,
+    PassRefPtr<const SharedBuffer> data,
+    const KURL& url) {
+  if (m_delegate.shouldSkipResource(hasCacheControlNoStoreHeader))
     return;
 
   if (!data) {
@@ -470,12 +472,11 @@ void FrameSerializer::addToResources(const Resource& resource,
     return;
   }
 
-  String mimeType = resource.response().mimeType();
   m_resources->append(SerializedResource(url, mimeType, std::move(data)));
   m_resourceURLs.add(url);
 }
 
-void FrameSerializer::addImageToResources(ImageResource* image,
+void FrameSerializer::addImageToResources(ImageResourceContent* image,
                                           const KURL& url) {
   if (!image || !image->hasImage() || image->errorOccurred() ||
       !shouldAddURL(url))
@@ -486,7 +487,11 @@ void FrameSerializer::addImageToResources(ImageResource* image,
   double imageStartTime = monotonicallyIncreasingTime();
 
   RefPtr<const SharedBuffer> data = image->getImage()->data();
-  addToResources(*image, data, url);
+  addToResources(image->response().mimeType(),
+                 image->hasCacheControlNoStoreHeader()
+                     ? HasCacheControlNoStoreHeader
+                     : NoCacheControlNoStoreHeader,
+                 data, url);
 
   // If we're already reporting time for CSS serialization don't report it for
   // this image to avoid reporting the same time twice.
@@ -507,7 +512,11 @@ void FrameSerializer::addFontToResources(FontResource* font) {
 
   RefPtr<const SharedBuffer> data(font->resourceBuffer());
 
-  addToResources(*font, data, font->url());
+  addToResources(font->response().mimeType(),
+                 font->hasCacheControlNoStoreHeader()
+                     ? HasCacheControlNoStoreHeader
+                     : NoCacheControlNoStoreHeader,
+                 data, font->url());
 }
 
 void FrameSerializer::retrieveResourcesForProperties(

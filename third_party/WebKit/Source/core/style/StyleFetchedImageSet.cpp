@@ -26,13 +26,13 @@
 #include "core/style/StyleFetchedImageSet.h"
 
 #include "core/css/CSSImageSetValue.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
 
 namespace blink {
 
-StyleFetchedImageSet::StyleFetchedImageSet(ImageResource* image,
+StyleFetchedImageSet::StyleFetchedImageSet(ImageResourceContent* image,
                                            float imageScaleFactor,
                                            CSSImageSetValue* value,
                                            const KURL& url)
@@ -56,7 +56,7 @@ WrappedImagePtr StyleFetchedImageSet::data() const {
   return m_bestFitImage.get();
 }
 
-ImageResource* StyleFetchedImageSet::cachedImage() const {
+ImageResourceContent* StyleFetchedImageSet::cachedImage() const {
   return m_bestFitImage.get();
 }
 

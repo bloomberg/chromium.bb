@@ -27,7 +27,7 @@
 #ifndef LayoutImageResource_h
 #define LayoutImageResource_h
 
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/style/StyleImage.h"
 
 namespace blink {
@@ -46,8 +46,8 @@ class LayoutImageResource
   virtual void initialize(LayoutObject*);
   virtual void shutdown();
 
-  void setImageResource(ImageResource*);
-  ImageResource* cachedImage() const { return m_cachedImage.get(); }
+  void setImageResource(ImageResourceContent*);
+  ImageResourceContent* cachedImage() const { return m_cachedImage.get(); }
   virtual bool hasImage() const { return m_cachedImage; }
 
   void resetAnimation();
@@ -71,7 +71,7 @@ class LayoutImageResource
  protected:
   LayoutImageResource();
   LayoutObject* m_layoutObject;
-  Member<ImageResource> m_cachedImage;
+  Member<ImageResourceContent> m_cachedImage;
 };
 
 }  // namespace blink

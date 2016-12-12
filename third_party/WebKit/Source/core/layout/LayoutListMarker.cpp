@@ -25,7 +25,6 @@
 
 #include "core/layout/LayoutListMarker.h"
 
-#include "core/fetch/ImageResource.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/ListMarkerText.h"

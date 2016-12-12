@@ -84,7 +84,8 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   bool shouldIgnoreAttribute(const Element&, const Attribute&) override;
   bool rewriteLink(const Element&, String& rewrittenLink) override;
   bool shouldSkipResourceWithURL(const KURL&) override;
-  bool shouldSkipResource(const Resource&) override;
+  bool shouldSkipResource(
+      FrameSerializer::ResourceHasCacheControlNoStoreHeader) override;
   Vector<Attribute> getCustomAttributes(const Element&) override;
 
  private:
@@ -160,11 +161,13 @@ bool MHTMLFrameSerializerDelegate::shouldSkipResourceWithURL(const KURL& url) {
 }
 
 bool MHTMLFrameSerializerDelegate::shouldSkipResource(
-    const Resource& resource) {
+    FrameSerializer::ResourceHasCacheControlNoStoreHeader
+        hasCacheControlNoStoreHeader) {
   return m_webDelegate.cacheControlPolicy() ==
              WebFrameSerializerCacheControlPolicy::
                  SkipAnyFrameOrResourceMarkedNoStore &&
-         resource.hasCacheControlNoStoreHeader();
+         hasCacheControlNoStoreHeader ==
+             FrameSerializer::HasCacheControlNoStoreHeader;
 }
 
 Vector<Attribute> MHTMLFrameSerializerDelegate::getCustomAttributes(

@@ -30,7 +30,7 @@
 #ifndef ShapeValue_h
 #define ShapeValue_h
 
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/style/BasicShapes.h"
 #include "core/style/DataEquivalency.h"
 #include "core/style/ComputedStyleConstants.h"

@@ -140,7 +140,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // animation update for CSS and advance the SMIL timeline by one frame.
   virtual void advanceAnimationForTesting() {}
 
-  // Typically the ImageResource that owns us.
+  // Typically the ImageResourceContent that owns us.
   ImageObserver* getImageObserver() const {
     return m_imageObserverDisabled ? nullptr : m_imageObserver;
   }
@@ -218,8 +218,8 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // TODO(Oilpan): consider having Image on the Oilpan heap and
   // turn this into a Member<>.
   //
-  // The observer (an ImageResource) is an untraced member, with the
-  // ImageResource being responsible for clearing itself out.
+  // The observer (an ImageResourceContent) is an untraced member, with the
+  // ImageResourceContent being responsible for clearing itself out.
   UntracedMember<ImageObserver> m_imageObserver;
   bool m_imageObserverDisabled;
 };

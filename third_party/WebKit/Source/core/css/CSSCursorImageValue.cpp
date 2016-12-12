@@ -23,7 +23,7 @@
 
 #include "core/SVGNames.h"
 #include "core/css/CSSImageSetValue.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/style/StyleFetchedImage.h"
 #include "core/style/StyleFetchedImageSet.h"
 #include "core/style/StyleImage.h"

@@ -32,7 +32,6 @@
 #include "core/css/BasicShapeFunctions.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/fetch/ImageResource.h"
 #include "core/layout/shapes/BoxShape.h"
 #include "core/layout/shapes/PolygonShape.h"
 #include "core/layout/shapes/RasterShape.h"

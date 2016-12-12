@@ -583,7 +583,7 @@ void Internals::advanceTimeForImage(Element* image,
     return;
   }
 
-  ImageResource* resource = nullptr;
+  ImageResourceContent* resource = nullptr;
   if (isHTMLImageElement(*image)) {
     resource = toHTMLImageElement(*image).cachedImage();
   } else if (isSVGImageElement(*image)) {
@@ -614,7 +614,7 @@ void Internals::advanceImageAnimation(Element* image,
                                       ExceptionState& exceptionState) {
   ASSERT(image);
 
-  ImageResource* resource = nullptr;
+  ImageResourceContent* resource = nullptr;
   if (isHTMLImageElement(*image)) {
     resource = toHTMLImageElement(*image).cachedImage();
   } else if (isSVGImageElement(*image)) {

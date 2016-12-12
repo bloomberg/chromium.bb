@@ -37,7 +37,7 @@ class GraphicsLayer;
 class HitTestLocation;
 class HitTestRequest;
 class HitTestResult;
-class ImageResource;
+class ImageResourceContent;
 class InvalidationSet;
 class PaintLayer;
 class LayoutRect;
@@ -293,7 +293,8 @@ std::unique_ptr<TracedValue> data(LayoutObject*,
 namespace InspectorPaintImageEvent {
 std::unique_ptr<TracedValue> data(const LayoutImage&);
 std::unique_ptr<TracedValue> data(const LayoutObject&, const StyleImage&);
-std::unique_ptr<TracedValue> data(const LayoutObject*, const ImageResource&);
+std::unique_ptr<TracedValue> data(const LayoutObject*,
+                                  const ImageResourceContent&);
 }
 
 namespace InspectorCommitLoadEvent {

@@ -242,7 +242,7 @@ TEST(ImageResourceTest, MultipartImage) {
   cachedImage->loader()->didReceiveResponse(
       WrappedResourceResponse(multipartResponse), nullptr);
   EXPECT_FALSE(cachedImage->resourceBuffer());
-  EXPECT_FALSE(cachedImage->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->hasImage());
   EXPECT_EQ(0, client->imageChangedCount());
   EXPECT_FALSE(client->notifyFinishedCalled());
   EXPECT_EQ("multipart/x-mixed-replace", cachedImage->response().mimeType());
@@ -254,7 +254,7 @@ TEST(ImageResourceTest, MultipartImage) {
   // Send the response for the first real part. No image or data buffer is
   // created.
   EXPECT_FALSE(cachedImage->resourceBuffer());
-  EXPECT_FALSE(cachedImage->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->hasImage());
   EXPECT_EQ(0, client->imageChangedCount());
   EXPECT_FALSE(client->notifyFinishedCalled());
   EXPECT_EQ("image/svg+xml", cachedImage->response().mimeType());
@@ -266,7 +266,7 @@ TEST(ImageResourceTest, MultipartImage) {
   // created.
   cachedImage->appendData(secondPart, strlen(secondPart));
   EXPECT_TRUE(cachedImage->resourceBuffer());
-  EXPECT_FALSE(cachedImage->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->hasImage());
   EXPECT_EQ(0, client->imageChangedCount());
   EXPECT_FALSE(client->notifyFinishedCalled());
 
@@ -287,10 +287,10 @@ TEST(ImageResourceTest, MultipartImage) {
   cachedImage->loader()->didFinishLoading(0.0, 0, 0);
   EXPECT_TRUE(cachedImage->resourceBuffer());
   EXPECT_FALSE(cachedImage->errorOccurred());
-  ASSERT_TRUE(cachedImage->hasImage());
-  EXPECT_FALSE(cachedImage->getImage()->isNull());
-  EXPECT_EQ(1, cachedImage->getImage()->width());
-  EXPECT_EQ(1, cachedImage->getImage()->height());
+  ASSERT_TRUE(cachedImage->getContent()->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->getImage()->isNull());
+  EXPECT_EQ(1, cachedImage->getContent()->getImage()->width());
+  EXPECT_EQ(1, cachedImage->getContent()->getImage()->height());
   EXPECT_EQ(1, client->imageChangedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
   EXPECT_EQ(1, client2->imageChangedCount());
@@ -351,23 +351,23 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
   cachedImage->finish();
   EXPECT_EQ(0u, cachedImage->encodedSizeMemoryUsageForTesting());
   EXPECT_FALSE(cachedImage->errorOccurred());
-  ASSERT_TRUE(cachedImage->hasImage());
-  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  ASSERT_TRUE(cachedImage->getContent()->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->getImage()->isNull());
   EXPECT_TRUE(client->notifyFinishedCalled());
 
   // The prune comes when the ImageResource still has clients. The image should
   // not be deleted.
   cachedImage->prune();
   EXPECT_TRUE(cachedImage->isAlive());
-  ASSERT_TRUE(cachedImage->hasImage());
-  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  ASSERT_TRUE(cachedImage->getContent()->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->getImage()->isNull());
 
   // The ImageResource no longer has clients. The decoded image data should be
   // deleted by prune.
   client->removeAsClient();
   cachedImage->prune();
   EXPECT_FALSE(cachedImage->isAlive());
-  EXPECT_TRUE(cachedImage->hasImage());
+  EXPECT_TRUE(cachedImage->getContent()->hasImage());
   // TODO(hajimehoshi): Should check cachedImage doesn't have decoded image
   // data.
 }
@@ -388,11 +388,11 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
                           sizeof(kJpegImage));
   cachedImage->finish();
   EXPECT_FALSE(cachedImage->errorOccurred());
-  ASSERT_TRUE(cachedImage->hasImage());
-  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  ASSERT_TRUE(cachedImage->getContent()->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->getImage()->isNull());
   EXPECT_EQ(2, client->imageChangedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
+  EXPECT_TRUE(cachedImage->getContent()->getImage()->isBitmapImage());
 }
 
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
@@ -419,8 +419,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
                           sizeof(kJpegImage));
   cachedImage->finish();
   EXPECT_FALSE(cachedImage->errorOccurred());
-  ASSERT_TRUE(cachedImage->hasImage());
-  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  ASSERT_TRUE(cachedImage->getContent()->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->getImage()->isNull());
   EXPECT_EQ(2, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_EQ(sizeof(kJpegImage), client->encodedSizeOnLastImageChanged());
@@ -428,15 +428,15 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   EXPECT_TRUE(client->notifyFinishedCalled());
   EXPECT_EQ(sizeof(kJpegImage), client->encodedSizeOnNotifyFinished());
   EXPECT_EQ(sizeof(kJpegImage), client->encodedSizeOnImageNotifyFinished());
-  EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
-  EXPECT_EQ(1, cachedImage->getImage()->width());
-  EXPECT_EQ(1, cachedImage->getImage()->height());
+  EXPECT_TRUE(cachedImage->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(1, cachedImage->getContent()->getImage()->width());
+  EXPECT_EQ(1, cachedImage->getContent()->getImage()->height());
 
   // Call reloadIfLoFiOrPlaceholder() after the image has finished loading.
   cachedImage->reloadIfLoFiOrPlaceholder(fetcher);
   EXPECT_FALSE(cachedImage->errorOccurred());
   EXPECT_FALSE(cachedImage->resourceBuffer());
-  EXPECT_FALSE(cachedImage->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->hasImage());
   EXPECT_EQ(3, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
 
@@ -447,8 +447,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   cachedImage->loader()->didFinishLoading(0.0, sizeof(kJpegImage2),
                                           sizeof(kJpegImage2));
   EXPECT_FALSE(cachedImage->errorOccurred());
-  ASSERT_TRUE(cachedImage->hasImage());
-  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  ASSERT_TRUE(cachedImage->getContent()->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->getImage()->isNull());
   EXPECT_EQ(sizeof(kJpegImage2), client->encodedSizeOnLastImageChanged());
   EXPECT_TRUE(client->notifyFinishedCalled());
 
@@ -456,9 +456,9 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   EXPECT_EQ(sizeof(kJpegImage), client->encodedSizeOnNotifyFinished());
   EXPECT_EQ(sizeof(kJpegImage), client->encodedSizeOnImageNotifyFinished());
 
-  EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
-  EXPECT_EQ(50, cachedImage->getImage()->width());
-  EXPECT_EQ(50, cachedImage->getImage()->height());
+  EXPECT_TRUE(cachedImage->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(50, cachedImage->getContent()->getImage()->width());
+  EXPECT_EQ(50, cachedImage->getContent()->getImage()->height());
 }
 
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
@@ -486,20 +486,20 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
       reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
 
   EXPECT_FALSE(cachedImage->errorOccurred());
-  ASSERT_TRUE(cachedImage->hasImage());
-  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  ASSERT_TRUE(cachedImage->getContent()->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->getImage()->isNull());
   EXPECT_EQ(1, client->imageChangedCount());
   EXPECT_EQ(sizeof(kJpegImage), client->encodedSizeOnLastImageChanged());
   EXPECT_FALSE(client->notifyFinishedCalled());
-  EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
-  EXPECT_EQ(1, cachedImage->getImage()->width());
-  EXPECT_EQ(1, cachedImage->getImage()->height());
+  EXPECT_TRUE(cachedImage->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(1, cachedImage->getContent()->getImage()->width());
+  EXPECT_EQ(1, cachedImage->getContent()->getImage()->height());
 
   // Call reloadIfLoFiOrPlaceholder() while the image is still loading.
   cachedImage->reloadIfLoFiOrPlaceholder(fetcher);
   EXPECT_FALSE(cachedImage->errorOccurred());
   EXPECT_FALSE(cachedImage->resourceBuffer());
-  EXPECT_FALSE(cachedImage->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->hasImage());
   EXPECT_EQ(2, client->imageChangedCount());
   EXPECT_EQ(0U, client->encodedSizeOnLastImageChanged());
   // The client should not have been notified of completion yet, since the image
@@ -516,17 +516,17 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
                                           sizeof(kJpegImage2));
 
   EXPECT_FALSE(cachedImage->errorOccurred());
-  ASSERT_TRUE(cachedImage->hasImage());
-  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  ASSERT_TRUE(cachedImage->getContent()->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->getImage()->isNull());
   EXPECT_EQ(sizeof(kJpegImage2), client->encodedSizeOnLastImageChanged());
   // The client should have been notified of completion only after the reload
   // completed.
   EXPECT_TRUE(client->notifyFinishedCalled());
   EXPECT_EQ(sizeof(kJpegImage2), client->encodedSizeOnNotifyFinished());
   EXPECT_EQ(sizeof(kJpegImage2), client->encodedSizeOnImageNotifyFinished());
-  EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
-  EXPECT_EQ(50, cachedImage->getImage()->width());
-  EXPECT_EQ(50, cachedImage->getImage()->height());
+  EXPECT_TRUE(cachedImage->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(50, cachedImage->getContent()->getImage()->width());
+  EXPECT_EQ(50, cachedImage->getContent()->getImage()->height());
 }
 
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
@@ -581,11 +581,11 @@ TEST(ImageResourceTest, SVGImage) {
                   strlen(kSvgImage));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(1, client->imageChangedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_FALSE(imageResource->getImage()->isBitmapImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isBitmapImage());
 }
 
 TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
@@ -599,14 +599,14 @@ TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
                   sizeof(kJpegImage));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(2, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_TRUE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(1, imageResource->getImage()->width());
-  EXPECT_EQ(1, imageResource->getImage()->height());
+  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->height());
 
   imageResource->setRevalidatingRequest(ResourceRequest(url));
   ResourceResponse response;
@@ -616,14 +616,14 @@ TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
   imageResource->responseReceived(response, nullptr);
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(2, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_TRUE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(1, imageResource->getImage()->width());
-  EXPECT_EQ(1, imageResource->getImage()->height());
+  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->height());
 }
 
 TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
@@ -636,14 +636,14 @@ TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
                   strlen(kSvgImage));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(1, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_FALSE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(200, imageResource->getImage()->width());
-  EXPECT_EQ(200, imageResource->getImage()->height());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(200, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(200, imageResource->getContent()->getImage()->height());
 
   imageResource->setRevalidatingRequest(ResourceRequest(url));
   ResourceResponse response;
@@ -652,14 +652,14 @@ TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
   imageResource->responseReceived(response, nullptr);
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(1, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_FALSE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(200, imageResource->getImage()->width());
-  EXPECT_EQ(200, imageResource->getImage()->height());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(200, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(200, imageResource->getContent()->getImage()->height());
 }
 
 TEST(ImageResourceTest, FailedRevalidationJpegToJpeg) {
@@ -673,14 +673,14 @@ TEST(ImageResourceTest, FailedRevalidationJpegToJpeg) {
                   sizeof(kJpegImage));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(2, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_TRUE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(1, imageResource->getImage()->width());
-  EXPECT_EQ(1, imageResource->getImage()->height());
+  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->height());
 
   imageResource->setRevalidatingRequest(ResourceRequest(url));
   receiveResponse(imageResource, url, "image/jpeg",
@@ -688,14 +688,14 @@ TEST(ImageResourceTest, FailedRevalidationJpegToJpeg) {
                   sizeof(kJpegImage2));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(4, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_TRUE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(50, imageResource->getImage()->width());
-  EXPECT_EQ(50, imageResource->getImage()->height());
+  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(50, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(50, imageResource->getContent()->getImage()->height());
 }
 
 TEST(ImageResourceTest, FailedRevalidationJpegToSvg) {
@@ -709,28 +709,28 @@ TEST(ImageResourceTest, FailedRevalidationJpegToSvg) {
                   sizeof(kJpegImage));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(2, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_TRUE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(1, imageResource->getImage()->width());
-  EXPECT_EQ(1, imageResource->getImage()->height());
+  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->height());
 
   imageResource->setRevalidatingRequest(ResourceRequest(url));
   receiveResponse(imageResource, url, "image/svg+xml", kSvgImage,
                   strlen(kSvgImage));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(3, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_FALSE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(200, imageResource->getImage()->width());
-  EXPECT_EQ(200, imageResource->getImage()->height());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(200, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(200, imageResource->getContent()->getImage()->height());
 }
 
 TEST(ImageResourceTest, FailedRevalidationSvgToJpeg) {
@@ -743,14 +743,14 @@ TEST(ImageResourceTest, FailedRevalidationSvgToJpeg) {
                   strlen(kSvgImage));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(1, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_FALSE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(200, imageResource->getImage()->width());
-  EXPECT_EQ(200, imageResource->getImage()->height());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(200, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(200, imageResource->getContent()->getImage()->height());
 
   imageResource->setRevalidatingRequest(ResourceRequest(url));
   receiveResponse(imageResource, url, "image/jpeg",
@@ -758,14 +758,14 @@ TEST(ImageResourceTest, FailedRevalidationSvgToJpeg) {
                   sizeof(kJpegImage));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(3, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_TRUE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(1, imageResource->getImage()->width());
-  EXPECT_EQ(1, imageResource->getImage()->height());
+  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->height());
 }
 
 TEST(ImageResourceTest, FailedRevalidationSvgToSvg) {
@@ -778,28 +778,28 @@ TEST(ImageResourceTest, FailedRevalidationSvgToSvg) {
                   strlen(kSvgImage));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(1, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_FALSE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(200, imageResource->getImage()->width());
-  EXPECT_EQ(200, imageResource->getImage()->height());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(200, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(200, imageResource->getContent()->getImage()->height());
 
   imageResource->setRevalidatingRequest(ResourceRequest(url));
   receiveResponse(imageResource, url, "image/svg+xml", kSvgImage2,
                   strlen(kSvgImage2));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
   EXPECT_EQ(2, client->imageChangedCount());
   EXPECT_EQ(1, client->imageNotifyFinishedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_FALSE(imageResource->getImage()->isBitmapImage());
-  EXPECT_EQ(300, imageResource->getImage()->width());
-  EXPECT_EQ(300, imageResource->getImage()->height());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(300, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(300, imageResource->getContent()->getImage()->height());
 }
 
 // Tests for pruning.
@@ -817,10 +817,10 @@ TEST(ImageResourceTest, AddClientAfterPrune) {
                   sizeof(kJpegImage));
 
   EXPECT_FALSE(imageResource->errorOccurred());
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
-  EXPECT_EQ(1, imageResource->getImage()->width());
-  EXPECT_EQ(1, imageResource->getImage()->height());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->height());
   EXPECT_TRUE(client1->notifyFinishedCalled());
 
   client1->removeAsClient();
@@ -829,16 +829,16 @@ TEST(ImageResourceTest, AddClientAfterPrune) {
 
   imageResource->prune();
 
-  EXPECT_TRUE(imageResource->hasImage());
+  EXPECT_TRUE(imageResource->getContent()->hasImage());
 
   // Re-adds a ResourceClient but not ImageResourceObserver.
   Persistent<MockResourceClient> client2 =
       new MockResourceClient(imageResource);
 
-  ASSERT_TRUE(imageResource->hasImage());
-  EXPECT_FALSE(imageResource->getImage()->isNull());
-  EXPECT_EQ(1, imageResource->getImage()->width());
-  EXPECT_EQ(1, imageResource->getImage()->height());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(1, imageResource->getContent()->getImage()->height());
   EXPECT_TRUE(client2->notifyFinishedCalled());
 }
 
@@ -892,10 +892,10 @@ TEST(ImageResourceTest, FetchDisallowPlaceholder) {
   EXPECT_EQ(sizeof(kJpegImage), client->encodedSizeOnNotifyFinished());
   EXPECT_EQ(sizeof(kJpegImage), client->encodedSizeOnImageNotifyFinished());
 
-  ASSERT_TRUE(image->hasImage());
-  EXPECT_EQ(1, image->getImage()->width());
-  EXPECT_EQ(1, image->getImage()->height());
-  EXPECT_TRUE(image->getImage()->isBitmapImage());
+  ASSERT_TRUE(image->getContent()->hasImage());
+  EXPECT_EQ(1, image->getContent()->getImage()->width());
+  EXPECT_EQ(1, image->getContent()->getImage()->height());
+  EXPECT_TRUE(image->getContent()->getImage()->isBitmapImage());
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderDataURL) {
@@ -991,11 +991,11 @@ TEST(ImageResourceTest, FetchAllowPlaceholderSuccessful) {
   EXPECT_EQ(kJpegImageSubrangeWithDimensionsLength,
             client->encodedSizeOnImageNotifyFinished());
 
-  ASSERT_TRUE(image->hasImage());
-  EXPECT_EQ(1, image->getImage()->width());
-  EXPECT_EQ(1, image->getImage()->height());
-  EXPECT_FALSE(image->getImage()->isBitmapImage());
-  EXPECT_FALSE(image->getImage()->isSVGImage());
+  ASSERT_TRUE(image->getContent()->hasImage());
+  EXPECT_EQ(1, image->getContent()->getImage()->width());
+  EXPECT_EQ(1, image->getContent()->getImage()->height());
+  EXPECT_FALSE(image->getContent()->getImage()->isBitmapImage());
+  EXPECT_FALSE(image->getContent()->getImage()->isSVGImage());
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
@@ -1049,10 +1049,10 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   EXPECT_EQ(sizeof(kJpegImage), client->encodedSizeOnNotifyFinished());
   EXPECT_EQ(sizeof(kJpegImage), client->encodedSizeOnImageNotifyFinished());
 
-  ASSERT_TRUE(image->hasImage());
-  EXPECT_EQ(1, image->getImage()->width());
-  EXPECT_EQ(1, image->getImage()->height());
-  EXPECT_TRUE(image->getImage()->isBitmapImage());
+  ASSERT_TRUE(image->getContent()->hasImage());
+  EXPECT_EQ(1, image->getContent()->getImage()->width());
+  EXPECT_EQ(1, image->getContent()->getImage()->height());
+  EXPECT_TRUE(image->getContent()->getImage()->isBitmapImage());
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderThenDisallowPlaceholder) {
@@ -1154,7 +1154,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   size_t bytesSent = meaningfulImageSize;
 
   EXPECT_FALSE(cachedImage->errorOccurred());
-  EXPECT_TRUE(cachedImage->hasImage());
+  EXPECT_TRUE(cachedImage->getContent()->hasImage());
   EXPECT_EQ(1, client->imageChangedCount());
 
   platform.runForPeriodSeconds(1.);
@@ -1163,7 +1163,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   // Sanity check that we created an image after appending |meaningfulImageSize|
   // bytes just once.
   EXPECT_FALSE(cachedImage->errorOccurred());
-  ASSERT_TRUE(cachedImage->hasImage());
+  ASSERT_TRUE(cachedImage->getContent()->hasImage());
   EXPECT_EQ(1, client->imageChangedCount());
 
   for (int flushCount = 1; flushCount <= 3; ++flushCount) {
@@ -1178,7 +1178,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
           reinterpret_cast<const char*>(kJpegImage2) + bytesSent, 1);
 
       EXPECT_FALSE(cachedImage->errorOccurred());
-      ASSERT_TRUE(cachedImage->hasImage());
+      ASSERT_TRUE(cachedImage->getContent()->hasImage());
       EXPECT_EQ(flushCount, client->imageChangedCount());
 
       ++bytesSent;
@@ -1190,8 +1190,8 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   platform.runForPeriodSeconds(10.);
   platform.advanceClockSeconds(10.);
   EXPECT_FALSE(cachedImage->errorOccurred());
-  ASSERT_TRUE(cachedImage->hasImage());
-  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  ASSERT_TRUE(cachedImage->getContent()->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->getImage()->isNull());
   EXPECT_EQ(4, client->imageChangedCount());
 
   // Append the rest of the data and finish (which causes another flush).
@@ -1201,13 +1201,13 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   cachedImage->finish();
 
   EXPECT_FALSE(cachedImage->errorOccurred());
-  ASSERT_TRUE(cachedImage->hasImage());
-  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  ASSERT_TRUE(cachedImage->getContent()->hasImage());
+  EXPECT_FALSE(cachedImage->getContent()->getImage()->isNull());
   EXPECT_EQ(5, client->imageChangedCount());
   EXPECT_TRUE(client->notifyFinishedCalled());
-  EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
-  EXPECT_EQ(50, cachedImage->getImage()->width());
-  EXPECT_EQ(50, cachedImage->getImage()->height());
+  EXPECT_TRUE(cachedImage->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(50, cachedImage->getContent()->getImage()->width());
+  EXPECT_EQ(50, cachedImage->getContent()->getImage()->height());
 
   WTF::setTimeFunctionsForTesting(nullptr);
 }

@@ -7,6 +7,7 @@
 #include "core/frame/Settings.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/network/ResourceResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

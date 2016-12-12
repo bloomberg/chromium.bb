@@ -48,9 +48,8 @@ class CSSValue;
 class Document;
 class Element;
 class FontResource;
-class ImageResource;
+class ImageResourceContent;
 class LocalFrame;
-class Resource;
 class SharedBuffer;
 class StylePropertySet;
 
@@ -63,6 +62,11 @@ class CORE_EXPORT FrameSerializer final {
   STACK_ALLOCATED();
 
  public:
+  enum ResourceHasCacheControlNoStoreHeader {
+    NoCacheControlNoStoreHeader,
+    HasCacheControlNoStoreHeader
+  };
+
   class Delegate {
    public:
     // Controls whether HTML serialization should skip the given attribute.
@@ -88,7 +92,9 @@ class CORE_EXPORT FrameSerializer final {
     virtual bool shouldSkipResourceWithURL(const KURL&) { return false; }
 
     // Tells whether to skip serialization of a subresource.
-    virtual bool shouldSkipResource(const Resource&) { return false; }
+    virtual bool shouldSkipResource(ResourceHasCacheControlNoStoreHeader) {
+      return false;
+    }
 
     // Returns custom attributes that need to add in order to serialize the
     // element.
@@ -123,10 +129,11 @@ class CORE_EXPORT FrameSerializer final {
 
   bool shouldAddURL(const KURL&);
 
-  void addToResources(const Resource&,
+  void addToResources(const String& mimeType,
+                      ResourceHasCacheControlNoStoreHeader,
                       PassRefPtr<const SharedBuffer>,
                       const KURL&);
-  void addImageToResources(ImageResource*, const KURL&);
+  void addImageToResources(ImageResourceContent*, const KURL&);
   void addFontToResources(FontResource*);
 
   void retrieveResourcesForProperties(const StylePropertySet*, Document&);

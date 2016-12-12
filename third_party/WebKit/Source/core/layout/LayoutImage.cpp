@@ -29,7 +29,7 @@
 #include "core/layout/LayoutImage.h"
 
 #include "core/HTMLNames.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -178,7 +178,7 @@ void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded() {
   contentChanged(ImageChanged);
 }
 
-void LayoutImage::imageNotifyFinished(ImageResource* newImage) {
+void LayoutImage::imageNotifyFinished(ImageResourceContent* newImage) {
   if (!m_imageResource)
     return;
 
@@ -321,7 +321,7 @@ LayoutReplaced* LayoutImage::embeddedReplacedContent() const {
   if (!m_imageResource)
     return nullptr;
 
-  ImageResource* cachedImage = m_imageResource->cachedImage();
+  ImageResourceContent* cachedImage = m_imageResource->cachedImage();
   if (cachedImage && cachedImage->getImage() &&
       cachedImage->getImage()->isSVGImage())
     return toSVGImage(cachedImage->getImage())->embeddedReplacedContent();

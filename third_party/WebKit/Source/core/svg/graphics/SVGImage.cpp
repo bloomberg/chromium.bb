@@ -490,8 +490,9 @@ void SVGImage::serviceAnimations(double monotonicAnimationStartTime) {
   ScriptForbiddenScope forbidScript;
 
   // The calls below may trigger GCs, so set up the required persistent
-  // reference on the ImageResource which owns this SVGImage. By transitivity,
-  // that will keep the associated SVGImageChromeClient object alive.
+  // reference on the ImageResourceContent which owns this SVGImage. By
+  // transitivity, that will keep the associated SVGImageChromeClient object
+  // alive.
   Persistent<ImageObserver> protect(getImageObserver());
   m_page->animator().serviceScriptedAnimations(monotonicAnimationStartTime);
   // Do *not* update the paint phase. It's critical to paint only when

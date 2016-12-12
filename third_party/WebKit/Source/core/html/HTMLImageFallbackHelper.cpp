@@ -9,7 +9,6 @@
 #include "core/dom/ElementRareData.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/fetch/ImageResource.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageElement.h"

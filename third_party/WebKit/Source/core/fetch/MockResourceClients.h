@@ -31,6 +31,8 @@
 #ifndef MockResourceClients_h
 #define MockResourceClients_h
 
+#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/fetch/ImageResourceObserver.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
@@ -72,8 +74,8 @@ class MockImageResourceClient final : public MockResourceClient,
   explicit MockImageResourceClient(ImageResource*);
   ~MockImageResourceClient() override;
 
-  void imageNotifyFinished(ImageResource*) override;
-  void imageChanged(ImageResource*, const IntRect*) override;
+  void imageNotifyFinished(ImageResourceContent*) override;
+  void imageChanged(ImageResourceContent*, const IntRect*) override;
 
   String debugName() const override { return "MockImageResourceClient"; }
 

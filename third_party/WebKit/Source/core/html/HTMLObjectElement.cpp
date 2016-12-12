@@ -32,7 +32,6 @@
 #include "core/dom/TagCollection.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/fetch/ImageResource.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLImageLoader.h"
