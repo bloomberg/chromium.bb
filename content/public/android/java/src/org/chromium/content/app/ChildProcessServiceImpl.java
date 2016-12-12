@@ -70,8 +70,6 @@ public class ChildProcessServiceImpl {
 
     private static AtomicReference<Context> sContext = new AtomicReference<>(null);
     private boolean mLibraryInitialized = false;
-    // Becomes true once the service is bound. Access must synchronize around mMainThread.
-    private boolean mIsBound = false;
 
     /**
      * If >= 0 enables "validation of caller of {@link mBinder}'s methods". A RemoteException
@@ -164,11 +162,7 @@ public class ChildProcessServiceImpl {
                     Linker linker = null;
                     boolean requestedSharedRelro = false;
                     if (Linker.isUsed()) {
-                        synchronized (mMainThread) {
-                            while (!mIsBound) {
-                                mMainThread.wait();
-                            }
-                        }
+                        assert mLinkerParams != null;
                         linker = getLinker();
                         if (mLinkerParams.mWaitForSharedRelro) {
                             requestedSharedRelro = true;
@@ -282,28 +276,24 @@ public class ChildProcessServiceImpl {
         return mBinder;
     }
 
-    void initializeParams(Intent intent) {
+    private void initializeParams(Intent intent) {
         synchronized (mMainThread) {
-            mCommandLineParams =
-                    intent.getStringArrayExtra(ChildProcessConstants.EXTRA_COMMAND_LINE);
             // mLinkerParams is never used if Linker.isUsed() returns false.
             // See onCreate().
             mLinkerParams = new ChromiumLinkerParams(intent);
             mLibraryProcessType = ChildProcessCreationParams.getLibraryProcessType(intent);
-            mIsBound = true;
             mMainThread.notifyAll();
         }
     }
 
-    void getServiceInfo(Bundle bundle) {
+    private void getServiceInfo(Bundle bundle) {
         // Required to unparcel FileDescriptorInfo.
         bundle.setClassLoader(mHostClassLoader);
         synchronized (mMainThread) {
-            // Allow the command line to be set via bind() intent or setupConnection, but
-            // the FD can only be transferred here.
             if (mCommandLineParams == null) {
                 mCommandLineParams =
                         bundle.getStringArray(ChildProcessConstants.EXTRA_COMMAND_LINE);
+                mMainThread.notifyAll();
             }
             // We must have received the command line by now
             assert mCommandLineParams != null;

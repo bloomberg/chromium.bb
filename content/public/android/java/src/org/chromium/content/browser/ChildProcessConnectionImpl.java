@@ -130,9 +130,9 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                 try {
                     TraceEvent.begin("ChildProcessConnectionImpl.ChildServiceConnection.bind");
                     final Intent intent = createServiceBindIntent();
-                    if (commandLine != null) {
-                        intent.putExtra(ChildProcessConstants.EXTRA_COMMAND_LINE, commandLine);
-                    }
+                    // Note, the intent may be saved and re-used by Android for re-launching the
+                    // child service. Do not pass data that is different for each child; command
+                    // line arguments for example.
                     if (mLinkerParams != null) {
                         mLinkerParams.addIntentExtras(intent);
                     }

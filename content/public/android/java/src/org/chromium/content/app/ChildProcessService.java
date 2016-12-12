@@ -6,7 +6,6 @@ package org.chromium.content.app;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.IBinder;
 
 import org.chromium.base.annotations.JNINamespace;
@@ -47,21 +46,5 @@ public class ChildProcessService extends Service {
         // scratch every time.
         stopSelf();
         return mChildProcessServiceImpl.bind(intent, -1);
-    }
-
-    /**
-     * Helper method to initialize the params from intent.
-     * @param intent Intent to launch the service.
-     */
-    protected void initializeParams(Intent intent) {
-        mChildProcessServiceImpl.initializeParams(intent);
-    }
-
-    /**
-     * Helper method to get the information about the service from a given bundle.
-     * @param bundle Bundle that contains the information to start the service.
-     */
-    protected void getServiceInfo(Bundle bundle) {
-        mChildProcessServiceImpl.getServiceInfo(bundle);
     }
 }
