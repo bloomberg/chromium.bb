@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <xf86drm.h>
 #include <amdgpu_drm.h>
 #include <amdgpu.h>
@@ -352,12 +353,32 @@ static int amdgpu_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	return ret;
 }
 
+static void *amdgpu_bo_map(struct bo *bo, struct map_info *data, size_t plane)
+{
+	int ret;
+	union drm_amdgpu_gem_mmap gem_map;
+
+	memset(&gem_map, 0, sizeof(gem_map));
+	gem_map.in.handle = bo->handles[0].u32;
+
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_AMDGPU_GEM_MMAP, &gem_map);
+	if (ret) {
+		fprintf(stderr, "drv: DRM_IOCTL_AMDGPU_GEM_MMAP failed\n");
+		return MAP_FAILED;
+	}
+	data->length = bo->sizes[0];
+
+	return mmap(0, bo->sizes[0], PROT_READ | PROT_WRITE, MAP_SHARED,
+		    bo->drv->fd, gem_map.out.addr_ptr);
+}
+
 struct backend backend_amdgpu = {
 	.name = "amdgpu",
 	.init = amdgpu_init,
 	.close = amdgpu_close,
 	.bo_create = amdgpu_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
+	.bo_map = amdgpu_bo_map,
 };
 
 #endif
