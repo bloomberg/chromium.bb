@@ -22,6 +22,9 @@
 
 static int domaintxfmrf_vtable[DOMAINTXFMRF_ITERS][DOMAINTXFMRF_PARAMS][256];
 
+// Whether to filter only y or not
+static const int override_y_only[RESTORE_TYPES] = { 1, 1, 1, 1, 1 };
+
 static const int domaintxfmrf_params[DOMAINTXFMRF_PARAMS] = {
   48,  52,  56,  60,  64,  68,  72,  76,  80,  82,  84,  86,  88,
   90,  92,  94,  96,  97,  98,  99,  100, 101, 102, 103, 104, 105,
@@ -1022,6 +1025,9 @@ void av1_loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
           AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL) < 0)
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate tmp restoration buffer");
+
+  if (y_only == 0)
+    y_only = override_y_only[cm->rst_internal.rsi->frame_restoration_type];
 
 #if CONFIG_AOM_HIGHBITDEPTH
   if (cm->use_highbitdepth)
