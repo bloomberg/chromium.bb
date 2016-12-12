@@ -10,7 +10,17 @@ import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//tools/grit/grit_rule.gni")
 
-grit("resources") {
+group("resources") {
+  public_deps = [
+    ":launchscreen_xib",
+    ":quick_action_icons",
+    ":system_strings",
+    ios_application_icons_target,
+    ios_packed_resources_target,
+  ]
+}
+
+grit("ios_resources") {
   source = "ios_resources.grd"
   output_dir = "$root_gen_dir/ios/chrome"
   use_qualified_include = true
@@ -53,7 +63,7 @@ repack("repack_unscaled_resources") {
     "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
   deps = [
-    ":resources",
+    ":ios_resources",
     "//components/resources",
     "//ios/web:resources",
     "//net:net_resources",

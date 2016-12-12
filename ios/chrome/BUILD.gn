@@ -3,12 +3,14 @@
 # found in the LICENSE file.
 
 import("//ios/build/config.gni")
+import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//testing/test.gni")
 
 test("ios_chrome_unittests") {
   deps = [
-    # Ensure that all unit tests are run.
+    # Ensure that all unit tests are run and packed resources available.
     "//ios/chrome/test:run_all_unittests",
+    ios_packed_resources_target,
 
     # Add unit_tests target here.
     "//ios/chrome/app:unit_tests",
