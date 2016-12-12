@@ -6,12 +6,9 @@ import("//build/config/features.gni")
 
 source_set("cpp") {
   sources = [
-    "//device/power_monitor/power_monitor_export.h",
     "power_monitor_broadcast_source.cc",
     "power_monitor_broadcast_source.h",
   ]
-
-  defines = [ "DEVICE_POWER_MONITOR_IMPLEMENTATION" ]
 
   deps = [
     "//base",
