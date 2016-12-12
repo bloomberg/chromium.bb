@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 
+#include <deque>
 #include <map>
 #include <utility>
 
@@ -16,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
 #include "components/ntp_snippets/user_classifier.h"
@@ -160,6 +162,83 @@ class MockSnippetsAvailableCallback {
            NTPSnippetsFetcher::OptionalFetchedCategories* fetched_categories));
 };
 
+// TODO(fhorschig): Transfer this class' functionality to call delegates
+// automatically as option to TestURLFetcherFactory where it was just deleted.
+// This can be represented as a single member there and would reduce the amount
+// of fake implementations from three to two.
+
+// DelegateCallingTestURLFetcherFactory can be used to temporarily inject
+// TestURLFetcher instances into a scope.
+// Client code can access the last created fetcher to verify expected
+// properties. When the factory gets destroyed, all available delegates of still
+// valid fetchers will be called.
+// This ensures once-bound callbacks (like SnippetsAvailableCallback) will be
+// called at some point and are not leaked.
+class DelegateCallingTestURLFetcherFactory
+    : public net::TestURLFetcherFactory,
+      public net::TestURLFetcherDelegateForTests {
+ public:
+  DelegateCallingTestURLFetcherFactory() {
+    SetDelegateForTests(this);
+    set_remove_fetcher_on_delete(true);
+  }
+
+  ~DelegateCallingTestURLFetcherFactory() override {
+    while (!fetchers_.empty()) {
+      DropAndCallDelegate(fetchers_.front());
+    }
+  }
+
+  std::unique_ptr<net::URLFetcher> CreateURLFetcher(
+      int id,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
+      net::URLFetcherDelegate* d) override {
+    if (GetFetcherByID(id)) {
+      LOG(WARNING) << "The ID " << id << " was already assigned to a fetcher."
+                   << "Its delegate will thereforde be called right now.";
+      DropAndCallDelegate(id);
+    }
+    fetchers_.push_back(id);
+    return TestURLFetcherFactory::CreateURLFetcher(id, url, request_type, d);
+  }
+
+  // Returns the raw pointer of the last created URL fetcher.
+  // If it was destroyed or no fetcher was created, it will return a nulltpr.
+  net::TestURLFetcher* GetLastCreatedFetcher() {
+    if (fetchers_.empty()) {
+      return nullptr;
+    }
+    return GetFetcherByID(fetchers_.front());
+  }
+
+ private:
+  // The fetcher can either be destroyed because the delegate was called during
+  // execution or because we called it on destruction.
+  void DropAndCallDelegate(int fetcher_id) {
+    auto found_id_iter =
+        std::find(fetchers_.begin(), fetchers_.end(), fetcher_id);
+    if (found_id_iter == fetchers_.end()) {
+      return;
+    }
+    fetchers_.erase(found_id_iter);
+    net::TestURLFetcher* fetcher = GetFetcherByID(fetcher_id);
+    if (!fetcher->delegate()) {
+      return;
+    }
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+  }
+
+  // net::TestURLFetcherDelegateForTests overrides:
+  void OnRequestStart(int fetcher_id) override {}
+  void OnChunkUpload(int fetcher_id) override {}
+  void OnRequestEnd(int fetcher_id) override {
+    DropAndCallDelegate(fetcher_id);
+  }
+
+  std::deque<int> fetchers_;  // std::queue doesn't support std::find.
+};
+
 // Factory for FakeURLFetcher objects that always generate errors.
 class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
  public:
@@ -290,6 +369,15 @@ class NTPSnippetsFetcherTest : public testing::Test {
     params_manager_ =
         base::MakeUnique<variations::testing::VariationParamsManager>(
             ntp_snippets::kStudyName, params);
+  }
+
+  void SetVariationParametersForFeatures(
+      const std::map<std::string, std::string>& params,
+      const std::set<std::string>& features) {
+    params_manager_.reset();
+    params_manager_ =
+        base::MakeUnique<variations::testing::VariationParamsManager>(
+            ntp_snippets::kStudyName, params, features);
   }
 
   void SetFakeResponse(const std::string& response_data,
@@ -912,13 +1000,15 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldRestrictToHosts) {
-  net::TestURLFetcherFactory test_url_fetcher_factory;
+  DelegateCallingTestURLFetcherFactory fetcher_factory;
   NTPSnippetsFetcher::Params params = test_params();
   params.hosts = {"www.somehost1.com", "www.somehost2.com"};
   params.count_to_fetch = 17;
+
   snippets_fetcher().FetchSnippets(
       params, ToSnippetsAvailableCallback(&mock_callback()));
-  net::TestURLFetcher* fetcher = test_url_fetcher_factory.GetFetcherByID(0);
+
+  net::TestURLFetcher* fetcher = fetcher_factory.GetLastCreatedFetcher();
   ASSERT_THAT(fetcher, NotNull());
   std::unique_ptr<base::Value> value =
       base::JSONReader::Read(fetcher->upload_data());
@@ -941,19 +1031,50 @@ TEST_F(NTPSnippetsFetcherTest, ShouldRestrictToHosts) {
   ASSERT_TRUE(content_selectors->GetDictionary(1, &content_selector));
   EXPECT_TRUE(content_selector->GetString("value", &content_selector_value));
   EXPECT_THAT(content_selector_value, Eq("www.somehost2.com"));
-  // Call the delegate callback manually as the TestURLFetcher deletes any
-  // call to the delegate that usually happens on |Start|.
-  // Without the call to the delegate, it leaks the request that owns itself.
-  ASSERT_THAT(fetcher->delegate(), NotNull());
-  EXPECT_CALL(mock_callback(),
-              Run(NTPSnippetsFetcher::FetchResult::URL_REQUEST_STATUS_ERROR,
-                  /*snippets=*/Not(HasValue())))
-      .Times(1);
-  // An 4XX response needs the least configuration to successfully invoke the
-  // callback properly as the results are not important in this test.
-  fetcher->set_response_code(net::HTTP_NOT_FOUND);
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, -2));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
+TEST_F(NTPSnippetsFetcherTest, RetryOnInteractiveRequests) {
+  DelegateCallingTestURLFetcherFactory fetcher_factory;
+  NTPSnippetsFetcher::Params params = test_params();
+  params.interactive_request = true;
+
+  snippets_fetcher().FetchSnippets(
+      params, ToSnippetsAvailableCallback(&mock_callback()));
+
+  net::TestURLFetcher* fetcher = fetcher_factory.GetLastCreatedFetcher();
+  ASSERT_THAT(fetcher, NotNull());
+  EXPECT_THAT(fetcher->GetMaxRetriesOn5xx(), Eq(2));
+}
+
+TEST_F(NTPSnippetsFetcherTest, RetriesConfigurableOnNonInteractiveRequests) {
+  struct ExpectationForVariationParam {
+    std::string param_value;
+    int expected_value;
+    std::string description;
+  };
+  const std::vector<ExpectationForVariationParam> retry_config_expectation = {
+      {"", 0, "Do not retry by default"},
+      {"0", 0, "Do not retry on param value 0"},
+      {"-1", 0, "Do not retry on negative param values."},
+      {"4", 4, "Retry as set in param value."}};
+
+  NTPSnippetsFetcher::Params params = test_params();
+  params.interactive_request = false;
+
+  for (const auto& retry_config : retry_config_expectation) {
+    DelegateCallingTestURLFetcherFactory fetcher_factory;
+    SetVariationParametersForFeatures(
+        {{"background_5xx_retries_count", retry_config.param_value}},
+        {ntp_snippets::kArticleSuggestionsFeature.name});
+
+    snippets_fetcher().FetchSnippets(
+        params, ToSnippetsAvailableCallback(&mock_callback()));
+
+    net::TestURLFetcher* fetcher = fetcher_factory.GetLastCreatedFetcher();
+    ASSERT_THAT(fetcher, NotNull());
+    EXPECT_THAT(fetcher->GetMaxRetriesOn5xx(), Eq(retry_config.expected_value))
+        << retry_config.description;
+  }
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {

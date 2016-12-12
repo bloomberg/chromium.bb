@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <utility>
 
@@ -60,6 +61,9 @@ const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 
 // Variation parameter for personalizing fetching of snippets.
 const char kPersonalizationName[] = "fetching_personalization";
+
+// Variation parameter for disabling the retry.
+const char kBackground5xxRetriesName[] = "background_5xx_retries_count";
 
 // Variation parameter for chrome-content-suggestions backend.
 const char kContentSuggestionsBackend[] = "content_suggestions_backend";
@@ -130,6 +134,15 @@ bool IsBooleanParameterEnabled(const std::string& param_name,
                  << "\" for variation parameter " << param_name;
   }
   return default_value;
+}
+
+int Get5xxRetryCount(bool interactive_request) {
+  if (interactive_request) {
+    return 2;
+  }
+  return std::max(0, variations::GetVariationParamByFeatureAsInt(
+                         ntp_snippets::kArticleSuggestionsFeature,
+                         kBackground5xxRetriesName, 0));
 }
 
 bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
@@ -812,8 +825,8 @@ NTPSnippetsFetcher::RequestBuilder::BuildURLFetcher(
 
   // Fetchers are sometimes cancelled because a network change was detected.
   url_fetcher->SetAutomaticallyRetryOnNetworkChanges(3);
-  // Try to make fetching the files bit more robust even with poor connection.
-  url_fetcher->SetMaxRetriesOn5xx(3);
+  url_fetcher->SetMaxRetriesOn5xx(
+      Get5xxRetryCount(params_.interactive_request));
   return url_fetcher;
 }
 

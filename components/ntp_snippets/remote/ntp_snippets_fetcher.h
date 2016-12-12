@@ -224,6 +224,10 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
         const scoped_refptr<net::URLRequestContextGetter>& context_getter);
     RequestBuilder& SetUserClassifier(const UserClassifier& user_classifier);
 
+    // These preview methods allow to inspect the Request without exposing it
+    // publicly.
+    // TODO(fhorschig): Remove these when moving the RequestBuilder to
+    // snippets::internal and trigger the request to intercept the request.
     std::string PreviewRequestBodyForTesting() { return BuildBody(); }
     std::string PreviewRequestHeadersForTesting() { return BuildHeaders(); }
     RequestBuilder& SetUserClassForTesting(const std::string& user_class) {
