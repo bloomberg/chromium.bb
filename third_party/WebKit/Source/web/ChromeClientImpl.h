@@ -196,7 +196,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   void ajaxSucceeded(LocalFrame*) override;
 
   void didCancelCompositionOnSelectionChange() override;
-  void willSetInputMethodState() override;
+  void resetInputMethod() override;
   void showImeIfNeeded() override;
 
   void registerViewportLayers() const override;

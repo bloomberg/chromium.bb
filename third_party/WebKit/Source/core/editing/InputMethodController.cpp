@@ -1193,6 +1193,12 @@ WebTextInputType InputMethodController::textInputType() const {
   return WebTextInputTypeNone;
 }
 
+void InputMethodController::willChangeFocus() {
+  if (!finishComposingText(DoNotKeepSelection))
+    return;
+  frame().chromeClient().resetInputMethod();
+}
+
 DEFINE_TRACE(InputMethodController) {
   visitor->trace(m_frame);
   visitor->trace(m_compositionRange);

@@ -303,7 +303,7 @@ class CORE_EXPORT ChromeClient : public HostWindow {
 
   // Input method editor related functions.
   virtual void didCancelCompositionOnSelectionChange() {}
-  virtual void willSetInputMethodState() {}
+  virtual void resetInputMethod() {}
   virtual void didUpdateTextOfFocusedElementByNonUserInput(LocalFrame&) {}
   virtual void showImeIfNeeded() {}
 

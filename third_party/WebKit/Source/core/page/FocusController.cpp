@@ -39,6 +39,7 @@
 #include "core/editing/EditingUtilities.h"  // For firstPositionInOrBeforeNode
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/InputMethodController.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameClient.h"
 #include "core/frame/FrameView.h"
@@ -1128,7 +1129,8 @@ bool FocusController::setFocusedElement(Element* element,
       !relinquishesEditingFocus(*oldFocusedElement))
     return false;
 
-  m_page->chromeClient().willSetInputMethodState();
+  if (oldFocusedFrame)
+    oldFocusedFrame->inputMethodController().willChangeFocus();
 
   Document* newDocument = nullptr;
   if (element)

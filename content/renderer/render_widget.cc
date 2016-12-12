@@ -2022,6 +2022,8 @@ void RenderWidget::GetCompositionRange(gfx::Range* range) {
 bool RenderWidget::ShouldUpdateCompositionInfo(
     const gfx::Range& range,
     const std::vector<gfx::Rect>& bounds) {
+  if (!range.IsValid())
+    return false;
   if (composition_range_ != range)
     return true;
   if (bounds.size() != composition_character_bounds_.size())
@@ -2077,17 +2079,7 @@ blink::WebScreenInfo RenderWidget::screenInfo() {
 
 void RenderWidget::resetInputMethod() {
   ImeEventGuard guard(this);
-  // If the last text input type is not None, then we should finish any
-  // ongoing composition regardless of the new text input type.
-  if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE) {
-    // If a composition text exists, then we need to let the browser process
-    // to cancel the input method's ongoing composition session.
-    blink::WebInputMethodController* controller = GetInputMethodController();
-    if (controller &&
-        controller->finishComposingText(
-            WebInputMethodController::DoNotKeepSelection))
-      Send(new InputHostMsg_ImeCancelComposition(routing_id()));
-  }
+  Send(new InputHostMsg_ImeCancelComposition(routing_id()));
 
   UpdateCompositionInfo(false /* not an immediate request */);
 }

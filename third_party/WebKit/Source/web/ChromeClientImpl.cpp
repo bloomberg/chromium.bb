@@ -1012,7 +1012,7 @@ void ChromeClientImpl::didCancelCompositionOnSelectionChange() {
     m_webView->client()->didCancelCompositionOnSelectionChange();
 }
 
-void ChromeClientImpl::willSetInputMethodState() {
+void ChromeClientImpl::resetInputMethod() {
   if (m_webView->client())
     m_webView->client()->resetInputMethod();
 }

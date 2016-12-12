@@ -103,6 +103,9 @@ class CORE_EXPORT InputMethodController final
   WebTextInputInfo textInputInfo() const;
   WebTextInputType textInputType() const;
 
+  // Call this when we will change focus.
+  void willChangeFocus();
+
  private:
   Document& document() const;
   bool isAvailable() const;
