@@ -118,6 +118,7 @@ var DumpCreator = (function() {
       {
         'getUserMedia': userMediaRequests,
         'PeerConnections': peerConnectionDataStore,
+        'UserAgent': navigator.userAgent,
       };
       var textBlob = new Blob([JSON.stringify(dump_object, null, ' ')],
                               {type: 'octet/stream'});
