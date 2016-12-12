@@ -28,10 +28,9 @@ ScreenOrientationProvider::~ScreenOrientationProvider() {
 void ScreenOrientationProvider::LockOrientation(
     blink::WebScreenOrientationLockType orientation,
     const LockOrientationCallback& callback) {
-  // ScreenOrientation should have cancelled all pending request at thie point.
+  // ScreenOrientation should have cancelled all pending request at this point.
   DCHECK(on_result_callback_.is_null());
-  DCHECK(pending_lock_orientation_.has_value());
-  DCHECK(pending_lock_orientation_.value() >= 0);
+  DCHECK(!pending_lock_orientation_.has_value());
   on_result_callback_ = callback;
 
   if (!delegate_ || !delegate_->ScreenOrientationProviderSupported()) {
