@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "components/reading_list/ios/reading_list_entry.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 
 class ReadingListModel;
 class ReadingListStoreDelegate;
@@ -19,20 +21,19 @@ class ModelTypeSyncBridge;
 
 // Interface for a persistence layer for reading list.
 // All interface methods have to be called on main thread.
-class ReadingListModelStorage {
+class ReadingListModelStorage : public syncer::ModelTypeSyncBridge {
  public:
   class ScopedBatchUpdate;
 
-  ReadingListModelStorage() {}
-  virtual ~ReadingListModelStorage() {}
+  ReadingListModelStorage(
+      const ChangeProcessorFactory& change_processor_factory,
+      syncer::ModelType type);
+  ~ReadingListModelStorage() override;
 
   // Sets the model the Storage is backing.
   // This will trigger store initalization and load persistent entries.
   virtual void SetReadingListModel(ReadingListModel* model,
                                    ReadingListStoreDelegate* delegate) = 0;
-
-  // Returns the class responsible for handling sync messages.
-  virtual syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() = 0;
 
   // Starts a transaction. All Save/Remove entry will be delayed until the
   // transaction is commited.

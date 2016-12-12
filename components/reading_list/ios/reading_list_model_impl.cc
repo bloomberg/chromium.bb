@@ -404,7 +404,7 @@ syncer::ModelTypeSyncBridge* ReadingListModelImpl::GetModelTypeSyncBridge() {
   DCHECK(loaded());
   if (!storage_layer_)
     return nullptr;
-  return storage_layer_->GetModelTypeSyncBridge();
+  return storage_layer_.get();
 }
 
 ReadingListModelStorage* ReadingListModelImpl::StorageLayer() {

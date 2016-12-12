@@ -9,7 +9,6 @@
 #include "components/reading_list/ios/reading_list_model_storage.h"
 #include "components/reading_list/ios/reading_list_store_delegate.h"
 #include "components/sync/model/model_type_store.h"
-#include "components/sync/model/model_type_sync_bridge.h"
 
 namespace syncer {
 class MutableDataBatch;
@@ -18,8 +17,7 @@ class MutableDataBatch;
 class ReadingListModel;
 
 // A ReadingListModelStorage storing and syncing data in protobufs.
-class ReadingListStore : public syncer::ModelTypeSyncBridge,
-                         public ReadingListModelStorage,
+class ReadingListStore : public ReadingListModelStorage,
                          public base::NonThreadSafe {
   using StoreFactoryFunction = base::Callback<void(
       const syncer::ModelTypeStore::InitCallback& callback)>;
@@ -37,9 +35,6 @@ class ReadingListStore : public syncer::ModelTypeSyncBridge,
 
   void SaveEntry(const ReadingListEntry& entry) override;
   void RemoveEntry(const ReadingListEntry& entry) override;
-
-  // ReadingListModelStorage implementation.
-  syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() override;
 
   // Creates an object used to communicate changes in the sync metadata to the
   // model type store.

@@ -20,7 +20,7 @@
 ReadingListStore::ReadingListStore(
     StoreFactoryFunction create_store_callback,
     const ChangeProcessorFactory& change_processor_factory)
-    : ModelTypeSyncBridge(change_processor_factory, syncer::READING_LIST),
+    : ReadingListModelStorage(change_processor_factory, syncer::READING_LIST),
       create_store_callback_(create_store_callback),
       pending_transaction_count_(0) {}
 
@@ -174,10 +174,6 @@ void ReadingListStore::OnStoreCreated(
   store_->ReadAllData(
       base::Bind(&ReadingListStore::OnDatabaseLoad, base::AsWeakPtr(this)));
   return;
-}
-
-syncer::ModelTypeSyncBridge* ReadingListStore::GetModelTypeSyncBridge() {
-  return this;
 }
 
 // Creates an object used to communicate changes in the sync metadata to the

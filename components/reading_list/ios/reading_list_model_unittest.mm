@@ -10,6 +10,7 @@
 #include "components/reading_list/ios/reading_list_model_impl.h"
 #include "components/reading_list/ios/reading_list_model_storage.h"
 #include "components/reading_list/ios/reading_list_store_delegate.h"
+#include "components/sync/model/metadata_change_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -26,7 +27,10 @@ class TestReadingListStorageObserver {
 class TestReadingListStorage : public ReadingListModelStorage {
  public:
   TestReadingListStorage(TestReadingListStorageObserver* observer)
-      : entries_(new ReadingListStoreDelegate::ReadingListEntries()),
+      : ReadingListModelStorage(
+            base::Bind(&syncer::ModelTypeChangeProcessor::Create),
+            syncer::READING_LIST),
+        entries_(new ReadingListStoreDelegate::ReadingListEntries()),
         observer_(observer) {}
 
   void AddSampleEntries() {
@@ -83,23 +87,60 @@ class TestReadingListStorage : public ReadingListModelStorage {
     delegate->StoreLoaded(std::move(entries_));
   }
 
-  syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() override {
-    return nullptr;
-  }
-
-  std::unique_ptr<ScopedBatchUpdate> EnsureBatchCreated() override {
-    return std::unique_ptr<ScopedBatchUpdate>();
-  }
-
   // Saves or updates an entry. If the entry is not yet in the database, it is
   // created.
   void SaveEntry(const ReadingListEntry& entry) override {
     observer_->ReadingListDidSaveEntry();
   }
 
-  // Removed an entry from the storage.
+  // Removes an entry from the storage.
   void RemoveEntry(const ReadingListEntry& entry) override {
     observer_->ReadingListDidRemoveEntry();
+  }
+
+  std::unique_ptr<ScopedBatchUpdate> EnsureBatchCreated() override {
+    return std::unique_ptr<ScopedBatchUpdate>();
+  }
+
+  // Syncing is not used in this test class.
+  std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
+      override {
+    NOTREACHED();
+    return std::unique_ptr<syncer::MetadataChangeList>();
+  }
+
+  syncer::SyncError MergeSyncData(
+      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+      syncer::EntityDataMap entity_data_map) override {
+    NOTREACHED();
+    return syncer::SyncError();
+  }
+
+  syncer::SyncError ApplySyncChanges(
+      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+      syncer::EntityChangeList entity_changes) override {
+    NOTREACHED();
+    return syncer::SyncError();
+  }
+
+  void GetData(StorageKeyList storage_keys, DataCallback callback) override {
+    NOTREACHED();
+    return;
+  }
+
+  void GetAllData(DataCallback callback) override {
+    NOTREACHED();
+    return;
+  }
+
+  std::string GetClientTag(const syncer::EntityData& entity_data) override {
+    NOTREACHED();
+    return "";
+  }
+
+  std::string GetStorageKey(const syncer::EntityData& entity_data) override {
+    NOTREACHED();
+    return "";
   }
 
  private:

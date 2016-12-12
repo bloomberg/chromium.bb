@@ -14,9 +14,6 @@ class ReadingListEntry;
 // The delegate to handle callbacks from the ReadingListStore.
 class ReadingListStoreDelegate {
  public:
-  ReadingListStoreDelegate() {}
-  virtual ~ReadingListStoreDelegate() {}
-
   using ReadingListEntries = std::map<GURL, ReadingListEntry>;
   // These three methods handle callbacks from a ReadingListStore.
   // This method is called when the local store is loaded. |entries| contains
@@ -36,6 +33,11 @@ class ReadingListStoreDelegate {
 
   // Called to remove an entry to the model.
   virtual void SyncRemoveEntry(const GURL& url) = 0;
+
+ protected:
+  ReadingListStoreDelegate() {}
+  virtual ~ReadingListStoreDelegate() {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ReadingListStoreDelegate);
 };
