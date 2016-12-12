@@ -186,14 +186,11 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     agent_host_->DispatchProtocolMessage(this, json_command);
     // Some messages are dispatched synchronously.
     // Only run loop if we are not finished yet.
-    if (in_dispatch_ && wait)
-      WaitForResponse();
+    if (in_dispatch_ && wait) {
+      waiting_for_command_result_id_ = last_sent_id_;
+      base::RunLoop().Run();
+    }
     in_dispatch_ = false;
-  }
-
-  void WaitForResponse() {
-    waiting_for_command_result_id_ = last_sent_id_;
-    base::RunLoop().Run();
   }
 
   bool HasValue(const std::string& path) {
@@ -412,26 +409,14 @@ class SyntheticKeyEventTest : public DevToolsProtocolTest {
                     int modifier,
                     int windowsKeyCode,
                     int nativeKeyCode,
-                    const std::string& key,
-                    bool wait) {
+                    const std::string& key) {
     std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
     params->SetString("type", type);
     params->SetInteger("modifiers", modifier);
     params->SetInteger("windowsVirtualKeyCode", windowsKeyCode);
     params->SetInteger("nativeVirtualKeyCode", nativeKeyCode);
     params->SetString("key", key);
-    SendCommand("Input.dispatchKeyEvent", std::move(params), wait);
-  }
-};
-
-class SyntheticMouseEventTest : public DevToolsProtocolTest {
- protected:
-  void SendMouseEvent(const std::string& type, int x, int y, bool wait) {
-    std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
-    params->SetString("type", type);
-    params->SetInteger("x", x);
-    params->SetInteger("y", y);
-    SendCommand("Input.dispatchMouseEvent", std::move(params), wait);
+    SendCommand("Input.dispatchKeyEvent", std::move(params));
   }
 };
 
@@ -450,8 +435,8 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKey) {
   DOMMessageQueue dom_message_queue;
 
   // Send enter (keycode 13).
-  SendKeyEvent("rawKeyDown", 0, 13, 13, "Enter", true);
-  SendKeyEvent("keyUp", 0, 13, 13, "Enter", true);
+  SendKeyEvent("rawKeyDown", 0, 13, 13, "Enter");
+  SendKeyEvent("keyUp", 0, 13, 13, "Enter");
 
   std::string key;
   ASSERT_TRUE(dom_message_queue.WaitForMessage(&key));
@@ -460,66 +445,13 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKey) {
   EXPECT_EQ("\"Enter\"", key);
 
   // Send escape (keycode 27).
-  SendKeyEvent("rawKeyDown", 0, 27, 27, "Escape", true);
-  SendKeyEvent("keyUp", 0, 27, 27, "Escape", true);
+  SendKeyEvent("rawKeyDown", 0, 27, 27, "Escape");
+  SendKeyEvent("keyUp", 0, 27, 27, "Escape");
 
   ASSERT_TRUE(dom_message_queue.WaitForMessage(&key));
   EXPECT_EQ("\"Escape\"", key);
   ASSERT_TRUE(dom_message_queue.WaitForMessage(&key));
   EXPECT_EQ("\"Escape\"", key);
-}
-
-IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyboardEventAck) {
-  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
-  Attach();
-  ASSERT_TRUE(content::ExecuteScript(
-      shell()->web_contents()->GetRenderViewHost(),
-      "document.body.addEventListener('keydown', () => console.log('x'));"));
-
-  scoped_refptr<InputMsgWatcher> filter = new InputMsgWatcher(
-      RenderWidgetHostImpl::From(
-          shell()->web_contents()->GetRenderViewHost()->GetWidget()),
-      blink::WebInputEvent::MouseMove);
-
-  SendCommand("Runtime.enable", nullptr);
-  SendKeyEvent("rawKeyDown", 0, 13, 13, "Enter", false);
-
-  // We expect that the console log message event arrives *before* the input
-  // event ack, and the subsequent command response for Input.dispatchKeyEvent.
-  WaitForNotification("Runtime.consoleAPICalled");
-  EXPECT_THAT(console_messages_, ElementsAre("x"));
-  EXPECT_FALSE(filter->HasReceivedAck());
-  EXPECT_EQ(1u, result_ids_.size());
-
-  WaitForResponse();
-  EXPECT_EQ(2u, result_ids_.size());
-}
-
-IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventAck) {
-  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
-  Attach();
-  ASSERT_TRUE(content::ExecuteScript(
-      shell()->web_contents()->GetRenderViewHost(),
-      "document.body.addEventListener('mousemove', () => console.log('x'));"));
-
-  scoped_refptr<InputMsgWatcher> filter = new InputMsgWatcher(
-      RenderWidgetHostImpl::From(
-          shell()->web_contents()->GetRenderViewHost()->GetWidget()),
-      blink::WebInputEvent::MouseMove);
-
-  SendCommand("Runtime.enable", nullptr);
-  SendMouseEvent("mouseMoved", 15, 15, false);
-
-  // We expect that the console log message event arrives *before* the input
-  // event ack, and the subsequent command response for
-  // Input.dispatchMouseEvent.
-  WaitForNotification("Runtime.consoleAPICalled");
-  EXPECT_THAT(console_messages_, ElementsAre("x"));
-  EXPECT_FALSE(filter->HasReceivedAck());
-  EXPECT_EQ(1u, result_ids_.size());
-
-  WaitForResponse();
-  EXPECT_EQ(2u, result_ids_.size());
 }
 
 namespace {

@@ -663,8 +663,6 @@ async_commands_list = [
     "Network.getCookies",
     "Network.deleteCookie",
     "Network.setCookie",
-    "Input.dispatchKeyEvent",
-    "Input.dispatchMouseEvent",
     "Input.synthesizePinchGesture",
     "Input.synthesizeScrollGesture",
     "Input.synthesizeTapGesture"]
