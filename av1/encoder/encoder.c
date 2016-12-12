@@ -3912,7 +3912,8 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   // cpi->sf.use_upsampled_references can be different from frame to frame.
   // Every time when cpi->sf.use_upsampled_references is changed from 0 to 1.
   // The reference frames for this frame have to be up-sampled before encoding.
-  if (!use_upsampled_ref && cpi->sf.use_upsampled_references)
+  if (!use_upsampled_ref && cpi->sf.use_upsampled_references &&
+      cm->frame_type != KEY_FRAME)
     reset_use_upsampled_references(cpi);
 
   av1_set_quantizer(cm, q);
@@ -3985,7 +3986,8 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
       // 1.
       // The reference frames for this frame have to be up-sampled before
       // encoding.
-      if (!use_upsampled_ref && cpi->sf.use_upsampled_references)
+      if (!use_upsampled_ref && cpi->sf.use_upsampled_references &&
+          cm->frame_type != KEY_FRAME)
         reset_use_upsampled_references(cpi);
 
       // TODO(agrange) Scale cpi->max_mv_magnitude if frame-size has changed.
