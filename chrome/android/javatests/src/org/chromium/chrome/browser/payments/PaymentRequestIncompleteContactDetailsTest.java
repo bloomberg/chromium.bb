@@ -40,7 +40,11 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
     }
 
     /** Attempt to update the contact information with invalid data and cancel the transaction. */
-    @MediumTest
+    /*
+     * @MediumTest
+     * Bug=crbug.com/673299
+     */
+    @FlakyTest
     @Feature({"Payments"})
     public void testEditIncompleteContactAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
