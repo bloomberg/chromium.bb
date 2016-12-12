@@ -260,7 +260,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         UmaUtils.recordForegroundStartTime();
         stopProgressionIfNotAcceptedTermsOfService();
         if (!mFreProperties.getBoolean(EXTRA_USE_FRE_FLOW_SEQUENCER)) {
-            if (FirstRunStatus.getFirstRunFlowComplete(this)) {
+            if (FirstRunStatus.getFirstRunFlowComplete()) {
                 // This is a parallel flow that needs to be refreshed/re-fired.
                 // Signal the FRE flow completion and re-launch the original intent.
                 completeFirstRunExperience();
@@ -403,7 +403,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         // If default is true then it corresponds to opt-out and false corresponds to opt-in.
         UmaUtils.recordMetricsReportingDefaultOptIn(!DEFAULT_METRICS_AND_CRASH_REPORTING);
         sGlue.acceptTermsOfService(allowCrashUpload);
-        FirstRunStatus.setSkipWelcomePage(FirstRunActivity.this, true);
+        FirstRunStatus.setSkipWelcomePage(true);
         flushPersistentData();
         stopProgressionIfNotAcceptedTermsOfService();
         jumpToPage(mPager.getCurrentItem() + 1);

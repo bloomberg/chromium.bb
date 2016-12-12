@@ -86,7 +86,7 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected boolean isFirstRunFlowComplete() {
-        return FirstRunStatus.getFirstRunFlowComplete(mActivity);
+        return FirstRunStatus.getFirstRunFlowComplete();
     }
 
     @VisibleForTesting
@@ -263,13 +263,13 @@ public abstract class FirstRunFlowSequencer  {
                 fromIntent != null && TextUtils.equals(fromIntent.getAction(), Intent.ACTION_MAIN);
         if (!fromChromeIcon && ToSAckedReceiver.checkAnyUserHasSeenToS(context)) return null;
 
-        final boolean baseFreComplete = FirstRunStatus.getFirstRunFlowComplete(context);
+        final boolean baseFreComplete = FirstRunStatus.getFirstRunFlowComplete();
         if (!baseFreComplete) {
             if (forLightweightFre
                     && CommandLine.getInstance().hasSwitch(
                                ChromeSwitches.ENABLE_LIGHTWEIGHT_FIRST_RUN_EXPERIENCE)) {
-                if (!FirstRunStatus.shouldSkipWelcomePage(context)
-                        && !FirstRunStatus.getLightweightFirstRunFlowComplete(context)) {
+                if (!FirstRunStatus.shouldSkipWelcomePage()
+                        && !FirstRunStatus.getLightweightFirstRunFlowComplete()) {
                     return createLightweightFirstRunIntent(context, fromChromeIcon);
                 }
             } else {
