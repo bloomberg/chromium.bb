@@ -253,8 +253,6 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   }
 
   bool isFullscreen() const;
-  void enterFullscreen();
-  void exitFullscreen();
   void didEnterFullscreen();
   void didExitFullscreen();
   virtual bool usesOverlayFullscreenVideo() const { return false; }

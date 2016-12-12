@@ -3417,18 +3417,6 @@ bool HTMLMediaElement::isFullscreen() const {
   return Fullscreen::isCurrentFullScreenElement(*this);
 }
 
-void HTMLMediaElement::enterFullscreen() {
-  BLINK_MEDIA_LOG << "enterFullscreen(" << (void*)this << ")";
-
-  Fullscreen::requestFullscreen(*this, Fullscreen::PrefixedRequest);
-}
-
-void HTMLMediaElement::exitFullscreen() {
-  BLINK_MEDIA_LOG << "exitFullscreen(" << (void*)this << ")";
-
-  Fullscreen::exitFullscreen(document());
-}
-
 void HTMLMediaElement::didEnterFullscreen() {
   configureMediaControls();
   if (mediaControls())

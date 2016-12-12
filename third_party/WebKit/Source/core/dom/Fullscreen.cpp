@@ -317,6 +317,12 @@ void Fullscreen::contextDestroyed() {
 }
 
 // https://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen
+void Fullscreen::requestFullscreen(Element& element) {
+  // TODO(foolip): Make RequestType::Unprefixed the default when the unprefixed
+  // API is enabled. https://crbug.com/383813
+  requestFullscreen(element, RequestType::Prefixed, false);
+}
+
 void Fullscreen::requestFullscreen(Element& element,
                                    RequestType requestType,
                                    bool forCrossProcessDescendant) {
@@ -724,7 +730,7 @@ void Fullscreen::fullScreenLayoutObjectDestroyed() {
 void Fullscreen::enqueueChangeEvent(Document& document,
                                     RequestType requestType) {
   Event* event;
-  if (requestType == UnprefixedRequest) {
+  if (requestType == RequestType::Unprefixed) {
     event = createEvent(EventTypeNames::fullscreenchange, document);
   } else {
     DCHECK(document.hasFullscreenSupplement());
@@ -742,7 +748,7 @@ void Fullscreen::enqueueChangeEvent(Document& document,
 
 void Fullscreen::enqueueErrorEvent(Element& element, RequestType requestType) {
   Event* event;
-  if (requestType == UnprefixedRequest)
+  if (requestType == RequestType::Unprefixed)
     event = createEvent(EventTypeNames::fullscreenerror, element.document());
   else
     event = createEvent(EventTypeNames::webkitfullscreenerror, element);

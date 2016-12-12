@@ -524,9 +524,9 @@ void WebRemoteFrameImpl::willEnterFullscreen() {
   // TODO(alexmos): currently, this assumes prefixed requests, but in the
   // future, this should plumb in information about which request type
   // (prefixed or unprefixed) to use for firing fullscreen events.
-  Fullscreen::from(ownerElement->document())
-      .requestFullscreen(*ownerElement, Fullscreen::PrefixedRequest,
-                         true /* forCrossProcessAncestor */);
+  Fullscreen::requestFullscreen(*ownerElement,
+                                Fullscreen::RequestType::Prefixed,
+                                true /* forCrossProcessAncestor */);
 }
 
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,

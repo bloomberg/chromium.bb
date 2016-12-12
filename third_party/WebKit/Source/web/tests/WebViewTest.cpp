@@ -1723,7 +1723,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
   Element* element = document->getElementById("fullscreenElement");
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
-  Fullscreen::requestFullscreen(*element, Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*element);
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
@@ -1764,7 +1764,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
   Element* element = document->getElementById("fullscreenElement");
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
-  Fullscreen::requestFullscreen(*element, Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*element);
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
@@ -1779,7 +1779,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   // shouldn't try to restore the scroll and scale values when we layout to
   // enter fullscreen.
   webViewImpl->didExitFullscreen();
-  Fullscreen::requestFullscreen(*element, Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*element);
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
@@ -1821,7 +1821,7 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
   Element* element = document->body();
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
-  Fullscreen::requestFullscreen(*element, Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*element);
   webViewImpl->didEnterFullscreen();
 
   // Page scale factor must be 1.0 during fullscreen for elements to be sized
@@ -1830,7 +1830,7 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
 
   // Make sure fullscreen nesting doesn't disrupt scroll/scale saving.
   Element* otherElement = document->getElementById("content");
-  Fullscreen::requestFullscreen(*otherElement, Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*otherElement);
 
   // Confirm that exiting fullscreen restores the parameters.
   webViewImpl->didExitFullscreen();

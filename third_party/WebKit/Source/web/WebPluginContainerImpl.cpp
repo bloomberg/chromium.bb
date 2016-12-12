@@ -308,7 +308,7 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer) {
 }
 
 void WebPluginContainerImpl::requestFullscreen() {
-  Fullscreen::requestFullscreen(*m_element, Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*m_element);
 }
 
 bool WebPluginContainerImpl::isFullscreenElement() const {

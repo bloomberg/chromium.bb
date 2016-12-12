@@ -63,13 +63,15 @@ class CORE_EXPORT Fullscreen final
   static Element* currentFullScreenElementForBindingFrom(Document&);
   static bool isCurrentFullScreenElement(const Element&);
 
-  enum RequestType {
+  enum class RequestType {
     // Element.requestFullscreen()
-    UnprefixedRequest,
+    Unprefixed,
     // Element.webkitRequestFullscreen()/webkitRequestFullScreen() and
     // HTMLVideoElement.webkitEnterFullscreen()/webkitEnterFullScreen()
-    PrefixedRequest,
+    Prefixed,
   };
+
+  static void requestFullscreen(Element&);
 
   // |forCrossProcessDescendant| is used in OOPIF scenarios and is set to
   // true when fullscreen is requested for an out-of-process descendant

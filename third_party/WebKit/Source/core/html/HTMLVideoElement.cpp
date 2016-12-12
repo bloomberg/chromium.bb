@@ -255,12 +255,12 @@ bool HTMLVideoElement::hasAvailableVideoFrame() const {
 
 void HTMLVideoElement::webkitEnterFullscreen() {
   if (!isFullscreen())
-    enterFullscreen();
+    Fullscreen::requestFullscreen(*this, Fullscreen::RequestType::Prefixed);
 }
 
 void HTMLVideoElement::webkitExitFullscreen() {
   if (isFullscreen())
-    exitFullscreen();
+    Fullscreen::exitFullscreen(document());
 }
 
 bool HTMLVideoElement::webkitSupportsFullscreen() {

@@ -530,9 +530,7 @@ void MediaControls::showOverlayCastButtonIfNeeded() {
 }
 
 void MediaControls::enterFullscreen() {
-  // TODO(foolip): switch to Fullscreen::UnprefixedRequest when the unprefixed
-  // Fullscreen API has launched.
-  Fullscreen::requestFullscreen(mediaElement(), Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(mediaElement());
 }
 
 void MediaControls::exitFullscreen() {

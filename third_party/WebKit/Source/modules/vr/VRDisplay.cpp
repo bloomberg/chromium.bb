@@ -490,7 +490,7 @@ void VRDisplay::beginPresent() {
           new UserGestureIndicator(DocumentUserGestureToken::create(
               doc, UserGestureToken::Status::PossiblyExistingGesture)));
     }
-    Fullscreen::requestFullscreen(*canvas, Fullscreen::UnprefixedRequest);
+    Fullscreen::requestFullscreen(*canvas);
 
     // Check to see if the canvas is still the current fullscreen
     // element once every 2 seconds.
@@ -728,7 +728,7 @@ void VRDisplay::onFullscreenCheck(TimerBase*) {
           new UserGestureIndicator(DocumentUserGestureToken::create(
               doc, UserGestureToken::Status::PossiblyExistingGesture)));
     }
-    Fullscreen::requestFullscreen(*canvas, Fullscreen::UnprefixedRequest);
+    Fullscreen::requestFullscreen(*canvas);
   }
 }
 
