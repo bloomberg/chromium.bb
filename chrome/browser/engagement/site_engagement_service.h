@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -36,6 +37,10 @@ class GURL;
 class HostContentSettingsMap;
 class Profile;
 class SiteEngagementScore;
+
+#if defined(OS_ANDROID)
+class SiteEngagementServiceAndroid;
+#endif
 
 class SiteEngagementScoreProvider {
  public:
@@ -134,6 +139,7 @@ class SiteEngagementService : public KeyedService,
 
  private:
   friend class SiteEngagementObserver;
+  friend class SiteEngagementServiceAndroid;
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CleanupEngagementScores);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
@@ -159,6 +165,13 @@ class SiteEngagementService : public KeyedService,
                            IncognitoEngagementService);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetScoreFromSettings);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
+
+#if defined(OS_ANDROID)
+  // Shim class to expose the service to Java.
+  SiteEngagementServiceAndroid* GetAndroidService() const;
+  void SetAndroidService(
+      std::unique_ptr<SiteEngagementServiceAndroid> android_service);
+#endif
 
   // Only used in tests.
   SiteEngagementService(Profile* profile, std::unique_ptr<base::Clock> clock);
@@ -252,6 +265,10 @@ class SiteEngagementService : public KeyedService,
 
   // The clock used to vend times.
   std::unique_ptr<base::Clock> clock_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<SiteEngagementServiceAndroid> android_service_;
+#endif
 
   // Metrics are recorded at non-incognito browser startup, and then
   // approximately once per hour thereafter. Store the local time at which

@@ -36,6 +36,10 @@
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/engagement/site_engagement_service_android.h"
+#endif
+
 namespace {
 
 const int FOUR_WEEKS_IN_DAYS = 28;
@@ -237,6 +241,17 @@ double SiteEngagementService::GetTotalEngagementPoints() const {
 
   return total_score;
 }
+
+#if defined(OS_ANDROID)
+SiteEngagementServiceAndroid* SiteEngagementService::GetAndroidService() const {
+  return android_service_.get();
+}
+
+void SiteEngagementService::SetAndroidService(
+    std::unique_ptr<SiteEngagementServiceAndroid> android_service) {
+  android_service_ = std::move(android_service);
+}
+#endif
 
 SiteEngagementService::SiteEngagementService(Profile* profile,
                                              std::unique_ptr<base::Clock> clock)
