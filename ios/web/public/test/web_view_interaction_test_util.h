@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef IOS_WEB_PUBLIC_TEST_WEB_VIEW_INTERACTION_TEST_UTIL_H_
+#define IOS_WEB_PUBLIC_TEST_WEB_VIEW_INTERACTION_TEST_UTIL_H_
+
 #import <UIKit/UIKit.h>
 
 #include <string>
@@ -43,3 +46,5 @@ bool SubmitWebViewFormWithId(web::WebState* web_state,
                              const std::string& form_id);
 }  // namespace test
 }  // namespace web
+
+#endif  // IOS_WEB_PUBLIC_TEST_WEB_VIEW_INTERACTION_TEST_UTIL_H_

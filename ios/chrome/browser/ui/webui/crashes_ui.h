@@ -28,4 +28,4 @@ class CrashesUI : public web::WebUIIOSController {
   DISALLOW_COPY_AND_ASSIGN(CrashesUI);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CRASHES_UI_H_
+#endif  // IOS_CHROME_BROWSER_UI_WEBUI_CRASHES_UI_H_

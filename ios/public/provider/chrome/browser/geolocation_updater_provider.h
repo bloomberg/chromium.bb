@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_GEOLOCATION_UPDATER_H
-#define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_GEOLOCATION_UPDATER_H
+#ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_GEOLOCATION_UPDATER_PROVIDER_H_
+#define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_GEOLOCATION_UPDATER_PROVIDER_H_
 
 #import <CoreLocation/CoreLocation.h>
 #import <Foundation/Foundation.h>
@@ -87,4 +87,4 @@ class GeolocationUpdaterProvider {
 
 }  // namespace ios
 
-#endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_GEOLOCATION_UPDATER_H
+#endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_GEOLOCATION_UPDATER_PROVIDER_H_

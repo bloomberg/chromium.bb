@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_FAVICON_URL_
-#define IOS_WEB_PUBLIC_FAVICON_URL_
+#ifndef IOS_WEB_PUBLIC_FAVICON_URL_H_
+#define IOS_WEB_PUBLIC_FAVICON_URL_H_
 
 #include <vector>
 
@@ -42,4 +42,4 @@ struct FaviconURL {
 
 } // namespace web
 
-#endif  // IOS_WEB_PUBLIC_FAVICON_URL_
+#endif  // IOS_WEB_PUBLIC_FAVICON_URL_H_

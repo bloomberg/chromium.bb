@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_INTERNAL_WEB_WEBUI_URL_DATA_SOURCE_IMPL_IOS_H_
-#define IOS_INTERNAL_WEB_WEBUI_URL_DATA_SOURCE_IMPL_IOS_H_
+#ifndef IOS_WEB_WEBUI_URL_DATA_SOURCE_IOS_IMPL_H_
+#define IOS_WEB_WEBUI_URL_DATA_SOURCE_IOS_IMPL_H_
 
 #include <memory>
 
@@ -97,4 +97,4 @@ class URLDataSourceIOSImpl
 
 }  // namespace web
 
-#endif  // IOS_INTERNAL_WEB_WEBUI_URL_DATA_SOURCE_IMPL_IOS_H_
+#endif  // IOS_WEB_WEBUI_URL_DATA_SOURCE_IOS_IMPL_H_

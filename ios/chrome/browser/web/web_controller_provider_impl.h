@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_INTERNAL_CHROME_BROWSER_WEB_WEB_CONTROLLER_PROVIDER_IMPL_H_
-#define IOS_INTERNAL_CHROME_BROWSER_WEB_WEB_CONTROLLER_PROVIDER_IMPL_H_
+#ifndef IOS_CHROME_BROWSER_WEB_WEB_CONTROLLER_PROVIDER_IMPL_H_
+#define IOS_CHROME_BROWSER_WEB_WEB_CONTROLLER_PROVIDER_IMPL_H_
 
 #include <memory>
 
@@ -33,4 +33,4 @@ class WebControllerProviderImpl : public ios::WebControllerProvider {
   bool suppresses_dialogs_;
 };
 
-#endif  // IOS_INTERNAL_CHROME_BROWSER_WEB_WEB_CONTROLLER_PROVIDER_IMPL_H_
+#endif  // IOS_CHROME_BROWSER_WEB_WEB_CONTROLLER_PROVIDER_IMPL_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CRNET_CONSUMER_VIEW_CONTROLLER_
-#define CRNET_CONSUMER_VIEW_CONTROLLER_
+#ifndef IOS_CRNET_CRNET_CONSUMER_CRNET_CONSUMER_VIEW_CONTROLLER_H_
+#define IOS_CRNET_CRNET_CONSUMER_CRNET_CONSUMER_VIEW_CONTROLLER_H_
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -11,4 +11,4 @@
 @interface CrNetConsumerViewController : UIViewController
 @end
 
-#endif  // CRNET_CONSUMER_VIEW_CONTROLLER_
+#endif  // IOS_CRNET_CRNET_CONSUMER_CRNET_CONSUMER_VIEW_CONTROLLER_H_

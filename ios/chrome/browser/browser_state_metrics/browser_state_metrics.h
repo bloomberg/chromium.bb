@@ -21,4 +21,4 @@ bool CountBrowserStateInformation(ios::ChromeBrowserStateManager* manager,
 
 void LogNumberOfBrowserStates(ios::ChromeBrowserStateManager* manager);
 
-#endif  // IOS_CHROME_BROWSER_BROWSER_STATE_BROWSER_STATE_METRICS_H_
+#endif  // IOS_CHROME_BROWSER_BROWSER_STATE_METRICS_BROWSER_STATE_METRICS_H_

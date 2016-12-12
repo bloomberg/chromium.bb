@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEB_TEST_WEB_PUBLIC_TEST_TEST_WEB_CLIENT_H_
-#define WEB_TEST_WEB_PUBLIC_TEST_TEST_WEB_CLIENT_H_
+#ifndef IOS_WEB_PUBLIC_TEST_TEST_WEB_CLIENT_H_
+#define IOS_WEB_PUBLIC_TEST_TEST_WEB_CLIENT_H_
 
 #import <Foundation/Foundation.h>
 
@@ -58,4 +58,4 @@ class TestWebClient : public web::WebClient {
 
 }  // namespace web
 
-#endif // WEB_TEST_WEB_PUBLIC_TEST_TEST_WEB_CLIENT_H_
+#endif  // IOS_WEB_PUBLIC_TEST_TEST_WEB_CLIENT_H_

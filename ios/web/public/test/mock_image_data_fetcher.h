@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_IMAGE_FETCHER_MOCK_IMAGE_DATA_FETCHER_H_
-#define IOS_WEB_PUBLIC_IMAGE_FETCHER_MOCK_IMAGE_DATA_FETCHER_H_
+#ifndef IOS_WEB_PUBLIC_TEST_MOCK_IMAGE_DATA_FETCHER_H_
+#define IOS_WEB_PUBLIC_TEST_MOCK_IMAGE_DATA_FETCHER_H_
 
 #import "ios/web/public/image_fetcher/image_data_fetcher.h"
 
@@ -33,4 +33,4 @@ class MockImageDataFetcher : public ImageDataFetcher {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_IMAGE_FETCHER_MOCK_IMAGE_DATA_FETCHER_H_
+#endif  // IOS_WEB_PUBLIC_TEST_MOCK_IMAGE_DATA_FETCHER_H_

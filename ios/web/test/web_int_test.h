@@ -31,4 +31,4 @@ class WebIntTest : public WebTest {
 
 }  // namespace web
 
-#endif  // IOS_WEB_TEST_WEB_TEST_H_
+#endif  // IOS_WEB_TEST_WEB_INT_TEST_H_

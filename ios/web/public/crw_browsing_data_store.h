@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_CRW_BROWSING_DATA_STORE_H_
-#define IOS_WEB_CRW_BROWSING_DATA_STORE_H_
+#ifndef IOS_WEB_PUBLIC_CRW_BROWSING_DATA_STORE_H_
+#define IOS_WEB_PUBLIC_CRW_BROWSING_DATA_STORE_H_
 
 #import <Foundation/Foundation.h>
 
@@ -94,4 +94,4 @@ typedef NS_ENUM(NSUInteger, BrowsingDataStoreMode) {
 
 @end
 
-#endif  // IOS_WEB_CRW_BROWSING_DATA_STORE_H_
+#endif  // IOS_WEB_PUBLIC_CRW_BROWSING_DATA_STORE_H_

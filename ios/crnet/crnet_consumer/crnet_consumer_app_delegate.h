@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CRNET_CONSUMER_APP_DELEGATE_
-#define CRNET_CONSUMER_APP_DELEGATE_
+#ifndef IOS_CRNET_CRNET_CONSUMER_CRNET_CONSUMER_APP_DELEGATE_H_
+#define IOS_CRNET_CRNET_CONSUMER_CRNET_CONSUMER_APP_DELEGATE_H_
 
 #import <UIKit/UIKit.h>
 
@@ -17,4 +17,4 @@
 
 @end
 
-#endif  // CRNET_CONSUMER_APP_DELEGATE_
+#endif  // IOS_CRNET_CRNET_CONSUMER_CRNET_CONSUMER_APP_DELEGATE_H_

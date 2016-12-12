@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_INTERNAL_CHROME_BROWSER_SHARE_EXTENSION_SHARE_EXTENSION_SERVICE_H_
-#define IOS_INTERNAL_CHROME_BROWSER_SHARE_EXTENSION_SHARE_EXTENSION_SERVICE_H_
+#ifndef IOS_CHROME_BROWSER_SHARE_EXTENSION_SHARE_EXTENSION_SERVICE_H_
+#define IOS_CHROME_BROWSER_SHARE_EXTENSION_SHARE_EXTENSION_SERVICE_H_
 
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -44,4 +44,4 @@ class ShareExtensionService : public KeyedService,
   DISALLOW_COPY_AND_ASSIGN(ShareExtensionService);
 };
 
-#endif  // IOS_INTERNAL_CHROME_BROWSER_SHARE_EXTENSION_SHARE_EXTENSION_SERVICE_H_
+#endif  // IOS_CHROME_BROWSER_SHARE_EXTENSION_SHARE_EXTENSION_SERVICE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RTL_GEOMETRY_H_
-#define RTL_GEOMETRY_H_
+#ifndef IOS_CHROME_BROWSER_UI_RTL_GEOMETRY_H_
+#define IOS_CHROME_BROWSER_UI_RTL_GEOMETRY_H_
 
 #include <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
@@ -203,4 +203,4 @@ CGFloat UIEdgeInsetsGetTrailing(UIEdgeInsets insets);
 // smaller sections of views should be determined case by case.
 NSLayoutFormatOptions LayoutOptionForRTLSupport();
 
-#endif  // RTL_GEOMETRY_H_
+#endif  // IOS_CHROME_BROWSER_UI_RTL_GEOMETRY_H_

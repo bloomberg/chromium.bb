@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef IOS_CRNET_CRNET_H_
+#define IOS_CRNET_CRNET_H_
+
 #import <Foundation/Foundation.h>
 
 // A block, that takes a request, and returns YES if the request should
@@ -132,3 +135,5 @@ __attribute__((visibility("default")))
 + (void)clearCacheWithCompletionCallback:(ClearCacheCallback)completionBlock;
 
 @end
+
+#endif  // IOS_CRNET_CRNET_H_
