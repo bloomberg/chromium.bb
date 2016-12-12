@@ -24,9 +24,10 @@
 
 #include "core/paint/ThemePainterDefault.h"
 
+#include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutProgress.h"
-#include "core/layout/LayoutTheme.h"
+#include "core/layout/LayoutThemeDefault.h"
 #include "core/paint/MediaControlsPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/LayoutTestSupport.h"
@@ -42,10 +43,6 @@ namespace blink {
 namespace {
 
 const unsigned defaultButtonBackgroundColor = 0xffdddddd;
-const unsigned mockDropdownMenuListArrowPadding = 3;
-// This is equal to the padding provided by the LayoutMenuList which is
-// calculated based on |menuListArrowPaddingSize| in LayoutThemeDefault.
-const unsigned mockDropdownMenuListArrowWidth = 18;
 
 bool useMockTheme() {
   return LayoutTestSupport::isMockThemeEnabledForTest();
@@ -142,7 +139,8 @@ IntRect convertToPaintingRect(const LayoutObject& inputLayoutObject,
 
 }  // namespace
 
-ThemePainterDefault::ThemePainterDefault() : ThemePainter() {}
+ThemePainterDefault::ThemePainterDefault(LayoutThemeDefault& theme)
+    : ThemePainter(), m_theme(theme) {}
 
 bool ThemePainterDefault::paintCheckbox(const LayoutObject& o,
                                         const PaintInfo& i,
@@ -285,34 +283,40 @@ void ThemePainterDefault::setupMenuListArrow(
     const LayoutBox& box,
     const IntRect& rect,
     WebThemeEngine::ExtraParams& extraParams) {
-  const int right = rect.x() + rect.width();
+  const int left = rect.x() + box.borderLeft();
+  const int right = rect.x() + rect.width() - box.borderRight();
   const int middle = rect.y() + rect.height() / 2;
 
   extraParams.menuList.arrowY = middle;
+  float arrowBoxWidth = m_theme.clampedMenuListArrowPaddingSize(
+      box.frameView()->getHostWindow(), box.styleRef());
+  float arrowScaleFactor = arrowBoxWidth / m_theme.scrollbarThicknessInDIP();
   if (useMockTheme()) {
     // The size and position of the drop-down button is different between
     // the mock theme and the regular aura theme.
-    int extraPadding =
-        mockDropdownMenuListArrowPadding * box.styleRef().effectiveZoom();
-    int arrowBoxWidth =
-        mockDropdownMenuListArrowWidth * box.styleRef().effectiveZoom();
-    int arrowSize = std::min(arrowBoxWidth, rect.height()) - 2 * extraPadding;
+
+    // Padding inside the arrowBox.
+    float extraPadding = 2 * arrowScaleFactor;
+    float arrowSize =
+        std::min(arrowBoxWidth,
+                 static_cast<float>(rect.height() - box.borderTop() -
+                                    box.borderBottom())) -
+        2 * extraPadding;
+    // |arrowX| is the middle position for mock theme engine.
     extraParams.menuList.arrowX =
         (box.styleRef().direction() == RTL)
             ? rect.x() + extraPadding + (arrowSize / 2)
             : right - (arrowSize / 2) - extraPadding;
     extraParams.menuList.arrowSize = arrowSize;
   } else {
-    const int arrowSize = 6;
-    const int arrowPadding = 6;
-    extraParams.menuList.arrowX =
-        (box.styleRef().direction() == RTL)
-            ? rect.x() + arrowPadding * box.styleRef().effectiveZoom() +
-                  box.borderLeft()
-            : right -
-                  (arrowSize + arrowPadding) * box.styleRef().effectiveZoom() -
-                  box.borderRight();
-    extraParams.menuList.arrowSize = arrowSize * box.styleRef().effectiveZoom();
+    // TODO(tkent): This should be 7.0 to match scroll bar buttons.
+    float arrowSize = 6.0 * arrowScaleFactor;
+    // Put the 6px arrow at the center of paddingForArrow area.
+    // |arrowX| is the left position for Aura theme engine.
+    extraParams.menuList.arrowX = (box.styleRef().direction() == RTL)
+                                      ? left + (arrowBoxWidth - arrowSize) / 2
+                                      : right - (arrowBoxWidth + arrowSize) / 2;
+    extraParams.menuList.arrowSize = arrowSize;
   }
   extraParams.menuList.arrowColor = box.resolveColor(CSSPropertyColor).rgb();
 }

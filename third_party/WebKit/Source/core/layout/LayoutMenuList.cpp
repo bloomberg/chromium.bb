@@ -28,6 +28,7 @@
 
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/layout/LayoutText.h"
@@ -98,8 +99,9 @@ void LayoutMenuList::adjustInnerStyle() {
 
   Length paddingStart =
       Length(LayoutTheme::theme().popupInternalPaddingStart(styleRef()), Fixed);
-  Length paddingEnd =
-      Length(LayoutTheme::theme().popupInternalPaddingEnd(styleRef()), Fixed);
+  Length paddingEnd = Length(LayoutTheme::theme().popupInternalPaddingEnd(
+                                 frameView()->getHostWindow(), styleRef()),
+                             Fixed);
   innerStyle.setPaddingLeft(styleRef().direction() == LTR ? paddingStart
                                                           : paddingEnd);
   innerStyle.setPaddingRight(styleRef().direction() == LTR ? paddingEnd

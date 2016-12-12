@@ -2,7 +2,7 @@
 <html>
 <body>
 <script src="../../resources/js-test.js"></script>
-
+<div id="container">
 <div>
   <a id="link1" href="#">Link</a>
   <button id="button1">Button</button>
@@ -34,7 +34,7 @@
 <canvas hidden id="hiddenCanvas" width="300" height="300">
   <a id="linkInHiddenCanvas" href="#">Link</a>
 </canvas>
-
+</div>
 <div id="console"></div>
 <script>
 description("This test makes sure that focusable elements in canvas fallback content are focusable.");
@@ -87,6 +87,7 @@ function checkNotFocusable(id) {
 
 checkNotFocusable("linkInHiddenCanvas");
 
+document.querySelector("#container").remove();
 </script>
 
 </body>

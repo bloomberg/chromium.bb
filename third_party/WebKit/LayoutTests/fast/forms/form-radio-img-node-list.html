@@ -1,5 +1,6 @@
 <!doctype html>
 <script src="../../resources/js-test.js"></script>
+<div id="container">
 <img name=outside1></img>
 <form id="f1">
     <button id=n1></button>
@@ -17,6 +18,7 @@
 </form>
 <!-- The img element isn't 'reassociatable'; add @form to verify it is so. -->
 <img name=n2 form=f1></img>
+</div>
 <script>
 description("Test RadioNodeLists returned by the HTMLFormElement named-getter.");
 
@@ -47,4 +49,6 @@ var img = document.createElement("img");
 img.name = "n2";
 form.appendChild(img);
 verifyLength(3);
+
+document.querySelector("#container").remove();
 </script>

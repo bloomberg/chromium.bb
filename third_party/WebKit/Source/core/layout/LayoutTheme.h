@@ -41,6 +41,7 @@ namespace blink {
 class ComputedStyle;
 class Element;
 class FileList;
+class HostWindow;
 class HTMLInputElement;
 class LayoutObject;
 class Theme;
@@ -167,7 +168,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual int popupInternalPaddingStart(const ComputedStyle&) const {
     return 0;
   }
-  virtual int popupInternalPaddingEnd(const ComputedStyle&) const { return 0; }
+  virtual int popupInternalPaddingEnd(const HostWindow*,
+                                      const ComputedStyle&) const {
+    return 0;
+  }
   virtual int popupInternalPaddingTop(const ComputedStyle&) const { return 0; }
   virtual int popupInternalPaddingBottom(const ComputedStyle&) const {
     return 0;

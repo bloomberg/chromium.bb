@@ -3,7 +3,7 @@
 <body>
 <script src="../resources/js-test.js"></script>
 
-<div>
+<div id="container">
   <button id="button"></button>
   <input id="text" type="text">
   <input id="checkbox" type="checkbox">
@@ -41,6 +41,8 @@ if (window.testRunner && window.accessibilityController) {
     checkControl("combobox");
     checkControl("listbox");
     checkControl("textarea");
+
+    document.querySelector("#container").remove();
 }
 
 </script>

@@ -58,6 +58,8 @@ class PLATFORM_EXPORT ScrollbarTheme {
 
   virtual ScrollbarPart hitTest(const ScrollbarThemeClient&, const IntPoint&);
 
+  // This returns a fixed value regardless of device-scale-factor.
+  // See also Scrollbar::scrollbarThickness().
   virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) {
     return 0;
   }

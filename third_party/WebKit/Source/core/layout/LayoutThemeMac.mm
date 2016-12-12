@@ -754,7 +754,8 @@ int LayoutThemeMac::popupInternalPaddingStart(
   return 0;
 }
 
-int LayoutThemeMac::popupInternalPaddingEnd(const ComputedStyle& style) const {
+int LayoutThemeMac::popupInternalPaddingEnd(const HostWindow*,
+                                            const ComputedStyle& style) const {
   if (style.appearance() == MenulistPart)
     return popupButtonPadding(
                controlSizeForFont(style))[ThemeMac::RightMargin] *

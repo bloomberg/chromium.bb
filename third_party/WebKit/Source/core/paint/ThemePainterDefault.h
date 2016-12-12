@@ -35,10 +35,11 @@
 namespace blink {
 
 class LayoutBox;
+class LayoutThemeDefault;
 
 class ThemePainterDefault final : public ThemePainter {
  public:
-  ThemePainterDefault();
+  explicit ThemePainterDefault(LayoutThemeDefault&);
 
  private:
   bool paintCheckbox(const LayoutObject&,
@@ -84,6 +85,9 @@ class ThemePainterDefault final : public ThemePainter {
   void setupMenuListArrow(const LayoutBox&,
                           const IntRect&,
                           WebThemeEngine::ExtraParams&);
+
+  // ThemePaintDefault is a part object of m_theme.
+  LayoutThemeDefault& m_theme;
 };
 
 }  // namespace blink

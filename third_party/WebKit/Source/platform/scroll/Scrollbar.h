@@ -108,6 +108,9 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
   bool enabled() const override { return m_enabled; }
   void setEnabled(bool) override;
 
+  // This returns device-scale-factor-aware pixel value.
+  // e.g. 15 in dsf=1.0, 30 in dsf=2.0.
+  // See also ScrolbarTheme::scrollbatThickness().
   int scrollbarThickness() const;
 
   // Called by the ScrollableArea when the scroll offset changes.

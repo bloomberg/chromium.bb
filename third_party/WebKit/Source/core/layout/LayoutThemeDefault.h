@@ -111,9 +111,13 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
 
   // These methods define the padding for the MenuList's inner block.
   int popupInternalPaddingStart(const ComputedStyle&) const override;
-  int popupInternalPaddingEnd(const ComputedStyle&) const override;
+  int popupInternalPaddingEnd(const HostWindow*,
+                              const ComputedStyle&) const override;
   int popupInternalPaddingTop(const ComputedStyle&) const override;
   int popupInternalPaddingBottom(const ComputedStyle&) const override;
+  static int scrollbarThicknessInDIP();
+  static float clampedMenuListArrowPaddingSize(const HostWindow*,
+                                               const ComputedStyle&);
 
   // Provide a way to pass the default font size from the Settings object
   // to the layout theme. FIXME: http://b/1129186 A cleaner way would be

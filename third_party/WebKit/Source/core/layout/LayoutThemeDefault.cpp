@@ -28,6 +28,7 @@
 #include "core/layout/LayoutThemeFontProvider.h"
 #include "core/paint/MediaControlsPainter.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/HostWindow.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/graphics/Color.h"
@@ -42,7 +43,6 @@ static const float defaultControlFontPixelSize = 13;
 static const float defaultCancelButtonSize = 9;
 static const float minCancelButtonSize = 5;
 static const float maxCancelButtonSize = 21;
-static const int menuListArrowPaddingSize = 14;
 
 static bool useMockTheme() {
   return LayoutTestSupport::isMockThemeEnabledForTest();
@@ -55,7 +55,8 @@ unsigned LayoutThemeDefault::m_inactiveSelectionForegroundColor = 0xff323232;
 
 double LayoutThemeDefault::m_caretBlinkInterval;
 
-LayoutThemeDefault::LayoutThemeDefault() : LayoutTheme(nullptr) {
+LayoutThemeDefault::LayoutThemeDefault()
+    : LayoutTheme(nullptr), m_painter(*this) {
   m_caretBlinkInterval = LayoutTheme::caretBlinkInterval();
 }
 
@@ -316,8 +317,12 @@ int LayoutThemeDefault::popupInternalPaddingStart(
 }
 
 int LayoutThemeDefault::popupInternalPaddingEnd(
+    const HostWindow* host,
     const ComputedStyle& style) const {
-  return menuListInternalPadding(style, 4 + menuListArrowPaddingSize);
+  if (style.appearance() == NoControlPart)
+    return 0;
+  return 1 * style.effectiveZoom() +
+         clampedMenuListArrowPaddingSize(host, style);
 }
 
 int LayoutThemeDefault::popupInternalPaddingTop(
@@ -328,6 +333,32 @@ int LayoutThemeDefault::popupInternalPaddingTop(
 int LayoutThemeDefault::popupInternalPaddingBottom(
     const ComputedStyle& style) const {
   return menuListInternalPadding(style, 1);
+}
+
+// static
+int LayoutThemeDefault::scrollbarThicknessInDIP() {
+  int width = Platform::current()
+                  ->themeEngine()
+                  ->getSize(WebThemeEngine::PartScrollbarDownArrow)
+                  .width;
+  return width > 0 ? width : 15;
+}
+
+// static
+float LayoutThemeDefault::clampedMenuListArrowPaddingSize(
+    const HostWindow* host,
+    const ComputedStyle& style) {
+  int originalSize = scrollbarThicknessInDIP();
+  int scaledSize =
+      host ? host->windowToViewportScalar(originalSize) : originalSize;
+  // The result should not be samller than the scrollbar thickness in order to
+  // secure space for scrollbar in popup.
+  float deviceScale = 1.0f * scaledSize / originalSize;
+  if (style.effectiveZoom() < deviceScale)
+    return scaledSize;
+  // The value should be zoomed though scrollbars aren't scaled by zoom.
+  // crbug.com/432795.
+  return originalSize * style.effectiveZoom();
 }
 
 // static
