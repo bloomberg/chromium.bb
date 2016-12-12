@@ -42,6 +42,7 @@ blink_core_sources("dom") {
     "ContextFeatures.h",
     "ContextLifecycleNotifier.cpp",
     "ContextLifecycleNotifier.h",
+    "ContextLifecycleObserver.cpp",
     "ContextLifecycleObserver.h",
     "DOMArrayBuffer.cpp",
     "DOMArrayBuffer.h",

@@ -26,9 +26,8 @@
 #ifndef ApplicationCache_h
 #define ApplicationCache_h
 
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
-
-#include "core/frame/DOMWindowProperty.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -39,7 +38,7 @@ class ExceptionState;
 class LocalFrame;
 
 class ApplicationCache final : public EventTargetWithInlineData,
-                               public DOMWindowProperty {
+                               public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 
@@ -49,7 +48,7 @@ class ApplicationCache final : public EventTargetWithInlineData,
   }
   ~ApplicationCache() override {}
 
-  void frameDestroyed() override;
+  void contextDestroyed() override;
 
   unsigned short status() const;
   void update(ExceptionState&);

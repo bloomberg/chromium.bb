@@ -39,7 +39,7 @@
 namespace blink {
 
 ApplicationCache::ApplicationCache(LocalFrame* frame)
-    : DOMWindowProperty(frame) {
+    : ContextLifecycleObserver(frame->document()) {
   ApplicationCacheHost* cacheHost = applicationCacheHost();
   if (cacheHost)
     cacheHost->setApplicationCache(this);
@@ -47,13 +47,12 @@ ApplicationCache::ApplicationCache(LocalFrame* frame)
 
 DEFINE_TRACE(ApplicationCache) {
   EventTargetWithInlineData::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
-void ApplicationCache::frameDestroyed() {
+void ApplicationCache::contextDestroyed() {
   if (ApplicationCacheHost* cacheHost = applicationCacheHost())
     cacheHost->setApplicationCache(0);
-  DOMWindowProperty::frameDestroyed();
 }
 
 ApplicationCacheHost* ApplicationCache::applicationCacheHost() const {
