@@ -7,6 +7,7 @@ package org.chromium.net;
 import android.content.Context;
 import android.os.ConditionVariable;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -73,6 +74,7 @@ public final class QuicTestServer {
     }
 
     public static long createMockCertVerifier() {
+        TestFilesInstaller.installIfNeeded(ContextUtils.getApplicationContext());
         return MockCertVerifier.createMockCertVerifier(CERTS_USED, true);
     }
 
