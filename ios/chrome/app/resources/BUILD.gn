@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/locales.gni")
 import("//ios/chrome/app/resources/ios_chrome_repack.gni")
+import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -111,5 +112,18 @@ bundle_data_ib_file("launchscreen_xib") {
   source = "LaunchScreen.xib"
   deps = [
     ios_launchscreen_assets_target,
+  ]
+}
+
+generate_localizable_strings("system_strings") {
+  config_file = "chrome_localize_strings_config.plist"
+  datapack_dir = get_label_info(ios_packed_resources_target, "target_gen_dir")
+  packed_locales = ios_packed_locales_as_mac_outputs
+  output_filenames = [
+    "InfoPlist.strings",
+    "Localizable.strings",
+  ]
+  deps = [
+    ios_packed_resources_target,
   ]
 }
