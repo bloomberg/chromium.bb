@@ -22,7 +22,10 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/proxy_settings_dialog.h"
+#include "chrome/browser/chromeos/login/ui/shared_web_view.h"
+#include "chrome/browser/chromeos/login/ui/shared_web_view_factory.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_set_background_color.h"
+#include "chrome/browser/chromeos/login/ui/web_view_handle.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -176,7 +179,8 @@ class WebUILoginView::StatusAreaFocusTraversable
 
 // WebUILoginView public: ------------------------------------------------------
 
-WebUILoginView::WebUILoginView() {
+WebUILoginView::WebUILoginView(const WebViewSettings& settings)
+    : settings_(settings) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                  content::NotificationService::AllSources());
@@ -252,15 +256,24 @@ WebUILoginView::~WebUILoginView() {
   } else {
     NOTIMPLEMENTED();
   }
+
+  // If the WebView is going to be reused, make sure we call teardown.
+  if (!webui_login_->HasOneRef())
+    GetWebUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.teardown");
+
+  // Clear any delegates we have set on the WebView.
+  WebContents* web_contents = web_view()->GetWebContents();
+  WebContentsModalDialogManager::FromWebContents(web_contents)
+      ->SetDelegate(nullptr);
+  web_contents->SetDelegate(nullptr);
 }
 
-void WebUILoginView::Init() {
-  Profile* signin_profile = ProfileHelper::GetSigninProfile();
-  webui_login_ = new views::WebView(signin_profile);
-  webui_login_->set_allow_accelerators(true);
-  AddChildView(webui_login_);
+// static
+void WebUILoginView::InitializeWebView(views::WebView* web_view) {
+  WebContents* web_contents = web_view->GetWebContents();
 
-  WebContents* web_contents = webui_login_->GetWebContents();
+  WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
+      web_contents, SK_ColorTRANSPARENT);
 
   // Ensure that the login UI has a tab ID, which will allow the GAIA auth
   // extension's background script to tell it apart from a captive portal window
@@ -274,16 +287,38 @@ void WebUILoginView::Init() {
 
   // LoginHandlerViews uses a constrained window for the password manager view.
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
-  WebContentsModalDialogManager::FromWebContents(web_contents)->
-      SetDelegate(this);
 
-  web_contents->SetDelegate(this);
   extensions::SetViewType(web_contents, extensions::VIEW_TYPE_COMPONENT);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
   content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
-      prefs, signin_profile, web_contents);
+      prefs, ProfileHelper::GetSigninProfile(), web_contents);
+}
+
+void WebUILoginView::Init() {
+  Profile* signin_profile = ProfileHelper::GetSigninProfile();
+
+  if (!settings_.preloaded_url.is_empty()) {
+    SharedWebView* shared_web_view =
+        SharedWebViewFactory::GetForProfile(signin_profile);
+    is_reusing_webview_ =
+        shared_web_view->Get(settings_.preloaded_url, &webui_login_);
+  } else {
+    webui_login_ = new WebViewHandle(signin_profile);
+    is_reusing_webview_ = false;
+  }
+
+  WebContents* web_contents = web_view()->GetWebContents();
+  if (!is_reusing_webview_)
+    InitializeWebView(web_view());
+
+  web_view()->set_allow_accelerators(true);
+  AddChildView(web_view());
+
+  WebContentsModalDialogManager::FromWebContents(web_contents)
+      ->SetDelegate(this);
+  web_contents->SetDelegate(this);
 
   status_area_widget_host_ = new views::View;
   AddChildView(status_area_widget_host_);
@@ -294,7 +329,7 @@ const char* WebUILoginView::GetClassName() const {
 }
 
 void WebUILoginView::RequestFocus() {
-  webui_login_->RequestFocus();
+  web_view()->RequestFocus();
 }
 
 web_modal::WebContentsModalDialogHost*
@@ -334,7 +369,7 @@ bool WebUILoginView::AcceleratorPressed(
   if (entry == accel_map_.end())
     return false;
 
-  if (!webui_login_)
+  if (!web_view())
     return true;
 
   content::WebUI* web_ui = GetWebUI();
@@ -351,12 +386,15 @@ gfx::NativeWindow WebUILoginView::GetNativeWindow() const {
   return GetWidget()->GetNativeWindow();
 }
 
-void WebUILoginView::LoadURL(const GURL & url) {
-  webui_login_->LoadInitialURL(url);
-  webui_login_->RequestFocus();
+void WebUILoginView::LoadURL(const GURL& url) {
+  // If a preloaded_url is provided then |url| must match it.
+  DCHECK(settings_.preloaded_url.is_empty() || url == settings_.preloaded_url);
 
-  WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
-      GetWebContents(), SK_ColorTRANSPARENT);
+  if (is_reusing_webview_ && !settings_.preloaded_url.is_empty())
+    GetWebUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.reload");
+  else
+    web_view()->LoadInitialURL(url);
+  web_view()->RequestFocus();
 
   // There is no Shell instance while running in mash.
   if (chrome::IsRunningInMash())
@@ -373,14 +411,17 @@ void WebUILoginView::LoadURL(const GURL & url) {
 }
 
 content::WebUI* WebUILoginView::GetWebUI() {
-  return webui_login_->web_contents()->GetWebUI();
+  return web_view()->web_contents()->GetWebUI();
 }
 
 content::WebContents* WebUILoginView::GetWebContents() {
-  return webui_login_->web_contents();
+  return web_view()->web_contents();
 }
 
 OobeUI* WebUILoginView::GetOobeUI() {
+  if (!GetWebUI())
+    return nullptr;
+
   return static_cast<OobeUI*>(GetWebUI()->GetController());
 }
 
@@ -442,8 +483,8 @@ void WebUILoginView::SetUIEnabled(bool enabled) {
 // WebUILoginView protected: ---------------------------------------------------
 
 void WebUILoginView::Layout() {
-  DCHECK(webui_login_);
-  webui_login_->SetBoundsRect(bounds());
+  DCHECK(web_view());
+  web_view()->SetBoundsRect(bounds());
 
   for (auto& observer : observer_list_)
     observer.OnPositionRequiresUpdate();
@@ -459,9 +500,9 @@ void WebUILoginView::ChildPreferredSizeChanged(View* child) {
 
 void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   // Return the focus to the web contents.
-  webui_login_->web_contents()->FocusThroughTabTraversal(reverse);
+  web_view()->web_contents()->FocusThroughTabTraversal(reverse);
   GetWidget()->Activate();
-  webui_login_->web_contents()->Focus();
+  web_view()->web_contents()->Focus();
 }
 
 void WebUILoginView::Observe(int type,
@@ -477,6 +518,10 @@ void WebUILoginView::Observe(int type,
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
+}
+
+views::WebView* WebUILoginView::web_view() {
+  return webui_login_->web_view();
 }
 
 // WebUILoginView private: -----------------------------------------------------

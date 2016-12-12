@@ -1141,7 +1141,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   params.delegate = new LoginWidgetDelegate(login_window_);
   login_window_->Init(params);
 
-  login_view_ = new WebUILoginView();
+  login_view_ = new WebUILoginView(WebUILoginView::WebViewSettings());
   login_view_->Init();
   if (login_view_->webui_visible())
     OnLoginPromptVisible();

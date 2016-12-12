@@ -894,12 +894,7 @@ void SigninScreenHandler::ReloadGaia(bool force_reload) {
 }
 
 void SigninScreenHandler::Initialize() {
-  // If delegate_ is nullptr here (e.g. WebUIScreenLocker has been destroyed),
-  // don't do anything, just return.
-  if (!delegate_)
-    return;
-
-  if (show_on_init_) {
+  if (delegate_ && show_on_init_) {
     show_on_init_ = false;
     ShowImpl();
   }

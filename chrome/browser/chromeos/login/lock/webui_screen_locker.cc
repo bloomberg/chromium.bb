@@ -61,7 +61,8 @@ namespace chromeos {
 // WebUIScreenLocker implementation.
 
 WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
-    : screen_locker_(screen_locker),
+    : WebUILoginView(WebViewSettings()),
+      screen_locker_(screen_locker),
       network_state_helper_(new login::NetworkStateHelper),
       weak_factory_(this) {
   set_should_emit_login_prompt_visible(false);
@@ -88,7 +89,7 @@ WebUIScreenLocker::~WebUIScreenLocker() {
   }
   // If LockScreen() was called, we need to clear the signin screen handler
   // delegate set in ShowSigninScreen so that it no longer points to us.
-  if (login_display_.get())
+  if (login_display_.get() && GetOobeUI())
     GetOobeUI()->ResetSigninScreenHandlerDelegate();
 
   if (keyboard::KeyboardController::GetInstance() && is_observing_keyboard_) {
@@ -107,7 +108,7 @@ void WebUIScreenLocker::LockScreen() {
   lock_window_->AddObserver(this);
 
   Init();
-  content::WebContentsObserver::Observe(webui_login_->GetWebContents());
+  content::WebContentsObserver::Observe(web_view()->GetWebContents());
 
   lock_window_->SetContentsView(this);
   lock_window_->SetBounds(bounds);
@@ -171,7 +172,7 @@ gfx::NativeWindow WebUIScreenLocker::GetNativeWindow() const {
 void WebUIScreenLocker::FocusUserPod() {
   if (!webui_ready_)
     return;
-  webui_login_->RequestFocus();
+  web_view()->RequestFocus();
   GetWebUI()->CallJavascriptFunctionUnsafe(
       "cr.ui.Oobe.forceLockedUserPodFocus");
 }

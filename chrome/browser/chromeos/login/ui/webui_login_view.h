@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -18,8 +19,7 @@
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace content {
 class WebUI;
@@ -34,6 +34,7 @@ class Widget;
 namespace chromeos {
 
 class OobeUI;
+class WebViewHandle;
 
 // View used to render a WebUI supporting Widget. This widget is used for the
 // WebUI based start up and lock screens. It contains a WebView.
@@ -43,10 +44,15 @@ class WebUILoginView : public views::View,
                        public ChromeWebModalDialogManagerDelegate,
                        public web_modal::WebContentsModalDialogHost {
  public:
+  struct WebViewSettings {
+    // URL of the WebView to preload and reuse across WebUILoginView instances.
+    GURL preloaded_url;
+  };
+
   // Internal class name.
   static const char kViewClassName[];
 
-  WebUILoginView();
+  explicit WebUILoginView(const WebViewSettings& settings);
   ~WebUILoginView() override;
 
   // Initializes the webui login view.
@@ -105,6 +111,8 @@ class WebUILoginView : public views::View,
   }
 
  protected:
+  static void InitializeWebView(views::WebView* web_view);
+
   // Overridden from views::View:
   void Layout() override;
   void OnLocaleChanged() override;
@@ -116,8 +124,7 @@ class WebUILoginView : public views::View,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // WebView for rendering a webpage as a webui login.
-  views::WebView* webui_login_ = nullptr;
+  views::WebView* web_view();
 
  private:
   // Map type for the accelerator-to-identifier map.
@@ -147,6 +154,15 @@ class WebUILoginView : public views::View,
   void OnLoginPromptVisible();
 
   content::NotificationRegistrar registrar_;
+
+  // WebView configuration options.
+  const WebViewSettings settings_;
+
+  // WebView for rendering a webpage as a webui login.
+  scoped_refptr<WebViewHandle> webui_login_;
+
+  // True if the current webview instance (ie, GetWebUI()) has been reused.
+  bool is_reusing_webview_ = false;
 
   // Converts keyboard events on the WebContents to accelerators.
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;

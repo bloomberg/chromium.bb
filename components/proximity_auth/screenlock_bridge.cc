@@ -117,12 +117,12 @@ ScreenlockBridge* ScreenlockBridge::Get() {
 }
 
 void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
-  DCHECK(lock_handler_ == nullptr || lock_handler == nullptr);
-
   // Don't notify observers if there is no change -- i.e. if the screen was
   // already unlocked, and is remaining unlocked.
   if (lock_handler == lock_handler_)
     return;
+
+  DCHECK(lock_handler_ == nullptr || lock_handler == nullptr);
 
   // TODO(isherman): If |lock_handler| is null, then |lock_handler_| might have
   // been freed. Cache the screen type rather than querying it below.
