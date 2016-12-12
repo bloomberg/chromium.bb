@@ -146,7 +146,6 @@
 //<include src="ui/actions_submenu.js">
 //<include src="ui/banners.js" >
 //<include src="ui/default_task_dialog.js">
-//<include src="ui/details_container.js">
 //<include src="ui/dialog_footer.js">
 //<include src="ui/directory_tree.js">
 //<include src="ui/drag_selector.js">
@@ -164,13 +163,11 @@
 //<include src="ui/gear_menu.js">
 //<include src="ui/list_container.js">
 //<include src="ui/location_line.js">
-//<include src="ui/multi_file_details.js">
 //<include src="ui/multi_profile_share_dialog.js">
 //<include src="ui/progress_center_panel.js">
 //<include src="ui/providers_menu.js">
 //<include src="ui/search_box.js">
 //<include src="ui/share_dialog.js">
-//<include src="ui/single_file_details.js">
 //<include src="ui/suggest_apps_dialog.js">
 //<include src="main_window_component.js">
 //<include src="volume_manager_wrapper.js">

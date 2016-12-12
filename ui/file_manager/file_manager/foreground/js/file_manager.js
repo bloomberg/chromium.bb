@@ -890,23 +890,11 @@ FileManager.prototype = /** @struct */ {
         this.volumeManager_,
         this.historyLoader_);
 
-    var singlePanel = queryRequiredElement('#single-file-details', dom);
-    SingleFileDetailsPanel.decorate(
-        assertInstanceof(singlePanel, HTMLDivElement),
-        this.metadataModel_);
-
-    var multiPanel = queryRequiredElement('#multi-file-details', dom);
-    MultiFileDetailsPanel.decorate(
-        assertInstanceof(multiPanel, HTMLDivElement),
-        this.metadataModel_);
-
     this.addHistoryObserver_();
 
     this.ui_.initAdditionalUI(
         assertInstanceof(table, FileTable),
         assertInstanceof(grid, FileGrid),
-        assertInstanceof(singlePanel, SingleFileDetailsPanel),
-        assertInstanceof(multiPanel, MultiFileDetailsPanel),
         new LocationLine(
             queryRequiredElement('#location-breadcrumbs', dom),
             this.volumeManager_));
@@ -1043,7 +1031,6 @@ FileManager.prototype = /** @struct */ {
     // Create metadata update controller.
     this.metadataUpdateController_ = new MetadataUpdateController(
         this.ui_.listContainer,
-        assert(this.ui_.detailsContainer),
         this.directoryModel_,
         this.metadataModel_,
         this.fileMetadataFormatter_);

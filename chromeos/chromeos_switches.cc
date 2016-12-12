@@ -231,9 +231,6 @@ const char kEnableExperimentalAccessibilityFeatures[] =
 // Enables sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
 
-// Enables details panel in Files app.
-const char kEnableFilesDetailsPanel[] = "enable-files-details-panel";
-
 // Enables quick view in Files app.
 const char kEnableFilesQuickView[] = "enable-files-quick-view";
 

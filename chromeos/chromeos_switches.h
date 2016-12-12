@@ -81,7 +81,6 @@ CHROMEOS_EXPORT extern const char kEnableConsumerKiosk[];
 CHROMEOS_EXPORT extern const char kEnableDataSaverPrompt[];
 CHROMEOS_EXPORT extern const char kEnableExperimentalAccessibilityFeatures[];
 CHROMEOS_EXPORT extern const char kEnableExtensionAssetsSharing[];
-CHROMEOS_EXPORT extern const char kEnableFilesDetailsPanel[];
 CHROMEOS_EXPORT extern const char kEnableFilesQuickView[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUITransitions[];
 CHROMEOS_EXPORT extern const char kEnableKioskMode[];

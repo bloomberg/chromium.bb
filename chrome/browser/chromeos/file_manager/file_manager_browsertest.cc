@@ -54,19 +54,6 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTestWithLegacyEventDispatch, Test) {
   StartTest();
 }
 
-// Test fixture class for details panel.
-// TODO(ryoh): remove after we release details panel feature.
-class FileManagerDetailsPanelBrowserTest : public FileManagerBrowserTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    FileManagerBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch("--enable-files-details-panel");
-  }
-};
-
-IN_PROC_BROWSER_TEST_P(FileManagerDetailsPanelBrowserTest, Test) {
-  StartTest();
-}
-
 // Unlike TEST/TEST_F, which are macros that expand to further macros,
 // INSTANTIATE_TEST_CASE_P is a macro that expands directly to code that
 // stringizes the arguments. As a result, macros passed as parameters (such as
@@ -202,14 +189,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     DISABLED_QuickView,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "openQuickView")));
-
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DetailsPanel,
-    FileManagerDetailsPanelBrowserTest,
-    ::testing::Values(
-        TestParameter(NOT_IN_GUEST_MODE, "openDetailsPanel"),
-        TestParameter(NOT_IN_GUEST_MODE, "openDetailsPanelForSingleFile"),
-        TestParameter(NOT_IN_GUEST_MODE, "openSingleFileAndSeeDetailsPanel")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_DirectoryTreeContextMenu DISABLED_DirectoryTreeContextMenu

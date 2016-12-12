@@ -124,8 +124,6 @@ function MainWindowComponent(
       'pathclick', this.onBreadcrumbClick_.bind(this));
   ui.toggleViewButton.addEventListener(
       'click', this.onToggleViewButtonClick_.bind(this));
-  ui.detailsButton.addEventListener(
-      'click', this.onDetailsButtonClick_.bind(this));
   directoryModel.addEventListener(
       'directory-changed', this.onDirectoryChanged_.bind(this));
   volumeManager.addEventListener(
@@ -134,8 +132,6 @@ function MainWindowComponent(
   this.onDriveConnectionChanged_();
   document.addEventListener('keydown', this.onKeyDown_.bind(this));
   document.addEventListener('keyup', this.onKeyUp_.bind(this));
-  selectionHandler.addEventListener('change',
-      this.onFileSelectionChanged_.bind(this));
 }
 
 /**
@@ -159,17 +155,6 @@ MainWindowComponent.prototype.onFileListFocus_ = function() {
     var selection = this.selectionHandler_.selection;
     if (selection && selection.totalCount == 0)
       this.directoryModel_.selectIndex(0);
-  }
-};
-
-/**
- * Handles file selection event.
- *
- * @private
- */
-MainWindowComponent.prototype.onFileSelectionChanged_ = function(event) {
-  if (this.ui_.detailsContainer) {
-    this.ui_.detailsContainer.onFileSelectionChanged(event);
   }
 };
 
@@ -247,18 +232,6 @@ MainWindowComponent.prototype.onToggleViewButtonClick_ = function(event) {
   this.ui_.setCurrentListType(listType);
   this.appStateController_.saveViewOptions();
 
-  this.ui_.listContainer.focus();
-};
-
-/**
- * Handles click event on the toggle-view button.
- * @param {Event} event Click event.
- * @private
- */
-MainWindowComponent.prototype.onDetailsButtonClick_ = function(event) {
-  var visible = this.ui_.detailsContainer.visible;
-  this.ui_.setDetailsVisibility(!visible);
-  this.appStateController_.saveViewOptions();
   this.ui_.listContainer.focus();
 };
 

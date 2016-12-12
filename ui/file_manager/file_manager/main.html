@@ -344,12 +344,6 @@
         <files-toggle-ripple></files-toggle-ripple>
         <div class="icon"></div>
       </button>
-      <button id="details-button" class="icon-button" tabindex="18"
-              i18n-values="aria-label:DETAIL_BUTTON_TOOLTIP"
-              has-tooltip>
-        <files-toggle-ripple></files-toggle-ripple>
-        <div class="icon"></div>
-      </button>
       <button id="gear-button" class="icon-button" tabindex="19"
               menu="#gear-menu"
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
@@ -441,55 +435,6 @@
             <div class="error"></div>
             <button id="format-button" command="#format"></button>
           </div>
-        </div>
-      </div>
-      <div class="splitter" id="list-details-splitter"></div>
-      <div id="details-container" class="details-container">
-        <div id="single-file-details">
-          <div class="filename-container">
-            <div class="filename-icon detail-icon"></div>
-            <div class="filename"></div>
-          </div>
-          <div class="thumbnail-container">
-            <div class="thumbnail"></div>
-          </div>
-          <ul class="details-list">
-            <li class='modification-time'>
-              <span i18n-content="DATE_COLUMN_LABEL"></span>:
-              <span class='content'></span>
-            </li>
-            <li class='file-size'>
-              <span i18n-content="SIZE_COLUMN_LABEL"></span>:
-              <span class='content'></span>
-            </li>
-            <li class='image-size'>
-              <span i18n-content="IMAGE_RESOLUTION_COLUMN_LABEL"></span>:
-              <span class='content'></span>
-            </li>
-            <li class='media-title'>
-              <span i18n-content="MEDIA_TITLE_COLUMN_LABEL"></span>:
-              <span class='content'></span>
-            </li>
-            <li class='media-artist'>
-              <span i18n-content="MEDIA_ARTIST_COLUMN_LABEL"></span>:
-              <span class='content'></span>
-            </li>
-          </ul>
-        </div>
-        <div id="multi-file-details">
-          <div class="thumbnail-container">
-            <div class="thumbnail" generic-thumbnail="folder"></div>
-          </div>
-          <ul class="details-list">
-            <li class='file-count'>
-              <span i18n-content="TOTAL_FILE_COUNT"></span>:
-              <span class='content'></span>
-            </li>
-            <li class='file-size'>
-              <span i18n-content="TOTAL_FILE_SIZE"></span>:
-              <span class='content'></span>
-            </li>
-          </ul>
         </div>
       </div>
     </div>

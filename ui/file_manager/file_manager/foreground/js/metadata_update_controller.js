@@ -5,7 +5,6 @@
 /**
  * Controller for list contents update.
  * @param {!ListContainer} listContainer
- * @param {!DetailsContainer} detailsContainer
  * @param {!DirectoryModel} directoryModel
  * @param {!MetadataModel} metadataModel
  * @param {!FileMetadataFormatter} fileMetadataFormatter
@@ -13,7 +12,6 @@
  * @struct
  */
 function MetadataUpdateController(listContainer,
-                                  detailsContainer,
                                   directoryModel,
                                   metadataModel,
                                   fileMetadataFormatter) {
@@ -34,12 +32,6 @@ function MetadataUpdateController(listContainer,
    * @const
    */
   this.listContainer_ = listContainer;
-
-  /**
-   * @private {!DetailsContainer}
-   * @const
-   */
-  this.detailsContainer_ = detailsContainer;
 
   /**
    * @private {!FileMetadataFormatter}
@@ -129,7 +121,6 @@ MetadataUpdateController.prototype.onPreferencesChanged_ = function() {
     // TODO(oka): Remove these two lines, and add fileMetadataFormatter to
     // constructor for each field instead.
     this.listContainer_.table.setDateTimeFormat(use12hourClock);
-    this.detailsContainer_.setDateTimeFormat(use12hourClock);
     this.refreshCurrentDirectoryMetadata();
   }.bind(this));
 };
