@@ -91,20 +91,44 @@ class InitializationObserver : public TestObserver {
 using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
 using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
 
-std::vector<URLRequestSummary> GetUniqueSubresources(
-    const PageRequestSummary& summary) {
-  std::vector<URLRequestSummary> subresources(summary.subresource_requests);
-  std::stable_sort(subresources.begin(), subresources.end(),
+void RemoveDuplicateSubresources(std::vector<URLRequestSummary>* subresources) {
+  std::stable_sort(subresources->begin(), subresources->end(),
                    [](const URLRequestSummary& x, const URLRequestSummary& y) {
                      return x.resource_url < y.resource_url;
                    });
-  subresources.erase(
-      std::unique(subresources.begin(), subresources.end(),
+  subresources->erase(
+      std::unique(subresources->begin(), subresources->end(),
                   [](const URLRequestSummary& x, const URLRequestSummary& y) {
                     return x.resource_url == y.resource_url;
                   }),
-      subresources.end());
-  return subresources;
+      subresources->end());
+}
+
+// Fill a NavigationID with "empty" data that does not trigger
+// the is_valid DCHECK(). Allows comparing.
+void SetValidNavigationID(NavigationID* navigation_id) {
+  navigation_id->render_process_id = 0;
+  navigation_id->render_frame_id = 0;
+  navigation_id->main_frame_url = GURL("http://127.0.0.1");
+}
+
+// Does a custom comparison of subresources of URLRequestSummary
+// and fail the test if the expectation is not met.
+void CompareSubresources(std::vector<URLRequestSummary> actual_subresources,
+                         std::vector<URLRequestSummary> expected_subresources,
+                         bool match_navigation_id) {
+  // Duplicate resources can be observed in a single navigation but
+  // ResourcePrefetchPredictor only cares about the first occurrence of each.
+  RemoveDuplicateSubresources(&actual_subresources);
+
+  if (!match_navigation_id) {
+    for (auto& subresource : actual_subresources)
+      SetValidNavigationID(&subresource.navigation_id);
+    for (auto& subresource : expected_subresources)
+      SetValidNavigationID(&subresource.navigation_id);
+  }
+  EXPECT_THAT(actual_subresources,
+              testing::UnorderedElementsAreArray(expected_subresources));
 }
 
 }  // namespace
@@ -119,10 +143,12 @@ class ResourcePrefetchPredictorTestObserver : public TestObserver {
   explicit ResourcePrefetchPredictorTestObserver(
       ResourcePrefetchPredictor* predictor,
       const size_t expected_url_visit_count,
-      const PageRequestSummary& expected_summary)
+      const PageRequestSummary& expected_summary,
+      bool match_navigation_id)
       : TestObserver(predictor),
         url_visit_count_(expected_url_visit_count),
-        summary_(expected_summary) {}
+        summary_(expected_summary),
+        match_navigation_id_(match_navigation_id) {}
 
   // TestObserver:
   void OnNavigationLearned(size_t url_visit_count,
@@ -130,12 +156,8 @@ class ResourcePrefetchPredictorTestObserver : public TestObserver {
     EXPECT_EQ(url_visit_count, url_visit_count_);
     EXPECT_EQ(summary.main_frame_url, summary_.main_frame_url);
     EXPECT_EQ(summary.initial_url, summary_.initial_url);
-    // Duplicate resources can be observed in a single navigation but
-    // ResourcePrefetchPredictor only cares about the first occurrence of each.
-    std::vector<ResourcePrefetchPredictor::URLRequestSummary> subresources =
-        GetUniqueSubresources(summary);
-    EXPECT_THAT(subresources, testing::UnorderedElementsAreArray(
-                                  summary_.subresource_requests));
+    CompareSubresources(summary.subresource_requests,
+                        summary_.subresource_requests, match_navigation_id_);
     run_loop_.Quit();
   }
 
@@ -145,6 +167,7 @@ class ResourcePrefetchPredictorTestObserver : public TestObserver {
   base::RunLoop run_loop_;
   size_t url_visit_count_;
   PageRequestSummary summary_;
+  bool match_navigation_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictorTestObserver);
 };
@@ -173,7 +196,9 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     EnsurePredictorInitialized();
   }
 
-  void NavigateToURLAndCheckSubresources(const GURL& main_frame_url) {
+  void NavigateToURLAndCheckSubresources(
+      const GURL& main_frame_url,
+      WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB) {
     GURL endpoint_url = GetRedirectEndpoint(main_frame_url);
     std::vector<URLRequestSummary> url_request_summaries;
     for (const auto& kv : resources_) {
@@ -185,8 +210,11 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     ResourcePrefetchPredictorTestObserver observer(
         predictor_, UpdateAndGetVisitCount(main_frame_url),
         CreatePageRequestSummary(endpoint_url.spec(), main_frame_url.spec(),
-                                 url_request_summaries));
-    ui_test_utils::NavigateToURL(browser(), main_frame_url);
+                                 url_request_summaries),
+        true);  // Matching navigation id by default
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), main_frame_url, disposition,
+        ui_test_utils::BROWSER_TEST_NONE);
     observer.Wait();
   }
 
