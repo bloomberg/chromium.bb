@@ -21,9 +21,6 @@
 #include "components/prefs/pref_service.h"
 
 namespace arc {
-
-extern ArcBridgeService* g_arc_bridge_service;
-
 namespace {
 constexpr int64_t kReconnectDelayInSeconds = 5;
 }  // namespace
@@ -32,17 +29,11 @@ ArcBridgeServiceImpl::ArcBridgeServiceImpl(
     const scoped_refptr<base::TaskRunner>& blocking_task_runner)
     : session_started_(false),
       factory_(base::Bind(ArcSession::Create, this, blocking_task_runner)),
-      weak_factory_(this) {
-  DCHECK(!g_arc_bridge_service);
-  g_arc_bridge_service = this;
-}
+      weak_factory_(this) {}
 
 ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {
   if (arc_session_)
     arc_session_->RemoveObserver(this);
-
-  DCHECK(g_arc_bridge_service == this);
-  g_arc_bridge_service = nullptr;
 }
 
 void ArcBridgeServiceImpl::RequestStart() {

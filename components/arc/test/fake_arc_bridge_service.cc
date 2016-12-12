@@ -6,16 +6,9 @@
 
 namespace arc {
 
-extern ArcBridgeService* g_arc_bridge_service;
-
-FakeArcBridgeService::FakeArcBridgeService() {
-  DCHECK(!g_arc_bridge_service);
-  g_arc_bridge_service = this;
-}
+FakeArcBridgeService::FakeArcBridgeService() = default;
 
 FakeArcBridgeService::~FakeArcBridgeService() {
-  DCHECK(g_arc_bridge_service == this);
-  g_arc_bridge_service = nullptr;
   SetStopped();
 }
 

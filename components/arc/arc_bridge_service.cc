@@ -21,9 +21,6 @@ const base::Feature kArcEnabledFeature{"EnableARC",
 
 }  // namespace
 
-// Weak pointer.  This class is owned by ArcServiceManager.
-ArcBridgeService* g_arc_bridge_service = nullptr;
-
 ArcBridgeService::ArcBridgeService()
     : state_(State::STOPPED),
       stop_reason_(StopReason::SHUTDOWN),
@@ -32,18 +29,6 @@ ArcBridgeService::ArcBridgeService()
 ArcBridgeService::~ArcBridgeService() {
   DCHECK(CalledOnValidThread());
   DCHECK(state() == State::STOPPING || state() == State::STOPPED);
-}
-
-// static
-ArcBridgeService* ArcBridgeService::Get() {
-  if (!g_arc_bridge_service) {
-    // ArcBridgeService may be indirectly referenced in unit tests where
-    // ArcBridgeService is optional.
-    LOG(ERROR) << "ArcBridgeService is not ready.";
-    return nullptr;
-  }
-  DCHECK(g_arc_bridge_service->CalledOnValidThread());
-  return g_arc_bridge_service;
 }
 
 // static

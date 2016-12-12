@@ -90,10 +90,6 @@ class ArcBridgeService {
 
   virtual ~ArcBridgeService();
 
-  // Gets the global instance of the ARC Bridge Service. This can only be
-  // called on the thread that this class was created on.
-  static ArcBridgeService* Get();
-
   // Return true if ARC has been enabled through a commandline
   // switch.
   static bool GetEnabled(const base::CommandLine* command_line);
