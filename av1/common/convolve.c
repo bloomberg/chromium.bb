@@ -466,6 +466,12 @@ void av1_highbd_convolve(const uint8_t *src8, int src_stride, uint8_t *dst8,
         av1_get_interp_filter_params(interp_filter[1 + 2 * ref_idx]);
     InterpFilterParams filter_params_y =
         av1_get_interp_filter_params(interp_filter[0 + 2 * ref_idx]);
+    if (interp_filter[0 + 2 * ref_idx] == MULTITAP_SHARP &&
+        interp_filter[1 + 2 * ref_idx] == MULTITAP_SHARP) {
+      // Avoid two directions both using 12-tap filter.
+      // This will reduce hardware implementation cost.
+      filter_params_y = av1_get_interp_filter_params(EIGHTTAP_SHARP);
+    }
 #endif
 
 #if CONFIG_DUAL_FILTER
