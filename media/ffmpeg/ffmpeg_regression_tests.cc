@@ -209,6 +209,10 @@ FFMPEG_TEST_CASE(Cr668346,
                  "security/668346.flac",
                  PIPELINE_ERROR_INITIALIZATION_FAILED,
                  PIPELINE_ERROR_INITIALIZATION_FAILED);
+FFMPEG_TEST_CASE(Cr670190,
+                 "security/670190.ogg",
+                 DECODER_ERROR_NOT_SUPPORTED,
+                 DECODER_ERROR_NOT_SUPPORTED);
 
 // General MP4 test cases.
 FFMPEG_TEST_CASE(MP4_0,
