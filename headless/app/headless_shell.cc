@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 
 #include "base/base64.h"
@@ -243,9 +243,8 @@ class HeadlessShell : public HeadlessWebContents::Observer,
       FetchDom();
     } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
                    switches::kRepl)) {
-      std::cout
-          << "Type a Javascript expression to evaluate or \"quit\" to exit."
-          << std::endl;
+      LOG(INFO)
+          << "Type a Javascript expression to evaluate or \"quit\" to exit.";
       InputExpression();
     } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
                    switches::kScreenshot)) {
@@ -268,7 +267,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
     } else {
       std::string dom;
       if (result->GetResult()->GetValue()->GetAsString(&dom)) {
-        std::cout << dom << std::endl;
+        printf("%s\n", dom.c_str());
       }
     }
     Shutdown();
@@ -277,23 +276,29 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   void InputExpression() {
     // Note that a real system should read user input asynchronously, because
     // otherwise all other browser activity is suspended (e.g., page loading).
-    std::string expression;
-    std::cout << ">>> ";
-    std::getline(std::cin, expression);
-    if (std::cin.bad() || std::cin.eof() || expression == "quit") {
+    printf(">>> ");
+    std::stringstream expression;
+    while (true) {
+      char c = fgetc(stdin);
+      if (c == EOF || c == '\n') {
+        break;
+      }
+      expression << c;
+    }
+    if (expression.str() == "quit") {
       Shutdown();
       return;
     }
     devtools_client_->GetRuntime()->Evaluate(
-        expression, base::Bind(&HeadlessShell::OnExpressionResult,
-                               weak_factory_.GetWeakPtr()));
+        expression.str(), base::Bind(&HeadlessShell::OnExpressionResult,
+                                     weak_factory_.GetWeakPtr()));
   }
 
   void OnExpressionResult(std::unique_ptr<runtime::EvaluateResult> result) {
     std::unique_ptr<base::Value> value = result->Serialize();
     std::string result_json;
     base::JSONWriter::Write(*value, &result_json);
-    std::cout << result_json << std::endl;
+    printf("%s\n", result_json.c_str());
     InputExpression();
   }
 
@@ -361,7 +366,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
       LOG(ERROR) << "Writing screenshot to file " << file_name.value()
                  << " was unsuccessful: " << net::ErrorToString(write_result);
     } else {
-      std::cout << "Screenshot written to file " << file_name.value() << "."
+      LOG(INFO) << "Screenshot written to file " << file_name.value() << "."
                 << std::endl;
     }
     int close_result = screenshot_file_stream_->Close(base::Bind(
