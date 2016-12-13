@@ -6,7 +6,7 @@
 
 #include "services/service_manager/runner/common/client_util.h"
 
-bool IsFullScreenMode() {
+bool IsFullScreenMode(int64_t display_id) {
   if (service_manager::ServiceManagerIsRemote()) {
     // TODO: http://crbug.com/640390.
     NOTIMPLEMENTED();
