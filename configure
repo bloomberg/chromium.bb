@@ -483,6 +483,10 @@ post_process_cmdline() {
       log_echo "ext_tile not compatible with reference_buffer, so"
       log_echo "disabling reference_buffer"
       disable_feature reference_buffer
+      log_echo "ext_tile not compatible with daala_ec, so"
+      log_echo "disabling daala_ec and enabling ans if needed."
+      disable_feature daala_ec
+      enabled ec_multisymbol && ! enabled daala_ec && soft_enable ans
     fi
     if enabled global_motion && (enabled ext_inter || enabled dual_filter); then
       log_echo "global_motion currently not compatible with ext_inter"
