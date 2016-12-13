@@ -164,39 +164,41 @@
           hidden="[[!isProfileShortcutsEnabled_]]">
         $i18n{createDesktopShortcutLabel}
       </paper-checkbox>
-      <paper-checkbox id="makeSupervisedCheckbox" checked="{{isSupervised_}}">
-        $i18n{manageProfilesSupervisedSignedInLabel}
-      </paper-checkbox>
-      <div id="supervised-user-container">
-        <div id="learn-more" >
-          <a is="action-link" on-tap="onLearnMoreTap_">$i18n{learnMore}</a>
-        </div>
-        <template is="dom-if" if="[[isSupervised_]]">
-          <template is="dom-if" if="[[isSignedIn_(signedInUsers_)]]">
-            <paper-dropdown-menu label="$i18n{selectAnAccount}" no-label-float>
-              <paper-listbox class="dropdown-content"
-                  selected="{{signedInUserIndex_}}"
-                  attr-for-selected="data-user-index">
-                <template is="dom-repeat" items="[[signedInUsers_]]">
-                  <paper-item data-user-index$="[[index]]">
-                    [[item.username]]
-                  </paper-item>
-                </template>
-              </paper-listbox>
-            </paper-dropdown-menu>
-            <a id="import-user" is="action-link" on-tap="onImportUserTap_"
-                hidden="[[isImportUserLinkHidden_(createInProgress_,
-                                                  loadingSupervisedUsers_,
-                                                  signedInUserIndex_)]]">
-              $i18n{importExistingSupervisedUserLink}
-            </a>
-          </template>
-          <div id="sign-in-howto-message"
-              hidden="[[isSignedIn_(signedInUsers_)]]"
-              inner-h-t-m-l="[[i18nAllowIDAttr_('noSignedInUserMessage')]]">
+      <template is="dom-if" if="[[!isForceSigninEnabled_]]">
+        <paper-checkbox id="makeSupervisedCheckbox" checked="{{isSupervised_}}">
+          $i18n{manageProfilesSupervisedSignedInLabel}
+        </paper-checkbox>
+        <div id="supervised-user-container">
+          <div id="learn-more" >
+            <a is="action-link" on-tap="onLearnMoreTap_">$i18n{learnMore}</a>
           </div>
-        </template>
-      </div>
+          <template is="dom-if" if="[[isSupervised_]]">
+            <template is="dom-if" if="[[isSignedIn_(signedInUsers_)]]">
+              <paper-dropdown-menu label="$i18n{selectAnAccount}" no-label-float>
+                <paper-listbox class="dropdown-content"
+                    selected="{{signedInUserIndex_}}"
+                    attr-for-selected="data-user-index">
+                  <template is="dom-repeat" items="[[signedInUsers_]]">
+                    <paper-item data-user-index$="[[index]]">
+                      [[item.username]]
+                    </paper-item>
+                  </template>
+                </paper-listbox>
+              </paper-dropdown-menu>
+              <a id="import-user" is="action-link" on-tap="onImportUserTap_"
+                  hidden="[[isImportUserLinkHidden_(createInProgress_,
+                                                    loadingSupervisedUsers_,
+                                                    signedInUserIndex_)]]">
+                $i18n{importExistingSupervisedUserLink}
+              </a>
+            </template>
+            <div id="sign-in-howto-message"
+                hidden="[[isSignedIn_(signedInUsers_)]]"
+                inner-h-t-m-l="[[i18nAllowIDAttr_('noSignedInUserMessage')]]">
+            </div>
+          </template>
+        </div>
+      </template>
       <div id="actions">
         <paper-spinner active="[[isSpinnerActive_(createInProgress_,
                                                   loadingSupervisedUsers_)]]">

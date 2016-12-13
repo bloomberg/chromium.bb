@@ -66,7 +66,8 @@ cr.define('user_manager.create_profile_tests', function() {
           assertFalse(!!createProfileElement.$$('paper-dropdown-menu'));
 
           // Simulate checking the supervised user checkbox.
-          MockInteractions.tap(createProfileElement.$.makeSupervisedCheckbox);
+          MockInteractions.tap(
+            createProfileElement.$$("#makeSupervisedCheckbox"));
           Polymer.dom.flush();
 
           // The dropdown menu is visible and is populated with signed in users.
@@ -115,7 +116,8 @@ cr.define('user_manager.create_profile_tests', function() {
 
       test('Has to select a custodian for the supervised profile', function() {
         // Simulate checking the supervised user checkbox.
-        MockInteractions.tap(createProfileElement.$.makeSupervisedCheckbox);
+        MockInteractions.tap(
+          createProfileElement.$$("#makeSupervisedCheckbox"));
         Polymer.dom.flush();
 
         // Simulate clicking 'Create'.
@@ -135,7 +137,8 @@ cr.define('user_manager.create_profile_tests', function() {
 
       test('Supervised profile name is duplicate (on the device)', function() {
         // Simulate checking the supervised user checkbox.
-        MockInteractions.tap(createProfileElement.$.makeSupervisedCheckbox);
+        MockInteractions.tap(
+          createProfileElement.$$("#makeSupervisedCheckbox"));
         Polymer.dom.flush();
 
         // There is an existing supervised user with this name on the device.
@@ -166,7 +169,8 @@ cr.define('user_manager.create_profile_tests', function() {
 
       test('Supervised profile name is duplicate (remote)', function() {
         // Simulate checking the supervised user checkbox.
-        MockInteractions.tap(createProfileElement.$.makeSupervisedCheckbox);
+        MockInteractions.tap(
+          createProfileElement.$$("#makeSupervisedCheckbox"));
         Polymer.dom.flush();
 
         // There is an existing supervised user with this name on the device.
@@ -199,7 +203,8 @@ cr.define('user_manager.create_profile_tests', function() {
         browserProxy.setExistingSupervisedUsers([]);
 
         // Simulate checking the supervised user checkbox.
-        MockInteractions.tap(createProfileElement.$.makeSupervisedCheckbox);
+        MockInteractions.tap(
+          createProfileElement.$$("#makeSupervisedCheckbox"));
         Polymer.dom.flush();
 
         // Select the first signed in user.
@@ -227,7 +232,8 @@ cr.define('user_manager.create_profile_tests', function() {
 
       test('Create supervised profile', function() {
         // Simulate checking the supervised user checkbox.
-        MockInteractions.tap(createProfileElement.$.makeSupervisedCheckbox);
+        MockInteractions.tap(
+          createProfileElement.$$("#makeSupervisedCheckbox"));
         Polymer.dom.flush();
 
         // Select the first signed in user.
@@ -418,7 +424,8 @@ cr.define('user_manager.create_profile_tests', function() {
           assertEquals(0, createProfileElement.signedInUsers_.length);
 
           // Simulate checking the supervised user checkbox.
-          MockInteractions.tap(createProfileElement.$.makeSupervisedCheckbox);
+          MockInteractions.tap(
+            createProfileElement.$$("#makeSupervisedCheckbox"));
           Polymer.dom.flush();
 
           // The dropdown menu is not visible when there are no signed in users.
@@ -505,6 +512,45 @@ cr.define('user_manager.create_profile_tests', function() {
           assertEquals('', args.supervisedUserId);
           assertEquals('', args.custodianProfilePath);
         });
+      });
+    });
+
+    suite('CreateProfileTestsForceSigninPolicy', function() {
+      setup(function() {
+        browserProxy = new TestProfileBrowserProxy();
+        // Replace real proxy with mock proxy.
+        signin.ProfileBrowserProxyImpl.instance_ = browserProxy;
+        browserProxy.setIcons([{url: 'icon1.png', label: 'icon1'}]);
+      });
+
+      teardown(function(done) {
+        createProfileElement.remove();
+        // Allow asynchronous tasks to finish.
+        setTimeout(done);
+      });
+
+      test('force sign in policy enabled', function () {
+        loadTimeData.overrideValues({
+          isForceSigninEnabled: true,
+        });
+        createProfileElement = createElement();
+        Polymer.dom.flush();
+
+        var createSupervisedUserCheckbox =
+          createProfileElement.$$("#makeSupervisedCheckbox");
+        assertFalse(!!createSupervisedUserCheckbox);
+      });
+
+      test('force sign in policy not enabled', function () {
+        loadTimeData.overrideValues({
+          isForceSigninEnabled: false,
+        });
+        createProfileElement = createElement();
+        Polymer.dom.flush();
+
+        var createSupervisedUserCheckbox =
+          createProfileElement.$$("#makeSupervisedCheckbox");
+        assertTrue(createSupervisedUserCheckbox.clientHeight > 0);
       });
     });
   }

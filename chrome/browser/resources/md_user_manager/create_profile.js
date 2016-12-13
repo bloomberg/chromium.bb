@@ -138,6 +138,17 @@ Polymer({
         return loadTimeData.getBoolean('profileShortcutsEnabled');
       },
       readOnly: true
+    },
+
+    /**
+     * True if the force sign in policy is enabled.
+     * @private {boolean}
+     */
+    isForceSigninEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isForceSigninEnabled');
+      },
     }
   },
 
