@@ -153,6 +153,7 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void onVolumeChange();
   void onFocusIn();
   void onTimeUpdate();
+  void onDurationChange();
   void onPlay();
   void onPause();
   void onTextTracksAddedOrRemoved();

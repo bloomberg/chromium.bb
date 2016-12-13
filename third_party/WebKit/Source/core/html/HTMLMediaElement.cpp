@@ -3061,8 +3061,6 @@ void HTMLMediaElement::durationChanged(double duration, bool requestSeek) {
   m_duration = duration;
   scheduleEvent(EventTypeNames::durationchange);
 
-  if (mediaControls())
-    mediaControls()->reset();
   if (layoutObject())
     layoutObject()->updateFromElement();
 

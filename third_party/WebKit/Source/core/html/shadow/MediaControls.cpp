@@ -705,6 +705,11 @@ void MediaControls::onTimeUpdate() {
     makeTransparent();
 }
 
+void MediaControls::onDurationChange() {
+  m_timeline->setDuration(mediaElement().duration());
+  updateCurrentTimeDisplay();
+}
+
 void MediaControls::onPlay() {
   updatePlayState();
   m_timeline->setPosition(mediaElement().currentTime());
