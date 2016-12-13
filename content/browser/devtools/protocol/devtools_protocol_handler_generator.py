@@ -643,8 +643,7 @@ fields = []
 includes = []
 fields_init = []
 
-browser_domains_list = ["Security",
-    "Target", "ServiceWorker", "Input", "Storage"]
+browser_domains_list = ["Target", "ServiceWorker", "Input", "Storage"]
 browser_commands_list = []
 async_commands_list = [
     "Input.synthesizePinchGesture",

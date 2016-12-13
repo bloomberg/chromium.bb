@@ -74,6 +74,8 @@ inspector_protocol_generate("protocol_sources") {
     "protocol/protocol.h",
     "protocol/schema.cc",
     "protocol/schema.h",
+    "protocol/security.cc",
+    "protocol/security.h",
     "protocol/system_info.cc",
     "protocol/system_info.h",
     "protocol/tethering.cc",
