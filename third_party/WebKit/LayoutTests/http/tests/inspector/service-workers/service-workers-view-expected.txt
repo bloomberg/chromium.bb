@@ -52,20 +52,6 @@ Errors
 details
 clear
 Unegister ServiceWorker for scope1
-http://127.0.0.1:8000/inspector/service-workers/resources/scope1/ - deleted
-Update
-Push
-Sync
-Unregister
-Source
-service-worker-empty.js
-Received
-Status
-Clients
-Errors
-0
-details
-clear
 http://127.0.0.1:8000/inspector/service-workers/resources/scope2/
 Update
 Push
@@ -77,6 +63,18 @@ Received
 Status
 #N activated and is running
 stop
+Clients
+Errors
+0
+details
+clear
+http://127.0.0.1:8000/inspector/service-workers/resources/scope1/ - deleted
+Update
+Push
+Sync
+Unregister
+Source
+Status
 Clients
 Errors
 0
