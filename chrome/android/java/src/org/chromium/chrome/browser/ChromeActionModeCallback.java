@@ -81,8 +81,8 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
         if (TextUtils.isEmpty(query)) return;
 
         String url = TemplateUrlService.getInstance().getUrlForSearchQuery(query);
-        String headers = GeolocationHeader.getGeoHeader(mContext.getApplicationContext(),
-                url, mTab.isIncognito());
+        String headers =
+                GeolocationHeader.getGeoHeader(mContext.getApplicationContext(), url, mTab);
 
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setVerbatimHeaders(headers);

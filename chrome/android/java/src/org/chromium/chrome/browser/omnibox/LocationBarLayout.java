@@ -2194,7 +2194,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         if (currentTab != null && !url.isEmpty()) {
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setVerbatimHeaders(
-                    GeolocationHeader.getGeoHeader(getContext(), url, currentTab.isIncognito()));
+                    GeolocationHeader.getGeoHeader(getContext(), url, currentTab));
             loadUrlParams.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
             currentTab.loadUrl(loadUrlParams);
 
