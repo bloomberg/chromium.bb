@@ -119,6 +119,7 @@ public class OfflinePageSavePageLaterEvaluationTest
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                assert mBridge != null;
                 mBridge.getRequestsInQueue(new Callback<SavePageRequest[]>() {
                     @Override
                     public void onResult(SavePageRequest[] results) {
@@ -481,6 +482,9 @@ public class OfflinePageSavePageLaterEvaluationTest
             Log.e(TAG, e.getMessage(), e);
             fail(String.format(
                     "Config file %s is not found, aborting the test.", CONFIG_FILE_PATH));
+        } catch (NumberFormatException e) {
+            Log.e(TAG, e.getMessage(), e);
+            fail("Error parsing config file, aborting test.");
         } finally {
             if (inputStream != null) {
                 inputStream.close();

@@ -89,6 +89,7 @@ def main(args):
       output_dir=os.path.expanduser('~/offline_eval_output'),
       user_request=DEFAULT_USER_REQUEST,
       user_test_scheduler=DEFAULT_USE_TEST_SCHEDULER,
+      schedule_batch_size=DEFAULT_BATCH_SIZE,
       verbose=DEFAULT_VERBOSE)
 
   def get_adb_command(args):
