@@ -5,19 +5,17 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
-#include "base/i18n/rtl.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/test/scoped_force_rtl_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -584,29 +582,9 @@ TEST_F(TabControllerTest, LayoutAndVisibilityOfSubviews) {
 }
 
 TEST_F(TabControllerTest, LayoutAndVisibilityOfSubviewsRTL) {
-  std::string old_locale(base::i18n::GetConfiguredLocale());
-  base::i18n::SetICUDefaultLocale("he");
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      cocoa_l10n_util::kExperimentalMacRTL);
-  // TODO(lgrey): Create ScopedNSUserDefaults or similar to do
-  // this automatically.
-  NSString* const appleTextDirectionDefaultsKey = @"AppleTextDirection";
-  NSString* const forceRTLWritingDirectionDefaultsKey =
-      @"NSForceRightToLeftWritingDirection";
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  BOOL oldTextDirection = [defaults boolForKey:appleTextDirectionDefaultsKey];
-  BOOL oldRTLWritingDirection =
-      [defaults boolForKey:forceRTLWritingDirectionDefaultsKey];
-  [defaults setBool:YES forKey:appleTextDirectionDefaultsKey];
-  [defaults setBool:YES forKey:forceRTLWritingDirectionDefaultsKey];
+  cocoa_l10n_util::ScopedForceRTLMac scoped_rtl;
 
   CheckLayoutAndVisibilityOfSubviewsForAllStates(true);
-
-  base::i18n::SetICUDefaultLocale(old_locale);
-  [defaults setBool:oldTextDirection forKey:appleTextDirectionDefaultsKey];
-  [defaults setBool:oldRTLWritingDirection
-             forKey:forceRTLWritingDirectionDefaultsKey];
 }
 
 }  // namespace
