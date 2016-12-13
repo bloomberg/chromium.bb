@@ -47,3 +47,15 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(kainino): remove this once golden images are generated
     self.Fail('Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
               bug=666259)
+
+    self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'], bug=672999)
+    self.Fail('Pixel_Canvas2DRedBox', ['mac'], bug=672999)
+    self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D', ['mac'], bug=672999)
+    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', ['mac'],
+              bug=672999)
+    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
+              ['mac'], bug=672999)
+    self.Fail('Pixel_IOSurface2DCanvas', ['mac'], bug=672999)
+    self.Fail('Pixel_OffscreenCanvasTransferToImageBitmapWorker', ['mac'],
+              bug=672999)
+    self.Fail('Pixel_WebGLGreenTriangle_NoAA_NoAlpha', ['mac'], bug=672999)
