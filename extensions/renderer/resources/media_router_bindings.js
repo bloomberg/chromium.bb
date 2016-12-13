@@ -716,14 +716,14 @@ define('media_router_bindings', [
   /**
    * Sends a binary message to the route designated by |routeId|.
    * @param {!string} routeId
-   * @param {!Uint8Array} data
+   * @param {!Array<number>} data
    * @return {!Promise.<boolean>} Resolved with true if the data was sent,
    *    or false on failure.
    */
   MediaRouteProvider.prototype.sendRouteBinaryMessage = function(
     routeId, data) {
     this.handlers_.onBeforeInvokeHandler();
-    return this.handlers_.sendRouteBinaryMessage(routeId, data)
+    return this.handlers_.sendRouteBinaryMessage(routeId, new Uint8Array(data))
         .then(function() {
           return {'sent': true};
         }, function() {
