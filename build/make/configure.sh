@@ -672,6 +672,8 @@ check_xcode_minimum_version() {
 }
 
 process_common_toolchain() {
+  add_cflags_only -std=c99
+
   if [ -z "$toolchain" ]; then
     gcctarget="${CHOST:-$(gcc -dumpmachine 2> /dev/null)}"
 
