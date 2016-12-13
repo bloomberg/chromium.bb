@@ -36,9 +36,8 @@ import java.util.Locale;
  *   ratio score:
  *   - The dominant size score lies in [0, 1] and is computed using |mMinimumSize| and |mIdealSize|:
  *     - If size < |mMinimumSize| (too small), the size score is 0.
- *     - If size > 4 * |mIdealSize| (too large), the size score lies is 0.
  *     - If |mMinimumSize| <= size <= |mIdealSize|, the score increases linearly from 0.2 to 1.
- *     - If |mIdealSize| < size <= 4 * |mIdealSize|, the score drops linearly from 1 to 0.6.
+ *     - If size > |mIdealSize|, the score is |mIdealSize| / size, which drops from 1 to 0.
  *     - When the size is "any", the size score is 0.8.
  *     - If unspecified, use the default size score (0.4).
  *   - The aspect ratio score lies in [0, 1] and is computed by dividing the short edge length by
@@ -54,6 +53,8 @@ public class MediaImageManager implements ImageDownloadCallback {
     private static final double TYPE_SCORE_BMP = 0.5;
     private static final double TYPE_SCORE_XICON = 0.4;
     private static final double TYPE_SCORE_GIF = 0.3;
+
+    private static final int MAX_BITMAP_SIZE_FOR_DOWNLOAD = 2048;
 
     private static final Object LOCK = new Object();
 
@@ -130,8 +131,16 @@ public class MediaImageManager implements ImageDownloadCallback {
             return;
         }
 
+        // Limit |maxBitmapSize| to |MAX_BITMAP_SIZE_FOR_DOWNLOAD| to avoid passing huge bitmaps
+        // through JNI. |maxBitmapSize| does not prevent huge images to be downloaded. It is used to
+        // filter/rescale the download images. See documentation of
+        // {@link WebContents#downloadImage()} for details.
         mRequestId = mWebContents.downloadImage(
-            image.getSrc(), false, 8 * mIdealSize, false, this);
+                image.getSrc(),                // url
+                false,                         // isFavicon
+                MAX_BITMAP_SIZE_FOR_DOWNLOAD,  // maxBitmapSize
+                false,                         // bypassCache
+                this);                         // callback
     }
 
     /**
@@ -212,13 +221,11 @@ public class MediaImageManager implements ImageDownloadCallback {
         if (dominantSize == 0) return 0.8;
         // Ignore images that are too small.
         if (dominantSize < mMinimumSize) return 0;
-        // Ignore images that are too large.
-        if (dominantSize > 4 * mIdealSize) return 0;
 
         if (dominantSize <= mIdealSize) {
             return 0.8 * (dominantSize - mMinimumSize) / (mIdealSize - mMinimumSize) + 0.2;
         }
-        return 0.4 * (dominantSize - mIdealSize) / (3 * mIdealSize) + 0.6;
+        return 1.0 * mIdealSize / dominantSize;
     }
 
     private double getImageAspectRatioScore(int width, int height) {
