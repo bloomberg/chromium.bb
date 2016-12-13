@@ -104,6 +104,7 @@ void ReadingListWebStateObserver::WebStateDestroyed() {
 void ReadingListWebStateObserver::StartCheckingProgress(
     const GURL& pending_url) {
   pending_url_ = pending_url;
+  try_number_ = 0;
   timer_.reset(new base::Timer(false, true));
   const base::TimeDelta kDelayUntilLoadingProgressIsChecked =
       base::TimeDelta::FromSeconds(1);
@@ -128,10 +129,15 @@ void ReadingListWebStateObserver::VerifyIfReadingListEntryStartedLoading() {
   if (!entry || entry->DistilledState() != ReadingListEntry::PROCESSED) {
     return;
   }
+  try_number_++;
   double progress = web_state()->GetLoadingProgress();
-  const double kMinimumExpectedProgress = 0.15;
-  if (progress < kMinimumExpectedProgress) {
+  const double kMinimumExpectedProgressPerStep = 0.25;
+  if (progress < try_number_ * kMinimumExpectedProgressPerStep) {
     reading_list::LoadReadingListDistilled(*entry, reading_list_model_,
                                            web_state());
+  }
+  if (try_number_ >= 3) {
+    // Loading reached 75%, let the page finish normal loading.
+    timer_->Stop();
   }
 }

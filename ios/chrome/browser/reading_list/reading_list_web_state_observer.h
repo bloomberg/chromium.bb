@@ -54,6 +54,7 @@ class ReadingListWebStateObserver : public web::WebStateObserver {
   ReadingListModel* reading_list_model_;
   std::unique_ptr<base::Timer> timer_;
   GURL pending_url_;
+  int try_number_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListWebStateObserver);
 };
