@@ -100,16 +100,16 @@ class CORE_EXPORT ComputedStyleBase {
   // use resetFoo(), which can be more efficient.
   {% for field in fields %}
   // {{field.property_name}}
-  inline static {{field.type}} {{field.initial_method_name}}() { return {{field.default_value}}; }
-  {{field.type}} {{field.getter_method_name}}() const { return static_cast<{{field.type}}>({{field.name}}); }
-  void {{field.setter_method_name}}({{field.type}} v) { {{field.name}} = static_cast<unsigned>(v); }
+  inline static {{field.storage_type}} {{field.initial_method_name}}() { return {{field.default_value}}; }
+  {{field.storage_type}} {{field.getter_method_name}}() const { return static_cast<{{field.storage_type}}>({{field.name}}); }
+  void {{field.setter_method_name}}({{field.storage_type}} v) { {{field.name}} = static_cast<unsigned>(v); }
   inline void {{field.resetter_method_name}}() { {{field.name}} = {{default_value(field)}}; }
 
   {% endfor %}
  protected:
   // Storage.
   {% for field in fields %}
-  unsigned {{field.name}} : {{field.size}}; // {{field.type}}
+  unsigned {{field.name}} : {{field.size}}; // {{field.storage_type}}
   {% endfor %}
 };
 

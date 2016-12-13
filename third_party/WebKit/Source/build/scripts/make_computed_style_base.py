@@ -35,8 +35,8 @@ class Field(object):
         self.name = kwargs.pop('name')
         # Name of property field is for
         self.property_name = kwargs.pop('property_name')
-        # Field storage type
-        self.type = kwargs.pop('type')
+        # Internal field storage type
+        self.storage_type = kwargs.pop('storage_type')
         # Bits needed for storage
         self.size = kwargs.pop('size')
         # Default value for field
@@ -112,7 +112,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                         'inherited_flag',
                         name='m_' + field_name_suffix_lower,
                         property_name=property['name'],
-                        type='bool',
+                        storage_type='bool',
                         size=1,
                         default_value='true',
                         getter_method_name=field_name_suffix_lower,
@@ -128,7 +128,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                     property_name=property['name'],
                     inherited=property['inherited'],
                     independent=property['independent'],
-                    type=type_name,
+                    storage_type=type_name,
                     size=int(math.ceil(bits_needed)),
                     default_value=default_value,
                     getter_method_name=property_name_lower,
