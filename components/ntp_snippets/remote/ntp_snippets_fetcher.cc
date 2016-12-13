@@ -691,13 +691,10 @@ std::string NTPSnippetsFetcher::RequestBuilder::BuildHeaders() const {
     headers.SetHeader("Authorization", auth_header_);
   }
   // Add X-Client-Data header with experiment IDs from field trials.
-  // Note: It's fine to pass in |is_signed_in| false, which does not affect
-  // transmission of experiment ids coming from the variations server.
-  bool is_signed_in = false;
   variations::AppendVariationHeaders(url_,
                                      false,  // incognito
                                      false,  // uma_enabled
-                                     is_signed_in, &headers);
+                                     &headers);
   return headers.ToString();
 }
 

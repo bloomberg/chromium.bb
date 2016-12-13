@@ -632,13 +632,10 @@ class SRTFetcher : public net::URLFetcherDelegate {
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(
         profile_->GetResourceContext());
     net::HttpRequestHeaders headers;
-    // Note: It's fine to pass in |is_signed_in| false, which does not affect
-    // transmission of experiment ids coming from the variations server.
-    bool is_signed_in = false;
     variations::AppendVariationHeaders(
         url_fetcher_->GetOriginalURL(), io_data->IsOffTheRecord(),
         ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
-        is_signed_in, &headers);
+        &headers);
     url_fetcher_->SetExtraRequestHeaders(headers.ToString());
     url_fetcher_->Start();
   }

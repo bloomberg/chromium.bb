@@ -44,7 +44,6 @@ const char kClientData[] = "X-Client-Data";
 void AppendVariationHeaders(const GURL& url,
                             bool incognito,
                             bool uma_enabled,
-                            bool is_signed_in,
                             net::HttpRequestHeaders* headers) {
   // Note the criteria for attaching client experiment headers:
   // 1. We only transmit to Google owned domains which can evaluate experiments.
@@ -63,8 +62,7 @@ void AppendVariationHeaders(const GURL& url,
     headers->SetHeaderIfMissing(kChromeUMAEnabled, "1");
 
   const std::string variation_ids_header =
-      VariationsHttpHeaderProvider::GetInstance()->GetClientDataHeader(
-          is_signed_in);
+      VariationsHttpHeaderProvider::GetInstance()->GetClientDataHeader();
   if (!variation_ids_header.empty()) {
     // Note that prior to M33 this header was named X-Chrome-Variations.
     headers->SetHeaderIfMissing(kClientData, variation_ids_header);

@@ -333,12 +333,9 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
     fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
     // Add Chrome experiment state to the request headers.
     net::HttpRequestHeaders headers;
-    // Note: It's fine to pass in |is_signed_in| false, which does not affect
-    // transmission of experiment ids coming from the variations server.
-    bool is_signed_in = false;
     variations::AppendVariationHeaders(fetcher_->GetOriginalURL(),
                                        client()->IsOffTheRecord(), false,
-                                       is_signed_in, &headers);
+                                       &headers);
     fetcher_->SetExtraRequestHeaders(headers.ToString());
     fetcher_->Start();
     LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_SENT);

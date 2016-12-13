@@ -890,12 +890,8 @@ std::unique_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  // Note: It's fine to pass in |is_signed_in| false, which does not affect
-  // transmission of experiment ids coming from the variations server.
-  bool is_signed_in = false;
-  variations::AppendVariationHeaders(fetcher->GetOriginalURL(),
-                                     client()->IsOffTheRecord(), false,
-                                     is_signed_in, &headers);
+  variations::AppendVariationHeaders(
+      fetcher->GetOriginalURL(), client()->IsOffTheRecord(), false, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
   fetcher->Start();
   return fetcher;

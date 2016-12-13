@@ -39,21 +39,13 @@ class GroupMapAccessor {
                    const VariationID id,
                    const bool force) {
 #if !defined(NDEBUG)
-    DCHECK_EQ(4, ID_COLLECTION_COUNT);
-    // Ensure that at most one of the trigger/non-trigger/signed-in web property
-    // IDs are set.
-    if (key == GOOGLE_WEB_PROPERTIES || key == GOOGLE_WEB_PROPERTIES_TRIGGER ||
-        key == GOOGLE_WEB_PROPERTIES_SIGNED_IN) {
-      if (key != GOOGLE_WEB_PROPERTIES)
-        DCHECK_EQ(EMPTY_ID, GetID(GOOGLE_WEB_PROPERTIES, group_identifier));
-      if (key != GOOGLE_WEB_PROPERTIES_TRIGGER) {
-        DCHECK_EQ(EMPTY_ID,
-                  GetID(GOOGLE_WEB_PROPERTIES_TRIGGER, group_identifier));
-      }
-      if (key != GOOGLE_WEB_PROPERTIES_SIGNED_IN) {
-        DCHECK_EQ(EMPTY_ID,
-                  GetID(GOOGLE_WEB_PROPERTIES_SIGNED_IN, group_identifier));
-      }
+    DCHECK_EQ(3, ID_COLLECTION_COUNT);
+    // Ensure that at most one of the trigger/non-trigger web property IDs are
+    // set.
+    if (key == GOOGLE_WEB_PROPERTIES || key == GOOGLE_WEB_PROPERTIES_TRIGGER) {
+      IDCollectionKey other_key = key == GOOGLE_WEB_PROPERTIES ?
+          GOOGLE_WEB_PROPERTIES_TRIGGER : GOOGLE_WEB_PROPERTIES;
+      DCHECK_EQ(EMPTY_ID, GetID(other_key, group_identifier));
     }
 
     // Validate that all collections with this |group_identifier| have the same
