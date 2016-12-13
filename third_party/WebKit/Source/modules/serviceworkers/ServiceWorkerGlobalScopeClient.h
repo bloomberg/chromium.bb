@@ -45,7 +45,6 @@
 
 namespace blink {
 
-struct WebCrossOriginServiceWorkerClient;
 struct WebServiceWorkerClientQueryOptions;
 class ExecutionContext;
 class WebServiceWorkerResponse;
@@ -111,10 +110,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
                                             double eventDispatchTime) = 0;
   virtual void postMessageToClient(
       const WebString& clientUUID,
-      const WebString& message,
-      std::unique_ptr<WebMessagePortChannelArray>) = 0;
-  virtual void postMessageToCrossOriginClient(
-      const WebCrossOriginServiceWorkerClient&,
       const WebString& message,
       std::unique_ptr<WebMessagePortChannelArray>) = 0;
   virtual void skipWaiting(

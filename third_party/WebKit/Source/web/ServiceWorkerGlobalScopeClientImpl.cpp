@@ -163,14 +163,6 @@ void ServiceWorkerGlobalScopeClientImpl::postMessageToClient(
   m_client.postMessageToClient(clientUUID, message, webChannels.release());
 }
 
-void ServiceWorkerGlobalScopeClientImpl::postMessageToCrossOriginClient(
-    const WebCrossOriginServiceWorkerClient& client,
-    const WebString& message,
-    std::unique_ptr<WebMessagePortChannelArray> webChannels) {
-  m_client.postMessageToCrossOriginClient(client, message,
-                                          webChannels.release());
-}
-
 void ServiceWorkerGlobalScopeClientImpl::skipWaiting(
     std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks> callbacks) {
   m_client.skipWaiting(std::move(callbacks));

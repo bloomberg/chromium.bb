@@ -97,10 +97,6 @@ class ServiceWorkerGlobalScopeClientImpl final
       const WebString& clientUUID,
       const WebString& message,
       std::unique_ptr<WebMessagePortChannelArray>) override;
-  void postMessageToCrossOriginClient(
-      const WebCrossOriginServiceWorkerClient&,
-      const WebString& message,
-      std::unique_ptr<WebMessagePortChannelArray>) override;
   void skipWaiting(
       std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>) override;
   void claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>) override;

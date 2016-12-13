@@ -184,10 +184,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const blink::WebString& uuid,
       const blink::WebString& message,
       blink::WebMessagePortChannelArray* channels) override;
-  void postMessageToCrossOriginClient(
-      const blink::WebCrossOriginServiceWorkerClient&,
-      const blink::WebString&,
-      blink::WebMessagePortChannelArray*) override;
   void focus(const blink::WebString& uuid,
              std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
   void navigate(

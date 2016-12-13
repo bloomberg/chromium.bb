@@ -55,11 +55,6 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
                            WebMessagePortChannelArray*) override {
     NOTREACHED();
   }
-  void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&,
-                                      const WebString&,
-                                      WebMessagePortChannelArray*) override {
-    NOTREACHED();
-  }
   void skipWaiting(
       std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>) override {
     NOTREACHED();
