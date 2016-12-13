@@ -142,6 +142,6 @@ interface PresentationServiceClient {
   // See PresentationService::SetDefaultPresentationURL.
   OnDefaultSessionStarted(PresentationSessionInfo sessionInfo);
 
-  // See PresentationService::ListeningForReceiverPageRendered.
+  // See PresentationService::OnReceiverConnectionAvailable.
   OnReceiverConnectionAvailable(PresentationSessionInfo sessionInfo);
 };
