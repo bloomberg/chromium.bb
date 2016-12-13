@@ -194,98 +194,106 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.assertEqual(canned.CheckOwners, orig)
 
   def testListRelevantPresubmitFiles(self):
-    join = presubmit.os.path.join
     files = [
       'blat.cc',
-      join('foo', 'haspresubmit', 'yodle', 'smart.h'),
-      join('moo', 'mat', 'gat', 'yo.h'),
-      join('foo', 'luck.h'),
+      presubmit.os.path.join('foo', 'haspresubmit', 'yodle', 'smart.h'),
+      presubmit.os.path.join('moo', 'mat', 'gat', 'yo.h'),
+      presubmit.os.path.join('foo', 'luck.h'),
     ]
     inherit_path = presubmit.os.path.join(self.fake_root_dir,
                                           self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
     presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(join(self.fake_root_dir,
+    presubmit.os.path.isfile(presubmit.os.path.join(self.fake_root_dir,
                                   'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.listdir(join(self.fake_root_dir, 'foo')).AndReturn([])
-    presubmit.os.listdir(join(self.fake_root_dir, 'foo',
+    presubmit.os.listdir(presubmit.os.path.join(
+        self.fake_root_dir, 'foo')).AndReturn([])
+    presubmit.os.listdir(presubmit.os.path.join(self.fake_root_dir, 'foo',
                               'haspresubmit')).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(
-        join(self.fake_root_dir, 'foo', 'haspresubmit',
+        presubmit.os.path.join(self.fake_root_dir, 'foo', 'haspresubmit',
              'PRESUBMIT.py')).AndReturn(True)
     presubmit.os.listdir(
-        join(self.fake_root_dir, 'foo', 'haspresubmit', 'yodle')).AndReturn(
+        presubmit.os.path.join(
+            self.fake_root_dir, 'foo', 'haspresubmit', 'yodle')).AndReturn(
             ['PRESUBMIT.py'])
     presubmit.os.path.isfile(
-        join(self.fake_root_dir, 'foo', 'haspresubmit', 'yodle',
-             'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.listdir(join(self.fake_root_dir, 'moo')).AndReturn([])
-    presubmit.os.listdir(join(self.fake_root_dir, 'moo', 'mat')).AndReturn([])
-    presubmit.os.listdir(join(self.fake_root_dir, 'moo', 'mat',
-                              'gat')).AndReturn([])
+        presubmit.os.path.join(
+            self.fake_root_dir, 'foo', 'haspresubmit', 'yodle',
+            'PRESUBMIT.py')).AndReturn(True)
+    presubmit.os.listdir(presubmit.os.path.join(
+        self.fake_root_dir, 'moo')).AndReturn([])
+    presubmit.os.listdir(presubmit.os.path.join(
+        self.fake_root_dir, 'moo', 'mat')).AndReturn([])
+    presubmit.os.listdir(presubmit.os.path.join(
+        self.fake_root_dir, 'moo', 'mat', 'gat')).AndReturn([])
     self.mox.ReplayAll()
 
     presubmit_files = presubmit.ListRelevantPresubmitFiles(files,
                                                            self.fake_root_dir)
     self.assertEqual(presubmit_files,
         [
-          join(self.fake_root_dir, 'PRESUBMIT.py'),
-          join(self.fake_root_dir, 'foo', 'haspresubmit', 'PRESUBMIT.py'),
-          join(self.fake_root_dir, 'foo', 'haspresubmit', 'yodle',
-               'PRESUBMIT.py')
+          presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py'),
+          presubmit.os.path.join(
+              self.fake_root_dir, 'foo', 'haspresubmit', 'PRESUBMIT.py'),
+          presubmit.os.path.join(
+              self.fake_root_dir, 'foo', 'haspresubmit', 'yodle',
+              'PRESUBMIT.py')
         ])
 
   def testListUserPresubmitFiles(self):
-    join = presubmit.os.path.join
     files = ['blat.cc',]
     inherit_path = presubmit.os.path.join(self.fake_root_dir,
                                           self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
     presubmit.os.listdir(self.fake_root_dir).AndReturn(
         ['PRESUBMIT.py', 'PRESUBMIT_test.py', 'PRESUBMIT-user.py'])
-    presubmit.os.path.isfile(join(self.fake_root_dir,
+    presubmit.os.path.isfile(presubmit.os.path.join(self.fake_root_dir,
                                   'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.path.isfile(join(self.fake_root_dir,
+    presubmit.os.path.isfile(presubmit.os.path.join(self.fake_root_dir,
                                   'PRESUBMIT_test.py')).AndReturn(True)
-    presubmit.os.path.isfile(join(self.fake_root_dir,
+    presubmit.os.path.isfile(presubmit.os.path.join(self.fake_root_dir,
                                   'PRESUBMIT-user.py')).AndReturn(True)
     self.mox.ReplayAll()
 
     presubmit_files = presubmit.ListRelevantPresubmitFiles(files,
                                                            self.fake_root_dir)
     self.assertEqual(presubmit_files, [
-        join(self.fake_root_dir, 'PRESUBMIT.py'),
-        join(self.fake_root_dir, 'PRESUBMIT-user.py'),
+        presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py'),
+        presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT-user.py'),
     ])
 
   def testListRelevantPresubmitFilesInheritSettings(self):
-    join = presubmit.os.path.join
     sys_root_dir = self._OS_SEP
-    root_dir = join(sys_root_dir, 'foo', 'bar')
+    root_dir = presubmit.os.path.join(sys_root_dir, 'foo', 'bar')
     files = [
       'test.cc',
-      join('moo', 'test2.cc'),
-      join('zoo', 'test3.cc')
+      presubmit.os.path.join('moo', 'test2.cc'),
+      presubmit.os.path.join('zoo', 'test3.cc')
     ]
     inherit_path = presubmit.os.path.join(root_dir, self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(True)
     presubmit.os.listdir(sys_root_dir).AndReturn([])
-    presubmit.os.listdir(join(sys_root_dir, 'foo')).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(join(sys_root_dir, 'foo',
-                                  'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.listdir(join(sys_root_dir, 'foo', 'bar')).AndReturn([])
-    presubmit.os.listdir(join(sys_root_dir, 'foo', 'bar', 'moo')).AndReturn(
-        ['PRESUBMIT.py'])
-    presubmit.os.path.isfile(
-        join(sys_root_dir, 'foo', 'bar', 'moo', 'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.listdir(join(sys_root_dir, 'foo', 'bar', 'zoo')).AndReturn([])
+    presubmit.os.listdir(presubmit.os.path.join(
+        sys_root_dir, 'foo')).AndReturn(['PRESUBMIT.py'])
+    presubmit.os.path.isfile(presubmit.os.path.join(
+        sys_root_dir, 'foo', 'PRESUBMIT.py')).AndReturn(True)
+    presubmit.os.listdir(presubmit.os.path.join(
+        sys_root_dir, 'foo', 'bar')).AndReturn([])
+    presubmit.os.listdir(presubmit.os.path.join(
+        sys_root_dir, 'foo', 'bar', 'moo')).AndReturn(['PRESUBMIT.py'])
+    presubmit.os.path.isfile(presubmit.os.path.join(
+        sys_root_dir, 'foo', 'bar', 'moo', 'PRESUBMIT.py')).AndReturn(True)
+    presubmit.os.listdir(presubmit.os.path.join(
+        sys_root_dir, 'foo', 'bar', 'zoo')).AndReturn([])
     self.mox.ReplayAll()
 
     presubmit_files = presubmit.ListRelevantPresubmitFiles(files, root_dir)
     self.assertEqual(presubmit_files,
         [
-          join(sys_root_dir, 'foo', 'PRESUBMIT.py'),
-          join(sys_root_dir, 'foo', 'bar', 'moo', 'PRESUBMIT.py')
+          presubmit.os.path.join(sys_root_dir, 'foo', 'PRESUBMIT.py'),
+          presubmit.os.path.join(
+              sys_root_dir, 'foo', 'bar', 'moo', 'PRESUBMIT.py')
         ])
 
   def testTagLineRe(self):
@@ -554,114 +562,89 @@ class PresubmitUnittest(PresubmitTestsBase):
       fake_presubmit)
 
   def testDoPresubmitChecks(self):
-    join = presubmit.os.path.join
-    description_lines = ('Hello there',
-                         'this is a change',
-                         'STORY=http://tracker/123')
-    files = [
-      ['A', join('haspresubmit', 'blat.cc')],
-    ]
-    haspresubmit_path = join(self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
-    root_path = join(self.fake_root_dir, 'PRESUBMIT.py')
-    inherit_path = presubmit.os.path.join(self.fake_root_dir,
-                                          self._INHERIT_SETTINGS)
+    haspresubmit_path = presubmit.os.path.join(
+        self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
+    root_path = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    inherit_path = presubmit.os.path.join(
+        self.fake_root_dir, self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
     presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(root_path).AndReturn(True)
     presubmit.os.listdir(os.path.join(
         self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
-    presubmit.gclient_utils.FileRead(root_path,
-                                     'rU').AndReturn(self.presubmit_text)
-    presubmit.gclient_utils.FileRead(haspresubmit_path,
-                                     'rU').AndReturn(self.presubmit_text)
+    presubmit.gclient_utils.FileRead(root_path, 'rU').AndReturn(
+        self.presubmit_text)
+    presubmit.gclient_utils.FileRead(haspresubmit_path, 'rU').AndReturn(
+        self.presubmit_text)
     presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
-    input_buf = StringIO.StringIO('y\n')
-    change = presubmit.Change(
-        'mychange',
-        '\n'.join(description_lines),
-        self.fake_root_dir,
-        files,
-        0,
-        0,
-        None)
+    # Make a change which will have no warnings.
+    change = self.ExampleChange(extra_lines=['STORY=http://tracker/123'])
+
     output = presubmit.DoPresubmitChecks(
-        change, False, True, None, input_buf, None, False, None)
+        change=change, committing=False, verbose=True,
+        output_stream=None, input_stream=None,
+        default_presubmit=None, may_prompt=False, rietveld_obj=None)
     self.failIf(output.should_continue())
     self.assertEqual(output.getvalue().count('!!'), 2)
     self.assertEqual(output.getvalue().count(
         'Running presubmit upload checks ...\n'), 1)
 
   def testDoPresubmitChecksPromptsAfterWarnings(self):
-    join = presubmit.os.path.join
-    description_lines = ('Hello there',
-                         'this is a change',
-                         'NOSUCHKEY=http://tracker/123')
-    files = [
-      ['A', join('haspresubmit', 'blat.cc')],
-    ]
-    presubmit_path = join(self.fake_root_dir, 'PRESUBMIT.py')
-    haspresubmit_path = join(self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
-    inherit_path = presubmit.os.path.join(self.fake_root_dir,
-                                          self._INHERIT_SETTINGS)
+    presubmit_path = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    haspresubmit_path = presubmit.os.path.join(
+        self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
+    inherit_path = presubmit.os.path.join(
+        self.fake_root_dir, self._INHERIT_SETTINGS)
     for _ in range(2):
       presubmit.os.path.isfile(inherit_path).AndReturn(False)
       presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
       presubmit.os.path.isfile(presubmit_path).AndReturn(True)
-      presubmit.os.listdir(join(self.fake_root_dir, 'haspresubmit')).AndReturn(
-          ['PRESUBMIT.py'])
+      presubmit.os.listdir(presubmit.os.path.join(
+          self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
       presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
-      presubmit.gclient_utils.FileRead(presubmit_path, 'rU'
-          ).AndReturn(self.presubmit_text)
-      presubmit.gclient_utils.FileRead(haspresubmit_path, 'rU'
-          ).AndReturn(self.presubmit_text)
+      presubmit.gclient_utils.FileRead(presubmit_path, 'rU').AndReturn(
+          self.presubmit_text)
+      presubmit.gclient_utils.FileRead(haspresubmit_path, 'rU').AndReturn(
+          self.presubmit_text)
     presubmit.random.randint(0, 4).AndReturn(1)
     presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
+    # Make a change with a single warning.
+    change = self.ExampleChange(extra_lines=['NOSUCHKEY=http://tracker/123'])
+
     input_buf = StringIO.StringIO('n\n')  # say no to the warning
-    change = presubmit.Change(
-        'mychange',
-        '\n'.join(description_lines),
-        self.fake_root_dir,
-        files,
-        0,
-        0,
-        None)
     output = presubmit.DoPresubmitChecks(
-        change, False, True, None, input_buf, None, True, None)
+        change=change, committing=False, verbose=True,
+        output_stream=None, input_stream=input_buf,
+        default_presubmit=None, may_prompt=True, rietveld_obj=None)
     self.failIf(output.should_continue())
     self.assertEqual(output.getvalue().count('??'), 2)
 
     input_buf = StringIO.StringIO('y\n')  # say yes to the warning
     output = presubmit.DoPresubmitChecks(
-        change, False, True, None, input_buf, None, True, None)
+        change=change, committing=False, verbose=True,
+        output_stream=None, input_stream=input_buf,
+        default_presubmit=None, may_prompt=True, rietveld_obj=None)
     self.failUnless(output.should_continue())
     self.assertEquals(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count(
         'Running presubmit upload checks ...\n'), 1)
 
   def testDoPresubmitChecksNoWarningPromptIfErrors(self):
-    join = presubmit.os.path.join
-    description_lines = ('Hello there',
-                         'this is a change',
-                         'NOSUCHKEY=http://tracker/123',
-                         'REALLYNOSUCHKEY=http://tracker/123')
-    files = [
-      ['A', join('haspresubmit', 'blat.cc')],
-    ]
-    presubmit_path = join(self.fake_root_dir, 'PRESUBMIT.py')
-    haspresubmit_path = join(self.fake_root_dir, 'haspresubmit',
-                             'PRESUBMIT.py')
-    inherit_path = presubmit.os.path.join(self.fake_root_dir,
-                                          self._INHERIT_SETTINGS)
+    presubmit_path = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    haspresubmit_path = presubmit.os.path.join(
+        self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
+    inherit_path = presubmit.os.path.join(
+        self.fake_root_dir, self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
     presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(presubmit_path).AndReturn(True)
-    presubmit.os.listdir(join(self.fake_root_dir, 'haspresubmit')).AndReturn(
-        ['PRESUBMIT.py'])
+    presubmit.os.listdir(presubmit.os.path.join(
+        self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
     presubmit.gclient_utils.FileRead(presubmit_path, 'rU'
                                      ).AndReturn(self.presubmit_text)
@@ -670,16 +653,14 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
-    change = presubmit.Change(
-        'mychange',
-        '\n'.join(description_lines),
-        self.fake_root_dir,
-        files,
-        0,
-        0,
-        None)
-    output = presubmit.DoPresubmitChecks(change, False, True, None, None,
-        None, False, None)
+    change = self.ExampleChange(extra_lines=[
+        'NOSUCHKEY=http://tracker/123',
+        'REALLYNOSUCHKEY=http://tracker/123'
+    ])
+    output = presubmit.DoPresubmitChecks(
+        change=change, committing=False, verbose=True,
+        output_stream=None, input_stream=None,
+        default_presubmit=None, may_prompt=False, rietveld_obj=None)
     self.assertEqual(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count('XX!!XX'), 2)
     self.assertEqual(output.getvalue().count('(y/N)'), 0)
@@ -687,45 +668,32 @@ class PresubmitUnittest(PresubmitTestsBase):
         'Running presubmit upload checks ...\n'), 1)
 
   def testDoDefaultPresubmitChecksAndFeedback(self):
-    join = presubmit.os.path.join
-    description_lines = ('Hello there',
-                         'this is a change',
-                         'STORY=http://tracker/123')
-    files = [
-      ['A', join('haspresubmit', 'blat.cc')],
-    ]
-    DEFAULT_SCRIPT = """
+    always_fail_presubmit_script = """
 def CheckChangeOnUpload(input_api, output_api):
   return [output_api.PresubmitError("!!")]
 def CheckChangeOnCommit(input_api, output_api):
   raise Exception("Test error")
 """
-    inherit_path = presubmit.os.path.join(self.fake_root_dir,
-                                          self._INHERIT_SETTINGS)
+    inherit_path = presubmit.os.path.join(
+        self.fake_root_dir, self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    presubmit.os.listdir(join(self.fake_root_dir)
-        ).AndReturn([])
-    presubmit.os.listdir(join(self.fake_root_dir, 'haspresubmit')
-        ).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(join(self.fake_root_dir,
+    presubmit.os.listdir(self.fake_root_dir).AndReturn([])
+    presubmit.os.listdir(presubmit.os.path.join(
+        self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
+    presubmit.os.path.isfile(presubmit.os.path.join(self.fake_root_dir,
                                   'haspresubmit',
                                   'PRESUBMIT.py')).AndReturn(False)
     presubmit.random.randint(0, 4).AndReturn(0)
     self.mox.ReplayAll()
 
     input_buf = StringIO.StringIO('y\n')
-    # Always fail.
-    change = presubmit.Change(
-        'mychange',
-        '\n'.join(description_lines),
-        self.fake_root_dir,
-        files,
-        0,
-        0,
-        None)
+
+    change = self.ExampleChange(extra_lines=['STORY=http://tracker/123'])
     output = presubmit.DoPresubmitChecks(
-        change, False, True, None, input_buf, DEFAULT_SCRIPT, False, None, None,
-        None)
+        change=change, committing=False, verbose=True,
+        output_stream=None, input_stream=input_buf,
+        default_presubmit=always_fail_presubmit_script,
+        may_prompt=False, rietveld_obj=None)
     self.failIf(output.should_continue())
     text = (
         'Running presubmit upload checks ...\n'
@@ -738,8 +706,8 @@ def CheckChangeOnCommit(input_api, output_api):
         'on the file to figure out who to ask for help.\n')
     self.assertEquals(output.getvalue(), text)
 
-  def testTags(self):
-    DEFAULT_SCRIPT = """
+  def testDoPresubmitChecksWithTags(self):
+    tag_checker_presubmit_script = """
 def CheckChangeOnUpload(input_api, output_api):
   if input_api.change.tags['BUG'] != 'boo':
     return [output_api.PresubmitError('Tag parsing failed. 1')]
@@ -770,12 +738,12 @@ def CheckChangeOnCommit(input_api, output_api):
   raise Exception("Test error")
 """
     presubmit.random.randint(0, 4).AndReturn(1)
-    inherit_path = presubmit.os.path.join(self.fake_root_dir,
-                                          self._INHERIT_SETTINGS)
+    inherit_path = presubmit.os.path.join(
+        self.fake_root_dir, self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
     self.mox.ReplayAll()
 
-    output = StringIO.StringIO()
+    output_buf = StringIO.StringIO()
     input_buf = StringIO.StringIO('y\n')
     change = presubmit.Change(
         'foo',
@@ -785,10 +753,14 @@ def CheckChangeOnCommit(input_api, output_api):
         0,
         0,
         None)
-    self.failUnless(presubmit.DoPresubmitChecks(
-        change, False, True, output, input_buf, DEFAULT_SCRIPT, False, None,
-        None))
-    self.assertEquals(output.getvalue(),
+    presubmit_output = presubmit.DoPresubmitChecks(
+        change=change, committing=False, verbose=True,
+        output_stream=output_buf, input_stream=input_buf,
+        default_presubmit=tag_checker_presubmit_script,
+        may_prompt=False, rietveld_obj=None)
+
+    self.failUnless(presubmit_output)
+    self.assertEquals(output_buf.getvalue(),
                       ('Running presubmit upload checks ...\n'
                        'Warning, no PRESUBMIT.py found.\n'
                        'Running default presubmit script.\n'
@@ -800,14 +772,8 @@ def CheckChangeOnCommit(input_api, output_api):
 
   def testGetTryMastersExecuter(self):
     self.mox.ReplayAll()
-    change = presubmit.Change(
-        'foo',
-        'Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n',
-        self.fake_root_dir,
-        None,
-        0,
-        0,
-        None)
+    change = self.ExampleChange(
+        extra_lines=['STORY=http://tracker.com/42', 'BUG=boo\n'])
     executer = presubmit.GetTryMastersExecuter()
     self.assertEqual({}, executer.ExecPresubmitScript('', '', '', change))
     self.assertEqual({},
@@ -825,6 +791,24 @@ def CheckChangeOnCommit(input_api, output_api):
           result,
           executer.ExecPresubmitScript(
               self.presubmit_trymaster % result, '', '', change))
+
+  def ExampleChange(self, extra_lines=None):
+    """Returns an example Change instance for tests."""
+    description_lines = [
+      'Hello there',
+      'This is a change',
+    ] + (extra_lines or [])
+    files = [
+      ['A', presubmit.os.path.join('haspresubmit', 'blat.cc')],
+    ]
+    return presubmit.Change(
+        name='mychange',
+        description='\n'.join(description_lines),
+        local_root=self.fake_root_dir,
+        files=files,
+        issue=0,
+        patchset=0,
+        author=None)
 
   def testMergeMasters(self):
     merge = presubmit._MergeMasters
@@ -856,15 +840,16 @@ def CheckChangeOnCommit(input_api, output_api):
         % ('{"t1.cr": {"linux1": set(["t1"])},'
            ' "t2.cr": {"linux2": set(["defaulttests"])}}'))
 
-    join = presubmit.os.path.join
     isfile = presubmit.os.path.isfile
     listdir = presubmit.os.listdir
     FileRead = presubmit.gclient_utils.FileRead
     filename = 'foo.cc'
-    filename_linux = join('linux_only', 'penguin.cc')
-    root_presubmit = join(self.fake_root_dir, 'PRESUBMIT.py')
-    linux_presubmit = join(self.fake_root_dir, 'linux_only', 'PRESUBMIT.py')
-    inherit_path = join(self.fake_root_dir, self._INHERIT_SETTINGS)
+    filename_linux = presubmit.os.path.join('linux_only', 'penguin.cc')
+    root_presubmit = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    linux_presubmit = presubmit.os.path.join(
+        self.fake_root_dir, 'linux_only', 'PRESUBMIT.py')
+    inherit_path = presubmit.os.path.join(
+        self.fake_root_dir, self._INHERIT_SETTINGS)
 
     isfile(inherit_path).AndReturn(False)
     listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
@@ -874,7 +859,8 @@ def CheckChangeOnCommit(input_api, output_api):
     isfile(inherit_path).AndReturn(False)
     listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
     isfile(root_presubmit).AndReturn(True)
-    listdir(join(self.fake_root_dir, 'linux_only')).AndReturn(['PRESUBMIT.py'])
+    listdir(presubmit.os.path.join(
+        self.fake_root_dir, 'linux_only')).AndReturn(['PRESUBMIT.py'])
     isfile(linux_presubmit).AndReturn(True)
     FileRead(root_presubmit, 'rU').AndReturn(root_text)
     FileRead(linux_presubmit, 'rU').AndReturn(linux_text)
@@ -1015,22 +1001,21 @@ class InputApiUnittest(PresubmitTestsBase):
     self.assertEquals(api.host_url, 'http://codereview.chromium.org')
 
   def testInputApiPresubmitScriptFiltering(self):
-    join = presubmit.os.path.join
     description_lines = ('Hello there',
                          'this is a change',
                          'BUG=123',
                          ' STORY =http://foo/  \t',
                          'and some more regular text')
     files = [
-      ['A', join('foo', 'blat.cc'), True],
-      ['M', join('foo', 'blat', 'READ_ME2'), True],
-      ['M', join('foo', 'blat', 'binary.dll'), True],
-      ['M', join('foo', 'blat', 'weird.xyz'), True],
-      ['M', join('foo', 'blat', 'another.h'), True],
-      ['M', join('foo', 'third_party', 'third.cc'), True],
-      ['D', join('foo', 'mat', 'beingdeleted.txt'), False],
-      ['M', join('flop', 'notfound.txt'), False],
-      ['A', join('boo', 'flap.h'), True],
+      ['A', presubmit.os.path.join('foo', 'blat.cc'), True],
+      ['M', presubmit.os.path.join('foo', 'blat', 'READ_ME2'), True],
+      ['M', presubmit.os.path.join('foo', 'blat', 'binary.dll'), True],
+      ['M', presubmit.os.path.join('foo', 'blat', 'weird.xyz'), True],
+      ['M', presubmit.os.path.join('foo', 'blat', 'another.h'), True],
+      ['M', presubmit.os.path.join('foo', 'third_party', 'third.cc'), True],
+      ['D', presubmit.os.path.join('foo', 'mat', 'beingdeleted.txt'), False],
+      ['M', presubmit.os.path.join('flop', 'notfound.txt'), False],
+      ['A', presubmit.os.path.join('boo', 'flap.h'), True],
     ]
     diffs = []
     for _, f, exists in files:
@@ -1054,7 +1039,7 @@ class InputApiUnittest(PresubmitTestsBase):
         None)
     input_api = presubmit.InputApi(
         change,
-        join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'),
+        presubmit.os.path.join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'),
         False, None, False)
     # Doesn't filter much
     got_files = input_api.AffectedFiles()
@@ -1210,7 +1195,6 @@ class InputApiUnittest(PresubmitTestsBase):
     self.assertEquals(got_files[1].LocalPath(), 'eecaee')
 
   def testGetAbsoluteLocalPath(self):
-    join = presubmit.os.path.join
     normpath = presubmit.normpath
     # Regression test for bug of presubmit stuff that relies on invoking
     # SVN (e.g. to get mime type of file) not working unless gcl invoked
@@ -1219,8 +1203,8 @@ class InputApiUnittest(PresubmitTestsBase):
     # the presubmit script was asking about).
     files = [
       ['A', 'isdir'],
-      ['A', join('isdir', 'blat.cc')],
-      ['M', join('elsewhere', 'ouf.cc')],
+      ['A', presubmit.os.path.join('isdir', 'blat.cc')],
+      ['M', presubmit.os.path.join('elsewhere', 'ouf.cc')],
     ]
     self.mox.ReplayAll()
 
@@ -1231,25 +1215,33 @@ class InputApiUnittest(PresubmitTestsBase):
     self.assertEquals(affected_files[0].LocalPath(), normpath('isdir'))
     self.assertEquals(affected_files[1].LocalPath(), normpath('isdir/blat.cc'))
     # Absolute paths should be prefixed
-    self.assertEquals(affected_files[0].AbsoluteLocalPath(),
-                      normpath(join(self.fake_root_dir, 'isdir')))
-    self.assertEquals(affected_files[1].AbsoluteLocalPath(),
-                      normpath(join(self.fake_root_dir, 'isdir/blat.cc')))
+    self.assertEquals(
+        affected_files[0].AbsoluteLocalPath(),
+        presubmit.normpath(presubmit.os.path.join(self.fake_root_dir, 'isdir')))
+    self.assertEquals(
+        affected_files[1].AbsoluteLocalPath(),
+        presubmit.normpath(presubmit.os.path.join(
+            self.fake_root_dir, 'isdir/blat.cc')))
 
     # New helper functions need to work
     paths_from_change = change.AbsoluteLocalPaths()
     self.assertEqual(len(paths_from_change), 3)
-    presubmit_path = join(self.fake_root_dir, 'isdir', 'PRESUBMIT.py')
+    presubmit_path = presubmit.os.path.join(
+        self.fake_root_dir, 'isdir', 'PRESUBMIT.py')
     api = presubmit.InputApi(
         change=change, presubmit_path=presubmit_path,
         is_committing=True, rietveld_obj=None, verbose=False)
     paths_from_api = api.AbsoluteLocalPaths()
     self.assertEqual(len(paths_from_api), 2)
     for absolute_paths in [paths_from_change, paths_from_api]:
-      self.assertEqual(absolute_paths[0],
-                       normpath(join(self.fake_root_dir, 'isdir')))
-      self.assertEqual(absolute_paths[1],
-                       normpath(join(self.fake_root_dir, 'isdir', 'blat.cc')))
+      self.assertEqual(
+          absolute_paths[0],
+          presubmit.normpath(presubmit.os.path.join(
+              self.fake_root_dir, 'isdir')))
+      self.assertEqual(
+          absolute_paths[1],
+          presubmit.normpath(presubmit.os.path.join(
+              self.fake_root_dir, 'isdir', 'blat.cc')))
 
   def testDeprecated(self):
     presubmit.warn(mox.IgnoreArg(), category=mox.IgnoreArg(), stacklevel=2)
