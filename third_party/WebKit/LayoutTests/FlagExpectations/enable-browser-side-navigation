@@ -16,6 +16,7 @@ crbug.com/575210 fast/history/history-length-append-subframe-with-hash.html [ Fa
 crbug.com/575210 fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
 crbug.com/575210 http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
 crbug.com/575210 imported/wpt/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
+crbug.com/575210 imported/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-navigation-of-parent.html [ Failure ]
 crbug.com/575210 imported/wpt/html/browsers/history/the-history-interface/004.html [ Failure ]
 crbug.com/575210 imported/wpt/html/browsers/history/the-location-interface/security_location_0.htm [ Failure ]
 crbug.com/575210 virtual/stable/http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
@@ -128,9 +129,11 @@ crbug.com/638900 virtual/mojo-loading/http/tests/navigation/same-origin-fragment
 # callback sequence on renderer-initiated failed navigations.
 crbug.com/640631 http/tests/loading/bad-scheme-subframe.html [ Timeout Failure ]
 crbug.com/640631 http/tests/loading/bad-server-subframe.html [ Failure ]
+crbug.com/640631 http/tests/loading/pdf-commit-load-callbacks.html [ Crash Failure ]
 crbug.com/640631 http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
 crbug.com/640631 virtual/mojo-loading/http/tests/loading/bad-scheme-subframe.html [ Timeout Failure ]
 crbug.com/640631 virtual/mojo-loading/http/tests/loading/bad-server-subframe.html [ Failure ]
+crbug.com/640631 virtual/mojo-loading/http/tests/loading/pdf-commit-load-callbacks.html [ Crash Failure ]
 crbug.com/640631 virtual/mojo-loading/http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
 
 # https://crbug.com/647698: Failing due to absence of call to
@@ -144,30 +147,39 @@ crbug.com/648608 http/tests/cookies/same-site/popup-same-site.html [ Failure ]
 crbug.com/648608 virtual/mojo-loading/http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
 crbug.com/648608 virtual/mojo-loading/http/tests/cookies/same-site/popup-same-site.html [ Failure ]
 
-# Untriaged navigation
-Bug(none) fast/dom/Document/open-with-pending-load.html [ Failure ]
-Bug(none) fast/dom/HTMLAnchorElement/anchor-no-multiple-windows.html [ Failure ]
-Bug(none) http/tests/loading/pdf-commit-load-callbacks.html [ Crash Failure ]
-Bug(none) http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
-Bug(none) http/tests/navigation/response204.html [ Timeout ]
-Bug(none) http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
-Bug(none) http/tests/security/cross-frame-access-parent-explicit-domain-isolated-world.html [ Timeout ]
-Bug(none) imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/005.html [ Failure ]
-Bug(none) imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/006.html [ Failure ]
-Bug(none) imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/007.html [ Failure ]
-Bug(none) imported/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-history-back.html [ Failure ]
-Bug(none) imported/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-navigation-of-parent.html [ Failure ]
-Bug(none) imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html [ Failure ]
-Bug(none) imported/wpt/html/browsers/the-window-object/security-window/window-security.html [ Failure ]
-Bug(none) virtual/stable/http/tests/navigation/response204.html [ Timeout ]
-Bug(none) virtual/mojo-loading/http/tests/loading/pdf-commit-load-callbacks.html [ Crash Failure ]
-Bug(none) virtual/mojo-loading/http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
-Bug(none) virtual/mojo-loading/http/tests/navigation/response204.html [ Timeout ]
-Bug(none) virtual/mojo-loading/http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
-Bug(none) virtual/mojo-loading/http/tests/security/cross-frame-access-parent-explicit-domain-isolated-world.html [ Timeout ]
+# https://crbug.com/673742 Calling document.open should cancel a load
+crbug.com/673742 fast/dom/Document/open-with-pending-load.html [ Failure ]
 
-# Untriaged other
-Bug(none) http/tests/misc/policy-delegate-called-twice.html [ Failure ]
-Bug(none) http/tests/misc/window-open-then-write.html [ Timeout ]
-Bug(none) virtual/mojo-loading/http/tests/misc/policy-delegate-called-twice.html [ Failure ]
-Bug(none) virtual/mojo-loading/http/tests/misc/window-open-then-write.html [ Timeout ]
+# https://crbug.com/673744 Popups should open in the correct window
+crbug.com/673744 fast/dom/HTMLAnchorElement/anchor-no-multiple-windows.html [ Failure ]
+
+# https://crbug.com/673745 Resource transfer size should be forwarded to blink
+crbug.com/673745 http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
+crbug.com/673745 virtual/mojo-loading/http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
+
+# Timeout when receiving a 204 response
+# Note (clamy): I haven't filed a bug yet since
+# https://codereview.chromium.org/2549373004/ will modify 204 handling when it
+# lands.
+Bug(none) http/tests/navigation/response204.html [ Timeout ]
+Bug(none) virtual/stable/http/tests/navigation/response204.html [ Timeout ]
+Bug(none) virtual/mojo-loading/http/tests/navigation/response204.html [ Timeout ]
+
+# https://crbug.com/673748 Cross frame access should work
+crbug.com/673748 http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
+crbug.com/673748 http/tests/security/cross-frame-access-parent-explicit-domain-isolated-world.html [ Timeout ]
+crbug.com/673748 virtual/mojo-loading/http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
+crbug.com/673748 virtual/mojo-loading/http/tests/security/cross-frame-access-parent-explicit-domain-isolated-world.html [ Timeout ]
+
+# https://crbug.com/673751 Clicking on an href link with a javascript on click
+# navigation event should follow the href link
+crbug.com/673748 imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/005.html [ Failure ]
+crbug.com/673748 imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/006.html [ Failure ]
+crbug.com/673748 imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/007.html [ Failure ]
+
+# This test seems to be partially failing without PlzNavigate as well.
+Bug(none) imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html [ Failure ]
+
+# https://crbug.com/673751 Policy delegate is called twice
+crbug.com/673751 http/tests/misc/policy-delegate-called-twice.html [ Failure ]
+crbug.com/673751 virtual/mojo-loading/http/tests/misc/policy-delegate-called-twice.html [ Failure ]
