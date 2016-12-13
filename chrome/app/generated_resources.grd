@@ -7767,23 +7767,8 @@ the Bookmarks menu.">
 
         <!-- Import progress popup -->
         <if expr="is_macosx">
-          <message name="IDS_IMPORT_PROGRESS_TITLE" desc="Title for the importing progress dialog">
-            Importing
-          </message>
           <message name="IDS_IMPORT_SETTINGS_MENU_MAC" desc="The text label for the Import menu item.">
             Import Bookmarks and Settings...
-          </message>
-          <message name="IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS" desc="Import status for bookmarks">
-            Favorites/Bookmarks
-          </message>
-          <message name="IDS_IMPORT_PROGRESS_STATUS_SEARCH" desc="Import status for search engines">
-            Search settings
-          </message>
-          <message name="IDS_IMPORT_PROGRESS_STATUS_PASSWORDS" desc="Import status for passwords">
-            Saved passwords
-          </message>
-          <message name="IDS_IMPORT_PROGRESS_STATUS_HISTORY" desc="Import status for history">
-            Browsing history
           </message>
         </if> <!-- is_macosx -->
       </if> <!-- not is_android -->

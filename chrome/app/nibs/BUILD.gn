@@ -36,7 +36,6 @@ translated_xibs = [
   "FirstRunDialog.xib",
   "HttpAuthLoginSheet.xib",
   "HungRendererDialog.xib",
-  "ImportProgressDialog.xib",
   "MainMenu.xib",
   "OneClickSigninBubble.xib",
   "OneClickSigninDialog.xib",
@@ -50,7 +49,6 @@ untranslated_xibs = [
   "FindBar.xib",
   "GlobalErrorBubble.xib",
   "InfoBar.xib",
-  "Panel.xib",
 ]
 
 mac_xib_bundle_data("chrome_xibs") {
