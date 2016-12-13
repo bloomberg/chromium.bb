@@ -791,7 +791,8 @@ void av1_alloc_compressor_data(AV1_COMP *cpi) {
     CHECK_MEM_ERROR(cm, cpi->tile_tok[0][0],
                     aom_calloc(tokens, sizeof(*cpi->tile_tok[0][0])));
 #if CONFIG_ANS
-    aom_buf_ans_alloc(&cpi->buf_ans, &cm->error, tokens);
+    aom_buf_ans_alloc(&cpi->buf_ans, &cm->error,
+                      ANS_MAX_SYMBOLS ? ANS_MAX_SYMBOLS : tokens);
 #endif  // CONFIG_ANS
   }
 

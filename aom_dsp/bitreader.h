@@ -68,13 +68,21 @@ typedef struct aom_dk_reader aom_reader;
 #endif
 
 static INLINE int aom_reader_init(aom_reader *r, const uint8_t *buffer,
-                                  size_t size, aom_decrypt_cb decrypt_cb,
+                                  size_t size,
+#if CONFIG_ANS && ANS_MAX_SYMBOLS
+                                  size_t window_size,
+#endif
+                                  aom_decrypt_cb decrypt_cb,
                                   void *decrypt_state) {
 #if CONFIG_ANS
   (void)decrypt_cb;
   (void)decrypt_state;
   if (size > INT_MAX) return 1;
-  return ans_read_init(r, buffer, (int)size);
+  return ans_read_init(r,
+#if ANS_MAX_SYMBOLS
+                       (int)window_size,
+#endif
+                       buffer, (int)size);
 #elif CONFIG_DAALA_EC
   (void)decrypt_cb;
   (void)decrypt_state;

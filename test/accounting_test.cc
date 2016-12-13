@@ -35,7 +35,11 @@ TEST(AV1, TestAccounting) {
   }
   aom_stop_encode(&bw);
   aom_reader br;
-  aom_reader_init(&br, bw_buffer, bw.pos, NULL, NULL);
+  aom_reader_init(&br, bw_buffer, bw.pos,
+#if CONFIG_ANS && ANS_MAX_SYMBOLS
+                  1 << 16,
+#endif
+                  NULL, NULL);
 
   Accounting accounting;
   aom_accounting_init(&accounting);

@@ -43,14 +43,24 @@ struct BufAnsCoder {
   int size;
   int offset;
   int output_bytes;
+#if ANS_MAX_SYMBOLS
+  int window_size;
+#endif
 };
 
+// Allocate a buffered ANS coder to store size symbols.
+// When ANS_MAX_SYMBOLS is turned on, the size is the fixed size of each ANS
+// partition.
+// When ANS_MAX_SYMBOLS is turned off, size is merely an initial hint and the
+// buffer will grow on demand
 void aom_buf_ans_alloc(struct BufAnsCoder *c,
-                       struct aom_internal_error_info *error, int size_hint);
+                       struct aom_internal_error_info *error, int hint);
 
 void aom_buf_ans_free(struct BufAnsCoder *c);
 
+#if !ANS_MAX_SYMBOLS
 void aom_buf_ans_grow(struct BufAnsCoder *c);
+#endif
 
 void aom_buf_ans_flush(struct BufAnsCoder *const c);
 
@@ -64,30 +74,34 @@ static INLINE void buf_ans_write_init(struct BufAnsCoder *const c,
 static INLINE void buf_uabs_write(struct BufAnsCoder *const c, uint8_t val,
                                   AnsP8 prob) {
   assert(c->offset <= c->size);
+#if !ANS_MAX_SYMBOLS
   if (c->offset == c->size) {
     aom_buf_ans_grow(c);
   }
+#endif
   c->buf[c->offset].method = ANS_METHOD_UABS;
   c->buf[c->offset].val_start = val;
   c->buf[c->offset].prob = prob;
   ++c->offset;
 #if ANS_MAX_SYMBOLS
-  if (c->offset == ANS_MAX_SYMBOLS) aom_buf_ans_flush(c);
+  if (c->offset == c->size) aom_buf_ans_flush(c);
 #endif
 }
 
 static INLINE void buf_rans_write(struct BufAnsCoder *const c,
                                   const struct rans_sym *const sym) {
   assert(c->offset <= c->size);
+#if !ANS_MAX_SYMBOLS
   if (c->offset == c->size) {
     aom_buf_ans_grow(c);
   }
+#endif
   c->buf[c->offset].method = ANS_METHOD_RANS;
   c->buf[c->offset].val_start = sym->cum_prob;
   c->buf[c->offset].prob = sym->prob;
   ++c->offset;
 #if ANS_MAX_SYMBOLS
-  if (c->offset == ANS_MAX_SYMBOLS) aom_buf_ans_flush(c);
+  if (c->offset == c->size) aom_buf_ans_flush(c);
 #endif
 }
 

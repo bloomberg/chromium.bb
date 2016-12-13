@@ -26,6 +26,9 @@ namespace {
 typedef std::vector<std::pair<uint8_t, bool> > PvVec;
 
 const int kPrintStats = 0;
+// When ANS is windowed use the window size, otherwise use a small value to
+// exercise the buffer growth code
+const int kBufAnsSize = ANS_MAX_SYMBOLS ? ANS_MAX_SYMBOLS : 100;
 
 PvVec abs_encode_build_vals(int iters) {
   PvVec ret;
@@ -49,7 +52,7 @@ PvVec abs_encode_build_vals(int iters) {
 
 bool check_uabs(const PvVec &pv_vec, uint8_t *buf) {
   BufAnsCoder a;
-  aom_buf_ans_alloc(&a, NULL, 100);
+  aom_buf_ans_alloc(&a, NULL, kBufAnsSize);
   buf_ans_write_init(&a, buf);
 
   std::clock_t start = std::clock();
@@ -62,7 +65,12 @@ bool check_uabs(const PvVec &pv_vec, uint8_t *buf) {
   aom_buf_ans_free(&a);
   bool okay = true;
   AnsDecoder d;
-  if (ans_read_init(&d, buf, offset)) return false;
+  if (ans_read_init(&d,
+#if ANS_MAX_SYMBOLS
+                    kBufAnsSize,
+#endif
+                    buf, offset))
+    return false;
   start = std::clock();
   for (PvVec::const_iterator it = pv_vec.begin(); it != pv_vec.end(); ++it) {
     okay = okay && (uabs_read(&d, 256 - it->first) != 0) == it->second;
@@ -115,7 +123,7 @@ void rans_build_dec_tab(const struct rans_sym sym_tab[],
 bool check_rans(const std::vector<int> &sym_vec, const rans_sym *const tab,
                 uint8_t *buf) {
   BufAnsCoder a;
-  aom_buf_ans_alloc(&a, NULL, 100);
+  aom_buf_ans_alloc(&a, NULL, kBufAnsSize);
   buf_ans_write_init(&a, buf);
   aom_cdf_prob dec_tab[kRansSymbols];
   rans_build_dec_tab(tab, dec_tab);
@@ -131,7 +139,12 @@ bool check_rans(const std::vector<int> &sym_vec, const rans_sym *const tab,
   aom_buf_ans_free(&a);
   bool okay = true;
   AnsDecoder d;
-  if (ans_read_init(&d, buf, offset)) return false;
+  if (ans_read_init(&d,
+#if ANS_MAX_SYMBOLS
+                    kBufAnsSize,
+#endif
+                    buf, offset))
+    return false;
   start = std::clock();
   for (std::vector<int>::const_iterator it = sym_vec.begin();
        it != sym_vec.end(); ++it) {

@@ -16,9 +16,9 @@
 #include "aom/internal/aom_codec_internal.h"
 
 void aom_buf_ans_alloc(struct BufAnsCoder *c,
-                       struct aom_internal_error_info *error, int size_hint) {
+                       struct aom_internal_error_info *error, int size) {
   c->error = error;
-  c->size = size_hint;
+  c->size = size;
   AOM_CHECK_MEM_ERROR(error, c->buf, aom_malloc(c->size * sizeof(*c->buf)));
   // Initialize to overfull to trigger the assert in write.
   c->offset = c->size + 1;
@@ -30,6 +30,7 @@ void aom_buf_ans_free(struct BufAnsCoder *c) {
   c->size = 0;
 }
 
+#if !ANS_MAX_SYMBOLS
 void aom_buf_ans_grow(struct BufAnsCoder *c) {
   struct buffered_ans_symbol *new_buf = NULL;
   int new_size = c->size * 2;
@@ -40,6 +41,7 @@ void aom_buf_ans_grow(struct BufAnsCoder *c) {
   c->buf = new_buf;
   c->size = new_size;
 }
+#endif
 
 void aom_buf_ans_flush(struct BufAnsCoder *const c) {
   int offset;
