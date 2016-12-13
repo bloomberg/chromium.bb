@@ -10,6 +10,7 @@
 
 #include "base/observer_list.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 
 class PrefChangeRegistrar;
@@ -37,7 +38,8 @@ namespace chromeos {
 // image saved in syncable preference.
 class UserImageSyncObserver
     : public sync_preferences::PrefServiceSyncableObserver,
-      public content::NotificationObserver {
+      public content::NotificationObserver,
+      public user_manager::UserManager::Observer {
  public:
   class Observer {
    public:
@@ -71,6 +73,9 @@ class UserImageSyncObserver
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // user_manager::UserManager::Observer implementation.
+  void OnUserImageChanged(const user_manager::User& user) override;
 
   // Called after user profile was loaded.
   void OnProfileGained(Profile* profile);

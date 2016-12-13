@@ -9,13 +9,19 @@
 
 namespace user_manager {
 
-UserManager* UserManager::instance = NULL;
+UserManager* UserManager::instance = nullptr;
 
-UserManager::Observer::~Observer() {
-}
+UserManager::Observer::~Observer() = default;
 
-void UserManager::Observer::LocalStateChanged(UserManager* user_manager) {
-}
+void UserManager::Observer::LocalStateChanged(UserManager* user_manager) {}
+
+void UserManager::Observer::OnUserImageChanged(const User& user) {}
+
+void UserManager::Observer::OnUserProfileImageUpdateFailed(const User& user) {}
+
+void UserManager::Observer::OnUserProfileImageUpdated(
+    const User& user,
+    const gfx::ImageSkia& profile_image) {}
 
 void UserManager::UserSessionStateObserver::ActiveUserChanged(
     const User* active_user) {
@@ -57,7 +63,7 @@ bool UserManager::IsInitialized() {
 
 void UserManager::Destroy() {
   DCHECK(UserManager::instance == this);
-  UserManager::SetInstance(NULL);
+  UserManager::SetInstance(nullptr);
 }
 
 // static

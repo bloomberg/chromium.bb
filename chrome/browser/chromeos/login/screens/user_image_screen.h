@@ -16,8 +16,7 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/user_manager/user.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/user_manager/user_manager.h"
 
 namespace base {
 class Timer;
@@ -36,7 +35,7 @@ class UserImageView;
 
 class UserImageScreen : public UserImageModel,
                         public ImageDecoder::ImageRequest,
-                        public content::NotificationObserver,
+                        public user_manager::UserManager::Observer,
                         public UserImageSyncObserver::Observer,
                         public CameraPresenceNotifier::Observer {
  public:
@@ -59,10 +58,11 @@ class UserImageScreen : public UserImageModel,
   void OnImageAccepted() override;
   void OnViewDestroyed(UserImageView* view) override;
 
-  // content::NotificationObserver implementation:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // user_manager::UserManager::Observer implementation:
+  void OnUserImageChanged(const user_manager::User& user) override;
+  void OnUserProfileImageUpdateFailed(const user_manager::User& user) override;
+  void OnUserProfileImageUpdated(const user_manager::User& user,
+                                 const gfx::ImageSkia& profile_image) override;
 
   // ImageDecoder::ImageRequest implementation:
   void OnImageDecoded(const SkBitmap& decoded_image) override;
@@ -114,8 +114,6 @@ class UserImageScreen : public UserImageModel,
 
   // Reports sync duration and result to UMA.
   void ReportSyncResult(SyncResult timed_out) const;
-
-  content::NotificationRegistrar notification_registrar_;
 
   std::unique_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
 

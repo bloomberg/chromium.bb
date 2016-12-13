@@ -95,13 +95,6 @@ class FakeChromeUserManager : public ChromeUserManager {
   bool IsLoggedInAsStub() const override;
   bool IsUserNonCryptohomeDataEphemeral(
       const AccountId& account_id) const override;
-  void AddObserver(UserManager::Observer* obs) override;
-  void RemoveObserver(UserManager::Observer* obs) override;
-  void AddSessionStateObserver(
-      UserManager::UserSessionStateObserver* obs) override;
-  void RemoveSessionStateObserver(
-      UserManager::UserSessionStateObserver* obs) override;
-  void NotifyLocalStateChanged() override;
   void ChangeUserChildStatus(user_manager::User* user, bool is_child) override;
   bool AreSupervisedUsersAllowed() const override;
   PrefService* GetLocalState() const override;

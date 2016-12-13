@@ -63,8 +63,7 @@ void ProfileInfoHandler::OnJavascriptAllowed() {
                  base::Unretained(this)));
 
 #if defined(OS_CHROMEOS)
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                 content::NotificationService::AllSources());
+  user_manager::UserManager::Get()->AddObserver(this);
 #endif
 }
 
@@ -75,15 +74,12 @@ void ProfileInfoHandler::OnJavascriptDisallowed() {
   profile_pref_registrar_.RemoveAll();
 
 #if defined(OS_CHROMEOS)
-  registrar_.RemoveAll();
+  user_manager::UserManager::Get()->RemoveObserver(this);
 #endif
 }
 
 #if defined(OS_CHROMEOS)
-void ProfileInfoHandler::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED, type);
+void ProfileInfoHandler::OnUserImageChanged(const user_manager::User& user) {
   PushProfileInfo();
 }
 #endif

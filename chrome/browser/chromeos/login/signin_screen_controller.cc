@@ -32,13 +32,13 @@ SignInScreenController::SignInScreenController(
   user_selection_screen_->SetView(user_board_view);
   user_board_view->Bind(*user_selection_screen_.get());
 
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
+  user_manager::UserManager::Get()->AddObserver(this);
 }
 
 SignInScreenController::~SignInScreenController() {
+  user_manager::UserManager::Get()->RemoveObserver(this);
   instance_ = nullptr;
 }
 
@@ -68,6 +68,11 @@ void SignInScreenController::OnUserRemoved(const AccountId& account_id) {
   user_selection_screen_->OnUserRemoved(account_id);
 }
 
+void SignInScreenController::OnUserImageChanged(
+    const user_manager::User& user) {
+  user_selection_screen_->OnUserImageChanged(user);
+}
+
 void SignInScreenController::SendUserList() {
   user_selection_screen_->HandleGetUsers();
 }
@@ -87,19 +92,14 @@ void SignInScreenController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_SESSION_STARTED) {
-    // Stop listening to any notification once session has started.
-    // Sign in screen objects are marked for deletion with DeleteSoon so
-    // make sure no object would be used after session has started.
-    // http://crbug.com/125276
-    registrar_.RemoveAll();
-    return;
-  }
-  if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
-    user_selection_screen_->OnUserImageChanged(
-        *content::Details<user_manager::User>(details).ptr());
-    return;
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_SESSION_STARTED, type);
+
+  // Stop listening to any notification once session has started.
+  // Sign in screen objects are marked for deletion with DeleteSoon so
+  // make sure no object would be used after session has started.
+  // http://crbug.com/125276
+  registrar_.RemoveAll();
+  user_manager::UserManager::Get()->RemoveObserver(this);
 }
 
 }  // namespace chromeos

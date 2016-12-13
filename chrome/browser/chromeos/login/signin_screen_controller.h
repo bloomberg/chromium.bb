@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -28,6 +29,7 @@ class OobeUI;
 // the user. It is a 'per-session' class; SignInScreenHandler, in comparsion, is
 // tied to the WebContents lifetime and therefore may live beyond this class.
 class SignInScreenController : public user_manager::RemoveUserDelegate,
+                               public user_manager::UserManager::Observer,
                                public content::NotificationObserver {
  public:
   SignInScreenController(OobeUI* oobe_ui,
@@ -60,6 +62,9 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
   // user_manager::RemoveUserDelegate implementation:
   void OnBeforeUserRemoved(const AccountId& account_id) override;
   void OnUserRemoved(const AccountId& account_id) override;
+
+  // user_manager::UserManager::Observer implementation:
+  void OnUserImageChanged(const user_manager::User& user) override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,

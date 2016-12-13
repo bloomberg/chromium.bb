@@ -62,6 +62,7 @@ class SystemTrayDelegateChromeOS
       public ash::SessionStateObserver,
       public chrome::BrowserListObserver,
       public extensions::AppWindowRegistry::Observer,
+      public user_manager::UserManager::Observer,
       public user_manager::UserManager::UserSessionStateObserver,
       public SupervisedUserServiceObserver,
       public input_method::InputMethodManager::ImeMenuObserver {
@@ -115,6 +116,9 @@ class SystemTrayDelegateChromeOS
       ash::CustodianInfoTrayObserver* observer) override;
   std::unique_ptr<ash::SystemTrayItem> CreateRotationLockTrayItem(
       ash::SystemTray* tray) override;
+
+  // Overridden from user_manager::UserManager::Observer:
+  void OnUserImageChanged(const user_manager::User& user) override;
 
   // Overridden from user_manager::UserManager::UserSessionStateObserver:
   void UserAddedToSession(const user_manager::User* active_user) override;

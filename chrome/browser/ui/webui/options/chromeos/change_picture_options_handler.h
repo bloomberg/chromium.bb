@@ -9,8 +9,7 @@
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -31,7 +30,7 @@ namespace options {
 // ChromeOS user image options page UI handler.
 class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
                                     public ui::SelectFileDialog::Listener,
-                                    public content::NotificationObserver,
+                                    public user_manager::UserManager::Observer,
                                     public ImageDecoder::ImageRequest,
                                     public CameraPresenceNotifier::Observer {
  public:
@@ -103,10 +102,10 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
                     int index,
                     void* params) override;
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // user_manager::UserManager::Observer implementation.
+  void OnUserImageChanged(const user_manager::User& user) override;
+  void OnUserProfileImageUpdated(const user_manager::User& user,
+                                 const gfx::ImageSkia& profile_image) override;
 
   // Sets user image to photo taken from camera.
   void SetImageFromCamera(const gfx::ImageSkia& photo);
@@ -136,8 +135,6 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
 
   // Data URL for |user_photo_|.
   std::string user_photo_data_url_;
-
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangePictureOptionsHandler);
 };

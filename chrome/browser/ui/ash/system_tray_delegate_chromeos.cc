@@ -144,9 +144,6 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
   // Register notifications on construction so that events such as
   // PROFILE_CREATED do not get missed if they happen before Initialize().
   registrar_.reset(new content::NotificationRegistrar);
-  registrar_->Add(this,
-                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                  content::NotificationService::AllSources());
   if (GetUserLoginStatus() == ash::LoginStatus::NOT_LOGGED_IN) {
     registrar_->Add(this,
                     chrome::NOTIFICATION_SESSION_STARTED,
@@ -165,6 +162,7 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged,
                  base::Unretained(this)));
 
+  user_manager::UserManager::Get()->AddObserver(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
@@ -244,6 +242,7 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   if (policy_manager)
     policy_manager->core()->store()->RemoveObserver(this);
 
+  user_manager::UserManager::Get()->RemoveObserver(this);
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
@@ -762,14 +761,6 @@ void SystemTrayDelegateChromeOS::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
-      // This notification is also sent on login screen when user avatar
-      // is loaded from file.
-      if (GetUserLoginStatus() != ash::LoginStatus::NOT_LOGGED_IN) {
-        GetSystemTrayNotifier()->NotifyUserUpdate();
-      }
-      break;
-    }
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       SetProfile(content::Source<Profile>(source).ptr());
       registrar_->Remove(this,
@@ -897,6 +888,13 @@ void SystemTrayDelegateChromeOS::OnStoreLoaded(
 
 void SystemTrayDelegateChromeOS::OnStoreError(policy::CloudPolicyStore* store) {
   UpdateEnterpriseDomain();
+}
+
+void SystemTrayDelegateChromeOS::OnUserImageChanged(
+    const user_manager::User& user) {
+  // This is also invoked on login screen when user avatar is loaded from file.
+  if (GetUserLoginStatus() != ash::LoginStatus::NOT_LOGGED_IN)
+    GetSystemTrayNotifier()->NotifyUserUpdate();
 }
 
 // Overridden from ash::SessionStateObserver

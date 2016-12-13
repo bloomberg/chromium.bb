@@ -73,19 +73,12 @@ UserImageScreen::UserImageScreen(BaseScreenDelegate* base_screen_delegate,
       user_has_selected_image_(false) {
   if (view_)
     view_->Bind(*this);
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                              content::NotificationService::AllSources());
+  user_manager::UserManager::Get()->AddObserver(this);
   GetContextEditor().SetString(kContextKeyProfilePictureDataURL, std::string());
 }
 
 UserImageScreen::~UserImageScreen() {
+  user_manager::UserManager::Get()->RemoveObserver(this);
   CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
   if (view_)
     view_->Unbind();
@@ -293,7 +286,7 @@ void UserImageScreen::Show() {
 
 void UserImageScreen::Hide() {
   CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
-  notification_registrar_.RemoveAll();
+  user_manager::UserManager::Get()->RemoveObserver(this);
   policy_registrar_.reset();
   sync_timer_.reset();
   if (UserImageSyncObserver* sync_observer = GetSyncObserver())
@@ -307,35 +300,25 @@ void UserImageScreen::OnViewDestroyed(UserImageView* view) {
     view_ = nullptr;
 }
 
-void UserImageScreen::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED: {
-      // We've got a new profile image.
-      GetContextEditor().SetString(
-          kContextKeyProfilePictureDataURL,
-          webui::GetBitmapDataUrl(
-              *content::Details<const gfx::ImageSkia>(details)
-                   .ptr()
-                   ->bitmap()));
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED: {
-      // User has a default profile image or fetching profile image has failed.
-      GetContextEditor().SetString(kContextKeyProfilePictureDataURL,
-                                   std::string());
-      break;
-    }
-    case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
-      GetContextEditor().SetString(
-          kContextKeySelectedImageURL,
-          default_user_image::GetDefaultImageUrl(GetUser()->image_index()));
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+void UserImageScreen::OnUserImageChanged(const user_manager::User& user) {
+  GetContextEditor().SetString(
+      kContextKeySelectedImageURL,
+      default_user_image::GetDefaultImageUrl(GetUser()->image_index()));
+}
+
+void UserImageScreen::OnUserProfileImageUpdateFailed(
+    const user_manager::User& user) {
+  // User has a default profile image or fetching profile image has failed.
+  GetContextEditor().SetString(kContextKeyProfilePictureDataURL, std::string());
+}
+
+void UserImageScreen::OnUserProfileImageUpdated(
+    const user_manager::User& user,
+    const gfx::ImageSkia& profile_image) {
+  // We've got a new profile image.
+  GetContextEditor().SetString(
+      kContextKeyProfilePictureDataURL,
+      webui::GetBitmapDataUrl(*profile_image.bitmap()));
 }
 
 void UserImageScreen::ExitScreen() {

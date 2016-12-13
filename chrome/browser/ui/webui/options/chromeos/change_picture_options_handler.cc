@@ -82,12 +82,7 @@ const char kProfileDownloadReason[] = "Preferences";
 ChangePictureOptionsHandler::ChangePictureOptionsHandler()
     : previous_image_url_(url::kAboutBlankURL),
       previous_image_index_(user_manager::User::USER_IMAGE_INVALID) {
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-      content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-      content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-      content::NotificationService::AllSources());
+  user_manager::UserManager::Get()->AddObserver(this);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   media::SoundsManager* manager = media::SoundsManager::Get();
@@ -98,6 +93,7 @@ ChangePictureOptionsHandler::ChangePictureOptionsHandler()
 }
 
 ChangePictureOptionsHandler::~ChangePictureOptionsHandler() {
+  user_manager::UserManager::Get()->RemoveObserver(this);
   CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
@@ -438,20 +434,19 @@ void ChangePictureOptionsHandler::OnCameraPresenceCheckDone(
   SetCameraPresent(is_camera_present);
 }
 
-void ChangePictureOptionsHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED) {
-    // User profile image has been updated.
-    SendProfileImage(*content::Details<const gfx::ImageSkia>(details).ptr(),
-                     false);
-  } else if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
-    // Not initialized yet.
-    if (previous_image_index_ == user_manager::User::USER_IMAGE_INVALID)
-      return;
-    SendSelectedImage();
-  }
+void ChangePictureOptionsHandler::OnUserImageChanged(
+    const user_manager::User& user) {
+  // Not initialized yet.
+  if (previous_image_index_ == user_manager::User::USER_IMAGE_INVALID)
+    return;
+  SendSelectedImage();
+}
+
+void ChangePictureOptionsHandler::OnUserProfileImageUpdated(
+    const user_manager::User& user,
+    const gfx::ImageSkia& profile_image) {
+  // User profile image has been updated.
+  SendProfileImage(profile_image, false);
 }
 
 gfx::NativeWindow ChangePictureOptionsHandler::GetBrowserWindow() const {

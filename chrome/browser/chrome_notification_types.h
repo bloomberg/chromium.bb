@@ -347,16 +347,6 @@ enum NotificationType {
   // The details are a chromeos::User object.
   NOTIFICATION_SESSION_STARTED,
 
-  // Sent when user image is updated.
-  NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-
-  // Sent by UserManager when a profile image download has been completed.
-  NOTIFICATION_PROFILE_IMAGE_UPDATED,
-
-  // Sent by UserManager when profile image download has failed or user has the
-  // default profile image or no profile image at all. No details are expected.
-  NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-
   // Sent when a network error message is displayed on the WebUI login screen.
   // First paint event of this fires NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE.
   NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,

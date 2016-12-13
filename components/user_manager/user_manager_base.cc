@@ -669,6 +669,26 @@ void UserManagerBase::NotifyLocalStateChanged() {
     observer.LocalStateChanged(this);
 }
 
+void UserManagerBase::NotifyUserImageChanged(const User& user) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  for (auto& observer : observer_list_)
+    observer.OnUserImageChanged(user);
+}
+
+void UserManagerBase::NotifyUserProfileImageUpdateFailed(const User& user) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  for (auto& observer : observer_list_)
+    observer.OnUserProfileImageUpdateFailed(user);
+}
+
+void UserManagerBase::NotifyUserProfileImageUpdated(
+    const User& user,
+    const gfx::ImageSkia& profile_image) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  for (auto& observer : observer_list_)
+    observer.OnUserProfileImageUpdated(user, profile_image);
+}
+
 bool UserManagerBase::CanUserBeRemoved(const User* user) const {
   // Only regular and supervised users are allowed to be manually removed.
   if (!user || !(user->HasGaiaAccount() || user->IsSupervised()))

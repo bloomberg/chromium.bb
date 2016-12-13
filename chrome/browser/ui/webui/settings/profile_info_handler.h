@@ -15,8 +15,7 @@
 #include "components/prefs/pref_change_registrar.h"
 
 #if defined(OS_CHROMEOS)
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 class Profile;
@@ -25,7 +24,7 @@ namespace settings {
 
 class ProfileInfoHandler : public SettingsPageUIHandler,
 #if defined(OS_CHROMEOS)
-                           public content::NotificationObserver,
+                           public user_manager::UserManager::Observer,
 #endif
                            public ProfileAttributesStorage::Observer {
  public:
@@ -41,10 +40,8 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
   void OnJavascriptDisallowed() override;
 
 #if defined(OS_CHROMEOS)
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // user_manager::UserManager::Observer implementation.
+  void OnUserImageChanged(const user_manager::User& user) override;
 #endif
 
   // ProfileAttributesStorage::Observer implementation.
@@ -82,11 +79,6 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
 
   // Used to listen for changes in the list of managed supervised users.
   PrefChangeRegistrar profile_pref_registrar_;
-
-#if defined(OS_CHROMEOS)
-  // Used to listen to ChromeOS user image changes.
-  content::NotificationRegistrar registrar_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoHandler);
 };

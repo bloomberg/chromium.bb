@@ -136,7 +136,7 @@ class UserImageManagerImpl
 
   // Called when a Job updates the copy of the user image held in
   // memory.  Allows |this| to update |downloaded_profile_image_| and
-  // send a NOTIFICATION_LOGIN_USER_IMAGE_CHANGED notification.
+  // notify user manager about user image change.
   void OnJobChangedUserImage();
 
   // Called when a Job for the user finishes.

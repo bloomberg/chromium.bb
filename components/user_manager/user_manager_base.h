@@ -104,6 +104,11 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void RemoveSessionStateObserver(
       UserManager::UserSessionStateObserver* obs) override;
   void NotifyLocalStateChanged() override;
+  void NotifyUserImageChanged(const User& user) override;
+  void NotifyUserProfileImageUpdateFailed(const User& user) override;
+  void NotifyUserProfileImageUpdated(
+      const User& user,
+      const gfx::ImageSkia& profile_image) override;
   void ChangeUserChildStatus(User* user, bool is_child) override;
   void Initialize() override;
 

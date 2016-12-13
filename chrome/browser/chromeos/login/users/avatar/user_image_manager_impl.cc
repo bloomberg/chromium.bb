@@ -26,7 +26,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
@@ -43,7 +42,6 @@
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -858,11 +856,10 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
   if (!NeedProfileImage())
     return;
 
+  const user_manager::User* const user = GetUser();
+
   if (result == kDownloadDefault) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-        content::Source<UserImageManager>(this),
-        content::NotificationService::NoDetails());
+    user_manager_->NotifyUserProfileImageUpdateFailed(*user);
   } else {
     profile_image_requested_ = false;
   }
@@ -875,7 +872,6 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
       downloader->GetProfilePicture());
   profile_image_url_ = GURL(downloader->GetProfilePictureURL());
 
-  const user_manager::User* user = GetUser();
   if (user->image_index() == user_manager::User::USER_IMAGE_PROFILE) {
     VLOG(1) << "Updating profile image for logged-in user.";
     UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
@@ -885,10 +881,8 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
     SaveUserImageFromProfileImage();
   }
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-      content::Source<UserImageManager>(this),
-      content::Details<const gfx::ImageSkia>(&downloaded_profile_image_));
+  user_manager_->NotifyUserProfileImageUpdated(*user,
+                                               downloaded_profile_image_);
 }
 
 void UserImageManagerImpl::OnProfileDownloadFailure(
@@ -918,10 +912,7 @@ void UserImageManagerImpl::OnProfileDownloadFailure(
                    kProfileDownloadReasonRetry));
   }
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-      content::Source<UserImageManager>(this),
-      content::NotificationService::NoDetails());
+  user_manager_->NotifyUserProfileImageUpdateFailed(*GetUser());
 }
 
 bool UserImageManagerImpl::IsUserImageManaged() const {
@@ -999,10 +990,7 @@ void UserImageManagerImpl::OnJobChangedUserImage() {
   if (GetUser()->is_logged_in())
     TryToInitDownloadedProfileImage();
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-      content::Source<UserImageManagerImpl>(this),
-      content::Details<const user_manager::User>(GetUser()));
+  user_manager_->NotifyUserImageChanged(*GetUser());
 }
 
 void UserImageManagerImpl::OnJobDone() {

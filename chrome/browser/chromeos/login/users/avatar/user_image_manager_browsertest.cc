@@ -17,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
@@ -25,7 +26,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
@@ -62,9 +62,6 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -103,6 +100,30 @@ policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
   }
   return policy_manager->core()->store();
 }
+
+class UserImageChangeWaiter : public user_manager::UserManager::Observer {
+ public:
+  UserImageChangeWaiter() {}
+  ~UserImageChangeWaiter() override {}
+
+  void Wait() {
+    user_manager::UserManager::Get()->AddObserver(this);
+    run_loop_ = base::MakeUnique<base::RunLoop>();
+    run_loop_->Run();
+    user_manager::UserManager::Get()->RemoveObserver(this);
+  }
+
+  // user_manager::UserManager::Observer:
+  void OnUserImageChanged(const user_manager::User& user) override {
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+ private:
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserImageChangeWaiter);
+};
 
 }  // namespace
 
@@ -317,11 +338,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveAndLoadUserImage) {
       user_manager::UserManager::Get()->FindUser(test_account_id1_);
   ASSERT_TRUE(user);
   // Wait for image load.
-  if (user->image_index() == user_manager::User::USER_IMAGE_INVALID) {
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-        content::NotificationService::AllSources()).Wait();
-  }
+  if (user->image_index() == user_manager::User::USER_IMAGE_INVALID)
+    UserImageChangeWaiter().Wait();
   // The image should be in the safe format.
   EXPECT_TRUE(user->image_is_safe_format());
   // Check image dimensions. Images can't be compared since JPEG is lossy.

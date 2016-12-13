@@ -528,24 +528,6 @@ bool FakeChromeUserManager::IsUserNonCryptohomeDataEphemeral(
   return false;
 }
 
-void FakeChromeUserManager::AddObserver(UserManager::Observer* obs) {
-  NOTREACHED();
-}
-
-void FakeChromeUserManager::RemoveObserver(UserManager::Observer* obs) {
-  NOTREACHED();
-}
-
-void FakeChromeUserManager::AddSessionStateObserver(
-    UserManager::UserSessionStateObserver* obs) {}
-
-void FakeChromeUserManager::RemoveSessionStateObserver(
-    UserManager::UserSessionStateObserver* obs) {}
-
-void FakeChromeUserManager::NotifyLocalStateChanged() {
-  NOTREACHED();
-}
-
 void FakeChromeUserManager::ChangeUserChildStatus(user_manager::User* user,
                                                   bool is_child) {
   NOTREACHED();
