@@ -373,7 +373,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_effectiveDisplay =
         m_nonInheritedData.m_originalDisplay =
             static_cast<unsigned>(initialDisplay());
-    m_nonInheritedData.m_overflowAnchor = initialOverflowAnchor();
+    m_nonInheritedData.m_overflowAnchor =
+        static_cast<unsigned>(initialOverflowAnchor());
     m_nonInheritedData.m_overflowX = initialOverflowX();
     m_nonInheritedData.m_overflowY = initialOverflowY();
     m_nonInheritedData.m_verticalAlign = initialVerticalAlign();
@@ -1544,12 +1545,14 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Overflow properties.
   // overflow-anchor
-  static EOverflowAnchor initialOverflowAnchor() { return AnchorAuto; }
+  static EOverflowAnchor initialOverflowAnchor() {
+    return EOverflowAnchor::Auto;
+  }
   EOverflowAnchor overflowAnchor() const {
     return static_cast<EOverflowAnchor>(m_nonInheritedData.m_overflowAnchor);
   }
   void setOverflowAnchor(EOverflowAnchor v) {
-    m_nonInheritedData.m_overflowAnchor = v;
+    m_nonInheritedData.m_overflowAnchor = static_cast<unsigned>(v);
   }
 
   // overflow-x

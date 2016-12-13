@@ -1805,7 +1805,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
         StyleChangeReasonForTracing::create(StyleChangeReason::FontSizeChange));
   }
 
-  EOverflowAnchor overflowAnchor = AnchorAuto;
+  EOverflowAnchor overflowAnchor = EOverflowAnchor::Auto;
   EOverflow overflowX = OverflowAuto;
   EOverflow overflowY = OverflowAuto;
   float columnGap = 0;
@@ -1819,8 +1819,8 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
       overflowX = OverflowAuto;
     if (overflowY == OverflowVisible)
       overflowY = OverflowAuto;
-    if (overflowAnchor == AnchorVisible)
-      overflowAnchor = AnchorAuto;
+    if (overflowAnchor == EOverflowAnchor::Visible)
+      overflowAnchor = EOverflowAnchor::Auto;
     // Column-gap is (ab)used by the current paged overflow implementation (in
     // lack of other ways to specify gaps between pages), so we have to
     // propagate it too.

@@ -2791,13 +2791,13 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EOverflowAnchor e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case AnchorVisible:
+    case EOverflowAnchor::Visible:
       m_valueID = CSSValueVisible;
       break;
-    case AnchorNone:
+    case EOverflowAnchor::None:
       m_valueID = CSSValueNone;
       break;
-    case AnchorAuto:
+    case EOverflowAnchor::Auto:
       m_valueID = CSSValueAuto;
       break;
   }
@@ -2807,17 +2807,17 @@ template <>
 inline EOverflowAnchor CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueVisible:
-      return AnchorVisible;
+      return EOverflowAnchor::Visible;
     case CSSValueNone:
-      return AnchorNone;
+      return EOverflowAnchor::None;
     case CSSValueAuto:
-      return AnchorAuto;
+      return EOverflowAnchor::Auto;
     default:
       break;
   }
 
   NOTREACHED();
-  return AnchorNone;
+  return EOverflowAnchor::None;
 }
 
 template <>

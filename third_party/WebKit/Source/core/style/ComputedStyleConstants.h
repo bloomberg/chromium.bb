@@ -146,7 +146,7 @@ enum EBoxSizing { BoxSizingContentBox, BoxSizingBorderBox };
 
 // Random visual rendering model attributes. Not inherited.
 
-enum EOverflowAnchor { AnchorVisible, AnchorNone, AnchorAuto };
+enum class EOverflowAnchor : unsigned { Visible, None, Auto };
 
 enum EOverflow {
   OverflowVisible,
