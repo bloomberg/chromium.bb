@@ -8,30 +8,18 @@ crbug.com/608372 fast/loader/form-state-restore-with-frames.html [ Failure ]
 crbug.com/608372 http/tests/history/back-to-post.html [ Timeout ]
 crbug.com/608372 http/tests/navigation/post-goback-same-url.html [ Failure ]
 crbug.com/608372 virtual/stable/http/tests/navigation/post-goback-same-url.html [ Failure ]
-
-# https://crbug.com/608375: PlzNavigate: Appcache support
-crbug.com/608375 http/tests/appcache/fallback.html [ Timeout ]
-crbug.com/608375 http/tests/appcache/main-resource-hash.html [ Crash Timeout ]
-crbug.com/608375 http/tests/appcache/main-resource-redirect.html [ Crash Timeout ]
-crbug.com/608375 http/tests/appcache/non-html.xhtml [ Crash Timeout ]
-crbug.com/608375 http/tests/appcache/offline-access.html [ Crash Timeout ]
-crbug.com/608375 http/tests/appcache/remove-cache.html [ Failure Timeout ]
-crbug.com/608375 http/tests/appcache/top-frame-2.html [ Timeout ]
-crbug.com/608375 http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
-crbug.com/608375 virtual/disable-mojo-service-worker/http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
-crbug.com/608375 virtual/service-worker-navigation-preload/http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
+crbug.com/608372 virtual/mojo-loading/http/tests/history/back-to-post.html [ Timeout ]
+crbug.com/608372 virtual/mojo-loading/http/tests/navigation/post-goback-same-url.html [ Failure ]
 
 # https://crbug.com/575210: PlzNavigate: history navigation support
 crbug.com/575210 fast/history/history-length-append-subframe-with-hash.html [ Failure ]
 crbug.com/575210 fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
-crbug.com/575210 http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]
 crbug.com/575210 http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
-crbug.com/575210 http/tests/navigation/rename-subframe-goback.html [ Failure ]
 crbug.com/575210 imported/wpt/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
 crbug.com/575210 imported/wpt/html/browsers/history/the-history-interface/004.html [ Failure ]
 crbug.com/575210 imported/wpt/html/browsers/history/the-location-interface/security_location_0.htm [ Failure ]
 crbug.com/575210 virtual/stable/http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
-crbug.com/575210 virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Failure ]
+crbug.com/575210 virtual/mojo-loading/http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
 
 # https://crbug.com/551000: PlzNavigate: DevTools support
 crbug.com/551000 http/tests/inspector-protocol/reload-memory-cache.html [ Failure ]
@@ -45,15 +33,23 @@ crbug.com/551000 http/tests/inspector/network/network-initiator.html [ Failure ]
 crbug.com/551000 http/tests/inspector/resource-har-conversion.html [ Failure ]
 crbug.com/551000 http/tests/inspector/resource-parameters-ipv6.html [ Failure Timeout ]
 crbug.com/551000 http/tests/inspector/resource-parameters.html [ Failure ]
-crbug.com/551000 http/tests/inspector/service-workers/service-worker-agents.html [ Failure ]
-crbug.com/551000 http/tests/inspector/service-workers/service-worker-manager.html [ Timeout ]
 crbug.com/551000 http/tests/inspector/service-workers/service-workers-redundant.html [ Timeout ]
 crbug.com/551000 http/tests/inspector/service-workers/user-agent-override.html [ Failure ]
 crbug.com/551000 inspector-protocol/page/frameAttachedDetached.html [ Failure ]
 crbug.com/551000 inspector-protocol/page/frameStartedLoading.html [ Failure ]
+crbug.com/551000 virtual/mojo-loading/http/tests/inspector-protocol/reload-memory-cache.html [ Failure ]
+crbug.com/551000 virtual/mojo-loading/http/tests/inspector/console-resource-errors.html [ Failure ]
+crbug.com/551000 virtual/mojo-loading/http/tests/inspector/extensions-ignore-cache.html [ Failure ]
+crbug.com/551000 virtual/mojo-loading/http/tests/inspector/extensions-network-redirect.html [ Timeout ]
+crbug.com/551000 virtual/mojo-loading/http/tests/inspector/extensions-useragent.html [ Failure ]
+crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-document-initiator.html [ Failure ]
+crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-initiator.html [ Failure ]
+crbug.com/551000 virtual/mojo-loading/http/tests/inspector/resource-har-conversion.html [ Failure ]
+crbug.com/551000 virtual/mojo-loading/http/tests/inspector/resource-parameters.html [ Failure ]
 
 # https://crbug.com/625765: Need to solve duplicate output from
 # WebFrameTestClient::willSendRequest() that causes text failures.
+crbug.com/625765 http/tests/cache/iframe-304-crash.html [ Failure ]
 crbug.com/625765 http/tests/history/post-replace-state-reload.html [ Failure ]
 crbug.com/625765 http/tests/loading/redirect-methods.html [ Crash Failure ]
 crbug.com/625765 http/tests/navigation/location-reload-after-post.php [ Failure ]
@@ -65,30 +61,46 @@ crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-multiple-head
 crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-none.html [ Failure ]
 crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-allow.html [ Failure ]
 crbug.com/625765 fast/loader/main-document-url-for-non-http-loads.html [ Failure ]
-crbug.com/625765 http/tests/cache/iframe-304-crash.html [ Failure ]
 crbug.com/625765 imported/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
 crbug.com/625765 virtual/stable/http/tests/navigation/location-reload-after-post.php [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/cache/iframe-304-crash.html [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/history/post-replace-state-reload.html [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/loading/redirect-methods.html [ Crash Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/navigation/location-reload-after-post.php [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-allowall.html [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-deny.html [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-invalid.html [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-multiple-headers-conflict.html [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-multiple-headers-sameorigin-allow.html [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-none.html [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-allow.html [ Failure ]
 
 # https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
 # checks up out of the renderer.
 crbug.com/555418 http/tests/security/contentSecurityPolicy/1.1/child-src/frame-redirect-blocked.html [ Timeout ]
-crbug.com/555418 http/tests/security/contentSecurityPolicy/1.1/form-action-src-allowed.html [ Failure ]
-crbug.com/555418 http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored.html [ Failure ]
 crbug.com/555418 http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
 crbug.com/555418 http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
 crbug.com/555418 http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
+crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/child-src/frame-redirect-blocked.html [ Timeout ]
+crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
+crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
+crbug.com/555418 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
 
 # https://crbug.com/576270: Move mixed-content checks that happen during
 # navigation to the browser
 crbug.com/576270 http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Timeout Failure ]
 crbug.com/576270 http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
 crbug.com/576270 http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
+crbug.com/576270 virtual/mojo-loading/http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Timeout Failure ]
+crbug.com/576270 virtual/mojo-loading/http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
+crbug.com/576270 virtual/mojo-loading/http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
 
 # https://crbug.com/638900: Failing due to flipped order of callbacks to
 # WebFrameClient::didStartProvisionalLoad() and
 # WebFrameClient::didFinishDocumentLoad().
 crbug.com/638900 fast/loader/subframe-removes-itself.html [ Failure ]
 crbug.com/638900 http/tests/loading/css-no-cache-revalidation.html [ Failure ]
+crbug.com/638900 http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
 crbug.com/638900 http/tests/loading/image-picture-download-after-shrink.html [ Failure ]
 crbug.com/638900 http/tests/loading/image-picture-no-download-after-picture-removal.html [ Failure ]
 crbug.com/638900 http/tests/loading/image-picture-no-download-after-removal.html [ Failure ]
@@ -100,38 +112,62 @@ crbug.com/638900 http/tests/navigation/cross-origin-fragment-navigation-is-async
 crbug.com/638900 http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
 crbug.com/638900 virtual/stable/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
 crbug.com/638900 virtual/stable/http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
-crbug.com/638900 http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
+crbug.com/638900 virtual/mojo-loading/http/tests/loading/css-no-cache-revalidation.html [ Failure ]
+crbug.com/638900 virtual/mojo-loading/http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
+crbug.com/638900 virtual/mojo-loading/http/tests/loading/image-picture-download-after-shrink.html [ Failure ]
+crbug.com/638900 virtual/mojo-loading/http/tests/loading/image-picture-no-download-after-picture-removal.html [ Failure ]
+crbug.com/638900 virtual/mojo-loading/http/tests/loading/image-picture-no-download-after-removal.html [ Failure ]
+crbug.com/638900 virtual/mojo-loading/http/tests/loading/image-picture-no-download-after-source-removal.html [ Failure ]
+crbug.com/638900 virtual/mojo-loading/http/tests/loading/redirect-with-no-location-crash.html [ Failure ]
+crbug.com/638900 virtual/mojo-loading/http/tests/loading/simple-subframe.html [ Failure ]
+crbug.com/638900 virtual/mojo-loading/http/tests/loading/slow-parsing-subframe.html [ Failure ]
+crbug.com/638900 virtual/mojo-loading/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
+crbug.com/638900 virtual/mojo-loading/http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
 
 # https://crbug.com/640631: Failing due to difference in WebFrameClient
 # callback sequence on renderer-initiated failed navigations.
 crbug.com/640631 http/tests/loading/bad-scheme-subframe.html [ Timeout Failure ]
 crbug.com/640631 http/tests/loading/bad-server-subframe.html [ Failure ]
 crbug.com/640631 http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
+crbug.com/640631 virtual/mojo-loading/http/tests/loading/bad-scheme-subframe.html [ Timeout Failure ]
+crbug.com/640631 virtual/mojo-loading/http/tests/loading/bad-server-subframe.html [ Failure ]
+crbug.com/640631 virtual/mojo-loading/http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
 
 # https://crbug.com/647698: Failing due to absence of call to
 # WebFrameClient::didReceiveServerRedirectForProvisionalLoad.
 crbug.com/647698 http/tests/loading/307-after-303-after-post.html [ Failure ]
-
-# Properly set ZoomLevel (see IFrameZoomBrowsertests*)
-Bug(none) fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
+crbug.com/647698 virtual/mojo-loading/http/tests/loading/307-after-303-after-post.html [ Failure ]
 
 # https://crbug.com/648608: Properly set the initator of the navigation.
 crbug.com/648608 http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
 crbug.com/648608 http/tests/cookies/same-site/popup-same-site.html [ Failure ]
+crbug.com/648608 virtual/mojo-loading/http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
+crbug.com/648608 virtual/mojo-loading/http/tests/cookies/same-site/popup-same-site.html [ Failure ]
 
 # Untriaged navigation
 Bug(none) fast/dom/Document/open-with-pending-load.html [ Failure ]
 Bug(none) fast/dom/HTMLAnchorElement/anchor-no-multiple-windows.html [ Failure ]
 Bug(none) http/tests/loading/pdf-commit-load-callbacks.html [ Crash Failure ]
 Bug(none) http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
-Bug(none) http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
 Bug(none) http/tests/navigation/response204.html [ Timeout ]
 Bug(none) http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
 Bug(none) http/tests/security/cross-frame-access-parent-explicit-domain-isolated-world.html [ Timeout ]
+Bug(none) imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/005.html [ Failure ]
+Bug(none) imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/006.html [ Failure ]
+Bug(none) imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/007.html [ Failure ]
+Bug(none) imported/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-history-back.html [ Failure ]
+Bug(none) imported/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-navigation-of-parent.html [ Failure ]
+Bug(none) imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html [ Failure ]
 Bug(none) imported/wpt/html/browsers/the-window-object/security-window/window-security.html [ Failure ]
-Bug(none) virtual/stable/http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
 Bug(none) virtual/stable/http/tests/navigation/response204.html [ Timeout ]
+Bug(none) virtual/mojo-loading/http/tests/loading/pdf-commit-load-callbacks.html [ Crash Failure ]
+Bug(none) virtual/mojo-loading/http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
+Bug(none) virtual/mojo-loading/http/tests/navigation/response204.html [ Timeout ]
+Bug(none) virtual/mojo-loading/http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
+Bug(none) virtual/mojo-loading/http/tests/security/cross-frame-access-parent-explicit-domain-isolated-world.html [ Timeout ]
 
 # Untriaged other
 Bug(none) http/tests/misc/policy-delegate-called-twice.html [ Failure ]
 Bug(none) http/tests/misc/window-open-then-write.html [ Timeout ]
+Bug(none) virtual/mojo-loading/http/tests/misc/policy-delegate-called-twice.html [ Failure ]
+Bug(none) virtual/mojo-loading/http/tests/misc/window-open-then-write.html [ Timeout ]
