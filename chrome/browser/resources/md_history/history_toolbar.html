@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
@@ -20,6 +19,8 @@
         transition: background-color 150ms;
         width: 100%;
       }
+
+      /* General toolbar layout. */
 
       cr-toolbar,
       #overlay-buttons,
@@ -62,6 +63,8 @@
         -webkit-margin-end: 12px;
       }
 
+      /* Info button and dropdown. */
+
       #info-button {
         /* Additional styles for unresolved <button>. */
         background: none;
@@ -92,6 +95,8 @@
         padding: 12px 20px;
       }
 
+      /* Selection overlay. */
+
       :host(:not([has-drawer])) #overlay-wrapper {
         -webkit-margin-start: var(--side-bar-width);
       }
@@ -113,15 +118,16 @@
       #cancel-icon-button {
         -webkit-margin-end: 24px;
         -webkit-margin-start: 2px;
-        height: 36px;
-        min-width: 36px;
-        width: 36px;
       }
 
-      #grouped-nav-container paper-icon-button {
-        --paper-icon-button-ink-color: rgba(255, 255, 255, 0.4);
-        -webkit-margin-start: 24px;
-        flex: 0 0 auto;
+      /* Grouped toolbar. */
+
+      paper-tabs {
+        /* TODO(tsergeant): Align tabs with cards. */
+        --paper-tabs-selection-bar-color: #fff;
+        -webkit-margin-start: 32px;
+        height: calc(var(--toolbar-grouped-height) - var(--toolbar-height));
+        min-width: 300px;
       }
 
       paper-tab {
@@ -130,23 +136,13 @@
         text-transform: uppercase;
       }
 
-      paper-tabs {
-        --paper-tabs-selection-bar-color: var(--google-blue-500);
-        height: calc(var(--toolbar-grouped-height) - var(--toolbar-height));
-        min-width: 300px;
-      }
-
       #grouped-buttons-container {
         align-items: center;
         display: flex;
       }
 
-      #grouped-range-buttons {
-        -webkit-margin-start: 32px;
-      }
-
       #grouped-nav-container {
-        -webkit-margin-end: 24px;
+        -webkit-margin-end: 16px;
         align-items: center;
         display: flex;
         flex: 1;
@@ -161,12 +157,22 @@
       }
 
       #grouped-date {
+        -webkit-margin-end: 8px;
         flex: 0 1 auto;
         opacity: 0.7;
         overflow: hidden;
         text-align: right;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      #grouped-nav-container button {
+        -webkit-margin-start: 8px;
+        flex: 0 0 auto;
+      }
+
+      #grouped-nav-container button[disabled] {
+        color: rgba(255, 255, 255, 0.5);
       }
 
       :host-context([dir=rtl]) .rtl-reversible {
@@ -208,9 +214,13 @@
       <template is="dom-if" if="[[itemsSelected_]]">
         <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
           <div id="overlay-buttons">
-            <paper-icon-button icon="cr:clear" id="cancel-icon-button"
-                on-tap="onClearSelectionTap_" title="$i18n{cancel}">
-            </paper-icon-button>
+            <button is="paper-icon-button-light"
+                id="cancel-icon-button"
+                class="icon-button"
+                on-tap="onClearSelectionTap_"
+                title="$i18n{cancel}">
+              <iron-icon icon="cr:clear"></iron-icon>
+            </button>
             <div id="number-selected">[[numberOfItemsSelected_(count)]]</div>
             <paper-button id="cancel-button" on-tap="onClearSelectionTap_">
               $i18n{cancel}
@@ -224,8 +234,7 @@
     </div>
     <template is="dom-if" if="[[isGroupedMode]]">
       <div id="grouped-buttons-container">
-        <paper-tabs attr-for-selected="value" selected="{{groupedRange}}"
-            id="grouped-range-buttons">
+        <paper-tabs attr-for-selected="value" selected="{{groupedRange}}">
           <paper-tab value="0">$i18n{rangeAllTime}</paper-tab>
           <paper-tab value="1">$i18n{rangeWeek}</paper-tab>
           <paper-tab value="2">$i18n{rangeMonth}</paper-tab>
@@ -234,23 +243,30 @@
           <span id="grouped-date">
             {{getHistoryInterval_(queryStartTime, queryEndTime)}}
           </span>
-          <paper-icon-button id="today-button" icon="history:today"
-              alt="$i18n{rangeToday}"
+          <button is="paper-icon-button-light"
+              id="today-button"
+              class="icon-button"
               title="$i18n{rangeToday}"
               on-tap="onTodayTap_"
-              disabled="[[isToday_(groupedOffset)]]"></paper-icon-button>
-          <paper-icon-button id="prev-button" icon="history:chevron-left"
-              alt="$i18n{rangePrevious}"
+              disabled="[[isToday_(groupedOffset)]]">
+            <iron-icon icon="history:today"></iron-icon>
+          </button>
+          <button is="paper-icon-button-light"
+              id="prev-button"
               title="$i18n{rangePrevious}"
-              class="rtl-reversible"
+              class="icon-button rtl-reversible"
               on-tap="onPrevTap_"
-              disabled="[[!hasMoreResults]]"></paper-icon-button>
-          <paper-icon-button id="next-button" icon="cr:chevron-right"
-              alt="$i18n{rangeNext}"
+              disabled="[[!hasMoreResults]]">
+            <iron-icon icon="history:chevron-left"></iron-icon>
+          </button>
+          <button is="paper-icon-button-light"
+              id="next-button"
               title="$i18n{rangeNext}"
-              class="rtl-reversible"
+              class="icon-button rtl-reversible"
               on-tap="onNextTap_"
-              disabled="[[isToday_(groupedOffset)]]"></paper-icon-button>
+              disabled="[[isToday_(groupedOffset)]]">
+            <iron-icon icon="cr:chevron-right"></iron-icon>
+          </button>
         </div>
       </div>
     </template>
