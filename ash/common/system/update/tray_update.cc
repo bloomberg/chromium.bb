@@ -10,11 +10,11 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/wm_shell.h"
-#include "ash/public/interfaces/update.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -33,22 +33,22 @@ namespace {
 // severity.
 // TODO(tdanderson): This is only used for non-material design, so remove it
 // when material design is the default. See crbug.com/625692.
-int DecideResource(mojom::UpdateSeverity severity, bool dark) {
+int DecideResource(UpdateInfo::UpdateSeverity severity, bool dark) {
   switch (severity) {
-    case mojom::UpdateSeverity::NONE:
-    case mojom::UpdateSeverity::LOW:
+    case UpdateInfo::UPDATE_NONE:
+    case UpdateInfo::UPDATE_LOW:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK : IDR_AURA_UBER_TRAY_UPDATE;
 
-    case mojom::UpdateSeverity::ELEVATED:
+    case UpdateInfo::UPDATE_ELEVATED:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_GREEN
                   : IDR_AURA_UBER_TRAY_UPDATE_GREEN;
 
-    case mojom::UpdateSeverity::HIGH:
+    case UpdateInfo::UPDATE_HIGH:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_ORANGE
                   : IDR_AURA_UBER_TRAY_UPDATE_ORANGE;
 
-    case mojom::UpdateSeverity::SEVERE:
-    case mojom::UpdateSeverity::CRITICAL:
+    case UpdateInfo::UPDATE_SEVERE:
+    case UpdateInfo::UPDATE_CRITICAL:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_RED
                   : IDR_AURA_UBER_TRAY_UPDATE_RED;
   }
@@ -60,19 +60,19 @@ int DecideResource(mojom::UpdateSeverity severity, bool dark) {
 // Returns the color to use for the material design update icon when the update
 // severity is |severity|. If |for_menu| is true, the icon color for the system
 // menu is given, otherwise the icon color for the system tray is given.
-SkColor IconColorForUpdateSeverity(mojom::UpdateSeverity severity,
+SkColor IconColorForUpdateSeverity(UpdateInfo::UpdateSeverity severity,
                                    bool for_menu) {
   const SkColor default_color = for_menu ? kMenuIconColor : kTrayIconColor;
   switch (severity) {
-    case mojom::UpdateSeverity::NONE:
+    case UpdateInfo::UPDATE_NONE:
       return default_color;
-    case mojom::UpdateSeverity::LOW:
+    case UpdateInfo::UPDATE_LOW:
       return for_menu ? gfx::kGoogleGreen700 : kTrayIconColor;
-    case mojom::UpdateSeverity::ELEVATED:
+    case UpdateInfo::UPDATE_ELEVATED:
       return for_menu ? gfx::kGoogleYellow700 : gfx::kGoogleYellow300;
-    case mojom::UpdateSeverity::HIGH:
-    case mojom::UpdateSeverity::SEVERE:
-    case mojom::UpdateSeverity::CRITICAL:
+    case UpdateInfo::UPDATE_HIGH:
+    case UpdateInfo::UPDATE_SEVERE:
+    case UpdateInfo::UPDATE_CRITICAL:
       return for_menu ? gfx::kGoogleRed700 : gfx::kGoogleRed300;
     default:
       NOTREACHED();
@@ -81,19 +81,9 @@ SkColor IconColorForUpdateSeverity(mojom::UpdateSeverity severity,
   return default_color;
 }
 
-}  // namespace
-
-// static
-bool TrayUpdate::update_required_ = false;
-// static
-mojom::UpdateSeverity TrayUpdate::severity_ = mojom::UpdateSeverity::NONE;
-// static
-bool TrayUpdate::factory_reset_required_ = false;
-
-// The "restart to update" item in the system tray menu.
-class TrayUpdate::UpdateView : public ActionableView {
+class UpdateView : public ActionableView {
  public:
-  explicit UpdateView(TrayUpdate* owner)
+  UpdateView(SystemTrayItem* owner, const UpdateInfo& info)
       : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
         label_(nullptr) {
     SetLayoutManager(new views::FillLayout);
@@ -105,16 +95,15 @@ class TrayUpdate::UpdateView : public ActionableView {
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
       image->SetImage(gfx::CreateVectorIcon(
           kSystemMenuUpdateIcon,
-          IconColorForUpdateSeverity(owner->severity_, true)));
+          IconColorForUpdateSeverity(info.severity, true)));
     } else {
-      image->SetImage(
-          bundle.GetImageNamed(DecideResource(owner->severity_, true))
-              .ToImageSkia());
+      image->SetImage(bundle.GetImageNamed(DecideResource(info.severity, true))
+                          .ToImageSkia());
     }
     tri_view->AddView(TriView::Container::START, image);
 
     base::string16 label_text =
-        owner->factory_reset_required_
+        info.factory_reset_required
             ? bundle.GetLocalizedString(
                   IDS_ASH_STATUS_TRAY_RESTART_AND_POWERWASH_TO_UPDATE)
             : bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE);
@@ -160,33 +149,34 @@ class TrayUpdate::UpdateView : public ActionableView {
   DISALLOW_COPY_AND_ASSIGN(UpdateView);
 };
 
-TrayUpdate::TrayUpdate(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_UPDATE, UMA_UPDATE) {}
+}  // namespace
 
-TrayUpdate::~TrayUpdate() {}
+TrayUpdate::TrayUpdate(SystemTray* system_tray)
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_UPDATE, UMA_UPDATE) {
+  WmShell::Get()->system_tray_notifier()->AddUpdateObserver(this);
+}
+
+TrayUpdate::~TrayUpdate() {
+  WmShell::Get()->system_tray_notifier()->RemoveUpdateObserver(this);
+}
 
 bool TrayUpdate::GetInitialVisibility() {
-  // If chrome tells ash there is an update available before this item's system
-  // tray is constructed then show the icon.
-  return update_required_;
+  UpdateInfo info;
+  WmShell::Get()->system_tray_delegate()->GetSystemUpdateInfo(&info);
+  return info.update_required;
 }
 
 views::View* TrayUpdate::CreateDefaultView(LoginStatus status) {
-  return update_required_ ? new UpdateView(this) : nullptr;
+  UpdateInfo info;
+  WmShell::Get()->system_tray_delegate()->GetSystemUpdateInfo(&info);
+  return info.update_required ? new UpdateView(this, info) : nullptr;
 }
 
-void TrayUpdate::ShowUpdateIcon(mojom::UpdateSeverity severity,
-                                bool factory_reset_required) {
-  // Cache update info so we can create the default view when the menu opens.
-  update_required_ = true;
-  severity_ = severity;
-  factory_reset_required_ = factory_reset_required;
-
-  // Show the icon in the tray.
+void TrayUpdate::OnUpdateRecommended(const UpdateInfo& info) {
   if (MaterialDesignController::UseMaterialDesignSystemIcons())
-    SetIconColor(IconColorForUpdateSeverity(severity_, false));
+    SetIconColor(IconColorForUpdateSeverity(info.severity, false));
   else
-    SetImageFromResourceId(DecideResource(severity_, false));
+    SetImageFromResourceId(DecideResource(info.severity, false));
   tray_view()->SetVisible(true);
 }
 

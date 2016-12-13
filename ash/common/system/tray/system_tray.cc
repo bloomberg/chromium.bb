@@ -822,6 +822,10 @@ TrayTiles* SystemTray::GetTrayTilesForTesting() const {
   return tray_tiles_;
 }
 
+TrayUpdate* SystemTray::GetTrayUpdateForTesting() const {
+  return tray_update_;
+}
+
 void SystemTray::CloseBubble(const ui::KeyEvent& key_event) {
   CloseSystemBubble();
 }

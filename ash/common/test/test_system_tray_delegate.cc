@@ -16,6 +16,7 @@ namespace test {
 
 namespace {
 
+bool g_system_update_required = false;
 LoginStatus g_initial_status = LoginStatus::USER;
 
 }  // namespace
@@ -68,6 +69,13 @@ LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
 
 bool TestSystemTrayDelegate::IsUserSupervised() const {
   return login_status_ == LoginStatus::SUPERVISED;
+}
+
+void TestSystemTrayDelegate::GetSystemUpdateInfo(UpdateInfo* info) const {
+  DCHECK(info);
+  info->severity = UpdateInfo::UPDATE_NONE;
+  info->update_required = g_system_update_required;
+  info->factory_reset_required = false;
 }
 
 bool TestSystemTrayDelegate::GetSessionStartTime(

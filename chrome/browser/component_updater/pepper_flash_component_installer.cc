@@ -46,7 +46,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -91,7 +91,8 @@ void LogRegistrationResult(chromeos::DBusMethodCallStatus call_status,
     LOG(ERROR) << "Component flash registration failed";
     return;
   }
-  chromeos::SystemTrayClient* tray = chromeos::SystemTrayClient::Get();
+  chromeos::SystemTrayDelegateChromeOS* tray =
+      chromeos::SystemTrayDelegateChromeOS::instance();
   if (tray) {
     tray->SetFlashUpdateAvailable();
   }
