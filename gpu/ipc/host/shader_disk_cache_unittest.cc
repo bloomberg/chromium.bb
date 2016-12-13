@@ -5,15 +5,14 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/browser_thread_impl.h"
-#include "content/browser/gpu/shader_disk_cache.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "gpu/ipc/host/shader_disk_cache.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace gpu {
 namespace {
 
 const int kDefaultClientId = 42;
@@ -25,9 +24,12 @@ const char kCacheValue[] = "cached value";
 class ShaderDiskCacheTest : public testing::Test {
  public:
   ShaderDiskCacheTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-    factory_ = base::MakeUnique<ShaderCacheFactory>(
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
+      : cache_thread_("CacheThread") {
+    base::Thread::Options options;
+    options.message_loop_type = base::MessageLoop::TYPE_IO;
+    CHECK(cache_thread_.StartWithOptions(options));
+    factory_ =
+        base::MakeUnique<ShaderCacheFactory>(cache_thread_.task_runner());
   }
 
   ~ShaderDiskCacheTest() override {}
@@ -46,7 +48,8 @@ class ShaderDiskCacheTest : public testing::Test {
 
   std::unique_ptr<ShaderCacheFactory> factory_;
   base::ScopedTempDir temp_dir_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::Thread cache_thread_;
+  base::MessageLoopForIO message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderDiskCacheTest);
 };
@@ -76,4 +79,4 @@ TEST_F(ShaderDiskCacheTest, ClearsCache) {
   EXPECT_EQ(0, cache->Size());
 };
 
-}  // namespace content
+}  // namespace gpu

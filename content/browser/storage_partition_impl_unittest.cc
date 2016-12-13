@@ -641,7 +641,7 @@ class StoragePartitionShaderClearTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
 
-  scoped_refptr<ShaderDiskCache> cache_;
+  scoped_refptr<gpu::ShaderDiskCache> cache_;
 };
 
 // Tests ---------------------------------------------------------------------

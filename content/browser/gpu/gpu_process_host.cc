@@ -57,6 +57,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/ipc/host/shader_disk_cache.h"
 #include "gpu/ipc/service/switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
@@ -1173,7 +1174,7 @@ void GpuProcessHost::LoadedShader(const std::string& key,
 void GpuProcessHost::CreateChannelCache(int32_t client_id) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateChannelCache");
 
-  scoped_refptr<ShaderDiskCache> cache =
+  scoped_refptr<gpu::ShaderDiskCache> cache =
       GetShaderCacheFactorySingleton()->Get(client_id);
   if (!cache.get())
     return;

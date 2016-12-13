@@ -42,6 +42,7 @@ struct ChannelHandle;
 
 namespace gpu {
 struct GpuPreferences;
+class ShaderDiskCache;
 struct SyncToken;
 }
 
@@ -52,7 +53,6 @@ class InterfaceProvider;
 namespace content {
 class BrowserChildProcessHostImpl;
 class InProcessChildThreadParams;
-class ShaderDiskCache;
 
 typedef base::Thread* (*GpuMainThreadFactoryFunction)(
     const InProcessChildThreadParams&, const gpu::GpuPreferences&);
@@ -282,7 +282,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // automatic execution of 3D content from those domains.
   std::multiset<GURL> urls_with_live_offscreen_contexts_;
 
-  typedef std::map<int32_t, scoped_refptr<ShaderDiskCache>>
+  typedef std::map<int32_t, scoped_refptr<gpu::ShaderDiskCache>>
       ClientIdToShaderCacheMap;
   ClientIdToShaderCacheMap client_id_to_shader_cache_;
 

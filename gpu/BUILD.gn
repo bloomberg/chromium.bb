@@ -302,6 +302,7 @@ test("gpu_unittests") {
     "ipc/client/gpu_memory_buffer_impl_shared_memory_unittest.cc",
     "ipc/client/gpu_memory_buffer_impl_test_template.h",
     "ipc/common/struct_traits_unittest.cc",
+    "ipc/host/shader_disk_cache_unittest.cc",
   ]
 
   if (is_mac) {
@@ -326,8 +327,10 @@ test("gpu_unittests") {
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/ipc:gl_in_process_context",
     "//gpu/ipc/common:test_interfaces",
+    "//gpu/ipc/host",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/angle:translator",

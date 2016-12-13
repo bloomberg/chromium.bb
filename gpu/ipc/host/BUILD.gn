@@ -10,11 +10,14 @@ source_set("host") {
     "gpu_memory_buffer_support.h",
     "gpu_switches.cc",
     "gpu_switches.h",
+    "shader_disk_cache.cc",
+    "shader_disk_cache.h",
   ]
 
   deps = [
     "//base",
     "//gpu/ipc/common",
+    "//net",
     "//ui/gfx",
     "//ui/gl",
   ]

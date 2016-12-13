@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gpu/shader_disk_cache.h"
+#include "gpu/ipc/host/shader_disk_cache.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -13,7 +13,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
-namespace content {
+namespace gpu {
 
 namespace {
 
@@ -77,7 +77,6 @@ class ShaderDiskReadHelper : public base::ThreadChecker {
     ITERATION_FINISHED
   };
 
-
   void OnOpComplete(int rv);
 
   int OpenNextEntry();
@@ -109,11 +108,7 @@ class ShaderClearHelper : public base::ThreadChecker {
   void Clear();
 
  private:
-  enum OpType {
-    TERMINATE,
-    VERIFY_CACHE_SETUP,
-    DELETE_CACHE
-  };
+  enum OpType { TERMINATE, VERIFY_CACHE_SETUP, DELETE_CACHE };
 
   void DoClearShaderCache(int rv);
 
@@ -376,8 +371,7 @@ ShaderCacheFactory::ShaderCacheFactory(
     scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner)
     : cache_task_runner_(std::move(cache_task_runner)) {}
 
-ShaderCacheFactory::~ShaderCacheFactory() {
-}
+ShaderCacheFactory::~ShaderCacheFactory() {}
 
 void ShaderCacheFactory::SetCacheInfo(int32_t client_id,
                                       const base::FilePath& path) {
@@ -516,15 +510,15 @@ void ShaderDiskCache::Cache(const std::string& key, const std::string& shader) {
   entries_.insert(std::make_pair(raw_ptr, std::move(shim)));
 }
 
-int ShaderDiskCache::Clear(
-    const base::Time begin_time, const base::Time end_time,
-    const net::CompletionCallback& completion_callback) {
+int ShaderDiskCache::Clear(const base::Time begin_time,
+                           const base::Time end_time,
+                           const net::CompletionCallback& completion_callback) {
   int rv;
   if (begin_time.is_null()) {
     rv = backend_->DoomAllEntries(completion_callback);
   } else {
-    rv = backend_->DoomEntriesBetween(begin_time, end_time,
-                                      completion_callback);
+    rv =
+        backend_->DoomEntriesBetween(begin_time, end_time, completion_callback);
   }
   return rv;
 }
@@ -581,4 +575,4 @@ int ShaderDiskCache::SetCacheCompleteCallback(
   return net::ERR_IO_PENDING;
 }
 
-}  // namespace content
+}  // namespace gpu

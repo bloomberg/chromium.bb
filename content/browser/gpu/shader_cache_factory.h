@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_GPU_SHADER_CACHE_FACTORY_H_
 #define CONTENT_BROWSER_GPU_SHADER_CACHE_FACTORY_H_
 
-#include "content/browser/gpu/shader_disk_cache.h"
 #include "content/common/content_export.h"
+#include "gpu/ipc/host/shader_disk_cache.h"
 
 namespace content {
 
@@ -20,7 +20,7 @@ CONTENT_EXPORT void InitShaderCacheFactorySingleton(
 
 // Returns an instance previously created by InitShaderCacheFactorySingleton().
 // This can return nullptr if an instance has not yet been created.
-CONTENT_EXPORT ShaderCacheFactory* GetShaderCacheFactorySingleton();
+CONTENT_EXPORT gpu::ShaderCacheFactory* GetShaderCacheFactorySingleton();
 
 }  // namespace content
 
