@@ -57,6 +57,9 @@ void ExtensionsGuestViewManagerDelegate::DispatchEvent(
                                               << " must have a histogram value";
 
   content::WebContents* owner = guest->owner_web_contents();
+  if (!owner)
+    return;  // Could happen at tab shutdown.
+
   EventRouter::DispatchEventToSender(owner, guest->browser_context(),
                                      guest->owner_host(), histogram_value,
                                      event_name, std::move(event_args),
