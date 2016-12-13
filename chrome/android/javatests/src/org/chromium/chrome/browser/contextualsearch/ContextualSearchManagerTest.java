@@ -2739,6 +2739,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
+    @RetryOnFailure  // crbug.com/673681
     public void testQuickActionCaptionAndImage() throws InterruptedException, TimeoutException {
         // Simulate a tap to show the Bar, then set the quick action data.
         simulateTapSearch("search");
