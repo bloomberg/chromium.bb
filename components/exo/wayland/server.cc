@@ -3058,7 +3058,16 @@ void keyboard_configuration_get_keyboard_device_configuration(
     wl_resource* resource,
     uint32_t id,
     wl_resource* keyboard_resource) {
-  // TODO(yhanada): Produce an error if a delegate already exists.
+  Keyboard* keyboard = GetUserDataAs<Keyboard>(keyboard_resource);
+  if (keyboard->HasDeviceConfigurationDelegate()) {
+    wl_resource_post_error(
+        resource,
+        ZCR_KEYBOARD_CONFIGURATION_V1_ERROR_DEVICE_CONFIGURATION_EXISTS,
+        "keyboard has already been associated with a device configuration "
+        "object");
+    return;
+  }
+
   wl_resource* keyboard_device_configuration_resource = wl_resource_create(
       client, &zcr_keyboard_device_configuration_v1_interface, 1, id);
 
@@ -3066,8 +3075,7 @@ void keyboard_configuration_get_keyboard_device_configuration(
       keyboard_device_configuration_resource,
       &keyboard_device_configuration_implementation,
       base::MakeUnique<WaylandKeyboardDeviceConfigurationDelegate>(
-          keyboard_device_configuration_resource,
-          GetUserDataAs<Keyboard>(keyboard_resource)));
+          keyboard_device_configuration_resource, keyboard));
 }
 
 const struct zcr_keyboard_configuration_v1_interface
@@ -3127,7 +3135,7 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &zcr_stylus_v1_interface, 1, display_,
                    bind_stylus);
   wl_global_create(wl_display_.get(), &zcr_keyboard_configuration_v1_interface,
-                   1, display_, bind_keyboard_configuration);
+                   2, display_, bind_keyboard_configuration);
 }
 
 Server::~Server() {}

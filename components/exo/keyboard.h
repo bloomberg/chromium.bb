@@ -33,6 +33,7 @@ class Keyboard : public ui::EventHandler,
   explicit Keyboard(KeyboardDelegate* delegate);
   ~Keyboard() override;
 
+  bool HasDeviceConfigurationDelegate() const;
   void SetDeviceConfigurationDelegate(
       KeyboardDeviceConfigurationDelegate* delegate);
 
