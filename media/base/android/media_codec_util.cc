@@ -115,6 +115,12 @@ bool MediaCodecUtil::IsMediaCodecAvailable() {
     return model != "GT-I9100" && model != "GT-I9300" && model != "GT-N7000" &&
            model != "GT-N7100" && model != "A6600" && model != "A6800" &&
            model != "GT-S7262" && model != "GT-S5282" && model != "GT-I8552";
+  } else if (base::android::BuildInfo::GetInstance()->sdk_int() < 19) {
+    // For JB, these tend to fail often (crbug.com/654905), but not with K+.
+    std::string model(base::android::BuildInfo::GetInstance()->model());
+    return model != "GT-P3113" && model != "GT-P5110" && model != "GT-P5100" &&
+           model != "GT-P5113" && model != "GT-P3110" && model != "GT-N5110" &&
+           model != "e-tab4" && model != "GT-I8200Q";
   }
 
   return true;
