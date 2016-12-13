@@ -1895,8 +1895,6 @@ crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-res
 
 crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
 
-crbug.com/657968 storage/indexeddb/idbdatabase-createObjectStore-exception-order.html [ Pass Failure ]
-crbug.com/657968 storage/indexeddb/idbdatabase-deleteObjectStore-exception-order.html [ Pass Failure ]
 crbug.com/667236 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
 crbug.com/667236 [ Linux ] fast/forms/select/basic-selects.html [ NeedsRebaseline ]
 crbug.com/667236 [ Linux ] fast/forms/select/select-autofilled.html [ NeedsRebaseline ]

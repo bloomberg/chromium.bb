@@ -10,15 +10,17 @@
 indexeddb_test(
   (t, db, req) => {
     db.createObjectStore('s');
-    req.transaction.abort();
+    req.transaction.onabort = () => {
+      setTimeout(t.step_func(() => {
+        assert_throws(
+          'InvalidStateError', () => { db.deleteObjectStore('s'); },
+          '"running an upgrade transaction" check (InvalidStateError) ' +
+          'should precede "not active" check (TransactionInactiveError)');
+        t.done();
+      }), 0);
+    };
     req.onerror = null;
-    setTimeout(t.step_func(() => {
-      assert_throws(
-        'InvalidStateError', () => { db.deleteObjectStore('s'); },
-        '"running an upgrade transaction" check (InvalidStateError) ' +
-        'should precede "not active" check (TransactionInactiveError)');
-      t.done();
-    }), 0);
+    req.transaction.abort();
   },
   (t, db) => { t.assert_unreached('open should fail'); },
   'IDBDatabase.deleteObjectStore exception order: ' +
@@ -27,8 +29,8 @@ indexeddb_test(
 
 indexeddb_test(
   (t, db, req) => {
-    req.transaction.abort();
     req.onerror = null;
+    req.transaction.abort();
     assert_throws(
       'TransactionInactiveError', () => { db.deleteObjectStore('nope'); },
       '"not active" check (TransactionInactiveError) should precede ' +
