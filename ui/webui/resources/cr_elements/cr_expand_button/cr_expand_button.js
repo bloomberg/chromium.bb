@@ -40,5 +40,13 @@ Polymer({
 
   iconName_: function(expanded) {
     return expanded ? 'cr:expand-less' : 'cr:expand-more';
-  }
+  },
+
+  /**
+   * @param {Event} event
+   * @private
+   */
+  stopTap_: function(event) {
+    event.stopPropagation();
+  },
 });

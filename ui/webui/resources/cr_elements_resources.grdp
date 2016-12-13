@@ -19,9 +19,6 @@
   <structure name="IDR_CR_ELEMENTS_CR_DIALOG_JS"
              file="../../webui/resources/cr_elements/cr_dialog/cr_dialog.js"
              type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_CR_EXPAND_BUTTON_CSS"
-             file="../../webui/resources/cr_elements/cr_expand_button/cr_expand_button.css"
-             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_EXPAND_BUTTON_HTML"
              file="../../webui/resources/cr_elements/cr_expand_button/cr_expand_button.html"
              type="chrome_html" />
@@ -170,8 +167,5 @@
              type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_TOOLBAR_SEARCH_FIELD_JS"
              file="../../webui/resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_SHARED_CSS"
-             file="../../webui/resources/cr_elements/shared.css"
              type="chrome_html" />
 </grit-part>
