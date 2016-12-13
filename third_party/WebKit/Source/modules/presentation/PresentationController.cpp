@@ -4,6 +4,7 @@
 
 #include "modules/presentation/PresentationController.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/presentation/PresentationConnection.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
@@ -14,7 +15,7 @@ namespace blink {
 
 PresentationController::PresentationController(LocalFrame& frame,
                                                WebPresentationClient* client)
-    : DOMWindowProperty(&frame), m_client(client) {
+    : ContextLifecycleObserver(frame.document()), m_client(client) {
   if (m_client)
     m_client->setController(this);
 }
@@ -58,7 +59,7 @@ DEFINE_TRACE(PresentationController) {
   visitor->trace(m_presentation);
   visitor->trace(m_connections);
   Supplement<LocalFrame>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 void PresentationController::didStartDefaultSession(
@@ -140,12 +141,11 @@ void PresentationController::registerConnection(
   m_connections.add(connection);
 }
 
-void PresentationController::frameDestroyed() {
+void PresentationController::contextDestroyed() {
   if (m_client) {
     m_client->setController(nullptr);
     m_client = nullptr;
   }
-  DOMWindowProperty::frameDestroyed();
 }
 
 PresentationConnection* PresentationController::findConnection(
