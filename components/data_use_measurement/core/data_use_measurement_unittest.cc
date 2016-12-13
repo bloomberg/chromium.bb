@@ -41,9 +41,21 @@ class UserRequestUserDataForTesting : public base::SupportsUserData::Data,
   }
 };
 
+// The more usual initialization of kUserDataKey would be along the lines of
+//     const void* const UserRequestUserDataForTesting::kUserDataKey =
+//         &UserRequestUserDataForTesting::kUserDataKey;
+// but lld's identical constant folding then folds that with
+// DataUseUserData::kUserDataKey which is initialized like that as well, and
+// then UserRequestUserDataForTesting::IsUserRequest() starts classifying
+// service requests as user requests.  To work around this, make
+// UserRequestUserDataForTesting::kUserDataKey point to an arbitrary integer
+// instead.
+// TODO(thakis): If we changed lld to only ICF over code and not over data,
+// we could undo this again.
+const int kICFBuster = 12345634;
+
 // static
-const void* const UserRequestUserDataForTesting::kUserDataKey =
-    &UserRequestUserDataForTesting::kUserDataKey;
+const void* const UserRequestUserDataForTesting::kUserDataKey = &kICFBuster;
 
 class DataUseMeasurementTest : public testing::Test {
  public:
