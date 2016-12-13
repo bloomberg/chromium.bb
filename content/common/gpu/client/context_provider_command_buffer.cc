@@ -447,8 +447,6 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   DCHECK(bind_succeeded_);
-  if (!gr_context_)
-    return false;
 
   base::Optional<base::AutoLock> hold;
   if (support_locking_)
@@ -457,11 +455,13 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
   gles2_impl_->OnMemoryDump(args, pmd);
   gles2_helper_->OnMemoryDump(args, pmd);
 
-  context_thread_checker_.DetachFromThread();
-  SkiaGpuTraceMemoryDump trace_memory_dump(
-      pmd, gles2_impl_->ShareGroupTracingGUID());
-  gr_context_->get()->dumpMemoryStatistics(&trace_memory_dump);
-  context_thread_checker_.DetachFromThread();
+  if (gr_context_) {
+    context_thread_checker_.DetachFromThread();
+    SkiaGpuTraceMemoryDump trace_memory_dump(
+        pmd, gles2_impl_->ShareGroupTracingGUID());
+    gr_context_->get()->dumpMemoryStatistics(&trace_memory_dump);
+    context_thread_checker_.DetachFromThread();
+  }
   return true;
 }
 
