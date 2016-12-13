@@ -5,19 +5,12 @@
 #ifndef IOS_WEB_WEB_STATE_WEB_CONTROLLER_OBSERVER_BRIDGE_H_
 #define IOS_WEB_WEB_STATE_WEB_CONTROLLER_OBSERVER_BRIDGE_H_
 
-#include <string>
-
 #import "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 
 @class CRWWebController;
 @protocol CRWWebControllerObserver;
-class GURL;
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace web {
 
@@ -49,14 +42,8 @@ class WebControllerObserverBridge : public WebStateObserver {
   // WebStateObserver implementation.
   void PageLoaded(PageLoadCompletionStatus load_completion_status) override;
 
-  // Callback for script commands.
-  bool ScriptCommandReceived(const base::DictionaryValue& value,
-                             const GURL& url,
-                             bool user_is_interacting);
-
   base::WeakNSProtocol<id<CRWWebControllerObserver>> web_controller_observer_;
   base::WeakNSObject<CRWWebController> web_controller_;
-  std::string script_command_callback_prefix_;
 
   DISALLOW_COPY_AND_ASSIGN(WebControllerObserverBridge);
 };

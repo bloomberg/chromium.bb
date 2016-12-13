@@ -10,9 +10,7 @@
 
 #include "base/ios/ios_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/values.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/navigation/crw_session_entry.h"
@@ -204,27 +202,13 @@ typedef BOOL (^openExternalURLBlockType)(const GURL&);
 @interface CountingObserver : NSObject<CRWWebControllerObserver>
 
 @property(nonatomic, readonly) int pageLoadedCount;
-@property(nonatomic, readonly) int messageCount;
 @end
 
 @implementation CountingObserver
 @synthesize pageLoadedCount = _pageLoadedCount;
-@synthesize messageCount = _messageCount;
 
 - (void)pageLoaded:(CRWWebController*)webController {
   ++_pageLoadedCount;
-}
-
-- (BOOL)handleCommand:(const base::DictionaryValue&)command
-        webController:(CRWWebController*)webController
-    userIsInteracting:(BOOL)userIsInteracting
-            originURL:(const GURL&)originURL {
-  ++_messageCount;
-  return YES;
-}
-
-- (NSString*)commandPrefix {
-  return @"wctest";
 }
 
 @end
@@ -906,17 +890,6 @@ TEST_F(CRWWebControllerObserversTest, Observers) {
   EXPECT_EQ(0, [observer pageLoadedCount]);
   [web_controller() webStateImpl]->OnPageLoaded(GURL("http://test"), true);
   EXPECT_EQ(1, [observer pageLoadedCount]);
-
-  EXPECT_EQ(0, [observer messageCount]);
-  // Non-matching prefix.
-  EXPECT_FALSE([web_controller() webStateImpl]->OnScriptCommandReceived(
-      "a", base::DictionaryValue(), GURL("http://test"), true));
-  EXPECT_EQ(0, [observer messageCount]);
-  // Matching prefix.
-  EXPECT_TRUE([web_controller() webStateImpl]->OnScriptCommandReceived(
-      base::SysNSStringToUTF8([observer commandPrefix]) + ".foo",
-      base::DictionaryValue(), GURL("http://test"), true));
-  EXPECT_EQ(1, [observer messageCount]);
 
   [web_controller() removeObserver:observer];
   EXPECT_EQ(0u, [web_controller() observerCount]);
