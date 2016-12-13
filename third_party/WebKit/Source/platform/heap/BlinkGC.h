@@ -23,7 +23,6 @@ using VisitorCallback = void (*)(Visitor*, void* self);
 using TraceCallback = VisitorCallback;
 using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
-using PreFinalizerCallback = bool (*)(void*);
 
 // Simple alias to avoid heap compaction type signatures turning into
 // a sea of generic |void*|s.

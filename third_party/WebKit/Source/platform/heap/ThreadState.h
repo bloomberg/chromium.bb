@@ -117,8 +117,6 @@ class PLATFORM_EXPORT ThreadState {
   WTF_MAKE_NONCOPYABLE(ThreadState);
 
  public:
-  typedef std::pair<void*, PreFinalizerCallback> PreFinalizer;
-
   // See setGCState() for possible state transitions.
   enum GCState {
     NoGCScheduled,
@@ -704,6 +702,9 @@ class PLATFORM_EXPORT ThreadState {
   GCState m_gcState;
 
   std::unique_ptr<CallbackStack> m_threadLocalWeakCallbackStack;
+
+  using PreFinalizerCallback = bool (*)(void*);
+  using PreFinalizer = std::pair<void*, PreFinalizerCallback>;
 
   // Pre-finalizers are called in the reverse order in which they are
   // registered by the constructors (including constructors of Mixin objects)
