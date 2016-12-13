@@ -48,7 +48,7 @@
 #include "components/tracing/common/process_metrics_memory_dump_provider.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "content/browser/audio_device_thread.h"
+#include "content/browser/audio_manager_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/device_sensors/device_sensor_service.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
@@ -1703,9 +1703,9 @@ void BrowserMainLoop::CreateAudioManager() {
   audio_manager_ = GetContentClient()->browser()->CreateAudioManager(
       MediaInternals::GetInstance());
   if (!audio_manager_) {
-    audio_thread_ = base::MakeUnique<AudioDeviceThread>();
+    audio_thread_ = base::MakeUnique<AudioManagerThread>();
     audio_manager_ = media::AudioManager::Create(
-        audio_thread_->GetTaskRunner(), audio_thread_->worker_task_runner(),
+        audio_thread_->task_runner(), audio_thread_->worker_task_runner(),
         MediaInternals::GetInstance());
   }
   CHECK(audio_manager_);

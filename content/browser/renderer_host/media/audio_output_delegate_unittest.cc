@@ -13,7 +13,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/browser/audio_device_thread.h"
+#include "content/browser/audio_manager_thread.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -109,10 +109,10 @@ class AudioOutputDelegateTest : public testing::Test {
     // approximate the real conditions of AudioOutputDelegate well.
     thread_bundle_ = base::MakeUnique<TestBrowserThreadBundle>(
         TestBrowserThreadBundle::Options::REAL_IO_THREAD);
-    audio_thread_ = base::MakeUnique<AudioDeviceThread>();
+    audio_thread_ = base::MakeUnique<AudioManagerThread>();
 
     audio_manager_.reset(new media::FakeAudioManager(
-        audio_thread_->GetTaskRunner(), audio_thread_->worker_task_runner(),
+        audio_thread_->task_runner(), audio_thread_->worker_task_runner(),
         &log_factory_));
     media_stream_manager_ =
         base::MakeUnique<MediaStreamManager>(audio_manager_.get());
@@ -458,7 +458,7 @@ class AudioOutputDelegateTest : public testing::Test {
   // TestBrowserThreadBundle.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
-  std::unique_ptr<AudioDeviceThread> audio_thread_;
+  std::unique_ptr<AudioManagerThread> audio_thread_;
   media::ScopedAudioManagerPtr audio_manager_;
   StrictMock<MockAudioMirroringManager> mirroring_manager_;
   StrictMock<MockEventHandler> event_handler_;

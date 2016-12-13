@@ -72,7 +72,7 @@ class ClientNativePixmapFactory;
 #endif
 
 namespace content {
-class AudioDeviceThread;
+class AudioManagerThread;
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
 class BrowserThreadImpl;
@@ -288,7 +288,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
   std::unique_ptr<media::UserInputMonitor> user_input_monitor_;
   // AudioThread needs to outlive |audio_manager_|.
-  std::unique_ptr<AudioDeviceThread> audio_thread_;
+  std::unique_ptr<AudioManagerThread> audio_thread_;
   media::ScopedAudioManagerPtr audio_manager_;
 
   std::unique_ptr<midi::MidiManager> midi_manager_;

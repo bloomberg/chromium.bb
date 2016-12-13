@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "content/browser/audio_device_thread.h"
+#include "content/browser/audio_manager_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -71,9 +71,9 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
 
     thread_bundle_ = base::MakeUnique<TestBrowserThreadBundle>(
         TestBrowserThreadBundle::Options::REAL_IO_THREAD);
-    audio_thread_ = base::MakeUnique<AudioDeviceThread>();
+    audio_thread_ = base::MakeUnique<AudioManagerThread>();
     audio_manager_.reset(new media::FakeAudioManager(
-        audio_thread_->GetTaskRunner(), audio_thread_->worker_task_runner(),
+        audio_thread_->task_runner(), audio_thread_->worker_task_runner(),
         &log_factory_));
     media_stream_manager_ =
         base::MakeUnique<MediaStreamManager>(audio_manager_.get());
@@ -146,7 +146,7 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
   // DestructionObserver.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
-  std::unique_ptr<AudioDeviceThread> audio_thread_;
+  std::unique_ptr<AudioManagerThread> audio_thread_;
   media::FakeAudioLogFactory log_factory_;
   media::ScopedAudioManagerPtr audio_manager_;
 
