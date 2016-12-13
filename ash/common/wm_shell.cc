@@ -47,6 +47,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/display/display.h"
 #include "ui/views/focus/focus_manager_factory.h"
@@ -249,6 +250,7 @@ void WmShell::SetPaletteDelegateForTesting(
 
 WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
     : delegate_(std::move(shell_delegate)),
+      app_list_(base::MakeUnique<app_list::AppList>()),
       cast_config_(base::MakeUnique<CastConfigController>()),
       focus_cycler_(base::MakeUnique<FocusCycler>()),
       immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),

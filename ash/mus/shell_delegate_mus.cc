@@ -19,7 +19,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "components/user_manager/user_info_impl.h"
-#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/gfx/image/image.h"
 
 #if defined(OS_CHROMEOS)
@@ -110,7 +109,7 @@ class MediaDelegateStub : public MediaDelegate {
 }  // namespace
 
 ShellDelegateMus::ShellDelegateMus(service_manager::Connector* connector)
-    : connector_(connector), app_list_presenter_(connector) {
+    : connector_(connector) {
   // |connector_| may be null in tests.
 }
 

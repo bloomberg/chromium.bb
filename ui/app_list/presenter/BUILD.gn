@@ -8,8 +8,23 @@ import("//testing/test.gni")
 
 assert(use_aura)
 
+mojom("mojom") {
+  sources = [
+    "app_list_presenter.mojom",
+  ]
+  deps = [
+    "//services/ui/public/interfaces",
+  ]
+
+  export_class_attribute = "APP_LIST_PRESENTER_EXPORT"
+  export_define = "APP_LIST_PRESENTER_IMPLEMENTATION=1"
+  export_header = "ui/app_list/presenter/app_list_presenter_export.h"
+}
+
 component("presenter") {
   sources = [
+    "app_list.cc",
+    "app_list.h",
     "app_list_presenter.h",
     "app_list_presenter_delegate.cc",
     "app_list_presenter_delegate.h",
@@ -24,7 +39,9 @@ component("presenter") {
   defines = [ "APP_LIST_PRESENTER_IMPLEMENTATION" ]
 
   public_deps = [
+    ":mojom",
     "//base",
+    "//mojo/public/cpp/bindings",
     "//ui/app_list",
     "//ui/aura",
     "//ui/compositor",
@@ -34,15 +51,6 @@ component("presenter") {
     # Temporary dependency to fix compile flake in http://crbug.com/611898.
     # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
     "//ui/accessibility:ax_gen",
-  ]
-}
-
-mojom("mojom") {
-  sources = [
-    "app_list_presenter.mojom",
-  ]
-  deps = [
-    "//services/ui/public/interfaces",
   ]
 }
 

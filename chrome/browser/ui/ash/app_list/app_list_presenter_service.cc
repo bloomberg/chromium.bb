@@ -5,9 +5,24 @@
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
 
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
+#include "chrome/browser/ui/ash/ash_util.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/app_list/presenter/app_list_presenter.h"
 
-AppListPresenterService::AppListPresenterService() {}
+AppListPresenterService::AppListPresenterService() : binding_(this) {
+  content::ServiceManagerConnection* connection =
+      content::ServiceManagerConnection::GetForProcess();
+  if (connection && connection->GetConnector()) {
+    // Connect to the app list interface in the ash service.
+    app_list::mojom::AppListPtr app_list_ptr;
+    connection->GetConnector()->ConnectToInterface(
+        ash_util::GetAshServiceName(), &app_list_ptr);
+    // Register this object as the app list presenter.
+    app_list_ptr->SetAppListPresenter(binding_.CreateInterfacePtrAndBind());
+  }
+}
+
 AppListPresenterService::~AppListPresenterService() {}
 
 void AppListPresenterService::Show(int64_t display_id) {

@@ -7,6 +7,7 @@
         // Modifications here should correspond with changes to
         // chrome_content_browser_manifest_overlay.json.
         "ash": [
+          "app_list::mojom::AppList",
           "ash::mojom::AcceleratorController",
           "ash::mojom::CastConfig",
           "ash::mojom::LocaleNotificationController",

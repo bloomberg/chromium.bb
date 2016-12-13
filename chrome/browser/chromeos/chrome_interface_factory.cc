@@ -16,7 +16,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/keyboard_ui_service.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -26,7 +25,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
-#include "ui/app_list/presenter/app_list_presenter.mojom.h"
 #include "ui/keyboard/keyboard.mojom.h"
 
 namespace chromeos {
@@ -113,21 +111,11 @@ class FactoryImpl {
     launchable_->ProcessRequest(std::move(request));
   }
 
-  void BindRequest(app_list::mojom::AppListPresenterRequest request) {
-    if (!app_list_presenter_service_)
-      app_list_presenter_service_ = base::MakeUnique<AppListPresenterService>();
-    app_list_presenter_bindings_.AddBinding(app_list_presenter_service_.get(),
-                                            std::move(request));
-  }
-
   static base::LazyInstance<std::unique_ptr<FactoryImpl>>::Leaky factory_;
 
   std::unique_ptr<KeyboardUIService> keyboard_ui_service_;
   mojo::BindingSet<keyboard::mojom::Keyboard> keyboard_bindings_;
   std::unique_ptr<ChromeLaunchable> launchable_;
-  std::unique_ptr<AppListPresenterService> app_list_presenter_service_;
-  mojo::BindingSet<app_list::mojom::AppListPresenter>
-      app_list_presenter_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FactoryImpl);
 };
@@ -153,8 +141,6 @@ bool ChromeInterfaceFactory::OnConnect(
                                                      main_thread_task_runner_);
   FactoryImpl::AddFactory<mash::mojom::Launchable>(registry,
                                                    main_thread_task_runner_);
-  FactoryImpl::AddFactory<app_list::mojom::AppListPresenter>(
-      registry, main_thread_task_runner_);
 
   // In classic ash, the browser process provides ash services to itself.
   if (!chrome::IsRunningInMash()) {

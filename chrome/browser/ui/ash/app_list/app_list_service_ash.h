@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
+#include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
 #include "ui/app_list/app_list_model.h"
 
 namespace app_list {
@@ -75,6 +76,8 @@ class AppListServiceAsh : public AppListServiceImpl {
       presenter_delegate_factory_;
   std::unique_ptr<app_list::AppListPresenterImpl> app_list_presenter_;
   std::unique_ptr<AppListControllerDelegateAsh> controller_delegate_;
+
+  AppListPresenterService app_list_presenter_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceAsh);
 };

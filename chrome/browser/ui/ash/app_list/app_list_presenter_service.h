@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_PRESENTER_SERVICE_H_
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/app_list/presenter/app_list_presenter.mojom.h"
 
 namespace app_list {
@@ -25,6 +26,8 @@ class AppListPresenterService : public app_list::mojom::AppListPresenter {
 
  private:
   app_list::AppListPresenter* GetPresenter();
+
+  mojo::Binding<app_list::mojom::AppListPresenter> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterService);
 };

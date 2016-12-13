@@ -11,6 +11,7 @@
 #include "ash/common/new_window_controller.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/shelf_controller.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/shutdown_controller.h"
 #include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
@@ -19,6 +20,7 @@
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "ui/app_list/presenter/app_list.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/network/vpn_list.h"
@@ -31,6 +33,10 @@ namespace {
 void BindAcceleratorControllerRequestOnMainThread(
     mojom::AcceleratorControllerRequest request) {
   WmShell::Get()->accelerator_controller()->BindRequest(std::move(request));
+}
+
+void BindAppListRequestOnMainThread(app_list::mojom::AppListRequest request) {
+  WmShell::Get()->app_list()->BindRequest(std::move(request));
 }
 
 void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
@@ -91,6 +97,8 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::Bind(&BindAcceleratorControllerRequestOnMainThread),
       main_thread_task_runner);
+  registry->AddInterface(base::Bind(&BindAppListRequestOnMainThread),
+                         main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindCastConfigOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(

@@ -21,6 +21,10 @@
 #include "ui/compositor/layer_type.h"
 #include "ui/wm/public/window_types.h"
 
+namespace app_list {
+class AppList;
+}
+
 namespace base {
 class SequencedWorkerPool;
 }
@@ -116,6 +120,8 @@ class ASH_EXPORT WmShell {
   AccessibilityDelegate* accessibility_delegate() {
     return accessibility_delegate_.get();
   }
+
+  app_list::AppList* app_list() { return app_list_.get(); }
 
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
@@ -481,6 +487,7 @@ class ASH_EXPORT WmShell {
 
   std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
+  std::unique_ptr<app_list::AppList> app_list_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<FocusCycler> focus_cycler_;

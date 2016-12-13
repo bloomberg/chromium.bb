@@ -4,37 +4,34 @@
 
 #include "ash/mus/app_list_presenter_mus.h"
 
-#include "content/public/common/service_names.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "ash/common/wm_shell.h"
+#include "ui/app_list/presenter/app_list.h"
 
 namespace ash {
 
-namespace {
-
-bool HasConnection(app_list::mojom::AppListPresenterPtr* interface_ptr) {
-  return interface_ptr->is_bound() && !interface_ptr->encountered_error();
-}
-
-}  // namespace
-
-AppListPresenterMus::AppListPresenterMus(service_manager::Connector* connector)
-    : connector_(connector) {}
+AppListPresenterMus::AppListPresenterMus() {}
 
 AppListPresenterMus::~AppListPresenterMus() {}
 
 void AppListPresenterMus::Show(int64_t display_id) {
-  ConnectIfNeeded();
-  presenter_->Show(display_id);
+  app_list::mojom::AppListPresenter* app_list_presenter =
+      WmShell::Get()->app_list()->GetAppListPresenter();
+  if (app_list_presenter)
+    app_list_presenter->Show(display_id);
 }
 
 void AppListPresenterMus::Dismiss() {
-  ConnectIfNeeded();
-  presenter_->Dismiss();
+  app_list::mojom::AppListPresenter* app_list_presenter =
+      WmShell::Get()->app_list()->GetAppListPresenter();
+  if (app_list_presenter)
+    app_list_presenter->Dismiss();
 }
 
 void AppListPresenterMus::ToggleAppList(int64_t display_id) {
-  ConnectIfNeeded();
-  presenter_->ToggleAppList(display_id);
+  app_list::mojom::AppListPresenter* app_list_presenter =
+      WmShell::Get()->app_list()->GetAppListPresenter();
+  if (app_list_presenter)
+    app_list_presenter->ToggleAppList(display_id);
 }
 
 bool AppListPresenterMus::IsVisible() const {
@@ -47,15 +44,6 @@ bool AppListPresenterMus::GetTargetVisibility() const {
   // either teach them to use a callback, or perhaps use a visibility observer.
   //  NOTIMPLEMENTED();
   return false;
-}
-
-void AppListPresenterMus::ConnectIfNeeded() {
-  if (!connector_ || HasConnection(&presenter_))
-    return;
-  connector_->ConnectToInterface(content::mojom::kBrowserServiceName,
-                                 &presenter_);
-  CHECK(HasConnection(&presenter_))
-      << "Could not connect to app_list::mojom::AppListPresenter.";
 }
 
 }  // namespace ash
