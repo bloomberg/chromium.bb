@@ -50,10 +50,9 @@ int32_t CastRemotingConnectorMessaging::GetStreamIdFromStartedMessage(
   start += specifier.size();
   if (start + 1 >= message.size())
     return -1; // Must be at least one hex digit following the specifier.
+  const auto length = message.find(kMessageFieldSeparator, start) - start;
   int parsed_value;
-  if (!base::HexStringToInt(
-          message.substr(start, message.find(kMessageFieldSeparator, start)),
-          &parsed_value) ||
+  if (!base::HexStringToInt(message.substr(start, length), &parsed_value) ||
       parsed_value < 0 ||
       parsed_value > std::numeric_limits<int32_t>::max()) {
     return -1; // Non-hex digits, or outside valid range.
