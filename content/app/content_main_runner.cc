@@ -453,6 +453,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   int Initialize(const ContentMainParams& params) override {
     ui_task_ = params.ui_task;
 
+#if defined(USE_AURA)
+    env_mode_ = params.env_mode;
+#endif
+
     base::EnableTerminationOnOutOfMemory();
 #if defined(OS_WIN)
     base::win::RegisterInvalidParamHandler();
@@ -782,6 +786,9 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #elif defined(OS_MACOSX)
     main_params.autorelease_pool = autorelease_pool_.get();
 #endif
+#if defined(USE_AURA)
+    main_params.env_mode = env_mode_;
+#endif
 
     return RunNamedProcessTypeMain(process_type, main_params, delegate_);
   }
@@ -839,6 +846,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif
 
   base::Closure* ui_task_;
+
+#if defined(USE_AURA)
+  aura::Env::Mode env_mode_ = aura::Env::Mode::LOCAL;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ContentMainRunnerImpl);
 };

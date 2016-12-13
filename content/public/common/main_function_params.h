@@ -25,6 +25,10 @@ class ScopedNSAutoreleasePool;
 }
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
 namespace content {
 
 struct MainFunctionParams {
@@ -48,6 +52,10 @@ struct MainFunctionParams {
   base::mac::ScopedNSAutoreleasePool* autorelease_pool;
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
   bool zygote_child;
+#endif
+
+#if defined(USE_AURA)
+  aura::Env::Mode env_mode = aura::Env::Mode::LOCAL;
 #endif
 
   // Used by InProcessBrowserTest. If non-null BrowserMain schedules this

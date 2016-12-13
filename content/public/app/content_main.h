@@ -15,6 +15,10 @@
 #include <windows.h>
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
 namespace sandbox {
 struct SandboxInterfaceInfo;
 }
@@ -51,6 +55,10 @@ struct ContentMainParams {
   // Used by browser_tests. If non-null BrowserMain schedules this task to run
   // on the MessageLoop. It's owned by the test code.
   base::Closure* ui_task;
+
+#if defined(USE_AURA)
+  aura::Env::Mode env_mode = aura::Env::Mode::LOCAL;
+#endif
 };
 
 #if defined(OS_ANDROID)

@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
+import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/features/features.gni")
@@ -272,6 +273,10 @@ source_set("common_sources") {
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",
   ]
+
+  if (use_aura) {
+    deps += [ "//ui/aura" ]
+  }
 
   # //content/common needs to include public headers.
   allow_circular_includes_from = [
