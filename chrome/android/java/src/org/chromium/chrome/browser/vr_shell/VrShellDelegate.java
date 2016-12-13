@@ -68,7 +68,7 @@ public class VrShellDelegate {
     private final Intent mEnterVRIntent;
 
     private boolean mVrAvailable;
-    private boolean mCardboardSupportOnly;
+    private boolean mCardboardSupportOnly = true;
     private Boolean mVrShellEnabled;
 
     private VrClassesBuilder mVrClassesBuilder;
@@ -93,10 +93,10 @@ public class VrShellDelegate {
         // TODO(bshe): refactor code so that mCardboardSupportOnly does not depend on mVrAvailable
         // and mVrAvailable does not depend on createVrDaydreamApi.
         mVrAvailable = createVrClassesBuilder() && isVrCoreCompatible() && createVrDaydreamApi();
-        // Make sure mVrDaydreamApi is created as createVrDaydreamApi might not get called above.
-        if (mVrDaydreamApi == null) createVrDaydreamApi();
         // Only Cardboard mode is supported on non-daydream devices.
-        mCardboardSupportOnly = !mVrDaydreamApi.isDaydreamReadyDevice();
+        if (mVrDaydreamApi != null && mVrDaydreamApi.isDaydreamReadyDevice()) {
+            mCardboardSupportOnly = false;
+        }
 
         if (mVrAvailable && !mCardboardSupportOnly) {
             mEnterVRIntent =
