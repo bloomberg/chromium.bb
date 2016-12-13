@@ -131,23 +131,10 @@ void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   DCHECK(!init_cb.is_null());
   DCHECK(client);
-  DCHECK(demuxer_stream_provider->GetStream(DemuxerStream::AUDIO) ||
-         demuxer_stream_provider->GetStream(DemuxerStream::VIDEO));
 
   client_ = client;
   demuxer_stream_provider_ = demuxer_stream_provider;
   init_cb_ = init_cb;
-
-  DemuxerStream* audio_stream =
-      demuxer_stream_provider->GetStream(DemuxerStream::AUDIO);
-  if (audio_stream)
-    audio_stream->SetStreamStatusChangeCB(base::Bind(
-        &RendererImpl::RestartStreamPlayback, weak_this_, audio_stream));
-  DemuxerStream* video_stream =
-      demuxer_stream_provider->GetStream(DemuxerStream::VIDEO);
-  if (video_stream)
-    video_stream->SetStreamStatusChangeCB(base::Bind(
-        &RendererImpl::RestartStreamPlayback, weak_this_, video_stream));
 
   if (HasEncryptedStream() && !cdm_context_) {
     state_ = STATE_INIT_PENDING_CDM;
@@ -384,19 +371,23 @@ void RendererImpl::InitializeAudioRenderer() {
   PipelineStatusCB done_cb =
       base::Bind(&RendererImpl::OnAudioRendererInitializeDone, weak_this_);
 
-  if (!demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO)) {
+  DemuxerStream* audio_stream =
+      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
+  if (!audio_stream) {
     audio_renderer_.reset();
     task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));
     return;
   }
 
+  audio_stream->SetStreamStatusChangeCB(base::Bind(
+      &RendererImpl::RestartStreamPlayback, weak_this_, audio_stream));
+
   audio_renderer_client_.reset(
       new RendererClientInternal(DemuxerStream::AUDIO, this));
   // Note: After the initialization of a renderer, error events from it may
   // happen at any time and all future calls must guard against STATE_ERROR.
-  audio_renderer_->Initialize(
-      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO), cdm_context_,
-      audio_renderer_client_.get(), done_cb);
+  audio_renderer_->Initialize(audio_stream, cdm_context_,
+                              audio_renderer_client_.get(), done_cb);
 }
 
 void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
@@ -429,17 +420,21 @@ void RendererImpl::InitializeVideoRenderer() {
   PipelineStatusCB done_cb =
       base::Bind(&RendererImpl::OnVideoRendererInitializeDone, weak_this_);
 
-  if (!demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO)) {
+  DemuxerStream* video_stream =
+      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
+  if (!video_stream) {
     video_renderer_.reset();
     task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));
     return;
   }
 
+  video_stream->SetStreamStatusChangeCB(base::Bind(
+      &RendererImpl::RestartStreamPlayback, weak_this_, video_stream));
+
   video_renderer_client_.reset(
       new RendererClientInternal(DemuxerStream::VIDEO, this));
   video_renderer_->Initialize(
-      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO), cdm_context_,
-      video_renderer_client_.get(),
+      video_stream, cdm_context_, video_renderer_client_.get(),
       base::Bind(&RendererImpl::GetWallClockTimes, base::Unretained(this)),
       done_cb);
 }

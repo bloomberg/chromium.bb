@@ -39,6 +39,13 @@ class MEDIA_EXPORT DemuxerStreamProvider {
   //   Returns the first stream of the given stream type (which is not allowed
   //   to be DemuxerStream::TEXT), or NULL if that type of stream is not
   //   present.
+  //   NOTE: Once a DemuxerStream pointer is returned from GetStream it is
+  //   guaranteed to stay valid for as long as the Demuxer/DemuxerStreamProvider
+  //   is alive. But make no assumption that once GetStream returned a non-null
+  //   pointer for some stream type then all subsequent calls will also return
+  //   non-null pointer for the same stream type. In MSE Javascript code can
+  //   remove SourceBuffer from a MediaSource at any point and this will make
+  //   some previously existing streams inaccessible/unavailable.
   // Other types:
   //   Should not be called.
   virtual DemuxerStream* GetStream(DemuxerStream::Type type) = 0;

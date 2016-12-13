@@ -150,12 +150,34 @@ class RendererImplTest : public ::testing::Test {
   void InitializeWithAudio() {
     CreateAudioStream();
     SetAudioRendererInitializeExpectations(PIPELINE_OK);
+    // There is a potential race between HTMLMediaElement/WMPI shutdown and
+    // renderers being initialized which might result in DemuxerStreamProvider
+    // GetStream suddenly returning NULL (see crbug.com/668604). So we are going
+    // to check here that GetStream will be invoked exactly 3 times during
+    // RendererImpl initialization to help catch potential issues. Currently the
+    // GetStream is invoked once directly from RendererImpl::Initialize, once
+    // indirectly from RendererImpl::Initialize via HasEncryptedStream and once
+    // from RendererImpl::InitializeAudioRenderer.
+    EXPECT_CALL(*demuxer_, GetStream(DemuxerStream::AUDIO))
+        .Times(2)
+        .WillRepeatedly(Return(audio_stream_.get()));
     InitializeAndExpect(PIPELINE_OK);
   }
 
   void InitializeWithVideo() {
     CreateVideoStream();
     SetVideoRendererInitializeExpectations(PIPELINE_OK);
+    // There is a potential race between HTMLMediaElement/WMPI shutdown and
+    // renderers being initialized which might result in DemuxerStreamProvider
+    // GetStream suddenly returning NULL (see crbug.com/668604). So we are going
+    // to check here that GetStream will be invoked exactly 3 times during
+    // RendererImpl initialization to help catch potential issues. Currently the
+    // GetStream is invoked once directly from RendererImpl::Initialize, once
+    // indirectly from RendererImpl::Initialize via HasEncryptedStream and once
+    // from RendererImpl::InitializeVideoRenderer.
+    EXPECT_CALL(*demuxer_, GetStream(DemuxerStream::VIDEO))
+        .Times(2)
+        .WillRepeatedly(Return(video_stream_.get()));
     InitializeAndExpect(PIPELINE_OK);
   }
 
