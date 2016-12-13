@@ -39,6 +39,7 @@ class IntersectionObserverController
 
  private:
   explicit IntersectionObserverController(Document*);
+  void postTaskToDeliverObservations();
 
  private:
   // IntersectionObservers for which this is the tracking document.

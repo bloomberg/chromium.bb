@@ -26,9 +26,7 @@ IntersectionObserverController::IntersectionObserverController(
 
 IntersectionObserverController::~IntersectionObserverController() {}
 
-void IntersectionObserverController::scheduleIntersectionObserverForDelivery(
-    IntersectionObserver& observer) {
-  m_pendingIntersectionObservers.add(&observer);
+void IntersectionObserverController::postTaskToDeliverObservations() {
   if (!m_weakPtrFactory.hasWeakPtrs()) {
     // TODO(ojan): These tasks decide whether to throttle a subframe, so they
     // need to be unthrottled, but we should throttle all the other tasks
@@ -41,12 +39,18 @@ void IntersectionObserverController::scheduleIntersectionObserverForDelivery(
   }
 }
 
+void IntersectionObserverController::scheduleIntersectionObserverForDelivery(
+    IntersectionObserver& observer) {
+  m_pendingIntersectionObservers.add(&observer);
+  postTaskToDeliverObservations();
+}
+
 void IntersectionObserverController::resume() {
   // If the callback fired while DOM objects were suspended, notifications might
   // be late, so deliver them right away (rather than waiting to fire again).
   if (m_callbackFiredWhileSuspended) {
     m_callbackFiredWhileSuspended = false;
-    deliverIntersectionObservations();
+    postTaskToDeliverObservations();
   }
 }
 

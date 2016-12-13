@@ -6,6 +6,7 @@
 
 #include "core/dom/IntersectionObserverCallback.h"
 #include "core/dom/IntersectionObserverInit.h"
+#include "core/frame/FrameView.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/sim/SimCompositor.h"
@@ -65,6 +66,65 @@ TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
   ASSERT_TRUE(target);
   observer->observe(target, exceptionState);
   EXPECT_TRUE(compositor().needsBeginFrame());
+}
+
+TEST_F(IntersectionObserverTest, ResumePostsTask) {
+  webView().resize(WebSize(800, 600));
+  SimRequest mainResource("https://example.com/", "text/html");
+  loadURL("https://example.com/");
+  mainResource.complete(
+      "<div id='leading-space' style='height: 700px;'></div>"
+      "<div id='target'></div>"
+      "<div id='trailing-space' style='height: 700px;'></div>");
+
+  IntersectionObserverInit observerInit;
+  DummyExceptionStateForTesting exceptionState;
+  TestIntersectionObserverCallback* observerCallback =
+      new TestIntersectionObserverCallback(document());
+  IntersectionObserver* observer = IntersectionObserver::create(
+      observerInit, *observerCallback, exceptionState);
+  ASSERT_FALSE(exceptionState.hadException());
+
+  Element* target = document().getElementById("target");
+  ASSERT_TRUE(target);
+  observer->observe(target, exceptionState);
+
+  compositor().beginFrame();
+  testing::runPendingTasks();
+  EXPECT_EQ(observerCallback->callCount(), 0);
+
+  // When document is not suspended, beginFrame() will generate notifications
+  // and post a task to deliver them.
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0, 300), ProgrammaticScroll);
+  compositor().beginFrame();
+  EXPECT_EQ(observerCallback->callCount(), 0);
+  testing::runPendingTasks();
+  EXPECT_EQ(observerCallback->callCount(), 1);
+
+  // When a document is suspended, beginFrame() will generate a notification,
+  // but it will not be delivered.  The notification will, however, be
+  // available via takeRecords();
+  document().suspendScheduledTasks();
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0, 0), ProgrammaticScroll);
+  compositor().beginFrame();
+  EXPECT_EQ(observerCallback->callCount(), 1);
+  testing::runPendingTasks();
+  EXPECT_EQ(observerCallback->callCount(), 1);
+  EXPECT_FALSE(observer->takeRecords(exceptionState).isEmpty());
+
+  // Generate a notification while document is suspended; then resume document.
+  // Notification should happen in a post task.
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0, 300), ProgrammaticScroll);
+  compositor().beginFrame();
+  testing::runPendingTasks();
+  EXPECT_EQ(observerCallback->callCount(), 1);
+  document().resumeScheduledTasks();
+  EXPECT_EQ(observerCallback->callCount(), 1);
+  testing::runPendingTasks();
+  EXPECT_EQ(observerCallback->callCount(), 2);
 }
 
 }  // namespace blink
