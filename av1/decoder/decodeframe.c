@@ -2147,7 +2147,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif  // CONFIG_CLPF
 }
 
-#if !CONFIG_ANS
 static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
                                const size_t read_size,
                                struct aom_internal_error_info *error_info,
@@ -2164,27 +2163,6 @@ static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
     aom_internal_error(error_info, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder %d", 1);
 }
-#else
-static void setup_token_decoder(const uint8_t *data, const uint8_t *data_end,
-                                const size_t read_size,
-                                struct aom_internal_error_info *error_info,
-                                struct AnsDecoder *const ans,
-                                aom_decrypt_cb decrypt_cb,
-                                void *decrypt_state) {
-  (void)decrypt_cb;
-  (void)decrypt_state;
-  // Validate the calculated partition length. If the buffer
-  // described by the partition can't be fully read, then restrict
-  // it to the portion that can be (for EC mode) or throw an error.
-  if (!read_is_valid(data, read_size, data_end))
-    aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
-                       "Truncated packet or corrupt tile length");
-
-  if (read_size > INT_MAX || ans_read_init(ans, data, (int)read_size))
-    aom_internal_error(error_info, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate token decoder %d", 1);
-}
-#endif
 
 #if !CONFIG_PVQ
 static void read_coef_probs_common(av1_coeff_probs_model *coef_probs,
@@ -3166,13 +3144,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_zero(td->pvq_ref_coeff);
 #endif
       av1_tile_init(&td->xd.tile, td->cm, tile_row, tile_col);
-#if !CONFIG_ANS
       setup_bool_decoder(buf->data, data_end, buf->size, &cm->error,
                          &td->bit_reader, pbi->decrypt_cb, pbi->decrypt_state);
-#else
-      setup_token_decoder(buf->data, data_end, buf->size, &cm->error,
-                          &td->bit_reader, pbi->decrypt_cb, pbi->decrypt_state);
-#endif
 #if CONFIG_ACCOUNTING
       if (pbi->acct_enabled) {
         td->bit_reader.accounting = &pbi->accounting;
@@ -3505,15 +3478,9 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
         av1_zero(twd->dqcoeff);
         av1_tile_init(tile_info, cm, tile_row, buf->col);
         av1_tile_init(&twd->xd.tile, cm, tile_row, buf->col);
-#if !CONFIG_ANS
         setup_bool_decoder(buf->data, data_end, buf->size, &cm->error,
                            &twd->bit_reader, pbi->decrypt_cb,
                            pbi->decrypt_state);
-#else
-        setup_token_decoder(buf->data, data_end, buf->size, &cm->error,
-                            &twd->bit_reader, pbi->decrypt_cb,
-                            pbi->decrypt_state);
-#endif  // CONFIG_ANS
         av1_init_macroblockd(cm, &twd->xd,
 #if CONFIG_PVQ
                              twd->pvq_ref_coeff,
@@ -4142,16 +4109,10 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   int j;
 #endif
 
-#if !CONFIG_ANS
   if (aom_reader_init(&r, data, partition_size, pbi->decrypt_cb,
                       pbi->decrypt_state))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder 0");
-#else
-  if (ans_read_init(&r, data, (int)partition_size))
-    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate compressed header ANS decoder");
-#endif  // !CONFIG_ANS
 
 #if CONFIG_LOOP_RESTORATION
   decode_restoration(cm, &r);
