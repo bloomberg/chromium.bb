@@ -27,27 +27,19 @@ interface SVGSVGElement : SVGGraphicsElement {
     [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength y;
     [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength width;
     [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength height;
-             attribute float currentScale;
+
+    attribute float currentScale;
     // TODO(foolip): currentTranslate should be a DOMPointReadOnly.
     [ImplementedAs=currentTranslateFromJavascript] readonly attribute SVGPoint currentTranslate;
-
-    [MeasureAs=SVGSVGElementSuspendRedraw] unsigned long suspendRedraw(unsigned long maxWaitMilliseconds);
-    [MeasureAs=SVGSVGElementUnsuspendRedraw] void unsuspendRedraw(unsigned long suspendHandleId);
-    [MeasureAs=SVGSVGElementUnsuspendRedrawAll] void unsuspendRedrawAll();
-    [MeasureAs=SVGSVGElementForceRedraw] void forceRedraw();
-
-    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] void pauseAnimations();
-    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] void unpauseAnimations();
-    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] boolean animationsPaused();
-    [MeasureAs=SVGSMILCurrentTime, RuntimeEnabled=smil] float getCurrentTime();
-    [MeasureAs=SVGSMILCurrentTime, RuntimeEnabled=smil] void setCurrentTime(float seconds);
 
     // TODO(foolip): The rect arguments should be DOMRectReadOnly.
     NodeList getIntersectionList(SVGRect rect, SVGElement? referenceElement);
     NodeList getEnclosureList(SVGRect rect, SVGElement? referenceElement);
     boolean checkIntersection(SVGElement element, SVGRect rect);
     boolean checkEnclosure(SVGElement element, SVGRect rect);
+
     void deselectAll();
+
     [Measure] SVGNumber createSVGNumber();
     [Measure] SVGLength createSVGLength();
     [Measure] SVGAngle createSVGAngle();
@@ -58,9 +50,20 @@ interface SVGSVGElement : SVGGraphicsElement {
     [Measure] SVGTransform createSVGTransform();
     [Measure] SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
 
-    // TODO(foolip): The following was part of SVG 1.1:
-    // http://www.w3.org/TR/SVG11/struct.html#InterfaceSVGSVGElement
     [Measure] Element getElementById(DOMString elementId);
+
+    [MeasureAs=SVGSVGElementSuspendRedraw] unsigned long suspendRedraw(unsigned long maxWaitMilliseconds);
+    [MeasureAs=SVGSVGElementUnsuspendRedraw] void unsuspendRedraw(unsigned long suspendHandleId);
+    [MeasureAs=SVGSVGElementUnsuspendRedrawAll] void unsuspendRedrawAll();
+    [MeasureAs=SVGSVGElementForceRedraw] void forceRedraw();
+
+    // SVG Animations
+    // https://svgwg.org/specs/animations/#InterfaceSVGSVGElement
+    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] void pauseAnimations();
+    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] void unpauseAnimations();
+    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] boolean animationsPaused();
+    [MeasureAs=SVGSMILCurrentTime, RuntimeEnabled=smil] float getCurrentTime();
+    [MeasureAs=SVGSMILCurrentTime, RuntimeEnabled=smil] void setCurrentTime(float seconds);
 };
 
 SVGSVGElement implements SVGFitToViewBox;

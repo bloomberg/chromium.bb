@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// http://www.w3.org/TR/filter-effects/#InterfaceSVGFEDropShadowElement
+// https://drafts.fxtf.org/filters/#InterfaceSVGFEDropShadowElement
 
 interface SVGFEDropShadowElement : SVGElement {
     [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in1;

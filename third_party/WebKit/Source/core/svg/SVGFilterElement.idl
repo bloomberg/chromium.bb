@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/filter-effects/#InterfaceSVGFilterElement
+// https://drafts.fxtf.org/filters/#InterfaceSVGFilterElement
 
 interface SVGFilterElement : SVGElement {
     [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedEnumeration filterUnits;

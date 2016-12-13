@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG11/filters.html#InterfaceSVGFEImageElement
-// http://www.w3.org/TR/filter-effects/#InterfaceSVGFEImageElement
-// Currently SVG 1.1, SVG 2 members not implemented
+// https://drafts.fxtf.org/filters/#InterfaceSVGFEImageElement
 
 interface SVGFEImageElement : SVGElement {
     [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;

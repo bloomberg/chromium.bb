@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/filter-effects/#InterfaceSVGFEBlendElement
+// https://drafts.fxtf.org/filters/#InterfaceSVGFEBlendElement
 
 [
     DoNotCheckConstants,

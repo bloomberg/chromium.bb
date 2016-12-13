@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/css-masking/#InterfaceSVGClipPathElement
+// https://drafts.fxtf.org/css-masking-1/#InterfaceSVGClipPathElement
 
 // TODO(foolip): SVGClipPathElement should inherit from SVGElement and
 // implement SVGUnitTypes. The transform attribute (which is on
