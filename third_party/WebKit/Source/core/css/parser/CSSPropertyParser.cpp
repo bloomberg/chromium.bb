@@ -41,6 +41,7 @@
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
+#include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/svg/SVGPathUtilities.h"
@@ -3465,6 +3466,17 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
                                   m_range.peek().id());
     return consumeIdent(m_range);
   }
+
+  // Gets the parsing function for our current property from the property API.
+  // If it has been implemented, we call this function, otherwise we manually
+  // parse this value in the switch statement below. As we implement APIs for
+  // other properties, those properties will be taken out of the switch
+  // statement.
+  const CSSPropertyDescriptor& cssPropertyDesc =
+      CSSPropertyDescriptor::get(property);
+  if (cssPropertyDesc.temporaryCanReadValue)
+    return cssPropertyDesc.parseSingleValue(m_range, m_context);
+
   switch (property) {
     case CSSPropertyWillChange:
       return consumeWillChange(m_range);
@@ -3558,13 +3570,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeLengthOrPercent(m_range, m_context.mode(),
                                     ValueRangeNonNegative,
                                     UnitlessQuirk::Allow);
-    case CSSPropertyWebkitPaddingStart:
-    case CSSPropertyWebkitPaddingEnd:
-    case CSSPropertyWebkitPaddingBefore:
-    case CSSPropertyWebkitPaddingAfter:
-      return consumeLengthOrPercent(m_range, m_context.mode(),
-                                    ValueRangeNonNegative,
-                                    UnitlessQuirk::Forbid);
     case CSSPropertyClip:
       return consumeClip(m_range, m_context.mode());
     case CSSPropertyTouchAction:
