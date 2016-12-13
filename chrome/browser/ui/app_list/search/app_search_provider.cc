@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 
 #include <stddef.h>
+
+#include <map>
 #include <string>
 #include <utility>
 
@@ -270,8 +272,6 @@ AppSearchProvider::~AppSearchProvider() {}
 void AppSearchProvider::Start(bool /*is_voice_query*/,
                               const base::string16& query) {
   query_ = query;
-  const TokenizedString query_terms(query);
-
   ClearResults();
 
   bool show_recommendations = query.empty();
