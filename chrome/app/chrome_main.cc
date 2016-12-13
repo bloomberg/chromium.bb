@@ -5,13 +5,16 @@
 #include <stdint.h>
 
 #include "build/build_config.h"
+#include "base/command_line.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/features.h"
 #include "content/public/app/content_main.h"
+#include "content/public/common/content_switches.h"
+#include "headless/public/headless_shell.h"
+#include "ui/gfx/switches.h"
 
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-#include "base/command_line.h"
 #include "chrome/app/mash/mash_runner.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
@@ -82,17 +85,22 @@ int ChromeMain(int argc, const char** argv) {
   params.argv = argv;
 #endif
 
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 #if !defined(OS_WIN)
   base::CommandLine::Init(params.argc, params.argv);
+  const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
+  ALLOW_UNUSED_LOCAL(command_line);
 #endif
 
+#if defined(OS_LINUX)
+  if (command_line->HasSwitch(switches::kHeadless))
+    return headless::HeadlessShellMain(argc, argv);
+#endif  // defined(OS_LINUX)
+
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
   version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::CANARY ||
       channel == version_info::Channel::UNKNOWN) {
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    if (command_line.HasSwitch("mash"))
+    if (command_line->HasSwitch("mash"))
       return MashMain();
     WaitForMashDebuggerIfNecessary();
   }

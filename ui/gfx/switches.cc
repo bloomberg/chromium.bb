@@ -18,4 +18,7 @@ const char kDisableDirectWriteForUI[] = "disable-directwrite-for-ui";
 const char kEnableHarfBuzzRenderText[] = "enable-harfbuzz-rendertext";
 #endif
 
+// Run in headless mode, i.e., without a UI or display server dependencies.
+const char kHeadless[] = "headless";
+
 }  // namespace switches

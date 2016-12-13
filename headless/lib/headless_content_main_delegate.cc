@@ -12,9 +12,8 @@
 #include "content/public/common/content_switches.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_content_browser_client.h"
-#include "headless/lib/renderer/headless_content_renderer_client.h"
-#include "headless/lib/utility/headless_content_utility_client.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
 
@@ -42,15 +41,21 @@ HeadlessContentMainDelegate::~HeadlessContentMainDelegate() {
 bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
+  // Make sure all processes know that we're in headless mode.
+  if (!command_line->HasSwitch(switches::kHeadless))
+    command_line->AppendSwitch(switches::kHeadless);
+
   if (browser_->options()->single_process_mode)
     command_line->AppendSwitch(switches::kSingleProcess);
 
   if (browser_->options()->disable_sandbox)
     command_line->AppendSwitch(switches::kNoSandbox);
 
+#if defined(USE_OZONE)
   // The headless backend is automatically chosen for a headless build, but also
   // adding it here allows us to run in a non-headless build too.
   command_line->AppendSwitchASCII(switches::kOzonePlatform, "headless");
+#endif
 
   if (!browser_->options()->gl_implementation.empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL,
@@ -115,18 +120,6 @@ content::ContentBrowserClient*
 HeadlessContentMainDelegate::CreateContentBrowserClient() {
   browser_client_.reset(new HeadlessContentBrowserClient(browser_.get()));
   return browser_client_.get();
-}
-
-content::ContentRendererClient*
-HeadlessContentMainDelegate::CreateContentRendererClient() {
-  renderer_client_.reset(new HeadlessContentRendererClient);
-  return renderer_client_.get();
-}
-
-content::ContentUtilityClient*
-HeadlessContentMainDelegate::CreateContentUtilityClient() {
-  utility_client_.reset(new HeadlessContentUtilityClient);
-  return utility_client_.get();
 }
 
 }  // namespace headless

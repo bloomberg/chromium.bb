@@ -19,9 +19,10 @@
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/browser/headless_window_parenting_client.h"
+#include "headless/lib/browser/headless_window_tree_host.h"
 #include "headless/lib/headless_content_main_delegate.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window_tree_host.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace headless {
@@ -119,8 +120,10 @@ void HeadlessBrowserImpl::set_browser_main_parts(
 
 void HeadlessBrowserImpl::RunOnStartCallback() {
   DCHECK(aura::Env::GetInstance());
+  ui::DeviceDataManager::CreateInstance();
+
   window_tree_host_.reset(
-      aura::WindowTreeHost::Create(gfx::Rect(options()->window_size)));
+      new HeadlessWindowTreeHost(gfx::Rect(options()->window_size)));
   window_tree_host_->InitHost();
 
   window_parenting_client_.reset(

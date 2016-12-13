@@ -18,6 +18,8 @@ GFX_EXPORT extern const char kDisableDirectWriteForUI[];
 GFX_EXPORT extern const char kEnableHarfBuzzRenderText[];
 #endif
 
+GFX_EXPORT extern const char kHeadless[];
+
 }  // namespace switches
 
 #endif  // UI_GFX_SWITCHES_H_
