@@ -6,6 +6,7 @@
 
 [
     Constructor,
+    Constructor(DOMString transformList),
     Constructor(sequence<unrestricted double> numberSequence),
     RaisesException=Constructor,
     // FIXME: Should implement more constructors (See: crbug.com/388780)

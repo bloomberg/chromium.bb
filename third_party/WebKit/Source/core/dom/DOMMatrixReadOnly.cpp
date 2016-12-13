@@ -5,10 +5,17 @@
 #include "core/dom/DOMMatrixReadOnly.h"
 
 #include "bindings/core/v8/V8ObjectBuilder.h"
+#include "core/css/CSSIdentifierValue.h"
+#include "core/css/CSSToLengthConversionData.h"
+#include "core/css/CSSValueList.h"
+#include "core/css/parser/CSSParser.h"
+#include "core/css/resolver/TransformBuilder.h"
 #include "core/dom/DOMMatrix.h"
 #include "core/dom/DOMMatrixInit.h"
 #include "core/dom/DOMPoint.h"
 #include "core/dom/DOMPointInit.h"
+#include "core/layout/api/LayoutViewItem.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace {
@@ -87,6 +94,13 @@ bool DOMMatrixReadOnly::validateAndFixup(DOMMatrixInit& other,
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::create(ExceptionState& exceptionState) {
   return new DOMMatrixReadOnly(TransformationMatrix());
+}
+
+DOMMatrixReadOnly* DOMMatrixReadOnly::create(const String& transformList,
+                                             ExceptionState& exceptionState) {
+  DOMMatrixReadOnly* matrix = new DOMMatrixReadOnly(TransformationMatrix());
+  matrix->setMatrixValueFromString(transformList, exceptionState);
+  return matrix;
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::create(Vector<double> sequence,
@@ -330,6 +344,55 @@ ScriptValue DOMMatrixReadOnly::toJSONForBinding(
   result.addBoolean("is2D", is2D());
   result.addBoolean("isIdentity", isIdentity());
   return result.scriptValue();
+}
+
+void DOMMatrixReadOnly::setMatrixValueFromString(
+    const String& inputString,
+    ExceptionState& exceptionState) {
+  DEFINE_STATIC_LOCAL(String, identityMatrix2D, ("matrix(1, 0, 0, 1, 0, 0)"));
+  String string = inputString;
+  if (string.isEmpty())
+    string = identityMatrix2D;
+
+  const CSSValue* value =
+      CSSParser::parseSingleValue(CSSPropertyTransform, string);
+
+  if (!value || value->isCSSWideKeyword()) {
+    exceptionState.throwDOMException(SyntaxError,
+                                     "Failed to parse '" + inputString + "'.");
+    return;
+  }
+
+  if (value->isIdentifierValue()) {
+    DCHECK(toCSSIdentifierValue(value)->getValueID() == CSSValueNone);
+    m_matrix->makeIdentity();
+    m_is2D = true;
+    return;
+  }
+
+  if (TransformBuilder::hasRelativeLengths(toCSSValueList(*value))) {
+    exceptionState.throwDOMException(SyntaxError,
+                                     "Lengths must be absolute, not relative");
+    return;
+  }
+
+  const ComputedStyle& initialStyle = ComputedStyle::initialStyle();
+  TransformOperations operations = TransformBuilder::createTransformOperations(
+      *value, CSSToLengthConversionData(&initialStyle, &initialStyle,
+                                        LayoutViewItem(nullptr), 1.0f));
+
+  if (operations.dependsOnBoxSize()) {
+    exceptionState.throwDOMException(
+        SyntaxError, "Lengths must be absolute, not depend on the box size");
+    return;
+  }
+
+  m_matrix->makeIdentity();
+  operations.apply(FloatSize(0, 0), *m_matrix);
+
+  m_is2D = !operations.has3DOperation();
+
+  return;
 }
 
 }  // namespace blink

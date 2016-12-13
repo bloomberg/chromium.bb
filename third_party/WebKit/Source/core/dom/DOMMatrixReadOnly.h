@@ -26,6 +26,7 @@ class CORE_EXPORT DOMMatrixReadOnly
 
  public:
   static DOMMatrixReadOnly* create(ExceptionState&);
+  static DOMMatrixReadOnly* create(const String&, ExceptionState&);
   static DOMMatrixReadOnly* create(Vector<double>, ExceptionState&);
   static DOMMatrixReadOnly* fromFloat32Array(DOMFloat32Array*, ExceptionState&);
   static DOMMatrixReadOnly* fromFloat64Array(DOMFloat64Array*, ExceptionState&);
@@ -101,6 +102,7 @@ class CORE_EXPORT DOMMatrixReadOnly
 
  protected:
   DOMMatrixReadOnly() {}
+  DOMMatrixReadOnly(const String&, ExceptionState&);
   DOMMatrixReadOnly(const TransformationMatrix&, bool is2D = true);
 
   template <typename T>
@@ -121,6 +123,8 @@ class CORE_EXPORT DOMMatrixReadOnly
       NOTREACHED();
     }
   }
+
+  void setMatrixValueFromString(const String&, ExceptionState&);
 
   static bool validateAndFixup(DOMMatrixInit&, ExceptionState&);
   // TransformationMatrix needs to be 16-byte aligned. PartitionAlloc

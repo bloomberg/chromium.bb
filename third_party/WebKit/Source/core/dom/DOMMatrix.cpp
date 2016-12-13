@@ -4,14 +4,6 @@
 
 #include "core/dom/DOMMatrix.h"
 
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSToLengthConversionData.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/resolver/TransformBuilder.h"
-#include "core/layout/api/LayoutViewItem.h"
-#include "core/style/ComputedStyle.h"
-
 namespace blink {
 
 DOMMatrix* DOMMatrix::create(ExceptionState& exceptionState) {
@@ -27,6 +19,13 @@ DOMMatrix* DOMMatrix::create(const SkMatrix44& matrix,
                              ExceptionState& exceptionState) {
   TransformationMatrix transformationMatrix(matrix);
   return new DOMMatrix(transformationMatrix, transformationMatrix.isAffine());
+}
+
+DOMMatrix* DOMMatrix::create(const String& transformList,
+                             ExceptionState& exceptionState) {
+  DOMMatrix* matrix = new DOMMatrix(TransformationMatrix());
+  matrix->setMatrixValueFromString(transformList, exceptionState);
+  return matrix;
 }
 
 DOMMatrix* DOMMatrix::create(Vector<double> sequence,
@@ -261,50 +260,7 @@ DOMMatrix* DOMMatrix::invertSelf() {
 
 DOMMatrix* DOMMatrix::setMatrixValue(const String& inputString,
                                      ExceptionState& exceptionState) {
-  DEFINE_STATIC_LOCAL(String, identityMatrix2D, ("matrix(1, 0, 0, 1, 0, 0)"));
-  String string = inputString;
-  if (string.isEmpty())
-    string = identityMatrix2D;
-
-  const CSSValue* value =
-      CSSParser::parseSingleValue(CSSPropertyTransform, string);
-
-  if (!value || value->isCSSWideKeyword()) {
-    exceptionState.throwDOMException(SyntaxError,
-                                     "Failed to parse '" + inputString + "'.");
-    return nullptr;
-  }
-
-  if (value->isIdentifierValue()) {
-    DCHECK(toCSSIdentifierValue(value)->getValueID() == CSSValueNone);
-    m_matrix->makeIdentity();
-    m_is2D = true;
-    return this;
-  }
-
-  if (TransformBuilder::hasRelativeLengths(toCSSValueList(*value))) {
-    exceptionState.throwDOMException(SyntaxError,
-                                     "Relative lengths not supported.");
-    return nullptr;
-  }
-
-  const ComputedStyle& initialStyle = ComputedStyle::initialStyle();
-  TransformOperations operations = TransformBuilder::createTransformOperations(
-      *value, CSSToLengthConversionData(&initialStyle, &initialStyle,
-                                        LayoutViewItem(nullptr), 1.0f));
-
-  if (operations.dependsOnBoxSize()) {
-    exceptionState.throwDOMException(SyntaxError,
-                                     "The transformation depends on the box "
-                                     "size, which is not supported.");
-    return nullptr;
-  }
-
-  m_matrix->makeIdentity();
-  operations.apply(FloatSize(0, 0), *m_matrix);
-
-  m_is2D = !operations.has3DOperation();
-
+  setMatrixValueFromString(inputString, exceptionState);
   return this;
 }
 

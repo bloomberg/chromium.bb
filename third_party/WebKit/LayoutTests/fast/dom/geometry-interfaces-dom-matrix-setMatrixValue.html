@@ -238,56 +238,56 @@ test(() => {
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("initial");
-  }, "CSS-wide keywords are disallowed.");
+  }, "CSS-wide keywords are disallowed");
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("notExistFunction()");
-  }, "can't parse not exist function.");
+  }, "can't parse not exist function");
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("translateY(50%)");
-  }, "Can't parse without absolute unit.");
+  }, "using relative units should throw a SyntaxError");
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("translateX(1.2em)");
-  }, "Can't parse without absolute unit.");
+  }, "using relative units should throw a SyntaxError");
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("translateX(10ex)");
-  }, "Can't parse without absolute unit.");
+  }, "using relative units should throw a SyntaxError");
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("translateX(10ch)");
-  }, "Can't parse without absolute unit.");
+  }, "using relative units should throw a SyntaxError");
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("translateX(10rem)");
-  }, "Can't parse without absolute unit.");
+  }, "using relative units should throw a SyntaxError");
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("translateX(10vw)");
-  }, "Can't parse without absolute unit.");
+  }, "using relative units should throw a SyntaxError");
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("translateX(10vh)");
-  }, "Can't parse without absolute unit.");
+  }, "using relative units should throw a SyntaxError");
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("translateX(10vmin)");
-  }, "Can't parse without absolute unit.");
+  }, "using relative units should throw a SyntaxError");
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("translateX(10vmax)");
-  }, "Can't parse without absolute unit.");
+  }, "using relative units should throw a SyntaxError");
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("translateX(calc(10px + 1em))");
-  }, "Can't parse without absolute unit.");
+  }, "using relative units should throw a SyntaxError");
 
   //actualMatrix should be not changed.
   assert_true(actualMatrix.is2D);
   assert_matrix_almost_equals(actualMatrix, expectedMatrix);
 
-}, "DOMMatrix.setMatrix(): Exception test.");
+}, "DOMMatrix.setMatrix(): Exception test");
 
 </script>
