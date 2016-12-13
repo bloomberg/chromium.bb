@@ -276,5 +276,5 @@ Worklet status=experimental
 LazyParseCSS status=experimental
 ParseHTMLOnMainThread status=test
 SendBeaconThrowForBlobWithNonSimpleType status=experimental
-PerformanceNavigationTiming2 status=test
+PerformanceNavigationTiming2 status=experimental
 BackgroundVideoTrackOptimization status=stable
