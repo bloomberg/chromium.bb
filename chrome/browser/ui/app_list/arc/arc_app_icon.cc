@@ -5,10 +5,15 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 
 #include <algorithm>
+#include <map>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
@@ -100,8 +105,16 @@ class ArcAppIcon::Source : public gfx::ImageSkiaSource {
 
   const int resource_size_in_dip_;
 
+  // A map from a pair of a resource ID and size in DIP to an image. This
+  // is a cache to avoid resizing IDR icons in GetImageForScale every time.
+  static base::LazyInstance<std::map<std::pair<int, int>, gfx::ImageSkia>>
+      default_icons_cache_;
+
   DISALLOW_COPY_AND_ASSIGN(Source);
 };
+
+base::LazyInstance<std::map<std::pair<int, int>, gfx::ImageSkia>>
+    ArcAppIcon::Source::default_icons_cache_ = LAZY_INSTANCE_INITIALIZER;
 
 ArcAppIcon::Source::Source(const base::WeakPtr<ArcAppIcon>& host,
                            int resource_size_in_dip)
@@ -113,6 +126,7 @@ ArcAppIcon::Source::~Source() {
 }
 
 gfx::ImageSkiaRep ArcAppIcon::Source::GetImageForScale(float scale) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (host_)
     host_->LoadForScaleFactor(ui::GetSupportedScaleFactor(scale));
 
@@ -124,14 +138,25 @@ gfx::ImageSkiaRep ArcAppIcon::Source::GetImageForScale(float scale) {
   } else {
     resource_id = IDR_APP_DEFAULT_ICON;
   }
+
+  // Check |default_icons_cache_| and returns the existing one if possible.
+  const auto key = std::make_pair(resource_id, resource_size_in_dip_);
+  const auto it = default_icons_cache_.Get().find(key);
+  if (it != default_icons_cache_.Get().end())
+    return it->second.GetRepresentation(scale);
+
   const gfx::ImageSkia* default_image = ResourceBundle::GetSharedInstance().
       GetImageSkiaNamed(resource_id);
   CHECK(default_image);
-  return gfx::ImageSkiaOperations::CreateResizedImage(
-      *default_image,
-      skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(resource_size_in_dip_, resource_size_in_dip_)).
-          GetRepresentation(scale);
+  gfx::ImageSkia resized_image = gfx::ImageSkiaOperations::CreateResizedImage(
+      *default_image, skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(resource_size_in_dip_, resource_size_in_dip_));
+
+  // Add the resized image to the cache to avoid executing the expensive resize
+  // operation many times. Caching the result is safe because unlike ARC icons
+  // that can be updated dynamically, IDR icons are static.
+  default_icons_cache_.Get().insert(std::make_pair(key, resized_image));
+  return resized_image.GetRepresentation(scale);
 }
 
 class ArcAppIcon::DecodeRequest : public ImageDecoder::ImageRequest {
