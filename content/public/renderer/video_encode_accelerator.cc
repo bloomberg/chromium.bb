@@ -34,11 +34,17 @@ void CreateVideoEncodeAccelerator(
 
 media::VideoEncodeAccelerator::SupportedProfiles
 GetSupportedVideoEncodeAcceleratorProfiles() {
+  // In https://crbug.com/664652, H264 HW accelerator is enabled on Android for
+  // RTC by Default. Keep HW accelerator disabled for Cast as before at present.
+#if defined(OS_ANDROID)
+  return media::VideoEncodeAccelerator::SupportedProfiles();
+#else
   media::GpuVideoAcceleratorFactories* gpu_factories =
       RenderThreadImpl::current()->GetGpuFactories();
   if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled())
     return media::VideoEncodeAccelerator::SupportedProfiles();
   return gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles();
+#endif  // defined(OS_ANDROID)
 }
 
 }  // namespace content
