@@ -230,6 +230,16 @@ bool IsZeroRttQuicEnabled() {
              params, "enable_zero_rtt", "false") == "true";
 }
 
+bool IsBrotliAcceptEncodingEnabled() {
+  // Brotli encoding is enabled by default since the data reduction proxy server
+  // controls when to serve Brotli encoded content. It can be disabled in
+  // Chromium only if Chromium belongs to a field trial group whose name starts
+  // with "Disabled".
+  return !base::StartsWith(base::FieldTrialList::FindFullName(
+                               "DataReductionProxyBrotliAcceptEncoding"),
+                           kDisabled, base::CompareCase::SENSITIVE);
+}
+
 bool IsConfigClientEnabled() {
   // Config client is enabled by default. It can be disabled only if Chromium
   // belongs to a field trial group whose name starts with "Disabled".

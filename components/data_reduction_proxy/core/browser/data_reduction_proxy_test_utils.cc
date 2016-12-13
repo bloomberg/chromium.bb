@@ -298,6 +298,8 @@ DataReductionProxyTestContext::Builder::Builder()
       use_test_config_client_(false),
       skip_settings_initialization_(false) {}
 
+DataReductionProxyTestContext::Builder::~Builder() {}
+
 DataReductionProxyTestContext::Builder&
 DataReductionProxyTestContext::Builder::WithParamsFlags(int params_flags) {
   params_flags_ = params_flags;
@@ -368,6 +370,14 @@ DataReductionProxyTestContext::Builder::SkipSettingsInitialization() {
   return *this;
 }
 
+DataReductionProxyTestContext::Builder&
+DataReductionProxyTestContext::Builder::WithProxiesForHttp(
+    const std::vector<net::ProxyServer>& proxy_servers) {
+  DCHECK(!proxy_servers.empty());
+  proxy_servers_ = proxy_servers;
+  return *this;
+}
+
 std::unique_ptr<DataReductionProxyTestContext>
 DataReductionProxyTestContext::Builder::Build() {
   // Check for invalid builder combinations.
@@ -412,6 +422,9 @@ DataReductionProxyTestContext::Builder::Build() {
     test_context_flags |= USE_CONFIG_CLIENT;
     std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
         DataReductionProxyMutableConfigValues::CreateFromParams(params.get());
+    if (!proxy_servers_.empty()) {
+      mutable_config->UpdateValues(proxy_servers_);
+    }
     raw_mutable_config = mutable_config.get();
     config.reset(new TestDataReductionProxyConfig(
         std::move(mutable_config), task_runner, net_log.get(),
@@ -422,6 +435,9 @@ DataReductionProxyTestContext::Builder::Build() {
         std::move(params), task_runner, net_log.get(), configurator.get(),
         event_creator.get()));
   } else {
+    if (!proxy_servers_.empty()) {
+      params->SetProxiesForHttp(proxy_servers_);
+    }
     config.reset(new TestDataReductionProxyConfig(
         std::move(params), task_runner, net_log.get(), configurator.get(),
         event_creator.get()));
@@ -597,13 +613,18 @@ DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
 }
 
 void DataReductionProxyTestContext::AttachToURLRequestContext(
-      net::URLRequestContextStorage* request_context_storage) const {
+    net::URLRequestContextStorage* request_context_storage,
+    bool exclude_chrome_proxy_header_for_testing) const {
   DCHECK(request_context_storage);
 
   // |request_context_storage| takes ownership of the network delegate.
-  request_context_storage->set_network_delegate(
+  std::unique_ptr<DataReductionProxyNetworkDelegate> network_delegate =
       io_data()->CreateNetworkDelegate(
-          base::MakeUnique<net::TestNetworkDelegate>(), true));
+          base::MakeUnique<net::TestNetworkDelegate>(), true);
+
+  network_delegate->exclude_chrome_proxy_header_for_testing_ =
+      exclude_chrome_proxy_header_for_testing;
+  request_context_storage->set_network_delegate(std::move(network_delegate));
 
   request_context_storage->set_job_factory(
       base::MakeUnique<net::URLRequestInterceptingJobFactory>(

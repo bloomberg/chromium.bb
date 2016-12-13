@@ -181,7 +181,8 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
       data_reduction_proxy_bypass_stats_(nullptr),
       data_reduction_proxy_request_options_(request_options),
       data_reduction_proxy_io_data_(nullptr),
-      configurator_(configurator) {
+      configurator_(configurator),
+      exclude_chrome_proxy_header_for_testing_(false) {
   DCHECK(data_reduction_proxy_config_);
   DCHECK(data_reduction_proxy_request_options_);
   DCHECK(configurator_);
@@ -323,11 +324,10 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     data->set_lofi_requested(
         lofi_decider ? lofi_decider->ShouldRecordLoFiUMA(*request) : false);
   }
+  MaybeAddBrotliToAcceptEncodingHeader(proxy_info, headers, *request);
 
-  if (!data_reduction_proxy_request_options_)
-    return;
-
-  data_reduction_proxy_request_options_->AddRequestHeader(headers);
+  if (!exclude_chrome_proxy_header_for_testing_)
+    data_reduction_proxy_request_options_->AddRequestHeader(headers);
   if (lofi_decider)
     lofi_decider->MaybeSetIgnorePreviewsBlacklistDirective(headers);
 }
@@ -495,6 +495,59 @@ void DataReductionProxyNetworkDelegate::SetDataUseGroupProvider(
     std::unique_ptr<DataUseGroupProvider> data_use_group_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   data_use_group_provider_ = std::move(data_use_group_provider);
+}
+
+void DataReductionProxyNetworkDelegate::MaybeAddBrotliToAcceptEncodingHeader(
+    const net::ProxyInfo& proxy_info,
+    net::HttpRequestHeaders* request_headers,
+    const net::URLRequest& request) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // This method should be called only when the resolved proxy was a data
+  // saver proxy.
+  DCHECK(data_reduction_proxy_config_->IsDataReductionProxy(
+      proxy_info.proxy_server(), nullptr));
+  DCHECK(request.url().is_valid());
+  DCHECK(!request.url().SchemeIsCryptographic());
+  DCHECK(request.url().SchemeIsHTTPOrHTTPS());
+
+  static const char kBrotli[] = "br";
+
+  if (!request.context()->enable_brotli()) {
+    // Verify that Brotli is enabled globally.
+    return;
+  }
+
+  if (!params::IsBrotliAcceptEncodingEnabled()) {
+    // Verify that Brotli is enabled for data reduction proxy.
+    return;
+  }
+
+  if (!proxy_info.proxy_server().is_https() &&
+      !proxy_info.proxy_server().is_quic()) {
+    // Brotli encoding can be used only when the proxy server is a secure proxy
+    // server.
+    return;
+  }
+
+  if (!request_headers->HasHeader(net::HttpRequestHeaders::kAcceptEncoding))
+    return;
+
+  std::string header_value;
+  request_headers->GetHeader(net::HttpRequestHeaders::kAcceptEncoding,
+                             &header_value);
+
+  // Brotli should not be already present in the header since the URL is non-
+  // cryptographic. This is an approximate check, and would trigger even if the
+  // accept-encoding header contains an encoding that has prefix |kBrotli|.
+  DCHECK_EQ(std::string::npos, header_value.find(kBrotli));
+
+  request_headers->RemoveHeader(net::HttpRequestHeaders::kAcceptEncoding);
+  if (!header_value.empty())
+    header_value += ", ";
+  header_value += kBrotli;
+  request_headers->SetHeader(net::HttpRequestHeaders::kAcceptEncoding,
+                             header_value);
 }
 
 }  // namespace data_reduction_proxy

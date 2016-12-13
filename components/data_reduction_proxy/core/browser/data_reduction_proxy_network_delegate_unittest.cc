@@ -49,8 +49,13 @@
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
+#include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
+#include "net/test/test_data_directory.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -172,15 +177,31 @@ class TestLoFiUIService : public LoFiUIService {
 class DataReductionProxyNetworkDelegateTest : public testing::Test {
  public:
   DataReductionProxyNetworkDelegateTest()
-      : context_(true),
-        context_storage_(&context_),
-        test_context_(DataReductionProxyTestContext::Builder()
-                          .WithClient(kClient)
-                          .WithMockClientSocketFactory(&mock_socket_factory_)
-                          .WithURLRequestContext(&context_)
-                          .Build()) {
+      : context_(true), context_storage_(&context_) {}
+
+  void Init(bool use_secure_proxy,
+            bool enable_brotli_globally,
+            bool exclude_chrome_proxy_header_for_testing) {
+    net::ProxyServer proxy_server =
+        use_secure_proxy
+            ? net::ProxyServer::FromURI("https://origin.net:443",
+                                        net::ProxyServer::SCHEME_HTTPS)
+            : net::ProxyServer::FromURI("http://origin.net:80",
+                                        net::ProxyServer::SCHEME_HTTP);
+
+    proxy_service_ =
+        net::ProxyService::CreateFixedFromPacResult(proxy_server.ToPacString());
+    context_.set_proxy_service(proxy_service_.get());
+    test_context_ = (DataReductionProxyTestContext::Builder()
+                         .WithClient(kClient)
+                         .WithMockClientSocketFactory(&mock_socket_factory_)
+                         .WithURLRequestContext(&context_)
+                         .WithProxiesForHttp({proxy_server})
+                         .Build());
+
     context_.set_client_socket_factory(&mock_socket_factory_);
-    test_context_->AttachToURLRequestContext(&context_storage_);
+    test_context_->AttachToURLRequestContext(
+        &context_storage_, exclude_chrome_proxy_header_for_testing);
 
     std::unique_ptr<TestLoFiDecider> lofi_decider(new TestLoFiDecider());
     lofi_decider_ = lofi_decider.get();
@@ -190,6 +211,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     lofi_ui_service_ = lofi_ui_service.get();
     test_context_->io_data()->set_lofi_ui_service(std::move(lofi_ui_service));
 
+    context_.set_enable_brotli(enable_brotli_globally);
     context_.Init();
 
     test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();
@@ -239,6 +261,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
       int64_t response_content_length) {
     const std::string response_body(
         base::checked_cast<size_t>(response_content_length), ' ');
+
     net::MockRead reads[] = {net::MockRead(response_headers.c_str()),
                              net::MockRead(response_body.c_str()),
                              net::MockRead(net::SYNCHRONOUS, net::OK)};
@@ -254,6 +277,92 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     request->Start();
     base::RunLoop().RunUntilIdle();
     return request;
+  }
+
+  // Fetches a single URL request, verifies the correctness of Accept-Encoding
+  // header, and verifies that the response is cached only if |expect_cached|
+  // is set to true. Each line in |response_headers| should end with "\r\n" and
+  // not '\0', and the last line should have a second "\r\n". An empty
+  // |response_headers| is allowed. It works by making this look like an
+  // HTTP/0.9 response, since HTTP/0.9 responses don't have headers.
+  void FetchURLRequestAndVerifyBrotli(net::HttpRequestHeaders* request_headers,
+                                      const std::string& response_headers,
+                                      bool expect_cached,
+                                      bool expect_brotli) {
+    GURL url("http://www.example.com/a.html");
+    net::SSLSocketDataProvider ssl_socket_data_provider(net::ASYNC, net::OK);
+
+    int response_body_size = 140;
+    const std::string response_body(
+        base::checked_cast<size_t>(response_body_size), ' ');
+
+    ssl_socket_data_provider.next_proto = net::kProtoHTTP11;
+    ssl_socket_data_provider.cert = net::ImportCertFromFile(
+        net::GetTestCertsDirectory(), "unittest.selfsigned.der");
+    mock_socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider);
+
+    net::MockRead reads[] = {net::MockRead(response_headers.c_str()),
+                             net::MockRead(response_body.c_str()),
+                             net::MockRead(net::SYNCHRONOUS, net::OK)};
+    net::MockWrite writes[1];
+
+    if (expect_brotli) {
+      writes[0] = net::MockWrite(
+          "GET http://www.example.com/a.html HTTP/1.1\r\n"
+          "Host: www.example.com\r\n"
+          "Proxy-Connection: keep-alive\r\n"
+          "User-Agent:\r\n"
+          "Accept-Language: en-us,fr\r\n"
+          "Accept-Encoding: gzip, deflate, br\r\n\r\n");
+    } else {
+      writes[0] = net::MockWrite(
+          "GET http://www.example.com/a.html HTTP/1.1\r\n"
+          "Host: www.example.com\r\n"
+          "Proxy-Connection: keep-alive\r\n"
+          "User-Agent:\r\n"
+          "Accept-Encoding: gzip, deflate\r\n"
+          "Accept-Language: en-us,fr\r\n\r\n");
+    }
+
+    net::StaticSocketDataProvider socket(reads, arraysize(reads), writes,
+                                         arraysize(writes));
+    mock_socket_factory_.AddSocketDataProvider(&socket);
+
+    net::TestDelegate delegate;
+    std::unique_ptr<net::URLRequest> request =
+        context_.CreateRequest(url, net::IDLE, &delegate);
+    if (request_headers)
+      request->SetExtraRequestHeaders(*request_headers);
+
+    request->Start();
+    base::RunLoop().RunUntilIdle();
+
+    if (!expect_cached) {
+      EXPECT_EQ(response_body_size,
+                request->received_response_content_length());
+      EXPECT_NE(0, request->GetTotalSentBytes());
+      EXPECT_NE(0, request->GetTotalReceivedBytes());
+      EXPECT_FALSE(request->was_cached());
+      VerifyBrotliPresent(request.get(), expect_brotli);
+    } else {
+      EXPECT_TRUE(request->was_cached());
+    }
+  }
+
+  void VerifyBrotliPresent(net::URLRequest* request, bool expect_brotli) {
+    net::HttpRequestHeaders request_headers_sent;
+    EXPECT_TRUE(request->GetFullRequestHeaders(&request_headers_sent));
+    std::string accept_encoding_value;
+    EXPECT_TRUE(request_headers_sent.GetHeader("Accept-Encoding",
+                                               &accept_encoding_value));
+    EXPECT_NE(std::string::npos, accept_encoding_value.find("gzip"));
+    if (expect_brotli) {
+      // Brotli should be the last entry in the Accept-Encoding header.
+      EXPECT_EQ(accept_encoding_value.length() - 2,
+                accept_encoding_value.find("br"));
+    } else {
+      EXPECT_EQ(std::string::npos, accept_encoding_value.find("br"));
+    }
   }
 
   void DelegateStageDone(int result) {}
@@ -328,6 +437,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
   net::MockClientSocketFactory mock_socket_factory_;
+  std::unique_ptr<net::ProxyService> proxy_service_;
   net::TestURLRequestContext context_;
   net::URLRequestContextStorage context_storage_;
 
@@ -337,6 +447,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
+  Init(false, false, false);
   std::unique_ptr<net::URLRequest> fake_request(FetchURLRequest(
       GURL("http://www.google.com/"), nullptr, std::string(), 0));
 
@@ -359,6 +470,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
+  Init(false, false, false);
   // Enable Lo-Fi.
   const struct {
     bool lofi_switch_enabled;
@@ -522,6 +634,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
+  Init(false, false, false);
   const struct {
     bool lofi_on;
     bool used_data_reduction_proxy;
@@ -593,6 +706,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
 
 TEST_F(DataReductionProxyNetworkDelegateTest,
        RequestDataHoldbackConfigurations) {
+  Init(false, false, false);
   const struct {
     bool data_reduction_proxy_enabled;
     bool used_direct;
@@ -639,6 +753,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
+  Init(false, false, false);
   net::ProxyInfo data_reduction_proxy_info;
   std::string data_reduction_proxy;
   base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
@@ -684,6 +799,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
+  Init(false, false, false);
   const std::string kReceivedValidOCLHistogramName =
       "Net.HttpContentLengthWithValidOCL";
   const std::string kOriginalValidOCLHistogramName =
@@ -833,6 +949,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
+  Init(false, false, false);
   // Enable Lo-Fi.
   const struct {
     bool lofi_response;
@@ -861,6 +978,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
 
 TEST_F(DataReductionProxyNetworkDelegateTest,
        TestLoFiTransformationTypeHistogram) {
+  Init(false, false, false);
   const char kLoFiTransformationTypeHistogram[] =
       "DataReductionProxy.LoFi.TransformationType";
   base::HistogramTester histogram_tester;
@@ -887,6 +1005,94 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
 
   histogram_tester.ExpectBucketCount(kLoFiTransformationTypeHistogram,
                                      LITE_PAGE, 1);
+}
+
+// Test that Brotli is not added to the accept-encoding header when it is
+// disabled globally.
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       BrotliAdvertisement_BrotliDisabled) {
+  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */,
+       true /* exclude_chrome_proxy_header_for_testing */);
+  base::FieldTrialList field_trial_list(nullptr);
+
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 140\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "x-original-content-length: 200\r\n"
+      "Cache-Control: max-age=1200\r\n";
+  response_headers += "\r\n";
+
+  // Use secure sockets when fetching the request since Brotli is only enabled
+  // for secure connections.
+  FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, false);
+}
+
+// Test that Brotli is not added to the accept-encoding header when the request
+// is fetched from an insecure proxy.
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       BrotliAdvertisementInsecureProxy) {
+  Init(false /* use_secure_proxy */, true /* enable_brotli_globally */,
+       false /* exclude_chrome_proxy_header_for_testing */);
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 140\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "x-original-content-length: 200\r\n"
+      "Cache-Control: max-age=1200\r\n";
+  response_headers += "\r\n";
+
+  // Use secure sockets when fetching the request since Brotli is only enabled
+  // for secure connections.
+  std::unique_ptr<net::URLRequest> request(FetchURLRequest(
+      GURL("http://www.example.com/a.html"), nullptr, response_headers, 140));
+  EXPECT_EQ(140, request->received_response_content_length());
+  EXPECT_NE(0, request->GetTotalSentBytes());
+  EXPECT_NE(0, request->GetTotalReceivedBytes());
+  EXPECT_FALSE(request->was_cached());
+  // Brotli should be added to Accept Encoding header only if secure proxy is in
+  VerifyBrotliPresent(request.get(), false);
+}
+
+// Test that Brotli is not added to the accept-encoding header when it is
+// disabled via data reduction proxy field trial.
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       BrotliAdvertisementDisabledViaFieldTrial) {
+  Init(true /* use_secure_proxy */, true /* enable_brotli_globally */,
+       true /* exclude_chrome_proxy_header_for_testing */);
+
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "DataReductionProxyBrotliAcceptEncoding", "Disabled"));
+
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 140\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "x-original-content-length: 200\r\n"
+      "Cache-Control: max-age=1200\r\n";
+  response_headers += "\r\n";
+
+  FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, false);
+  FetchURLRequestAndVerifyBrotli(nullptr, response_headers, true, false);
+}
+
+// Test that Brotli is correctly added to the accept-encoding header when it is
+// enabled globally.
+TEST_F(DataReductionProxyNetworkDelegateTest, BrotliAdvertisement) {
+  Init(true /* use_secure_proxy */, true /* enable_brotli_globally */,
+       true /* exclude_chrome_proxy_header_for_testing */);
+
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 140\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "x-original-content-length: 200\r\n"
+      "Cache-Control: max-age=1200\r\n";
+  response_headers += "\r\n";
+
+  FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, true);
+  FetchURLRequestAndVerifyBrotli(nullptr, response_headers, true, true);
 }
 
 }  // namespace

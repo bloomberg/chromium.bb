@@ -783,7 +783,7 @@ class DataReductionProxyBypassProtocolEndToEndTest : public testing::Test {
   }
 
   void AttachToContextAndInit() {
-    drp_test_context_->AttachToURLRequestContext(storage_.get());
+    drp_test_context_->AttachToURLRequestContext(storage_.get(), false);
     context_->Init();
   }
 

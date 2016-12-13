@@ -609,7 +609,7 @@ class DataReductionProxyDelegateTest : public testing::Test {
                           .WithURLRequestContext(&context_)
                           .Build()) {
     context_.set_client_socket_factory(&mock_socket_factory_);
-    test_context_->AttachToURLRequestContext(&context_storage_);
+    test_context_->AttachToURLRequestContext(&context_storage_, false);
 
     std::unique_ptr<TestLoFiUIService> lofi_ui_service(new TestLoFiUIService());
     lofi_ui_service_ = lofi_ui_service.get();

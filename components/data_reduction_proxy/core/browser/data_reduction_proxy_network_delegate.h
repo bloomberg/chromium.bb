@@ -87,6 +87,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       std::unique_ptr<DataUseGroupProvider> data_use_group_provider);
 
  private:
+  friend class DataReductionProxyTestContext;
+
   // Resets if Lo-Fi has been used for the last main frame load to false.
   void OnBeforeURLRequestInternal(net::URLRequest* request,
                                   const net::CompletionCallback& callback,
@@ -153,6 +155,13 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       const net::ProxyInfo& proxy_info,
       const net::ProxyRetryInfoMap& proxy_retry_info) const;
 
+  // May add Brotli to Accept Encoding request header if |proxy_info| contains
+  // a proxy server that is expected to support Brotli encoding.
+  void MaybeAddBrotliToAcceptEncodingHeader(
+      const net::ProxyInfo& proxy_info,
+      net::HttpRequestHeaders* request_headers,
+      const net::URLRequest& request) const;
+
   // Total size of all content that has been received over the network.
   int64_t total_received_bytes_;
 
@@ -171,6 +180,10 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   const DataReductionProxyConfigurator* configurator_;
 
   std::unique_ptr<DataUseGroupProvider> data_use_group_provider_;
+
+  // If |exclude_chrome_proxy_header_for_testing_| is set to true, chrome-proxy
+  // header would not be added to the request headers.
+  bool exclude_chrome_proxy_header_for_testing_;
 
   base::ThreadChecker thread_checker_;
 

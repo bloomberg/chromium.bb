@@ -269,6 +269,8 @@ class DataReductionProxyTestContext {
    public:
     Builder();
 
+    ~Builder();
+
     // |DataReductionProxyParams| flags to use.
     Builder& WithParamsFlags(int params_flags);
 
@@ -313,6 +315,10 @@ class DataReductionProxyTestContext {
     // Construct, but do not initialize the |DataReductionProxySettings| object.
     Builder& SkipSettingsInitialization();
 
+    // Specifies the data reduction proxy servers.
+    Builder& WithProxiesForHttp(
+        const std::vector<net::ProxyServer>& proxy_servers);
+
     // Creates a |DataReductionProxyTestContext|. Owned by the caller.
     std::unique_ptr<DataReductionProxyTestContext> Build();
 
@@ -329,6 +335,7 @@ class DataReductionProxyTestContext {
     bool use_config_client_;
     bool use_test_config_client_;
     bool skip_settings_initialization_;
+    std::vector<net::ProxyServer> proxy_servers_;
   };
 
   virtual ~DataReductionProxyTestContext();
@@ -364,9 +371,11 @@ class DataReductionProxyTestContext {
   // This creates a |DataReductionProxyNetworkDelegate| and
   // |DataReductionProxyInterceptor|, using them in the |net::URLRequestContext|
   // for |request_context_storage|. |request_context_storage| takes ownership of
-  // the created objects.
+  // the created objects. If |exclude_chrome_proxy_header_for_testing| is set
+  // to true, chrome-proxy header would not be added to the request headers.
   void AttachToURLRequestContext(
-      net::URLRequestContextStorage* request_context_storage) const;
+      net::URLRequestContextStorage* request_context_storage,
+      bool exclude_chrome_proxy_header_for_testing) const;
 
   // Enable the Data Reduction Proxy, simulating a successful secure proxy
   // check. This can only be called if not built with WithTestConfigurator,
