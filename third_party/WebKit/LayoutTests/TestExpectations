@@ -2271,3 +2271,6 @@ crbug.com/610835 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-
 
 # Added 2016-12-12
 crbug.com/673463 [ Linux ] fast/forms/associatedFormControls-leak-nodes.html [ Pass Failure ]
+
+# Added 2016-12-12
+crbug.com/673539 [ Linux ] css3/filters/effect-contrast-hw.html [ Pass Failure ]
