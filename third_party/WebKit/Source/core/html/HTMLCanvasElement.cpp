@@ -146,7 +146,8 @@ HTMLCanvasElement::~HTMLCanvasElement() {
 }
 
 void HTMLCanvasElement::dispose() {
-  releasePlaceholderFrame();
+  if (placeholderFrame())
+    releasePlaceholderFrame();
 
   if (m_context) {
     m_context->detachCanvas();

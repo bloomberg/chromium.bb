@@ -91,11 +91,6 @@ class Visitor;
 //
 // class Foo : GarbageCollected<Foo> {
 //     USING_PRE_FINALIZER(Foo, dispose);
-// public:
-//     Foo()
-//     {
-//         ThreadState::current()->registerPreFinalizer(this);
-//     }
 // private:
 //     void dispose()
 //     {
@@ -103,15 +98,18 @@ class Visitor;
 //     }
 //     Member<Bar> m_bar;
 // };
-#define USING_PRE_FINALIZER(Class, preFinalizer)    \
- public:                                            \
-  static bool invokePreFinalizer(void* object) {    \
-    Class* self = reinterpret_cast<Class*>(object); \
-    if (ThreadHeap::isHeapObjectAlive(self))        \
-      return false;                                 \
-    self->Class::preFinalizer();                    \
-    return true;                                    \
-  }                                                 \
+#define USING_PRE_FINALIZER(Class, preFinalizer)                           \
+ public:                                                                   \
+  static bool invokePreFinalizer(void* object) {                           \
+    Class* self = reinterpret_cast<Class*>(object);                        \
+    if (ThreadHeap::isHeapObjectAlive(self))                               \
+      return false;                                                        \
+    self->Class::preFinalizer();                                           \
+    return true;                                                           \
+  }                                                                        \
+                                                                           \
+ private:                                                                  \
+  ThreadState::PrefinalizerRegistration<Class> m_prefinalizerDummy = this; \
   using UsingPreFinalizerMacroNeedsTrailingSemiColon = char
 
 class PLATFORM_EXPORT ThreadState {
@@ -415,32 +413,9 @@ class PLATFORM_EXPORT ThreadState {
 
   size_t objectPayloadSizeForTesting();
 
-  // Register the pre-finalizer for the |self| object. This method is normally
-  // called in the constructor of the |self| object. The class T must have
-  // USING_PRE_FINALIZER().
+  // TODO: no longer needed, remove all uses.
   template <typename T>
   void registerPreFinalizer(T* self) {
-    static_assert(sizeof(&T::invokePreFinalizer) > 0,
-                  "USING_PRE_FINALIZER(T) must be defined.");
-    ASSERT(checkThread());
-    ASSERT(!sweepForbidden());
-    ASSERT(!m_orderedPreFinalizers.contains(
-        PreFinalizer(self, T::invokePreFinalizer)));
-    m_orderedPreFinalizers.add(PreFinalizer(self, T::invokePreFinalizer));
-  }
-
-  // Unregister the pre-finalizer for the |self| object.
-  template <typename T>
-  void unregisterPreFinalizer(T* self) {
-    static_assert(sizeof(&T::invokePreFinalizer) > 0,
-                  "USING_PRE_FINALIZER(T) must be defined.");
-    ASSERT(checkThread());
-    // Ignore pre-finalizers called during pre-finalizers or destructors.
-    if (sweepForbidden())
-      return;
-    ASSERT(m_orderedPreFinalizers.contains(
-        PreFinalizer(self, T::invokePreFinalizer)));
-    m_orderedPreFinalizers.remove(PreFinalizer(self, &T::invokePreFinalizer));
   }
 
   void shouldFlushHeapDoesNotContainCache() {
@@ -565,7 +540,29 @@ class PLATFORM_EXPORT ThreadState {
   void collectGarbageForTerminatingThread();
   void collectAllGarbage();
 
+  // Register the pre-finalizer for the |self| object. The class T must have
+  // USING_PRE_FINALIZER().
+  template <typename T>
+  class PrefinalizerRegistration final {
+   public:
+    PrefinalizerRegistration(T* self) {
+      static_assert(sizeof(&T::invokePreFinalizer) > 0,
+                    "USING_PRE_FINALIZER(T) must be defined.");
+      ThreadState* state = ThreadState::current();
+#if ENABLE(ASSERT)
+      DCHECK(state->checkThread());
+#endif
+      DCHECK(!state->sweepForbidden());
+      DCHECK(!state->m_orderedPreFinalizers.contains(
+          PreFinalizer(self, T::invokePreFinalizer)));
+      state->m_orderedPreFinalizers.add(
+          PreFinalizer(self, T::invokePreFinalizer));
+    }
+  };
+
  private:
+  template <typename T>
+  friend class PrefinalizerRegistration;
   enum SnapshotType { HeapSnapshot, FreelistSnapshot };
 
   explicit ThreadState(BlinkGC::ThreadHeapMode);

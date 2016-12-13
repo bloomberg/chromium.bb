@@ -1160,7 +1160,6 @@ class ObservableWithPreFinalizer
   ~ObservableWithPreFinalizer() { m_wasDestructed = true; }
   DEFINE_INLINE_TRACE() {}
   void dispose() {
-    ThreadState::current()->unregisterPreFinalizer(this);
     EXPECT_FALSE(m_wasDestructed);
     s_disposeWasCalled = true;
   }
@@ -1168,7 +1167,6 @@ class ObservableWithPreFinalizer
 
  protected:
   ObservableWithPreFinalizer() : m_wasDestructed(false) {
-    ThreadState::current()->registerPreFinalizer(this);
   }
 
   bool m_wasDestructed;
@@ -1197,7 +1195,6 @@ class PreFinalizerBase : public GarbageCollectedFinalized<PreFinalizerBase> {
 
  protected:
   PreFinalizerBase() : m_wasDestructed(false) {
-    ThreadState::current()->registerPreFinalizer(this);
   }
   bool m_wasDestructed;
 };
@@ -1218,7 +1215,6 @@ class PreFinalizerMixin : public GarbageCollectedMixin {
 
  protected:
   PreFinalizerMixin() : m_wasDestructed(false) {
-    ThreadState::current()->registerPreFinalizer(this);
   }
   bool m_wasDestructed;
 };
@@ -1241,7 +1237,6 @@ class PreFinalizerSubClass : public PreFinalizerBase, public PreFinalizerMixin {
 
  protected:
   PreFinalizerSubClass() : m_wasDestructed(false) {
-    ThreadState::current()->registerPreFinalizer(this);
   }
   bool m_wasDestructed;
 };
@@ -1561,7 +1556,6 @@ class PreFinalizationAllocator
  public:
   PreFinalizationAllocator(Persistent<IntWrapper>* wrapper)
       : m_wrapper(wrapper) {
-    ThreadState::current()->registerPreFinalizer(this);
   }
 
   void dispose() {
@@ -3881,23 +3875,9 @@ TEST(HeapTest, FinalizationObserver) {
 
 TEST(HeapTest, PreFinalizer) {
   Observable::s_willFinalizeWasCalled = false;
-  {
-    Observable* foo = Observable::create(Bar::create());
-    ThreadState::current()->registerPreFinalizer(foo);
-  }
+  { Observable::create(Bar::create()); }
   preciselyCollectGarbage();
   EXPECT_TRUE(Observable::s_willFinalizeWasCalled);
-}
-
-TEST(HeapTest, PreFinalizerIsNotCalledIfUnregistered) {
-  Observable::s_willFinalizeWasCalled = false;
-  {
-    Observable* foo = Observable::create(Bar::create());
-    ThreadState::current()->registerPreFinalizer(foo);
-    ThreadState::current()->unregisterPreFinalizer(foo);
-  }
-  preciselyCollectGarbage();
-  EXPECT_FALSE(Observable::s_willFinalizeWasCalled);
 }
 
 TEST(HeapTest, PreFinalizerUnregistersItself) {
