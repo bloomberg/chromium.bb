@@ -246,8 +246,9 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
 // if those backends are slow. If this turns out to be a problem, consider
 // increasing the |timeout_ms| constant.
 //
-// Flakily timing out on Mac 10.11: https://crbug.com/646119
-#if defined(OS_MACOSX)
+// Flakily timing out on Mac 10.11 (crbug.com/646119) and flakily
+// failing on Linux/ChromeOS (crbug.com/624836).
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_TimeAndURL DISABLED_TimeAndURL
 #else
 #define MAYBE_TimeAndURL TimeAndURL
