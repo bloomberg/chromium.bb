@@ -15,6 +15,11 @@ interface BroadcastChannel : EventTarget
     method constructor
     method postMessage
     setter onmessage
+interface BudgetService
+    method constructor
+    method getBudget
+    method getCost
+    method reserve
 interface ByteLengthQueuingStrategy
     method constructor
     method size

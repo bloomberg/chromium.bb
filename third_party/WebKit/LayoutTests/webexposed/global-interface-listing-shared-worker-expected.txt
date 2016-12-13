@@ -25,6 +25,12 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method postMessage
 [Worker]     setter onmessage
+[Worker] interface BudgetService
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method getBudget
+[Worker]     method getCost
+[Worker]     method reserve
 [Worker] interface ByteLengthQueuingStrategy
 [Worker]     method constructor
 [Worker]     method size

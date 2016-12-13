@@ -13,6 +13,7 @@
         assert_own_property(BudgetService.prototype, 'getBudget');
         assert_own_property(BudgetService.prototype, 'reserve');
         assert_equals(navigator.budget, navigator.budget);
+        assert_true('BudgetService' in self);
       }, 'NavigatorBudget should be exposed and have the expected interface in a Document.');
     </script>
   </body>
