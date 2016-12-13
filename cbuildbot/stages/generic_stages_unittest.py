@@ -524,6 +524,37 @@ class MasterConfigBuilderStageTest(AbstractStageTestCase):
     self.assertRaises(buildbucket_lib.NoBuildbucketClientException,
                       stage.GetBuildbucketClient)
 
+  def testGetScheduledSlaveBuildbucketIdsReturnsEmpty(self):
+    """test GetScheduledSlaveBuildbucketIds with no builds."""
+    stage = self.ConstructStage()
+    self.assertEqual(stage.GetScheduledSlaveBuildbucketIds(), [])
+
+  def testGetScheduledSlaveBuildbucketIdsWithoutRetriedBuilds(self):
+    """test GetScheduledSlaveBuildbucketIds without retried builds."""
+    stage = self.ConstructStage()
+    scheduled_slave_builds = [('slave1', 'bb_id1', 0),
+                              ('slave2', 'bb_id2', 0)]
+    self._run.attrs.metadata.ExtendKeyListWithList(
+        constants.METADATA_SCHEDULED_SLAVES, scheduled_slave_builds)
+    self.assertEqual(set(stage.GetScheduledSlaveBuildbucketIds()),
+                     {'bb_id1', 'bb_id2'})
+
+  def testGetScheduledSlaveBuildbucketIdsWithRetriedBuilds(self):
+    """test GetScheduledSlaveBuildbucketIds With Retried Builds."""
+    stage = self.ConstructStage()
+    scheduled_slave_builds = [('slave1', 'bb_id1', 0),
+                              ('slave2', 'bb_id2', 0),
+                              ('slave1', 'bb_id3', 3)]
+    self._run.attrs.metadata.ExtendKeyListWithList(
+        constants.METADATA_SCHEDULED_SLAVES, scheduled_slave_builds)
+    self.assertEqual(set(stage.GetScheduledSlaveBuildbucketIds()),
+                     {'bb_id3', 'bb_id2'})
+
+  def testGetScheduledSlaveBuildbucketIdsReturnsNone(self):
+    """Returns None for non master build."""
+    stage = self.ConstructStage()
+    stage._run.config.master = False
+    self.assertIsNone(stage.GetScheduledSlaveBuildbucketIds())
 
 class BoardSpecificBuilderStageTest(AbstractStageTestCase):
   """Tests option/config settings on board-specific stages."""

@@ -11,6 +11,7 @@ import time
 
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 
@@ -124,9 +125,9 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
                           % (slave_name, current_ts, e))
 
     self._run.attrs.metadata.ExtendKeyListWithList(
-        'scheduled_slaves', scheduled_slave_builds)
+        constants.METADATA_SCHEDULED_SLAVES, scheduled_slave_builds)
     self._run.attrs.metadata.ExtendKeyListWithList(
-        'unscheduled_slaves', unscheduled_slave_builds)
+        constants.METADATA_UNSCHEDULED_SLAVES, unscheduled_slave_builds)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):

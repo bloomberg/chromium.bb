@@ -309,6 +309,23 @@ class BuilderStage(object):
 
     return buildbucket_client
 
+  def GetScheduledSlaveBuildbucketIds(self):
+    """Get buildbucket_ids list of the scheduled slave builds.
+
+    Returns:
+      If slaves were scheduled by Buildbucket, return a list of
+      buildbucket_ids (strings) of the slave builds. The list doesn't
+      contain the old builds which were retried in Buildbucket.
+      If slaves were scheduled by git commits, return None.
+    """
+    buildbucket_ids = None
+    if (config_lib.UseBuildbucketScheduler(self._run.config) and
+        config_lib.IsMasterBuild(self._run.config)):
+      buildbucket_ids = buildbucket_lib.GetBuildbucketIds(
+          self._run.attrs.metadata)
+
+    return buildbucket_ids
+
   def _Print(self, msg):
     """Prints a msg to stderr."""
     sys.stdout.flush()

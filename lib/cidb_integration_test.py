@@ -690,6 +690,64 @@ class BuildTableTest(CIDBIntegrationTest):
         bot_db.GetBuildStatus(build_id)['summary'],
         'summary')
 
+  def _GetBuildToBuildbucketIdList(self, slave_statuses):
+    """Convert slave_statuses to a list of (build_config, buildbucket_id)."""
+    return [(x['build_config'], x['buildbucket_id']) for x in slave_statuses]
+
+  def testGetSlaveStatus(self):
+    """Test GetSlaveStatus."""
+    self._PrepareDatabase()
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
+
+    build_id = bot_db.InsertBuild('build_name',
+                                  constants.WATERFALL_INTERNAL,
+                                  _random(),
+                                  'build_config',
+                                  'bot_hostname')
+
+    bot_db.InsertBuild('build_1',
+                       constants.WATERFALL_INTERNAL,
+                       _random(),
+                       'build_1',
+                       'bot_hostname',
+                       master_build_id=build_id,
+                       buildbucket_id='id_1')
+    bot_db.InsertBuild('build_2',
+                       constants.WATERFALL_INTERNAL,
+                       _random(),
+                       'build_2',
+                       'bot_hostname',
+                       master_build_id=build_id,
+                       buildbucket_id='id_2')
+    bot_db.InsertBuild('build_1',
+                       constants.WATERFALL_INTERNAL,
+                       _random(),
+                       'build_1',
+                       'bot_hostname',
+                       master_build_id=build_id,
+                       buildbucket_id='id_3')
+
+    build_bb_id_list = self._GetBuildToBuildbucketIdList(
+        bot_db.GetSlaveStatuses(build_id))
+    expected_list = ([
+        ('build_1', 'id_1'),
+        ('build_2', 'id_2'),
+        ('build_1', 'id_3')
+    ])
+    self.assertListEqual(build_bb_id_list, expected_list)
+
+    build_bb_id_list = self._GetBuildToBuildbucketIdList(
+        bot_db.GetSlaveStatuses(build_id, buildbucket_ids=['id_2', 'id_3']))
+    expected_list = ([
+        ('build_2', 'id_2'),
+        ('build_1', 'id_3')
+    ])
+    self.assertListEqual(build_bb_id_list, expected_list)
+
+    build_bb_id_list = self._GetBuildToBuildbucketIdList(
+        bot_db.GetSlaveStatuses(build_id, buildbucket_ids=[]))
+    self.assertListEqual(build_bb_id_list, [])
+
 
 class DataSeries1Test(CIDBIntegrationTest):
   """Simulate a single set of canary builds."""

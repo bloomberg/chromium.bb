@@ -1066,20 +1066,39 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
          'last_updated', 'start_time', 'finish_time', 'final'])
 
   @minimum_schema(43)
-  def GetSlaveStatuses(self, master_build_id):
+  def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
     """Gets the statuses of slave builders to given build.
 
     Args:
       master_build_id: build id of the master build to fetch the slave
                        statuses for.
+      buildbucket_ids: A list of buildbucket_ids (string). If it's given,
+        only fetch the builds with buildbucket_id in the buildbucket_ids.
+        Default to None.
 
     Returns:
-      A list containing, for each slave build (row) found, a dictionary
-      with keys BUILD_STATUS_KEYS.
+      A list containing a dictionary with keys BUILD_STATUS_KEYS.
+      If buildbucket_ids is None, the list contains all slave builds found
+      in the buildTable; else, the list only contains the slave builds
+      with |buildbucket_id| in the buildbucket_ids list.
     """
-    return self._SelectWhere('buildTable',
-                             'master_build_id = %d' % master_build_id,
-                             self.BUILD_STATUS_KEYS)
+    if buildbucket_ids is None:
+      return self._SelectWhere(
+          'buildTable',
+          'master_build_id = %d' % master_build_id,
+          self.BUILD_STATUS_KEYS)
+    else:
+      assert isinstance(buildbucket_ids, list)
+
+      if buildbucket_ids:
+        return self._SelectWhere(
+            'buildTable',
+            'master_build_id = %d AND buildbucket_id IN (%s)' %
+            (master_build_id, ','.join(
+                '"%s"' % x for x in buildbucket_ids)),
+            self.BUILD_STATUS_KEYS)
+      else:
+        return []
 
   @minimum_schema(30)
   def GetSlaveStages(self, master_build_id):

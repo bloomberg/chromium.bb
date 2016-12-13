@@ -242,10 +242,15 @@ class FakeCIDBConnection(object):
     """Gets the status of the builds."""
     return [self._TrimStatus(self.buildTable[x]) for x in build_ids]
 
-  def GetSlaveStatuses(self, master_build_id):
+  def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
     """Gets the slaves of given build."""
-    return [self._TrimStatus(b) for b in self.buildTable
-            if b['master_build_id'] == master_build_id]
+    if buildbucket_ids is None:
+      return [self._TrimStatus(b) for b in self.buildTable
+              if b['master_build_id'] == master_build_id]
+    else:
+      return [self._TrimStatus(b) for b in self.buildTable
+              if b['master_build_id'] == master_build_id and
+              b['buildbucket_id'] in buildbucket_ids]
 
   def GetBuildStages(self, build_id):
     """Gets build stages given the build_id"""

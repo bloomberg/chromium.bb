@@ -68,8 +68,13 @@ class SlaveStatus(object):
 
     self.UpdateSlaveStatus()
 
-  def _GetSlaveStatusesFromCIDB(self):
+  def _GetSlaveStatusesFromCIDB(self, build_info_dict):
     """Get statuses of slaves (not in completed_builds set) from CIDB.
+
+    Args:
+      build_info_dict: A dict mapping build config names to their
+                       information fetched from Buildbucket server
+                       (in format of BuildbucketInfo).
 
     Returns:
       A dict mapping the slave build config name to its status in CIDB
@@ -78,7 +83,12 @@ class SlaveStatus(object):
     """
     status_dict = dict()
     if self.db is not None:
-      status_list = self.db.GetSlaveStatuses(self.master_build_id)
+      buildbucket_ids = None if build_info_dict is None else [
+          info.buildbucket_id for info in build_info_dict.values()]
+
+      status_list = self.db.GetSlaveStatuses(
+          self.master_build_id, buildbucket_ids=buildbucket_ids)
+
       for d in status_list:
         if d['build_config'] not in self.completed_builds:
           status_dict[d['build_config']] = d['status']
@@ -132,13 +142,13 @@ class SlaveStatus(object):
 
   def UpdateSlaveStatus(self):
     """Update slave statuses by querying CIDB and Buildbucket(if supported)."""
-    self.cidb_status = self._GetSlaveStatusesFromCIDB()
-
     if (self.config is not None and
         self.metadata is not None and
         config_lib.UseBuildbucketScheduler(self.config)):
       self.build_info_dict = self._GetSlaveStatusesFromBuildbucket()
       self._SetStatusBuildsDict()
+
+    self.cidb_status = self._GetSlaveStatusesFromCIDB(self.build_info_dict)
 
     self.missing_builds = self._GetMissingBuilds()
     self.scheduled_builds = self._GetScheduledBuilds()

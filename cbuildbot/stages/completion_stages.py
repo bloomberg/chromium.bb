@@ -609,7 +609,9 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     # build_id is the master build id for the run.
     build_id, db = self._run.GetCIDBHandle()
     assert db, 'No database connection to use.'
-    slave_list = db.GetSlaveStatuses(build_id)
+
+    buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
+    slave_list = db.GetSlaveStatuses(build_id, buildbucket_ids=buildbucket_ids)
     # TODO(akeshet): We are getting the full action history for all changes that
     # were in this CQ run. It would make more sense to only get the actions from
     # build_ids of this master and its slaves.
@@ -617,11 +619,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     config_map = dict()
 
-    # Build the build_id to config_name mapping. Note that if add the
-    # "relaunch" feature in cbuildbot, there may be multiple build ids
-    # for the same slave config. We will have to make sure
-    # GetSlaveStatuses() returns only the valid slaves (e.g. with
-    # latest start time).
     for d in slave_list:
       config_map[d['id']] = d['build_config']
 

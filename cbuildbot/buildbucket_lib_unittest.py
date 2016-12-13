@@ -418,8 +418,8 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
     build_dict = buildbucket_lib.GetScheduledBuildDict(None)
     self.assertEqual(build_dict, {})
 
-  def testGetBuildInfo(self):
-    """Test UpdateBuildInfoDict with metadata and config."""
+  def testGetBuildInfoDict(self):
+    """Test GetBuildInfoDict with metadata and config."""
     metadata = metadata_lib.CBuildbotMetadata()
     slaves = [('config_1', 'bb_id_1', 0),
               ('config_1', 'bb_id_2', 1)]
@@ -430,3 +430,16 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
     self.assertEqual(build_info_dict['config_1']['retry'], 1)
     self.assertEqual(build_info_dict['config_1']['buildbucket_id'],
                      'bb_id_2')
+
+  def testGetBuildbucketIds(self):
+    """Test GetBuildbucketIds with metadata and config."""
+    metadata = metadata_lib.CBuildbotMetadata()
+    slaves = [('config_1', 'bb_id_1', 0),
+              ('config_1', 'bb_id_2', 1),
+              ('config_2', 'bb_id_3', 2)]
+    metadata.ExtendKeyListWithList(
+        constants.METADATA_SCHEDULED_SLAVES, slaves)
+
+    buildbucket_ids = buildbucket_lib.GetBuildbucketIds(metadata)
+    self.assertTrue('bb_id_2' in buildbucket_ids)
+    self.assertTrue('bb_id_3' in buildbucket_ids)

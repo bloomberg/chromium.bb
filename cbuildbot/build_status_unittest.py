@@ -799,27 +799,71 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self.assertIsNone(updated_build_info_dict['build1'].status)
     self.assertIsNone(updated_build_info_dict['build2'].status)
 
-  def test_GetSlaveStatusesFromCIDB(self):
-    """Test test_GetSlaveStatusesFromCIDB"""
-    master = 'master-paladin'
-    slave1 = 'slave1-paladin'
-    slave2 = 'slave2-paladin'
-    self.db.InsertBuild(master, constants.WATERFALL_INTERNAL, 1, master,
+  def _InsertMasterSlaveBuildsToCIDB(self):
+    """Insert master and slave builds into fake_cidb."""
+    self.db.InsertBuild('master', constants.WATERFALL_INTERNAL, 1, 'master',
                         'host1')
-    self.db.InsertBuild(slave1, constants.WATERFALL_INTERNAL, 2, slave1,
-                        'host1', master_build_id=0)
-    self.db.InsertBuild(slave2, constants.WATERFALL_INTERNAL, 3, slave2,
-                        'host1', master_build_id=0)
+    self.db.InsertBuild('slave1', constants.WATERFALL_INTERNAL, 2, 'slave1',
+                        'host1', master_build_id=0, buildbucket_id='id_1',
+                        status='fail')
+    self.db.InsertBuild('slave2', constants.WATERFALL_INTERNAL, 3, 'slave2',
+                        'host1', master_build_id=0, buildbucket_id='id_2',
+                        status='fail')
 
+  def test_GetSlaveStatusesFromCIDB(self):
+    """_GetSlaveStatusesFromCIDB without Buildbucket info."""
+    self.PatchObject(build_status.SlaveStatus, 'UpdateSlaveStatus')
+    self._InsertMasterSlaveBuildsToCIDB()
+    slave_status = self._GetSlaveStatus(builders_array=['slave1', 'slave2'])
+
+    cidb_status = slave_status._GetSlaveStatusesFromCIDB(None)
+    self.assertEqual(set(cidb_status.keys()), set(['slave1', 'slave2']))
+
+    slave_status.completed_builds.update(['slave1'])
+    cidb_status = slave_status._GetSlaveStatusesFromCIDB(None)
+    self.assertEqual(set(cidb_status.keys()), set(['slave2']))
+
+  def test_GetSlaveStatusesFromCIDBWithBuildbucket(self):
+    """_GetSlaveStatusesFromCIDB with Buildbucket info."""
+    self.PatchObject(build_status.SlaveStatus, 'UpdateSlaveStatus')
+    self._InsertMasterSlaveBuildsToCIDB()
     slave_status = self._GetSlaveStatus(
-        builders_array=[slave1, slave2],
+        builders_array=['slave1', 'slave2'],
         config=self.master_cq_config,
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client)
 
-    cidb_status = slave_status._GetSlaveStatusesFromCIDB()
-    self.assertEqual(set(cidb_status.keys()), set([slave1, slave2]))
+    build_info_dict = {
+        'slave1': BuildbucketInfos.GetStartedBuild(bb_id='id_1'),
+        'slave2': BuildbucketInfos.GetStartedBuild(bb_id='id_2')
+    }
 
-    slave_status.completed_builds.update([slave1])
-    cidb_status = slave_status._GetSlaveStatusesFromCIDB()
-    self.assertEqual(set(cidb_status.keys()), set([slave2]))
+    cidb_status = slave_status._GetSlaveStatusesFromCIDB(build_info_dict)
+    self.assertEqual(set(cidb_status.keys()), set(['slave1', 'slave2']))
+
+    slave_status.completed_builds.update(['slave1'])
+    cidb_status = slave_status._GetSlaveStatusesFromCIDB(build_info_dict)
+    self.assertEqual(set(cidb_status.keys()), set(['slave2']))
+
+  def test_GetSlaveStatusesFromCIDBWithRetriedBuilds(self):
+    """_GetSlaveStatusesFromCIDB doesn't return retried builds."""
+    self.PatchObject(build_status.SlaveStatus, 'UpdateSlaveStatus')
+    self._InsertMasterSlaveBuildsToCIDB()
+    self.db.InsertBuild('slave1', constants.WATERFALL_INTERNAL, 3,
+                        'slave1', 'host1', master_build_id=0,
+                        buildbucket_id='id_3', status='inflight')
+
+    slave_status = self._GetSlaveStatus(
+        builders_array=['slave1', 'slave2'],
+        config=self.master_cq_config,
+        metadata=self.metadata,
+        buildbucket_client=self.buildbucket_client)
+
+    build_info_dict = {
+        'slave1': BuildbucketInfos.GetStartedBuild(bb_id='id_3'),
+        'slave2': BuildbucketInfos.GetStartedBuild(bb_id='id_4')
+    }
+
+    cidb_status = slave_status._GetSlaveStatusesFromCIDB(build_info_dict)
+    self.assertEqual(set(cidb_status.keys()), set(['slave1']))
+    self.assertEqual(cidb_status['slave1'], 'inflight')
