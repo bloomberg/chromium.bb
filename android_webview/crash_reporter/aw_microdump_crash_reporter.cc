@@ -154,10 +154,6 @@ void AddGpuFingerprintToMicrodumpCrashHandler(
   breakpad::AddGpuFingerprintToMicrodumpCrashHandler(gpu_fingerprint);
 }
 
-void SetWebViewTextAddrRange(uintptr_t start, uintptr_t end) {
-  breakpad::SetNativeCodeTextAddrRange(start, end);
-}
-
 bool DumpWithoutCrashingToFd(int fd) {
   return g_crash_reporter_client.Pointer()->DumpWithoutCrashingToFd(fd);
 }

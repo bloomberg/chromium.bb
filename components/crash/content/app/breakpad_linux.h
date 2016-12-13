@@ -31,11 +31,6 @@ extern void InitMicrodumpCrashHandlerIfNecessary(
 
 extern void AddGpuFingerprintToMicrodumpCrashHandler(
     const std::string& gpu_fingerprint);
-
-// Inform breakpad of the extent of the text section that is
-// considered interesting for the purpose of crashes so that this can
-// be used to elide crashes that do not reference interesting code.
-extern void SetNativeCodeTextAddrRange(uintptr_t start, uintptr_t end);
 #endif
 
 // Checks if crash reporting is enabled. Note that this is not the same as
