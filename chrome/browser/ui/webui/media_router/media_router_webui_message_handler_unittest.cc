@@ -538,16 +538,18 @@ TEST_F(MediaRouterWebUIMessageHandlerTest,
 TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateIssue) {
   std::string issue_title("An issue");
   std::string issue_message("This is an issue");
-  IssueAction default_action(IssueAction::TYPE_LEARN_MORE);
-  std::vector<IssueAction> secondary_actions;
-  secondary_actions.push_back(IssueAction(IssueAction::TYPE_DISMISS));
+  IssueInfo::Action default_action = IssueInfo::Action::LEARN_MORE;
+  std::vector<IssueInfo::Action> secondary_actions;
+  secondary_actions.push_back(IssueInfo::Action::DISMISS);
   MediaRoute::Id route_id("routeId123");
-  bool is_blocking = true;
-  Issue issue(issue_title, issue_message, default_action, secondary_actions,
-              route_id, Issue::FATAL, is_blocking, -1);
+  IssueInfo info(issue_title, default_action, IssueInfo::Severity::FATAL);
+  info.message = issue_message;
+  info.secondary_actions = secondary_actions;
+  info.route_id = route_id;
+  Issue issue(info);
   const Issue::Id& issue_id = issue.id();
 
-  handler_->UpdateIssue(&issue);
+  handler_->UpdateIssue(issue);
   EXPECT_EQ(1u, web_ui_->call_data().size());
   const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
   EXPECT_EQ("media_router.ui.setIssue", call_data.function_name());
@@ -555,26 +557,30 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateIssue) {
   const base::DictionaryValue* issue_value = nullptr;
   ASSERT_TRUE(arg1->GetAsDictionary(&issue_value));
 
+  // Initialized to invalid issue id.
+  int actual_issue_id = -1;
   std::string value;
-  EXPECT_TRUE(issue_value->GetString("id", &value));
-  EXPECT_EQ(issue_id, value);
+  EXPECT_TRUE(issue_value->GetInteger("id", &actual_issue_id));
+  EXPECT_EQ(issue_id, actual_issue_id);
   EXPECT_TRUE(issue_value->GetString("title", &value));
   EXPECT_EQ(issue_title, value);
   EXPECT_TRUE(issue_value->GetString("message", &value));
   EXPECT_EQ(issue_message, value);
 
+  // Initialized to invalid action type.
   int action_type_num = -1;
   EXPECT_TRUE(issue_value->GetInteger("defaultActionType", &action_type_num));
-  EXPECT_EQ(default_action.type(), action_type_num);
+  EXPECT_EQ(static_cast<int>(default_action), action_type_num);
   EXPECT_TRUE(issue_value->GetInteger("secondaryActionType", &action_type_num));
-  EXPECT_EQ(secondary_actions[0].type(), action_type_num);
+  EXPECT_EQ(static_cast<int>(secondary_actions[0]), action_type_num);
 
   EXPECT_TRUE(issue_value->GetString("routeId", &value));
   EXPECT_EQ(route_id, value);
 
+  // The issue is blocking since it is FATAL.
   bool actual_is_blocking = false;
   EXPECT_TRUE(issue_value->GetBoolean("isBlocking", &actual_is_blocking));
-  EXPECT_EQ(is_blocking, actual_is_blocking);
+  EXPECT_TRUE(actual_is_blocking);
 }
 
 }  // namespace media_router

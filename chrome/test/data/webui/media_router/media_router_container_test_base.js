@@ -77,7 +77,7 @@ cr.define('media_router_container_test_base', function() {
      * @type {!media_router.Issue}
      */
     var fakeBlockingIssue = new media_router.Issue(
-        'issue id 1', 'Issue Title 1', 'Issue Message 1', 0, 1,
+        1, 'Issue Title 1', 'Issue Message 1', 0, 1,
         'route id 1', true, 1234);
 
     /**
@@ -105,7 +105,7 @@ cr.define('media_router_container_test_base', function() {
      * @type {!media_router.Issue}
      */
     var fakeNonBlockingIssue = new media_router.Issue(
-        'issue id 2', 'Issue Title 2', 'Issue Message 2', 0, 1,
+        2, 'Issue Title 2', 'Issue Message 2', 0, 1,
         'route id 2', false, 1234);
 
     /**

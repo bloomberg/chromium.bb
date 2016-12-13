@@ -126,7 +126,8 @@ class MediaRouterUI::UIIssuesObserver : public IssuesObserver {
   ~UIIssuesObserver() override {}
 
   // IssuesObserver implementation.
-  void OnIssueUpdated(const Issue* issue) override { ui_->SetIssue(issue); }
+  void OnIssue(const Issue& issue) override { ui_->SetIssue(issue); }
+  void OnIssuesCleared() override { ui_->ClearIssue(); }
 
  private:
   // Reference back to the owning MediaRouterUI instance.
@@ -187,8 +188,6 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
 }
 
 MediaRouterUI::~MediaRouterUI() {
-  if (issues_observer_) issues_observer_->UnregisterObserver();
-
   if (query_result_manager_.get()) query_result_manager_->RemoveObserver(this);
   if (presentation_service_delegate_.get())
     presentation_service_delegate_->RemoveDefaultPresentationRequestObserver(
@@ -383,9 +382,8 @@ void MediaRouterUI::UIInitialized() {
   ui_initialized_ = true;
 
   // Register for Issue updates.
-  if (!issues_observer_)
-    issues_observer_.reset(new UIIssuesObserver(router_, this));
-  issues_observer_->RegisterObserver();
+  issues_observer_.reset(new UIIssuesObserver(router_, this));
+  issues_observer_->Init();
 }
 
 bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
@@ -504,9 +502,11 @@ void MediaRouterUI::CloseRoute(const MediaRoute::Id& route_id) {
   router_->TerminateRoute(route_id);
 }
 
-void MediaRouterUI::AddIssue(const Issue& issue) { router_->AddIssue(issue); }
+void MediaRouterUI::AddIssue(const IssueInfo& issue) {
+  router_->AddIssue(issue);
+}
 
-void MediaRouterUI::ClearIssue(const std::string& issue_id) {
+void MediaRouterUI::ClearIssue(const Issue::Id& issue_id) {
   router_->ClearIssue(issue_id);
 }
 
@@ -569,11 +569,18 @@ void MediaRouterUI::OnResultsUpdated(
               return sink1.sink.CompareUsingCollator(sink2.sink, collator_ptr);
             });
 
-  if (ui_initialized_) handler_->UpdateSinks(sinks_);
+  if (ui_initialized_)
+    handler_->UpdateSinks(sinks_);
 }
 
-void MediaRouterUI::SetIssue(const Issue* issue) {
-  if (ui_initialized_) handler_->UpdateIssue(issue);
+void MediaRouterUI::SetIssue(const Issue& issue) {
+  if (ui_initialized_)
+    handler_->UpdateIssue(issue);
+}
+
+void MediaRouterUI::ClearIssue() {
+  if (ui_initialized_)
+    handler_->ClearIssue();
 }
 
 void MediaRouterUI::OnRoutesUpdated(
@@ -680,11 +687,8 @@ void MediaRouterUI::SendIssueForRouteTimeout(
       NOTREACHED();
   }
 
-  Issue issue(issue_title, std::string(),
-              IssueAction(IssueAction::TYPE_DISMISS),
-              std::vector<IssueAction>(), std::string(), Issue::NOTIFICATION,
-              false, -1);
-  AddIssue(issue);
+  AddIssue(IssueInfo(issue_title, IssueInfo::Action::DISMISS,
+                     IssueInfo::Severity::NOTIFICATION));
 }
 
 void MediaRouterUI::SendIssueForUnableToCast(MediaCastMode cast_mode) {
@@ -696,10 +700,8 @@ void MediaRouterUI::SendIssueForUnableToCast(MediaCastMode cast_mode) {
                 IDS_MEDIA_ROUTER_ISSUE_UNABLE_TO_CAST_DESKTOP)
           : l10n_util::GetStringUTF8(
                 IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
-  AddIssue(Issue(issue_title, std::string(),
-                 IssueAction(IssueAction::TYPE_DISMISS),
-                 std::vector<IssueAction>(), std::string(), Issue::WARNING,
-                 false, -1));
+  AddIssue(IssueInfo(issue_title, IssueInfo::Action::DISMISS,
+                     IssueInfo::Severity::WARNING));
 }
 
 GURL MediaRouterUI::GetFrameURL() const {

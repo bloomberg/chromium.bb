@@ -13,84 +13,83 @@
 
 namespace media_router {
 
-// The text that corresponds with an action a user can take for a Issue.
-class IssueAction {
+// Contains the information relevant to an issue.
+struct IssueInfo {
  public:
-  enum Type {
-    TYPE_DISMISS,
-    TYPE_LEARN_MORE,
-    TYPE_MAX /* Denotes enum value boundary. */
+  // Possible actions for an issue.
+  enum class Action {
+    DISMISS,
+    // NOTE: If LEARN_MORE is set as a possible action for an issue, then its
+    // |help_page_id_| must also be set to a valid value.
+    LEARN_MORE,
+
+    // Denotes enum value boundary. New values should be added above.
+    NUM_VALUES = LEARN_MORE
   };
 
-  explicit IssueAction(const Type type);
-  ~IssueAction();
+  // Severity type of an issue. A FATAL issue is considered blocking. Although
+  // issues of other severity levels may also be blocking.
+  enum class Severity { FATAL, WARNING, NOTIFICATION };
 
-  Type type() const { return type_; }
+  static const int kUnknownHelpPageId = 0;
 
-  bool Equals(const IssueAction& other) const { return type_ == other.type_; }
+  // Used by Mojo and testing only.
+  IssueInfo();
 
- private:
-  Type type_;
+  // |title|: The title for the issue.
+  // |default_action|: Default action user can take to resolve the issue.
+  // |severity|: The severity of the issue. If FATAL, then |is_blocking| is set
+  // to |true|.
+  IssueInfo(const std::string& title, Action default_action, Severity severity);
+  IssueInfo(const IssueInfo& other);
+  ~IssueInfo();
+
+  IssueInfo& operator=(const IssueInfo& other);
+  bool operator==(const IssueInfo& other) const;
+
+  // Fields set with values provided to the constructor.
+  std::string title;
+  Action default_action;
+  Severity severity;
+
+  // Description message for the issue.
+  std::string message;
+
+  // Options the user can take to resolve the issue in addition to the
+  // default action. Can be empty. If non-empty, currently only one secondary
+  // action is supported.
+  std::vector<Action> secondary_actions;
+
+  // ID of route associated with the Issue, or empty if no route is associated
+  // with it.
+  std::string route_id;
+
+  // |true| if the issue needs to be resolved before continuing. Note that a
+  // Issue of severity FATAL is considered blocking by default.
+  bool is_blocking;
+
+  // ID of help page to link to, if one of the actions is LEARN_MORE.
+  // Defaults to |kUnknownHelpPageId|.
+  int help_page_id;
 };
 
-// Contains the information relevant to an issue.
+// An issue that is associated with a globally unique ID. Created by
+// IssueManager when an IssueInfo is added to it.
 class Issue {
  public:
-  using Id = std::string;
-
-  enum Severity { FATAL, WARNING, NOTIFICATION };
-
-  // Creates a custom issue.
-  // |title|: The title for the issue.
-  // |message|: The optional description message for the issue.
-  // |default_action|: Default action user can take to resolve the issue.
-  // |secondary_actions|: Array of options user can take to resolve the
-  //                      issue. Can be empty. Currently only one secondary
-  //                      action is supported.
-  // |route_id|: The route id, or empty if global.
-  // |severity|: The severity of the issue.
-  // |is_blocking|: True if the issue needs to be resolved before continuing.
-  // |help_page_id|: Required if one of the actions is learn-more. Passes in -1
-  //                 if the issue is not associated with a help page.
-  Issue(const std::string& title,
-        const std::string& message,
-        const IssueAction& default_action,
-        const std::vector<IssueAction>& secondary_actions,
-        const MediaRoute::Id& route_id,
-        const Severity severity,
-        bool is_blocking,
-        int help_page_id);
-
-  Issue(const Issue& other);
-
+  using Id = int;
+  // ID is generated during construction.
+  explicit Issue(const IssueInfo& info);
+  Issue(const Issue& other) = default;
+  Issue& operator=(const Issue& other) = default;
   ~Issue();
 
-  // See constructor comments for more information about these fields.
-  const std::string& title() const { return title_; }
-  const std::string& message() const { return message_; }
-  IssueAction default_action() const { return default_action_; }
-  const std::vector<IssueAction>& secondary_actions() const {
-    return secondary_actions_;
-  }
-  MediaRoute::Id route_id() const { return route_id_; }
-  Severity severity() const { return severity_; }
-  const Issue::Id& id() const { return id_; }
-  bool is_blocking() const { return is_blocking_; }
-  bool is_global() const { return route_id_.empty(); }
-  int help_page_id() const { return help_page_id_; }
-
-  bool Equals(const Issue& other) const;
+  const Id& id() const { return id_; }
+  const IssueInfo& info() const { return info_; }
 
  private:
-  std::string title_;
-  std::string message_;
-  IssueAction default_action_;
-  std::vector<IssueAction> secondary_actions_;
-  std::string route_id_;
-  Severity severity_;
-  Issue::Id id_;
-  bool is_blocking_;
-  int help_page_id_;
+  Id id_;
+  IssueInfo info_;
 };
 
 }  // namespace media_router

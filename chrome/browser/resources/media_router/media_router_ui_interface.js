@@ -197,7 +197,7 @@ cr.define('media_router.browserApi', function() {
   /**
    * Acts on the given issue.
    *
-   * @param {string} issueId
+   * @param {number} issueId
    * @param {number} actionType Type of action that the user clicked.
    * @param {?number} helpPageId The numeric help center ID.
    */

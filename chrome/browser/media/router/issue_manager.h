@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -25,26 +26,13 @@ class IssueManager {
   IssueManager();
   ~IssueManager();
 
-  // Adds an issue.
-  // |issue|: Issue to be added. Must have unique ID.
-  void AddIssue(const Issue& issue);
+  // Adds an issue. No-ops if the issue already exists.
+  // |issue_info|: Info of issue to be added.
+  void AddIssue(const IssueInfo& issue_info);
 
   // Removes an issue when user has noted it is resolved.
   // |issue_id|: Issue::Id of the issue to be removed.
   void ClearIssue(const Issue::Id& issue_id);
-
-  // Gets the number of unresolved issues.
-  size_t GetIssueCount() const;
-
-  // Removes all unresolved issues.
-  void ClearAllIssues();
-
-  // Removes all unresolved global issues.
-  void ClearGlobalIssues();
-
-  // Removes all unresolved issues with RouteId.
-  // |route_id|: ID of the media route whose issues are to be cleared.
-  void ClearIssuesWithRouteId(const MediaRoute::Id& route_id);
 
   // Registers an issue observer |observer|. The observer will be triggered
   // when the highest priority issue changes.
@@ -59,17 +47,17 @@ class IssueManager {
 
  private:
   // Checks if the current top issue has changed. Updates |top_issue_|.
-  // If |top_issue_| has changed, issues in |issues_observers_| will be
+  // If |top_issue_| has changed, observers in |issues_observers_| will be
   // notified of the new top issue.
   void MaybeUpdateTopIssue();
 
-  std::vector<Issue> issues_;
+  std::vector<std::unique_ptr<Issue>> issues_;
 
   // IssueObserver insteances are not owned by the manager.
   base::ObserverList<IssuesObserver> issues_observers_;
 
-  // The ID of the current top issue.
-  Issue::Id top_issue_id_;
+  // ID of the top Issue in |issues_|, or |nullptr| if there are no issues.
+  const Issue* top_issue_;
 
   DISALLOW_COPY_AND_ASSIGN(IssueManager);
 };

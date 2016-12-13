@@ -39,42 +39,9 @@ MATCHER_P(SequenceEquals, other, "") {
   return true;
 }
 
-// Matcher for checking all fields in Issue objects except the ID.
-MATCHER_P(EqualsIssue, other, "") {
-  if (arg.title() != other.title())
-    return false;
-
-  if (arg.message() != other.message())
-    return false;
-
-  if (!arg.default_action().Equals(other.default_action()))
-    return false;
-
-  if (arg.secondary_actions().size() != other.secondary_actions().size())
-    return false;
-
-  for (size_t i = 0; i < arg.secondary_actions().size(); ++i) {
-    if (!arg.secondary_actions()[i].Equals(other.secondary_actions()[i]))
-      return false;
-  }
-
-  if (arg.route_id() != other.route_id())
-    return false;
-
-  if (arg.severity() != other.severity())
-    return false;
-
-  if (arg.is_blocking() != other.is_blocking())
-    return false;
-
-  if (arg.help_page_id() != other.help_page_id())
-    return false;
-
-  return true;
-}
-
+// Matcher for IssueInfo title.
 MATCHER_P(IssueTitleEquals, title, "") {
-  return arg.title() == title;
+  return arg.title == title;
 }
 
 MATCHER_P(StateChangeInfoEquals, other, "") {
@@ -87,7 +54,8 @@ class MockIssuesObserver : public IssuesObserver {
   explicit MockIssuesObserver(MediaRouter* router);
   ~MockIssuesObserver() override;
 
-  MOCK_METHOD1(OnIssueUpdated, void(const Issue* issue));
+  MOCK_METHOD1(OnIssue, void(const Issue& issue));
+  MOCK_METHOD0(OnIssuesCleared, void());
 };
 
 class MockMediaSinksObserver : public MediaSinksObserver {

@@ -46,15 +46,10 @@ class FakeComponentActionDelegate
 class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
  public:
   MediaRouterActionControllerUnitTest()
-      : issue_(media_router::Issue(
+      : issue_(media_router::IssueInfo(
             "title notification",
-            "message notification",
-            media_router::IssueAction(media_router::IssueAction::TYPE_DISMISS),
-            std::vector<media_router::IssueAction>(),
-            "route_id",
-            media_router::Issue::NOTIFICATION,
-            false,
-            -1)),
+            media_router::IssueInfo::Action::DISMISS,
+            media_router::IssueInfo::Severity::NOTIFICATION)),
         source1_("fakeSource1"),
         source2_("fakeSource2") {}
 
@@ -105,7 +100,7 @@ class MediaRouterActionControllerUnitTest : public MediaRouterWebUITest {
 
   MediaRouterActionController* controller() { return controller_.get(); }
 
-  const media_router::Issue* issue() { return &issue_; }
+  const media_router::Issue& issue() { return issue_; }
   const std::vector<media_router::MediaRoute>& local_display_route_list()
       const {
     return local_display_route_list_;
@@ -152,18 +147,18 @@ TEST_F(MediaRouterActionControllerUnitTest, EphemeralIconForRoutesAndIssues) {
   EXPECT_FALSE(ActionExists());
 
   // Creating an issue should show the action icon.
-  controller()->OnIssueUpdated(issue());
+  controller()->OnIssue(issue());
   EXPECT_TRUE(controller()->has_issue_);
   EXPECT_TRUE(ActionExists());
   // Removing the issue should hide the icon.
-  controller()->OnIssueUpdated(nullptr);
+  controller()->OnIssuesCleared();
   EXPECT_FALSE(controller()->has_issue_);
   EXPECT_FALSE(ActionExists());
 
-  controller()->OnIssueUpdated(issue());
+  controller()->OnIssue(issue());
   controller()->OnRoutesUpdated(local_display_route_list(),
                                 empty_route_id_list());
-  controller()->OnIssueUpdated(nullptr);
+  controller()->OnIssuesCleared();
   // When the issue disappears, the icon should remain visible if there's
   // a local route.
   EXPECT_TRUE(ActionExists());
@@ -201,11 +196,11 @@ TEST_F(MediaRouterActionControllerUnitTest, EphemeralIconForDialog) {
 
   controller()->OnDialogShown();
   EXPECT_TRUE(ActionExists());
-  controller()->OnIssueUpdated(issue());
+  controller()->OnIssue(issue());
   // Hiding the dialog while there is an issue shouldn't hide the icon.
   controller()->OnDialogHidden();
   EXPECT_TRUE(ActionExists());
-  controller()->OnIssueUpdated(nullptr);
+  controller()->OnIssuesCleared();
   EXPECT_FALSE(ActionExists());
 }
 

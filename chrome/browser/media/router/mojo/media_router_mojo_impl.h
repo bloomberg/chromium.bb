@@ -99,7 +99,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const MediaRoute::Id& route_id,
       std::unique_ptr<std::vector<uint8_t>> data,
       const SendRouteMessageCallback& callback) override;
-  void AddIssue(const Issue& issue) override;
+  void AddIssue(const IssueInfo& issue_info) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void OnUserGesture() override;
   void SearchSinks(
@@ -284,7 +284,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       mojom::MediaRouteProviderPtr media_route_provider_ptr,
       const mojom::MediaRouter::RegisterMediaRouteProviderCallback&
           callback) override;
-  void OnIssue(mojom::IssuePtr issue) override;
+  void OnIssue(const IssueInfo& issue) override;
   void OnSinksReceived(const std::string& media_source,
                        std::vector<mojom::MediaSinkPtr> sinks,
                        const std::vector<std::string>& origins) override;

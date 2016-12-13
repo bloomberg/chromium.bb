@@ -3,7 +3,21 @@
 # found in the LICENSE file.
 
 mojom = "//chrome/browser/media/router/mojo/media_router.mojom"
-public_headers = [ "//chrome/browser/media/router/route_message.h" ]
+public_headers = [
+  "//chrome/browser/media/router/issue.h",
+  "//chrome/browser/media/router/route_message.h",
+]
+deps = [
+  "//third_party/icu",  # For issue.h
+]
 traits_headers =
     [ "//chrome/browser/media/router/mojo/media_router_struct_traits.h" ]
-type_mappings = [ "media_router.mojom.RouteMessage=media_router::RouteMessage" ]
+sources = [
+  "//chrome/browser/media/router/mojo/media_router_struct_traits.cc",
+]
+type_mappings = [
+  "media_router.mojom.Issue=media_router::IssueInfo",
+  "media_router.mojom.Issue.ActionType=media_router::IssueInfo::Action",
+  "media_router.mojom.Issue.Severity=media_router::IssueInfo::Severity",
+  "media_router.mojom.RouteMessage=media_router::RouteMessage",
+]

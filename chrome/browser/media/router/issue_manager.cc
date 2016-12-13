@@ -6,11 +6,12 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace media_router {
 
-IssueManager::IssueManager() {
+IssueManager::IssueManager() : top_issue_(nullptr) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -18,54 +19,27 @@ IssueManager::~IssueManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void IssueManager::AddIssue(const Issue& issue) {
+void IssueManager::AddIssue(const IssueInfo& issue_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  for (const Issue& next_issue : issues_) {
-    if (next_issue.Equals(issue)) {
-      return;
-    }
-  }
-  issues_.push_back(issue);
+  auto it = std::find_if(issues_.begin(), issues_.end(),
+                         [&issue_info](const std::unique_ptr<Issue>& issue) {
+                           return issue_info == issue->info();
+                         });
+  if (it != issues_.end())
+    return;
+
+  issues_.push_back(base::MakeUnique<Issue>(issue_info));
   MaybeUpdateTopIssue();
 }
 
 void IssueManager::ClearIssue(const Issue::Id& issue_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  issues_.erase(std::remove_if(issues_.begin(), issues_.end(),
-                               [&issue_id](const Issue& issue) {
-                                 return issue_id == issue.id();
-                               }),
-                issues_.end());
-  MaybeUpdateTopIssue();
-}
-
-size_t IssueManager::GetIssueCount() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return issues_.size();
-}
-
-void IssueManager::ClearAllIssues() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  issues_.clear();
-  MaybeUpdateTopIssue();
-}
-
-void IssueManager::ClearGlobalIssues() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   issues_.erase(
-      std::remove_if(issues_.begin(), issues_.end(), [](const Issue& issue) {
-        return issue.is_global();
-      }), issues_.end());
-  MaybeUpdateTopIssue();
-}
-
-void IssueManager::ClearIssuesWithRouteId(const MediaRoute::Id& route_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  issues_.erase(std::remove_if(issues_.begin(), issues_.end(),
-                               [&route_id](const Issue& issue) {
-                                 return route_id == issue.route_id();
-                               }),
-                issues_.end());
+      std::remove_if(issues_.begin(), issues_.end(),
+                     [&issue_id](const std::unique_ptr<Issue>& issue) {
+                       return issue_id == issue->id();
+                     }),
+      issues_.end());
   MaybeUpdateTopIssue();
 }
 
@@ -75,15 +49,9 @@ void IssueManager::RegisterObserver(IssuesObserver* observer) {
   DCHECK(!issues_observers_.HasObserver(observer));
 
   issues_observers_.AddObserver(observer);
-  if (top_issue_id_.empty())
-    return;
-
-  // Find the current top issue and report it to the observer.
-  for (const auto& next_issue : issues_) {
-    if (next_issue.id() == top_issue_id_) {
-      observer->OnIssueUpdated(&next_issue);
-    }
-  }
+  MaybeUpdateTopIssue();
+  if (top_issue_)
+    observer->OnIssue(*top_issue_);
 }
 
 void IssueManager::UnregisterObserver(IssuesObserver* observer) {
@@ -93,29 +61,28 @@ void IssueManager::UnregisterObserver(IssuesObserver* observer) {
 
 void IssueManager::MaybeUpdateTopIssue() {
   const Issue* new_top_issue = nullptr;
+  if (!issues_.empty()) {
+    // Select the first blocking issue in the list of issues.
+    // If there are none, simply select the first issue in the list.
+    auto it = std::find_if(issues_.begin(), issues_.end(),
+                           [](const std::unique_ptr<Issue>& issue) {
+                             return issue->info().is_blocking;
+                           });
+    if (it == issues_.end())
+      it = issues_.begin();
 
-  if (issues_.empty()) {
-    for (auto& observer : issues_observers_)
-      observer.OnIssueUpdated(new_top_issue);
-    return;
-  }
-
-  // Select the first blocking issue in the list of issues.
-  // If there are none, simply select the first issue in the list.
-  new_top_issue = &(issues_.front());
-  for (const auto& issue : issues_) {
-    // The first blocking issue is of higher priority than the first issue.
-    if (issue.is_blocking()) {
-      new_top_issue = &issue;
-      break;
-    }
+    new_top_issue = it->get();
   }
 
   // If we've found a new top issue, then report it via the observer.
-  if (new_top_issue->id() != top_issue_id_) {
-    top_issue_id_ = new_top_issue->id();
-    for (auto& observer : issues_observers_)
-      observer.OnIssueUpdated(new_top_issue);
+  if (new_top_issue != top_issue_) {
+    top_issue_ = new_top_issue;
+    for (auto& observer : issues_observers_) {
+      if (top_issue_)
+        observer.OnIssue(*top_issue_);
+      else
+        observer.OnIssuesCleared();
+    }
   }
 }
 

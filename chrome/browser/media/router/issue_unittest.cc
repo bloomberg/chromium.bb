@@ -7,131 +7,110 @@
 
 namespace media_router {
 
-// Checks static IssueAction factory method.
-TEST(IssueUnitTest, IssueActionConstructor) {
-  // Pre-defined "Dismiss" issue action.
-  IssueAction action1(IssueAction::TYPE_DISMISS);
-  EXPECT_EQ(IssueAction::TYPE_DISMISS, action1.type());
+namespace {
 
-  // Pre-defined "Learn More" issue action.
-  IssueAction action2(IssueAction::TYPE_LEARN_MORE);
-  EXPECT_EQ(IssueAction::TYPE_LEARN_MORE, action2.type());
+IssueInfo CreateWarningIssueInfo(IssueInfo::Action action_type) {
+  IssueInfo issue("title", action_type, IssueInfo::Severity::WARNING);
+  issue.message = "message";
+  issue.help_page_id = 12345;
+  return issue;
 }
 
-// Tests custom Issue factory method without any secondary actions.
-TEST(IssueUnitTest, CustomIssueConstructionWithNoSecondaryActions) {
-  std::vector<IssueAction> secondary_actions;
-  std::string title = "title";
-  std::string message = "message";
-
-  Issue issue1(title, message, IssueAction(IssueAction::TYPE_DISMISS),
-               secondary_actions, "", Issue::WARNING, false,
-               12345);
-
-  EXPECT_EQ(title, issue1.title());
-  EXPECT_EQ(message, issue1.message());
-  EXPECT_EQ(IssueAction::TYPE_DISMISS, issue1.default_action().type());
-  EXPECT_TRUE(issue1.secondary_actions().empty());
-  EXPECT_EQ(Issue::WARNING, issue1.severity());
-  EXPECT_EQ("", issue1.route_id());
-  EXPECT_TRUE(issue1.is_global());
-  EXPECT_FALSE(issue1.is_blocking());
-  EXPECT_EQ(12345, issue1.help_page_id());
-
-  Issue issue2(title, message, IssueAction(IssueAction::TYPE_DISMISS),
-               secondary_actions, "routeid", Issue::FATAL, true,
-               12345);
-
-  EXPECT_EQ(title, issue2.title());
-  EXPECT_EQ(message, issue2.message());
-  EXPECT_EQ(IssueAction::TYPE_DISMISS, issue1.default_action().type());
-  EXPECT_TRUE(issue2.secondary_actions().empty());
-  EXPECT_EQ(Issue::FATAL, issue2.severity());
-  EXPECT_EQ("routeid", issue2.route_id());
-  EXPECT_FALSE(issue2.is_global());
-  EXPECT_TRUE(issue2.is_blocking());
-  EXPECT_EQ(12345, issue1.help_page_id());
-
-  Issue issue3(title, "", IssueAction(IssueAction::TYPE_DISMISS),
-               secondary_actions, "routeid", Issue::FATAL, true,
-               12345);
-
-  EXPECT_EQ(title, issue3.title());
-  EXPECT_EQ("", issue3.message());
-  EXPECT_EQ(IssueAction::TYPE_DISMISS, issue1.default_action().type());
-  EXPECT_TRUE(issue3.secondary_actions().empty());
-  EXPECT_EQ(Issue::FATAL, issue3.severity());
-  EXPECT_EQ("routeid", issue3.route_id());
-  EXPECT_FALSE(issue3.is_global());
-  EXPECT_TRUE(issue3.is_blocking());
-  EXPECT_EQ(12345, issue1.help_page_id());
+IssueInfo CreateFatalRouteIssueInfoWithMessage(IssueInfo::Action action_type) {
+  IssueInfo issue("title", action_type, IssueInfo::Severity::FATAL);
+  issue.message = "message";
+  issue.route_id = "routeid";
+  issue.help_page_id = 12345;
+  return issue;
 }
 
-// Tests custom Issue factory method with secondary actions.
-TEST(IssueUnitTest, CustomIssueConstructionWithSecondaryActions) {
-  std::vector<IssueAction> secondary_actions;
-  secondary_actions.push_back(IssueAction(IssueAction::TYPE_DISMISS));
-  EXPECT_EQ(1u, secondary_actions.size());
-  std::string title = "title";
-  std::string message = "message";
-
-  Issue issue1(title, message, IssueAction(IssueAction::TYPE_LEARN_MORE),
-               secondary_actions, "", Issue::WARNING, false, -1);
-
-  EXPECT_EQ(title, issue1.title());
-  EXPECT_EQ(message, issue1.message());
-  EXPECT_EQ(IssueAction::TYPE_LEARN_MORE, issue1.default_action().type());
-  EXPECT_FALSE(issue1.secondary_actions().empty());
-  EXPECT_EQ(1u, issue1.secondary_actions().size());
-  EXPECT_EQ(Issue::WARNING, issue1.severity());
-  EXPECT_EQ("", issue1.route_id());
-  EXPECT_TRUE(issue1.is_global());
-  EXPECT_FALSE(issue1.is_blocking());
-
-  Issue issue2(title, message, IssueAction(IssueAction::TYPE_LEARN_MORE),
-               secondary_actions, "routeid", Issue::FATAL, true, -1);
-
-  EXPECT_EQ(title, issue2.title());
-  EXPECT_EQ(message, issue2.message());
-  EXPECT_EQ(IssueAction::TYPE_LEARN_MORE, issue2.default_action().type());
-  EXPECT_FALSE(issue2.secondary_actions().empty());
-  EXPECT_EQ(1u, issue2.secondary_actions().size());
-  EXPECT_EQ(Issue::FATAL, issue2.severity());
-  EXPECT_EQ("routeid", issue2.route_id());
-  EXPECT_FALSE(issue2.is_global());
-  EXPECT_TRUE(issue2.is_blocking());
-
-  Issue issue3(title, "", IssueAction(IssueAction::TYPE_LEARN_MORE),
-               secondary_actions, "routeid", Issue::FATAL, true, -1);
-
-  EXPECT_EQ(title, issue3.title());
-  EXPECT_EQ("", issue3.message());
-  EXPECT_EQ(IssueAction::TYPE_LEARN_MORE, issue3.default_action().type());
-  EXPECT_FALSE(issue3.secondary_actions().empty());
-  EXPECT_EQ(1u, issue3.secondary_actions().size());
-  EXPECT_EQ(Issue::FATAL, issue3.severity());
-  EXPECT_EQ("routeid", issue3.route_id());
-  EXPECT_FALSE(issue3.is_global());
-  EXPECT_TRUE(issue3.is_blocking());
+IssueInfo CreateFatalRouteIssueInfo(IssueInfo::Action action_type) {
+  IssueInfo issue("title", action_type, IssueInfo::Severity::FATAL);
+  issue.route_id = "routeid";
+  issue.help_page_id = 12345;
+  return issue;
 }
 
-// Tests == and != method.
-TEST(IssueUnitTest, Equal) {
-  std::vector<IssueAction> secondary_actions;
-  secondary_actions.push_back(IssueAction(IssueAction::TYPE_DISMISS));
+}  // namespace
 
-  std::vector<IssueAction> secondary_actions2;
+// Tests Issues without any secondary actions.
+TEST(IssueInfoUnitTest, CustomIssueConstructionWithNoSecondaryActions) {
+  IssueInfo issue1 = CreateWarningIssueInfo(IssueInfo::Action::DISMISS);
 
-  std::string title = "title";
-  std::string message = "message";
+  EXPECT_EQ("title", issue1.title);
+  EXPECT_EQ("message", issue1.message);
+  EXPECT_EQ(IssueInfo::Action::DISMISS, issue1.default_action);
+  EXPECT_TRUE(issue1.secondary_actions.empty());
+  EXPECT_EQ(IssueInfo::Severity::WARNING, issue1.severity);
+  EXPECT_EQ("", issue1.route_id);
+  EXPECT_FALSE(issue1.is_blocking);
+  EXPECT_EQ(12345, issue1.help_page_id);
 
-  Issue issue1(Issue(title, message, IssueAction(IssueAction::TYPE_LEARN_MORE),
-                     secondary_actions, "", Issue::WARNING, false, -1));
-  EXPECT_TRUE(issue1.Equals(issue1));
+  IssueInfo issue2 =
+      CreateFatalRouteIssueInfoWithMessage(IssueInfo::Action::DISMISS);
 
-  Issue issue2(Issue(title, message, IssueAction(IssueAction::TYPE_LEARN_MORE),
-                     secondary_actions, "", Issue::WARNING, false, -1));
-  EXPECT_FALSE(issue1.Equals(issue2));
+  EXPECT_EQ("title", issue2.title);
+  EXPECT_EQ("message", issue2.message);
+  EXPECT_EQ(IssueInfo::Action::DISMISS, issue1.default_action);
+  EXPECT_TRUE(issue2.secondary_actions.empty());
+  EXPECT_EQ(IssueInfo::Severity::FATAL, issue2.severity);
+  EXPECT_EQ("routeid", issue2.route_id);
+  EXPECT_TRUE(issue2.is_blocking);
+  EXPECT_EQ(12345, issue2.help_page_id);
+
+  IssueInfo issue3 = CreateFatalRouteIssueInfo(IssueInfo::Action::DISMISS);
+
+  EXPECT_EQ("title", issue3.title);
+  EXPECT_EQ("", issue3.message);
+  EXPECT_EQ(IssueInfo::Action::DISMISS, issue1.default_action);
+  EXPECT_TRUE(issue3.secondary_actions.empty());
+  EXPECT_EQ(IssueInfo::Severity::FATAL, issue3.severity);
+  EXPECT_EQ("routeid", issue3.route_id);
+  EXPECT_TRUE(issue3.is_blocking);
+  EXPECT_EQ(12345, issue3.help_page_id);
+}
+
+// Tests Issues with secondary actions.
+TEST(IssueInfoUnitTest, CustomIssueConstructionWithSecondaryActions) {
+  std::vector<IssueInfo::Action> secondary_actions;
+  secondary_actions.push_back(IssueInfo::Action::DISMISS);
+
+  IssueInfo issue1 = CreateWarningIssueInfo(IssueInfo::Action::LEARN_MORE);
+  issue1.secondary_actions = secondary_actions;
+
+  EXPECT_EQ("title", issue1.title);
+  EXPECT_EQ("message", issue1.message);
+  EXPECT_EQ(IssueInfo::Action::LEARN_MORE, issue1.default_action);
+  EXPECT_FALSE(issue1.secondary_actions.empty());
+  EXPECT_EQ(1u, issue1.secondary_actions.size());
+  EXPECT_EQ(IssueInfo::Severity::WARNING, issue1.severity);
+  EXPECT_EQ("", issue1.route_id);
+  EXPECT_FALSE(issue1.is_blocking);
+
+  IssueInfo issue2 =
+      CreateFatalRouteIssueInfoWithMessage(IssueInfo::Action::LEARN_MORE);
+  issue2.secondary_actions = secondary_actions;
+
+  EXPECT_EQ("title", issue2.title);
+  EXPECT_EQ("message", issue2.message);
+  EXPECT_EQ(IssueInfo::Action::LEARN_MORE, issue2.default_action);
+  EXPECT_FALSE(issue2.secondary_actions.empty());
+  EXPECT_EQ(1u, issue2.secondary_actions.size());
+  EXPECT_EQ(IssueInfo::Severity::FATAL, issue2.severity);
+  EXPECT_EQ("routeid", issue2.route_id);
+  EXPECT_TRUE(issue2.is_blocking);
+
+  IssueInfo issue3 = CreateFatalRouteIssueInfo(IssueInfo::Action::LEARN_MORE);
+  issue3.secondary_actions = secondary_actions;
+
+  EXPECT_EQ("title", issue3.title);
+  EXPECT_EQ("", issue3.message);
+  EXPECT_EQ(IssueInfo::Action::LEARN_MORE, issue3.default_action);
+  EXPECT_FALSE(issue3.secondary_actions.empty());
+  EXPECT_EQ(1u, issue3.secondary_actions.size());
+  EXPECT_EQ(IssueInfo::Severity::FATAL, issue3.severity);
+  EXPECT_EQ("routeid", issue3.route_id);
+  EXPECT_TRUE(issue3.is_blocking);
 }
 
 }  // namespace media_router

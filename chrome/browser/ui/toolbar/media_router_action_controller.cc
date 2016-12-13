@@ -22,12 +22,15 @@ MediaRouterActionController::MediaRouterActionController(Profile* profile)
 
 MediaRouterActionController::~MediaRouterActionController() {
   DCHECK_EQ(dialog_count_, 0u);
-  UnregisterObserver();  // media_router::IssuesObserver.
 }
 
-void MediaRouterActionController::OnIssueUpdated(
-    const media_router::Issue* issue) {
-  has_issue_ = issue != nullptr;
+void MediaRouterActionController::OnIssue(const media_router::Issue& issue) {
+  has_issue_ = true;
+  MaybeAddOrRemoveAction();
+}
+
+void MediaRouterActionController::OnIssuesCleared() {
+  has_issue_ = false;
   MaybeAddOrRemoveAction();
 }
 
@@ -67,7 +70,7 @@ MediaRouterActionController::MediaRouterActionController(
       component_action_delegate_(component_action_delegate),
       component_migration_helper_(component_migration_helper) {
   DCHECK(profile_);
-  RegisterObserver();  // media_router::IssuesObserver.
+  media_router::IssuesObserver::Init();
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kToolbarMigratedComponentActionStatus,

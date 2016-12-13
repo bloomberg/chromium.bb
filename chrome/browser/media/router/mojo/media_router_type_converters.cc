@@ -6,7 +6,6 @@
 
 #include "chrome/browser/media/router/mojo/media_router_type_converters.h"
 
-using media_router::mojom::IssuePtr;
 using media_router::mojom::MediaRoutePtr;
 using media_router::mojom::MediaSinkPtr;
 
@@ -100,51 +99,6 @@ TypeConverter<std::unique_ptr<media_router::MediaRoute>,
   media_route->set_incognito(input->is_incognito);
   media_route->set_offscreen_presentation(input->is_offscreen_presentation);
   return media_route;
-}
-
-media_router::Issue::Severity IssueSeverityFromMojo(
-    media_router::mojom::Issue::Severity severity) {
-  switch (severity) {
-    case media_router::mojom::Issue::Severity::FATAL:
-      return media_router::Issue::FATAL;
-    case media_router::mojom::Issue::Severity::WARNING:
-      return media_router::Issue::WARNING;
-    case media_router::mojom::Issue::Severity::NOTIFICATION:
-      return media_router::Issue::NOTIFICATION;
-    default:
-      NOTREACHED() << "Unknown issue severity " << severity;
-      return media_router::Issue::WARNING;
-  }
-}
-
-media_router::IssueAction::Type IssueActionTypeFromMojo(
-    media_router::mojom::Issue::ActionType action_type) {
-  switch (action_type) {
-    case media_router::mojom::Issue::ActionType::DISMISS:
-      return media_router::IssueAction::TYPE_DISMISS;
-    case media_router::mojom::Issue::ActionType::LEARN_MORE:
-      return media_router::IssueAction::TYPE_LEARN_MORE;
-    default:
-      NOTREACHED() << "Unknown issue action type " << action_type;
-      return media_router::IssueAction::TYPE_DISMISS;
-  }
-}
-
-// static
-media_router::Issue TypeConverter<media_router::Issue, IssuePtr>::Convert(
-    const IssuePtr& input) {
-  std::vector<media_router::IssueAction> actions;
-  if (input->secondary_actions) {
-    actions.reserve(input->secondary_actions->size());
-    for (auto a : *input->secondary_actions)
-      actions.push_back(media_router::IssueAction(IssueActionTypeFromMojo(a)));
-  }
-  return media_router::Issue(
-      input->title, input->message.value_or(std::string()),
-      media_router::IssueAction(IssueActionTypeFromMojo(input->default_action)),
-      actions, input->route_id.value_or(std::string()),
-      IssueSeverityFromMojo(input->severity),
-      input->is_blocking, input->help_page_id);
 }
 
 content::PresentationConnectionState PresentationConnectionStateFromMojo(

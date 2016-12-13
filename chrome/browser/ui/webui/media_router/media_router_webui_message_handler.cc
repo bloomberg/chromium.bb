@@ -186,27 +186,31 @@ std::unique_ptr<base::ListValue> CastModesToValue(
 
 // Returns an Issue dictionary created from |issue| that can be used in WebUI.
 std::unique_ptr<base::DictionaryValue> IssueToValue(const Issue& issue) {
+  const IssueInfo& issue_info = issue.info();
   std::unique_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
-  dictionary->SetString("id", issue.id());
-  dictionary->SetString("title", issue.title());
-  dictionary->SetString("message", issue.message());
-  dictionary->SetInteger("defaultActionType", issue.default_action().type());
-  if (!issue.secondary_actions().empty()) {
+  dictionary->SetInteger("id", issue.id());
+  dictionary->SetString("title", issue_info.title);
+  dictionary->SetString("message", issue_info.message);
+  dictionary->SetInteger("defaultActionType",
+                         static_cast<int>(issue_info.default_action));
+  if (!issue_info.secondary_actions.empty()) {
+    DCHECK_EQ(1u, issue_info.secondary_actions.size());
     dictionary->SetInteger("secondaryActionType",
-                           issue.secondary_actions().begin()->type());
+                           static_cast<int>(issue_info.secondary_actions[0]));
   }
-  if (!issue.route_id().empty())
-    dictionary->SetString("routeId", issue.route_id());
-  dictionary->SetBoolean("isBlocking", issue.is_blocking());
-  if (issue.help_page_id() > 0)
-    dictionary->SetInteger("helpPageId", issue.help_page_id());
+  if (!issue_info.route_id.empty())
+    dictionary->SetString("routeId", issue_info.route_id);
+  dictionary->SetBoolean("isBlocking", issue_info.is_blocking);
+  if (issue_info.help_page_id > 0)
+    dictionary->SetInteger("helpPageId", issue_info.help_page_id);
 
   return dictionary;
 }
 
 bool IsValidIssueActionTypeNum(int issue_action_type_num) {
   return issue_action_type_num >= 0 &&
-         issue_action_type_num < IssueAction::TYPE_MAX;
+         issue_action_type_num <=
+             static_cast<int>(IssueInfo::Action::NUM_VALUES);
 }
 
 // Composes a "learn more" URL. The URL depends on template arguments in |args|.
@@ -295,11 +299,15 @@ void MediaRouterWebUIMessageHandler::ReturnSearchResult(
                                          base::StringValue(sink_id));
 }
 
-void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue* issue) {
+void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue& issue) {
   DVLOG(2) << "UpdateIssue";
-  web_ui()->CallJavascriptFunctionUnsafe(
-      kSetIssue,
-      issue ? *IssueToValue(*issue) : *base::Value::CreateNullValue());
+  web_ui()->CallJavascriptFunctionUnsafe(kSetIssue, *IssueToValue(issue));
+}
+
+void MediaRouterWebUIMessageHandler::ClearIssue() {
+  DVLOG(2) << "ClearIssue";
+  web_ui()->CallJavascriptFunctionUnsafe(kSetIssue,
+                                         *base::Value::CreateNullValue());
 }
 
 void MediaRouterWebUIMessageHandler::UpdateMaxDialogHeight(int height) {
@@ -461,11 +469,9 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
       static_cast<MediaRouterUI*>(web_ui()->GetController());
   if (media_router_ui->HasPendingRouteRequest()) {
     DVLOG(1) << "UI already has pending route request. Ignoring.";
-    Issue issue(
+    IssueInfo issue(
         l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_ISSUE_PENDING_ROUTE),
-        std::string(), IssueAction(IssueAction::TYPE_DISMISS),
-        std::vector<IssueAction>(), std::string(), Issue::NOTIFICATION,
-        false, -1);
+        IssueInfo::Action::DISMISS, IssueInfo::Severity::NOTIFICATION);
     media_router_ui_->AddIssue(issue);
     return;
   }
@@ -508,7 +514,7 @@ void MediaRouterWebUIMessageHandler::OnActOnIssue(
   Issue::Id issue_id;
   int action_type_num = -1;
   if (!args->GetDictionary(0, &args_dict) ||
-      !args_dict->GetString("issueId", &issue_id) ||
+      !args_dict->GetInteger("issueId", &issue_id) ||
       !args_dict->GetInteger("actionType", &action_type_num)) {
     DVLOG(1) << "Unable to extract args.";
     return;
@@ -517,8 +523,8 @@ void MediaRouterWebUIMessageHandler::OnActOnIssue(
     DVLOG(1) << "Invalid action type: " << action_type_num;
     return;
   }
-  IssueAction::Type action_type =
-      static_cast<IssueAction::Type>(action_type_num);
+  IssueInfo::Action action_type =
+      static_cast<IssueInfo::Action>(action_type_num);
   if (ActOnIssueType(action_type, args_dict))
     DVLOG(1) << "ActOnIssueType failed for Issue ID " << issue_id;
   media_router_ui_->ClearIssue(issue_id);
@@ -552,11 +558,9 @@ void MediaRouterWebUIMessageHandler::OnJoinRoute(const base::ListValue* args) {
       static_cast<MediaRouterUI*>(web_ui()->GetController());
   if (media_router_ui->HasPendingRouteRequest()) {
     DVLOG(1) << "UI already has pending route request. Ignoring.";
-    Issue issue(
+    IssueInfo issue(
         l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_ISSUE_PENDING_ROUTE),
-        std::string(), IssueAction(IssueAction::TYPE_DISMISS),
-        std::vector<IssueAction>(), std::string(), Issue::NOTIFICATION,
-        false, -1);
+        IssueInfo::Action::DISMISS, IssueInfo::Severity::NOTIFICATION);
     media_router_ui_->AddIssue(issue);
     return;
   }
@@ -788,9 +792,9 @@ void MediaRouterWebUIMessageHandler::OnInitialDataReceived(
 }
 
 bool MediaRouterWebUIMessageHandler::ActOnIssueType(
-    const IssueAction::Type& action_type,
+    IssueInfo::Action action_type,
     const base::DictionaryValue* args) {
-  if (action_type == IssueAction::TYPE_LEARN_MORE) {
+  if (action_type == IssueInfo::Action::LEARN_MORE) {
     std::string learn_more_url = GetLearnMoreUrl(args);
     if (learn_more_url.empty())
       return false;

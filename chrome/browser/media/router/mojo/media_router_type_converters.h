@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
@@ -50,19 +49,6 @@ struct TypeConverter<std::unique_ptr<media_router::MediaRoute>,
                      media_router::mojom::MediaRoutePtr> {
   static std::unique_ptr<media_router::MediaRoute> Convert(
       const media_router::mojom::MediaRoutePtr& input);
-};
-
-// Issue conversion.
-media_router::Issue::Severity IssueSeverityFromMojo(
-    media_router::mojom::Issue::Severity severity);
-
-media_router::IssueAction::Type IssueActionTypeFromMojo(
-    media_router::mojom::Issue::ActionType action_type);
-
-template <>
-struct TypeConverter<media_router::Issue, media_router::mojom::IssuePtr> {
-  static media_router::Issue Convert(
-      const media_router::mojom::IssuePtr& input);
 };
 
 // PresentationConnectionState conversion.

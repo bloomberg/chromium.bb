@@ -65,7 +65,7 @@ class MockMediaRouter : public MediaRouterBase {
                void(const MediaRoute::Id& route_id,
                     std::vector<uint8_t>* data,
                     const SendRouteMessageCallback& callback));
-  MOCK_METHOD1(AddIssue, void(const Issue& issue));
+  MOCK_METHOD1(AddIssue, void(const IssueInfo& issue));
   MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
   MOCK_METHOD0(OnUserGesture, void());
   MOCK_METHOD5(

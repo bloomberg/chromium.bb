@@ -198,7 +198,7 @@ cr.define('media_router', function() {
    *   helpPageId - the numeric help center ID.
    */
   function onIssueActionClick(event) {
-    /** @type {{id: string, actionType: number, helpPageId: number}} */
+    /** @type {{id: number, actionType: number, helpPageId: number}} */
     var detail = event.detail;
     media_router.browserApi.actOnIssue(detail.id,
                                        detail.actionType,

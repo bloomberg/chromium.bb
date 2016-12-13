@@ -209,7 +209,7 @@ void MediaRouterAndroid::SendRouteBinaryMessage(
                                            jbyte_array, callback_id);
 }
 
-void MediaRouterAndroid::AddIssue(const Issue& issue) {
+void MediaRouterAndroid::AddIssue(const IssueInfo& issue_info) {
   NOTIMPLEMENTED();
 }
 

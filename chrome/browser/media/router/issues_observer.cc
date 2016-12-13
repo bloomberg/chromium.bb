@@ -9,19 +9,22 @@
 
 namespace media_router {
 
-IssuesObserver::IssuesObserver(MediaRouter* router) : router_(router) {
+IssuesObserver::IssuesObserver(MediaRouter* router)
+    : router_(router), initialized_(false) {
   DCHECK(router_);
 }
 
 IssuesObserver::~IssuesObserver() {
+  if (initialized_)
+    router_->UnregisterIssuesObserver(this);
 }
 
-void IssuesObserver::RegisterObserver() {
+void IssuesObserver::Init() {
+  if (initialized_)
+    return;
+
   router_->RegisterIssuesObserver(this);
-}
-
-void IssuesObserver::UnregisterObserver() {
-  router_->UnregisterIssuesObserver(this);
+  initialized_ = true;
 }
 
 }  // namespace media_router

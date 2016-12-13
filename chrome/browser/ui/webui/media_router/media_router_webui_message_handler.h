@@ -48,9 +48,8 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
                                      const MediaRoute* route);
   void ReturnSearchResult(const std::string& sink_id);
 
-  // Does not take ownership of |issue|. Note that |issue| can be nullptr, when
-  // there are no more issues.
-  void UpdateIssue(const Issue* issue);
+  void UpdateIssue(const Issue& issue);
+  void ClearIssue();
 
   // Updates the maximum dialog height to allow the WebUI properly scale when
   // the browser window changes.
@@ -90,7 +89,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // Performs an action for an Issue of |type|.
   // |args| contains additional parameter that varies based on |type|.
   // Returns |true| if the action was successfully performed.
-  bool ActOnIssueType(const IssueAction::Type& type,
+  bool ActOnIssueType(IssueInfo::Action type,
                       const base::DictionaryValue* args);
 
   // May update the first run flow related properties in the WebUI. This is

@@ -54,11 +54,10 @@ MediaRouterAction::MediaRouterAction(Browser* browser,
   DCHECK(toolbar_actions_bar_);
   tab_strip_model_observer_.Add(browser_->tab_strip_model());
   toolbar_actions_bar_observer_.Add(toolbar_actions_bar_);
-  RegisterObserver();
+  IssuesObserver::Init();
 }
 
 MediaRouterAction::~MediaRouterAction() {
-  UnregisterObserver();
 }
 
 // static
@@ -165,8 +164,13 @@ bool MediaRouterAction::DisabledClickOpensMenu() const {
   return false;
 }
 
-void MediaRouterAction::OnIssueUpdated(const media_router::Issue* issue) {
-  issue_.reset(issue ? new media_router::Issue(*issue) : nullptr);
+void MediaRouterAction::OnIssue(const media_router::Issue& issue) {
+  current_issue_.reset(new media_router::IssueInfo(issue.info()));
+  MaybeUpdateIcon();
+}
+
+void MediaRouterAction::OnIssuesCleared() {
+  current_issue_.reset();
   MaybeUpdateIcon();
 }
 
@@ -266,11 +270,13 @@ void MediaRouterAction::MaybeUpdateIcon() {
 
 gfx::VectorIconId MediaRouterAction::GetCurrentIcon() const {
   // Highest priority is to indicate whether there's an issue.
-  if (issue_) {
-    if (issue_->severity() == media_router::Issue::FATAL)
+  if (current_issue_) {
+    media_router::IssueInfo::Severity severity = current_issue_->severity;
+    if (severity == media_router::IssueInfo::Severity::FATAL)
       return gfx::VectorIconId::MEDIA_ROUTER_ERROR;
-    if (issue_->severity() == media_router::Issue::WARNING)
+    if (severity == media_router::IssueInfo::Severity::WARNING)
       return gfx::VectorIconId::MEDIA_ROUTER_WARNING;
+    // Fall through for Severity::NOTIFICATION.
   }
 
   return has_local_display_route_ ? gfx::VectorIconId::MEDIA_ROUTER_ACTIVE

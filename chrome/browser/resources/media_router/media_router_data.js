@@ -125,7 +125,7 @@ cr.define('media_router', function() {
       loadTimeData.getString('autoCastMode'), null);
 
   /**
-   * @param {string} id The ID of this issue.
+   * @param {number} id The ID of this issue.
    * @param {string} title The issue title.
    * @param {string} message The issue message.
    * @param {number} defaultActionType The type of default action.
@@ -140,7 +140,7 @@ cr.define('media_router', function() {
   var Issue = function(id, title, message, defaultActionType,
                        secondaryActionType, routeId, isBlocking,
                        helpPageId) {
-    /** @type {string} */
+    /** @type {number} */
     this.id = id;
 
     /** @type {string} */

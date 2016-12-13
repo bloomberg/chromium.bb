@@ -19,15 +19,22 @@ class IssuesObserver {
   explicit IssuesObserver(MediaRouter* router);
   virtual ~IssuesObserver();
 
-  void RegisterObserver();
-  void UnregisterObserver();
+  // Registers with Media Router to start observing for Issues. No-ops if Init()
+  // has already been called before.
+  void Init();
 
   // Called when there is an updated Media Router Issue.
-  // If |issue| is nullptr, then there is currently no issue.
-  virtual void OnIssueUpdated(const Issue* issue) {}
+  // Note that |issue| is owned by the IssueManager that is calling the
+  // observers. Implementations that wish to retain the data must make a copy
+  // of |issue|.
+  virtual void OnIssue(const Issue& issue) {}
+
+  // Called when there are no more issues.
+  virtual void OnIssuesCleared() {}
 
  private:
   MediaRouter* router_;
+  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(IssuesObserver);
 };

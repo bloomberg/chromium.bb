@@ -167,11 +167,10 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
 #endif
 }
 
-void MediaRouterMojoImpl::OnIssue(const mojom::IssuePtr issue) {
+void MediaRouterMojoImpl::OnIssue(const IssueInfo& issue) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG_WITH_INSTANCE(1) << "OnIssue " << issue->title;
-  const Issue& issue_converted = issue.To<Issue>();
-  issue_manager_.AddIssue(issue_converted);
+  DVLOG_WITH_INSTANCE(1) << "OnIssue " << issue.title;
+  issue_manager_.AddIssue(issue);
 }
 
 void MediaRouterMojoImpl::OnSinksReceived(
@@ -406,9 +405,9 @@ void MediaRouterMojoImpl::SendRouteBinaryMessage(
                         base::Passed(std::move(data)), callback));
 }
 
-void MediaRouterMojoImpl::AddIssue(const Issue& issue) {
+void MediaRouterMojoImpl::AddIssue(const IssueInfo& issue_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  issue_manager_.AddIssue(issue);
+  issue_manager_.AddIssue(issue_info);
 }
 
 void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {

@@ -99,16 +99,16 @@ cr.define('issue_banner', function() {
 
         // Initialize issues.
         fakeBlockingIssueOne = new media_router.Issue(
-            'issue id 1', 'Issue Title 1', 'Issue Message 1', 0, 1,
+            1, 'Issue Title 1', 'Issue Message 1', 0, 1,
             'route id 1', true, 1234);
         fakeBlockingIssueTwo = new media_router.Issue(
-            'issue id 2', 'Issue Title 2', 'Issue Message 2', 0, undefined,
+            2, 'Issue Title 2', 'Issue Message 2', 0, undefined,
             'route id 2', true, 1234);
         fakeNonBlockingIssueOne = new media_router.Issue(
-            'issue id 3', 'Issue Title 3', 'Issue Message 3', 0, 1,
+            3, 'Issue Title 3', 'Issue Message 3', 0, 1,
             'route id 3', false, 1234);
         fakeNonBlockingIssueTwo = new media_router.Issue(
-            'issue id 4', 'Issue Title 4', 'Issue Message 4', 0, undefined,
+            4, 'Issue Title 4', 'Issue Message 4', 0, undefined,
             'route id 4', false, 1234);
 
         // Allow for the issue banner to be created and attached.

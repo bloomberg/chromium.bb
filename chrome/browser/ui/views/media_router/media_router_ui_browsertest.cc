@@ -31,7 +31,10 @@ namespace media_router {
 
 class MediaRouterUIBrowserTest : public InProcessBrowserTest {
  public:
-  MediaRouterUIBrowserTest() {}
+  MediaRouterUIBrowserTest()
+      : issue_(IssueInfo("title notification",
+                         IssueInfo::Action::DISMISS,
+                         IssueInfo::Severity::NOTIFICATION)) {}
   ~MediaRouterUIBrowserTest() override {}
 
   void SetUpOnMainThread() override {
@@ -46,12 +49,6 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
 
     action_controller_ =
         MediaRouterUIService::Get(browser()->profile())->action_controller();
-
-    issue_.reset(new Issue(
-        "title notification", "message notification",
-        media_router::IssueAction(media_router::IssueAction::TYPE_DISMISS),
-        std::vector<media_router::IssueAction>(), "route_id",
-        media_router::Issue::NOTIFICATION, false, -1));
 
     routes_ = {MediaRoute("routeId1", MediaSource("sourceId"), "sinkId1",
                           "description", true, std::string(), true)};
@@ -108,7 +105,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
  protected:
   ToolbarActionsBar* toolbar_actions_bar_ = nullptr;
 
-  std::unique_ptr<Issue> issue_;
+  Issue issue_;
 
   // A vector of MediaRoutes that includes a local route.
   std::vector<MediaRoute> routes_;
@@ -150,9 +147,9 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
                        EphemeralToolbarIconForRoutesAndIssues) {
-  action_controller_->OnIssueUpdated(issue_.get());
+  action_controller_->OnIssue(issue_);
   EXPECT_TRUE(ActionExists());
-  action_controller_->OnIssueUpdated(nullptr);
+  action_controller_->OnIssuesCleared();
   EXPECT_FALSE(ActionExists());
 
   action_controller_->OnRoutesUpdated(routes_, std::vector<MediaRoute::Id>());

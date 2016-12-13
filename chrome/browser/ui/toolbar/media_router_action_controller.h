@@ -32,7 +32,8 @@ class MediaRouterActionController : public media_router::IssuesObserver,
   ~MediaRouterActionController() override;
 
   // media_router::IssuesObserver:
-  void OnIssueUpdated(const media_router::Issue* issue) override;
+  void OnIssue(const media_router::Issue& issue) override;
+  void OnIssuesCleared() override;
 
   // media_router::MediaRoutesObserver:
   void OnRoutesUpdated(const std::vector<media_router::MediaRoute>& routes,

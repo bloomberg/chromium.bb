@@ -113,7 +113,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   void CloseRoute(const MediaRoute::Id& route_id);
 
   // Calls MediaRouter to add the given issue.
-  void AddIssue(const Issue& issue);
+  void AddIssue(const IssueInfo& issue);
 
   // Calls MediaRouter to clear the given issue.
   void ClearIssue(const Issue::Id& issue_id);
@@ -220,7 +220,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // Called by |issues_observer_| when the top issue has changed.
   // If the UI is already initialized, notifies |handler_| to update the UI.
   // Ignored if the UI is not yet initialized.
-  void SetIssue(const Issue* issue);
+  void SetIssue(const Issue& issue);
+  void ClearIssue();
 
   // Called by |routes_observer_| when the set of active routes has changed.
   void OnRoutesUpdated(const std::vector<MediaRoute>& routes,

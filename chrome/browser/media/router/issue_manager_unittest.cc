@@ -7,140 +7,93 @@
 
 #include "base/macros.h"
 #include "chrome/browser/media/router/issue_manager.h"
+#include "chrome/browser/media/router/mock_media_router.h"
+#include "chrome/browser/media/router/test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+using testing::_;
+using testing::SaveArg;
 
 namespace media_router {
 namespace {
 
-const char kTestRouteId[] = "routeId";
-
-Issue CreateTestIssue(const std::string& route_id) {
-  return Issue("title", "message", IssueAction(IssueAction::TYPE_DISMISS),
-               std::vector<IssueAction>(), route_id, Issue::WARNING, false,
-               12345);
-}
-
-class IssueManagerUnitTest : public ::testing::Test {
- protected:
-  IssueManagerUnitTest() {}
-  ~IssueManagerUnitTest() override {}
-
-  content::TestBrowserThreadBundle thread_bundle_;
-  IssueManager manager_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IssueManagerUnitTest);
-};
-
-TEST_F(IssueManagerUnitTest, InitializeManager) {
-  // Before anything is done to the manager, it should hold no issues.
-  EXPECT_EQ(0u, manager_.GetIssueCount());
-}
-
-TEST_F(IssueManagerUnitTest, AddIssue) {
-  Issue issue = CreateTestIssue(kTestRouteId);
-
-  // Add initial issue.
-  manager_.AddIssue(issue);
-  EXPECT_EQ(1u, manager_.GetIssueCount());
-
-  // Attempt to add the same issue. Duplicates should not be inserted.
-  manager_.AddIssue(issue);
-  EXPECT_EQ(1u, manager_.GetIssueCount());
-}
-
-TEST_F(IssueManagerUnitTest, ClearIssue) {
-  Issue issue = CreateTestIssue(kTestRouteId);
-
-  // Remove an issue that doesn't exist.
-  manager_.ClearIssue("id");
-
-  // Add initial issue.
-  manager_.AddIssue(issue);
-  EXPECT_EQ(1u, manager_.GetIssueCount());
-
-  // Remove the only issue.
-  manager_.ClearIssue(issue.id());
-  EXPECT_EQ(0u, manager_.GetIssueCount());
-
-  // Remove an issue that doesn't exist.
-  manager_.ClearIssue("id");
-  EXPECT_EQ(0u, manager_.GetIssueCount());
-}
-
-TEST_F(IssueManagerUnitTest, ClearAllIssues) {
-  // Add ten issues.
-  for (int i = 0; i < 10; i++) {
-    manager_.AddIssue(CreateTestIssue(kTestRouteId));
-  }
-
-  // Check that the issues were added.
-  EXPECT_EQ(10u, manager_.GetIssueCount());
-
-  // Remove all the issues.
-  manager_.ClearAllIssues();
-  EXPECT_EQ(0u, manager_.GetIssueCount());
-}
-
-TEST_F(IssueManagerUnitTest, ClearGlobalIssues) {
-  // Add ten non-global issues.
-  for (int i = 0; i < 10; i++) {
-    manager_.AddIssue(CreateTestIssue(kTestRouteId));
-  }
-
-  // Check that the issues were added.
-  EXPECT_EQ(10u, manager_.GetIssueCount());
-
-  // Add five global issues.
-  for (int i = 0; i < 5; i++) {
-    manager_.AddIssue(CreateTestIssue(""));
-  }
-
-  // Check that the issues were added.
-  EXPECT_EQ(15u, manager_.GetIssueCount());
-
-  // Remove all the global issues.
-  manager_.ClearGlobalIssues();
-  EXPECT_EQ(10u, manager_.GetIssueCount());
-}
-
-TEST_F(IssueManagerUnitTest, ClearIssuesWithRouteId) {
-  const std::string route_id_one = "route_id1";
-  const std::string route_id_two = "route_id2";
-
-  // Add ten issues with the same route.
-  for (int i = 0; i < 10; i++) {
-    manager_.AddIssue(CreateTestIssue(route_id_one));
-  }
-
-  // Check that the issues were added.
-  EXPECT_EQ(10u, manager_.GetIssueCount());
-
-  // Add ten issues with a different route.
-  for (int i = 0; i < 10; i++) {
-    manager_.AddIssue(CreateTestIssue(route_id_two));
-  }
-
-  // Check that the issues were added.
-  EXPECT_EQ(20u, manager_.GetIssueCount());
-
-  // Add ten global issues.
-  for (int i = 0; i < 10; i++) {
-    manager_.AddIssue(CreateTestIssue(""));
-  }
-
-  // Check that the issues were added.
-  EXPECT_EQ(30u, manager_.GetIssueCount());
-
-  // Remove all routes with route_id_one.
-  manager_.ClearIssuesWithRouteId(route_id_one);
-  EXPECT_EQ(20u, manager_.GetIssueCount());
-
-  // Remove all routes with route_id_two.
-  manager_.ClearIssuesWithRouteId(route_id_two);
-  EXPECT_EQ(10u, manager_.GetIssueCount());
+IssueInfo CreateTestIssue(IssueInfo::Severity severity) {
+  IssueInfo issue("title", IssueInfo::Action::DISMISS, severity);
+  issue.message = "message";
+  issue.help_page_id = 12345;
+  return issue;
 }
 
 }  // namespace
+
+class IssueManagerTest : public ::testing::Test {
+ protected:
+  IssueManagerTest() {}
+  ~IssueManagerTest() override {}
+
+  content::TestBrowserThreadBundle thread_bundle_;
+  IssueManager manager_;
+  MockMediaRouter router_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IssueManagerTest);
+};
+
+TEST_F(IssueManagerTest, AddAndClearIssue) {
+  IssueInfo issue_info1 = CreateTestIssue(IssueInfo::Severity::WARNING);
+
+  // Add initial issue.
+  manager_.AddIssue(issue_info1);
+
+  Issue issue1((IssueInfo()));
+  MockIssuesObserver observer(&router_);
+  EXPECT_CALL(observer, OnIssue(_)).WillOnce(SaveArg<0>(&issue1));
+  manager_.RegisterObserver(&observer);
+  EXPECT_EQ(issue_info1, issue1.info());
+  Issue::Id issue1_id = issue1.id();
+
+  IssueInfo issue_info2 = CreateTestIssue(IssueInfo::Severity::FATAL);
+  EXPECT_TRUE(issue_info2.is_blocking);
+
+  // Blocking issue takes precedence.
+  Issue issue2((IssueInfo()));
+  EXPECT_CALL(observer, OnIssue(_)).WillOnce(SaveArg<0>(&issue2));
+  manager_.AddIssue(issue_info2);
+  EXPECT_EQ(issue_info2, issue2.info());
+
+  // Clear |issue2|. Observer will be notified with |issue1| again as it is now
+  // the top issue.
+  EXPECT_CALL(observer, OnIssue(_)).WillOnce(SaveArg<0>(&issue1));
+  manager_.ClearIssue(issue2.id());
+  EXPECT_EQ(issue1_id, issue1.id());
+  EXPECT_EQ(issue_info1, issue1.info());
+
+  // All issues cleared. Observer will be notified with |nullptr| that there are
+  // no more issues.
+  EXPECT_CALL(observer, OnIssuesCleared());
+  manager_.ClearIssue(issue1.id());
+
+  manager_.UnregisterObserver(&observer);
+}
+
+TEST_F(IssueManagerTest, AddSameIssueInfoHasNoEffect) {
+  IssueInfo issue_info = CreateTestIssue(IssueInfo::Severity::WARNING);
+
+  MockIssuesObserver observer(&router_);
+  manager_.RegisterObserver(&observer);
+
+  Issue issue((IssueInfo()));
+  EXPECT_CALL(observer, OnIssue(_)).WillOnce(SaveArg<0>(&issue));
+  manager_.AddIssue(issue_info);
+  EXPECT_EQ(issue_info, issue.info());
+
+  // Adding the same IssueInfo has no effect.
+  manager_.AddIssue(issue_info);
+
+  EXPECT_CALL(observer, OnIssuesCleared());
+  manager_.ClearIssue(issue.id());
+  manager_.UnregisterObserver(&observer);
+}
+
 }  // namespace media_router
