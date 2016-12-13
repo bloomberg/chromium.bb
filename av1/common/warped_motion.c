@@ -406,6 +406,117 @@ static uint8_t warp_interpolate(uint8_t *ref, int x, int y, int width,
   }
 }
 
+// For warping, we really use a 6-tap filter, but we do blocks of 8 pixels
+// at a time. The zoom/rotation/shear in the model are applied to the
+// "fractional" position of each pixel, which therefore varies within
+// [-1, 2) * WARPEDPIXEL_PREC_SHIFTS.
+// We need an extra 2 taps to fit this in, for a total of 8 taps.
+/* clang-format off */
+static const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS*3][8] = {
+  // [-1, 0)
+  { 0,   0, 128,   0,   0, 0, 0, 0 }, { 0, - 1, 128,   2, - 1, 0, 0, 0 },
+  { 1, - 3, 127,   4, - 1, 0, 0, 0 }, { 1, - 4, 126,   6, - 2, 1, 0, 0 },
+  { 1, - 5, 126,   8, - 3, 1, 0, 0 }, { 1, - 6, 125,  11, - 4, 1, 0, 0 },
+  { 1, - 7, 124,  13, - 4, 1, 0, 0 }, { 2, - 8, 123,  15, - 5, 1, 0, 0 },
+  { 2, - 9, 122,  18, - 6, 1, 0, 0 }, { 2, -10, 121,  20, - 6, 1, 0, 0 },
+  { 2, -11, 120,  22, - 7, 2, 0, 0 }, { 2, -12, 119,  25, - 8, 2, 0, 0 },
+  { 3, -13, 117,  27, - 8, 2, 0, 0 }, { 3, -13, 116,  29, - 9, 2, 0, 0 },
+  { 3, -14, 114,  32, -10, 3, 0, 0 }, { 3, -15, 113,  35, -10, 2, 0, 0 },
+  { 3, -15, 111,  37, -11, 3, 0, 0 }, { 3, -16, 109,  40, -11, 3, 0, 0 },
+  { 3, -16, 108,  42, -12, 3, 0, 0 }, { 4, -17, 106,  45, -13, 3, 0, 0 },
+  { 4, -17, 104,  47, -13, 3, 0, 0 }, { 4, -17, 102,  50, -14, 3, 0, 0 },
+  { 4, -17, 100,  52, -14, 3, 0, 0 }, { 4, -18,  98,  55, -15, 4, 0, 0 },
+  { 4, -18,  96,  58, -15, 3, 0, 0 }, { 4, -18,  94,  60, -16, 4, 0, 0 },
+  { 4, -18,  91,  63, -16, 4, 0, 0 }, { 4, -18,  89,  65, -16, 4, 0, 0 },
+  { 4, -18,  87,  68, -17, 4, 0, 0 }, { 4, -18,  85,  70, -17, 4, 0, 0 },
+  { 4, -18,  82,  73, -17, 4, 0, 0 }, { 4, -18,  80,  75, -17, 4, 0, 0 },
+  { 4, -18,  78,  78, -18, 4, 0, 0 }, { 4, -17,  75,  80, -18, 4, 0, 0 },
+  { 4, -17,  73,  82, -18, 4, 0, 0 }, { 4, -17,  70,  85, -18, 4, 0, 0 },
+  { 4, -17,  68,  87, -18, 4, 0, 0 }, { 4, -16,  65,  89, -18, 4, 0, 0 },
+  { 4, -16,  63,  91, -18, 4, 0, 0 }, { 4, -16,  60,  94, -18, 4, 0, 0 },
+  { 3, -15,  58,  96, -18, 4, 0, 0 }, { 4, -15,  55,  98, -18, 4, 0, 0 },
+  { 3, -14,  52, 100, -17, 4, 0, 0 }, { 3, -14,  50, 102, -17, 4, 0, 0 },
+  { 3, -13,  47, 104, -17, 4, 0, 0 }, { 3, -13,  45, 106, -17, 4, 0, 0 },
+  { 3, -12,  42, 108, -16, 3, 0, 0 }, { 3, -11,  40, 109, -16, 3, 0, 0 },
+  { 3, -11,  37, 111, -15, 3, 0, 0 }, { 2, -10,  35, 113, -15, 3, 0, 0 },
+  { 3, -10,  32, 114, -14, 3, 0, 0 }, { 2, - 9,  29, 116, -13, 3, 0, 0 },
+  { 2, - 8,  27, 117, -13, 3, 0, 0 }, { 2, - 8,  25, 119, -12, 2, 0, 0 },
+  { 2, - 7,  22, 120, -11, 2, 0, 0 }, { 1, - 6,  20, 121, -10, 2, 0, 0 },
+  { 1, - 6,  18, 122, - 9, 2, 0, 0 }, { 1, - 5,  15, 123, - 8, 2, 0, 0 },
+  { 1, - 4,  13, 124, - 7, 1, 0, 0 }, { 1, - 4,  11, 125, - 6, 1, 0, 0 },
+  { 1, - 3,   8, 126, - 5, 1, 0, 0 }, { 1, - 2,   6, 126, - 4, 1, 0, 0 },
+  { 0, - 1,   4, 127, - 3, 1, 0, 0 }, { 0, - 1,   2, 128, - 1, 0, 0, 0 },
+
+  // [0, 1)
+  { 0, 0,   0, 128,   0,   0, 0, 0 }, { 0, 0, - 1, 128,   2, - 1, 0, 0 },
+  { 0, 1, - 3, 127,   4, - 1, 0, 0 }, { 0, 1, - 4, 126,   6, - 2, 1, 0 },
+  { 0, 1, - 5, 126,   8, - 3, 1, 0 }, { 0, 1, - 6, 125,  11, - 4, 1, 0 },
+  { 0, 1, - 7, 124,  13, - 4, 1, 0 }, { 0, 2, - 8, 123,  15, - 5, 1, 0 },
+  { 0, 2, - 9, 122,  18, - 6, 1, 0 }, { 0, 2, -10, 121,  20, - 6, 1, 0 },
+  { 0, 2, -11, 120,  22, - 7, 2, 0 }, { 0, 2, -12, 119,  25, - 8, 2, 0 },
+  { 0, 3, -13, 117,  27, - 8, 2, 0 }, { 0, 3, -13, 116,  29, - 9, 2, 0 },
+  { 0, 3, -14, 114,  32, -10, 3, 0 }, { 0, 3, -15, 113,  35, -10, 2, 0 },
+  { 0, 3, -15, 111,  37, -11, 3, 0 }, { 0, 3, -16, 109,  40, -11, 3, 0 },
+  { 0, 3, -16, 108,  42, -12, 3, 0 }, { 0, 4, -17, 106,  45, -13, 3, 0 },
+  { 0, 4, -17, 104,  47, -13, 3, 0 }, { 0, 4, -17, 102,  50, -14, 3, 0 },
+  { 0, 4, -17, 100,  52, -14, 3, 0 }, { 0, 4, -18,  98,  55, -15, 4, 0 },
+  { 0, 4, -18,  96,  58, -15, 3, 0 }, { 0, 4, -18,  94,  60, -16, 4, 0 },
+  { 0, 4, -18,  91,  63, -16, 4, 0 }, { 0, 4, -18,  89,  65, -16, 4, 0 },
+  { 0, 4, -18,  87,  68, -17, 4, 0 }, { 0, 4, -18,  85,  70, -17, 4, 0 },
+  { 0, 4, -18,  82,  73, -17, 4, 0 }, { 0, 4, -18,  80,  75, -17, 4, 0 },
+  { 0, 4, -18,  78,  78, -18, 4, 0 }, { 0, 4, -17,  75,  80, -18, 4, 0 },
+  { 0, 4, -17,  73,  82, -18, 4, 0 }, { 0, 4, -17,  70,  85, -18, 4, 0 },
+  { 0, 4, -17,  68,  87, -18, 4, 0 }, { 0, 4, -16,  65,  89, -18, 4, 0 },
+  { 0, 4, -16,  63,  91, -18, 4, 0 }, { 0, 4, -16,  60,  94, -18, 4, 0 },
+  { 0, 3, -15,  58,  96, -18, 4, 0 }, { 0, 4, -15,  55,  98, -18, 4, 0 },
+  { 0, 3, -14,  52, 100, -17, 4, 0 }, { 0, 3, -14,  50, 102, -17, 4, 0 },
+  { 0, 3, -13,  47, 104, -17, 4, 0 }, { 0, 3, -13,  45, 106, -17, 4, 0 },
+  { 0, 3, -12,  42, 108, -16, 3, 0 }, { 0, 3, -11,  40, 109, -16, 3, 0 },
+  { 0, 3, -11,  37, 111, -15, 3, 0 }, { 0, 2, -10,  35, 113, -15, 3, 0 },
+  { 0, 3, -10,  32, 114, -14, 3, 0 }, { 0, 2, - 9,  29, 116, -13, 3, 0 },
+  { 0, 2, - 8,  27, 117, -13, 3, 0 }, { 0, 2, - 8,  25, 119, -12, 2, 0 },
+  { 0, 2, - 7,  22, 120, -11, 2, 0 }, { 0, 1, - 6,  20, 121, -10, 2, 0 },
+  { 0, 1, - 6,  18, 122, - 9, 2, 0 }, { 0, 1, - 5,  15, 123, - 8, 2, 0 },
+  { 0, 1, - 4,  13, 124, - 7, 1, 0 }, { 0, 1, - 4,  11, 125, - 6, 1, 0 },
+  { 0, 1, - 3,   8, 126, - 5, 1, 0 }, { 0, 1, - 2,   6, 126, - 4, 1, 0 },
+  { 0, 0, - 1,   4, 127, - 3, 1, 0 }, { 0, 0, - 1,   2, 128, - 1, 0, 0 },
+
+  // [1, 2)
+  { 0, 0, 0,   0, 128,   0,   0, 0 }, { 0, 0, 0, - 1, 128,   2, - 1, 0 },
+  { 0, 0, 1, - 3, 127,   4, - 1, 0 }, { 0, 0, 1, - 4, 126,   6, - 2, 1 },
+  { 0, 0, 1, - 5, 126,   8, - 3, 1 }, { 0, 0, 1, - 6, 125,  11, - 4, 1 },
+  { 0, 0, 1, - 7, 124,  13, - 4, 1 }, { 0, 0, 2, - 8, 123,  15, - 5, 1 },
+  { 0, 0, 2, - 9, 122,  18, - 6, 1 }, { 0, 0, 2, -10, 121,  20, - 6, 1 },
+  { 0, 0, 2, -11, 120,  22, - 7, 2 }, { 0, 0, 2, -12, 119,  25, - 8, 2 },
+  { 0, 0, 3, -13, 117,  27, - 8, 2 }, { 0, 0, 3, -13, 116,  29, - 9, 2 },
+  { 0, 0, 3, -14, 114,  32, -10, 3 }, { 0, 0, 3, -15, 113,  35, -10, 2 },
+  { 0, 0, 3, -15, 111,  37, -11, 3 }, { 0, 0, 3, -16, 109,  40, -11, 3 },
+  { 0, 0, 3, -16, 108,  42, -12, 3 }, { 0, 0, 4, -17, 106,  45, -13, 3 },
+  { 0, 0, 4, -17, 104,  47, -13, 3 }, { 0, 0, 4, -17, 102,  50, -14, 3 },
+  { 0, 0, 4, -17, 100,  52, -14, 3 }, { 0, 0, 4, -18,  98,  55, -15, 4 },
+  { 0, 0, 4, -18,  96,  58, -15, 3 }, { 0, 0, 4, -18,  94,  60, -16, 4 },
+  { 0, 0, 4, -18,  91,  63, -16, 4 }, { 0, 0, 4, -18,  89,  65, -16, 4 },
+  { 0, 0, 4, -18,  87,  68, -17, 4 }, { 0, 0, 4, -18,  85,  70, -17, 4 },
+  { 0, 0, 4, -18,  82,  73, -17, 4 }, { 0, 0, 4, -18,  80,  75, -17, 4 },
+  { 0, 0, 4, -18,  78,  78, -18, 4 }, { 0, 0, 4, -17,  75,  80, -18, 4 },
+  { 0, 0, 4, -17,  73,  82, -18, 4 }, { 0, 0, 4, -17,  70,  85, -18, 4 },
+  { 0, 0, 4, -17,  68,  87, -18, 4 }, { 0, 0, 4, -16,  65,  89, -18, 4 },
+  { 0, 0, 4, -16,  63,  91, -18, 4 }, { 0, 0, 4, -16,  60,  94, -18, 4 },
+  { 0, 0, 3, -15,  58,  96, -18, 4 }, { 0, 0, 4, -15,  55,  98, -18, 4 },
+  { 0, 0, 3, -14,  52, 100, -17, 4 }, { 0, 0, 3, -14,  50, 102, -17, 4 },
+  { 0, 0, 3, -13,  47, 104, -17, 4 }, { 0, 0, 3, -13,  45, 106, -17, 4 },
+  { 0, 0, 3, -12,  42, 108, -16, 3 }, { 0, 0, 3, -11,  40, 109, -16, 3 },
+  { 0, 0, 3, -11,  37, 111, -15, 3 }, { 0, 0, 2, -10,  35, 113, -15, 3 },
+  { 0, 0, 3, -10,  32, 114, -14, 3 }, { 0, 0, 2, - 9,  29, 116, -13, 3 },
+  { 0, 0, 2, - 8,  27, 117, -13, 3 }, { 0, 0, 2, - 8,  25, 119, -12, 2 },
+  { 0, 0, 2, - 7,  22, 120, -11, 2 }, { 0, 0, 1, - 6,  20, 121, -10, 2 },
+  { 0, 0, 1, - 6,  18, 122, - 9, 2 }, { 0, 0, 1, - 5,  15, 123, - 8, 2 },
+  { 0, 0, 1, - 4,  13, 124, - 7, 1 }, { 0, 0, 1, - 4,  11, 125, - 6, 1 },
+  { 0, 0, 1, - 3,   8, 126, - 5, 1 }, { 0, 0, 1, - 2,   6, 126, - 4, 1 },
+  { 0, 0, 0, - 1,   4, 127, - 3, 1 }, { 0, 0, 0, - 1,   2, 128, - 1, 0 },
+};
+/* clang-format on */
+
 #if CONFIG_AOM_HIGHBITDEPTH
 static INLINE void highbd_get_subcolumn(int taps, uint16_t *ref, int32_t *col,
                                         int stride, int x, int y_start) {
@@ -601,39 +712,11 @@ static INLINE int error_measure(int err) {
   return error_measure_lut[255 + err];
 }
 
-static double warp_erroradv(WarpedMotionParams *wm, uint8_t *ref, int width,
-                            int height, int stride, uint8_t *dst, int p_col,
-                            int p_row, int p_width, int p_height, int p_stride,
-                            int subsampling_x, int subsampling_y, int x_scale,
-                            int y_scale) {
-  int gm_err = 0, no_gm_err = 0;
-  int gm_sumerr = 0, no_gm_sumerr = 0;
-  int i, j;
-  ProjectPointsFunc projectpoints = get_project_points_type(wm->wmtype);
-  for (i = p_row; i < p_row + p_height; ++i) {
-    for (j = p_col; j < p_col + p_width; ++j) {
-      int in[2], out[2];
-      in[0] = j;
-      in[1] = i;
-      projectpoints(wm->wmmat, in, out, 1, 2, 2, subsampling_x, subsampling_y);
-      out[0] = ROUND_POWER_OF_TWO_SIGNED(out[0] * x_scale, 4);
-      out[1] = ROUND_POWER_OF_TWO_SIGNED(out[1] * y_scale, 4);
-      gm_err = dst[(j - p_col) + (i - p_row) * p_stride] -
-               warp_interpolate(ref, out[0], out[1], width, height, stride);
-      no_gm_err =
-          dst[(j - p_col) + (i - p_row) * p_stride] - ref[j + i * stride];
-      gm_sumerr += error_measure(gm_err);
-      no_gm_sumerr += error_measure(no_gm_err);
-    }
-  }
-  return (double)gm_sumerr / no_gm_sumerr;
-}
-
-static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
-                       int height, int stride, uint8_t *pred, int p_col,
-                       int p_row, int p_width, int p_height, int p_stride,
-                       int subsampling_x, int subsampling_y, int x_scale,
-                       int y_scale, int ref_frm) {
+static void warp_plane_old(WarpedMotionParams *wm, uint8_t *ref, int width,
+                           int height, int stride, uint8_t *pred, int p_col,
+                           int p_row, int p_width, int p_height, int p_stride,
+                           int subsampling_x, int subsampling_y, int x_scale,
+                           int y_scale, int ref_frm) {
   int i, j;
   ProjectPointsFunc projectpoints = get_project_points_type(wm->wmtype);
   if (projectpoints == NULL) return;
@@ -655,6 +738,171 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
             warp_interpolate(ref, out[0], out[1], width, height, stride);
     }
   }
+}
+
+/* The warp filter for ROTZOOM and AFFINE models works as follows:
+   * Split the input into 8x8 blocks
+   * For each block, project the point (4, 4) within the block, to get the
+     overall block position. Split into integer and fractional coordinates,
+     maintaining full WARPEDMODEL precision
+   * Filter horizontally: Generate 15 rows of 8 pixels each. Each pixel gets a
+     variable horizontal offset. This means that, while the rows of the
+     intermediate buffer align with the rows of the *reference* image, the
+     columns align with the columns of the *destination* image.
+   * Filter vertically: Generate the output block (up to 8x8 pixels, but if the
+     destination is too small we crop the output at this stage). Each pixel has
+     a variable vertical offset, so that the resulting rows are aligned with
+     the rows of the destination image.
+
+   To accomplish these alignments, we factor the warp matrix as a
+   product of two shear / asymmetric zoom matrices:
+   / a b \  = /   1       0    \ * / 1+alpha  beta \
+   \ c d /    \ gamma  1+delta /   \    0      1   /
+   where a, b, c, d are wmmat[2], wmmat[3], wmmat[4], wmmat[5] respectively.
+   The second shear (with alpha and beta) is applied by the horizontal filter,
+   then the first shear (with gamma and delta) is applied by the vertical
+   filter.
+
+   The only limitation is that, to fit this in a fixed 8-tap filter size,
+   the fractional pixel offsets must be at most +-1. Since the horizontal filter
+   generates 15 rows of 8 columns, and the initial point we project is at (4, 4)
+   within the block, the parameters must satisfy
+   4 * |alpha| + 7 * |beta| <= 1   and   4 * |gamma| + 7 * |delta| <= 1
+   for this filter to be applicable.
+*/
+static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
+                       int height, int stride, uint8_t *pred, int p_col,
+                       int p_row, int p_width, int p_height, int p_stride,
+                       int subsampling_x, int subsampling_y, int x_scale,
+                       int y_scale, int ref_frm) {
+  if (wm->wmtype == ROTZOOM) {
+    wm->wmmat[5] = wm->wmmat[2];
+    wm->wmmat[4] = -wm->wmmat[3];
+  }
+  if (wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) {
+    int32_t tmp[15 * 8];
+    int i, j, k, l, m;
+    int32_t *mat = wm->wmmat;
+
+    int32_t alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
+    int32_t beta = mat[3];
+    int32_t gamma = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2];
+    int32_t delta = mat[5] -
+                    (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
+                    (1 << WARPEDMODEL_PREC_BITS);
+
+    if ((4 * abs(alpha) + 7 * abs(beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
+        (4 * abs(gamma) + 7 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
+      assert(0 && "Warped motion model is incompatible with new warp filter");
+      warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row,
+                     p_width, p_height, p_stride, subsampling_x, subsampling_y,
+                     x_scale, y_scale, ref_frm);
+      return;
+    }
+
+    for (i = p_row; i < p_row + p_height; i += 8) {
+      for (j = p_col; j < p_col + p_width; j += 8) {
+        int32_t x4, y4, ix4, sx4, iy4, sy4;
+        if (subsampling_x)
+          x4 = ROUND_POWER_OF_TWO_SIGNED(
+              mat[2] * 2 * (j + 4) + mat[3] * 2 * (i + 4) + mat[0] +
+                  (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
+              1);
+        else
+          x4 = mat[2] * (j + 4) + mat[3] * (i + 4) + mat[0];
+
+        if (subsampling_y)
+          y4 = ROUND_POWER_OF_TWO_SIGNED(
+              mat[4] * 2 * (j + 4) + mat[5] * 2 * (i + 4) + mat[1] +
+                  (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
+              1);
+        else
+          y4 = mat[4] * (j + 4) + mat[5] * (i + 4) + mat[1];
+
+        ix4 = x4 >> WARPEDMODEL_PREC_BITS;
+        sx4 = x4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
+        iy4 = y4 >> WARPEDMODEL_PREC_BITS;
+        sy4 = y4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
+
+        // Horizontal filter
+        for (k = -7; k < 8; ++k) {
+          int iy = iy4 + k;
+          if (iy < 0)
+            iy = 0;
+          else if (iy > height - 1)
+            iy = height - 1;
+
+          for (l = -4; l < 4; ++l) {
+            int ix = ix4 + l;
+            int sx = ROUND_POWER_OF_TWO_SIGNED(sx4 + alpha * l + beta * k,
+                                               WARPEDDIFF_PREC_BITS);
+            const int16_t *coeffs = warped_filter[sx + WARPEDPIXEL_PREC_SHIFTS];
+            int32_t sum = 0;
+            for (m = 0; m < 8; ++m) {
+              if (ix + m - 3 < 0)
+                sum += ref[iy * stride] * coeffs[m];
+              else if (ix + m - 3 > width - 1)
+                sum += ref[iy * stride + width - 1] * coeffs[m];
+              else
+                sum += ref[iy * stride + ix + m - 3] * coeffs[m];
+            }
+            tmp[(k + 7) * 8 + (l + 4)] = sum;
+          }
+        }
+
+        // Vertical filter
+        for (k = -4; k < AOMMIN(4, p_row + p_height - i - 4); ++k) {
+          for (l = -4; l < AOMMIN(4, p_col + p_width - j - 4); ++l) {
+            uint8_t *p =
+                &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
+            int sy = ROUND_POWER_OF_TWO_SIGNED(sy4 + gamma * l + delta * k,
+                                               WARPEDDIFF_PREC_BITS);
+            const int16_t *coeffs = warped_filter[sy + WARPEDPIXEL_PREC_SHIFTS];
+            int32_t sum = 0;
+            for (m = 0; m < 8; ++m) {
+              sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
+            }
+            sum = clip_pixel(
+                ROUND_POWER_OF_TWO_SIGNED(sum, 2 * WARPEDPIXEL_FILTER_BITS));
+            if (ref_frm)
+              *p = ROUND_POWER_OF_TWO_SIGNED(*p + sum, 1);
+            else
+              *p = sum;
+          }
+        }
+      }
+    }
+  } else {
+    warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row, p_width,
+                   p_height, p_stride, subsampling_x, subsampling_y, x_scale,
+                   y_scale, ref_frm);
+  }
+}
+
+static double warp_erroradv(WarpedMotionParams *wm, uint8_t *ref, int width,
+                            int height, int stride, uint8_t *dst, int p_col,
+                            int p_row, int p_width, int p_height, int p_stride,
+                            int subsampling_x, int subsampling_y, int x_scale,
+                            int y_scale) {
+  int gm_err = 0, no_gm_err = 0;
+  int gm_sumerr = 0, no_gm_sumerr = 0;
+  int i, j;
+  uint8_t *tmp = aom_malloc(p_width * p_height);
+  warp_plane(wm, ref, width, height, stride, tmp, p_col, p_row, p_width,
+             p_height, p_width, subsampling_x, subsampling_y, x_scale, y_scale,
+             0);
+
+  for (i = 0; i < p_height; ++i) {
+    for (j = 0; j < p_width; ++j) {
+      gm_err = dst[j + i * p_stride] - tmp[j + i * p_width];
+      no_gm_err = dst[j + i * p_stride] - ref[j + i * stride];
+      gm_sumerr += error_measure(gm_err);
+      no_gm_sumerr += error_measure(no_gm_err);
+    }
+  }
+
+  aom_free(tmp);
+  return (double)gm_sumerr / no_gm_sumerr;
 }
 
 double av1_warp_erroradv(WarpedMotionParams *wm,
