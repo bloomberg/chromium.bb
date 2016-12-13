@@ -1784,9 +1784,12 @@ InspectorStyleSheetForInlineStyle* InspectorCSSAgent::asInspectorStyleSheet(
 void InspectorCSSAgent::collectAllDocumentStyleSheets(
     Document* document,
     HeapVector<Member<CSSStyleSheet>>& result) {
-  for (const auto& style :
-       document->styleEngine().activeStyleSheetsForInspector())
-    InspectorCSSAgent::collectStyleSheets(style.first, result);
+  const HeapVector<Member<CSSStyleSheet>> activeStyleSheets =
+      document->styleEngine().activeStyleSheetsForInspector();
+  for (const auto& style : activeStyleSheets) {
+    CSSStyleSheet* styleSheet = style.get();
+    InspectorCSSAgent::collectStyleSheets(styleSheet, result);
+  }
 }
 
 // static

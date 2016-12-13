@@ -36,6 +36,7 @@ namespace blink {
 
 class ShadowRoot;
 class StyleSheetCollection;
+class StyleEngine;
 
 class ShadowTreeStyleSheetCollection final
     : public TreeScopeStyleSheetCollection {
@@ -43,7 +44,9 @@ class ShadowTreeStyleSheetCollection final
 
  public:
   explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
-  void updateActiveStyleSheets();
+
+  void updateActiveStyleSheets(StyleEngine&, StyleResolverUpdateMode);
+
   bool isShadowTreeStyleSheetCollection() const final { return true; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
@@ -51,7 +54,7 @@ class ShadowTreeStyleSheetCollection final
   }
 
  private:
-  void collectStyleSheets(StyleSheetCollection&);
+  void collectStyleSheets(StyleEngine&, StyleSheetCollection&);
 };
 
 DEFINE_TYPE_CASTS(ShadowTreeStyleSheetCollection,

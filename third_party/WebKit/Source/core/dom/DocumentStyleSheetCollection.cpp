@@ -45,6 +45,7 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
 }
 
 void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(
+    StyleEngine& engine,
     DocumentStyleSheetCollector& collector) {
   for (Node* n : m_styleSheetCandidateNodes) {
     StyleSheetCandidate candidate(*n);
@@ -69,37 +70,64 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(
       continue;
 
     collector.appendSheetForList(sheet);
-    if (!candidate.canBeActivated(
-            document().styleEngine().preferredStylesheetSetName()))
-      continue;
-
-    CSSStyleSheet* cssSheet = toCSSStyleSheet(sheet);
-    collector.appendActiveStyleSheet(std::make_pair(
-        cssSheet, document().styleEngine().ruleSetForSheet(*cssSheet)));
+    if (candidate.canBeActivated(engine.preferredStylesheetSetName()))
+      collector.appendActiveStyleSheet(toCSSStyleSheet(sheet));
   }
 }
 
 void DocumentStyleSheetCollection::collectStyleSheets(
+    StyleEngine& engine,
     DocumentStyleSheetCollector& collector) {
-  for (auto& sheet : document().styleEngine().injectedAuthorStyleSheets()) {
-    collector.appendActiveStyleSheet(std::make_pair(
-        sheet, document().styleEngine().ruleSetForSheet(*sheet)));
-  }
-  collectStyleSheetsFromCandidates(collector);
-  if (CSSStyleSheet* inspectorSheet =
-          document().styleEngine().inspectorStyleSheet()) {
-    collector.appendActiveStyleSheet(std::make_pair(
-        inspectorSheet,
-        document().styleEngine().ruleSetForSheet(*inspectorSheet)));
-  }
+  DCHECK_EQ(&document().styleEngine(), &engine);
+  collector.appendActiveStyleSheets(engine.injectedAuthorStyleSheets());
+  collectStyleSheetsFromCandidates(engine, collector);
+  if (engine.inspectorStyleSheet())
+    collector.appendActiveStyleSheet(engine.inspectorStyleSheet());
 }
 
-void DocumentStyleSheetCollection::updateActiveStyleSheets() {
+void DocumentStyleSheetCollection::updateActiveStyleSheets(
+    StyleEngine& engine,
+    StyleResolverUpdateMode updateMode) {
   // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
   StyleSheetCollection* collection = StyleSheetCollection::create();
   ActiveDocumentStyleSheetCollector collector(*collection);
-  collectStyleSheets(collector);
-  applyActiveStyleSheetChanges(*collection);
+  collectStyleSheets(engine, collector);
+
+  StyleSheetChange change;
+  analyzeStyleSheetChange(updateMode, collection->activeAuthorStyleSheets(),
+                          change);
+
+  if (change.styleResolverUpdateType == Reconstruct) {
+    engine.clearMasterResolver();
+    // TODO(rune@opera.com): The following depends on whether StyleRuleFontFace
+    // was modified or not.  We should only remove modified/removed @font-face
+    // rules, or @font-face rules from removed stylesheets. We currently avoid
+    // clearing the font cache when we have had an analyzed update and no
+    // @font-face rules were removed, in which case requiresFullStyleRecalc will
+    // be false.
+    if (change.requiresFullStyleRecalc)
+      engine.clearFontCache();
+  } else if (StyleResolver* styleResolver = engine.resolver()) {
+    if (change.styleResolverUpdateType != Additive) {
+      DCHECK_EQ(change.styleResolverUpdateType, Reset);
+      engine.resetAuthorStyle(treeScope());
+      engine.removeFontFaceRules(change.fontFaceRulesToRemove);
+      styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
+      styleResolver->lazyAppendAuthorStyleSheets(
+          0, collection->activeAuthorStyleSheets());
+    } else {
+      styleResolver->lazyAppendAuthorStyleSheets(
+          m_activeAuthorStyleSheets.size(),
+          collection->activeAuthorStyleSheets());
+    }
+  }
+  if (change.requiresFullStyleRecalc)
+    document().setNeedsStyleRecalc(
+        SubtreeStyleChange, StyleChangeReasonForTracing::create(
+                                StyleChangeReason::ActiveStylesheetsUpdate));
+
+  collection->swap(*this);
+  collection->dispose();
 }
 
 void DocumentStyleSheetCollection::collectViewportRules(

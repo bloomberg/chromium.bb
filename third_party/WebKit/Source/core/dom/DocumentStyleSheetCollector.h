@@ -28,13 +28,13 @@
 #define DocumentStyleSheetCollector_h
 
 #include "bindings/core/v8/TraceWrapperMember.h"
-#include "core/css/ActiveStyleSheets.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
+class CSSStyleSheet;
 class Document;
 class StyleSheet;
 class StyleSheetCollection;
@@ -53,7 +53,9 @@ class DocumentStyleSheetCollector {
                               HeapHashSet<Member<Document>>*);
   ~DocumentStyleSheetCollector();
 
-  void appendActiveStyleSheet(const ActiveStyleSheet&);
+  void appendActiveStyleSheets(
+      const HeapVector<TraceWrapperMember<CSSStyleSheet>>&);
+  void appendActiveStyleSheet(CSSStyleSheet*);
   void appendSheetForList(StyleSheet*);
 
   bool hasVisited(Document* document) const {

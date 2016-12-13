@@ -1120,6 +1120,7 @@ source_set("unit_tests") {
     "dom/StyleEngineTest.cpp",
     "dom/SuspendableObjectTest.cpp",
     "dom/TextTest.cpp",
+    "dom/TreeScopeStyleSheetCollectionTest.cpp",
     "dom/TreeScopeTest.cpp",
     "dom/URLSearchParamsTest.cpp",
     "dom/custom/CustomElementDefinitionTest.cpp",

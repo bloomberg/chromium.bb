@@ -339,7 +339,8 @@ TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
   document().view()->updateAllLifecyclePhases();
 
   unsigned afterCount = styleEngine().styleForElementCount();
-  EXPECT_EQ(1u, afterCount - beforeCount);
+  // TODO(rune@opera.com): Should be 1u for ruleset based invalidations.
+  EXPECT_EQ(8u, afterCount - beforeCount);
 
   ASSERT_TRUE(t1->computedStyle());
   EXPECT_EQ(makeRGB(0, 128, 0),
@@ -365,7 +366,8 @@ TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
   document().view()->updateAllLifecyclePhases();
 
   unsigned afterCount = styleEngine().styleForElementCount();
-  EXPECT_EQ(0u, afterCount - beforeCount);
+  // TODO(rune@opera.com): Should be 0 for ruleset based invalidations.
+  EXPECT_EQ(8u, afterCount - beforeCount);
 
   ASSERT_TRUE(t1->computedStyle());
   EXPECT_EQ(makeRGB(0, 128, 0),

@@ -695,9 +695,6 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor,
 
 void LocalFrame::deviceScaleFactorChanged() {
   document()->mediaQueryAffectingValueChanged();
-  document()->setNeedsStyleRecalc(
-      SubtreeStyleChange,
-      StyleChangeReasonForTracing::create(StyleChangeReason::Zoom));
   for (Frame* child = tree().firstChild(); child;
        child = child->tree().nextSibling()) {
     if (child->isLocalFrame())

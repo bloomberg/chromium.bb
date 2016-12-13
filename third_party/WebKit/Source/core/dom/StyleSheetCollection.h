@@ -33,13 +33,13 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
-#include "core/css/ActiveStyleSheets.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
+class CSSStyleSheet;
 class StyleSheet;
 
 class CORE_EXPORT StyleSheetCollection
@@ -53,7 +53,7 @@ class CORE_EXPORT StyleSheetCollection
 
   static StyleSheetCollection* create() { return new StyleSheetCollection; }
 
-  const ActiveStyleSheetVector& activeAuthorStyleSheets() const {
+  const HeapVector<Member<CSSStyleSheet>>& activeAuthorStyleSheets() const {
     return m_activeAuthorStyleSheets;
   }
   const HeapVector<TraceWrapperMember<StyleSheet>>&
@@ -63,7 +63,10 @@ class CORE_EXPORT StyleSheetCollection
 
   void swap(StyleSheetCollection&);
   void swapSheetsForSheetList(HeapVector<Member<StyleSheet>>&);
-  void appendActiveStyleSheet(const ActiveStyleSheet&);
+  void appendActiveStyleSheet(CSSStyleSheet*);
+  void appendActiveStyleSheets(const HeapVector<Member<CSSStyleSheet>>&);
+  void appendActiveStyleSheets(
+      const HeapVector<TraceWrapperMember<CSSStyleSheet>>&);
   void appendSheetForList(StyleSheet*);
 
   DECLARE_VIRTUAL_TRACE();
@@ -75,7 +78,7 @@ class CORE_EXPORT StyleSheetCollection
   StyleSheetCollection();
 
   HeapVector<TraceWrapperMember<StyleSheet>> m_styleSheetsForStyleSheetList;
-  ActiveStyleSheetVector m_activeAuthorStyleSheets;
+  HeapVector<Member<CSSStyleSheet>> m_activeAuthorStyleSheets;
 };
 
 }  // namespace blink

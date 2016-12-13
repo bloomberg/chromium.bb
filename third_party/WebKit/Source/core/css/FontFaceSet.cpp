@@ -310,9 +310,9 @@ bool FontFaceSet::hasForBinding(ScriptState*,
 
 const HeapListHashSet<Member<FontFace>>& FontFaceSet::cssConnectedFontFaceList()
     const {
-  Document* document = this->document();
-  document->updateActiveStyle();
-  return document->styleEngine()
+  Document* d = document();
+  d->ensureStyleResolver();  // Flush pending style changes.
+  return d->styleEngine()
       .fontSelector()
       ->fontFaceCache()
       ->cssConnectedFontFaces();
@@ -467,7 +467,6 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font) {
 
   style->font().update(style->font().getFontSelector());
 
-  document()->updateActiveStyle();
   document()->ensureStyleResolver().computeFont(style.get(), *parsedStyle);
 
   font = style->font();

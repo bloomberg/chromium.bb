@@ -1629,7 +1629,6 @@ void StyleResolver::invalidateMatchedPropertiesCache() {
 }
 
 void StyleResolver::notifyResizeForViewportUnits() {
-  document().styleEngine().updateActiveStyle();
   m_matchedPropertiesCache.clearViewportDependent();
 }
 

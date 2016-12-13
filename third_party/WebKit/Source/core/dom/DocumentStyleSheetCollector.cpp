@@ -30,7 +30,6 @@
 
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheet.h"
-#include "core/dom/Document.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 
 namespace blink {
@@ -45,8 +44,13 @@ DocumentStyleSheetCollector::DocumentStyleSheetCollector(
 
 DocumentStyleSheetCollector::~DocumentStyleSheetCollector() {}
 
-void DocumentStyleSheetCollector::appendActiveStyleSheet(
-    const ActiveStyleSheet& sheet) {
+void DocumentStyleSheetCollector::appendActiveStyleSheets(
+    const HeapVector<TraceWrapperMember<CSSStyleSheet>>& sheets) {
+  DCHECK(m_collection);
+  m_collection->appendActiveStyleSheets(sheets);
+}
+
+void DocumentStyleSheetCollector::appendActiveStyleSheet(CSSStyleSheet* sheet) {
   DCHECK(m_collection);
   m_collection->appendActiveStyleSheet(sheet);
 }

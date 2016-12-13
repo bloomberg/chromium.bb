@@ -56,7 +56,8 @@ if (window.internals) {
     // Test deleteRule
     forceRecalc();
     sheet.sheet.deleteRule(0); // Deletes .bar rule.
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
+    // FIXME: Ideally we'd do StyleInvalidationAnalysis here and only recalc 3 bar's, 3 baz's + documentElement
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "43");
 
     shouldBe("getComputedStyle(document.querySelector('.foo')).color", '"rgb(0, 0, 0)"');
     shouldBe("getComputedStyle(document.querySelector('.baz')).color", '"rgb(255, 0, 0)"');
@@ -65,7 +66,8 @@ if (window.internals) {
     // Test insertRule
     forceRecalc();
     sheet.sheet.insertRule(".foo { color: red; }", 0);
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
+    // FIXME: Ideally we'd do StyleInvalidationAnalysis here and only recalc 3 foo's, 3 baz's + documentElement
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "59");
 
     shouldBe("getComputedStyle(document.querySelector('.foo')).color", '"rgb(255, 0, 0)"');
     shouldBe("getComputedStyle(document.querySelector('.baz')).color", '"rgb(255, 0, 0)"');

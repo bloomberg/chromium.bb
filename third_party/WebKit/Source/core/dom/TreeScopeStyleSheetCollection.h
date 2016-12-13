@@ -31,14 +31,20 @@
 #define TreeScopeStyleSheetCollection_h
 
 #include "core/CoreExport.h"
+#include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/StyleSheetCollection.h"
 #include "core/dom/TreeScope.h"
+#include "wtf/HashMap.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class Document;
 class Node;
+class StyleSheetContents;
+class StyleRuleFontFace;
 
 class CORE_EXPORT TreeScopeStyleSheetCollection : public StyleSheetCollection {
  public:
@@ -50,7 +56,7 @@ class CORE_EXPORT TreeScopeStyleSheetCollection : public StyleSheetCollection {
     return !m_styleSheetCandidateNodes.isEmpty();
   }
 
-  bool mediaQueryAffectingValueChanged();
+  void clearMediaQueryRuleSetStyleSheets();
 
   virtual bool isShadowTreeStyleSheetCollection() const { return false; }
 
@@ -62,13 +68,39 @@ class CORE_EXPORT TreeScopeStyleSheetCollection : public StyleSheetCollection {
   Document& document() const { return treeScope().document(); }
   TreeScope& treeScope() const { return *m_treeScope; }
 
-  void applyActiveStyleSheetChanges(StyleSheetCollection&);
+  enum StyleResolverUpdateType { Reconstruct, Reset, Additive };
 
-  Member<TreeScope> m_treeScope;
-  DocumentOrderedList m_styleSheetCandidateNodes;
+  class StyleSheetChange {
+    STACK_ALLOCATED();
+
+   public:
+    StyleResolverUpdateType styleResolverUpdateType;
+    bool requiresFullStyleRecalc;
+    HeapVector<Member<const StyleRuleFontFace>> fontFaceRulesToRemove;
+
+    StyleSheetChange()
+        : styleResolverUpdateType(Reconstruct), requiresFullStyleRecalc(true) {}
+  };
+
+  void analyzeStyleSheetChange(StyleResolverUpdateMode,
+                               const HeapVector<Member<CSSStyleSheet>>&,
+                               StyleSheetChange&);
 
  private:
+  static StyleResolverUpdateType compareStyleSheets(
+      const HeapVector<Member<CSSStyleSheet>>& oldStyleSheets,
+      const HeapVector<Member<CSSStyleSheet>>& newStylesheets,
+      HeapVector<Member<StyleSheetContents>>& addedSheets);
+  bool activeLoadingStyleSheetLoaded(
+      const HeapVector<Member<CSSStyleSheet>>& newStyleSheets);
+
   friend class TreeScopeStyleSheetCollectionTest;
+
+ protected:
+  Member<TreeScope> m_treeScope;
+  bool m_hadActiveLoadingStylesheet;
+
+  DocumentOrderedList m_styleSheetCandidateNodes;
 };
 
 }  // namespace blink
