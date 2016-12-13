@@ -8,12 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "device/gamepad/public/interfaces/gamepad.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/system/platform_handle.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace content {
@@ -42,8 +41,8 @@ class GamepadSharedMemoryReader : public RendererGamepadProvider,
   void GamepadDisconnected(int index,
                            const blink::WebGamepad& gamepad) override;
 
-  base::SharedMemoryHandle renderer_shared_memory_handle_;
-  std::unique_ptr<base::SharedMemory> renderer_shared_memory_;
+  mojo::ScopedSharedBufferHandle renderer_shared_buffer_handle_;
+  mojo::ScopedSharedBufferMapping renderer_shared_buffer_mapping_;
   GamepadHardwareBuffer* gamepad_hardware_buffer_;
 
   bool ever_interacted_with_;

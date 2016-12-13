@@ -29,14 +29,7 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader(RenderThread* thread)
 
 void GamepadSharedMemoryReader::SendStartMessage() {
   if (gamepad_monitor_) {
-    mojo::ScopedSharedBufferHandle buffer_handle;
-    gamepad_monitor_->GamepadStartPolling(&buffer_handle);
-    // TODO(heke): Use mojo::SharedBuffer rather than base::SharedMemory. See
-    // crbug.com/670655.
-    MojoResult result = mojo::UnwrapSharedMemoryHandle(
-        std::move(buffer_handle), &renderer_shared_memory_handle_, nullptr,
-        nullptr);
-    CHECK_EQ(MOJO_RESULT_OK, result);
+    gamepad_monitor_->GamepadStartPolling(&renderer_shared_buffer_handle_);
   }
 }
 
@@ -52,16 +45,15 @@ void GamepadSharedMemoryReader::Start(
 
   // If we don't get a valid handle from the browser, don't try to Map (we're
   // probably out of memory or file handles).
-  bool valid_handle = base::SharedMemory::IsHandleValid(
-      renderer_shared_memory_handle_);
+  bool valid_handle = renderer_shared_buffer_handle_.is_valid();
   UMA_HISTOGRAM_BOOLEAN("Gamepad.ValidSharedMemoryHandle", valid_handle);
   if (!valid_handle)
     return;
 
-  renderer_shared_memory_.reset(
-      new base::SharedMemory(renderer_shared_memory_handle_, true));
-  CHECK(renderer_shared_memory_->Map(sizeof(GamepadHardwareBuffer)));
-  void *memory = renderer_shared_memory_->memory();
+  renderer_shared_buffer_mapping_ =
+      renderer_shared_buffer_handle_->Map(sizeof(GamepadHardwareBuffer));
+  CHECK(renderer_shared_buffer_mapping_);
+  void* memory = renderer_shared_buffer_mapping_.get();
   CHECK(memory);
   gamepad_hardware_buffer_ =
       static_cast<GamepadHardwareBuffer*>(memory);
@@ -80,7 +72,7 @@ void GamepadSharedMemoryReader::SampleGamepads(blink::WebGamepads& gamepads) {
   blink::WebGamepads read_into;
   TRACE_EVENT0("GAMEPAD", "SampleGamepads");
 
-  if (!base::SharedMemory::IsHandleValid(renderer_shared_memory_handle_))
+  if (!renderer_shared_buffer_handle_.is_valid())
     return;
 
   // Only try to read this many times before failing to avoid waiting here
