@@ -40,7 +40,6 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/gfx/switches.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -201,39 +200,35 @@ int GpuMain(const MainFunctionParams& parameters) {
   // TODO(ericrk): Revisit this once we assess its impact on crbug.com/662802
   // and crbug.com/609252.
   std::unique_ptr<base::MessageLoop> main_message_loop;
-  if (command_line.HasSwitch(switches::kHeadless)) {
-    main_message_loop.reset(
-        new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
-  } else {
+
 #if defined(OS_WIN)
-    // OK to use default non-UI message loop because all GPU windows run on
-    // dedicated thread.
-    main_message_loop.reset(
-        new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
+  // OK to use default non-UI message loop because all GPU windows run on
+  // dedicated thread.
+  main_message_loop.reset(
+      new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
 #elif defined(USE_X11)
-    // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
-    // and https://crbug.com/326995.
-    main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
-    std::unique_ptr<ui::PlatformEventSource> event_source =
-        ui::PlatformEventSource::CreateDefault();
+  // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
+  // and https://crbug.com/326995.
+  main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+  std::unique_ptr<ui::PlatformEventSource> event_source =
+      ui::PlatformEventSource::CreateDefault();
 #elif defined(USE_OZONE) && defined(OZONE_X11)
-    // If we might be running Ozone X11 we need a UI loop to grab Expose events.
-    // See GLSurfaceGLX and https://crbug.com/326995.
-    main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+  // If we might be running Ozone X11 we need a UI loop to grab Expose events.
+  // See GLSurfaceGLX and https://crbug.com/326995.
+  main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
 #elif defined(USE_OZONE)
-    main_message_loop.reset(
-        new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
+  main_message_loop.reset(
+      new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
 #elif defined(OS_LINUX)
 #error "Unsupported Linux platform."
 #elif defined(OS_MACOSX)
-    // This is necessary for CoreAnimation layers hosted in the GPU process to
-    // be drawn. See http://crbug.com/312462.
-    std::unique_ptr<base::MessagePump> pump(new base::MessagePumpCFRunLoop());
-    main_message_loop.reset(new base::MessageLoop(std::move(pump)));
+  // This is necessary for CoreAnimation layers hosted in the GPU process to be
+  // drawn. See http://crbug.com/312462.
+  std::unique_ptr<base::MessagePump> pump(new base::MessagePumpCFRunLoop());
+  main_message_loop.reset(new base::MessageLoop(std::move(pump)));
 #else
-    main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+  main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
 #endif
-  }
 
   base::PlatformThread::SetName("CrGpuMain");
 

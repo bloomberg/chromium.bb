@@ -9,7 +9,6 @@
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "ui/gfx/switches.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_egl_api_implementation.h"
@@ -125,11 +124,6 @@ bool InitializeStaticEGLInternal() {
 }  // namespace
 
 bool InitializeGLOneOffPlatform() {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kHeadless))
-    return true;
-
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
       if (!GLSurfaceGLX::InitializeOneOff()) {

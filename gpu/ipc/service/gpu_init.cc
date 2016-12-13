@@ -17,7 +17,6 @@
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "gpu/ipc/service/switches.h"
-#include "ui/gfx/switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/init/gl_factory.h"
@@ -128,7 +127,6 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
   // to run slowly in that case.
   bool enable_watchdog =
       !command_line.HasSwitch(switches::kDisableGpuWatchdog) &&
-      !command_line.HasSwitch(switches::kHeadless) &&
       !RunningOnValgrind();
 
   // Disable the watchdog in debug builds because they tend to only be run by

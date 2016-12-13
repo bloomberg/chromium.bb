@@ -23,7 +23,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "ui/display/display_switches.h"
-#include "ui/gfx/switches.h"
 
 namespace content {
 
@@ -253,9 +252,6 @@ void ZygoteCommunication::Init() {
       switches::kDisableSeccompFilterSandbox,
       switches::kEnableHeapProfiling,
       switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
-      // Need to tell the zygote that it is headless so that we don't try to use
-      // the wrong type of main delegate.
-      switches::kHeadless,
       // Zygote process needs to know what resources to have loaded when it
       // becomes a renderer process.
       switches::kForceDeviceScaleFactor, switches::kLoggingLevel,

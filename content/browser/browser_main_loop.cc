@@ -105,7 +105,6 @@
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "sql/sql_memory_dump_provider.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/gfx/switches.h"
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
 #include "content/browser/compositor/image_transport_factory.h"
@@ -464,8 +463,6 @@ class GpuDataManagerVisualProxy : public GpuDataManagerObserver {
   }
 
   void OnGpuInfoUpdate() override {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
-      return;
     gpu::GPUInfo gpu_info = gpu_data_manager_->GetGPUInfo();
     if (!ui::XVisualManager::GetInstance()->OnGPUInfoChanged(
             gpu_info.software_rendering ||
@@ -1572,8 +1569,7 @@ bool BrowserMainLoop::InitializeToolkit() {
 #if defined(USE_AURA)
 
 #if defined(USE_X11)
-  if (!parsed_command_line_.HasSwitch(switches::kHeadless) &&
-      !gfx::GetXDisplay()) {
+  if (!gfx::GetXDisplay()) {
     LOG(ERROR) << "Unable to open X display.";
     return false;
   }

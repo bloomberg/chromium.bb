@@ -239,9 +239,6 @@ if (!is_android && !is_mac) {
         # Needed to use the master_preferences functions
         "//chrome/installer/util:with_no_strings",
         "//content/public/app:both",
-
-        # For headless mode.
-        "//headless:headless_shell_lib",
       ]
       if (enable_plugins && enable_pdf) {
         deps += [ "//pdf" ]

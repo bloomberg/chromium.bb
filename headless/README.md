@@ -69,7 +69,6 @@ web pages. Its main classes are:
 
 ## Documentation
 
-* [Runtime headless mode for Chrome](https://docs.google.com/document/d/1aIJUzQr3eougZQp90bp4mqGr5gY6hdUice8UPa-Ys90/edit#)
 * [Virtual Time in Blink](https://docs.google.com/document/d/1y9kdt_zezt7pbey6uzvt1dgklwc1ob_vy4nzo1zbqmo/edit#heading=h.tn3gd1y9ifml)
 * [Headless Chrome architecture](https://docs.google.com/document/d/11zIkKkLBocofGgoTeeyibB2TZ_k7nR78v7kNelCatUE/edit)
 * [Headless Chrome C++ DevTools API](https://docs.google.com/document/d/1rlqcp8nk-ZQvldNJWdbaMbwfDbJoOXvahPCDoPGOwhQ/edit#heading=h.ng2bxb15li9a)
