@@ -35,10 +35,14 @@
 #include "wtf/Allocator.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Noncopyable.h"
+
 #include <limits>
 
 namespace blink {
 
+// Maintains a stationary clock time during script execution.  Tries to track
+// the glass time (the moment photons leave the screen) of the current animation
+// frame.
 class CORE_EXPORT AnimationClock {
   DISALLOW_NEW();
   WTF_MAKE_NONCOPYABLE(AnimationClock);
@@ -48,19 +52,21 @@ class CORE_EXPORT AnimationClock {
                               WTF::monotonicallyIncreasingTime)
       : m_monotonicallyIncreasingTime(monotonicallyIncreasingTime),
         m_time(0),
-        m_currentTask(std::numeric_limits<unsigned>::max()) {}
+        m_taskForWhichTimeWasCalculated(std::numeric_limits<unsigned>::max()) {}
 
   void updateTime(double time);
   double currentTime();
   void resetTimeForTesting(double time = 0);
 
-  static void notifyTaskStart() { ++s_currentTask; }
+  // notifyTaskStart should be called right before the main message loop starts
+  // to run the next task from the message queue.
+  static void notifyTaskStart() { ++s_currentlyRunningTask; }
 
  private:
   WTF::TimeFunction m_monotonicallyIncreasingTime;
   double m_time;
-  unsigned m_currentTask;
-  static unsigned s_currentTask;
+  unsigned m_taskForWhichTimeWasCalculated;
+  static unsigned s_currentlyRunningTask;
 };
 
 }  // namespace blink

@@ -43,16 +43,16 @@ const double approximateFrameTime = 1 / 60.0;
 
 namespace blink {
 
-unsigned AnimationClock::s_currentTask = 0;
+unsigned AnimationClock::s_currentlyRunningTask = 0;
 
 void AnimationClock::updateTime(double time) {
   if (time > m_time)
     m_time = time;
-  m_currentTask = s_currentTask;
+  m_taskForWhichTimeWasCalculated = s_currentlyRunningTask;
 }
 
 double AnimationClock::currentTime() {
-  if (m_currentTask != s_currentTask) {
+  if (m_taskForWhichTimeWasCalculated != s_currentlyRunningTask) {
     const double currentTime = m_monotonicallyIncreasingTime();
     if (m_time < currentTime) {
       // Advance to the first estimated frame after the current time.
@@ -63,7 +63,7 @@ double AnimationClock::currentTime() {
       DCHECK_LE(newTime, currentTime + approximateFrameTime);
       updateTime(newTime);
     } else {
-      m_currentTask = s_currentTask;
+      m_taskForWhichTimeWasCalculated = s_currentlyRunningTask;
     }
   }
   return m_time;
@@ -71,8 +71,8 @@ double AnimationClock::currentTime() {
 
 void AnimationClock::resetTimeForTesting(double time) {
   m_time = time;
-  m_currentTask = 0;
-  s_currentTask = 0;
+  m_taskForWhichTimeWasCalculated = 0;
+  s_currentlyRunningTask = 0;
 }
 
 }  // namespace blink
