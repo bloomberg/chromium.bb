@@ -35,6 +35,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace sync_preferences {
+class TestingPrefServiceSyncable;
+}
+
 namespace extensions {
 
 class ExtensionRegistry;
@@ -51,9 +55,9 @@ class ExtensionServiceTestBase : public testing::Test {
     base::FilePath profile_path;
     base::FilePath pref_file;
     base::FilePath extensions_install_dir;
-    bool autoupdate_enabled;    // defaults to false.
-    bool is_first_run;          // defaults to true.
-    bool profile_is_supervised; // defaults to false.
+    bool autoupdate_enabled;     // defaults to false.
+    bool is_first_run;           // defaults to true.
+    bool profile_is_supervised;  // defaults to false.
 
     // Though you could use this constructor, you probably want to use
     // CreateDefaultInitParams(), and then make a change or two.
@@ -117,6 +121,7 @@ class ExtensionServiceTestBase : public testing::Test {
 
   content::BrowserContext* browser_context();
   Profile* profile();
+  sync_preferences::TestingPrefServiceSyncable* testing_pref_service();
   ExtensionService* service() { return service_; }
   ExtensionRegistry* registry() { return registry_; }
   const base::FilePath& extensions_install_dir() const {

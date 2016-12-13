@@ -25,6 +25,13 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "components/crx_file/id_util.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_service_impl.h"
+#include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_error_test_util.h"
@@ -39,6 +46,9 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/test_util.h"
 #include "extensions/common/value_builder.h"
+
+using testing::Return;
+using testing::_;
 
 namespace extensions {
 
@@ -95,6 +105,18 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestBase {
       api::developer_private::PackStatus expected_status,
       int expected_flags);
 
+  // Execute the updateProfileConfiguration API call with a specified
+  // dev_mode. This is done from the webui when the user checks the
+  // "Developer Mode" checkbox.
+  void UpdateProfileConfigurationDevMode(bool dev_mode);
+
+  // Execute the getProfileConfiguration API and parse its result into a
+  // ProfileInfo structure for further verification in the calling test.
+  // Will reset the profile_info unique_ptr.
+  // Uses ASSERT_* inside - callers should use ASSERT_NO_FATAL_FAILURE.
+  void GetProfileConfiguration(
+      std::unique_ptr<api::developer_private::ProfileInfo>* profile_info);
+
   Browser* browser() { return browser_.get(); }
 
  private:
@@ -107,6 +129,7 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestBase {
   std::unique_ptr<Browser> browser_;
 
   std::vector<std::unique_ptr<TestExtensionDir>> test_extension_dirs_;
+  policy::MockConfigurationPolicyProvider mock_policy_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateApiUnitTest);
 };
@@ -242,9 +265,43 @@ testing::AssertionResult DeveloperPrivateApiUnitTest::TestPackExtensionFunction(
   return testing::AssertionSuccess();
 }
 
+void DeveloperPrivateApiUnitTest::UpdateProfileConfigurationDevMode(
+    bool dev_mode) {
+  scoped_refptr<UIThreadExtensionFunction> function(
+      new api::DeveloperPrivateUpdateProfileConfigurationFunction());
+  std::unique_ptr<base::ListValue> args =
+      ListBuilder()
+          .Append(DictionaryBuilder()
+                      .SetBoolean("inDeveloperMode", dev_mode)
+                      .Build())
+          .Build();
+  EXPECT_TRUE(RunFunction(function, *args)) << function->GetError();
+}
+
+void DeveloperPrivateApiUnitTest::GetProfileConfiguration(
+    std::unique_ptr<api::developer_private::ProfileInfo>* profile_info) {
+  scoped_refptr<UIThreadExtensionFunction> function(
+      new api::DeveloperPrivateGetProfileConfigurationFunction());
+  base::ListValue args;
+  EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
+
+  ASSERT_TRUE(function->GetResultList());
+  ASSERT_EQ(1u, function->GetResultList()->GetSize());
+  const base::Value* response_value = nullptr;
+  function->GetResultList()->Get(0u, &response_value);
+  *profile_info =
+      api::developer_private::ProfileInfo::FromValue(*response_value);
+}
+
 void DeveloperPrivateApiUnitTest::SetUp() {
   ExtensionServiceTestBase::SetUp();
-  InitializeEmptyExtensionService();
+
+  // By not specifying a pref_file filepath, we get a
+  // sync_preferences::TestingPrefServiceSyncable
+  // - see BuildTestingProfile in extension_service_test_base.cc.
+  ExtensionServiceInitParams init_params = CreateDefaultInitParams();
+  init_params.pref_file.clear();
+  InitializeExtensionService(init_params);
 
   browser_window_.reset(new TestBrowserWindow());
   Browser::CreateParams params(profile());
@@ -574,6 +631,40 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
   EXPECT_TRUE(RunFunction(function, *args)) << function->GetError();
   // No more errors!
   EXPECT_TRUE(error_console->GetErrorsForExtension(extension->id()).empty());
+}
+
+// Test developerPrivate.updateProfileConfiguration: Try to turn on devMode
+// when DeveloperToolsDisabled policy is active.
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDevModeDisabledPolicy) {
+  testing_pref_service()->SetManagedPref(prefs::kExtensionsUIDeveloperMode,
+                                         new base::FundamentalValue(false));
+
+  UpdateProfileConfigurationDevMode(true);
+
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode));
+
+  std::unique_ptr<api::developer_private::ProfileInfo> profile_info;
+  ASSERT_NO_FATAL_FAILURE(GetProfileConfiguration(&profile_info));
+  EXPECT_FALSE(profile_info->in_developer_mode);
+  EXPECT_TRUE(profile_info->is_developer_mode_controlled_by_policy);
+}
+
+// Test developerPrivate.updateProfileConfiguration: Try to turn on devMode
+// (without DeveloperToolsDisabled policy).
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDevMode) {
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode));
+
+  UpdateProfileConfigurationDevMode(true);
+
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode));
+
+  std::unique_ptr<api::developer_private::ProfileInfo> profile_info;
+  ASSERT_NO_FATAL_FAILURE(GetProfileConfiguration(&profile_info));
+  EXPECT_TRUE(profile_info->in_developer_mode);
+  EXPECT_FALSE(profile_info->is_developer_mode_controlled_by_policy);
 }
 
 }  // namespace extensions

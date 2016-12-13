@@ -101,12 +101,14 @@ class PrefMapping {
               bool is_local_state,
               bool check_for_mandatory,
               bool check_for_recommended,
+              const std::string& indicator_test_url,
               const std::string& indicator_test_setup_js,
               const std::string& indicator_selector)
       : pref_(pref),
         is_local_state_(is_local_state),
         check_for_mandatory_(check_for_mandatory),
         check_for_recommended_(check_for_recommended),
+        indicator_test_url_(indicator_test_url),
         indicator_test_setup_js_(indicator_test_setup_js),
         indicator_selector_(indicator_selector) {}
   ~PrefMapping() {}
@@ -118,6 +120,8 @@ class PrefMapping {
   bool check_for_mandatory() const { return check_for_mandatory_; }
 
   bool check_for_recommended() const { return check_for_recommended_; }
+
+  const std::string& indicator_test_url() const { return indicator_test_url_; }
 
   const std::string& indicator_test_setup_js() const {
     return indicator_test_setup_js_;
@@ -139,6 +143,7 @@ class PrefMapping {
   const bool is_local_state_;
   const bool check_for_mandatory_;
   const bool check_for_recommended_;
+  const std::string indicator_test_url_;
   const std::string indicator_test_setup_js_;
   const std::string indicator_selector_;
   ScopedVector<IndicatorTestCase> indicator_test_cases_;
@@ -218,7 +223,7 @@ class PolicyTestCase {
   DISALLOW_COPY_AND_ASSIGN(PolicyTestCase);
 };
 
-// Parses all policy test cases and makes then available in a map.
+// Parses all policy test cases and makes them available in a map.
 class PolicyTestCases {
  public:
   typedef std::vector<PolicyTestCase*> PolicyTestCaseVector;
@@ -327,6 +332,8 @@ class PolicyTestCases {
         bool check_for_recommended = true;
         pref_mapping_dict->GetBoolean("check_for_recommended",
                                       &check_for_recommended);
+        std::string indicator_test_url;
+        pref_mapping_dict->GetString("indicator_test_url", &indicator_test_url);
         std::string indicator_test_setup_js;
         pref_mapping_dict->GetString("indicator_test_setup_js",
                                      &indicator_test_setup_js);
@@ -336,6 +343,7 @@ class PolicyTestCases {
                                                     is_local_state,
                                                     check_for_mandatory,
                                                     check_for_recommended,
+                                                    indicator_test_url,
                                                     indicator_test_setup_js,
                                                     indicator_selector);
         const base::ListValue* indicator_tests = NULL;
@@ -693,6 +701,18 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
               (*pref_mapping)->indicator_test_setup_js()));
         }
 
+        // A non-empty indicator_test_url is expected to be used in very
+        // few cases, so it's currently implemented by navigating to the URL
+        // right before the test and navigating back afterwards.
+        // If you introduce many test cases with the same non-empty
+        // indicator_test_url, this would be inefficient. We could consider
+        // navigting to a specific indicator_test_url once for many test cases
+        // instead.
+        if (!(*pref_mapping)->indicator_test_url().empty()) {
+          ui_test_utils::NavigateToURL(
+              browser(), GURL((*pref_mapping)->indicator_test_url()));
+        }
+
         std::string indicator_selector = (*pref_mapping)->indicator_selector();
         if (indicator_selector.empty())
           indicator_selector = "[pref=\"" + (*pref_mapping)->pref() + "\"]";
@@ -756,6 +776,9 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
                                             (*indicator_test_case)->readonly());
           prefs->ClearPref((*pref_mapping)->pref().c_str());
         }
+
+        if (!(*pref_mapping)->indicator_test_url().empty())
+          ui_test_utils::NavigateToURL(browser(), GURL(kMainSettingsPage));
       }
     }
   }

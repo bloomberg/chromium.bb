@@ -276,6 +276,11 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   source->AddString("extensionCommandsRegular",
       l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_NOT_GLOBAL));
   source->AddString("ok", l10n_util::GetStringUTF16(IDS_OK));
+
+  // 'Bubble' text for the controlled-setting-indicator
+  source->AddString(
+      "extensionControlledSettingPolicy",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));
 }
 
 void ExtensionSettingsHandler::DidStartNavigationToPendingEntry(

@@ -226,6 +226,7 @@ namespace developerPrivate {
     boolean appInfoDialogEnabled;
     boolean canLoadUnpacked;
     boolean inDeveloperMode;
+    boolean isDeveloperModeControlledByPolicy;
     boolean isIncognitoAvailable;
     boolean isSupervised;
   };

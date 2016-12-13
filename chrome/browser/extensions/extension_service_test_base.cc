@@ -303,6 +303,11 @@ Profile* ExtensionServiceTestBase::profile() {
   return profile_.get();
 }
 
+sync_preferences::TestingPrefServiceSyncable*
+ExtensionServiceTestBase::testing_pref_service() {
+  return profile_->GetTestingPrefService();
+}
+
 void ExtensionServiceTestBase::CreateExtensionService(
     const ExtensionServiceInitParams& params) {
   TestExtensionSystem* system =

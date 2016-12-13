@@ -712,6 +712,31 @@ void GetExtensionAllowedTypesMap(
                             new base::FundamentalValue(entry.manifest_type))));
   }
 }
+
+// Piggy-back kDeveloperToolsDisabled set to true to also force-disable
+// kExtensionsUIDeveloperMode.
+class DevToolsExtensionsUIPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  DevToolsExtensionsUIPolicyHandler()
+      : TypeCheckingPolicyHandler(key::kDeveloperToolsDisabled,
+                                  base::Value::Type::BOOLEAN) {}
+  ~DevToolsExtensionsUIPolicyHandler() override {}
+
+  // ConfigurationPolicyHandler implementation:
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override {
+    const base::Value* value = policies.GetValue(policy_name());
+    bool developerToolsDisabled;
+    if (value && value->GetAsBoolean(&developerToolsDisabled) &&
+        developerToolsDisabled) {
+      prefs->SetValue(prefs::kExtensionsUIDeveloperMode,
+                      base::MakeUnique<base::FundamentalValue>(false));
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DevToolsExtensionsUIPolicyHandler);
+};
 #endif
 
 void GetDeprecatedFeaturesMap(
@@ -798,6 +823,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       base::MakeUnique<extensions::ExtensionSettingsPolicyHandler>(
           chrome_schema));
+  handlers->AddHandler(base::MakeUnique<DevToolsExtensionsUIPolicyHandler>());
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

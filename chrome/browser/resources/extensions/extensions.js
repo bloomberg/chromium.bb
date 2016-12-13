@@ -196,6 +196,8 @@ cr.define('extensions', function() {
 
       /** @const */
       var supervised = profileInfo.isSupervised;
+      var developerModeControlledByPolicy =
+          profileInfo.isDeveloperModeControlledByPolicy;
 
       var pageDiv = $('extension-settings');
       pageDiv.classList.toggle('profile-is-supervised', supervised);
@@ -203,7 +205,13 @@ cr.define('extensions', function() {
 
       var devControlsCheckbox = $('toggle-dev-on');
       devControlsCheckbox.checked = profileInfo.inDeveloperMode;
-      devControlsCheckbox.disabled = supervised;
+      devControlsCheckbox.disabled =
+          supervised || developerModeControlledByPolicy;
+
+      // This is necessary e.g. if developer mode is now disabled by policy
+      // but extension developer tools were visible.
+      this.updateDevControlsVisibility_(false);
+      this.updateDevToggleControlledIndicator_(developerModeControlledByPolicy);
 
       $('load-unpacked').disabled = !profileInfo.canLoadUnpacked;
       var extensionList = $('extension-settings-list');
@@ -216,6 +224,36 @@ cr.define('extensions', function() {
         }
         this.onExtensionCountChanged();
       }.bind(this));
+    },
+
+    /**
+     * Shows or hides the 'controlled by policy' indicator on the dev-toggle
+     * checkbox.
+     * @param {boolean} devModeControlledByPolicy true if the indicator
+     *     should be showing.
+     * @private
+     */
+    updateDevToggleControlledIndicator_: function(devModeControlledByPolicy) {
+      var controlledIndicator = document.querySelector(
+          '#dev-toggle .controlled-setting-indicator');
+
+      if (!(controlledIndicator instanceof cr.ui.ControlledIndicator))
+        cr.ui.ControlledIndicator.decorate(controlledIndicator);
+
+      // We control the visibility of the ControlledIndicator by setting or
+      // removing the 'controlled-by' attribute (see controlled_indicator.css).
+      var isVisible = controlledIndicator.getAttribute('controlled-by');
+      if (devModeControlledByPolicy && !isVisible) {
+        var controlledBy = 'policy';
+        controlledIndicator.setAttribute(
+           'controlled-by', controlledBy);
+        controlledIndicator.setAttribute(
+            'text' + controlledBy,
+            loadTimeData.getString('extensionControlledSettingPolicy'));
+      } else if (!devModeControlledByPolicy && isVisible) {
+        // This hides the element - see above.
+        controlledIndicator.removeAttribute('controlled-by');
+      }
     },
 
     /**
