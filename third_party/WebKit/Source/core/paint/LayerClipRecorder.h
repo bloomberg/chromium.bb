@@ -46,7 +46,7 @@ class CORE_EXPORT LayerClipRecorder {
       const LayoutBoxModelObject&,
       DisplayItem::Type,
       const ClipRect&,
-      const PaintLayer* clipRoot,
+      const PaintLayerPaintingInfo* localPaintingInfo,
       const LayoutPoint& fragmentOffset,
       PaintLayerFlags,
       BorderRadiusClippingRule = IncludeSelfForBorderRadius);
@@ -55,7 +55,7 @@ class CORE_EXPORT LayerClipRecorder {
 
  private:
   void collectRoundedRectClips(PaintLayer&,
-                               const PaintLayer* clipRoot,
+                               const PaintLayerPaintingInfo& localPaintingInfo,
                                GraphicsContext&,
                                const LayoutPoint& fragmentOffset,
                                PaintLayerFlags,

@@ -738,8 +738,6 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
       paintingPhasesJSON->pushString("GraphicsLayerPaintMask");
     if (m_paintingPhase & GraphicsLayerPaintChildClippingMask)
       paintingPhasesJSON->pushString("GraphicsLayerPaintChildClippingMask");
-    if (m_paintingPhase & GraphicsLayerPaintAncestorClippingMask)
-      paintingPhasesJSON->pushString("GraphicsLayerPaintAncestorClippingMask");
     if (m_paintingPhase & GraphicsLayerPaintOverflowContents)
       paintingPhasesJSON->pushString("GraphicsLayerPaintOverflowContents");
     if (m_paintingPhase & GraphicsLayerPaintCompositedScroll)

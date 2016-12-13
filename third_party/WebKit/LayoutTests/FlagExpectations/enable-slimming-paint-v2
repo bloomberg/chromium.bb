@@ -2159,9 +2159,6 @@ Bug(none) fast/overflow/003.xml [ Failure ]
 Bug(none) fast/overflow/overflow-float-stacking.html [ Failure ]
 Bug(none) fast/overflow/overflow-stacking.html [ Failure ]
 
-# Need to write SPv2 version of this code.
-crbug.com/157218 compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
-
 # Notes about rebaselined tests:
 #
 # Rebaselined for small pixel differences.

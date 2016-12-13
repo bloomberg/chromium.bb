@@ -43,8 +43,7 @@ enum GraphicsLayerPaintingPhaseFlags {
   GraphicsLayerPaintOverflowContents = (1 << 3),
   GraphicsLayerPaintCompositedScroll = (1 << 4),
   GraphicsLayerPaintChildClippingMask = (1 << 5),
-  GraphicsLayerPaintAncestorClippingMask = (1 << 6),
-  GraphicsLayerPaintDecoration = (1 << 7),
+  GraphicsLayerPaintDecoration = (1 << 6),
   GraphicsLayerPaintAllWithOverflowClip =
       (GraphicsLayerPaintBackground | GraphicsLayerPaintForeground |
        GraphicsLayerPaintMask |

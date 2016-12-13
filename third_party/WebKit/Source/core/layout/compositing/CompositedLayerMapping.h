@@ -117,10 +117,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
     return m_ancestorClippingLayer.get();
   }
 
-  GraphicsLayer* ancestorClippingMaskLayer() const {
-    return m_ancestorClippingMaskLayer.get();
-  }
-
   GraphicsLayer* foregroundLayer() const { return m_foregroundLayer.get(); }
 
   GraphicsLayer* backgroundLayer() const { return m_backgroundLayer.get(); }
@@ -387,9 +383,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void updateInternalHierarchy();
   void updatePaintingPhases();
   bool updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip);
-  bool updateClippingLayers(bool needsAncestorClip,
-                            bool needsAncestorClippingMask,
-                            bool needsDescendantClip);
   bool updateChildTransformLayer(bool needsChildTransformLayer);
   bool updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer,
                                     bool needsVerticalScrollbarLayer,
@@ -484,16 +477,10 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const GraphicsLayerPaintInfo&,
       const Vector<GraphicsLayerPaintInfo>& layers);
 
-  // Return true in |owningLayerIsClipped| iff |m_owningLayer|'s compositing
-  // ancestor is not a descendant (inclusive) of the clipping container for
-  // |m_owningLayer|. Return true in |owningLayerIsMasked| iff
-  // |owningLayerIsClipped| is true and |m_owningLayer|'s compositing ancestor
-  // is not a descendant (inclusive) of a container that applies a mask for
-  // |m_owningLayer|.
-  void owningLayerClippedOrMaskedByLayerNotAboveCompositedAncestor(
-      const PaintLayer* scrollParent,
-      bool& owningLayerIsClipped,
-      bool& owningLayerIsMasked);
+  // Return true if |m_owningLayer|'s compositing ancestor is not a descendant
+  // (inclusive) of the clipping container for |m_owningLayer|.
+  bool owningLayerClippedByLayerNotAboveCompositedAncestor(
+      const PaintLayer* scrollParent);
 
   const PaintLayer* scrollParent();
 
@@ -542,20 +529,9 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // In this case B is clipped by another layer that doesn't happen to be its
   // ancestor: A.  So we create an ancestor clipping layer for B, [+], which
   // ensures that B is clipped as if it had been A's descendant.
-  // In addition, the m_ancestorClippingLayer will have an associated
-  // mask layer if the ancestor, A, has a border radius that requires a
-  // rounded corner clip rect. The mask is not part of the layer tree; rather
-  // it is attached to the m_ancestorClippingLayer itself.
-  //
-  // Layers that require a CSS mask also have a mask layer attached to them.
 
   // Only used if we are clipped by an ancestor which is not a stacking context.
   std::unique_ptr<GraphicsLayer> m_ancestorClippingLayer;
-
-  // Only used is there is an m_ancestorClippingLayer that also needs to apply
-  // a clipping mask (for CSS clips or border radius).
-  std::unique_ptr<GraphicsLayer> m_ancestorClippingMaskLayer;
-
   std::unique_ptr<GraphicsLayer> m_graphicsLayer;
 
   // Only used if we have clipping on a stacking context with compositing
