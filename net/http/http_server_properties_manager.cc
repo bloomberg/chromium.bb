@@ -100,7 +100,7 @@ void HttpServerPropertiesManager::InitializeOnNetworkThread() {
   http_server_properties_impl_.reset(new HttpServerPropertiesImpl());
 
   network_prefs_update_timer_.reset(new base::OneShotTimer);
-
+  network_prefs_update_timer_->SetTaskRunner(network_task_runner_);
   pref_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread,
