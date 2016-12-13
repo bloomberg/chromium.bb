@@ -48,6 +48,11 @@ public class GestureStateListener {
     public void onScrollEnded(int scrollOffsetY, int scrollExtentY) {}
 
     /*
+     * Called when the min or max scale factor may have been changed.
+     */
+    public void onScaleLimitsChanged(float minPageScaleFactor, float maxPageScaleFactor) {}
+
+    /*
      * Called when the scroll offsets or extents may have changed.
      */
     public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {}

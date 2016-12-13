@@ -98,16 +98,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     // produce little visible difference.
     private static final float ZOOM_CONTROLS_EPSILON = 0.007f;
 
-    private static final ZoomControlsDelegate NO_OP_ZOOM_CONTROLS_DELEGATE =
-            new ZoomControlsDelegate() {
-        @Override
-        public void invokeZoomPicker() {}
-        @Override
-        public void dismissZoomPicker() {}
-        @Override
-        public void updateZoomControls() {}
-    };
-
     // If the embedder adds a JavaScript interface object that contains an indirect reference to
     // the ContentViewCore, then storing a strong ref to the interface object on the native
     // side would prevent garbage collection of the ContentViewCore (as that strong ref would
@@ -276,26 +266,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     }
 
     /**
-     * An interface for controlling visibility and state of embedder-provided zoom controls.
-     */
-    public interface ZoomControlsDelegate {
-        /**
-         * Called when it's reasonable to show zoom controls.
-         */
-        void invokeZoomPicker();
-
-        /**
-         * Called when zoom controls need to be hidden (e.g. when the view hides).
-         */
-        void dismissZoomPicker();
-
-        /**
-         * Called when page scale has been changed, so the controls can update their state.
-         */
-        void updateZoomControls();
-    }
-
-    /**
      * An interface that allows the embedder to be notified when the results of
      * extractSmartClipData are available.
      */
@@ -318,7 +288,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private boolean mAttachedToWindow;
     private final ObserverList<GestureStateListener> mGestureStateListeners;
     private final RewindableIterator<GestureStateListener> mGestureStateListenersIterator;
-    private ZoomControlsDelegate mZoomControlsDelegate;
 
     private PopupZoomer mPopupZoomer;
     private SelectPopup mSelectPopup;
@@ -623,8 +592,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         long windowNativePointer = windowAndroid.getNativePointer();
         assert windowNativePointer != 0;
 
-        mZoomControlsDelegate = NO_OP_ZOOM_CONTROLS_DELEGATE;
-
         final float dipScale = windowAndroid.getDisplay().getDipScale();
 
         mRenderCoordinates.reset();
@@ -836,7 +803,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mWebContentsObserver.destroy();
         mWebContentsObserver = null;
         setSmartClipDataListener(null);
-        setZoomControlsDelegate(null);
         mImeAdapter.resetAndHideKeyboard();
         // TODO(igsolla): address TODO in ContentViewClient because ContentViewClient is not
         // currently a real Null Object.
@@ -1177,14 +1143,12 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private void onScrollBeginEventAck() {
         setTouchScrollInProgress(true);
         hidePastePopup();
-        mZoomControlsDelegate.invokeZoomPicker();
         updateGestureStateListener(GestureEventType.SCROLL_START);
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void onScrollUpdateGestureConsumed() {
-        mZoomControlsDelegate.invokeZoomPicker();
         for (mGestureStateListenersIterator.rewind();
                 mGestureStateListenersIterator.hasNext();) {
             mGestureStateListenersIterator.next().onScrollUpdateGestureConsumed();
@@ -1420,7 +1384,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mAttachedToWindow = false;
         mImeAdapter.onViewDetachedFromWindow();
         mJoystickScrollProvider.onViewDetachedFromWindow();
-        mZoomControlsDelegate.dismissZoomPicker();
         removeDisplayAndroidObserver();
         GamepadList.onDetachedFromWindow();
         mAccessibilityManager.removeAccessibilityStateChangeListener(this);
@@ -1432,15 +1395,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         // locking and app switching.
         updateTextSelectionUI(false);
         mSystemCaptioningBridge.removeListener(this);
-    }
-
-    /**
-     * @see View#onVisibilityChanged(android.view.View, int)
-     */
-    public void onVisibilityChanged(View changedView, int visibility) {
-        if (visibility != View.VISIBLE) {
-            mZoomControlsDelegate.dismissZoomPicker();
-        }
     }
 
     /**
@@ -1836,14 +1790,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         if (!mPopupZoomer.isShowing()) mPopupZoomer.setLastTouch(xPix, yPix);
     }
 
-    public void setZoomControlsDelegate(ZoomControlsDelegate zoomControlsDelegate) {
-        if (zoomControlsDelegate == null) {
-            mZoomControlsDelegate = NO_OP_ZOOM_CONTROLS_DELEGATE;
-            return;
-        }
-        mZoomControlsDelegate = zoomControlsDelegate;
-    }
-
     public void updateMultiTouchZoomSupport(boolean supportsMultiTouchZoom) {
         if (mNativeContentViewCore == 0) return;
         nativeSetMultiTouchZoomSupportEnabled(mNativeContentViewCore, supportsMultiTouchZoom);
@@ -1946,7 +1892,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                 .getContentOffsetYPixBottom()) != 0;
 
         final boolean needHidePopupZoomer = contentSizeChanged || scrollChanged;
-        final boolean needUpdateZoomControls = scaleLimitsChanged || scrollChanged;
 
         if (needHidePopupZoomer) mPopupZoomer.hide(true);
 
@@ -1974,7 +1919,13 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             }
         }
 
-        if (needUpdateZoomControls) mZoomControlsDelegate.updateZoomControls();
+        if (scaleLimitsChanged) {
+            for (mGestureStateListenersIterator.rewind();
+                    mGestureStateListenersIterator.hasNext();) {
+                mGestureStateListenersIterator.next().onScaleLimitsChanged(
+                        minPageScaleFactor, maxPageScaleFactor);
+            }
+        }
 
         if (topBarChanged) {
             float topBarTranslate = topBarShownPix - browserControlsHeightDp * deviceScale;
@@ -2330,13 +2281,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         if (mNativeContentViewCore == 0) return false;
         nativePinchEnd(mNativeContentViewCore, SystemClock.uptimeMillis());
         return true;
-    }
-
-    /**
-     * Invokes the graphical zoom picker widget for this ContentView.
-     */
-    public void invokeZoomPicker() {
-        mZoomControlsDelegate.invokeZoomPicker();
     }
 
     /**

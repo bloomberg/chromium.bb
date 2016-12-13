@@ -11,9 +11,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ZoomButtonsController;
 
-import org.chromium.content.browser.ContentViewCore.ZoomControlsDelegate;
-
-class AwZoomControls implements ZoomControlsDelegate {
+class AwZoomControls {
 
     private AwContents mAwContents;
     // It is advised to use getZoomController() where possible.
@@ -23,7 +21,6 @@ class AwZoomControls implements ZoomControlsDelegate {
         mAwContents = awContents;
     }
 
-    @Override
     public void invokeZoomPicker() {
         ZoomButtonsController zoomController = getZoomController();
         if (zoomController != null) {
@@ -31,7 +28,6 @@ class AwZoomControls implements ZoomControlsDelegate {
         }
     }
 
-    @Override
     public void dismissZoomPicker() {
         ZoomButtonsController zoomController = getZoomController();
         if (zoomController != null) {
@@ -39,7 +35,6 @@ class AwZoomControls implements ZoomControlsDelegate {
         }
     }
 
-    @Override
     public void updateZoomControls() {
         ZoomButtonsController zoomController = getZoomController();
         if (zoomController == null) {

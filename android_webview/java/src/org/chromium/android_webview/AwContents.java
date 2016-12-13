@@ -633,6 +633,22 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
         @Override
         public void onScrollUpdateGestureConsumed() {
             mScrollAccessibilityHelper.postViewScrolledAccessibilityEventCallback();
+            mZoomControls.invokeZoomPicker();
+        }
+
+        @Override
+        public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
+            mZoomControls.invokeZoomPicker();
+        }
+
+        @Override
+        public void onScaleLimitsChanged(float minPageScaleFactor, float maxPageScaleFactor) {
+            mZoomControls.invokeZoomPicker();
+        }
+
+        @Override
+        public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {
+            mZoomControls.updateZoomControls();
         }
     }
 
@@ -793,14 +809,12 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
             Context context, ViewAndroidDelegate viewDelegate,
             InternalAccessDelegate internalDispatcher, WebContents webContents,
             GestureStateListener gestureStateListener, ContentViewClient contentViewClient,
-            ContentViewCore.ZoomControlsDelegate zoomControlsDelegate,
             WindowAndroid windowAndroid) {
         contentViewCore.initialize(viewDelegate, internalDispatcher, webContents, windowAndroid);
         contentViewCore.setActionModeCallback(
                 new AwActionModeCallback(this, contentViewCore.getActionModeCallbackHelper()));
         contentViewCore.addGestureStateListener(gestureStateListener);
         contentViewCore.setContentViewClient(contentViewClient);
-        contentViewCore.setZoomControlsDelegate(zoomControlsDelegate);
     }
 
     boolean isFullScreen() {
@@ -1040,7 +1054,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
                 mContentViewCore.getRenderCoordinates());
         initializeContentViewCore(mContentViewCore, mContext, mViewAndroidDelegate,
                 mInternalAccessAdapter, webContents, new AwGestureStateListener(),
-                mContentViewClient, mZoomControls, mWindowAndroid.getWindowAndroid());
+                mContentViewClient, mWindowAndroid.getWindowAndroid());
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);
         mWebContents = mContentViewCore.getWebContents();
@@ -2170,7 +2184,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
      */
     public void invokeZoomPicker() {
         if (TRACE) Log.i(TAG, "%s invokeZoomPicker", this);
-        if (!isDestroyed(WARN)) mContentViewCore.invokeZoomPicker();
+        if (!isDestroyed(WARN)) mZoomControls.invokeZoomPicker();
     }
 
     /**
@@ -3162,6 +3176,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
             }
 
             mScrollAccessibilityHelper.removePostedCallbacks();
+            mZoomControls.dismissZoomPicker();
         }
 
         @Override

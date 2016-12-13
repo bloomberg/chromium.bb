@@ -288,12 +288,6 @@ public class ContentView extends FrameLayout
         mContentViewCore.onDetachedFromWindow();
     }
 
-    @Override
-    protected void onVisibilityChanged(View changedView, int visibility) {
-        super.onVisibilityChanged(changedView, visibility);
-        mContentViewCore.onVisibilityChanged(changedView, visibility);
-    }
-
     // Implements SmartClipProvider
     @Override
     public void extractSmartClipData(int x, int y, int width, int height) {
