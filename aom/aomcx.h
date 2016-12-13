@@ -145,13 +145,6 @@ enum aome_enc_control_id {
    */
   AOME_SET_ENABLEAUTOALTREF,
 
-#if CONFIG_EXT_REFS
-  /*!\brief Codec control function to enable automatic set and use
-   * bwd-pred frames.
-   */
-  AOME_SET_ENABLEAUTOBWDREF,
-#endif  // CONFIG_EXT_REFS
-
   /*!\brief Codec control function to set sharpness.
    */
   AOME_SET_SHARPNESS = AOME_SET_ENABLEAUTOALTREF + 2,
@@ -244,61 +237,6 @@ enum aome_enc_control_id {
    *  By default, encoder operates in normal coding mode (maybe lossy).
    */
   AV1E_SET_LOSSLESS = AV1E_SET_GF_CBR_BOOST_PCT + 2,
-#if CONFIG_AOM_QM
-  /*!\brief Codec control function to encode with quantisation matrices.
-   *
-   * AOM can operate with default quantisation matrices dependent on
-   * quantisation level and block type.
-   *                          0 = do not use quantisation matrices
-   *                          1 = use quantisation matrices
-   *
-   *  By default, the encoder operates without quantisation matrices.
-   */
-
-  AV1E_SET_ENABLE_QM,
-
-  /*!\brief Codec control function to set the min quant matrix flatness.
-   *
-   * AOM can operate with different ranges of quantisation matrices.
-   * As quantisation levels increase, the matrices get flatter. This
-   * control sets the minimum level of flatness from which the matrices
-   * are determined.
-   *
-   *  By default, the encoder sets this minimum at half the available
-   *  range.
-   */
-  AV1E_SET_QM_MIN,
-
-  /*!\brief Codec control function to set the max quant matrix flatness.
-   *
-   * AOM can operate with different ranges of quantisation matrices.
-   * As quantisation levels increase, the matrices get flatter. This
-   * control sets the maximum level of flatness possible.
-   *
-   * By default, the encoder sets this maximum at the top of the
-   * available range.
-   */
-  AV1E_SET_QM_MAX,
-#endif
-
-#if CONFIG_TILE_GROUPS
-  /*!\brief Codec control function to set a maximum number of tile groups.
-   *
-   * This will set the maximum number of tile groups. This will be
-   * overridden if an MTU size is set. The default value is 1.
-   */
-  AV1E_SET_NUM_TG,
-
-  /*!\brief Codec control function to set an MTU size for a tile group.
-   *
-   * This will set the maximum number of bytes in a tile group. This can be
-   * exceeded only if a single tile is larger than this amount.
-   *
-   * By default, the value is 0, in which case a fixed number of tile groups
-   * is used.
-   */
-  AV1E_SET_MTU,
-#endif
 
   /*!\brief Codec control function to set number of tile columns.
    *
@@ -445,8 +383,78 @@ enum aome_enc_control_id {
    *
    * By default, the superblock size is determined separately for each
    * frame by the encoder.
+   *
+   * Experiment: EXT_PARTITION
    */
   AV1E_SET_SUPERBLOCK_SIZE,
+
+  /*!\brief Codec control function to enable automatic set and use
+   * bwd-pred frames.
+   *
+   * Experiment: EXT_REFS
+   */
+  AOME_SET_ENABLEAUTOBWDREF,
+
+  /*!\brief Codec control function to encode with quantisation matrices.
+   *
+   * AOM can operate with default quantisation matrices dependent on
+   * quantisation level and block type.
+   *                          0 = do not use quantisation matrices
+   *                          1 = use quantisation matrices
+   *
+   *  By default, the encoder operates without quantisation matrices.
+   *
+   * Experiment: AOM_QM
+   */
+  AV1E_SET_ENABLE_QM,
+
+  /*!\brief Codec control function to set the min quant matrix flatness.
+   *
+   * AOM can operate with different ranges of quantisation matrices.
+   * As quantisation levels increase, the matrices get flatter. This
+   * control sets the minimum level of flatness from which the matrices
+   * are determined.
+   *
+   *  By default, the encoder sets this minimum at half the available
+   *  range.
+   *
+   * Experiment: AOM_QM
+   */
+  AV1E_SET_QM_MIN,
+
+  /*!\brief Codec control function to set the max quant matrix flatness.
+   *
+   * AOM can operate with different ranges of quantisation matrices.
+   * As quantisation levels increase, the matrices get flatter. This
+   * control sets the maximum level of flatness possible.
+   *
+   * By default, the encoder sets this maximum at the top of the
+   * available range.
+   *
+   * Experiment: AOM_QM
+   */
+  AV1E_SET_QM_MAX,
+
+  /*!\brief Codec control function to set a maximum number of tile groups.
+   *
+   * This will set the maximum number of tile groups. This will be
+   * overridden if an MTU size is set. The default value is 1.
+   *
+   * Experiment: TILE_GROUPS
+   */
+  AV1E_SET_NUM_TG,
+
+  /*!\brief Codec control function to set an MTU size for a tile group.
+   *
+   * This will set the maximum number of bytes in a tile group. This can be
+   * exceeded only if a single tile is larger than this amount.
+   *
+   * By default, the value is 0, in which case a fixed number of tile groups
+   * is used.
+   *
+   * Experiment: TILE_GROUPS
+   */
+  AV1E_SET_MTU,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -539,10 +547,8 @@ AOM_CTRL_USE_TYPE(AOME_SET_CPUUSED, int)
 AOM_CTRL_USE_TYPE(AOME_SET_ENABLEAUTOALTREF, unsigned int)
 #define AOM_CTRL_AOME_SET_ENABLEAUTOALTREF
 
-#if CONFIG_EXT_REFS
 AOM_CTRL_USE_TYPE(AOME_SET_ENABLEAUTOBWDREF, unsigned int)
 #define AOM_CTRL_AOME_SET_ENABLEAUTOBWDREF
-#endif  // CONFIG_EXT_REFS
 
 AOM_CTRL_USE_TYPE(AOME_SET_SHARPNESS, unsigned int)
 #define AOM_CTRL_AOME_SET_SHARPNESS
@@ -579,7 +585,6 @@ AOM_CTRL_USE_TYPE(AV1E_SET_GF_CBR_BOOST_PCT, unsigned int)
 AOM_CTRL_USE_TYPE(AV1E_SET_LOSSLESS, unsigned int)
 #define AOM_CTRL_AV1E_SET_LOSSLESS
 
-#if CONFIG_AOM_QM
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_QM, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_QM
 
@@ -588,14 +593,11 @@ AOM_CTRL_USE_TYPE(AV1E_SET_QM_MIN, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_QM_MAX, unsigned int)
 #define AOM_CTRL_AV1E_SET_QM_MAX
-#endif
 
-#if CONFIG_TILE_GROUPS
 AOM_CTRL_USE_TYPE(AV1E_SET_NUM_TG, unsigned int)
 #define AOM_CTRL_AV1E_SET_NUM_TG
 AOM_CTRL_USE_TYPE(AV1E_SET_MTU, unsigned int)
 #define AOM_CTRL_AV1E_SET_MTU
-#endif
 
 AOM_CTRL_USE_TYPE(AV1E_SET_FRAME_PARALLEL_DECODING, unsigned int)
 #define AOM_CTRL_AV1E_SET_FRAME_PARALLEL_DECODING
