@@ -201,6 +201,13 @@ void RecordDailyContentLengthHistograms(
       percent_savings_via_data_reduction_proxy);
 }
 
+void RecordSavingsClearedNegativeClockMetric(int days_since_last_update) {
+  // Data savings are cleared if the system clock moved back by more than
+  // one day.
+  UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.SavingsCleared.NegativeSystemClock",
+                        days_since_last_update < -1);
+}
+
 }  // namespace
 
 class DataReductionProxyCompressionStats::DailyContentLengthUpdate {
@@ -923,6 +930,8 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
           "Net.DailyContentLength_ViaDataReductionProxy_UnknownMime");
     }
 
+    RecordSavingsClearedNegativeClockMetric(days_since_last_update);
+
     // The system may go backwards in time by up to a day for legitimate
     // reasons, such as with changes to the time zone. In such cases, we
     // keep adding to the current day which is why we check for
@@ -930,6 +939,11 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
     // Note: we accept the fact that some reported data is shifted to
     // the adjacent day if users travel back and forth across time zones.
     if (days_since_last_update && (days_since_last_update != -1)) {
+      if (days_since_last_update < -1) {
+        pref_service_->SetInt64(
+            prefs::kDataReductionProxySavingsClearedNegativeSystemClock,
+            now.ToInternalValue());
+      }
       SetInt64(data_reduction_proxy::prefs::
                    kDailyHttpOriginalContentLengthApplication,
                0);

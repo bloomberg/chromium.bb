@@ -21,6 +21,8 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
 
   registry->RegisterInt64Pref(prefs::kDataReductionProxyLastEnabledTime, 0L);
+  registry->RegisterInt64Pref(
+      prefs::kDataReductionProxySavingsClearedNegativeSystemClock, 0);
 
   registry->RegisterBooleanPref(prefs::kDataUsageReportingEnabled, false);
 
@@ -108,7 +110,8 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDataReductionProxy, std::string());
   registry->RegisterInt64Pref(prefs::kDataReductionProxyLastEnabledTime, 0L);
   registry->RegisterInt64Pref(
-      prefs::kHttpReceivedContentLength, 0);
+      prefs::kDataReductionProxySavingsClearedNegativeSystemClock, 0);
+  registry->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
   registry->RegisterInt64Pref(
       prefs::kHttpOriginalContentLength, 0);
   registry->RegisterListPref(

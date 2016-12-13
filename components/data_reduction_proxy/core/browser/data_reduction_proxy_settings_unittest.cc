@@ -731,6 +731,32 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledExistingUser) {
                    prefs::kDataReductionProxyLastEnabledTime));
 }
 
+TEST_F(DataReductionProxySettingsTest, TestDaysSinceSavingsCleared) {
+  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
+  base::SimpleTestClock* clock_ptr = clock.get();
+  clock_ptr->Advance(base::TimeDelta::FromDays(1));
+  ResetSettings(std::move(clock), true, true, false, false);
+
+  InitPrefMembers();
+  base::HistogramTester histogram_tester;
+  test_context_->pref_service()->SetInt64(
+      prefs::kDataReductionProxySavingsClearedNegativeSystemClock,
+      clock_ptr->Now().ToInternalValue());
+
+  settings_->data_reduction_proxy_service_->SetIOData(
+      test_context_->io_data()->GetWeakPtr());
+  test_context_->RunUntilIdle();
+
+  clock_ptr->Advance(base::TimeDelta::FromDays(100));
+
+  // Simulate Chromium startup with data reduction proxy already enabled.
+  settings_->spdy_proxy_auth_enabled_.SetValue(true);
+  settings_->MaybeActivateDataReductionProxy(true /* at_startup */);
+  test_context_->RunUntilIdle();
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.DaysSinceSavingsCleared.NegativeSystemClock", 100, 1);
+}
+
 TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {
   ContentLengthList result =
       settings_->GetDailyContentLengths(prefs::kDailyHttpOriginalContentLength);

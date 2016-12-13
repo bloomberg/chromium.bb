@@ -270,6 +270,8 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver,
                            TestDaysSinceEnabledWithTestClock);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestDaysSinceEnabledExistingUser);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           TestDaysSinceSavingsCleared);
 
   // Override of DataReductionProxyService::Observer.
   void OnServiceInitialized() override;
