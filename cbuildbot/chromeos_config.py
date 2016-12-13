@@ -2167,6 +2167,7 @@ def CqBuilders(site_config, ge_build_config):
   # Jetstream devices run unique hw tests
   _paladin_jetstream_hwtest_boards = frozenset([
       'whirlwind',
+      'gale',
   ])
 
   _paladin_moblab_hwtest_boards = frozenset([
@@ -3152,6 +3153,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       },
 
       'whirlwind-release': {
+          'dev_installer_prebuilts':True,
+      },
+
+      'gale-release': {
           'dev_installer_prebuilts':True,
       },
 
