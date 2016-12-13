@@ -22,6 +22,8 @@ source_set("test_support") {
   sources = [
     "cast_metrics_test_helper.cc",
     "cast_metrics_test_helper.h",
+    "mock_cast_metrics_helper.cc",
+    "mock_cast_metrics_helper.h",
   ]
 
   public_deps = [
@@ -30,5 +32,6 @@ source_set("test_support") {
 
   deps = [
     "//base",
+    "//testing/gmock",
   ]
 }
