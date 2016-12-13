@@ -60,8 +60,8 @@ void PlatformNotificationContextImpl::Initialize() {
     std::set<std::string> displayed_notifications;
 
     bool notification_synchronization_supported =
-        service->GetDisplayedPersistentNotifications(browser_context_,
-                                                     &displayed_notifications);
+        service->GetDisplayedNotifications(browser_context_,
+                                           &displayed_notifications);
 
     // Synchronize the notifications stored in the database with the set of
     // displaying notifications in |displayed_notifications|. This is necessary
@@ -182,25 +182,66 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
 }
 
 void PlatformNotificationContextImpl::
+    SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
+        const GURL& origin,
+        int64_t service_worker_registration_id,
+        const ReadAllResultCallback& callback,
+        std::unique_ptr<std::set<std::string>> notification_ids,
+        bool sync_supported) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  LazyInitialize(
+      base::Bind(&PlatformNotificationContextImpl::
+                     DoReadAllNotificationDataForServiceWorkerRegistration,
+                 this, origin, service_worker_registration_id, callback,
+                 base::Passed(&notification_ids), sync_supported),
+      base::Bind(callback, false /* success */,
+                 std::vector<NotificationDatabaseData>()));
+}
+
+void PlatformNotificationContextImpl::
     ReadAllNotificationDataForServiceWorkerRegistration(
         const GURL& origin,
         int64_t service_worker_registration_id,
         const ReadAllResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  LazyInitialize(
-      base::Bind(&PlatformNotificationContextImpl::
-                     DoReadAllNotificationDataForServiceWorkerRegistration,
-                 this, origin, service_worker_registration_id, callback),
-      base::Bind(callback, false /* success */,
-                 std::vector<NotificationDatabaseData>()));
+
+  std::unique_ptr<std::set<std::string>> notification_ids =
+      base::MakeUnique<std::set<std::string>>();
+
+  PlatformNotificationService* service =
+      GetContentClient()->browser()->GetPlatformNotificationService();
+
+  if (!service) {
+    // Rely on the database only
+    SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
+        origin, service_worker_registration_id, callback,
+        std::move(notification_ids), false /* sync_supported */);
+    return;
+  }
+
+  std::set<std::string>* notification_ids_ptr = notification_ids.get();
+
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PlatformNotificationService::GetDisplayedNotifications,
+                 base::Unretained(service), browser_context_,
+                 notification_ids_ptr),
+      base::Bind(
+          &PlatformNotificationContextImpl::
+              SynchronizeDisplayedNotificationsForServiceWorkerRegistration,
+          this, origin, service_worker_registration_id, callback,
+          base::Passed(&notification_ids)));
 }
 
 void PlatformNotificationContextImpl::
     DoReadAllNotificationDataForServiceWorkerRegistration(
         const GURL& origin,
         int64_t service_worker_registration_id,
-        const ReadAllResultCallback& callback) {
+        const ReadAllResultCallback& callback,
+        std::unique_ptr<std::set<std::string>> displayed_notifications,
+        bool synchronization_supported) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(displayed_notifications);
 
   std::vector<NotificationDatabaseData> notification_datas;
 
@@ -212,6 +253,22 @@ void PlatformNotificationContextImpl::
                             status, NotificationDatabase::STATUS_COUNT);
 
   if (status == NotificationDatabase::STATUS_OK) {
+    if (synchronization_supported) {
+      // Filter out notifications that are not actually on display anymore.
+      // TODO(miguelg) synchronize the database if there are inconsistencies.
+      for (auto it = notification_datas.begin();
+           it != notification_datas.end();) {
+        // The database is only used for persistent notifications.
+        DCHECK(NotificationIdGenerator::IsPersistentNotification(
+            it->notification_id));
+        if (displayed_notifications->count(it->notification_id)) {
+          ++it;
+        } else {
+          it = notification_datas.erase(it);
+        }
+      }
+    }
+
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(callback, true /* success */, notification_datas));

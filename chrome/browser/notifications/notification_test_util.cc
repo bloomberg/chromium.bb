@@ -37,6 +37,19 @@ void StubNotificationUIManager::SetNotificationAddedCallback(
   notification_added_callback_ = callback;
 }
 
+bool StubNotificationUIManager::SilentDismissById(
+    const std::string& delegate_id,
+    ProfileID profile_id) {
+  auto iter = notifications_.begin();
+  for (; iter != notifications_.end(); ++iter) {
+    if (iter->first.delegate_id() != delegate_id || iter->second != profile_id)
+      continue;
+    notifications_.erase(iter);
+    return true;
+  }
+  return false;
+}
+
 void StubNotificationUIManager::Add(const Notification& notification,
                                     Profile* profile) {
   notifications_.push_back(std::make_pair(

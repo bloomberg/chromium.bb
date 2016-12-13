@@ -83,7 +83,7 @@ void LayoutTestNotificationManager::ClosePersistentNotification(
   persistent_notifications_.erase(notification_id);
 }
 
-bool LayoutTestNotificationManager::GetDisplayedPersistentNotifications(
+bool LayoutTestNotificationManager::GetDisplayedNotifications(
     BrowserContext* browser_context,
     std::set<std::string>* displayed_notifications) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

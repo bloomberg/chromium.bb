@@ -78,10 +78,10 @@ class CONTENT_EXPORT PlatformNotificationService {
       BrowserContext* browser_context,
       const std::string& notification_id) = 0;
 
-  // Writes the ids of all currently displaying persistent notifications for the
+  // Writes the ids of all currently displaying notifications for the
   // given |browser_context| to |displayed_notifications|. Returns whether the
   // platform is able to provide such a set.
-  virtual bool GetDisplayedPersistentNotifications(
+  virtual bool GetDisplayedNotifications(
       BrowserContext* browser_context,
       std::set<std::string>* displayed_notifications) = 0;
 };

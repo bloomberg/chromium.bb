@@ -50,6 +50,12 @@ class StubNotificationUIManager : public NotificationUIManager {
   // added to the Notification UI manager. Will be invoked on the UI thread.
   void SetNotificationAddedCallback(const base::Closure& callback);
 
+  // Emulates clearing a notification from the notification center
+  // without running any of the delegates. This may happen when native
+  // notification centers don't inform us about closed notifications,
+  // for example as a result of a system reboot.
+  bool SilentDismissById(const std::string& delegate_id, ProfileID profile_id);
+
   // NotificationUIManager implementation.
   void Add(const Notification& notification, Profile* profile) override;
   bool Update(const Notification& notification, Profile* profile) override;

@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_NOTIFICATIONS_PLATFORM_NOTIFICATION_CONTEXT_IMPL_H_
 
 #include <stdint.h>
+#include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -126,13 +128,25 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                               const GURL& origin,
                               const ReadResultCallback& callback);
 
+  // Updates the database (and the result callback) based on
+  // |displayed_notifications|
+  // if |sync_supported|. Called on the IO thread.
+  void SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      const ReadAllResultCallback& callback,
+      std::unique_ptr<std::set<std::string>> displayed_notifications,
+      bool sync_supported);
+
   // Actually reads all notification data from the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the
   // IO thread when the operation has completed.
   void DoReadAllNotificationDataForServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const ReadAllResultCallback& callback);
+      const ReadAllResultCallback& callback,
+      std::unique_ptr<std::set<std::string>> displayed_notifications,
+      bool synchronization_supported);
 
   // Actually writes the notification database to the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the

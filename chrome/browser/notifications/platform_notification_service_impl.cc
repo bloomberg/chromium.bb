@@ -361,16 +361,16 @@ void PlatformNotificationServiceImpl::ClosePersistentNotification(
                                                 notification_id);
 }
 
-bool PlatformNotificationServiceImpl::GetDisplayedPersistentNotifications(
+bool PlatformNotificationServiceImpl::GetDisplayedNotifications(
     BrowserContext* browser_context,
     std::set<std::string>* displayed_notifications) {
   DCHECK(displayed_notifications);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (!profile || profile->AsTestingProfile())
     return false;  // Tests will not have a message center.
 
-  // TODO(peter): Filter for persistent notifications only.
   return GetNotificationDisplayService(profile)->GetDisplayed(
       displayed_notifications);
 }

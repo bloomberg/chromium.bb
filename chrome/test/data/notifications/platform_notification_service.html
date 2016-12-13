@@ -21,6 +21,14 @@
         });
       }
 
+      function DisplayNonPersistentNotification(title, options) {
+        const notification = new Notification(title, options || {});
+        notification.addEventListener('show', e =>
+          domAutomationController.send('ok'));
+        notification.addEventListener('error', e =>
+          domAutomationController.send('could not show notification'));
+      }
+
       // Renews the registered Service Worker registration for this page, then
       // displays a notification on the activated ServiceWorkerRegistration.
       function DisplayPersistentNotification(title, options) {
@@ -125,6 +133,29 @@
               type: 'text' }
           ]
         });
+      }
+
+      // Gets a comma separated list of currently displayed notification titles
+      function GetDisplayedNotifications() {
+        GetActivatedServiceWorker('platform_notification_service.js',
+          location.pathname).then(function (sw) {
+            return sw.getNotifications();
+          }).then(function (notifications) {
+            var notificationResult = '';
+            for (var i = 0; i < notifications.length; ++i) {
+              notificationResult = notificationResult.concat(notifications[i].title);
+              if (i < (notifications.length -1))
+                  notificationResult = notificationResult.concat(',');
+            }
+            if (expectingMessage)
+              domAutomationController.send(notificationResult);
+            else
+              messageStack.push(notificationResult);
+
+            domAutomationController.send('ok');
+          }).catch(function (error) {
+            domAutomationController.send('' + error);
+          });
       }
 
       // Returns the latest received message from the worker. If no message has
