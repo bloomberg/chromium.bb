@@ -1211,7 +1211,7 @@ String Document::readyState() const {
   return String();
 }
 
-void Document::setReadyState(ReadyState readyState) {
+void Document::setReadyState(DocumentReadyState readyState) {
   if (readyState == m_readyState)
     return;
 

@@ -674,8 +674,10 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   bool inNoQuirksMode() const { return m_compatibilityMode == NoQuirksMode; }
 
-  enum ReadyState { Loading, Interactive, Complete };
-  void setReadyState(ReadyState);
+  // https://html.spec.whatwg.org/multipage/dom.html#documentreadystate
+  enum DocumentReadyState { Loading, Interactive, Complete };
+
+  void setReadyState(DocumentReadyState);
   bool isLoadCompleted();
 
   enum ParsingState { Parsing, InDOMContentLoaded, FinishedParsing };
@@ -1512,7 +1514,8 @@ class CORE_EXPORT Document : public ContainerNode,
   const Member<VisitedLinkState> m_visitedLinkState;
 
   bool m_visuallyOrdered;
-  ReadyState m_readyState;
+
+  DocumentReadyState m_readyState;
   ParsingState m_parsingState;
 
   bool m_gotoAnchorNeededAfterStylesheetsLoad;
