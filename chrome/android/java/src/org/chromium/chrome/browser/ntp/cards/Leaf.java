@@ -42,6 +42,9 @@ public abstract class Leaf implements TreeNode {
         return 0;
     }
 
+    @Override
+    public void init() {}
+
     /**
      * Display the data for this item.
      * @param holder The view holder that should be updated.

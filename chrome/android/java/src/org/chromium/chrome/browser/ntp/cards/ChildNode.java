@@ -16,6 +16,9 @@ public abstract class ChildNode implements TreeNode {
         mParent = parent;
     }
 
+    @Override
+    public void init() {}
+
     protected void notifyItemRangeChanged(int index, int count) {
         mParent.onItemRangeChanged(this, index, count);
     }

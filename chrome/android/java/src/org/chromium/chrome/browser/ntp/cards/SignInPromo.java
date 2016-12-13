@@ -42,13 +42,24 @@ public class SignInPromo extends OptionalLeaf
     @Nullable
     private final SigninObserver mObserver;
 
-    public SignInPromo(NodeParent parent) {
+    public SignInPromo(NodeParent parent, NewTabPageManager newTabPageManager) {
         super(parent);
         mDismissed = ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
                              .getNewTabPageSigninPromoDismissed();
 
-        final SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
-        mObserver = mDismissed ? null : new SigninObserver(signinManager);
+        SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
+        if (mDismissed) {
+            mObserver = null;
+        } else {
+            mObserver = new SigninObserver(signinManager);
+            newTabPageManager.addDestructionObserver(mObserver);
+        }
+    }
+
+    @Override
+    public void init() {
+        super.init();
+        SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
         setVisible(signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative());
     }
 

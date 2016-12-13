@@ -347,7 +347,9 @@ public class SuggestionsSectionTest {
     }
 
     private SuggestionsSection createSection(SuggestionsCategoryInfo info) {
-        return new SuggestionsSection(mParent, info, mManager, mBridge);
+        SuggestionsSection section = new SuggestionsSection(mParent, mManager, mBridge, info);
+        section.init();
+        return section;
     }
 
     private OfflinePageItem createOfflinePageItem(String url, long offlineId) {

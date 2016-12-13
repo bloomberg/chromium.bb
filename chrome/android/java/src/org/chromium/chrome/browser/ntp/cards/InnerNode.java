@@ -108,4 +108,34 @@ public abstract class InnerNode extends ChildNode implements NodeParent {
     public void onItemRangeRemoved(TreeNode child, int index, int count) {
         notifyItemRangeRemoved(getStartingOffsetForChild(child) + index, count);
     }
+
+    @Override
+    public void init() {
+        super.init();
+        for (TreeNode child : getChildren()) {
+            child.init();
+        }
+    }
+
+    /**
+     * Helper method for adding a new child node. Notifies about the inserted items and initializes
+     * the child.
+     *
+     * @param child The child node to be added.
+     */
+    protected void didAddChild(TreeNode child) {
+        int count = child.getItemCount();
+        if (count > 0) onItemRangeInserted(child, 0, count);
+        child.init();
+    }
+
+    /**
+     * Helper method for removing a child node. Notifies about the removed items.
+     *
+     * @param child The child node to be removed.
+     */
+    protected void willRemoveChild(TreeNode child) {
+        int count = child.getItemCount();
+        if (count > 0) onItemRangeRemoved(child, 0, count);
+    }
 }

@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -20,7 +21,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +32,7 @@ import java.util.List;
 public class InnerNodeTest {
 
     private static final int[] ITEM_COUNTS = {1, 2, 3, 0, 3, 2, 1};
-    private final List<TreeNode> mChildren = Arrays.asList(new TreeNode[ITEM_COUNTS.length]);
+    private final List<TreeNode> mChildren = new ArrayList<>();
     @Mock private NodeParent mParent;
     private InnerNode mInnerNode;
 
@@ -42,7 +43,7 @@ public class InnerNodeTest {
         for (int i = 0; i < ITEM_COUNTS.length; i++) {
             TreeNode child = mock(TreeNode.class);
             when(child.getItemCount()).thenReturn(ITEM_COUNTS[i]);
-            mChildren.set(i, child);
+            mChildren.add(child);
         }
         mInnerNode = new InnerNode(mParent) {
             @Override
@@ -50,6 +51,14 @@ public class InnerNodeTest {
                 return mChildren;
             }
         };
+    }
+
+    @Test
+    public void testInit() {
+        mInnerNode.init();
+        for (TreeNode child : mChildren) {
+            verify(child).init();
+        }
     }
 
     @Test
@@ -100,6 +109,43 @@ public class InnerNodeTest {
         assertThat(mInnerNode.getSuggestionAt(5), is(article2));
         assertThat(mInnerNode.getSuggestionAt(6), is(article3));
         assertThat(mInnerNode.getSuggestionAt(11), is(article4));
+    }
+
+    @Test
+    public void testDidAddChild() {
+        TreeNode child = mock(TreeNode.class);
+        when(child.getItemCount()).thenReturn(23);
+        mChildren.add(3, child);
+        mInnerNode.didAddChild(child);
+
+        // The child should have been initialized and the parent notified about the added items.
+        verify(child).init();
+        verify(mParent).onItemRangeInserted(mInnerNode, 6, 23);
+
+        TreeNode child2 = mock(TreeNode.class);
+        when(child2.getItemCount()).thenReturn(0);
+        mChildren.add(4, child2);
+        mInnerNode.didAddChild(child2);
+        verify(child2).init();
+
+        // The empty child should have been initialized, but there should be no change
+        // notifications.
+        verifyNoMoreInteractions(mParent);
+    }
+
+    @Test
+    public void testWillRemoveChild() {
+        mInnerNode.willRemoveChild(mChildren.get(4));
+        mChildren.remove(4);
+
+        // The parent should have been notified about the removed items.
+        verify(mParent).onItemRangeRemoved(mInnerNode, 6, 3);
+
+        mInnerNode.willRemoveChild(mChildren.get(3));
+        mChildren.remove(3);
+
+        // There should be no change notifications about the empty child.
+        verifyNoMoreInteractions(mParent);
     }
 
     @Test
