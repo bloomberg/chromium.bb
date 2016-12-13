@@ -12,6 +12,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/renderer/api_binding_hooks.h"
+#include "extensions/renderer/api_binding_types.h"
 #include "extensions/renderer/api_event_handler.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/arguments.h"
@@ -23,12 +25,10 @@ namespace {
 
 const char kExtensionAPIPerContextKey[] = "extension_api_binding";
 
-using APISignature = std::vector<std::unique_ptr<ArgumentSpec>>;
-
 // Returns the expected APISignature for a dictionary describing an API method.
-std::unique_ptr<APISignature> GetAPISignature(
+std::unique_ptr<binding::APISignature> GetAPISignature(
     const base::DictionaryValue& dict) {
-  std::unique_ptr<APISignature> signature = base::MakeUnique<APISignature>();
+  auto signature = base::MakeUnique<binding::APISignature>();
   const base::ListValue* params = nullptr;
   CHECK(dict.GetList("parameters", &params));
   signature->reserve(params->GetSize());
@@ -110,7 +110,7 @@ bool ParseCallback(gin::Arguments* arguments,
 
 // Parses |args| against |signature| and populates error with any errors.
 std::unique_ptr<base::ListValue> ParseArguments(
-    const APISignature* signature,
+    const binding::APISignature* signature,
     gin::Arguments* arguments,
     const ArgumentSpec::RefMap& type_refs,
     v8::Local<v8::Function>* callback,
@@ -193,9 +193,11 @@ APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue* type_definitions,
                        const base::ListValue* event_definitions,
                        const APIMethodCallback& callback,
+                       std::unique_ptr<APIBindingHooks> binding_hooks,
                        ArgumentSpec::RefMap* type_refs)
     : api_name_(api_name),
       method_callback_(callback),
+      binding_hooks_(std::move(binding_hooks)),
       type_refs_(type_refs),
       weak_factory_(this) {
   DCHECK(!method_callback_.is_null());
@@ -204,7 +206,7 @@ APIBinding::APIBinding(const std::string& api_name,
     CHECK(func->GetAsDictionary(&func_dict));
     std::string name;
     CHECK(func_dict->GetString("name", &name));
-    std::unique_ptr<APISignature> spec = GetAPISignature(*func_dict);
+    std::unique_ptr<binding::APISignature> spec = GetAPISignature(*func_dict);
     signatures_[name] = std::move(spec);
   }
   if (type_definitions) {
@@ -292,11 +294,22 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
 }
 
 void APIBinding::HandleCall(const std::string& name,
-                            const APISignature* signature,
+                            const binding::APISignature* signature,
                             gin::Arguments* arguments) {
   std::string error;
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
+
+  if (binding_hooks_) {
+    // Check for a custom hook to handle the method.
+    APIBindingHooks::HandleRequestHook handler =
+        binding_hooks_->GetHandleRequest(name);
+    if (!handler.is_null()) {
+      handler.Run(signature, arguments);
+      return;
+    }
+  }
+
   std::unique_ptr<base::ListValue> parsed_arguments;
   v8::Local<v8::Function> callback;
   {

@@ -70,6 +70,15 @@ class APIBindingsSystem {
                           v8::Local<v8::Context> context,
                           const base::ListValue& response);
 
+  // Returns the APIBindingHooks object for the given api to allow for
+  // registering custom hooks. These must be registered *before* the
+  // binding is instantiated.
+  // TODO(devlin): It's a little weird that we don't just expose a
+  // RegisterHooks-type method. Depending on how complex the hook interface
+  // is, maybe we should rethink this. Downside would be that it's less
+  // efficient to register multiple hooks for the same API.
+  APIBindingHooks* GetHooksForAPI(const std::string& api_name);
+
  private:
   // Creates a new APIBinding for the given |api_name|.
   std::unique_ptr<APIBinding> CreateNewAPIBinding(const std::string& api_name);
@@ -94,6 +103,11 @@ class APIBindingsSystem {
   // A map from api_name -> APIBinding for constructed APIs. APIBindings are
   // created lazily.
   std::map<std::string, std::unique_ptr<APIBinding>> api_bindings_;
+
+  // A map from api_name -> APIBindingHooks for registering custom hooks.
+  // TODO(devlin): This map is pretty pointer-y. Is that going to be a
+  // performance concern?
+  std::map<std::string, std::unique_ptr<APIBindingHooks>> binding_hooks_;
 
   // The method to retrieve the DictionaryValue describing a given extension
   // API. Curried in for testing purposes so we can use fake APIs.

@@ -12,8 +12,11 @@
 #include "base/values.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/api_binding.h"
+#include "extensions/renderer/api_binding_hooks.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
+#include "extensions/renderer/api_binding_types.h"
+#include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/try_catch.h"
 
@@ -286,6 +289,54 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
     ValidateLastRequest("beta.simpleFunc", "[2]");
     EXPECT_EQ(-1, last_request()->request_id);
     reset_last_request();
+  }
+}
+
+// Tests adding a custom hook to an API.
+TEST_F(APIBindingsSystemTest, TestCustomHooks) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  bool did_call = false;
+  auto hook = [](bool* did_call, const binding::APISignature* signature,
+                 gin::Arguments* arguments) {
+    *did_call = true;
+    std::string argument;
+    EXPECT_EQ(2, arguments->Length());
+    EXPECT_TRUE(arguments->GetNext(&argument));
+    EXPECT_EQ("foo", argument);
+    v8::Local<v8::Function> function;
+    ASSERT_TRUE(arguments->GetNext(&function));
+    v8::Local<v8::String> response =
+        gin::StringToV8(arguments->isolate(), "bar");
+    v8::Local<v8::Value> response_args[] = {response};
+    RunFunctionOnGlobal(function, arguments->isolate()->GetCurrentContext(),
+                        1, response_args);
+  };
+
+  APIBindingHooks* hooks = bindings_system()->GetHooksForAPI(kAlphaAPIName);
+  ASSERT_TRUE(hooks);
+  hooks->RegisterHandleRequest(
+      "alpha.functionWithCallback",
+      base::Bind(hook, &did_call));
+
+  v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
+      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs));
+  ASSERT_FALSE(alpha_api.IsEmpty());
+
+  {
+    // Test a simple call -> response.
+    const char kTestCall[] =
+        "obj.functionWithCallback('foo', function() {\n"
+        "  this.callbackArguments = Array.from(arguments);\n"
+        "});";
+    CallFunctionOnObject(context, alpha_api, kTestCall);
+    EXPECT_TRUE(did_call);
+
+    std::unique_ptr<base::Value> result = GetBaseValuePropertyFromObject(
+        context->Global(), context, "callbackArguments");
+    ASSERT_TRUE(result);
+    EXPECT_EQ("[\"bar\"]", ValueToString(*result));
   }
 }
 

@@ -8,10 +8,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/renderer/api_binding.h"
+#include "extensions/renderer/api_binding_hooks.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
 #include "extensions/renderer/api_event_handler.h"
 #include "extensions/renderer/api_request_handler.h"
+#include "gin/arguments.h"
 #include "gin/converter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
@@ -194,7 +196,7 @@ TEST_F(APIBindingUnittest, Test) {
   APIBinding binding(
       "test", *functions, nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      &refs);
+      nullptr, &refs);
   EXPECT_TRUE(refs.empty());
 
   v8::HandleScope handle_scope(isolate());
@@ -295,7 +297,7 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
   APIBinding binding(
       "test", *functions, types.get(), nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      &refs);
+      nullptr, &refs);
   EXPECT_EQ(2u, refs.size());
   EXPECT_TRUE(base::ContainsKey(refs, "refObj"));
   EXPECT_TRUE(base::ContainsKey(refs, "refEnum"));
@@ -341,7 +343,7 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
   APIBinding binding(
       "test", *functions, nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      &refs);
+      nullptr, &refs);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -384,7 +386,7 @@ TEST_F(APIBindingUnittest, TestEventCreation) {
   APIBinding binding(
       "test", *functions, nullptr, events.get(),
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      &refs);
+      nullptr, &refs);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -420,7 +422,7 @@ TEST_F(APIBindingUnittest, TestDisposedContext) {
   APIBinding binding(
       "test", *functions, nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      &refs);
+      nullptr, &refs);
   EXPECT_TRUE(refs.empty());
 
   v8::HandleScope handle_scope(isolate());
@@ -439,6 +441,51 @@ TEST_F(APIBindingUnittest, TestDisposedContext) {
   EXPECT_FALSE(HandlerWasInvoked());
   // This test passes if this does not crash, even under AddressSanitizer
   // builds.
+}
+
+// Tests adding custom hooks for an API method.
+TEST_F(APIBindingUnittest, TestCustomHooks) {
+  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+
+  // Register a hook for the test.oneString method.
+  auto hooks = base::MakeUnique<APIBindingHooks>();
+  bool did_call = false;
+  auto hook = [](bool* did_call, const binding::APISignature* signature,
+                 gin::Arguments* arguments) {
+    *did_call = true;
+    EXPECT_EQ(1, arguments->Length());
+    std::string argument;
+    EXPECT_TRUE(arguments->GetNext(&argument));
+    EXPECT_EQ("foo", argument);
+  };
+  hooks->RegisterHandleRequest("test.oneString", base::Bind(hook, &did_call));
+
+  APIBinding binding(
+      "test", *functions, nullptr, nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      std::move(hooks), &refs);
+  EXPECT_TRUE(refs.empty());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+
+  // First try calling the oneString() method, which has a custom hook
+  // installed.
+  v8::Local<v8::Function> func =
+      FunctionFromString(context, "(function(obj) { obj.oneString('foo'); })");
+  v8::Local<v8::Value> args[] = {binding_object};
+  RunFunction(func, context, 1, args);
+  EXPECT_TRUE(did_call);
+
+  // Other methods, like stringAndInt(), should behave normally.
+  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");
 }
 
 }  // namespace extensions

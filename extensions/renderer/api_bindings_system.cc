@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "extensions/renderer/api_binding_hooks.h"
 
 namespace extensions {
 
@@ -47,10 +48,18 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
   const base::ListValue* event_definitions = nullptr;
   api_schema.GetList("events", &event_definitions);
 
+  // Find the hooks for the API, if any exist.
+  std::unique_ptr<APIBindingHooks> hooks;
+  auto iter = binding_hooks_.find(api_name);
+  if (iter != binding_hooks_.end()) {
+    hooks = std::move(iter->second);
+    binding_hooks_.erase(iter);
+  }
+
   return base::MakeUnique<APIBinding>(
       api_name, *function_definitions, type_definitions, event_definitions,
       base::Bind(&APIBindingsSystem::OnAPICall, base::Unretained(this)),
-      &type_reference_map_);
+      std::move(hooks), &type_reference_map_);
 }
 
 void APIBindingsSystem::CompleteRequest(int request_id,
@@ -62,6 +71,16 @@ void APIBindingsSystem::FireEventInContext(const std::string& event_name,
                                            v8::Local<v8::Context> context,
                                            const base::ListValue& response) {
   event_handler_.FireEventInContext(event_name, context, response);
+}
+
+APIBindingHooks* APIBindingsSystem::GetHooksForAPI(
+    const std::string& api_name) {
+  DCHECK(api_bindings_.empty())
+      << "Hook registration must happen before creating any binding instances.";
+  std::unique_ptr<APIBindingHooks>& hooks = binding_hooks_[api_name];
+  if (!hooks)
+    hooks = base::MakeUnique<APIBindingHooks>();
+  return hooks.get();
 }
 
 void APIBindingsSystem::OnAPICall(const std::string& name,

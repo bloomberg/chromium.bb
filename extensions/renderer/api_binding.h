@@ -25,6 +25,7 @@ class Arguments;
 }
 
 namespace extensions {
+class APIBindingHooks;
 class APIEventHandler;
 
 // A class that vends v8::Objects for extension APIs. These APIs have function
@@ -62,6 +63,7 @@ class APIBinding {
              const base::ListValue* type_definitions,
              const base::ListValue* event_definitions,
              const APIMethodCallback& callback,
+             std::unique_ptr<APIBindingHooks> binding_hooks,
              ArgumentSpec::RefMap* type_refs);
   ~APIBinding();
 
@@ -92,6 +94,10 @@ class APIBinding {
 
   // The callback to use when an API is invoked with valid arguments.
   APIMethodCallback method_callback_;
+
+  // The registered hooks for this API. Null if there are no registered custom
+  // hooks.
+  std::unique_ptr<APIBindingHooks> binding_hooks_;
 
   // The reference map for all known types; required to outlive this object.
   const ArgumentSpec::RefMap* type_refs_;
