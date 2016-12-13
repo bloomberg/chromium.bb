@@ -55,6 +55,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/switches.h"
 
 #if defined(USE_AURA)
 #include "content/browser/compositor/mus_browser_compositor_output_surface.h"
@@ -196,6 +197,10 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
 std::unique_ptr<cc::SoftwareOutputDevice>
 GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     ui::Compositor* compositor) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kHeadless))
+    return base::WrapUnique(new cc::SoftwareOutputDevice);
+
 #if defined(USE_AURA)
   if (service_manager::ServiceManagerIsRemote()) {
     NOTREACHED();
@@ -260,6 +265,10 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
 }
 
 static bool ShouldCreateGpuCompositorFrameSink(ui::Compositor* compositor) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kHeadless))
+    return false;
+
 #if defined(OS_CHROMEOS)
   // Software fallback does not happen on Chrome OS.
   return true;

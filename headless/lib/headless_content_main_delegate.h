@@ -10,14 +10,13 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/app/content_main_delegate.h"
+#include "headless/lib/browser/headless_platform_event_source.h"
 #include "headless/lib/headless_content_client.h"
 
 namespace headless {
 
 class HeadlessBrowserImpl;
 class HeadlessContentBrowserClient;
-class HeadlessContentUtilityClient;
-class HeadlessContentRendererClient;
 
 class HeadlessContentMainDelegate : public content::ContentMainDelegate {
  public:
@@ -33,8 +32,6 @@ class HeadlessContentMainDelegate : public content::ContentMainDelegate {
       const content::MainFunctionParams& main_function_params) override;
   void ZygoteForked() override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
-  content::ContentRendererClient* CreateContentRendererClient() override;
-  content::ContentUtilityClient* CreateContentUtilityClient() override;
 
   HeadlessBrowserImpl* browser() const { return browser_.get(); }
 
@@ -46,9 +43,8 @@ class HeadlessContentMainDelegate : public content::ContentMainDelegate {
   static HeadlessContentMainDelegate* GetInstance();
 
   std::unique_ptr<HeadlessContentBrowserClient> browser_client_;
-  std::unique_ptr<HeadlessContentRendererClient> renderer_client_;
-  std::unique_ptr<HeadlessContentUtilityClient> utility_client_;
   HeadlessContentClient content_client_;
+  HeadlessPlatformEventSource platform_event_source_;
 
   std::unique_ptr<HeadlessBrowserImpl> browser_;
 
