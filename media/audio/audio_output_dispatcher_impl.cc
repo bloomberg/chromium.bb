@@ -32,6 +32,12 @@ AudioOutputDispatcherImpl::AudioOutputDispatcherImpl(
       audio_stream_id_(0) {}
 
 AudioOutputDispatcherImpl::~AudioOutputDispatcherImpl() {
+  CHECK(task_runner_->BelongsToCurrentThread());
+
+  // Close all idle streams immediately.  The |close_timer_| will handle
+  // invalidating any outstanding tasks upon its destruction.
+  CloseAllIdleStreams();
+
   // There must be no idle proxy streams.
   CHECK_EQ(idle_proxies_, 0u);
 
@@ -120,24 +126,6 @@ void AudioOutputDispatcherImpl::CloseStream(AudioOutputProxy* stream_proxy) {
   // cycle time when streams are opened and closed repeatedly.
   CloseIdleStreams(std::max(idle_proxies_, static_cast<size_t>(1)));
   close_timer_.Reset();
-}
-
-void AudioOutputDispatcherImpl::Shutdown() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  // Close all idle streams immediately.  The |close_timer_| will handle
-  // invalidating any outstanding tasks upon its destruction.
-  CloseAllIdleStreams();
-
-  // No AudioOutputProxy objects should hold a reference to us when we get
-  // to this stage.
-  DCHECK(HasOneRef()) << "Only the AudioManager should hold a reference";
-
-  LOG_IF(WARNING, idle_proxies_ > 0u) << "Idle proxy streams during shutdown: "
-                                      << idle_proxies_;
-  LOG_IF(WARNING, !proxy_to_physical_map_.empty())
-      << "Active proxy streams during shutdown: "
-      << proxy_to_physical_map_.size();
 }
 
 bool AudioOutputDispatcherImpl::HasOutputProxies() const {

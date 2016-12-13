@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
@@ -37,6 +36,7 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
                        const AudioParameters& output_params,
                        const std::string& output_device_id,
                        const base::TimeDelta& close_delay);
+  ~AudioOutputResampler() override;
 
   // AudioOutputDispatcher interface.
   bool OpenStream() override;
@@ -45,12 +45,8 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   void StopStream(AudioOutputProxy* stream_proxy) override;
   void StreamVolumeSet(AudioOutputProxy* stream_proxy, double volume) override;
   void CloseStream(AudioOutputProxy* stream_proxy) override;
-  void Shutdown() override;
 
  private:
-  friend class base::RefCountedThreadSafe<AudioOutputResampler>;
-  ~AudioOutputResampler() override;
-
   // Converts low latency based output parameters into high latency
   // appropriate output parameters in error situations.
   void SetupFallbackParams();
@@ -62,7 +58,7 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   void Initialize();
 
   // Dispatcher to proxy all AudioOutputDispatcher calls too.
-  scoped_refptr<AudioOutputDispatcherImpl> dispatcher_;
+  std::unique_ptr<AudioOutputDispatcherImpl> dispatcher_;
 
   // Map of outstanding OnMoreDataConverter objects.  A new object is created
   // on every StartStream() call and destroyed on CloseStream().

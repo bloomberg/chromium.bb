@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -49,7 +50,7 @@ struct AudioManagerBase::DispatcherParams {
   const AudioParameters input_params;
   const AudioParameters output_params;
   const std::string output_device_id;
-  scoped_refptr<AudioOutputDispatcher> dispatcher;
+  std::unique_ptr<AudioOutputDispatcher> dispatcher;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DispatcherParams);
@@ -258,20 +259,18 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
 
   const base::TimeDelta kCloseDelay =
       base::TimeDelta::FromSeconds(kStreamCloseDelaySeconds);
-  scoped_refptr<AudioOutputDispatcher> dispatcher;
+  std::unique_ptr<AudioOutputDispatcher> dispatcher;
   if (output_params.format() != AudioParameters::AUDIO_FAKE) {
-    dispatcher = new AudioOutputResampler(this, params, output_params,
-                                          output_device_id,
-                                          kCloseDelay);
+    dispatcher = base::MakeUnique<AudioOutputResampler>(
+        this, params, output_params, output_device_id, kCloseDelay);
   } else {
-    dispatcher = new AudioOutputDispatcherImpl(this, output_params,
-                                               output_device_id,
-                                               kCloseDelay);
+    dispatcher = base::MakeUnique<AudioOutputDispatcherImpl>(
+        this, output_params, output_device_id, kCloseDelay);
   }
 
-  dispatcher_params->dispatcher = dispatcher;
+  dispatcher_params->dispatcher = std::move(dispatcher);
   output_dispatchers_.push_back(dispatcher_params);
-  return new AudioOutputProxy(dispatcher.get());
+  return new AudioOutputProxy(dispatcher_params->dispatcher.get());
 }
 
 void AudioManagerBase::ShowAudioInputSettings() {
@@ -306,11 +305,9 @@ void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
 
 void AudioManagerBase::Shutdown() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+
   // Close all output streams.
-  while (!output_dispatchers_.empty()) {
-    output_dispatchers_.back()->dispatcher->Shutdown();
-    output_dispatchers_.pop_back();
-  }
+  output_dispatchers_.clear();
 
 #if defined(OS_MACOSX)
   // On mac, AudioManager runs on the main thread, loop for which stops

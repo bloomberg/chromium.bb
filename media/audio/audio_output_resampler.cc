@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
@@ -255,7 +256,6 @@ void AudioOutputResampler::Reinitialize() {
   // Log a trace event so we can get feedback in the field when this happens.
   TRACE_EVENT0("audio", "AudioOutputResampler::Reinitialize");
 
-  dispatcher_->Shutdown();
   output_params_ = original_output_params_;
   streams_opened_ = false;
   Initialize();
@@ -264,7 +264,7 @@ void AudioOutputResampler::Reinitialize() {
 void AudioOutputResampler::Initialize() {
   DCHECK(!streams_opened_);
   DCHECK(callbacks_.empty());
-  dispatcher_ = new AudioOutputDispatcherImpl(
+  dispatcher_ = base::MakeUnique<AudioOutputDispatcherImpl>(
       audio_manager_, output_params_, device_id_, close_delay_);
 }
 
@@ -389,17 +389,6 @@ void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
       !output_params_.Equals(original_output_params_)) {
     reinitialize_timer_.Reset();
   }
-}
-
-void AudioOutputResampler::Shutdown() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  // No AudioOutputProxy objects should hold a reference to us when we get
-  // to this stage.
-  DCHECK(HasOneRef()) << "Only the AudioManager should hold a reference";
-
-  dispatcher_->Shutdown();
-  DCHECK(callbacks_.empty());
 }
 
 OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,

@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -174,10 +175,8 @@ class AudioOutputProxyTest : public testing::Test {
   }
 
   virtual void InitDispatcher(base::TimeDelta close_delay) {
-    dispatcher_impl_ = new AudioOutputDispatcherImpl(&manager(),
-                                                     params_,
-                                                     std::string(),
-                                                     close_delay);
+    dispatcher_impl_ = base::MakeUnique<AudioOutputDispatcherImpl>(
+        &manager(), params_, std::string(), close_delay);
   }
 
   virtual void OnStart() {}
@@ -422,7 +421,7 @@ class AudioOutputProxyTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_refptr<AudioOutputDispatcherImpl> dispatcher_impl_;
+  std::unique_ptr<AudioOutputDispatcherImpl> dispatcher_impl_;
   MockAudioManager manager_;
   MockAudioSourceCallback callback_;
   AudioParameters params_;
@@ -439,7 +438,7 @@ class AudioOutputResamplerTest : public AudioOutputProxyTest {
     resampler_params_ = AudioParameters(
         AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
         16000, 16, 1024);
-    resampler_ = new AudioOutputResampler(
+    resampler_ = base::MakeUnique<AudioOutputResampler>(
         &manager(), params_, resampler_params_, std::string(), close_delay);
   }
 
@@ -454,7 +453,7 @@ class AudioOutputResamplerTest : public AudioOutputProxyTest {
 
  protected:
   AudioParameters resampler_params_;
-  scoped_refptr<AudioOutputResampler> resampler_;
+  std::unique_ptr<AudioOutputResampler> resampler_;
 };
 
 TEST_F(AudioOutputProxyTest, CreateAndClose) {

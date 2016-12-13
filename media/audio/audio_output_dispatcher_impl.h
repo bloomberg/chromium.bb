@@ -40,6 +40,7 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
                             const AudioParameters& params,
                             const std::string& output_device_id,
                             const base::TimeDelta& close_delay);
+  ~AudioOutputDispatcherImpl() override;
 
   // Opens a new physical stream if there are no pending streams in
   // |idle_streams_|.  Do not call Close() or Stop() if this method fails.
@@ -61,8 +62,6 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   // kept alive until |close_timer_| fires.
   void CloseStream(AudioOutputProxy* stream_proxy) override;
 
-  void Shutdown() override;
-
   // Returns true if there are any open AudioOutputProxy objects.
   bool HasOutputProxies() const;
 
@@ -70,9 +69,6 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   void CloseAllIdleStreams();
 
  private:
-  friend class base::RefCountedThreadSafe<AudioOutputDispatcherImpl>;
-  ~AudioOutputDispatcherImpl() override;
-
   // Creates a new physical output stream, opens it and pushes to
   // |idle_streams_|.  Returns false if the stream couldn't be created or
   // opened.
