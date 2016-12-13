@@ -64,8 +64,6 @@ static_library("arc") {
     "power/arc_power_bridge.h",
     "storage_manager/arc_storage_manager.cc",
     "storage_manager/arc_storage_manager.h",
-    "user_data/arc_user_data_service.cc",
-    "user_data/arc_user_data_service.h",
   ]
 
   public_deps = [

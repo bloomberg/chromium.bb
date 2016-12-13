@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/user_data/arc_user_data_service.h"
 
 namespace arc {
 

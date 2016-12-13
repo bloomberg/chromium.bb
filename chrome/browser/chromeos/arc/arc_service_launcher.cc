@@ -36,7 +36,6 @@
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
 #include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
-#include "components/arc/user_data/arc_user_data_service.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/arc/notification/arc_notification_manager.h"
