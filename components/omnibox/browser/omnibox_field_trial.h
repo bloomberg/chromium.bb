@@ -270,22 +270,15 @@ class OmniboxFieldTrial {
   // For HQP scoring related experiments to control the topicality and scoring
   // ranges of relevancy scores.
 
-  // Returns true if HQP experimental scoring is enabled. Returns false if
-  // |kHQPExperimentalScoringEnabledParam| is not specified in the field trial.
-  static bool HQPExperimentalScoringEnabled();
-
-  // Returns the scoring buckets for HQP experiments. Returns empty string
-  // in case |kHQPExperimentalScoringBucketsParam| or
-  // |kHQPExperimentalScoringEnabledParam| is not specified in the
-  // field trial. Scoring buckets are stored in string form giving mapping from
-  // (topicality_score, frequency_score) to final relevance score.
-  // Please see GetRelevancyScore() under
-  // chrome/browser/history::ScoredHistoryMatch for details.
+  // Returns the scoring buckets for HQP experiments. Returns an empty string
+  // if scoring buckets are not specified in the field trial. Scoring buckets
+  // are stored in string form giving mapping from (topicality_score,
+  // frequency_score) to final relevance score. Please see GetRelevancyScore()
+  // under chrome/browser/history::ScoredHistoryMatch for details.
   static std::string HQPExperimentalScoringBuckets();
 
-  // Returns the topicality threshold for HQP experiments. Returns -1 if
-  // |kHQPExperimentalScoringTopicalityThresholdParam| or
-  // |kHQPExperimentalScoringEnabledParam| is not specified in the field trial.
+  // Returns the topicality threshold for HQP experiments. Returns a default
+  // value of 0.8 if no threshold is specified in the field trial.
   static float HQPExperimentalTopicalityThreshold();
 
   // ---------------------------------------------------------
@@ -411,7 +404,6 @@ class OmniboxFieldTrial {
   static const char kHUPNewScoringVisitedCountUseDecayFactorParam[];
 
   // Parameter names used by the HQP experimental scoring experiments.
-  static const char kHQPExperimentalScoringEnabledParam[];
   static const char kHQPExperimentalScoringBucketsParam[];
   static const char kHQPExperimentalScoringTopicalityThresholdParam[];
 

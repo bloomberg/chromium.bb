@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -113,17 +114,9 @@ size_t ScoredHistoryMatch::max_visits_to_score_;
 bool ScoredHistoryMatch::allow_tld_matches_;
 bool ScoredHistoryMatch::allow_scheme_matches_;
 size_t ScoredHistoryMatch::num_title_words_to_allow_;
-bool ScoredHistoryMatch::hqp_experimental_scoring_enabled_;
-
-// Default topicality threshold.  See GetTopicalityScore() for details.
-float ScoredHistoryMatch::topicality_threshold_ = 0.8f;
-
-// Default HQP relevance buckets. See GetFinalRelevancyScore() for more details
-// on these numbers.
-char ScoredHistoryMatch::hqp_relevance_buckets_str_[] =
-    "0.0:400,1.5:600,5.0:900,10.5:1203,15.0:1300,20.0:1399";
-std::vector<ScoredHistoryMatch::ScoreMaxRelevance>*
-    ScoredHistoryMatch::hqp_relevance_buckets_ = nullptr;
+float ScoredHistoryMatch::topicality_threshold_;
+ScoredHistoryMatch::ScoreMaxRelevances*
+    ScoredHistoryMatch::relevance_buckets_override_ = nullptr;
 
 ScoredHistoryMatch::ScoredHistoryMatch()
     : ScoredHistoryMatch(history::URLRow(),
@@ -261,8 +254,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   const float topicality_score = GetTopicalityScore(
       terms_vector.size(), url, terms_to_word_starts_offsets, word_starts);
   const float frequency_score = GetFrequency(now, is_url_bookmarked, visits);
-  raw_score = base::saturated_cast<int>(GetFinalRelevancyScore(
-      topicality_score, frequency_score, *hqp_relevance_buckets_));
+  raw_score = base::saturated_cast<int>(
+      GetFinalRelevancyScore(topicality_score, frequency_score));
 
   if (also_do_hup_like_scoring_ && likely_can_inline) {
     // HistoryURL-provider-like scoring gives any match that is
@@ -415,10 +408,11 @@ void ScoredHistoryMatch::Init() {
   allow_tld_matches_ = OmniboxFieldTrial::HQPAllowMatchInTLDValue();
   allow_scheme_matches_ = OmniboxFieldTrial::HQPAllowMatchInSchemeValue();
   num_title_words_to_allow_ = OmniboxFieldTrial::HQPNumTitleWordsToAllow();
+  topicality_threshold_ =
+      OmniboxFieldTrial::HQPExperimentalTopicalityThreshold();
 
   InitRawTermScoreToTopicalityScoreArray();
   InitDaysAgoToRecencyScoreArray();
-  InitHQPExperimentalParams();
 }
 
 float ScoredHistoryMatch::GetTopicalityScore(
@@ -617,12 +611,17 @@ float ScoredHistoryMatch::GetFrequency(const base::Time& now,
 }
 
 // static
-float ScoredHistoryMatch::GetFinalRelevancyScore(
-    float topicality_score,
-    float frequency_score,
-    const std::vector<ScoreMaxRelevance>& hqp_relevance_buckets) {
-  DCHECK(hqp_relevance_buckets.size() > 0);
-  DCHECK_EQ(hqp_relevance_buckets[0].first, 0.0);
+float ScoredHistoryMatch::GetFinalRelevancyScore(float topicality_score,
+                                                 float frequency_score) {
+  // |relevance_buckets| gives a mapping from intemerdiate score to the final
+  // relevance score.
+  CR_DEFINE_STATIC_LOCAL(ScoreMaxRelevances, default_relevance_buckets,
+                         (GetHQPBuckets()));
+  ScoreMaxRelevances* relevance_buckets = relevance_buckets_override_
+                                              ? relevance_buckets_override_
+                                              : &default_relevance_buckets;
+  DCHECK(!relevance_buckets->empty());
+  DCHECK_EQ(0.0, (*relevance_buckets)[0].first);
 
   if (topicality_score == 0)
     return 0;
@@ -642,7 +641,7 @@ float ScoredHistoryMatch::GetFinalRelevancyScore(
   //
   // The below code maps intermediate_score to the range [0, 1399].
   // For example:
-  // HQP default scoring buckets: "0.0:400,1.5:600,12.0:1300,20.0:1399"
+  // The default scoring buckets: "0.0:400,1.5:600,12.0:1300,20.0:1399"
   // We will linearly interpolate the scores between:
   //      0 to 1.5    --> 400 to 600
   //    1.5 to 12.0   --> 600 to 1300
@@ -655,76 +654,52 @@ float ScoredHistoryMatch::GetFinalRelevancyScore(
 
   // Find the threshold where intermediate score is greater than bucket.
   size_t i = 1;
-  for (; i < hqp_relevance_buckets.size(); ++i) {
-    const ScoreMaxRelevance& hqp_bucket = hqp_relevance_buckets[i];
-    if (intermediate_score >= hqp_bucket.first) {
+  for (; i < relevance_buckets->size(); ++i) {
+    const ScoreMaxRelevance& bucket = (*relevance_buckets)[i];
+    if (intermediate_score >= bucket.first) {
       continue;
     }
-    const ScoreMaxRelevance& previous_bucket = hqp_relevance_buckets[i - 1];
-    const float slope = ((hqp_bucket.second - previous_bucket.second) /
-                         (hqp_bucket.first - previous_bucket.first));
+    const ScoreMaxRelevance& previous_bucket = (*relevance_buckets)[i - 1];
+    const float slope = ((bucket.second - previous_bucket.second) /
+                         (bucket.first - previous_bucket.first));
     return (previous_bucket.second +
             (slope * (intermediate_score - previous_bucket.first)));
   }
   // It will reach this stage when the score is > highest bucket score.
   // Return the highest bucket score.
-  return hqp_relevance_buckets[i - 1].second;
+  return (*relevance_buckets)[i - 1].second;
 }
 
 // static
-void ScoredHistoryMatch::InitHQPExperimentalParams() {
-  // These are default HQP relevance scoring buckets.
-  // See GetFinalRelevancyScore() for details.
-  std::string hqp_relevance_buckets_str = std::string(
-      hqp_relevance_buckets_str_);
-
-  // Fetch the experiment params if they are any.
-  hqp_experimental_scoring_enabled_ =
-      OmniboxFieldTrial::HQPExperimentalScoringEnabled();
-
-  if (hqp_experimental_scoring_enabled_) {
-    // Add the topicality threshold from experiment params.
-    float hqp_experimental_topicality_threhold =
-        OmniboxFieldTrial::HQPExperimentalTopicalityThreshold();
-    topicality_threshold_ = hqp_experimental_topicality_threhold;
-
-    // Add the HQP experimental scoring buckets.
-    std::string hqp_experimental_scoring_buckets =
-        OmniboxFieldTrial::HQPExperimentalScoringBuckets();
-    if (!hqp_experimental_scoring_buckets.empty())
-      hqp_relevance_buckets_str = hqp_experimental_scoring_buckets;
-  }
-
-  // Parse the hqp_relevance_buckets_str string once and store them in vector
-  // which is easy to access.
-  hqp_relevance_buckets_ =
-      new std::vector<ScoredHistoryMatch::ScoreMaxRelevance>();
-
-  bool is_valid_bucket_str = GetHQPBucketsFromString(hqp_relevance_buckets_str,
-                                                     hqp_relevance_buckets_);
-  DCHECK(is_valid_bucket_str);
+std::vector<ScoredHistoryMatch::ScoreMaxRelevance>
+ScoredHistoryMatch::GetHQPBuckets() {
+  // Start with the default buckets and override them if appropriate.
+  std::string relevance_buckets_str =
+      "0.0:400,1.5:600,5.0:900,10.5:1203,15.0:1300,20.0:1399";
+  std::string experimental_scoring_buckets =
+      OmniboxFieldTrial::HQPExperimentalScoringBuckets();
+  if (!experimental_scoring_buckets.empty())
+    relevance_buckets_str = experimental_scoring_buckets;
+  return GetHQPBucketsFromString(relevance_buckets_str);
 }
 
 // static
-bool ScoredHistoryMatch::GetHQPBucketsFromString(
-    const std::string& buckets_str,
-    std::vector<ScoreMaxRelevance>* hqp_buckets) {
-  DCHECK(hqp_buckets != NULL);
+ScoredHistoryMatch::ScoreMaxRelevances
+ScoredHistoryMatch::GetHQPBucketsFromString(const std::string& buckets_str) {
   DCHECK(!buckets_str.empty());
-
   base::StringPairs kv_pairs;
-  if (base::SplitStringIntoKeyValuePairs(buckets_str, ':', ',', &kv_pairs)) {
-    for (base::StringPairs::const_iterator it = kv_pairs.begin();
-         it != kv_pairs.end(); ++it) {
-      ScoreMaxRelevance bucket;
-      bool is_valid_intermediate_score =
-          base::StringToDouble(it->first, &bucket.first);
-      DCHECK(is_valid_intermediate_score);
-      bool is_valid_hqp_score = base::StringToInt(it->second, &bucket.second);
-      DCHECK(is_valid_hqp_score);
-      hqp_buckets->push_back(bucket);
-    }
-    return true;
+  if (!base::SplitStringIntoKeyValuePairs(buckets_str, ':', ',', &kv_pairs))
+    return ScoreMaxRelevances();
+  ScoreMaxRelevances hqp_buckets;
+  for (base::StringPairs::const_iterator it = kv_pairs.begin();
+       it != kv_pairs.end(); ++it) {
+    ScoreMaxRelevance bucket;
+    bool is_valid_intermediate_score =
+        base::StringToDouble(it->first, &bucket.first);
+    DCHECK(is_valid_intermediate_score);
+    bool is_valid_hqp_score = base::StringToInt(it->second, &bucket.second);
+    DCHECK(is_valid_hqp_score);
+    hqp_buckets.push_back(bucket);
   }
-  return false;
+  return hqp_buckets;
 }

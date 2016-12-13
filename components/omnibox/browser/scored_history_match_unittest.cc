@@ -647,54 +647,51 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
 
 // Test the function GetFinalRelevancyScore().
 TEST_F(ScoredHistoryMatchTest, GetFinalRelevancyScore) {
-  // hqp_relevance_buckets = "0.0:100,1.0:200,4.0:500,8.0:900,10.0:1000";
-  std::vector<ScoredHistoryMatch::ScoreMaxRelevance> hqp_buckets;
-  hqp_buckets.push_back(std::make_pair(0.0, 100));
-  hqp_buckets.push_back(std::make_pair(1.0, 200));
-  hqp_buckets.push_back(std::make_pair(4.0, 500));
-  hqp_buckets.push_back(std::make_pair(8.0, 900));
-  hqp_buckets.push_back(std::make_pair(10.0, 1000));
+  // relevance_buckets = "0.0:100,1.0:200,4.0:500,8.0:900,10.0:1000";
+  ScoredHistoryMatch::ScoreMaxRelevances relevance_buckets = {
+      {0.0, 100}, {1.0, 200}, {4.0, 500}, {8.0, 900}, {10.0, 1000}};
+  base::AutoReset<ScoredHistoryMatch::ScoreMaxRelevances*> tmp(
+      &ScoredHistoryMatch::relevance_buckets_override_, &relevance_buckets);
+
   // Check when topicality score is zero.
   float topicality_score = 0.0;
   float frequency_score = 10.0;
   // intermediate_score = 0.0 * 10.0 = 0.0.
-  EXPECT_EQ(0, ScoredHistoryMatch::GetFinalRelevancyScore(
-                   topicality_score, frequency_score, hqp_buckets));
+  EXPECT_EQ(0, ScoredHistoryMatch::GetFinalRelevancyScore(topicality_score,
+                                                          frequency_score));
 
   // Check when intermediate score falls at the border range.
   topicality_score = 0.4f;
   frequency_score = 10.0f;
   // intermediate_score = 0.5 * 10.0 = 4.0.
-  EXPECT_EQ(500, ScoredHistoryMatch::GetFinalRelevancyScore(
-                     topicality_score, frequency_score, hqp_buckets));
+  EXPECT_EQ(500, ScoredHistoryMatch::GetFinalRelevancyScore(topicality_score,
+                                                            frequency_score));
 
   // Checking the score that falls into one of the buckets.
   topicality_score = 0.5f;
   frequency_score = 10.0f;
   // intermediate_score = 0.5 * 10.0 = 5.0.
   EXPECT_EQ(600,  // 500 + (((900 - 500)/(8 -4)) * 1) = 600.
-            ScoredHistoryMatch::GetFinalRelevancyScore(
-                topicality_score, frequency_score, hqp_buckets));
+            ScoredHistoryMatch::GetFinalRelevancyScore(topicality_score,
+                                                       frequency_score));
 
   // Never give the score greater than maximum specified.
   topicality_score = 0.5f;
   frequency_score = 22.0f;
   // intermediate_score = 0.5 * 22.0 = 11.0
-  EXPECT_EQ(1000, ScoredHistoryMatch::GetFinalRelevancyScore(
-                      topicality_score, frequency_score, hqp_buckets));
+  EXPECT_EQ(1000, ScoredHistoryMatch::GetFinalRelevancyScore(topicality_score,
+                                                             frequency_score));
 }
 
 // Test the function GetHQPBucketsFromString().
 TEST_F(ScoredHistoryMatchTest, GetHQPBucketsFromString) {
   std::string buckets_str = "0.0:400,1.5:600,12.0:1300,20.0:1399";
-  std::vector<ScoredHistoryMatch::ScoreMaxRelevance> hqp_buckets;
-
-  EXPECT_TRUE(
-      ScoredHistoryMatch::GetHQPBucketsFromString(buckets_str, &hqp_buckets));
+  std::vector<ScoredHistoryMatch::ScoreMaxRelevance> hqp_buckets =
+      ScoredHistoryMatch::GetHQPBucketsFromString(buckets_str);
   EXPECT_THAT(hqp_buckets, ElementsAre(Pair(0.0, 400), Pair(1.5, 600),
                                        Pair(12.0, 1300), Pair(20.0, 1399)));
-  // invalid string.
+  // Test using an invalid string.
   buckets_str = "0.0,400,1.5,600";
-  EXPECT_FALSE(
-      ScoredHistoryMatch::GetHQPBucketsFromString(buckets_str, &hqp_buckets));
+  hqp_buckets = ScoredHistoryMatch::GetHQPBucketsFromString(buckets_str);
+  EXPECT_TRUE(hqp_buckets.empty());
 }

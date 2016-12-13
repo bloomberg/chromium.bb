@@ -371,33 +371,21 @@ void OmniboxFieldTrial::GetSuggestPollingStrategy(bool* from_last_keystroke,
   }
 }
 
-bool OmniboxFieldTrial::HQPExperimentalScoringEnabled() {
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kHQPExperimentalScoringEnabledParam) == "true";
-}
-
 std::string OmniboxFieldTrial::HQPExperimentalScoringBuckets() {
-  if (!HQPExperimentalScoringEnabled())
-    return "";
-
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kHQPExperimentalScoringBucketsParam);
 }
 
 float OmniboxFieldTrial::HQPExperimentalTopicalityThreshold() {
-  if (!HQPExperimentalScoringEnabled())
-    return -1;
-
-  std::string topicality_threhold_str =
-    variations::GetVariationParamValue(
-        kBundledExperimentFieldTrialName,
-        kHQPExperimentalScoringTopicalityThresholdParam);
+  std::string topicality_threshold_str = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kHQPExperimentalScoringTopicalityThresholdParam);
 
   double topicality_threshold;
-  if (!base::StringToDouble(topicality_threhold_str, &topicality_threshold))
-    return -1;
+  if (topicality_threshold_str.empty() ||
+      !base::StringToDouble(topicality_threshold_str, &topicality_threshold))
+    return 0.8f;
 
   return static_cast<float>(topicality_threshold);
 }
@@ -580,8 +568,6 @@ const char OmniboxFieldTrial::kHUPNewScoringVisitedCountScoreBucketsParam[] =
 const char OmniboxFieldTrial::kHUPNewScoringVisitedCountUseDecayFactorParam[] =
     "VisitedCountUseDecayFactor";
 
-const char OmniboxFieldTrial::kHQPExperimentalScoringEnabledParam[] =
-    "HQPExperimentalScoringEnabled";
 const char OmniboxFieldTrial::kHQPExperimentalScoringBucketsParam[] =
     "HQPExperimentalScoringBuckets";
 const char

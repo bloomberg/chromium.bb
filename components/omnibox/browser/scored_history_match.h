@@ -24,9 +24,14 @@ class ScoredHistoryMatchTest;
 struct ScoredHistoryMatch : public history::HistoryMatch {
   // ScoreMaxRelevance maps from an intermediate-score to the maximum
   // final-relevance score given to a URL for this intermediate score.
-  // This is used to store the score ranges of HQP relevance buckets.
+  // This is used to store the score ranges of relevance buckets.
   // Please see GetFinalRelevancyScore() for details.
-  typedef std::pair<double, int> ScoreMaxRelevance;
+  using ScoreMaxRelevance = std::pair<double, int>;
+
+  // A sorted vector of ScoreMaxRelevance entries, used by taking a score and
+  // interpolating between consecutive buckets.  See GetFinalRelevancyScore()
+  // for details.
+  using ScoreMaxRelevances = std::vector<ScoreMaxRelevance>;
 
   // Required for STL, we don't use this directly.
   ScoredHistoryMatch();
@@ -128,29 +133,22 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
                      const bool bookmarked,
                      const VisitInfoVector& visits) const;
 
-  // Combines the two component scores into a final score that's
-  // an appropriate value to use as a relevancy score. Scoring buckets are
-  // specified through |hqp_relevance_buckets|. Please see the function
-  // implementation for more details.
-  static float GetFinalRelevancyScore(
-      float topicality_score,
-      float frequency_score,
-      const std::vector<ScoreMaxRelevance>& hqp_relevance_buckets);
+  // Combines the two component scores into a final score that's an appropriate
+  // value to use as a relevancy score.
+  static float GetFinalRelevancyScore(float topicality_score,
+                                      float frequency_score);
 
-  // Initializes the HQP experimental params: |hqp_relevance_buckets_|
-  // to default buckets. If hqp experimental scoring is enabled, it
-  // fetches the |hqp_experimental_scoring_enabled_|, |topicality_threshold_|
-  // and |hqp_relevance_buckets_| from omnibox field trials.
-  static void InitHQPExperimentalParams();
+  // Helper function that returns the string containing the scoring buckets
+  // (either the default ones or ones specified in an experiment).
+  static ScoreMaxRelevances GetHQPBuckets();
 
-  // Helper function to parse the string containing the scoring buckets.
-  // For example,
-  // String: "0.0:400,1.5:600,12.0:1300,20.0:1399"
-  // Buckets: vector[(0.0, 400),(1.5,600),(12.0,1300),(20.0,1399)]
-  // Returns false, in case if it fail to parse the string.
-  static bool GetHQPBucketsFromString(
-      const std::string& buckets_str,
-      std::vector<ScoreMaxRelevance>* hqp_buckets);
+  // Helper function to parse the string containing the scoring buckets and
+  // return the results.  For example, with |buckets_str| as
+  // "0.0:400,1.5:600,12.0:1300,20.0:1399", it returns [(0.0, 400), (1.5, 600),
+  // (12.0, 1300), (20.0, 1399)]. It returns an empty vector in the case of a
+  // malformed |buckets_str|.
+  static ScoreMaxRelevances GetHQPBucketsFromString(
+      const std::string& buckets_str);
 
   // If true, assign raw scores to be max(whatever it normally would be, a
   // score that's similar to the score HistoryURL provider would assign).
@@ -184,22 +182,15 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // Words beyond this number are ignored.
   static size_t num_title_words_to_allow_;
 
-  // True, if hqp experimental scoring is enabled.
-  static bool hqp_experimental_scoring_enabled_;
-
   // |topicality_threshold_| is used to control the topicality scoring.
-  // If |topicality_threshold_| > 0, then URLs with topicality-score < threshold
-  // are given topicality score of 0. By default it is initalized to -1.
+  // If |topicality_threshold_| > 0, then URLs with topicality-score less than
+  // the threshold are given topicality score of 0.
   static float topicality_threshold_;
 
-  // |hqp_relevance_buckets_str_| is used to control the hqp score ranges.
-  // It is the string representation of |hqp_relevance_buckets_|.
-  static char hqp_relevance_buckets_str_[];
-
-  // |hqp_relevance_buckets_| gives mapping from (topicality*frequency)
-  // to the final relevance scoring. Please see GetFinalRelevancyScore()
-  // for more details and scoring method.
-  static std::vector<ScoreMaxRelevance>* hqp_relevance_buckets_;
+  // Used for testing.  A possibly null pointer to a vector.  If set,
+  // overrides the static local variable |relevance_buckets| declared in
+  // GetFinalRelevancyScore().
+  static ScoreMaxRelevances* relevance_buckets_override_;
 };
 typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
 
