@@ -78,7 +78,7 @@ button.menu-button-activator.active {
   vertical-align: -4px;
   border: 1px solid transparent;
   opacity: 0.35;
-  -webkit-transition: opacity 0.218s;
+  transition: opacity 0.218s;
 }
 
 .help-icon:hover, .help-icon.active {
