@@ -10982,6 +10982,18 @@ TEST_F(WebFrameTest, TestNonCompositedOverlayScrollbarsFade) {
   testing::runDelayedTasks(kMockOverlayFadeOutDelayMs);
   EXPECT_TRUE(scrollableArea->scrollbarsHidden());
 
+  // Non-composited scrollbars don't fade out while mouse is over.
+  EXPECT_TRUE(scrollableArea->verticalScrollbar());
+  scrollableArea->setScrollOffset(ScrollOffset(20, 20), ProgrammaticScroll,
+                                  ScrollBehaviorInstant);
+  EXPECT_FALSE(scrollableArea->scrollbarsHidden());
+  scrollableArea->mouseEnteredScrollbar(*scrollableArea->verticalScrollbar());
+  testing::runDelayedTasks(kMockOverlayFadeOutDelayMs);
+  EXPECT_FALSE(scrollableArea->scrollbarsHidden());
+  scrollableArea->mouseExitedScrollbar(*scrollableArea->verticalScrollbar());
+  testing::runDelayedTasks(kMockOverlayFadeOutDelayMs);
+  EXPECT_TRUE(scrollableArea->scrollbarsHidden());
+
   mockOverlayTheme.setOverlayScrollbarFadeOutDelay(0.0);
 }
 

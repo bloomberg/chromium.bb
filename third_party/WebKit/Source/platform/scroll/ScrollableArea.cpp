@@ -67,7 +67,8 @@ ScrollableArea::ScrollableArea()
       m_verticalScrollbarNeedsPaintInvalidation(false),
       m_scrollCornerNeedsPaintInvalidation(false),
       m_scrollbarsHidden(false),
-      m_scrollbarCaptured(false) {}
+      m_scrollbarCaptured(false),
+      m_mouseOverScrollbar(false) {}
 
 ScrollableArea::~ScrollableArea() {}
 
@@ -323,13 +324,20 @@ void ScrollableArea::mouseMovedInContentArea() const {
 }
 
 void ScrollableArea::mouseEnteredScrollbar(Scrollbar& scrollbar) {
+  m_mouseOverScrollbar = true;
   scrollAnimator().mouseEnteredScrollbar(scrollbar);
-  // Restart the fade out timer.
   showOverlayScrollbars();
+  if (m_fadeOverlayScrollbarsTimer)
+    m_fadeOverlayScrollbarsTimer->stop();
 }
 
 void ScrollableArea::mouseExitedScrollbar(Scrollbar& scrollbar) {
+  m_mouseOverScrollbar = false;
   scrollAnimator().mouseExitedScrollbar(scrollbar);
+  if (!m_scrollbarsHidden) {
+    // This will kick off the fade out timer.
+    showOverlayScrollbars();
+  }
 }
 
 void ScrollableArea::mouseCapturedScrollbar() {
@@ -574,7 +582,7 @@ void ScrollableArea::showOverlayScrollbars() {
         this, &ScrollableArea::fadeOverlayScrollbarsTimerFired));
   }
 
-  if (!m_scrollbarCaptured) {
+  if (!m_scrollbarCaptured && !m_mouseOverScrollbar) {
     m_fadeOverlayScrollbarsTimer->startOneShot(timeUntilDisable,
                                                BLINK_FROM_HERE);
   }
