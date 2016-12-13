@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
@@ -523,21 +524,15 @@ void ServiceWorkerDispatcher::OnDidGetRegistrations(
   if (!callbacks)
     return;
 
-  typedef blink::WebVector<blink::WebServiceWorkerRegistration::Handle*>
-      WebServiceWorkerRegistrationArray;
-  std::unique_ptr<WebServiceWorkerRegistrationArray> registrations(
-      new WebServiceWorkerRegistrationArray(infos.size()));
+  using WebServiceWorkerRegistrationHandles =
+      WebServiceWorkerProvider::WebServiceWorkerRegistrationHandles;
+  std::unique_ptr<WebServiceWorkerRegistrationHandles> registrations =
+      base::MakeUnique<WebServiceWorkerRegistrationHandles>(infos.size());
   for (size_t i = 0; i < infos.size(); ++i) {
-    if (infos[i].handle_id != kInvalidServiceWorkerHandleId) {
-      ServiceWorkerRegistrationObjectInfo info(infos[i]);
-      ServiceWorkerVersionAttributes attr(attrs[i]);
-
-      // WebServiceWorkerGetRegistrationsCallbacks cannot receive an array of
-      // std::unique_ptr<WebServiceWorkerRegistration::Handle>, so create leaky
-      // handles instead.
-      (*registrations)[i] = WebServiceWorkerRegistrationImpl::CreateLeakyHandle(
-          GetOrAdoptRegistration(info, attr));
-    }
+    if (infos[i].handle_id == kInvalidServiceWorkerHandleId)
+      continue;
+    (*registrations)[i] = WebServiceWorkerRegistrationImpl::CreateHandle(
+        GetOrAdoptRegistration(infos[i], attrs[i]));
   }
 
   callbacks->onSuccess(std::move(registrations));

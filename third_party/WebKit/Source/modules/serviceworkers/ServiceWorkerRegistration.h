@@ -37,6 +37,12 @@ class ServiceWorkerRegistration final
   USING_PRE_FINALIZER(ServiceWorkerRegistration, dispose);
 
  public:
+  // Called from CallbackPromiseAdapter.
+  using WebType = std::unique_ptr<WebServiceWorkerRegistration::Handle>;
+  static ServiceWorkerRegistration* take(
+      ScriptPromiseResolver*,
+      std::unique_ptr<WebServiceWorkerRegistration::Handle>);
+
   // ScriptWrappable overrides.
   bool hasPendingActivity() const final;
 
@@ -102,14 +108,17 @@ class ServiceWorkerRegistrationArray {
   STATIC_ONLY(ServiceWorkerRegistrationArray);
 
  public:
+  // Called from CallbackPromiseAdapter.
+  using WebType = std::unique_ptr<
+      WebVector<std::unique_ptr<WebServiceWorkerRegistration::Handle>>>;
   static HeapVector<Member<ServiceWorkerRegistration>> take(
       ScriptPromiseResolver* resolver,
-      Vector<std::unique_ptr<WebServiceWorkerRegistration::Handle>>*
-          webServiceWorkerRegistrations) {
+      WebType webServiceWorkerRegistrations) {
     HeapVector<Member<ServiceWorkerRegistration>> registrations;
-    for (auto& registration : *webServiceWorkerRegistrations)
-      registrations.append(ServiceWorkerRegistration::getOrCreate(
-          resolver->getExecutionContext(), std::move(registration)));
+    for (auto& registration : *webServiceWorkerRegistrations) {
+      registrations.append(
+          ServiceWorkerRegistration::take(resolver, std::move(registration)));
+    }
     return registrations;
   }
 };

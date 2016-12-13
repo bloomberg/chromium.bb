@@ -59,10 +59,11 @@ class WebServiceWorkerProvider {
       WebCallbacks<std::unique_ptr<WebServiceWorkerRegistration::Handle>,
                    const WebServiceWorkerError&>;
 
-  // Each element's ownership is transferred.
-  using WebServiceWorkerGetRegistrationsCallbacks = WebCallbacks<
-      std::unique_ptr<WebVector<WebServiceWorkerRegistration::Handle*>>,
-      const WebServiceWorkerError&>;
+  using WebServiceWorkerRegistrationHandles =
+      WebVector<std::unique_ptr<WebServiceWorkerRegistration::Handle>>;
+  using WebServiceWorkerGetRegistrationsCallbacks =
+      WebCallbacks<std::unique_ptr<WebServiceWorkerRegistrationHandles>,
+                   const WebServiceWorkerError&>;
   using WebServiceWorkerGetRegistrationForReadyCallbacks =
       WebCallbacks<std::unique_ptr<WebServiceWorkerRegistration::Handle>, void>;
 

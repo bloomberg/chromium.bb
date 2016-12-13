@@ -78,13 +78,6 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   static std::unique_ptr<WebServiceWorkerRegistrationHandle> CreateHandle(
       const scoped_refptr<WebServiceWorkerRegistrationImpl>& registration);
 
-  // Same with CreateHandle(), but returns a raw pointer to the handle w/ its
-  // ownership instead. The caller must manage the ownership. This function must
-  // be used only for passing the handle to Blink API that does not support
-  // blink::WebPassOwnPtr.
-  static WebServiceWorkerRegistrationHandle* CreateLeakyHandle(
-      const scoped_refptr<WebServiceWorkerRegistrationImpl>& registration);
-
  private:
   friend class base::RefCounted<WebServiceWorkerRegistrationImpl>;
   ~WebServiceWorkerRegistrationImpl() override;

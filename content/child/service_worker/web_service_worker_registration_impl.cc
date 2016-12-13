@@ -200,14 +200,6 @@ WebServiceWorkerRegistrationImpl::CreateHandle(
   return base::MakeUnique<HandleImpl>(registration);
 }
 
-blink::WebServiceWorkerRegistration::Handle*
-WebServiceWorkerRegistrationImpl::CreateLeakyHandle(
-    const scoped_refptr<WebServiceWorkerRegistrationImpl>& registration) {
-  if (!registration)
-    return nullptr;
-  return new HandleImpl(registration);
-}
-
 WebServiceWorkerRegistrationImpl::~WebServiceWorkerRegistrationImpl() {
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();

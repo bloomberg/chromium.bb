@@ -21,6 +21,12 @@
 
 namespace blink {
 
+ServiceWorkerRegistration* ServiceWorkerRegistration::take(
+    ScriptPromiseResolver* resolver,
+    std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) {
+  return getOrCreate(resolver->getExecutionContext(), std::move(handle));
+}
+
 bool ServiceWorkerRegistration::hasPendingActivity() const {
   return !m_stopped;
 }

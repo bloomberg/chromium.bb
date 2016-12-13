@@ -137,6 +137,9 @@ v8::Local<v8::Value> ServiceWorkerErrorForUpdate::take(
       // a TypeError.
       return V8ThrowException::createTypeError(
           scriptState->isolate(), getExceptionParams(webError).message);
+    case WebServiceWorkerError::ErrorTypeType:
+      return V8ThrowException::createTypeError(scriptState->isolate(),
+                                               webError.message);
     default:
       return toV8(ServiceWorkerError::take(resolver, webError),
                   scriptState->context()->Global(), scriptState->isolate());

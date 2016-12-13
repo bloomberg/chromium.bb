@@ -29,6 +29,7 @@
  */
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
 
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -61,41 +62,6 @@
 #include <utility>
 
 namespace blink {
-
-class RegistrationCallback
-    : public WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks {
- public:
-  explicit RegistrationCallback(ScriptPromiseResolver* resolver)
-      : m_resolver(resolver) {}
-  ~RegistrationCallback() override {}
-
-  void onSuccess(
-      std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
-    if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->isContextDestroyed())
-      return;
-    m_resolver->resolve(ServiceWorkerRegistration::getOrCreate(
-        m_resolver->getExecutionContext(), WTF::wrapUnique(handle.release())));
-  }
-
-  void onError(const WebServiceWorkerError& error) override {
-    if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->isContextDestroyed())
-      return;
-    ScriptState::Scope scope(m_resolver->getScriptState());
-    if (error.errorType == WebServiceWorkerError::ErrorTypeType) {
-      m_resolver->reject(V8ThrowException::createTypeError(
-          m_resolver->getScriptState()->isolate(), error.message));
-    } else {
-      m_resolver->reject(
-          ServiceWorkerErrorForUpdate::take(m_resolver.get(), error));
-    }
-  }
-
- private:
-  Persistent<ScriptPromiseResolver> m_resolver;
-  WTF_MAKE_NONCOPYABLE(RegistrationCallback);
-};
 
 class GetRegistrationCallback : public WebServiceWorkerProvider::
                                     WebServiceWorkerGetRegistrationCallbacks {
@@ -130,42 +96,6 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::
  private:
   Persistent<ScriptPromiseResolver> m_resolver;
   WTF_MAKE_NONCOPYABLE(GetRegistrationCallback);
-};
-
-class GetRegistrationsCallback : public WebServiceWorkerProvider::
-                                     WebServiceWorkerGetRegistrationsCallbacks {
- public:
-  explicit GetRegistrationsCallback(ScriptPromiseResolver* resolver)
-      : m_resolver(resolver) {}
-  ~GetRegistrationsCallback() override {}
-
-  void onSuccess(
-      std::unique_ptr<WebVector<WebServiceWorkerRegistration::Handle*>>
-          webPassRegistrations) override {
-    Vector<std::unique_ptr<WebServiceWorkerRegistration::Handle>> handles;
-    std::unique_ptr<WebVector<WebServiceWorkerRegistration::Handle*>>
-        webRegistrations = WTF::wrapUnique(webPassRegistrations.release());
-    for (auto& handle : *webRegistrations) {
-      handles.append(WTF::wrapUnique(handle));
-    }
-
-    if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->isContextDestroyed())
-      return;
-    m_resolver->resolve(
-        ServiceWorkerRegistrationArray::take(m_resolver.get(), &handles));
-  }
-
-  void onError(const WebServiceWorkerError& error) override {
-    if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->isContextDestroyed())
-      return;
-    m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
-  }
-
- private:
-  Persistent<ScriptPromiseResolver> m_resolver;
-  WTF_MAKE_NONCOPYABLE(GetRegistrationsCallback);
 };
 
 class ServiceWorkerContainer::GetRegistrationForReadyCallback
@@ -358,8 +288,11 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
     patternURL = enteredExecutionContext(scriptState->isolate())
                      ->completeURL(options.scope());
 
-  registerServiceWorkerImpl(executionContext, scriptURL, patternURL,
-                            WTF::makeUnique<RegistrationCallback>(resolver));
+  registerServiceWorkerImpl(
+      executionContext, scriptURL, patternURL,
+      WTF::makeUnique<CallbackPromiseAdapter<ServiceWorkerRegistration,
+                                             ServiceWorkerErrorForUpdate>>(
+          resolver));
 
   return promise;
 }
@@ -455,7 +388,8 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
   }
 
   m_provider->getRegistrations(
-      WTF::makeUnique<GetRegistrationsCallback>(resolver));
+      WTF::makeUnique<CallbackPromiseAdapter<ServiceWorkerRegistrationArray,
+                                             ServiceWorkerError>>(resolver));
 
   return promise;
 }
