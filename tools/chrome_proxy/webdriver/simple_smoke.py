@@ -46,4 +46,4 @@ if __name__ == '__main__':
   # unittest command line args functionality.
   flags = common.ParseFlags()
   unittest.main(argv=[sys.argv[0]], verbosity=2, failfast=flags.failfast,
-    catchbreak=flags.catch, buffer=flags.buffer)
+    catchbreak=flags.catch, buffer=(not flags.disable_buffer))

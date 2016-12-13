@@ -42,10 +42,11 @@ def ParseFlags():
   parser.add_argument('chrome_driver', nargs=1, type=str, help='The path to '
     'the ChromeDriver executable. If not given, the default system chrome '
     'will be used.')
-  parser.add_argument('-b', '--buffer', help='The standard output and standard '
-    'error streams are buffered during the test run. Output during a passing '
-    'test is discarded. Output is echoed normally on test fail or error and is '
-    'added to the failure messages.', action='store_true')
+  parser.add_argument('--disable_buffer', help='Causes stdout and stderr from '
+    'tests to output normally. Otherwise, the standard output and standard '
+    'error streams are buffered during the test run, and output during a '
+    'passing test is discarded. Output will always be echoed normally on test '
+    'fail or error and is added to the failure messages.', action='store_true')
   parser.add_argument('-c', '--catch', help='Control-C during the test run '
     'waits for the current test to end and then reports all the results so '
     'far. A second Control-C raises the normal KeyboardInterrupt exception.',
@@ -307,7 +308,9 @@ class TestDriver:
   def GetHTTPResponses(self, include_favicon=False):
     """Parses the Performance Logs and returns a list of HTTPResponse objects.
 
-    This function should be called exactly once after every page load.
+    Use caution when calling this function  multiple times. Only responses
+    since the last time this function was called are returned (or since Chrome
+    started, whichever is later).
 
     Args:
       include_favicon: A bool that if True will include responses for favicons.
@@ -319,11 +322,17 @@ class TestDriver:
       params = log_dict['params']
       response_dict = params['response']
       http_response_dict = {
-        'response_headers': response_dict['headers'],
-        'request_headers': response_dict['requestHeaders'],
-        'url': response_dict['url'],
-        'status': response_dict['status'],
-        'request_type': params['type']
+        'response_headers': response_dict['headers'] if 'headers' in
+          response_dict else {},
+        'request_headers': response_dict['requestHeaders'] if 'requestHeaders'
+          in response_dict else {},
+        'url': response_dict['url'] if 'url' in response_dict else '',
+        'protocol': response_dict['protocol'] if 'protocol' in response_dict
+          else '',
+        'port': response_dict['remotePort'] if 'remotePort' in response_dict
+          else -1,
+        'status': response_dict['status'] if 'status' in response_dict else -1,
+        'request_type': params['type'] if 'type' in params else ''
       }
       return HTTPResponse(**http_response_dict)
     all_responses = []
@@ -345,16 +354,20 @@ class HTTPResponse:
     _response_headers: A dict of response headers.
     _request_headers: A dict of request headers.
     _url: the fetched url
+    _protocol: The protocol used to get the response.
+    _port: The remote port number used to get the response.
     _status: The integer status code of the response
     _request_type: What caused this request (Document, XHR, etc)
     _flags: A Namespace object from ParseFlags()
   """
 
-  def __init__(self, response_headers, request_headers, url, status,
-      request_type):
+  def __init__(self, response_headers, request_headers, url, protocol, port,
+      status, request_type):
     self._response_headers = response_headers
     self._request_headers = request_headers
     self._url = url
+    self._protocol = protocol
+    self._port = port
     self._status = status
     self._request_type = request_type
     self._flags = ParseFlags()
@@ -364,6 +377,8 @@ class HTTPResponse:
       'response_headers': self._response_headers,
       'request_headers': self._request_headers,
       'url': self._url,
+      'protocol': self._protocol,
+      'port': self._port,
       'status': self._status,
       'request_type': self._request_type
     }
@@ -382,6 +397,14 @@ class HTTPResponse:
     return self._url
 
   @property
+  def protocol(self):
+    return self._protocol
+
+  @property
+  def port(self):
+    return self._port
+
+  @property
   def status(self):
     return self._status
 
@@ -395,3 +418,9 @@ class HTTPResponse:
 
   def WasXHR(self):
     return self.request_type == 'XHR'
+
+  def UsedHTTP(self):
+    return self._protocol == 'http/1.1'
+
+  def UsedHTTP2(self):
+    return self._protocol == 'h2'
