@@ -705,7 +705,6 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touc
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518883 crbug.com/390452 virtual/mojo-loading/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
-crbug.com/518988 [ Win7 ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass ]
 crbug.com/518989 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-002.xht [ Failure Pass Timeout ]
 crbug.com/518998 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 crbug.com/673296 [ Android ] inspector-protocol/input/dispatchMouseEvent.html [ Pass Timeout ]
@@ -1858,11 +1857,6 @@ crbug.com/669357 virtual/mojo-loading/http/tests/inspector/network/network-datar
 crbug.com/669357 virtual/mojo-loading/http/tests/inspector/tracing/timeline-receive-response-event.html [ Failure ]
 crbug.com/669357 virtual/mojo-loading/http/tests/inspector/tracing/timeline-network-received-data.html [ Failure ]
 crbug.com/669357 virtual/mojo-loading/http/tests/local/formdata/upload-events.html [ Failure ]
-
-# TODO(yhirano): There is an entry for the base test, but this test is flakier
-# than that. Fix this test so that we can move the entry to the base test
-# section.
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass ]
 
 crbug.com/664873 http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
 crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
