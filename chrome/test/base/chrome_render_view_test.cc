@@ -108,7 +108,7 @@ void ChromeRenderViewTest::SetUp() {
   ChromeUnitTestSuite::InitializeProviders();
   ChromeUnitTestSuite::InitializeResourceBundle();
 
-  chrome_render_thread_ = CreateMockRenderThread();
+  chrome_render_thread_ = new ChromeMockRenderThread();
   render_thread_.reset(chrome_render_thread_);
 
   content::RenderViewTest::SetUp();
@@ -191,8 +191,4 @@ void ChromeRenderViewTest::DisableUserGestureSimulationForAutofill() {
 void ChromeRenderViewTest::WaitForAutofillDidAssociateFormControl() {
   static_cast<MockAutofillAgent*>(autofill_agent_)
       ->WaitForAutofillDidAssociateFormControl();
-}
-
-ChromeMockRenderThread* ChromeRenderViewTest::CreateMockRenderThread() {
-  return new ChromeMockRenderThread();
 }
