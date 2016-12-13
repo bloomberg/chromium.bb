@@ -19,6 +19,7 @@
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
+#include "platform/testing/PaintPropertyTestHelpers.h"
 #include "platform/testing/PictureMatchers.h"
 #include "platform/testing/TestPaintArtifact.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
@@ -29,6 +30,7 @@
 namespace blink {
 namespace {
 
+using ::blink::testing::createOpacityOnlyEffect;
 using ::testing::Pointee;
 
 PaintChunkProperties defaultPaintChunkProperties() {
@@ -569,15 +571,12 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
-  RefPtr<EffectPaintPropertyNode> effect1 = EffectPaintPropertyNode::create(
-      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 0.5);
-  RefPtr<EffectPaintPropertyNode> effect2 = EffectPaintPropertyNode::create(
-      effect1, TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 0.3);
-  RefPtr<EffectPaintPropertyNode> effect3 = EffectPaintPropertyNode::create(
-      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 0.2);
+  RefPtr<EffectPaintPropertyNode> effect1 =
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
+  RefPtr<EffectPaintPropertyNode> effect2 =
+      createOpacityOnlyEffect(effect1, 0.3);
+  RefPtr<EffectPaintPropertyNode> effect3 =
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.2);
 
   TestPaintArtifact artifact;
   artifact
@@ -661,9 +660,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
-  RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
-      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 0.5);
+  RefPtr<EffectPaintPropertyNode> effect =
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
 
   RefPtr<TransformPaintPropertyNode> scrollTranslationA =
       TransformPaintPropertyNode::create(

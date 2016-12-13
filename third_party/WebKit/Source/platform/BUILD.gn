@@ -1606,6 +1606,7 @@ static_library("test_support") {
     "testing/MessageLoopForMojo.h",
     "testing/PaintPrinters.cpp",
     "testing/PaintPrinters.h",
+    "testing/PaintPropertyTestHelpers.h",
     "testing/PictureMatchers.cpp",
     "testing/PictureMatchers.h",
     "testing/PlatformTestPrinters.cpp",

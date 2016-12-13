@@ -10,22 +10,19 @@
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
+#include "platform/testing/PaintPropertyTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 class GeometryMapperTest : public ::testing::Test {
  public:
-  RefPtr<TransformPaintPropertyNode> rootTransformNode;
-  RefPtr<ClipPaintPropertyNode> rootClipNode;
-  RefPtr<EffectPaintPropertyNode> rootEffectNode;
-  RefPtr<ScrollPaintPropertyNode> rootScrollNode;
-
   std::unique_ptr<GeometryMapper> geometryMapper;
 
   PropertyTreeState rootPropertyTreeState() {
-    PropertyTreeState state(rootTransformNode.get(), rootClipNode.get(),
-                            rootEffectNode.get(), rootScrollNode.get());
+    PropertyTreeState state(
+        TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+        EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
     return state;
   }
 
@@ -42,16 +39,6 @@ class GeometryMapperTest : public ::testing::Test {
 
  private:
   void SetUp() override {
-    rootTransformNode = TransformPaintPropertyNode::create(
-        nullptr, TransformationMatrix(), FloatPoint3D());
-    rootClipNode = ClipPaintPropertyNode::create(
-        nullptr, rootTransformNode,
-        FloatRoundedRect(LayoutRect::infiniteIntRect()));
-    rootEffectNode = EffectPaintPropertyNode::create(
-        nullptr, rootTransformNode, rootClipNode, CompositorFilterOperations(),
-        1.0);
-    rootScrollNode = ScrollPaintPropertyNode::create(
-        nullptr, rootTransformNode, IntSize(), IntSize(), false, false, 0);
     geometryMapper = WTF::makeUnique<GeometryMapper>();
   }
 
@@ -116,9 +103,10 @@ const static float kTestEpsilon = 1e-6;
 TEST_F(GeometryMapperTest, Root) {
   FloatRect input(0, 0, 100, 100);
 
-  CHECK_MAPPINGS(input, input, input, rootTransformNode->matrix(),
-                 rootClipNode->clipRect().rect(), rootPropertyTreeState(),
-                 rootPropertyTreeState());
+  CHECK_MAPPINGS(input, input, input,
+                 TransformPaintPropertyNode::root()->matrix(),
+                 ClipPaintPropertyNode::root()->clipRect().rect(),
+                 rootPropertyTreeState(), rootPropertyTreeState());
 }
 
 TEST_F(GeometryMapperTest, IdentityTransform) {
@@ -132,7 +120,7 @@ TEST_F(GeometryMapperTest, IdentityTransform) {
   FloatRect input(0, 0, 100, 100);
 
   CHECK_MAPPINGS(input, input, input, transform->matrix(),
-                 rootClipNode->clipRect().rect(), localState,
+                 ClipPaintPropertyNode::root()->clipRect().rect(), localState,
                  rootPropertyTreeState());
 }
 
@@ -149,7 +137,7 @@ TEST_F(GeometryMapperTest, TranslationTransform) {
   FloatRect output = transformMatrix.mapRect(input);
 
   CHECK_MAPPINGS(input, output, output, transform->matrix(),
-                 rootClipNode->clipRect().rect(), localState,
+                 ClipPaintPropertyNode::root()->clipRect().rect(), localState,
                  rootPropertyTreeState());
 
   bool success = false;
@@ -174,7 +162,7 @@ TEST_F(GeometryMapperTest, RotationAndScaleTransform) {
   FloatRect output = transformMatrix.mapRect(input);
 
   CHECK_MAPPINGS(input, output, output, transformMatrix,
-                 rootClipNode->clipRect().rect(), localState,
+                 ClipPaintPropertyNode::root()->clipRect().rect(), localState,
                  rootPropertyTreeState());
 }
 
@@ -194,7 +182,7 @@ TEST_F(GeometryMapperTest, RotationAndScaleTransformWithTransformOrigin) {
   FloatRect output = transformMatrix.mapRect(input);
 
   CHECK_MAPPINGS(input, output, output, transformMatrix,
-                 rootClipNode->clipRect().rect(), localState,
+                 ClipPaintPropertyNode::root()->clipRect().rect(), localState,
                  rootPropertyTreeState());
 }
 
@@ -218,8 +206,9 @@ TEST_F(GeometryMapperTest, NestedTransforms) {
   TransformationMatrix final = rotateTransform * scaleTransform;
   FloatRect output = final.mapRect(input);
 
-  CHECK_MAPPINGS(input, output, output, final, rootClipNode->clipRect().rect(),
-                 localState, rootPropertyTreeState());
+  CHECK_MAPPINGS(input, output, output, final,
+                 ClipPaintPropertyNode::root()->clipRect().rect(), localState,
+                 rootPropertyTreeState());
 
   // Check the cached matrix for the intermediate transform.
   EXPECT_EQ(rotateTransform,
@@ -249,8 +238,9 @@ TEST_F(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
   TransformationMatrix final = scaleTransform * translateTransform;
   FloatRect output = final.mapRect(input);
 
-  CHECK_MAPPINGS(input, output, output, final, rootClipNode->clipRect().rect(),
-                 localState, rootPropertyTreeState());
+  CHECK_MAPPINGS(input, output, output, final,
+                 ClipPaintPropertyNode::root()->clipRect().rect(), localState,
+                 rootPropertyTreeState());
 
   // Check the cached matrix for the intermediate transform.
   EXPECT_EQ(scaleTransform,
@@ -281,13 +271,14 @@ TEST_F(GeometryMapperTest, NestedTransformsIntermediateDestination) {
   FloatRect output = scaleTransform.mapRect(input);
 
   CHECK_MAPPINGS(input, output, output, scaleTransform,
-                 rootClipNode->clipRect().rect(), localState,
+                 ClipPaintPropertyNode::root()->clipRect().rect(), localState,
                  intermediateState);
 }
 
 TEST_F(GeometryMapperTest, SimpleClip) {
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
-      rootClipNode, rootTransformNode, FloatRoundedRect(10, 10, 50, 50));
+      ClipPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      FloatRoundedRect(10, 10, 50, 50));
 
   PropertyTreeState localState = rootPropertyTreeState();
   localState.setClip(clip.get());
@@ -295,13 +286,14 @@ TEST_F(GeometryMapperTest, SimpleClip) {
   FloatRect input(0, 0, 100, 100);
   FloatRect output(10, 10, 50, 50);
 
-  CHECK_MAPPINGS(
-      input,                        // Input
-      output,                       // Visual rect
-      input,                        // Transformed rect (not clipped).
-      rootTransformNode->matrix(),  // Transform matrix to ancestor space
-      clip->clipRect().rect(),      // Clip rect in ancestor space
-      localState, rootPropertyTreeState());
+  CHECK_MAPPINGS(input,   // Input
+                 output,  // Visual rect
+                 input,   // Transformed rect (not clipped).
+                 TransformPaintPropertyNode::root()
+                     ->matrix(),           // Transform matrix to ancestor space
+                 clip->clipRect().rect(),  // Clip rect in ancestor space
+                 localState,
+                 rootPropertyTreeState());
 }
 
 TEST_F(GeometryMapperTest, ClipBeforeTransform) {
@@ -312,7 +304,8 @@ TEST_F(GeometryMapperTest, ClipBeforeTransform) {
                                          rotateTransform, FloatPoint3D());
 
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
-      rootClipNode, transform.get(), FloatRoundedRect(10, 10, 50, 50));
+      ClipPaintPropertyNode::root(), transform.get(),
+      FloatRoundedRect(10, 10, 50, 50));
 
   PropertyTreeState localState = rootPropertyTreeState();
   localState.setClip(clip.get());
@@ -341,9 +334,9 @@ TEST_F(GeometryMapperTest, ClipAfterTransform) {
       TransformPaintPropertyNode::create(rootPropertyTreeState().transform(),
                                          rotateTransform, FloatPoint3D());
 
-  RefPtr<ClipPaintPropertyNode> clip =
-      ClipPaintPropertyNode::create(rootClipNode, rootTransformNode.get(),
-                                    FloatRoundedRect(10, 10, 200, 200));
+  RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
+      ClipPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      FloatRoundedRect(10, 10, 200, 200));
 
   PropertyTreeState localState = rootPropertyTreeState();
   localState.setClip(clip.get());
@@ -364,9 +357,9 @@ TEST_F(GeometryMapperTest, ClipAfterTransform) {
 }
 
 TEST_F(GeometryMapperTest, TwoClipsWithTransformBetween) {
-  RefPtr<ClipPaintPropertyNode> clip1 =
-      ClipPaintPropertyNode::create(rootClipNode, rootTransformNode.get(),
-                                    FloatRoundedRect(10, 10, 200, 200));
+  RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
+      ClipPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      FloatRoundedRect(10, 10, 200, 200));
 
   TransformationMatrix rotateTransform;
   rotateTransform.rotate(45);

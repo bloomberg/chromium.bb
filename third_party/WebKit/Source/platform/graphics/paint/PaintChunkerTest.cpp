@@ -5,24 +5,18 @@
 #include "platform/graphics/paint/PaintChunker.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/testing/PaintPropertyTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::ElementsAre;
+using ::blink::testing::createOpacityOnlyEffect;
+using ::blink::testing::defaultPaintChunkProperties;
+using ::testing::ElementsAre;
 
 namespace blink {
 namespace {
 
-PaintChunkProperties rootPaintChunkProperties() {
-  PaintChunkProperties rootProperties;
-  rootProperties.transform = TransformPaintPropertyNode::root();
-  rootProperties.clip = ClipPaintPropertyNode::root();
-  rootProperties.effect = EffectPaintPropertyNode::root();
-  rootProperties.scroll = ScrollPaintPropertyNode::root();
-  return rootProperties;
-}
-
-class PaintChunkerTest : public testing::Test {
+class PaintChunkerTest : public ::testing::Test {
  protected:
   void SetUp() override {
     RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
@@ -73,34 +67,34 @@ TEST_F(PaintChunkerTest, Empty) {
 TEST_F(PaintChunkerTest, SingleNonEmptyRange) {
   PaintChunker chunker;
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   Vector<PaintChunk> chunks = chunker.releasePaintChunks();
 
   EXPECT_THAT(chunks, ElementsAre(PaintChunk(0, 2, nullptr,
-                                             rootPaintChunkProperties())));
+                                             defaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, SamePropertiesTwiceCombineIntoOneChunk) {
   PaintChunker chunker;
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   Vector<PaintChunk> chunks = chunker.releasePaintChunks();
 
   EXPECT_THAT(chunks, ElementsAre(PaintChunk(0, 3, nullptr,
-                                             rootPaintChunkProperties())));
+                                             defaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, CanRewindDisplayItemIndex) {
   PaintChunker chunker;
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   chunker.decrementDisplayItemIndex();
@@ -108,24 +102,24 @@ TEST_F(PaintChunkerTest, CanRewindDisplayItemIndex) {
   Vector<PaintChunk> chunks = chunker.releasePaintChunks();
 
   EXPECT_THAT(chunks, ElementsAre(PaintChunk(0, 2, nullptr,
-                                             rootPaintChunkProperties())));
+                                             defaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {
   PaintChunker chunker;
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
-  PaintChunkProperties simpleTransform = rootPaintChunkProperties();
+  PaintChunkProperties simpleTransform = defaultPaintChunkProperties();
   simpleTransform.transform = TransformPaintPropertyNode::create(
       nullptr, TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
 
   chunker.updateCurrentPaintChunkProperties(nullptr, simpleTransform);
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
-  PaintChunkProperties anotherTransform = rootPaintChunkProperties();
+  PaintChunkProperties anotherTransform = defaultPaintChunkProperties();
   anotherTransform.transform = TransformPaintPropertyNode::create(
       nullptr, TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   chunker.updateCurrentPaintChunkProperties(nullptr, anotherTransform);
@@ -133,45 +127,42 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {
 
   Vector<PaintChunk> chunks = chunker.releasePaintChunks();
 
-  EXPECT_THAT(chunks,
-              ElementsAre(PaintChunk(0, 2, nullptr, rootPaintChunkProperties()),
-                          PaintChunk(2, 3, nullptr, simpleTransform),
-                          PaintChunk(3, 4, nullptr, anotherTransform)));
+  EXPECT_THAT(chunks, ElementsAre(PaintChunk(0, 2, nullptr,
+                                             defaultPaintChunkProperties()),
+                                  PaintChunk(2, 3, nullptr, simpleTransform),
+                                  PaintChunk(3, 4, nullptr, anotherTransform)));
 }
 
 TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
   PaintChunker chunker;
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
-  PaintChunkProperties simpleTransform = rootPaintChunkProperties();
+  PaintChunkProperties simpleTransform = defaultPaintChunkProperties();
   simpleTransform.transform = TransformPaintPropertyNode::create(
       nullptr, TransformationMatrix(0, 0, 0, 0, 0, 0), FloatPoint3D(9, 8, 7));
   chunker.updateCurrentPaintChunkProperties(nullptr, simpleTransform);
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
-  PaintChunkProperties simpleTransformAndEffect = rootPaintChunkProperties();
+  PaintChunkProperties simpleTransformAndEffect = defaultPaintChunkProperties();
   simpleTransformAndEffect.transform = simpleTransform.transform;
-  simpleTransformAndEffect.effect = EffectPaintPropertyNode::create(
-      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 0.5f);
+  simpleTransformAndEffect.effect =
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5f);
   chunker.updateCurrentPaintChunkProperties(nullptr, simpleTransformAndEffect);
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
   PaintChunkProperties simpleTransformAndEffectWithUpdatedTransform =
-      rootPaintChunkProperties();
+      defaultPaintChunkProperties();
   simpleTransformAndEffectWithUpdatedTransform.transform =
       TransformPaintPropertyNode::create(nullptr,
                                          TransformationMatrix(1, 1, 0, 0, 0, 0),
                                          FloatPoint3D(9, 8, 7));
   simpleTransformAndEffectWithUpdatedTransform.effect =
-      EffectPaintPropertyNode::create(
-          EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-          ClipPaintPropertyNode::root(), CompositorFilterOperations(),
-          simpleTransformAndEffect.effect->opacity());
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(),
+                              simpleTransformAndEffect.effect->opacity());
   chunker.updateCurrentPaintChunkProperties(
       nullptr, simpleTransformAndEffectWithUpdatedTransform);
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
@@ -187,7 +178,7 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
 
   EXPECT_THAT(
       chunks,
-      ElementsAre(PaintChunk(0, 1, nullptr, rootPaintChunkProperties()),
+      ElementsAre(PaintChunk(0, 1, nullptr, defaultPaintChunkProperties()),
                   PaintChunk(1, 3, nullptr, simpleTransform),
                   PaintChunk(3, 5, nullptr, simpleTransformAndEffect),
                   PaintChunk(5, 7, nullptr,
@@ -202,10 +193,10 @@ TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms) {
   // </root xform>
   PaintChunker chunker;
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
-  PaintChunkProperties simpleTransform = rootPaintChunkProperties();
+  PaintChunkProperties simpleTransform = defaultPaintChunkProperties();
   simpleTransform.transform = TransformPaintPropertyNode::create(
       nullptr, TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   chunker.updateCurrentPaintChunkProperties(nullptr, simpleTransform);
@@ -213,31 +204,31 @@ TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms) {
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
   Vector<PaintChunk> chunks = chunker.releasePaintChunks();
 
   EXPECT_THAT(
       chunks,
-      ElementsAre(PaintChunk(0, 1, nullptr, rootPaintChunkProperties()),
+      ElementsAre(PaintChunk(0, 1, nullptr, defaultPaintChunkProperties()),
                   PaintChunk(1, 3, nullptr, simpleTransform),
-                  PaintChunk(3, 4, nullptr, rootPaintChunkProperties())));
+                  PaintChunk(3, 4, nullptr, defaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems) {
   // Test that properties can change without display items being generated.
   PaintChunker chunker;
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
-  PaintChunkProperties firstTransform = rootPaintChunkProperties();
+  PaintChunkProperties firstTransform = defaultPaintChunkProperties();
   firstTransform.transform = TransformPaintPropertyNode::create(
       nullptr, TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   chunker.updateCurrentPaintChunkProperties(nullptr, firstTransform);
 
-  PaintChunkProperties secondTransform = rootPaintChunkProperties();
+  PaintChunkProperties secondTransform = defaultPaintChunkProperties();
   secondTransform.transform = TransformPaintPropertyNode::create(
       nullptr, TransformationMatrix(9, 8, 7, 6, 5, 4), FloatPoint3D(3, 2, 1));
   chunker.updateCurrentPaintChunkProperties(nullptr, secondTransform);
@@ -245,9 +236,9 @@ TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems) {
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   Vector<PaintChunk> chunks = chunker.releasePaintChunks();
 
-  EXPECT_THAT(chunks,
-              ElementsAre(PaintChunk(0, 1, nullptr, rootPaintChunkProperties()),
-                          PaintChunk(1, 2, nullptr, secondTransform)));
+  EXPECT_THAT(chunks, ElementsAre(PaintChunk(0, 1, nullptr,
+                                             defaultPaintChunkProperties()),
+                                  PaintChunk(1, 2, nullptr, secondTransform)));
 }
 
 TEST_F(PaintChunkerTest, CreatesSeparateChunksWhenRequested) {
@@ -262,7 +253,7 @@ TEST_F(PaintChunkerTest, CreatesSeparateChunksWhenRequested) {
   TestDisplayItemRequiringSeparateChunk i6(m_client);
 
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   chunker.incrementDisplayItemIndex(i1);
   chunker.incrementDisplayItemIndex(i2);
@@ -282,13 +273,14 @@ TEST_F(PaintChunkerTest, CreatesSeparateChunksWhenRequested) {
   DisplayItem::Id id3 = i3.getId();
   DisplayItem::Id id6 = i6.getId();
   Vector<PaintChunk> chunks = chunker.releasePaintChunks();
-  EXPECT_THAT(chunks,
-              ElementsAre(PaintChunk(0, 1, nullptr, rootPaintChunkProperties()),
-                          PaintChunk(1, 2, &id1, rootPaintChunkProperties()),
-                          PaintChunk(2, 3, &id2, rootPaintChunkProperties()),
-                          PaintChunk(3, 4, &id3, rootPaintChunkProperties()),
-                          PaintChunk(4, 6, nullptr, rootPaintChunkProperties()),
-                          PaintChunk(6, 7, &id6, rootPaintChunkProperties())));
+  EXPECT_THAT(
+      chunks,
+      ElementsAre(PaintChunk(0, 1, nullptr, defaultPaintChunkProperties()),
+                  PaintChunk(1, 2, &id1, defaultPaintChunkProperties()),
+                  PaintChunk(2, 3, &id2, defaultPaintChunkProperties()),
+                  PaintChunk(3, 4, &id3, defaultPaintChunkProperties()),
+                  PaintChunk(4, 6, nullptr, defaultPaintChunkProperties()),
+                  PaintChunk(6, 7, &id6, defaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, ChunkIds) {
@@ -299,11 +291,11 @@ TEST_F(PaintChunkerTest, ChunkIds) {
   DisplayItem::Id id2 = i2.getId();
 
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
-  PaintChunkProperties simpleTransform = rootPaintChunkProperties();
+  PaintChunkProperties simpleTransform = defaultPaintChunkProperties();
   simpleTransform.transform = TransformPaintPropertyNode::create(
       nullptr, TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   chunker.updateCurrentPaintChunkProperties(&id1, simpleTransform);
@@ -314,17 +306,17 @@ TEST_F(PaintChunkerTest, ChunkIds) {
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
   Vector<PaintChunk> chunks = chunker.releasePaintChunks();
   EXPECT_THAT(
       chunks,
-      ElementsAre(PaintChunk(0, 2, nullptr, rootPaintChunkProperties()),
+      ElementsAre(PaintChunk(0, 2, nullptr, defaultPaintChunkProperties()),
                   PaintChunk(2, 4, &id1, simpleTransform),
                   PaintChunk(4, 5, &id2, simpleTransform),
                   PaintChunk(5, 6, nullptr, simpleTransform),
-                  PaintChunk(6, 7, nullptr, rootPaintChunkProperties())));
+                  PaintChunk(6, 7, nullptr, defaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
@@ -336,11 +328,11 @@ TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
   i2.setSkippedCache();
 
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
-  PaintChunkProperties simpleTransform = rootPaintChunkProperties();
+  PaintChunkProperties simpleTransform = defaultPaintChunkProperties();
   simpleTransform.transform = TransformPaintPropertyNode::create(
       nullptr, TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   chunker.updateCurrentPaintChunkProperties(&id1, simpleTransform);
@@ -351,17 +343,17 @@ TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
   chunker.updateCurrentPaintChunkProperties(nullptr,
-                                            rootPaintChunkProperties());
+                                            defaultPaintChunkProperties());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem(m_client));
 
   Vector<PaintChunk> chunks = chunker.releasePaintChunks();
   EXPECT_THAT(
       chunks,
-      ElementsAre(PaintChunk(0, 2, nullptr, rootPaintChunkProperties()),
+      ElementsAre(PaintChunk(0, 2, nullptr, defaultPaintChunkProperties()),
                   PaintChunk(2, 4, nullptr, simpleTransform),
                   PaintChunk(4, 5, nullptr, simpleTransform),
                   PaintChunk(5, 6, nullptr, simpleTransform),
-                  PaintChunk(6, 7, nullptr, rootPaintChunkProperties())));
+                  PaintChunk(6, 7, nullptr, defaultPaintChunkProperties())));
 }
 
 }  // namespace
