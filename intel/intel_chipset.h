@@ -233,6 +233,11 @@
 #define PCI_CHIP_COFFEELAKE_U_GT3_3     0x3EA7
 #define PCI_CHIP_COFFEELAKE_U_GT3_4     0x3EA8
 
+#define PCI_CHIP_CANNONLAKE_U_GT2_0	0x5A52
+#define PCI_CHIP_CANNONLAKE_U_GT2_1	0x5A5A
+#define PCI_CHIP_CANNONLAKE_U_GT2_2	0x5A42
+#define PCI_CHIP_CANNONLAKE_U_GT2_3	0x5A4A
+
 #define IS_MOBILE(devid)	((devid) == PCI_CHIP_I855_GM || \
 				 (devid) == PCI_CHIP_I915_GM || \
 				 (devid) == PCI_CHIP_I945_GM || \
@@ -496,5 +501,13 @@
 				 IS_GEN8(dev) || \
 				 IS_GEN9(dev))
 
+#define IS_CNL_U(devid)		((devid) == PCI_CHIP_CANNONLAKE_U_GT2_0 || \
+				 (devid) == PCI_CHIP_CANNONLAKE_U_GT2_1 || \
+				 (devid) == PCI_CHIP_CANNONLAKE_U_GT2_2 || \
+				 (devid) == PCI_CHIP_CANNONLAKE_U_GT2_3)
+
+#define IS_CANNONLAKE(devid)	(IS_CNL_U(devid))
+
+#define IS_GEN10(devid)		(IS_CANNONLAKE(devid))
 
 #endif /* _INTEL_CHIPSET_H */
