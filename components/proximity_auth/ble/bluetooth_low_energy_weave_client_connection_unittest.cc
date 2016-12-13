@@ -361,6 +361,13 @@ class ProximityAuthBluetoothLowEnergyWeaveClientConnectionTest
         receiver_factory_);
   }
 
+  ~ProximityAuthBluetoothLowEnergyWeaveClientConnectionTest() override {
+    BluetoothLowEnergyWeavePacketGenerator::Factory::SetInstanceForTesting(
+        nullptr);
+    BluetoothLowEnergyWeavePacketReceiver::Factory::SetInstanceForTesting(
+        nullptr);
+  }
+
   void SetUp() override {
     device_ = base::MakeUnique<NiceMock<device::MockBluetoothDevice>>(
         adapter_.get(), 0, kTestRemoteDeviceName,
