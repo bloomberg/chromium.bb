@@ -7,10 +7,12 @@
 #include "bindings/core/v8/PerformanceObserverCallback.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/testing/NullExecutionContext.h"
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceLongTaskTiming.h"
 #include "core/timing/PerformanceObserver.h"
 #include "core/timing/PerformanceObserverInit.h"
+#include "platform/network/ResourceResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -46,7 +48,10 @@ class PerformanceBaseTest : public ::testing::Test {
 
   void SetUp() override {
     m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
+    m_executionContext = new NullExecutionContext();
   }
+
+  ExecutionContext* getExecutionContext() { return m_executionContext.get(); }
 
   int numPerformanceEntriesInObserver() {
     return m_observer->m_performanceEntries.size();
@@ -58,7 +63,17 @@ class PerformanceBaseTest : public ::testing::Test {
     return PerformanceBase::getNavigationType(type, document);
   }
 
+  static bool allowsTimingRedirect(
+      const Vector<ResourceResponse>& redirectChain,
+      const ResourceResponse& finalResponse,
+      const SecurityOrigin& initiatorSecurityOrigin,
+      ExecutionContext* context) {
+    return PerformanceBase::allowsTimingRedirect(
+        redirectChain, finalResponse, initiatorSecurityOrigin, context);
+  }
+
   Persistent<TestPerformanceBase> m_base;
+  Persistent<ExecutionContext> m_executionContext;
   Persistent<PerformanceObserver> m_observer;
   std::unique_ptr<DummyPageHolder> m_pageHolder;
   Persistent<PerformanceObserverCallback> m_cb;
@@ -144,4 +159,40 @@ TEST_F(PerformanceBaseTest, GetNavigationType) {
   EXPECT_EQ(returnedType,
             PerformanceNavigationTiming::NavigationType::Navigate);
 }
+
+TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
+  // When there are no cross-origin redirects.
+  AtomicString originDomain = "http://127.0.0.1:8000";
+  Vector<ResourceResponse> redirectChain;
+  KURL url(ParsedURLString, originDomain + "/foo.html");
+  ResourceResponse finalResponse;
+  finalResponse.setURL(url);
+  ResourceResponse redirectResponse1;
+  redirectResponse1.setURL(url);
+  ResourceResponse redirectResponse2;
+  redirectResponse2.setURL(url);
+  redirectChain.append(redirectResponse1);
+  redirectChain.append(redirectResponse2);
+  RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(url);
+  EXPECT_TRUE(allowsTimingRedirect(redirectChain, finalResponse,
+                                   *securityOrigin.get(),
+                                   getExecutionContext()));
+  // When there exist cross-origin redirects.
+  AtomicString crossOriginDomain = "http://126.0.0.1:8000";
+  KURL redirectUrl(ParsedURLString, crossOriginDomain + "/bar.html");
+  ResourceResponse redirectResponse3;
+  redirectResponse3.setURL(redirectUrl);
+  redirectChain.append(redirectResponse3);
+  EXPECT_FALSE(allowsTimingRedirect(redirectChain, finalResponse,
+                                    *securityOrigin.get(),
+                                    getExecutionContext()));
+
+  // When cross-origin redirect opts in.
+  redirectChain.back().setHTTPHeaderField(HTTPNames::Timing_Allow_Origin,
+                                          originDomain);
+  EXPECT_TRUE(allowsTimingRedirect(redirectChain, finalResponse,
+                                   *securityOrigin.get(),
+                                   getExecutionContext()));
+}
+
 }  // namespace blink

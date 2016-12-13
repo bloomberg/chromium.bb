@@ -36,7 +36,7 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
     double redirectEnd,
     double fetchStart,
     double responseEnd,
-    bool hasCrossOriginRedirect,
+    bool allowRedirectDetails,
     bool hasSameOriginAsPreviousDocument,
     ResourceLoadTiming* timing,
     double lastRedirectEndTime,
@@ -57,7 +57,7 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
                                 true /*allowTimingDetails*/,  // TODO(sunjian):
                                                               // Create an enum
                                                               // for this.
-                                !hasCrossOriginRedirect,
+                                allowRedirectDetails,
                                 "document",
                                 "navigation",
                                 timeOrigin),
@@ -76,19 +76,19 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
       m_redirectEnd(redirectEnd),
       m_fetchStart(fetchStart),
       m_responseEnd(responseEnd),
-      m_hasCrossOriginRedirect(hasCrossOriginRedirect),
+      m_allowRedirectDetails(allowRedirectDetails),
       m_hasSameOriginAsPreviousDocument(hasSameOriginAsPreviousDocument) {}
 
 PerformanceNavigationTiming::~PerformanceNavigationTiming() {}
 
 double PerformanceNavigationTiming::unloadEventStart() const {
-  if (m_hasCrossOriginRedirect || !m_hasSameOriginAsPreviousDocument)
+  if (!m_allowRedirectDetails || !m_hasSameOriginAsPreviousDocument)
     return 0;
   return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_unloadEventStart);
 }
 
 double PerformanceNavigationTiming::unloadEventEnd() const {
-  if (m_hasCrossOriginRedirect || !m_hasSameOriginAsPreviousDocument)
+  if (!m_allowRedirectDetails || !m_hasSameOriginAsPreviousDocument)
     return 0;
 
   return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_unloadEventEnd);
@@ -136,8 +136,7 @@ AtomicString PerformanceNavigationTiming::type() const {
 }
 
 unsigned short PerformanceNavigationTiming::redirectCount() const {
-  // TODO(sunjian): Also check response headers to allow opt-in crbugs/665160
-  if (m_hasCrossOriginRedirect)
+  if (!m_allowRedirectDetails)
     return 0;
   return m_redirectCount;
 }
@@ -147,13 +146,13 @@ double PerformanceNavigationTiming::fetchStart() const {
 }
 
 double PerformanceNavigationTiming::redirectStart() const {
-  if (m_hasCrossOriginRedirect)
+  if (!m_allowRedirectDetails)
     return 0;
   return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_redirectStart);
 }
 
 double PerformanceNavigationTiming::redirectEnd() const {
-  if (m_hasCrossOriginRedirect)
+  if (!m_allowRedirectDetails)
     return 0;
   return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_redirectEnd);
 }

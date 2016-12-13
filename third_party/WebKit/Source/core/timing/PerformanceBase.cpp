@@ -50,6 +50,16 @@
 
 namespace blink {
 
+namespace {
+
+SecurityOrigin* getSecurityOrigin(ExecutionContext* context) {
+  if (context)
+    return context->getSecurityOrigin();
+  return nullptr;
+}
+
+}  // namespace
+
 using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 
 static const size_t defaultResourceTimingBufferSize = 150;
@@ -225,7 +235,7 @@ void PerformanceBase::setFrameTimingBufferSize(unsigned size) {
     dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));
 }
 
-static bool passesTimingAllowCheck(
+bool PerformanceBase::passesTimingAllowCheck(
     const ResourceResponse& response,
     const SecurityOrigin& initiatorSecurityOrigin,
     const AtomicString& originalTimingAllowOrigin,
@@ -263,10 +273,11 @@ static bool passesTimingAllowCheck(
   return false;
 }
 
-static bool allowsTimingRedirect(const Vector<ResourceResponse>& redirectChain,
-                                 const ResourceResponse& finalResponse,
-                                 const SecurityOrigin& initiatorSecurityOrigin,
-                                 ExecutionContext* context) {
+bool PerformanceBase::allowsTimingRedirect(
+    const Vector<ResourceResponse>& redirectChain,
+    const ResourceResponse& finalResponse,
+    const SecurityOrigin& initiatorSecurityOrigin,
+    ExecutionContext* context) {
   if (!passesTimingAllowCheck(finalResponse, initiatorSecurityOrigin,
                               AtomicString(), context))
     return false;
@@ -284,10 +295,8 @@ void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info) {
   if (isResourceTimingBufferFull() &&
       !hasObserverFor(PerformanceEntry::Resource))
     return;
-  SecurityOrigin* securityOrigin = nullptr;
   ExecutionContext* context = getExecutionContext();
-  if (context)
-    securityOrigin = context->getSecurityOrigin();
+  SecurityOrigin* securityOrigin = getSecurityOrigin(context);
   if (!securityOrigin)
     return;
 
@@ -357,6 +366,15 @@ void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
   double lastRedirectEndTime = documentLoadTiming.redirectEnd();
   double finishTime = documentLoadTiming.loadEventEnd();
 
+  ExecutionContext* context = getExecutionContext();
+  SecurityOrigin* securityOrigin = getSecurityOrigin(context);
+  if (!securityOrigin)
+    return;
+
+  bool allowRedirectDetails =
+      allowsTimingRedirect(navigationTimingInfo->redirectChain(), finalResponse,
+                           *securityOrigin, context);
+
   unsigned long long transferSize = navigationTimingInfo->transferSize();
   unsigned long long encodedBodyLength = finalResponse.encodedBodyLength();
   unsigned long long decodedBodyLength = finalResponse.decodedBodyLength();
@@ -374,7 +392,7 @@ void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
       documentTiming ? documentTiming->domComplete() : 0, type,
       documentLoadTiming.redirectStart(), documentLoadTiming.redirectEnd(),
       documentLoadTiming.fetchStart(), documentLoadTiming.responseEnd(),
-      documentLoadTiming.hasCrossOriginRedirect(),
+      allowRedirectDetails,
       documentLoadTiming.hasSameOriginAsPreviousDocument(), resourceLoadTiming,
       lastRedirectEndTime, finishTime, transferSize, encodedBodyLength,
       decodedBodyLength, didReuseConnection);

@@ -32,7 +32,7 @@ class CORE_EXPORT PerformanceNavigationTiming final
                               double redirectEnd,
                               double fetchStart,
                               double responseEnd,
-                              bool hasCrossOriginRedirect,
+                              bool allowRedirectDetails,
                               bool hasSameOriginAsPreviousDocument,
                               ResourceLoadTiming*,
                               double lastRedirectEndTime,
@@ -80,7 +80,7 @@ class CORE_EXPORT PerformanceNavigationTiming final
   double m_redirectEnd;
   double m_fetchStart;
   double m_responseEnd;
-  bool m_hasCrossOriginRedirect;
+  bool m_allowRedirectDetails;
   bool m_hasSameOriginAsPreviousDocument;
 };
 }  // namespace blink

@@ -132,6 +132,16 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
       NavigationType,
       const Document*);
 
+  static bool allowsTimingRedirect(const Vector<ResourceResponse>&,
+                                   const ResourceResponse&,
+                                   const SecurityOrigin&,
+                                   ExecutionContext*);
+
+  static bool passesTimingAllowCheck(const ResourceResponse&,
+                                     const SecurityOrigin&,
+                                     const AtomicString&,
+                                     ExecutionContext*);
+
  protected:
   explicit PerformanceBase(double timeOrigin);
 
