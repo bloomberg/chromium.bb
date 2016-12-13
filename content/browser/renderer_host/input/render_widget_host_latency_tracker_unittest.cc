@@ -3,9 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/test/histogram_tester.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "components/rappor/test_rappor_service.h"
 #include "content/browser/renderer_host/input/render_widget_host_latency_tracker.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/test/test_content_browser_client.h"
+#include "content/test/test_render_view_host.h"
+#include "content/test/test_web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,9 +64,29 @@ void AddRenderingScheduledComponent(ui::LatencyInfo* latency,
 
 }  // namespace
 
-class RenderWidgetHostLatencyTrackerTest : public testing::Test {
+class RenderWidgetHostLatencyTrackerTestBrowserClient
+    : public TestContentBrowserClient {
  public:
-  RenderWidgetHostLatencyTrackerTest() {
+  RenderWidgetHostLatencyTrackerTestBrowserClient() {}
+  ~RenderWidgetHostLatencyTrackerTestBrowserClient() override {}
+
+  rappor::RapporService* GetRapporService() override {
+    return &rappor_service_;
+  }
+
+  rappor::TestRapporServiceImpl* getTestRapporService() {
+    return &rappor_service_;
+  }
+
+ private:
+  rappor::TestRapporServiceImpl rappor_service_;
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostLatencyTrackerTestBrowserClient);
+};
+
+class RenderWidgetHostLatencyTrackerTest
+    : public RenderViewHostImplTestHarness {
+ public:
+  RenderWidgetHostLatencyTrackerTest() : old_browser_client_(NULL) {
     tracker_.Initialize(kTestRoutingId, kTestProcessId);
     ResetHistograms();
   }
@@ -88,12 +113,25 @@ class RenderWidgetHostLatencyTrackerTest : public testing::Test {
     return *histogram_tester_;
   }
 
- private:
+  void SetUp() override {
+    RenderViewHostImplTestHarness::SetUp();
+    old_browser_client_ = SetBrowserClientForTesting(&test_browser_client_);
+    tracker_.SetDelegate(contents());
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_browser_client_);
+    RenderViewHostImplTestHarness::TearDown();
+  }
+
+ protected:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostLatencyTrackerTest);
   const int kTestRoutingId = 3;
   const int kTestProcessId = 1;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   RenderWidgetHostLatencyTracker tracker_;
+  RenderWidgetHostLatencyTrackerTestBrowserClient test_browser_client_;
+  ContentBrowserClient* old_browser_client_;
 };
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
@@ -381,9 +419,13 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
 }
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
+  const GURL url("http://www.foo.bar.com/subpage/1");
+  contents()->NavigateAndCommit(url);
   for (bool rendering_on_main : {false, true}) {
     for (bool is_running_navigation_hint_task : {false, true}) {
       ResetHistograms();
+      EXPECT_EQ(0,
+                test_browser_client_.getTestRapporService()->GetReportsCount());
       {
         auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
             5.f, -5.f, 0, blink::WebGestureDeviceTouchscreen);
@@ -430,6 +472,24 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
                                   is_running_navigation_hint_task);
       }
 
+      // Rappor metrics
+      rappor::TestSample::Shadow* sample_obj =
+          test_browser_client_.getTestRapporService()
+              ->GetRecordedSampleForMetric(
+                  "Event.Latency.ScrollUpdate.Touch."
+                  "TimeToScrollUpdateSwapBegin2");
+      EXPECT_NE(nullptr, sample_obj);
+      const auto& domain_it = sample_obj->string_fields.find("Domain");
+      EXPECT_NE(domain_it, sample_obj->string_fields.end());
+      EXPECT_EQ("bar.com", domain_it->second);
+      const auto& latency_it = sample_obj->uint64_fields.find("Latency");
+      EXPECT_NE(latency_it, sample_obj->uint64_fields.end());
+      EXPECT_EQ(rappor::NO_NOISE, latency_it->second.second);
+
+      EXPECT_EQ(2,
+                test_browser_client_.getTestRapporService()->GetReportsCount());
+
+      // UMA histograms
       EXPECT_TRUE(HistogramSizeEq(
           "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2", 0));
       EXPECT_TRUE(HistogramSizeEq(

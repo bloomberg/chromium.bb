@@ -1380,6 +1380,7 @@ test("content_unittests") {
     "//cc/surfaces",
     "//components/display_compositor",
     "//components/payments:payment_app",
+    "//components/rappor:test_support",
     "//content:resources",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",

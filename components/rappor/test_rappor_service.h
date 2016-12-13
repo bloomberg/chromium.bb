@@ -33,6 +33,10 @@ class TestSample : public Sample {
                      uint64_t flags,
                      size_t num_flags) override;
 
+  void SetUInt64Field(const std::string& field_name,
+                      uint64_t value,
+                      NoiseLevel noise_level) override;
+
   struct Shadow {
     explicit Shadow(RapporType type);
     Shadow(const Shadow& other);
@@ -40,6 +44,7 @@ class TestSample : public Sample {
     RapporType type;
     std::map<std::string, uint64_t> flag_fields;
     std::map<std::string, std::string> string_fields;
+    std::map<std::string, std::pair<std::uint64_t, NoiseLevel>> uint64_fields;
   };
 
   Shadow GetShadow() { return shadow_; }

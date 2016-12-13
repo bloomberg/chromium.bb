@@ -17,11 +17,13 @@
 
 namespace content {
 
+class RenderWidgetHostDelegate;
+
 // Utility class for tracking the latency of events passing through
 // a given RenderWidgetHost.
 class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
  public:
-  RenderWidgetHostLatencyTracker();
+  explicit RenderWidgetHostLatencyTracker();
   ~RenderWidgetHostLatencyTracker();
 
   // Associates the latency tracker with a given route and process.
@@ -68,6 +70,10 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
   // subsystem.
   int64_t latency_component_id() const { return latency_component_id_; }
 
+  // A delegate is used to get the url to be stored in Rappor Sample.
+  // If delegate is null no Rappor sample will be reported.
+  void SetDelegate(RenderWidgetHostDelegate*);
+
  private:
   int64_t last_event_id_;
   int64_t latency_component_id_;
@@ -79,6 +85,8 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
   // Whether the touch start for the current stream of touch events had its
   // default action prevented. Only valid for single finger gestures.
   bool touch_start_default_prevented_;
+
+  RenderWidgetHostDelegate* render_widget_host_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostLatencyTracker);
 };

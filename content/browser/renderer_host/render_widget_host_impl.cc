@@ -273,6 +273,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_in_touchpad_gesture_scroll_(false),
       is_in_touchscreen_gesture_scroll_(false),
       received_paint_after_load_(false),
+      latency_tracker_(),
       next_browser_snapshot_id_(1),
       owned_by_render_frame_host_(false),
       is_focused_(false),
@@ -287,6 +288,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       weak_factory_(this) {
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
+  latency_tracker_.SetDelegate(delegate_);
 
 #if defined(OS_WIN)
   // Update the display color profile cache so that it is likely to be up to
@@ -2304,6 +2306,7 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
 
 void RenderWidgetHostImpl::DetachDelegate() {
   delegate_ = NULL;
+  latency_tracker_.SetDelegate(nullptr);
 }
 
 void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {

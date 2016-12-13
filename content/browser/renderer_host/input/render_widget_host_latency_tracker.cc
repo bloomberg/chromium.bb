@@ -9,7 +9,10 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
 using blink::WebGestureEvent;
@@ -238,6 +241,7 @@ void ComputeScrollLatencyHistograms(
 }
 
 void ComputeTouchAndWheelScrollLatencyHistograms(
+    RenderWidgetHostDelegate* render_widget_host_delegate,
     const ui::LatencyInfo::LatencyComponent& gpu_swap_begin_component,
     const ui::LatencyInfo::LatencyComponent& gpu_swap_end_component,
     int64_t latency_component_id,
@@ -279,6 +283,22 @@ void ComputeTouchAndWheelScrollLatencyHistograms(
           "Event.Latency.ScrollUpdate." + event_type_name +
               ".TimeToScrollUpdateSwapBegin2",
           original_component, gpu_swap_begin_component);
+
+      rappor::RapporService* rappor_service =
+          GetContentClient()->browser()->GetRapporService();
+      if (rappor_service && render_widget_host_delegate) {
+        std::unique_ptr<rappor::Sample> sample =
+            rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE);
+        render_widget_host_delegate->AddDomainInfoToRapporSample(sample.get());
+        sample->SetUInt64Field("Latency",
+                               (gpu_swap_begin_component.last_event_time -
+                                original_component.first_event_time)
+                                   .InMicroseconds(),
+                               rappor::NO_NOISE);
+        rappor_service->RecordSample(
+            "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin2",
+            std::move(sample));
+      }
     }
   } else {
     // No original component found.
@@ -372,7 +392,8 @@ RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker()
       device_scale_factor_(1),
       has_seen_first_gesture_scroll_update_(false),
       multi_finger_gesture_(false),
-      touch_start_default_prevented_(false) {}
+      touch_start_default_prevented_(false),
+      render_widget_host_delegate_(nullptr) {}
 
 RenderWidgetHostLatencyTracker::~RenderWidgetHostLatencyTracker() {}
 
@@ -711,8 +732,8 @@ void RenderWidgetHostLatencyTracker::OnFrameSwapped(
   if (source_event_type == ui::SourceEventType::WHEEL ||
       source_event_type == ui::SourceEventType::TOUCH) {
     ComputeTouchAndWheelScrollLatencyHistograms(
-        gpu_swap_begin_component, gpu_swap_end_component, latency_component_id_,
-        latency,
+        render_widget_host_delegate_, gpu_swap_begin_component,
+        gpu_swap_end_component, latency_component_id_, latency,
         source_event_type == ui::SourceEventType::WHEEL ? "Wheel" : "Touch");
   }
 
@@ -727,6 +748,11 @@ void RenderWidgetHostLatencyTracker::OnFrameSwapped(
         gpu_swap_begin_component, gpu_swap_end_component, latency_component_id_,
         latency, is_running_navigation_hint_task);
   }
+}
+
+void RenderWidgetHostLatencyTracker::SetDelegate(
+    RenderWidgetHostDelegate* delegate) {
+  render_widget_host_delegate_ = delegate;
 }
 
 }  // namespace content

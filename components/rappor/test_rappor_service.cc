@@ -42,12 +42,21 @@ void TestSample::SetFlagsField(const std::string& field_name,
   Sample::SetFlagsField(field_name, flags, num_flags);
 }
 
+void TestSample::SetUInt64Field(const std::string& field_name,
+                                uint64_t value,
+                                NoiseLevel noise_level) {
+  shadow_.uint64_fields[field_name] =
+      std::pair<std::uint64_t, NoiseLevel>(value, noise_level);
+  Sample::SetUInt64Field(field_name, value, noise_level);
+}
+
 TestSample::Shadow::Shadow(RapporType type) : type(type) {}
 
 TestSample::Shadow::Shadow(const TestSample::Shadow& other) {
   type = other.type;
   flag_fields = other.flag_fields;
   string_fields = other.string_fields;
+  uint64_fields = other.uint64_fields;
 }
 
 TestSample::Shadow::~Shadow() {}
