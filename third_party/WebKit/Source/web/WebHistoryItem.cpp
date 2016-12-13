@@ -113,8 +113,8 @@ void WebHistoryItem::setPageScaleFactor(float scale) {
   m_private->setPageScaleFactor(scale);
 }
 
-WebVector<WebString> WebHistoryItem::documentState() const {
-  return m_private->documentState();
+WebVector<WebString> WebHistoryItem::getDocumentState() const {
+  return m_private->getDocumentState();
 }
 
 void WebHistoryItem::setDocumentState(const WebVector<WebString>& state) {

@@ -515,7 +515,7 @@ void FrameLoader::didInstallNewDocument(bool dispatchWindowObjectAvailable) {
 
   if (m_provisionalItem && isBackForwardLoadType(m_loadType)) {
     m_frame->document()->setStateForNewFormElements(
-        m_provisionalItem->documentState());
+        m_provisionalItem->getDocumentState());
   }
 }
 

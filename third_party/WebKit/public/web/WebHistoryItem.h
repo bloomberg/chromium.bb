@@ -93,7 +93,7 @@ class WebHistoryItem {
   BLINK_EXPORT float pageScaleFactor() const;
   BLINK_EXPORT void setPageScaleFactor(float);
 
-  BLINK_EXPORT WebVector<WebString> documentState() const;
+  BLINK_EXPORT WebVector<WebString> getDocumentState() const;
   BLINK_EXPORT void setDocumentState(const WebVector<WebString>&);
 
   BLINK_EXPORT long long itemSequenceNumber() const;

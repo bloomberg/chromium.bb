@@ -869,7 +869,7 @@ Vector<String> Internals::formControlStateOfHistoryItem(
                                      "No history item is available.");
     return Vector<String>();
   }
-  return mainItem->documentState();
+  return mainItem->getDocumentState();
 }
 
 void Internals::setFormControlStateOfHistoryItem(

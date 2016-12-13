@@ -52,7 +52,7 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
   state->document_sequence_number =
       item.documentSequenceNumber();
   state->page_scale_factor = item.pageScaleFactor();
-  ToNullableString16Vector(item.documentState(), &state->document_state);
+  ToNullableString16Vector(item.getDocumentState(), &state->document_state);
 
   state->http_body.http_content_type = item.httpContentType();
   const WebHTTPBody& http_body = item.httpBody();

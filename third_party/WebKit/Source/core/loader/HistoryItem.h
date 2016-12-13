@@ -69,7 +69,7 @@ class CORE_EXPORT HistoryItem final
   void setPageScaleFactor(float);
 
   Vector<String> getReferencedFilePaths();
-  const Vector<String>& documentState();
+  const Vector<String>& getDocumentState();
   void setDocumentState(const Vector<String>&);
   void setDocumentState(DocumentState*);
   void clearDocumentState();
