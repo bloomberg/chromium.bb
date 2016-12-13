@@ -570,8 +570,11 @@ MediaQueryMatcher& Document::mediaQueryMatcher() {
 }
 
 void Document::mediaQueryAffectingValueChanged() {
-  m_evaluateMediaQueriesOnStyleRecalc = true;
   styleEngine().mediaQueryAffectingValueChanged();
+  if (needsLayoutTreeUpdate())
+    m_evaluateMediaQueriesOnStyleRecalc = true;
+  else
+    evaluateMediaQueryList();
   InspectorInstrumentation::mediaQueryResultChanged(this);
 }
 
@@ -2227,8 +2230,9 @@ void Document::updateStyleAndLayoutTreeIgnorePendingStylesheets() {
     if (bodyElement && !bodyElement->layoutObject() &&
         m_pendingSheetLayout == NoLayoutWithPendingSheets) {
       m_pendingSheetLayout = DidLayoutWithPendingSheets;
-      styleEngine().resolverChanged(FullStyleUpdate);
-    } else if (m_hasNodesWithPlaceholderStyle) {
+      styleEngine().markAllTreeScopesDirty();
+    }
+    if (m_hasNodesWithPlaceholderStyle) {
       // If new nodes have been added or style recalc has been done with style
       // sheets still pending, some nodes may not have had their real style
       // calculated yet.  Normally this gets cleaned when style sheets arrive

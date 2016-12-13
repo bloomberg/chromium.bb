@@ -36,7 +36,6 @@
 namespace blink {
 
 class DocumentStyleSheetCollector;
-class StyleEngine;
 class TreeScope;
 class ViewportStyleResolver;
 
@@ -49,8 +48,8 @@ class DocumentStyleSheetCollection final
     return new DocumentStyleSheetCollection(treeScope);
   }
 
-  void updateActiveStyleSheets(StyleEngine&, StyleResolverUpdateMode);
-  void collectStyleSheets(StyleEngine&, DocumentStyleSheetCollector&);
+  void updateActiveStyleSheets();
+  void collectStyleSheets(DocumentStyleSheetCollector&);
   void collectViewportRules(ViewportStyleResolver&);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
@@ -60,8 +59,7 @@ class DocumentStyleSheetCollection final
  private:
   explicit DocumentStyleSheetCollection(TreeScope&);
 
-  void collectStyleSheetsFromCandidates(StyleEngine&,
-                                        DocumentStyleSheetCollector&);
+  void collectStyleSheetsFromCandidates(DocumentStyleSheetCollector&);
 };
 
 }  // namespace blink

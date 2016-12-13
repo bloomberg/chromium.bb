@@ -29,6 +29,7 @@
 #include "core/dom/StyleSheetCollection.h"
 
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/RuleSet.h"
 
 namespace blink {
 
@@ -52,20 +53,9 @@ void StyleSheetCollection::swapSheetsForSheetList(
   ::blink::swap(m_styleSheetsForStyleSheetList, sheets, this);
 }
 
-void StyleSheetCollection::appendActiveStyleSheet(CSSStyleSheet* sheet) {
-  m_activeAuthorStyleSheets.append(sheet);
-}
-
-void StyleSheetCollection::appendActiveStyleSheets(
-    const HeapVector<Member<CSSStyleSheet>>& sheets) {
-  m_activeAuthorStyleSheets.appendVector(sheets);
-}
-
-void StyleSheetCollection::appendActiveStyleSheets(
-    const HeapVector<TraceWrapperMember<CSSStyleSheet>>& sheets) {
-  for (CSSStyleSheet* sheet : sheets) {
-    m_activeAuthorStyleSheets.append(sheet);
-  }
+void StyleSheetCollection::appendActiveStyleSheet(
+    const ActiveStyleSheet& activeSheet) {
+  m_activeAuthorStyleSheets.append(activeSheet);
 }
 
 void StyleSheetCollection::appendSheetForList(StyleSheet* sheet) {
