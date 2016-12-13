@@ -279,7 +279,8 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 // NSAccessibility informal protocol implementation.
 
 - (BOOL)accessibilityIsIgnored {
-  return [[self AXRole] isEqualToString:NSAccessibilityUnknownRole];
+  return [[self AXRole] isEqualToString:NSAccessibilityUnknownRole] ||
+         node_->GetData().HasStateFlag(ui::AX_STATE_INVISIBLE);
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
