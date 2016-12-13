@@ -47,7 +47,11 @@ class SimpleWM : public service_manager::Service,
   ~SimpleWM() override;
 
  private:
+  class DisplayLayoutManager;
   class FrameView;
+  class WindowListModel;
+  class WindowListModelObserver;
+  class WindowListView;
 
   // service_manager::Service:
   void OnStart() override;
@@ -93,18 +97,22 @@ class SimpleWM : public service_manager::Service,
 
   FrameView* GetFrameViewForClientWindow(aura::Window* client_window);
 
+  void OnWindowListViewItemActivated(aura::Window* index);
+
   std::unique_ptr<views::AuraInit> aura_init_;
   ::wm::WMState wm_state_;
   std::unique_ptr<display::ScreenBase> screen_;
   aura::PropertyConverter property_converter_;
   aura::test::TestFocusClient focus_client_;
   std::unique_ptr<aura::WindowTreeHostMus> window_tree_host_;
-  aura::Window* root_ = nullptr;
+  aura::Window* display_root_ = nullptr;
+  aura::Window* window_root_ = nullptr;
   aura::WindowManagerClient* window_manager_client_ = nullptr;
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
   std::unique_ptr<ui::Gpu> gpu_;
   std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
   std::map<aura::Window*, FrameView*> client_window_to_frame_view_;
+  std::unique_ptr<WindowListModel> window_list_model_;
 
   bool started_ = false;
 

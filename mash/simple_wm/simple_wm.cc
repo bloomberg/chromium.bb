@@ -4,11 +4,14 @@
 
 #include "mash/simple_wm/simple_wm.h"
 
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/display/screen_base.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/mus_client.h"
@@ -26,6 +29,158 @@ const int kNonClientSize = 5;
 
 }  // namespace
 
+class SimpleWM::WindowListModelObserver {
+ public:
+  virtual void OnWindowAddedOrRemoved() = 0;
+  virtual void OnWindowTitleChanged(size_t index,
+                                    const base::string16& title) = 0;
+};
+
+class SimpleWM::WindowListModel : public aura::WindowObserver {
+ public:
+  explicit WindowListModel(aura::Window* window_container)
+      : window_container_(window_container) {
+    window_container_->AddObserver(this);
+  }
+  ~WindowListModel() override {
+    window_container_->RemoveObserver(this);
+    for (auto window : windows_)
+      window->RemoveObserver(this);
+  }
+
+  size_t GetSize() const {
+    return windows_.size();
+  }
+  base::string16 GetTitle(size_t index) const {
+    return windows_.at(index)->GetTitle();
+  }
+  aura::Window* GetWindow(size_t index) const {
+    return windows_.at(index);
+  }
+
+  void AddObserver(WindowListModelObserver* observer) {
+    observers_.AddObserver(observer);
+  }
+  void RemoveObserver(WindowListModelObserver* observer) {
+    observers_.RemoveObserver(observer);
+  }
+
+ private:
+  // aura::WindowObserver:
+  void OnWindowAdded(aura::Window* window) override {
+    if (window->parent() == window_container_)
+      AddWindow(window);
+    for (auto& observer : observers_)
+      observer.OnWindowAddedOrRemoved();
+  }
+  void OnWillRemoveWindow(aura::Window* window) override {
+    window->RemoveObserver(this);
+    for (auto& observer : observers_)
+      observer.OnWindowAddedOrRemoved();
+    auto it = std::find(windows_.begin(), windows_.end(), window);
+    DCHECK(it != windows_.end());
+    windows_.erase(it);
+  }
+  void OnWindowTitleChanged(aura::Window* window) override {
+    auto it = std::find(windows_.begin(), windows_.end(), window);
+    size_t index = it - windows_.begin();
+    for (auto& observer : observers_)
+      observer.OnWindowTitleChanged(index, window->GetTitle());
+  }
+
+  void AddWindow(aura::Window* window) {
+    window->AddObserver(this);
+    auto it = std::find(windows_.begin(), windows_.end(), window);
+    DCHECK(it == windows_.end());
+    windows_.push_back(window);
+  }
+
+  aura::Window* window_container_;
+  std::vector<aura::Window*> windows_;
+  base::ObserverList<WindowListModelObserver> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowListModel);
+};
+
+class SimpleWM::WindowListView : public views::WidgetDelegateView,
+                                 public views::ButtonListener,
+                                 public SimpleWM::WindowListModelObserver {
+ public:
+  using ActivateCallback = base::Callback<void(aura::Window*)>;
+
+  WindowListView(WindowListModel* model, ActivateCallback activate_callback)
+      : model_(model), activate_callback_(activate_callback) {
+    model_->AddObserver(this);
+    Rebuild();
+  }
+  ~WindowListView() override {
+    model_->RemoveObserver(this);
+  }
+
+  static const int kButtonSpacing = 5;
+
+  // views::View
+  void Layout() override {
+    int x_offset = kButtonSpacing;
+    for (int i = 0; i < child_count(); ++i) {
+      View* v = child_at(i);
+      gfx::Size ps = v->GetPreferredSize();
+      gfx::Rect bounds(x_offset, kButtonSpacing, ps.width(), ps.height());
+      v->SetBoundsRect(bounds);
+      x_offset = bounds.right() + kButtonSpacing;
+    }
+  }
+  void OnPaint(gfx::Canvas* canvas) override {
+    canvas->DrawColor(SK_ColorLTGRAY);
+  }
+  gfx::Size GetPreferredSize() const override {
+    std::unique_ptr<views::MdTextButton> measure_button(
+        views::MdTextButton::Create(nullptr, base::UTF8ToUTF16("Sample")));
+    int height =
+        measure_button->GetPreferredSize().height() + 2 * kButtonSpacing;
+    return gfx::Size(0, height);
+  }
+
+ private:
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    activate_callback_.Run(
+        model_->GetWindow(static_cast<size_t>(sender->tag())));
+  }
+
+  // WindowListModelObserver:
+  void OnWindowAddedOrRemoved() override {
+    Rebuild();
+  }
+  void OnWindowTitleChanged(size_t index,
+                            const base::string16& new_title) override {
+    views::MdTextButton* label =
+        static_cast<views::MdTextButton*>(child_at(static_cast<int>(index)));
+    label->SetText(new_title);
+    Layout();
+  }
+
+  void Rebuild() {
+    RemoveAllChildViews(true);
+
+    size_t size = model_->GetSize();
+    for (size_t i = 0; i < size; ++i) {
+      base::string16 title = model_->GetTitle(i);
+      if (title.empty())
+        title = base::UTF8ToUTF16("Untitled");
+      views::MdTextButton* button = views::MdTextButton::Create(this, title);
+      button->set_tag(static_cast<int>(i));
+      AddChildView(button);
+    }
+    Layout();
+  }
+
+  WindowListModel* model_;
+  ActivateCallback activate_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowListView);
+};
+
 class SimpleWM::FrameView : public views::WidgetDelegateView,
                             public aura::WindowObserver {
  public:
@@ -38,11 +193,14 @@ class SimpleWM::FrameView : public views::WidgetDelegateView,
  private:
   // views::WidgetDelegateView:
   base::string16 GetWindowTitle() const override {
-    base::string16* title =
+    base::string16* title_from_property =
         client_window_->GetProperty(aura::client::kTitleKey);
-    if (!title)
-      return base::UTF8ToUTF16("(Window)");
-    return *title;
+    base::string16 title = title_from_property ? *title_from_property
+                                               : base::UTF8ToUTF16("(Window)");
+    // TODO(beng): quick hack to cause WindowObserver::OnWindowTitleChanged to
+    //             fire.
+    GetWidget()->GetNativeWindow()->SetTitle(title);
+    return title;
   }
   void Layout() override {
     // Client offsets are applied automatically by the window service.
@@ -61,6 +219,50 @@ class SimpleWM::FrameView : public views::WidgetDelegateView,
   aura::Window* client_window_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameView);
+};
+
+class SimpleWM::DisplayLayoutManager : public aura::LayoutManager {
+ public:
+  DisplayLayoutManager(aura::Window* display_root,
+                       aura::Window* window_root,
+                       SimpleWM::WindowListView* window_list_view)
+      : display_root_(display_root),
+        window_root_(window_root),
+        window_list_view_(window_list_view) {}
+  ~DisplayLayoutManager() override {}
+
+ private:
+  // aura::LayoutManager:
+  void OnWindowResized() override {}
+  void OnWindowAddedToLayout(aura::Window* child) override {
+    Layout();
+  }
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  void OnWindowRemovedFromLayout(aura::Window* child) override {}
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override {}
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override {
+    SetChildBoundsDirect(child, requested_bounds);
+  }
+
+  void Layout() {
+    gfx::Size ps = window_list_view_->GetPreferredSize();
+    gfx::Rect bounds = display_root_->bounds();
+    gfx::Rect window_root_bounds = bounds;
+    window_root_bounds.set_height(window_root_bounds.height() - ps.height());
+    window_root_->SetBounds(window_root_bounds);
+    gfx::Rect window_list_view_bounds = bounds;
+    window_list_view_bounds.set_height(ps.height());
+    window_list_view_bounds.set_y(window_root_bounds.bottom());
+    window_list_view_->GetWidget()->SetBounds(window_list_view_bounds);
+  }
+
+  aura::Window* display_root_;
+  aura::Window* window_root_;
+  SimpleWM::WindowListView* window_list_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayLayoutManager);
 };
 
 SimpleWM::SimpleWM() {}
@@ -165,7 +367,7 @@ aura::Window* SimpleWM::OnWmCreateTopLevelWindow(
   FrameView* frame_view = new FrameView(client_window);
   params.delegate = frame_view;
   params.native_widget = frame_native_widget;
-  params.parent = root_;
+  params.parent = window_root_;
   params.bounds = gfx::Rect(10, 10, 500, 500);
   frame_widget->Init(params);
   frame_widget->Show();
@@ -194,11 +396,36 @@ void SimpleWM::OnWmNewDisplay(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
   // Only handles a single root.
-  DCHECK(!root_);
+  DCHECK(!window_root_);
   window_tree_host_ = std::move(window_tree_host);
-  root_ = window_tree_host_->window();
+  window_tree_host_->InitHost();
+  display_root_ = window_tree_host_->window();
+  window_root_ = new aura::Window(nullptr);
+  window_root_->Init(ui::LAYER_NOT_DRAWN);
+  display_root_->AddChild(window_root_);
+  window_root_->Show();
+
+  window_list_model_ = base::MakeUnique<WindowListModel>(window_root_);
+
+  views::Widget* window_list_widget = new views::Widget;
+  views::NativeWidgetAura* window_list_widget_native_widget =
+      new views::NativeWidgetAura(window_list_widget, true);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+  WindowListView* window_list_view =
+      new WindowListView(window_list_model_.get(),
+                         base::Bind(&SimpleWM::OnWindowListViewItemActivated,
+                                    base::Unretained(this)));
+  params.delegate = window_list_view;
+  params.native_widget = window_list_widget_native_widget;
+  params.parent = display_root_;
+  window_list_widget->Init(params);
+  window_list_widget->Show();
+
+  display_root_->SetLayoutManager(new DisplayLayoutManager(
+      display_root_, window_root_, window_list_view));
+
   DCHECK(window_manager_client_);
-  window_manager_client_->AddActivationParent(root_);
+  window_manager_client_->AddActivationParent(window_root_);
   ui::mojom::FrameDecorationValuesPtr frame_decoration_values =
       ui::mojom::FrameDecorationValues::New();
   frame_decoration_values->normal_client_area_insets.Set(
@@ -206,14 +433,14 @@ void SimpleWM::OnWmNewDisplay(
   frame_decoration_values->max_title_bar_button_width = 0;
   window_manager_client_->SetFrameDecorationValues(
       std::move(frame_decoration_values));
-  new wm::DefaultActivationClient(root_);
-  aura::client::SetFocusClient(root_, &focus_client_);
+  new wm::DefaultActivationClient(display_root_);
+  aura::client::SetFocusClient(display_root_, &focus_client_);
 }
 
 void SimpleWM::OnWmDisplayRemoved(
     aura::WindowTreeHostMus* window_tree_host) {
   DCHECK_EQ(window_tree_host, window_tree_host_.get());
-  root_ = nullptr;
+  window_root_ = nullptr;
   window_tree_host_.reset();
 }
 
@@ -240,5 +467,10 @@ SimpleWM::FrameView* SimpleWM::GetFrameViewForClientWindow(
   return it != client_window_to_frame_view_.end() ? it->second : nullptr;
 }
 
-}  // namespace simple_wm
+void SimpleWM::OnWindowListViewItemActivated(aura::Window* window) {
+  aura::client::ActivationClient* activation_client =
+      aura::client::GetActivationClient(window->GetRootWindow());
+  activation_client->ActivateWindow(window);
+}
 
+}  // namespace simple_wm
