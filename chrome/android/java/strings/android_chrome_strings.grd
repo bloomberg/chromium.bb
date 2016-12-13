@@ -2690,6 +2690,15 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_UPDATED_LABEL" desc="The text that informs the user that the total value of their cart has been updated.">
         Updated
       </message>
+      <message name="IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS" desc="Label of the section containing the link to go to the settings page for card and address options.">
+        You can manage cards and addresses in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN" desc="Label of the section containing the origin description and the link to go to the settings page for card and address options. This label is used when the user is signed in.">
+        Card and address options are from your Google Account (<ph name="ACCOUNT_EMAIL">%1$s<ex>johndoe@gmail.com</ex></ph>) and Chrome. You can manage these in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT" desc="Label of the section containing the origin description and the link to go to the settings page for card and address options. This label is used when the user is not signed in.">
+        Card and address options are from Chrome. You can manage these in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
 
       <!-- Shipping address in web payments API -->
       <message name="IDS_PAYMENTS_SHIPPING_SUMMARY_LABEL" desc="The title for the section of shipping information. Shipping is typically used for packages.">

@@ -5,12 +5,14 @@
 package org.chromium.chrome.browser.payments;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -28,6 +30,8 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSecti
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -159,6 +163,7 @@ public class PaymentRequestImpl
 
     private static final String TAG = "cr_PaymentRequest";
     private static final String ANDROID_PAY_METHOD_NAME = "https://android.com/pay";
+    private static final String PAYMENT_COMPLETE_ONCE = "payment_complete_once";
     private static final int SUGGESTIONS_LIMIT = 4;
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
             new Comparator<Completable>() {
@@ -455,7 +460,8 @@ public class PaymentRequestImpl
 
         mUI = new PaymentRequestUI(mContext, this, requestShipping,
                 requestPayerName || requestPayerPhone || requestPayerEmail,
-                mMerchantSupportsAutofillPaymentInstruments, mMerchantName, mOrigin,
+                mMerchantSupportsAutofillPaymentInstruments, !isPaymentCompleteOnce(),
+                mMerchantName, mOrigin,
                 new ShippingStrings(
                         options == null ? PaymentShippingType.SHIPPING : options.shippingType));
 
@@ -1064,7 +1070,28 @@ public class PaymentRequestImpl
     public void complete(int result) {
         if (mClient == null) return;
         recordSuccessFunnelHistograms("Completed");
+        if (!isPaymentCompleteOnce()) setPaymentCompleteOnce();
         closeUI(PaymentComplete.FAIL != result);
+    }
+
+    private static boolean isPaymentCompleteOnce() {
+        return ContextUtils.getAppSharedPreferences().getBoolean(PAYMENT_COMPLETE_ONCE, false);
+    }
+
+    private static void setPaymentCompleteOnce() {
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putBoolean(PAYMENT_COMPLETE_ONCE, true)
+                .apply();
+    }
+
+    @Override
+    public void onCardAndAddressSettingsClicked() {
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                mContext, AutofillPreferences.class.getName());
+        mContext.startActivity(intent);
+        disconnectFromClientWithDebugMessage("Card and address settings clicked");
+        recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER);
     }
 
     /**

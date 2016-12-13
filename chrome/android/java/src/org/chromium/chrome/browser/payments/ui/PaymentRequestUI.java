@@ -23,8 +23,10 @@ import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
+import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,6 +54,11 @@ import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 import org.chromium.chrome.browser.widget.animation.FocusAnimator;
+import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
+import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.text.SpanApplier.SpanInfo;
+import org.chromium.ui.widget.TextViewWithClickableSpans;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -194,6 +201,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
          * or the “X” button in UI.
          */
         void onDismiss();
+
+        /**
+         * Called when the user clicks on 'Settings' to control card and address options.
+         */
+        void onCardAndAddressSettingsClicked();
     }
 
     /**
@@ -287,6 +299,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final Client mClient;
     private final boolean mRequestShipping;
     private final boolean mRequestContactDetails;
+    private final boolean mShowDataSource;
 
     private final Dialog mDialog;
     private final EditorView mEditorView;
@@ -343,6 +356,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param canAddCards     Whether the UI should show the [+ADD CARD] button. This can be false,
      *                        for example, when the merchant does not accept credit cards, so
      *                        there's no point in adding cards within PaymentRequest UI.
+     * @param showDataSource  Whether the UI should describe the source of Autofill data.
      * @param title           The title to show at the top of the UI. This can be, for example, the
      *                        &lt;title&gt; of the merchant website. If the string is too long for
      *                        UI, it elides at the end.
@@ -353,12 +367,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param shippingStrings The string resource identifiers to use in the shipping sections.
      */
     public PaymentRequestUI(Activity activity, Client client, boolean requestShipping,
-            boolean requestContact, boolean canAddCards, String title, String origin,
-            ShippingStrings shippingStrings) {
+            boolean requestContact, boolean canAddCards, boolean showDataSource, String title,
+            String origin, ShippingStrings shippingStrings) {
         mContext = activity;
         mClient = client;
         mRequestShipping = requestShipping;
         mRequestContactDetails = requestContact;
+        mShowDataSource = showDataSource;
         mAnimatorTranslation = activity.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
 
@@ -983,6 +998,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout, 0));
             mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout, -1));
 
+            // Add a link to Autofill settings.
+            addCardAndAddressOptionsSettingsView(mPaymentContainerLayout);
+
             // Expand all the dividers.
             for (int i = 0; i < mSectionSeparators.size(); i++) mSectionSeparators.get(i).expand();
             mPaymentContainerLayout.requestLayout();
@@ -1034,6 +1052,41 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         } else {
             updateSectionVisibility();
         }
+    }
+
+    private void addCardAndAddressOptionsSettingsView(LinearLayout parent) {
+        String message;
+        if (!mShowDataSource) {
+            message = mContext.getString(R.string.payments_card_and_address_settings);
+        } else if (ChromeSigninController.get(mContext).isSignedIn()) {
+            message = mContext.getString(R.string.payments_card_and_address_settings_signed_in,
+                    ChromeSigninController.get(mContext).getSignedInAccountName());
+        } else {
+            message = mContext.getString(R.string.payments_card_and_address_settings_signed_out);
+        }
+
+        NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
+            @Override
+            public void onClick(View widget) {
+                mClient.onCardAndAddressSettingsClicked();
+            }
+        };
+        SpannableString spannableMessage =
+                SpanApplier.applySpans(message, new SpanInfo("<link>", "</link>", settingsSpan));
+
+        TextView view = new TextViewWithClickableSpans(mContext);
+        view.setText(spannableMessage);
+        view.setMovementMethod(LinkMovementMethod.getInstance());
+        ApiCompatibilityUtils.setTextAppearance(view, R.style.PaymentsUiSectionDescriptiveText);
+
+        LinearLayout.LayoutParams layoutParams =
+                new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        int marginSize = mContext.getResources().getDimensionPixelSize(
+                R.dimen.payments_section_large_spacing);
+        layoutParams.topMargin = marginSize;
+        ApiCompatibilityUtils.setMarginStart(layoutParams, marginSize);
+        ApiCompatibilityUtils.setMarginEnd(layoutParams, marginSize);
+        parent.addView(view, layoutParams);
     }
 
     private Callback<SectionInformation> createUpdateSectionCallback(@DataType final int type) {
