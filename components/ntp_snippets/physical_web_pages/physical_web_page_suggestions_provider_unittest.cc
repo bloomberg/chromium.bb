@@ -23,6 +23,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -115,14 +116,14 @@ class PhysicalWebPageSuggestionsProviderTest : public testing::Test {
   }
 
   void FireUrlFound(const std::string& url) {
-    physical_web_data_source_.NotifyOnFound(url);
+    physical_web_data_source_.NotifyOnFound(GURL(url));
   }
 
   void FireUrlLost(const std::string& url) {
-    physical_web_data_source_.NotifyOnLost(url);
+    physical_web_data_source_.NotifyOnLost(GURL(url));
   }
 
-  void FireUrlDistanceChanged(const std::string& url, double new_distance) {
+  void FireUrlDistanceChanged(const GURL& url, double new_distance) {
     physical_web_data_source_.NotifyOnDistanceChanged(url, new_distance);
   }
 

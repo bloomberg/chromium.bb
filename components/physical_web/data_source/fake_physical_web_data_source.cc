@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/physical_web/data_source/physical_web_listener.h"
+#include "url/gurl.h"
 
 using base::ListValue;
 using base::DictionaryValue;
@@ -91,18 +92,18 @@ void FakePhysicalWebDataSource::SetMetadata(
   metadata_ = std::move(metadata);
 }
 
-void FakePhysicalWebDataSource::NotifyOnFound(const std::string& url) {
+void FakePhysicalWebDataSource::NotifyOnFound(const GURL& url) {
   for (PhysicalWebListener& observer : observer_list_)
     observer.OnFound(url);
 }
 
-void FakePhysicalWebDataSource::NotifyOnLost(const std::string& url) {
+void FakePhysicalWebDataSource::NotifyOnLost(const GURL& url) {
   for (PhysicalWebListener& observer : observer_list_)
     observer.OnLost(url);
 }
 
 void FakePhysicalWebDataSource::NotifyOnDistanceChanged(
-    const std::string& url,
+    const GURL& url,
     double distance_estimate) {
   for (PhysicalWebListener& observer : observer_list_)
     observer.OnDistanceChanged(url, distance_estimate);

@@ -104,16 +104,14 @@ void PhysicalWebDataSourceAndroid::OnFound(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& j_url) {
-  std::string url = ConvertJavaStringToUTF8(env, j_url);
-  NotifyOnFound(url);
+  NotifyOnFound(GURL(ConvertJavaStringToUTF8(env, j_url)));
 }
 
 void PhysicalWebDataSourceAndroid::OnLost(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& j_url) {
-  std::string url = ConvertJavaStringToUTF8(env, j_url);
-  NotifyOnLost(url);
+  NotifyOnLost(GURL(ConvertJavaStringToUTF8(env, j_url)));
 }
 
 void PhysicalWebDataSourceAndroid::OnDistanceChanged(
@@ -121,8 +119,8 @@ void PhysicalWebDataSourceAndroid::OnDistanceChanged(
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& j_url,
     jdouble distance_estimate) {
-  std::string url = ConvertJavaStringToUTF8(env, j_url);
-  NotifyOnDistanceChanged(url, distance_estimate);
+  NotifyOnDistanceChanged(GURL(ConvertJavaStringToUTF8(env, j_url)),
+                          distance_estimate);
 }
 
 // static

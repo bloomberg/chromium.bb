@@ -5,13 +5,13 @@
 #include "base/values.h"
 #include "components/physical_web/data_source/physical_web_data_source_impl.h"
 #include "components/physical_web/data_source/physical_web_listener.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace physical_web {
 
 // Test Values ----------------------------------------------------------------
-const char kUrl[] = "https://www.google.com";
+GURL kUrl = GURL("https://www.google.com");
 
 // TestPhysicalWebDataSource --------------------------------------------------
 
@@ -48,18 +48,17 @@ class TestPhysicalWebListener : public PhysicalWebListener {
 
   ~TestPhysicalWebListener() {}
 
-  void OnFound(const std::string& url) override {
+  void OnFound(const GURL& url) override {
     on_found_notified_ = true;
     last_event_url_ = url;
   }
 
-  void OnLost(const std::string& url) override {
+  void OnLost(const GURL& url) override {
     on_lost_notified_ = true;
     last_event_url_ = url;
   }
 
-  void OnDistanceChanged(const std::string& url,
-                         double distance_estimate) override {
+  void OnDistanceChanged(const GURL& url, double distance_estimate) override {
     on_distance_changed_notified_ = true;
     last_event_url_ = url;
   }
@@ -70,13 +69,13 @@ class TestPhysicalWebListener : public PhysicalWebListener {
 
   bool OnDistanceChangedNotified() { return on_distance_changed_notified_; }
 
-  std::string LastEventUrl() { return last_event_url_; }
+  GURL LastEventUrl() { return last_event_url_; }
 
  private:
   bool on_found_notified_;
   bool on_lost_notified_;
   bool on_distance_changed_notified_;
-  std::string last_event_url_;
+  GURL last_event_url_;
 };
 
 // PhysicalWebDataSourceImplTest ----------------------------------------------
@@ -135,7 +134,7 @@ TEST_F(PhysicalWebDataSourceImplTest, OnFoundNotRegistered) {
   EXPECT_FALSE(listener_.OnFoundNotified());
   EXPECT_FALSE(listener_.OnLostNotified());
   EXPECT_FALSE(listener_.OnDistanceChangedNotified());
-  EXPECT_TRUE(listener_.LastEventUrl().empty());
+  EXPECT_TRUE(listener_.LastEventUrl().is_empty());
 }
 
 TEST_F(PhysicalWebDataSourceImplTest, OnLostNotRegistered) {
@@ -144,7 +143,7 @@ TEST_F(PhysicalWebDataSourceImplTest, OnLostNotRegistered) {
   EXPECT_FALSE(listener_.OnFoundNotified());
   EXPECT_FALSE(listener_.OnLostNotified());
   EXPECT_FALSE(listener_.OnDistanceChangedNotified());
-  EXPECT_TRUE(listener_.LastEventUrl().empty());
+  EXPECT_TRUE(listener_.LastEventUrl().is_empty());
 }
 
 TEST_F(PhysicalWebDataSourceImplTest, OnDistanceChangedNotRegistered) {
@@ -153,7 +152,7 @@ TEST_F(PhysicalWebDataSourceImplTest, OnDistanceChangedNotRegistered) {
   EXPECT_FALSE(listener_.OnFoundNotified());
   EXPECT_FALSE(listener_.OnLostNotified());
   EXPECT_FALSE(listener_.OnDistanceChangedNotified());
-  EXPECT_TRUE(listener_.LastEventUrl().empty());
+  EXPECT_TRUE(listener_.LastEventUrl().is_empty());
 }
 
 }  // namespace physical_web

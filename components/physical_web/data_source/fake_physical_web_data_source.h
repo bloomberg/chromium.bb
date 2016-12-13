@@ -11,6 +11,8 @@
 #include "base/observer_list.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 
+class GURL;
+
 namespace base {
 class DictionaryValue;
 class ListValue;
@@ -49,10 +51,9 @@ class FakePhysicalWebDataSource : public PhysicalWebDataSource {
 
   // for testing
   void SetMetadata(std::unique_ptr<base::ListValue> metadata);
-  void NotifyOnFound(const std::string& url);
-  void NotifyOnLost(const std::string& url);
-  void NotifyOnDistanceChanged(const std::string& url,
-                               double distance_estimate);
+  void NotifyOnFound(const GURL& url);
+  void NotifyOnLost(const GURL& url);
+  void NotifyOnDistanceChanged(const GURL& url, double distance_estimate);
 
  private:
   std::unique_ptr<base::ListValue> metadata_;

@@ -6,7 +6,6 @@
 #define COMPONENTS_NTP_SNIPPETS_PHYSICAL_WEB_PAGES_PHYSICAL_WEB_PAGE_SUGGESTIONS_PROVIDER_H_
 
 #include <set>
-#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -21,6 +20,7 @@
 
 class PrefRegistrySimple;
 class PrefService;
+class GURL;
 
 namespace ntp_snippets {
 
@@ -80,10 +80,9 @@ class PhysicalWebPageSuggestionsProvider
       const base::DictionaryValue& page) const;
 
   // PhysicalWebListener implementation.
-  void OnFound(const std::string& url) override;
-  void OnLost(const std::string& url) override;
-  void OnDistanceChanged(const std::string& url,
-                         double distance_estimate) override;
+  void OnFound(const GURL& url) override;
+  void OnLost(const GURL& url) override;
+  void OnDistanceChanged(const GURL& url, double distance_estimate) override;
 
   // Fires the |OnSuggestionInvalidated| event for the suggestion corresponding
   // to the given |page_id| and deletes it from the dismissed IDs list, if

@@ -7,6 +7,8 @@
 #include "base/observer_list.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 
+class GURL;
+
 namespace physical_web {
 
 class PhysicalWebListener;
@@ -23,13 +25,13 @@ class PhysicalWebDataSourceImpl : public PhysicalWebDataSource {
   void UnregisterListener(PhysicalWebListener* physical_web_listener) override;
 
   // Notify all registered listeners that a URL has been found.
-  void NotifyOnFound(const std::string& url);
+  void NotifyOnFound(const GURL& url);
 
   // Notify all registered listeners that a URL has been lost.
-  void NotifyOnLost(const std::string& url);
+  void NotifyOnLost(const GURL& url);
 
   // Notify all registered listeners that a distance has changed for a URL.
-  void NotifyOnDistanceChanged(const std::string& url,
+  void NotifyOnDistanceChanged(const GURL& url,
                                double distance_estimate);
 
  private:

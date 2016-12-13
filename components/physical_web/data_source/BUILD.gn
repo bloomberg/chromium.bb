@@ -25,6 +25,7 @@ source_set("test_support") {
   deps = [
     ":data_source",
     "//base",
+    "//url",
   ]
 }
 
@@ -38,5 +39,6 @@ source_set("unit_tests") {
     ":data_source",
     "//base",
     "//testing/gtest",
+    "//url",
   ]
 }

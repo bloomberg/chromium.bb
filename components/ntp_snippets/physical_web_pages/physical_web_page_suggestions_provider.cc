@@ -272,16 +272,16 @@ ContentSuggestion PhysicalWebPageSuggestionsProvider::ConvertPhysicalWebPage(
 }
 
 // PhysicalWebListener implementation.
-void PhysicalWebPageSuggestionsProvider::OnFound(const std::string& url) {
+void PhysicalWebPageSuggestionsProvider::OnFound(const GURL& url) {
   FetchPhysicalWebPages();
 }
 
-void PhysicalWebPageSuggestionsProvider::OnLost(const std::string& url) {
-  InvalidateSuggestion(url);
+void PhysicalWebPageSuggestionsProvider::OnLost(const GURL& url) {
+  InvalidateSuggestion(url.spec());
 }
 
 void PhysicalWebPageSuggestionsProvider::OnDistanceChanged(
-    const std::string& url,
+    const GURL& url,
     double distance_estimate) {
   FetchPhysicalWebPages();
 }

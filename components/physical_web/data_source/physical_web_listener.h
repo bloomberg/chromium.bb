@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_PHYSICAL_WEB_DATA_SOURCE_PHYSICAL_WEB_LISTENER_H_
 #define COMPONENTS_PHYSICAL_WEB_DATA_SOURCE_PHYSICAL_WEB_LISTENER_H_
 
-#include <string>
+class GURL;
 
 namespace physical_web {
 
@@ -14,15 +14,14 @@ class PhysicalWebListener {
  public:
 
   // OnFound(url) will be called when a new URL has been found.
-  virtual void OnFound(const std::string& url) = 0;
+  virtual void OnFound(const GURL& url) = 0;
 
   // OnLost(url) will be called when a URL can no longer be seen.
-  virtual void OnLost(const std::string& url) = 0;
+  virtual void OnLost(const GURL& url) = 0;
 
   // OnDistanceChagned(url, distance_estimate) will be called when the distance
   // estimate is changed for the URL.
-  virtual void OnDistanceChanged(const std::string& url,
-                                 double distance_estimate) = 0;
+  virtual void OnDistanceChanged(const GURL& url, double distance_estimate) = 0;
 };
 
 }  // namespace physical_web
