@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
-#include "base/run_loop.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace chromeos {
@@ -137,9 +137,8 @@ class ScreenshotTester {
   // and difference between them and golden ones will be stored.
   base::FilePath artifacts_dir_;
 
-  // |run_loop_| and |run_loop_quitter_| are used to synchronize
-  // with ui::GrabWindowSnapshotAsync.
-  base::RunLoop run_loop_;
+  // |run_loop_quitter_| is used to stop waiting when
+  // ui::GrabWindowSnapshotAsync completes.
   base::Closure run_loop_quitter_;
 
   // Is true when we're in test mode:

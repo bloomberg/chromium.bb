@@ -124,6 +124,7 @@ class AudioRendererMixerInputTest : public testing::Test,
  protected:
   virtual ~AudioRendererMixerInputTest() {}
 
+  base::MessageLoop message_loop_;
   AudioParameters audio_parameters_;
   scoped_refptr<MockAudioRendererSink> sinks_[2];
   std::unique_ptr<AudioRendererMixer> mixers_[2];

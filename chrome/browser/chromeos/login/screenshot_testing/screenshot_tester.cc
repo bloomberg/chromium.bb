@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/SkDiffPixelsMetric.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/SkImageDiffer.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/SkPMetric.h"

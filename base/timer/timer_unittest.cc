@@ -54,17 +54,58 @@ class Receiver {
   int count_;
 };
 
-class OneShotTimerTester {
+// A basic helper class that can start a one-shot timer and signal a
+// WaitableEvent when this timer fires.
+class OneShotTimerTesterBase {
+ public:
+  // |did_run|, if provided, will be signaled when Run() fires.
+  explicit OneShotTimerTesterBase(
+      WaitableEvent* did_run = nullptr,
+      const TimeDelta& delay = TimeDelta::FromMilliseconds(10))
+      : did_run_(did_run), delay_(delay) {}
+
+  virtual ~OneShotTimerTesterBase() = default;
+
+  void Start() {
+    started_time_ = TimeTicks::Now();
+    timer_->Start(FROM_HERE, delay_, this, &OneShotTimerTesterBase::Run);
+  }
+
+  bool IsRunning() { return timer_->IsRunning(); }
+
+  TimeTicks started_time() const { return started_time_; }
+  TimeDelta delay() const { return delay_; }
+
+ protected:
+  virtual void Run() {
+    if (did_run_) {
+      EXPECT_FALSE(did_run_->IsSignaled());
+      did_run_->Signal();
+    }
+  }
+
+  std::unique_ptr<OneShotTimer> timer_ = MakeUnique<OneShotTimer>();
+
+ private:
+  WaitableEvent* const did_run_;
+  const TimeDelta delay_;
+  TimeTicks started_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(OneShotTimerTesterBase);
+};
+
+// Extends functionality of OneShotTimerTesterBase with the abilities to wait
+// until the timer fires and to change task runner for the timer.
+class OneShotTimerTester : public OneShotTimerTesterBase {
  public:
   // |did_run|, if provided, will be signaled when Run() fires.
   explicit OneShotTimerTester(
       WaitableEvent* did_run = nullptr,
       const TimeDelta& delay = TimeDelta::FromMilliseconds(10))
-      : quit_closure_(run_loop_.QuitClosure()),
-        did_run_(did_run),
-        delay_(delay) {}
+      : OneShotTimerTesterBase(did_run, delay),
+        quit_closure_(run_loop_.QuitClosure()) {}
 
-  virtual ~OneShotTimerTester() = default;
+  ~OneShotTimerTester() override = default;
 
   void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner) {
     timer_->SetTaskRunner(std::move(task_runner));
@@ -76,45 +117,29 @@ class OneShotTimerTester {
              ThreadTaskRunnerHandle::Get(), FROM_HERE, run_loop_.QuitClosure());
   }
 
-  void Start() {
-    started_time_ = TimeTicks::Now();
-    timer_->Start(FROM_HERE, delay_, this, &OneShotTimerTester::Run);
-  }
-
   // Blocks until Run() executes and confirms that Run() didn't fire before
   // |delay_| expired.
   void WaitAndConfirmTimerFiredAfterDelay() {
     run_loop_.Run();
 
-    EXPECT_NE(TimeTicks(), started_time_);
-    EXPECT_GE(TimeTicks::Now() - started_time_, delay_);
+    EXPECT_NE(TimeTicks(), started_time());
+    EXPECT_GE(TimeTicks::Now() - started_time(), delay());
   }
-
-  bool IsRunning() { return timer_->IsRunning(); }
 
  protected:
   // Overridable method to do things on Run() before signaling events/closures
   // managed by this helper.
   virtual void OnRun() {}
 
-  std::unique_ptr<OneShotTimer> timer_ = MakeUnique<OneShotTimer>();
-
  private:
-  void Run() {
+  void Run() override {
     OnRun();
-    if (did_run_) {
-      EXPECT_FALSE(did_run_->IsSignaled());
-      did_run_->Signal();
-    }
+    OneShotTimerTesterBase::Run();
     quit_closure_.Run();
   }
 
   RunLoop run_loop_;
   Closure quit_closure_;
-  WaitableEvent* const did_run_;
-
-  const TimeDelta delay_;
-  TimeTicks started_time_;
 
   DISALLOW_COPY_AND_ASSIGN(OneShotTimerTester);
 };
@@ -517,10 +542,10 @@ TEST(TimerTest, MessageLoopShutdown) {
   WaitableEvent did_run(WaitableEvent::ResetPolicy::MANUAL,
                         WaitableEvent::InitialState::NOT_SIGNALED);
   {
-    OneShotTimerTester a(&did_run);
-    OneShotTimerTester b(&did_run);
-    OneShotTimerTester c(&did_run);
-    OneShotTimerTester d(&did_run);
+    OneShotTimerTesterBase a(&did_run);
+    OneShotTimerTesterBase b(&did_run);
+    OneShotTimerTesterBase c(&did_run);
+    OneShotTimerTesterBase d(&did_run);
     {
       MessageLoop loop;
       a.Start();

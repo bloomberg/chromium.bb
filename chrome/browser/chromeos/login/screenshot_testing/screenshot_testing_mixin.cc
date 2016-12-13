@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.h"
 
+#include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"

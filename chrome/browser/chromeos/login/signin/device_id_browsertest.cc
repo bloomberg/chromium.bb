@@ -49,6 +49,7 @@ class DeviceIDTest : public OobeBaseTest,
   }
 
   void SetUpOnMainThread() override {
+    user_removal_loop_.reset(new base::RunLoop);
     OobeBaseTest::SetUpOnMainThread();
     LoadRefreshTokenToDeviceIdMap();
   }
@@ -125,7 +126,7 @@ class DeviceIDTest : public OobeBaseTest,
 
   void RemoveUser(const AccountId& account_id) {
     user_manager::UserManager::Get()->RemoveUser(account_id, this);
-    user_removal_loop_.Run();
+    user_removal_loop_->Run();
   }
 
  private:
@@ -133,7 +134,7 @@ class DeviceIDTest : public OobeBaseTest,
   void OnBeforeUserRemoved(const AccountId& account_id) override {}
 
   void OnUserRemoved(const AccountId& account_id) override {
-    user_removal_loop_.Quit();
+    user_removal_loop_->Quit();
   }
 
   base::FilePath GetRefreshTokenToDeviceIdMapFilePath() const {
@@ -170,7 +171,7 @@ class DeviceIDTest : public OobeBaseTest,
                                 json.c_str(), json.length()));
   }
 
-  base::RunLoop user_removal_loop_;
+  std::unique_ptr<base::RunLoop> user_removal_loop_;
 };
 
 // Add the first user and check that device ID is consistent.

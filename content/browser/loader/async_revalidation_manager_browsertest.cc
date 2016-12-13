@@ -48,7 +48,16 @@ class AsyncRevalidationManagerBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::SetUp();
   }
 
-  base::RunLoop* run_loop() { return &run_loop_; }
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+    run_loop_.reset(new base::RunLoop);
+  }
+
+  base::RunLoop* run_loop() {
+    DCHECK(run_loop_);
+    return run_loop_.get();
+  }
+
   int requests_counted() const { return requests_counted_; }
 
   // This method lacks diagnostics for the failure case because TitleWatcher
@@ -92,7 +101,7 @@ class AsyncRevalidationManagerBrowserTest : public ContentBrowserTest {
     // use this for synchronisation.
     if (version == 2) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              run_loop_.QuitClosure());
+                              run_loop()->QuitClosure());
     }
     return std::move(http_response);
   }
@@ -142,7 +151,7 @@ class AsyncRevalidationManagerBrowserTest : public ContentBrowserTest {
     return http_response;
   }
 
-  base::RunLoop run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   int requests_counted_ = 0;
   base::test::ScopedFeatureList scoped_feature_list_;
 

@@ -59,7 +59,7 @@ class DeviceDisablingTest
   std::string GetCurrentScreenName(content::WebContents* web_contents);
 
  protected:
-  base::RunLoop network_state_change_wait_run_loop_;
+  std::unique_ptr<base::RunLoop> network_state_change_wait_run_loop_;
 
  private:
   // OobeBaseTest:
@@ -121,6 +121,8 @@ void DeviceDisablingTest::SetUpInProcessBrowserTestFixture() {
 }
 
 void DeviceDisablingTest::SetUpOnMainThread() {
+  network_state_change_wait_run_loop_.reset(new base::RunLoop);
+
   OobeBaseTest::SetUpOnMainThread();
 
   // Set up fake networks.
@@ -129,7 +131,7 @@ void DeviceDisablingTest::SetUpOnMainThread() {
 }
 
 void DeviceDisablingTest::UpdateState(NetworkError::ErrorReason reason) {
-  network_state_change_wait_run_loop_.Quit();
+  network_state_change_wait_run_loop_->Quit();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableDuringNormalOperation) {
@@ -206,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   ASSERT_TRUE(signin_screen_handler);
   signin_screen_handler->ZeroOfflineTimeoutForTesting();
   SimulateNetworkOffline();
-  network_state_change_wait_run_loop_.Run();
+  network_state_change_wait_run_loop_->Run();
   network_state_informer->RemoveObserver(this);
   base::RunLoop().RunUntilIdle();
 
