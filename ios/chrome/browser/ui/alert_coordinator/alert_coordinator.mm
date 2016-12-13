@@ -4,23 +4,19 @@
 
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 
-#import "base/ios/weak_nsobject.h"
-#import "base/mac/scoped_block.h"
-#import "base/mac/scoped_nsobject.h"
+#include "base/logging.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
-@interface AlertCoordinator () {
-  // Variables backing properties of the same name.
-  base::scoped_nsobject<UIAlertController> _alertController;
-  base::scoped_nsobject<NSString> _message;
-  base::mac::ScopedBlock<ProceduralBlock> _cancelAction;
-  base::mac::ScopedBlock<ProceduralBlock> _startAction;
-  base::mac::ScopedBlock<ProceduralBlock> _noInteractionAction;
-  base::mac::ScopedBlock<ProceduralBlock> _rawCancelAction;
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
+@interface AlertCoordinator () {
+  // Variable backing a property from Subclassing category.
+  UIAlertController* _alertController;
   // Title for the alert.
-  base::scoped_nsobject<NSString> _title;
+  NSString* _title;
 }
 
 // Redefined to readwrite.
@@ -42,6 +38,11 @@
 
 @synthesize visible = _visible;
 @synthesize cancelButtonAdded = _cancelButtonAdded;
+@synthesize cancelAction = _cancelAction;
+@synthesize startAction = _startAction;
+@synthesize noInteractionAction = _noInteractionAction;
+@synthesize rawCancelAction = _rawCancelAction;
+@synthesize message = _message;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController {
   NOTREACHED();
@@ -53,8 +54,8 @@
                                    message:(NSString*)message {
   self = [super initWithBaseViewController:viewController];
   if (self) {
-    _title.reset([title copy]);
-    _message.reset([message copy]);
+    _title = [title copy];
+    _message = [message copy];
   }
   return self;
 }
@@ -72,7 +73,7 @@
   if (style == UIAlertActionStyleCancel)
     _cancelButtonAdded = YES;
 
-  base::WeakNSObject<AlertCoordinator> weakSelf(self);
+  __weak AlertCoordinator* weakSelf = self;
 
   UIAlertAction* alertAction =
       [UIAlertAction actionWithTitle:title
@@ -120,8 +121,8 @@
 
 - (void)stop {
   if (_noInteractionAction) {
-    _noInteractionAction.get()();
-    _noInteractionAction.reset();
+    _noInteractionAction();
+    _noInteractionAction = nil;
   }
   [[_alertController presentingViewController]
       dismissViewControllerAnimated:NO
@@ -137,7 +138,7 @@
         [self alertControllerWithTitle:_title message:_message];
 
     if (alert)
-      _alertController.reset([alert retain]);
+      _alertController = alert;
   }
   return _alertController;
 }
@@ -146,50 +147,18 @@
   return _message;
 }
 
-- (void)setMessage:(NSString*)message {
-  _message.reset([message copy]);
-}
-
-- (ProceduralBlock)cancelAction {
-  return _cancelAction;
-}
-
 - (void)setCancelAction:(ProceduralBlock)cancelAction {
-  base::WeakNSObject<AlertCoordinator> weakSelf(self);
+  __weak AlertCoordinator* weakSelf = self;
 
   self.rawCancelAction = cancelAction;
 
-  _cancelAction.reset([^{
-    base::scoped_nsobject<AlertCoordinator> strongSelf([weakSelf retain]);
+  _cancelAction = [^{
+    AlertCoordinator* strongSelf = weakSelf;
     [strongSelf setNoInteractionAction:nil];
     if ([strongSelf rawCancelAction]) {
       [strongSelf rawCancelAction]();
     }
-  } copy]);
-}
-
-- (ProceduralBlock)startAction {
-  return _startAction;
-}
-
-- (void)setStartAction:(ProceduralBlock)startAction {
-  _startAction.reset([startAction copy]);
-}
-
-- (ProceduralBlock)noInteractionAction {
-  return _noInteractionAction;
-}
-
-- (void)setNoInteractionAction:(ProceduralBlock)noInteractionAction {
-  _noInteractionAction.reset([noInteractionAction copy]);
-}
-
-- (ProceduralBlock)rawCancelAction {
-  return _rawCancelAction;
-}
-
-- (void)setRawCancelAction:(ProceduralBlock)rawCancelAction {
-  _rawCancelAction.reset([rawCancelAction copy]);
+  } copy];
 }
 
 #pragma mark - Private Methods.
@@ -197,9 +166,9 @@
 - (void)alertDismissed {
   self.visible = NO;
   _cancelButtonAdded = NO;
-  _alertController.reset();
-  _cancelAction.reset();
-  _noInteractionAction.reset();
+  _alertController = nil;
+  _cancelAction = nil;
+  _noInteractionAction = nil;
 }
 
 - (UIAlertController*)alertControllerWithTitle:(NSString*)title

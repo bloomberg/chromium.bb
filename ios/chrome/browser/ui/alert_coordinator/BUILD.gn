@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("alert_coordinator") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "action_sheet_coordinator.h",
     "action_sheet_coordinator.mm",

@@ -4,13 +4,17 @@
 
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 
-#import "base/mac/scoped_nsobject.h"
+#import "base/logging.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface ActionSheetCoordinator () {
   // Rectangle for the popover alert.
   CGRect _rect;
   // View for the popovert alert.
-  base::scoped_nsobject<UIView> _view;
+  UIView* _view;
 }
 
 @end
@@ -34,7 +38,7 @@
                                    message:message];
   if (self) {
     _rect = rect;
-    _view.reset([view retain]);
+    _view = view;
   }
   return self;
 }

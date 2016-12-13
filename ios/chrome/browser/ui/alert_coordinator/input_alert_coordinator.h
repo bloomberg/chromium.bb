@@ -11,7 +11,7 @@
 @interface InputAlertCoordinator : AlertCoordinator
 
 // Text fields displayed by the alert.
-@property(nonatomic, readonly) NSArray<UITextField*>* textFields;
+@property(strong, nonatomic, readonly) NSArray<UITextField*>* textFields;
 
 // Add a text field to the alert.
 - (void)addTextFieldWithConfigurationHandler:
