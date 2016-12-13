@@ -12,6 +12,6 @@ enum OperationType {
     RuntimeEnabled=Budget
 ] interface BudgetService {
     [CallWith=ScriptState] Promise<double> getCost(OperationType operation);
-    [CallWith=ScriptState] Promise<FrozenArray<BudgetState>> getBudget();
+    [CallWith=ScriptState] Promise<sequence<BudgetState>> getBudget();
     [CallWith=ScriptState] Promise<boolean> reserve(OperationType operation);
 };
