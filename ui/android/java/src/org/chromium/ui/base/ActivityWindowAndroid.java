@@ -47,7 +47,7 @@ public class ActivityWindowAndroid
     private final Handler mHandler;
     private final SparseArray<PermissionCallback> mOutstandingPermissionRequests;
 
-    private int mNextRequestCode = 0;
+    private int mNextRequestCode;
 
     /**
      * Creates an Activity-specific WindowAndroid with associated intent functionality.

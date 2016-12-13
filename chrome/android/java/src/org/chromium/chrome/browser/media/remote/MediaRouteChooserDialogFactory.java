@@ -73,8 +73,8 @@ public class MediaRouteChooserDialogFactory extends MediaRouteDialogFactory {
         final MediaRouteController mController;
         final MediaStateListener mPlayer;
         final SystemVisibilitySaver mVisibilitySaver = new SystemVisibilitySaver();
-        boolean mCancelled = false;
-        Context mContext = null;
+        boolean mCancelled;
+        Context mContext;
 
         // The class has to be a public static class with a zero-argument constructor.
         // Since we can't pass any callbacks to the fragment easily, just close the dialog.

@@ -69,7 +69,7 @@ public class ChildProcessServiceImpl {
     private int mLibraryProcessType;
 
     private static AtomicReference<Context> sContext = new AtomicReference<>(null);
-    private boolean mLibraryInitialized = false;
+    private boolean mLibraryInitialized;
 
     /**
      * If >= 0 enables "validation of caller of {@link mBinder}'s methods". A RemoteException

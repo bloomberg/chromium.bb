@@ -85,19 +85,19 @@ public class VideoCaptureCamera
 
     // Storage of takePicture() callback Id. There can be one such request in flight at most, and
     // needs to be exercised either in case of error or sucess.
-    private long mPhotoTakenCallbackId = 0;
-    private int mPhotoWidth = 0;
-    private int mPhotoHeight = 0;
+    private long mPhotoTakenCallbackId;
+    private int mPhotoWidth;
+    private int mPhotoHeight;
     private android.hardware.Camera.Area mAreaOfInterest;
 
     private android.hardware.Camera mCamera;
     // Lock to mutually exclude execution of OnPreviewFrame() and {start/stop}Capture().
     private ReentrantLock mPreviewBufferLock = new ReentrantLock();
     // True when native code has started capture.
-    private boolean mIsRunning = false;
+    private boolean mIsRunning;
 
-    private int[] mGlTextures = null;
-    private SurfaceTexture mSurfaceTexture = null;
+    private int[] mGlTextures;
+    private SurfaceTexture mSurfaceTexture;
 
     private static android.hardware.Camera.CameraInfo getCameraInfo(int id) {
         android.hardware.Camera.CameraInfo cameraInfo = new android.hardware.Camera.CameraInfo();

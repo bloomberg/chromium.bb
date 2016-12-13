@@ -43,7 +43,7 @@ public class GoogleCloudMessagingV2 implements GoogleCloudMessagingSubscriber {
     private static final String EXTRA_SUBSCRIPTION = "subscription";
 
     private Context mContext;
-    private PendingIntent mAppPendingIntent = null;
+    private PendingIntent mAppPendingIntent;
     private final Object mAppPendingIntentLock = new Object();
 
     public GoogleCloudMessagingV2(Context context) {

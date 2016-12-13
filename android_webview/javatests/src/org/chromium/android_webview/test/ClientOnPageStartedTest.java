@@ -49,9 +49,9 @@ public class ClientOnPageStartedTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testOnPageStartedCalledOnceOnError() throws Throwable {
         class LocalTestClient extends TestAwContentsClient {
-            private boolean mIsOnReceivedErrorCalled = false;
-            private boolean mIsOnPageStartedCalled = false;
-            private boolean mAllowAboutBlank = false;
+            private boolean mIsOnReceivedErrorCalled;
+            private boolean mIsOnPageStartedCalled;
+            private boolean mAllowAboutBlank;
 
             @Override
             public void onReceivedError(int errorCode, String description, String failingUrl) {

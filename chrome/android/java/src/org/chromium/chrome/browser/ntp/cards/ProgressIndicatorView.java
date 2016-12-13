@@ -26,7 +26,7 @@ public class ProgressIndicatorView extends ImageView {
     private final Runnable mShowSpinnerRunnable;
 
     private final MaterialProgressDrawable mProgressDrawable;
-    private boolean mPostedCallback = false;
+    private boolean mPostedCallback;
 
     /**
      * Constructor for use in layout files.

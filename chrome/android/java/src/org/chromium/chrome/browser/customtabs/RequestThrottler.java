@@ -46,14 +46,14 @@ class RequestThrottler {
     private static final String LAST_REQUEST = "last_request_";
     private static final String BANNED_UNTIL = "banned_until_";
 
-    private static SparseArray<RequestThrottler> sUidToThrottler = null;
+    private static SparseArray<RequestThrottler> sUidToThrottler;
 
     private final SharedPreferences mSharedPreferences;
     private final int mUid;
     private float mScore;
     private long mLastPrerenderRequestMs;
     private long mBannedUntilMs;
-    private String mUrl = null;
+    private String mUrl;
 
     /**
      * Updates the prediction stats and returns whether prediction is allowed.

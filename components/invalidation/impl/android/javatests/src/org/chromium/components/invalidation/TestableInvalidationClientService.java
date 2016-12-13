@@ -46,10 +46,10 @@ public class TestableInvalidationClientService extends InvalidationClientService
     final List<byte[]> mAcknowledgements = new ArrayList<byte[]>();
 
     /** Whether Chrome is in the foreground. */
-    private boolean mIsChromeInForeground = false;
+    private boolean mIsChromeInForeground;
 
     /** Whether sync is enabled. */
-    private boolean mIsSyncEnabled = false;
+    private boolean mIsSyncEnabled;
 
     @Override
     public void acknowledge(byte[] ackHandle) {

@@ -283,7 +283,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private ContentViewClient mContentViewClient;
 
     // Native pointer to C++ ContentViewCoreImpl object which will be set by nativeInit().
-    private long mNativeContentViewCore = 0;
+    private long mNativeContentViewCore;
 
     private boolean mAttachedToWindow;
     private final ObserverList<GestureStateListener> mGestureStateListeners;
@@ -291,11 +291,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
     private PopupZoomer mPopupZoomer;
     private SelectPopup mSelectPopup;
-    private long mNativeSelectPopupSourceFrame = 0;
+    private long mNativeSelectPopupSourceFrame;
 
     private OverscrollRefreshHandler mOverscrollRefreshHandler;
 
-    private Runnable mFakeMouseMoveRunnable = null;
+    private Runnable mFakeMouseMoveRunnable;
 
     // Only valid when focused on a text / password field.
     private ImeAdapter mImeAdapter;
@@ -365,7 +365,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     // onNativeFlingStopped() is called asynchronously.
     private int mPotentiallyActiveFlingCount;
 
-    private SmartClipDataListener mSmartClipDataListener = null;
+    private SmartClipDataListener mSmartClipDataListener;
 
     /**
      * PID used to indicate an invalid render process.

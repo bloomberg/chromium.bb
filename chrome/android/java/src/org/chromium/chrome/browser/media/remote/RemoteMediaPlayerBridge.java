@@ -39,7 +39,7 @@ public class RemoteMediaPlayerBridge {
 
     // mActive is true when the Chrome is playing, or preparing to play, this player's video
     // remotely.
-    private boolean mActive = false;
+    private boolean mActive;
 
     private static final String TAG = "MediaFling";
 

@@ -77,7 +77,7 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
     private final VirtualDisplayAndroid mContentVirtualDisplay;
     private final VirtualDisplayAndroid mUiVirtualDisplay;
 
-    private long mNativeVrShell = 0;
+    private long mNativeVrShell;
 
     private int mContentTextureHandle;
     private int mUiTextureHandle;

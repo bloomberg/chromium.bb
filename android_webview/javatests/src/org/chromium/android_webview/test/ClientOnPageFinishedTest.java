@@ -56,9 +56,9 @@ public class ClientOnPageFinishedTest extends AwTestBase {
     @FlakyTest(message = "crbug.com/652577")
     public void testCalledAfterError() throws Throwable {
         class LocalTestClient extends TestAwContentsClient {
-            private boolean mIsOnReceivedErrorCalled = false;
-            private boolean mIsOnPageFinishedCalled = false;
-            private boolean mAllowAboutBlank = false;
+            private boolean mIsOnReceivedErrorCalled;
+            private boolean mIsOnPageFinishedCalled;
+            private boolean mAllowAboutBlank;
 
             @Override
             public void onReceivedError(int errorCode, String description, String failingUrl) {

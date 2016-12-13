@@ -34,7 +34,7 @@ public class ApplicationTestUtils {
     private static final String TAG = "ApplicationTestUtils";
     private static final float FLOAT_EPSILON = 0.001f;
 
-    private static PowerManager.WakeLock sWakeLock = null;
+    private static PowerManager.WakeLock sWakeLock;
 
     // TODO(jbudorick): fix deprecation warning crbug.com/537347
     @SuppressWarnings("deprecation")

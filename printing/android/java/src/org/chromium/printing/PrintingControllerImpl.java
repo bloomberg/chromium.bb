@@ -88,12 +88,12 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     private int mPrintingState = PRINTING_STATE_READY;
 
     /** Whether layouting parameters have been changed to require a new PDF generation. */
-    private boolean mNeedNewPdf = false;
+    private boolean mNeedNewPdf;
 
     /** Total number of pages to print with initial print dialog settings. */
     private int mLastKnownMaxPages = PrintDocumentInfo.PAGE_COUNT_UNKNOWN;
 
-    private boolean mIsBusy = false;
+    private boolean mIsBusy;
 
     private PrintManagerDelegate mPrintManager;
 

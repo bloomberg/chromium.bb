@@ -24,7 +24,7 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
     private static final String PASSPHRASE = "passphrase";
 
     static class CountingGmsCoreSyncListener extends GmsCoreSyncListener {
-        private int mCallCount = 0;
+        private int mCallCount;
 
         @Override
         public void updateEncryptionKey(byte[] key) {

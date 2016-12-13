@@ -36,10 +36,10 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
     // array containing the order of sections
     private List<?>[] mSections = {mTopSection, mBottomSection};
 
-    private BookmarkId mDesktopNodeId = null;
-    private BookmarkId mMobileNodeId = null;
-    private BookmarkId mOthersNodeId = null;
-    private List<BookmarkId> mManagedAndPartnerFolderIds = null;
+    private BookmarkId mDesktopNodeId;
+    private BookmarkId mMobileNodeId;
+    private BookmarkId mOthersNodeId;
+    private List<BookmarkId> mManagedAndPartnerFolderIds;
 
     /**
      * Represents each item in the list.

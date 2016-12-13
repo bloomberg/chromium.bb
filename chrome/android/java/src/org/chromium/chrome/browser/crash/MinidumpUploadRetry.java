@@ -18,7 +18,7 @@ import org.chromium.net.NetworkChangeNotifier;
  */
 class MinidumpUploadRetry implements NetworkChangeNotifier.ConnectionTypeObserver {
     private final Context mContext;
-    private static MinidumpUploadRetry sSingleton = null;
+    private static MinidumpUploadRetry sSingleton;
 
     private static class Scheduler implements Runnable {
         private static NonThreadSafe sThreadCheck;

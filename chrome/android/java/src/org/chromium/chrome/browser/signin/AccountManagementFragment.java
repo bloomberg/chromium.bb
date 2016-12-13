@@ -100,8 +100,8 @@ public class AccountManagementFragment extends PreferenceFragment
     private static final HashMap<String, Pair<String, Bitmap>> sToNamePicture =
             new HashMap<String, Pair<String, Bitmap>>();
 
-    private static String sChildAccountId = null;
-    private static Bitmap sCachedBadgedPicture = null;
+    private static String sChildAccountId;
+    private static Bitmap sCachedBadgedPicture;
 
     public static final String PREF_SIGN_OUT = "sign_out";
     public static final String PREF_ADD_ACCOUNT = "add_account";

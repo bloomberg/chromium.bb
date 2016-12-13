@@ -1244,8 +1244,8 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             mCanHandleWithInstantApp = value;
         }
 
-        public Intent startActivityIntent = null;
-        public boolean startIncognitoIntentCalled = false;
+        public Intent startActivityIntent;
+        public boolean startIncognitoIntentCalled;
 
         // This should not be reset for every run of check().
         private Boolean mQueryIntentOverride;

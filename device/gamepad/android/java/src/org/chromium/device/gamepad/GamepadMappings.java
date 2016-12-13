@@ -269,7 +269,7 @@ abstract class GamepadMappings {
         private int mRightTriggerAxis = -1;
         private int mRightStickXAxis = -1;
         private int mRightStickYAxis = -1;
-        private boolean mUseHatAxes = false;
+        private boolean mUseHatAxes;
 
         UnknownGamepadMappings(int[] axes) {
             int hatAxesFound = 0;

@@ -22,10 +22,10 @@ public class DeviceFormFactor {
     public static final int MINIMUM_TABLET_WIDTH_DP = 600;
     private static final int MINIMUM_LARGE_TABLET_WIDTH_DP = 720;
 
-    private static Boolean sIsTablet = null;
-    private static Boolean sIsLargeTablet = null;
-    private static Integer sMinimumTabletWidthPx = null;
-    private static Float sDensity = null;
+    private static Boolean sIsTablet;
+    private static Boolean sIsLargeTablet;
+    private static Integer sMinimumTabletWidthPx;
+    private static Float sDensity;
 
     /**
      * @param context {@link Context} used to get the Application Context.

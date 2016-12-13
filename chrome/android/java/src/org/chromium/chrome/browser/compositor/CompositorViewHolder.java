@@ -76,7 +76,7 @@ public class CompositorViewHolder extends CoordinatorLayout
         implements ContentOffsetProvider, LayoutManagerHost, LayoutRenderHost, Invalidator.Host,
                 FullscreenListener {
 
-    private boolean mIsKeyboardShowing = false;
+    private boolean mIsKeyboardShowing;
 
     private final Invalidator mInvalidator = new Invalidator();
     private LayoutManager mLayoutManager;
@@ -89,7 +89,7 @@ public class CompositorViewHolder extends CoordinatorLayout
 
     private final ArrayList<Invalidator.Client> mPendingInvalidations =
             new ArrayList<Invalidator.Client>();
-    private boolean mSkipInvalidation = false;
+    private boolean mSkipInvalidation;
 
     /**
      * A task to be performed after a resize event.
@@ -100,9 +100,9 @@ public class CompositorViewHolder extends CoordinatorLayout
     private ChromeFullscreenManager mFullscreenManager;
     private View mAccessibilityView;
     private CompositorAccessibilityProvider mNodeProvider;
-    private boolean mFullscreenTouchEvent = false;
-    private float mLastContentOffset = 0;
-    private float mLastVisibleContentOffset = 0;
+    private boolean mFullscreenTouchEvent;
+    private float mLastContentOffset;
+    private float mLastVisibleContentOffset;
 
     /** The toolbar control container. **/
     private ControlContainer mControlContainer;
@@ -121,7 +121,7 @@ public class CompositorViewHolder extends CoordinatorLayout
     private DrawingInfo mProgressBarDrawingInfo;
 
     // If we've drawn at least one frame.
-    private boolean mHasDrawnOnce = false;
+    private boolean mHasDrawnOnce;
 
     /**
      * The desired size of this view in {@link MeasureSpec}. Set by the host

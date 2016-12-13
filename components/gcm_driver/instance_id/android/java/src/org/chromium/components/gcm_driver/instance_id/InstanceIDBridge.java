@@ -29,9 +29,9 @@ public class InstanceIDBridge {
      * Underlying InstanceID. May be shared by multiple InstanceIDBridges. Must be initialized on
      * a background thread.
      */
-    private InstanceID mInstanceID = null;
+    private InstanceID mInstanceID;
 
-    private static boolean sBlockOnAsyncTasksForTesting = false;
+    private static boolean sBlockOnAsyncTasksForTesting;
 
     private InstanceIDBridge(
             long nativeInstanceIDAndroid, Context context, String subtype) {

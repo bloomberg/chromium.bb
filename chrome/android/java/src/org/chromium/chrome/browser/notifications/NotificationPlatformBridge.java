@@ -79,7 +79,7 @@ public class NotificationPlatformBridge {
     private final Context mAppContext;
     private final NotificationManagerProxy mNotificationManager;
 
-    private long mLastNotificationClickMs = 0L;
+    private long mLastNotificationClickMs;
 
     /**
      * Creates a new instance of the NotificationPlatformBridge.

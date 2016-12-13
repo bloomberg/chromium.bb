@@ -381,8 +381,8 @@ public class ChildProcessLauncher {
                         creationParams);
     }
 
-    private static boolean sLinkerInitialized = false;
-    private static long sLinkerLoadAddress = 0;
+    private static boolean sLinkerInitialized;
+    private static long sLinkerLoadAddress;
 
     private static ChromiumLinkerParams getLinkerParamsForNewConnection() {
         if (!sLinkerInitialized) {
@@ -484,7 +484,7 @@ public class ChildProcessLauncher {
             new ConcurrentHashMap<Integer, ChildProcessConnection>();
 
     // A pre-allocated and pre-bound connection ready for connection setup, or null.
-    private static ChildProcessConnection sSpareSandboxedConnection = null;
+    private static ChildProcessConnection sSpareSandboxedConnection;
 
     // Manages oom bindings used to bind chind services.
     private static BindingManager sBindingManager = BindingManagerImpl.createBindingManager();

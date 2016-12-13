@@ -445,7 +445,7 @@ public class TestAwContentsClient extends NullContentsClient {
      */
     public static class ShouldOverrideUrlLoadingHelper extends CallbackHelper {
         private String mShouldOverrideUrlLoadingUrl;
-        private boolean mShouldOverrideUrlLoadingReturnValue = false;
+        private boolean mShouldOverrideUrlLoadingReturnValue;
         private boolean mIsRedirect;
         private boolean mHasUserGesture;
         private boolean mIsMainFrame;

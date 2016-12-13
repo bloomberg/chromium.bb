@@ -73,7 +73,7 @@ class FindResultBar extends View {
     private final Paint mFillPaint;
     private final Paint mStrokePaint;
 
-    boolean mWaitingForActivateAck = false;
+    boolean mWaitingForActivateAck;
 
     private static Comparator<RectF> sComparator = new Comparator<RectF>() {
         @Override

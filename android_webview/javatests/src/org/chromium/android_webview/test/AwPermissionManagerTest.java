@@ -53,7 +53,7 @@ public class AwPermissionManagerTest extends AwTestBase {
                 CommonResources.getTextHtmlHeaders(true));
 
         TestAwContentsClient contentsClient = new TestAwContentsClient() {
-            private boolean mCalled = false;
+            private boolean mCalled;
 
             @Override
             public void onPermissionRequest(final AwPermissionRequest awPermissionRequest) {

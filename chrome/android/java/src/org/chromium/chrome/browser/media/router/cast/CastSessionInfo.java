@@ -29,8 +29,8 @@ public class CastSessionInfo {
          * Use this class to construct an instance of {@link VolumeInfo}.
          */
         public static class Builder {
-            private double mLevel = 0;
-            private boolean mMuted = false;
+            private double mLevel;
+            private boolean mMuted;
 
             public Builder setLevel(double level) {
                 mLevel = level;
@@ -99,8 +99,8 @@ public class CastSessionInfo {
             private String mLabel = "";
             private String mFriendlyName = "";
             private List<String> mCapabilities = new ArrayList<String>();
-            private VolumeInfo mVolume = null;
-            private int mIsActiveInput = 0;
+            private VolumeInfo mVolume;
+            private int mIsActiveInput;
             private String mDisplayStatus = "";
             private String mReceiverType = "";
 
@@ -223,7 +223,7 @@ public class CastSessionInfo {
     public static class Builder {
         private String mSessionId = "";
         private String mStatusText = "";
-        private ReceiverInfo mReceiver = null;
+        private ReceiverInfo mReceiver;
         private List<String> mNamespaces = new ArrayList<String>();
         private List<String> mMedia = new ArrayList<String>();
         private String mStatus = "";

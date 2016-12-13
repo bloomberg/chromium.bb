@@ -49,13 +49,13 @@ public class AndroidSyncSettings {
 
     private final SyncContentResolverDelegate mSyncContentResolverDelegate;
 
-    private Account mAccount = null;
+    private Account mAccount;
 
-    private boolean mIsSyncable = false;
+    private boolean mIsSyncable;
 
-    private boolean mChromeSyncEnabled = false;
+    private boolean mChromeSyncEnabled;
 
-    private boolean mMasterSyncEnabled = false;
+    private boolean mMasterSyncEnabled;
 
     private final ObserverList<AndroidSyncSettingsObserver> mObservers =
             new ObserverList<AndroidSyncSettingsObserver>();

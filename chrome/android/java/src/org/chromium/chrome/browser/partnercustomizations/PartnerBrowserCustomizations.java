@@ -37,7 +37,7 @@ public class PartnerBrowserCustomizations {
     public static final String PARTNER_DISABLE_INCOGNITO_MODE_PATH = "disableincognitomode";
 
     private static String sProviderAuthority = PROVIDER_AUTHORITY;
-    private static boolean sIgnoreBrowserProviderSystemPackageCheck = false;
+    private static boolean sIgnoreBrowserProviderSystemPackageCheck;
     private static volatile String sHomepage;
     private static volatile boolean sIncognitoModeDisabled;
     private static volatile boolean sBookmarksEditingDisabled;

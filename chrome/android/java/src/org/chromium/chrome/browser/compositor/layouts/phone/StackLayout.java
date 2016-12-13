@@ -82,7 +82,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
     private int mStackAnimationCount;
 
-    private float mFlingSpeed = 0; // pixel/ms
+    private float mFlingSpeed; // pixel/ms
 
     /** Whether the current fling animation is the result of switching stacks. */
     private boolean mFlingFromModelChange;
@@ -94,8 +94,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     // from the event handler; and mRenderedScrollIndex is the value we get
     // after map mScrollIndex through a decelerate function.
     // Here we use float as index so we can smoothly animate the transition between stack.
-    private float mRenderedScrollOffset = 0.0f;
-    private float mScrollIndexOffset = 0.0f;
+    private float mRenderedScrollOffset;
+    private float mScrollIndexOffset;
 
     private final int mMinMaxInnerMargin;
     private float mInnerMarginPercent;
@@ -113,7 +113,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     // We use StackTab[] instead of ArrayList<StackTab> because the sorting function does
     // an allocation to iterate over the elements.
     // Do not use out of the context of {@link #updateTabPriority}.
-    private StackTab[] mSortedPriorityArray = null;
+    private StackTab[] mSortedPriorityArray;
 
     private final ArrayList<Integer> mVisibilityArray = new ArrayList<Integer>();
     private final VisibilityComparator mVisibilityComparator = new VisibilityComparator();
@@ -121,13 +121,13 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private Comparator<StackTab> mSortingComparator = mVisibilityComparator;
 
     private static final int LAYOUTTAB_ASYNCHRONOUS_INITIALIZATION_BATCH_SIZE = 4;
-    private boolean mDelayedLayoutTabInitRequired = false;
+    private boolean mDelayedLayoutTabInitRequired;
 
     private Boolean mTemporarySelectedStack;
 
     // Orientation Variables
-    private PortraitViewport mCachedPortraitViewport = null;
-    private PortraitViewport mCachedLandscapeViewport = null;
+    private PortraitViewport mCachedPortraitViewport;
+    private PortraitViewport mCachedLandscapeViewport;
 
     private final ViewGroup mViewContainer;
 

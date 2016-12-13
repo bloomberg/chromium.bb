@@ -109,7 +109,7 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         };
 
         /** True if we are waiting for the MediaRouter route to connect or reconnect */
-        private boolean mConnectionFailureNotifierQueued = false;
+        private boolean mConnectionFailureNotifierQueued;
 
         private void clearConnectionFailureCallback() {
             getHandler().removeCallbacks(mConnectionFailureNotifier);
@@ -163,7 +163,7 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     private final DeviceSelectionCallback mDeviceSelectionCallback;
 
     private final Handler mHandler;
-    private boolean mIsPrepared = false;
+    private boolean mIsPrepared;
 
     private final MediaRouter mMediaRouter;
 
@@ -180,12 +180,12 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     // two player states.
     private PlayerState mRemotePlayerState = PlayerState.FINISHED;
     private PlayerState mDisplayedPlayerState = PlayerState.FINISHED;
-    private boolean mRoutesAvailable = false;
+    private boolean mRoutesAvailable;
     private final Set<UiListener> mUiListeners;
-    private boolean mWatchingRouteSelection = false;
+    private boolean mWatchingRouteSelection;
 
-    private long mMediaElementAttachedTimestampMs = 0;
-    private long mMediaElementDetachedTimestampMs = 0;
+    private long mMediaElementAttachedTimestampMs;
+    private long mMediaElementDetachedTimestampMs;
 
     protected AbstractMediaRouteController() {
         mContext = ContextUtils.getApplicationContext();

@@ -225,7 +225,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
                 modeFlags, acceptTypes, title, defaultFilename, capture);
 
         mContentsClient.showFileChooser(new ValueCallback<String[]>() {
-            boolean mCompleted = false;
+            boolean mCompleted;
             @Override
             public void onReceiveValue(String[] results) {
                 if (mCompleted) {

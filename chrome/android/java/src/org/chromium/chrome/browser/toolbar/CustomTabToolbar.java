@@ -128,7 +128,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private CustomTabToolbarAnimationDelegate mAnimDelegate;
     private int mState = STATE_DOMAIN_ONLY;
     private String mFirstUrl;
-    private boolean mShowsOfflinePage = false;
+    private boolean mShowsOfflinePage;
 
     private Runnable mTitleAnimationStarter = new Runnable() {
         @Override

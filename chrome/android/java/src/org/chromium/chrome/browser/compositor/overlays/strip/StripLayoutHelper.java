@@ -132,7 +132,7 @@ public class StripLayoutHelper {
 
     // Reorder State
     private int mReorderState = REORDER_SCROLL_NONE;
-    private boolean mInReorderMode = false;
+    private boolean mInReorderMode;
     private float mLastReorderX;
     private long mLastReorderScrollTime;
 

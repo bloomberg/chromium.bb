@@ -4,12 +4,13 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.os.Message;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import org.apache.http.util.EncodingUtils;
+
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -27,9 +28,9 @@ public class AwContentsClientOnFormResubmissionTest extends AwTestBase {
             extends org.chromium.android_webview.test.TestAwContentsClient {
 
         // Number of times onFormResubmit is called.
-        private int mResubmissions = 0;
+        private int mResubmissions;
         // Whether to resubmit Post data on reload.
-        private boolean mResubmit = false;
+        private boolean mResubmit;
 
         public int getResubmissions() {
             return mResubmissions;

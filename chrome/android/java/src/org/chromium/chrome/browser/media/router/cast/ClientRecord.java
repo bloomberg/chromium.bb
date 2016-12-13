@@ -46,7 +46,7 @@ public class ClientRecord {
     /**
      * Whether the client is ready to receive messages.
      */
-    public boolean isConnected = false;
+    public boolean isConnected;
 
     /**
      * The pending messages for the client.

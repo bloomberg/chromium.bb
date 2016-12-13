@@ -16,9 +16,9 @@ import org.chromium.base.VisibleForTesting;
 public abstract class EventFilter {
     protected final EventFilterHost mHost;
     protected final float mPxToDp;
-    private boolean mSimulateIntercepting = false;
+    private boolean mSimulateIntercepting;
 
-    private boolean mAutoOffset = false;
+    private boolean mAutoOffset;
     protected float mCurrentTouchOffsetX;
     protected float mCurrentTouchOffsetY;
 

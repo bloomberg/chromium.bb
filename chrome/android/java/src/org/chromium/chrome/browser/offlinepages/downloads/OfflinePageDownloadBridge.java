@@ -60,7 +60,7 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
         public void onItemUpdated(OfflinePageDownloadItem item) {}
     }
 
-    private static boolean sIsTesting = false;
+    private static boolean sIsTesting;
     private final ObserverList<Observer> mObservers = new ObserverList<Observer>();
     private long mNativeOfflinePageDownloadBridge;
     private boolean mIsLoaded;

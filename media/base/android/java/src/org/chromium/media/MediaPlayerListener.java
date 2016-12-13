@@ -32,7 +32,7 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
     public static final int MEDIA_ERROR_TIMED_OUT = -110;
 
     // Used to determine the class instance to dispatch the native call to.
-    private long mNativeMediaPlayerListener = 0;
+    private long mNativeMediaPlayerListener;
     private final Context mContext;
 
     private MediaPlayerListener(long nativeMediaPlayerListener, Context context) {

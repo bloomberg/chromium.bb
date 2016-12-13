@@ -73,7 +73,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     private FindResultListener mFindResultListener;
 
-    private FindMatchRectsListener mFindMatchRectsListener = null;
+    private FindMatchRectsListener mFindMatchRectsListener;
 
     private int mDisplayMode = WebDisplayMode.Browser;
 

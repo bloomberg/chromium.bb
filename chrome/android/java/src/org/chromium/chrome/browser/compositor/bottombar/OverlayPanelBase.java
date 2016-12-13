@@ -109,7 +109,7 @@ abstract class OverlayPanelBase {
      * The Y coordinate to apply to the Base Page in order to keep the selection
      * in view when the Overlay Panel is in its EXPANDED state.
      */
-    private float mBasePageTargetY = 0.f;
+    private float mBasePageTargetY;
 
     /** The current context. */
     protected final Context mContext;
@@ -388,8 +388,8 @@ abstract class OverlayPanelBase {
     private boolean mIsBarBorderVisible;
     private float mBarBorderHeight;
 
-    private boolean mBarShadowVisible = false;
-    private float mBarShadowOpacity = 0.f;
+    private boolean mBarShadowVisible;
+    private float mBarShadowOpacity;
 
     private float mArrowIconOpacity;
 
@@ -485,7 +485,7 @@ abstract class OverlayPanelBase {
     // Base Page states
     // --------------------------------------------------------------------------------------------
 
-    private float mBasePageY = 0.0f;
+    private float mBasePageY;
     private float mBasePageBrightness = 1.0f;
 
     /**

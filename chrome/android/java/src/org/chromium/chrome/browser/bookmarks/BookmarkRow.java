@@ -35,7 +35,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
     protected BookmarkDelegate mDelegate;
     protected BookmarkId mBookmarkId;
     private ListPopupWindow mPopupMenu;
-    private boolean mIsAttachedToWindow = false;
+    private boolean mIsAttachedToWindow;
 
     /**
      * Constructor for inflating from XML.

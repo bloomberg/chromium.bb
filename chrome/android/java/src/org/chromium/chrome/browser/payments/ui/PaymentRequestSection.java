@@ -1092,7 +1092,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         private SectionInformation mSectionInformation;
 
         /** Indicates whether the summary should be a single line. */
-        private boolean mSummaryInSingleLine = false;
+        private boolean mSummaryInSingleLine;
 
         private FocusChangedObserver mFocusChangedObserver;
 

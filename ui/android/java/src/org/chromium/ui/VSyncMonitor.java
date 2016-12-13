@@ -19,11 +19,11 @@ public class VSyncMonitor {
     private static final long NANOSECONDS_PER_SECOND = 1000000000;
     private static final long NANOSECONDS_PER_MICROSECOND = 1000;
 
-    private boolean mInsideVSync = false;
+    private boolean mInsideVSync;
 
     // Conservative guess about vsync's consecutivity.
     // If true, next tick is guaranteed to be consecutive.
-    private boolean mConsecutiveVSync = false;
+    private boolean mConsecutiveVSync;
 
     /**
      * VSync listener class

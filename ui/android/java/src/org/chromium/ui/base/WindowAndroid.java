@@ -71,7 +71,7 @@ public class WindowAndroid {
     }
 
     // Native pointer to the c++ WindowAndroid object.
-    private long mNativeWindowAndroid = 0;
+    private long mNativeWindowAndroid;
     private final VSyncMonitor mVSyncMonitor;
     private final DisplayAndroid mDisplayAndroid;
 
@@ -97,7 +97,7 @@ public class WindowAndroid {
 
     private ViewGroup mKeyboardAccessoryView;
 
-    protected boolean mIsKeyboardShowing = false;
+    protected boolean mIsKeyboardShowing;
 
     // System accessibility service.
     private final AccessibilityManager mAccessibilityManager;

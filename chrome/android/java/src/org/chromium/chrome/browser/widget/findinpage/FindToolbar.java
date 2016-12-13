@@ -62,7 +62,7 @@ public class FindToolbar extends LinearLayout
     protected TintedImageButton mFindPrevButton;
     protected TintedImageButton mFindNextButton;
 
-    private FindResultBar mResultBar = null;
+    private FindResultBar mResultBar;
 
     private TabModelSelector mTabModelSelector;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
@@ -77,12 +77,12 @@ public class FindToolbar extends LinearLayout
     private String mLastUserSearch = "";
 
     /** Whether toolbar text is being set automatically (not typed by user). */
-    private boolean mSettingFindTextProgrammatically = false;
+    private boolean mSettingFindTextProgrammatically;
 
     /** Whether the search key should trigger a new search. */
-    private boolean mSearchKeyShouldTriggerSearch = false;
+    private boolean mSearchKeyShouldTriggerSearch;
 
-    private boolean mActive = false;
+    private boolean mActive;
 
     private Handler mHandler = new Handler();
     private Runnable mAccessibleAnnouncementRunnable;
@@ -335,7 +335,7 @@ public class FindToolbar extends LinearLayout
         mAccessibilityDidActivateResult = true;
     }
 
-    private boolean mShowKeyboardOnceWindowIsFocused = false;
+    private boolean mShowKeyboardOnceWindowIsFocused;
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {

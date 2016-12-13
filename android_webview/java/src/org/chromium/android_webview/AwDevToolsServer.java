@@ -12,7 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
 @JNINamespace("android_webview")
 public class AwDevToolsServer {
 
-    private long mNativeDevToolsServer = 0;
+    private long mNativeDevToolsServer;
 
     public AwDevToolsServer() {
         mNativeDevToolsServer = nativeInitRemoteDebugging();

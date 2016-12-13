@@ -113,7 +113,7 @@ class ClientManager {
     private final Context mContext;
     private final Map<CustomTabsSessionToken, SessionParams> mSessionParams = new HashMap<>();
     private final SparseBooleanArray mUidHasCalledWarmup = new SparseBooleanArray();
-    private boolean mWarmupHasBeenCalled = false;
+    private boolean mWarmupHasBeenCalled;
 
     public ClientManager(Context context) {
         mContext = context.getApplicationContext();

@@ -21,7 +21,7 @@ class MemoryMonitorAndroid {
     private static final String TAG = "MemoryMonitorAndroid";
     private static final ActivityManager.MemoryInfo sMemoryInfo =
             new ActivityManager.MemoryInfo();
-    private static ComponentCallbacks2 sCallbacks = null;
+    private static ComponentCallbacks2 sCallbacks;
 
     private MemoryMonitorAndroid() {
     }

@@ -19,7 +19,7 @@ import org.chromium.net.test.util.TestWebServer;
 public class AwContentsClientVisitedHistoryTest extends AwTestBase {
     private static class GetVisitedHistoryHelper extends CallbackHelper {
         private ValueCallback<String[]> mCallback;
-        private boolean mSaveCallback = false;
+        private boolean mSaveCallback;
 
         public ValueCallback<String[]> getCallback() {
             assert getCallCount() > 0;

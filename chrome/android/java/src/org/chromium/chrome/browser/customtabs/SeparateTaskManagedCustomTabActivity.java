@@ -25,7 +25,7 @@ public class SeparateTaskManagedCustomTabActivity extends SeparateTaskCustomTabA
     private static final String FORCE_FINISH = "CCT.ForceFinish";
 
     // Time at which an intent was received and handled.
-    private long mIntentHandlingTimeMs = 0;
+    private long mIntentHandlingTimeMs;
 
     @Override
     public void onStartWithNative() {

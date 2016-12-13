@@ -306,7 +306,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
     private Bitmap mFavicon;
     private boolean mHasRequestedVisitedHistoryFromClient;
     // Whether this WebView is a popup.
-    private boolean mIsPopupWindow = false;
+    private boolean mIsPopupWindow;
 
     // The base background color, i.e. not accounting for any CSS body from the current page.
     private int mBaseBackgroundColor = Color.WHITE;
@@ -357,7 +357,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
 
     // True when this AwContents has been destroyed.
     // Do not use directly, call isDestroyed() instead.
-    private boolean mIsDestroyed = false;
+    private boolean mIsDestroyed;
 
     private static String sCurrentLocales = "";
 
@@ -1694,7 +1694,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
     // take that into consideration).
     // http://crbug.com/269032
     private boolean mOverlayHorizontalScrollbar = true;
-    private boolean mOverlayVerticalScrollbar = false;
+    private boolean mOverlayVerticalScrollbar;
 
     /**
      * @see View#setScrollBarStyle(int)

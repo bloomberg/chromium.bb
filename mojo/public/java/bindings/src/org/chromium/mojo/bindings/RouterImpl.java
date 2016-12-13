@@ -48,7 +48,7 @@ public class RouterImpl implements Router {
      * {@link MessageReceiver} used to return responses to the caller.
      */
     class ResponderThunk implements MessageReceiver {
-        private boolean mAcceptWasInvoked = false;
+        private boolean mAcceptWasInvoked;
 
         /**
          * @see

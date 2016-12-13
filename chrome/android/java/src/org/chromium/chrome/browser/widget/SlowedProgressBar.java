@@ -17,8 +17,8 @@ import org.chromium.base.annotations.SuppressFBWarnings;
  * specific FPS.
  */
 public class SlowedProgressBar extends ProgressBar {
-    private long mLastDrawTimeMs = 0;
-    private boolean mPendingInvalidation = false;
+    private long mLastDrawTimeMs;
+    private boolean mPendingInvalidation;
     private static final int MIN_MS_PER_FRAME = 66;
     private int mTargetProgress;
 

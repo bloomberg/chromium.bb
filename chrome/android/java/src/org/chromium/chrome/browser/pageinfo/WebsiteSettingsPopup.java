@@ -137,7 +137,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
         private boolean mIsShowingTruncatedText = true;
 
         // The profile to use when getting the end index for the origin.
-        private Profile mProfile = null;
+        private Profile mProfile;
 
         // The maximum number of lines currently shown in the view
         private int mCurrentMaxLines = Integer.MAX_VALUE;
@@ -266,7 +266,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
     private final Dialog mDialog;
 
     // Animation which is currently running, if there is one.
-    private AnimatorSet mCurrentAnimation = null;
+    private AnimatorSet mCurrentAnimation;
 
     private boolean mDismissWithoutAnimation;
 

@@ -32,7 +32,7 @@ public class ChromeStrictMode {
     private static final double UPLOAD_PROBABILITY = 0.01;
     private static final double MAX_UPLOADS_PER_SESSION = 3;
 
-    private static boolean sIsStrictModeAlreadyConfigured = false;
+    private static boolean sIsStrictModeAlreadyConfigured;
     private static List<Object> sCachedStackTraces =
             Collections.synchronizedList(new ArrayList<Object>());
     private static AtomicInteger sNumUploads = new AtomicInteger();

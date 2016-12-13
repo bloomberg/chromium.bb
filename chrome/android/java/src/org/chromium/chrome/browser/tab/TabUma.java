@@ -53,7 +53,7 @@ public class TabUma {
     private static final int TAB_STATE_MAX = TAB_STATE_CLOSED;
 
     // Counter of tab shows (as per onShow()) for all tabs.
-    private static long sAllTabsShowCount = 0;
+    private static long sAllTabsShowCount;
 
     /**
      * State in which the tab was created. This can be used in metric accounting - e.g. to

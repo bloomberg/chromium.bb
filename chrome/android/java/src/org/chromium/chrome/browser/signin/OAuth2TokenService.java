@@ -51,8 +51,8 @@ public final class OAuth2TokenService
 
     private static final String OAUTH2_SCOPE_PREFIX = "oauth2:";
 
-    private Context mPendingValidationContext = null;
-    private boolean mPendingValidationForceNotifications = false;
+    private Context mPendingValidationContext;
+    private boolean mPendingValidationForceNotifications;
 
     private final long mNativeOAuth2TokenServiceDelegateAndroid;
     private final ObserverList<OAuth2TokenServiceObserver> mObservers;

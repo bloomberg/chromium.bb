@@ -53,7 +53,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     private OnClickListener mBookmarkListener;
     private OnClickListener mTabSwitcherListener;
 
-    private boolean mIsInTabSwitcherMode = false;
+    private boolean mIsInTabSwitcherMode;
 
     private boolean mShowTabStack;
     private boolean mToolbarButtonsVisible;

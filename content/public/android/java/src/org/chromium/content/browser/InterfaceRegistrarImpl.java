@@ -48,7 +48,7 @@ class InterfaceRegistrarImpl {
                 new ContentWebContentsInterfaceRegistrar());
     }
 
-    private static boolean sHasRegisteredRegistrars = false;
+    private static boolean sHasRegisteredRegistrars;
 }
 
 class ContentContextInterfaceRegistrar implements InterfaceRegistrar<Context> {

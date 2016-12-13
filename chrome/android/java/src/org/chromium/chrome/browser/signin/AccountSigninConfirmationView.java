@@ -18,7 +18,7 @@ import org.chromium.chrome.R;
 */
 public class AccountSigninConfirmationView extends ScrollView {
     private Observer mObserver;
-    private boolean mScrolledToBottom = false;
+    private boolean mScrolledToBottom;
 
     /**
     * Scrolled to bottom observer.

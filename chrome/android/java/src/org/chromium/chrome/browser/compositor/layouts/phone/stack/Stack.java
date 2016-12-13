@@ -188,15 +188,15 @@ public class Stack {
 
     // Drag Lock
     private DragLock mDragLock = DragLock.NONE;
-    private long mLastScrollUpdate = 0;
-    private float mMinScrollMotion = 0;
+    private long mLastScrollUpdate;
+    private float mMinScrollMotion;
 
     // Scrolling Variables
-    private float mScrollTarget = 0;
-    private float mScrollOffset = 0;
-    private float mScrollOffsetForDyingTabs = 0;
-    private float mCurrentScrollDirection = 0.0f;
-    private StackTab mScrollingTab = null;
+    private float mScrollTarget;
+    private float mScrollOffset;
+    private float mScrollOffsetForDyingTabs;
+    private float mCurrentScrollDirection;
+    private StackTab mScrollingTab;
 
     // Swipe Variables
     private float mSwipeUnboundScrollOffset;

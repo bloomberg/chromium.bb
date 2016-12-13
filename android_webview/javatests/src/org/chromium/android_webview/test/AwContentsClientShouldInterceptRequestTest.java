@@ -43,7 +43,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
             private ConcurrentHashMap<String, AwWebResourceRequest> mRequestsByUrls =
                     new ConcurrentHashMap<String, AwWebResourceRequest>();
             // This is read on another thread, so needs to be marked volatile.
-            private volatile AwWebResourceResponse mShouldInterceptRequestReturnValue = null;
+            private volatile AwWebResourceResponse mShouldInterceptRequestReturnValue;
             void setReturnValue(AwWebResourceResponse value) {
                 mShouldInterceptRequestReturnValue = value;
             }

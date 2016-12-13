@@ -15,10 +15,10 @@ import org.chromium.base.VisibleForTesting;
  * Utility class that provides information about the current state of the device.
  */
 public class DeviceState {
-    private static DeviceState sDeviceState = null;
+    private static DeviceState sDeviceState;
 
     // Saved battery level percentage.
-    private int mSavedBatteryPercentage = 0;
+    private int mSavedBatteryPercentage;
 
     /** Disallow Construction of DeviceState objects. Use {@link #getInstance()} instead to create
      * a singleton instance.

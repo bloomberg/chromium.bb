@@ -41,36 +41,36 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     // (specifically start and stop) may be called from any thread, hence all entry point methods
     // into the class are synchronized on the lock to protect access to these members.
     private final Object mLock = new Object();
-    private IChildProcessService mService = null;
+    private IChildProcessService mService;
     // Set to true when the service connected successfully.
-    private boolean mServiceConnectComplete = false;
+    private boolean mServiceConnectComplete;
     // Set to true when the service disconnects, as opposed to being properly closed. This happens
     // when the process crashes or gets killed by the system out-of-memory killer.
-    private boolean mServiceDisconnected = false;
+    private boolean mServiceDisconnected;
     // When the service disconnects (i.e. mServiceDisconnected is set to true), the status of the
     // oom bindings is stashed here for future inspection.
-    private boolean mWasOomProtected = false;
-    private int mPid = 0;  // Process ID of the corresponding child process.
+    private boolean mWasOomProtected;
+    private int mPid;  // Process ID of the corresponding child process.
     // Initial binding protects the newly spawned process from being killed before it is put to use,
     // it is maintained between calls to start() and removeInitialBinding().
-    private ChildServiceConnection mInitialBinding = null;
+    private ChildServiceConnection mInitialBinding;
     // Strong binding will make the service priority equal to the priority of the activity. We want
     // the OS to be able to kill background renderers as it kills other background apps, so strong
     // bindings are maintained only for services that are active at the moment (between
     // addStrongBinding() and removeStrongBinding()).
-    private ChildServiceConnection mStrongBinding = null;
+    private ChildServiceConnection mStrongBinding;
     // Low priority binding maintained in the entire lifetime of the connection, i.e. between calls
     // to start() and stop().
-    private ChildServiceConnection mWaivedBinding = null;
+    private ChildServiceConnection mWaivedBinding;
     // Incremented on addStrongBinding(), decremented on removeStrongBinding().
-    private int mStrongBindingCount = 0;
+    private int mStrongBindingCount;
     // Moderate binding will make the service priority equal to the priority of a visible process
     // while the app is in the foreground. It will stay bound only while the app is in the
     // foreground to protect a background process from the system out-of-memory killer.
-    private ChildServiceConnection mModerateBinding = null;
+    private ChildServiceConnection mModerateBinding;
 
     // Linker-related parameters.
-    private ChromiumLinkerParams mLinkerParams = null;
+    private ChromiumLinkerParams mLinkerParams;
 
     private final boolean mAlwaysInForeground;
     private final ChildProcessCreationParams mCreationParams;
@@ -108,7 +108,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     private ChildProcessConnection.ConnectionCallback mConnectionCallback;
 
     private class ChildServiceConnection implements ServiceConnection {
-        private boolean mBound = false;
+        private boolean mBound;
 
         private final int mBindFlags;
 

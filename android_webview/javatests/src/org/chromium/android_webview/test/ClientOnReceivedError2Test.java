@@ -57,9 +57,9 @@ public class ClientOnReceivedError2Test extends AwTestBase {
     }
 
     private static class VerifyOnReceivedError2CallClient extends TestAwContentsClient {
-        private boolean mBypass = false;
-        private boolean mIsOnPageFinishedCalled = false;
-        private boolean mIsOnReceivedError2Called = false;
+        private boolean mBypass;
+        private boolean mIsOnPageFinishedCalled;
+        private boolean mIsOnReceivedError2Called;
 
         void enableBypass() {
             mBypass = true;

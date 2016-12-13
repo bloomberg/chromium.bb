@@ -94,7 +94,7 @@ public class PrecacheController {
     SyncServiceInitializedNotifier mSyncServiceNotifier;
 
     /** True if a precache session is in progress. Threadsafe. */
-    private boolean mIsPrecaching = false;
+    private boolean mIsPrecaching;
 
     /** Wakelock that is held while precaching is in progress. */
     private WakeLock mPrecachingWakeLock;

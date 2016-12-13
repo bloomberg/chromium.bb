@@ -62,7 +62,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     public static final String SESSION_TAG_PREFIX = "session_sync";
 
     private static SyncController sInstance;
-    private static boolean sInitialized = false;
+    private static boolean sInitialized;
 
     private final Context mContext;
     private final ChromeSigninController mChromeSigninController;

@@ -22,7 +22,7 @@ public class GestureEventFilter extends EventFilter {
     private boolean mSingleInput = true;
     private boolean mInLongPress;
     private boolean mSeenFirstScrollEvent;
-    private int mButtons = 0;
+    private int mButtons;
     private LongPressRunnable mLongPressRunnable = new LongPressRunnable();
     private Handler mLongPressHandler = new Handler();
 

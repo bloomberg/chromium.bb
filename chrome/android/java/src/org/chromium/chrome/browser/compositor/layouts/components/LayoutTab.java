@@ -114,12 +114,12 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
      * Whether this tab need to have its title texture generated. As this is not a free operation
      * knowing that we won't show it might save a few cycles and memory.
      */
-    private boolean mIsTitleNeeded = false;
+    private boolean mIsTitleNeeded;
 
     /**
      * Whether initFromHost() has been called since the last call to init().
      */
-    private boolean mInitFromHostCalled = false;
+    private boolean mInitFromHostCalled;
 
     /** The animation set specific to this LayoutTab. */
     private ChromeAnimation<ChromeAnimation.Animatable<?>> mCurrentAnimations;

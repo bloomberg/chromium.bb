@@ -104,7 +104,7 @@ public class InfoBarContainer extends SwipableOverlayView {
     private final ArrayList<InfoBar> mInfoBars = new ArrayList<InfoBar>();
 
     /** True when this container has been emptied and its native counterpart has been destroyed. */
-    private boolean mDestroyed = false;
+    private boolean mDestroyed;
 
     /** The id of the tab associated with us. Set to Tab.INVALID_TAB_ID if no tab is associated. */
     private int mTabId;

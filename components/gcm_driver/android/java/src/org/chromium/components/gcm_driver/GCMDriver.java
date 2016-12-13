@@ -30,7 +30,7 @@ public class GCMDriver {
     private static final String TAG = "GCMDriver";
 
     // The instance of GCMDriver currently owned by a C++ GCMDriverAndroid, if any.
-    private static GCMDriver sInstance = null;
+    private static GCMDriver sInstance;
 
     private long mNativeGCMDriverAndroid;
     private final Context mContext;

@@ -51,9 +51,9 @@ public class WebappUma {
     private int mSplashScreenIconType = SPLASHSCREEN_ICON_TYPE_MAX;
     private int mSplashScreenIconSize = -1;
     private int mSplashScreenThemeColor = SPLASHSCREEN_COLOR_STATUS_MAX;
-    private long mSplashScreenVisibleTime = 0;
+    private long mSplashScreenVisibleTime;
 
-    private boolean mCommitted = false;
+    private boolean mCommitted;
 
     /**
      * Signal that the splash screen is now visible. This is being used to

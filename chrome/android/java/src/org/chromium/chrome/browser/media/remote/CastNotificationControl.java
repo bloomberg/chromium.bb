@@ -31,14 +31,14 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
     private static CastNotificationControl sInstance;
 
     private Bitmap mPosterBitmap;
-    protected MediaRouteController mMediaRouteController = null;
+    protected MediaRouteController mMediaRouteController;
     private MediaNotificationInfo.Builder mNotificationBuilder;
     private Context mContext;
     private PlayerState mState;
     private String mTitle = "";
     private AudioManager mAudioManager;
 
-    private boolean mIsShowing = false;
+    private boolean mIsShowing;
 
     private static final Object LOCK = new Object();
 

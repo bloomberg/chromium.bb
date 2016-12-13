@@ -182,7 +182,7 @@ public class ContextualSearchImageControl
      * The static image visibility percentage, which dictates how and where to draw the static
      * image. The static image is not visible at all at 0.f and completely visible at 1.f.
      */
-    private float mStaticImageVisibilityPercentage = 0.f;
+    private float mStaticImageVisibilityPercentage;
 
     /**
      * Hides the static image if it is visible and makes the icon sprite visible. Also resets the

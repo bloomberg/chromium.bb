@@ -20,9 +20,9 @@ import java.util.List;
  */
 @JNINamespace("policy::android")
 public class CombinedPolicyProvider {
-    private static CombinedPolicyProvider sInstance = null;
+    private static CombinedPolicyProvider sInstance;
 
-    private long mNativeCombinedPolicyProvider = 0;
+    private long mNativeCombinedPolicyProvider;
 
     private PolicyConverter mPolicyConverter;
     private final List<PolicyProvider> mPolicyProviders = new ArrayList<>();

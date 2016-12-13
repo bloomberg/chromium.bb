@@ -31,7 +31,7 @@ public class InstanceIDWithSubtype extends InstanceID {
     /** Fake subclasses can set this so getInstance creates instances of them. */
     @VisibleForTesting
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    protected static FakeFactory sFakeFactoryForTesting = null;
+    protected static FakeFactory sFakeFactoryForTesting;
 
     protected InstanceIDWithSubtype(Context context, String subtype) {
         super(context, subtype, null /* options */);

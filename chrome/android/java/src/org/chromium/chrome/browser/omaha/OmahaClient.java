@@ -110,9 +110,9 @@ public class OmahaClient extends IntentService {
     // Static fields
     private static boolean sEnableCommunication = true;
     private static boolean sEnableUpdateDetection = true;
-    private static VersionNumberGetter sVersionNumberGetter = null;
-    private static MarketURLGetter sMarketURLGetter = null;
-    private static Boolean sIsFreshInstallOrDataCleared = null;
+    private static VersionNumberGetter sVersionNumberGetter;
+    private static MarketURLGetter sMarketURLGetter;
+    private static Boolean sIsFreshInstallOrDataCleared;
 
     // Member fields not persisted to disk.
     private boolean mStateHasBeenRestored;

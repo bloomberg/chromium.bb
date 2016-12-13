@@ -145,7 +145,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
          * afterwards. This allows the manager to know if it should progress the flow when the
          * account tracker broadcasts updates.
          */
-        public boolean blockedOnAccountSeeding = false;
+        public boolean blockedOnAccountSeeding;
 
         /**
          * @param account The account to sign in to.

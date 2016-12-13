@@ -28,13 +28,13 @@ public abstract class VideoCapture {
     // individual implementations.
     protected boolean mInvertDeviceOrientationReadings;
 
-    protected VideoCaptureFormat mCaptureFormat = null;
+    protected VideoCaptureFormat mCaptureFormat;
     protected final Context mContext;
     protected final int mId;
     // Native callback context variable.
     protected final long mNativeVideoCaptureDeviceAndroid;
 
-    protected boolean mUseBackgroundThreadForTesting = false;
+    protected boolean mUseBackgroundThreadForTesting;
 
     VideoCapture(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
         mContext = context;

@@ -35,7 +35,7 @@ class ChromeLifetimeController implements ApplicationLifetime.Observer,
     private static ChromeLifetimeController sInstance;
 
     private boolean mRestartChromeOnDestroy;
-    private int mRemainingActivitiesCount = 0;
+    private int mRemainingActivitiesCount;
 
     /**
      * Initialize the ChromeLifetimeController;

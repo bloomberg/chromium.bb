@@ -207,9 +207,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private TabModelSelectorTabModelObserver mTabModelObserver;
 
-    private boolean mUIInitialized = false;
+    private boolean mUIInitialized;
 
-    private boolean mIsOnFirstRun = false;
+    private boolean mIsOnFirstRun;
     private Boolean mMergeTabsOnResume;
 
     private Boolean mIsAccessibilityEnabled;
@@ -219,13 +219,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     /**
      * Keeps track of whether or not a specific tab was created based on the startup intent.
      */
-    private boolean mCreatedTabOnStartup = false;
+    private boolean mCreatedTabOnStartup;
 
     // Whether or not chrome was launched with an intent to open a tab.
-    private boolean mIntentWithEffect = false;
+    private boolean mIntentWithEffect;
 
     // Time at which an intent was received and handled.
-    private long mIntentHandlingTimeMs = 0;
+    private long mIntentHandlingTimeMs;
 
     private VrShellDelegate mVrShellDelegate;
 

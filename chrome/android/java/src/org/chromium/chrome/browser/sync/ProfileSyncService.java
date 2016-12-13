@@ -76,7 +76,7 @@ public class ProfileSyncService {
     };
 
     private static ProfileSyncService sProfileSyncService;
-    private static boolean sInitialized = false;
+    private static boolean sInitialized;
 
     // Sync state changes more often than listeners are added/removed, so using CopyOnWrite.
     private final List<SyncStateChangedListener> mListeners =

@@ -40,7 +40,7 @@ public class ContextualSearchTabHelper
      */
     private GestureStateListener mGestureStateListener;
 
-    private long mNativeHelper = 0;
+    private long mNativeHelper;
 
     private final Tab mTab;
 

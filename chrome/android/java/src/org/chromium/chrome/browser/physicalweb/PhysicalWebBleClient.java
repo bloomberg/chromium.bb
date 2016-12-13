@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.ChromeApplication;
  * subclass.
  */
 public class PhysicalWebBleClient {
-    private static PhysicalWebBleClient sInstance = null;
+    private static PhysicalWebBleClient sInstance;
     private static final String TAG = "PhysicalWeb";
 
     // We don't actually listen to any of the onFound or onLost events in the foreground.

@@ -33,12 +33,12 @@ import java.util.concurrent.TimeUnit;
 public class SupervisedUserContentProvider extends WebRestrictionsContentProvider {
     private static final String SUPERVISED_USER_CONTENT_PROVIDER_ENABLED =
             "SupervisedUserContentProviderEnabled";
-    private long mNativeSupervisedUserContentProvider = 0;
+    private long mNativeSupervisedUserContentProvider;
     private boolean mChromeAlreadyStarted;
     private static Object sEnabledLock = new Object();
 
     // Three value "boolean" caching enabled state, null if not yet known.
-    private static Boolean sEnabled = null;
+    private static Boolean sEnabled;
 
     private long getSupervisedUserContentProvider() throws ProcessInitException {
         mChromeAlreadyStarted = LibraryLoader.isInitialized();

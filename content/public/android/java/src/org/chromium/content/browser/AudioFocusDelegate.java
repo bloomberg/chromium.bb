@@ -29,7 +29,7 @@ public class AudioFocusDelegate implements AudioManager.OnAudioFocusChangeListen
 
     private Context mContext;
     private int mFocusType;
-    private boolean mIsDucking = false;
+    private boolean mIsDucking;
 
     // Native pointer to C++ content::AudioFocusDelegateAndroid.
     // It will be set to 0 when the native AudioFocusDelegateAndroid object is destroyed.

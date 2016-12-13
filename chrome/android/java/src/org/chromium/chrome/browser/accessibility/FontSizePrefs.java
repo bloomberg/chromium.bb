@@ -45,7 +45,7 @@ public class FontSizePrefs {
     private final SharedPreferences mSharedPreferences;
     private final ObserverList<FontSizePrefsObserver> mObserverList;
 
-    private Float mSystemFontScaleForTests = null;
+    private Float mSystemFontScaleForTests;
 
     /**
      * Interface for observing changes in font size-related preferences.

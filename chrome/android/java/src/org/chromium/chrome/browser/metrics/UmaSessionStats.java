@@ -26,7 +26,7 @@ public class UmaSessionStats {
 
     private static final String SAMSUNG_MULTWINDOW_PACKAGE = "com.sec.feature.multiwindow";
 
-    private static long sNativeUmaSessionStats = 0;
+    private static long sNativeUmaSessionStats;
 
     // TabModelSelector is needed to get the count of open tabs. We want to log the number of open
     // tabs on every page load.
@@ -37,7 +37,7 @@ public class UmaSessionStats {
     private final boolean mIsMultiWindowCapable;
     private ComponentCallbacks mComponentCallbacks;
 
-    private boolean mKeyboardConnected = false;
+    private boolean mKeyboardConnected;
 
     public UmaSessionStats(Context context) {
         mContext = context;

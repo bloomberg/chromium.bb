@@ -46,21 +46,21 @@ public class MediaSessionTabHelper implements MediaImageCallback {
     private static final int HIDE_NOTIFICATION_DELAY_MILLIS = 1000;
 
     private Tab mTab;
-    private Bitmap mPageMediaImage = null;
-    private Bitmap mFavicon = null;
-    private Bitmap mCurrentMediaImage = null;
-    private String mOrigin = null;
+    private Bitmap mPageMediaImage;
+    private Bitmap mFavicon;
+    private Bitmap mCurrentMediaImage;
+    private String mOrigin;
     private MediaSessionObserver mMediaSessionObserver;
     private int mPreviousVolumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE;
-    private MediaNotificationInfo.Builder mNotificationInfoBuilder = null;
+    private MediaNotificationInfo.Builder mNotificationInfoBuilder;
     // The fallback title if |mPageMetadata| is null or its title is empty.
-    private String mFallbackTitle = null;
+    private String mFallbackTitle;
     // The metadata set by the page.
-    private MediaMetadata mPageMetadata = null;
+    private MediaMetadata mPageMetadata;
     // The currently showing metadata.
-    private MediaMetadata mCurrentMetadata = null;
-    private MediaImageManager mMediaImageManager = null;
-    private Set<Integer> mMediaSessionActions = null;
+    private MediaMetadata mCurrentMetadata;
+    private MediaImageManager mMediaImageManager;
+    private Set<Integer> mMediaSessionActions;
     private Handler mHandler;
     // The delayed task to hide notification. Hiding notification can be immediate or delayed.
     // Delayed hiding will schedule this delayed task to |mHandler|. The task will be canceled when

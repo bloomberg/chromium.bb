@@ -36,12 +36,12 @@ public class ModelTypeHelper {
 
     private static final int[] NON_INVALIDATION_TYPES_ARRAY = new int[] {ModelType.PROXY_TABS};
 
-    private static TestDelegate sDelegate = null;
+    private static TestDelegate sDelegate;
 
     // Convenience sets for checking whether a type can have invalidations. Some ModelTypes
     // such as PROXY_TABS are not real types and can't be registered. Initializing these
     // once reduces toNotificationType() calls in the isInvalidationType() method.
-    private static Set<String> sNonInvalidationTypes = null;
+    private static Set<String> sNonInvalidationTypes;
 
     /**
      * Initializes the non-invalidation sets. Called lazily the first time they're needed.

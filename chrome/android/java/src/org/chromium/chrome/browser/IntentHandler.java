@@ -154,7 +154,7 @@ public class IntentHandler {
     /**
      * Fake ComponentName used in constructing TRUSTED_APPLICATION_CODE_EXTRA.
      */
-    private static ComponentName sFakeComponentName = null;
+    private static ComponentName sFakeComponentName;
 
     private static final Object LOCK = new Object();
 

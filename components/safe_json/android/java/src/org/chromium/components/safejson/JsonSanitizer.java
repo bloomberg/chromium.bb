@@ -127,7 +127,7 @@ public class JsonSanitizer {
      * Helper class to check nesting depth of JSON expressions.
      */
     private static class StackChecker {
-        private int mStackDepth = 0;
+        private int mStackDepth;
 
         public void increaseAndCheck() {
             if (++mStackDepth >= MAX_NESTING_DEPTH) {

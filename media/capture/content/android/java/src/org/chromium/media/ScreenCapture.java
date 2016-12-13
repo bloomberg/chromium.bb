@@ -59,7 +59,7 @@ public class ScreenCapture extends Fragment {
     private MediaProjectionManager mMediaProjectionManager;
     private VirtualDisplay mVirtualDisplay;
     private Surface mSurface;
-    private ImageReader mImageReader = null;
+    private ImageReader mImageReader;
     private HandlerThread mThread;
     private Handler mBackgroundHandler;
     private Display mDisplay;

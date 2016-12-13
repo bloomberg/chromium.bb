@@ -45,7 +45,7 @@ public class SmoothProgressBar extends ProgressBar {
     private final ObserverList<ProgressChangeListener> mObservers;
     private final RewindableIterator<ProgressChangeListener> mObserversIterator;
 
-    private boolean mIsAnimated = false;
+    private boolean mIsAnimated;
     private int mTargetProgress;
 
     // Since the progress bar is being animated, the internal progress bar resolution should be

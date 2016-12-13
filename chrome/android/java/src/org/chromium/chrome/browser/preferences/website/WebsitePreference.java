@@ -37,7 +37,7 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
     private FaviconHelper mFaviconHelper;
 
     // Whether the favicon has been fetched already.
-    private boolean mFaviconFetched = false;
+    private boolean mFaviconFetched;
 
     // Metrics for favicon processing.
     private static final int FAVICON_CORNER_RADIUS_DP = 2;

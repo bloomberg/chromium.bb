@@ -258,21 +258,21 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mPreviewSession;
     private CaptureRequest mPreviewRequest;
-    private Handler mMainHandler = null;
+    private Handler mMainHandler;
 
     private CameraState mCameraState = CameraState.STOPPED;
     private final float mMaxZoom;
     private Rect mCropRect = new Rect();
-    private int mPhotoWidth = 0;
-    private int mPhotoHeight = 0;
+    private int mPhotoWidth;
+    private int mPhotoHeight;
     private int mFocusMode = AndroidMeteringMode.CONTINUOUS;
     private int mExposureMode = AndroidMeteringMode.CONTINUOUS;
     private MeteringRectangle mAreaOfInterest;
-    private int mExposureCompensation = 0;
+    private int mExposureCompensation;
     private int mWhiteBalanceMode = AndroidMeteringMode.CONTINUOUS;
     private int mColorTemperature = -1;
-    private int mIso = 0;
-    private boolean mRedEyeReduction = false;
+    private int mIso;
+    private boolean mRedEyeReduction;
     private int mFillLightMode = AndroidFillLightMode.OFF;
 
     // Service function to grab CameraCharacteristics and handle exceptions.

@@ -496,7 +496,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
                     : null;
 
     private class LaunchBehindWorkaround {
-        private boolean mPaused = false;
+        private boolean mPaused;
 
         private View getDecorView() {
             return getWindow().getDecorView();

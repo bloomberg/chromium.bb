@@ -43,7 +43,7 @@ public class SuggestionsSection extends InnerNode {
 
     private final List<TreeNode> mChildren;
 
-    private boolean mIsNtpDestroyed = false;
+    private boolean mIsNtpDestroyed;
 
     public SuggestionsSection(NodeParent parent, NewTabPageManager manager,
             OfflinePageBridge offlinePageBridge, SuggestionsCategoryInfo info) {

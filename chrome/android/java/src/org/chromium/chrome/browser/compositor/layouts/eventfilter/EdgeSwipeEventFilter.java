@@ -53,13 +53,13 @@ public class EdgeSwipeEventFilter extends EventFilter {
     private final EdgeSwipeHandler mEdgeSwipeHandler;
     private boolean mEdgeSwipeStarted;
 
-    private boolean mInLongPress = false;
-    private boolean mInDoubleTap = false;
+    private boolean mInLongPress;
+    private boolean mInDoubleTap;
     private boolean mScrollStarted;
 
     // This flag is used to for accumulating events when the motion at the beginning of a scroll
     // can not be trusted and we need more events to make a better angle and speed estimate.
-    private boolean mAccumulatingEvents = false;
+    private boolean mAccumulatingEvents;
     private final ArrayList<MotionEvent> mAccumulatedEvents = new ArrayList<MotionEvent>();
     private boolean mPropagateEventsToHostView;
 

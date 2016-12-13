@@ -34,7 +34,7 @@ public class MediaRouteChooserDialogManager extends BaseMediaRouteDialogManager 
     public static class Fragment extends MediaRouteChooserDialogFragment {
         private final Handler mHandler = new Handler();
         private final SystemVisibilitySaver mVisibilitySaver = new SystemVisibilitySaver();
-        private BaseMediaRouteDialogManager mManager = null;
+        private BaseMediaRouteDialogManager mManager;
         private boolean mCancelled;
 
         public Fragment() {

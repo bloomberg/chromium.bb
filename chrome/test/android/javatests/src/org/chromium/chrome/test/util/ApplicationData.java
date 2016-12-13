@@ -41,7 +41,7 @@ public final class ApplicationData {
         final String appDir = getAppDirFromTargetContext(targetContext);
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria() {
-                    private boolean mDataRemoved = false;
+                    private boolean mDataRemoved;
 
                     @Override
                     public boolean isSatisfied() {

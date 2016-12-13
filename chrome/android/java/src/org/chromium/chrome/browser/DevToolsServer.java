@@ -16,7 +16,7 @@ import org.chromium.base.annotations.CalledByNative;
 public class DevToolsServer {
     private static final String DEBUG_PERMISSION_SIFFIX = ".permission.DEBUG";
 
-    private long mNativeDevToolsServer = 0;
+    private long mNativeDevToolsServer;
 
     // Defines what processes may access to the socket.
     public enum Security {

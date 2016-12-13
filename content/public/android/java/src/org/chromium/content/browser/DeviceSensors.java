@@ -92,12 +92,12 @@ class DeviceSensors implements SensorEventListener {
     final Set<Integer> mActiveSensors = new HashSet<Integer>();
     final List<Set<Integer>> mOrientationSensorSets;
     Set<Integer> mDeviceOrientationSensors;
-    boolean mDeviceLightIsActive = false;
-    boolean mDeviceMotionIsActive = false;
-    boolean mDeviceOrientationIsActive = false;
-    boolean mDeviceOrientationIsActiveWithBackupSensors = false;
-    boolean mDeviceOrientationAbsoluteIsActive = false;
-    boolean mOrientationNotAvailable = false;
+    boolean mDeviceLightIsActive;
+    boolean mDeviceMotionIsActive;
+    boolean mDeviceOrientationIsActive;
+    boolean mDeviceOrientationIsActiveWithBackupSensors;
+    boolean mDeviceOrientationAbsoluteIsActive;
+    boolean mOrientationNotAvailable;
 
     protected DeviceSensors(Context context) {
         mAppContext = context.getApplicationContext();

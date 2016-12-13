@@ -34,7 +34,7 @@ public class AddToHomescreenDialog implements AddToHomescreenManager.Observer {
      * Whether {@link mManager} is ready for {@link AddToHomescreenManager#addShortcut()} to be
      * called.
      */
-    private boolean mIsReadyToAdd = false;
+    private boolean mIsReadyToAdd;
 
     public AddToHomescreenDialog(AddToHomescreenManager manager) {
         mManager = manager;

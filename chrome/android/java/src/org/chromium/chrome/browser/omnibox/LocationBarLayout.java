@@ -151,7 +151,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     protected TintedImageButton mDeleteButton;
     protected TintedImageButton mMicButton;
     protected UrlBar mUrlBar;
-    private ActionModeController mActionModeController = null;
+    private ActionModeController mActionModeController;
 
     private AutocompleteController mAutocomplete;
 

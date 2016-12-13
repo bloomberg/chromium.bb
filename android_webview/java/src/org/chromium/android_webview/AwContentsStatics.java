@@ -19,7 +19,7 @@ public class AwContentsStatics {
 
     private static String sUnreachableWebDataUrl;
 
-    private static boolean sRecordFullDocument = false;
+    private static boolean sRecordFullDocument;
 
     /**
      * Return the client certificate lookup table.

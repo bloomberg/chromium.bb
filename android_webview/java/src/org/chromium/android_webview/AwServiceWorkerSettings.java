@@ -27,7 +27,7 @@ public class AwServiceWorkerSettings {
     private boolean mAllowContentUrlAccess = true;
     private boolean mAllowFileUrlAccess = true;
     private boolean mBlockNetworkLoads;  // Default depends on permission of the embedding APK
-    private boolean mAcceptThirdPartyCookies = false;
+    private boolean mAcceptThirdPartyCookies;
 
     // Lock to protect all settings.
     private final Object mAwServiceWorkerSettingsLock = new Object();

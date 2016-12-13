@@ -35,7 +35,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
     // This flag signifies the object has gotten an onNativeReady callback and
     // has not been destroyed.
-    private boolean mActiveState = false;
+    private boolean mActiveState;
 
     private boolean mIsUndoSupported;
 

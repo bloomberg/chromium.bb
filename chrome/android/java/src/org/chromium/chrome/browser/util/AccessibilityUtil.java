@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class AccessibilityUtil {
     // Whether we've already shown an alert that they have an old version of TalkBack running.
-    private static boolean sOldTalkBackVersionAlertShown = false;
+    private static boolean sOldTalkBackVersionAlertShown;
 
     // The link to download or update TalkBack from the Play Store.
     private static final String TALKBACK_MARKET_LINK =

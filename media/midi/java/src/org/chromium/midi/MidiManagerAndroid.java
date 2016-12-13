@@ -30,7 +30,7 @@ class MidiManagerAndroid {
     /**
      * Set true when this instance is successfully initialized.
      */
-    private boolean mIsInitialized = false;
+    private boolean mIsInitialized;
     /**
      * The devices held by this manager.
      */

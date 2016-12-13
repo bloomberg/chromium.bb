@@ -48,7 +48,7 @@ class BatteryStatusManager {
     // Only used in L (API level 21) and higher.
     private AndroidBatteryManagerWrapper mAndroidBatteryManager;
 
-    private boolean mEnabled = false;
+    private boolean mEnabled;
 
     @VisibleForTesting
     static class AndroidBatteryManagerWrapper {

@@ -46,19 +46,19 @@ public class MediaNotificationInfo {
      */
     public static final class Builder {
 
-        private MediaMetadata mMetadata = null;
-        private boolean mIsPaused = false;
+        private MediaMetadata mMetadata;
+        private boolean mIsPaused;
         private String mOrigin = "";
         private int mTabId = Tab.INVALID_TAB_ID;
         private boolean mIsPrivate = true;
-        private int mIcon = 0;
-        private Bitmap mLargeIcon = null;
-        private int mDefaultLargeIcon = 0;
+        private int mIcon;
+        private Bitmap mLargeIcon;
+        private int mDefaultLargeIcon;
         private int mActions = ACTION_PLAY_PAUSE | ACTION_SWIPEAWAY;
         private int mId = INVALID_ID;
-        private Intent mContentIntent = null;
-        private MediaNotificationListener mListener = null;
-        private Set<Integer> mMediaSessionActions = null;
+        private Intent mContentIntent;
+        private MediaNotificationListener mListener;
+        private Set<Integer> mMediaSessionActions;
 
         /**
          * Initializes the builder with the default values.

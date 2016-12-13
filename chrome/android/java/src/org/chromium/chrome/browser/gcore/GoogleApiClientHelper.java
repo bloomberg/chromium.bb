@@ -71,11 +71,11 @@ public class GoogleApiClientHelper
         implements OnConnectionFailedListener, ConnectionCallbacks {
     private static final String TAG = "GCore";
 
-    private int mResolutionAttempts = 0;
-    private boolean mWasConnectedBefore = false;
+    private int mResolutionAttempts;
+    private boolean mWasConnectedBefore;
     private final Handler mHandler = new Handler(ThreadUtils.getUiThreadLooper());
     private final GoogleApiClient mClient;
-    private long mDisconnectionDelayMs = 0;
+    private long mDisconnectionDelayMs;
     private Runnable mPendingDisconnect;
 
     /**

@@ -67,7 +67,7 @@ public class BluetoothChooserDialog
     long mNativeBluetoothChooserDialogPtr;
 
     // Used to keep track of when the Mode Changed Receiver is registered.
-    boolean mIsLocationModeChangedReceiverRegistered = false;
+    boolean mIsLocationModeChangedReceiverRegistered;
 
     @VisibleForTesting
     final BroadcastReceiver mLocationModeBroadcastReceiver = new BroadcastReceiver() {

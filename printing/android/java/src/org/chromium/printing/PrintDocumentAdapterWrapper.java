@@ -56,7 +56,7 @@ public class PrintDocumentAdapterWrapper extends PrintDocumentAdapter {
     }
 
     public static class LayoutResultCallbackWrapperImpl implements LayoutResultCallbackWrapper {
-        private LayoutResultCallback mCallback = null;
+        private LayoutResultCallback mCallback;
         public LayoutResultCallbackWrapperImpl(LayoutResultCallback callback) {
             assert callback != null;
             mCallback = callback;
@@ -79,7 +79,7 @@ public class PrintDocumentAdapterWrapper extends PrintDocumentAdapter {
     }
 
     public static class WriteResultCallbackWrapperImpl implements WriteResultCallbackWrapper {
-        private WriteResultCallback mCallback = null;
+        private WriteResultCallback mCallback;
         public WriteResultCallbackWrapperImpl(WriteResultCallback callback) {
             assert callback != null;
             mCallback = callback;

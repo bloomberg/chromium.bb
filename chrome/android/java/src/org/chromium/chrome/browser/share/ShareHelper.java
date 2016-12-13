@@ -99,7 +99,7 @@ public class ShareHelper {
     private static final String SHARE_IMAGES_DIRECTORY_NAME = "screenshot";
 
     /** Force the use of a Chrome-specific intent chooser, not the system chooser. */
-    private static boolean sForceCustomChooserForTesting = false;
+    private static boolean sForceCustomChooserForTesting;
 
     /** If non-null, will be used instead of the real activity. */
     private static FakeIntentReceiver sFakeIntentReceiverForTesting;

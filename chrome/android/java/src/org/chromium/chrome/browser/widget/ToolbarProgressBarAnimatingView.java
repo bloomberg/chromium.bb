@@ -59,7 +59,7 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
     private final BakedBezierInterpolator mBezier = BakedBezierInterpolator.FADE_OUT_CURVE;
 
     /** The current width of the progress bar. */
-    private float mProgressWidth = 0;
+    private float mProgressWidth;
 
     /** The set of individual animators that constitute the whole animation sequence. */
     private final AnimatorSet mAnimatorSet;

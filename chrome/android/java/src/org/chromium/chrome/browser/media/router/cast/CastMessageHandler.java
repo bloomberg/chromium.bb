@@ -8,11 +8,12 @@ import android.os.Handler;
 import android.support.v4.util.ArrayMap;
 import android.util.SparseArray;
 
-import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -72,7 +73,7 @@ public class CastMessageHandler {
 
     // The reference to CastSession, only valid after calling {@link onSessionCreated}, and will be
     // reset to null when calling {@link onApplicationStopped}.
-    private CastSession mSession = null;
+    private CastSession mSession;
     private final CastMediaRouteProvider mRouteProvider;
     private Handler mHandler;
 

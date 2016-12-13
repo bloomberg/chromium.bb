@@ -28,7 +28,7 @@ public class AwContentsLifecycleNotifier {
 
     private static final ObserverList<Observer> sLifecycleObservers =
             new ObserverList<Observer>();
-    private static int sNumWebViews = 0;
+    private static int sNumWebViews;
 
     private AwContentsLifecycleNotifier() {}
 

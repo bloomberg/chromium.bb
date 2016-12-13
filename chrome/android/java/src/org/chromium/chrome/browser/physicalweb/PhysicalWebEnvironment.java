@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.ChromeApplication;
  */
 public class PhysicalWebEnvironment {
     private static final Object INSTANCE_LOCK = new Object();
-    private static PhysicalWebEnvironment sInstance = null;
+    private static PhysicalWebEnvironment sInstance;
 
     /**
      * Get a singleton instance of this class.

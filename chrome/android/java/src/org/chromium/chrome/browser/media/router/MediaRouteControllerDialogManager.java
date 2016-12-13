@@ -45,8 +45,8 @@ public class MediaRouteControllerDialogManager extends BaseMediaRouteDialogManag
     public static class Fragment extends MediaRouteControllerDialogFragment {
         private final Handler mHandler = new Handler();
         private final SystemVisibilitySaver mVisibilitySaver = new SystemVisibilitySaver();
-        private BaseMediaRouteDialogManager mManager = null;
-        private MediaRouter.Callback mCallback = null;
+        private BaseMediaRouteDialogManager mManager;
+        private MediaRouter.Callback mCallback;
 
         public Fragment() {
             mHandler.post(new Runnable() {

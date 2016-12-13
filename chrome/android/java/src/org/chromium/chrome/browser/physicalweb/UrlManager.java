@@ -74,7 +74,7 @@ class UrlManager {
     private static final long STALE_NOTIFICATION_TIMEOUT_MILLIS = 30 * 60 * 1000;  // 30 Minutes
     private static final long MAX_CACHE_TIME = 24 * 60 * 60 * 1000;  // 1 Day
     private static final int MAX_CACHE_SIZE = 100;
-    private static UrlManager sInstance = null;
+    private static UrlManager sInstance;
     private final Context mContext;
     private final ObserverList<Listener> mObservers;
     private final Set<String> mNearbyUrls;

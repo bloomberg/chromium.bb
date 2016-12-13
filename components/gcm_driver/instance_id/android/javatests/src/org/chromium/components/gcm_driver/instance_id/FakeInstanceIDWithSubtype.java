@@ -26,8 +26,8 @@ import java.util.Random;
  */
 @JNINamespace("instance_id")
 public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
-    private String mId = null;
-    private long mCreationTime = 0;
+    private String mId;
+    private long mCreationTime;
 
     /** Map from (subtype + ',' + authorizedEntity + ',' + scope) to token. */
     private Map<String, String> mTokens = new HashMap<>();

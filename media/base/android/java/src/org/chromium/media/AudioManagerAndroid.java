@@ -164,17 +164,17 @@ class AudioManagerAndroid {
 
     // Enabled during initialization if MODIFY_AUDIO_SETTINGS permission is
     // granted. Required to shift system-wide audio settings.
-    private boolean mHasModifyAudioSettingsPermission = false;
+    private boolean mHasModifyAudioSettingsPermission;
 
     // Enabled during initialization if BLUETOOTH permission is granted.
-    private boolean mHasBluetoothPermission = false;
+    private boolean mHasBluetoothPermission;
 
     // Stores the audio states related to Bluetooth SCO audio, where some
     // states are needed to keep track of intermediate states while the SCO
     // channel is enabled or disabled (switching state can take a few seconds).
     private int mBluetoothScoState = STATE_BLUETOOTH_SCO_INVALID;
 
-    private boolean mIsInitialized = false;
+    private boolean mIsInitialized;
     private boolean mSavedIsSpeakerphoneOn;
     private boolean mSavedIsMicrophoneMute;
 
@@ -195,8 +195,8 @@ class AudioManagerAndroid {
     private boolean[] mAudioDevices = new boolean[DEVICE_COUNT];
 
     private final ContentResolver mContentResolver;
-    private ContentObserver mSettingsObserver = null;
-    private HandlerThread mSettingsObserverThread = null;
+    private ContentObserver mSettingsObserver;
+    private HandlerThread mSettingsObserverThread;
     private int mCurrentVolume;
 
     // Broadcast receiver for wired headset intent broadcasts.

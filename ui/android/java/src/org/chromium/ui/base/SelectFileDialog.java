@@ -54,7 +54,7 @@ public class SelectFileDialog
     /**
      * If set, overrides the WindowAndroid passed in {@link selectFile()}.
      */
-    private static WindowAndroid sOverrideWindowAndroid = null;
+    private static WindowAndroid sOverrideWindowAndroid;
 
     private final long mNativeSelectFileDialog;
     private List<String> mFileTypes;

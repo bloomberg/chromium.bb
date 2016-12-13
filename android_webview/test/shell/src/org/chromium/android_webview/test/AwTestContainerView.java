@@ -37,8 +37,8 @@ public class AwTestContainerView extends FrameLayout {
     private AwContents mAwContents;
     private AwContents.InternalAccessDelegate mInternalAccessDelegate;
 
-    private HardwareView mHardwareView = null;
-    private boolean mAttachedContents = false;
+    private HardwareView mHardwareView;
+    private boolean mAttachedContents;
 
     private class HardwareView extends GLSurfaceView {
         private static final int MODE_DRAW = 0;
@@ -50,24 +50,24 @@ public class AwTestContainerView extends FrameLayout {
         // and drawGL on the rendering thread. The variables following
         // are protected by it.
         private final Object mSyncLock = new Object();
-        private boolean mFunctorAttached = false;
-        private boolean mNeedsProcessGL = false;
-        private boolean mNeedsDrawGL = false;
-        private boolean mWaitForCompletion = false;
-        private int mLastScrollX = 0;
-        private int mLastScrollY = 0;
+        private boolean mFunctorAttached;
+        private boolean mNeedsProcessGL;
+        private boolean mNeedsDrawGL;
+        private boolean mWaitForCompletion;
+        private int mLastScrollX;
+        private int mLastScrollY;
 
         // Only used by drawGL on render thread to store the value of scroll offsets at most recent
         // sync for subsequent draws.
-        private int mCommittedScrollX = 0;
-        private int mCommittedScrollY = 0;
+        private int mCommittedScrollX;
+        private int mCommittedScrollY;
 
-        private boolean mHaveSurface = false;
-        private Runnable mReadyToRenderCallback = null;
-        private Runnable mReadyToDetachCallback = null;
+        private boolean mHaveSurface;
+        private Runnable mReadyToRenderCallback;
+        private Runnable mReadyToDetachCallback;
 
-        private long mDrawGL = 0;
-        private long mViewContext = 0;
+        private long mDrawGL;
+        private long mViewContext;
 
         public HardwareView(Context context) {
             super(context);
@@ -75,8 +75,8 @@ public class AwTestContainerView extends FrameLayout {
             getHolder().setFormat(PixelFormat.OPAQUE);
             setPreserveEGLContextOnPause(true);
             setRenderer(new Renderer() {
-                private int mWidth = 0;
-                private int mHeight = 0;
+                private int mWidth;
+                private int mHeight;
 
                 @Override
                 public void onDrawFrame(GL10 gl) {
@@ -232,7 +232,7 @@ public class AwTestContainerView extends FrameLayout {
         }
     }
 
-    private static boolean sCreatedOnce = false;
+    private static boolean sCreatedOnce;
     private HardwareView createHardwareViewOnlyOnce(Context context) {
         if (sCreatedOnce) return null;
         sCreatedOnce = true;

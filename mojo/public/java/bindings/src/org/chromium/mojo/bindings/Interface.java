@@ -107,12 +107,12 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
             /**
              * The {@link ConnectionErrorHandler} that will be notified of errors.
              */
-            private ConnectionErrorHandler mErrorHandler = null;
+            private ConnectionErrorHandler mErrorHandler;
 
             /**
              * The currently known version of the interface.
              */
-            private int mVersion = 0;
+            private int mVersion;
 
             /**
              * Constructor.

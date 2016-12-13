@@ -178,7 +178,7 @@ public class ChromeSigninUtils {
         private final Object mAuthenticationCompletionLock = new Object();
 
         /** Stores the result of account authentication. Null means not finished. */
-        private Bundle mResultBundle = null;
+        private Bundle mResultBundle;
 
         /**
          * Block and wait for the authentication callback to complete.

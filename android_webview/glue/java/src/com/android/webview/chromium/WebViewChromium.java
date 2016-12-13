@@ -105,7 +105,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
     private final boolean mShouldDisableThreadChecking;
 
-    private static boolean sRecordWholeDocumentEnabledByApi = false;
+    private static boolean sRecordWholeDocumentEnabledByApi;
     static void enableSlowWholeDocumentDraw() {
         sRecordWholeDocumentEnabledByApi = true;
     }

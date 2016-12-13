@@ -69,8 +69,8 @@ public class Shell extends LinearLayout {
     private ContentViewRenderView mContentViewRenderView;
     private WindowAndroid mWindow;
 
-    private boolean mLoading = false;
-    private boolean mIsFullscreen = false;
+    private boolean mLoading;
+    private boolean mIsFullscreen;
 
     /**
      * Constructor for inflating via XML.

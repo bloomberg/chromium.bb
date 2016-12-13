@@ -37,17 +37,17 @@ public abstract class PrecacheLauncher {
      * Initialized by updateEnabled to call updateEnabledSync when the sync backend is initialized.
      * Only accessed on the UI thread.
      */
-    private ProfileSyncService.SyncStateChangedListener mListener = null;
+    private ProfileSyncService.SyncStateChangedListener mListener;
 
     /**
      * Boolean failure indicators, reflecting the state of the last call to updatePrecachingEnabled.
      * Access must occur on the UI thread. Values default to false -- so if mCalled is false, the
      * value of the other booleans is not necessarily valid.
      */
-    private boolean mCalled = false;
-    private boolean mSyncInitialized = false;
-    private boolean mNetworkPredictionsAllowed = false;
-    private boolean mShouldRun = false;
+    private boolean mCalled;
+    private boolean mSyncInitialized;
+    private boolean mNetworkPredictionsAllowed;
+    private boolean mShouldRun;
 
     /** Destroy the native PrecacheLauncher, releasing the memory that it was using. */
     public void destroy() {

@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.init.ProcessInitializationHandler;
  * A Service that provides access to {@link ChromeBrowserSyncAdapter}.
  */
 public class ChromeBrowserSyncAdapterService extends Service {
-    private static ChromeBrowserSyncAdapter sSyncAdapter = null;
+    private static ChromeBrowserSyncAdapter sSyncAdapter;
     private static final Object LOCK = new Object();
 
     /**

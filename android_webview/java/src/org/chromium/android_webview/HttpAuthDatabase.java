@@ -32,7 +32,7 @@ public class HttpAuthDatabase {
 
     private static final int DATABASE_VERSION = 1;
 
-    private SQLiteDatabase mDatabase = null;
+    private SQLiteDatabase mDatabase;
 
     private static final String ID_COL = "_id";
 
@@ -50,7 +50,7 @@ public class HttpAuthDatabase {
     /**
      * Initially false until the background thread completes.
      */
-    private boolean mInitialized = false;
+    private boolean mInitialized;
 
     private final Object mInitializedLock = new Object();
 

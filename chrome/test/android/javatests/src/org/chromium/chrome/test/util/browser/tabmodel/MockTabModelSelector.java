@@ -19,7 +19,7 @@ public class MockTabModelSelector extends TabModelSelectorBase {
     // Offsetting the id compared to the index helps greatly when debugging.
     public static final int ID_OFFSET = 100000;
     public static final int INCOGNITO_ID_OFFSET = 200000;
-    private static int sCurTabOffset = 0;
+    private static int sCurTabOffset;
 
     public MockTabModelSelector(
             int tabCount, int incognitoTabCount, MockTabModel.MockTabModelDelegate delegate) {

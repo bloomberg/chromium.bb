@@ -29,7 +29,7 @@ public class FakeServerHelper {
 
     // Pointer value for the FakeServer. This pointer is not owned by native
     // code, so it must be stored here for future deletion.
-    private static long sNativeFakeServer = 0L;
+    private static long sNativeFakeServer;
 
     // The pointer to the native object called here.
     private final long mNativeFakeServerHelperAndroid;

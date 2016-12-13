@@ -66,7 +66,7 @@ public class StripLayoutTab
     private final LayoutRenderHost mRenderHost;
 
     private boolean mVisible = true;
-    private boolean mIsDying = false;
+    private boolean mIsDying;
     private boolean mCanShowCloseButton = true;
     private final boolean mIncognito;
     private float mContentOffsetX;

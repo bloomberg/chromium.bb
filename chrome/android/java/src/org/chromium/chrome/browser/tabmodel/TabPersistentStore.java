@@ -170,8 +170,8 @@ public class TabPersistentStore extends TabPersister {
     private SaveListTask mSaveListTask;
 
     private boolean mDestroyed;
-    private boolean mCancelNormalTabLoads = false;
-    private boolean mCancelIncognitoTabLoads = false;
+    private boolean mCancelNormalTabLoads;
+    private boolean mCancelIncognitoTabLoads;
 
     // Keys are the original tab indexes, values are the tab ids.
     private SparseIntArray mNormalTabsRestored;
@@ -1069,7 +1069,7 @@ public class TabPersistentStore extends TabPersister {
         int mId;
         TabState mState;
         boolean mEncrypted;
-        boolean mStateSaved = false;
+        boolean mStateSaved;
 
         SaveTabTask(Tab tab) {
             mTab = tab;

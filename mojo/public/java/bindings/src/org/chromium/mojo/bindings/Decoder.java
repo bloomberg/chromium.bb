@@ -29,11 +29,11 @@ public class Decoder {
         /**
          * Minimal value for the next handle to deserialize.
          */
-        private int mMinNextClaimedHandle = 0;
+        private int mMinNextClaimedHandle;
         /**
          * Minimal value of the start of the next memory to claim.
          */
-        private long mMinNextMemory = 0;
+        private long mMinNextMemory;
         /**
          * The current nesting level when decoding.
          */

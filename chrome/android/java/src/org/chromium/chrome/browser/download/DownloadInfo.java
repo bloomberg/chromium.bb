@@ -167,7 +167,7 @@ public final class DownloadInfo {
         private boolean mIsResumable = true;
         private boolean mIsPaused;
         private boolean mIsOffTheRecord;
-        private boolean mIsOfflinePage = false;
+        private boolean mIsOfflinePage;
         private int mState = DownloadState.IN_PROGRESS;
 
         public Builder setUrl(String url) {

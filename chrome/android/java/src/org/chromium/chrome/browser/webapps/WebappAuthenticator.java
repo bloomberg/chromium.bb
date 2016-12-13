@@ -47,7 +47,7 @@ public class WebappAuthenticator {
     private static final Object sLock = new Object();
 
     private static FutureTask<SecretKey> sMacKeyGenerator;
-    private static SecretKey sKey = null;
+    private static SecretKey sKey;
 
     private static final TimesHistogramSample sWebappValidationTimes = new TimesHistogramSample(
             "Android.StrictMode.WebappAuthenticatorMac", TimeUnit.MILLISECONDS);

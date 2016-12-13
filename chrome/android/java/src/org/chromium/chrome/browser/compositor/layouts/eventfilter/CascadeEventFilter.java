@@ -14,7 +14,7 @@ import java.util.Arrays;
  */
 public class CascadeEventFilter extends EventFilter {
     private EventFilter[] mDelegates;
-    private EventFilter mActiveDelegate = null;
+    private EventFilter mActiveDelegate;
 
     /**
      * Creates a {@link CascadeEventFilter}.

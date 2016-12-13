@@ -36,8 +36,8 @@ class MediaCodecUtil {
      * Class to pass parameters from createDecoder()
      */
     public static class CodecCreationInfo {
-        public MediaCodec mediaCodec = null;
-        public boolean supportsAdaptivePlayback = false;
+        public MediaCodec mediaCodec;
+        public boolean supportsAdaptivePlayback;
         public BitrateAdjustmentTypes bitrateAdjustmentType = BitrateAdjustmentTypes.NO_ADJUSTMENT;
     }
 

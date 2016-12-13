@@ -50,10 +50,10 @@ public class SiteSettingsPreferences extends PreferenceFragment
     static final String USB_KEY = "usb";
 
     // Whether the Protected Content menu is available for display.
-    boolean mProtectedContentMenuAvailable = false;
+    boolean mProtectedContentMenuAvailable;
 
     // Whether this class is handling showing the Media sub-menu (and not the main menu).
-    boolean mMediaSubMenu = false;
+    boolean mMediaSubMenu;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

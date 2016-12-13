@@ -54,7 +54,7 @@ public class FeatureUtilities {
     private static boolean sIsHerbFlavorCached;
 
     /** Used to track if cached command line flags should be refreshed. */
-    private static CommandLine.ResetListener sResetListener = null;
+    private static CommandLine.ResetListener sResetListener;
 
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}

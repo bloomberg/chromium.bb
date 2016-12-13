@@ -108,7 +108,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         super(activityClass);
     }
 
-    protected boolean mSkipClearAppData = false;
+    protected boolean mSkipClearAppData;
 
     private Thread.UncaughtExceptionHandler mDefaultUncaughtExceptionHandler;
 
