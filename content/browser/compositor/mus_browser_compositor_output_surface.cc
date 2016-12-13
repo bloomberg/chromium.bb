@@ -32,7 +32,8 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
     : GpuBrowserCompositorOutputSurface(std::move(context),
                                         update_vsync_parameters_callback,
                                         std::move(overlay_candidate_validator)),
-      ui_window_(window) {
+      ui_window_(window),
+      window_(nullptr) {
   ui_compositor_frame_sink_ = ui_window_->RequestCompositorFrameSink(
       ui::mojom::CompositorFrameSinkType::DEFAULT, context,
       gpu_memory_buffer_manager);
@@ -49,6 +50,7 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
     : GpuBrowserCompositorOutputSurface(std::move(context),
                                         update_vsync_parameters_callback,
                                         std::move(overlay_candidate_validator)),
+      ui_window_(nullptr),
       window_(window) {
   aura::WindowPortMus* window_port = aura::WindowPortMus::Get(window_);
   DCHECK(window_port);
