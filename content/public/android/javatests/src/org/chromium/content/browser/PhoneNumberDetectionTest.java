@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.common.ContentSwitches;
@@ -169,6 +170,7 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
 
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    @DisabledTest(message = "crbug.com/673279")
     @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=GB")
     public void testLocalUKNumbers() throws Throwable {
         startActivityWithTestUrl(
