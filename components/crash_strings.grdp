@@ -14,7 +14,7 @@
     Crash ID <ph name="CRASH_LOCAL_ID">$1<ex>123456-789789</ex></ph>
   </message>
   <message name="IDS_CRASH_CRASH_TIME_FORMAT" desc="Format for crash entry occurrence time on chrome://crashes">
-    Automatically reported <ph name="CRASH_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph>
+    Crash report captured on <ph name="CRASH_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph>, reported on <ph name="CRASH_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph>
   </message>
   <message name="IDS_CRASH_CRASH_NOT_UPLOADED" desc="Format for crash entry occurrence on chrome://crashes that was not uploaded to the server">
     Crash report captured on <ph name="CRASH_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph> was not uploaded
