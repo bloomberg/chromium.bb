@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/variations/variations_http_header_provider.h"
@@ -38,6 +39,50 @@ const char* kHostsToSetHeadersFor[] = {
 
 const char kChromeUMAEnabled[] = "X-Chrome-UMA-Enabled";
 const char kClientData[] = "X-Client-Data";
+
+// The result of checking if a URL should have variations headers appended.
+// This enum is used to record UMA histogram values, and should not be
+// reordered.
+enum URLValidationResult {
+  INVALID_URL,
+  NOT_HTTPS,
+  NOT_GOOGLE_DOMAIN,
+  SHOULD_APPEND,
+  URL_VALIDATION_RESULT_SIZE,
+};
+
+// Checks whether headers should be appended to the |url|, based on the domain
+// of |url|. |url| is assumed to be valid, and to have the https scheme.
+bool IsGoogleDomain(const GURL& url) {
+  if (google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
+                                     google_util::ALLOW_NON_STANDARD_PORTS)) {
+    return true;
+  }
+  if (google_util::IsYoutubeDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
+                                      google_util::ALLOW_NON_STANDARD_PORTS)) {
+    return true;
+  }
+
+  // Some domains don't have international TLD extensions, so testing for them
+  // is very straight forward.
+  const std::string host = url.host();
+  for (size_t i = 0; i < arraysize(kSuffixesToSetHeadersFor); ++i) {
+    if (base::EndsWith(host, kSuffixesToSetHeadersFor[i],
+                       base::CompareCase::INSENSITIVE_ASCII))
+      return true;
+  }
+  for (size_t i = 0; i < arraysize(kHostsToSetHeadersFor); ++i) {
+    if (base::LowerCaseEqualsASCII(host, kHostsToSetHeadersFor[i]))
+      return true;
+  }
+
+  return false;
+}
+
+void LogUrlValidationHistogram(URLValidationResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Variations.Headers.URLValidationResult", result,
+                            URL_VALIDATION_RESULT_SIZE);
+}
 
 }  // namespace
 
@@ -82,29 +127,21 @@ namespace internal {
 
 // static
 bool ShouldAppendVariationHeaders(const GURL& url) {
-  if (google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
-                                     google_util::ALLOW_NON_STANDARD_PORTS)) {
-    return true;
-  }
-
-  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
+  if (!url.is_valid()) {
+    LogUrlValidationHistogram(INVALID_URL);
     return false;
-
-  // Some domains don't have international TLD extensions, so testing for them
-  // is very straight forward.
-  const std::string host = url.host();
-  for (size_t i = 0; i < arraysize(kSuffixesToSetHeadersFor); ++i) {
-    if (base::EndsWith(host, kSuffixesToSetHeadersFor[i],
-                       base::CompareCase::INSENSITIVE_ASCII))
-      return true;
   }
-  for (size_t i = 0; i < arraysize(kHostsToSetHeadersFor); ++i) {
-    if (base::LowerCaseEqualsASCII(host, kHostsToSetHeadersFor[i]))
-      return true;
+  if (!url.SchemeIs("https")) {
+    LogUrlValidationHistogram(NOT_HTTPS);
+    return false;
+  }
+  if (!IsGoogleDomain(url)) {
+    LogUrlValidationHistogram(NOT_GOOGLE_DOMAIN);
+    return false;
   }
 
-  return google_util::IsYoutubeDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
-                                         google_util::ALLOW_NON_STANDARD_PORTS);
+  LogUrlValidationHistogram(SHOULD_APPEND);
+  return true;
 }
 
 }  // namespace internal

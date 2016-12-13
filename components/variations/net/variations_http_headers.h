@@ -35,7 +35,8 @@ std::set<std::string> GetVariationHeaderNames();
 namespace internal {
 
 // Checks whether variation headers should be appended to requests to the
-// specified |url|. Returns true for google.<TLD> and youtube.<TLD> URLs.
+// specified |url|. Returns true for google.<TLD> and youtube.<TLD> URLs with
+// the https scheme.
 bool ShouldAppendVariationHeaders(const GURL& url);
 
 }  // namespace internal
