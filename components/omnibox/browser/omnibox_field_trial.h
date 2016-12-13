@@ -103,6 +103,15 @@ class OmniboxFieldTrial {
   // given number.  Omitted types are assumed to have multipliers of 1.0.
   typedef std::map<AutocompleteMatchType::Type, float> DemotionMultipliers;
 
+  // A vector that maps from the number of matching pages to the document
+  // specificity score used in HistoryQuick provider / ScoredHistoryMatch
+  // scoring. The vector is sorted by the size_t (the number of matching pages).
+  // If an entry is omitted, the appropriate value is assumed to be the one in
+  // the later bucket.  For example, with a vector containing {{1, 2.0},
+  // {3, 1.5}}, the score for 2 is inferred to be 1.5.  Values beyond the
+  // end of the vector are assumed to have scores of 1.0.
+  typedef std::vector<std::pair<size_t, double>> NumMatchesScores;
+
   // Do not change these values as they need to be in sync with values
   // specified in experiment configs on the variations server.
   enum EmphasizeTitlesCondition {
@@ -302,6 +311,10 @@ class OmniboxFieldTrial {
   // of non-typed transitions is 1.)  Returns 20 if the experiment isn't active.
   static float HQPTypedValue();
 
+  // Returns NumMatchesScores; see comment by the declaration of it.
+  // Returns an empty NumMatchesScores if the experiment isn't active.
+  static NumMatchesScores HQPNumMatchesScores();
+
   // ---------------------------------------------------------
   // For the HQPNumTitleWords experiment that's part of the
   // bundled omnibox field trial.
@@ -382,6 +395,7 @@ class OmniboxFieldTrial {
   static const char kHQPFixFewVisitsBugRule[];
   static const char kHQPFreqencyUsesSumRule[];
   static const char kHQPMaxVisitsToScoreRule[];
+  static const char kHQPNumMatchesScoresRule[];
   static const char kHQPNumTitleWordsRule[];
   static const char kHQPAlsoDoHUPLikeScoringRule[];
   static const char kHUPSearchDatabaseRule[];

@@ -715,13 +715,11 @@ void URLIndexPrivateData::HistoryIdSetToScoredMatches(
   }
 
   // Score the matches.
+  const size_t num_matches = history_id_set.size();
   const base::Time now = base::Time::Now();
   std::transform(
       history_id_set.begin(), history_id_set.end(),
-      std::back_inserter(*scored_items),
-      [this, &lower_raw_string, &lower_raw_terms,
-       &lower_terms_to_word_starts_offsets, &bookmark_model,
-       &now](const HistoryID history_id) {
+      std::back_inserter(*scored_items), [&](const HistoryID history_id) {
         auto hist_pos = history_info_map_.find(history_id);
         const history::URLRow& hist_item = hist_pos->second.url_row;
         auto starts_pos = word_starts_map_.find(history_id);
@@ -731,7 +729,7 @@ void URLIndexPrivateData::HistoryIdSetToScoredMatches(
             lower_raw_terms, lower_terms_to_word_starts_offsets,
             starts_pos->second,
             bookmark_model && bookmark_model->IsBookmarked(hist_item.url()),
-            now);
+            num_matches, now);
       });
 
   // Filter all matches that ended up scoring 0.  (These are usually matches

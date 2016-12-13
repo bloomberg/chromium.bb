@@ -431,6 +431,28 @@ float OmniboxFieldTrial::HQPTypedValue() {
   return typed_value;
 }
 
+OmniboxFieldTrial::NumMatchesScores OmniboxFieldTrial::HQPNumMatchesScores() {
+  std::string str = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName, kHQPNumMatchesScoresRule);
+  // The parameter is a comma-separated list of (number, value) pairs, e.g.
+  // "1:3,2:2.5,3:2,4:1.5".
+  // This is a best-effort conversion; we trust the hand-crafted parameters
+  // downloaded from the server to be perfect.  There's no need to handle
+  // errors smartly.
+  base::StringPairs kv_pairs;
+  if (!base::SplitStringIntoKeyValuePairs(str, ':', ',', &kv_pairs))
+    return NumMatchesScores{};
+  NumMatchesScores num_matches_scores(kv_pairs.size());
+  for (size_t i = 0; i < kv_pairs.size(); ++i) {
+    base::StringToSizeT(kv_pairs[i].first, &num_matches_scores[i].first);
+    // The input must be sorted by number of matches.
+    DCHECK((i == 0) ||
+           (num_matches_scores[i].first > num_matches_scores[i - 1].first));
+    base::StringToDouble(kv_pairs[i].second, &num_matches_scores[i].second);
+  }
+  return num_matches_scores;
+}
+
 size_t OmniboxFieldTrial::HQPNumTitleWordsToAllow() {
   // The value of the rule is a string that encodes an integer (actually
   // size_t) containing the number of words.
@@ -536,6 +558,8 @@ const char OmniboxFieldTrial::kHQPFixFewVisitsBugRule[] = "HQPFixFewVisitsBug";
 const char OmniboxFieldTrial::kHQPFreqencyUsesSumRule[] = "HQPFreqencyUsesSum";
 const char OmniboxFieldTrial::kHQPMaxVisitsToScoreRule[] =
     "HQPMaxVisitsToScoreRule";
+const char OmniboxFieldTrial::kHQPNumMatchesScoresRule[] =
+    "HQPNumMatchesScores";
 const char OmniboxFieldTrial::kHQPNumTitleWordsRule[] = "HQPNumTitleWords";
 const char OmniboxFieldTrial::kHQPAlsoDoHUPLikeScoringRule[] =
     "HQPAlsoDoHUPLikeScoring";

@@ -16,6 +16,7 @@
 #include "components/history/core/browser/history_match.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 
 class ScoredHistoryMatchTest;
 
@@ -48,9 +49,11 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // These offsets (".net" should have an offset of 1) come from
   // |terms_to_word_starts_offsets|. |is_url_bookmarked| indicates whether the
   // match's URL is referenced by any bookmarks, which can also affect the raw
-  // score.  The raw score allows the matches to be ordered and can be used to
-  // influence the final score calculated by the client of this index.  If the
-  // row does not qualify the raw score will be 0.
+  // score.  |num_matching_pages| indicates how many URLs in the eligible URL
+  // database match the user's input; it can also affect the raw score.  The raw
+  // score allows the matches to be ordered and can be used to influence the
+  // final score calculated by the client of this index.  If the row does not
+  // qualify the raw score will be 0.
   ScoredHistoryMatch(const history::URLRow& row,
                      const VisitInfoVector& visits,
                      const base::string16& lower_string,
@@ -58,6 +61,7 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
                      const WordStarts& terms_to_word_starts_offsets,
                      const RowWordStarts& word_starts,
                      bool is_url_bookmarked,
+                     size_t num_matching_pages,
                      base::Time now);
 
   ~ScoredHistoryMatch();
@@ -98,6 +102,7 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
 
  private:
   friend class ScoredHistoryMatchTest;
+  FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetDocumentSpecificityScore);
   FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetFinalRelevancyScore);
   FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetFrequency);
   FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetHQPBucketsFromString);
@@ -133,10 +138,15 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
                      const bool bookmarked,
                      const VisitInfoVector& visits) const;
 
-  // Combines the two component scores into a final score that's an appropriate
-  // value to use as a relevancy score.
+  // Returns a document specificity score based on how many pages matched the
+  // user's input.
+  float GetDocumentSpecificityScore(size_t num_matching_pages) const;
+
+  // Combines the three component scores into a final score that's
+  // an appropriate value to use as a relevancy score.
   static float GetFinalRelevancyScore(float topicality_score,
-                                      float frequency_score);
+                                      float frequency_score,
+                                      float specificity_score);
 
   // Helper function that returns the string containing the scoring buckets
   // (either the default ones or ones specified in an experiment).
@@ -191,6 +201,11 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // overrides the static local variable |relevance_buckets| declared in
   // GetFinalRelevancyScore().
   static ScoreMaxRelevances* relevance_buckets_override_;
+
+  // Used for testing.  If this pointer is not null, it overrides the static
+  // local variable |default_matches_to_specificity| declared in
+  // GetDocumentSpecificityScore().
+  static OmniboxFieldTrial::NumMatchesScores* matches_to_specificity_override_;
 };
 typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
 

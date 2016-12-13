@@ -117,6 +117,8 @@ size_t ScoredHistoryMatch::num_title_words_to_allow_;
 float ScoredHistoryMatch::topicality_threshold_;
 ScoredHistoryMatch::ScoreMaxRelevances*
     ScoredHistoryMatch::relevance_buckets_override_ = nullptr;
+OmniboxFieldTrial::NumMatchesScores*
+    ScoredHistoryMatch::matches_to_specificity_override_ = nullptr;
 
 ScoredHistoryMatch::ScoredHistoryMatch()
     : ScoredHistoryMatch(history::URLRow(),
@@ -126,8 +128,8 @@ ScoredHistoryMatch::ScoredHistoryMatch()
                          WordStarts(),
                          RowWordStarts(),
                          false,
-                         base::Time::Max()) {
-}
+                         1,
+                         base::Time::Max()) {}
 
 ScoredHistoryMatch::ScoredHistoryMatch(
     const history::URLRow& row,
@@ -137,6 +139,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     const WordStarts& terms_to_word_starts_offsets,
     const RowWordStarts& word_starts,
     bool is_url_bookmarked,
+    size_t num_matching_pages,
     base::Time now)
     : HistoryMatch(row, 0, false, false), raw_score(0) {
   // NOTE: Call Init() before doing any validity checking to ensure that the
@@ -254,8 +257,10 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   const float topicality_score = GetTopicalityScore(
       terms_vector.size(), url, terms_to_word_starts_offsets, word_starts);
   const float frequency_score = GetFrequency(now, is_url_bookmarked, visits);
-  raw_score = base::saturated_cast<int>(
-      GetFinalRelevancyScore(topicality_score, frequency_score));
+  const float specificity_score =
+      GetDocumentSpecificityScore(num_matching_pages);
+  raw_score = base::saturated_cast<int>(GetFinalRelevancyScore(
+      topicality_score, frequency_score, specificity_score));
 
   if (also_do_hup_like_scoring_ && likely_can_inline) {
     // HistoryURL-provider-like scoring gives any match that is
@@ -610,9 +615,29 @@ float ScoredHistoryMatch::GetFrequency(const base::Time& now,
          ScoredHistoryMatch::max_visits_to_score_;
 }
 
+float ScoredHistoryMatch::GetDocumentSpecificityScore(
+    size_t num_matching_pages) const {
+  // A mapping from the number of matching pages to their associated document
+  // specificity scores.  See omnibox_field_trial.h for more details.
+  CR_DEFINE_STATIC_LOCAL(OmniboxFieldTrial::NumMatchesScores,
+                         default_matches_to_specificity,
+                         (OmniboxFieldTrial::HQPNumMatchesScores()));
+  OmniboxFieldTrial::NumMatchesScores* matches_to_specificity =
+      matches_to_specificity_override_ ? matches_to_specificity_override_
+                                       : &default_matches_to_specificity;
+
+  // The floating point value below must be less than the lowest score the
+  // server would send down.
+  OmniboxFieldTrial::NumMatchesScores::const_iterator it = std::upper_bound(
+      matches_to_specificity->begin(), matches_to_specificity->end(),
+      std::pair<size_t, double>{num_matching_pages, -1});
+  return (it != matches_to_specificity->end()) ? it->second : 1.0;
+};
+
 // static
 float ScoredHistoryMatch::GetFinalRelevancyScore(float topicality_score,
-                                                 float frequency_score) {
+                                                 float frequency_score,
+                                                 float specificity_score) {
   // |relevance_buckets| gives a mapping from intemerdiate score to the final
   // relevance score.
   CR_DEFINE_STATIC_LOCAL(ScoreMaxRelevances, default_relevance_buckets,
@@ -625,8 +650,9 @@ float ScoredHistoryMatch::GetFinalRelevancyScore(float topicality_score,
 
   if (topicality_score == 0)
     return 0;
-  // Here's how to interpret intermediate_score: Suppose the omnibox
-  // has one input term.  Suppose we have a URL for which the omnibox
+  // Here's how to interpret intermediate_score: Suppose the omnibox has one
+  // input term.  Suppose the input matches many documents.  (This implies
+  // specificity_score == 1.0.)  Suppose we have a URL for which the omnibox
   // input term has a single URL hostname hit at a word boundary.  (This
   // implies topicality_score = 1.0.).  Then the intermediate_score for
   // this URL will depend entirely on the frequency_score with
@@ -650,7 +676,8 @@ float ScoredHistoryMatch::GetFinalRelevancyScore(float topicality_score,
   //
   // The score maxes out at 1399 (i.e., cannot beat a good inlineable result
   // from HistoryURL provider).
-  const float intermediate_score = topicality_score * frequency_score;
+  const float intermediate_score =
+      topicality_score * frequency_score * specificity_score;
 
   // Find the threshold where intermediate score is greater than bucket.
   size_t i = 1;
