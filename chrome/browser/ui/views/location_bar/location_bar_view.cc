@@ -220,10 +220,10 @@ void LocationBarView::Init() {
   gfx::FontList font_list = ResourceBundle::GetSharedInstance().GetFontList(
       ResourceBundle::BaseFont);
   const int current_font_size = font_list.GetFontSize();
-  const int desired_font_size = GetLayoutConstant(OMNIBOX_FONT_PIXEL_SIZE);
-  if (current_font_size != desired_font_size) {
+  constexpr int kDesiredFontSize = 14;
+  if (current_font_size != kDesiredFontSize) {
     font_list =
-        font_list.DeriveWithSizeDelta(desired_font_size - current_font_size);
+        font_list.DeriveWithSizeDelta(kDesiredFontSize - current_font_size);
   }
   // Shrink large fonts to make them fit.
   // TODO(pkasting): Stretch the location bar instead in this case.
@@ -234,7 +234,7 @@ void LocationBarView::Init() {
 
   // Determine the font for use inside the bubbles.
   const int bubble_padding =
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING) +
+      kBubbleVerticalPadding +
       GetLayoutConstant(LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING);
   const int bubble_height = location_height - (bubble_padding * 2);
 
@@ -490,8 +490,6 @@ gfx::Size LocationBarView::GetPreferredSize() const {
 
   min_size.set_height(min_size.height() * size_animation_.GetCurrentValue());
 
-  const int padding = GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
-
   // Compute width of omnibox-leading content.
   const int edge_thickness = GetHorizontalEdgeThickness();
   int leading_width = edge_thickness;
@@ -502,7 +500,8 @@ gfx::Size LocationBarView::GetPreferredSize() const {
     leading_width +=
         location_icon_view_->GetMinimumSizeForLabelText(security_text).width();
   } else {
-    leading_width += padding + location_icon_view_->GetMinimumSize().width();
+    leading_width +=
+        kHorizontalPadding + location_icon_view_->GetMinimumSize().width();
   }
 
   // Compute width of omnibox-trailing content.
@@ -521,8 +520,8 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   }
 
   min_size.set_width(leading_width + omnibox_view_->GetMinimumSize().width() +
-                     2 * padding - omnibox_view_->GetInsets().width() +
-                     trailing_width);
+                     2 * kHorizontalPadding -
+                     omnibox_view_->GetInsets().width() + trailing_width);
   return min_size;
 }
 
@@ -534,8 +533,7 @@ void LocationBarView::Layout() {
   location_icon_view_->SetVisible(false);
   keyword_hint_view_->SetVisible(false);
 
-  const int item_padding = GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
-  const int edge_thickness = GetHorizontalEdgeThickness();
+  constexpr int item_padding = kHorizontalPadding;
 
   LocationBarLayout leading_decorations(
       LocationBarLayout::LEFT_EDGE, item_padding,
@@ -633,6 +631,8 @@ void LocationBarView::Layout() {
       keyword_hint_view_->SetKeyword(keyword);
   }
 
+  const int edge_thickness = GetHorizontalEdgeThickness();
+
   // Perform layout.
   int full_width = width() - (2 * edge_thickness);
 
@@ -728,18 +728,20 @@ WebContents* LocationBarView::GetWebContents() {
 // LocationBarView, private:
 
 int LocationBarView::IncrementalMinimumWidth(views::View* view) const {
-  return view->visible() ?
-      (GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) +
-          view->GetMinimumSize().width()) : 0;
+  return view->visible() ? (kHorizontalPadding + view->GetMinimumSize().width())
+                         : 0;
 }
 
 int LocationBarView::GetHorizontalEdgeThickness() const {
-  return is_popup_mode_ ? 0 : GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS);
+  return is_popup_mode_
+             ? 0
+             : BackgroundWith1PxBorder::kLocationBarBorderThicknessDip;
 }
 
 int LocationBarView::GetTotalVerticalPadding() const {
-  return GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS) +
-         GetLayoutConstant(LOCATION_BAR_VERTICAL_PADDING);
+  constexpr int kInteriorPadding = 1;
+  return BackgroundWith1PxBorder::kLocationBarBorderThicknessDip +
+         kInteriorPadding;
 }
 
 void LocationBarView::RefreshLocationIcon() {
@@ -1182,9 +1184,10 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   // border images are meant to rest atop the toolbar background and parts atop
   // the omnibox background, so we can't just blindly fill our entire bounds.
   gfx::Rect bounds(GetContentsBounds());
-  bounds.Inset(
-      GetHorizontalEdgeThickness(),
-      is_popup_mode_ ? 0 : GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS));
+  bounds.Inset(GetHorizontalEdgeThickness(),
+               is_popup_mode_
+                   ? 0
+                   : BackgroundWith1PxBorder::kLocationBarBorderThicknessDip);
   SkColor background_color(GetColor(BACKGROUND));
   canvas->FillRect(bounds, background_color);
   const SkColor border_color = GetBorderColor(profile()->IsOffTheRecord());

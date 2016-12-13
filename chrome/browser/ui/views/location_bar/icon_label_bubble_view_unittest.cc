@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/test/views_test_base.h"
@@ -65,7 +65,7 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
   bool ShouldShowLabel() const override {
     return !IsShrinking() ||
            (width() > (image()->GetPreferredSize().width() +
-                       2 * GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING)));
+                       2 * LocationBarView::kHorizontalPadding));
   }
 
   double WidthMultiplier() const override {

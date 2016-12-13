@@ -9,91 +9,47 @@
 #include "ui/base/material_design/material_design_controller.h"
 
 int GetLayoutConstant(LayoutConstant constant) {
-  const int kFindBarVerticalOffset[] = {6, 6};
-  const int kLocationBarBorderThickness[] = {1, 1};
-  const int kLocationBarBubbleFontVerticalPadding[] = {2, 4};
-  const int kLocationBarBubbleVerticalPadding[] = {3, 3};
-  const int kLocationBarBubbleAnchorVerticalInset[] = {6, 8};
-  const int kLocationBarHeight[] = {28, 32};
-  const int kLocationBarHorizontalPadding[] = {6, 6};
-  const int kLocationBarVerticalPadding[] = {1, 1};
-  const int kOmniboxFontPixelSize[] = {14, 14};
-  const int kTabFaviconTitleSpacing[] = {6, 6};
-  const int kTabHeight[] = {29, 33};
-  const int kTabPinnedContentWidth[] = {23, 23};
-  const int kTabstripNewTabButtonOverlap[] = {5, 6};
-  const int kTabstripTabOverlap[] = {16, 16};
-  const int kToolbarStandardSpacing[] = {4, 8};
-  const int kToolbarElementPadding[] = {0, 8};
-  const int kToolbarLocationBarRightPadding[] = {4, 8};
-
-  const int mode = ui::MaterialDesignController::GetMode();
+  const bool hybrid = ui::MaterialDesignController::GetMode() ==
+                      ui::MaterialDesignController::MATERIAL_HYBRID;
   switch (constant) {
-    case AVATAR_ICON_PADDING:
-      return 4;
-    case FIND_BAR_TOOLBAR_OVERLAP:
-      return kFindBarVerticalOffset[mode];
-    case LOCATION_BAR_BORDER_THICKNESS:
-      return kLocationBarBorderThickness[mode];
     case LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING:
-      return kLocationBarBubbleFontVerticalPadding[mode];
-    case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
-      return kLocationBarBubbleVerticalPadding[mode];
+      return hybrid ? 4 : 2;
     case LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET:
       if (ui::MaterialDesignController::IsSecondaryUiMaterial())
         return 1;
-      return kLocationBarBubbleAnchorVerticalInset[mode];
+      return hybrid ? 8 : 6;
     case LOCATION_BAR_HEIGHT:
-      return kLocationBarHeight[mode];
-    case LOCATION_BAR_HORIZONTAL_PADDING:
-      return kLocationBarHorizontalPadding[mode];
-    case LOCATION_BAR_VERTICAL_PADDING:
-      return kLocationBarVerticalPadding[mode];
-    case OMNIBOX_FONT_PIXEL_SIZE:
-      return kOmniboxFontPixelSize[mode];
+      return hybrid ? 32 : 28;
     case TABSTRIP_NEW_TAB_BUTTON_OVERLAP:
-      return kTabstripNewTabButtonOverlap[mode];
-    case TABSTRIP_TAB_OVERLAP:
-      return kTabstripTabOverlap[mode];
-    case TAB_FAVICON_TITLE_SPACING:
-      return kTabFaviconTitleSpacing[mode];
+      return hybrid ? 6 : 5;
     case TAB_HEIGHT:
-      return kTabHeight[mode];
-    case TAB_PINNED_CONTENT_WIDTH:
-      return kTabPinnedContentWidth[mode];
-    case TOOLBAR_BUTTON_PADDING:
-      return 6;
+      return hybrid ? 33 : 29;
     case TOOLBAR_ELEMENT_PADDING:
-      return kToolbarElementPadding[mode];
-    case TOOLBAR_LOCATION_BAR_RIGHT_PADDING:
-      return kToolbarLocationBarRightPadding[mode];
+      return hybrid ? 8 : 0;
     case TOOLBAR_STANDARD_SPACING:
-      return kToolbarStandardSpacing[mode];
+      return hybrid ? 8 : 4;
   }
   NOTREACHED();
   return 0;
 }
 
 gfx::Insets GetLayoutInsets(LayoutInset inset) {
+  const bool hybrid = ui::MaterialDesignController::GetMode() ==
+                      ui::MaterialDesignController::MATERIAL_HYBRID;
   switch (inset) {
-    case TAB: {
-      const bool hybrid = ui::MaterialDesignController::GetMode() ==
-                          ui::MaterialDesignController::MATERIAL_HYBRID;
+    case TAB:
       return gfx::Insets(1, hybrid ? 18 : 16);
-    }
   }
   NOTREACHED();
   return gfx::Insets();
 }
 
 gfx::Size GetLayoutSize(LayoutSize size) {
-  const int kNewTabButtonWidth[] = {36, 39};
-  const int kNewTabButtonHeight[] = {18, 21};
-
-  const int mode = ui::MaterialDesignController::GetMode();
+  const bool hybrid = ui::MaterialDesignController::GetMode() ==
+                      ui::MaterialDesignController::MATERIAL_HYBRID;
   switch (size) {
     case NEW_TAB_BUTTON:
-      return gfx::Size(kNewTabButtonWidth[mode], kNewTabButtonHeight[mode]);
+      return hybrid ? gfx::Size(39, 21) : gfx::Size(36, 18);
   }
   NOTREACHED();
   return gfx::Size();

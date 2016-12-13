@@ -408,10 +408,11 @@ void BrowserNonClientFrameViewAsh::UpdateProfileIcons() {
 // BrowserNonClientFrameViewAsh, private:
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
-  const int pad = GetLayoutConstant(AVATAR_ICON_PADDING);
   const int avatar_right =
-      profile_indicator_icon() ? (pad + GetIncognitoAvatarIcon().width()) : 0;
-  return avatar_right + pad;
+      profile_indicator_icon()
+          ? (kAvatarIconPadding + GetIncognitoAvatarIcon().width())
+          : 0;
+  return avatar_right + kAvatarIconPadding;
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
@@ -448,9 +449,9 @@ void BrowserNonClientFrameViewAsh::LayoutProfileIndicatorIcon() {
 #endif
 
   const gfx::ImageSkia incognito_icon = GetIncognitoAvatarIcon();
-  const int pad = GetLayoutConstant(AVATAR_ICON_PADDING);
-  const int avatar_bottom =
-      GetTopInset(false) + browser_view()->GetTabStripHeight() - pad;
+  const int avatar_bottom = GetTopInset(false) +
+                            browser_view()->GetTabStripHeight() -
+                            kAvatarIconPadding;
   int avatar_y = avatar_bottom - incognito_icon.height();
 
   // Hide the incognito icon in immersive fullscreen when the tab light bar is
@@ -458,8 +459,8 @@ void BrowserNonClientFrameViewAsh::LayoutProfileIndicatorIcon() {
   // recognizable.
   const bool avatar_visible = !UseImmersiveLightbarHeaderStyle();
   const int avatar_height = avatar_visible ? (avatar_bottom - avatar_y) : 0;
-  profile_indicator_icon()->SetBounds(pad, avatar_y, incognito_icon.width(),
-                                      avatar_height);
+  profile_indicator_icon()->SetBounds(kAvatarIconPadding, avatar_y,
+                                      incognito_icon.width(), avatar_height);
   profile_indicator_icon()->SetVisible(avatar_visible);
 }
 

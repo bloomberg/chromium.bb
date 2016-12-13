@@ -111,6 +111,13 @@ class LocationBarView : public LocationBar,
   // Width (and height) of icons in location bar.
   static constexpr int kIconWidth = 16;
 
+  // Space between items in the location bar, as well as between items and the
+  // edges.
+  static constexpr int kHorizontalPadding = 6;
+
+  // The additional vertical padding of a bubble.
+  static constexpr int kBubbleVerticalPadding = 3;
+
   // The location bar view's class name.
   static const char kViewClassName[];
 

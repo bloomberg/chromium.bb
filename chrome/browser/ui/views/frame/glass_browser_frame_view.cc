@@ -139,8 +139,7 @@ GlassBrowserFrameView::~GlassBrowserFrameView() {
 
 gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
-  const int x =
-      incognito_bounds_.right() + GetLayoutConstant(AVATAR_ICON_PADDING);
+  const int x = incognito_bounds_.right() + kAvatarIconPadding;
   int end_x = width() - ClientBorderThickness(false);
   if (!CaptionButtonsOnLeadingEdge()) {
     end_x = std::min(MinimizeButtonX(), end_x) -
@@ -739,7 +738,6 @@ void GlassBrowserFrameView::LayoutProfileSwitcher() {
 }
 
 void GlassBrowserFrameView::LayoutIncognitoIcon() {
-  const int pad = GetLayoutConstant(AVATAR_ICON_PADDING);
   const gfx::Size size(GetIncognitoAvatarIcon().size());
   int x = ClientBorderThickness(false);
   // In RTL, the icon needs to start after the caption buttons.
@@ -749,11 +747,12 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
                                      kProfileSwitcherButtonOffset)
                                   : 0);
   }
-  const int bottom =
-      GetTopInset(false) + browser_view()->GetTabStripHeight() - pad;
+  const int bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
+                     kAvatarIconPadding;
   incognito_bounds_.SetRect(
-      x + (profile_indicator_icon() ? pad : 0), bottom - size.height(),
-      profile_indicator_icon() ? size.width() : 0, size.height());
+      x + (profile_indicator_icon() ? kAvatarIconPadding : 0),
+      bottom - size.height(), profile_indicator_icon() ? size.width() : 0,
+      size.height());
   if (profile_indicator_icon())
     profile_indicator_icon()->SetBoundsRect(incognito_bounds_);
 }

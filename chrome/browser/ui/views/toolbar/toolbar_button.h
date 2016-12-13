@@ -33,6 +33,9 @@ class MenuRunner;
 class ToolbarButton : public views::LabelButton,
                       public views::ContextMenuController {
  public:
+  // Padding inside the border (around the image).
+  static constexpr int kInteriorPadding = 6;
+
   // Takes ownership of the |model|, which can be null if no menu
   // is to be shown.
   ToolbarButton(Profile* profile,

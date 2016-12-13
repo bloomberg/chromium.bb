@@ -570,8 +570,7 @@ void ToolbarView::Layout() {
       home_->bounds().right() + GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
   int app_menu_width = app_menu_button_->GetPreferredSize().width();
-  const int right_padding =
-      GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING);
+  const int right_padding = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
   // Note that the browser actions container has its own internal left and right
   // padding to visually separate it from the location bar and app menu button.
@@ -710,8 +709,6 @@ gfx::Size ToolbarView::GetSizeInternal(
     const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
     const int browser_actions_width =
         (browser_actions_->*get_size)().width();
-    const int right_padding =
-        GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING);
     const int content_width =
         2 * GetToolbarHorizontalPadding() + (back_->*get_size)().width() +
         element_padding + (forward_->*get_size)().width() + element_padding +
@@ -720,7 +717,9 @@ gfx::Size ToolbarView::GetSizeInternal(
              ? element_padding + (home_->*get_size)().width()
              : 0) +
         GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
-        (browser_actions_width > 0 ? browser_actions_width : right_padding) +
+        (browser_actions_width > 0
+             ? browser_actions_width
+             : GetLayoutConstant(TOOLBAR_STANDARD_SPACING)) +
         (app_menu_button_->*get_size)().width();
     size.Enlarge(content_width, 0);
   }

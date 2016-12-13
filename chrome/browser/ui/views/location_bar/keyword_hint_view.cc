@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -39,7 +39,7 @@ class TabKeyBubbleView : public views::Label {
 TabKeyBubbleView::TabKeyBubbleView(const gfx::FontList& font_list)
     : views::Label(l10n_util::GetStringUTF16(IDS_APP_TAB_KEY), font_list) {
   SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING), 0)));
+      gfx::Insets(LocationBarView::kBubbleVerticalPadding, 0)));
 }
 
 TabKeyBubbleView::~TabKeyBubbleView() {}

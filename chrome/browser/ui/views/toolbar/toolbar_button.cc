@@ -12,8 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
@@ -57,16 +55,10 @@ bool ToolbarButton::IsMenuShowing() const {
 }
 
 gfx::Size ToolbarButton::GetPreferredSize() const {
-  gfx::Size size(image()->GetPreferredSize());
-  gfx::Size label_size = label()->GetPreferredSize();
-  if (label_size.width() > 0) {
-    size.Enlarge(
-        label_size.width() + GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING),
-        0);
-  }
-  const int pad = GetLayoutConstant(TOOLBAR_BUTTON_PADDING);
-  size.Enlarge(2 * pad, 2 * pad);
-  return size;
+  DCHECK(label()->text().empty());
+  gfx::Rect rect(gfx::Size(image()->GetPreferredSize()));
+  rect.Inset(gfx::Insets(-kInteriorPadding));
+  return rect.size();
 }
 
 bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
@@ -150,7 +142,7 @@ std::unique_ptr<views::LabelButtonBorder> ToolbarButton::CreateDefaultBorder()
       views::LabelButton::CreateDefaultBorder();
 
   if (ThemeServiceFactory::GetForProfile(profile_)->UsingSystemTheme())
-    border->set_insets(gfx::Insets(GetLayoutConstant(TOOLBAR_BUTTON_PADDING)));
+    border->set_insets(gfx::Insets(kInteriorPadding));
 
   return border;
 }

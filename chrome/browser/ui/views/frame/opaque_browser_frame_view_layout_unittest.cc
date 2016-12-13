@@ -236,7 +236,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
           (maximized ? OBFVL::kCaptionSpacing
                      : -GetLayoutSize(NEW_TAB_BUTTON).width());
     }
-    int tabstrip_x = GetLayoutConstant(AVATAR_ICON_PADDING);
+    int tabstrip_x = OpaqueBrowserFrameView::kAvatarIconPadding;
     if (show_caption_buttons && caption_buttons_on_left) {
       int right_of_close =
           maximized ? kMaximizedExtraCloseWidth : OBFVL::kFrameBorderThickness;

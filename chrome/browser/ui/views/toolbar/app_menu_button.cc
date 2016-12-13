@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/theme_resources.h"
 #include "extensions/common/feature_switch.h"
@@ -108,10 +109,9 @@ void AppMenuButton::RemoveMenuListener(views::MenuListener* listener) {
 }
 
 gfx::Size AppMenuButton::GetPreferredSize() const {
-  gfx::Size size(image()->GetPreferredSize());
-  const int pad = GetLayoutConstant(TOOLBAR_BUTTON_PADDING);
-  size.Enlarge(pad * 2, pad * 2);
-  return size;
+  gfx::Rect rect(image()->GetPreferredSize());
+  rect.Inset(gfx::Insets(-ToolbarButton::kInteriorPadding));
+  return rect.size();
 }
 
 void AppMenuButton::UpdateIcon() {

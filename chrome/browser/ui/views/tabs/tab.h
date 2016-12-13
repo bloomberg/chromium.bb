@@ -52,6 +52,9 @@ class Tab : public gfx::AnimationDelegate,
   // The Tab's class name.
   static const char kViewClassName[];
 
+  // The amount of overlap between two adjacent tabs.
+  static constexpr int kOverlap = 16;
+
   Tab(TabController* controller, gfx::AnimationContainer* container);
   ~Tab() override;
 

@@ -17,6 +17,9 @@ class BrowserView;
 class BrowserNonClientFrameView : public views::NonClientFrameView,
                                   public ProfileAttributesStorage::Observer {
  public:
+  // The padding on the left, right, and bottom of the avatar icon.
+  static constexpr int kAvatarIconPadding = 4;
+
   BrowserNonClientFrameView(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameView() override;
 

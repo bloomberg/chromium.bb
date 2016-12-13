@@ -728,8 +728,7 @@ gfx::Size Tab::GetMinimumActiveSize() {
 // static
 gfx::Size Tab::GetStandardSize() {
   const int kNetTabWidth = 193;
-  return gfx::Size(kNetTabWidth + GetLayoutConstant(TABSTRIP_TAB_OVERLAP),
-                   GetMinimumInactiveSize().height());
+  return gfx::Size(kNetTabWidth + kOverlap, GetMinimumInactiveSize().height());
 }
 
 // static
@@ -739,8 +738,8 @@ int Tab::GetTouchWidth() {
 
 // static
 int Tab::GetPinnedWidth() {
-  return GetMinimumInactiveSize().width() +
-         GetLayoutConstant(TAB_PINNED_CONTENT_WIDTH);
+  constexpr int kTabPinnedContentWidth = 23;
+  return GetMinimumInactiveSize().width() + kTabPinnedContentWidth;
 }
 
 // static
@@ -919,9 +918,9 @@ void Tab::Layout() {
   // Size the title to fill the remaining width and use all available height.
   const bool show_title = ShouldRenderAsNormalTab();
   if (show_title) {
-    const int title_spacing = GetLayoutConstant(TAB_FAVICON_TITLE_SPACING);
-    int title_left = showing_icon_ ?
-        (favicon_bounds_.right() + title_spacing) : start;
+    constexpr int kTitleSpacing = 6;
+    int title_left =
+        showing_icon_ ? (favicon_bounds_.right() + kTitleSpacing) : start;
     int title_width = lb.right() - title_left;
     if (showing_alert_indicator_) {
       title_width =

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
-#include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -42,7 +42,7 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
   // the bubble should be smaller, so use an empty border to shrink down the
   // content bounds so the background gets painted correctly.
   SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING), 0)));
+      gfx::Insets(LocationBarView::kBubbleVerticalPadding, 0)));
 
   // Flip the canvas in RTL so the separator is drawn on the correct side.
   EnableCanvasFlippingForRTLUI(true);
@@ -94,7 +94,7 @@ bool IconLabelBubbleView::OnKeyReleased(const ui::KeyEvent& event) {
 
 void IconLabelBubbleView::Layout() {
   // Compute the image bounds. Leading and trailing padding are the same.
-  int image_x = GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
+  int image_x = LocationBarView::kHorizontalPadding;
   int bubble_trailing_padding = image_x;
 
   // If ShouldShowLabel() is true, then either we show a label in the
@@ -192,7 +192,7 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
     // enough to show the icon. We don't want to shrink all the way back to
     // zero, since this would mean the view would completely disappear and then
     // pop back to an icon after the animation finishes.
-    const int max_width = GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) +
+    const int max_width = LocationBarView::kHorizontalPadding +
                           image_->GetPreferredSize().width() +
                           GetInternalSpacing() + label_width + post_label_width;
     const int current_width = WidthMultiplier() * max_width;
@@ -205,13 +205,12 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
 int IconLabelBubbleView::GetInternalSpacing() const {
   return image_->GetPreferredSize().IsEmpty()
              ? 0
-             : GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
+             : LocationBarView::kHorizontalPadding;
 }
 
 int IconLabelBubbleView::GetPostSeparatorPadding() const {
-  // The location bar will add LOCATION_BAR_HORIZONTAL_PADDING after us.
-  return kSpaceBesideSeparator -
-         GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
+  // The location bar will add LocationBarView::kHorizontalPadding after us.
+  return kSpaceBesideSeparator - LocationBarView::kHorizontalPadding;
 }
 
 float IconLabelBubbleView::GetScaleFactor() const {
