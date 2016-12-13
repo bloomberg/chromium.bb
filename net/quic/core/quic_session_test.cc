@@ -1096,6 +1096,18 @@ TEST_P(QuicSessionTestServer, InvalidSessionFlowControlWindowInHandshake) {
   session_.OnConfigNegotiated();
 }
 
+// Test negotiation of custom server initial flow control window.
+TEST_P(QuicSessionTestServer, CustomFlowControlWindow) {
+  FLAGS_quic_large_ifw_options = true;
+  QuicTagVector copt;
+  copt.push_back(kIFW7);
+  QuicConfigPeer::SetReceivedConnectionOptions(session_.config(), copt);
+
+  session_.OnConfigNegotiated();
+  EXPECT_EQ(192 * 1024u, QuicFlowControllerPeer::ReceiveWindowSize(
+                             session_.flow_controller()));
+}
+
 TEST_P(QuicSessionTestServer, FlowControlWithInvalidFinalOffset) {
   // Test that if we receive a stream RST with a highest byte offset that
   // violates flow control, that we close the connection.
