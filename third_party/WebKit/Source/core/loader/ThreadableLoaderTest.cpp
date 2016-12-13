@@ -240,6 +240,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   void onSetUp() override {
     m_mockWorkerReportingProxy = WTF::makeUnique<MockWorkerReportingProxy>();
     m_securityOrigin = document().getSecurityOrigin();
+    m_parentFrameTaskRunners =
+        ParentFrameTaskRunners::create(&m_dummyPageHolder->frame());
     m_workerThread = WTF::wrapUnique(new WorkerThreadForTest(
         this, *m_mockWorkerReportingProxy, m_threadHeapMode));
 
@@ -329,7 +331,12 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
                         std::unique_ptr<ExecutionContextTask> task) override {
     DCHECK(m_workerThread);
     DCHECK(m_workerThread->isCurrentThread());
-    document().postTask(location, std::move(task));
+    m_parentFrameTaskRunners->get(TaskType::Networking)
+        ->postTask(
+            BLINK_FROM_HERE,
+            crossThreadBind(&ExecutionContextTask::performTaskIfContextIsValid,
+                            WTF::passed(std::move(task)),
+                            wrapCrossThreadWeakPersistent(&document())));
   }
 
   void postTaskToWorkerGlobalScope(
@@ -344,6 +351,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   std::unique_ptr<WorkerThreadForTest> m_workerThread;
 
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
   Checkpoint m_checkpoint;
   // |m_loader| must be touched only from the worker thread only.
   CrossThreadPersistent<ThreadableLoader> m_loader;

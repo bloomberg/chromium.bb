@@ -51,6 +51,7 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
+#include "platform/heap/Persistent.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
@@ -306,10 +307,12 @@ void WebSharedWorkerImpl::didTerminateWorkerThreadOnMainThread() {
 void WebSharedWorkerImpl::postTaskToLoader(
     const WebTraceLocation& location,
     std::unique_ptr<ExecutionContextTask> task) {
-  // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and
-  // consider using m_parentFrameTaskRunners->get(TaskType::Networking)
-  // instead.
-  m_mainFrame->frame()->document()->postTask(location, std::move(task));
+  m_parentFrameTaskRunners->get(TaskType::Networking)
+      ->postTask(FROM_HERE,
+                 crossThreadBind(
+                     &ExecutionContextTask::performTaskIfContextIsValid,
+                     WTF::passed(std::move(task)),
+                     wrapCrossThreadWeakPersistent(m_loadingDocument.get())));
 }
 
 void WebSharedWorkerImpl::postTaskToWorkerGlobalScope(

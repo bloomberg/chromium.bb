@@ -263,10 +263,13 @@ void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message) {
 void WebEmbeddedWorkerImpl::postTaskToLoader(
     const WebTraceLocation& location,
     std::unique_ptr<ExecutionContextTask> task) {
-  // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and
-  // consider using m_mainThreadTaskRunners->get(TaskType::Networking)
-  // instead.
-  m_mainFrame->frame()->document()->postTask(location, std::move(task));
+  m_mainThreadTaskRunners->get(TaskType::Networking)
+      ->postTask(
+          BLINK_FROM_HERE,
+          crossThreadBind(
+              &ExecutionContextTask::performTaskIfContextIsValid,
+              WTF::passed(std::move(task)),
+              wrapCrossThreadWeakPersistent(m_mainFrame->frame()->document())));
 }
 
 void WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(

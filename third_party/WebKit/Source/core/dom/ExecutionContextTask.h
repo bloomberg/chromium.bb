@@ -48,6 +48,11 @@ class CORE_EXPORT ExecutionContextTask {
   ExecutionContextTask() {}
   virtual ~ExecutionContextTask() {}
   virtual void performTask(ExecutionContext*) = 0;
+
+  void performTaskIfContextIsValid(ExecutionContext* context) {
+    if (context)
+      performTask(context);
+  }
 };
 
 namespace internal {

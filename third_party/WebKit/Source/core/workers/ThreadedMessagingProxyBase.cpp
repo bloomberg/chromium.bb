@@ -74,9 +74,12 @@ void ThreadedMessagingProxyBase::postTaskToLoader(
     const WebTraceLocation& location,
     std::unique_ptr<ExecutionContextTask> task) {
   DCHECK(getExecutionContext()->isDocument());
-  // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and use
-  // m_parentFrameTaskRunners->get(TaskType::Networking) instead.
-  getExecutionContext()->postTask(location, std::move(task));
+  m_parentFrameTaskRunners->get(TaskType::Networking)
+      ->postTask(BLINK_FROM_HERE,
+                 crossThreadBind(
+                     &ExecutionContextTask::performTaskIfContextIsValid,
+                     WTF::passed(std::move(task)),
+                     wrapCrossThreadWeakPersistent(getExecutionContext())));
 }
 
 void ThreadedMessagingProxyBase::countFeature(UseCounter::Feature feature) {
