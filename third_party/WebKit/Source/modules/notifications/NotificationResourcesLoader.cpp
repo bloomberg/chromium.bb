@@ -19,7 +19,6 @@ NotificationResourcesLoader::NotificationResourcesLoader(
     : m_started(false),
       m_completionCallback(std::move(completionCallback)),
       m_pendingRequestCount(0) {
-  ThreadState::current()->registerPreFinalizer(this);
   DCHECK(m_completionCallback);
 }
 

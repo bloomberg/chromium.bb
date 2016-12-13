@@ -142,7 +142,6 @@ SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> webSourceBuffer,
   DCHECK(m_webSourceBuffer);
   DCHECK(m_source);
   DCHECK(m_source->mediaElement());
-  ThreadState::current()->registerPreFinalizer(this);
   m_audioTracks = AudioTrackList::create(*m_source->mediaElement());
   m_videoTracks = VideoTrackList::create(*m_source->mediaElement());
   m_webSourceBuffer->setClient(this);

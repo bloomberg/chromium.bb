@@ -670,7 +670,6 @@ WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element,
       m_touchEventRequestType(TouchEventRequestTypeNone),
       m_wantsWheelEvents(false),
       m_isDisposed(false) {
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 WebPluginContainerImpl::~WebPluginContainerImpl() {

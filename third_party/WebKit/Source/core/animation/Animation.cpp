@@ -1131,7 +1131,6 @@ Animation::CompositorAnimationPlayerHolder::create(Animation* animation) {
 Animation::CompositorAnimationPlayerHolder::CompositorAnimationPlayerHolder(
     Animation* animation)
     : m_animation(animation) {
-  ThreadState::current()->registerPreFinalizer(this);
   m_compositorPlayer = CompositorAnimationPlayer::create();
   m_compositorPlayer->setAnimationDelegate(m_animation);
 }

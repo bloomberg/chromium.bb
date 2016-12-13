@@ -45,8 +45,6 @@ StyleRuleImport::StyleRuleImport(const String& href, MediaQuerySet* media)
       m_loading(false) {
   if (!m_mediaQueries)
     m_mediaQueries = MediaQuerySet::create(String());
-
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 StyleRuleImport::~StyleRuleImport() {}

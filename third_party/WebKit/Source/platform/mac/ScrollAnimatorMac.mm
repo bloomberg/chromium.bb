@@ -700,8 +700,6 @@ ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
                        ->clone()),
       m_haveScrolledSincePageLoad(false),
       m_needsScrollerStyleUpdate(false) {
-  ThreadState::current()->registerPreFinalizer(this);
-
   m_scrollAnimationHelperDelegate.adoptNS(
       [[BlinkScrollAnimationHelperDelegate alloc] initWithScrollAnimator:this]);
   m_scrollAnimationHelper.adoptNS(

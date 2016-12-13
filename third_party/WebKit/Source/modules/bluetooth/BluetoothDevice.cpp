@@ -27,8 +27,6 @@ BluetoothDevice::BluetoothDevice(
       m_attributeInstanceMap(new BluetoothAttributeInstanceMap(this)),
       m_webDevice(std::move(webDevice)),
       m_gatt(BluetoothRemoteGATTServer::create(this)) {
-  // See example in Source/platform/heap/ThreadState.h
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 BluetoothDevice* BluetoothDevice::take(

@@ -54,7 +54,7 @@ class ResourceOwner : public C {
   }
 
  protected:
-  ResourceOwner() { ThreadState::current()->registerPreFinalizer(this); }
+  ResourceOwner() {}
 
   void setResource(
       ResourceType*,

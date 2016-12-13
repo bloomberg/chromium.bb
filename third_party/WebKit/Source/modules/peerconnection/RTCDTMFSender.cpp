@@ -76,7 +76,6 @@ RTCDTMFSender::RTCDTMFSender(ExecutionContext* context,
       m_handler(std::move(handler)),
       m_stopped(false),
       m_scheduledEventTimer(this, &RTCDTMFSender::scheduledEventTimerFired) {
-  ThreadState::current()->registerPreFinalizer(this);
   m_handler->setClient(this);
 }
 

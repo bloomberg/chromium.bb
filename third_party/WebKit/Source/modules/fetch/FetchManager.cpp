@@ -303,7 +303,6 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext,
       m_didFinishLoading(false),
       m_isIsolatedWorld(isIsolatedWorld),
       m_executionContext(executionContext) {
-  ThreadState::current()->registerPreFinalizer(this);
   m_urlList.append(request->url());
 }
 

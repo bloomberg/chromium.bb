@@ -379,7 +379,6 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState,
                                         ClosedPromise::Closed)),
       m_actionTimer(this, &MediaKeySession::actionTimerFired) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
-  ThreadState::current()->registerPreFinalizer(this);
 
   // Create the matching Chromium object. It will not be usable until
   // initializeNewSession() is called in response to the user calling

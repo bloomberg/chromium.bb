@@ -26,7 +26,6 @@ ScrollAnimatorCompositorCoordinator::ScrollAnimatorCompositorCoordinator()
       m_compositorAnimationId(0),
       m_compositorAnimationGroupId(0),
       m_implOnlyAnimationTakeover(false) {
-  ThreadState::current()->registerPreFinalizer(this);
   m_compositorPlayer = CompositorAnimationPlayer::create();
   ASSERT(m_compositorPlayer);
   m_compositorPlayer->setAnimationDelegate(this);

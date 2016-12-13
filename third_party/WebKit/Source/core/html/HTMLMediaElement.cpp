@@ -418,8 +418,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_autoplayUmaHelper(AutoplayUmaHelper::create(this)),
       m_remotePlaybackClient(nullptr),
       m_autoplayVisibilityObserver(nullptr) {
-  ThreadState::current()->registerPreFinalizer(this);
-
   BLINK_MEDIA_LOG << "HTMLMediaElement(" << (void*)this << ")";
 
   m_lockedPendingUserGesture = computeLockedPendingUserGesture(document);

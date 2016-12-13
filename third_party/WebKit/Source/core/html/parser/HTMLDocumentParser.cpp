@@ -155,8 +155,6 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
   ASSERT(shouldUseThreading() || (m_token && m_tokenizer));
   // Threading is not allowed in prefetch mode.
   DCHECK(!document.isPrefetchOnly() || !shouldUseThreading());
-
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 HTMLDocumentParser::~HTMLDocumentParser() {}

@@ -53,7 +53,6 @@ usb::DeviceFilterPtr convertDeviceFilter(const USBDeviceFilter& filter) {
 
 USB::USB(LocalFrame& frame)
     : ContextLifecycleObserver(frame.document()), m_clientBinding(this) {
-  ThreadState::current()->registerPreFinalizer(this);
   frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_deviceManager));
   m_deviceManager.set_connection_error_handler(convertToBaseCallback(WTF::bind(
       &USB::onDeviceManagerConnectionError, wrapWeakPersistent(this))));

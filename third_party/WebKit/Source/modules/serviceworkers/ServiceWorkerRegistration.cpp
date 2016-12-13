@@ -138,7 +138,6 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
       m_stopped(false) {
   ASSERT(m_handle);
   ASSERT(!m_handle->registration()->proxy());
-  ThreadState::current()->registerPreFinalizer(this);
 
   if (!executionContext)
     return;

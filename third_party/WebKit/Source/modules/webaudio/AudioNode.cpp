@@ -528,7 +528,6 @@ unsigned AudioHandler::numberOfOutputChannels() const {
 
 AudioNode::AudioNode(BaseAudioContext& context)
     : m_context(context), m_handler(nullptr) {
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 void AudioNode::dispose() {

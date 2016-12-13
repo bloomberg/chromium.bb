@@ -23,7 +23,6 @@ BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* executionContext,
     : ContextLifecycleObserver(executionContext),
       m_blobDataHandle(blobDataHandle),
       m_loader(loader) {
-  ThreadState::current()->registerPreFinalizer(this);
   if (!m_blobDataHandle) {
     // Note that |m_loader| is non-null only in tests.
     if (m_loader) {

@@ -132,7 +132,6 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
       document.settings()->antialiasedClips2dCanvasEnabled())
     m_clipAntialiasing = AntiAliased;
   setShouldAntialias(true);
-  ThreadState::current()->registerPreFinalizer(this);
   validateStateStack();
 }
 

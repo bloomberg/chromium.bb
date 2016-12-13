@@ -253,7 +253,6 @@ ResourceFetcher::ResourceFetcher(FetchContext* newContext)
       m_imagesEnabled(true),
       m_allowStaleResources(false),
       m_imageFetched(false) {
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 ResourceFetcher::~ResourceFetcher() {}

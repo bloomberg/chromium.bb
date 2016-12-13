@@ -429,11 +429,6 @@ class PLATFORM_EXPORT ThreadState {
 
   size_t objectPayloadSizeForTesting();
 
-  // TODO: no longer needed, remove all uses.
-  template <typename T>
-  void registerPreFinalizer(T* self) {
-  }
-
   void shouldFlushHeapDoesNotContainCache() {
     m_shouldFlushHeapDoesNotContainCache = true;
   }

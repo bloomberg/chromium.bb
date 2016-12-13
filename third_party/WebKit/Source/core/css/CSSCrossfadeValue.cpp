@@ -114,7 +114,6 @@ CSSCrossfadeValue::CSSCrossfadeValue(CSSValue* fromValue,
       m_cachedFromImage(nullptr),
       m_cachedToImage(nullptr),
       m_crossfadeSubimageObserver(this) {
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 CSSCrossfadeValue::~CSSCrossfadeValue() {}

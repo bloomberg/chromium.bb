@@ -27,7 +27,6 @@ VRController::VRController(NavigatorVR* navigatorVR)
       m_binding.CreateInterfacePtrAndBind(),
       convertToBaseCallback(
           WTF::bind(&VRController::onDisplaysSynced, wrapPersistent(this))));
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 VRController::~VRController() {}

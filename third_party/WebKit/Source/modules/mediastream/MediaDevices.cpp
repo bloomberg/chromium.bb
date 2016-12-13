@@ -77,7 +77,6 @@ MediaDevices::MediaDevices(ExecutionContext* context)
       m_dispatchScheduledEventRunner(AsyncMethodRunner<MediaDevices>::create(
           this,
           &MediaDevices::dispatchScheduledEvent)) {
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 MediaDevices::~MediaDevices() {}

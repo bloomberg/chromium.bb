@@ -58,7 +58,6 @@ MediaStreamComponent::MediaStreamComponent(const String& id,
                                            bool muted)
     : m_source(source), m_id(id), m_enabled(enabled), m_muted(muted) {
   DCHECK(m_id.length());
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 MediaStreamComponent* MediaStreamComponent::clone() const {

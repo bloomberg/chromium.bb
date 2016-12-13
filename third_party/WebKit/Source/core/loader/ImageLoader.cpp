@@ -163,7 +163,6 @@ ImageLoader::ImageLoader(Element* element)
       m_elementIsProtected(false),
       m_suppressErrorEvents(false) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageLoader " << this;
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 ImageLoader::~ImageLoader() {}

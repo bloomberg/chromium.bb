@@ -12,7 +12,6 @@ MockFontResourceClient::MockFontResourceClient(Resource* resource)
     : m_resource(resource),
       m_fontLoadShortLimitExceededCalled(false),
       m_fontLoadLongLimitExceededCalled(false) {
-  ThreadState::current()->registerPreFinalizer(this);
   m_resource->addClient(this);
 }
 

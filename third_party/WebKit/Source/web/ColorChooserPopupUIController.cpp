@@ -52,7 +52,6 @@ ColorChooserPopupUIController::ColorChooserPopupUIController(
       m_chromeClient(chromeClient),
       m_popup(nullptr),
       m_locale(Locale::defaultLocale()) {
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 ColorChooserPopupUIController::~ColorChooserPopupUIController() {}

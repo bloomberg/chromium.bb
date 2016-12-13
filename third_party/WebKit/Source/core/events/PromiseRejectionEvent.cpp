@@ -16,7 +16,6 @@ PromiseRejectionEvent::PromiseRejectionEvent(
       m_world(state->world()),
       m_promise(this),
       m_reason(this) {
-  ThreadState::current()->registerPreFinalizer(this);
   DCHECK(initializer.hasPromise());
   m_promise.set(initializer.promise().isolate(),
                 initializer.promise().v8Value());

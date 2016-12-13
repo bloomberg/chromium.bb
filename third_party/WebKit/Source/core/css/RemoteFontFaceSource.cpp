@@ -64,7 +64,6 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font,
                                           : FontLoadHistograms::FromUnknown,
                    m_display),
       m_isInterventionTriggered(false) {
-  ThreadState::current()->registerPreFinalizer(this);
   m_font->addClient(this);
 
   if (shouldTriggerWebFontsIntervention()) {

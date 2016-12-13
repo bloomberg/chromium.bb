@@ -12,7 +12,6 @@ MockResourceClient::MockResourceClient(Resource* resource)
     : m_resource(resource),
       m_notifyFinishedCalled(false),
       m_encodedSizeOnNotifyFinished(0) {
-  ThreadState::current()->registerPreFinalizer(this);
   m_resource->addClient(this);
 }
 

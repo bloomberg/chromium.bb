@@ -50,8 +50,6 @@ BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(
       m_stopped(false) {
   m_properties = BluetoothCharacteristicProperties::create(
       m_webCharacteristic->characteristicProperties);
-  // See example in Source/platform/heap/ThreadState.h
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::create(

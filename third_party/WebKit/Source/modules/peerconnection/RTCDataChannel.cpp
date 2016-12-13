@@ -92,7 +92,6 @@ RTCDataChannel::RTCDataChannel(
       m_scheduledEventTimer(this, &RTCDataChannel::scheduledEventTimerFired),
       m_bufferedAmountLowThreshold(0U),
       m_stopped(false) {
-  ThreadState::current()->registerPreFinalizer(this);
   m_handler->setClient(this);
 }
 

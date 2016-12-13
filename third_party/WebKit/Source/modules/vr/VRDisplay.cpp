@@ -97,7 +97,6 @@ VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
       m_inAnimationFrame(false),
       m_display(std::move(display)),
       m_binding(this, std::move(request)) {
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 VRDisplay::~VRDisplay() {}

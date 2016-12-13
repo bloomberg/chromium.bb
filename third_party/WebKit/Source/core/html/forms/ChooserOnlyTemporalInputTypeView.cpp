@@ -40,7 +40,6 @@ ChooserOnlyTemporalInputTypeView::ChooserOnlyTemporalInputTypeView(
     HTMLInputElement& element,
     BaseTemporalInputType& inputType)
     : KeyboardClickableInputTypeView(element), m_inputType(inputType) {
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 ChooserOnlyTemporalInputTypeView* ChooserOnlyTemporalInputTypeView::create(

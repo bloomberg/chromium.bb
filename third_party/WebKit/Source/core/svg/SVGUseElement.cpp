@@ -71,7 +71,6 @@ inline SVGUseElement::SVGUseElement(Document& document)
       m_haveFiredLoadEvent(false),
       m_needsShadowTreeRecreation(false) {
   ASSERT(hasCustomStyleCallbacks());
-  ThreadState::current()->registerPreFinalizer(this);
 
   addToPropertyMap(m_x);
   addToPropertyMap(m_y);

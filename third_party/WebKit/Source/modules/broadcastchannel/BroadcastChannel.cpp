@@ -130,8 +130,6 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* executionContext,
       m_origin(executionContext->getSecurityOrigin()),
       m_name(name),
       m_binding(this) {
-  ThreadState::current()->registerPreFinalizer(this);
-
   mojom::blink::BroadcastChannelProviderPtr& provider =
       getThreadSpecificProvider();
 

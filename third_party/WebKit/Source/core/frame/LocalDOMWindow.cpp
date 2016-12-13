@@ -274,7 +274,6 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
       m_visualViewport(DOMVisualViewport::create(this)),
       m_unusedPreloadsTimer(this, &LocalDOMWindow::warnUnusedPreloads),
       m_shouldPrintWhenFinishedLoading(false) {
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 void LocalDOMWindow::clearDocument() {

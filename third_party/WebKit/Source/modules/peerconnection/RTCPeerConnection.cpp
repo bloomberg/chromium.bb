@@ -499,7 +499,6 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
       m_stopped(false),
       m_closed(false),
       m_hasDataChannels(false) {
-  ThreadState::current()->registerPreFinalizer(this);
   Document* document = toDocument(getExecutionContext());
 
   // If we fail, set |m_closed| and |m_stopped| to true, to avoid hitting the

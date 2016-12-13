@@ -45,7 +45,6 @@ PendingScript::PendingScript(Element* element, ScriptResource* resource)
       m_parserBlockingLoadStartTime(0),
       m_client(nullptr) {
   setScriptResource(resource);
-  ThreadState::current()->registerPreFinalizer(this);
   MemoryCoordinator::instance().registerClient(this);
 }
 

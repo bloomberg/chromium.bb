@@ -158,7 +158,6 @@ HTMLParserScriptRunner::HTMLParserScriptRunner(
       m_host(host),
       m_parserBlockingScript(PendingScript::create(nullptr, nullptr)) {
   DCHECK(m_host);
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 HTMLParserScriptRunner::~HTMLParserScriptRunner() {

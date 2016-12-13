@@ -42,7 +42,6 @@ StyleFetchedImageSet::StyleFetchedImageSet(ImageResourceContent* image,
       m_url(url) {
   m_isImageResourceSet = true;
   m_bestFitImage->addObserver(this);
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 StyleFetchedImageSet::~StyleFetchedImageSet() {}

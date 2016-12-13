@@ -40,7 +40,6 @@ StyleFetchedImage::StyleFetchedImage(ImageResourceContent* image,
   // ResourceFetcher is not determined from StyleFetchedImage and it is
   // impossible to send a request for refetching.
   m_image->setNotRefetchableDataFromDiskCache();
-  ThreadState::current()->registerPreFinalizer(this);
 }
 
 StyleFetchedImage::~StyleFetchedImage() {}
