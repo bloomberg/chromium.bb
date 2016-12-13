@@ -6,27 +6,27 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_SECURITY_HANDLER_H_
 
 #include "base/macros.h"
-#include "content/browser/devtools/protocol/security.h"
+#include "content/browser/devtools/devtools_protocol_handler.h"
+#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
+namespace devtools {
+namespace security {
 
-class RenderFrameHostImpl;
-
-namespace protocol {
-
-class SecurityHandler : public Security::Backend,
-                        public WebContentsObserver {
+class SecurityHandler : public WebContentsObserver {
  public:
+  typedef DevToolsProtocolClient::Response Response;
+
   SecurityHandler();
   ~SecurityHandler() override;
 
-  void Wire(UberDispatcher*);
-  void SetRenderFrameHost(RenderFrameHostImpl* host);
+  void SetClient(std::unique_ptr<Client> client);
+  void SetRenderFrameHost(RenderFrameHost* host);
 
-  Response Enable() override;
-  Response Disable() override;
-  Response ShowCertificateViewer() override;
+  Response Enable();
+  Response Disable();
+  Response ShowCertificateViewer();
 
  private:
   void AttachToRenderFrameHost();
@@ -34,14 +34,15 @@ class SecurityHandler : public Security::Backend,
   // WebContentsObserver overrides
   void DidChangeVisibleSecurityState() override;
 
-  std::unique_ptr<Security::Frontend> frontend_;
+  std::unique_ptr<Client> client_;
   bool enabled_;
-  RenderFrameHostImpl* host_;
+  RenderFrameHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityHandler);
 };
 
-}  // namespace protocol
+}  // namespace security
+}  // namespace devtools
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_SECURITY_HANDLER_H_
