@@ -136,7 +136,6 @@ class Location;
 class MediaQueryListListener;
 class MediaQueryMatcher;
 class NodeFilter;
-class NodeIntersectionObserverData;
 class NodeIterator;
 class NthIndexCache;
 class OriginAccessEntry;
@@ -815,7 +814,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   IntersectionObserverController* intersectionObserverController();
   IntersectionObserverController& ensureIntersectionObserverController();
-  NodeIntersectionObserverData& ensureIntersectionObserverData();
 
   ResizeObserverController* resizeObserverController() const {
     return m_resizeObserverController;
@@ -1657,7 +1655,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<CanvasFontCache> m_canvasFontCache;
 
   Member<IntersectionObserverController> m_intersectionObserverController;
-  Member<NodeIntersectionObserverData> m_intersectionObserverData;
   Member<ResizeObserverController> m_resizeObserverController;
 
   int m_nodeCount;

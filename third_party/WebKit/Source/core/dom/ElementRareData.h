@@ -28,8 +28,8 @@
 #include "core/dom/Attr.h"
 #include "core/dom/CompositorProxiedPropertySet.h"
 #include "core/dom/DatasetDOMStringMap.h"
+#include "core/dom/ElementIntersectionObserverData.h"
 #include "core/dom/NamedNodeMap.h"
-#include "core/dom/NodeIntersectionObserverData.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/PseudoElementData.h"
@@ -161,12 +161,12 @@ class ElementRareData : public NodeRareData {
     ScriptWrappableVisitor::writeBarrier(this, attr);
   }
 
-  NodeIntersectionObserverData* intersectionObserverData() const {
+  ElementIntersectionObserverData* intersectionObserverData() const {
     return m_intersectionObserverData.get();
   }
-  NodeIntersectionObserverData& ensureIntersectionObserverData() {
+  ElementIntersectionObserverData& ensureIntersectionObserverData() {
     if (!m_intersectionObserverData) {
-      m_intersectionObserverData = new NodeIntersectionObserverData();
+      m_intersectionObserverData = new ElementIntersectionObserverData();
       ScriptWrappableVisitor::writeBarrier(this, m_intersectionObserverData);
     }
     return *m_intersectionObserverData;
@@ -200,7 +200,7 @@ class ElementRareData : public NodeRareData {
   std::unique_ptr<CompositorProxiedPropertySet> m_proxiedProperties;
 
   Member<ElementAnimations> m_elementAnimations;
-  Member<NodeIntersectionObserverData> m_intersectionObserverData;
+  Member<ElementIntersectionObserverData> m_intersectionObserverData;
   Member<ResizeObserverDataMap> m_resizeObserverData;
 
   RefPtr<ComputedStyle> m_computedStyle;

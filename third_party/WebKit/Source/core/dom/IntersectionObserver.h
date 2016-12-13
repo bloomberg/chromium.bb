@@ -35,11 +35,17 @@ class CORE_EXPORT IntersectionObserver final
   // Defines the assumed initial state of the observed element. If the actual
   // state is the same as the initial state, then no observation will be
   // delivered. kAuto means the initial observation will always get sent.
-  enum class InitialState {
+  enum InitialState {
     // TODO(skyostil): Add support for kVisible.
-    kAuto,
-    kHidden,
+    kAuto = 0,
+    kHidden = 1,
+    kDoNotUseMax = 2
   };
+
+  // InitialState is stored in a single bit in m_initialState.  If adding new
+  // enum values, increase the size of m_initialState and update the assert.
+  static_assert(InitialState::kDoNotUseMax == 2,
+                "InitialState fits in a single bit.");
 
   static IntersectionObserver* create(const IntersectionObserverInit&,
                                       IntersectionObserverCallback&,
@@ -58,11 +64,21 @@ class CORE_EXPORT IntersectionObserver final
   HeapVector<Member<IntersectionObserverEntry>> takeRecords(ExceptionState&);
 
   // API attributes.
-  Element* root() const;
+  Element* root() const { return m_root.get(); }
   String rootMargin() const;
   const Vector<float>& thresholds() const { return m_thresholds; }
 
-  Node* rootNode() const { return m_root.get(); }
+  // An observer can either track intersections with an explicit root Element,
+  // or with the the top-level frame's viewport (the "implicit root").  When
+  // tracking the implicit root, m_root will be null, but because m_root is a
+  // weak pointer, we cannot surmise that this observer tracks the implicit
+  // root just because m_root is null.  Hence m_rootIsImplicit.
+  bool rootIsImplicit() const { return m_rootIsImplicit; }
+
+  // This is the document which is responsible for running
+  // computeIntersectionObservations at frame generation time.
+  Document& trackingDocument() const;
+
   const Length& topMargin() const { return m_topMargin; }
   const Length& rightMargin() const { return m_rightMargin; }
   const Length& bottomMargin() const { return m_bottomMargin; }
@@ -88,13 +104,17 @@ class CORE_EXPORT IntersectionObserver final
 
  private:
   explicit IntersectionObserver(IntersectionObserverCallback&,
-                                Node&,
+                                Element*,
                                 const Vector<Length>& rootMargin,
                                 const Vector<float>& thresholds);
   void clearWeakMembers(Visitor*);
 
+  // Returns false if this observer has an explicit root element which has been
+  // deleted; true otherwise.
+  bool rootIsValid() const;
+
   Member<IntersectionObserverCallback> m_callback;
-  WeakMember<Node> m_root;
+  WeakMember<Element> m_root;
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> m_observations;
   HeapVector<Member<IntersectionObserverEntry>> m_entries;
   Vector<float> m_thresholds;
@@ -102,7 +122,9 @@ class CORE_EXPORT IntersectionObserver final
   Length m_rightMargin;
   Length m_bottomMargin;
   Length m_leftMargin;
-  InitialState m_initialState;
+  unsigned m_rootIsImplicit : 1;
+  // m_initialState contains values from enum InitialState
+  unsigned m_initialState : 1;
 };
 
 }  // namespace blink

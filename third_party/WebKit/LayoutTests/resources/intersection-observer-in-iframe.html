@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
+
+<div style="height: 200px; width: 100px;"></div>
+<div id="target" style="background-color: green; width:100px; height:100px"></div>
+<div style="height: 200px; width: 100px;"></div>
+
+<script>
+setup({message_events: [], output_document: window.parent.document});
+onload = function() {
+  var entries = [];
+  var observer = new IntersectionObserver(function(changes) { entries = entries.concat(changes) }, {});
+  var target = document.getElementById("target");
+  var scroller = document.scrollingElement;
+  observer.observe(target);
+  entries = entries.concat(observer.takeRecords());
+  var t = async_test("IntersectionObserver in iframe with explicit root.");
+  test(function() { assert_equals(entries.length, 0) }, "No initial notifications.")
+  waitForNotification(t.step_func(step1));
+
+  function step1() {
+    test(function() { assert_equals(entries.length, 0) }, "No notifications after first rAF.");
+    scroller.scrollTop = 250;
+    waitForNotification(t.step_func(step2));
+  }
+
+  function step2() {
+    test(function() { assert_equals(entries.length, 1) }, "One notification.");
+    if (entries.length) {
+      test(function() { assert_equals(entries[0].boundingClientRect.left, 8) }, "entries[0].boundingClientRect.left");
+      test(function() { assert_equals(entries[0].boundingClientRect.right, 108) }, "entries[0].boundingClientRect.right");
+      test(function() { assert_equals(entries[0].boundingClientRect.top, -42) }, "entries[0].boundingClientRect.top");
+      test(function() { assert_equals(entries[0].boundingClientRect.bottom, 58) }, "entries[0].boundingClientRect.bottom");
+      test(function() { assert_equals(entries[0].intersectionRect.left, 8) }, "entries[0].intersectionRect.left");
+      test(function() { assert_equals(entries[0].intersectionRect.right, 108) }, "entries[0].intersectionRect.right");
+      test(function() { assert_equals(entries[0].intersectionRect.top, 0) }, "entries[0].intersectionRect.top");
+      test(function() { assert_equals(entries[0].intersectionRect.bottom, 58) }, "entries[0].intersectionRect.bottom");
+      test(function() { assert_equals(entries[0].rootBounds.left, 0) }, "entries[0].rootBounds.left");
+      test(function() { assert_equals(entries[0].rootBounds.right, 800) }, "entries[0].rootBounds.right");
+      test(function() { assert_equals(entries[0].rootBounds.top, 0) }, "entries[0].rootBounds.top");
+      test(function() { assert_equals(entries[0].rootBounds.bottom, 600) }, "entries[0].rootBounds.bottom");
+      test(function() { assert_true(entries[0].target === target) }, "entries[0].target object identity");
+    }
+    t.done();
+  }
+};
+</script>

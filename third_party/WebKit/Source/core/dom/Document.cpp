@@ -93,7 +93,6 @@
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeFilter.h"
-#include "core/dom/NodeIntersectionObserverData.h"
 #include "core/dom/NodeIterator.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
@@ -5719,12 +5718,6 @@ Document::ensureIntersectionObserverController() {
   return *m_intersectionObserverController;
 }
 
-NodeIntersectionObserverData& Document::ensureIntersectionObserverData() {
-  if (!m_intersectionObserverData)
-    m_intersectionObserverData = new NodeIntersectionObserverData();
-  return *m_intersectionObserverData;
-}
-
 ResizeObserverController& Document::ensureResizeObserverController() {
   if (!m_resizeObserverController)
     m_resizeObserverController = new ResizeObserverController();
@@ -6520,7 +6513,6 @@ DEFINE_TRACE(Document) {
   visitor->trace(m_contextDocument);
   visitor->trace(m_canvasFontCache);
   visitor->trace(m_intersectionObserverController);
-  visitor->trace(m_intersectionObserverData);
   visitor->trace(m_snapCoordinator);
   visitor->trace(m_resizeObserverController);
   visitor->trace(m_propertyRegistry);

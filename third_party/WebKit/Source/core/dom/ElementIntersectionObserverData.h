@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NodeIntersectionObserverData_h
-#define NodeIntersectionObserverData_h
+#ifndef ElementIntersectionObserverData_h
+#define ElementIntersectionObserverData_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
@@ -15,13 +15,15 @@ class Node;
 class IntersectionObservation;
 class IntersectionObserver;
 
-class NodeIntersectionObserverData
-    : public GarbageCollected<NodeIntersectionObserverData>,
+class ElementIntersectionObserverData
+    : public GarbageCollected<ElementIntersectionObserverData>,
       public TraceWrapperBase {
  public:
-  NodeIntersectionObserverData();
+  ElementIntersectionObserverData();
 
   IntersectionObservation* getObservationFor(IntersectionObserver&);
+  void addObserver(IntersectionObserver&);
+  void removeObserver(IntersectionObserver&);
   void addObservation(IntersectionObservation&);
   void removeObservation(IntersectionObserver&);
   void activateValidIntersectionObservers(Node&);
@@ -41,4 +43,4 @@ class NodeIntersectionObserverData
 
 }  // namespace blink
 
-#endif  // NodeIntersectionObserverData_h
+#endif  // ElementIntersectionObserverData_h

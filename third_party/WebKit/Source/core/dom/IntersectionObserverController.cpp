@@ -5,6 +5,7 @@
 #include "core/dom/IntersectionObserverController.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "platform/tracing/TraceEvent.h"
 
@@ -90,7 +91,7 @@ void IntersectionObserverController::removeTrackedObserversForRoot(
     const Node& root) {
   HeapVector<Member<IntersectionObserver>> toRemove;
   for (auto& observer : m_trackedIntersectionObservers) {
-    if (observer->rootNode() == &root)
+    if (observer->root() == &root)
       toRemove.append(observer);
   }
   m_trackedIntersectionObservers.removeAll(toRemove);

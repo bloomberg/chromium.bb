@@ -27,10 +27,8 @@ void IntersectionObservation::computeIntersectionObservations(
   rootMargin[1] = m_observer->rightMargin();
   rootMargin[2] = m_observer->bottomMargin();
   rootMargin[3] = m_observer->leftMargin();
-  Node* rootNode = m_observer->rootNode();
-  IntersectionGeometry geometry(
-      rootNode && !rootNode->isDocumentNode() ? toElement(rootNode) : nullptr,
-      *target(), rootMargin, m_shouldReportRootBounds);
+  IntersectionGeometry geometry(m_observer->root(), *target(), rootMargin,
+                                m_shouldReportRootBounds);
   geometry.computeGeometry();
 
   // Some corner cases for threshold index:

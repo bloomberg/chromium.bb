@@ -61,7 +61,7 @@ class InputDeviceCapabilities;
 class Locale;
 class MutableStylePropertySet;
 class NamedNodeMap;
-class NodeIntersectionObserverData;
+class ElementIntersectionObserverData;
 class PseudoElement;
 class ResizeObservation;
 class ResizeObserver;
@@ -717,8 +717,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   SpellcheckAttributeState spellcheckAttributeState() const;
 
-  NodeIntersectionObserverData* intersectionObserverData() const;
-  NodeIntersectionObserverData& ensureIntersectionObserverData();
+  ElementIntersectionObserverData* intersectionObserverData() const;
+  ElementIntersectionObserverData& ensureIntersectionObserverData();
 
   HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>*
   resizeObserverData() const;

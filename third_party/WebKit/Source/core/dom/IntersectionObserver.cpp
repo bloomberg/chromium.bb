@@ -8,18 +8,18 @@
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementIntersectionObserverData.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/IntersectionObserverCallback.h"
 #include "core/dom/IntersectionObserverController.h"
 #include "core/dom/IntersectionObserverEntry.h"
 #include "core/dom/IntersectionObserverInit.h"
-#include "core/dom/NodeIntersectionObserverData.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/LayoutView.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/Timer.h"
@@ -128,34 +128,13 @@ void parseThresholds(const DoubleOrDoubleSequence& thresholdParameter,
   std::sort(thresholds.begin(), thresholds.end());
 }
 
-// Returns the root Node of a given Document to use as the IntersectionObserver
-// root when no root is given.
-// TODO(szager): it doesn't support RemoteFrames, see https://crbug.com/615156
-Node* getRootNode(Document* document) {
-  Frame* mainFrame = document->frame()->tree().top();
-  if (mainFrame && mainFrame->isLocalFrame())
-    return toLocalFrame(mainFrame)->document();
-  return nullptr;
-}
-
 }  // anonymous namespace
 
 IntersectionObserver* IntersectionObserver::create(
     const IntersectionObserverInit& observerInit,
     IntersectionObserverCallback& callback,
     ExceptionState& exceptionState) {
-  Node* root = observerInit.root();
-  if (!root) {
-    ExecutionContext* context = callback.getExecutionContext();
-    DCHECK(context->isDocument());
-    root = getRootNode(toDocument(context));
-  }
-  if (!root) {
-    exceptionState.throwDOMException(
-        HierarchyRequestError,
-        "Unable to get root node in main frame to track.");
-    return nullptr;
-  }
+  Element* root = observerInit.root();
 
   Vector<Length> rootMargin;
   parseRootMargin(observerInit.rootMargin(), rootMargin, exceptionState);
@@ -167,7 +146,7 @@ IntersectionObserver* IntersectionObserver::create(
   if (exceptionState.hadException())
     return nullptr;
 
-  return new IntersectionObserver(callback, *root, rootMargin, thresholds);
+  return new IntersectionObserver(callback, root, rootMargin, thresholds);
 }
 
 IntersectionObserver* IntersectionObserver::create(
@@ -176,32 +155,25 @@ IntersectionObserver* IntersectionObserver::create(
     Document* document,
     std::unique_ptr<EventCallback> callback,
     ExceptionState& exceptionState) {
-  Node* root = getRootNode(document);
-  if (!root) {
-    exceptionState.throwDOMException(
-        HierarchyRequestError,
-        "Unable to get root node in main frame to track.");
-    return nullptr;
-  }
-
   IntersectionObserverCallbackImpl* intersectionObserverCallback =
       new IntersectionObserverCallbackImpl(document, std::move(callback));
-  return new IntersectionObserver(*intersectionObserverCallback, *root,
+  return new IntersectionObserver(*intersectionObserverCallback, nullptr,
                                   rootMargin, thresholds);
 }
 
 IntersectionObserver::IntersectionObserver(
     IntersectionObserverCallback& callback,
-    Node& root,
+    Element* root,
     const Vector<Length>& rootMargin,
     const Vector<float>& thresholds)
     : m_callback(&callback),
-      m_root(&root),
+      m_root(root),
       m_thresholds(thresholds),
       m_topMargin(Fixed),
       m_rightMargin(Fixed),
       m_bottomMargin(Fixed),
       m_leftMargin(Fixed),
+      m_rootIsImplicit(root ? 0 : 1),
       m_initialState(InitialState::kHidden) {
   switch (rootMargin.size()) {
     case 0:
@@ -229,45 +201,72 @@ IntersectionObserver::IntersectionObserver(
       NOTREACHED();
       break;
   }
-  root.document().ensureIntersectionObserverController().addTrackedObserver(
+  if (root)
+    root->ensureIntersectionObserverData().addObserver(*this);
+  trackingDocument().ensureIntersectionObserverController().addTrackedObserver(
       *this);
 }
 
 void IntersectionObserver::clearWeakMembers(Visitor* visitor) {
-  if (ThreadHeap::isHeapObjectAlive(m_root))
+  if (ThreadHeap::isHeapObjectAlive(root()))
     return;
   IgnorableExceptionState exceptionState;
   disconnect(exceptionState);
   m_root = nullptr;
 }
 
+bool IntersectionObserver::rootIsValid() const {
+  return rootIsImplicit() || root();
+}
+
+Document& IntersectionObserver::trackingDocument() const {
+  Document* document = nullptr;
+  if (rootIsImplicit()) {
+    DCHECK(m_callback->getExecutionContext());
+    document = toDocument(m_callback->getExecutionContext());
+  } else {
+    DCHECK(root());
+    document = &root()->document();
+  }
+  DCHECK(document);
+  DCHECK(document->frame());
+  return *document->frame()->localFrameRoot()->document();
+}
+
 void IntersectionObserver::observe(Element* target,
                                    ExceptionState& exceptionState) {
-  if (!m_root) {
+  if (!rootIsValid()) {
     exceptionState.throwDOMException(
         InvalidStateError,
         "observe() called on an IntersectionObserver with an invalid root.");
     return;
   }
 
-  if (!target || m_root.get() == target)
+  if (!target || root() == target)
+    return;
+
+  LocalFrame* targetFrame = target->document().frame();
+  if (!targetFrame)
     return;
 
   if (target->ensureIntersectionObserverData().getObservationFor(*this))
     return;
-  bool shouldReportRootBounds = false;
-  bool isDOMDescendant = false;
-  LocalFrame* targetFrame = target->document().frame();
-  LocalFrame* rootFrame = m_root->document().frame();
 
-  if (target->document() == rootNode()->document()) {
+  bool isDOMDescendant = true;
+  bool shouldReportRootBounds = false;
+  if (rootIsImplicit()) {
+    Frame* rootFrame = targetFrame->tree().top();
+    DCHECK(rootFrame);
+    if (rootFrame == targetFrame) {
+      shouldReportRootBounds = true;
+    } else {
+      shouldReportRootBounds =
+          targetFrame->securityContext()->getSecurityOrigin()->canAccess(
+              rootFrame->securityContext()->getSecurityOrigin());
+    }
+  } else {
     shouldReportRootBounds = true;
-    isDOMDescendant = rootNode()->isShadowIncludingInclusiveAncestorOf(target);
-  } else if (targetFrame && rootFrame) {
-    shouldReportRootBounds =
-        targetFrame->securityContext()->getSecurityOrigin()->canAccess(
-            rootFrame->securityContext()->getSecurityOrigin());
-    isDOMDescendant = (targetFrame->tree().top() == rootFrame);
+    isDOMDescendant = root()->isShadowIncludingInclusiveAncestorOf(target);
   }
 
   IntersectionObservation* observation =
@@ -276,11 +275,10 @@ void IntersectionObserver::observe(Element* target,
   m_observations.add(observation);
 
   if (!isDOMDescendant) {
-    m_root->document().addConsoleMessage(
+    root()->document().addConsoleMessage(
         ConsoleMessage::create(JSMessageSource, WarningMessageLevel,
                                "IntersectionObserver.observe(target): target "
                                "element is not a descendant of root."));
-    return;
   }
 
   if (m_initialState == InitialState::kAuto) {
@@ -288,15 +286,13 @@ void IntersectionObserver::observe(Element* target,
       observation->setLastThresholdIndex(std::numeric_limits<unsigned>::max());
   }
 
-  if (!rootFrame)
-    return;
-  if (FrameView* rootFrameView = rootFrame->view())
-    rootFrameView->scheduleAnimation();
+  if (FrameView* frameView = targetFrame->view())
+    frameView->scheduleAnimation();
 }
 
 void IntersectionObserver::unobserve(Element* target,
                                      ExceptionState& exceptionState) {
-  if (!m_root) {
+  if (!rootIsValid()) {
     exceptionState.throwDOMException(
         InvalidStateError,
         "unobserve() called on an IntersectionObserver with an invalid root.");
@@ -305,13 +301,15 @@ void IntersectionObserver::unobserve(Element* target,
 
   if (!target || !target->intersectionObserverData())
     return;
-  // TODO(szager): unobserve callback
+
   if (IntersectionObservation* observation =
           target->intersectionObserverData()->getObservationFor(*this))
     observation->disconnect();
 }
 
 void IntersectionObserver::computeIntersectionObservations() {
+  if (!rootIsValid())
+    return;
   Document* callbackDocument = toDocument(m_callback->getExecutionContext());
   if (!callbackDocument)
     return;
@@ -325,7 +323,7 @@ void IntersectionObserver::computeIntersectionObservations() {
 }
 
 void IntersectionObserver::disconnect(ExceptionState& exceptionState) {
-  if (!m_root) {
+  if (!rootIsValid()) {
     exceptionState.throwDOMException(
         InvalidStateError,
         "disconnect() called on an IntersectionObserver with an invalid root.");
@@ -351,22 +349,16 @@ HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(
     ExceptionState& exceptionState) {
   HeapVector<Member<IntersectionObserverEntry>> entries;
 
-  if (!m_root)
+  if (!rootIsValid()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "takeRecords() called on an "
                                      "IntersectionObserver with an invalid "
                                      "root.");
-  else
+  } else {
     entries.swap(m_entries);
+  }
 
   return entries;
-}
-
-Element* IntersectionObserver::root() const {
-  Node* node = rootNode();
-  if (node && !node->isDocumentNode())
-    return toElement(node);
-  return nullptr;
 }
 
 static void appendLength(StringBuilder& stringBuilder, const Length& length) {
