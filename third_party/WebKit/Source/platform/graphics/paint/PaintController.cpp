@@ -826,71 +826,30 @@ void PaintController::checkUnderInvalidation() {
   ++m_underInvalidationCheckingBegin;
 }
 
-String PaintController::displayItemListAsDebugString(
-    const DisplayItemList& list,
-    bool showPictures) const {
-  StringBuilder stringBuilder;
-  size_t i = 0;
-  for (auto it = list.begin(); it != list.end(); ++it, ++i) {
-    const DisplayItem& displayItem = *it;
-    if (i)
-      stringBuilder.append(",\n");
-    stringBuilder.append(String::format("{index: %zu, ", i));
-#ifndef NDEBUG
-    displayItem.dumpPropertiesAsDebugString(stringBuilder);
-#endif
-
-    if (displayItem.hasValidClient()) {
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-      if (!displayItem.client().isAlive()) {
-        stringBuilder.append(", clientIsAlive: false");
-      } else {
-#else
-      // debugName() and clientCacheIsValid() can only be called on a live
-      // client, so only output it for m_newDisplayItemList, in which we are
-      // sure the clients are all alive.
-      if (&list == &m_newDisplayItemList) {
-#endif
-#ifdef NDEBUG
-        stringBuilder.append(
-            String::format("clientDebugName: \"%s\"",
-                           displayItem.client().debugName().ascii().data()));
-#endif
-        stringBuilder.append(", cacheIsValid: ");
-        stringBuilder.append(
-            clientCacheIsValid(displayItem.client()) ? "true" : "false");
-      }
-#ifndef NDEBUG
-      if (showPictures && displayItem.isDrawing()) {
-        if (const SkPicture* picture =
-                static_cast<const DrawingDisplayItem&>(displayItem).picture()) {
-          stringBuilder.append(", picture: ");
-          stringBuilder.append(pictureAsDebugString(picture));
-        }
-      }
-#endif
-    }
-    if (list.hasVisualRect(i)) {
-      IntRect visualRect = list.visualRect(i);
-      stringBuilder.append(String::format(
-          ", visualRect: [%d,%d %dx%d]", visualRect.x(), visualRect.y(),
-          visualRect.width(), visualRect.height()));
-    }
-    stringBuilder.append('}');
-  }
-  return stringBuilder.toString();
-}
-
 void PaintController::showDebugDataInternal(bool showPictures) const {
   WTFLogAlways("current display item list: [%s]\n",
-               displayItemListAsDebugString(
-                   m_currentPaintArtifact.getDisplayItemList(), showPictures)
+               m_currentPaintArtifact.getDisplayItemList()
+                   .subsequenceAsJSON(
+                       0, m_currentPaintArtifact.getDisplayItemList().size(),
+                       showPictures ? DisplayItemList::JsonOptions::ShowPictures
+                                    : DisplayItemList::JsonOptions::Default)
+                   ->toPrettyJSONString()
                    .utf8()
                    .data());
-  WTFLogAlways("new display item list: [%s]\n",
-               displayItemListAsDebugString(m_newDisplayItemList, showPictures)
-                   .utf8()
-                   .data());
+  // debugName() and clientCacheIsValid() can only be called on a live
+  // client, so only output it for m_newDisplayItemList, in which we are
+  // sure the clients are all alive.
+  WTFLogAlways(
+      "new display item list: [%s]\n",
+      m_newDisplayItemList
+          .subsequenceAsJSON(
+              0, m_newDisplayItemList.size(),
+              showPictures ? (DisplayItemList::JsonOptions::ShowPictures |
+                              DisplayItemList::JsonOptions::ShowClientDebugName)
+                           : DisplayItemList::JsonOptions::ShowClientDebugName)
+          ->toPrettyJSONString()
+          .utf8()
+          .data());
 }
 
 }  // namespace blink
