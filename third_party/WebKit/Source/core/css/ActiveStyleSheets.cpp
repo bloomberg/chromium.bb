@@ -16,7 +16,7 @@ namespace blink {
 ActiveSheetsChange compareActiveStyleSheets(
     const ActiveStyleSheetVector& oldStyleSheets,
     const ActiveStyleSheetVector& newStyleSheets,
-    HeapVector<Member<RuleSet>>& changedRuleSets) {
+    HeapHashSet<Member<RuleSet>>& changedRuleSets) {
   unsigned newStyleSheetCount = newStyleSheets.size();
   unsigned oldStyleSheetCount = oldStyleSheets.size();
 
@@ -32,32 +32,34 @@ ActiveSheetsChange compareActiveStyleSheets(
       continue;
 
     if (newStyleSheets[index].second)
-      changedRuleSets.append(newStyleSheets[index].second);
+      changedRuleSets.add(newStyleSheets[index].second);
     if (oldStyleSheets[index].second)
-      changedRuleSets.append(oldStyleSheets[index].second);
+      changedRuleSets.add(oldStyleSheets[index].second);
   }
 
   if (index == oldStyleSheetCount) {
-    if (index == newStyleSheetCount)
-      return changedRuleSets.size() ? ActiveSheetsChanged
-                                    : NoActiveSheetsChanged;
+    if (index == newStyleSheetCount) {
+      return changedRuleSets.isEmpty() ? NoActiveSheetsChanged
+                                       : ActiveSheetsChanged;
+    }
 
     // Sheets added at the end.
     for (; index < newStyleSheetCount; index++) {
       if (newStyleSheets[index].second)
-        changedRuleSets.append(newStyleSheets[index].second);
+        changedRuleSets.add(newStyleSheets[index].second);
     }
-    return changedRuleSets.size() ? ActiveSheetsAppended
-                                  : NoActiveSheetsChanged;
+    return changedRuleSets.isEmpty() ? NoActiveSheetsChanged
+                                     : ActiveSheetsAppended;
   }
 
   if (index == newStyleSheetCount) {
     // Sheets removed from the end.
     for (; index < oldStyleSheetCount; index++) {
       if (oldStyleSheets[index].second)
-        changedRuleSets.append(oldStyleSheets[index].second);
+        changedRuleSets.add(oldStyleSheets[index].second);
     }
-    return changedRuleSets.size() ? ActiveSheetsChanged : NoActiveSheetsChanged;
+    return changedRuleSets.isEmpty() ? NoActiveSheetsChanged
+                                     : ActiveSheetsChanged;
   }
 
   DCHECK(index < oldStyleSheetCount && index < newStyleSheetCount);
@@ -83,7 +85,7 @@ ActiveSheetsChange compareActiveStyleSheets(
         (*mergedIterator).first != sheet1.first) {
       // Sheet either removed or inserted.
       if (sheet1.second)
-        changedRuleSets.append(sheet1.second);
+        changedRuleSets.add(sheet1.second);
       continue;
     }
 
@@ -96,11 +98,12 @@ ActiveSheetsChange compareActiveStyleSheets(
     // Active rules for the given stylesheet changed.
     // DOM, CSSOM, or media query changes.
     if (sheet1.second)
-      changedRuleSets.append(sheet1.second);
+      changedRuleSets.add(sheet1.second);
     if (sheet2.second)
-      changedRuleSets.append(sheet2.second);
+      changedRuleSets.add(sheet2.second);
   }
-  return changedRuleSets.size() ? ActiveSheetsChanged : NoActiveSheetsChanged;
+  return changedRuleSets.isEmpty() ? NoActiveSheetsChanged
+                                   : ActiveSheetsChanged;
 }
 
 }  // namespace blink

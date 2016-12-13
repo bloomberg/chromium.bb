@@ -57,7 +57,7 @@ ShadowRoot& ApplyRulesetsTest::attachShadow(Element& host) {
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_NoChange) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   EXPECT_EQ(NoActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -80,7 +80,7 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_NoChange) {
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AppendedToEmpty) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
@@ -96,7 +96,7 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AppendedToEmpty) {
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AppendedToNonEmpty) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
@@ -113,7 +113,7 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AppendedToNonEmpty) {
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_Mutated) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
@@ -135,15 +135,15 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_Mutated) {
 
   EXPECT_EQ(ActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
-  ASSERT_EQ(2u, changedRuleSets.size());
-  EXPECT_EQ(&sheet2->contents()->ruleSet(), changedRuleSets[0]);
-  EXPECT_EQ(oldSheets[1].second, changedRuleSets[1]);
+  EXPECT_EQ(2u, changedRuleSets.size());
+  EXPECT_TRUE(changedRuleSets.contains(&sheet2->contents()->ruleSet()));
+  EXPECT_TRUE(changedRuleSets.contains(oldSheets[1].second));
 }
 
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_Inserted) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
@@ -158,14 +158,14 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_Inserted) {
 
   EXPECT_EQ(ActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
-  ASSERT_EQ(1u, changedRuleSets.size());
-  EXPECT_EQ(&sheet2->contents()->ruleSet(), changedRuleSets[0]);
+  EXPECT_EQ(1u, changedRuleSets.size());
+  EXPECT_TRUE(changedRuleSets.contains(&sheet2->contents()->ruleSet()));
 }
 
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_Removed) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
@@ -180,14 +180,14 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_Removed) {
 
   EXPECT_EQ(ActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
-  ASSERT_EQ(1u, changedRuleSets.size());
-  EXPECT_EQ(&sheet2->contents()->ruleSet(), changedRuleSets[0]);
+  EXPECT_EQ(1u, changedRuleSets.size());
+  EXPECT_TRUE(changedRuleSets.contains(&sheet2->contents()->ruleSet()));
 }
 
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_RemovedAll) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
@@ -205,7 +205,7 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_RemovedAll) {
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_InsertedAndRemoved) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
@@ -219,15 +219,15 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_InsertedAndRemoved) {
 
   EXPECT_EQ(ActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
-  ASSERT_EQ(2u, changedRuleSets.size());
-  EXPECT_EQ(&sheet1->contents()->ruleSet(), changedRuleSets[0]);
-  EXPECT_EQ(&sheet3->contents()->ruleSet(), changedRuleSets[1]);
+  EXPECT_EQ(2u, changedRuleSets.size());
+  EXPECT_TRUE(changedRuleSets.contains(&sheet1->contents()->ruleSet()));
+  EXPECT_TRUE(changedRuleSets.contains(&sheet3->contents()->ruleSet()));
 }
 
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AddNullRuleSet) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
@@ -245,7 +245,7 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AddNullRuleSet) {
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_RemoveNullRuleSet) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
@@ -263,7 +263,7 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_RemoveNullRuleSet) {
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AddRemoveNullRuleSet) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
@@ -284,7 +284,7 @@ TEST_F(ActiveStyleSheetsTest,
        CompareActiveStyleSheets_RemoveNullRuleSetAndAppend) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
@@ -298,14 +298,14 @@ TEST_F(ActiveStyleSheetsTest,
 
   EXPECT_EQ(ActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
-  ASSERT_EQ(1u, changedRuleSets.size());
-  EXPECT_EQ(&sheet3->contents()->ruleSet(), changedRuleSets[0]);
+  EXPECT_EQ(1u, changedRuleSets.size());
+  EXPECT_TRUE(changedRuleSets.contains(&sheet3->contents()->ruleSet()));
 }
 
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_ReorderedImportSheets) {
   ActiveStyleSheetVector oldSheets;
   ActiveStyleSheetVector newSheets;
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();

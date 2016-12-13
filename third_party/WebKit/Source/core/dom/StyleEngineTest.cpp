@@ -50,13 +50,13 @@ StyleEngineTest::scheduleInvalidationsForRules(TreeScope& treeScope,
   StyleSheetContents* sheet =
       StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
   sheet->parseString(cssText);
-  HeapVector<Member<RuleSet>> ruleSets;
+  HeapHashSet<Member<RuleSet>> ruleSets;
   RuleSet& ruleSet = sheet->ensureRuleSet(MediaQueryEvaluator(),
                                           RuleHasDocumentSecurityOrigin);
   ruleSet.compactRulesIfNeeded();
   if (ruleSet.needsFullRecalcForRuleSetInvalidation())
     return RuleSetInvalidationFullRecalc;
-  ruleSets.append(&ruleSet);
+  ruleSets.add(&ruleSet);
   styleEngine().scheduleInvalidationsForRuleSets(treeScope, ruleSets);
   return RuleSetInvalidationsScheduled;
 }

@@ -895,7 +895,7 @@ void StyleEngine::scheduleNthPseudoInvalidations(ContainerNode& nthParent) {
 
 void StyleEngine::scheduleRuleSetInvalidationsForElement(
     Element& element,
-    const HeapVector<Member<RuleSet>>& ruleSets) {
+    const HeapHashSet<Member<RuleSet>>& ruleSets) {
   AtomicString id;
   const SpaceSplitString* classNames = nullptr;
 
@@ -938,7 +938,7 @@ void StyleEngine::invalidateSlottedElements(HTMLSlotElement& slot) {
 
 void StyleEngine::scheduleInvalidationsForRuleSets(
     TreeScope& treeScope,
-    const HeapVector<Member<RuleSet>>& ruleSets) {
+    const HeapHashSet<Member<RuleSet>>& ruleSets) {
 #if DCHECK_IS_ON()
   // Full scope recalcs should be handled while collecting the ruleSets before
   // calling this method.
@@ -1097,7 +1097,7 @@ enum RuleSetFlags {
   FullRecalcRules = 1 << 2
 };
 
-unsigned getRuleSetFlags(const HeapVector<Member<RuleSet>> ruleSets) {
+unsigned getRuleSetFlags(const HeapHashSet<Member<RuleSet>> ruleSets) {
   unsigned flags = 0;
   for (auto& ruleSet : ruleSets) {
     ruleSet->compactRulesIfNeeded();
@@ -1117,7 +1117,7 @@ void StyleEngine::applyRuleSetChanges(
     TreeScope& treeScope,
     const ActiveStyleSheetVector& oldStyleSheets,
     const ActiveStyleSheetVector& newStyleSheets) {
-  HeapVector<Member<RuleSet>> changedRuleSets;
+  HeapHashSet<Member<RuleSet>> changedRuleSets;
 
   ScopedStyleResolver* scopedResolver = treeScope.scopedStyleResolver();
   bool appendAllSheets =
