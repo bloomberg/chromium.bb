@@ -71,7 +71,7 @@ class GFX_EXPORT Image {
   explicit Image(const ImageSkia& image);
 
 #if defined(OS_IOS)
-  // Does not retain |image|; expects to take ownership.
+  // Retains |image|.
   explicit Image(UIImage* image);
 
   // Retains argument according to |policy|.

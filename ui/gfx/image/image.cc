@@ -420,7 +420,7 @@ Image::Image(const ImageSkia& image) {
 }
 
 #if defined(OS_IOS)
-Image::Image(UIImage* image) : Image(image, base::scoped_policy::ASSUME) {}
+Image::Image(UIImage* image) : Image(image, base::scoped_policy::RETAIN) {}
 
 Image::Image(UIImage* image, base::scoped_policy::OwnershipPolicy policy)
     : storage_(new internal::ImageStorage(Image::kImageRepCocoaTouch)) {
