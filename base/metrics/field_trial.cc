@@ -726,7 +726,7 @@ void FieldTrialList::GetInitiallyActiveFieldTrials(
 
     StringPiece trial_name;
     StringPiece group_name;
-    if (entry->activated &&
+    if (subtle::NoBarrier_Load(&entry->activated) &&
         entry->GetTrialAndGroupName(&trial_name, &group_name)) {
       FieldTrial::ActiveGroup group;
       group.trial_name = trial_name.as_string();
@@ -1083,7 +1083,8 @@ void FieldTrialList::ClearParamsFromSharedMemoryForTesting() {
     FieldTrial::FieldTrialEntry* new_entry =
         allocator->GetAsObject<FieldTrial::FieldTrialEntry>(new_ref,
                                                             kFieldTrialType);
-    new_entry->activated = prev_entry->activated;
+    subtle::NoBarrier_Store(&new_entry->activated,
+                            subtle::NoBarrier_Load(&prev_entry->activated));
     new_entry->pickle_size = pickle.size();
 
     // TODO(lawrencewu): Modify base::Pickle to be able to write over a section
@@ -1186,7 +1187,7 @@ bool FieldTrialList::CreateTrialsFromSharedMemory(
         CreateFieldTrial(trial_name.as_string(), group_name.as_string());
 
     trial->ref_ = ref;
-    if (entry->activated) {
+    if (subtle::NoBarrier_Load(&entry->activated)) {
       // Call |group()| to mark the trial as "used" and notify observers, if
       // any. This is useful to ensure that field trials created in child
       // processes are properly reported in crash reports.
@@ -1278,7 +1279,7 @@ void FieldTrialList::AddToAllocatorWhileLocked(
 
   FieldTrial::FieldTrialEntry* entry =
       allocator->GetAsObject<FieldTrial::FieldTrialEntry>(ref, kFieldTrialType);
-  entry->activated = trial_state.activated;
+  subtle::NoBarrier_Store(&entry->activated, trial_state.activated);
   entry->pickle_size = pickle.size();
 
   // TODO(lawrencewu): Modify base::Pickle to be able to write over a section in
@@ -1313,7 +1314,7 @@ void FieldTrialList::ActivateFieldTrialEntryWhileLocked(
     FieldTrial::FieldTrialEntry* entry =
         allocator->GetAsObject<FieldTrial::FieldTrialEntry>(ref,
                                                             kFieldTrialType);
-    entry->activated = true;
+    subtle::NoBarrier_Store(&entry->activated, 1);
   }
 }
 
