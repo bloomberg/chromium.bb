@@ -104,9 +104,10 @@ class FakeURLLoaderInterface : public nacl_io::URLLoaderInterface {
 
   virtual void Close(PP_Resource loader);
 
- private:
+ protected:
   FakeCoreInterface* core_interface_;  // Weak reference.
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FakeURLLoaderInterface);
 };
 
@@ -139,10 +140,11 @@ class FakeURLResponseInfoInterface : public nacl_io::URLResponseInfoInterface {
                              PP_URLResponseProperty property);
   virtual PP_Resource GetBodyAsFileRef(PP_Resource response);
 
- private:
+ protected:
   FakeCoreInterface* core_interface_;  // Weak reference.
   FakeVarInterface* var_interface_;    // Weak reference.
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FakeURLResponseInfoInterface);
 };
 

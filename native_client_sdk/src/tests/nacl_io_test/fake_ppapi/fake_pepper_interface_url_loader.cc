@@ -11,6 +11,8 @@
 
 #include "gtest/gtest.h"
 
+#include <ppapi/c/pp_bool.h>
+
 #include "fake_ppapi/fake_util.h"
 #include "nacl_io/osinttypes.h"
 
@@ -468,6 +470,13 @@ PP_Bool FakeURLRequestInfoInterface::SetProperty(PP_Resource request,
       if (value.type != PP_VARTYPE_BOOL)
         return PP_FALSE;
       // Throw the value away for now. TODO(binji): add tests for this.
+      return PP_TRUE;
+    }
+    case PP_URLREQUESTPROPERTY_STREAMTOFILE: {
+      if (value.type != PP_VARTYPE_BOOL)
+        return PP_FALSE;
+
+      request_resource->stream_to_file = PP_ToBool(value.value.as_bool);
       return PP_TRUE;
     }
     default:

@@ -29,6 +29,8 @@
         'fake_ppapi/fake_node.h',
         'fake_ppapi/fake_pepper_interface.cc',
         'fake_ppapi/fake_pepper_interface.h',
+        'fake_ppapi/fake_pepper_interface_googledrivefs.cc',
+        'fake_ppapi/fake_pepper_interface_googledrivefs.h',
         'fake_ppapi/fake_pepper_interface_html5_fs.cc',
         'fake_ppapi/fake_pepper_interface_html5_fs.h',
         'fake_ppapi/fake_pepper_interface_url_loader.cc',

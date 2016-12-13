@@ -12,6 +12,8 @@
 #include "fake_ppapi/fake_filesystem.h"
 #include "fake_ppapi/fake_resource_manager.h"
 
+const int32_t STATUSCODE_NOT_IMPLEMENTED = 501;
+
 class FakeFileRefResource : public FakeResource {
  public:
   FakeFileRefResource() : filesystem(NULL) {}
@@ -42,13 +44,14 @@ class FakeHtml5FsResource : public FakeResource {
 
 class FakeURLRequestInfoResource : public FakeResource {
  public:
-  FakeURLRequestInfoResource() {}
+  FakeURLRequestInfoResource() : stream_to_file(false) {}
   static const char* classname() { return "FakeURLRequestInfoResource"; }
 
   std::string url;
   std::string method;
   std::string headers;
   std::string body;
+  bool stream_to_file;
 };
 
 class FakeURLResponseInfoResource : public FakeResource {
