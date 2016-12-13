@@ -40,9 +40,8 @@ constexpr int kReceiverHandle = 0;
 // received. RpcBroker will distribute each RPC message to the components based
 // on the handle value in the RPC message.
 //
-// Note this is single-threaded class running on main thread except for
-// GetUniqueHandle(). It provides WeakPtr() for caller to post tasks to the main
-// thread.
+// Note this is single-threaded class running on main thread. It provides
+// WeakPtr() for caller to post tasks to the main thread.
 class RpcBroker {
  public:
   using SendMessageCallback =
@@ -50,15 +49,16 @@ class RpcBroker {
   explicit RpcBroker(const SendMessageCallback& send_message_cb);
   ~RpcBroker();
 
-  // Get unique handle value (larger than 0) for Rpc message.
-  static int GetUniqueHandle();
+  // Get unique handle value (larger than 0) for RPC message handles.
+  int GetUniqueHandle();
 
   using ReceiveMessageCallback =
       base::Callback<void(std::unique_ptr<pb::RpcMessage>)>;
-  // Allows components to register ReceiveMessageCallback. The handle value can
-  // be sent to receiver using predefined RPC message and handle. So that
-  // receiver can use it as an identity to send RPC message back to specific
-  // component.
+  // Register a component to receive messages via the given
+  // ReceiveMessageCallback. |handle| is a unique handle value provided by a
+  // prior call to GetUniqueHandle() and is used to reference the component in
+  // the RPC messages. The receiver can then use it to direct an RPC message
+  // back to a specific component.
   void RegisterMessageReceiverCallback(int handle,
                                        const ReceiveMessageCallback& callback);
   // Allows components to unregister in order to stop receiving message.
@@ -79,10 +79,18 @@ class RpcBroker {
   void SetMessageCallbackForTesting(const SendMessageCallback& send_message_cb);
 
  private:
+  // Checks that all method calls occur on the same thread.
   base::ThreadChecker thread_checker_;
+
+  // Next unique handle to return from GetUniqueHandle().
+  int next_handle_;
+
   // Maps to hold handle value associated to MessageReceiver.
   std::map<int, ReceiveMessageCallback> receive_callbacks_;
+
+  // Callback that is run to send a serialized message.
   SendMessageCallback send_message_cb_;
+
   base::WeakPtrFactory<RpcBroker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RpcBroker);

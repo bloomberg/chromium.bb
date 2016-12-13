@@ -53,6 +53,7 @@ class RemoteRendererImpl : public Renderer {
   static void OnDataPipeCreatedOnMainThread(
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       base::WeakPtr<RemoteRendererImpl> self,
+      base::WeakPtr<remoting::RpcBroker> rpc_broker,
       mojom::RemotingDataStreamSenderPtrInfo audio,
       mojom::RemotingDataStreamSenderPtrInfo video,
       mojo::ScopedDataPipeProducerHandle audio_handle,
@@ -96,7 +97,9 @@ class RemoteRendererImpl : public Renderer {
   void OnDataPipeCreated(mojom::RemotingDataStreamSenderPtrInfo audio,
                          mojom::RemotingDataStreamSenderPtrInfo video,
                          mojo::ScopedDataPipeProducerHandle audio_handle,
-                         mojo::ScopedDataPipeProducerHandle video_handle);
+                         mojo::ScopedDataPipeProducerHandle video_handle,
+                         int audio_rpc_handle,
+                         int video_rpc_handle);
 
   // Callback function when RPC message is received. Runs on media thread only.
   void OnReceivedRpc(std::unique_ptr<remoting::pb::RpcMessage> message);

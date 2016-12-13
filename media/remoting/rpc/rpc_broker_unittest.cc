@@ -97,7 +97,7 @@ TEST_F(RpcBrokerTest, TestProcessMessageFromRemoteRegistered) {
   std::unique_ptr<RpcBroker> rpc_broker(new RpcBroker(base::Bind(
       &FakeMessageReceiver::OnSendMessage, fake_receiver->GetWeakPtr())));
 
-  int handle = RpcBroker::GetUniqueHandle();
+  int handle = rpc_broker->GetUniqueHandle();
   const remoting::RpcBroker::ReceiveMessageCallback receive_callback =
       base::Bind(&FakeMessageReceiver::OnReceivedRpc,
                  fake_receiver->GetWeakPtr());
@@ -117,7 +117,7 @@ TEST_F(RpcBrokerTest, TestProcessMessageFromRemoteUnregistered) {
   std::unique_ptr<RpcBroker> rpc_broker(new RpcBroker(base::Bind(
       &FakeMessageReceiver::OnSendMessage, fake_receiver->GetWeakPtr())));
 
-  int handle = RpcBroker::GetUniqueHandle();
+  int handle = rpc_broker->GetUniqueHandle();
   const remoting::RpcBroker::ReceiveMessageCallback receive_callback =
       base::Bind(&FakeMessageReceiver::OnReceivedRpc,
                  fake_receiver->GetWeakPtr());
@@ -182,7 +182,7 @@ TEST_F(RpcBrokerTest, RpcBrokerProcessMessageWithRegisteredHandle) {
   // Creates receiver RpcBroker and registers FakeMessageReceiver.
   std::unique_ptr<RpcBroker> rpc_broker(new RpcBroker(base::Bind(
       &FakeMessageReceiver::OnSendMessage, fake_receiver->GetWeakPtr())));
-  int handle = RpcBroker::GetUniqueHandle();
+  int handle = rpc_broker->GetUniqueHandle();
   const remoting::RpcBroker::ReceiveMessageCallback receive_callback =
       base::Bind(&FakeMessageReceiver::OnReceivedRpc,
                  fake_receiver->GetWeakPtr());
@@ -214,7 +214,7 @@ TEST_F(RpcBrokerTest, RpcBrokerProcessMessageWithUnregisteredHandle) {
   // Creates receiver RpcBroker and registers FakeMessageReceiver.
   std::unique_ptr<RpcBroker> rpc_broker(new RpcBroker(base::Bind(
       &FakeMessageReceiver::OnSendMessage, fake_receiver->GetWeakPtr())));
-  int handle = RpcBroker::GetUniqueHandle();
+  int handle = rpc_broker->GetUniqueHandle();
   const remoting::RpcBroker::ReceiveMessageCallback receive_callback =
       base::Bind(&FakeMessageReceiver::OnReceivedRpc,
                  fake_receiver->GetWeakPtr());

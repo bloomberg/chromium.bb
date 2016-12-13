@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "media/base/bind_to_current_loop.h"
 
@@ -14,26 +13,47 @@ namespace media {
 namespace remoting {
 
 namespace {
-// Generates unique handle value.
-base::StaticAtomicSequenceNumber g_handle_generator;
+
+std::ostream& operator<<(std::ostream& out, const pb::RpcMessage& message) {
+  out << "handle=" << message.handle() << ", proc=" << message.proc();
+  switch (message.rpc_oneof_case()) {
+    case pb::RpcMessage::kIntegerValue:
+      out << ", integer_value=" << message.integer_value();
+      break;
+    case pb::RpcMessage::kInteger64Value:
+      out << ", integer64_value=" << message.integer64_value();
+      break;
+    case pb::RpcMessage::kDoubleValue:
+      out << ", double_value=" << message.double_value();
+      break;
+    case pb::RpcMessage::kBooleanValue:
+      out << ", boolean_value=" << message.boolean_value();
+      break;
+    case pb::RpcMessage::kStringValue:
+      out << ", string_value=" << message.string_value();
+      break;
+    default:
+      out << ", rpc_oneof=" << message.rpc_oneof_case();
+      break;
+  }
+  return out;
 }
 
+}  // namespace
+
 RpcBroker::RpcBroker(const SendMessageCallback& send_message_cb)
-    : send_message_cb_(send_message_cb), weak_factory_(this) {}
+    : next_handle_(kReceiverHandle + 1),
+      send_message_cb_(send_message_cb),
+      weak_factory_(this) {}
 
 RpcBroker::~RpcBroker() {
   DCHECK(thread_checker_.CalledOnValidThread());
   receive_callbacks_.clear();
 }
 
-// static
 int RpcBroker::GetUniqueHandle() {
-  // Return the next handle. If GetNext() returns zero (kReceiverHandle), call
-  // it again so that 1+ are returned by this function.
-  int handle = g_handle_generator.GetNext();
-  if (handle != kReceiverHandle)
-    return handle;
-  return g_handle_generator.GetNext();
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return next_handle_++;
 }
 
 void RpcBroker::RegisterMessageReceiverCallback(
@@ -55,6 +75,7 @@ void RpcBroker::ProcessMessageFromRemote(
     std::unique_ptr<pb::RpcMessage> message) {
   DCHECK(message);
   DCHECK(thread_checker_.CalledOnValidThread());
+  VLOG(3) << __func__ << ": " << *message;
   const auto entry = receive_callbacks_.find(message->handle());
   if (entry == receive_callbacks_.end()) {
     LOG(ERROR) << "unregistered handle: " << message->handle();
@@ -66,6 +87,7 @@ void RpcBroker::ProcessMessageFromRemote(
 void RpcBroker::SendMessageToRemote(std::unique_ptr<pb::RpcMessage> message) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(message);
+  VLOG(3) << __func__ << ": " << *message;
   std::unique_ptr<std::vector<uint8_t>> serialized_message(
       new std::vector<uint8_t>(message->ByteSize()));
   CHECK(message->SerializeToArray(serialized_message->data(),

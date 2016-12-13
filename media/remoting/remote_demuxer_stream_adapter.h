@@ -42,6 +42,7 @@ class RemoteDemuxerStreamAdapter {
   // |demuxer_stream|: Demuxer component.
   // |rpc_broker|: Broker class to handle incoming and outgoing RPC message. It
   //               is used only on the main thread.
+  // |rpc_handle|: Unique value that references this RemoteDemuxerStreamAdapter.
   // |stream_sender_info|: Transfer of pipe binding on the media thread. It is
   //                       to access mojo interface for sending data stream.
   // |producer_handle|: handle to send data using mojo data pipe.
@@ -51,6 +52,7 @@ class RemoteDemuxerStreamAdapter {
       const std::string& name,
       ::media::DemuxerStream* demuxer_stream,
       const base::WeakPtr<RpcBroker>& rpc_broker,
+      int rpc_handle,
       mojom::RemotingDataStreamSenderPtrInfo stream_sender_info,
       mojo::ScopedDataPipeProducerHandle producer_handle);
   ~RemoteDemuxerStreamAdapter();
@@ -74,8 +76,8 @@ class RemoteDemuxerStreamAdapter {
 
   // RPC message tasks.
   void Initialize(int remote_callback_handle);
-  void EnableBitstreamConverter();
   void ReadUntil(std::unique_ptr<remoting::pb::RpcMessage> message);
+  void EnableBitstreamConverter();
   void RequestBuffer(int callback_handle);
   void SendReadAck(int callback_handle);
 
@@ -87,7 +89,7 @@ class RemoteDemuxerStreamAdapter {
   void ResetPendingFrame();
 
   // Callback function when data pipe error occurs.
-  void OnFatalError();
+  void OnFatalError(const char* reason);
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;

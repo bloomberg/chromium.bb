@@ -39,7 +39,8 @@ class MockRemoteDemuxerStreamAdapter {
     demuxer_stream_adapter_.reset(new RemoteDemuxerStreamAdapter(
         std::move(main_task_runner), std::move(media_task_runner), name,
         demuxer_stream, rpc_broker_->GetWeakPtr(),
-        std::move(stream_sender_info), std::move(producer_handle)));
+        rpc_broker_->GetUniqueHandle(), std::move(stream_sender_info),
+        std::move(producer_handle)));
   }
 
   int rpc_handle() const { return demuxer_stream_adapter_->rpc_handle(); }

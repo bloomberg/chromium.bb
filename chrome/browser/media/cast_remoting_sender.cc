@@ -188,7 +188,7 @@ void CastRemotingSender::ResendCheck() {
     if (latest_acked_frame_id_ == last_sent_frame_id_) {
       // Last frame acked, no point in doing anything.
     } else {
-      VLOG(1) << SENDER_SSRC
+      VLOG(2) << SENDER_SSRC
               << "ACK timeout; last acked frame: " << latest_acked_frame_id_;
       ResendForKickstart();
     }
@@ -213,7 +213,7 @@ void CastRemotingSender::ResendForKickstart() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(!last_send_time_.is_null());
-  VLOG(1) << SENDER_SSRC << "Resending last packet of frame "
+  VLOG(2) << SENDER_SSRC << "Resending last packet of frame "
           << last_sent_frame_id_ << " to kick-start.";
   last_send_time_ = clock_->NowTicks();
   transport_->ResendFrameForKickstart(ssrc_, last_sent_frame_id_);
@@ -252,7 +252,7 @@ void CastRemotingSender::OnReceivedCastMessage(
   if (cast_feedback.missing_frames_and_packets.empty() &&
       cast_feedback.received_later_frames.empty()) {
     if (latest_acked_frame_id_ == cast_feedback.ack_frame_id) {
-      VLOG(1) << SENDER_SSRC << "Received duplicate ACK for frame "
+      VLOG(2) << SENDER_SSRC << "Received duplicate ACK for frame "
               << latest_acked_frame_id_;
       TRACE_EVENT_INSTANT2(
           "cast.stream", "Duplicate ACK", TRACE_EVENT_SCOPE_THREAD,
