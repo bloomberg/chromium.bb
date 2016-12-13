@@ -183,3 +183,8 @@ Bug(none) imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-ob
 # https://crbug.com/673751 Policy delegate is called twice
 crbug.com/673751 http/tests/misc/policy-delegate-called-twice.html [ Failure ]
 crbug.com/673751 virtual/mojo-loading/http/tests/misc/policy-delegate-called-twice.html [ Failure ]
+
+# These tests are flaky.
+Bug(none) http/tests/misc/window-open-then-write.html [ Timeout ]
+Bug(none) imported/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-history-back.html [ Failure ]
+Bug(none) virtual/mojo-loading/http/tests/misc/window-open-then-write.html [ Timeout ]
