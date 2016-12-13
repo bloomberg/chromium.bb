@@ -2067,8 +2067,6 @@ split_static_library("ui") {
       "window_sizer/window_sizer_aura.cc",
     ]
     deps += [
-      # aura uses some of ash resources.
-      "//ash/resources",
       "//ui/aura",
       "//ui/keyboard",
       "//ui/keyboard:keyboard_with_content",

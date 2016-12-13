@@ -6,6 +6,7 @@ import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 import("//ui/base/ui_features.gni")
 
+assert(is_chromeos)
 assert(enable_hidpi)
 
 grit("resources") {
@@ -27,7 +28,10 @@ template("ash_test_resources") {
 
     sources = [
       "$root_gen_dir/ash/resources/ash_resources_${percent}_percent.pak",
+      "$root_gen_dir/ui/app_list/resources/app_list_resources_${percent}_percent.pak",
+      "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak",
       "$root_gen_dir/ui/resources/ui_resources_${percent}_percent.pak",
+      "$root_gen_dir/ui/views/resources/views_resources_${percent}_percent.pak",
     ]
 
     if (percent == "100") {
@@ -40,34 +44,20 @@ template("ash_test_resources") {
 
     deps = [
       "//ash/resources",
+      "//ui/app_list/resources",
+      "//ui/chromeos/resources",
       "//ui/resources",
+      "//ui/views/resources",
     ]
 
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
 
-    if (toolkit_views) {
-      deps += [
-        "//ui/app_list/resources",
-        "//ui/views/resources",
-      ]
-      sources += [
-        "$root_gen_dir/ui/app_list/resources/app_list_resources_${percent}_percent.pak",
-        "$root_gen_dir/ui/views/resources/views_resources_${percent}_percent.pak",
-      ]
-
-      if (percent == "100") {
-        # TODO(msw): This seems bad, but follows repack_ui_test_pak's example.
-        deps += [ "//third_party/WebKit/public:resources_grit" ]
-        sources +=
-            [ "$root_gen_dir/blink/public/resources/blink_resources.pak" ]
-      }
-    }
-
-    if (is_chromeos) {
-      sources += [ "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak" ]
-      deps += [ "//ui/chromeos/resources" ]
+    if (percent == "100") {
+      # TODO(msw): This seems bad, but follows repack_ui_test_pak's example.
+      deps += [ "//third_party/WebKit/public:resources_grit" ]
+      sources += [ "$root_gen_dir/blink/public/resources/blink_resources.pak" ]
     }
   }
 }
