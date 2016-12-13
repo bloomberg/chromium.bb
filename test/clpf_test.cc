@@ -213,6 +213,10 @@ TEST_P(ClpfHbdSpeedTest, TestSpeed) {
 
 using std::tr1::make_tuple;
 
+// VS compiling for 32 bit targets does not support vector types in
+// structs as arguments, which makes the v256 type of the intrinsics
+// hard to support, so optimizations for this target are disabled.
+#if defined(_WIN64) || !defined(_MSC_VER) || defined(__clang__)
 // Test all supported architectures and block sizes
 #if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(
@@ -294,7 +298,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&aom_clpf_block_hbd_neon, &aom_clpf_block_hbd_c, 4, 8),
         make_tuple(&aom_clpf_block_hbd_neon, &aom_clpf_block_hbd_c, 4, 4)));
 #endif
-#endif
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 // Test speed for all supported architectures
 #if HAVE_SSE2
@@ -349,6 +353,7 @@ INSTANTIATE_TEST_CASE_P(NEON, ClpfHbdSpeedTest,
                                                      &aom_clpf_block_hbd_c, 8,
                                                      8)));
 #endif
-#endif
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // defined(_WIN64) || !defined(_MSC_VER)
 
 }  // namespace
