@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.tabmodel.document.ActivityDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
 import org.chromium.content.app.ContentApplication;
@@ -391,8 +392,13 @@ public class ChromeApplication extends ContentApplication {
         return null;
     }
 
+    /** Returns the singleton instance of GooglePlayWebApkInstallDelegate. */
+    public GooglePlayWebApkInstallDelegate getGooglePlayWebApkInstallDelegate() {
+        return null;
+    }
+
     /**
-     * Returns the Singleton instance of the DocumentTabModelSelector.
+     * Returns the singleton instance of the DocumentTabModelSelector.
      * TODO(dfalcantara): Find a better place for this once we differentiate between activity and
      *                    application-level TabModelSelectors.
      * @return The DocumentTabModelSelector for the application.

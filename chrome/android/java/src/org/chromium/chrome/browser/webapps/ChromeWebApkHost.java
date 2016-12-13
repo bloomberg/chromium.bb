@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.StrictMode;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -20,12 +21,16 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 /**
  * Contains functionality needed for Chrome to host WebAPKs.
  */
 public class ChromeWebApkHost {
+    /** Flag to enable installing WebAPKs using Google Play. */
+    private static final String PLAY_INSTALL = "play_install";
+
     private static final String TAG = "ChromeWebApkHost";
 
     private static Boolean sEnabledForTesting;
@@ -44,15 +49,21 @@ public class ChromeWebApkHost {
         return isEnabledInPrefs();
     }
 
+    /** Return whether installing WebAPKs using Google Play is enabled. */
+    public static boolean canUseGooglePlayToInstallWebApk() {
+        if (!isEnabled()) return false;
+        return TextUtils.equals(VariationsAssociatedData.getVariationParamValue(
+                ChromeFeatureList.WEBAPKS, PLAY_INSTALL), "true");
+    }
+
     @CalledByNative
     private static boolean areWebApkEnabled() {
         return ChromeWebApkHost.isEnabled();
     }
 
     /**
-     * Check the cached value to figure out if the feature is enabled. We have
-     * to use the cached value because native library may not yet been loaded.
-     *
+     * Check the cached value to figure out if the feature is enabled. We have to use the cached
+     * value because native library may not yet been loaded.
      * @return Whether the feature is enabled.
      */
     private static boolean isEnabledInPrefs() {

@@ -52,12 +52,17 @@ const char* kDownloadedWebApkPackageName = "party.unicode";
 
 // WebApkInstaller subclass where
 // WebApkInstaller::StartInstallingDownloadedWebApk() and
-// WebApkInstaller::StartUpdateUsingDownloadedWebApk() are stubbed out.
+// WebApkInstaller::StartUpdateUsingDownloadedWebApk() and
+// WebApkInstaller::HasGooglePlayWebApkInstallDelegate() and
+// WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay() are stubbed out.
 class TestWebApkInstaller : public WebApkInstaller {
  public:
   TestWebApkInstaller(const ShortcutInfo& shortcut_info,
-                      const SkBitmap& shortcut_icon)
-      : WebApkInstaller(shortcut_info, shortcut_icon) {}
+                      const SkBitmap& shortcut_icon,
+                      bool has_google_play_webapk_install_delegate)
+      : WebApkInstaller(shortcut_info, shortcut_icon),
+        has_google_play_webapk_install_delegate_(
+            has_google_play_webapk_install_delegate) {}
 
   bool StartInstallingDownloadedWebApk(
       JNIEnv* env,
@@ -73,6 +78,17 @@ class TestWebApkInstaller : public WebApkInstaller {
     return true;
   }
 
+  bool HasGooglePlayWebApkInstallDelegate() override {
+    return has_google_play_webapk_install_delegate_;
+  }
+
+  bool InstallOrUpdateWebApkFromGooglePlay(const std::string& package_name,
+                                           int version,
+                                           const std::string& token) override {
+    PostTaskToRunSuccessCallback();
+    return true;
+  }
+
   void PostTaskToRunSuccessCallback() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -80,6 +96,9 @@ class TestWebApkInstaller : public WebApkInstaller {
   }
 
  private:
+  // Whether the Google Play install delegate is available.
+  bool has_google_play_webapk_install_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(TestWebApkInstaller);
 };
 
@@ -89,8 +108,14 @@ class WebApkInstallerRunner {
   explicit WebApkInstallerRunner(const GURL& best_icon_url)
       : url_request_context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
-        best_icon_url_(best_icon_url) {}
+        best_icon_url_(best_icon_url),
+        has_google_play_webapk_install_delegate_(false) {}
+
   ~WebApkInstallerRunner() {}
+
+  void SetHasGooglePlayWebApkInstallDelegate(bool has_delegate) {
+    has_google_play_webapk_install_delegate_ = has_delegate;
+  }
 
   void RunInstallWebApk() {
     WebApkInstaller* installer = CreateWebApkInstaller();
@@ -123,7 +148,8 @@ class WebApkInstallerRunner {
     info.best_icon_url = best_icon_url_;
 
     // WebApkInstaller owns itself.
-    WebApkInstaller* installer = new TestWebApkInstaller(info, SkBitmap());
+    WebApkInstaller* installer = new TestWebApkInstaller(
+        info, SkBitmap(), has_google_play_webapk_install_delegate_);
     installer->SetTimeoutMs(100);
     return installer;
   }
@@ -153,6 +179,9 @@ class WebApkInstallerRunner {
 
   // Whether the installation process succeeded.
   bool success_;
+
+  // Whether the Google Play install delegate is available.
+  bool has_google_play_webapk_install_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApkInstallerRunner);
 };
@@ -329,5 +358,13 @@ TEST_F(WebApkInstallerTest, UnparsableCreateWebApkResponse) {
 TEST_F(WebApkInstallerTest, UpdateSuccess) {
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
   runner->RunUpdateWebApk();
+  EXPECT_TRUE(runner->success());
+}
+
+// Test installation succeeds using Google Play.
+TEST_F(WebApkInstallerTest, InstallFromGooglePlaySuccess) {
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->SetHasGooglePlayWebApkInstallDelegate(true);
+  runner->RunInstallWebApk();
   EXPECT_TRUE(runner->success());
 }

@@ -13,9 +13,11 @@ import android.os.Looper;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.banners.InstallerDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -45,8 +47,13 @@ public class WebApkInstaller {
     /** Weak pointer to the native WebApkInstaller. */
     private long mNativePointer;
 
+    /** Talks to Google Play to install WebAPKs. */
+    private GooglePlayWebApkInstallDelegate mGooglePlayWebApkInstallDelegate;
+
     private WebApkInstaller(long nativePtr) {
         mNativePointer = nativePtr;
+        ChromeApplication application = (ChromeApplication) ContextUtils.getApplicationContext();
+        mGooglePlayWebApkInstallDelegate = application.getGooglePlayWebApkInstallDelegate();
     }
 
     @CalledByNative
@@ -55,8 +62,16 @@ public class WebApkInstaller {
     }
 
     @CalledByNative
+    private boolean hasGooglePlayWebApkInstallDelegate() {
+        return mGooglePlayWebApkInstallDelegate != null;
+    }
+
+    @CalledByNative
     private void destroy() {
-        ApplicationStatus.unregisterApplicationStateListener(mListener);
+        if (mListener != null) {
+            ApplicationStatus.unregisterApplicationStateListener(mListener);
+        }
+        mListener = null;
         mNativePointer = 0;
     }
 
@@ -86,7 +101,67 @@ public class WebApkInstaller {
     }
 
     /**
-     * Send intent to Android to show prompt and install downloaded WebAPK.
+     * Installs a WebAPK from Google Play and monitors the installation.
+     * @param packageName The package name of the WebAPK to install.
+     * @param version The version of WebAPK to install.
+     * @param title The title of the WebAPK to display during installation.
+     * @param token The token from WebAPK Server.
+     * @param url The start URL of the WebAPK to install.
+     * @return True if the install was started. A "true" return value does not guarantee that the
+     *         install succeeds.
+     */
+    @CalledByNative
+    private boolean installWebApkFromGooglePlayAsync(String packageName, int version, String title,
+            String token, String url) {
+        if (mGooglePlayWebApkInstallDelegate == null) return false;
+
+        Callback<Boolean> callback = new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean success) {
+                if (mNativePointer != 0) {
+                    nativeOnInstallFinished(mNativePointer, success);
+                }
+            }
+        };
+        return mGooglePlayWebApkInstallDelegate.installAsync(packageName, version, title, token,
+                url, callback);
+    }
+
+    /**
+     * Updates a WebAPK.
+     * @param filePath File to update.
+     * @return True if the update was started. A "true" return value does not guarantee that the
+     *         update succeeds.
+     */
+    @CalledByNative
+    private boolean updateAsyncFromNative(String filePath) {
+        mIsInstall = false;
+        return installDownloadedWebApk(filePath);
+    }
+
+    /**
+     * Updates a WebAPK using Google Play.
+     * @param packageName The package name of the WebAPK to install.
+     * @param version The version of WebAPK to install.
+     * @param title The title of the WebAPK to display during installation.
+     * @param token The token from WebAPK Server.
+     * @param url The start URL of the WebAPK to install.
+     * @return True if the update was started. A "true" return value does not guarantee that the
+     *         update succeeds.
+     */
+    @CalledByNative
+    private boolean updateAsyncFromGooglePlay(String packageName, int version, String title,
+            String token, String url) {
+        if (mGooglePlayWebApkInstallDelegate == null) return false;
+
+        // TODO(hanxi):crbug.com/634499. Adds a callback to show an infobar after the update
+        // succeeded.
+        return mGooglePlayWebApkInstallDelegate.installAsync(packageName, version, title, token,
+                url, null);
+    }
+
+    /**
+     * Sends intent to Android to show prompt and install downloaded WebAPK.
      * @param filePath File to install.
      */
     private boolean installDownloadedWebApk(String filePath) {
@@ -130,18 +205,6 @@ public class WebApkInstaller {
             ShortcutHelper.addWebApkShortcut(ContextUtils.getApplicationContext(),
                     mWebApkPackageName);
         }
-    }
-
-    /**
-     * Updates a WebAPK.
-     * @param filePath File to update.
-     * @return True if the update was started. A "true" return value does not guarantee that the
-     *         update succeeds.
-     */
-    @CalledByNative
-    private boolean updateAsyncFromNative(String filePath) {
-        mIsInstall = false;
-        return installDownloadedWebApk(filePath);
     }
 
     private ApplicationStatus.ApplicationStateListener createApplicationStateListener() {

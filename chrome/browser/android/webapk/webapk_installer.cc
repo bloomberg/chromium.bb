@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -315,6 +316,39 @@ bool WebApkInstaller::StartUpdateUsingDownloadedWebApk(
       env, java_ref_, java_file_path);
 }
 
+bool WebApkInstaller::HasGooglePlayWebApkInstallDelegate() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_WebApkInstaller_hasGooglePlayWebApkInstallDelegate(
+      env, java_ref_);
+}
+
+bool WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay(
+    const std::string& package_name,
+    int version,
+    const std::string& token) {
+  webapk_package_ = package_name;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> java_webapk_package =
+      base::android::ConvertUTF8ToJavaString(env, webapk_package_);
+  base::android::ScopedJavaLocalRef<jstring> java_title =
+      base::android::ConvertUTF16ToJavaString(env, shortcut_info_.user_title);
+  base::android::ScopedJavaLocalRef<jstring> java_token =
+      base::android::ConvertUTF8ToJavaString(env, token);
+  base::android::ScopedJavaLocalRef<jstring> java_url =
+      base::android::ConvertUTF8ToJavaString(env, shortcut_info_.url.spec());
+
+  if (task_type_ == WebApkInstaller::INSTALL) {
+    return Java_WebApkInstaller_installWebApkFromGooglePlayAsync(
+        env, java_ref_, java_webapk_package, version, java_title, java_token,
+        java_url);
+  } else {
+    return Java_WebApkInstaller_updateAsyncFromGooglePlay(
+        env, java_ref_, java_webapk_package, version, java_title, java_token,
+        java_url);
+  }
+}
+
 void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
   timer_.Stop();
 
@@ -339,6 +373,17 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
     OnFailure();
     return;
   }
+
+  if (HasGooglePlayWebApkInstallDelegate()) {
+    int version = 1;
+    base::StringToInt(response->version(), &version);
+    if (!InstallOrUpdateWebApkFromGooglePlay(
+        response->package_name(), version, response->token())) {
+      OnFailure();
+    }
+    return;
+  }
+
   OnGotWebApkDownloadUrl(signed_download_url, response->package_name());
 }
 
