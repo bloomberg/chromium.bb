@@ -12,8 +12,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/key_systems.h"
-#include "media/base/media_keys.h"
 #include "media/blink/cdm_result_promise.h"
 #include "media/blink/cdm_session_adapter.h"
 #include "media/blink/webcontentdecryptionmodulesession_impl.h"
@@ -101,7 +101,8 @@ void WebContentDecryptionModuleImpl::setServerCertificate(
           new CdmResultPromise<>(result, std::string())));
 }
 
-scoped_refptr<MediaKeys> WebContentDecryptionModuleImpl::GetCdm() {
+scoped_refptr<ContentDecryptionModule>
+WebContentDecryptionModuleImpl::GetCdm() {
   return adapter_->GetCdm();
 }
 

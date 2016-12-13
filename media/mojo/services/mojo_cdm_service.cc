@@ -34,14 +34,15 @@ class CdmManager {
   ~CdmManager() {}
 
   // Returns the CDM associated with |cdm_id|. Can be called on any thread.
-  scoped_refptr<MediaKeys> GetCdm(int cdm_id) {
+  scoped_refptr<ContentDecryptionModule> GetCdm(int cdm_id) {
     base::AutoLock lock(lock_);
     auto iter = cdm_map_.find(cdm_id);
     return iter == cdm_map_.end() ? nullptr : iter->second;
   }
 
   // Registers the |cdm| for |cdm_id|.
-  void RegisterCdm(int cdm_id, const scoped_refptr<MediaKeys>& cdm) {
+  void RegisterCdm(int cdm_id,
+                   const scoped_refptr<ContentDecryptionModule>& cdm) {
     base::AutoLock lock(lock_);
     DCHECK(!cdm_map_.count(cdm_id));
     cdm_map_[cdm_id] = cdm;
@@ -57,7 +58,7 @@ class CdmManager {
  private:
   // Lock to protect |cdm_map_|.
   base::Lock lock_;
-  std::map<int, scoped_refptr<MediaKeys>> cdm_map_;
+  std::map<int, scoped_refptr<ContentDecryptionModule>> cdm_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmManager);
 };
@@ -72,7 +73,8 @@ using NewSessionMojoCdmPromise = MojoCdmPromise<std::string>;
 int MojoCdmService::next_cdm_id_ = CdmContext::kInvalidCdmId + 1;
 
 // static
-scoped_refptr<MediaKeys> MojoCdmService::LegacyGetCdm(int cdm_id) {
+scoped_refptr<ContentDecryptionModule> MojoCdmService::LegacyGetCdm(
+    int cdm_id) {
   DVLOG(1) << __func__ << ": " << cdm_id;
   return g_cdm_manager.Get().GetCdm(cdm_id);
 }
@@ -168,13 +170,14 @@ void MojoCdmService::RemoveSession(const std::string& session_id,
                       base::MakeUnique<SimpleMojoCdmPromise>(callback));
 }
 
-scoped_refptr<MediaKeys> MojoCdmService::GetCdm() {
+scoped_refptr<ContentDecryptionModule> MojoCdmService::GetCdm() {
   return cdm_;
 }
 
-void MojoCdmService::OnCdmCreated(const InitializeCallback& callback,
-                                  const scoped_refptr<MediaKeys>& cdm,
-                                  const std::string& error_message) {
+void MojoCdmService::OnCdmCreated(
+    const InitializeCallback& callback,
+    const scoped_refptr<::media::ContentDecryptionModule>& cdm,
+    const std::string& error_message) {
   mojom::CdmPromiseResultPtr cdm_promise_result(mojom::CdmPromiseResult::New());
 
   // TODO(xhwang): This should not happen when KeySystemInfo is properly
@@ -212,9 +215,10 @@ void MojoCdmService::OnCdmCreated(const InitializeCallback& callback,
                std::move(decryptor_service));
 }
 
-void MojoCdmService::OnSessionMessage(const std::string& session_id,
-                                      MediaKeys::MessageType message_type,
-                                      const std::vector<uint8_t>& message) {
+void MojoCdmService::OnSessionMessage(
+    const std::string& session_id,
+    ::media::ContentDecryptionModule::MessageType message_type,
+    const std::vector<uint8_t>& message) {
   DVLOG(2) << __func__ << "(" << message_type << ")";
   client_->OnSessionMessage(session_id, message_type, message);
 }

@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "media/base/media_keys.h"
-
 namespace media {
 
 CdmPromiseAdapter::CdmPromiseAdapter() : next_promise_id_(1) {

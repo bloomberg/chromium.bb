@@ -18,7 +18,7 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/cdm_session_tracker.h"
-#include "media/base/media_keys.h"
+#include "media/base/content_decryption_module.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -30,14 +30,14 @@ namespace media {
 
 class MojoDecryptor;
 
-// A MediaKeys that proxies to a mojom::ContentDecryptionModule. That
-// mojom::ContentDecryptionModule proxies back to the MojoCdm via the
+// A ContentDecryptionModule that proxies to a mojom::ContentDecryptionModule.
+// That mojom::ContentDecryptionModule proxies back to the MojoCdm via the
 // mojom::ContentDecryptionModuleClient interface.
-class MojoCdm : public MediaKeys,
+class MojoCdm : public ContentDecryptionModule,
                 public CdmContext,
                 public mojom::ContentDecryptionModuleClient {
  public:
-  using MessageType = MediaKeys::MessageType;
+  using MessageType = ContentDecryptionModule::MessageType;
 
   static void Create(
       const std::string& key_system,
@@ -50,7 +50,7 @@ class MojoCdm : public MediaKeys,
       const SessionExpirationUpdateCB& session_expiration_update_cb,
       const CdmCreatedCB& cdm_created_cb);
 
-  // MediaKeys implementation.
+  // ContentDecryptionModule implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
                             std::unique_ptr<SimpleCdmPromise> promise) final;
   void CreateSessionAndGenerateRequest(

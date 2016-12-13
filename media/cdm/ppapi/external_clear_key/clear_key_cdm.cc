@@ -145,18 +145,18 @@ static cdm::Error ConvertException(
   return cdm::kUnknownError;
 }
 
-static media::MediaKeys::SessionType ConvertSessionType(
+static media::ContentDecryptionModule::SessionType ConvertSessionType(
     cdm::SessionType session_type) {
   switch (session_type) {
     case cdm::kTemporary:
-      return media::MediaKeys::TEMPORARY_SESSION;
+      return media::ContentDecryptionModule::TEMPORARY_SESSION;
     case cdm::kPersistentLicense:
-      return media::MediaKeys::PERSISTENT_LICENSE_SESSION;
+      return media::ContentDecryptionModule::PERSISTENT_LICENSE_SESSION;
     case cdm::kPersistentKeyRelease:
-      return media::MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION;
+      return media::ContentDecryptionModule::PERSISTENT_RELEASE_MESSAGE_SESSION;
   }
   NOTREACHED();
-  return media::MediaKeys::TEMPORARY_SESSION;
+  return media::ContentDecryptionModule::TEMPORARY_SESSION;
 }
 
 static media::EmeInitDataType ConvertInitDataType(
@@ -351,9 +351,9 @@ void ClearKeyCdm::LoadSession(uint32_t promise_id,
   std::vector<uint8_t> key_id(
       kLoadableSessionKeyId,
       kLoadableSessionKeyId + arraysize(kLoadableSessionKeyId) - 1);
-  decryptor_->CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                              EmeInitDataType::WEBM, key_id,
-                                              std::move(promise));
+  decryptor_->CreateSessionAndGenerateRequest(
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::WEBM, key_id,
+      std::move(promise));
 }
 
 void ClearKeyCdm::UpdateSession(uint32_t promise_id,
@@ -757,9 +757,10 @@ void ClearKeyCdm::LoadLoadableSession() {
       std::vector<uint8_t>(jwk_set.begin(), jwk_set.end()), std::move(promise));
 }
 
-void ClearKeyCdm::OnSessionMessage(const std::string& session_id,
-                                   MediaKeys::MessageType message_type,
-                                   const std::vector<uint8_t>& message) {
+void ClearKeyCdm::OnSessionMessage(
+    const std::string& session_id,
+    ContentDecryptionModule::MessageType message_type,
+    const std::vector<uint8_t>& message) {
   DVLOG(1) << "OnSessionMessage: " << message.size();
 
   // Ignore the message when we are waiting to update the loadable session.

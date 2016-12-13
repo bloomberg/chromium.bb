@@ -10,9 +10,9 @@
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_context.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
-#include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
@@ -23,7 +23,7 @@
 namespace media {
 
 MojoDecryptorService::MojoDecryptorService(
-    const scoped_refptr<MediaKeys>& cdm,
+    const scoped_refptr<ContentDecryptionModule>& cdm,
     mojo::InterfaceRequest<mojom::Decryptor> request,
     const base::Closure& error_handler)
     : binding_(this, std::move(request)), cdm_(cdm), weak_factory_(this) {

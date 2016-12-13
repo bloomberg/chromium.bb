@@ -40,7 +40,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   ClearKeyCdm(Host* host, const std::string& key_system, const GURL& origin);
   ~ClearKeyCdm() override;
 
-  // ContentDecryptionModule implementation.
+  // ClearKeyCdmInterface implementation.
   void Initialize(bool allow_distinctive_identifier,
                   bool allow_persistent_state) override;
   void CreateSessionAndGenerateRequest(uint32_t promise_id,
@@ -94,7 +94,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
 
   // ContentDecryptionModule callbacks.
   void OnSessionMessage(const std::string& session_id,
-                        MediaKeys::MessageType message_type,
+                        ContentDecryptionModule::MessageType message_type,
                         const std::vector<uint8_t>& message);
   void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,

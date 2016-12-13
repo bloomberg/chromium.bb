@@ -108,7 +108,7 @@ void CastCdmProxy::SetServerCertificate(
 }
 
 void CastCdmProxy::CreateSessionAndGenerateRequest(
-    ::media::MediaKeys::SessionType session_type,
+    ::media::ContentDecryptionModule::SessionType session_type,
     ::media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<::media::NewSessionCdmPromise> promise) {
@@ -119,7 +119,7 @@ void CastCdmProxy::CreateSessionAndGenerateRequest(
 }
 
 void CastCdmProxy::LoadSession(
-    ::media::MediaKeys::SessionType session_type,
+    ::media::ContentDecryptionModule::SessionType session_type,
     const std::string& session_id,
     std::unique_ptr<::media::NewSessionCdmPromise> promise) {
   DCHECK(thread_checker_.CalledOnValidThread());

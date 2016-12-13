@@ -21,9 +21,9 @@
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media.h"
-#include "media/base/media_keys.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_tracks.h"
 #include "media/base/test_data_util.h"
@@ -195,10 +195,11 @@ class FakeEncryptedMedia {
    public:
     virtual ~AppBase() {}
 
-    virtual void OnSessionMessage(const std::string& session_id,
-                                  MediaKeys::MessageType message_type,
-                                  const std::vector<uint8_t>& message,
-                                  AesDecryptor* decryptor) = 0;
+    virtual void OnSessionMessage(
+        const std::string& session_id,
+        ContentDecryptionModule::MessageType message_type,
+        const std::vector<uint8_t>& message,
+        AesDecryptor* decryptor) = 0;
 
     virtual void OnSessionClosed(const std::string& session_id) = 0;
 
@@ -227,7 +228,7 @@ class FakeEncryptedMedia {
 
   // Callbacks for firing session events. Delegate to |app_|.
   void OnSessionMessage(const std::string& session_id,
-                        MediaKeys::MessageType message_type,
+                        ContentDecryptionModule::MessageType message_type,
                         const std::vector<uint8_t>& message) {
     app_->OnSessionMessage(session_id, message_type, message, decryptor_.get());
   }
@@ -310,13 +311,14 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   }
 
   void OnSessionMessage(const std::string& session_id,
-                        MediaKeys::MessageType message_type,
+                        ContentDecryptionModule::MessageType message_type,
                         const std::vector<uint8_t>& message,
                         AesDecryptor* decryptor) override {
     EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());
     EXPECT_EQ(current_session_id_, session_id);
-    EXPECT_EQ(MediaKeys::MessageType::LICENSE_REQUEST, message_type);
+    EXPECT_EQ(ContentDecryptionModule::MessageType::LICENSE_REQUEST,
+              message_type);
 
     // Extract the key ID from |message|. For Clear Key this is a JSON object
     // containing a set of "kids". There should only be 1 key ID in |message|.
@@ -362,7 +364,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 
     if (current_session_id_.empty()) {
       decryptor->CreateSessionAndGenerateRequest(
-          MediaKeys::TEMPORARY_SESSION, init_data_type, init_data,
+          ContentDecryptionModule::TEMPORARY_SESSION, init_data_type, init_data,
           CreateSessionPromise(RESOLVED));
       EXPECT_FALSE(current_session_id_.empty());
     }
@@ -396,9 +398,9 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
     prev_init_data_ = init_data;
     ++num_distinct_need_key_calls_;
 
-    decryptor->CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                               init_data_type, init_data,
-                                               CreateSessionPromise(RESOLVED));
+    decryptor->CreateSessionAndGenerateRequest(
+        ContentDecryptionModule::TEMPORARY_SESSION, init_data_type, init_data,
+        CreateSessionPromise(RESOLVED));
   }
 
   bool LookupKey(const std::vector<uint8_t>& key_id,
@@ -414,7 +416,7 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
 class NoResponseApp : public FakeEncryptedMedia::AppBase {
  public:
   void OnSessionMessage(const std::string& session_id,
-                        MediaKeys::MessageType message_type,
+                        ContentDecryptionModule::MessageType message_type,
                         const std::vector<uint8_t>& message,
                         AesDecryptor* decryptor) override {
     EXPECT_FALSE(session_id.empty());

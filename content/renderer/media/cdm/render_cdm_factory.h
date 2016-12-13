@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/cdm_factory.h"
-#include "media/base/media_keys.h"
 #include "ppapi/features/features.h"
 
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)

@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/eme_constants.h"
-#include "media/base/media_keys.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_cdm_promise.h"
@@ -27,11 +27,11 @@ namespace media {
 class CdmFactory;
 
 // A mojom::ContentDecryptionModule implementation backed by a
-// media::MediaKeys.
+// media::ContentDecryptionModule.
 class MEDIA_MOJO_EXPORT MojoCdmService
     : NON_EXPORTED_BASE(public mojom::ContentDecryptionModule) {
  public:
-  using SessionType = MediaKeys::SessionType;
+  using SessionType = ::media::ContentDecryptionModule::SessionType;
 
   // Get the CDM associated with |cdm_id|, which is unique per process.
   // Can be called on any thread. The returned CDM is not guaranteed to be
@@ -41,7 +41,8 @@ class MEDIA_MOJO_EXPORT MojoCdmService
   // render frame the caller is associated with. In the future, we should move
   // all out-of-process media players into the MediaService so that we can use
   // MojoCdmServiceContext (per render frame) to get the CDM.
-  static scoped_refptr<MediaKeys> LegacyGetCdm(int cdm_id);
+  static scoped_refptr<::media::ContentDecryptionModule> LegacyGetCdm(
+      int cdm_id);
 
   // Constructs a MojoCdmService and strongly binds it to the |request|.
   MojoCdmService(base::WeakPtr<MojoCdmServiceContext> context,
@@ -74,18 +75,19 @@ class MEDIA_MOJO_EXPORT MojoCdmService
                      const RemoveSessionCallback& callback) final;
 
   // Get CDM to be used by the media pipeline.
-  scoped_refptr<MediaKeys> GetCdm();
+  scoped_refptr<::media::ContentDecryptionModule> GetCdm();
 
  private:
   // Callback for CdmFactory::Create().
   void OnCdmCreated(const InitializeCallback& callback,
-                    const scoped_refptr<MediaKeys>& cdm,
+                    const scoped_refptr<::media::ContentDecryptionModule>& cdm,
                     const std::string& error_message);
 
   // Callbacks for firing session events.
-  void OnSessionMessage(const std::string& session_id,
-                        MediaKeys::MessageType message_type,
-                        const std::vector<uint8_t>& message);
+  void OnSessionMessage(
+      const std::string& session_id,
+      ::media::ContentDecryptionModule::MessageType message_type,
+      const std::vector<uint8_t>& message);
   void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info);
@@ -104,7 +106,7 @@ class MEDIA_MOJO_EXPORT MojoCdmService
   base::WeakPtr<MojoCdmServiceContext> context_;
 
   CdmFactory* cdm_factory_;
-  scoped_refptr<MediaKeys> cdm_;
+  scoped_refptr<::media::ContentDecryptionModule> cdm_;
 
   std::unique_ptr<MojoDecryptorService> decryptor_;
 

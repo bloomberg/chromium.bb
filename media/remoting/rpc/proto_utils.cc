@@ -385,7 +385,7 @@ void ConvertCdmPromiseToProto(const CdmPromiseResult& result,
   promise_message->set_success(result.success());
   if (!result.success()) {
     promise_message->set_exception(
-        ToProtoMediaKeysException(result.exception()).value());
+        ToProtoCdmException(result.exception()).value());
     promise_message->set_system_code(result.system_code());
     promise_message->set_error_message(result.error_message());
   }

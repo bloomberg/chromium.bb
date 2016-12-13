@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
-#include "media/base/media_keys.h"
 #include "media/remoting/remote_demuxer_stream_adapter.h"
 #include "media/remoting/remoting_renderer_controller.h"
 #include "media/remoting/rpc/proto_enum_utils.h"

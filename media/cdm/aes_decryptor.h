@@ -17,9 +17,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "media/base/cdm_context.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_export.h"
-#include "media/base/media_keys.h"
 
 class GURL;
 
@@ -31,7 +31,7 @@ namespace media {
 
 // Decrypts an AES encrypted buffer into an unencrypted buffer. The AES
 // encryption must be CTR with a key size of 128bits.
-class MEDIA_EXPORT AesDecryptor : public MediaKeys,
+class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
                                   public CdmContext,
                                   public Decryptor {
  public:
@@ -40,7 +40,7 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
                const SessionClosedCB& session_closed_cb,
                const SessionKeysChangeCB& session_keys_change_cb);
 
-  // MediaKeys implementation.
+  // ContentDecryptionModule implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
                             std::unique_ptr<SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(

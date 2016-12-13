@@ -16,8 +16,8 @@
 #include "content/renderer/media/cdm/pepper_cdm_wrapper.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/decryptor.h"
-#include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
 
 class GURL;
@@ -29,10 +29,10 @@ class SingleThreadTaskRunner;
 namespace content {
 class ContentDecryptorDelegate;
 
-// PpapiDecryptor implements media::MediaKeys and media::Decryptor and forwards
-// all calls to the PluginInstance.
+// PpapiDecryptor implements media::ContentDecryptionModule and media::Decryptor
+// and forwards all calls to the PluginInstance.
 // This class should always be created & destroyed on the main renderer thread.
-class PpapiDecryptor : public media::MediaKeys,
+class PpapiDecryptor : public media::ContentDecryptionModule,
                        public media::CdmContext,
                        public media::Decryptor {
  public:
@@ -48,7 +48,7 @@ class PpapiDecryptor : public media::MediaKeys,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb,
       const media::CdmCreatedCB& cdm_created_cb);
 
-  // media::MediaKeys implementation.
+  // media::ContentDecryptionModule implementation.
   void SetServerCertificate(
       const std::vector<uint8_t>& certificate,
       std::unique_ptr<media::SimpleCdmPromise> promise) override;
@@ -113,7 +113,7 @@ class PpapiDecryptor : public media::MediaKeys,
 
   // Callbacks for |plugin_cdm_delegate_| to fire session events.
   void OnSessionMessage(const std::string& session_id,
-                        MediaKeys::MessageType message_type,
+                        ContentDecryptionModule::MessageType message_type,
                         const std::vector<uint8_t>& message);
   void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,

@@ -260,7 +260,7 @@ message CdmKeyInformation {
 }
 
 // Should align with ::media::CdmPromise::Exception
-enum MediaKeysException {
+enum CdmException {
   NOT_SUPPORTED_ERROR = 0;
   INVALID_STATE_ERROR = 1;
   INVALID_ACCESS_ERROR = 2;
@@ -270,15 +270,15 @@ enum MediaKeysException {
   OUTPUT_ERROR = 6;
 }
 
-// Should align with ::media::MediaKeys::MessageType
-enum MediaKeysMessageType {
+// Should align with ::media::ContentDecryptionModule::MessageType
+enum CdmMessageType {
   LICENSE_REQUEST = 0;
   LICENSE_RENEWAL = 1;
   LICENSE_RELEASE = 2;
 }
 
-// Should align with ::media::MediaKeys::SessionType
-enum MediaKeysSessionType {
+// Should align with ::media::ContentDecryptionModule::SessionType
+enum CdmSessionType {
   TEMPORARY_SESSION = 0;
   PERSISTENT_LICENSE_SESSION = 1;
   PERSISTENT_RELEASE_MESSAGE_SESSION = 2;
@@ -364,14 +364,14 @@ message CdmCreateSessionAndGenerateRequest {
     KEYIDS = 3;
   };
 
-  optional MediaKeysSessionType session_type = 1;
+  optional CdmSessionType session_type = 1;
   optional EmeInitDataType init_data_type = 2;
   optional int32 callback_handle = 3;
   optional bytes init_data = 4;
 }
 
 message CdmLoadSession {
-  optional MediaKeysSessionType session_type = 1;
+  optional CdmSessionType session_type = 1;
   optional string session_id = 2;
   optional int32 callback_handle = 3;
 }
@@ -399,14 +399,14 @@ message CdmPromise {
 
   optional string session_id = 3;
   optional bool success = 4;
-  optional MediaKeysException exception = 5;
+  optional CdmException exception = 5;
   optional uint32 system_code = 6;
   optional string error_message = 7;
 }
 
 message CdmClientOnSessionMessage {
   optional string session_id = 1;
-  optional MediaKeysMessageType message_type = 2;
+  optional CdmMessageType message_type = 2;
   optional bytes message = 3;
 }
 

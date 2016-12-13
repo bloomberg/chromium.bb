@@ -9,6 +9,7 @@
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_config.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/key_system_names.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_switches.h"
@@ -44,7 +45,7 @@ void AndroidCdmFactory::Create(
   // This is used for testing.
   if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting) &&
       IsExternalClearKey(key_system)) {
-    scoped_refptr<MediaKeys> cdm(
+    scoped_refptr<ContentDecryptionModule> cdm(
         new AesDecryptor(security_origin, session_message_cb, session_closed_cb,
                          session_keys_change_cb));
     bound_cdm_created_cb.Run(cdm, "");

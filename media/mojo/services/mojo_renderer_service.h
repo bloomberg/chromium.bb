@@ -27,7 +27,7 @@ namespace media {
 
 class AudioRendererSink;
 class DemuxerStreamProviderShim;
-class MediaKeys;
+class ContentDecryptionModule;
 class MojoCdmServiceContext;
 class Renderer;
 class VideoRendererSink;
@@ -119,7 +119,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   void OnFlushCompleted(const FlushCallback& callback);
 
   // Callback executed once SetCdm() completes.
-  void OnCdmAttached(scoped_refptr<MediaKeys> cdm,
+  void OnCdmAttached(scoped_refptr<ContentDecryptionModule> cdm,
                      const base::Callback<void(bool)>& callback,
                      bool success);
 
@@ -137,7 +137,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
 
   // Hold a reference to the CDM set on the |renderer_| so that the CDM won't be
   // destructed while the |renderer_| is still using it.
-  scoped_refptr<MediaKeys> cdm_;
+  scoped_refptr<ContentDecryptionModule> cdm_;
 
   // Audio and Video sinks.
   // May be null if underlying |renderer_| does not use them.

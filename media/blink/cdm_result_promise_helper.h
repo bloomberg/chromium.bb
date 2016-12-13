@@ -13,9 +13,10 @@
 
 namespace media {
 
-// A superset of media::MediaKeys::Exception for UMA reporting. These values
-// should never be changed as it will affect existing reporting, and must match
-// the values for CdmPromiseResult in tools/metrics/histograms/histograms.xml.
+// A superset of media::ContentDecryptionModule::Exception for UMA reporting.
+// These values should never be changed as it will affect existing reporting,
+// and must match the values for CdmPromiseResult in
+// tools/metrics/histograms/histograms.xml.
 enum CdmResultForUMA {
   SUCCESS = 0,
   NOT_SUPPORTED_ERROR = 1,

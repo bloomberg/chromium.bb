@@ -75,7 +75,8 @@ GURL MediaPlayerAndroid::GetFirstPartyForCookies() {
   return GURL();
 }
 
-void MediaPlayerAndroid::SetCdm(const scoped_refptr<MediaKeys>& /* cdm */) {
+void MediaPlayerAndroid::SetCdm(
+    const scoped_refptr<ContentDecryptionModule>& /* cdm */) {
   // Players that support EME should override this.
   LOG(ERROR) << "EME not supported on base MediaPlayerAndroid class.";
   return;

@@ -47,9 +47,10 @@ struct CdmKeyInformation {
 };
 
 // An interface that represents a CDM in the Encrypted Media Extensions (EME)
-// spec (https://w3c.github.io/encrypted-media/). See media/base/media_keys.h.
+// spec (https://w3c.github.io/encrypted-media/).
+// See media/base/content_decryption_module.h
 interface ContentDecryptionModule {
-  // See media::MediaKeys::SessionType
+  // See media::ContentDecryptionModule::SessionType
   [Native]
   enum SessionType;
 
@@ -98,9 +99,9 @@ interface ContentDecryptionModule {
   RemoveSession(string session_id) => (CdmPromiseResult result);
 };
 
-// Session callbacks. See media/base/media_keys.h for details.
+// Session callbacks. See media/base/content_decryption_module.h for details.
 interface ContentDecryptionModuleClient {
-  // See media::MediaKeys::MessageType
+  // See media::ContentDecryptionModule::MessageType
   [Native]
   enum MessageType;
 

@@ -13,8 +13,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/key_systems.h"
-#include "media/base/media_keys.h"
 #include "media/cdm/aes_decryptor.h"
 #include "ppapi/features/features.h"
 #include "url/gurl.h"
@@ -57,7 +57,7 @@ void RenderCdmFactory::Create(
   if (media::CanUseAesDecryptor(key_system)) {
     DCHECK(!cdm_config.allow_distinctive_identifier);
     DCHECK(!cdm_config.allow_persistent_state);
-    scoped_refptr<media::MediaKeys> cdm(
+    scoped_refptr<media::ContentDecryptionModule> cdm(
         new media::AesDecryptor(security_origin, session_message_cb,
                                 session_closed_cb, session_keys_change_cb));
     base::ThreadTaskRunnerHandle::Get()->PostTask(

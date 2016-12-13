@@ -106,9 +106,10 @@ void CastCdm::UnregisterPlayer(int registration_id) {
   return cast_cdm_context_.get();
 }
 
-void CastCdm::OnSessionMessage(const std::string& session_id,
-                               const std::vector<uint8_t>& message,
-                               ::media::MediaKeys::MessageType message_type) {
+void CastCdm::OnSessionMessage(
+    const std::string& session_id,
+    const std::vector<uint8_t>& message,
+    ::media::ContentDecryptionModule::MessageType message_type) {
   session_message_cb_.Run(session_id, message_type, message);
 }
 

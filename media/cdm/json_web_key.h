@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "media/base/content_decryption_module.h"
 #include "media/base/media_export.h"
-#include "media/base/media_keys.h"
 
 namespace media {
 
@@ -64,15 +64,17 @@ MEDIA_EXPORT std::string GenerateJWKSet(const uint8_t* key,
                                         int key_id_length);
 
 // Converts a set of |key|, |key_id| pairs to a JSON Web Key Set.
-MEDIA_EXPORT std::string GenerateJWKSet(const KeyIdAndKeyPairs& keys,
-                                        MediaKeys::SessionType session_type);
+MEDIA_EXPORT std::string GenerateJWKSet(
+    const KeyIdAndKeyPairs& keys,
+    ContentDecryptionModule::SessionType session_type);
 
 // Extracts the JSON Web Keys from a JSON Web Key Set. If |input| looks like
 // a valid JWK Set, then true is returned and |keys| and |session_type| are
 // updated to contain the values found. Otherwise return false.
-MEDIA_EXPORT bool ExtractKeysFromJWKSet(const std::string& jwk_set,
-                                        KeyIdAndKeyPairs* keys,
-                                        MediaKeys::SessionType* session_type);
+MEDIA_EXPORT bool ExtractKeysFromJWKSet(
+    const std::string& jwk_set,
+    KeyIdAndKeyPairs* keys,
+    ContentDecryptionModule::SessionType* session_type);
 
 // Extracts the Key Ids from a Key IDs Initialization Data
 // (https://w3c.github.io/encrypted-media/keyids-format.html). If |input| looks
@@ -84,9 +86,10 @@ MEDIA_EXPORT bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
 
 // Creates a license request message for the |key_ids| and |session_type|
 // specified. |license| is updated to contain the resulting JSON string.
-MEDIA_EXPORT void CreateLicenseRequest(const KeyIdList& key_ids,
-                                       MediaKeys::SessionType session_type,
-                                       std::vector<uint8_t>* license);
+MEDIA_EXPORT void CreateLicenseRequest(
+    const KeyIdList& key_ids,
+    ContentDecryptionModule::SessionType session_type,
+    std::vector<uint8_t>* license);
 
 // Creates a keyIDs init_data message for the |key_ids| specified.
 // |key_ids_init_data| is updated to contain the resulting JSON string.

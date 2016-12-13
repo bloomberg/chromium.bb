@@ -456,8 +456,8 @@ base::Optional<pb::CdmKeyInformation::KeyStatus> ToProtoCdmKeyInformation(
 }
 
 base::Optional<::media::CdmPromise::Exception> ToCdmPromiseException(
-    pb::MediaKeysException value) {
-  using OriginType = pb::MediaKeysException;
+    pb::CdmException value) {
+  using OriginType = pb::CdmException;
   using OtherType = ::media::CdmPromise;
   switch (value) {
     CASE_RETURN_OTHER(NOT_SUPPORTED_ERROR);
@@ -471,10 +471,10 @@ base::Optional<::media::CdmPromise::Exception> ToCdmPromiseException(
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<pb::MediaKeysException> ToProtoMediaKeysException(
+base::Optional<pb::CdmException> ToProtoCdmException(
     ::media::CdmPromise::Exception value) {
   using OriginType = ::media::CdmPromise;
-  using OtherType = pb::MediaKeysException;
+  using OtherType = pb::CdmException;
   switch (value) {
     CASE_RETURN_OTHER(NOT_SUPPORTED_ERROR);
     CASE_RETURN_OTHER(INVALID_STATE_ERROR);
@@ -487,10 +487,10 @@ base::Optional<pb::MediaKeysException> ToProtoMediaKeysException(
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<::media::MediaKeys::MessageType> ToMediaMediaKeysMessageType(
-    pb::MediaKeysMessageType value) {
-  using OriginType = pb::MediaKeysMessageType;
-  using OtherType = ::media::MediaKeys;
+base::Optional<::media::ContentDecryptionModule::MessageType>
+ToMediaCdmMessageType(pb::CdmMessageType value) {
+  using OriginType = pb::CdmMessageType;
+  using OtherType = ::media::ContentDecryptionModule;
   switch (value) {
     CASE_RETURN_OTHER(LICENSE_REQUEST);
     CASE_RETURN_OTHER(LICENSE_RENEWAL);
@@ -499,10 +499,10 @@ base::Optional<::media::MediaKeys::MessageType> ToMediaMediaKeysMessageType(
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<pb::MediaKeysMessageType> ToProtoMediaKeysMessageType(
-    ::media::MediaKeys::MessageType value) {
-  using OriginType = ::media::MediaKeys;
-  using OtherType = pb::MediaKeysMessageType;
+base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(
+    ::media::ContentDecryptionModule::MessageType value) {
+  using OriginType = ::media::ContentDecryptionModule;
+  using OtherType = pb::CdmMessageType;
   switch (value) {
     CASE_RETURN_OTHER(LICENSE_REQUEST);
     CASE_RETURN_OTHER(LICENSE_RENEWAL);
@@ -511,10 +511,10 @@ base::Optional<pb::MediaKeysMessageType> ToProtoMediaKeysMessageType(
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<::media::MediaKeys::SessionType> ToMediaKeysSessionType(
-    pb::MediaKeysSessionType value) {
-  using OriginType = pb::MediaKeysSessionType;
-  using OtherType = ::media::MediaKeys;
+base::Optional<::media::ContentDecryptionModule::SessionType> ToCdmSessionType(
+    pb::CdmSessionType value) {
+  using OriginType = pb::CdmSessionType;
+  using OtherType = ::media::ContentDecryptionModule;
   switch (value) {
     CASE_RETURN_OTHER(TEMPORARY_SESSION);
     CASE_RETURN_OTHER(PERSISTENT_LICENSE_SESSION);
@@ -523,10 +523,10 @@ base::Optional<::media::MediaKeys::SessionType> ToMediaKeysSessionType(
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<pb::MediaKeysSessionType> ToProtoMediaKeysSessionType(
-    ::media::MediaKeys::SessionType value) {
-  using OriginType = ::media::MediaKeys;
-  using OtherType = pb::MediaKeysSessionType;
+base::Optional<pb::CdmSessionType> ToProtoCdmSessionType(
+    ::media::ContentDecryptionModule::SessionType value) {
+  using OriginType = ::media::ContentDecryptionModule;
+  using OtherType = pb::CdmSessionType;
   switch (value) {
     CASE_RETURN_OTHER(TEMPORARY_SESSION);
     CASE_RETURN_OTHER(PERSISTENT_LICENSE_SESSION);

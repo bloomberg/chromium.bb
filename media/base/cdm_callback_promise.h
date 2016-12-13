@@ -12,8 +12,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "media/base/cdm_promise.h"
+// TODO(xhwang): Remove this include after http://crbug.com/656706 is fixed.
+#include "media/base/content_decryption_module.h"
 #include "media/base/media_export.h"
-#include "media/base/media_keys.h"
 
 namespace media {
 

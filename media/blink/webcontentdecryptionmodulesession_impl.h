@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "media/base/media_keys.h"
+#include "media/base/content_decryption_module.h"
 #include "media/blink/new_session_cdm_result_promise.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleSession.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -24,7 +24,6 @@
 namespace media {
 
 class CdmSessionAdapter;
-class MediaKeys;
 
 class WebContentDecryptionModuleSessionImpl
     : public blink::WebContentDecryptionModuleSession {
@@ -52,7 +51,7 @@ class WebContentDecryptionModuleSessionImpl
   void remove(blink::WebContentDecryptionModuleResult result) override;
 
   // Callbacks.
-  void OnSessionMessage(MediaKeys::MessageType message_type,
+  void OnSessionMessage(ContentDecryptionModule::MessageType message_type,
                         const std::vector<uint8_t>& message);
   void OnSessionKeysChange(bool has_additional_usable_key,
                            CdmKeysInfo keys_info);

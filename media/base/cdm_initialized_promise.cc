@@ -8,7 +8,7 @@ namespace media {
 
 CdmInitializedPromise::CdmInitializedPromise(
     const CdmCreatedCB& cdm_created_cb,
-    const scoped_refptr<MediaKeys>& cdm)
+    const scoped_refptr<ContentDecryptionModule>& cdm)
     : cdm_created_cb_(cdm_created_cb), cdm_(cdm) {}
 
 CdmInitializedPromise::~CdmInitializedPromise() {

@@ -35,13 +35,14 @@ namespace media {
 
 namespace {
 
-cdm::SessionType ToCdmSessionType(MediaKeys::SessionType session_type) {
+cdm::SessionType ToCdmSessionType(
+    ContentDecryptionModule::SessionType session_type) {
   switch (session_type) {
-    case MediaKeys::TEMPORARY_SESSION:
+    case ContentDecryptionModule::TEMPORARY_SESSION:
       return cdm::kTemporary;
-    case MediaKeys::PERSISTENT_LICENSE_SESSION:
+    case ContentDecryptionModule::PERSISTENT_LICENSE_SESSION:
       return cdm::kPersistentLicense;
-    case MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION:
+    case ContentDecryptionModule::PERSISTENT_RELEASE_MESSAGE_SESSION:
       return cdm::kPersistentKeyRelease;
   }
 
@@ -87,18 +88,19 @@ CdmPromise::Exception ToMediaExceptionType(cdm::Error error) {
   return CdmPromise::UNKNOWN_ERROR;
 }
 
-MediaKeys::MessageType ToMediaMessageType(cdm::MessageType message_type) {
+ContentDecryptionModule::MessageType ToMediaMessageType(
+    cdm::MessageType message_type) {
   switch (message_type) {
     case cdm::kLicenseRequest:
-      return MediaKeys::LICENSE_REQUEST;
+      return ContentDecryptionModule::LICENSE_REQUEST;
     case cdm::kLicenseRenewal:
-      return MediaKeys::LICENSE_RENEWAL;
+      return ContentDecryptionModule::LICENSE_RENEWAL;
     case cdm::kLicenseRelease:
-      return MediaKeys::LICENSE_RELEASE;
+      return ContentDecryptionModule::LICENSE_RELEASE;
   }
 
   NOTREACHED() << "Unexpected cdm::MessageType " << message_type;
-  return MediaKeys::LICENSE_REQUEST;
+  return ContentDecryptionModule::LICENSE_REQUEST;
 }
 
 CdmKeyInformation::KeyStatus ToCdmKeyInformationKeyStatus(

@@ -30,9 +30,9 @@
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/limits.h"
 #include "media/base/media_content_type.h"
-#include "media/base/media_keys.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_url_demuxer.h"
@@ -918,7 +918,8 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
   if (!cdm) {
     result.completeWithError(
         blink::WebContentDecryptionModuleExceptionInvalidStateError, 0,
-        "The existing MediaKeys object cannot be removed at this time.");
+        "The existing ContentDecryptionModule object cannot be removed at this "
+        "time.");
     return;
   }
 
@@ -988,7 +989,7 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
 void WebMediaPlayerImpl::SetCdm(blink::WebContentDecryptionModule* cdm) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(cdm);
-  scoped_refptr<MediaKeys> cdm_reference =
+  scoped_refptr<ContentDecryptionModule> cdm_reference =
       ToWebContentDecryptionModuleImpl(cdm)->GetCdm();
   if (!cdm_reference) {
     NOTREACHED();
@@ -1033,7 +1034,7 @@ void WebMediaPlayerImpl::OnCdmAttached(bool success) {
   if (set_cdm_result_) {
     set_cdm_result_->completeWithError(
         blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
-        "Unable to set MediaKeys object");
+        "Unable to set ContentDecryptionModule object");
     set_cdm_result_.reset();
   }
 }

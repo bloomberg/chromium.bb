@@ -91,14 +91,14 @@ void CdmSessionAdapter::UnregisterSession(const std::string& session_id) {
 void CdmSessionAdapter::InitializeNewSession(
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
-    MediaKeys::SessionType session_type,
+    ContentDecryptionModule::SessionType session_type,
     std::unique_ptr<NewSessionCdmPromise> promise) {
   cdm_->CreateSessionAndGenerateRequest(session_type, init_data_type, init_data,
                                         std::move(promise));
 }
 
 void CdmSessionAdapter::LoadSession(
-    MediaKeys::SessionType session_type,
+    ContentDecryptionModule::SessionType session_type,
     const std::string& session_id,
     std::unique_ptr<NewSessionCdmPromise> promise) {
   cdm_->LoadSession(session_type, session_id, std::move(promise));
@@ -123,7 +123,7 @@ void CdmSessionAdapter::RemoveSession(
   cdm_->RemoveSession(session_id, std::move(promise));
 }
 
-scoped_refptr<MediaKeys> CdmSessionAdapter::GetCdm() {
+scoped_refptr<ContentDecryptionModule> CdmSessionAdapter::GetCdm() {
   return cdm_;
 }
 
@@ -136,10 +136,11 @@ const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
   return key_system_uma_prefix_;
 }
 
-void CdmSessionAdapter::OnCdmCreated(const std::string& key_system,
-                                     base::TimeTicks start_time,
-                                     const scoped_refptr<MediaKeys>& cdm,
-                                     const std::string& error_message) {
+void CdmSessionAdapter::OnCdmCreated(
+    const std::string& key_system,
+    base::TimeTicks start_time,
+    const scoped_refptr<ContentDecryptionModule>& cdm,
+    const std::string& error_message) {
   DVLOG(2) << __func__ << ": "
            << (cdm ? "success" : "failure (" + error_message + ")");
   DCHECK(!cdm_);
@@ -170,9 +171,10 @@ void CdmSessionAdapter::OnCdmCreated(const std::string& key_system,
   cdm_created_result_.reset();
 }
 
-void CdmSessionAdapter::OnSessionMessage(const std::string& session_id,
-                                         MediaKeys::MessageType message_type,
-                                         const std::vector<uint8_t>& message) {
+void CdmSessionAdapter::OnSessionMessage(
+    const std::string& session_id,
+    ContentDecryptionModule::MessageType message_type,
+    const std::vector<uint8_t>& message) {
   WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
   DLOG_IF(WARNING, !session) << __func__ << " for unknown session "
                              << session_id;

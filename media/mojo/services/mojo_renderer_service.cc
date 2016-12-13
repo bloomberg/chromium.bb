@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "media/base/audio_renderer_sink.h"
-#include "media/base/media_keys.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/media_url_demuxer.h"
 #include "media/base/renderer.h"
 #include "media/base/video_renderer_sink.h"
@@ -141,7 +141,8 @@ void MojoRendererService::SetCdm(int32_t cdm_id,
     return;
   }
 
-  scoped_refptr<MediaKeys> cdm = mojo_cdm_service_context_->GetCdm(cdm_id);
+  scoped_refptr<ContentDecryptionModule> cdm =
+      mojo_cdm_service_context_->GetCdm(cdm_id);
   if (!cdm) {
     DVLOG(1) << "CDM not found: " << cdm_id;
     callback.Run(false);
@@ -264,7 +265,7 @@ void MojoRendererService::OnFlushCompleted(const FlushCallback& callback) {
 }
 
 void MojoRendererService::OnCdmAttached(
-    scoped_refptr<MediaKeys> cdm,
+    scoped_refptr<ContentDecryptionModule> cdm,
     const base::Callback<void(bool)>& callback,
     bool success) {
   DVLOG(1) << __func__ << "(" << success << ")";

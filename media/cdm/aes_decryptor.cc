@@ -339,7 +339,7 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
   std::string key_string(response.begin(), response.end());
 
   KeyIdAndKeyPairs keys;
-  SessionType session_type = MediaKeys::TEMPORARY_SESSION;
+  SessionType session_type = ContentDecryptionModule::TEMPORARY_SESSION;
   if (!ExtractKeysFromJWKSet(key_string, &keys, &session_type)) {
     promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
                     "Response is not a valid JSON Web Key Set.");

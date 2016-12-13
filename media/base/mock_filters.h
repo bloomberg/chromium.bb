@@ -17,10 +17,10 @@
 #include "media/base/audio_renderer.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer.h"
-#include "media/base/media_keys.h"
 #include "media/base/media_track.h"
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
@@ -343,7 +343,7 @@ class MockCdmClient {
 
   MOCK_METHOD3(OnSessionMessage,
                void(const std::string& session_id,
-                    MediaKeys::MessageType message_type,
+                    ContentDecryptionModule::MessageType message_type,
                     const std::vector<uint8_t>& message));
   MOCK_METHOD1(OnSessionClosed, void(const std::string& session_id));
 

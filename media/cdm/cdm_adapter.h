@@ -23,9 +23,9 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_promise_adapter.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_export.h"
-#include "media/base/media_keys.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -44,7 +44,7 @@ class CdmWrapper;
 using CreateCdmFileIOCB =
     base::Callback<std::unique_ptr<CdmFileIO>(cdm::FileIOClient* client)>;
 
-class MEDIA_EXPORT CdmAdapter : public MediaKeys,
+class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
                                 public CdmContext,
                                 public Decryptor,
                                 NON_EXPORTED_BASE(public cdm::Host_8) {
@@ -67,7 +67,7 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
       const SessionExpirationUpdateCB& session_expiration_update_cb,
       const CdmCreatedCB& cdm_created_cb);
 
-  // MediaKeys implementation.
+  // ContentDecryptionModule implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
                             std::unique_ptr<SimpleCdmPromise> promise) final;
   void CreateSessionAndGenerateRequest(

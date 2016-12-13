@@ -22,8 +22,8 @@
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/cdm_session_tracker.h"
 #include "media/base/channel_layout.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/decryptor.h"
-#include "media/base/media_keys.h"
 #include "media/base/sample_format.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
@@ -68,11 +68,11 @@ class ContentDecryptorDelegate {
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
                             std::unique_ptr<media::SimpleCdmPromise> promise);
   void CreateSessionAndGenerateRequest(
-      media::MediaKeys::SessionType session_type,
+      media::ContentDecryptionModule::SessionType session_type,
       media::EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
       std::unique_ptr<media::NewSessionCdmPromise> promise);
-  void LoadSession(media::MediaKeys::SessionType session_type,
+  void LoadSession(media::ContentDecryptionModule::SessionType session_type,
                    const std::string& session_id,
                    std::unique_ptr<media::NewSessionCdmPromise> promise);
   void UpdateSession(const std::string& session_id,

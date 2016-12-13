@@ -70,7 +70,7 @@ class GLES2Interface;
 
 namespace media {
 class ChunkDemuxer;
-class MediaKeys;
+class ContentDecryptionModule;
 class MediaLog;
 class UrlIndex;
 class VideoFrameCompositor;
@@ -496,11 +496,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // If a CDM is attached keep a reference to it, so that it is not destroyed
   // until after the pipeline is done with it.
-  scoped_refptr<MediaKeys> cdm_;
+  scoped_refptr<ContentDecryptionModule> cdm_;
 
   // Keep track of the CDM while it is in the process of attaching to the
   // pipeline.
-  scoped_refptr<MediaKeys> pending_cdm_;
+  scoped_refptr<ContentDecryptionModule> pending_cdm_;
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   WebMediaPlayerCast cast_impl_;

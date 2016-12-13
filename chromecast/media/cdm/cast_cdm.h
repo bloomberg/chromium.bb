@@ -20,7 +20,7 @@
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/public/media/cast_key_status.h"
 #include "media/base/cdm_context.h"
-#include "media/base/media_keys.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/player_tracker.h"
 #include "media/cdm/json_web_key.h"
 
@@ -32,14 +32,14 @@ namespace chromecast {
 namespace media {
 class DecryptContextImpl;
 
-// CastCdm is an extension of MediaKeys that provides common
+// CastCdm is an extension of ContentDecryptionModule that provides common
 // functionality across CDM implementations.
 // All these additional functions are synchronous so:
 // - either both the CDM and the media pipeline must be running on the same
 //   thread,
 // - or CastCdm implementations must use some locks.
 //
-class CastCdm : public ::media::MediaKeys {
+class CastCdm : public ::media::ContentDecryptionModule {
  public:
   explicit CastCdm(MediaResourceTracker* media_resource_tracker);
 
@@ -64,15 +64,16 @@ class CastCdm : public ::media::MediaKeys {
                             CastKeyStatus key_status,
                             uint32_t system_code) = 0;
 
-  // ::media::MediaKeys implementation.
+  // ::media::ContentDecryptionModule implementation.
   ::media::CdmContext* GetCdmContext() override;
 
  protected:
   ~CastCdm() override;
 
-  void OnSessionMessage(const std::string& session_id,
-                        const std::vector<uint8_t>& message,
-                        ::media::MediaKeys::MessageType message_type);
+  void OnSessionMessage(
+      const std::string& session_id,
+      const std::vector<uint8_t>& message,
+      ::media::ContentDecryptionModule::MessageType message_type);
   void OnSessionClosed(const std::string& session_id);
   void OnSessionKeysChange(const std::string& session_id,
                            bool newly_usable_keys,

@@ -9,7 +9,6 @@
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "media/base/cdm_factory.h"
-#include "media/base/media_keys.h"
 
 namespace base {
 class SingleThreadTaskRunner;

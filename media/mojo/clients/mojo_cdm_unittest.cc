@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
 #include "media/base/cdm_config.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/mock_filters.h"
 #include "media/cdm/default_cdm_factory.h"
 #include "media/mojo/clients/mojo_cdm.h"
@@ -78,7 +79,7 @@ class MojoCdmTest : public ::testing::Test {
   }
 
   void OnCdmCreated(ExpectedResult expected_result,
-                    const scoped_refptr<MediaKeys>& cdm,
+                    const scoped_refptr<ContentDecryptionModule>& cdm,
                     const std::string& error_message) {
     if (!cdm) {
       DVLOG(1) << error_message;
@@ -101,7 +102,7 @@ class MojoCdmTest : public ::testing::Test {
 
   std::unique_ptr<MojoCdmService> mojo_cdm_service_;
   mojo::Binding<mojom::ContentDecryptionModule> cdm_binding_;
-  scoped_refptr<MediaKeys> mojo_cdm_;
+  scoped_refptr<ContentDecryptionModule> mojo_cdm_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MojoCdmTest);

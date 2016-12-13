@@ -21,7 +21,7 @@
 namespace media {
 
 class DecoderBuffer;
-class MediaKeys;
+class ContentDecryptionModule;
 class MojoDecoderBufferReader;
 class MojoDecoderBufferWriter;
 
@@ -35,7 +35,7 @@ class MojoDecryptorService : public mojom::Decryptor {
   // Constructs a MojoDecryptorService and binds it to the |request|. Keeps a
   // copy of |cdm| to prevent it from being deleted as long as it is needed.
   // |error_handler| will be called if a connection error occurs.
-  MojoDecryptorService(const scoped_refptr<MediaKeys>& cdm,
+  MojoDecryptorService(const scoped_refptr<ContentDecryptionModule>& cdm,
                        mojo::InterfaceRequest<mojom::Decryptor> request,
                        const base::Closure& error_handler);
 
@@ -104,7 +104,7 @@ class MojoDecryptorService : public mojom::Decryptor {
 
   // Keep ownership of |cdm_| while it is being used. |decryptor_| is the actual
   // Decryptor referenced by |cdm_|.
-  scoped_refptr<MediaKeys> cdm_;
+  scoped_refptr<ContentDecryptionModule> cdm_;
   media::Decryptor* decryptor_;
 
   // Keep a reference to VideoFrames until ReleaseSharedBuffer() is called

@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
 #include "media/mojo/clients/mojo_cdm.h"
@@ -48,7 +49,7 @@ void MojoCdmFactory::Create(
 // testing. See http://crbug.com/441957
 #if !defined(ENABLE_MOJO_RENDERER)
   if (CanUseAesDecryptor(key_system)) {
-    scoped_refptr<MediaKeys> cdm(
+    scoped_refptr<ContentDecryptionModule> cdm(
         new AesDecryptor(security_origin, session_message_cb, session_closed_cb,
                          session_keys_change_cb));
     base::ThreadTaskRunnerHandle::Get()->PostTask(

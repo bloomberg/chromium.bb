@@ -12,12 +12,12 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/channel_layout.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/decode_status.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/eme_constants.h"
 #include "media/base/encryption_scheme.h"
-#include "media/base/media_keys.h"
 #include "media/base/sample_format.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_codecs.h"
@@ -66,11 +66,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme::CipherMode,
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmPromise::Exception,
                           media::CdmPromise::EXCEPTION_MAX)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::MessageType,
-                          media::MediaKeys::MESSAGE_TYPE_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::ContentDecryptionModule::MessageType,
+                          media::ContentDecryptionModule::MESSAGE_TYPE_MAX)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::SessionType,
-                          media::MediaKeys::SESSION_TYPE_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::ContentDecryptionModule::SessionType,
+                          media::ContentDecryptionModule::SESSION_TYPE_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::SampleFormat, media::kSampleFormatMax)
 

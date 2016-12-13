@@ -42,8 +42,8 @@ class MEDIA_EXPORT Decryptor {
   Decryptor();
   virtual ~Decryptor();
 
-  // Indicates that a new key has been added to the MediaKeys object associated
-  // with the Decryptor.
+  // Indicates that a new key has been added to the ContentDecryptionModule
+  // object associated with the Decryptor.
   typedef base::Callback<void()> NewKeyCB;
 
   // Registers a NewKeyCB which should be called when a new key is added to the

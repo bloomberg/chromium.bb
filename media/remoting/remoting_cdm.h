@@ -6,14 +6,14 @@
 #define MEDIA_REMOTING_REMOTING_CDM_H_
 
 #include "media/base/cdm_factory.h"
-#include "media/base/media_keys.h"
+#include "media/base/content_decryption_module.h"
 #include "media/remoting/remoting_cdm_context.h"
 #include "media/remoting/remoting_cdm_controller.h"
 
 namespace media {
 
 // TODO(xjz): Merge this with erickung's implementation.
-class RemotingCdm : public MediaKeys {
+class RemotingCdm : public ContentDecryptionModule {
  public:
   RemotingCdm(const std::string& key_system,
               const GURL& security_origin,
@@ -25,7 +25,7 @@ class RemotingCdm : public MediaKeys {
               const CdmCreatedCB& cdm_created_cb,
               std::unique_ptr<RemotingCdmController> remoting_cdm_controller);
 
-  // MediaKeys implementations.
+  // ContentDecryptionModule implementations.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
                             std::unique_ptr<SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(

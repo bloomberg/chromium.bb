@@ -18,7 +18,6 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/eme_constants.h"
-#include "media/base/media_keys.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
 #include "media/remoting/remoting_rpc_message.pb.h"

@@ -11,9 +11,9 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/channel_layout.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/encryption_scheme.h"
-#include "media/base/media_keys.h"
 #include "media/base/sample_format.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
@@ -82,19 +82,19 @@ base::Optional<pb::CdmKeyInformation::KeyStatus> ToProtoCdmKeyInformation(
     ::media::CdmKeyInformation::KeyStatus value);
 
 base::Optional<::media::CdmPromise::Exception> ToCdmPromiseException(
-    pb::MediaKeysException value);
-base::Optional<pb::MediaKeysException> ToProtoMediaKeysException(
+    pb::CdmException value);
+base::Optional<pb::CdmException> ToProtoCdmException(
     ::media::CdmPromise::Exception value);
 
-base::Optional<::media::MediaKeys::MessageType> ToMediaMediaKeysMessageType(
-    pb::MediaKeysMessageType value);
-base::Optional<pb::MediaKeysMessageType> ToProtoMediaKeysMessageType(
-    ::media::MediaKeys::MessageType value);
+base::Optional<::media::ContentDecryptionModule::MessageType>
+ToMediaCdmMessageType(pb::CdmMessageType value);
+base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(
+    ::media::ContentDecryptionModule::MessageType value);
 
-base::Optional<::media::MediaKeys::SessionType> ToMediaKeysSessionType(
-    pb::MediaKeysSessionType value);
-base::Optional<pb::MediaKeysSessionType> ToProtoMediaKeysSessionType(
-    ::media::MediaKeys::SessionType value);
+base::Optional<::media::ContentDecryptionModule::SessionType> ToCdmSessionType(
+    pb::CdmSessionType value);
+base::Optional<pb::CdmSessionType> ToProtoCdmSessionType(
+    ::media::ContentDecryptionModule::SessionType value);
 
 base::Optional<::media::EmeInitDataType> ToMediaEmeInitDataType(
     pb::CdmCreateSessionAndGenerateRequest::EmeInitDataType value);

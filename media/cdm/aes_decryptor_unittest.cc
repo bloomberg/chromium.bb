@@ -276,7 +276,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
       helper_.reset();
   }
 
-  void OnCdmCreated(const scoped_refptr<MediaKeys>& cdm,
+  void OnCdmCreated(const scoped_refptr<ContentDecryptionModule>& cdm,
                     const std::string& error_message) {
     EXPECT_EQ(error_message, "");
     cdm_ = cdm;
@@ -328,9 +328,9 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
     DCHECK(!key_id.empty());
     EXPECT_CALL(cdm_client_,
                 OnSessionMessage(NotEmpty(), _, IsJSONDictionary()));
-    cdm_->CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                          EmeInitDataType::WEBM, key_id,
-                                          CreateSessionPromise(RESOLVED));
+    cdm_->CreateSessionAndGenerateRequest(
+        ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+        key_id, CreateSessionPromise(RESOLVED));
     // This expects the promise to be called synchronously, which is the case
     // for AesDecryptor.
     return session_id_;
@@ -446,7 +446,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
   }
 
   StrictMock<MockCdmClient> cdm_client_;
-  scoped_refptr<MediaKeys> cdm_;
+  scoped_refptr<ContentDecryptionModule> cdm_;
   Decryptor* decryptor_;
   Decryptor::DecryptCB decrypt_cb_;
   std::string session_id_;
@@ -468,13 +468,13 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
 
 TEST_P(AesDecryptorTest, CreateSessionWithEmptyInitData) {
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(), CreateSessionPromise(REJECTED));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::CENC,
       std::vector<uint8_t>(), CreateSessionPromise(REJECTED));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::KEYIDS,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::KEYIDS,
       std::vector<uint8_t>(), CreateSessionPromise(REJECTED));
 }
 
@@ -483,41 +483,41 @@ TEST_P(AesDecryptorTest, CreateSessionWithVariousLengthInitData_WebM) {
   init_data.resize(1);
   EXPECT_CALL(cdm_client_, OnSessionMessage(NotEmpty(), _, IsJSONDictionary()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(init_data), CreateSessionPromise(RESOLVED));
 
   init_data.resize(16);  // The expected size.
   EXPECT_CALL(cdm_client_, OnSessionMessage(NotEmpty(), _, IsJSONDictionary()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(init_data), CreateSessionPromise(RESOLVED));
 
   init_data.resize(512);
   EXPECT_CALL(cdm_client_, OnSessionMessage(NotEmpty(), _, IsJSONDictionary()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(init_data), CreateSessionPromise(RESOLVED));
 
   init_data.resize(513);
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(init_data), CreateSessionPromise(REJECTED));
 }
 
 TEST_P(AesDecryptorTest, MultipleCreateSession) {
   EXPECT_CALL(cdm_client_, OnSessionMessage(NotEmpty(), _, IsJSONDictionary()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(1), CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(cdm_client_, OnSessionMessage(NotEmpty(), _, IsJSONDictionary()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(1), CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(cdm_client_, OnSessionMessage(NotEmpty(), _, IsJSONDictionary()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(1), CreateSessionPromise(RESOLVED));
 }
 
@@ -540,12 +540,12 @@ TEST_P(AesDecryptorTest, CreateSessionWithCencInitData) {
 #if defined(USE_PROPRIETARY_CODECS)
   EXPECT_CALL(cdm_client_, OnSessionMessage(NotEmpty(), _, IsJSONDictionary()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::CENC,
       std::vector<uint8_t>(init_data, init_data + arraysize(init_data)),
       CreateSessionPromise(RESOLVED));
 #else
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::CENC,
       std::vector<uint8_t>(init_data, init_data + arraysize(init_data)),
       CreateSessionPromise(REJECTED));
 #endif
@@ -557,7 +557,7 @@ TEST_P(AesDecryptorTest, CreateSessionWithKeyIdsInitData) {
 
   EXPECT_CALL(cdm_client_, OnSessionMessage(NotEmpty(), _, IsJSONDictionary()));
   cdm_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::KEYIDS,
+      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::KEYIDS,
       std::vector<uint8_t>(init_data, init_data + arraysize(init_data) - 1),
       CreateSessionPromise(RESOLVED));
 }

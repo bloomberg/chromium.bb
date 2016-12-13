@@ -26,7 +26,7 @@ namespace media {
 struct CdmConfig;
 class CdmFactory;
 class CdmSessionAdapter;
-class MediaKeys;
+class ContentDecryptionModule;
 
 class MEDIA_BLINK_EXPORT WebContentDecryptionModuleImpl
     : public blink::WebContentDecryptionModule {
@@ -49,7 +49,7 @@ class MEDIA_BLINK_EXPORT WebContentDecryptionModuleImpl
       blink::WebContentDecryptionModuleResult result) override;
 
   // Returns a reference to the CDM used by |adapter_|.
-  scoped_refptr<MediaKeys> GetCdm();
+  scoped_refptr<ContentDecryptionModule> GetCdm();
 
  private:
   friend CdmSessionAdapter;

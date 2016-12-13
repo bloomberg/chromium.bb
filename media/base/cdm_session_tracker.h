@@ -12,8 +12,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/media_export.h"
-#include "media/base/media_keys.h"
 
 namespace media {
 

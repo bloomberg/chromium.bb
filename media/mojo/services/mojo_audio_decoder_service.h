@@ -17,7 +17,7 @@
 
 namespace media {
 
-class MediaKeys;
+class ContentDecryptionModule;
 class MojoCdmServiceContext;
 class MojoDecoderBufferReader;
 
@@ -46,7 +46,7 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService
  private:
   // Called by |decoder_| upon finishing initialization.
   void OnInitialized(const InitializeCallback& callback,
-                     scoped_refptr<MediaKeys> cdm,
+                     scoped_refptr<ContentDecryptionModule> cdm,
                      bool success);
 
   void OnReadDone(const DecodeCallback& callback,
@@ -72,7 +72,7 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService
 
   // Hold a reference to the CDM to keep it alive for the lifetime of the
   // |decoder_|. The |cdm_| owns the CdmContext which is passed to |decoder_|.
-  scoped_refptr<MediaKeys> cdm_;
+  scoped_refptr<ContentDecryptionModule> cdm_;
 
   // The AudioDecoder that does actual decoding work.
   // This MUST be declared after |cdm_| to maintain correct destruction order.

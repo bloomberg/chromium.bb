@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_key_information.h"
-#include "media/base/media_keys.h"
+#include "media/base/content_decryption_module.h"
 #include "media/base/mock_filters.h"
 #include "media/cdm/cdm_file_io.h"
 #include "media/cdm/external_clear_key_test_helper.h"
@@ -117,7 +117,7 @@ class CdmAdapterTest : public testing::Test {
     }
 
     adapter_->CreateSessionAndGenerateRequest(
-        MediaKeys::TEMPORARY_SESSION, data_type, key_id,
+        ContentDecryptionModule::TEMPORARY_SESSION, data_type, key_id,
         CreateSessionPromise(expected_result));
     RunUntilIdle();
   }
@@ -129,8 +129,8 @@ class CdmAdapterTest : public testing::Test {
     DCHECK(!session_id.empty());
     ASSERT_EQ(expected_result, FAILURE) << "LoadSession not supported.";
 
-    adapter_->LoadSession(MediaKeys::TEMPORARY_SESSION, session_id,
-                          CreateSessionPromise(expected_result));
+    adapter_->LoadSession(ContentDecryptionModule::TEMPORARY_SESSION,
+                          session_id, CreateSessionPromise(expected_result));
     RunUntilIdle();
   }
 
@@ -162,7 +162,7 @@ class CdmAdapterTest : public testing::Test {
 
  private:
   void OnCdmCreated(ExpectedResult expected_result,
-                    const scoped_refptr<MediaKeys>& cdm,
+                    const scoped_refptr<ContentDecryptionModule>& cdm,
                     const std::string& error_message) {
     if (cdm) {
       EXPECT_EQ(expected_result, SUCCESS) << "CDM should not have loaded.";
@@ -228,7 +228,7 @@ class CdmAdapterTest : public testing::Test {
   ExternalClearKeyTestHelper helper_;
 
   // Keep track of the loaded CDM.
-  scoped_refptr<MediaKeys> adapter_;
+  scoped_refptr<ContentDecryptionModule> adapter_;
 
   // |session_id_| is the latest result of calling CreateSession().
   std::string session_id_;

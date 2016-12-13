@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_MEDIA_KEYS_H_
-#define MEDIA_BASE_MEDIA_KEYS_H_
+#ifndef MEDIA_BASE_CONTENT_DECRYPTION_MODULE_H_
+#define MEDIA_BASE_CONTENT_DECRYPTION_MODULE_H_
 
 #include <stdint.h>
 
@@ -27,7 +27,7 @@ namespace media {
 
 class CdmContext;
 struct CdmKeyInformation;
-struct MediaKeysTraits;
+struct ContentDecryptionModuleTraits;
 
 template <typename... T>
 class CdmPromiseTemplate;
@@ -59,12 +59,10 @@ typedef ScopedVector<CdmKeyInformation> CdmKeysInfo;
 // that thread. For example, if the CDM supports a Decryptor interface, the
 // Decryptor methods could be called on a different thread. The CDM
 // implementation should make sure it's thread safe for these situations.
-//
-// TODO(xhwang): Rename MediaKeys to ContentDecryptionModule. See
-// http://crbug.com/309237
 
-class MEDIA_EXPORT MediaKeys
-    : public base::RefCountedThreadSafe<MediaKeys, MediaKeysTraits> {
+class MEDIA_EXPORT ContentDecryptionModule
+    : public base::RefCountedThreadSafe<ContentDecryptionModule,
+                                        ContentDecryptionModuleTraits> {
  public:
   // Type of license required when creating/loading a session.
   // Must be consistent with the values specified in the spec:
@@ -151,18 +149,19 @@ class MEDIA_EXPORT MediaKeys
   virtual void DeleteOnCorrectThread() const;
 
  protected:
-  friend class base::RefCountedThreadSafe<MediaKeys, MediaKeysTraits>;
+  friend class base::RefCountedThreadSafe<ContentDecryptionModule,
+                                          ContentDecryptionModuleTraits>;
 
-  MediaKeys();
-  virtual ~MediaKeys();
+  ContentDecryptionModule();
+  virtual ~ContentDecryptionModule();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MediaKeys);
+  DISALLOW_COPY_AND_ASSIGN(ContentDecryptionModule);
 };
 
-struct MEDIA_EXPORT MediaKeysTraits {
-  // Destroys |media_keys| on the correct thread.
-  static void Destruct(const MediaKeys* media_keys);
+struct MEDIA_EXPORT ContentDecryptionModuleTraits {
+  // Destroys |cdm| on the correct thread.
+  static void Destruct(const ContentDecryptionModule* cdm);
 };
 
 // CDM session event callbacks.
@@ -170,7 +169,7 @@ struct MEDIA_EXPORT MediaKeysTraits {
 // Called when the CDM needs to queue a message event to the session object.
 // See http://w3c.github.io/encrypted-media/#dom-evt-message
 typedef base::Callback<void(const std::string& session_id,
-                            MediaKeys::MessageType message_type,
+                            ContentDecryptionModule::MessageType message_type,
                             const std::vector<uint8_t>& message)>
     SessionMessageCB;
 
@@ -184,7 +183,8 @@ typedef base::Callback<void(const std::string& session_id)> SessionClosedCB;
 // status. See http://w3c.github.io/encrypted-media/#dom-evt-keystatuseschange
 typedef base::Callback<void(const std::string& session_id,
                             bool has_additional_usable_key,
-                            CdmKeysInfo keys_info)> SessionKeysChangeCB;
+                            CdmKeysInfo keys_info)>
+    SessionKeysChangeCB;
 
 // Called when the CDM changes the expiration time of a session.
 // See http://w3c.github.io/encrypted-media/#update-expiration
@@ -194,4 +194,4 @@ typedef base::Callback<void(const std::string& session_id,
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_MEDIA_KEYS_H_
+#endif  // MEDIA_BASE_CONTENT_DECRYPTION_MODULE_H_

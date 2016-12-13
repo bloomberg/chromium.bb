@@ -20,7 +20,7 @@
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/android/sdk_media_codec_bridge.h"
-#include "media/base/media_keys.h"
+#include "media/base/content_decryption_module.h"
 #include "media/gpu/avda_codec_allocator.h"
 #include "media/gpu/avda_picture_buffer_manager.h"
 #include "media/gpu/avda_state_provider.h"
@@ -284,7 +284,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   base::Optional<DrainType> drain_type_;
 
   // Holds a ref-count to the CDM to avoid using the CDM after it's destroyed.
-  scoped_refptr<MediaKeys> cdm_for_reference_holding_only_;
+  scoped_refptr<ContentDecryptionModule> cdm_for_reference_holding_only_;
 
   MediaDrmBridgeCdmContext* media_drm_bridge_cdm_context_;
 

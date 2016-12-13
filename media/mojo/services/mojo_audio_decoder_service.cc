@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "media/base/cdm_context.h"
-#include "media/base/media_keys.h"
+#include "media/base/content_decryption_module.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/common/mojo_decoder_buffer_converter.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
@@ -36,7 +36,7 @@ void MojoAudioDecoderService::Initialize(
 
   // Get CdmContext from cdm_id if the stream is encrypted.
   CdmContext* cdm_context = nullptr;
-  scoped_refptr<MediaKeys> cdm;
+  scoped_refptr<ContentDecryptionModule> cdm;
   if (config.To<media::AudioDecoderConfig>().is_encrypted()) {
     if (!mojo_cdm_service_context_) {
       DVLOG(1) << "CDM service context not available.";
@@ -90,9 +90,10 @@ void MojoAudioDecoderService::Reset(const ResetCallback& callback) {
       base::Bind(&MojoAudioDecoderService::OnResetDone, weak_this_, callback));
 }
 
-void MojoAudioDecoderService::OnInitialized(const InitializeCallback& callback,
-                                            scoped_refptr<MediaKeys> cdm,
-                                            bool success) {
+void MojoAudioDecoderService::OnInitialized(
+    const InitializeCallback& callback,
+    scoped_refptr<ContentDecryptionModule> cdm,
+    bool success) {
   DVLOG(1) << __func__ << " success:" << success;
 
   if (success) {

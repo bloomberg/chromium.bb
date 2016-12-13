@@ -16,7 +16,7 @@
 
 namespace media {
 
-class MediaKeys;
+class ContentDecryptionModule;
 class MojoCdmService;
 
 // A class that creates, owns and manages all MojoCdmService instances.
@@ -34,7 +34,7 @@ class MEDIA_MOJO_EXPORT MojoCdmServiceContext {
   void UnregisterCdm(int cdm_id);
 
   // Returns the CDM associated with |cdm_id|.
-  scoped_refptr<MediaKeys> GetCdm(int cdm_id);
+  scoped_refptr<ContentDecryptionModule> GetCdm(int cdm_id);
 
  private:
   // A map between CDM ID and MojoCdmService.

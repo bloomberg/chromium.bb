@@ -9,6 +9,7 @@
 
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cdm/cast_cdm.h"
+#include "media/base/content_decryption_module.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -17,11 +18,11 @@ class SingleThreadTaskRunner;
 namespace chromecast {
 namespace media {
 
-// MediaKeys implementation that lives on the UI thread and forwards all calls
-// to a CastCdm instance on the CMA thread. This is used to simplify the
-// UI-CMA threading interaction.
+// ContentDecryptionModule implementation that lives on the UI thread and
+// forwards all calls to a CastCdm instance on the CMA thread. This is used to
+// simplify the UI-CMA threading interaction.
 // TODO(slan): Remove this class when CMA is deprecated.
-class CastCdmProxy : public ::media::MediaKeys {
+class CastCdmProxy : public ::media::ContentDecryptionModule {
  public:
   CastCdmProxy(const scoped_refptr<CastCdm>& cast_cdm,
                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
@@ -32,17 +33,17 @@ class CastCdmProxy : public ::media::MediaKeys {
  private:
   ~CastCdmProxy() override;
 
-  // ::media::MediaKeys implementation:
+  // ::media::ContentDecryptionModule implementation:
   void SetServerCertificate(
       const std::vector<uint8_t>& certificate,
       std::unique_ptr<::media::SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
-      ::media::MediaKeys::SessionType session_type,
+      ::media::ContentDecryptionModule::SessionType session_type,
       ::media::EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
       std::unique_ptr<::media::NewSessionCdmPromise> promise) override;
   void LoadSession(
-      ::media::MediaKeys::SessionType session_type,
+      ::media::ContentDecryptionModule::SessionType session_type,
       const std::string& session_id,
       std::unique_ptr<::media::NewSessionCdmPromise> promise) override;
   void UpdateSession(

@@ -92,18 +92,18 @@ std::string ConvertInitDataType(media::EmeInitDataType init_data_type) {
   }
 }
 
-MediaKeys::MessageType GetMessageType(RequestType request_type) {
+ContentDecryptionModule::MessageType GetMessageType(RequestType request_type) {
   switch (request_type) {
     case RequestType::REQUEST_TYPE_INITIAL:
-      return MediaKeys::LICENSE_REQUEST;
+      return ContentDecryptionModule::LICENSE_REQUEST;
     case RequestType::REQUEST_TYPE_RENEWAL:
-      return MediaKeys::LICENSE_RENEWAL;
+      return ContentDecryptionModule::LICENSE_RENEWAL;
     case RequestType::REQUEST_TYPE_RELEASE:
-      return MediaKeys::LICENSE_RELEASE;
+      return ContentDecryptionModule::LICENSE_RELEASE;
   }
 
   NOTREACHED();
-  return MediaKeys::LICENSE_REQUEST;
+  return ContentDecryptionModule::LICENSE_REQUEST;
 }
 
 CdmKeyInformation::KeyStatus ConvertKeyStatus(KeyStatus key_status) {
@@ -367,7 +367,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;
 
-  if (session_type != media::MediaKeys::TEMPORARY_SESSION) {
+  if (session_type != ContentDecryptionModule::TEMPORARY_SESSION) {
     NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
     promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
                     "Only the temporary session type is supported.");
@@ -637,7 +637,7 @@ void MediaDrmBridge::OnSessionMessage(
 
   std::vector<uint8_t> message;
   JavaByteArrayToByteVector(env, j_message, &message);
-  MediaKeys::MessageType message_type =
+  ContentDecryptionModule::MessageType message_type =
       GetMessageType(static_cast<RequestType>(j_message_type));
 
   task_runner_->PostTask(

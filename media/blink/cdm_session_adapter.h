@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "media/base/media_keys.h"
+#include "media/base/content_decryption_module.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleSession.h"
 
@@ -28,9 +28,9 @@ class CdmFactory;
 class WebContentDecryptionModuleSessionImpl;
 
 // Owns the CDM instance and makes calls from session objects to the CDM.
-// Forwards the session ID-based callbacks of the MediaKeys interface to the
-// appropriate session object. Callers should hold references to this class
-// as long as they need the CDM instance.
+// Forwards the session ID-based callbacks of the ContentDecryptionModule
+// interface to the appropriate session object. Callers should hold references
+// to this class as long as they need the CDM instance.
 class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
  public:
   CdmSessionAdapter();
@@ -68,11 +68,11 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // |session_type| provided.
   void InitializeNewSession(EmeInitDataType init_data_type,
                             const std::vector<uint8_t>& init_data,
-                            MediaKeys::SessionType session_type,
+                            ContentDecryptionModule::SessionType session_type,
                             std::unique_ptr<NewSessionCdmPromise> promise);
 
   // Loads the session specified by |session_id|.
-  void LoadSession(MediaKeys::SessionType session_type,
+  void LoadSession(ContentDecryptionModule::SessionType session_type,
                    const std::string& session_id,
                    std::unique_ptr<NewSessionCdmPromise> promise);
 
@@ -91,7 +91,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
                      std::unique_ptr<SimpleCdmPromise> promise);
 
   // Returns a reference to the CDM.
-  scoped_refptr<MediaKeys> GetCdm();
+  scoped_refptr<ContentDecryptionModule> GetCdm();
 
   // Returns the key system name.
   const std::string& GetKeySystem() const;
@@ -112,12 +112,12 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // Callback for CreateCdm().
   void OnCdmCreated(const std::string& key_system,
                     base::TimeTicks start_time,
-                    const scoped_refptr<MediaKeys>& cdm,
+                    const scoped_refptr<ContentDecryptionModule>& cdm,
                     const std::string& error_message);
 
   // Callbacks for firing session events.
   void OnSessionMessage(const std::string& session_id,
-                        MediaKeys::MessageType message_type,
+                        ContentDecryptionModule::MessageType message_type,
                         const std::vector<uint8_t>& message);
   void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
@@ -132,7 +132,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   void ReportTimeToCreateCdmUMA(base::TimeDelta cdm_creation_time) const;
 
-  scoped_refptr<MediaKeys> cdm_;
+  scoped_refptr<ContentDecryptionModule> cdm_;
 
   SessionMap sessions_;
 

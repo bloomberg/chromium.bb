@@ -23,7 +23,7 @@
 
 namespace media {
 
-class MediaKeys;
+class ContentDecryptionModule;
 class MediaPlayerManager;
 
 // This class serves as the base class for different media player
@@ -92,7 +92,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual GURL GetFirstPartyForCookies();
 
   // Associates the |cdm| with this player.
-  virtual void SetCdm(const scoped_refptr<MediaKeys>& cdm);
+  virtual void SetCdm(const scoped_refptr<ContentDecryptionModule>& cdm);
 
   // Requests playback permission from MediaPlayerManager.
   // Overridden in MediaCodecPlayer to pass data between threads.
