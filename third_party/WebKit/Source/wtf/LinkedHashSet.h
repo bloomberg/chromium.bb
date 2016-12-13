@@ -299,6 +299,13 @@ class LinkedHashSet {
   template <typename VisitorDispatcher>
   void trace(VisitorDispatcher visitor) {
     m_impl.trace(visitor);
+    // Should the underlying table be moved by GC, register a callback
+    // that fixes up the interior pointers that the (Heap)LinkedHashSet keeps.
+    if (m_impl.m_table) {
+      Allocator::registerBackingStoreCallback(
+          visitor, m_impl.m_table, moveBackingCallback,
+          reinterpret_cast<void*>(&m_anchor));
+    }
   }
 
   int64_t modifications() const { return m_impl.modifications(); }
@@ -331,6 +338,50 @@ class LinkedHashSet {
   }
   const_reverse_iterator makeConstReverseIterator(const Node* position) const {
     return const_reverse_iterator(position, this);
+  }
+
+  static void moveBackingCallback(void* anchor,
+                                  void* from,
+                                  void* to,
+                                  size_t size) {
+    // Note: the hash table move may have been overlapping; linearly scan the
+    // entire table and fixup interior pointers into the old region with
+    // correspondingly offset ones into the new.
+    size_t tableSize = size / sizeof(Node);
+    Node* table = reinterpret_cast<Node*>(to);
+    NodeBase* fromStart = reinterpret_cast<NodeBase*>(from);
+    NodeBase* fromEnd =
+        reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(from) + size);
+    for (Node* element = table + tableSize - 1; element >= table; element--) {
+      Node& node = *element;
+      if (ImplType::isEmptyOrDeletedBucket(node))
+        continue;
+      if (node.m_next >= fromStart && node.m_next < fromEnd) {
+        size_t diff = reinterpret_cast<uintptr_t>(node.m_next) -
+                      reinterpret_cast<uintptr_t>(from);
+        node.m_next =
+            reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
+      }
+      if (node.m_prev >= fromStart && node.m_prev < fromEnd) {
+        size_t diff = reinterpret_cast<uintptr_t>(node.m_prev) -
+                      reinterpret_cast<uintptr_t>(from);
+        node.m_prev =
+            reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
+      }
+    }
+    NodeBase* anchorNode = reinterpret_cast<NodeBase*>(anchor);
+    if (anchorNode->m_next >= fromStart && anchorNode->m_next < fromEnd) {
+      size_t diff = reinterpret_cast<uintptr_t>(anchorNode->m_next) -
+                    reinterpret_cast<uintptr_t>(from);
+      anchorNode->m_next =
+          reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
+    }
+    if (anchorNode->m_prev >= fromStart && anchorNode->m_prev < fromEnd) {
+      size_t diff = reinterpret_cast<uintptr_t>(anchorNode->m_prev) -
+                    reinterpret_cast<uintptr_t>(from);
+      anchorNode->m_prev =
+          reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
+    }
   }
 
   ImplType m_impl;

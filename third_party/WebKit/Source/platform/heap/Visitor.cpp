@@ -18,6 +18,9 @@ std::unique_ptr<Visitor> Visitor::create(ThreadState* state,
     case BlinkGC::GCWithSweep:
     case BlinkGC::GCWithoutSweep:
       return WTF::makeUnique<MarkingVisitor<Visitor::GlobalMarking>>(state);
+    case BlinkGC::GCWithSweepCompaction:
+      return WTF::makeUnique<
+          MarkingVisitor<Visitor::GlobalMarkingWithCompaction>>(state);
     case BlinkGC::TakeSnapshot:
       return WTF::makeUnique<MarkingVisitor<Visitor::SnapshotMarking>>(state);
     case BlinkGC::ThreadTerminationGC:
@@ -35,13 +38,12 @@ Visitor::Visitor(ThreadState* state, MarkingMode markingMode)
     : VisitorHelper(state), m_markingMode(markingMode) {
   // See ThreadState::runScheduledGC() why we need to already be in a
   // GCForbiddenScope before any safe point is entered.
-  state->enterGCForbiddenScope();
-
-  ASSERT(state->checkThread());
+  DCHECK(state->isGCForbidden());
+#if ENABLE(ASSERT)
+  DCHECK(state->checkThread());
+#endif
 }
 
-Visitor::~Visitor() {
-  state()->leaveGCForbiddenScope();
-}
+Visitor::~Visitor() {}
 
 }  // namespace blink

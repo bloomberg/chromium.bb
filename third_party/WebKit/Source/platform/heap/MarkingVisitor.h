@@ -48,6 +48,16 @@ class MarkingVisitor final : public Visitor,
   }
 #endif
 
+  void registerMovingObjectReference(MovableReference* slot) override {
+    Impl::registerMovingObjectReference(slot);
+  }
+
+  void registerMovingObjectCallback(MovableReference backingStore,
+                                    MovingObjectCallback callback,
+                                    void* callbackData) override {
+    Impl::registerMovingObjectCallback(backingStore, callback, callbackData);
+  }
+
   bool ensureMarked(const void* objectPointer) override {
     return Impl::ensureMarked(objectPointer);
   }

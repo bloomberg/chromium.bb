@@ -512,6 +512,26 @@ class NormalPage final : public BasePage {
 
   inline NormalPageArena* arenaForNormalPage() const;
 
+  // Context object holding the state of the arena page compaction pass,
+  // passed in when compacting individual pages.
+  class CompactionContext {
+    STACK_ALLOCATED();
+
+   public:
+    // Page compacting into.
+    NormalPage* m_currentPage = nullptr;
+    // Offset into |m_currentPage| to the next free address.
+    size_t m_allocationPoint = 0;
+    // Chain of available pages to use for compaction. Page compaction
+    // picks the next one when the current one is exhausted.
+    BasePage* m_availablePages = nullptr;
+    // Chain of pages that have been compacted. Page compaction will
+    // add compacted pages once the current one becomes exhausted.
+    BasePage** m_compactedPages = nullptr;
+  };
+
+  void sweepAndCompact(CompactionContext&);
+
  private:
   HeapObjectHeader* findHeaderFromAddress(Address);
   void populateObjectStartBitMap();
@@ -665,6 +685,8 @@ class FreeList {
   // All FreeListEntries in the nth list have size >= 2^n.
   FreeListEntry* m_freeLists[blinkPageSizeLog2];
 
+  size_t freeListSize() const;
+
   friend class NormalPageArena;
 };
 
@@ -761,8 +783,14 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   bool isLazySweeping() const { return m_isLazySweeping; }
   void setIsLazySweeping(bool flag) { m_isLazySweeping = flag; }
 
+  size_t arenaSize();
+  size_t freeListSize();
+
+  void sweepAndCompact();
+
  private:
   void allocatePage();
+
   Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
   Address allocateFromFreeList(size_t, size_t gcInfoIndex);
 

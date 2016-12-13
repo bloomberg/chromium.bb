@@ -38,6 +38,7 @@
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
+#include "platform/heap/HeapCompact.h"
 #include "platform/heap/PagePool.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/Visitor.h"
@@ -79,7 +80,7 @@ uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
 
 const size_t defaultAllocatedObjectSizeThreshold = 100 * 1024;
 
-const char* gcReasonString(BlinkGC::GCReason reason) {
+const char* ThreadState::gcReasonString(BlinkGC::GCReason reason) {
   switch (reason) {
     case BlinkGC::IdleGC:
       return "IdleGC";
@@ -504,6 +505,7 @@ void ThreadState::threadLocalWeakProcessing() {
   // Due to the complexity, we just forbid allocations.
   NoAllocationScope noAllocationScope(this);
 
+  GCForbiddenScope gcForbiddenScope(this);
   std::unique_ptr<Visitor> visitor =
       Visitor::create(this, BlinkGC::ThreadLocalWeakProcessing);
 
@@ -999,7 +1001,7 @@ void ThreadState::runScheduledGC(BlinkGC::StackState stackState) {
     return;
 
   // If a safe point is entered while initiating a GC, we clearly do
-  // not want to do another as part that -- the safe point is only
+  // not want to do another as part of that -- the safe point is only
   // entered after checking if a scheduled GC ought to run first.
   // Prevent that from happening by marking GCs as forbidden while
   // one is initiated and later running.
@@ -1038,6 +1040,34 @@ void ThreadState::makeConsistentForGC() {
   TRACE_EVENT0("blink_gc", "ThreadState::makeConsistentForGC");
   for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
     m_arenas[i]->makeConsistentForGC();
+}
+
+void ThreadState::compact() {
+  if (!heap().compaction()->isCompacting())
+    return;
+
+  SweepForbiddenScope scope(this);
+  ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
+  NoAllocationScope noAllocationScope(this);
+
+  // Compaction is done eagerly and before the mutator threads get
+  // to run again. Doing it lazily is problematic, as the mutator's
+  // references to live objects could suddenly be invalidated by
+  // compaction of a page/heap. We do know all the references to
+  // the relocating objects just after marking, but won't later.
+  // (e.g., stack references could have been created, new objects
+  // created which refer to old collection objects, and so on.)
+
+  // Compact the hash table backing store arena first, it usually has
+  // higher fragmentation and is larger.
+  //
+  // TODO: implement bail out wrt any overall deadline, not compacting
+  // the remaining arenas if the time budget has been exceeded.
+  heap().compaction()->startThreadCompaction();
+  for (int i = BlinkGC::HashTableArenaIndex; i >= BlinkGC::Vector1ArenaIndex;
+       --i)
+    static_cast<NormalPageArena*>(m_arenas[i])->sweepAndCompact();
+  heap().compaction()->finishThreadCompaction();
 }
 
 void ThreadState::makeConsistentForMutator() {
@@ -1123,9 +1153,19 @@ void ThreadState::preSweep() {
 
   eagerSweep();
 
+  // Any sweep compaction must happen after pre-finalizers and eager
+  // sweeping, as it will finalize dead objects in compactable arenas
+  // (e.g., backing stores for container objects.)
+  //
+  // As per-contract for prefinalizers, those finalizable objects must
+  // still be accessible when the prefinalizer runs, hence we cannot
+  // schedule compaction until those have run. Similarly for eager sweeping.
+  compact();
+
 #if defined(ADDRESS_SANITIZER)
   poisonAllHeaps();
 #endif
+
   if (previousGCState == EagerSweepScheduled) {
     // Eager sweeping should happen only in testing.
     completeSweep();
@@ -1674,7 +1714,7 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
   RELEASE_ASSERT(!isGCForbidden());
   completeSweep();
 
-  std::unique_ptr<Visitor> visitor = Visitor::create(this, gcType);
+  GCForbiddenScope gcForbiddenScope(this);
 
   SafePointScope safePointScope(stackState, this);
 
@@ -1684,6 +1724,12 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
   // Try to park the other threads. If we're unable to, bail out of the GC.
   if (!parkThreadsScope.parkThreads())
     return;
+
+  BlinkGC::GCType visitorType = gcType;
+  if (heap().compaction()->shouldCompact(this, gcType, reason))
+    visitorType = heap().compaction()->initialize(this);
+
+  std::unique_ptr<Visitor> visitor = Visitor::create(this, visitorType);
 
   ScriptForbiddenIfMainThreadScope scriptForbidden;
 
@@ -1697,7 +1743,7 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
 
   // Disallow allocation during garbage collection (but not during the
   // finalization that happens when the visitorScope is torn down).
-  ThreadState::NoAllocationScope noAllocationScope(this);
+  NoAllocationScope noAllocationScope(this);
 
   heap().commitCallbackStacks();
   heap().preGC();
@@ -1785,10 +1831,11 @@ void ThreadState::collectGarbageForTerminatingThread() {
     // ahead while it is running, hence the termination GC does not enter a
     // safepoint. VisitorScope will not enter also a safepoint scope for
     // ThreadTerminationGC.
+    GCForbiddenScope gcForbiddenScope(this);
     std::unique_ptr<Visitor> visitor =
         Visitor::create(this, BlinkGC::ThreadTerminationGC);
 
-    ThreadState::NoAllocationScope noAllocationScope(this);
+    NoAllocationScope noAllocationScope(this);
 
     heap().commitCallbackStacks();
     preGC();
