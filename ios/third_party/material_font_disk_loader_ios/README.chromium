@@ -1,0 +1,13 @@
+Name: Material Font Disk Loader iOS
+URL: https://github.com/material-foundation/material-font-disk-loader-ios
+Version: 0
+Revision: 20c8fe37329cb18826f90159ce4ee445079e2e46
+License: Apache 2.0
+License File: src/LICENSE
+Security Critical: yes
+
+Description:
+Registers a single custom font asset from disk.
+
+Local Modifications:
+None

@@ -355,6 +355,15 @@ deps_os = {
     'src/ios/third_party/gcdwebserver/src':
       Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '3d5fd0b8281a7224c057deb2d17709b5bea64836',
 
+    'src/ios/third_party/material_font_disk_loader_ios/src':
+      Var('chromium_git') + '/external/github.com/material-foundation/material-font-disk-loader-ios.git' + '@' + '20c8fe37329cb18826f90159ce4ee445079e2e46',
+
+    'src/ios/third_party/material_roboto_font_loader_ios/src':
+      Var('chromium_git') + '/external/github.com/material-foundation/material-roboto-font-loader-ios.git' + '@' + '2e83b0fdbbd9b12782aa886695dd29b077bad430',
+
+    'src/ios/third_party/material_sprited_animation_view_ios/src':
+      Var('chromium_git') + '/external/github.com/material-foundation/material-sprited-animation-view-ios.git' + '@' + 'e240cdcd4538f0763ca5bd8c5afc2991eb482f1a',
+
     'src/ios/third_party/material_text_accessibility_ios/src':
       Var('chromium_git') + '/external/github.com/google/material-text-accessibility-ios.git' + '@' + '96d2b0f13976a897bc7a41daf67f36d9548cff94',
 
