@@ -100,16 +100,16 @@ static double toTimeOrigin(LocalFrame* frame) {
 }
 
 Performance::Performance(LocalFrame* frame)
-    : PerformanceBase(toTimeOrigin(frame)), DOMWindowProperty(frame) {}
+    : PerformanceBase(toTimeOrigin(frame)),
+      ContextLifecycleObserver(frame ? frame->document() : nullptr) {}
 
 Performance::~Performance() {
   if (frame())
     frame()->performanceMonitor()->unsubscribeAll(this);
 }
 
-void Performance::frameDestroyed() {
+void Performance::contextDestroyed() {
   frame()->performanceMonitor()->unsubscribeAll(this);
-  DOMWindowProperty::frameDestroyed();
 }
 
 ExecutionContext* Performance::getExecutionContext() const {
@@ -161,7 +161,7 @@ ScriptValue Performance::toJSONForBinding(ScriptState* scriptState) const {
 DEFINE_TRACE(Performance) {
   visitor->trace(m_navigation);
   visitor->trace(m_timing);
-  DOMWindowProperty::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
   PerformanceBase::trace(visitor);
   PerformanceMonitor::Client::trace(visitor);
 }
