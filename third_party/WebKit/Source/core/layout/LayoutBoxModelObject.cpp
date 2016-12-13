@@ -226,13 +226,8 @@ void LayoutBoxModelObject::styleWillChange(StyleDifference diff,
 
   FloatStateForStyleChange::setWasFloating(this, isFloating());
 
-  if (const ComputedStyle* oldStyle = style()) {
-    if (hasLayer() && diff.needsPaintInvalidationSubtree()) {
-      if (oldStyle->hasAutoClip() != newStyle.hasAutoClip() ||
-          oldStyle->clip() != newStyle.clip())
-        layer()->clipper().clearClipRectsIncludingDescendants();
-    }
-  }
+  if (hasLayer() && diff.cssClipChanged())
+    layer()->clipper().clearClipRectsIncludingDescendants();
 
   LayoutObject::styleWillChange(diff, newStyle);
 }

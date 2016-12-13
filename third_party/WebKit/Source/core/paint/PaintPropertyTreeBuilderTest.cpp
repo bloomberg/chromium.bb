@@ -3138,4 +3138,15 @@ TEST_P(PaintPropertyTreeBuilderTest,
               !div->layoutObject()->paintProperties()->overflowClip());
 }
 
+// A basic sanity check for over-invalidation of paint properties.
+TEST_P(PaintPropertyTreeBuilderTest, NoPaintPropertyUpdateOnBackgroundChange) {
+  setBodyInnerHTML("<div id='div' style='background-color: blue'>DIV</div>");
+  auto* div = document().getElementById("div");
+
+  document().view()->updateAllLifecyclePhases();
+  div->setAttribute(HTMLNames::styleAttr, "background-color: green");
+  document().view()->updateLifecycleToLayoutClean();
+  EXPECT_FALSE(div->layoutObject()->needsPaintPropertyUpdate());
+}
+
 }  // namespace blink

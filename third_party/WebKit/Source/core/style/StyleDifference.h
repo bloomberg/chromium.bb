@@ -20,9 +20,10 @@ class StyleDifference {
     ZIndexChanged = 1 << 2,
     FilterChanged = 1 << 3,
     BackdropFilterChanged = 1 << 4,
+    CSSClipChanged = 1 << 5,
     // The object needs to issue paint invalidations if it is affected by text
     // decorations or properties dependent on color (e.g., border or outline).
-    TextDecorationOrColorChanged = 1 << 5,
+    TextDecorationOrColorChanged = 1 << 6,
     // If you add a value here, be sure to update the number of bits on
     // m_propertySpecificDifferences.
   };
@@ -32,11 +33,18 @@ class StyleDifference {
         m_layoutType(NoLayout),
         m_recomputeOverflow(false),
         m_propertySpecificDifferences(0),
-        m_scrollAnchorDisablingPropertyChanged(false) {}
+        m_scrollAnchorDisablingPropertyChanged(false),
+        m_needsPaintPropertyUpdate(false) {}
 
   bool hasDifference() const {
-    return m_paintInvalidationType || m_layoutType ||
-           m_propertySpecificDifferences;
+    bool result = m_paintInvalidationType || m_layoutType ||
+                  m_propertySpecificDifferences;
+    // m_recomputeOverflow, m_scrollAnchorDisablingPropertyChanged and
+    // m_needsPaintPropertyUpdate are never set without other flags set.
+    DCHECK(result ||
+           (!m_recomputeOverflow && !m_scrollAnchorDisablingPropertyChanged &&
+            !m_needsPaintPropertyUpdate));
+    return result;
   }
 
   bool hasAtMostPropertySpecificDifferences(
@@ -113,6 +121,11 @@ class StyleDifference {
     m_propertySpecificDifferences |= BackdropFilterChanged;
   }
 
+  bool cssClipChanged() const {
+    return m_propertySpecificDifferences & CSSClipChanged;
+  }
+  void setCSSClipChanged() { m_propertySpecificDifferences |= CSSClipChanged; }
+
   bool textDecorationOrColorChanged() const {
     return m_propertySpecificDifferences & TextDecorationOrColorChanged;
   }
@@ -127,6 +140,9 @@ class StyleDifference {
     m_scrollAnchorDisablingPropertyChanged = true;
   }
 
+  bool needsPaintPropertyUpdate() const { return m_needsPaintPropertyUpdate; }
+  void setNeedsPaintPropertyUpdate() { m_needsPaintPropertyUpdate = true; }
+
  private:
   enum PaintInvalidationType {
     NoPaintInvalidation = 0,
@@ -138,8 +154,9 @@ class StyleDifference {
   enum LayoutType { NoLayout = 0, PositionedMovement, FullLayout };
   unsigned m_layoutType : 2;
   unsigned m_recomputeOverflow : 1;
-  unsigned m_propertySpecificDifferences : 6;
+  unsigned m_propertySpecificDifferences : 7;
   unsigned m_scrollAnchorDisablingPropertyChanged : 1;
+  unsigned m_needsPaintPropertyUpdate : 1;
 };
 
 }  // namespace blink

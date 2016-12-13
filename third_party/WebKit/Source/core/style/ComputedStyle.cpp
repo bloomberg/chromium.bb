@@ -594,8 +594,12 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
 
   updatePropertySpecificDifferences(other, diff);
 
+  // The following conditions need to be at last, because they may depend on
+  // conditions in diff computed above.
   if (scrollAnchorDisablingPropertyChanged(other, diff))
     diff.setScrollAnchorDisablingPropertyChanged();
+  if (diffNeedsPaintPropertyUpdate(other, diff))
+    diff.setNeedsPaintPropertyUpdate();
 
   // Cursors are not checked, since they will be set appropriately in response
   // to mouse events, so they don't need to cause any paint invalidation or
@@ -610,7 +614,7 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
 
 bool ComputedStyle::scrollAnchorDisablingPropertyChanged(
     const ComputedStyle& other,
-    StyleDifference& diff) const {
+    const StyleDifference& diff) const {
   if (m_nonInheritedData.m_position != other.m_nonInheritedData.m_position)
     return true;
 
@@ -932,11 +936,6 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const {
 
 bool ComputedStyle::diffNeedsPaintInvalidationSubtree(
     const ComputedStyle& other) const {
-  if (position() != StaticPosition &&
-      (m_visual->clip != other.m_visual->clip ||
-       m_visual->hasAutoClip != other.m_visual->hasAutoClip))
-    return true;
-
   if (m_rareNonInheritedData.get() != other.m_rareNonInheritedData.get()) {
     if (m_rareNonInheritedData->m_effectiveBlendMode !=
             other.m_rareNonInheritedData->m_effectiveBlendMode ||
@@ -1132,6 +1131,24 @@ void ComputedStyle::updatePropertySpecificDifferences(
       diff.setTextDecorationOrColorChanged();
     }
   }
+
+  bool hasClip = hasOutOfFlowPosition() && !m_visual->hasAutoClip;
+  bool otherHasClip =
+      other.hasOutOfFlowPosition() && !other.m_visual->hasAutoClip;
+  if (hasClip != otherHasClip ||
+      (hasClip && m_visual->clip != other.m_visual->clip))
+    diff.setCSSClipChanged();
+}
+
+bool ComputedStyle::diffNeedsPaintPropertyUpdate(
+    const ComputedStyle& other,
+    const StyleDifference& diff) const {
+  if (diff.transformChanged() || diff.opacityChanged() ||
+      diff.zIndexChanged() || diff.filterChanged() ||
+      diff.backdropFilterChanged() || diff.cssClipChanged())
+    return true;
+
+  return false;
 }
 
 void ComputedStyle::addPaintImage(StyleImage* image) {

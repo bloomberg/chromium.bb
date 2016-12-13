@@ -3971,7 +3971,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                                 TransformationMatrix&) const;
 
   bool scrollAnchorDisablingPropertyChanged(const ComputedStyle& other,
-                                            StyleDifference&) const;
+                                            const StyleDifference&) const;
   bool diffNeedsFullLayoutAndPaintInvalidation(
       const ComputedStyle& other) const;
   bool diffNeedsFullLayout(const ComputedStyle& other) const;
@@ -3982,6 +3982,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       const ComputedStyle& other) const;
   void updatePropertySpecificDifferences(const ComputedStyle& other,
                                          StyleDifference&) const;
+  bool diffNeedsPaintPropertyUpdate(const ComputedStyle& other,
+                                    const StyleDifference&) const;
 
   bool requireTransformOrigin(ApplyTransformOrigin applyOrigin,
                               ApplyMotionPath) const;

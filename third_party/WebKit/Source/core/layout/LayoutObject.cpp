@@ -1467,25 +1467,6 @@ StyleDifference LayoutObject::adjustStyleDifference(
       diff.setNeedsFullLayout();
   }
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
-    // Text nodes share style with their parents but the checked styles don't
-    // apply to them, hence the !isText() check.
-    if (!isText() && (diff.transformChanged() || diff.opacityChanged() ||
-                      diff.zIndexChanged() || diff.filterChanged() ||
-                      diff.backdropFilterChanged())) {
-      // We don't need to invalidate paint of objects on SPv2 when only paint
-      // property or paint order change. Mark the painting layer needing repaint
-      // for changed paint property or paint order. Raster invalidation will be
-      // issued if needed during paint.
-      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        ObjectPaintInvalidator(*this).slowSetPaintingLayerNeedsRepaint();
-
-      // When transform, opacity, etc. change, paint properties will also change
-      // so we need to mark this object as needing an update.
-      getMutableForPainting().setNeedsPaintPropertyUpdate();
-    }
-  }
-
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     // If transform changed, and the layer does not paint into its own separate
     // backing, then we need to invalidate paints.
@@ -1529,6 +1510,11 @@ StyleDifference LayoutObject::adjustStyleDifference(
         diff.setNeedsPaintInvalidationSubtree();
     }
   }
+
+  // TODO(wangxianzhu): We may avoid subtree paint invalidation on CSS clip
+  // change for SPv2.
+  if (diff.cssClipChanged())
+    diff.setNeedsPaintInvalidationSubtree();
 
   // Optimization: for decoration/color property changes, invalidation is only
   // needed if we have style or text affected by these properties.
@@ -1738,6 +1724,20 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style) {
   else if (diff.needsPaintInvalidationObject() ||
            updatedDiff.needsPaintInvalidationObject())
     setShouldDoFullPaintInvalidation();
+
+  // Text nodes share style with their parents but the paint properties don't
+  // apply to them, hence the !isText() check.
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+      diff.needsPaintPropertyUpdate() && !isText()) {
+    setNeedsPaintPropertyUpdate();
+
+    // We don't need to invalidate paint of objects on SPv2 when only paint
+    // property or paint order change. Mark the painting layer needing repaint
+    // for changed paint property or paint order. Raster invalidation will be
+    // issued if needed during paint.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+      ObjectPaintInvalidator(*this).slowSetPaintingLayerNeedsRepaint();
+  }
 }
 
 void LayoutObject::styleWillChange(StyleDifference diff,
