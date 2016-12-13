@@ -39,24 +39,26 @@
     </style>
     <settings-animated-pages id="pages" section="bluetooth">
       <neon-animatable route-path="default">
-        <div class="settings-box first"
+        <div class="settings-box first" actionable
             on-tap="toggleDeviceListExpanded_">
           <iron-icon icon="settings:bluetooth"></iron-icon>
           <span class="middle">$i18n{bluetoothEnable}</span>
+          <cr-policy-pref-indicator
+              pref="[[prefs.cros.device.allow_bluetooth]]"
+              hidden="[[prefs.cros.device.allow_bluetooth.value]]">
+          </cr-policy-pref-indicator>
           <cr-expand-button id="expandListButton"
               alt="$i18n{bluetoothExpandA11yLabel}"
               hidden$="[[!bluetoothEnabled_]]"
               expanded="{{deviceListExpanded_}}">
           </cr-expand-button>
-          <paper-toggle-button id="enableBluetooth"
-              checked="{{bluetoothEnabled_}}"
-              disabled="[[!adapterState_.available]]"
-              on-change="onBluetoothEnabledChange_">
-          </paper-toggle-button>
-          <cr-policy-pref-indicator
-              pref="[[prefs.cros.device.allow_bluetooth]]"
-              hidden="[[prefs.cros.device.allow_bluetooth.value]]">
-          </cr-policy-pref-indicator>
+          <div class="secondary-action">
+            <paper-toggle-button id="enableBluetooth"
+                checked="{{bluetoothEnabled_}}"
+                disabled="[[!adapterState_.available]]"
+                on-change="onBluetoothEnabledChange_" on-tap="stopTap_">
+            </paper-toggle-button>
+          </div>
         </div>
         <iron-collapse opened="[[canShowDeviceList_(bluetoothEnabled_,
                                                     deviceListExpanded_)]]">

@@ -576,4 +576,12 @@ Polymer({
     this.pairingDevice_ = null;
     this.pairingEvent_ = null;
   },
+
+  /**
+   * @param {Event} e
+   * @private
+   */
+  stopTap_: function(e) {
+    e.stopPropagation();
+  },
 });
