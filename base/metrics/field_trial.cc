@@ -26,7 +26,7 @@
 #define POSIX_WITH_ZYGOTE 1
 #endif
 
-#if defined(POSIX_WITH_ZYGOTE)
+#if defined(POSIX_WITH_ZYGOTE) || defined(OS_MACOSX)
 #include "base/posix/global_descriptors.h"
 #endif
 
@@ -219,7 +219,7 @@ HANDLE CreateReadOnlyHandle(FieldTrialList::FieldTrialAllocator* allocator) {
 }
 #endif
 
-#if defined(POSIX_WITH_ZYGOTE)
+#if defined(POSIX_WITH_ZYGOTE) || defined(OS_MACOSX)
 int CreateReadOnlyHandle(FieldTrialList::FieldTrialAllocator* allocator) {
   SharedMemoryHandle new_handle;
   allocator->shared_memory()->ShareReadOnlyToProcess(GetCurrentProcessHandle(),
@@ -784,11 +784,14 @@ void FieldTrialList::CreateTrialsFromCommandLine(
   }
 #endif
 
-#if defined(POSIX_WITH_ZYGOTE)
-  // If we failed to create trials from the descriptor, fallback to the command
-  // line. Otherwise we're good -- return.
-  if (CreateTrialsFromDescriptor(fd_key))
-    return;
+#if defined(POSIX_WITH_ZYGOTE) || defined(OS_MACOSX)
+  // On POSIX, we check if the handle is valid by seeing if the browser process
+  // sent over the switch (we don't care about the value). Invalid handles
+  // occur in some browser tests which don't initialize the allocator.
+  if (cmd_line.HasSwitch(field_trial_handle_switch)) {
+    bool result = CreateTrialsFromDescriptor(fd_key);
+    DCHECK(result);
+  }
 #endif
 
   if (cmd_line.HasSwitch(switches::kForceFieldTrials)) {
@@ -817,7 +820,7 @@ void FieldTrialList::CreateFeaturesFromCommandLine(
       global_->field_trial_allocator_.get());
 }
 
-#if defined(POSIX_WITH_ZYGOTE)
+#if defined(POSIX_WITH_ZYGOTE) || defined(OS_MACOSX)
 // static
 bool FieldTrialList::CreateTrialsFromDescriptor(int fd_key) {
   if (!kUseSharedMemoryForFieldTrials)
@@ -830,7 +833,12 @@ bool FieldTrialList::CreateTrialsFromDescriptor(int fd_key) {
   if (fd == -1)
     return false;
 
+#if defined(POSIX_WITH_ZYGOTE)
   SharedMemoryHandle shm_handle(fd, true);
+#elif defined(OS_MACOSX)
+  SharedMemoryHandle shm_handle(FileDescriptor(fd, true));
+#endif
+
   bool result = FieldTrialList::CreateTrialsFromSharedMemoryHandle(shm_handle);
   DCHECK(result);
   return true;
@@ -880,7 +888,7 @@ void FieldTrialList::CopyFieldTrialStateToFlags(
     return;
   }
 
-#if defined(OS_WIN) || defined(POSIX_WITH_ZYGOTE)
+#if defined(OS_WIN) || defined(POSIX_WITH_ZYGOTE) || defined(OS_MACOSX)
   // Use shared memory to pass the state if the feature is enabled, otherwise
   // fallback to passing it via the command line as a string.
   if (kUseSharedMemoryForFieldTrials) {
@@ -898,9 +906,7 @@ void FieldTrialList::CopyFieldTrialStateToFlags(
 #if defined(OS_WIN)
     // We need to pass a named anonymous handle to shared memory over the
     // command line on Windows, since the child doesn't know which of the
-    // handles it inherited it should open. On POSIX, we don't need to do this
-    // -- we dup the fd into a fixed fd kFieldTrialDescriptor, so we can just
-    // look it up there.
+    // handles it inherited it should open.
     // PlatformFile is typedef'd to HANDLE which is typedef'd to void *. We
     // basically cast the handle into an int (uintptr_t, to be exact), stringify
     // the int, and pass it as a command-line flag. The child process will do
@@ -910,6 +916,13 @@ void FieldTrialList::CopyFieldTrialStateToFlags(
         reinterpret_cast<uintptr_t>(global_->readonly_allocator_handle_);
     std::string field_trial_handle = std::to_string(uintptr_handle);
     cmd_line->AppendSwitchASCII(field_trial_handle_switch, field_trial_handle);
+#elif defined(POSIX_WITH_ZYGOTE) || defined(OS_MACOSX)
+    // On POSIX, we dup the fd into a fixed fd kFieldTrialDescriptor, so we
+    // don't have to pass over the handle (it's not even the right handle
+    // anyways). But some browser tests don't create the allocator, so we need
+    // to be able to distinguish valid and invalid handles. We do that by just
+    // checking that the flag is set with a dummy value.
+    cmd_line->AppendSwitchASCII(field_trial_handle_switch, "1");
 #endif
     return;
   }
@@ -1210,6 +1223,9 @@ void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
   SharedMemoryCreateOptions options;
   options.size = kFieldTrialAllocationSize;
   options.share_read_only = true;
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  options.type = SharedMemoryHandle::POSIX;
+#endif
 
   std::unique_ptr<SharedMemory> shm(new SharedMemory());
   if (!shm->Create(options))
@@ -1232,7 +1248,7 @@ void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
   FeatureList::GetInstance()->AddFeaturesToAllocator(
       global_->field_trial_allocator_.get());
 
-#if defined(OS_WIN) || defined(POSIX_WITH_ZYGOTE)
+#if defined(OS_WIN) || defined(POSIX_WITH_ZYGOTE) || defined(OS_MACOSX)
   // Set |readonly_allocator_handle_| so we can pass it to be inherited and
   // via the command line.
   global_->readonly_allocator_handle_ =

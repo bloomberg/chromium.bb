@@ -647,8 +647,7 @@ class BASE_EXPORT FieldTrialList {
   static bool CreateTrialsFromHandleSwitch(const std::string& handle_switch);
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_MACOSX) && \
-    !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_ANDROID)
   // On POSIX systems that use the zygote, we look up the correct fd that backs
   // the shared memory segment containing the field trials by looking it up via
   // an fd key in GlobalDescriptors. Returns true on success, false on failure.
