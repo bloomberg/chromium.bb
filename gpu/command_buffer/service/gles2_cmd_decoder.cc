@@ -3840,6 +3840,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT;
   if (workarounds().remove_invariant_and_centroid_for_essl3)
     driver_bug_workarounds |= SH_REMOVE_INVARIANT_AND_CENTROID_FOR_ESSL3;
+  if (workarounds().rewrite_float_unary_minus_operator)
+    driver_bug_workarounds |= SH_REWRITE_FLOAT_UNARY_MINUS_OPERATOR;
 
   resources.WEBGL_debug_shader_precision =
       group_->gpu_preferences().emulate_shader_precision;

@@ -153,6 +153,8 @@
          reverse_point_sprite_coord_origin)                  \
   GPU_OP(REWRITE_DO_WHILE_LOOPS,                             \
          rewrite_do_while_loops)                             \
+  GPU_OP(REWRITE_FLOAT_UNARY_MINUS_OPERATOR,                 \
+         rewrite_float_unary_minus_operator)                 \
   GPU_OP(REWRITE_TEXELFETCHOFFSET_TO_TEXELFETCH,             \
          rewrite_texelfetchoffset_to_texelfetch)             \
   GPU_OP(SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS,             \

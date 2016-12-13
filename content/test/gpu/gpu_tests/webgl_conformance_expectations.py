@@ -359,12 +359,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['mac', 'amd'], bug=642822)
 
-    # Mac Intel failures
-
-    # Failed on OSX 10.10 and 10.11
-    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
-        ['mac', 'intel'], bug=672380)
-
     # Mac Retina NVidia failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['mac', ('nvidia', 0xfe9)], bug=635081)

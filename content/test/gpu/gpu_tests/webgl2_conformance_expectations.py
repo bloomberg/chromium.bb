@@ -519,10 +519,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac', 'intel'], bug=618464)
 
-    # Failed on OSX 10.10 and 10.11
-    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
-        ['mac', 'intel'], bug=672380)
-
     # Linux only.
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_byte.html',

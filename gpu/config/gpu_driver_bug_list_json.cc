@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.24",
+  "version": "9.25",
   "entries": [
     {
       "id": 1,
@@ -2280,6 +2280,22 @@ LONG_STRING_CONST(
       "vendor_id": "0x1002",
       "features": [
         "decode_encode_srgb_for_generatemipmap"
+      ]
+    },
+    {
+      "id": 211,
+      "description": "Rewrite -float to 0.0 - float for Intel Mac",
+      "cr_bugs": [672380],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<=",
+          "value": "10.11"
+        }
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "rewrite_float_unary_minus_operator"
       ]
     }
   ]
