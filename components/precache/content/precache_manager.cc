@@ -11,7 +11,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -27,12 +30,19 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/http_cache.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
 
-namespace {
+namespace precache {
 
 const char kPrecacheFieldTrialName[] = "Precache";
+const char kMinCacheSizeParam[] = "min_cache_size";
+
+namespace {
+
 const char kPrecacheFieldTrialEnabledGroup[] = "Enabled";
 const char kPrecacheFieldTrialControlGroup[] = "Control";
 const char kConfigURLParam[] = "config_url";
@@ -41,8 +51,6 @@ const char kDataReductionProxyParam[] = "disable_if_data_reduction_proxy";
 const size_t kNumTopHosts = 100;
 
 }  // namespace
-
-namespace precache {
 
 size_t NumTopHosts() {
   return kNumTopHosts;
@@ -123,6 +131,94 @@ PrecacheManager::AllowedType PrecacheManager::PrecachingAllowed() const {
   return AllowedType::DISALLOWED;
 }
 
+void PrecacheManager::OnCacheBackendReceived(int net_error_code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (net_error_code != net::OK) {
+    // Assume there is no cache.
+    cache_backend_ = nullptr;
+    OnCacheSizeReceived(0);
+    return;
+  }
+  DCHECK(cache_backend_);
+  int result = cache_backend_->CalculateSizeOfAllEntries(base::Bind(
+      &PrecacheManager::OnCacheSizeReceived, base::Unretained(this)));
+  if (result == net::ERR_IO_PENDING) {
+    // Wait for the callback.
+  } else if (result >= 0) {
+    // The result is the expected bytes already.
+    OnCacheSizeReceived(result);
+  } else {
+    // Error occurred. Couldn't get the size. Assume there is no cache.
+    OnCacheSizeReceived(0);
+  }
+  cache_backend_ = nullptr;
+}
+
+void PrecacheManager::OnCacheSizeReceived(int cache_size_bytes) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PrecacheManager::OnCacheSizeReceivedInUIThread,
+                 base::Unretained(this), cache_size_bytes));
+}
+
+void PrecacheManager::OnCacheSizeReceivedInUIThread(int cache_size_bytes) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  UMA_HISTOGRAM_MEMORY_KB("Precache.CacheSize.AllEntries",
+                          cache_size_bytes / 1024);
+
+  if (cache_size_bytes < min_cache_size_bytes_) {
+    OnDone();  // Do not continue.
+  } else {
+    BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::DB, FROM_HERE,
+        base::Bind(&PrecacheDatabase::GetUnfinishedWork,
+                   base::Unretained(precache_database_.get())),
+        base::Bind(&PrecacheManager::OnGetUnfinishedWorkDone, AsWeakPtr()));
+  }
+}
+
+void PrecacheManager::PrecacheIfCacheIsBigEnough(
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  CHECK(url_request_context_getter);
+
+  // Continue with OnGetUnfinishedWorkDone only if the size of the cache is
+  // at least min_cache_size_bytes_.
+  // Class disk_cache::Backend does not expose its maximum size. However, caches
+  // are usually full, so we can use the size of all the entries stored in the
+  // cache (via CalculateSizeOfAllEntries) as a proxy of its maximum size.
+  net::URLRequestContext* context =
+      url_request_context_getter->GetURLRequestContext();
+  if (!context) {
+    OnCacheSizeReceived(0);
+    return;
+  }
+  net::HttpTransactionFactory* factory = context->http_transaction_factory();
+  if (!factory) {
+    OnCacheSizeReceived(0);
+    return;
+  }
+  net::HttpCache* cache = factory->GetCache();
+  if (!cache) {
+    // There is no known cache. Assume that there is no cache.
+    // TODO(jamartin): I'm not sure this can be an actual posibility. Consider
+    // making this a CHECK(cache).
+    OnCacheSizeReceived(0);
+    return;
+  }
+  const int net_error_code = cache->GetBackend(
+      &cache_backend_, base::Bind(&PrecacheManager::OnCacheBackendReceived,
+                                  base::Unretained(this)));
+  if (net_error_code != net::ERR_IO_PENDING) {
+    // No need to wait for the callback. The callback hasn't been called with
+    // the appropriate code, so we call it directly.
+    OnCacheBackendReceived(net_error_code);
+  }
+}
+
 void PrecacheManager::StartPrecaching(
     const PrecacheCompletionCallback& precache_completion_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -140,12 +236,30 @@ void PrecacheManager::StartPrecaching(
       base::Bind(&PrecacheDatabase::SetLastPrecacheTimestamp,
                  base::Unretained(precache_database_.get()),
                  base::Time::Now()));
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(&PrecacheDatabase::GetUnfinishedWork,
-                 base::Unretained(precache_database_.get())),
-      base::Bind(&PrecacheManager::OnGetUnfinishedWorkDone, AsWeakPtr()));
+
+  // Ignore boolean return value. In all documented failure cases, it sets the
+  // int to a reasonable value.
+  base::StringToInt(variations::GetVariationParamValue(kPrecacheFieldTrialName,
+                                                       kMinCacheSizeParam),
+                    &min_cache_size_bytes_);
+  if (min_cache_size_bytes_ <= 0) {
+    // Skip looking up the cache size, because it doesn't matter.
+    OnCacheSizeReceivedInUIThread(0);
+    return;
+  }
+
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter(
+      content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+          ->GetURLRequestContext());
+  if (!url_request_context_getter) {
+    OnCacheSizeReceivedInUIThread(0);
+    return;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PrecacheManager::PrecacheIfCacheIsBigEnough, AsWeakPtr(),
+                 std::move(url_request_context_getter)));
 }
 
 void PrecacheManager::OnGetUnfinishedWorkDone(

@@ -17,10 +17,13 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/precache/core/precache_fetcher.h"
+#include "net/disk_cache/disk_cache.h"
+#include "net/http/http_cache.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -55,6 +58,8 @@ class PrecacheDatabase;
 class PrecacheUnfinishedWork;
 
 // Visible for test.
+extern const char kPrecacheFieldTrialName[];
+extern const char kMinCacheSizeParam[];
 size_t NumTopHosts();
 
 // Class that manages all precaching-related activities. Owned by the
@@ -162,6 +167,14 @@ class PrecacheManager : public KeyedService,
   // gets the list of TopHosts for metrics purposes, but otherwise does nothing.
   void OnHostsReceivedThenDone(const history::TopHostsList& host_counts);
 
+  // Chain of callbacks for StartPrecaching that make sure that we only precache
+  // if there is a cache big enough.
+  void PrecacheIfCacheIsBigEnough(
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+  void OnCacheBackendReceived(int net_error_code);
+  void OnCacheSizeReceived(int cache_size_bytes);
+  void OnCacheSizeReceivedInUIThread(int cache_size_bytes);
+
   // Returns true if precaching is allowed for the browser context.
   AllowedType PrecachingAllowed() const;
 
@@ -213,6 +226,15 @@ class PrecacheManager : public KeyedService,
 
   // Flag indicating whether or not precaching is currently in progress.
   bool is_precaching_;
+
+  // Pointer to the backend of the cache. Required to get the size of the cache.
+  // It is not owned and it is reset on demand via callbacks.
+  // It should only be accessed from the IO thread.
+  disk_cache::Backend* cache_backend_;
+
+  // The minimum cache size allowed for precaching. Initialized by
+  // StartPrecaching and read by OnCacheSizeReceivedInUIThread.
+  int min_cache_size_bytes_;
 
   // Work that hasn't yet finished.
   std::unique_ptr<PrecacheUnfinishedWork> unfinished_work_;

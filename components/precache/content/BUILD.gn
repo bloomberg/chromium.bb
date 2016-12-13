@@ -39,6 +39,7 @@ source_set("unit_tests") {
     "//components/history/core/browser",
     "//components/precache/core",
     "//components/precache/core:proto",
+    "//components/variations:test_support",
     "//content/public/browser",
     "//content/test:test_support",
     "//net:test_support",

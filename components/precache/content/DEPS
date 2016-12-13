@@ -5,12 +5,14 @@ include_rules = [
   "+components/variations",
   "+content/public/browser",
   "+net/base",
+  "+net/disk_cache",
+  "+net/http",
+  "+net/url_request",
 ]
 
 specific_include_rules = {
   '.*_[a-z]*test\.cc': [
     "+content/public/test",
-    "+net/http",
-    "+net/url_request",
+    "+net/test",
   ],
 }

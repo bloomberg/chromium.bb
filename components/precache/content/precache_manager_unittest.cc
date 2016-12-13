@@ -28,12 +28,17 @@
 #include "components/precache/core/precache_database.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/unfinished_work.pb.h"
+#include "components/variations/variations_params_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/test_completion_callback.h"
+#include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
+#include "net/test/gtest_util.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -223,6 +228,7 @@ class PrecacheManagerTest : public testing::Test {
   testing::NiceMock<MockHistoryService> history_service_;
   base::HistogramTester histograms_;
   net::HttpResponseInfo info_;
+  variations::testing::VariationParamsManager variation_params_;
 };
 
 TEST_F(PrecacheManagerTest, StartAndFinishPrecaching) {
@@ -251,6 +257,75 @@ TEST_F(PrecacheManagerTest, StartAndFinishPrecaching) {
   expected_requested_urls.insert(GURL(kConfigURL));
   expected_requested_urls.insert(GURL(kGoodManifestURL));
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
+}
+
+TEST_F(PrecacheManagerTest, StartPrecachingWithGoodSizedCache) {
+  variation_params_.SetVariationParams(kPrecacheFieldTrialName,
+                                       {{kMinCacheSizeParam, "1"}});
+
+  // Let's store something in the cache so we pass the min_cache_size threshold.
+  disk_cache::Backend* cache_backend;
+  {
+    // Get the CacheBackend.
+    net::TestCompletionCallback cb;
+    net::HttpCache* cache =
+        content::BrowserContext::GetDefaultStoragePartition(&browser_context_)
+            ->GetURLRequestContext()
+            ->GetURLRequestContext()
+            ->http_transaction_factory()
+            ->GetCache();
+    CHECK_NE(nullptr, cache);
+    int rv = cache->GetBackend(&cache_backend, cb.callback());
+    CHECK_EQ(net::OK, cb.GetResult(rv));
+    CHECK_NE(nullptr, cache_backend);
+    CHECK_EQ(cache_backend, cache->GetCurrentBackend());
+  }
+  disk_cache::Entry* entry = nullptr;
+  {
+    // Create a cache Entry.
+    net::TestCompletionCallback cb;
+    int rv = cache_backend->CreateEntry("key", &entry, cb.callback());
+    CHECK_EQ(net::OK, cb.GetResult(rv));
+    CHECK_NE(nullptr, entry);
+  }
+  {
+    // Store some data in the cache Entry.
+    const std::string data(1, 'a');
+    scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer(data));
+    net::TestCompletionCallback cb;
+    int rv = entry->WriteData(0, 0, buffer.get(), buffer->size(), cb.callback(),
+                              false);
+    entry->Close();
+    CHECK_EQ(buffer->size(), cb.GetResult(rv));
+  }
+  {
+    // Make sure everything went according to plan.
+    net::TestCompletionCallback cb;
+    int rv = cache_backend->CalculateSizeOfAllEntries(cb.callback());
+    CHECK_LE(1, cb.GetResult(rv));
+  }
+  EXPECT_FALSE(precache_manager_->IsPrecaching());
+
+  precache_manager_->StartPrecaching(precache_callback_.GetCallback());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(precache_manager_->IsPrecaching());
+  // Now it should be waiting for the top hosts.
+}
+
+TEST_F(PrecacheManagerTest, StartPrecachingStopsOnSmallCaches) {
+  // We don't have any entry in the cache, so the reported cache_size = 0 and
+  // thus it will fall below the threshold of 1.
+  variation_params_.SetVariationParams(kPrecacheFieldTrialName,
+                                       {{kMinCacheSizeParam, "1"}});
+  EXPECT_FALSE(precache_manager_->IsPrecaching());
+
+  precache_manager_->StartPrecaching(precache_callback_.GetCallback());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(precache_manager_->IsPrecaching());
+  EXPECT_TRUE(precache_callback_.was_on_done_called());
+  EXPECT_TRUE(url_callback_.requested_urls().empty());
 }
 
 TEST_F(PrecacheManagerTest, StartAndFinishPrecachingWithUnfinishedHosts) {
@@ -355,7 +430,9 @@ TEST_F(PrecacheManagerTest, StartAndCancelPrecachingAfterURLsReceived) {
 
   EXPECT_TRUE(precache_manager_->IsPrecaching());
   // Run a task to get unfinished work, and to get hosts.
-  for (int i = 0; i < 2; ++i) {
+  // We need to call run_loop.Run as many times as needed to go through the
+  // chain of callbacks :-(.
+  for (int i = 0; i < 4; ++i) {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   run_loop.QuitClosure());
@@ -418,7 +495,8 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchDuringPrecaching) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
       histograms_.GetTotalCountsForPrefix("Precache."),
-      UnorderedElementsAre(Pair("Precache.DownloadedPrecacheMotivated", 1),
+      UnorderedElementsAre(Pair("Precache.CacheSize.AllEntries", 1),
+                           Pair("Precache.DownloadedPrecacheMotivated", 1),
                            Pair("Precache.Fetch.PercentCompleted", 1),
                            Pair("Precache.Fetch.ResponseBytes.Network", 1),
                            Pair("Precache.Fetch.ResponseBytes.Total", 1),
@@ -498,6 +576,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   RecordStatsForPrecacheFetch(
       GURL("http://yesterday-fetch.com"), std::string(), base::TimeDelta(),
       kCurrentTime - base::TimeDelta::FromDays(1), info_, 1000);
+  expected_histogram_count_map["Precache.CacheSize.AllEntries"]++;
   expected_histogram_count_map["Precache.DownloadedPrecacheMotivated"] += 3;
   expected_histogram_count_map["Precache.Fetch.PercentCompleted"]++;
   expected_histogram_count_map["Precache.Fetch.ResponseBytes.Network"]++;
@@ -527,6 +606,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   // The precache fetcher runs until done, which records these histograms,
   // and then cancels precaching, which records these histograms again.
   // In practice
+  expected_histogram_count_map["Precache.CacheSize.AllEntries"]++;
   expected_histogram_count_map["Precache.Fetch.PercentCompleted"]++;
   expected_histogram_count_map["Precache.Fetch.ResponseBytes.Network"]++;
   expected_histogram_count_map["Precache.Fetch.ResponseBytes.Total"]++;
