@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.TabsOpenedFromExternalAppTest;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -142,6 +143,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FirstRunStatus.setFirstRunFlowComplete(true);
+            }
+        });
+
         Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
         mTestServer = EmbeddedTestServer.createAndStartServer(appContext);
         mTestPage = mTestServer.getURL(TEST_PAGE);
@@ -153,6 +162,13 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
     @Override
     protected void tearDown() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FirstRunStatus.setFirstRunFlowComplete(false);
+            }
+        });
+
         mTestServer.stopAndDestroyServer();
 
         // finish() is called on a non-UI thread by the testing harness. Must hide the menu

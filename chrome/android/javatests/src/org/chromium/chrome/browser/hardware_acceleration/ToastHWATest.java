@@ -20,6 +20,7 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadTestBase;
+import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -44,12 +45,27 @@ public class ToastHWATest extends DownloadTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FirstRunStatus.setFirstRunFlowComplete(true);
+            }
+        });
+
         deleteFilesInDownloadDirectory(TEST_FILES);
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     @Override
     protected void tearDown() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FirstRunStatus.setFirstRunFlowComplete(false);
+            }
+        });
+
         mTestServer.stopAndDestroyServer();
         deleteFilesInDownloadDirectory(TEST_FILES);
         super.tearDown();

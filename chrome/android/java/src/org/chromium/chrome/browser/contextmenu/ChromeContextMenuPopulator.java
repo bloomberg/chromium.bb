@@ -15,6 +15,7 @@ import android.webkit.MimeTypeMap;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -270,6 +271,16 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                                 TemplateUrlService.getInstance()
                                         .getDefaultSearchEngineTemplateUrl().getShortName()));
             }
+        }
+
+        // Hide all items that could spawn additional tabs until FRE has been completed.
+        if (!FirstRunStatus.getFirstRunFlowComplete()) {
+            menu.findItem(R.id.contextmenu_open_image_in_new_tab).setVisible(false);
+            menu.findItem(R.id.contextmenu_open_in_other_window).setVisible(false);
+            menu.findItem(R.id.contextmenu_open_in_new_tab).setVisible(false);
+            menu.findItem(R.id.contextmenu_open_in_incognito_tab).setVisible(false);
+            menu.findItem(R.id.contextmenu_search_by_image).setVisible(false);
+            menu.findItem(R.id.menu_id_open_in_chrome).setVisible(false);
         }
 
         if (mMode == FULLSCREEN_TAB_MODE) {
