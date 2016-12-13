@@ -2075,8 +2075,12 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   // Moreover, we can't have proper multithreading on X11, so this could cause
   // hard to debug issues there, if there were multiple "ChildThreads".
   for (const auto& state : state_transitions) {
-    for (size_t i = 0; i < num_concurrent_encoders; i++)
-      ASSERT_EQ(state, notes[i]->Wait());
+    for (size_t i = 0; i < num_concurrent_encoders && !HasFailure(); i++) {
+      EXPECT_EQ(state, notes[i]->Wait());
+    }
+    if (HasFailure()) {
+      break;
+    }
   }
 
   for (size_t i = 0; i < num_concurrent_encoders; ++i) {
@@ -2113,9 +2117,8 @@ void SimpleTestFunc() {
                                           CS_FINISHED};
 
   for (const auto& state : state_transitions) {
-    ClientState wait_state = note->Wait();
-    EXPECT_EQ(state, wait_state);
-    if (state != wait_state) {
+    EXPECT_EQ(state, note->Wait());
+    if (testing::Test::HasFailure()) {
       break;
     }
   }
