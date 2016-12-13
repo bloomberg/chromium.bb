@@ -94,6 +94,11 @@ class PopularSites : public net::URLFetcherDelegate {
 
   const base::FilePath& local_path() const { return local_path_; }
 
+  // Public for diagnostic pages only.
+  GURL GetURLToUse();
+  std::string GetCountryToUse();
+  std::string GetVersionToUse();
+
   // Register preferences used by this class.
   static void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* user_prefs);

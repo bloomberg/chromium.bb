@@ -17,6 +17,7 @@ const char kChromeUICreditsURL[] = "chrome://credits/";
 const char kChromeUIFlagsURL[] = "chrome://flags/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUINewTabURL[] = "chrome://newtab/";
+const char kChromeUINTPTilesInternalsURL[] = "chrome://ntp-tiles-internals/";
 const char kChromeUIOfflineURL[] = "chrome://offline/";
 const char kChromeUIPhysicalWebURL[] = "chrome://physical-web/";
 const char kChromeUIPopularSitesInternalsURL[] =
@@ -39,6 +40,7 @@ const char kChromeUIHistoryFrameHost[] = "history-frame";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUINetExportHost[] = "net-export";
 const char kChromeUINewTabHost[] = "newtab";
+const char kChromeUINTPTilesInternalsHost[] = "ntp-tiles-internals";
 const char kChromeUIOfflineHost[] = "offline";
 const char kChromeUIOmahaHost[] = "omaha";
 const char kChromeUIPhysicalWebHost[] = "physical-web";
@@ -53,13 +55,13 @@ const char kChromeUIVersionHost[] = "version";
 // These hosts will also be suggested by BuiltinProvider.
 // 'histograms' is chrome WebUI on iOS, content WebUI on other platforms.
 const char* const kChromeHostURLs[] = {
-    kChromeUIBookmarksHost,             kChromeUIChromeURLsHost,
-    kChromeUICreditsHost,               kChromeUIFlagsHost,
-    kChromeUIHistogramHost,             kChromeUINetExportHost,
-    kChromeUINewTabHost,                kChromeUISignInInternalsHost,
-    kChromeUISyncInternalsHost,         kChromeUIPhysicalWebHost,
-    kChromeUIPopularSitesInternalsHost, kChromeUITermsHost,
-    kChromeUIVersionHost,
+    kChromeUIBookmarksHost,       kChromeUIChromeURLsHost,
+    kChromeUICreditsHost,         kChromeUIFlagsHost,
+    kChromeUIHistogramHost,       kChromeUINetExportHost,
+    kChromeUINewTabHost,          kChromeUINTPTilesInternalsHost,
+    kChromeUISignInInternalsHost, kChromeUISyncInternalsHost,
+    kChromeUIPhysicalWebHost,     kChromeUIPopularSitesInternalsHost,
+    kChromeUITermsHost,           kChromeUIVersionHost,
 };
 const size_t kNumberOfChromeHostURLs = arraysize(kChromeHostURLs);
 

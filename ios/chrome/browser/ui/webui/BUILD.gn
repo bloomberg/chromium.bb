@@ -12,6 +12,8 @@ source_set("webui") {
     "flags_ui.cc",
     "flags_ui.h",
     "mojo_web_ui_ios_controller.h",
+    "ntp_tiles_internals_ui.cc",
+    "ntp_tiles_internals_ui.h",
     "physical_web_ui.cc",
     "physical_web_ui.h",
     "popular_sites_internals_ui.cc",

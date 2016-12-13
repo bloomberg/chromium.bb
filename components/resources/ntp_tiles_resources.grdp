@@ -5,4 +5,7 @@
     <include name="IDR_POPULAR_SITES_INTERNALS_JS" file="../ntp_tiles/webui/resources/popular_sites_internals.js" type="BINDATA" />
     <include name="IDR_POPULAR_SITES_INTERNALS_CSS" file="../ntp_tiles/webui/resources/popular_sites_internals.css" type="BINDATA" />
   </if>
+  <include name="IDR_NTP_TILES_INTERNALS_HTML" file="../ntp_tiles/webui/resources/ntp_tiles_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_NTP_TILES_INTERNALS_JS" file="../ntp_tiles/webui/resources/ntp_tiles_internals.js" type="BINDATA" />
+  <include name="IDR_NTP_TILES_INTERNALS_CSS" file="../ntp_tiles/webui/resources/ntp_tiles_internals.css" type="BINDATA" />
 </grit-part>
