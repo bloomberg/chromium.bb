@@ -38,7 +38,6 @@ import tempfile
 import zipfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
-import devil_chromium
 from play_services import utils
 from pylib.utils import argparse_utils
 
@@ -72,8 +71,6 @@ def main():
                       help='show the configuration file format help')
 
   args = parser.parse_args()
-
-  devil_chromium.Initialize()
 
   return ProcessGooglePlayServices(args.repository,
                                    args.out_dir,
