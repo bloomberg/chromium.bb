@@ -23,7 +23,7 @@
       }
 
       div.separator {
-        background-color: rgba(0, 0, 0, 0.08);
+        background-color: var(--separator-color);
         flex-shrink: 0;
         height: 1px;
         margin: 8px 0;
@@ -45,7 +45,7 @@
       iron-selector {
         -webkit-user-select: none;
         background-color: transparent;
-        color: #5a5a5a;
+        color: var(--sidebar-unselected-color);
         display: flex;
         flex: 1;
         flex-direction: column;
@@ -70,7 +70,7 @@
       }
 
       iron-selector > a.iron-selected {
-        color: var(--google-blue-500);
+        color: var(--link-color);
       }
 
       #spacer {
@@ -78,7 +78,7 @@
       }
 
       #footer {
-        color: var(--paper-grey-600);
+        color: var(--sidebar-footer-text-color);
         width: var(--side-bar-width);
       }
 
@@ -90,7 +90,6 @@
       }
 
       #footer a {
-        color: var(--google-blue-700);
         text-decoration: none;
       }
     </style>

@@ -16,7 +16,6 @@
   <template>
     <style include="shared-style">
       :host {
-        --checked-color: rgb(68, 136, 255);
         display: block;
         outline: none;
         pointer-events: none;
@@ -81,7 +80,7 @@
       }
 
       :host([selected]) #checkbox {
-        color: var(--checked-color);
+        color: var(--interactive-color);
       }
 
       #checkmark {
@@ -109,8 +108,8 @@
       }
 
       :host([selected]) #checkmark {
-        background: var(--checked-color);
-        border-color: var(--checked-color);
+        background: var(--interactive-color);
+        border-color: var(--interactive-color);
       }
 
       :host([selected]) #checkmark::after {
@@ -121,7 +120,7 @@
       }
 
       #time-accessed {
-        color: #646464;
+        color: var(--history-item-time-color);
         min-width: 96px;
       }
 
@@ -142,7 +141,7 @@
       }
 
       #bookmark-star {
-        color: var(--checked-color);
+        color: var(--interactive-color);
         height: 32px;
         width: 32px;
       }

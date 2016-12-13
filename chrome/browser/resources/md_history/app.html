@@ -17,6 +17,7 @@
   <template>
     <style include="shared-style">
       :host {
+        color: var(--primary-text-color);
         display: block;
         height: 100%;
         overflow: hidden;
@@ -63,7 +64,7 @@
 
       #drawer-header {
         align-items: center;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        border-bottom: 1px solid var(--separator-color);
         box-sizing: border-box;
         display: flex;
         height: var(--toolbar-height);
@@ -71,7 +72,7 @@
 
       h1 {
         -webkit-padding-start: 24px;
-        color: rgb(66, 66, 66);
+        color: var(--primary-text-color);
         font-size: 123%;
         font-weight: 400;
       }
