@@ -8,12 +8,15 @@ source_set("web") {
   sources = [
     "dom_altering_lock.h",
     "dom_altering_lock.mm",
+    "network_activity_indicator_tab_helper.h",
+    "network_activity_indicator_tab_helper.mm",
     "resubmit_data_controller.h",
     "resubmit_data_controller.mm",
   ]
   deps = [
     "//base",
     "//components/strings",
+    "//ios/chrome/browser/ui",
     "//ios/web",
     "//ui/base",
   ]
@@ -37,6 +40,19 @@ source_set("web_arc") {
     "//url",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "network_activity_indicator_tab_helper_unittest.mm",
+  ]
+  deps = [
+    ":web",
+    "//ios/web:test_support",
+    "//testing/gtest",
+  ]
 }
 
 bundle_data("resources") {

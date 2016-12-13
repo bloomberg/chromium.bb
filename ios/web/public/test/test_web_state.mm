@@ -133,7 +133,18 @@ bool TestWebState::IsBeingDestroyed() const {
 }
 
 void TestWebState::SetLoading(bool is_loading) {
+  if (is_loading == is_loading_)
+    return;
+
   is_loading_ = is_loading;
+
+  if (is_loading) {
+    for (auto& observer : observers_)
+      observer.DidStartLoading();
+  } else {
+    for (auto& observer : observers_)
+      observer.DidStopLoading();
+  }
 }
 
 void TestWebState::SetCurrentURL(const GURL& url) {
