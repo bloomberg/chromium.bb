@@ -8,6 +8,6 @@
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface NonDocumentTypeChildNode {
-    [PerWorldBindings] readonly attribute Element previousElementSibling;
-    [PerWorldBindings] readonly attribute Element nextElementSibling;
+    [PerWorldBindings] readonly attribute Element? previousElementSibling;
+    [PerWorldBindings] readonly attribute Element? nextElementSibling;
 };
