@@ -368,14 +368,6 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(
     ScriptState* scriptState) {
-#if OS(MACOSX)
-  // TODO(jlebel): Remove when stopNotifications is implemented.
-  return ScriptPromise::rejectWithDOMException(
-      scriptState, DOMException::create(NotSupportedError,
-                                        "stopNotifications is not implemented "
-                                        "yet. See https://goo.gl/J6ASzs"));
-#endif  // OS(MACOSX)
-
   if (!gatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
