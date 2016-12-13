@@ -69,8 +69,6 @@ STAMP_FILE = os.path.normpath(
 BINUTILS_DIR = os.path.join(THIRD_PARTY_DIR, 'binutils')
 BINUTILS_BIN_DIR = os.path.join(BINUTILS_DIR, BINUTILS_DIR,
                                 'Linux_x64', 'Release', 'bin')
-BFD_PLUGINS_DIR = os.path.join(BINUTILS_DIR, 'Linux_x64', 'Release',
-                               'lib', 'bfd-plugins')
 VERSION = '4.0.0'
 ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_tools', 'ndk')
@@ -557,36 +555,30 @@ def UpdateClang(args):
     EnsureDirExists(LLVM_LTO_GOLD_PLUGIN_DIR)
     os.chdir(LLVM_LTO_GOLD_PLUGIN_DIR)
 
-    # Create a symlink to LLVMgold.so build in the previous step so that ar
-    # and ranlib could find it while linking LLVMgold.so with LTO.
-    EnsureDirExists(BFD_PLUGINS_DIR)
-    RunCommand(['ln', '-sf',
-                os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'lib', 'LLVMgold.so'),
-                os.path.join(BFD_PLUGINS_DIR, 'LLVMgold.so')])
-
     lto_cflags = ['-flto']
-    lto_ldflags = ['-fuse-ld=gold']
+    lto_ldflags = ['-fuse-ld=lld']
     if args.gcc_toolchain:
       # Tell the bootstrap compiler to use a specific gcc prefix to search
       # for standard library headers and shared object files.
       lto_cflags += ['--gcc-toolchain=' + args.gcc_toolchain]
     lto_cmake_args = base_cmake_args + [
         '-DLLVM_BINUTILS_INCDIR=' + binutils_incdir,
+        '-DCMAKE_AR=' + os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR,
+                                     'bin', 'llvm-ar'),
+        '-DCMAKE_RANLIB=' + os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR,
+                                         'bin', 'llvm-ranlib'),
+        '-DLLVM_ENABLE_LTO=ON',
         '-DCMAKE_C_COMPILER=' + cc,
         '-DCMAKE_CXX_COMPILER=' + cxx,
         '-DCMAKE_C_FLAGS=' + ' '.join(lto_cflags),
-        '-DCMAKE_CXX_FLAGS=' + ' '.join(lto_cflags),
+        '-DCMAKE_CXX_FLAGS=' + ' '.join(lto_cflags + ['-std=c++11']),
         '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(lto_ldflags),
         '-DCMAKE_SHARED_LINKER_FLAGS=' + ' '.join(lto_ldflags),
         '-DCMAKE_MODULE_LINKER_FLAGS=' + ' '.join(lto_ldflags)]
 
-    # We need to use the proper binutils which support LLVM Gold plugin.
-    lto_env = os.environ.copy()
-    lto_env['PATH'] = BINUTILS_BIN_DIR + os.pathsep + lto_env.get('PATH', '')
-
     RmCmakeCache('.')
-    RunCommand(['cmake'] + lto_cmake_args + [LLVM_DIR], env=lto_env)
-    RunCommand(['ninja', 'LLVMgold'], env=lto_env)
+    RunCommand(['cmake'] + lto_cmake_args + [LLVM_DIR])
+    RunCommand(['ninja', 'LLVMgold'])
 
 
   # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
