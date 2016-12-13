@@ -70,7 +70,8 @@ NewAvatarButton::NewAvatarButton(AvatarButtonDelegate* delegate,
   // is larger than this, it will be shrunk to match it.
   // TODO(noms): Calculate this constant algorithmically from the button's size.
   const int kDisplayFontHeight = 16;
-  SetFontList(GetFontList().DeriveWithHeightUpperBound(kDisplayFontHeight));
+  SetFontList(
+      label()->font_list().DeriveWithHeightUpperBound(kDisplayFontHeight));
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   if (button_style == AvatarButtonStyle::THEMED) {

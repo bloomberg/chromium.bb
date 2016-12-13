@@ -291,24 +291,21 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   EXPECT_LT(button_->GetPreferredSize().height(), image_size);
 }
 
-TEST_F(LabelButtonTest, FontList) {
+TEST_F(LabelButtonTest, AdjustFontSize) {
   button_->SetText(base::ASCIIToUTF16("abc"));
 
-  const gfx::FontList original_font_list = button_->GetFontList();
-  const gfx::FontList large_font_list =
-      original_font_list.DeriveWithSizeDelta(100);
   const int original_width = button_->GetPreferredSize().width();
   const int original_height = button_->GetPreferredSize().height();
 
   // The button size increases when the font size is increased.
-  button_->SetFontList(large_font_list);
+  button_->AdjustFontSize(100);
   EXPECT_GT(button_->GetPreferredSize().width(), original_width);
   EXPECT_GT(button_->GetPreferredSize().height(), original_height);
 
   // The button returns to its original size when the minimal size is cleared
   // and the original font size is restored.
   button_->SetMinSize(gfx::Size());
-  button_->SetFontList(original_font_list);
+  button_->AdjustFontSize(-100);
   EXPECT_EQ(original_width, button_->GetPreferredSize().width());
   EXPECT_EQ(original_height, button_->GetPreferredSize().height());
 }

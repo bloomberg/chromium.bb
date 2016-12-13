@@ -56,10 +56,8 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Sets whether subpixel rendering is used on the label.
   void SetTextSubpixelRenderingEnabled(bool enabled);
 
-  // Gets or sets the font list used by this button.
-  const gfx::FontList& GetFontList() const;
-  // TODO(estade): make this function protected.
-  virtual void SetFontList(const gfx::FontList& font_list);
+  // TODO(estade): remove. See crbug.com/633986
+  void SetFontListDeprecated(const gfx::FontList& font_list);
 
   // Adjusts the font size up or down by the given amount.
   virtual void AdjustFontSize(int font_size_delta);
@@ -119,6 +117,9 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Returns the available area for the label and image. Subclasses can change
   // these bounds if they need room to do manual painting.
   virtual gfx::Rect GetChildAreaBounds();
+
+  // Sets the font list used by this button.
+  virtual void SetFontList(const gfx::FontList& font_list);
 
   // View:
   void OnPaint(gfx::Canvas* canvas) override;

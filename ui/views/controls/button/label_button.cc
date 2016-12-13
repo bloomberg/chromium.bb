@@ -159,25 +159,13 @@ void LabelButton::SetTextSubpixelRenderingEnabled(bool enabled) {
   label_->SetSubpixelRenderingEnabled(enabled);
 }
 
-const gfx::FontList& LabelButton::GetFontList() const {
-  return label_->font_list();
-}
-
-void LabelButton::SetFontList(const gfx::FontList& font_list) {
-  cached_normal_font_list_ = font_list;
-  if (PlatformStyle::kDefaultLabelButtonHasBoldFont) {
-    cached_bold_font_list_ = font_list.DeriveWithWeight(
-        GetValueBolderThan(font_list.GetFontWeight()));
-    if (is_default_) {
-      label_->SetFontList(cached_bold_font_list_);
-      return;
-    }
-  }
-  label_->SetFontList(cached_normal_font_list_);
+void LabelButton::SetFontListDeprecated(const gfx::FontList& font_list) {
+  SetFontList(font_list);
 }
 
 void LabelButton::AdjustFontSize(int font_size_delta) {
-  LabelButton::SetFontList(GetFontList().DeriveWithSizeDelta(font_size_delta));
+  LabelButton::SetFontList(
+      label()->font_list().DeriveWithSizeDelta(font_size_delta));
 }
 
 void LabelButton::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
@@ -391,6 +379,19 @@ void LabelButton::SetBorder(std::unique_ptr<Border> border) {
 
 gfx::Rect LabelButton::GetChildAreaBounds() {
   return GetLocalBounds();
+}
+
+void LabelButton::SetFontList(const gfx::FontList& font_list) {
+  cached_normal_font_list_ = font_list;
+  if (PlatformStyle::kDefaultLabelButtonHasBoldFont) {
+    cached_bold_font_list_ = font_list.DeriveWithWeight(
+        GetValueBolderThan(font_list.GetFontWeight()));
+    if (is_default_) {
+      label_->SetFontList(cached_bold_font_list_);
+      return;
+    }
+  }
+  label_->SetFontList(cached_normal_font_list_);
 }
 
 void LabelButton::OnPaint(gfx::Canvas* canvas) {

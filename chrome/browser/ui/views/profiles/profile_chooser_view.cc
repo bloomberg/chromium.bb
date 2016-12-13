@@ -534,7 +534,7 @@ class EditableProfileName : public views::View,
     AddChildView(profile_name_textfield_);
 
     button_ = new RightAlignedIconLabelButton(this, text);
-    button_->SetFontList(medium_font_list);
+    button_->SetFontListDeprecated(medium_font_list);
     // Show an "edit" pencil icon when hovering over. In the default state,
     // we need to create an empty placeholder of the correct size, so that
     // the text doesn't jump around when the hovered icon appears.
