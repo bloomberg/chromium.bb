@@ -116,26 +116,18 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  */
 enum aome_enc_control_id {
   /*!\brief Codec control function to set which reference frame encoder can use.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_USE_REFERENCE = 7,
 
   /*!\brief Codec control function to pass an ROI map to encoder.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_SET_ROI_MAP = 8,
 
   /*!\brief Codec control function to pass an Active map to encoder.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_SET_ACTIVEMAP,
 
   /*!\brief Codec control function to set encoder scaling mode.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_SET_SCALEMODE = 11,
 
@@ -145,45 +137,32 @@ enum aome_enc_control_id {
    * of motion estimation methods. Values greater than 0 will increase encoder
    * speed at the expense of quality.
    *
-   * \note Valid range for VP8: -16..16
-   * \note Valid range for AV1: -8..8
-   *
-   * Supported in codecs: VP8, AV1
+   * \note Valid range: -8..8
    */
   AOME_SET_CPUUSED = 13,
 
   /*!\brief Codec control function to enable automatic set and use alf frames.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_SET_ENABLEAUTOALTREF,
 
 #if CONFIG_EXT_REFS
   /*!\brief Codec control function to enable automatic set and use
    * bwd-pred frames.
-   *
-   * Supported in codecs: AV1
    */
   AOME_SET_ENABLEAUTOBWDREF,
 #endif  // CONFIG_EXT_REFS
 
   /*!\brief Codec control function to set sharpness.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_SET_SHARPNESS = AOME_SET_ENABLEAUTOALTREF + 2,
 
   /*!\brief Codec control function to set the threshold for MBs treated static.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_SET_STATIC_THRESHOLD,
 
   /*!\brief Codec control function to get last quantizer chosen by the encoder.
    *
    * Return value uses internal quantizer scale defined by the codec.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_GET_LAST_QUANTIZER = AOME_SET_STATIC_THRESHOLD + 2,
 
@@ -191,20 +170,14 @@ enum aome_enc_control_id {
    *
    * Return value uses the 0..63 scale as used by the rc_*_quantizer config
    * parameters.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_GET_LAST_QUANTIZER_64,
 
   /*!\brief Codec control function to set the max no of frames to create arf.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_SET_ARNR_MAXFRAMES,
 
   /*!\brief Codec control function to set the filter strength for the arf.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_SET_ARNR_STRENGTH,
 
@@ -212,8 +185,6 @@ enum aome_enc_control_id {
   AOME_SET_ARNR_TYPE,
 
   /*!\brief Codec control function to set visual tuning.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_SET_TUNING,
 
@@ -222,8 +193,6 @@ enum aome_enc_control_id {
    * \attention For this value to be used aom_codec_enc_cfg_t::g_usage must be
    *            set to #AOM_CQ.
    * \note Valid range: 0..63
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_SET_CQ_LEVEL,
 
@@ -237,8 +206,6 @@ enum aome_enc_control_id {
    *
    * For example, to allocate no more than 4.5 frames worth of bitrate
    * to a keyframe, set this to 450.
-   *
-   * Supported in codecs: VP8, AV1
    */
   AOME_SET_MAX_INTRA_BITRATE_PCT,
 
@@ -252,8 +219,6 @@ enum aome_enc_control_id {
    *
    * For example, to allow no more than 4.5 frames worth of bitrate
    * to an inter frame, set this to 450.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_MAX_INTER_BITRATE_PCT = AOME_SET_MAX_INTRA_BITRATE_PCT + 2,
 
@@ -267,8 +232,6 @@ enum aome_enc_control_id {
    *
    * For example, to allow 100% more bits, i.e, 2X, in a golden frame
    * than average frame, set this to 100.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_GF_CBR_BOOST_PCT,
 
@@ -282,8 +245,6 @@ enum aome_enc_control_id {
    *                          1 = lossless coding mode
    *
    *  By default, encoder operates in normal coding mode (maybe lossy).
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_LOSSLESS = AV1E_SET_GF_CBR_BOOST_PCT + 2,
 #if CONFIG_AOM_QM
@@ -295,8 +256,6 @@ enum aome_enc_control_id {
    *                          1 = use quantisation matrices
    *
    *  By default, the encoder operates without quantisation matrices.
-   *
-   * Supported in codecs: AOM
    */
 
   AV1E_SET_ENABLE_QM,
@@ -310,8 +269,6 @@ enum aome_enc_control_id {
    *
    *  By default, the encoder sets this minimum at half the available
    *  range.
-   *
-   * Supported in codecs: AOM
    */
   AV1E_SET_QM_MIN,
 
@@ -323,8 +280,6 @@ enum aome_enc_control_id {
    *
    * By default, the encoder sets this maximum at the top of the
    * available range.
-   *
-   * Supported in codecs: AOM
    */
   AV1E_SET_QM_MAX,
 #endif
@@ -334,8 +289,6 @@ enum aome_enc_control_id {
    *
    * This will set the maximum number of tile groups. This will be
    * overridden if an MTU size is set. The default value is 1.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_NUM_TG,
 
@@ -346,8 +299,6 @@ enum aome_enc_control_id {
    *
    * By default, the value is 0, in which case a fixed number of tile groups
    * is used.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_MTU,
 #endif
@@ -370,8 +321,6 @@ enum aome_enc_control_id {
    * is 4096).
    *
    * By default, the value is 0, i.e. one single column tile for entire image.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_TILE_COLUMNS,
 
@@ -390,8 +339,6 @@ enum aome_enc_control_id {
    *            2 = 4 tile rows
    *
    * By default, the value is 0, i.e. one single row tile for entire image.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_TILE_ROWS,
 
@@ -404,8 +351,6 @@ enum aome_enc_control_id {
    * turn this feature on or off for bitstreams produced by encoder.
    *
    * By default, this feature is off.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_FRAME_PARALLEL_DECODING,
 
@@ -417,8 +362,6 @@ enum aome_enc_control_id {
    * several AQ_modes supported.
    *
    * By default, encoder operates with AQ_Mode 0(adaptive quantization off).
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_AQ_MODE,
 
@@ -432,16 +375,12 @@ enum aome_enc_control_id {
    *
    * By default, the encoder is allowed to use this feature for appropriate
    * encoding modes.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_FRAME_PERIODIC_BOOST,
 
   /*!\brief Codec control function to set noise sensitivity.
    *
    *  0: off, 1: On(YOnly)
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_NOISE_SENSITIVITY,
 
@@ -449,8 +388,6 @@ enum aome_enc_control_id {
    * \note Valid parameter range:
    *              AOM_CONTENT_DEFAULT = Regular video content (Default)
    *              AOM_CONTENT_SCREEN  = Screen capture content
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_TUNE_CONTENT,
 
@@ -464,30 +401,22 @@ enum aome_enc_control_id {
    *                     5 = BT_2020
    *                     6 = RESERVED
    *                     7 = SRGB
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_COLOR_SPACE,
 
   /*!\brief Codec control function to set minimum interval between GF/ARF frames
    *
    * By default the value is set as 4.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_MIN_GF_INTERVAL,
 
   /*!\brief Codec control function to set minimum interval between GF/ARF frames
    *
    * By default the value is set as 16.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_MAX_GF_INTERVAL,
 
   /*!\brief Codec control function to get an Active map back from the encoder.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_GET_ACTIVEMAP,
 
@@ -495,16 +424,12 @@ enum aome_enc_control_id {
    * \note Valid ranges: 0..1, default is 0
    *                     0 = Limited range (16..235 or HBD equivalent)
    *                     1 = Full range (0..255 or HBD equivalent)
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_COLOR_RANGE,
 
   /*!\brief Codec control function to set intended rendering image size.
    *
    * By default, this is identical to the image size in pixels.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_RENDER_SIZE,
 
@@ -512,14 +437,10 @@ enum aome_enc_control_id {
    *
    * 255: off (default); 0: only keep level stats; 10: target for level 1.0;
    * 11: target for level 1.1; ... 62: target for level 6.2
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_TARGET_LEVEL,
 
   /*!\brief Codec control function to get bitstream level.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_GET_LEVEL,
 
@@ -527,8 +448,6 @@ enum aome_enc_control_id {
    *
    * By default, the superblock size is determined separately for each
    * frame by the encoder.
-   *
-   * Supported in codecs: AV1
    */
   AV1E_SET_SUPERBLOCK_SIZE,
 };
