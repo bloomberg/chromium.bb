@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -26,11 +27,13 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/vpn_provider/vpn_service.h"
@@ -59,6 +62,26 @@ void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
                                         sub_page);
 }
 
+// Returns the severity of a pending Chrome / Chrome OS update.
+ash::mojom::UpdateSeverity GetUpdateSeverity(UpgradeDetector* detector) {
+  switch (detector->upgrade_notification_stage()) {
+    case UpgradeDetector::UPGRADE_ANNOYANCE_NONE:
+      return ash::mojom::UpdateSeverity::NONE;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
+      return ash::mojom::UpdateSeverity::LOW;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
+      return ash::mojom::UpdateSeverity::ELEVATED;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
+      return ash::mojom::UpdateSeverity::HIGH;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
+      return ash::mojom::UpdateSeverity::SEVERE;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
+      return ash::mojom::UpdateSeverity::CRITICAL;
+  }
+  NOTREACHED();
+  return ash::mojom::UpdateSeverity::CRITICAL;
+}
+
 }  // namespace
 
 SystemTrayClient::SystemTrayClient() : binding_(this) {
@@ -71,6 +94,13 @@ SystemTrayClient::SystemTrayClient() : binding_(this) {
   // If this observes clock setting changes before ash comes up the IPCs will
   // be queued on |system_tray_|.
   g_browser_process->platform_part()->GetSystemClock()->AddObserver(this);
+
+  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
+                 content::NotificationService::AllSources());
+
+  // If an upgrade is available at startup then tell ash about it.
+  if (UpgradeDetector::GetInstance()->notify_upgrade())
+    HandleUpdateAvailable();
 
   DCHECK(!g_instance);
   g_instance = this;
@@ -165,6 +195,11 @@ Widget* SystemTrayClient::CreateUnownedDialogWidget(
   Widget* widget = new Widget;  // Owned by native widget.
   widget->Init(params);
   return widget;
+}
+
+void SystemTrayClient::SetFlashUpdateAvailable() {
+  flash_update_available_ = true;
+  HandleUpdateAvailable();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -309,17 +344,27 @@ void SystemTrayClient::SignOut() {
 }
 
 void SystemTrayClient::RequestRestartForUpdate() {
-  bool component_update = false;
-  chromeos::SystemTrayDelegateChromeOS* tray =
-      chromeos::SystemTrayDelegateChromeOS::instance();
-  if (tray)
-    component_update = tray->GetFlashUpdateAvailable();
-
-  chrome::RebootPolicy reboot_policy =
-      component_update ? chrome::RebootPolicy::kForceReboot
-                       : chrome::RebootPolicy::kOptionalReboot;
+  // Flash updates on Chrome OS require device reboot.
+  const chrome::RebootPolicy reboot_policy =
+      flash_update_available_ ? chrome::RebootPolicy::kForceReboot
+                              : chrome::RebootPolicy::kOptionalReboot;
 
   chrome::NotifyAndTerminate(true /* fast_path */, reboot_policy);
+}
+
+void SystemTrayClient::HandleUpdateAvailable() {
+  // Show an update icon for Chrome updates and Flash component updates.
+  UpgradeDetector* detector = UpgradeDetector::GetInstance();
+  DCHECK(detector->notify_upgrade() || flash_update_available_);
+
+  // Get the Chrome update severity.
+  ash::mojom::UpdateSeverity severity = GetUpdateSeverity(detector);
+
+  // Flash updates are elevated severity unless the Chrome severity is higher.
+  if (flash_update_available_)
+    severity = std::max(severity, ash::mojom::UpdateSeverity::ELEVATED);
+
+  system_tray_->ShowUpdateIcon(severity, detector->is_factory_reset_required());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -328,4 +373,11 @@ void SystemTrayClient::RequestRestartForUpdate() {
 void SystemTrayClient::OnSystemClockChanged(
     chromeos::system::SystemClock* clock) {
   system_tray_->SetUse24HourClock(clock->ShouldUse24HourClock());
+}
+
+void SystemTrayClient::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED, type);
+  HandleUpdateAvailable();
 }

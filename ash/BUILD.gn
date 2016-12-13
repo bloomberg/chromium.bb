@@ -441,7 +441,6 @@ component("ash") {
     "common/system/tray_accessibility.h",
     "common/system/update/tray_update.cc",
     "common/system/update/tray_update.h",
-    "common/system/update/update_observer.h",
     "common/system/user/button_from_view.cc",
     "common/system/user/button_from_view.h",
     "common/system/user/login_status.cc",

@@ -22,8 +22,6 @@ namespace ash {
 class AccessibilityObserver;
 class ClockObserver;
 class IMEObserver;
-struct UpdateInfo;
-class UpdateObserver;
 class UserObserver;
 
 #if defined(OS_CHROMEOS)
@@ -39,6 +37,10 @@ class SessionLengthLimitObserver;
 class TracingObserver;
 class VirtualKeyboardObserver;
 #endif
+
+namespace mojom {
+enum class UpdateSeverity;
+}
 
 // Observer and notification manager for the ash system tray.
 class ASH_EXPORT SystemTrayNotifier {
@@ -65,11 +67,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveIMEObserver(IMEObserver* observer);
   void NotifyRefreshIME();
   void NotifyRefreshIMEMenu(bool is_active);
-
-  // OS updates.
-  void AddUpdateObserver(UpdateObserver* observer);
-  void RemoveUpdateObserver(UpdateObserver* observer);
-  void NotifyUpdateRecommended(const UpdateInfo& info);
 
   // User.
   void AddUserObserver(UserObserver* observer);
@@ -147,7 +144,6 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<AccessibilityObserver> accessibility_observers_;
   base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<IMEObserver> ime_observers_;
-  base::ObserverList<UpdateObserver> update_observers_;
   base::ObserverList<UserObserver> user_observers_;
 
 #if defined(OS_CHROMEOS)

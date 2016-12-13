@@ -24,7 +24,6 @@
 #include "ash/common/system/ime/ime_observer.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray_accessibility.h"
-#include "ash/common/system/update/update_observer.h"
 #include "ash/common/system/user/user_observer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
@@ -58,13 +57,11 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
-#include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -109,9 +106,6 @@ const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
 // The maximum session length limit that can be set.
 const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
-// A pointer so that callers can access the single class instance.
-SystemTrayDelegateChromeOS* g_instance = nullptr;
-
 void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     const input_method::InputMethodUtil& util,
                     ash::IMEInfo* info) {
@@ -151,9 +145,6 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
   // PROFILE_CREATED do not get missed if they happen before Initialize().
   registrar_.reset(new content::NotificationRegistrar);
   registrar_->Add(this,
-                  chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                  content::NotificationService::AllSources());
-  registrar_->Add(this,
                   chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                   content::NotificationService::AllSources());
   if (GetUserLoginStatus() == ash::LoginStatus::NOT_LOGGED_IN) {
@@ -175,14 +166,6 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
                  base::Unretained(this)));
 
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
-
-  DCHECK(!g_instance);
-  g_instance = this;
-}
-
-// static
-SystemTrayDelegateChromeOS* SystemTrayDelegateChromeOS::instance() {
-  return g_instance;
 }
 
 void SystemTrayDelegateChromeOS::Initialize() {
@@ -232,9 +215,6 @@ void SystemTrayDelegateChromeOS::InitializeOnAdapterReady(
 }
 
 SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
-  DCHECK_EQ(this, g_instance);
-  g_instance = nullptr;
-
   // Unregister PrefChangeRegistrars.
   local_state_registrar_.reset();
   user_pref_registrar_.reset();
@@ -323,15 +303,6 @@ bool SystemTrayDelegateChromeOS::IsUserSupervised() const {
 
 bool SystemTrayDelegateChromeOS::IsUserChild() const {
   return user_manager::UserManager::Get()->IsLoggedInAsChildUser();
-}
-
-void SystemTrayDelegateChromeOS::GetSystemUpdateInfo(
-    ash::UpdateInfo* info) const {
-  GetUpdateInfo(UpgradeDetector::GetInstance(), info);
-  // If a flash component update is available, force the tray to show the user
-  // the Restart to Update dialog.
-  if (flash_update_available_)
-    info->update_required = true;
 }
 
 bool SystemTrayDelegateChromeOS::ShouldShowSettings() const {
@@ -624,18 +595,6 @@ void SystemTrayDelegateChromeOS::UserChangedChildStatus(
     ash::WmShell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
 }
 
-void SystemTrayDelegateChromeOS::SetFlashUpdateAvailable() {
-  flash_update_available_ = true;
-
-  ash::UpdateInfo info;
-  GetSystemUpdateInfo(&info);
-  GetSystemTrayNotifier()->NotifyUpdateRecommended(info);
-}
-
-bool SystemTrayDelegateChromeOS::GetFlashUpdateAvailable() {
-  return flash_update_available_;
-}
-
 ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
   return ash::WmShell::Get()->system_tray_notifier();
 }
@@ -803,12 +762,6 @@ void SystemTrayDelegateChromeOS::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
-      ash::UpdateInfo info;
-      GetUpdateInfo(content::Source<UpgradeDetector>(source).ptr(), &info);
-      GetSystemTrayNotifier()->NotifyUpdateRecommended(info);
-      break;
-    }
     case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
       // This notification is also sent on login screen when user avatar
       // is loaded from file.
