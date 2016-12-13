@@ -67,14 +67,6 @@ PrerenderContents* PrerenderHandle::contents() const {
   return prerender_data_ ? prerender_data_->contents() : nullptr;
 }
 
-bool PrerenderHandle::Matches(
-    const GURL& url,
-    const content::SessionStorageNamespace* session_storage_namespace) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return prerender_data_ &&
-         prerender_data_->contents()->Matches(url, session_storage_namespace);
-}
-
 PrerenderHandle::PrerenderHandle(
     PrerenderManager::PrerenderData* prerender_data)
     : observer_(nullptr), weak_ptr_factory_(this) {

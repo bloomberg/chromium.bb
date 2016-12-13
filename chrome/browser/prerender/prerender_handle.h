@@ -11,12 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 
-class GURL;
-
-namespace content {
-class SessionStorageNamespace;
-}
-
 namespace prerender {
 
 class PrerenderContents;
@@ -76,11 +70,6 @@ class PrerenderHandle : public PrerenderContents::Observer {
   bool IsAbandoned() const;
 
   PrerenderContents* contents() const;
-
-  // Returns whether the prerender matches the URL provided.
-  bool Matches(
-      const GURL& url,
-      const content::SessionStorageNamespace* session_storage_namespace) const;
 
   // Returns whether this PrerenderHandle represents the same prerender as
   // the other PrerenderHandle object specified.
