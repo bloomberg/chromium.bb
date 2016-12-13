@@ -28,31 +28,23 @@ public class FaceDetectionImpl implements FaceDetection {
     private static final String TAG = "FaceDetectionImpl";
     // By default, there is no limit in the number of faces detected.
     private static final int MAX_FACES = 10;
-    // Referred from
-    // https://cs.chromium.org/chromium/src/mojo/edk/system/broker_host.cc?l=24
-    private static final int MOJO_SHAREDBUFFER_MAX_BYTES = 16 * 1024 * 1024;
 
     @Override
     public void detect(SharedBufferHandle frameData, int width, int height,
             FaceDetectorOptions options, DetectResponse callback) {
-        if (!frameData.isValid()) {
-            Log.d(TAG, "Invalid sharedBufferHandle.");
-            return;
-        }
-        if (width <= 0 || height <= 0) {
-            Log.d(TAG, "Invalid image width or height.");
-            return;
-        }
 
         final long numPixels = (long) width * height;
-        if (numPixels > MOJO_SHAREDBUFFER_MAX_BYTES / 4) {
-            Log.d(TAG, "Data size exceeds the limit of mojo::SharedBufferHandle.");
+        // TODO(xianglu): https://crbug.com/670028 homogeneize overflow checking.
+        if (!frameData.isValid() || width <= 0 || height <= 0 || numPixels > (Long.MAX_VALUE / 4)) {
+            Log.d(TAG, "Invalid argument(s).");
+            callback.call(new FaceDetectionResult());
             return;
         }
 
         ByteBuffer imageBuffer = frameData.map(0, numPixels * 4, MapFlags.none());
         if (imageBuffer.capacity() <= 0) {
             Log.d(TAG, "Failed to map from SharedBufferHandle.");
+            callback.call(new FaceDetectionResult());
             return;
         }
 
