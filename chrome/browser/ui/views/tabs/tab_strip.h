@@ -239,6 +239,7 @@ class TabStrip : public views::View,
   bool CanPaintThrobberToLayer() const override;
   bool IsImmersiveStyle() const override;
   SkColor GetToolbarTopSeparatorColor() const override;
+  base::string16 GetAccessibleTabName() const override;
   int GetBackgroundResourceId(bool* custom_image) const override;
   void UpdateTabAccessibilityState(const Tab* tab,
                                    ui::AXNodeData* node_data) override;

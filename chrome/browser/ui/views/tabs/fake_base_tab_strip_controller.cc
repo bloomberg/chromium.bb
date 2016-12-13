@@ -148,3 +148,7 @@ void FakeBaseTabStripController::CheckFileSupported(const GURL& url) {
 SkColor FakeBaseTabStripController::GetToolbarTopSeparatorColor() const {
   return SK_ColorBLACK;
 }
+
+base::string16 FakeBaseTabStripController::GetAccessibleTabName() const {
+  return base::string16();
+}

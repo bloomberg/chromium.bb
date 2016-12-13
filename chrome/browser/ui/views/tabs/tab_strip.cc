@@ -1324,6 +1324,11 @@ SkColor TabStrip::GetToolbarTopSeparatorColor() const {
   return controller_->GetToolbarTopSeparatorColor();
 }
 
+// Returns the accessible tab name for the tab.
+base::string16 TabStrip::GetAccessibleTabName() const {
+  return controller_->GetAccessibleTabName();
+}
+
 int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
   const ui::ThemeProvider* tp = GetThemeProvider();
 

@@ -14236,6 +14236,32 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         This tab is connected to a USB device.
       </message>
 
+      <!-- Tab accessibility labels -->
+      <message name="IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT" desc="Accessibility label text, when the tab is recording media. Example: 'Google Hangouts - Camera or microphone recording'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Camera or microphone recording
+      </message>
+      <message name="IDS_TAB_AX_LABEL_TAB_CAPTURING_FORMAT" desc="Accessibility label text, when the tab content is being captured and shared using screen sharing. Example: 'Google Hangouts - Tab content shared'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Tab content shared
+      </message>
+      <message name="IDS_TAB_AX_LABEL_AUDIO_PLAYING_FORMAT" desc="Accessibility label text, when the tab is playing audio. Example: 'Google Play Music - Audio playing'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Play Music</ex></ph> - Audio playing
+      </message>
+      <message name="IDS_TAB_AX_LABEL_AUDIO_MUTING_FORMAT" desc="Accessibility label text, when all tab audio output is muted. Example: 'Google Play Music - Audio muted'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Play Music</ex></ph> - Audio muted
+      </message>
+      <message name="IDS_TAB_AX_LABEL_BLUETOOTH_CONNECTED_FORMAT" desc="Accessibility label text, when a tab is connected to and has access to a Bluetooth device. Example: 'Google Photos - Bluetooth device connected'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Photos</ex></ph> - Bluetooth device connected
+      </message>
+      <message name="IDS_TAB_AX_LABEL_USB_CONNECTED_FORMAT" desc="Accessibility label text, when a tab is connected to a USB device. Example: 'Google Photos - USB device connected'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Photos</ex></ph> - USB device connected
+      </message>
+      <message name="IDS_TAB_AX_LABEL_NETWORK_ERROR_FORMAT" desc="Accessibility label text, when tab has encountered a network error such as being disconnected from the internet. Example: 'www.google.com - Network error'">
+        <ph name="WINDOW_TITLE">$1<ex>www.google.com</ex></ph> - Network error
+      </message>
+      <message name="IDS_TAB_AX_LABEL_CRASHED_FORMAT" desc="Accessibility label text, when a tab has crashed. Example: 'Google Search - Crashed'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Search</ex></ph> - Crashed
+      </message>
+
       <!-- ProcessSingleton -->
       <message name="IDS_PROFILE_IN_USE_LINUX_QUIT" desc="Text of button in profile in use dialog to quit without doing anything.">
         Quit
