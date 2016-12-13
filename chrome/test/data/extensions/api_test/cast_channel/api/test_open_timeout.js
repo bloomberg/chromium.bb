@@ -6,7 +6,7 @@
 chrome.cast.channel.open({
   ipAddress: '192.168.1.1',
   port: 8009,
-  auth: 'ssl',
+  auth: 'ssl_verified',
   livenessTimeout: 5000,
   pingInterval: 1000
 }, function(channel) {

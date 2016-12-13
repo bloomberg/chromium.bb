@@ -225,7 +225,7 @@ void CastChannelAsyncApiFunction::SetResultFromError(int channel_id,
   channel_info.error_state = error;
   channel_info.connect_info.ip_address = "";
   channel_info.connect_info.port = 0;
-  channel_info.connect_info.auth = cast_channel::CHANNEL_AUTH_TYPE_SSL;
+  channel_info.connect_info.auth = cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED;
   SetResultFromChannelInfo(channel_info);
   SetError("Channel error = " + base::IntToString(error));
 }

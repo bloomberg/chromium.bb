@@ -22,7 +22,7 @@ TEST(CastChannelOpenFunctionTest, TestParseConnectInfo) {
   ConnectInfo connect_info;
   connect_info.ip_address = "192.0.0.1";
   connect_info.port = 8009;
-  connect_info.auth = CHANNEL_AUTH_TYPE_SSL;
+  connect_info.auth = CHANNEL_AUTH_TYPE_SSL_VERIFIED;
 
   ip_endpoint.reset(ccof::ParseConnectInfo(connect_info));
   EXPECT_TRUE(ip_endpoint);

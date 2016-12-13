@@ -108,7 +108,7 @@ class CastChannelAPITest : public ExtensionApiTest {
     ON_CALL(*mock_cast_socket_, ip_endpoint())
         .WillByDefault(ReturnRef(ip_endpoint_));
     ON_CALL(*mock_cast_socket_, channel_auth())
-        .WillByDefault(Return(cast_channel::CHANNEL_AUTH_TYPE_SSL));
+        .WillByDefault(Return(cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED));
     ON_CALL(*mock_cast_socket_, keep_alive()).WillByDefault(Return(false));
   }
 
@@ -388,16 +388,18 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestOpenInvalidConnectInfo) {
   cast_channel_open_function = CreateOpenFunction(empty_extension);
   std::string error = utils::RunFunctionAndReturnError(
       cast_channel_open_function.get(),
-      "[{\"ipAddress\": \"invalid_ip\", \"port\": 8009, \"auth\": \"ssl\"}]",
+      "[{\"ipAddress\": \"invalid_ip\", \"port\": 8009, \"auth\": "
+      "\"ssl_verified\"}]",
       browser());
   EXPECT_EQ(error, "Invalid connect_info (invalid IP address)");
 
   // Invalid port
   cast_channel_open_function = CreateOpenFunction(empty_extension);
-  error = utils::RunFunctionAndReturnError(
-      cast_channel_open_function.get(),
-      "[{\"ipAddress\": \"127.0.0.1\", \"port\": -200, \"auth\": \"ssl\"}]",
-      browser());
+  error = utils::RunFunctionAndReturnError(cast_channel_open_function.get(),
+                                           "[{\"ipAddress\": \"127.0.0.1\", "
+                                           "\"port\": -200, \"auth\": "
+                                           "\"ssl_verified\"}]",
+                                           browser());
   EXPECT_EQ(error, "Invalid connect_info (invalid port)");
 }
 
@@ -415,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
       "\"audioOnly\": false, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
-      "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "
+      "\"auth\": \"ssl_verified\"}, \"readyState\": \"open\"}, "
       "{\"namespace_\": \"foo\", \"sourceId\": \"src\", "
       "\"destinationId\": \"dest\", \"data\": 1235}]",
       browser()));
@@ -430,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
       "\"audioOnly\": false, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
-      "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "
+      "\"auth\": \"ssl_verified\"}, \"readyState\": \"open\"}, "
       "{\"namespace_\": \"\", \"sourceId\": \"src\", "
       "\"destinationId\": \"dest\", \"data\": \"data\"}]",
       browser());
@@ -445,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
       "\"audioOnly\": false, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
-      "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "
+      "\"auth\": \"ssl_verified\"}, \"readyState\": \"open\"}, "
       "{\"namespace_\": \"foo\", \"sourceId\": \"\", "
       "\"destinationId\": \"dest\", \"data\": \"data\"}]",
       browser());
@@ -460,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
       "\"audioOnly\": false, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
-      "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "
+      "\"auth\": \"ssl_verified\"}, \"readyState\": \"open\"}, "
       "{\"namespace_\": \"foo\", \"sourceId\": \"src\", "
       "\"destinationId\": \"\", \"data\": \"data\"}]",
       browser());

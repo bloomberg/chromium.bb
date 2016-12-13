@@ -51,8 +51,6 @@ namespace cast.channel {
 
   // Authentication methods that may be required to connect to a Cast receiver.
   enum ChannelAuthType {
-    // SSL over TCP.
-    ssl,
     // SSL over TCP with challenge and receiver signature verification.
     ssl_verified
   };

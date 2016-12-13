@@ -132,8 +132,6 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
       ready_state_(READY_STATE_NONE),
       auth_delegate_(nullptr) {
   DCHECK(net_log_);
-  DCHECK(channel_auth_ == CHANNEL_AUTH_TYPE_SSL ||
-         channel_auth_ == CHANNEL_AUTH_TYPE_SSL_VERIFIED);
   net_log_source_.type = net::NetLogSourceType::SOCKET;
   net_log_source_.id = net_log_->NextID();
 }
@@ -436,13 +434,7 @@ int CastSocketImpl::DoSslConnectComplete(int result) {
     }
     auth_delegate_ = new AuthTransportDelegate(this);
     transport_->SetReadDelegate(base::WrapUnique(auth_delegate_));
-    if (channel_auth_ == CHANNEL_AUTH_TYPE_SSL_VERIFIED) {
-      // Additionally verify the connection with a handshake.
-      SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_SEND);
-    } else {
-      SetConnectState(proto::CONN_STATE_FINISHED);
-      transport_->Start();
-    }
+    SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_SEND);
   } else if (result == net::ERR_CONNECTION_TIMED_OUT) {
     SetConnectState(proto::CONN_STATE_FINISHED);
     SetErrorState(CHANNEL_ERROR_CONNECT_TIMEOUT);

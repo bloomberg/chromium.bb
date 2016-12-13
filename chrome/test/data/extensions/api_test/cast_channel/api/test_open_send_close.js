@@ -23,6 +23,7 @@ var onOpen = function(channel) {
   assertOpenChannel(channel);
   chrome.cast.channel.send(channel, message, onSend);
 };
-
-chrome.cast.channel.open({ipAddress: '192.168.1.1', port: 8009, auth: 'ssl'},
-                         onOpen);
+chrome.cast.channel.open({
+  ipAddress: '192.168.1.1',
+  port: 8009,
+  auth: 'ssl_verified'}, onOpen);

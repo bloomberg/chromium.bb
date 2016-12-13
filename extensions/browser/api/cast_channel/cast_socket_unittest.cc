@@ -28,6 +28,7 @@
 #include "extensions/browser/api/cast_channel/cast_transport.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
+#include "extensions/common/api/cast_channel/logging.pb.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/log/test_net_log.h"
@@ -173,14 +174,6 @@ class CompleteHandler {
 
 class TestCastSocket : public CastSocketImpl {
  public:
-  static std::unique_ptr<TestCastSocket> Create(
-      Logger* logger,
-      uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
-    return std::unique_ptr<TestCastSocket>(
-        new TestCastSocket(CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL,
-                           kDistantTimeoutMillis, logger, device_capabilities));
-  }
-
   static std::unique_ptr<TestCastSocket> CreateSecure(
       Logger* logger,
       uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
@@ -372,8 +365,6 @@ class CastSocketTest : public testing::Test {
     }
   }
 
-  void CreateCastSocket() { socket_ = TestCastSocket::Create(logger_); }
-
   void CreateCastSocketSecure() {
     socket_ = TestCastSocket::CreateSecure(logger_);
   }
@@ -411,68 +402,6 @@ class CastSocketTest : public testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(CastSocketTest);
 };
-
-// Tests connecting and closing the socket.
-TEST_F(CastSocketTest, TestConnectAndClose) {
-  CreateCastSocket();
-  socket_->SetupMockTransport();
-  socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
-  socket_->SetupSslConnect(net::SYNCHRONOUS, net::OK);
-
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
-  socket_->Connect(std::move(delegate_),
-                   base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-
-  EXPECT_CALL(handler_, OnCloseComplete(net::OK));
-  socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,
-                            base::Unretained(&handler_)));
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Tests that the following connection flow works:
-// - TCP connection succeeds (async)
-// - SSL connection succeeds (async)
-TEST_F(CastSocketTest, TestConnect) {
-  CreateCastSocket();
-  socket_->SetupTcpConnect(net::ASYNC, net::OK);
-  socket_->SetupSslConnect(net::ASYNC, net::OK);
-  socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
-
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
-  socket_->Connect(std::move(delegate_),
-                   base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Tests that the following connection flow works:
-// - TCP connection fails (async)
-TEST_F(CastSocketTest, TestConnectFails) {
-  CreateCastSocket();
-  socket_->SetupTcpConnect(net::ASYNC, net::ERR_FAILED);
-
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_CONNECT_ERROR));
-  socket_->Connect(std::move(delegate_),
-                   base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
-  EXPECT_EQ(proto::TCP_SOCKET_CONNECT_COMPLETE,
-            logger_->GetLastErrors(socket_->id()).event_type);
-  EXPECT_EQ(net::ERR_FAILED,
-            logger_->GetLastErrors(socket_->id()).net_return_value);
-}
 
 // Tests that the following connection flow works:
 // - TCP connection succeeds (async)
@@ -692,44 +621,6 @@ TEST_F(CastSocketTest, TestConnectSslConnectTimeoutAsync) {
             socket_->error_state());
 }
 
-// Test connection error - cert extraction error (async)
-TEST_F(CastSocketTest, TestConnectCertExtractionErrorAsync) {
-  CreateCastSocket();
-  socket_->SetupTcpConnect(net::ASYNC, net::OK);
-  socket_->SetupSslConnect(net::ASYNC, net::OK);
-  // Set cert extraction to fail
-  socket_->SetExtractCertResult(false);
-
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
-  socket_->Connect(std::move(delegate_),
-                   base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
-            socket_->error_state());
-}
-
-// Test connection error - cert extraction error (sync)
-TEST_F(CastSocketTest, TestConnectCertExtractionErrorSync) {
-  CreateCastSocket();
-  socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
-  socket_->SetupSslConnect(net::SYNCHRONOUS, net::OK);
-  // Set cert extraction to fail
-  socket_->SetExtractCertResult(false);
-
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
-  socket_->Connect(std::move(delegate_),
-                   base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
-            socket_->error_state());
-}
-
 // Test connection error - challenge send fails
 TEST_F(CastSocketTest, TestConnectChallengeSendError) {
   CreateCastSocketSecure();
@@ -890,24 +781,6 @@ TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportSync) {
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
 }
 
-// Tests channel policy verification for device with no capabilities.
-TEST_F(CastSocketTest, TestChannelPolicyVerificationCapabilitiesNone) {
-  socket_ =
-      TestCastSocket::Create(logger_, cast_channel::CastDeviceCapability::NONE);
-  EXPECT_TRUE(socket_->TestVerifyChannelPolicyNone());
-  EXPECT_TRUE(socket_->TestVerifyChannelPolicyAudioOnly());
-}
-
-// Tests channel policy verification for device with video out capability.
-TEST_F(CastSocketTest, TestChannelPolicyVerificationCapabilitiesVideoOut) {
-  socket_ = TestCastSocket::Create(
-      logger_, cast_channel::CastDeviceCapability::VIDEO_OUT);
-  EXPECT_FALSE(socket_->audio_only());
-  EXPECT_TRUE(socket_->TestVerifyChannelPolicyNone());
-  EXPECT_FALSE(socket_->audio_only());
-  EXPECT_FALSE(socket_->TestVerifyChannelPolicyAudioOnly());
-  EXPECT_TRUE(socket_->audio_only());
-}
 }  // namespace cast_channel
 }  // namespace api
 }  // namespace extensions

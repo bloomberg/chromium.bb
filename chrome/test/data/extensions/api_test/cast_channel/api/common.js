@@ -8,7 +8,7 @@ assertOpenChannel = function(channel) {
   chrome.test.assertTrue(channel.channelId > 0);
   chrome.test.assertTrue(channel.connectInfo.ipAddress == '192.168.1.1');
   chrome.test.assertTrue(channel.connectInfo.port == 8009);
-  chrome.test.assertTrue(channel.connectInfo.auth == 'ssl');
+  chrome.test.assertTrue(channel.connectInfo.auth == 'ssl_verified');
   chrome.test.assertTrue(channel.readyState == 'open');
   chrome.test.assertTrue(channel.errorState == undefined);
 };
@@ -23,7 +23,7 @@ assertClosedChannelWithError = function(channel, error) {
   chrome.test.assertTrue(channel.channelId > 0);
   chrome.test.assertTrue(channel.connectInfo.ipAddress == '192.168.1.1');
   chrome.test.assertTrue(channel.connectInfo.port == 8009);
-  chrome.test.assertTrue(channel.connectInfo.auth == 'ssl');
+  chrome.test.assertTrue(channel.connectInfo.auth == 'ssl_verified');
   chrome.test.assertTrue(channel.readyState == 'closed');
   chrome.test.assertTrue(channel.errorState == error);
 };
