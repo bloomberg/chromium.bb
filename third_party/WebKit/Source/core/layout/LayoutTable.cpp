@@ -635,16 +635,12 @@ void LayoutTable::layout() {
         if (sectionLogicalHeight <
                 section->pageLogicalHeightForOffset(section->logicalTop()) &&
             section->getPaginationBreakability() != AllowAnyBreaks) {
-          LayoutUnit offsetForTableHeaders =
-              state.heightOffsetForTableHeaders();
           // Don't include any strut in the header group - we only want the
           // height from its content.
-          offsetForTableHeaders += sectionLogicalHeight;
+          LayoutUnit offsetForTableHeaders = sectionLogicalHeight;
           if (LayoutTableRow* row = section->firstRow())
             offsetForTableHeaders -= row->paginationStrut();
-          section->setOffsetForRepeatingHeader(
-              state.heightOffsetForTableHeaders());
-          state.setHeightOffsetForTableHeaders(offsetForTableHeaders);
+          setRowOffsetFromRepeatingHeader(offsetForTableHeaders);
         }
       }
     }

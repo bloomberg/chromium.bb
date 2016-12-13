@@ -318,13 +318,6 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   int paginationStrutForRow(LayoutTableRow*, LayoutUnit logicalOffset) const;
 
-  void setOffsetForRepeatingHeader(LayoutUnit offset) {
-    m_offsetForRepeatingHeader = offset;
-  }
-  LayoutUnit offsetForRepeatingHeader() const {
-    return m_offsetForRepeatingHeader;
-  }
-
   bool mapToVisualRectInAncestorSpace(
       const LayoutBoxModelObject* ancestor,
       LayoutRect&,
@@ -470,8 +463,6 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   // The use is to disable a painting optimization where we just paint the
   // invalidated cells.
   bool m_hasMultipleCellLevels;
-
-  LayoutUnit m_offsetForRepeatingHeader;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableSection, isTableSection());

@@ -106,8 +106,7 @@ LayoutTableSection::LayoutTableSection(Element* element)
       m_outerBorderAfter(0),
       m_needsCellRecalc(false),
       m_forceSlowPaintPathWithOverflowingCell(false),
-      m_hasMultipleCellLevels(false),
-      m_offsetForRepeatingHeader(LayoutUnit()) {
+      m_hasMultipleCellLevels(false) {
   // init LayoutObject attributes
   setInline(false);  // our object is not Inline
 }
@@ -1983,7 +1982,6 @@ int LayoutTableSection::logicalHeightForRow(
 
 void LayoutTableSection::adjustRowForPagination(LayoutTableRow& rowObject,
                                                 SubtreeLayoutScope& layouter) {
-  LayoutState& state = *view()->layoutState();
   rowObject.setPaginationStrut(LayoutUnit());
   rowObject.setLogicalHeight(LayoutUnit(logicalHeightForRow(rowObject)));
   int paginationStrut =
@@ -1991,9 +1989,12 @@ void LayoutTableSection::adjustRowForPagination(LayoutTableRow& rowObject,
   bool rowIsAtTopOfColumn = false;
   LayoutUnit offsetFromTopOfPage;
   if (!paginationStrut) {
-    if (state.heightOffsetForTableHeaders()) {
+    LayoutUnit pageLogicalHeight =
+        pageLogicalHeightForOffset(rowObject.logicalTop());
+    if (pageLogicalHeight && table()->header() &&
+        table()->rowOffsetFromRepeatingHeader()) {
       offsetFromTopOfPage =
-          pageLogicalHeightForOffset(rowObject.logicalTop()) -
+          pageLogicalHeight -
           pageRemainingLogicalHeightForOffset(rowObject.logicalTop(),
                                               AssociateWithLatterPage);
       rowIsAtTopOfColumn = !offsetFromTopOfPage ||
@@ -2014,8 +2015,7 @@ void LayoutTableSection::adjustRowForPagination(LayoutTableRow& rowObject,
   if (!rowObject.rowIndex() && header &&
       table()->sectionAbove(this) == header &&
       header->getPaginationBreakability() != AllowAnyBreaks) {
-    state.setHeightOffsetForTableHeaders(state.heightOffsetForTableHeaders() -
-                                         header->logicalHeight());
+    table()->setRowOffsetFromRepeatingHeader(LayoutUnit());
   }
   // Border spacing from the previous row has pushed this row just past the top
   // of the page, so we must reposition it to the top of the page and avoid any
@@ -2025,7 +2025,8 @@ void LayoutTableSection::adjustRowForPagination(LayoutTableRow& rowObject,
 
   // If we have a header group we will paint it at the top of each page,
   // move the rows down to accomodate it.
-  paginationStrut += state.heightOffsetForTableHeaders().toInt();
+  if (header)
+    paginationStrut += table()->rowOffsetFromRepeatingHeader().toInt();
   rowObject.setPaginationStrut(LayoutUnit(paginationStrut));
 
   // We have inserted a pagination strut before the row. Adjust the logical top
@@ -2058,9 +2059,12 @@ bool LayoutTableSection::isRepeatingHeaderGroup() const {
   // page, then don't repeat the header on each page.
   // See https://drafts.csswg.org/css-tables-3/#repeated-headers
   LayoutTableSection* sectionBelow = table()->sectionBelow(this);
-  if (sectionBelow && sectionBelow->firstRow() &&
-      sectionBelow->firstRow()->paginationStrut())
-    return false;
+  if (!sectionBelow)
+    return true;
+  if (LayoutTableRow* firstRow = sectionBelow->firstRow()) {
+    if (firstRow->paginationStrut() || firstRow->logicalHeight() > pageHeight)
+      return false;
+  }
 
   return true;
 }

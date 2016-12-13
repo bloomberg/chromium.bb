@@ -53,7 +53,6 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
     m_flowThread = m_next->flowThread();
   m_paginationStateChanged = m_next->m_paginationStateChanged;
   layoutObject.view()->pushLayoutState(*this);
-  m_heightOffsetForTableHeaders = m_next->heightOffsetForTableHeaders();
 
   if (layoutObject.isLayoutFlowThread()) {
     // Entering a new pagination context.

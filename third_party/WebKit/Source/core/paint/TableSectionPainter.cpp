@@ -81,14 +81,12 @@ void TableSectionPainter::paintRepeatingHeaderGroup(
                paintOffset.y() + totalHeightOfRows);
 
   while (paginationOffset.y() < bottomBound) {
-    LayoutPoint nestedOffset =
-        paginationOffset +
-        LayoutPoint(LayoutUnit(),
-                    m_layoutTableSection.offsetForRepeatingHeader());
-    if (itemToPaint == PaintCollapsedBorders)
-      paintCollapsedSectionBorders(paintInfo, nestedOffset, currentBorderValue);
-    else
-      paintSection(paintInfo, nestedOffset);
+    if (itemToPaint == PaintCollapsedBorders) {
+      paintCollapsedSectionBorders(paintInfo, paginationOffset,
+                                   currentBorderValue);
+    } else {
+      paintSection(paintInfo, paginationOffset);
+    }
     paginationOffset.move(0, pageHeight.toInt());
   }
 }
