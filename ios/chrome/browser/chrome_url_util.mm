@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -17,6 +16,10 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 bool UrlIsExternalFileReference(const GURL& url) {
   return url.SchemeIs(kChromeUIScheme) &&
@@ -43,7 +46,7 @@ bool IsHandledProtocol(const std::string& scheme) {
 }
 
 @implementation ChromeAppConstants {
-  base::scoped_nsobject<NSString> _callbackScheme;
+  NSString* _callbackScheme;
 }
 
 + (ChromeAppConstants*)sharedInstance {
@@ -64,7 +67,7 @@ bool IsHandledProtocol(const std::string& scheme) {
           base::mac::ObjCCastStrict<NSArray>(urlType[@"CFBundleURLSchemes"]);
       for (NSString* scheme in schemes) {
         if ([allowableSchemes containsObject:scheme])
-          _callbackScheme.reset([scheme copy]);
+          _callbackScheme = [scheme copy];
       }
     }
   }
@@ -73,7 +76,7 @@ bool IsHandledProtocol(const std::string& scheme) {
 }
 
 - (void)setCallbackSchemeForTesting:(NSString*)scheme {
-  _callbackScheme.reset([scheme copy]);
+  _callbackScheme = [scheme copy];
 }
 
 @end

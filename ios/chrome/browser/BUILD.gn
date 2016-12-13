@@ -22,6 +22,7 @@ declare_args() {
 }
 
 source_set("browser") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "about_flags.h",
     "about_flags.mm",

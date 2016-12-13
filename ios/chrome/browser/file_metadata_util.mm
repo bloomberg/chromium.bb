@@ -10,6 +10,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 void SetSkipSystemBackupAttributeToItem(const base::FilePath& path,
                                         bool skip_system_backup) {
   base::ThreadRestrictions::AssertIOAllowed();

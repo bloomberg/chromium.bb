@@ -79,6 +79,10 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "url/url_constants.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // The IOSChromeIOThread object must outlive any tasks posted to the IO thread
 // before the Quit task, so base::Bind() calls are not refcounted.
 

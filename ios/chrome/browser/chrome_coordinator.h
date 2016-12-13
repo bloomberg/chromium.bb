@@ -21,16 +21,17 @@ typedef NSMutableArray<ChromeCoordinator*> MutableCoordinatorArray;
 - (nullable instancetype)init NS_UNAVAILABLE;
 
 // Child coordinators created by this object.
-@property(nonatomic, nonnull, readonly)
+@property(strong, nonatomic, nonnull, readonly)
     MutableCoordinatorArray* childCoordinators;
 
 // The currently 'active' child coordinator, if any. By default this is the last
 // coordinator in |childCoordinators|, but subclasses need not adhere to that.
-@property(nonatomic, nullable, readonly)
+@property(strong, nonatomic, nullable, readonly)
     ChromeCoordinator* activeChildCoordinator;
 
 // The view controller this coordinator was initialized with.
-@property(nonatomic, nullable, readonly) UIViewController* baseViewController;
+@property(weak, nonatomic, nullable, readonly)
+    UIViewController* baseViewController;
 
 // The basic lifecycle methods for coordinators are -start and -stop. These
 // are blank template methods; child classes are expected to implement them and

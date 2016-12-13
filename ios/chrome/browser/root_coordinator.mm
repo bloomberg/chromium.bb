@@ -4,19 +4,18 @@
 
 #import "ios/chrome/browser/root_coordinator.h"
 
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 
-@interface RootCoordinator () {
-  base::WeakNSObject<UIWindow> _window;
-}
-@end
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @implementation RootCoordinator
+@synthesize window = _window;
 
 - (instancetype)initWithWindow:(UIWindow*)window {
   if ((self = [super initWithBaseViewController:nil])) {
-    _window.reset(window);
+    _window = window;
   }
   return self;
 }
@@ -24,12 +23,6 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController {
   NOTREACHED();
   return nil;
-}
-
-#pragma mark - property implementation
-
-- (nullable UIWindow*)window {
-  return _window;
 }
 
 @end

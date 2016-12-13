@@ -8,6 +8,10 @@
 
 #include "base/ios/ios_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 void OpenUrlWithCompletionHandler(NSURL* url,
                                   void (^completion_handler)(BOOL success)) {
   if (base::ios::IsRunningOnIOS10OrLater()) {

@@ -38,6 +38,10 @@
 
 #if !defined(OFFICIAL_BUILD)
 #include "components/variations/variations_switches.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 #endif
 
 namespace {

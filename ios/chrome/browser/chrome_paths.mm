@@ -13,6 +13,10 @@
 #include "components/gcm_driver/gcm_driver_constants.h"
 #include "ios/chrome/browser/chrome_paths_internal.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace ios {
 namespace {
 

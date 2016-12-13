@@ -4,13 +4,15 @@
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface ChromeCoordinator () {
-  base::WeakNSObject<UIViewController> _baseViewController;
-  base::scoped_nsobject<MutableCoordinatorArray> _childCoordinators;
+  __weak UIViewController* _baseViewController;
+  MutableCoordinatorArray* _childCoordinators;
 }
 @end
 
@@ -19,8 +21,8 @@
 - (nullable instancetype)initWithBaseViewController:
     (UIViewController*)viewController {
   if (self = [super init]) {
-    _baseViewController.reset(viewController);
-    _childCoordinators.reset([[MutableCoordinatorArray array] retain]);
+    _baseViewController = viewController;
+    _childCoordinators = [MutableCoordinatorArray array];
   }
   return self;
 }
@@ -32,7 +34,6 @@
 
 - (void)dealloc {
   [self stop];
-  [super dealloc];
 }
 
 - (MutableCoordinatorArray*)childCoordinators {

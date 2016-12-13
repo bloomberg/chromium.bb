@@ -4,33 +4,27 @@
 
 #import "ios/chrome/browser/xcallback_parameters.h"
 
-#include "base/mac/scoped_nsobject.h"
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 NSString* const kSourceAppIdKey = @"sourceAppId";
 }
 
-@interface XCallbackParameters () {
-  base::scoped_nsobject<NSString> _sourceAppId;
-}
-@end
-
 @implementation XCallbackParameters
+@synthesize sourceAppId = _sourceAppId;
 
 - (instancetype)initWithSourceAppId:(NSString*)sourceAppId {
   self = [super init];
   if (self) {
-    _sourceAppId.reset([sourceAppId copy]);
+    _sourceAppId = [sourceAppId copy];
   }
   return self;
 }
 
 - (NSString*)description {
-  return [NSString stringWithFormat:@"SourceApp: %@\n", _sourceAppId.get()];
-}
-
-- (NSString*)sourceAppId {
-  return _sourceAppId.get();
+  return [NSString stringWithFormat:@"SourceApp: %@\n", _sourceAppId];
 }
 
 #pragma mark - NSCoding Methods

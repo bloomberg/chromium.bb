@@ -20,7 +20,7 @@
 - (nullable instancetype)initWithBaseViewController:
     (nullable UIViewController*)viewController NS_UNAVAILABLE;
 
-@property(nonatomic, readonly, nullable) UIWindow* window;
+@property(weak, nonatomic, readonly, nullable) UIWindow* window;
 
 @end
 
