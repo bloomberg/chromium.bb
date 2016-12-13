@@ -66,6 +66,9 @@ var MainPageBehaviorImpl = {
    * @private
    */
   inSearchModeChanged_: function(inSearchMode) {
+    if (!this.isAttached)
+      return;
+
     if (!inSearchMode)
       this.tryTransitionToSection_(!settings.lastRouteChangeWasPopstate());
   },
