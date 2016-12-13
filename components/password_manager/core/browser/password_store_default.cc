@@ -84,11 +84,11 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsByURLAndTimeImpl(
     const base::Callback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end) {
-  ScopedVector<autofill::PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   PasswordStoreChangeList changes;
   if (login_db_ &&
       login_db_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
-    for (autofill::PasswordForm* form : forms) {
+    for (const auto& form : forms) {
       if (url_filter.Run(form->origin) && login_db_->RemoveLogin(*form))
         changes.push_back(
             PasswordStoreChange(PasswordStoreChange::REMOVE, *form));
@@ -102,12 +102,12 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsByURLAndTimeImpl(
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {
-  ScopedVector<autofill::PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   PasswordStoreChangeList changes;
   if (login_db_ &&
       login_db_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
     if (login_db_->RemoveLoginsCreatedBetween(delete_begin, delete_end)) {
-      for (const auto* form : forms) {
+      for (const auto& form : forms) {
         changes.push_back(
             PasswordStoreChange(PasswordStoreChange::REMOVE, *form));
       }
@@ -120,12 +120,12 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {
-  ScopedVector<autofill::PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   PasswordStoreChangeList changes;
   if (login_db_ &&
       login_db_->GetLoginsSyncedBetween(delete_begin, delete_end, &forms)) {
     if (login_db_->RemoveLoginsSyncedBetween(delete_begin, delete_end)) {
-      for (const auto* form : forms) {
+      for (const auto& form : forms) {
         changes.push_back(
             PasswordStoreChange(PasswordStoreChange::REMOVE, *form));
       }
@@ -137,13 +137,13 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
 
 PasswordStoreChangeList PasswordStoreDefault::DisableAutoSignInForOriginsImpl(
     const base::Callback<bool(const GURL&)>& origin_filter) {
-  ScopedVector<autofill::PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   PasswordStoreChangeList changes;
   if (!login_db_ || !login_db_->GetAutoSignInLogins(&forms))
     return changes;
 
   std::set<GURL> origins_to_update;
-  for (const auto* form : forms) {
+  for (const auto& form : forms) {
     if (origin_filter.Run(form->origin))
       origins_to_update.insert(form->origin);
   }
@@ -154,7 +154,7 @@ PasswordStoreChangeList PasswordStoreDefault::DisableAutoSignInForOriginsImpl(
       origins_updated.insert(origin);
   }
 
-  for (const auto* form : forms) {
+  for (const auto& form : forms) {
     if (origins_updated.count(form->origin)) {
       changes.push_back(
           PasswordStoreChange(PasswordStoreChange::UPDATE, *form));

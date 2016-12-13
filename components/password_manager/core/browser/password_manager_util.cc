@@ -80,17 +80,6 @@ void TrimUsernameOnlyCredentials(
       });
 }
 
-std::vector<std::unique_ptr<autofill::PasswordForm>> ConvertScopedVector(
-    ScopedVector<autofill::PasswordForm> old_vector) {
-  std::vector<std::unique_ptr<autofill::PasswordForm>> new_vector;
-  new_vector.reserve(old_vector.size());
-  for (auto* form : old_vector) {
-    new_vector.push_back(base::WrapUnique(form));
-  }
-  old_vector.weak_clear();  // All owned by |new_vector| by now.
-  return new_vector;
-}
-
 bool IsLoggingActive(const password_manager::PasswordManagerClient* client) {
   const password_manager::LogManager* log_manager = client->GetLogManager();
   return log_manager && log_manager->IsLoggingActive();

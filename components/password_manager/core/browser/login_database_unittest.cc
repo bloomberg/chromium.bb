@@ -12,7 +12,6 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -401,7 +400,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   form2.action = GURL("https://mobile.foo.com/login");
   form2.signon_realm = "federation://mobile.foo.com/accounts.google.com";
   form2.username_value = ASCIIToUTF16("test1@gmail.com");
-  form2.type = autofill::PasswordForm::TYPE_API;
+  form2.type = PasswordForm::TYPE_API;
   form2.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
 
   // Add it and make sure it is there.
@@ -510,7 +509,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   form2.action = GURL("https://some.other.google.com/login");
   form2.signon_realm = "federation://some.other.google.com/accounts.google.com";
   form2.username_value = ASCIIToUTF16("test1@gmail.com");
-  form2.type = autofill::PasswordForm::TYPE_API;
+  form2.type = PasswordForm::TYPE_API;
   form2.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
 
   // Add it and make sure it is there.
@@ -780,13 +779,10 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   EXPECT_EQ(4U, result.size());
   result.clear();
 
-  // TODO(crbug.com/555132) Replace |result_scopedvector| back with |result|.
-  ScopedVector<PasswordForm> result_scopedvector;
   // Get everything from today's date and on.
-  EXPECT_TRUE(
-      db().GetLoginsCreatedBetween(now, base::Time(), &result_scopedvector));
-  EXPECT_EQ(2U, result_scopedvector.size());
-  result_scopedvector.clear();
+  EXPECT_TRUE(db().GetLoginsCreatedBetween(now, base::Time(), &result));
+  EXPECT_EQ(2U, result.size());
+  result.clear();
 
   // Delete everything from today's date and on.
   db().RemoveLoginsCreatedBetween(now, base::Time());
@@ -825,15 +821,12 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   EXPECT_EQ(4U, result.size());
   result.clear();
 
-  // TODO(crbug.com/555132) Replace |result_scopedvector| back with |result|.
-  ScopedVector<PasswordForm> result_scopedvector;
   // Get everything from today's date and on.
-  EXPECT_TRUE(
-      db().GetLoginsSyncedBetween(now, base::Time(), &result_scopedvector));
-  ASSERT_EQ(2U, result_scopedvector.size());
-  EXPECT_EQ("http://3.com", result_scopedvector[0]->signon_realm);
-  EXPECT_EQ("http://4.com", result_scopedvector[1]->signon_realm);
-  result_scopedvector.clear();
+  EXPECT_TRUE(db().GetLoginsSyncedBetween(now, base::Time(), &result));
+  ASSERT_EQ(2U, result.size());
+  EXPECT_EQ("http://3.com", result[0]->signon_realm);
+  EXPECT_EQ("http://4.com", result[1]->signon_realm);
+  result.clear();
 
   // Delete everything from today's date and on.
   db().RemoveLoginsSyncedBetween(now, base::Time());
@@ -854,7 +847,7 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
 }
 
 TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
-  ScopedVector<PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   GURL origin("https://example.com");
   EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo1", origin));
@@ -864,7 +857,7 @@ TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
 
   EXPECT_TRUE(db().GetAutoSignInLogins(&result));
   EXPECT_EQ(4U, result.size());
-  for (const auto* form : result)
+  for (const auto& form : result)
     EXPECT_FALSE(form->skip_zero_click);
 
   EXPECT_TRUE(db().DisableAutoSignInForOrigin(origin));

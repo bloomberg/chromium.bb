@@ -116,7 +116,7 @@ TEST_F(LoginDatabaseIOSTest, UpdateLogin) {
       login_db_->UpdateLogin(form);
   ASSERT_EQ(1u, changes.size());
 
-  ScopedVector<PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   EXPECT_TRUE(login_db_->GetLogins(PasswordStore::FormDigest(form), &forms));
 
   ASSERT_EQ(1U, forms.size());
@@ -135,7 +135,7 @@ TEST_F(LoginDatabaseIOSTest, RemoveLogin) {
 
   ignore_result(login_db_->RemoveLogin(form));
 
-  ScopedVector<PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   EXPECT_TRUE(login_db_->GetLogins(PasswordStore::FormDigest(form), &forms));
 
   ASSERT_EQ(0U, forms.size());
@@ -171,7 +171,7 @@ TEST_F(LoginDatabaseIOSTest, RemoveLoginsCreatedBetween) {
 
   PasswordStore::FormDigest form = {PasswordForm::SCHEME_HTML,
                                     "http://www.example.com", GURL()};
-  ScopedVector<PasswordForm> logins;
+  std::vector<std::unique_ptr<PasswordForm>> logins;
   EXPECT_TRUE(login_db_->GetLogins(form, &logins));
 
   ASSERT_EQ(2U, logins.size());

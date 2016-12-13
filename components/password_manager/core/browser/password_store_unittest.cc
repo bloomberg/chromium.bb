@@ -136,7 +136,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   };
 
   // Build the forms vector and add the forms to the store.
-  ScopedVector<PasswordForm> all_forms;
+  std::vector<std::unique_ptr<PasswordForm>> all_forms;
   for (size_t i = 0; i < arraysize(form_data); ++i) {
     all_forms.push_back(CreatePasswordFormFromDataForTesting(form_data[i]));
     store->AddLogin(*all_forms.back());
@@ -398,7 +398,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
   store->SetAffiliatedMatchHelper(base::WrapUnique(mock_helper));
 
-  ScopedVector<PasswordForm> all_credentials;
+  std::vector<std::unique_ptr<PasswordForm>> all_credentials;
   for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
     all_credentials.push_back(
         CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
@@ -503,7 +503,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
   store->SetAffiliatedMatchHelper(base::WrapUnique(mock_helper));
 
-  ScopedVector<PasswordForm> all_credentials;
+  std::vector<std::unique_ptr<PasswordForm>> all_credentials;
   for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
     all_credentials.push_back(
         CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
@@ -687,7 +687,7 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
                                         base::Closure());
 
       // Set up the initial test data set.
-      ScopedVector<PasswordForm> all_credentials;
+      std::vector<std::unique_ptr<PasswordForm>> all_credentials;
       for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
         all_credentials.push_back(
             CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
@@ -795,7 +795,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
     store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
                                       base::Closure());
 
-    ScopedVector<PasswordForm> all_credentials;
+    std::vector<std::unique_ptr<PasswordForm>> all_credentials;
     for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
       all_credentials.push_back(
           CreatePasswordFormFromDataForTesting(kTestCredentials[i]));

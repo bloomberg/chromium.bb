@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 #include "crypto/apple_keychain.h"
 
@@ -27,7 +26,7 @@ class MacKeychainPasswordFormAdapter {
   explicit MacKeychainPasswordFormAdapter(const AppleKeychain* keychain);
 
   // Returns all keychain entries matching |signon_realm| and |scheme|.
-  ScopedVector<autofill::PasswordForm> PasswordsFillingForm(
+  std::vector<std::unique_ptr<autofill::PasswordForm>> PasswordsFillingForm(
       const std::string& signon_realm,
       autofill::PasswordForm::Scheme scheme);
 
@@ -48,7 +47,8 @@ class MacKeychainPasswordFormAdapter {
 
   // Returns all keychain entries corresponding to password forms.
   // TODO(vabr): This is only used in tests, should be moved there.
-  ScopedVector<autofill::PasswordForm> GetAllPasswordFormPasswords();
+  std::vector<std::unique_ptr<autofill::PasswordForm>>
+  GetAllPasswordFormPasswords();
 
   // Creates a new keychain entry from |form|, or updates the password of an
   // existing keychain entry if there is a collision. Returns true if a keychain
@@ -66,8 +66,8 @@ class MacKeychainPasswordFormAdapter {
  private:
   // Returns PasswordForm instances transformed from |items|. Also calls
   // AppleKeychain::Free on all of the keychain items and clears |items|.
-  ScopedVector<autofill::PasswordForm> ConvertKeychainItemsToForms(
-      std::vector<SecKeychainItemRef>* items);
+  std::vector<std::unique_ptr<autofill::PasswordForm>>
+  ConvertKeychainItemsToForms(std::vector<SecKeychainItemRef>* items);
 
   // Searches |keychain| for the specific keychain entry that corresponds to the
   // given form, and returns it (or NULL if no match is found). The caller is
@@ -171,16 +171,18 @@ bool FormsMatchForMerge(const autofill::PasswordForm& form_a,
 // password can be found (and which aren't blacklist entries), and for
 // keychain_forms its entries that weren't merged into at least one database
 // form.
-void MergePasswordForms(ScopedVector<autofill::PasswordForm>* keychain_forms,
-                        ScopedVector<autofill::PasswordForm>* database_forms,
-                        ScopedVector<autofill::PasswordForm>* merged_forms);
+void MergePasswordForms(
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* keychain_forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* database_forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* merged_forms);
 
 // For every form in |database_forms|, if such a form has a corresponding entry
 // in |keychain|, this adds the password from the entry and moves that form from
 // |database_forms| into |passwords|.
-void GetPasswordsForForms(const AppleKeychain& keychain,
-                          ScopedVector<autofill::PasswordForm>* database_forms,
-                          ScopedVector<autofill::PasswordForm>* passwords);
+void GetPasswordsForForms(
+    const AppleKeychain& keychain,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* database_forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* passwords);
 
 // Loads all items in the system keychain into |keychain_items|, creates for
 // each keychain item a corresponding PasswordForm that doesn't contain any
@@ -213,7 +215,8 @@ bool FormIsValidAndMatchesOtherForm(const autofill::PasswordForm& query_form,
 
 // Returns PasswordForm instances populated with password data for each keychain
 // entry in |item_form_pairs| that could be merged with |query_form|.
-ScopedVector<autofill::PasswordForm> ExtractPasswordsMergeableWithForm(
+std::vector<std::unique_ptr<autofill::PasswordForm>>
+ExtractPasswordsMergeableWithForm(
     const AppleKeychain& keychain,
     const std::vector<ItemFormPair>& item_form_pairs,
     const autofill::PasswordForm& query_form);

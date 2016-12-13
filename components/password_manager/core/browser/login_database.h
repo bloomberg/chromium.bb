@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -98,14 +97,16 @@ class LoginDatabase {
   bool GetLoginsCreatedBetween(
       base::Time begin,
       base::Time end,
-      ScopedVector<autofill::PasswordForm>* forms) const WARN_UNUSED_RESULT;
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const
+      WARN_UNUSED_RESULT;
 
   // Gets all logins synced from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
   // direction.
-  bool GetLoginsSyncedBetween(base::Time begin,
-                              base::Time end,
-                              ScopedVector<autofill::PasswordForm>* forms) const
+  bool GetLoginsSyncedBetween(
+      base::Time begin,
+      base::Time end,
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const
       WARN_UNUSED_RESULT;
 
   // Gets the complete list of not blacklisted credentials.
@@ -118,8 +119,8 @@ class LoginDatabase {
                               forms) const WARN_UNUSED_RESULT;
 
   // Gets the list of auto-sign-inable credentials.
-  bool GetAutoSignInLogins(ScopedVector<autofill::PasswordForm>* forms) const
-      WARN_UNUSED_RESULT;
+  bool GetAutoSignInLogins(std::vector<std::unique_ptr<autofill::PasswordForm>>*
+                               forms) const WARN_UNUSED_RESULT;
 
   // Deletes the login database file on disk, and creates a new, empty database.
   // This can be used after migrating passwords to some other store, to ensure
@@ -192,9 +193,10 @@ class LoginDatabase {
   // Overwrites |forms| with credentials retrieved from |statement|. If
   // |matched_form| is not null, filters out all results but those PSL-matching
   // |*matched_form| or federated credentials for it. On success returns true.
-  static bool StatementToForms(sql::Statement* statement,
-                               const PasswordStore::FormDigest* matched_form,
-                               ScopedVector<autofill::PasswordForm>* forms);
+  static bool StatementToForms(
+      sql::Statement* statement,
+      const PasswordStore::FormDigest* matched_form,
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms);
 
   // Initializes all the *_statement_ data members with appropriate SQL
   // fragments based on |builder|.

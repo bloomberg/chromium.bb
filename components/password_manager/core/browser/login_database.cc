@@ -910,7 +910,7 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
 bool LoginDatabase::RemoveLoginsCreatedBetween(base::Time delete_begin,
                                                base::Time delete_end) {
 #if defined(OS_IOS)
-  ScopedVector<autofill::PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   if (GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
     for (size_t i = 0; i < forms.size(); i++) {
       DeleteEncryptedPassword(*forms[i]);
@@ -942,7 +942,7 @@ bool LoginDatabase::RemoveLoginsSyncedBetween(base::Time delete_begin,
 }
 
 bool LoginDatabase::GetAutoSignInLogins(
-    ScopedVector<autofill::PasswordForm>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
   DCHECK(forms);
   DCHECK(!autosignin_statement_.empty());
   sql::Statement s(
@@ -1035,7 +1035,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
 
 bool LoginDatabase::GetLogins(
     const PasswordStore::FormDigest& form,
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
   DCHECK(forms);
   const GURL signon_realm(form.signon_realm);
   std::string registered_domain = GetRegistryControlledDomain(signon_realm);
@@ -1099,15 +1099,11 @@ bool LoginDatabase::GetLogins(
                               PSL_DOMAIN_MATCH_COUNT);
   }
 
-  ScopedVector<autofill::PasswordForm> forms_scopedvector;
   bool success = StatementToForms(
       &s, should_PSL_matching_apply || should_federated_apply ? &form : nullptr,
-      &forms_scopedvector);
-  if (success) {
-    *forms = password_manager_util::ConvertScopedVector(
-        std::move(forms_scopedvector));
+      forms);
+  if (success)
     return true;
-  }
   forms->clear();
   return false;
 }
@@ -1115,7 +1111,7 @@ bool LoginDatabase::GetLogins(
 bool LoginDatabase::GetLoginsCreatedBetween(
     const base::Time begin,
     const base::Time end,
-    ScopedVector<autofill::PasswordForm>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
   DCHECK(forms);
   DCHECK(!created_statement_.empty());
   sql::Statement s(
@@ -1130,7 +1126,7 @@ bool LoginDatabase::GetLoginsCreatedBetween(
 bool LoginDatabase::GetLoginsSyncedBetween(
     const base::Time begin,
     const base::Time end,
-    ScopedVector<autofill::PasswordForm>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
   DCHECK(forms);
   DCHECK(!synced_statement_.empty());
   sql::Statement s(
@@ -1144,12 +1140,12 @@ bool LoginDatabase::GetLoginsSyncedBetween(
 }
 
 bool LoginDatabase::GetAutofillableLogins(
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
   return GetAllLoginsWithBlacklistSetting(false, forms);
 }
 
 bool LoginDatabase::GetBlacklistLogins(
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
   return GetAllLoginsWithBlacklistSetting(true, forms);
 }
 
@@ -1162,13 +1158,9 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
       db_.GetCachedStatement(SQL_FROM_HERE, blacklisted_statement_.c_str()));
   s.BindInt(0, blacklisted ? 1 : 0);
 
-  ScopedVector<autofill::PasswordForm> forms_scopedvector;
-  bool success = StatementToForms(&s, nullptr, &forms_scopedvector);
-  if (success) {
-    *forms = password_manager_util::ConvertScopedVector(
-        std::move(forms_scopedvector));
+  bool success = StatementToForms(&s, nullptr, forms);
+  if (success)
     return true;
-  }
   forms->clear();
   return false;
 }
@@ -1182,7 +1174,7 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
 }
 
 std::string LoginDatabase::GetEncryptedPassword(
-    const autofill::PasswordForm& form) const {
+    const PasswordForm& form) const {
   DCHECK(!encrypted_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, encrypted_statement_.c_str()));
@@ -1204,12 +1196,12 @@ std::string LoginDatabase::GetEncryptedPassword(
 bool LoginDatabase::StatementToForms(
     sql::Statement* statement,
     const PasswordStore::FormDigest* matched_form,
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   PSLDomainMatchMetric psl_domain_match_metric = PSL_DOMAIN_MATCH_NONE;
 
   forms->clear();
   while (statement->Step()) {
-    std::unique_ptr<PasswordForm> new_form(new PasswordForm());
+    auto new_form = base::MakeUnique<PasswordForm>();
     EncryptionResult result =
         InitPasswordFormFromStatement(new_form.get(), *statement);
     if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
