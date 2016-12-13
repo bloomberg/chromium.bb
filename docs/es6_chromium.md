@@ -132,7 +132,7 @@ var fullyLoaded = new Promise(function(resolve) {
 });
 
 // ... some time later ...
-loaded.then(startTheApp).then(maybeShowFirstRun);
+fullyLoaded.then(startTheApp).then(maybeShowFirstRun);
 ```
 
 **Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-promise-objects)
@@ -636,13 +636,17 @@ for (var n of fibonacci) {
 
 ```js
 // Object.assign
-var o = Object.assign({a:true}, {b:true}, {c:true});
+var o = Object.assign({a:true}, {b:true}, {c:true});  // {a: true, b: true, c: true}
 'a' in o && 'b' in o && 'c' in o;  // true
 
 // Object.setPrototypeOf
 Object.setPrototypeOf({}, Array.prototype) instanceof Array;  // true
 
 // Object.is
+Object.is(null, null)  // true
+Object.is(NaN, NaN)  // true
+Object.is(-0, +0)  // false, btw: -0 === +0 is true
+
 // Object.getOwnPropertySymbols
 ```
 
