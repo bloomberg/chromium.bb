@@ -77,7 +77,7 @@ MouseEvent* MouseEvent::create(
     short button,
     unsigned short buttons,
     EventTarget* relatedTarget,
-    double platformTimeStamp,
+    TimeTicks platformTimeStamp,
     PlatformMouseEvent::SyntheticEventType syntheticEventType,
     const String& region,
     const PlatformMouseEvent* mouseEvent) {
@@ -108,8 +108,8 @@ MouseEvent* MouseEvent::create(const AtomicString& eventType,
     screenY = mouseEvent->screenY();
   }
 
-  double timestamp = underlyingEvent ? underlyingEvent->platformTimeStamp()
-                                     : monotonicallyIncreasingTime();
+  TimeTicks timestamp =
+      underlyingEvent ? underlyingEvent->platformTimeStamp() : TimeTicks::Now();
   MouseEvent* createdEvent = MouseEvent::create(
       eventType, true, true, view, 0, screenX, screenY, 0, 0, 0, 0, modifiers,
       0, 0, nullptr, timestamp, syntheticType, String(), nullptr);
@@ -147,7 +147,7 @@ MouseEvent::MouseEvent(
     short button,
     unsigned short buttons,
     EventTarget* relatedTarget,
-    double platformTimeStamp,
+    TimeTicks platformTimeStamp,
     PlatformMouseEvent::SyntheticEventType syntheticEventType,
     const String& region,
     const PlatformMouseEvent* mouseEvent)

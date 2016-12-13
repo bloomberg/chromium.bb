@@ -401,7 +401,8 @@ void HTMLAnchorElement::handleClick(Event* event) {
   sendPings(completedURL);
 
   ResourceRequest request(completedURL);
-  request.setUIStartTime(event->platformTimeStamp());
+  request.setUIStartTime(
+      (event->platformTimeStamp() - TimeTicks()).InSecondsF());
   request.setInputPerfMetricReportPolicy(
       InputToLoadPerfMetricReportPolicy::ReportLink);
 

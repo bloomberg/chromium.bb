@@ -203,7 +203,7 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget,
                              scaleDeltaToWindow(widget, e.movementY));
   m_modifiers = e.modifiers;
 
-  m_timestamp = e.timeStampSeconds;
+  m_timestamp = TimeTicks::FromSeconds(e.timeStampSeconds);
   m_clickCount = e.clickCount;
 
   m_pointerProperties = static_cast<WebPointerProperties>(e);
@@ -251,7 +251,7 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(
 
   m_type = PlatformEvent::Wheel;
 
-  m_timestamp = e.timeStampSeconds;
+  m_timestamp = TimeTicks::FromSeconds(e.timeStampSeconds);
   m_modifiers = e.modifiers;
   m_dispatchType = toPlatformDispatchType(e.dispatchType);
 
@@ -375,7 +375,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(
   m_position = widget->convertFromRootFrame(flooredIntPoint(
       convertHitPointToRootFrame(widget, FloatPoint(e.x, e.y))));
   m_globalPosition = IntPoint(e.globalX, e.globalY);
-  m_timestamp = e.timeStampSeconds;
+  m_timestamp = TimeTicks::FromSeconds(e.timeStampSeconds);
   m_modifiers = e.modifiers;
   switch (e.sourceDevice) {
     case WebGestureDeviceTouchpad:
@@ -463,7 +463,7 @@ PlatformTouchEventBuilder::PlatformTouchEventBuilder(
     const WebTouchEvent& event) {
   m_type = toPlatformTouchEventType(event.type);
   m_modifiers = event.modifiers;
-  m_timestamp = event.timeStampSeconds;
+  m_timestamp = TimeTicks::FromSeconds(event.timeStampSeconds);
   m_causesScrollingIfUncanceled = event.movedBeyondSlopRegion;
   m_touchStartOrFirstTouchMove = event.touchStartOrFirstTouchMove;
 
@@ -494,7 +494,7 @@ static void updateWebMouseEventFromCoreMouseEvent(
     const Widget* widget,
     const LayoutItem layoutItem,
     WebMouseEvent& webEvent) {
-  webEvent.timeStampSeconds = event.platformTimeStamp();
+  webEvent.timeStampSeconds = event.platformTimeStamp().InSeconds();
   webEvent.modifiers = event.modifiers();
 
   FrameView* view = widget ? toFrameView(widget->parent()) : 0;
@@ -597,7 +597,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget,
   else
     return;
 
-  timeStampSeconds = event.platformTimeStamp();
+  timeStampSeconds = event.platformTimeStamp().InSeconds();
   modifiers = event.modifiers();
 
   // The mouse event co-ordinates should be generated from the co-ordinates of
@@ -672,7 +672,7 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
     return;  // Skip all other keyboard events.
 
   modifiers = event.modifiers();
-  timeStampSeconds = event.platformTimeStamp();
+  timeStampSeconds = event.platformTimeStamp().InSeconds();
   windowsKeyCode = event.keyCode();
 }
 
@@ -746,7 +746,7 @@ WebTouchEventBuilder::WebTouchEventBuilder(const LayoutItem layoutItem,
     return;
   }
 
-  timeStampSeconds = event.platformTimeStamp();
+  timeStampSeconds = event.platformTimeStamp().InSeconds();
   modifiers = event.modifiers();
   dispatchType = event.cancelable() ? WebInputEvent::Blocking
                                     : WebInputEvent::EventNonBlocking;
@@ -811,7 +811,7 @@ WebGestureEventBuilder::WebGestureEventBuilder(const LayoutItem layoutItem,
     data.tap.tapCount = 1;
   }
 
-  timeStampSeconds = event.platformTimeStamp();
+  timeStampSeconds = event.platformTimeStamp().InSeconds();
   modifiers = event.modifiers();
 
   globalX = event.screenX();

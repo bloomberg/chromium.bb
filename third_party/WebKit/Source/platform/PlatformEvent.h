@@ -28,6 +28,7 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/Time.h"
 
 namespace blink {
 
@@ -138,15 +139,14 @@ class PlatformEvent {
 
   Modifiers getModifiers() const { return static_cast<Modifiers>(m_modifiers); }
 
-  double timestamp() const { return m_timestamp; }
+  TimeTicks timestamp() const { return m_timestamp; }
 
  protected:
-  PlatformEvent() : m_type(NoType), m_modifiers(), m_timestamp(0) {}
+  PlatformEvent() : m_type(NoType), m_modifiers() {}
 
-  explicit PlatformEvent(EventType type)
-      : m_type(type), m_modifiers(0), m_timestamp(0) {}
+  explicit PlatformEvent(EventType type) : m_type(type), m_modifiers(0) {}
 
-  PlatformEvent(EventType type, Modifiers modifiers, double timestamp)
+  PlatformEvent(EventType type, Modifiers modifiers, TimeTicks timestamp)
       : m_type(type), m_modifiers(modifiers), m_timestamp(timestamp) {}
 
   // Explicit protected destructor so that people don't accidentally
@@ -155,7 +155,7 @@ class PlatformEvent {
 
   unsigned m_type;
   unsigned m_modifiers;
-  double m_timestamp;
+  TimeTicks m_timestamp;
 };
 
 }  // namespace blink

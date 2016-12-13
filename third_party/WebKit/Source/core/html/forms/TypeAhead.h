@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"
+#include "wtf/Time.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -65,7 +66,7 @@ class TypeAhead {
  private:
   TypeAheadDataSource* m_dataSource;
   // platform timestamp of last keyboard event in seconds
-  double m_lastTypeTime;
+  TimeTicks m_lastTypeTime;
   UChar m_repeatingChar;
   StringBuilder m_buffer;
 };

@@ -108,7 +108,7 @@ class CORE_EXPORT MouseRelatedEvent : public UIEventWithKeyState {
                     const IntPoint& rootFrameLocation,
                     const IntPoint& movementDelta,
                     PlatformEvent::Modifiers,
-                    double platformTimeStamp,
+                    TimeTicks platformTimeStamp,
                     PositionType,
                     InputDeviceCapabilities* sourceCapabilities = nullptr);
 

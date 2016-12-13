@@ -1959,7 +1959,7 @@ void WebViewImpl::beginFrame(double lastFrameTimeMonotonic) {
 
       PlatformGestureEvent endScrollEvent(
           PlatformEvent::GestureScrollEnd, m_positionOnFlingStart,
-          m_globalPositionOnFlingStart, IntSize(), 0,
+          m_globalPositionOnFlingStart, IntSize(), TimeTicks(),
           PlatformEvent::NoModifiers,
           lastFlingSourceDevice == WebGestureDeviceTouchpad
               ? PlatformGestureSourceTouchpad

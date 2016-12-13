@@ -126,8 +126,7 @@ void WebFrameWidgetBase::dragSourceEndedAt(const WebPoint& pointInViewport,
   PlatformMouseEvent pme(
       pointInRootFrame, screenPoint, WebPointerProperties::Button::Left,
       PlatformEvent::MouseMoved, 0, PlatformEvent::NoModifiers,
-      PlatformMouseEvent::RealOrIndistinguishable,
-      WTF::monotonicallyIncreasingTime());
+      PlatformMouseEvent::RealOrIndistinguishable, TimeTicks::Now());
   toCoreFrame(localRoot())
       ->eventHandler()
       .dragSourceEndedAt(pme, static_cast<DragOperation>(operation));

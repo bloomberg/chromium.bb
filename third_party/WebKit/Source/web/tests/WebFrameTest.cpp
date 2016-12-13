@@ -1911,9 +1911,10 @@ TEST_F(WebFrameTest,
   ASSERT_NE(nullptr, element);
   EXPECT_EQ(String("oldValue"), element->innerText());
 
-  PlatformGestureEvent gestureEvent(
-      PlatformEvent::EventType::GestureTap, hitPoint, hitPoint, IntSize(0, 0),
-      0, PlatformEvent::NoModifiers, PlatformGestureSourceTouchscreen);
+  PlatformGestureEvent gestureEvent(PlatformEvent::EventType::GestureTap,
+                                    hitPoint, hitPoint, IntSize(0, 0),
+                                    TimeTicks(), PlatformEvent::NoModifiers,
+                                    PlatformGestureSourceTouchscreen);
   webViewHelper.webView()
       ->mainFrameImpl()
       ->frame()
@@ -6906,7 +6907,7 @@ TEST_P(ParameterizedWebFrameTest, SimulateFragmentAnchorMiddleClick) {
 
   Event* event = MouseEvent::create(
       EventTypeNames::click, false, false, document->domWindow(), 0, 0, 0, 0, 0,
-      0, 0, PlatformEvent::NoModifiers, 1, 0, nullptr, 0,
+      0, 0, PlatformEvent::NoModifiers, 1, 0, nullptr, TimeTicks(),
       PlatformMouseEvent::RealOrIndistinguishable, String(), nullptr);
   FrameLoadRequest frameRequest(document, ResourceRequest(destination));
   frameRequest.setTriggeringEvent(event);
@@ -6961,7 +6962,7 @@ TEST_P(ParameterizedWebFrameTest, ModifiedClickNewWindow) {
   // ctrl+click event
   Event* event = MouseEvent::create(
       EventTypeNames::click, false, false, document->domWindow(), 0, 0, 0, 0, 0,
-      0, 0, PlatformEvent::CtrlKey, 0, 0, nullptr, 0,
+      0, 0, PlatformEvent::CtrlKey, 0, 0, nullptr, TimeTicks(),
       PlatformMouseEvent::RealOrIndistinguishable, String(), nullptr);
   FrameLoadRequest frameRequest(document, ResourceRequest(destination));
   frameRequest.setTriggeringEvent(event);
@@ -10784,7 +10785,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
       IntPoint(aTag->offsetLeft(), aTag->offsetTop()),
       IntPoint(aTag->offsetLeft(), aTag->offsetTop()),
       WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
-      PlatformEvent::NoModifiers, WTF::monotonicallyIncreasingTime());
+      PlatformEvent::NoModifiers, TimeTicks::Now());
   document->frame()->eventHandler().handleMouseMoveEvent(
       mouseMoveOverLinkEvent, Vector<PlatformMouseEvent>());
 
@@ -10797,7 +10798,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   PlatformMouseEvent mouseMoveEvent(
       IntPoint(18, aTag->offsetTop()), IntPoint(18, aTag->offsetTop()),
       WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
-      PlatformEvent::NoModifiers, WTF::monotonicallyIncreasingTime());
+      PlatformEvent::NoModifiers, TimeTicks::Now());
   document->frame()->eventHandler().handleMouseMoveEvent(
       mouseMoveEvent, Vector<PlatformMouseEvent>());
 
@@ -10808,8 +10809,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   PlatformMouseEvent mousePressEvent(
       IntPoint(18, aTag->offsetTop()), IntPoint(18, aTag->offsetTop()),
       WebPointerProperties::Button::Left, PlatformEvent::MousePressed, 0,
-      PlatformEvent::Modifiers::LeftButtonDown,
-      WTF::monotonicallyIncreasingTime());
+      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now());
   document->frame()->eventHandler().handleMousePressEvent(mousePressEvent);
 
   EXPECT_FALSE(document->activeHoverElement());
@@ -10818,8 +10818,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   PlatformMouseEvent MouseReleaseEvent(
       IntPoint(18, aTag->offsetTop()), IntPoint(18, aTag->offsetTop()),
       WebPointerProperties::Button::Left, PlatformEvent::MouseReleased, 0,
-      PlatformEvent::Modifiers::LeftButtonDown,
-      WTF::monotonicallyIncreasingTime());
+      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now());
   document->frame()->eventHandler().handleMouseReleaseEvent(MouseReleaseEvent);
 
   // Mouse over disabled overlay scrollbar. Mouse cursor should be hand and has
@@ -10875,7 +10874,7 @@ TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
   PlatformMouseEvent mouseMoveOverDiv(
       IntPoint(1, 1), IntPoint(1, 1), WebPointerProperties::Button::NoButton,
       PlatformEvent::MouseMoved, 0, PlatformEvent::NoModifiers,
-      WTF::monotonicallyIncreasingTime());
+      TimeTicks::Now());
   document->frame()->eventHandler().handleMouseMoveEvent(
       mouseMoveOverDiv, Vector<PlatformMouseEvent>());
 
@@ -10893,7 +10892,7 @@ TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
   PlatformMouseEvent mouseMoveOverDivAndScrollbar(
       IntPoint(175, 1), IntPoint(175, 1),
       WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
-      PlatformEvent::NoModifiers, WTF::monotonicallyIncreasingTime());
+      PlatformEvent::NoModifiers, TimeTicks::Now());
   document->frame()->eventHandler().handleMouseMoveEvent(
       mouseMoveOverDivAndScrollbar, Vector<PlatformMouseEvent>());
 

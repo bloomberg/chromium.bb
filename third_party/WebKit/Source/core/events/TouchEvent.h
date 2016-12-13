@@ -54,7 +54,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
                             bool cancelable,
                             bool causesScrollingIfUncanceled,
                             bool firstTouchMoveOrStart,
-                            double platformTimeStamp,
+                            TimeTicks platformTimeStamp,
                             TouchAction currentTouchAction,
                             WebPointerProperties::PointerType pointerType) {
     return new TouchEvent(touches, targetTouches, changedTouches, type, view,
@@ -113,7 +113,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
              bool cancelable,
              bool causesScrollingIfUncanceled,
              bool firstTouchMoveOrStart,
-             double platformTimeStamp,
+             TimeTicks platformTimeStamp,
              TouchAction currentTouchAction,
              WebPointerProperties::PointerType);
   TouchEvent(const AtomicString&, const TouchEventInit&);

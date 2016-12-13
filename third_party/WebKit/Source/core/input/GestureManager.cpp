@@ -35,7 +35,7 @@ GestureManager::GestureManager(LocalFrame& frame,
 void GestureManager::clear() {
   m_suppressMouseEventsFromGestures = false;
   m_longTapShouldInvokeContextMenu = false;
-  m_lastShowPressTimestamp = 0;
+  m_lastShowPressTimestamp = TimeTicks();
 }
 
 DEFINE_TRACE(GestureManager) {
@@ -372,7 +372,7 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
       WebPointerProperties::Button::Right, eventType, /* clickCount */ 1,
       static_cast<PlatformEvent::Modifiers>(
           modifiers | PlatformEvent::Modifiers::RightButtonDown),
-      PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(),
+      PlatformMouseEvent::FromTouch, TimeTicks::Now(),
       WebPointerProperties::PointerType::Mouse);
 
   if (!m_suppressMouseEventsFromGestures && m_frame->view()) {
@@ -390,7 +390,7 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
 }
 
 WebInputEventResult GestureManager::handleGestureShowPress() {
-  m_lastShowPressTimestamp = WTF::monotonicallyIncreasingTime();
+  m_lastShowPressTimestamp = TimeTicks::Now();
 
   FrameView* view = m_frame->view();
   if (!view)
@@ -415,7 +415,7 @@ FrameHost* GestureManager::frameHost() const {
   return &m_frame->page()->frameHost();
 }
 
-double GestureManager::getLastShowPressTimestamp() const {
+TimeTicks GestureManager::getLastShowPressTimestamp() const {
   return m_lastShowPressTimestamp;
 }
 

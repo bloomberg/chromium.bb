@@ -29,7 +29,7 @@ UIEventWithKeyState::UIEventWithKeyState(
     AbstractView* view,
     int detail,
     PlatformEvent::Modifiers modifiers,
-    double platformTimeStamp,
+    TimeTicks platformTimeStamp,
     InputDeviceCapabilities* sourceCapabilities)
     : UIEvent(type,
               canBubble,

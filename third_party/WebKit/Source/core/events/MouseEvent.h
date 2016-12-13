@@ -57,7 +57,7 @@ class CORE_EXPORT MouseEvent : public MouseRelatedEvent {
                             short button,
                             unsigned short buttons,
                             EventTarget* relatedTarget,
-                            double platformTimeStamp,
+                            TimeTicks platformTimeStamp,
                             PlatformMouseEvent::SyntheticEventType,
                             const String& region,
                             const PlatformMouseEvent*);
@@ -152,7 +152,7 @@ class CORE_EXPORT MouseEvent : public MouseRelatedEvent {
              short button,
              unsigned short buttons,
              EventTarget* relatedTarget,
-             double platformTimeStamp,
+             TimeTicks platformTimeStamp,
              PlatformMouseEvent::SyntheticEventType,
              const String& region,
              const PlatformMouseEvent*);

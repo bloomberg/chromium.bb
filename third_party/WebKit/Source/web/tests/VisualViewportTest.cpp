@@ -1866,7 +1866,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
 
   // Send a scroll event on the main thread path.
   PlatformGestureEvent gsu(PlatformEvent::GestureScrollUpdate, IntPoint(0, 0),
-                           IntPoint(0, 0), IntSize(5, 5), 0,
+                           IntPoint(0, 0), IntSize(5, 5), TimeTicks(),
                            PlatformEvent::NoModifiers,
                            PlatformGestureSourceTouchpad);
   gsu.setScrollGestureData(-50, -60, ScrollByPrecisePixel, 1, 1,

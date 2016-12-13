@@ -30,7 +30,7 @@ UIEvent::UIEvent(const AtomicString& eventType,
                  bool canBubbleArg,
                  bool cancelableArg,
                  ComposedMode composedMode,
-                 double platformTimeStamp,
+                 TimeTicks platformTimeStamp,
                  AbstractView* viewArg,
                  int detailArg,
                  InputDeviceCapabilities* sourceCapabilitiesArg)

@@ -37,9 +37,9 @@ using namespace WTF::Unicode;
 namespace blink {
 
 TypeAhead::TypeAhead(TypeAheadDataSource* dataSource)
-    : m_dataSource(dataSource), m_lastTypeTime(0), m_repeatingChar(0) {}
+    : m_dataSource(dataSource), m_repeatingChar(0) {}
 
-static const double typeAheadTimeout = 1;  // in seconds
+static const TimeDelta typeAheadTimeout = TimeDelta::FromSecondsD(1);
 
 static String stripLeadingWhiteSpace(const String& string) {
   unsigned length = string.length();
@@ -58,7 +58,7 @@ int TypeAhead::handleEvent(KeyboardEvent* event, MatchModeFlags matchMode) {
     return -1;
 
   int optionCount = m_dataSource->optionCount();
-  double delta = event->platformTimeStamp() - m_lastTypeTime;
+  TimeDelta delta = event->platformTimeStamp() - m_lastTypeTime;
   m_lastTypeTime = event->platformTimeStamp();
 
   UChar c = event->charCode();
@@ -118,12 +118,12 @@ int TypeAhead::handleEvent(KeyboardEvent* event, MatchModeFlags matchMode) {
 }
 
 bool TypeAhead::hasActiveSession(KeyboardEvent* event) {
-  double delta = event->platformTimeStamp() - m_lastTypeTime;
+  TimeDelta delta = event->platformTimeStamp() - m_lastTypeTime;
   return delta <= typeAheadTimeout;
 }
 
 void TypeAhead::resetSession() {
-  m_lastTypeTime = 0;
+  m_lastTypeTime = TimeTicks();
   m_buffer.clear();
 }
 

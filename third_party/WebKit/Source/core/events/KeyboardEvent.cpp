@@ -95,7 +95,7 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
           domWindow,
           0,
           static_cast<PlatformEvent::Modifiers>(key.modifiers),
-          key.timeStampSeconds,
+          TimeTicks::FromSeconds(key.timeStampSeconds),
           InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities()),
       m_keyEvent(WTF::makeUnique<WebKeyboardEvent>(key)),
       // TODO(crbug.com/482880): Fix this initialization to lazy initialization.

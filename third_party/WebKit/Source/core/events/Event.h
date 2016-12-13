@@ -32,6 +32,7 @@
 #include "core/events/EventInit.h"
 #include "core/events/EventPath.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Time.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -156,7 +157,7 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   // using the platform timestamp (see |m_platformTimeStamp|).
   // For more info see http://crbug.com/160524
   double timeStamp(ScriptState*) const;
-  double platformTimeStamp() const { return m_platformTimeStamp; }
+  TimeTicks platformTimeStamp() const { return m_platformTimeStamp; }
 
   void stopPropagation() { m_propagationStopped = true; }
   void setStopPropagation(bool stopPropagation) {
@@ -270,11 +271,11 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
         bool canBubble,
         bool cancelable,
         ComposedMode,
-        double platformTimeStamp);
+        TimeTicks platformTimeStamp);
   Event(const AtomicString& type,
         bool canBubble,
         bool cancelable,
-        double platformTimeStamp);
+        TimeTicks platformTimeStamp);
   Event(const AtomicString& type,
         bool canBubble,
         bool cancelable,
@@ -322,7 +323,7 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   // The monotonic platform time in seconds, for input events it is the
   // event timestamp provided by the host OS and reported in the original
   // WebInputEvent instance.
-  double m_platformTimeStamp;
+  TimeTicks m_platformTimeStamp;
 };
 
 #define DEFINE_EVENT_TYPE_CASTS(typeName)                          \

@@ -14,6 +14,7 @@
 #include "platform/Timer.h"
 #include "public/platform/WebInputEventResult.h"
 #include "wtf/Allocator.h"
+#include "wtf/Time.h"
 
 namespace blink {
 
@@ -216,7 +217,7 @@ class CORE_EXPORT MouseEventManager final
   Member<Node> m_clickNode;
 
   IntPoint m_mouseDownPos;  // In our view's coords.
-  double m_mouseDownTimestamp;
+  TimeTicks m_mouseDownTimestamp;
   PlatformMouseEvent m_mouseDown;
 
   LayoutPoint m_dragStartPos;

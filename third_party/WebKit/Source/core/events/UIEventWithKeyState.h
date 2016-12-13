@@ -71,7 +71,7 @@ class CORE_EXPORT UIEventWithKeyState : public UIEvent {
                       AbstractView*,
                       int detail,
                       PlatformEvent::Modifiers,
-                      double platformTimeStamp,
+                      TimeTicks platformTimeStamp,
                       InputDeviceCapabilities* sourceCapabilities = nullptr);
   UIEventWithKeyState(const AtomicString& type,
                       const EventModifierInit& initializer);

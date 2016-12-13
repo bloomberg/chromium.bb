@@ -43,7 +43,7 @@ class CORE_EXPORT GestureManager
   // TODO(nzolghadr): This can probably be hidden and the related logic
   // be moved to this class (see crrev.com/112023010). Since that might cause
   // regression it's better to move that logic in another change.
-  double getLastShowPressTimestamp() const;
+  TimeTicks getLastShowPressTimestamp() const;
 
  private:
   WebInputEventResult handleGestureShowPress();
@@ -80,7 +80,7 @@ class CORE_EXPORT GestureManager
 
   const Member<SelectionController> m_selectionController;
 
-  double m_lastShowPressTimestamp;
+  TimeTicks m_lastShowPressTimestamp;
 };
 
 }  // namespace blink

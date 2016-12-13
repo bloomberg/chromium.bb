@@ -59,7 +59,7 @@ class PlatformMouseEvent : public PlatformEvent {
                      EventType type,
                      int clickCount,
                      Modifiers modifiers,
-                     double timestamp)
+                     TimeTicks timestamp)
       : PlatformEvent(type, modifiers, timestamp),
         m_position(position),
         m_globalPosition(globalPosition),
@@ -75,7 +75,7 @@ class PlatformMouseEvent : public PlatformEvent {
                      int clickCount,
                      Modifiers modifiers,
                      SyntheticEventType synthesized,
-                     double timestamp,
+                     TimeTicks timestamp,
                      WebPointerProperties::PointerType pointerType =
                          WebPointerProperties::PointerType::Unknown)
       : PlatformEvent(type, modifiers, timestamp),

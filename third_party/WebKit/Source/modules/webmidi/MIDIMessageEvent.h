@@ -64,7 +64,10 @@ class MIDIMessageEvent final : public Event {
 
  private:
   MIDIMessageEvent(double timeStamp, DOMUint8Array* data)
-      : Event(EventTypeNames::midimessage, true, false, timeStamp),
+      : Event(EventTypeNames::midimessage,
+              true,
+              false,
+              TimeTicks() + TimeDelta::FromSecondsD(timeStamp)),
         m_data(data) {}
 
   MIDIMessageEvent(const AtomicString& type,

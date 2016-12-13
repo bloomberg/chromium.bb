@@ -60,7 +60,7 @@ MouseRelatedEvent::MouseRelatedEvent(
     const IntPoint& rootFrameLocation,
     const IntPoint& movementDelta,
     PlatformEvent::Modifiers modifiers,
-    double platformTimeStamp,
+    TimeTicks platformTimeStamp,
     PositionType positionType,
     InputDeviceCapabilities* sourceCapabilities)
     : UIEventWithKeyState(eventType,

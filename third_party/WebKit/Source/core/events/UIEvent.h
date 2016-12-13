@@ -79,7 +79,7 @@ class CORE_EXPORT UIEvent : public Event {
           bool canBubble,
           bool cancelable,
           ComposedMode,
-          double platformTimeStamp,
+          TimeTicks platformTimeStamp,
           AbstractView*,
           int detail,
           InputDeviceCapabilities* sourceCapabilities);

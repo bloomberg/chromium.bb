@@ -140,7 +140,7 @@ static const double minimumCursorScale = 0.001;
 
 // The minimum amount of time an element stays active after a ShowPress
 // This is roughly 9 frames, which should be long enough to be noticeable.
-static const double minimumActiveInterval = 0.15;
+static const TimeDelta minimumActiveInterval = TimeDelta::FromSecondsD(0.15);
 
 enum NoCursorChangeType { NoCursorChange };
 
@@ -1664,7 +1664,7 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(
 
   HitTestRequest::HitTestRequestType hitType =
       m_gestureManager->getHitTypeForGestureType(gestureEvent.type());
-  double activeInterval = 0;
+  TimeDelta activeInterval;
   bool shouldKeepActiveForMinInterval = false;
   if (readOnly) {
     hitType |= HitTestRequest::ReadOnly;
@@ -1672,10 +1672,10 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(
     // If the Tap is received very shortly after ShowPress, we want to
     // delay clearing of the active state so that it's visible to the user
     // for at least a couple of frames.
-    activeInterval = WTF::monotonicallyIncreasingTime() -
-                     m_gestureManager->getLastShowPressTimestamp();
+    activeInterval =
+        TimeTicks::Now() - m_gestureManager->getLastShowPressTimestamp();
     shouldKeepActiveForMinInterval =
-        m_gestureManager->getLastShowPressTimestamp() &&
+        !m_gestureManager->getLastShowPressTimestamp().isNull() &&
         activeInterval < minimumActiveInterval;
     if (shouldKeepActiveForMinInterval)
       hitType |= HitTestRequest::ReadOnly;
@@ -1693,8 +1693,8 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(
     m_lastDeferredTapElement =
         eventWithHitTestResults.hitTestResult().innerElement();
     // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
-    m_activeIntervalTimer.startOneShot(minimumActiveInterval - activeInterval,
-                                       BLINK_FROM_HERE);
+    m_activeIntervalTimer.startOneShot(
+        (minimumActiveInterval - activeInterval).InSecondsF(), BLINK_FROM_HERE);
   }
 
   return eventWithHitTestResults;
@@ -1896,8 +1896,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
       locationInRootFrame, globalPosition,
       WebPointerProperties::Button::NoButton, eventType, /* clickCount */ 0,
       PlatformEvent::NoModifiers, PlatformMouseEvent::RealOrIndistinguishable,
-      WTF::monotonicallyIncreasingTime(),
-      WebPointerProperties::PointerType::Mouse);
+      TimeTicks::Now(), WebPointerProperties::PointerType::Mouse);
 
   return sendContextMenuEvent(mouseEvent, overrideTargetElement);
 }

@@ -43,6 +43,17 @@ class TimeWrapper {
     return m_value.ToInternalValue();
   }
 
+  // Only use this conversion when interfacing with legacy code that represents
+  // time in double. Converting to double can lead to losing information for
+  // large time values.
+  double InSeconds() const {
+    return (m_value - WrappedTimeType()).InSecondsF();
+  }
+
+  static TimeWrapper FromSeconds(double seconds) {
+    return WrappedTimeType() + TimeDelta::FromSecondsD(seconds);
+  }
+
   TimeWrapper& operator=(TimeWrapper other) {
     m_value = other.m_value;
     return *this;

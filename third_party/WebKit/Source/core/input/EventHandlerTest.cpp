@@ -40,7 +40,7 @@ class TapEventBuilder : public PlatformGestureEvent {
                              position,
                              position,
                              IntSize(5, 5),
-                             WTF::monotonicallyIncreasingTime(),
+                             TimeTicks::Now(),
                              static_cast<PlatformEvent::Modifiers>(0),
                              PlatformGestureSourceTouchscreen) {
     m_data.m_tap.m_tapCount = tapCount;
@@ -78,13 +78,13 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
   PlatformMouseEvent mouseDownEvent(
       IntPoint(0, 0), IntPoint(100, 200), WebPointerProperties::Button::Left,
       PlatformEvent::MousePressed, 1, PlatformEvent::Modifiers::LeftButtonDown,
-      WTF::monotonicallyIncreasingTime());
+      TimeTicks::Now());
   document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
   PlatformMouseEvent mouseMoveEvent(
       IntPoint(100, 50), IntPoint(200, 250), WebPointerProperties::Button::Left,
       PlatformEvent::MouseMoved, 1, PlatformEvent::Modifiers::LeftButtonDown,
-      WTF::monotonicallyIncreasingTime());
+      TimeTicks::Now());
   document().frame()->eventHandler().handleMouseMoveEvent(
       mouseMoveEvent, Vector<PlatformMouseEvent>());
 
@@ -95,7 +95,7 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
   PlatformMouseEvent mouseUpEvent(
       IntPoint(100, 50), IntPoint(200, 250), WebPointerProperties::Button::Left,
       PlatformEvent::MouseReleased, 1, static_cast<PlatformEvent::Modifiers>(0),
-      WTF::monotonicallyIncreasingTime());
+      TimeTicks::Now());
   document().frame()->eventHandler().handleMouseReleaseEvent(mouseUpEvent);
 
   FrameSelection& selection = document().frame()->selection();
@@ -182,14 +182,13 @@ TEST_F(EventHandlerTest, draggedInlinePositionTest) {
   PlatformMouseEvent mouseDownEvent(
       IntPoint(262, 29), IntPoint(329, 67), WebPointerProperties::Button::Left,
       PlatformEvent::MousePressed, 1, PlatformEvent::Modifiers::LeftButtonDown,
-      WTF::monotonicallyIncreasingTime());
+      TimeTicks::Now());
   document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
-  PlatformMouseEvent mouseMoveEvent(IntPoint(618, 298), IntPoint(685, 436),
-                                    WebPointerProperties::Button::Left,
-                                    PlatformEvent::MouseMoved, 1,
-                                    PlatformEvent::Modifiers::LeftButtonDown,
-                                    WTF::monotonicallyIncreasingTime());
+  PlatformMouseEvent mouseMoveEvent(
+      IntPoint(618, 298), IntPoint(685, 436),
+      WebPointerProperties::Button::Left, PlatformEvent::MouseMoved, 1,
+      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now());
   document().frame()->eventHandler().handleMouseMoveEvent(
       mouseMoveEvent, Vector<PlatformMouseEvent>());
 
@@ -212,18 +211,16 @@ TEST_F(EventHandlerTest, draggedSVGImagePositionTest) {
       "draggable='true'/>"
       "</svg>"
       "</div>");
-  PlatformMouseEvent mouseDownEvent(IntPoint(145, 144), IntPoint(212, 282),
-                                    WebPointerProperties::Button::Left,
-                                    PlatformEvent::MousePressed, 1,
-                                    PlatformEvent::Modifiers::LeftButtonDown,
-                                    WTF::monotonicallyIncreasingTime());
+  PlatformMouseEvent mouseDownEvent(
+      IntPoint(145, 144), IntPoint(212, 282),
+      WebPointerProperties::Button::Left, PlatformEvent::MousePressed, 1,
+      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now());
   document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
-  PlatformMouseEvent mouseMoveEvent(IntPoint(618, 298), IntPoint(685, 436),
-                                    WebPointerProperties::Button::Left,
-                                    PlatformEvent::MouseMoved, 1,
-                                    PlatformEvent::Modifiers::LeftButtonDown,
-                                    WTF::monotonicallyIncreasingTime());
+  PlatformMouseEvent mouseMoveEvent(
+      IntPoint(618, 298), IntPoint(685, 436),
+      WebPointerProperties::Button::Left, PlatformEvent::MouseMoved, 1,
+      PlatformEvent::Modifiers::LeftButtonDown, TimeTicks::Now());
   document().frame()->eventHandler().handleMouseMoveEvent(
       mouseMoveEvent, Vector<PlatformMouseEvent>());
 
@@ -252,7 +249,7 @@ TEST_F(EventHandlerTest, sendContextMenuEventWithHover) {
   PlatformMouseEvent mouseDownEvent(
       IntPoint(0, 0), IntPoint(100, 200), WebPointerProperties::Button::Right,
       PlatformEvent::MousePressed, 1, PlatformEvent::Modifiers::RightButtonDown,
-      WTF::monotonicallyIncreasingTime());
+      TimeTicks::Now());
   EXPECT_EQ(
       WebInputEventResult::HandledApplication,
       document().frame()->eventHandler().sendContextMenuEvent(mouseDownEvent));

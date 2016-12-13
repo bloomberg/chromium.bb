@@ -123,8 +123,7 @@ static PlatformMouseEvent createMouseEvent(DragData* dragData) {
       dragData->clientPosition(), dragData->globalPosition(),
       WebPointerProperties::Button::Left, PlatformEvent::MouseMoved, 0,
       static_cast<PlatformEvent::Modifiers>(dragData->modifiers()),
-      PlatformMouseEvent::RealOrIndistinguishable,
-      monotonicallyIncreasingTime());
+      PlatformMouseEvent::RealOrIndistinguishable, TimeTicks::Now());
 }
 
 static DataTransfer* createDraggingDataTransfer(DataTransferAccessPolicy policy,

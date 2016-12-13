@@ -211,7 +211,7 @@ TouchEvent::TouchEvent(TouchList* touches,
                        bool cancelable,
                        bool causesScrollingIfUncanceled,
                        bool firstTouchMoveOrStart,
-                       double platformTimeStamp,
+                       TimeTicks platformTimeStamp,
                        TouchAction currentTouchAction,
                        WebPointerProperties::PointerType pointerType)
     // Pass a sourceCapabilities including the ability to fire touchevents when

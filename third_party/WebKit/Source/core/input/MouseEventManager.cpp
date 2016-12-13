@@ -63,11 +63,11 @@ const double kFakeMouseMoveInterval = 0.1;
 #if OS(MACOSX)
 const int kDragThresholdX = 3;
 const int kDragThresholdY = 3;
-const double kTextDragDelay = 0.15;
+const TimeDelta kTextDragDelay = TimeDelta::FromSecondsD(0.15);
 #else
 const int kDragThresholdX = 4;
 const int kDragThresholdY = 4;
-const double kTextDragDelay = 0.0;
+const TimeDelta kTextDragDelay = TimeDelta::FromSecondsD(0.0);
 #endif
 
 }  // namespace
@@ -97,7 +97,7 @@ void MouseEventManager::clear() {
   m_clickCount = 0;
   m_clickNode = nullptr;
   m_mouseDownPos = IntPoint();
-  m_mouseDownTimestamp = 0;
+  m_mouseDownTimestamp = TimeTicks();
   m_mouseDown = PlatformMouseEvent();
   m_svgPan = false;
   m_dragStartPos = LayoutPoint();
@@ -304,8 +304,8 @@ void MouseEventManager::fakeMouseMoveEventTimerFired(TimerBase* timer) {
       WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
       static_cast<PlatformEvent::Modifiers>(
           KeyboardEventManager::getCurrentModifierState()),
-      PlatformMouseEvent::RealOrIndistinguishable,
-      monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
+      PlatformMouseEvent::RealOrIndistinguishable, TimeTicks::Now(),
+      WebPointerProperties::PointerType::Mouse);
   Vector<PlatformMouseEvent> coalescedEvents;
   m_frame->eventHandler().handleMouseMoveEvent(fakeMouseMoveEvent,
                                                coalescedEvents);
@@ -656,7 +656,7 @@ bool MouseEventManager::handleDragDropIfPossible(
         WebPointerProperties::Button::Left, PlatformEvent::MousePressed, 1,
         static_cast<PlatformEvent::Modifiers>(modifiers |
                                               PlatformEvent::LeftButtonDown),
-        PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(),
+        PlatformMouseEvent::FromTouch, TimeTicks::Now(),
         WebPointerProperties::PointerType::Mouse);
     m_mouseDown = mouseDownEvent;
 
@@ -665,7 +665,7 @@ bool MouseEventManager::handleDragDropIfPossible(
         WebPointerProperties::Button::Left, PlatformEvent::MouseMoved, 1,
         static_cast<PlatformEvent::Modifiers>(modifiers |
                                               PlatformEvent::LeftButtonDown),
-        PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(),
+        PlatformMouseEvent::FromTouch, TimeTicks::Now(),
         WebPointerProperties::PointerType::Mouse);
     HitTestRequest request(HitTestRequest::ReadOnly);
     MouseEventWithHitTestResults mev =

@@ -136,7 +136,7 @@ GestureEvent::GestureEvent(const AtomicString& type,
                            ScrollInertialPhase inertialPhase,
                            bool synthetic,
                            ScrollGranularity deltaUnits,
-                           double platformTimeStamp,
+                           TimeTicks platformTimeStamp,
                            int resendingPluginId,
                            GestureSource source)
     : MouseRelatedEvent(type,

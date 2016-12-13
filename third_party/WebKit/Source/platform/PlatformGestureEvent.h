@@ -54,7 +54,7 @@ class PlatformGestureEvent : public PlatformEvent {
                        const IntPoint& position,
                        const IntPoint& globalPosition,
                        const IntSize& area,
-                       double timestamp,
+                       TimeTicks timestamp,
                        PlatformEvent::Modifiers modifiers,
                        PlatformGestureSource source)
       : PlatformEvent(type, modifiers, timestamp),

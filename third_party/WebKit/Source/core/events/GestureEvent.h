@@ -77,7 +77,7 @@ class CORE_EXPORT GestureEvent final : public MouseRelatedEvent {
                ScrollInertialPhase,
                bool synthetic,
                ScrollGranularity deltaUnits,
-               double platformTimeStamp,
+               TimeTicks platformTimeStamp,
                int resendingPluginId,
                GestureSource);
 

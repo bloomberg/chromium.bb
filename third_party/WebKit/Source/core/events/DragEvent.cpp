@@ -26,7 +26,7 @@ DragEvent* DragEvent::create(
     short button,
     unsigned short buttons,
     EventTarget* relatedTarget,
-    double platformTimeStamp,
+    TimeTicks platformTimeStamp,
     DataTransfer* dataTransfer,
     PlatformMouseEvent::SyntheticEventType syntheticEventType) {
   return new DragEvent(type, canBubble, cancelable, view, detail, screenX,
@@ -55,7 +55,7 @@ DragEvent::DragEvent(const AtomicString& eventType,
                      short button,
                      unsigned short buttons,
                      EventTarget* relatedTarget,
-                     double platformTimeStamp,
+                     TimeTicks platformTimeStamp,
                      DataTransfer* dataTransfer,
                      PlatformMouseEvent::SyntheticEventType syntheticEventType)
     : MouseEvent(

@@ -641,12 +641,12 @@ bool EventTarget::fireEventListeners(Event* event,
   d->firingEventIterators->append(FiringEventIterator(event->type(), i, size));
 
   double blockedEventThreshold = blockedEventsWarningThreshold(context, event);
-  double now = 0.0;
+  TimeTicks now;
   bool shouldReportBlockedEvent = false;
   if (blockedEventThreshold) {
-    now = WTF::monotonicallyIncreasingTime();
+    now = TimeTicks::Now();
     shouldReportBlockedEvent =
-        now - event->platformTimeStamp() > blockedEventThreshold;
+        (now - event->platformTimeStamp()).InSecondsF() > blockedEventThreshold;
   }
   bool firedListener = false;
 
@@ -697,7 +697,7 @@ bool EventTarget::fireEventListeners(Event* event,
         !entry[i - 1].blockedEventWarningEmitted() &&
         !event->defaultPrevented()) {
       reportBlockedEvent(context, event, &entry[i - 1],
-                         now - event->platformTimeStamp());
+                         (now - event->platformTimeStamp()).InSecondsF());
     }
 
     if (passiveForced) {

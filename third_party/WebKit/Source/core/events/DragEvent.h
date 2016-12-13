@@ -38,7 +38,7 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
                            short button,
                            unsigned short buttons,
                            EventTarget* relatedTarget,
-                           double platformTimeStamp,
+                           TimeTicks platformTimeStamp,
                            DataTransfer*,
                            PlatformMouseEvent::SyntheticEventType =
                                PlatformMouseEvent::RealOrIndistinguishable);
@@ -77,7 +77,7 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
             short button,
             unsigned short buttons,
             EventTarget* relatedTarget,
-            double platformTimeStamp,
+            TimeTicks platformTimeStamp,
             DataTransfer*,
             PlatformMouseEvent::SyntheticEventType);
 
