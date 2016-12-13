@@ -415,24 +415,26 @@
 
   function initializeProxies() {
     return importModules([
+      'mojo/public/js/bindings',
       'mojo/public/js/connection',
       'chrome/browser/ui/webui/omnibox/omnibox.mojom',
       'content/public/renderer/frame_interfaces',
     ]).then(function(modules) {
-      var connection = modules[0];
-      var mojom = modules[1];
-      var frameInterfaces = modules[2];
+      var bindings = modules[0];
+      var connection = modules[1];
+      var mojom = modules[2];
+      var frameInterfaces = modules[3];
 
       browserProxy = connection.bindHandleToProxy(
           frameInterfaces.getInterface(mojom.OmniboxPageHandler.name),
           mojom.OmniboxPageHandler);
 
       /** @constructor */
-      var OmniboxPageImpl = function() {};
+      var OmniboxPageImpl = function() {
+        this.binding = new bindings.Binding(mojom.OmniboxPage, this);
+      };
 
       OmniboxPageImpl.prototype = {
-        __proto__: mojom.OmniboxPage.stubClass.prototype,
-
         /** @override */
         handleNewAutocompleteResult: function(result) {
           progressiveAutocompleteResults.push(result);
@@ -441,12 +443,7 @@
       };
 
       pageImpl = new OmniboxPageImpl();
-
-      // Create a message pipe, with one end of the pipe already connected to
-      // JS.
-      var handle = connection.bindStubDerivedImpl(pageImpl);
-      // Send the other end of the pipe to C++.
-      browserProxy.setClientPage(handle);
+      browserProxy.setClientPage(pageImpl.binding.createInterfacePtrAndBind());
     });
   }
 

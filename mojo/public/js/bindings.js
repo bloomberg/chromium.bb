@@ -5,35 +5,15 @@
 define("mojo/public/js/bindings", [
   "mojo/public/js/connection",
   "mojo/public/js/core",
-], function(connection, core) {
-
-  // ---------------------------------------------------------------------------
-
-  function InterfacePtrInfo(handle, version) {
-    this.handle = handle;
-    this.version = version;
-  }
-
-  InterfacePtrInfo.prototype.isValid = function() {
-    return core.isHandle(this.handle);
-  };
-
-  // ---------------------------------------------------------------------------
-
-  function InterfaceRequest(handle) {
-    this.handle = handle;
-  }
-
-  InterfaceRequest.prototype.isValid = function() {
-    return core.isHandle(this.handle);
-  };
+  "mojo/public/js/interface_types",
+], function(connection, core, types) {
 
   // ---------------------------------------------------------------------------
 
   function makeRequest(interfacePtr) {
     var pipe = core.createMessagePipe();
-    interfacePtr.ptr.bind(new InterfacePtrInfo(pipe.handle0, 0));
-    return new InterfaceRequest(pipe.handle1);
+    interfacePtr.ptr.bind(new types.InterfacePtrInfo(pipe.handle0, 0));
+    return new types.InterfaceRequest(pipe.handle1);
   }
 
   // ---------------------------------------------------------------------------
@@ -87,12 +67,12 @@ define("mojo/public/js/bindings", [
   InterfacePtrController.prototype.passInterface = function() {
     var result;
     if (this.connection_) {
-      result = new InterfacePtrInfo(
+      result = new types.InterfacePtrInfo(
           this.connection_.router_.connector_.handle_, this.version);
       this.connection_.router_.connector_.handle_ = null;
     } else {
       // This also handles the case when this object is not bound.
-      result = new InterfacePtrInfo(this.handle_, this.version);
+      result = new types.InterfacePtrInfo(this.handle_, this.version);
       this.handle_ = null;
     }
 
@@ -148,6 +128,13 @@ define("mojo/public/js/bindings", [
     return this.stub_ !== null;
   };
 
+  Binding.prototype.createInterfacePtrAndBind = function() {
+    var ptr = new this.interfaceType_.ptrClass();
+    // TODO(yzshen): Set the version of the interface pointer.
+    this.bind(makeRequest(ptr));
+    return ptr;
+  }
+
   Binding.prototype.bind = function(request) {
     this.close();
     if (request.isValid()) {
@@ -174,9 +161,9 @@ define("mojo/public/js/bindings", [
 
   Binding.prototype.unbind = function() {
     if (!this.isBound())
-      return new InterfaceRequest(null);
+      return new types.InterfaceRequest(null);
 
-    var result = new InterfaceRequest(
+    var result = new types.InterfaceRequest(
         connection.StubBindings(this.stub_).connection.router_.connector_
             .handle_);
     connection.StubBindings(this.stub_).connection.router_.connector_.handle_ =
@@ -186,8 +173,8 @@ define("mojo/public/js/bindings", [
   };
 
   var exports = {};
-  exports.InterfacePtrInfo = InterfacePtrInfo;
-  exports.InterfaceRequest = InterfaceRequest;
+  exports.InterfacePtrInfo = types.InterfacePtrInfo;
+  exports.InterfaceRequest = types.InterfaceRequest;
   exports.makeRequest = makeRequest;
   exports.InterfacePtrController = InterfacePtrController;
   exports.Binding = Binding;

@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 define("mojo/public/js/codec", [
-  "mojo/public/js/unicode",
   "mojo/public/js/buffer",
-], function(unicode, buffer) {
+  "mojo/public/js/interface_types",
+  "mojo/public/js/unicode",
+], function(buffer, types, unicode) {
 
   var kErrorUnsigned = "Passing negative value to unsigned";
   var kErrorArray = "Passing non Array for array type";
@@ -802,33 +803,54 @@ define("mojo/public/js/codec", [
 
   NullableHandle.encode = Handle.encode;
 
-  function Interface() {
+  function Interface(cls) {
+    this.cls = cls;
   }
 
-  Interface.encodedSize = 8;
+  Interface.prototype.encodedSize = 8;
 
-  Interface.decode = function(decoder) {
-    var handle = decoder.decodeHandle();
-    // Ignore the version field for now.
-    decoder.readUint32();
-
-    return handle;
+  Interface.prototype.decode = function(decoder) {
+    var interfacePtrInfo = new types.InterfacePtrInfo(
+        decoder.decodeHandle(), decoder.readUint32());
+    var interfacePtr = new this.cls();
+    interfacePtr.ptr.bind(interfacePtrInfo);
+    return interfacePtr;
   };
 
-  Interface.encode = function(encoder, val) {
-    encoder.encodeHandle(val);
-    // Set the version field to 0 for now.
-    encoder.writeUint32(0);
+  Interface.prototype.encode = function(encoder, val) {
+    var interfacePtrInfo =
+        val ? val.ptr.passInterface() : new InterfacePtrInfo(null, 0);
+    encoder.encodeHandle(interfacePtrInfo.handle);
+    encoder.writeUint32(interfacePtrInfo.version);
   };
 
-  function NullableInterface() {
+  function NullableInterface(cls) {
+    Interface.call(this, cls);
   }
 
-  NullableInterface.encodedSize = Interface.encodedSize;
+  NullableInterface.prototype = Object.create(Interface.prototype);
 
-  NullableInterface.decode = Interface.decode;
+  function InterfaceRequest() {
+  }
 
-  NullableInterface.encode = Interface.encode;
+  InterfaceRequest.encodedSize = 4;
+
+  InterfaceRequest.decode = function(decoder) {
+    return new types.InterfaceRequest(decoder.decodeHandle());
+  };
+
+  InterfaceRequest.encode = function(encoder, val) {
+    encoder.encodeHandle(val ? val.handle : null);
+  };
+
+  function NullableInterfaceRequest() {
+  }
+
+  NullableInterfaceRequest.encodedSize = InterfaceRequest.encodedSize;
+
+  NullableInterfaceRequest.decode = InterfaceRequest.decode;
+
+  NullableInterfaceRequest.encode = InterfaceRequest.encode;
 
   function MapOf(keyClass, valueClass) {
     this.keyClass = keyClass;
@@ -888,6 +910,8 @@ define("mojo/public/js/codec", [
   exports.NullableHandle = NullableHandle;
   exports.Interface = Interface;
   exports.NullableInterface = NullableInterface;
+  exports.InterfaceRequest = InterfaceRequest;
+  exports.NullableInterfaceRequest = NullableInterfaceRequest;
   exports.MapOf = MapOf;
   exports.NullableMapOf = NullableMapOf;
   return exports;

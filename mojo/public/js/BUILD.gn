@@ -19,6 +19,7 @@ group("bindings") {
     "constants.cc",
     "constants.h",
     "core.js",
+    "interface_types.js",
     "router.js",
     "support.js",
     "threading.js",

@@ -227,35 +227,33 @@ var browserProxy = null;
 
 function initializeProxies() {
   return importModules([
+    'mojo/public/js/bindings',
     'mojo/public/js/connection',
     'chrome/browser/ui/webui/plugins/plugins.mojom',
     'content/public/renderer/frame_interfaces',
   ]).then(function(modules) {
-    var connection = modules[0];
-    var pluginsMojom = modules[1];
-    var frameInterfaces = modules[2];
+    var bindings = modules[0];
+    var connection = modules[1];
+    var pluginsMojom = modules[2];
+    var frameInterfaces = modules[3];
 
     browserProxy = connection.bindHandleToProxy(
         frameInterfaces.getInterface(pluginsMojom.PluginsPageHandler.name),
         pluginsMojom.PluginsPageHandler);
 
     /** @constructor */
-    var PluginsPageImpl = function() {};
+    var PluginsPageImpl = function() {
+      this.binding = new bindings.Binding(pluginsMojom.PluginsPage, this);
+    };
 
     PluginsPageImpl.prototype = {
-      __proto__: pluginsMojom.PluginsPage.stubClass.prototype,
-
       /** @override */
       onPluginsUpdated: function(plugins) {
         returnPluginsData({plugins: plugins});
       },
     };
     pageImpl = new PluginsPageImpl();
-
-    // Create a message pipe, with one end of the pipe already connected to JS.
-    var handle = connection.bindStubDerivedImpl(pageImpl);
-    // Send the other end of the pipe to C++.
-    browserProxy.setClientPage(handle);
+    browserProxy.setClientPage(pageImpl.binding.createInterfacePtrAndBind());
   });
 }
 

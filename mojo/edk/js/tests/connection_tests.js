@@ -4,14 +4,14 @@
 
 define([
     "gin/test/expect",
-    "mojo/public/js/connection",
+    "mojo/public/js/bindings",
     "mojo/public/js/core",
     "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom",
     "mojo/public/interfaces/bindings/tests/sample_service.mojom",
     "mojo/public/js/threading",
     "gc",
 ], function(expect,
-            connection,
+            bindings,
             core,
             sample_interfaces,
             sample_service,
@@ -35,37 +35,34 @@ define([
     function ServiceImpl() {
     }
 
-    ServiceImpl.prototype = Object.create(
-        sample_service.Service.stubClass.prototype);
-
     ServiceImpl.prototype.frobinate = function(foo, baz, port) {
       expect(foo.name).toBe("Example name");
       expect(baz).toBe(sample_service.Service.BazOptions.REGULAR);
-      expect(core.close(port)).toBe(core.RESULT_OK);
+      expect(port.ptr.isBound()).toBeTruthy();
+      port.ptr.reset();
 
       return Promise.resolve({result: 42});
     };
 
-    var pipe = core.createMessagePipe();
-    var anotherPipe = core.createMessagePipe();
+    var service = new sample_service.ServicePtr();
+    var serviceBinding = new bindings.Binding(sample_service.Service,
+                                              new ServiceImpl(),
+                                              bindings.makeRequest(service));
     var sourcePipe = core.createMessagePipe();
-
-    var connection0 = new connection.Connection(pipe.handle0, ServiceImpl);
-
-    var connection1 = new connection.Connection(
-        pipe.handle1, undefined, sample_service.Service.proxyClass);
+    var port = new sample_service.PortPtr();
+    var portRequest = bindings.makeRequest(port);
 
     var foo = new sample_service.Foo();
     foo.bar = new sample_service.Bar();
     foo.name = "Example name";
     foo.source = sourcePipe.handle0;
-    var promise = connection1.remote.frobinate(
-        foo, sample_service.Service.BazOptions.REGULAR, anotherPipe.handle0)
+    var promise = service.frobinate(
+        foo, sample_service.Service.BazOptions.REGULAR, port)
             .then(function(response) {
       expect(response.result).toBe(42);
 
-      connection0.close();
-      connection1.close();
+      service.ptr.reset();
+      serviceBinding.close();
 
       return Promise.resolve();
     });
@@ -73,37 +70,25 @@ define([
     // sourcePipe.handle1 hasn't been closed yet.
     expect(core.close(sourcePipe.handle1)).toBe(core.RESULT_OK);
 
-    // anotherPipe.handle1 hasn't been closed yet.
-    expect(core.close(anotherPipe.handle1)).toBe(core.RESULT_OK);
+    // portRequest.handle hasn't been closed yet.
+    expect(core.close(portRequest.handle)).toBe(core.RESULT_OK);
 
     return promise;
   }
 
   function testWriteToClosedPipe() {
-    var pipe = core.createMessagePipe();
-    var anotherPipe = core.createMessagePipe();
+    var service = new sample_service.ServicePtr();
+    // Discard the interface request.
+    bindings.makeRequest(service);
 
-    var connection1 = new connection.Connection(
-        pipe.handle1, function() {}, sample_service.Service.proxyClass);
-
-    // Close the other end of the pipe.
-    core.close(pipe.handle0);
-
-    // Not observed yet because we haven't pumped events yet.
-    expect(connection1.encounteredError()).toBeFalsy();
-
-    var promise = connection1.remote.frobinate(
-        null, sample_service.Service.BazOptions.REGULAR, anotherPipe.handle0)
+    var promise = service.frobinate(
+        null, sample_service.Service.BazOptions.REGULAR, null)
             .then(function(response) {
       return Promise.reject("Unexpected response");
     }).catch(function(e) {
       // We should observe the closed pipe.
-      expect(connection1.encounteredError()).toBeTruthy();
       return Promise.resolve();
     });
-
-    // Write failures are not reported.
-    expect(connection1.encounteredError()).toBeFalsy();
 
     return promise;
   }
@@ -114,9 +99,6 @@ define([
     function ProviderImpl() {
     }
 
-    ProviderImpl.prototype =
-        Object.create(sample_interfaces.Provider.stubClass.prototype);
-
     ProviderImpl.prototype.echoString = function(a) {
       return Promise.resolve({a: a});
     };
@@ -125,17 +107,13 @@ define([
       return Promise.resolve({a: a, b: b});
     };
 
-    var pipe = core.createMessagePipe();
-
-    var connection0 = new connection.Connection(pipe.handle0, ProviderImpl);
-
-    var connection1 = new connection.Connection(
-        pipe.handle1, undefined, sample_interfaces.Provider.proxyClass);
-
-    var promise = connection1.remote.echoString("hello")
-        .then(function(response) {
+    var provider = new sample_interfaces.ProviderPtr();
+    var providerBinding = new bindings.Binding(sample_interfaces.Provider,
+                                               new ProviderImpl(),
+                                               bindings.makeRequest(provider));
+    var promise = provider.echoString("hello").then(function(response) {
       expect(response.a).toBe("hello");
-      return connection1.remote.echoStrings("hello", "world");
+      return provider.echoStrings("hello", "world");
     }).then(function(response) {
       expect(response.a).toBe("hello");
       expect(response.b).toBe("world");
@@ -143,7 +121,7 @@ define([
       core.readMessage = function() {
         return { result: core.RESULT_UNKNOWN };
       };
-      return connection1.remote.echoString("goodbye");
+      return provider.echoString("goodbye");
     }).then(function() {
       throw Error("Expected echoString to fail.");
     }, function(error) {

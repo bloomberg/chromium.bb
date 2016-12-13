@@ -73,7 +73,7 @@ define([
     ServiceImpl.prototype.frobinate = function(foo, baz, port) {
       checkFoo(foo);
       expect(baz).toBe(sample.Service.BazOptions.EXTRA);
-      bindings.ProxyBindings(port).close();
+      expect(port.ptr.isBound()).toBeTruthy();
       return Promise.resolve({result: 1234});
     };
 
@@ -85,9 +85,10 @@ define([
     var serviceBinding = new bindings.Binding(
         sample.Service, new ServiceImpl(), request);
 
-    var pipe = core.createMessagePipe();
+    var port = new sample.PortPtr();
+    bindings.makeRequest(port);
     var promise = service.frobinate(
-        foo, sample.Service.BazOptions.EXTRA, pipe.handle0)
+        foo, sample.Service.BazOptions.EXTRA, port)
             .then(function(response) {
       expect(response.result).toBe(1234);
 

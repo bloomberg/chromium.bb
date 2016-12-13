@@ -206,15 +206,6 @@ define('media_router_bindings', [
     this.mrpm_ = new MediaRouteProvider(this);
 
     /**
-     * The message pipe that connects the Media Router to mrpm_ across
-     * browser/renderer IPC boundaries. Object must remain in scope for the
-     * lifetime of the connection to prevent the connection from closing
-     * automatically.
-     * @type {!mojo.MessagePipe}
-     */
-    this.pipe_ = core.createMessagePipe();
-
-    /**
      * Handle to a KeepAlive service object, which prevents the extension from
      * being suspended as long as it remains in scope.
      * @type {boolean}
@@ -222,16 +213,13 @@ define('media_router_bindings', [
     this.keepAlive_ = null;
 
     /**
-     * The stub used to bind the service delegate to the Mojo interface.
+     * The bindings to bind the service delegate to the Mojo interface.
      * Object must remain in scope for the lifetime of the connection to
      * prevent the connection from closing automatically.
-     * @type {!mojom.MediaRouter}
+     * @type {!bindings.Binding}
      */
-    this.mediaRouteProviderStub_ = connector.bindHandleToStub(
-        this.pipe_.handle0, mediaRouterMojom.MediaRouteProvider);
-
-    // Link mediaRouteProviderStub_ to the provider manager delegate.
-    bindings.StubBindings(this.mediaRouteProviderStub_).delegate = this.mrpm_;
+    this.mediaRouteProviderBinding_ = new bindings.Binding(
+        mediaRouterMojom.MediaRouteProvider, this.mrpm_);
   }
 
   /**
@@ -239,10 +227,11 @@ define('media_router_bindings', [
    * @return {!Promise<string>} Instance ID for the Media Router.
    */
   MediaRouter.prototype.start = function() {
-    return this.service_.registerMediaRouteProvider(this.pipe_.handle1).then(
-        function(result) {
-          return result.instance_id;
-        }.bind(this));
+    return this.service_.registerMediaRouteProvider(
+        this.mediaRouteProviderBinding_.createInterfacePtrAndBind()).then(
+            function(result) {
+      return result.instance_id;
+    }.bind(this));
   }
 
   /**

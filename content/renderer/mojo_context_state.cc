@@ -66,6 +66,7 @@ scoped_refptr<base::RefCountedMemory> GetBuiltinModuleData(
     { mojo::kCodecModuleName, IDR_MOJO_CODEC_JS },
     { mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS },
     { mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS },
+    { mojo::kInterfaceTypesModuleName, IDR_MOJO_INTERFACE_TYPES_JS },
     { mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS },
     { mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS },
     { mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS },

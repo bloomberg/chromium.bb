@@ -170,6 +170,7 @@ void CastContentRendererClient::RunScriptsAtDocumentStart(
   static const int mojo_resource_ids[] = {
       IDR_MOJO_UNICODE_JS,
       IDR_MOJO_BUFFER_JS,
+      IDR_MOJO_INTERFACE_TYPES_JS,
       IDR_MOJO_CODEC_JS,
       IDR_MOJO_CONNECTOR_JS,
       IDR_MOJO_VALIDATOR_JS,

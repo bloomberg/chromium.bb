@@ -244,10 +244,10 @@ function sensor_mocks(mojo) {
       }
 
       // Returns initialized Sensor proxy to the client.
-      getSensor(type, stub) {
+      getSensor(type, request) {
         if (this.get_sensor_should_fail_) {
-          return getSensorResponse(null,
-              connection.bindProxy(null, sensor.SensorClient));
+          var ignored = new sensor.SensorClientPtr();
+          return getSensorResponse(null, bindings.makeRequest(ignored));
         }
 
         let offset =
@@ -258,6 +258,7 @@ function sensor_mocks(mojo) {
         }
 
         if (this.active_sensor_ == null) {
+          var stub = connection.bindHandleToStub(request.handle, sensor.Sensor);
           let mockSensor = new MockSensor(stub, this.shared_buffer_handle_,
               offset, this.reading_size_in_bytes_, reporting_mode);
           this.active_sensor_ = mockSensor;
@@ -284,10 +285,11 @@ function sensor_mocks(mojo) {
           this.resolve_func_(this.active_sensor_);
         }
 
-        var client_handle = connection.bindProxy(proxy => {
-          this.active_sensor_.client_ = proxy;
-          }, sensor.SensorClient);
-        return getSensorResponse(init_params, client_handle);
+        var client_request = new bindings.InterfaceRequest(
+            connection.bindProxy(proxy => {
+              this.active_sensor_.client_ = proxy;
+            }, sensor.SensorClient));
+        return getSensorResponse(init_params, client_request);
       }
 
       // Binds object to mojo message pipe

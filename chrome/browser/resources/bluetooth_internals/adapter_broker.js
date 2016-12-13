@@ -46,7 +46,7 @@ cr.define('adapter_broker', function() {
         }
 
         return interfaces.Connection.bindHandleToProxy(
-            response.device,
+            response.device.ptr.passInterface().handle,
             interfaces.BluetoothDevice.Device);
       });
     },
@@ -56,8 +56,12 @@ cr.define('adapter_broker', function() {
      * @param {!interfaces.BluetoothAdapter.AdapterClient} adapterClient
      */
     setClient: function(adapterClient) {
-      this.adapter_.setClient(interfaces.Connection.bindStubDerivedImpl(
-          adapterClient));
+      adapterClient.binding = new interfaces.Bindings.Binding(
+          interfaces.BluetoothAdapter.AdapterClient,
+          adapterClient);
+
+      this.adapter_.setClient(
+          adapterClient.binding.createInterfacePtrAndBind());
     },
 
     /**
@@ -153,12 +157,12 @@ cr.define('adapter_broker', function() {
       // Get an Adapter service.
       return adapterFactory.getAdapter();
     }).then(function(response) {
-      if (!response.adapter) {
+      if (!response.adapter.ptr.isBound()) {
         throw new Error('Bluetooth Not Supported on this platform.');
       }
 
       var adapter = interfaces.Connection.bindHandleToProxy(
-          response.adapter,
+          response.adapter.ptr.passInterface().handle,
           interfaces.BluetoothAdapter.Adapter);
 
       adapterBroker = new AdapterBroker(adapter);

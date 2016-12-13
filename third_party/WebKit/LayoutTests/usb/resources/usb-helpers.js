@@ -374,18 +374,19 @@ function usbMocks(mojo) {
         return Promise.resolve({ results: devices });
       }
 
-      getDevice(guid, stub) {
-        let device = this.mockDevices_.get(guid);
-        if (device === undefined) {
-          bindings.StubBindings(stub).close();
+      getDevice(guid, request) {
+        let deviceData = this.mockDevices_.get(guid);
+        if (deviceData === undefined) {
+          request.close();
         } else {
-          var mock = new MockDevice(device.info);
+          var stub = connection.bindHandleToStub(request.handle, device.Device);
+          var mock = new MockDevice(deviceData.info);
           bindings.StubBindings(stub).delegate = mock;
           bindings.StubBindings(stub).connectionErrorHandler = () => {
             if (this.deviceCloseHandler_)
-              this.deviceCloseHandler_(device.info);
+              this.deviceCloseHandler_(deviceData.info);
           };
-          device.stubs.push(stub);
+          deviceData.stubs.push(stub);
         }
       }
 

@@ -6,7 +6,7 @@ if (err !== validator.validationError.NONE)
 {%- macro _validate_field(field, offset, name) %}
 {%-   if field|is_string_pointer_field %}
 // validate {{name}}
-err = messageValidator.validateStringPointer({{offset}}, {{field|validate_string_params}})
+err = messageValidator.validateStringPointer({{offset}}, {{field|validate_nullable_params}})
 {{_check_err()}}
 {%-   elif field|is_array_pointer_field %}
 // validate {{name}}
@@ -22,11 +22,15 @@ err = messageValidator.validateMapPointer({{offset}}, {{field|validate_map_param
 {{_check_err()}}
 {%-   elif field|is_interface_field %}
 // validate {{name}}
-err = messageValidator.validateInterface({{offset}}, {{field|validate_interface_params}});
+err = messageValidator.validateInterface({{offset}}, {{field|validate_nullable_params}});
 {{_check_err()}}
-{%-   elif field|is_handle_field or field|is_interface_request_field %}
+{%-   elif field|is_interface_request_field %}
 // validate {{name}}
-err = messageValidator.validateHandle({{offset}}, {{field|validate_handle_params}})
+err = messageValidator.validateInterfaceRequest({{offset}}, {{field|validate_nullable_params}})
+{{_check_err()}}
+{%-   elif field|is_handle_field %}
+// validate {{name}}
+err = messageValidator.validateHandle({{offset}}, {{field|validate_nullable_params}})
 {{_check_err()}}
 {%-   elif field|is_enum_field %}
 // validate {{name}}

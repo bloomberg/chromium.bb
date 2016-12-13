@@ -42,12 +42,18 @@ define("mojo/public/js/validator", [
   }
 
   function isInterfaceClass(cls) {
-    return cls === codec.Interface || cls === codec.NullableInterface;
+    return cls instanceof codec.Interface;
+  }
+
+  function isInterfaceRequestClass(cls) {
+    return cls === codec.InterfaceRequest ||
+        cls === codec.NullableInterfaceRequest;
   }
 
   function isNullable(type) {
     return type === codec.NullableString || type === codec.NullableHandle ||
         type === codec.NullableInterface ||
+        type === codec.NullableInterfaceRequest ||
         type instanceof codec.NullableArrayOf ||
         type instanceof codec.NullablePointerTo;
   }
@@ -119,10 +125,15 @@ define("mojo/public/js/validator", [
 
     if (!this.claimHandle(index))
       return validationError.ILLEGAL_HANDLE;
+
     return validationError.NONE;
   };
 
   Validator.prototype.validateInterface = function(offset, nullable) {
+    return this.validateHandle(offset, nullable);
+  };
+
+  Validator.prototype.validateInterfaceRequest = function(offset, nullable) {
     return this.validateHandle(offset, nullable);
   };
 
@@ -372,6 +383,9 @@ define("mojo/public/js/validator", [
     if (isInterfaceClass(elementType))
       return this.validateInterfaceElements(
           elementsOffset, numElements, nullable);
+    if (isInterfaceRequestClass(elementType))
+      return this.validateInterfaceRequestElements(
+          elementsOffset, numElements, nullable);
     if (isStringClass(elementType))
       return this.validateArrayElements(
           elementsOffset, numElements, codec.Uint8, nullable, [0], 0);
@@ -406,10 +420,22 @@ define("mojo/public/js/validator", [
 
   Validator.prototype.validateInterfaceElements =
       function(offset, numElements, nullable) {
-    var elementSize = codec.Interface.encodedSize;
+    var elementSize = codec.Interface.prototype.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateInterface(elementOffset, nullable);
+      if (err != validationError.NONE)
+        return err;
+    }
+    return validationError.NONE;
+  };
+
+  Validator.prototype.validateInterfaceRequestElements =
+      function(offset, numElements, nullable) {
+    var elementSize = codec.InterfaceRequest.encodedSize;
+    for (var i = 0; i < numElements; i++) {
+      var elementOffset = offset + i * elementSize;
+      var err = this.validateInterfaceRequest(elementOffset, nullable);
       if (err != validationError.NONE)
         return err;
     }

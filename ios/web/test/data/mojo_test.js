@@ -12,18 +12,19 @@
 function getBrowserProxy() {
   return new Promise(function(resolve, reject) {
     define([
+      'mojo/public/js/bindings',
       'mojo/public/js/connection',
       'ios/web/test/mojo_test.mojom',
       'content/public/renderer/frame_interfaces',
-    ], function(connection, mojom, frameInterfaces) {
+    ], function(bindings, connection, mojom, frameInterfaces) {
       var pageImpl, browserProxy;
 
       /** @constructor */
-      function TestPageImpl() {};
+      function TestPageImpl() {
+        this.binding = new bindings.Binding(mojom.TestPage, this);
+      }
 
       TestPageImpl.prototype = {
-        __proto__: mojom.TestPage.stubClass.prototype,
-
         /** @override */
         handleNativeMessage: function(result) {
           if (result.message == 'ack') {
@@ -39,7 +40,7 @@ function getBrowserProxy() {
           mojom.TestUIHandlerMojo);
       pageImpl = new TestPageImpl();
 
-      browserProxy.setClientPage(connection.bindStubDerivedImpl(pageImpl));
+      browserProxy.setClientPage(pageImpl.binding.createInterfacePtrAndBind());
       resolve(browserProxy);
     });
   });

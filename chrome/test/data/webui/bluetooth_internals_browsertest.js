@@ -67,7 +67,8 @@ BluetoothInternalsTest.prototype = {
           ]);
 
           this.adapter = new TestAdapter();
-          this.adapterHandle_ = connection.bindStubDerivedImpl(this.adapter);
+          this.adapterBinding_ = new bindings.Binding(adapter.Adapter,
+                                                      this.adapter);
         };
 
         TestAdapterFactoryProxy.prototype = {
@@ -77,7 +78,7 @@ BluetoothInternalsTest.prototype = {
 
             // Create message pipe bound to TestAdapter.
             return Promise.resolve({
-              adapter: this.adapterHandle_,
+              adapter: this.adapterBinding_.createInterfacePtrAndBind(),
             });
           }
         };
