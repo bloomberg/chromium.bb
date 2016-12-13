@@ -23,6 +23,7 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/encoder/aq_cyclicrefresh.h"
 #if CONFIG_ANS
+#include "aom_dsp/ans.h"
 #include "aom_dsp/buf_ans.h"
 #endif
 #include "av1/encoder/context_tree.h"
@@ -264,6 +265,9 @@ typedef struct AV1EncoderConfig {
 #if CONFIG_EXT_PARTITION
   aom_superblock_size_t superblock_size;
 #endif  // CONFIG_EXT_PARTITION
+#if CONFIG_ANS && ANS_MAX_SYMBOLS
+  int ans_window_size_log2;
+#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {

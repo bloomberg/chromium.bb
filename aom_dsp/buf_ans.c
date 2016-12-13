@@ -19,6 +19,7 @@ void aom_buf_ans_alloc(struct BufAnsCoder *c,
                        struct aom_internal_error_info *error, int size) {
   c->error = error;
   c->size = size;
+  assert(c->size > 1);
   AOM_CHECK_MEM_ERROR(error, c->buf, aom_malloc(c->size * sizeof(*c->buf)));
   // Initialize to overfull to trigger the assert in write.
   c->offset = c->size + 1;

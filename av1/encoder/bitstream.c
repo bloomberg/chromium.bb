@@ -4124,6 +4124,11 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     write_sync_code(wb);
     write_bitdepth_colorspace_sampling(cm, wb);
     write_frame_size(cm, wb);
+#if CONFIG_ANS && ANS_MAX_SYMBOLS
+    assert(cpi->common.ans_window_size_log2 >= 8);
+    assert(cpi->common.ans_window_size_log2 < 24);
+    aom_wb_write_literal(wb, cpi->common.ans_window_size_log2 - 8, 4);
+#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
 #if CONFIG_PALETTE
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #endif  // CONFIG_PALETTE
@@ -4159,6 +4164,12 @@ static void write_uncompressed_header(AV1_COMP *cpi,
       aom_wb_write_literal(wb, get_refresh_mask(cpi), REF_FRAMES);
 #endif  // CONFIG_EXT_REFS
       write_frame_size(cm, wb);
+
+#if CONFIG_ANS && ANS_MAX_SYMBOLS
+      assert(cpi->common.ans_window_size_log2 >= 8);
+      assert(cpi->common.ans_window_size_log2 < 24);
+      aom_wb_write_literal(wb, cpi->common.ans_window_size_log2 - 8, 4);
+#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
     } else {
       MV_REFERENCE_FRAME ref_frame;
 

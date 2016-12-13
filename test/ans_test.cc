@@ -26,9 +26,8 @@ namespace {
 typedef std::vector<std::pair<uint8_t, bool> > PvVec;
 
 const int kPrintStats = 0;
-// When ANS is windowed use the window size, otherwise use a small value to
-// exercise the buffer growth code
-const int kBufAnsSize = ANS_MAX_SYMBOLS ? ANS_MAX_SYMBOLS : 100;
+// Use a small buffer size to exercise ANS window spills or buffer growth
+const int kBufAnsSize = 1 << 8;
 
 PvVec abs_encode_build_vals(int iters) {
   PvVec ret;

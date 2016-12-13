@@ -23,7 +23,8 @@
 extern "C" {
 #endif  // __cplusplus
 
-#define ANS_MAX_SYMBOLS (1 << 24)
+// Use windowed ANS, size is passed in at initialization
+#define ANS_MAX_SYMBOLS 1
 #define ANS_REVERSE 1
 
 typedef uint8_t AnsP8;
