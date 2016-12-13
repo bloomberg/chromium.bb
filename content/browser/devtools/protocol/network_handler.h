@@ -6,74 +6,59 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_NETWORK_HANDLER_H_
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
+#include "content/browser/devtools/protocol/network.h"
 #include "net/cookies/canonical_cookie.h"
 
 namespace content {
 
 class RenderFrameHostImpl;
 
-namespace devtools {
-namespace network {
+namespace protocol {
 
-class NetworkHandler {
+class NetworkHandler : public Network::Backend {
  public:
-  typedef DevToolsProtocolClient::Response Response;
   NetworkHandler();
-  virtual ~NetworkHandler();
+  ~NetworkHandler() override;
 
   void SetRenderFrameHost(RenderFrameHostImpl* host);
-  void SetClient(std::unique_ptr<Client> client);
+  void Wire(UberDispatcher*);
 
-  Response Enable(const int* max_total_size,
-                  const int* max_resource_size);
-  Response Disable();
+  Response Enable(Maybe<int> max_total_size,
+                  Maybe<int> max_resource_size) override;
+  Response Disable() override;
 
-  Response ClearBrowserCache();
-  Response ClearBrowserCookies();
-  Response GetCookies(DevToolsCommandId command_id, const bool* global);
-  Response DeleteCookie(DevToolsCommandId command_id,
-                        const std::string& cookie_name,
-                        const std::string& url);
+  Response ClearBrowserCache() override;
+  Response ClearBrowserCookies() override;
 
-  Response SetCookie(DevToolsCommandId command_id,
+  void GetCookies(Maybe<bool> global,
+                  std::unique_ptr<GetCookiesCallback> callback) override;
+  void DeleteCookie(const std::string& cookie_name,
+                    const std::string& url,
+                    std::unique_ptr<DeleteCookieCallback> callback) override;
+  void SetCookie(
       const std::string& url,
       const std::string& name,
       const std::string& value,
-      const std::string* domain,
-      const std::string* path,
-      bool* secure,
-      bool* http_only,
-      const std::string* same_site,
-      double* expires);
+      Maybe<std::string> domain,
+      Maybe<std::string> path,
+      Maybe<bool> secure,
+      Maybe<bool> http_only,
+      Maybe<std::string> same_site,
+      Maybe<double> expires,
+      std::unique_ptr<SetCookieCallback> callback) override;
 
-  Response CanEmulateNetworkConditions(bool* result);
-  Response EmulateNetworkConditions(bool offline,
-                                    double latency,
-                                    double download_throughput,
-                                    double upload_throughput,
-                                    const std::string* connection_type);
+  Response CanEmulateNetworkConditions(bool* result) override;
 
   bool enabled() const { return enabled_; }
 
  private:
-  void SendGetCookiesResponse(
-      DevToolsCommandId command_id,
-      const net::CookieList& cookie_list);
-  void SendDeleteCookieResponse(DevToolsCommandId command_id);
-  void SendSetCookieResponse(DevToolsCommandId command_id, bool success);
-
   RenderFrameHostImpl* host_;
-  std::unique_ptr<Client> client_;
   bool enabled_;
-  base::WeakPtrFactory<NetworkHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };
 
-}  // namespace network
-}  // namespace devtools
+}  // namespace protocol
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_NETWORK_HANDLER_H_

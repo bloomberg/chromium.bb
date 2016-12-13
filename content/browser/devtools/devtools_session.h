@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/protocol/forward.h"
+#include "content/browser/devtools/protocol/protocol.h"
 
 namespace content {
 
@@ -14,6 +14,10 @@ class DevToolsSession : public protocol::FrontendChannel {
   ~DevToolsSession() override;
 
   void ResetDispatcher();
+  protocol::Response::Status Dispatch(
+      const std::string& message,
+      int* call_id,
+      std::string* method);
 
   int session_id() { return session_id_; }
   protocol::UberDispatcher* dispatcher() { return dispatcher_.get(); }

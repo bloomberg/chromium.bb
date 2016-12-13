@@ -16,7 +16,6 @@ Running: testInvalidParam
 error: Protocol Error: Invalid type of argument 'latitude' for method 'Emulation.setGeolocationOverride' call. It must be 'number' but it is 'boolean'.
 
 Running: testInvalidGeolocation
-error: Request Emulation.setGeolocationOverride failed. {"code":-32603,"message":"Invalid geolocation"}
 
 Running: testTimestampOfOverridenPosition
 

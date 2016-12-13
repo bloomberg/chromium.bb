@@ -11,10 +11,13 @@
 
 namespace content {
 
-namespace devtools { namespace schema { class SchemaHandler; }}
+namespace protocol {
+class InspectorHandler;
+class NetworkHandler;
+class SchemaHandler;
+}
 
 class BrowserContext;
-class DevToolsProtocolHandler;
 
 class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
                                 public IPC::Listener {
@@ -54,9 +57,6 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
 
   virtual void OnAttachedStateChanged(bool attached);
   const WorkerId& worker_id() const { return worker_id_; }
-  DevToolsProtocolHandler* protocol_handler() {
-    return protocol_handler_.get();
-  }
 
  private:
   friend class SharedWorkerDevToolsManagerTest;
@@ -66,8 +66,9 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   void WorkerCreated();
   void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
 
-  std::unique_ptr<devtools::schema::SchemaHandler> schema_handler_;
-  std::unique_ptr<DevToolsProtocolHandler> protocol_handler_;
+  std::unique_ptr<protocol::InspectorHandler> inspector_handler_;
+  std::unique_ptr<protocol::NetworkHandler> network_handler_;
+  std::unique_ptr<protocol::SchemaHandler> schema_handler_;
   DevToolsMessageChunkProcessor chunk_processor_;
   WorkerState state_;
   WorkerId worker_id_;

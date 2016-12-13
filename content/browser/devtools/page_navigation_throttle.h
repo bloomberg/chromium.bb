@@ -10,16 +10,15 @@
 #include "content/public/browser/navigation_throttle.h"
 
 namespace content {
-namespace devtools {
-namespace page {
+namespace protocol {
 class PageHandler;
-}  // namespace page
+}  // namespace protocol
 
 // Used to allow the DevTools client to optionally cancel navigations via the
 // Page.setControlNavigations and Page.processNavigation commands.
 class PageNavigationThrottle : public content::NavigationThrottle {
  public:
-  PageNavigationThrottle(base::WeakPtr<page::PageHandler> page_handler,
+  PageNavigationThrottle(base::WeakPtr<protocol::PageHandler> page_handler,
                          int navigation_id,
                          content::NavigationHandle* navigation_handle);
   ~PageNavigationThrottle() override;
@@ -47,7 +46,7 @@ class PageNavigationThrottle : public content::NavigationThrottle {
   const int navigation_id_;
 
   // The PageHandler that this navigation throttle is associated with.
-  base::WeakPtr<page::PageHandler> page_handler_;
+  base::WeakPtr<protocol::PageHandler> page_handler_;
 
   // Whether or not a navigation was deferred. If deferred we expect a
   // subsequent call to AlwaysProceed, Resume or CancelDeferredNavigation.
@@ -56,7 +55,6 @@ class PageNavigationThrottle : public content::NavigationThrottle {
   DISALLOW_COPY_AND_ASSIGN(PageNavigationThrottle);
 };
 
-}  // namespace devtools
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_PAGE_NAVIGATION_THROTTLE_H_

@@ -58,10 +58,15 @@ void BrowserDevToolsAgentHost::Attach() {
 }
 
 void BrowserDevToolsAgentHost::Detach() {
+  io_handler_->Disable();
   io_handler_.reset();
+  memory_handler_->Disable();
   memory_handler_.reset();
+  system_info_handler_->Disable();
   system_info_handler_.reset();
+  tethering_handler_->Disable();
   tethering_handler_.reset();
+  tracing_handler_->Disable();
   tracing_handler_.reset();
 }
 

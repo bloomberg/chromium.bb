@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
@@ -61,7 +60,6 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
  private:
   ~ServiceWorkerDevToolsAgentHost() override;
   std::unique_ptr<ServiceWorkerIdentifier> service_worker_;
-  std::unique_ptr<devtools::network::NetworkHandler> network_handler_;
   base::Time version_installed_time_;
   base::Time version_doomed_time_;
 

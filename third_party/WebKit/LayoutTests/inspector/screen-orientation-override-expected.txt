@@ -7,13 +7,13 @@ CONSOLE MESSAGE: line 25: angle: 0; type: landscape-primary
 Running: initial
 
 Running: setWrongAngle1
-error: Request Emulation.setDeviceMetricsOverride failed. {"code":-32602,"message":"Missing or invalid 'Screen orientation angle must be non-negative, less than 360' parameter"}
+error: Request Emulation.setDeviceMetricsOverride failed. {"code":-32602,"message":"Screen orientation angle must be non-negative, less than 360"}
 
 Running: setWrongAngle2
-error: Request Emulation.setDeviceMetricsOverride failed. {"code":-32602,"message":"Missing or invalid 'Screen orientation angle must be non-negative, less than 360' parameter"}
+error: Request Emulation.setDeviceMetricsOverride failed. {"code":-32602,"message":"Screen orientation angle must be non-negative, less than 360"}
 
 Running: setWrongType
-error: Request Emulation.setDeviceMetricsOverride failed. {"code":-32602,"message":"Missing or invalid 'Invalid screen orientation type value' parameter"}
+error: Request Emulation.setDeviceMetricsOverride failed. {"code":-32602,"message":"Invalid screen orientation type value"}
 
 Running: setPortraitPrimary
 angle: 0; type: portrait-primary

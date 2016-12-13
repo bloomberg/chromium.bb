@@ -10,10 +10,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 namespace content {
-namespace devtools {
-namespace dom {
-
-typedef DevToolsProtocolClient::Response Response;
+namespace protocol {
 
 DOMHandler::DOMHandler() : host_(nullptr) {
 }
@@ -21,28 +18,36 @@ DOMHandler::DOMHandler() : host_(nullptr) {
 DOMHandler::~DOMHandler() {
 }
 
+void DOMHandler::Wire(UberDispatcher* dispatcher) {
+  DOM::Dispatcher::wire(dispatcher, this);
+}
+
 void DOMHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
   host_ = host;
 }
 
-Response DOMHandler::SetFileInputFiles(NodeId node_id,
-                                       const std::vector<std::string>& files) {
+Response DOMHandler::Disable() {
+  return Response::OK();
+}
+
+Response DOMHandler::SetFileInputFiles(
+    DOM::NodeId node_id,
+    std::unique_ptr<protocol::Array<std::string>> files) {
   if (host_) {
-    for (const auto& file : files) {
+    for (size_t i = 0; i < files->length(); i++) {
 #if defined(OS_WIN)
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
           host_->GetProcess()->GetID(),
-          base::FilePath(base::UTF8ToUTF16(file)));
+          base::FilePath(base::UTF8ToUTF16(files->get(i))));
 #else
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
           host_->GetProcess()->GetID(),
-          base::FilePath(file));
+          base::FilePath(files->get(i)));
 #endif  // OS_WIN
     }
   }
   return Response::FallThrough();
 }
 
-}  // namespace dom
-}  // namespace devtools
+}  // namespace protocol
 }  // namespace content

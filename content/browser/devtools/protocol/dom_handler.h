@@ -6,34 +6,33 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DOM_HANDLER_H_
 
 #include "base/macros.h"
-#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
+#include "content/browser/devtools/protocol/dom.h"
 
 namespace content {
 
 class RenderFrameHostImpl;
 
-namespace devtools {
-namespace dom {
+namespace protocol {
 
-class DOMHandler {
+class DOMHandler : public DOM::Backend {
  public:
-  typedef DevToolsProtocolClient::Response Response;
-
   DOMHandler();
-  virtual ~DOMHandler();
+  ~DOMHandler() override;
 
+  void Wire(UberDispatcher*);
   void SetRenderFrameHost(RenderFrameHostImpl* host);
+  Response Disable() override;
 
-  Response SetFileInputFiles(NodeId node_id,
-                             const std::vector<std::string>& files);
+  Response SetFileInputFiles(
+      DOM::NodeId node_id,
+      std::unique_ptr<protocol::Array<std::string>> files) override;
 
  private:
   RenderFrameHostImpl* host_;
   DISALLOW_COPY_AND_ASSIGN(DOMHandler);
 };
 
-}  // namespace dom
-}  // namespace devtools
+}  // namespace protocol
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DOM_HANDLER_H_

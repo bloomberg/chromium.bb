@@ -40,13 +40,7 @@ class NavigationThrottle;
 class RenderFrameHostImpl;
 
 namespace devtools {
-namespace dom { class DOMHandler; }
-namespace emulation { class EmulationHandler; }
 namespace input { class InputHandler; }
-namespace inspector { class InspectorHandler; }
-namespace network { class NetworkHandler; }
-namespace page { class PageHandler; }
-namespace schema { class SchemaHandler; }
 namespace security { class SecurityHandler; }
 namespace service_worker { class ServiceWorkerHandler; }
 namespace storage { class StorageHandler; }
@@ -54,7 +48,13 @@ namespace target { class TargetHandler; }
 }
 
 namespace protocol {
+class DOMHandler;
+class EmulationHandler;
+class InspectorHandler;
 class IOHandler;
+class NetworkHandler;
+class PageHandler;
+class SchemaHandler;
 class TracingHandler;
 }  // namespace protocol
 
@@ -183,13 +183,13 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // Stores per-host state between DisconnectWebContents and ConnectWebContents.
   std::unique_ptr<FrameHostHolder> disconnected_;
 
-  std::unique_ptr<devtools::dom::DOMHandler> dom_handler_;
+  std::unique_ptr<protocol::DOMHandler> dom_handler_;
   std::unique_ptr<devtools::input::InputHandler> input_handler_;
-  std::unique_ptr<devtools::inspector::InspectorHandler> inspector_handler_;
+  std::unique_ptr<protocol::InspectorHandler> inspector_handler_;
   std::unique_ptr<protocol::IOHandler> io_handler_;
-  std::unique_ptr<devtools::network::NetworkHandler> network_handler_;
-  std::unique_ptr<devtools::page::PageHandler> page_handler_;
-  std::unique_ptr<devtools::schema::SchemaHandler> schema_handler_;
+  std::unique_ptr<protocol::NetworkHandler> network_handler_;
+  std::unique_ptr<protocol::PageHandler> page_handler_;
+  std::unique_ptr<protocol::SchemaHandler> schema_handler_;
   std::unique_ptr<devtools::security::SecurityHandler> security_handler_;
   std::unique_ptr<devtools::service_worker::ServiceWorkerHandler>
       service_worker_handler_;
@@ -197,7 +197,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       storage_handler_;
   std::unique_ptr<devtools::target::TargetHandler> target_handler_;
   std::unique_ptr<protocol::TracingHandler> tracing_handler_;
-  std::unique_ptr<devtools::emulation::EmulationHandler> emulation_handler_;
+  std::unique_ptr<protocol::EmulationHandler> emulation_handler_;
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;

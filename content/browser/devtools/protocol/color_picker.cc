@@ -18,8 +18,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace content {
-namespace devtools {
-namespace page {
+namespace protocol {
 
 ColorPicker::ColorPicker(ColorPickedCallback callback)
     : callback_(callback),
@@ -259,6 +258,5 @@ void ColorPicker::UpdateCursor() {
   host_->SetCursor(cursor);
 }
 
-}  // namespace page
-}  // namespace devtools
+}  // namespace protocol
 }  // namespace content

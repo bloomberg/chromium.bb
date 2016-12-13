@@ -643,26 +643,10 @@ fields = []
 includes = []
 fields_init = []
 
-browser_domains_list = ["Inspector", "Page", "Emulation", "Security",
-    "Target", "ServiceWorker", "Input", "Storage", "Schema"]
-browser_commands_list = [
-    "DOM.setFileInputFiles",
-    "Network.enable",
-    "Network.disable",
-    "Network.clearBrowserCache",
-    "Network.clearBrowserCookies",
-    "Network.getCookies",
-    "Network.deleteCookie",
-    "Network.setCookie",
-    "Network.canEmulateNetworkConditions",
-    "Network.emulateNetworkConditions"]
+browser_domains_list = ["Security",
+    "Target", "ServiceWorker", "Input", "Storage"]
+browser_commands_list = []
 async_commands_list = [
-    "Page.getResourceContent",
-    "Page.searchInResource",
-    "Page.captureScreenshot",
-    "Network.getCookies",
-    "Network.deleteCookie",
-    "Network.setCookie",
     "Input.synthesizePinchGesture",
     "Input.synthesizeScrollGesture",
     "Input.synthesizeTapGesture"]

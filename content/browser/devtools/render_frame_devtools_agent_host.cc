@@ -378,9 +378,8 @@ RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(
 bool RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(
     FrameTreeNode* frame_tree_node) {
   RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
-  if (!agent_host)
-    return false;
-  return agent_host->network_handler_->enabled();
+  return agent_host && agent_host->network_handler_ &&
+         agent_host->network_handler_->enabled();
 }
 
 // static
@@ -395,18 +394,12 @@ void RenderFrameDevToolsAgentHost::WebContentsCreated(
 RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     RenderFrameHostImpl* host)
     : DevToolsAgentHostImpl(base::GenerateGUID()),
-      dom_handler_(new devtools::dom::DOMHandler()),
       input_handler_(new devtools::input::InputHandler()),
-      inspector_handler_(new devtools::inspector::InspectorHandler()),
-      network_handler_(new devtools::network::NetworkHandler()),
-      page_handler_(nullptr),
-      schema_handler_(new devtools::schema::SchemaHandler()),
       security_handler_(nullptr),
       service_worker_handler_(
           new devtools::service_worker::ServiceWorkerHandler()),
       storage_handler_(new devtools::storage::StorageHandler()),
       target_handler_(new devtools::target::TargetHandler()),
-      emulation_handler_(nullptr),
       frame_trace_recorder_(nullptr),
       protocol_handler_(new DevToolsProtocolHandler(this)),
       handlers_frame_host_(nullptr),
@@ -414,23 +407,14 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       pending_handle_(nullptr),
       frame_tree_node_(host->frame_tree_node()) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
-  dispatcher->SetDOMHandler(dom_handler_.get());
   dispatcher->SetInputHandler(input_handler_.get());
-  dispatcher->SetInspectorHandler(inspector_handler_.get());
-  dispatcher->SetNetworkHandler(network_handler_.get());
-  dispatcher->SetSchemaHandler(schema_handler_.get());
   dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
   dispatcher->SetStorageHandler(storage_handler_.get());
   dispatcher->SetTargetHandler(target_handler_.get());
 
   if (!host->GetParent()) {
     security_handler_.reset(new devtools::security::SecurityHandler());
-    page_handler_.reset(new devtools::page::PageHandler());
-    emulation_handler_.reset(
-        new devtools::emulation::EmulationHandler());
     dispatcher->SetSecurityHandler(security_handler_.get());
-    dispatcher->SetPageHandler(page_handler_.get());
-    dispatcher->SetEmulationHandler(emulation_handler_.get());
   }
 
   SetPending(host);
@@ -497,8 +481,35 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
 void RenderFrameDevToolsAgentHost::Attach() {
   session()->dispatcher()->setFallThroughForNotFound(true);
 
+  if (!frame_tree_node_->parent()) {
+    emulation_handler_.reset(new protocol::EmulationHandler());
+    emulation_handler_->Wire(session()->dispatcher());
+    emulation_handler_->SetRenderFrameHost(handlers_frame_host_);
+  }
+
+  dom_handler_.reset(new protocol::DOMHandler());
+  dom_handler_->Wire(session()->dispatcher());
+  dom_handler_->SetRenderFrameHost(handlers_frame_host_);
+
+  inspector_handler_.reset(new protocol::InspectorHandler());
+  inspector_handler_->Wire(session()->dispatcher());
+  inspector_handler_->SetRenderFrameHost(handlers_frame_host_);
+
   io_handler_.reset(new protocol::IOHandler(GetIOContext()));
   io_handler_->Wire(session()->dispatcher());
+
+  network_handler_.reset(new protocol::NetworkHandler());
+  network_handler_->Wire(session()->dispatcher());
+  network_handler_->SetRenderFrameHost(handlers_frame_host_);
+
+  if (!frame_tree_node_->parent()) {
+    page_handler_.reset(new protocol::PageHandler());
+    page_handler_->Wire(session()->dispatcher());
+    page_handler_->SetRenderFrameHost(handlers_frame_host_);
+  }
+
+  schema_handler_.reset(new protocol::SchemaHandler());
+  schema_handler_->Wire(session()->dispatcher());
 
   tracing_handler_.reset(new protocol::TracingHandler(
       protocol::TracingHandler::Renderer,
@@ -514,8 +525,24 @@ void RenderFrameDevToolsAgentHost::Attach() {
 }
 
 void RenderFrameDevToolsAgentHost::Detach() {
+  dom_handler_->Disable();
+  dom_handler_.reset();
+  if (emulation_handler_) {
+    emulation_handler_->Disable();
+    emulation_handler_.reset();
+  }
+  inspector_handler_->Disable();
+  inspector_handler_.reset();
   io_handler_->Disable();
   io_handler_.reset();
+  network_handler_->Disable();
+  network_handler_.reset();
+  if (page_handler_) {
+    page_handler_->Disable();
+    page_handler_.reset();
+  }
+  schema_handler_->Disable();
+  schema_handler_.reset();
   tracing_handler_->Disable();
   tracing_handler_.reset();
 
@@ -580,10 +607,6 @@ void RenderFrameDevToolsAgentHost::OnClientDetached() {
 #if defined(OS_ANDROID)
   power_save_blocker_.reset();
 #endif
-  if (emulation_handler_)
-    emulation_handler_->Detached();
-  if (page_handler_)
-    page_handler_->Detached();
   service_worker_handler_->Detached();
   target_handler_->Detached();
   frame_trace_recorder_.reset();
@@ -797,11 +820,13 @@ void RenderFrameDevToolsAgentHost::RenderProcessGone(
     case base::TERMINATION_STATUS_OOM_PROTECTED:
 #endif
     case base::TERMINATION_STATUS_LAUNCH_FAILED:
-      inspector_handler_->TargetCrashed();
+      if (inspector_handler_)
+        inspector_handler_->TargetCrashed();
       current_frame_crashed_ = true;
       break;
     default:
-      inspector_handler_->TargetDetached("Render process gone.");
+      if (inspector_handler_)
+        inspector_handler_->TargetDetached("Render process gone.");
       break;
   }
   DCHECK(CheckConsistency());
@@ -919,13 +944,16 @@ void RenderFrameDevToolsAgentHost::UpdateProtocolHandlers(
     handlers_frame_host_->GetRenderWidgetHost()->GetRoutingID();
 #endif
   handlers_frame_host_ = host;
-  dom_handler_->SetRenderFrameHost(host);
+  if (dom_handler_)
+    dom_handler_->SetRenderFrameHost(host);
   if (emulation_handler_)
     emulation_handler_->SetRenderFrameHost(host);
   input_handler_->SetRenderWidgetHost(
       host ? host->GetRenderWidgetHost() : nullptr);
-  inspector_handler_->SetRenderFrameHost(host);
-  network_handler_->SetRenderFrameHost(host);
+  if (inspector_handler_)
+    inspector_handler_->SetRenderFrameHost(host);
+  if (network_handler_)
+    network_handler_->SetRenderFrameHost(host);
   if (page_handler_)
     page_handler_->SetRenderFrameHost(host);
   service_worker_handler_->SetRenderFrameHost(host);
@@ -1071,9 +1099,10 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
   ViewHostMsg_SwapCompositorFrame::Param param;
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return;
-  if (page_handler_)
+  if (page_handler_) {
     page_handler_->OnSwapCompositorFrame(
         std::move(std::get<1>(param).metadata));
+  }
   if (input_handler_)
     input_handler_->OnSwapCompositorFrame(std::get<1>(param).metadata);
   if (frame_trace_recorder_ && tracing_handler_->did_initiate_recording()) {

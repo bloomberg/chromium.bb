@@ -5,9 +5,10 @@
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
 #include "base/guid.h"
-#include "base/json/json_reader.h"
-#include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/protocol/inspector_handler.h"
+#include "content/browser/devtools/protocol/network_handler.h"
+#include "content/browser/devtools/protocol/protocol.h"
 #include "content/browser/devtools/protocol/schema_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -28,12 +29,26 @@ void WorkerDevToolsAgentHost::Attach() {
     host->Send(new DevToolsAgentMsg_Attach(
         worker_id_.second, GetId(), session()->session_id()));
   }
+  session()->dispatcher()->setFallThroughForNotFound(true);
+  inspector_handler_.reset(new protocol::InspectorHandler());
+  inspector_handler_->Wire(session()->dispatcher());
+  network_handler_.reset(new protocol::NetworkHandler());
+  network_handler_->Wire(session()->dispatcher());
+  schema_handler_.reset(new protocol::SchemaHandler());
+  schema_handler_->Wire(session()->dispatcher());
+  session()->dispatcher()->setFallThroughForNotFound(true);
   OnAttachedStateChanged(true);
 }
 
 void WorkerDevToolsAgentHost::Detach() {
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first))
     host->Send(new DevToolsAgentMsg_Detach(worker_id_.second));
+  inspector_handler_->Disable();
+  inspector_handler_.reset();
+  network_handler_->Disable();
+  network_handler_.reset();
+  schema_handler_->Disable();
+  schema_handler_.reset();
   OnAttachedStateChanged(false);
   if (state_ == WORKER_INSPECTED) {
     state_ = WORKER_UNINSPECTED;
@@ -48,11 +63,10 @@ bool WorkerDevToolsAgentHost::DispatchProtocolMessage(
   if (state_ != WORKER_INSPECTED)
     return true;
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
-  int call_id;
+  int call_id = 0;
   std::string method;
-  if (protocol_handler_->HandleOptionalMessage(
-          session()->session_id(), std::move(value), &call_id, &method)) {
+  if (session()->Dispatch(message, &call_id, &method) !=
+      protocol::Response::kFallThrough) {
     return true;
   }
 
@@ -109,10 +123,7 @@ void WorkerDevToolsAgentHost::WorkerDestroyed() {
   DCHECK_NE(WORKER_TERMINATED, state_);
   if (state_ == WORKER_INSPECTED) {
     DCHECK(IsAttached());
-    // Client host is debugging this worker agent host.
-    devtools::inspector::Client inspector(this);
-    inspector.TargetCrashed(
-        devtools::inspector::TargetCrashedParams::Create());
+    inspector_handler_->TargetCrashed();
     DetachFromWorker();
   }
   state_ = WORKER_TERMINATED;
@@ -125,13 +136,10 @@ bool WorkerDevToolsAgentHost::IsTerminated() {
 
 WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(WorkerId worker_id)
     : DevToolsAgentHostImpl(base::GenerateGUID()),
-      schema_handler_(new devtools::schema::SchemaHandler()),
-      protocol_handler_(new DevToolsProtocolHandler(this)),
       chunk_processor_(base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
                                   base::Unretained(this))),
       state_(WORKER_UNINSPECTED),
       worker_id_(worker_id) {
-  protocol_handler_->dispatcher()->SetSchemaHandler(schema_handler_.get());
   WorkerCreated();
 }
 
