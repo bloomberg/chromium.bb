@@ -16,7 +16,6 @@
       },
       "requires": {
         "accessibility_autoclick": [ "ash:autoclick" ],
-        "mash_session": [ "app" ],
         "task_viewer": [ "mash:launchable" ],
         "ui": [ "ime_registrar" ]
       }

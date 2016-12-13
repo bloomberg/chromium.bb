@@ -12,8 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
-#include "mash/session/public/interfaces/constants.mojom.h"
-#include "mash/session/public/interfaces/session.mojom.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -231,7 +229,6 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
   explicit WindowTypeLauncherView(WindowTypeLauncher* window_type_launcher,
                                   service_manager::Connector* connector)
       : window_type_launcher_(window_type_launcher),
-        connector_(connector),
         create_button_(
             MdTextButton::Create(this, base::ASCIIToUTF16("Create Window"))),
         always_on_top_button_(MdTextButton::Create(
@@ -245,12 +242,6 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
         bubble_button_(
             MdTextButton::Create(this,
                                  base::ASCIIToUTF16("Create Pointy Bubble"))),
-        lock_button_(
-            MdTextButton::Create(this, base::ASCIIToUTF16("Lock Screen"))),
-        logout_button_(
-            MdTextButton::Create(this, base::ASCIIToUTF16("Log Out"))),
-        switch_user_button_(
-            MdTextButton::Create(this, base::ASCIIToUTF16("Switch User"))),
         widgets_button_(
             MdTextButton::Create(this,
                                  base::ASCIIToUTF16("Show Example Widgets"))),
@@ -309,9 +300,6 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     AddViewToLayout(layout, panel_button_);
     AddViewToLayout(layout, create_nonresizable_button_);
     AddViewToLayout(layout, bubble_button_);
-    AddViewToLayout(layout, lock_button_);
-    AddViewToLayout(layout, logout_button_);
-    AddViewToLayout(layout, switch_user_button_);
     AddViewToLayout(layout, widgets_button_);
     AddViewToLayout(layout, system_modal_button_);
     AddViewToLayout(layout, window_modal_button_);
@@ -370,21 +358,6 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
       WindowDelegateView::Create(0u);
     } else if (sender == bubble_button_) {
       NOTIMPLEMENTED();
-    } else if (sender == lock_button_) {
-      mash::session::mojom::SessionPtr session;
-      connector_->ConnectToInterface(mash::session::mojom::kServiceName,
-                                     &session);
-      session->LockScreen();
-    } else if (sender == logout_button_) {
-      mash::session::mojom::SessionPtr session;
-      connector_->ConnectToInterface(mash::session::mojom::kServiceName,
-                                     &session);
-      session->Logout();
-    } else if (sender == switch_user_button_) {
-      mash::session::mojom::SessionPtr session;
-      connector_->ConnectToInterface(mash::session::mojom::kServiceName,
-                                     &session);
-      session->SwitchUser();
     } else if (sender == widgets_button_) {
       NOTIMPLEMENTED();
     }
@@ -439,15 +412,11 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
   }
 
   WindowTypeLauncher* window_type_launcher_;
-  service_manager::Connector* connector_;
   views::Button* create_button_;
   views::Button* always_on_top_button_;
   views::Button* panel_button_;
   views::Button* create_nonresizable_button_;
   views::Button* bubble_button_;
-  views::Button* lock_button_;
-  views::Button* logout_button_;
-  views::Button* switch_user_button_;
   views::Button* widgets_button_;
   views::Button* system_modal_button_;
   views::Button* window_modal_button_;

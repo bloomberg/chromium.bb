@@ -3,7 +3,6 @@ include_rules = [
   "+services/ui/public",
   "+grit/ash_mus_resources.h",
   "+mash/public/interfaces",
-  "+mash/session/public",
   "+mash/shelf/public",
   "+mojo/common",
   "+mojo/public",

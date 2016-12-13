@@ -142,19 +142,6 @@ void WindowManager::Init(
   shell_->CreateShelf();
 }
 
-void WindowManager::SetScreenLocked(bool is_locked) {
-  // TODO: screen locked state needs to be persisted for newly added displays.
-  for (auto& root_window_controller : root_window_controllers_) {
-    WmWindowMus* non_lock_screen_containers_container =
-        root_window_controller->GetWindowByShellWindowId(
-            kShellWindowId_NonLockScreenContainersContainer);
-    if (is_locked)
-      non_lock_screen_containers_container->aura_window()->Hide();
-    else
-      non_lock_screen_containers_container->aura_window()->Show();
-  }
-}
-
 aura::Window* WindowManager::NewTopLevelWindow(
     ui::mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties) {

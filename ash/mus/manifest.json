@@ -26,7 +26,6 @@
       "requires": {
         "*": [ "accessibility", "app" ],
         "content_browser": [ "ash" ],
-        "mash_session": [ "mash_session:session" ],
         "ui": [ "window_manager" ],
         "touch_hud": [ "mash:launchable" ]
       }

@@ -91,8 +91,6 @@ class WindowManager : public aura::WindowManagerDelegate,
     return property_converter_.get();
   }
 
-  void SetScreenLocked(bool is_locked);
-
   // Creates a new top level window.
   aura::Window* NewTopLevelWindow(
       ui::mojom::WindowType window_type,

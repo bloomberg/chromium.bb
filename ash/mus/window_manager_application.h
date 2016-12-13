@@ -13,7 +13,6 @@
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/provider.h"
@@ -49,16 +48,12 @@ class NetworkConnectDelegateMus;
 class WindowManager;
 
 // Hosts the window manager and the ash system user interface for mash.
-class WindowManagerApplication
-    : public service_manager::Service,
-      public mash::session::mojom::ScreenlockStateListener {
+class WindowManagerApplication : public service_manager::Service {
  public:
   WindowManagerApplication();
   ~WindowManagerApplication() override;
 
   WindowManager* window_manager() { return window_manager_.get(); }
-
-  mash::session::mojom::Session* session() { return session_.get(); }
 
  private:
   friend class WmTestBase;
@@ -77,9 +72,6 @@ class WindowManagerApplication
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
-  // session::mojom::ScreenlockStateListener:
-  void ScreenlockStateChanged(bool locked) override;
-
   tracing::Provider tracing_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
@@ -90,11 +82,6 @@ class WindowManagerApplication
 
   // A blocking pool used by the WindowManager's shell; not used in tests.
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
-
-  mash::session::mojom::SessionPtr session_;
-
-  mojo::Binding<mash::session::mojom::ScreenlockStateListener>
-      screenlock_state_listener_binding_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<NetworkConnectDelegateMus> network_connect_delegate_;

@@ -5,8 +5,7 @@
     "service_manager:connector": {
       "provides": { "mash:launchable": [ "mash::mojom::Launchable" ] },
       "requires": {
-        "*": [ "app" ],
-        "mash_session": [ "mash_session:session" ]
+        "*": [ "app" ]
       }
     }
   }

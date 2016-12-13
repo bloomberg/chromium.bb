@@ -3,9 +3,6 @@
   "display_name": "User Session",
   "interface_provider_specs": {
     "service_manager:connector": {
-      "provides": {
-        "mash_session:session": [ "mash::session::mojom::Session" ]
-      },
       "requires": { "*": [ "app" ] }
     }
   }

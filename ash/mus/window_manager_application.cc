@@ -40,8 +40,7 @@
 namespace ash {
 namespace mus {
 
-WindowManagerApplication::WindowManagerApplication()
-    : screenlock_state_listener_binding_(this) {}
+WindowManagerApplication::WindowManagerApplication() {}
 
 WindowManagerApplication::~WindowManagerApplication() {
   // Destroy the WindowManager while still valid. This way we ensure
@@ -151,17 +150,7 @@ bool WindowManagerApplication::OnConnect(
   // Register services used in both classic ash and mash.
   mojo_interface_factory::RegisterInterfaces(
       registry, base::ThreadTaskRunnerHandle::Get());
-
-  if (remote_info.identity.name() == "mash_session") {
-    context()->connector()->ConnectToInterface(remote_info.identity, &session_);
-    session_->AddScreenlockStateListener(
-        screenlock_state_listener_binding_.CreateInterfacePtrAndBind());
-  }
   return true;
-}
-
-void WindowManagerApplication::ScreenlockStateChanged(bool locked) {
-  window_manager_->SetScreenLocked(locked);
 }
 
 }  // namespace mus

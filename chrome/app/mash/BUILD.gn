@@ -15,6 +15,7 @@ source_set("mash") {
     "//components/tracing:startup_tracing",
     "//content/public/common",
     "//mash/package",
+    "//mash/session/public/interfaces:constants",
     "//services/catalog/public/interfaces",
     "//services/service_manager",
     "//services/service_manager/background:lib",

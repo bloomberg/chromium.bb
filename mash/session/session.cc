@@ -9,10 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mash/common/config.h"
-#include "mash/login/public/interfaces/constants.mojom.h"
-#include "mash/login/public/interfaces/login.mojom.h"
 #include "mash/quick_launch/public/interfaces/constants.mojom.h"
-#include "mash/screenlock/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -31,7 +28,7 @@ void LogAndCallServiceRestartCallback(const std::string& url,
 namespace mash {
 namespace session {
 
-Session::Session() : screen_locked_(false) {}
+Session::Session() {}
 Session::~Session() {}
 
 void Session::OnStart() {
@@ -44,58 +41,7 @@ void Session::OnStart() {
 
 bool Session::OnConnect(const service_manager::ServiceInfo& remote_info,
                         service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::Session>(this);
   return true;
-}
-
-void Session::Logout() {
-  // TODO(beng): Notify connected listeners that login is happening, potentially
-  // give them the option to stop it.
-  mash::login::mojom::LoginPtr login;
-  context()->connector()->ConnectToInterface(login::mojom::kServiceName,
-                                             &login);
-  login->ShowLoginUI();
-  // This kills the user environment.
-  base::MessageLoop::current()->QuitWhenIdle();
-}
-
-void Session::SwitchUser() {
-  mash::login::mojom::LoginPtr login;
-  context()->connector()->ConnectToInterface(login::mojom::kServiceName,
-                                             &login);
-  login->SwitchUser();
-}
-
-void Session::AddScreenlockStateListener(
-    mojom::ScreenlockStateListenerPtr listener) {
-  listener->ScreenlockStateChanged(screen_locked_);
-  screenlock_listeners_.AddPtr(std::move(listener));
-}
-
-void Session::LockScreen() {
-  if (screen_locked_)
-    return;
-  screen_locked_ = true;
-  screenlock_listeners_.ForAllPtrs(
-      [](mojom::ScreenlockStateListener* listener) {
-        listener->ScreenlockStateChanged(true);
-      });
-  StartScreenlock();
-}
-void Session::UnlockScreen() {
-  if (!screen_locked_)
-    return;
-  screen_locked_ = false;
-  screenlock_listeners_.ForAllPtrs(
-      [](mojom::ScreenlockStateListener* listener) {
-        listener->ScreenlockStateChanged(false);
-      });
-  StopScreenlock();
-}
-
-void Session::Create(const service_manager::Identity& remote_identity,
-                     mojom::SessionRequest request) {
-  bindings_.AddBinding(this, std::move(request));
 }
 
 void Session::StartWindowManager() {
@@ -110,19 +56,6 @@ void Session::StartQuickLaunch() {
       quick_launch::mojom::kServiceName,
       base::Bind(&Session::StartQuickLaunch,
                  base::Unretained(this)));
-}
-
-void Session::StartScreenlock() {
-  StartRestartableService(
-      screenlock::mojom::kServiceName,
-      base::Bind(&Session::StartScreenlock,
-                 base::Unretained(this)));
-}
-
-void Session::StopScreenlock() {
-  auto connection = connections_.find("screenlock");
-  DCHECK(connections_.end() != connection);
-  connections_.erase(connection);
 }
 
 void Session::StartRestartableService(

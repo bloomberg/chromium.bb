@@ -107,7 +107,6 @@ source_set("lib") {
     "//base",
     "//base:i18n",
     "//mash/public/interfaces",
-    "//mash/session/public/interfaces",
     "//mojo/common:common_base",
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",

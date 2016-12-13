@@ -4,16 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
-  sources = [
-    "session.mojom",
-  ]
-
-  public_deps = [
-    ":constants",
-  ]
-}
-
 mojom("constants") {
   sources = [
     "constants.mojom",

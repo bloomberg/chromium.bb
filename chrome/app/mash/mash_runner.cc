@@ -27,6 +27,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mash/package/mash_packaged_service.h"
+#include "mash/session/public/interfaces/constants.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
@@ -185,7 +186,7 @@ void MashRunner::RunMain() {
       GetPackageManifestPath(kChromeContentUtilityPackageName)));
 
   // Ping mash_session to ensure an instance is brought up
-  context_->connector()->Connect("mash_session");
+  context_->connector()->Connect(mash::session::mojom::kServiceName);
   base::RunLoop().Run();
 
   base::TaskScheduler::GetInstance()->Shutdown();
