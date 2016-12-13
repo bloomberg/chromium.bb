@@ -457,10 +457,12 @@ std::unique_ptr<ProcessDataSnapshot> SharedSampler::CaptureSnapshot() {
     // the buffer boundary.
     if (offset + sizeof(SYSTEM_PROCESS_INFORMATION) > data_buffer.size())
       break;
-    if (offset + sizeof(SYSTEM_PROCESS_INFORMATION) +
-            (pi->NumberOfThreads - 1) * sizeof(SYSTEM_THREAD_INFORMATION) >
-      data_buffer.size())
+    if (pi->NumberOfThreads > 0 &&
+        (offset + sizeof(SYSTEM_PROCESS_INFORMATION) +
+             (pi->NumberOfThreads - 1) * sizeof(SYSTEM_THREAD_INFORMATION) >
+         data_buffer.size())) {
       break;
+    }
 
     if (pi->ImageName.Buffer) {
       // Validate that the image name is within the buffer boundary.
