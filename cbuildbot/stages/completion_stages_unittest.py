@@ -756,7 +756,7 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
                      return_value=changes_by_build_id)
 
     stage = self.ConstructStage()
-    results = stage.GetRelevantChangesForSlaves(changes, no_stat)
+    results = stage.GetRelevantChangesForSlaves(changes, no_stat, None)
     self.assertEqual(results, expected)
 
   def testWithExponentialFallbackApplied(self):

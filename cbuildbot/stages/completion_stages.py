@@ -567,7 +567,9 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         self, failing, inflight, no_stat)
 
     if self._run.config.master:
-      self.CQMasterHandleFailure(failing, inflight, no_stat)
+      slave_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
+      self.CQMasterHandleFailure(
+          failing, inflight, no_stat, slave_buildbucket_ids)
 
     self._RecordSubmissionMetrics()
 
@@ -594,11 +596,13 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       clactions.RecordSubmissionMetrics(action_history,
                                         submitted_change_strategies)
 
-  def _GetSlaveMappingAndCLActions(self, changes):
+  def _GetSlaveMappingAndCLActions(self, changes, slave_buildbucket_ids):
     """Query CIDB to for slaves and CL actions.
 
     Args:
       changes: A list of GerritPatch instances to examine.
+      slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
+                             scheduled by Buildbucket.
 
     Returns:
       A tuple of (config_map, action_history), where the config_map
@@ -610,8 +614,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     build_id, db = self._run.GetCIDBHandle()
     assert db, 'No database connection to use.'
 
-    buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
-    slave_list = db.GetSlaveStatuses(build_id, buildbucket_ids=buildbucket_ids)
+    slave_list = db.GetSlaveStatuses(
+        build_id, buildbucket_ids=slave_buildbucket_ids)
     # TODO(akeshet): We are getting the full action history for all changes that
     # were in this CQ run. It would make more sense to only get the actions from
     # build_ids of this master and its slaves.
@@ -631,18 +635,22 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     return config_map, action_history
 
-  def GetRelevantChangesForSlaves(self, changes, no_stat):
+  def GetRelevantChangesForSlaves(self, changes, no_stat,
+                                  slave_buildbucket_ids):
     """Compile a set of relevant changes for each slave.
 
     Args:
       changes: A list of GerritPatch instances to examine.
       no_stat: Set of builder names of slave builders that had status None.
+      slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
+                             scheduled by Buildbucket.
 
     Returns:
       A dictionary mapping a slave config name to a set of relevant changes.
     """
     # Retrieve the slaves and clactions from CIDB.
-    config_map, action_history = self._GetSlaveMappingAndCLActions(changes)
+    config_map, action_history = self._GetSlaveMappingAndCLActions(
+        changes, slave_buildbucket_ids)
     changes_by_build_id = clactions.GetRelevantChangesForBuilds(
         changes, action_history, config_map.keys())
 
@@ -689,8 +697,12 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         # If message_subtype==subsystem_unused, keep d as an empty dict.
     return subsys_by_config
 
-  def _ShouldSubmitPartialPool(self):
+  def _ShouldSubmitPartialPool(self, slave_buildbucket_ids):
     """Determine whether we should attempt or skip SubmitPartialPool.
+
+    Args:
+        slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave
+                               builds scheduled by Buildbucket.
 
     Returns:
       True if all important, non-sanity-check slaves ran and completed all
@@ -707,7 +719,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     # Get slave stages.
     build_id, db = self._run.GetCIDBHandle()
     assert db, 'No database connection to use.'
-    slave_stages = db.GetSlaveStages(build_id)
+    slave_stages = db.GetSlaveStages(
+        build_id, buildbucket_ids=slave_buildbucket_ids)
 
     should_submit = True
     ACCEPTED_STATUSES = (constants.BUILDER_STATUS_PASSED,
@@ -730,7 +743,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     return should_submit
 
-  def CQMasterHandleFailure(self, failing, inflight, no_stat):
+  def CQMasterHandleFailure(self, failing, inflight, no_stat,
+                            slave_buildbucket_ids):
     """Handle changes in the validation pool upon build failure or timeout.
 
     This function determines whether to reject CLs and what CLs to
@@ -741,16 +755,19 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
+      slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
+                             scheduled by Buildbucket.
     """
     messages = self._GetFailedMessages(failing)
     self.SendInfraAlertIfNeeded(failing, inflight, no_stat)
 
     changes = self.sync_stage.pool.applied
 
-    do_partial_submission = self._ShouldSubmitPartialPool()
+    do_partial_submission = self._ShouldSubmitPartialPool(slave_buildbucket_ids)
 
     if do_partial_submission:
-      changes_by_config = self.GetRelevantChangesForSlaves(changes, no_stat)
+      changes_by_config = self.GetRelevantChangesForSlaves(
+          changes, no_stat, slave_buildbucket_ids)
       subsys_by_config = self.GetSubsysResultForSlaves()
 
       # Even if there was a failure, we can submit the changes that indicate
@@ -997,7 +1014,10 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     elif self._build_stage_id is not None and db is not None:
       slave_configs = self._GetSlaveConfigs()
       important_set = set([slave['name'] for slave in slave_configs])
-      stages = db.GetSlaveStages(build_id)
+
+      slave_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
+      stages = db.GetSlaveStages(
+          build_id, buildbucket_ids=slave_buildbucket_ids)
 
       passed_set = set([s['build_config'] for s in stages if (
           s['name'] == stage_name and

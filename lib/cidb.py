@@ -1101,25 +1101,46 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         return []
 
   @minimum_schema(30)
-  def GetSlaveStages(self, master_build_id):
-    """Gets all the stages of slave builds to given build.
+  def GetSlaveStages(self, master_build_id, buildbucket_ids=None):
+    """Gets the stages of slave builds to given master_build_id.
 
     Args:
       master_build_id: build id of the master build to fetch the slave
                        stages for.
+      buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
+        to given master_build_id. If buildbucket_ids is given, only fetch
+        the stages of builds with |buildbucket_id| in buildbucket_ids.
+        Default to None.
 
     Returns:
-      A list containing, for each stage of each slave build found,
+      A list containing, for each stage of slave builds found,
       a dictionary with keys (id, build_id, name, board, status, last_updated,
       start_time, finish_time, final, build_config).
+      If buildbucket_ids is None, the list contains all stages of all slaves;
+      else, it only contains the stages of the slaves with |buildbucket_id|
+      in buildbucket_ids.
     """
     bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
                         'last_updated', 'start_time', 'finish_time', 'final']
     bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
-    results = self._Execute(
-        'SELECT %s, b.build_config FROM buildStageTable bs JOIN buildTable b '
-        'ON build_id = b.id where b.master_build_id = %d' %
-        (', '.join(bs_prepended_columns), master_build_id)).fetchall()
+
+    query = ('SELECT %s, b.build_config FROM buildStageTable bs JOIN '
+             'buildTable b ON build_id = b.id WHERE b.master_build_id = %d' %
+             (', '.join(bs_prepended_columns), master_build_id))
+
+    results = []
+    if buildbucket_ids is None:
+      results = self._Execute(query).fetchall()
+    else:
+      assert isinstance(buildbucket_ids, list)
+
+      if not buildbucket_ids:
+        return []
+
+      query += (' AND b.buildbucket_id IN (%s)' %
+                (','.join('"%s"' % x for x in buildbucket_ids)))
+      results = self._Execute(query).fetchall()
+
     columns = bs_table_columns + ['build_config']
     return [dict(zip(columns, values)) for values in results]
 
@@ -1401,6 +1422,11 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       keys build_id, build_config, waterfall, builder_name, build_number,
       message_type, message_subtype, message_value, timestamp, board.
     """
+    # Currently we only retry slave builds in Buildbucket which fail to pass
+    # SyncStage. It means if a build fails to pass HWTestStage, where it posts
+    # messages to buildMessageTable, we won't retry it. So there won't be
+    # duplicated messages for one slave build.
+    # TODO(nxia): it'll be good to have the buildbucket_ids filter.
     return self._GetBuildMessagesWithClause(
         'master_build_id = %s' % master_build_id)
 
