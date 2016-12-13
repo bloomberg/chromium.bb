@@ -5,15 +5,17 @@
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_block.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 
-@implementation ShowSigninCommand {
-  base::mac::ScopedBlock<ShowSigninCommandCompletionCallback> _callback;
-}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@implementation ShowSigninCommand
 
 @synthesize operation = _operation;
 @synthesize signInAccessPoint = _signInAccessPoint;
+@synthesize callback = _callback;
 
 - (instancetype)initWithTag:(NSInteger)tag {
   NOTREACHED();
@@ -27,7 +29,7 @@
   if ((self = [super initWithTag:IDC_SHOW_SIGNIN_IOS])) {
     _operation = operation;
     _signInAccessPoint = signInAccessPoint;
-    _callback.reset(callback, base::scoped_policy::RETAIN);
+    _callback = [callback copy];
   }
   return self;
 }
@@ -38,10 +40,6 @@
   return [self initWithOperation:operation
                signInAccessPoint:signInAccessPoint
                         callback:nil];
-}
-
-- (ShowSigninCommandCompletionCallback)callback {
-  return _callback.get();
 }
 
 @end

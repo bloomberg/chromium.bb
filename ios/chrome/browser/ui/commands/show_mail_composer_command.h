@@ -28,13 +28,13 @@ class FilePath;
     NS_DESIGNATED_INITIALIZER;
 
 // List of email recipients.
-@property(nonatomic, readonly) NSArray* toRecipients;
+@property(strong, nonatomic, readonly) NSArray* toRecipients;
 
 // Pre-filled default email subject.
-@property(nonatomic, readonly) NSString* subject;
+@property(copy, nonatomic, readonly) NSString* subject;
 
 // Pre-filled default email body.
-@property(nonatomic, readonly) NSString* body;
+@property(copy, nonatomic, readonly) NSString* body;
 
 // Path to file to attach to email.
 @property(nonatomic, assign) const base::FilePath& textFileToAttach;

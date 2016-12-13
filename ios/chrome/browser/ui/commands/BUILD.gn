@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("commands") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "UIKit+ChromeExecuteCommand.h",
     "UIKit+ChromeExecuteCommand.mm",

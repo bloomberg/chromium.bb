@@ -14,7 +14,7 @@ class GURL;
 @interface ReadingListAddCommand : GenericChromeCommand
 
 @property(nonatomic, readonly) const GURL& URL;
-@property(nonatomic, readonly) NSString* title;
+@property(copy, nonatomic, readonly) NSString* title;
 
 - (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
 

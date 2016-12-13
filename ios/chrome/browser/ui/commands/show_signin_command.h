@@ -45,7 +45,8 @@ enum AuthenticationOperation {
                     (signin_metrics::AccessPoint)signInAccessPoint;
 
 // The callback to be invoked after the operation is complete.
-@property(nonatomic, readonly) ShowSigninCommandCompletionCallback callback;
+@property(copy, nonatomic, readonly)
+    ShowSigninCommandCompletionCallback callback;
 
 // The operation to perform during the sign-in flow.
 @property(nonatomic, readonly) AuthenticationOperation operation;

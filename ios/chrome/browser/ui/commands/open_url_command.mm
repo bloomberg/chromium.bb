@@ -5,21 +5,24 @@
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/web/public/referrer.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation OpenUrlCommand {
   GURL _url;
   web::Referrer _referrer;
-  base::scoped_nsobject<NSString> _windowName;
 }
 
 @synthesize inIncognito = _inIncognito;
 @synthesize inBackground = _inBackground;
 @synthesize fromChrome = _fromChrome;
 @synthesize appendTo = _appendTo;
+@synthesize windowName = _windowName;
 
 - (instancetype)initWithTag:(NSInteger)tag {
   NOTREACHED();
@@ -35,7 +38,7 @@
   if ((self = [super initWithTag:IDC_OPEN_URL])) {
     _url = url;
     _referrer = referrer;
-    _windowName.reset([windowName copy]);
+    _windowName = [windowName copy];
     _inIncognito = inIncognito;
     _inBackground = inBackground;
     _appendTo = appendTo;
@@ -61,10 +64,6 @@
 
 - (const web::Referrer&)referrer {
   return _referrer;
-}
-
-- (NSString*)windowName {
-  return _windowName.get();
 }
 
 @end

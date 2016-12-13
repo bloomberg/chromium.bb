@@ -42,7 +42,7 @@ class GURL;
 @property(nonatomic, readonly) const web::Referrer& referrer;
 
 // Name of the window.
-@property(nonatomic, readonly) NSString* windowName;
+@property(strong, nonatomic, readonly) NSString* windowName;
 
 // Whether this URL command requests opening in incognito or not.
 @property(nonatomic, readonly) BOOL inIncognito;

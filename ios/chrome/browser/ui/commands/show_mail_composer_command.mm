@@ -6,19 +6,22 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation ShowMailComposerCommand {
-  base::scoped_nsobject<NSArray> _toRecipients;
-  base::scoped_nsobject<NSString> _subject;
-  base::scoped_nsobject<NSString> _body;
   base::FilePath _textFileToAttach;
 }
 
 @synthesize emailNotConfiguredAlertTitleId = _emailNotConfiguredAlertTitleId;
 @synthesize emailNotConfiguredAlertMessageId =
     _emailNotConfiguredAlertMessageId;
+@synthesize toRecipients = _toRecipients;
+@synthesize subject = _subject;
+@synthesize body = _body;
 
 - (instancetype)initWithTag:(NSInteger)tag {
   NOTREACHED();
@@ -34,25 +37,13 @@
   DCHECK(alertMessageId);
   self = [super initWithTag:IDC_SHOW_MAIL_COMPOSER];
   if (self) {
-    _toRecipients.reset([@[ toRecipient ] retain]);
-    _subject.reset([subject copy]);
-    _body.reset([body copy]);
+    _toRecipients = @[ toRecipient ];
+    _subject = [subject copy];
+    _body = [body copy];
     _emailNotConfiguredAlertTitleId = alertTitleId;
     _emailNotConfiguredAlertMessageId = alertMessageId;
   }
   return self;
-}
-
-- (NSArray*)toRecipients {
-  return _toRecipients.get();
-}
-
-- (NSString*)subject {
-  return _subject.get();
-}
-
-- (NSString*)body {
-  return _body.get();
 }
 
 - (const base::FilePath&)textFileToAttach {

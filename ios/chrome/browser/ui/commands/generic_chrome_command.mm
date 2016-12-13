@@ -9,12 +9,16 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation GenericChromeCommand
 
 @synthesize tag = _tag;
 
 + (instancetype)commandWithTag:(NSInteger)tag {
-  return [[[self alloc] initWithTag:tag] autorelease];
+  return [[self alloc] initWithTag:tag];
 }
 
 - (instancetype)initWithTag:(NSInteger)tag {
