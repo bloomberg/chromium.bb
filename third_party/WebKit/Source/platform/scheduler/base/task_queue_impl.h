@@ -139,9 +139,16 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   const char* GetName() const override;
   QueueType GetQueueType() const override;
 
-  // If this returns false then future updates for this queue are not needed
-  // unless requested.
-  bool MaybeUpdateImmediateWorkQueues();
+  // As BlockedByFence but only safe to be called while |any_thread_| is locked.
+  // Must only be called from the thread this task queue was created on.
+  bool BlockedByFenceLocked() const;
+
+  // Must only be called from the thread this task queue was created on.
+  void OnImmediateWorkQueueHasBecomeEmpty(
+      std::queue<TaskQueueImpl::Task>* work_queue);
+
+  // Must only be called from the thread this task queue was created on.
+  void ReloadImmediateWorkQueueIfEmpty();
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -172,9 +179,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   }
 
   // Enqueues any delayed tasks which should be run now on the
-  // |delayed_work_queue|. It also schedules the next wake up with the
-  // TimeDomain. Must be called from the main thread.
-  void WakeUpForDelayedWork(LazyNow* lazy_now);
+  // |delayed_work_queue|. Returns the deadline if a subsequent wakeup is
+  // required. Must be called from the main thread.
+  base::Optional<base::TimeTicks> WakeUpForDelayedWork(LazyNow* lazy_now);
 
   base::TimeTicks scheduled_time_domain_wakeup() const {
     return main_thread_only().scheduled_time_domain_wakeup;
@@ -289,9 +296,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
       base::TimeTicks desired_run_time,
       EnqueueOrder sequence_number,
       bool nestable);
-
-  // As BlockedByFence but safe to be called while locked.
-  bool BlockedByFenceLocked() const;
 
   void TraceQueueSize(bool is_locked) const;
   static void QueueAsValueInto(const std::queue<Task>& queue,

@@ -10,12 +10,15 @@ namespace blink {
 namespace scheduler {
 namespace internal {
 
-WorkQueue::WorkQueue(TaskQueueImpl* task_queue, const char* name)
+WorkQueue::WorkQueue(TaskQueueImpl* task_queue,
+                     const char* name,
+                     QueueType queue_type)
     : work_queue_sets_(nullptr),
       task_queue_(task_queue),
       work_queue_set_index_(0),
       name_(name),
-      fence_(0) {}
+      fence_(0),
+      queue_type_(queue_type) {}
 
 void WorkQueue::AsValueInto(base::trace_event::TracedValue* state) const {
   // Remove const to search |work_queue_| in the destructive manner. Restore the
@@ -116,6 +119,10 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   TaskQueueImpl::Task pending_task =
       std::move(const_cast<TaskQueueImpl::Task&>(work_queue_.front()));
   work_queue_.pop();
+  // NB immediate tasks have a different pipeline to delayed ones.
+  if (queue_type_ == QueueType::IMMEDIATE && work_queue_.empty())
+    task_queue_->OnImmediateWorkQueueHasBecomeEmpty(&work_queue_);
+  // OnPopQueue checks BlockedByFence() so we don't need to here.
   work_queue_sets_->OnPopQueue(this);
   task_queue_->TraceQueueSize(false);
   return pending_task;

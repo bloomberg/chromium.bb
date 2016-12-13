@@ -31,7 +31,9 @@ class WorkQueueSets;
 // throttling mechanisms.
 class BLINK_PLATFORM_EXPORT WorkQueue {
  public:
-  WorkQueue(TaskQueueImpl* task_queue, const char* name);
+  enum class QueueType { DELAYED, IMMEDIATE };
+
+  WorkQueue(TaskQueueImpl* task_queue, const char* name, QueueType queue_type);
   ~WorkQueue();
 
   // Associates this work queue with the given work queue sets. This must be
@@ -120,6 +122,7 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
   HeapHandle heap_handle_;
   const char* name_;
   EnqueueOrder fence_;
+  QueueType queue_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkQueue);
 };

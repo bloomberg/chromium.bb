@@ -46,23 +46,23 @@ void RealTimeDomain::RequestWakeup(base::TimeTicks now, base::TimeDelta delay) {
   task_queue_manager_->MaybeScheduleDelayedWork(FROM_HERE, now, delay);
 }
 
-bool RealTimeDomain::MaybeAdvanceTime() {
+base::Optional<base::TimeDelta> RealTimeDomain::DelayTillNextTask(
+    LazyNow* lazy_now) {
   base::TimeTicks next_run_time;
   if (!NextScheduledRunTime(&next_run_time))
-    return false;
+    return base::Optional<base::TimeDelta>();
 
-  base::TimeTicks now = Now();
+  base::TimeTicks now = lazy_now->Now();
   if (now >= next_run_time)
-    return true;  // Causes DoWork to post a continuation.
+    return base::TimeDelta();  // Makes DoWork post an immediate continuation.
 
   base::TimeDelta delay = next_run_time - now;
-  TRACE_EVENT1(tracing_category_, "RealTimeDomain::MaybeAdvanceTime",
+  TRACE_EVENT1(tracing_category_, "RealTimeDomain::DelayTillNextTask",
                "delay_ms", delay.InMillisecondsF());
 
-  // The next task is sometime in the future, make sure we schedule a DoWork to
-  // run it.
-  task_queue_manager_->MaybeScheduleDelayedWork(FROM_HERE, now, delay);
-  return false;
+  // The next task is sometime in the future. DoWork will make sure it gets
+  // run at the right time..
+  return delay;
 }
 
 void RealTimeDomain::AsValueIntoInternal(

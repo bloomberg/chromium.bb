@@ -22,7 +22,7 @@ class BLINK_PLATFORM_EXPORT ThrottledTimeDomain : public RealTimeDomain {
   // TimeDomain implementation:
   const char* GetName() const override;
   void RequestWakeup(base::TimeTicks now, base::TimeDelta delay) override;
-  bool MaybeAdvanceTime() override;
+  base::Optional<base::TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
 
   using TimeDomain::WakeupReadyDelayedQueues;
 
