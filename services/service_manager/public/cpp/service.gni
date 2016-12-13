@@ -94,6 +94,7 @@ template("service") {
     data_deps = service_data_deps
 
     deps = [
+      "//build/config/sanitizers:deps",
       "//services/service_manager/public/cpp/standalone_service:main",
     ]
 
