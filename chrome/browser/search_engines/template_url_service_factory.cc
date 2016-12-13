@@ -23,8 +23,9 @@
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_service.h"
+#include "rlz/features/features.h"
 
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"
 #endif
 
@@ -43,7 +44,7 @@ TemplateURLServiceFactory* TemplateURLServiceFactory::GetInstance() {
 std::unique_ptr<KeyedService> TemplateURLServiceFactory::BuildInstanceFor(
     content::BrowserContext* context) {
   base::Closure dsp_change_callback;
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
   dsp_change_callback = base::Bind(
       base::IgnoreResult(&rlz::RLZTracker::RecordProductEvent), rlz_lib::CHROME,
       rlz::RLZTracker::ChromeOmnibox(), rlz_lib::SET_TO_GOOGLE);

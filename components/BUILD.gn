@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//printing/features/features.gni")
+import("//rlz/features/features.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 

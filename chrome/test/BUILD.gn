@@ -16,6 +16,7 @@ import("//extensions/features/features.gni")
 import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
 import("//remoting/remoting_enable.gni")
+import("//rlz/features/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
@@ -1228,6 +1229,7 @@ test("browser_tests") {
     "//media:media_features",
     "//ppapi/features",
     "//printing/features",
+    "//rlz/features",
     "//third_party/WebKit/public:features",
   ]
 

@@ -94,6 +94,7 @@ include_rules = [
   "+ios/public/provider/web",
   "+ios/web/public",
   "+net",
+  "+rlz/features",
   "+third_party/brotli",
   "+third_party/google_toolbox_for_mac",
   "+ui",

@@ -7,6 +7,7 @@ import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
+import("//rlz/features/features.gni")
 
 assert(enable_extensions)
 
@@ -897,6 +898,7 @@ static_library("extensions") {
     "//net",
     "//ppapi/features",
     "//printing/features",
+    "//rlz/features",
     "//skia",
     "//sql",
     "//storage/browser",

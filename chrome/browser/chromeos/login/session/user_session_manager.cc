@@ -114,11 +114,12 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "net/cert/sth_distributor.h"
+#include "rlz/features/features.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "components/rlz/rlz_tracker.h"
 #endif
@@ -242,7 +243,7 @@ void InitLocaleAndInputMethodsForNewUser(
   prefs->SetBoolean(prefs::kLanguageShouldMergeInputMethods, true);
 }
 
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
 // Flag file that disables RLZ tracking, when present.
 const base::FilePath::CharType kRLZDisabledFlagName[] =
     FILE_PATH_LITERAL(".rlz_disabled");
@@ -555,7 +556,7 @@ bool UserSessionManager::UserSessionsRestoreInProgress() const {
 }
 
 void UserSessionManager::InitRlz(Profile* profile) {
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
   if (!g_browser_process->local_state()->HasPrefPath(prefs::kRLZBrand)) {
     // Read brand code asynchronously from an OEM data and repost ourselves.
     google_brand::chromeos::InitBrand(
@@ -1354,7 +1355,7 @@ void UserSessionManager::RestoreAuthSessionImpl(
 }
 
 void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
   PrefService* local_state = g_browser_process->local_state();
   if (disabled) {
     // Empty brand code means an organic install (no RLZ pings are sent).

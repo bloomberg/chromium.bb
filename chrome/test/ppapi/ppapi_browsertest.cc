@@ -31,6 +31,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ppapi/shared_impl/test_utils.h"
+#include "rlz/features/features.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -1233,7 +1234,7 @@ TEST_PPAPI_OUT_OF_PROCESS(PDF)
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FlashDRM) {
   RunTest(
-#if (defined(OS_WIN) && defined(ENABLE_RLZ)) || defined(OS_CHROMEOS)
+#if (defined(OS_WIN) && BUILDFLAG(ENABLE_RLZ)) || defined(OS_CHROMEOS)
           // Only implemented on Windows and ChromeOS currently.
           LIST_TEST(FlashDRM_GetDeviceID)
 #endif

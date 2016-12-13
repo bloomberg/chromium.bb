@@ -59,6 +59,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/features/features.h"
+#include "rlz/features/features.h"
 #include "sql/error_delegate_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -72,9 +73,9 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"
-#endif  // defined(ENABLE_RLZ)
+#endif  // BUILDFLAG(ENABLE_RLZ)
 #endif  // defined(OS_WIN)
 
 using content::BrowserContext;
@@ -399,7 +400,7 @@ void HandleReadError(const base::FilePath& pref_filename,
 std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
     const base::FilePath& profile_path) {
   std::string device_id;
-#if defined(OS_WIN) && defined(ENABLE_RLZ)
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_RLZ)
   // This is used by
   // chrome/browser/extensions/api/music_manager_private/device_id_win.cc
   // but that API is private (http://crbug.com/276485) and other platforms are

@@ -5,9 +5,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "rlz/features/features.h"
 
 // Supported on all platforms, but on Windows only if RLZ is enabled.
-#if !defined(OS_WIN) || defined(ENABLE_RLZ)
+#if !defined(OS_WIN) || BUILDFLAG(ENABLE_RLZ)
 
 class MusicManagerPrivateTest : public extensions::PlatformAppBrowserTest {
 };

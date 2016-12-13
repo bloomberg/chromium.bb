@@ -11,6 +11,7 @@ include_rules = [
   "+extensions",
   "+mash/package",
   "+mojo",
+  "+rlz/features",
   "+services",
 
   # Tests under chrome/ shouldn't need to access the internals of content/ and

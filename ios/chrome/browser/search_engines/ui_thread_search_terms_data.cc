@@ -18,9 +18,10 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/escape.h"
+#include "rlz/features/features.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"  // nogncheck
 #endif
 
@@ -60,7 +61,7 @@ base::string16 UIThreadSearchTermsData::GetRlzParameterValue(
   DCHECK(!from_app_list);
   DCHECK(thread_checker_.CalledOnValidThread());
   base::string16 rlz_string;
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
   // For organic brandcode do not use rlz at all.
   std::string brand;
   if (ios::google_brand::GetBrand(&brand) &&

@@ -23,6 +23,7 @@
 #include "components/login/localized_values_builder.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
+#include "rlz/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -131,7 +132,7 @@ void EulaScreenHandler::DeclareLocalizedValues(
   builder->Add("eulaTpmBusy", IDS_EULA_TPM_BUSY);
   builder->Add("eulaSystemInstallationSettingsOkButton", IDS_OK);
   builder->Add("termsOfServiceLoading", IDS_TERMS_OF_SERVICE_SCREEN_LOADING);
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
   builder->AddF("eulaRlzDesc",
                 IDS_EULA_RLZ_DESCRIPTION,
                 IDS_SHORT_PRODUCT_NAME,
@@ -161,7 +162,7 @@ void EulaScreenHandler::DeclareJSCallbacks() {
 }
 
 void EulaScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
   dict->SetString("rlzEnabled", "enabled");
 #else
   dict->SetString("rlzEnabled", "disabled");

@@ -11,9 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#if defined(OS_CHROMEOS)
-#include "chromeos/cryptohome/system_salt_getter.h"
-#endif
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_ppapi_host.h"
@@ -23,7 +20,13 @@
 #include "crypto/random.h"
 #include "crypto/sha2.h"
 #include "ppapi/c/pp_errors.h"
-#if defined(ENABLE_RLZ)
+#include "rlz/features/features.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/cryptohome/system_salt_getter.h"
+#endif
+
+#if BUILDFLAG(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"
 #endif
 
@@ -41,7 +44,7 @@ const uint32_t kSaltLength = 32;
 
 void GetMachineIDAsync(
     const base::Callback<void(const std::string&)>& callback) {
-#if defined(OS_WIN) && defined(ENABLE_RLZ)
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_RLZ)
   std::string result;
   rlz_lib::GetMachineId(&result);
   callback.Run(result);

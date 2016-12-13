@@ -25,8 +25,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
 #include "content/public/browser/browser_thread.h"
+#include "rlz/features/features.h"
 
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"
 #endif
 
@@ -183,13 +184,13 @@ void GetMacAddress(const IsValidMacAddressCallback& is_valid_mac_address,
 }
 
 std::string GetRlzMachineId() {
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
   std::string machine_id;
   if (!rlz_lib::GetMachineId(&machine_id))
-    return "";
+    return std::string();
   return machine_id;
 #else
-  return "";
+  return std::string();
 #endif
 }
 

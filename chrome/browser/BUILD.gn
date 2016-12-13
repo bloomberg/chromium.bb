@@ -15,6 +15,7 @@ import("//media/media_options.gni")
 import("//net/features.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
+import("//rlz/features/features.gni")
 import("//sandbox/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/base/ui_features.gni")
@@ -1510,6 +1511,7 @@ split_static_library("browser") {
     "//net:net_with_v8",
     "//ppapi/features",
     "//printing/features",
+    "//rlz/features",
     "//services/image_decoder/public/cpp",
     "//services/service_manager/public/cpp",
     "//skia",

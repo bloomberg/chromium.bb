@@ -52,10 +52,11 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_stream_factory.h"
 #include "net/url_request/url_request.h"
+#include "rlz/features/features.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"                        // nogncheck
 #include "ios/chrome/browser/rlz/rlz_tracker_delegate_impl.h"  // nogncheck
 #endif
@@ -172,7 +173,7 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   ios::ChromeBrowserState* last_used_browser_state =
       browser_state_manager->GetLastUsedBrowserState();
 
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
   // Init the RLZ library. This just schedules a task on the file thread to be
   // run sometime later. If this is the first run we record the installation
   // event.
@@ -187,7 +188,7 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
       RLZTrackerDelegateImpl::IsGoogleDefaultSearch(last_used_browser_state),
       RLZTrackerDelegateImpl::IsGoogleHomepage(last_used_browser_state),
       RLZTrackerDelegateImpl::IsGoogleInStartpages(last_used_browser_state));
-#endif  // defined(ENABLE_RLZ)
+#endif  // BUILDFLAG(ENABLE_RLZ)
 
   TranslateServiceIOS::Initialize();
   language_usage_metrics::LanguageUsageMetrics::RecordAcceptLanguages(

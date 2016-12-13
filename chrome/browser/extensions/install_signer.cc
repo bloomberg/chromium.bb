@@ -34,9 +34,10 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "rlz/features/features.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"
 #endif
 
@@ -84,7 +85,7 @@ GURL GetBackendUrl() {
 // |result|.
 bool HashWithMachineId(const std::string& salt, std::string* result) {
   std::string machine_id;
-#if defined(ENABLE_RLZ)
+#if BUILDFLAG(ENABLE_RLZ)
   if (!rlz_lib::GetMachineId(&machine_id))
     return false;
 #else

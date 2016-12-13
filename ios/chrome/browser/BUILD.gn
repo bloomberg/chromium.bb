@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ios/rules.gni")
+import("//rlz/features/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 declare_args() {
@@ -121,6 +122,7 @@ source_set("browser") {
     "//ios/web",
     "//ios/web:user_agent",
     "//net",
+    "//rlz/features",
     "//url",
   ]
   allow_circular_includes_from = [
@@ -182,6 +184,7 @@ source_set("browser_impl") {
     "//ios/web",
     "//ios/web/public/app",
     "//net",
+    "//rlz/features",
     "//ui/base",
   ]
 
