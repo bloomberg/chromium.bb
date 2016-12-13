@@ -397,9 +397,9 @@ SavePageRequest RequestCoordinatorTest::AddRequest2() {
   return request2;
 }
 
-TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
-  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions(),
-                                             immediate_callback()));
+TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithNoRequests) {
+  EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      immediate_callback()));
   PumpLoop();
 
   EXPECT_TRUE(immediate_schedule_callback_called());
@@ -415,7 +415,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
   }
 }
 
-TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
+TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithRequestInProgress) {
   // Start processing for this request.
   EXPECT_NE(coordinator()->SavePageLater(
                 kUrl1, kClientId1, kUserRequested,
@@ -427,8 +427,8 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
   EnableOfflinerCallback(false);
 
   // Sending the request to the offliner should make it busy.
-  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions(),
-                                             immediate_callback()));
+  EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      immediate_callback()));
   PumpLoop();
 
   EXPECT_TRUE(is_busy());
@@ -436,8 +436,8 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
   EXPECT_FALSE(immediate_schedule_callback_called());
 
   // Now trying to start processing on another request should return false.
-  EXPECT_FALSE(coordinator()->StartProcessing(device_conditions(),
-                                              immediate_callback()));
+  EXPECT_FALSE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                       immediate_callback()));
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLater) {
@@ -748,7 +748,8 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
 // If one item completes, and there are no more user requeted items left,
 // we should make a scheduler entry for a non-user requested item.
 TEST_F(RequestCoordinatorTest, RequestNotPickedDisabledItemsRemain) {
-  coordinator()->StartProcessing(device_conditions(), immediate_callback());
+  coordinator()->StartScheduledProcessing(device_conditions(),
+                                          immediate_callback());
   EXPECT_TRUE(is_starting());
 
   // Call RequestNotPicked, simulating a request on the disabled list.
@@ -768,7 +769,8 @@ TEST_F(RequestCoordinatorTest, RequestNotPickedDisabledItemsRemain) {
 // If one item completes, and there are no more user requeted items left,
 // we should make a scheduler entry for a non-user requested item.
 TEST_F(RequestCoordinatorTest, RequestNotPickedNonUserRequestedItemsRemain) {
-  coordinator()->StartProcessing(device_conditions(), immediate_callback());
+  coordinator()->StartScheduledProcessing(device_conditions(),
+                                          immediate_callback());
   EXPECT_TRUE(is_starting());
 
   // Call RequestNotPicked, and make sure we pick schedule a task for non user
@@ -824,14 +826,14 @@ TEST_F(RequestCoordinatorTest, SchedulerGetsLeastRestrictiveConditions) {
             coordinator()->policy()->UnmeteredNetworkRequired(kUserRequested));
 }
 
-TEST_F(RequestCoordinatorTest, StartProcessingWithLoadingDisabled) {
+TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithLoadingDisabled) {
   // Add a request to the queue, wait for callbacks to finish.
   AddRequest1();
   PumpLoop();
 
   DisableLoading();
-  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions(),
-                                             immediate_callback()));
+  EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      immediate_callback()));
 
   // Let the async callbacks in the request coordinator run.
   PumpLoop();
@@ -842,14 +844,15 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithLoadingDisabled) {
 }
 
 // This tests a StopProcessing call before we have actually started the
-// prerenderer.
-TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
+// offliner.
+TEST_F(RequestCoordinatorTest,
+       StartScheduledProcessingThenStopProcessingImmediately) {
   // Add a request to the queue, wait for callbacks to finish.
   AddRequest1();
   PumpLoop();
 
-  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions(),
-                                             immediate_callback()));
+  EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      immediate_callback()));
   EXPECT_TRUE(is_starting());
 
   // Now, quick, before it can do much (we haven't called PumpLoop), cancel it.
@@ -871,7 +874,8 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
 }
 
 // This tests a StopProcessing call after the prerenderer has been started.
-TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
+TEST_F(RequestCoordinatorTest,
+       StartScheduledProcessingThenStopProcessingLater) {
   // Add a request to the queue, wait for callbacks to finish.
   AddRequest1();
   PumpLoop();
@@ -879,8 +883,8 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
   // Ensure the start processing request stops before the completion callback.
   EnableOfflinerCallback(false);
 
-  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions(),
-                                             immediate_callback()));
+  EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      immediate_callback()));
   EXPECT_TRUE(is_starting());
 
   // Let all the async parts of the start processing pipeline run to completion.
@@ -930,8 +934,8 @@ TEST_F(RequestCoordinatorTest, RemoveInflightRequest) {
   // Ensure the start processing request stops before the completion callback.
   EnableOfflinerCallback(false);
 
-  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions(),
-                                             immediate_callback()));
+  EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      immediate_callback()));
 
   // Let all the async parts of the start processing pipeline run to completion.
   PumpLoop();
@@ -1016,8 +1020,8 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeoutForScheduledProcessing) {
   EnableOfflinerCallback(false);
 
   // Sending the request to the offliner.
-  EXPECT_TRUE(
-      coordinator()->StartProcessing(device_conditions(), waiting_callback()));
+  EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      waiting_callback()));
   PumpLoop();
 
   // Advance the mock clock far enough to cause a watchdog timeout
@@ -1090,8 +1094,8 @@ TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
   PumpLoop();
 
   // Sending the request to the offliner.
-  EXPECT_TRUE(
-      coordinator()->StartProcessing(device_conditions(), waiting_callback()));
+  EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      waiting_callback()));
   PumpLoop();
 
   // Advance the mock clock far enough to exceed our time budget.
@@ -1118,12 +1122,12 @@ TEST_F(RequestCoordinatorTest, TryNextRequestWithNoNetwork) {
   AddRequest2();
   PumpLoop();
 
-  // Set up for the call to StartProcessing.
+  // Set up for the call to StartScheduledProcessing.
   EnableOfflinerCallback(false);
 
   // Sending the request to the offliner.
-  EXPECT_TRUE(
-      coordinator()->StartProcessing(device_conditions(), waiting_callback()));
+  EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      waiting_callback()));
   PumpLoop();
   EXPECT_TRUE(coordinator()->is_busy());
 

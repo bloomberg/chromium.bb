@@ -81,8 +81,8 @@ public class BackgroundOfflinerTask {
         // TODO(petewil): Nothing is holding the Wake Lock.  We need some solution to
         // keep hold of it.  Options discussed so far are having a fresh set of functions
         // to grab and release a countdown latch, or holding onto the wake lock ourselves,
-        // or grabbing the wake lock and then starting chrome and running startProcessing
-        // on the UI thread.
+        // or grabbing the wake lock and then starting chrome and running
+        // startScheduledProcessing on the UI thread.
 
         // TODO(petewil): Decode the TriggerConditions from the bundle.
 
@@ -100,7 +100,7 @@ public class BackgroundOfflinerTask {
         };
 
         // Pass the activation on to the bridge to the C++ RequestCoordinator.
-        if (!mBridge.startProcessing(deviceConditions, callback)) {
+        if (!mBridge.startScheduledProcessing(deviceConditions, callback)) {
             // Processing not started currently. Let callback know.
             callback.onResult(false);
         }

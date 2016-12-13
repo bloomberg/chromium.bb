@@ -103,11 +103,12 @@ class RequestCoordinator : public KeyedService,
   // Get all save page request items in the callback.
   void GetAllRequests(const GetRequestsCallback& callback);
 
-  // Starts processing of one or more queued save page later requests.
+  // Starts processing of one or more queued save page later requests
+  // in scheduled background mode.
   // Returns whether processing was started and that caller should expect
   // a callback. If processing was already active, returns false.
-  bool StartProcessing(const DeviceConditions& device_conditions,
-                       const base::Callback<void(bool)>& callback);
+  bool StartScheduledProcessing(const DeviceConditions& device_conditions,
+                                const base::Callback<void(bool)>& callback);
 
   // Stops the current request processing if active. This is a way for
   // caller to abort processing; otherwise, processing will complete on
@@ -179,7 +180,7 @@ class RequestCoordinator : public KeyedService,
   bool is_starting() { return is_starting_; }
 
   // Tracks whether the last offlining attempt got canceled.  This is reset by
-  // the next StartProcessing() call.
+  // the next call to start processing.
   bool is_canceled() {
     return processing_state_ == ProcessingWindowState::STOPPED;
   }

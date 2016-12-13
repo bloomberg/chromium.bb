@@ -33,7 +33,8 @@ public class StubBackgroundSchedulerProcessor implements BackgroundSchedulerProc
     }
 
     @Override
-    public boolean startProcessing(DeviceConditions deviceConditions, Callback<Boolean> callback) {
+    public boolean startScheduledProcessing(
+            DeviceConditions deviceConditions, Callback<Boolean> callback) {
         if (mFailToStart) {
             return false;
         }

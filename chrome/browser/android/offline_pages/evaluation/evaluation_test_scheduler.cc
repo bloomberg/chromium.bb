@@ -38,8 +38,8 @@ void GetAllRequestsDone(
     // TODO(romax) Maybe get current real condition.
     DeviceConditions device_conditions(
         true, 0, net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
-    coordinator->StartProcessing(device_conditions,
-                                 base::Bind(&ProcessingDoneCallback));
+    coordinator->StartScheduledProcessing(device_conditions,
+                                          base::Bind(&ProcessingDoneCallback));
   }
 }
 

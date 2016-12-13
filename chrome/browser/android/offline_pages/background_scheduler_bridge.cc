@@ -30,18 +30,19 @@ void ProcessingDoneCallback(
 
 }  // namespace
 
-// JNI call to start request processing.
-static jboolean StartProcessing(JNIEnv* env,
-                                const JavaParamRef<jclass>& jcaller,
-                                const jboolean j_power_connected,
-                                const jint j_battery_percentage,
-                                const jint j_net_connection_type,
-                                const JavaParamRef<jobject>& j_callback_obj) {
+// JNI call to start request processing in scheduled mode.
+static jboolean StartScheduledProcessing(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const jboolean j_power_connected,
+    const jint j_battery_percentage,
+    const jint j_net_connection_type,
+    const JavaParamRef<jobject>& j_callback_obj) {
   ScopedJavaGlobalRef<jobject> j_callback_ref;
   j_callback_ref.Reset(env, j_callback_obj);
 
-  // Lookup/create RequestCoordinator KeyedService and call StartProcessing on
-  // it with bound j_callback_obj.
+  // Lookup/create RequestCoordinator KeyedService and call
+  // StartScheduledProcessing on it with bound j_callback_obj.
   Profile* profile = ProfileManager::GetLastUsedProfile();
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetInstance()->
@@ -51,7 +52,7 @@ static jboolean StartProcessing(JNIEnv* env,
       j_power_connected, j_battery_percentage,
       static_cast<net::NetworkChangeNotifier::ConnectionType>(
           j_net_connection_type));
-  return coordinator->StartProcessing(
+  return coordinator->StartScheduledProcessing(
       device_conditions, base::Bind(&ProcessingDoneCallback, j_callback_ref));
 }
 

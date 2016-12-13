@@ -295,7 +295,7 @@ bool OfflinePageEvaluationBridge::PushRequestProcessing(
   net::NetworkChangeNotifier::ConnectionType connection =
       net::NetworkChangeNotifier::GetConnectionType();
   DeviceConditions device_conditions(false, 0, connection);
-  return request_coordinator_->StartProcessing(
+  return request_coordinator_->StartScheduledProcessing(
       device_conditions, base::Bind(&OnPushRequestsDone, j_callback_ref));
 }
 

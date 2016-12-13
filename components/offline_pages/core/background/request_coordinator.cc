@@ -509,7 +509,7 @@ void RequestCoordinator::HandleWatchdogTimeout() {
 
 // Returns true if the caller should expect a callback, false otherwise. For
 // instance, this would return false if a request is already in progress.
-bool RequestCoordinator::StartProcessing(
+bool RequestCoordinator::StartScheduledProcessing(
     const DeviceConditions& device_conditions,
     const base::Callback<void(bool)>& callback) {
   DVLOG(2) << "Scheduled " << __func__;
