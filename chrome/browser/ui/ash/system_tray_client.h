@@ -8,6 +8,8 @@
 #include "ash/public/interfaces/system_tray.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/system/system_clock_observer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
@@ -23,7 +25,8 @@ class WidgetDelegate;
 // relevant state changes in chrome.
 // TODO: Consider renaming this to SystemTrayClientChromeOS.
 class SystemTrayClient : public ash::mojom::SystemTrayClient,
-                         public chromeos::system::SystemClockObserver {
+                         public chromeos::system::SystemClockObserver,
+                         public content::NotificationObserver {
  public:
   SystemTrayClient();
   ~SystemTrayClient() override;
@@ -42,6 +45,10 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   // The returned widget is owned by its native widget.
   static views::Widget* CreateUnownedDialogWidget(
       views::WidgetDelegate* widget_delegate);
+
+  // Shows an update icon for an Adobe Flash update and forces a device reboot
+  // when the update is applied.
+  void SetFlashUpdateAvailable();
 
   // ash::mojom::SystemTrayClient:
   void ShowSettings() override;
@@ -66,14 +73,27 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   void RequestRestartForUpdate() override;
 
  private:
+  // Requests that ash show the update available icon.
+  void HandleUpdateAvailable();
+
   // chromeos::system::SystemClockObserver:
   void OnSystemClockChanged(chromeos::system::SystemClock* clock) override;
+
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // System tray mojo service in ash.
   ash::mojom::SystemTrayPtr system_tray_;
 
   // Binds this object to the client interface.
   mojo::Binding<ash::mojom::SystemTrayClient> binding_;
+
+  // Whether an Adobe Flash component update is available.
+  bool flash_update_available_ = false;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayClient);
 };

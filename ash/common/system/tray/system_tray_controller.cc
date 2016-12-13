@@ -4,8 +4,12 @@
 
 #include "ash/common/system/tray/system_tray_controller.h"
 
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/system/update/tray_update.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 
 namespace ash {
 
@@ -126,6 +130,18 @@ void SystemTrayController::SetClient(mojom::SystemTrayClientPtr client) {
 void SystemTrayController::SetUse24HourClock(bool use_24_hour) {
   hour_clock_type_ = use_24_hour ? base::k24HourClock : base::k12HourClock;
   WmShell::Get()->system_tray_notifier()->NotifyDateFormatChanged();
+}
+
+void SystemTrayController::ShowUpdateIcon(mojom::UpdateSeverity severity,
+                                          bool factory_reset_required) {
+  // Show the icon on all displays.
+  for (WmWindow* root : WmShell::Get()->GetAllRootWindows()) {
+    ash::SystemTray* tray = root->GetRootWindowController()->GetSystemTray();
+    // External monitors might not have a tray yet.
+    if (!tray)
+      continue;
+    tray->tray_update()->ShowUpdateIcon(severity, factory_reset_required);
+  }
 }
 
 }  // namespace ash

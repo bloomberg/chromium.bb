@@ -13,8 +13,6 @@
 #include "ash/common/system/date/tray_date.h"
 #include "ash/common/system/date/tray_system_info.h"
 #include "ash/common/system/tray/system_tray.h"
-#include "ash/common/system/update/tray_update.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -129,31 +127,6 @@ IN_PROC_BROWSER_TEST_F(SystemTrayDelegateChromeOSTest,
   content::RunAllPendingInMessageLoop();
   CreateDefaultView();
   EXPECT_EQ(base::k24HourClock, GetHourType());
-}
-
-// Test that a flash update causes the update UI to show in the system menu.
-IN_PROC_BROWSER_TEST_F(SystemTrayDelegateChromeOSTest,
-                       TestFlashUpdateTrayIcon) {
-  ash::TrayUpdate* tray_update = ash::Shell::GetInstance()
-                                     ->GetPrimarySystemTray()
-                                     ->GetTrayUpdateForTesting();
-
-  ash::UpdateInfo initial_info;
-  ash::WmShell::Get()->system_tray_delegate()->GetSystemUpdateInfo(
-      &initial_info);
-  EXPECT_FALSE(initial_info.update_required);
-
-  // When no update is pending, the item isn't visible.
-  EXPECT_FALSE(tray_update->tray_view()->visible());
-
-  chromeos::SystemTrayDelegateChromeOS::instance()->SetFlashUpdateAvailable();
-
-  ash::UpdateInfo post_info;
-  ash::WmShell::Get()->system_tray_delegate()->GetSystemUpdateInfo(&post_info);
-  EXPECT_TRUE(post_info.update_required);
-
-  // Tray item is now visible.
-  EXPECT_TRUE(tray_update->tray_view()->visible());
 }
 
 }  // namespace chromeos

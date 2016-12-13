@@ -135,6 +135,7 @@ class UpgradeDetector {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AppMenuModelTest, Basics);
+  FRIEND_TEST_ALL_PREFIXES(SystemTrayClientTest, UpdateTrayIcon);
 
   // Initiates an Idle check. See IdleCallback below.
   void CheckIdle();

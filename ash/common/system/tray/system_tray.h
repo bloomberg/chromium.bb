@@ -47,6 +47,8 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   explicit SystemTray(WmShelf* wm_shelf);
   ~SystemTray() override;
 
+  TrayUpdate* tray_update() { return tray_update_; }
+
   // Calls TrayBackgroundView::Initialize(), creates the tray items, and
   // adds them to SystemTrayNotifier.
   void InitializeTrayItems(SystemTrayDelegate* delegate,
@@ -168,7 +170,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TrayNetwork* GetTrayNetworkForTesting() const;
   TraySystemInfo* GetTraySystemInfoForTesting() const;
   TrayTiles* GetTrayTilesForTesting() const;
-  TrayUpdate* GetTrayUpdateForTesting() const;
 
   // Activates the system tray bubble.
   void ActivateBubble();

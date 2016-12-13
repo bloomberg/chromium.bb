@@ -56,11 +56,13 @@ class ASH_EXPORT SystemTrayController
   // Binds the mojom::SystemTray interface to this object.
   void BindRequest(mojom::SystemTrayRequest request);
 
- private:
-  // mojom::SystemTray:
+  // mojom::SystemTray overrides. Public for testing.
   void SetClient(mojom::SystemTrayClientPtr client) override;
   void SetUse24HourClock(bool use_24_hour) override;
+  void ShowUpdateIcon(mojom::UpdateSeverity severity,
+                      bool factory_reset_required) override;
 
+ private:
   // Client interface in chrome browser. Only bound on Chrome OS.
   mojom::SystemTrayClientPtr system_tray_client_;
 

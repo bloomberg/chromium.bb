@@ -5,11 +5,6 @@
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 
 #include <string>
-#include <utility>
-
-#include "ash/common/system/networking_config_delegate.h"
-#include "base/message_loop/message_loop.h"
-#include "base/time/time.h"
 
 namespace ash {
 
@@ -30,13 +25,6 @@ std::string DefaultSystemTrayDelegate::GetSupervisedUserManager() const {
 
 bool DefaultSystemTrayDelegate::IsUserSupervised() const {
   return GetUserLoginStatus() == LoginStatus::SUPERVISED;
-}
-
-void DefaultSystemTrayDelegate::GetSystemUpdateInfo(UpdateInfo* info) const {
-  DCHECK(info);
-  info->severity = UpdateInfo::UPDATE_NONE;
-  info->update_required = true;
-  info->factory_reset_required = false;
 }
 
 bool DefaultSystemTrayDelegate::ShouldShowSettings() const {

@@ -17,6 +17,7 @@ class ImageView;
 namespace ash {
 class TrayItemView;
 
+// A system tray item that uses an image as its "tray view" in the status area.
 class ASH_EXPORT TrayImageItem : public SystemTrayItem {
  public:
   TrayImageItem(SystemTray* system_tray, int resource_id, UmaType uma_type);
@@ -57,6 +58,7 @@ class ASH_EXPORT TrayImageItem : public SystemTrayItem {
   // The color of the material design icon in the tray.
   SkColor icon_color_;
 
+  // The image view in the tray.
   TrayItemView* tray_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayImageItem);

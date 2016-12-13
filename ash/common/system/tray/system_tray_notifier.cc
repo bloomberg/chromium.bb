@@ -7,7 +7,6 @@
 #include "ash/common/system/accessibility_observer.h"
 #include "ash/common/system/date/clock_observer.h"
 #include "ash/common/system/ime/ime_observer.h"
-#include "ash/common/system/update/update_observer.h"
 #include "ash/common/system/user/user_observer.h"
 
 #if defined(OS_CHROMEOS)
@@ -90,19 +89,6 @@ void SystemTrayNotifier::NotifyRefreshIME() {
 void SystemTrayNotifier::NotifyRefreshIMEMenu(bool is_active) {
   for (auto& observer : ime_observers_)
     observer.OnIMEMenuActivationChanged(is_active);
-}
-
-void SystemTrayNotifier::AddUpdateObserver(UpdateObserver* observer) {
-  update_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveUpdateObserver(UpdateObserver* observer) {
-  update_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyUpdateRecommended(const UpdateInfo& info) {
-  for (auto& observer : update_observers_)
-    observer.OnUpdateRecommended(info);
 }
 
 void SystemTrayNotifier::AddUserObserver(UserObserver* observer) {
