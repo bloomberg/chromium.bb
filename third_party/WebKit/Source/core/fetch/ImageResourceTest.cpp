@@ -433,8 +433,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   EXPECT_EQ(1, cachedImage->getContent()->getImage()->width());
   EXPECT_EQ(1, cachedImage->getContent()->getImage()->height());
 
-  // Call reloadIfLoFiOrPlaceholder() after the image has finished loading.
-  cachedImage->reloadIfLoFiOrPlaceholder(fetcher);
+  // Call reloadIfLoFiOrPlaceholderImage() after the image has finished loading.
+  cachedImage->reloadIfLoFiOrPlaceholderImage(fetcher, Resource::kReloadAlways);
   EXPECT_FALSE(cachedImage->errorOccurred());
   EXPECT_FALSE(cachedImage->resourceBuffer());
   EXPECT_FALSE(cachedImage->getContent()->hasImage());
@@ -496,8 +496,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
   EXPECT_EQ(1, cachedImage->getContent()->getImage()->width());
   EXPECT_EQ(1, cachedImage->getContent()->getImage()->height());
 
-  // Call reloadIfLoFiOrPlaceholder() while the image is still loading.
-  cachedImage->reloadIfLoFiOrPlaceholder(fetcher);
+  // Call reloadIfLoFiOrPlaceholderImage() while the image is still loading.
+  cachedImage->reloadIfLoFiOrPlaceholderImage(fetcher, Resource::kReloadAlways);
   EXPECT_FALSE(cachedImage->errorOccurred());
   EXPECT_FALSE(cachedImage->resourceBuffer());
   EXPECT_FALSE(cachedImage->getContent()->hasImage());
@@ -561,7 +561,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
   EXPECT_EQ(Resource::Cached, image->getStatus());
   EXPECT_TRUE(image->isPlaceholder());
 
-  image->reloadIfLoFiOrPlaceholder(fetcher);
+  image->reloadIfLoFiOrPlaceholderImage(fetcher, Resource::kReloadAlways);
 
   EXPECT_EQ(Resource::Pending, image->getStatus());
   EXPECT_FALSE(image->isPlaceholder());

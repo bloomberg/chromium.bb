@@ -30,7 +30,6 @@
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
-#include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoadingLog.h"
@@ -1115,10 +1114,7 @@ ResourceTimingInfo* ResourceFetcher::getNavigationTimingInfo() {
 void ResourceFetcher::handleLoadCompletion(Resource* resource) {
   context().didLoadResource(resource);
 
-  if (resource->isImage() &&
-      toImageResource(resource)->shouldReloadBrokenPlaceholder()) {
-    toImageResource(resource)->reloadIfLoFiOrPlaceholder(this);
-  }
+  resource->reloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }
 
 void ResourceFetcher::handleLoaderFinish(Resource* resource,
@@ -1311,10 +1307,8 @@ void ResourceFetcher::updateAllImageResourcePriorities() {
 void ResourceFetcher::reloadLoFiImages() {
   for (const auto& documentResource : m_documentResources) {
     Resource* resource = documentResource.value.get();
-    if (resource && resource->isImage()) {
-      ImageResource* imageResource = toImageResource(resource);
-      imageResource->reloadIfLoFiOrPlaceholder(this);
-    }
+    if (resource)
+      resource->reloadIfLoFiOrPlaceholderImage(this, Resource::kReloadAlways);
   }
 }
 

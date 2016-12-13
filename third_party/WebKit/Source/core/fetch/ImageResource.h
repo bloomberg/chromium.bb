@@ -69,17 +69,8 @@ class CORE_EXPORT ImageResource final
   ImageResourceContent* getContent();
   const ImageResourceContent* getContent() const;
 
-  enum class ReloadCachePolicy {
-    UseExistingPolicy = 0,  // Don't modify the request's cache policy.
-    BypassCache,  // Modify the request so that the reload bypasses the cache.
-  };
-
-  // If this ImageResource has the Lo-Fi response headers or is a placeholder,
-  // reload the full original image with the Lo-Fi state set to off and
-  // optionally bypassing the cache.
-  void reloadIfLoFiOrPlaceholder(
-      ResourceFetcher*,
-      ReloadCachePolicy = ReloadCachePolicy::BypassCache);
+  void reloadIfLoFiOrPlaceholderImage(ResourceFetcher*,
+                                      ReloadLoFiOrPlaceholderPolicy);
 
   void didAddClient(ResourceClient*) override;
 
@@ -105,10 +96,6 @@ class CORE_EXPORT ImageResource final
 
   // Used by tests.
   bool isPlaceholder() const { return m_isPlaceholder; }
-
-  bool shouldReloadBrokenPlaceholder() const {
-    return m_isPlaceholder && willPaintBrokenImage();
-  }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -143,6 +130,10 @@ class CORE_EXPORT ImageResource final
   void destroyDecodedDataForFailedRevalidation() override;
 
   void flushImageIfNeeded(TimerBase*);
+
+  bool shouldReloadBrokenPlaceholder() const {
+    return m_isPlaceholder && willPaintBrokenImage();
+  }
 
   bool willPaintBrokenImage() const;
 

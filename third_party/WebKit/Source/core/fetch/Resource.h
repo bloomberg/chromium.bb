@@ -50,6 +50,7 @@ namespace blink {
 struct FetchInitiatorInfo;
 class FetchRequest;
 class ResourceClient;
+class ResourceFetcher;
 class ResourceTimingInfo;
 class ResourceLoader;
 class SecurityOrigin;
@@ -98,6 +99,13 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   enum PreloadReferencePolicy {
     MarkAsReferenced,
     DontMarkAsReferenced,
+  };
+
+  // Used by reloadIfLoFiOrPlaceholderImage().
+  enum ReloadLoFiOrPlaceholderPolicy {
+    kReloadIfNeeded,
+    kReloadAlwaysWithExistingCachePolicy,
+    kReloadAlways,
   };
 
   virtual ~Resource();
@@ -331,6 +339,12 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   virtual void onMemoryDump(WebMemoryDumpLevelOfDetail,
                             WebProcessMemoryDump*) const;
+
+  // If this Resource is ImageResource and has the Lo-Fi response headers or is
+  // a placeholder, reload the full original image with the Lo-Fi state set to
+  // off and optionally bypassing the cache.
+  virtual void reloadIfLoFiOrPlaceholderImage(ResourceFetcher*,
+                                              ReloadLoFiOrPlaceholderPolicy) {}
 
   static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
 

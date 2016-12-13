@@ -173,8 +173,8 @@ ImageResource* ImageResource::fetch(FetchRequest& request,
     // If the image is a placeholder, but this fetch doesn't allow a
     // placeholder, then load the original image. Note that the cache is not
     // bypassed here - it should be fine to use a cached copy if possible.
-    resource->reloadIfLoFiOrPlaceholder(fetcher,
-                                        ReloadCachePolicy::UseExistingPolicy);
+    resource->reloadIfLoFiOrPlaceholderImage(
+        fetcher, kReloadAlwaysWithExistingCachePolicy);
   }
   return resource;
 }
@@ -404,9 +404,12 @@ static bool isLoFiImage(const ImageResource& resource) {
              .contains("empty-image");
 }
 
-void ImageResource::reloadIfLoFiOrPlaceholder(
+void ImageResource::reloadIfLoFiOrPlaceholderImage(
     ResourceFetcher* fetcher,
-    ReloadCachePolicy reloadCachePolicy) {
+    ReloadLoFiOrPlaceholderPolicy policy) {
+  if (policy == kReloadIfNeeded && !shouldReloadBrokenPlaceholder())
+    return;
+
   if (!m_isPlaceholder && !isLoFiImage(*this))
     return;
 
@@ -417,7 +420,7 @@ void ImageResource::reloadIfLoFiOrPlaceholder(
   DCHECK(!m_isSchedulingReload);
   m_isSchedulingReload = true;
 
-  if (reloadCachePolicy == ReloadCachePolicy::BypassCache)
+  if (policy != kReloadAlwaysWithExistingCachePolicy)
     setCachePolicyBypassingCache();
   setLoFiStateOff();
 
