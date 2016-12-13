@@ -138,8 +138,6 @@ class CORE_EXPORT DocumentLoader
     m_navigationType = navigationType;
   }
 
-  void upgradeInsecureRequest();
-
   void startLoadingMainResource();
 
   DocumentLoadTiming& timing() { return m_documentLoadTiming; }
