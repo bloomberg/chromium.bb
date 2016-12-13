@@ -11,7 +11,9 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
+#include "chrome/browser/android/offline_pages/test_request_coordinator_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
@@ -28,7 +30,7 @@ namespace {
 const GURL kTestPageUrl("http://mystery.site/foo.html");
 const GURL kTestPageUrlOther("http://crazy.site/foo_other.html");
 const int kTabId = 153;
-}
+}  // namespace
 
 class TestDelegate: public RecentTabHelper::Delegate {
  public:
@@ -90,6 +92,16 @@ class RecentTabHelperTest
   OfflinePageModel* model() const { return model_; }
 
   const std::vector<OfflinePageItem>& all_pages() { return all_pages_; }
+
+  // Returns a OfflinePageItem pointer from |all_pages| that matches the
+  // provided |offline_id|. If a match is not found returns nullptr.
+  const OfflinePageItem* FindPageForOfflineId(int64_t offline_id) {
+    for (const OfflinePageItem& page : all_pages_) {
+      if (page.offline_id == offline_id)
+        return &page;
+    }
+    return nullptr;
+  }
 
   scoped_refptr<base::TestMockTimeTaskRunner>& task_runner() {
     return task_runner_;
@@ -165,12 +177,15 @@ RecentTabHelperTest::RecentTabHelperTest()
       weak_ptr_factory_(this) {}
 
 void RecentTabHelperTest::SetUp() {
-  content::RenderViewHostTestHarness::SetUp();
+  ChromeRenderViewHostTestHarness::SetUp();
 
   scoped_feature_list_.InitAndEnableFeature(kOffliningRecentPagesFeature);
-  // Sets up the factory for testing.
+  // Sets up the factories for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
       browser_context(), BuildTestOfflinePageModel);
+  RunUntilIdle();
+  RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
+      browser_context(), BuildTestRequestCoordinator);
   RunUntilIdle();
 
   RecentTabHelper::CreateForWebContents(web_contents());
@@ -287,7 +302,8 @@ TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoad) {
 // Triggers two snapshot captures during a single page load, where the 2nd one
 // fails. Should end up with one offline page (the 1st, successful snapshot
 // should be kept).
-TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoadSecondFails) {
+// TODO(carlosk): re-enable once https://crbug.com/655697 is fixed, again.
+TEST_F(RecentTabHelperTest, DISABLED_TwoCapturesSamePageLoadSecondFails) {
   NavigateAndCommit(kTestPageUrl);
   // Triggers snapshot after a time delay.
   recent_tab_helper()->DocumentAvailableInMainFrame();
@@ -436,6 +452,60 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsAndUrls) {
   EXPECT_EQ(kTestPageUrlOther, all_pages()[0].url);
 }
 
+// Triggers two snapshot captures via the download after a page was loaded page
+// and saved twice by last_n. Should end up with three offline pages: two from
+// downloads (which shouldn't replace each other) and one from last_n.
+TEST_F(RecentTabHelperTest, TwoDownloadCapturesInARowSamePage) {
+  NavigateAndCommit(kTestPageUrl);
+  // Executes a regular load with snapshots taken by last_n.
+  recent_tab_helper()->DocumentAvailableInMainFrame();
+  RunUntilIdle();
+  FastForwardSnapshotController();
+  RunUntilIdle();
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
+  RunUntilIdle();
+  // Checks that two last_n snapshots were created but only one was kept.
+  EXPECT_EQ(2U, page_added_count());
+  EXPECT_EQ(1U, model_removed_count());
+  GetAllPages();
+  EXPECT_EQ(1U, all_pages().size());
+  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
+  int64_t first_offline_id = all_pages()[0].offline_id;
+
+  // Request the 1st offline download.
+  const int64_t second_offline_id = first_offline_id + 1;
+  recent_tab_helper()->ObserveAndDownloadCurrentPage(
+      ClientId("download", "id2"), second_offline_id);
+  RunUntilIdle();
+  GetAllPages();
+  // Checks that both the previous last_n and download snapshots are present.
+  ASSERT_EQ(2U, all_pages().size());
+  EXPECT_NE(nullptr, FindPageForOfflineId(first_offline_id));
+  const OfflinePageItem* second_page = FindPageForOfflineId(second_offline_id);
+  ASSERT_NE(nullptr, second_page);
+  EXPECT_EQ(kTestPageUrl, second_page->url);
+  EXPECT_EQ("download", second_page->client_id.name_space);
+  EXPECT_EQ("id2", second_page->client_id.id);
+
+  // Request the 2nd offline download.
+  const int64_t third_offline_id = first_offline_id + 2;
+  recent_tab_helper()->ObserveAndDownloadCurrentPage(
+      ClientId("download", "id3"), third_offline_id);
+  RunUntilIdle();
+  GetAllPages();
+  ASSERT_EQ(3U, all_pages().size());
+  // Checks that the previous last_n and download snapshots are still present
+  // and the new downloaded one was added.
+  EXPECT_NE(nullptr, FindPageForOfflineId(first_offline_id));
+  EXPECT_NE(nullptr, FindPageForOfflineId(second_offline_id));
+  const OfflinePageItem* third_page = FindPageForOfflineId(third_offline_id);
+  ASSERT_NE(nullptr, third_page);
+  EXPECT_EQ(kTestPageUrl, third_page->url);
+  EXPECT_EQ("download", third_page->client_id.name_space);
+  EXPECT_EQ("id3", third_page->client_id.id);
+}
+
 // Simulates an error (disconnection) during the load of a page. Should end up
 // with no offline pages.
 TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
@@ -464,11 +534,11 @@ TEST_F(RecentTabHelperTest, FeatureNotEnabled) {
 }
 
 // Simulates a download request to offline the current page. Should end up with
-// no offline pages.
+// one offline pages.
 TEST_F(RecentTabHelperTest, DISABLED_DownloadRequest) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->ObserveAndDownloadCurrentPage(
-      ClientId("download", "id1"), 153l);
+      ClientId("download", "id1"), 153L);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
@@ -478,7 +548,7 @@ TEST_F(RecentTabHelperTest, DISABLED_DownloadRequest) {
   EXPECT_EQ(kTestPageUrl, page.url);
   EXPECT_EQ("download", page.client_id.name_space);
   EXPECT_EQ("id1", page.client_id.id);
-  EXPECT_EQ(153l, page.offline_id);
+  EXPECT_EQ(153L, page.offline_id);
 }
 
 }  // namespace offline_pages
