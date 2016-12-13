@@ -394,6 +394,7 @@ void TileManager::FinishTasksAndCleanUp() {
   more_tiles_need_prepare_check_notifier_.Cancel();
   signals_check_notifier_.Cancel();
   task_set_finished_weak_ptr_factory_.InvalidateWeakPtrs();
+  raster_buffer_provider_ = nullptr;
 
   image_controller_.SetImageDecodeCache(nullptr);
   locked_image_tasks_.clear();

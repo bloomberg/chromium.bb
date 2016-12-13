@@ -36,9 +36,6 @@ class CC_EXPORT ImageController {
   ImageDecodeCache* cache_ = nullptr;
   std::vector<DrawImage> predecode_locked_images_;
 
-  // Debugging information for crbug.com/650234.
-  size_t num_times_cache_was_set_ = 0;
-
   DISALLOW_COPY_AND_ASSIGN(ImageController);
 };
 

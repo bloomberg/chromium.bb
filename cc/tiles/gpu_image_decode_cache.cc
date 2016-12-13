@@ -363,6 +363,9 @@ GpuImageDecodeCache::GpuImageDecodeCache(ContextProvider* context,
 }
 
 GpuImageDecodeCache::~GpuImageDecodeCache() {
+  // Debugging crbug.com/650234.
+  CHECK_EQ(0u, in_use_cache_.size());
+
   // SetShouldAggressivelyFreeResources will zero our limits and free all
   // outstanding image memory.
   SetShouldAggressivelyFreeResources(true);

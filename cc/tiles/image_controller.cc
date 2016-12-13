@@ -10,18 +10,11 @@ ImageController::ImageController() = default;
 ImageController::~ImageController() = default;
 
 void ImageController::SetImageDecodeCache(ImageDecodeCache* cache) {
-  // We can only switch from null to non-null and back.
-  // CHECK to debug crbug.com/650234.
-  CHECK(cache || cache_);
-  CHECK(!cache || !cache_);
-
   if (!cache) {
     SetPredecodeImages(std::vector<DrawImage>(),
                        ImageDecodeCache::TracingInfo());
   }
   cache_ = cache;
-  // Debugging information for crbug.com/650234.
-  ++num_times_cache_was_set_;
 }
 
 void ImageController::GetTasksForImagesAndRef(
@@ -44,8 +37,6 @@ void ImageController::GetTasksForImagesAndRef(
 }
 
 void ImageController::UnrefImages(const std::vector<DrawImage>& images) {
-  // Debugging information for crbug.com/650234.
-  CHECK(cache_) << num_times_cache_was_set_;
   for (auto image : images)
     cache_->UnrefImage(image);
 }

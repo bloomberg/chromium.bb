@@ -193,8 +193,9 @@ SoftwareImageDecodeCache::SoftwareImageDecodeCache(
 }
 
 SoftwareImageDecodeCache::~SoftwareImageDecodeCache() {
-  DCHECK_EQ(0u, decoded_images_ref_counts_.size());
-  DCHECK_EQ(0u, at_raster_decoded_images_ref_counts_.size());
+  // Debugging crbug.com/650234
+  CHECK_EQ(0u, decoded_images_ref_counts_.size());
+  CHECK_EQ(0u, at_raster_decoded_images_ref_counts_.size());
 
   // It is safe to unregister, even if we didn't register in the constructor.
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
