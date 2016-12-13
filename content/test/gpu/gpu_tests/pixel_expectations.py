@@ -28,7 +28,11 @@ class PixelExpectations(GpuTestExpectations):
         ['android'], bug=521588)
 
     # TODO(ccameron) fix these on Mac Retina
-    self.Fail('Pixel_CSS3DBlueBox', ['mac'], bug=533690)
+    # self.Fail('Pixel_CSS3DBlueBox', ['mac'], bug=533690)
+
+    # TODO(jvanverth) remove once rebaselines are complete
+    # restore Mac-only fail above when removed
+    self.Fail('Pixel_CSS3DBlueBox', bug=673752)
 
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
