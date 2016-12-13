@@ -190,7 +190,7 @@
 #endif
 
 #if defined(ENABLE_MOJO_CDM) && BUILDFLAG(ENABLE_PEPPER_CDMS)
-#include "content/browser/media/cdm_service_impl.h"
+#include "content/browser/media/cdm_registry_impl.h"
 #endif
 
 #if defined(USE_X11)
@@ -854,7 +854,7 @@ int BrowserMainLoop::PreCreateThreads() {
   // Prior to any processing happening on the IO thread, we create the
   // CDM service as it is predominantly used from the IO thread. This must
   // be called on the main thread since it involves file path checks.
-  CdmService::GetInstance()->Init();
+  CdmRegistry::GetInstance()->Init();
 #endif
 
 #if defined(OS_MACOSX)

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/cdm_service_impl.h"
+#include "content/browser/media/cdm_registry_impl.h"
 
 #include <algorithm>
 #include <string>
@@ -28,10 +28,10 @@ const char kCodecDelimiter[] = ",";
 
 // For simplicity and to make failures easier to diagnose, this test uses
 // std::string instead of base::FilePath and std::vector<std::string>.
-class CdmServiceImplTest : public testing::Test {
+class CdmRegistryImplTest : public testing::Test {
  public:
-  CdmServiceImplTest() {}
-  ~CdmServiceImplTest() override {}
+  CdmRegistryImplTest() {}
+  ~CdmRegistryImplTest() override {}
 
  protected:
   void Register(const std::string& type,
@@ -41,13 +41,13 @@ class CdmServiceImplTest : public testing::Test {
     const std::vector<std::string> codecs =
         base::SplitString(supported_codecs, kCodecDelimiter,
                           base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    cdm_service_.RegisterCdm(CdmInfo(type, base::Version(version),
-                                     base::FilePath::FromUTF8Unsafe(path),
-                                     codecs));
+    cdm_registry_.RegisterCdm(CdmInfo(type, base::Version(version),
+                                      base::FilePath::FromUTF8Unsafe(path),
+                                      codecs));
   }
 
   bool IsRegistered(const std::string& type, const std::string& version) {
-    for (const auto& cdm : cdm_service_.GetAllRegisteredCdms()) {
+    for (const auto& cdm : cdm_registry_.GetAllRegisteredCdms()) {
       if (cdm.type == type && cdm.version.GetString() == version)
         return true;
     }
@@ -56,7 +56,7 @@ class CdmServiceImplTest : public testing::Test {
 
   std::vector<std::string> GetVersions(const std::string& type) {
     std::vector<std::string> versions;
-    for (const auto& cdm : cdm_service_.GetAllRegisteredCdms()) {
+    for (const auto& cdm : cdm_registry_.GetAllRegisteredCdms()) {
       if (cdm.type == type)
         versions.push_back(cdm.version.GetString());
     }
@@ -64,19 +64,19 @@ class CdmServiceImplTest : public testing::Test {
   }
 
  private:
-  CdmServiceImpl cdm_service_;
+  CdmRegistryImpl cdm_registry_;
 };
 
 // Note that KeySystemService is a singleton, and thus the actions of
 // one test impact other tests. So each test defines a different key system
 // name to avoid conflicts.
 
-TEST_F(CdmServiceImplTest, Register) {
+TEST_F(CdmRegistryImplTest, Register) {
   Register(kTestKeySystemType, kVersion1, kTestPath, kTestCodecs);
   EXPECT_TRUE(IsRegistered(kTestKeySystemType, kVersion1));
 }
 
-TEST_F(CdmServiceImplTest, ReRegister) {
+TEST_F(CdmRegistryImplTest, ReRegister) {
   Register(kTestKeySystemType, kVersion1, "/bb/cc", "unknown");
   EXPECT_TRUE(IsRegistered(kTestKeySystemType, kVersion1));
 
@@ -85,14 +85,14 @@ TEST_F(CdmServiceImplTest, ReRegister) {
   EXPECT_TRUE(IsRegistered(kTestKeySystemType, kVersion1));
 }
 
-TEST_F(CdmServiceImplTest, MultipleVersions) {
+TEST_F(CdmRegistryImplTest, MultipleVersions) {
   Register(kTestKeySystemType, kVersion1, kTestPath, kTestCodecs);
   Register(kTestKeySystemType, kVersion2, "/bb/cc", "unknown");
   EXPECT_TRUE(IsRegistered(kTestKeySystemType, kVersion1));
   EXPECT_TRUE(IsRegistered(kTestKeySystemType, kVersion2));
 }
 
-TEST_F(CdmServiceImplTest, NewVersionInsertedFirst) {
+TEST_F(CdmRegistryImplTest, NewVersionInsertedFirst) {
   Register(kTestKeySystemType, kVersion1, kTestPath, kTestCodecs);
   Register(kTestKeySystemType, kVersion2, "/bb/cc", "unknown");
 

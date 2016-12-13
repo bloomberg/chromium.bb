@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_CDM_SERVICE_H_
-#define CONTENT_PUBLIC_BROWSER_CDM_SERVICE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_CDM_REGISTRY_H_
+#define CONTENT_PUBLIC_BROWSER_CDM_REGISTRY_H_
 
 #include <vector>
 
@@ -14,12 +14,12 @@ namespace content {
 struct CdmInfo;
 
 // Keeps track of the Content Decryption Modules that are available.
-class CONTENT_EXPORT CdmService {
+class CONTENT_EXPORT CdmRegistry {
  public:
-  // Returns the CdmService singleton.
-  static CdmService* GetInstance();
+  // Returns the CdmRegistry singleton.
+  static CdmRegistry* GetInstance();
 
-  virtual ~CdmService() {}
+  virtual ~CdmRegistry() {}
 
   // Must be called on the instance to finish initialization.
   virtual void Init() = 0;
@@ -39,4 +39,4 @@ class CONTENT_EXPORT CdmService {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_CDM_SERVICE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_CDM_REGISTRY_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/cdm_service_impl.h"
+#include "content/browser/media/cdm_registry_impl.h"
 
 #include <stddef.h>
 
@@ -11,35 +11,35 @@
 
 namespace content {
 
-static base::LazyInstance<CdmServiceImpl>::Leaky g_cdm_service =
+static base::LazyInstance<CdmRegistryImpl>::Leaky g_cdm_registry =
     LAZY_INSTANCE_INITIALIZER;
 
 // static
-CdmService* CdmService::GetInstance() {
-  return CdmServiceImpl::GetInstance();
+CdmRegistry* CdmRegistry::GetInstance() {
+  return CdmRegistryImpl::GetInstance();
 }
 
 // static
-CdmServiceImpl* CdmServiceImpl::GetInstance() {
-  return g_cdm_service.Pointer();
+CdmRegistryImpl* CdmRegistryImpl::GetInstance() {
+  return g_cdm_registry.Pointer();
 }
 
-CdmServiceImpl::CdmServiceImpl() {}
+CdmRegistryImpl::CdmRegistryImpl() {}
 
-CdmServiceImpl::~CdmServiceImpl() {}
+CdmRegistryImpl::~CdmRegistryImpl() {}
 
-void CdmServiceImpl::Init() {
+void CdmRegistryImpl::Init() {
   // Let embedders register CDMs.
   GetContentClient()->AddContentDecryptionModules(&cdms_);
 }
 
-void CdmServiceImpl::RegisterCdm(const CdmInfo& info) {
+void CdmRegistryImpl::RegisterCdm(const CdmInfo& info) {
   // Always register new CDMs at the beginning of the list, so that
   // subsequent requests get the latest.
   cdms_.insert(cdms_.begin(), info);
 }
 
-const std::vector<CdmInfo>& CdmServiceImpl::GetAllRegisteredCdms() {
+const std::vector<CdmInfo>& CdmRegistryImpl::GetAllRegisteredCdms() {
   return cdms_;
 }
 
