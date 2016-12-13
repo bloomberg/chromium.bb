@@ -806,6 +806,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @DisabledTest(message = "crbug.com/673588")
     public void testImeSelectAndUnSelectAll() throws Exception {
         commitText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
