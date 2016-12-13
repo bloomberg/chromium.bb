@@ -4,6 +4,6 @@ Tests that console logging dumps object values defined by getters and allows to 
 
 console-log-object-with-getter.html:15 Object {}
 console-log-object-with-getter.html:16 [(...)]
-console-log-object-with-getter.html:15 Objectfoo: Objecta: 1b: 2__proto__: Objectset bar: function (x)get foo: function ()__proto__: Object
+console-log-object-with-getter.html:15 Objectfoo: Objecta: 1b: 2__proto__: Objectget foo: function ()set bar: function (x)__proto__: Object
 console-log-object-with-getter.html:16 Array(2)0: 1length: 2get 0: function ()set 1: function (x)__proto__: Array(0)
 

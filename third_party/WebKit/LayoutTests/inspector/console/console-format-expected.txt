@@ -225,10 +225,10 @@ console-format.html:7
 console-format.html:8 [svg#svg-node]
 globals[25]
     <svg id="svg-node"></svg>
-console-format.html:7 Object {getFoo: function}
+console-format.html:7 Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: function…}
 console-format.html:8 [Object]
 globals[26]
-Object {getFoo: function}
+Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: function…}
 console-format.html:7 -0
 console-format.html:8 [-0]
 globals[27]
@@ -533,8 +533,12 @@ console-format.html:8 Array(1)
 globals[25]
     <svg id="svg-node"></svg>
 console-format.html:7 Object
+    enumerableProp: 4
+    __underscoreEnumerableProp__: 5
+    abc: 3
     bar: (...)
     getFoo: function ()
+    __underscoreNonEnumerableProp: 2
     get bar: function ()
     set bar: function (x)
     __proto__: Object
@@ -544,8 +548,12 @@ console-format.html:8 Array(1)
     __proto__: Array(0)
 globals[26]
 Object
+    enumerableProp: 4
+    __underscoreEnumerableProp__: 5
+    abc: 3
     bar: (...)
     getFoo: function ()
+    __underscoreNonEnumerableProp: 2
     get bar: function ()
     set bar: function (x)
     __proto__: Object
@@ -573,10 +581,6 @@ console-format.html:8 Array(1)
 globals[29]
 function Object() { [native code] }
 console-format.html:7 Object
-    __defineGetter__: function __defineGetter__()
-    __defineSetter__: function __defineSetter__()
-    __lookupGetter__: function __lookupGetter__()
-    __lookupSetter__: function __lookupSetter__()
     constructor: function Object()
     hasOwnProperty: function hasOwnProperty()
     isPrototypeOf: function isPrototypeOf()
@@ -584,6 +588,10 @@ console-format.html:7 Object
     toLocaleString: function toLocaleString()
     toString: function toString()
     valueOf: function valueOf()
+    __defineGetter__: function __defineGetter__()
+    __defineSetter__: function __defineSetter__()
+    __lookupGetter__: function __lookupGetter__()
+    __lookupSetter__: function __lookupSetter__()
     get __proto__: function __proto__()
     set __proto__: function __proto__()
 console-format.html:8 Array(1)
@@ -592,10 +600,6 @@ console-format.html:8 Array(1)
     __proto__: Array(0)
 globals[30]
 Object
-    __defineGetter__: function __defineGetter__()
-    __defineSetter__: function __defineSetter__()
-    __lookupGetter__: function __lookupGetter__()
-    __lookupSetter__: function __lookupSetter__()
     constructor: function Object()
     hasOwnProperty: function hasOwnProperty()
     isPrototypeOf: function isPrototypeOf()
@@ -603,6 +607,10 @@ Object
     toLocaleString: function toLocaleString()
     toString: function toString()
     valueOf: function valueOf()
+    __defineGetter__: function __defineGetter__()
+    __defineSetter__: function __defineSetter__()
+    __lookupGetter__: function __lookupGetter__()
+    __lookupSetter__: function __lookupSetter__()
     get __proto__: function __proto__()
     set __proto__: function __proto__()
 console-format.html:7 function ( /**/ foo/**/, /*/**/bar,

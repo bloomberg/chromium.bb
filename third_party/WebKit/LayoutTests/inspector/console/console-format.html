@@ -55,9 +55,13 @@ function onload()
     var existingAttribute = document.getElementById("x").attributes[0];
     var throwingLengthGetter = {get length() { throw "Length called"; }};
     var objectWithNonEnumerables = Object.create({ foo: 1 }, {
+        __underscoreNonEnumerableProp: { value: 2, enumerable: false },
+        abc: { value: 3, enumerable: false },
         getFoo: { value: function() { return this.foo; } },
         bar: { get: function() { return this.bar; }, set: function(x) { this.bar = x; } }
     });
+    objectWithNonEnumerables.enumerableProp = 4;
+    objectWithNonEnumerables.__underscoreEnumerableProp__ = 5;
     var negZero = 1 / Number.NEGATIVE_INFINITY;
     var textNode = document.getElementById("x").nextSibling;
     var arrayLikeFunction = function( /**/ foo/**/, /*/**/bar,
