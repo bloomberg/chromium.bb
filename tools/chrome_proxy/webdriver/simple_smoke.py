@@ -42,5 +42,8 @@ class SimpleSmoke(unittest.TestCase):
 
 if __name__ == '__main__':
   # The unittest library uses sys.argv itself and is easily confused by our
-  # command line options. Pass it a simpler argv instead.
-  unittest.main(argv=[sys.argv[0]], verbosity=2)
+  # command line options. Pass it a simpler argv instead, while working in the
+  # unittest command line args functionality.
+  flags = common.ParseFlags()
+  unittest.main(argv=[sys.argv[0]], verbosity=2, failfast=flags.failfast,
+    catchbreak=flags.catch, buffer=flags.buffer)

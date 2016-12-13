@@ -42,6 +42,16 @@ def ParseFlags():
   parser.add_argument('chrome_driver', nargs=1, type=str, help='The path to '
     'the ChromeDriver executable. If not given, the default system chrome '
     'will be used.')
+  parser.add_argument('-b', '--buffer', help='The standard output and standard '
+    'error streams are buffered during the test run. Output during a passing '
+    'test is discarded. Output is echoed normally on test fail or error and is '
+    'added to the failure messages.', action='store_true')
+  parser.add_argument('-c', '--catch', help='Control-C during the test run '
+    'waits for the current test to end and then reports all the results so '
+    'far. A second Control-C raises the normal KeyboardInterrupt exception.',
+    action='store_true')
+  parser.add_argument('-f', '--failfast', help='Stop the test run on the first '
+    'error or failure.', action='store_true')
   # TODO(robertogden): Log sys.argv here.
   return parser.parse_args(sys.argv[1:])
 
