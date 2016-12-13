@@ -29,11 +29,14 @@
 
 #include "core/fetch/ResourceLoader.h"
 
+#include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/FetchContext.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/SharedBuffer.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
+#include "platform/network/NetworkInstrumentation.h"
 #include "platform/network/ResourceError.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
@@ -59,6 +62,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource)
       m_isCacheAwareLoadingActivated(false) {
   DCHECK(m_resource);
   DCHECK(m_fetcher);
+
   m_resource->setLoader(this);
 }
 
@@ -71,20 +75,19 @@ DEFINE_TRACE(ResourceLoader) {
   visitor->trace(m_resource);
 }
 
-void ResourceLoader::start(const ResourceRequest& request,
-                           WebTaskRunner* loadingTaskRunner,
-                           bool defersLoading) {
+void ResourceLoader::start(const ResourceRequest& request) {
   DCHECK(!m_loader);
+
   if (m_resource->options().synchronousPolicy == RequestSynchronously &&
-      defersLoading) {
+      context().defersLoading()) {
     cancel();
     return;
   }
 
   m_loader = WTF::wrapUnique(Platform::current()->createURLLoader());
   DCHECK(m_loader);
-  m_loader->setDefersLoading(defersLoading);
-  m_loader->setLoadingTaskRunner(loadingTaskRunner);
+  m_loader->setDefersLoading(context().defersLoading());
+  m_loader->setLoadingTaskRunner(context().loadingTaskRunner());
 
   if (m_isCacheAwareLoadingActivated) {
     // Override cache policy for cache-aware loading. If this request fails, a
@@ -102,22 +105,17 @@ void ResourceLoader::start(const ResourceRequest& request,
     m_loader->loadAsynchronously(WrappedResourceRequest(request), this);
 }
 
-void ResourceLoader::restart(const ResourceRequest& request,
-                             WebTaskRunner* loadingTaskRunner,
-                             bool defersLoading) {
+void ResourceLoader::restart(const ResourceRequest& request) {
   CHECK_EQ(m_resource->options().synchronousPolicy, RequestAsynchronously);
+
   m_loader.reset();
-  start(request, loadingTaskRunner, defersLoading);
+  start(request);
 }
 
 void ResourceLoader::setDefersLoading(bool defers) {
   DCHECK(m_loader);
-  m_loader->setDefersLoading(defers);
-}
 
-void ResourceLoader::didDownloadData(int length, int encodedDataLength) {
-  m_fetcher->didDownloadData(m_resource.get(), length, encodedDataLength);
-  m_resource->didDownloadData(length);
+  m_loader->setDefersLoading(defers);
 }
 
 void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority,
@@ -129,7 +127,7 @@ void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority,
 }
 
 void ResourceLoader::cancel() {
-  didFail(
+  handleError(
       ResourceError::cancelledError(m_resource->lastResourceRequest().url()));
 }
 
@@ -138,10 +136,15 @@ void ResourceLoader::cancelForRedirectAccessCheckError(
     ResourceRequestBlockedReason blockedReason) {
   m_resource->willNotFollowRedirect();
 
-  if (m_loader) {
-    didFail(
+  if (m_loader)
+    handleError(
         ResourceError::cancelledDueToAccessCheckError(newURL, blockedReason));
-  }
+}
+
+static bool isManualRedirectFetchRequest(const ResourceRequest& request) {
+  return request.fetchRedirectMode() ==
+             WebURLRequest::FetchRedirectModeManual &&
+         request.requestContext() == WebURLRequest::RequestContextFetch;
 }
 
 bool ResourceLoader::willFollowRedirect(
@@ -152,7 +155,7 @@ bool ResourceLoader::willFollowRedirect(
 
   if (m_isCacheAwareLoadingActivated) {
     // Fail as cache miss if cached response is a redirect.
-    didFail(
+    handleError(
         ResourceError::cacheMissError(m_resource->lastResourceRequest().url()));
     return false;
   }
@@ -160,17 +163,62 @@ bool ResourceLoader::willFollowRedirect(
   ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
   const ResourceResponse& redirectResponse(
       passedRedirectResponse.toResourceResponse());
+
   newRequest.setRedirectStatus(
       ResourceRequest::RedirectStatus::FollowedRedirect);
 
   const KURL originalURL = newRequest.url();
 
-  ResourceRequestBlockedReason blockedReason = m_fetcher->willFollowRedirect(
-      m_resource.get(), newRequest, redirectResponse);
-  if (blockedReason != ResourceRequestBlockedReason::None) {
-    cancelForRedirectAccessCheckError(newRequest.url(), blockedReason);
-    return false;
+  if (!isManualRedirectFetchRequest(m_resource->resourceRequest())) {
+    ResourceRequestBlockedReason blockedReason = context().canRequest(
+        m_resource->getType(), newRequest, newRequest.url(),
+        m_resource->options(), m_resource->isUnusedPreload(),
+        FetchRequest::UseDefaultOriginRestrictionForType);
+    if (blockedReason != ResourceRequestBlockedReason::None) {
+      cancelForRedirectAccessCheckError(newRequest.url(), blockedReason);
+      return false;
+    }
+
+    if (m_resource->options().corsEnabled == IsCORSEnabled) {
+      RefPtr<SecurityOrigin> sourceOrigin =
+          m_resource->options().securityOrigin;
+      if (!sourceOrigin.get())
+        sourceOrigin = context().getSecurityOrigin();
+
+      String errorMessage;
+      StoredCredentials withCredentials =
+          m_resource->lastResourceRequest().allowStoredCredentials()
+              ? AllowStoredCredentials
+              : DoNotAllowStoredCredentials;
+      if (!CrossOriginAccessControl::handleRedirect(
+              sourceOrigin, newRequest, redirectResponse, withCredentials,
+              m_resource->mutableOptions(), errorMessage)) {
+        m_resource->setCORSFailed();
+        context().addConsoleMessage(errorMessage);
+        cancelForRedirectAccessCheckError(newRequest.url(),
+                                          ResourceRequestBlockedReason::Other);
+        return false;
+      }
+    }
+    if (m_resource->getType() == Resource::Image &&
+        m_fetcher->shouldDeferImageLoad(newRequest.url())) {
+      cancelForRedirectAccessCheckError(newRequest.url(),
+                                        ResourceRequestBlockedReason::Other);
+      return false;
+    }
   }
+
+  bool crossOrigin = !SecurityOrigin::areSameSchemeHostPort(
+      redirectResponse.url(), newRequest.url());
+  m_fetcher->recordResourceTimingOnRedirect(m_resource.get(), redirectResponse,
+                                            crossOrigin);
+
+  newRequest.setAllowStoredCredentials(m_resource->options().allowCredentials ==
+                                       AllowStoredCredentials);
+
+  context().dispatchWillSendRequest(m_resource->identifier(), newRequest,
+                                    redirectResponse,
+                                    m_resource->options().initiatorInfo);
 
   // ResourceFetcher::willFollowRedirect() may rewrite the URL to
   // something else not for rejecting redirect but for other reasons.
@@ -202,33 +250,155 @@ void ResourceLoader::didSendData(unsigned long long bytesSent,
   m_resource->didSendData(bytesSent, totalBytesToBeSent);
 }
 
+FetchContext& ResourceLoader::context() const {
+  return m_fetcher->context();
+}
+
+ResourceRequestBlockedReason ResourceLoader::canAccessResponse(
+    Resource* resource,
+    const ResourceResponse& response) const {
+  // Redirects can change the response URL different from one of request.
+  bool forPreload = resource->isUnusedPreload();
+  ResourceRequestBlockedReason blockedReason =
+      context().canRequest(resource->getType(), resource->resourceRequest(),
+                           response.url(), resource->options(), forPreload,
+                           FetchRequest::UseDefaultOriginRestrictionForType);
+  if (blockedReason != ResourceRequestBlockedReason::None)
+    return blockedReason;
+
+  SecurityOrigin* sourceOrigin = resource->options().securityOrigin.get();
+  if (!sourceOrigin)
+    sourceOrigin = context().getSecurityOrigin();
+
+  if (sourceOrigin->canRequestNoSuborigin(response.url()))
+    return ResourceRequestBlockedReason::None;
+
+  // Use the original response instead of the 304 response for a successful
+  // revaldiation.
+  const ResourceResponse& responseForAccessControl =
+      (resource->isCacheValidator() && response.httpStatusCode() == 304)
+          ? resource->response()
+          : response;
+  String errorDescription;
+  if (!passesAccessControlCheck(
+          responseForAccessControl, resource->options().allowCredentials,
+          sourceOrigin, errorDescription,
+          resource->lastResourceRequest().requestContext())) {
+    resource->setCORSFailed();
+    if (!forPreload) {
+      String resourceType = Resource::resourceTypeToString(
+          resource->getType(), resource->options().initiatorInfo);
+      context().addConsoleMessage(
+          "Access to " + resourceType + " at '" + response.url().getString() +
+          "' from origin '" + sourceOrigin->toString() +
+          "' has been blocked by CORS policy: " + errorDescription);
+    }
+    return ResourceRequestBlockedReason::Other;
+  }
+  return ResourceRequestBlockedReason::None;
+}
+
 void ResourceLoader::didReceiveResponse(
-    const WebURLResponse& response,
+    const WebURLResponse& webURLResponse,
     std::unique_ptr<WebDataConsumerHandle> handle) {
-  DCHECK(!response.isNull());
-  m_fetcher->didReceiveResponse(m_resource.get(), response.toResourceResponse(),
-                                std::move(handle));
+  DCHECK(!webURLResponse.isNull());
+
+  const ResourceResponse& response = webURLResponse.toResourceResponse();
+
+  if (response.wasFetchedViaServiceWorker()) {
+    if (m_resource->options().corsEnabled == IsCORSEnabled &&
+        response.wasFallbackRequiredByServiceWorker()) {
+      ResourceRequest request = m_resource->lastResourceRequest();
+      DCHECK_EQ(request.skipServiceWorker(),
+                WebURLRequest::SkipServiceWorker::None);
+      // This code handles the case when a regular controlling service worker
+      // doesn't handle a cross origin request. When this happens we still want
+      // to give foreign fetch a chance to handle the request, so only skip the
+      // controlling service worker for the fallback request. This is currently
+      // safe because of http://crbug.com/604084 the
+      // wasFallbackRequiredByServiceWorker flag is never set when foreign fetch
+      // handled a request.
+      if (!context().shouldLoadNewResource(m_resource->getType())) {
+        // Cancel the request if we should not trigger a reload now.
+        handleError(ResourceError::cancelledError(response.url()));
+        return;
+      }
+      request.setSkipServiceWorker(
+          WebURLRequest::SkipServiceWorker::Controlling);
+      restart(request);
+      return;
+    }
+
+    // If the response is fetched via ServiceWorker, the original URL of the
+    // response could be different from the URL of the request. We check the URL
+    // not to load the resources which are forbidden by the page CSP.
+    // https://w3c.github.io/webappsec-csp/#should-block-response
+    const KURL& originalURL = response.originalURLViaServiceWorker();
+    if (!originalURL.isEmpty()) {
+      ResourceRequestBlockedReason blockedReason = context().allowResponse(
+          m_resource->getType(), m_resource->resourceRequest(), originalURL,
+          m_resource->options());
+      if (blockedReason != ResourceRequestBlockedReason::None) {
+        handleError(ResourceError::cancelledDueToAccessCheckError(
+            originalURL, blockedReason));
+        return;
+      }
+    }
+  } else if (m_resource->options().corsEnabled == IsCORSEnabled) {
+    ResourceRequestBlockedReason blockedReason =
+        canAccessResponse(m_resource, response);
+    if (blockedReason != ResourceRequestBlockedReason::None) {
+      handleError(ResourceError::cancelledDueToAccessCheckError(response.url(),
+                                                                blockedReason));
+      return;
+    }
+  }
+
+  context().dispatchDidReceiveResponse(
+      m_resource->identifier(), response,
+      m_resource->resourceRequest().frameType(),
+      m_resource->resourceRequest().requestContext(), m_resource);
+
+  m_resource->responseReceived(response, std::move(handle));
+  if (!m_resource->loader())
+    return;
+
+  if (response.httpStatusCode() >= 400 &&
+      !m_resource->shouldIgnoreHTTPStatusCodeErrors())
+    handleError(ResourceError::cancelledError(response.url()));
 }
 
 void ResourceLoader::didReceiveResponse(const WebURLResponse& response) {
   didReceiveResponse(response, nullptr);
 }
 
+void ResourceLoader::didDownloadData(int length, int encodedDataLength) {
+  context().dispatchDidDownloadData(m_resource->identifier(), length,
+                                    encodedDataLength);
+  m_resource->didDownloadData(length);
+}
+
 void ResourceLoader::didReceiveData(const char* data, int length) {
   CHECK_GE(length, 0);
-  m_fetcher->didReceiveData(m_resource.get(), data, length);
+
+  context().dispatchDidReceiveData(m_resource->identifier(), data, length);
   m_resource->addToDecodedBodyLength(length);
   m_resource->appendData(data, length);
 }
 
 void ResourceLoader::didReceiveTransferSizeUpdate(int transferSizeDiff) {
   DCHECK_GT(transferSizeDiff, 0);
-  m_fetcher->didReceiveTransferSizeUpdate(m_resource.get(), transferSizeDiff);
+  context().dispatchDidReceiveEncodedData(m_resource->identifier(),
+                                          transferSizeDiff);
 }
 
 void ResourceLoader::didFinishLoadingFirstPartInMultipart() {
-  m_fetcher->didFinishLoading(m_resource.get(), 0,
-                              ResourceFetcher::DidFinishFirstPartInMultipart);
+  network_instrumentation::endResourceLoad(
+      m_resource->identifier(),
+      network_instrumentation::RequestOutcome::Success);
+
+  m_fetcher->handleLoaderFinish(m_resource.get(), 0,
+                                ResourceFetcher::DidFinishFirstPartInMultipart);
 }
 
 void ResourceLoader::didFinishLoading(double finishTime,
@@ -236,9 +406,15 @@ void ResourceLoader::didFinishLoading(double finishTime,
                                       int64_t encodedBodyLength) {
   m_resource->setEncodedDataLength(encodedDataLength);
   m_resource->addToEncodedBodyLength(encodedBodyLength);
+
   m_loader.reset();
-  m_fetcher->didFinishLoading(m_resource.get(), finishTime,
-                              ResourceFetcher::DidFinishLoading);
+
+  network_instrumentation::endResourceLoad(
+      m_resource->identifier(),
+      network_instrumentation::RequestOutcome::Success);
+
+  m_fetcher->handleLoaderFinish(m_resource.get(), finishTime,
+                                ResourceFetcher::DidFinishLoading);
 }
 
 void ResourceLoader::didFail(const WebURLError& error,
@@ -246,22 +422,24 @@ void ResourceLoader::didFail(const WebURLError& error,
                              int64_t encodedBodyLength) {
   m_resource->setEncodedDataLength(encodedDataLength);
   m_resource->addToEncodedBodyLength(encodedBodyLength);
-  didFail(error);
+  handleError(error);
 }
 
-void ResourceLoader::didFail(const ResourceError& error) {
+void ResourceLoader::handleError(const ResourceError& error) {
   if (m_isCacheAwareLoadingActivated && error.isCacheMiss() &&
-      m_fetcher->context().shouldLoadNewResource(m_resource->getType())) {
+      context().shouldLoadNewResource(m_resource->getType())) {
     m_resource->willReloadAfterDiskCacheMiss();
     m_isCacheAwareLoadingActivated = false;
-    restart(m_resource->resourceRequest(),
-            m_fetcher->context().loadingTaskRunner(),
-            m_fetcher->context().defersLoading());
+    restart(m_resource->resourceRequest());
     return;
   }
 
   m_loader.reset();
-  m_fetcher->didFailLoading(m_resource.get(), error);
+
+  network_instrumentation::endResourceLoad(
+      m_resource->identifier(), network_instrumentation::RequestOutcome::Fail);
+
+  m_fetcher->handleLoaderError(m_resource.get(), error);
 }
 
 void ResourceLoader::requestSynchronously(const ResourceRequest& request) {
@@ -297,7 +475,8 @@ void ResourceLoader::requestSynchronously(const ResourceRequest& request) {
   // empty buffer is a noop in most cases, but is destructive in the case of
   // a 304, where it will overwrite the cached data we should be reusing.
   if (dataOut.size()) {
-    m_fetcher->didReceiveData(m_resource.get(), dataOut.data(), dataOut.size());
+    context().dispatchDidReceiveData(m_resource->identifier(), dataOut.data(),
+                                     dataOut.size());
     m_resource->setResourceBuffer(dataOut);
   }
   didFinishLoading(monotonicallyIncreasingTime(), encodedDataLength,

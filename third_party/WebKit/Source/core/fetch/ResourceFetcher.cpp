@@ -28,7 +28,6 @@
 #include "core/fetch/ResourceFetcher.h"
 
 #include "bindings/core/v8/V8DOMActivityLogger.h"
-#include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/ImageResource.h"
@@ -97,12 +96,6 @@ enum SriResourceIntegrityMismatchEvent {
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, XSLStyleSheet)  \
   }
 
-bool IsCrossOrigin(const KURL& a, const KURL& b) {
-  RefPtr<SecurityOrigin> originA = SecurityOrigin::create(a);
-  RefPtr<SecurityOrigin> originB = SecurityOrigin::create(b);
-  return !originB->isSameSchemeHostPort(originA.get());
-}
-
 void addRedirectsToTimingInfo(Resource* resource, ResourceTimingInfo* info) {
   // Store redirect responses that were packed inside the final response.
   const auto& responses = resource->response().redirectResponses();
@@ -110,14 +103,13 @@ void addRedirectsToTimingInfo(Resource* resource, ResourceTimingInfo* info) {
     const KURL& newURL = i + 1 < responses.size()
                              ? KURL(responses[i + 1].url())
                              : resource->resourceRequest().url();
-    bool crossOrigin = IsCrossOrigin(responses[i].url(), newURL);
+    bool crossOrigin =
+        !SecurityOrigin::areSameSchemeHostPort(responses[i].url(), newURL);
     info->addRedirect(responses[i], crossOrigin);
   }
 }
 
-}  // namespace
-
-static void RecordSriResourceIntegrityMismatchEvent(
+void RecordSriResourceIntegrityMismatchEvent(
     SriResourceIntegrityMismatchEvent event) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, integrityHistogram,
@@ -126,7 +118,7 @@ static void RecordSriResourceIntegrityMismatchEvent(
   integrityHistogram.count(event);
 }
 
-static ResourceLoadPriority typeToPriority(Resource::Type type) {
+ResourceLoadPriority typeToPriority(Resource::Type type) {
   switch (type) {
     case Resource::MainResource:
     case Resource::CSSStyleSheet:
@@ -157,6 +149,8 @@ static ResourceLoadPriority typeToPriority(Resource::Type type) {
   NOTREACHED();
   return ResourceLoadPriorityUnresolved;
 }
+
+}  // namespace
 
 ResourceLoadPriority ResourceFetcher::computeLoadPriority(
     Resource::Type type,
@@ -268,50 +262,6 @@ Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const {
   KURL url = MemoryCache::removeFragmentIdentifierIfNeeded(resourceURL);
   const WeakMember<Resource>& resource = m_documentResources.get(url);
   return resource.get();
-}
-
-ResourceRequestBlockedReason ResourceFetcher::canAccessResponse(
-    Resource* resource,
-    const ResourceResponse& response) const {
-  // Redirects can change the response URL different from one of request.
-  bool forPreload = resource->isUnusedPreload();
-  ResourceRequestBlockedReason blockedReason =
-      context().canRequest(resource->getType(), resource->resourceRequest(),
-                           response.url(), resource->options(), forPreload,
-                           FetchRequest::UseDefaultOriginRestrictionForType);
-  if (blockedReason != ResourceRequestBlockedReason::None)
-    return blockedReason;
-
-  SecurityOrigin* sourceOrigin = resource->options().securityOrigin.get();
-  if (!sourceOrigin)
-    sourceOrigin = context().getSecurityOrigin();
-
-  if (sourceOrigin->canRequestNoSuborigin(response.url()))
-    return ResourceRequestBlockedReason::None;
-
-  // Use the original response instead of the 304 response for a successful
-  // revaldiation.
-  const ResourceResponse& responseForAccessControl =
-      (resource->isCacheValidator() && response.httpStatusCode() == 304)
-          ? resource->response()
-          : response;
-  String errorDescription;
-  if (!passesAccessControlCheck(
-          responseForAccessControl, resource->options().allowCredentials,
-          sourceOrigin, errorDescription,
-          resource->lastResourceRequest().requestContext())) {
-    resource->setCORSFailed();
-    if (!forPreload) {
-      String resourceType = Resource::resourceTypeToString(
-          resource->getType(), resource->options().initiatorInfo);
-      context().addConsoleMessage(
-          "Access to " + resourceType + " at '" + response.url().getString() +
-          "' from origin '" + sourceOrigin->toString() +
-          "' has been blocked by CORS policy: " + errorDescription);
-    }
-    return ResourceRequestBlockedReason::Other;
-  }
-  return ResourceRequestBlockedReason::None;
 }
 
 bool ResourceFetcher::isControlledByServiceWorker() const {
@@ -805,6 +755,21 @@ void ResourceFetcher::storePerformanceTimingInitiatorInformation(
   }
 }
 
+void ResourceFetcher::recordResourceTimingOnRedirect(
+    Resource* resource,
+    const ResourceResponse& redirectResponse,
+    bool crossOrigin) {
+  ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
+  if (it != m_resourceTimingInfoMap.end()) {
+    it->value->addRedirect(redirectResponse, crossOrigin);
+  }
+
+  if (resource->getType() == Resource::MainResource) {
+    DCHECK(m_navigationTimingInfo);
+    m_navigationTimingInfo->addRedirect(redirectResponse, crossOrigin);
+  }
+}
+
 ResourceFetcher::RevalidationPolicy
 ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
                                              const FetchRequest& fetchRequest,
@@ -1148,23 +1113,32 @@ ResourceTimingInfo* ResourceFetcher::getNavigationTimingInfo() {
   return m_navigationTimingInfo.get();
 }
 
-void ResourceFetcher::didFinishLoading(Resource* resource,
-                                       double finishTime,
-                                       DidFinishLoadingReason finishReason) {
-  network_instrumentation::endResourceLoad(
-      resource->identifier(), network_instrumentation::RequestOutcome::Success);
-  DCHECK(resource);
-  const int64_t encodedDataLength = resource->response().encodedDataLength();
+void ResourceFetcher::handleLoadCompletion(Resource* resource) {
+  context().didLoadResource(resource);
 
-  // When loading a multipart resource, make the loader non-block when finishing
-  // loading the first part.
-  if (finishReason == DidFinishFirstPartInMultipart)
-    moveResourceLoaderToNonBlocking(resource->loader());
-  else
-    removeResourceLoader(resource->loader());
-  DCHECK(!m_loaders.contains(resource->loader()));
-  DCHECK(finishReason == DidFinishFirstPartInMultipart ||
-         !m_nonBlockingLoaders.contains(resource->loader()));
+  if (resource->isImage() &&
+      toImageResource(resource)->shouldReloadBrokenPlaceholder()) {
+    toImageResource(resource)->reloadIfLoFiOrPlaceholder(this);
+  }
+}
+
+void ResourceFetcher::handleLoaderFinish(Resource* resource,
+                                         double finishTime,
+                                         LoaderFinishType type) {
+  DCHECK(resource);
+
+  ResourceLoader* loader = resource->loader();
+  if (type == DidFinishFirstPartInMultipart) {
+    // When loading a multipart resource, make the loader non-block when
+    // finishing loading the first part.
+    moveResourceLoaderToNonBlocking(loader);
+  } else {
+    removeResourceLoader(loader);
+    DCHECK(!m_nonBlockingLoaders.contains(loader));
+  }
+  DCHECK(!m_loaders.contains(loader));
+
+  const int64_t encodedDataLength = resource->response().encodedDataLength();
 
   if (resource->getType() == Resource::MainResource) {
     DCHECK(m_navigationTimingInfo);
@@ -1190,126 +1164,40 @@ void ResourceFetcher::didFinishLoading(Resource* resource,
       // them.
       info->addFinalTransferSize(encodedDataLength == -1 ? 0
                                                          : encodedDataLength);
+
       if (resource->options().requestInitiatorContext == DocumentContext)
         context().addResourceTiming(*info);
       resource->reportResourceTimingToClients(*info);
     }
   }
+
   context().dispatchDidFinishLoading(resource->identifier(), finishTime,
                                      encodedDataLength);
-  if (finishReason == DidFinishLoading)
-    resource->finish(finishTime);
-  context().didLoadResource(resource);
 
-  if (resource->isImage() &&
-      toImageResource(resource)->shouldReloadBrokenPlaceholder()) {
-    toImageResource(resource)->reloadIfLoFiOrPlaceholder(this);
-  }
+  if (type == DidFinishLoading)
+    resource->finish(finishTime);
+
+  handleLoadCompletion(resource);
 }
 
-void ResourceFetcher::didFailLoading(Resource* resource,
-                                     const ResourceError& error) {
-  network_instrumentation::endResourceLoad(
-      resource->identifier(), network_instrumentation::RequestOutcome::Fail);
+void ResourceFetcher::handleLoaderError(Resource* resource,
+                                        const ResourceError& error) {
+  DCHECK(resource);
+
   removeResourceLoader(resource->loader());
-  m_resourceTimingInfoMap.take(const_cast<Resource*>(resource));
+
+  m_resourceTimingInfoMap.take(resource);
+
   bool isInternalRequest = resource->options().initiatorInfo.name ==
                            FetchInitiatorTypeNames::internal;
+
   context().dispatchDidFail(resource->identifier(), error,
                             resource->response().encodedDataLength(),
                             isInternalRequest);
+
   resource->error(error);
-  context().didLoadResource(resource);
 
-  if (resource->isImage() &&
-      toImageResource(resource)->shouldReloadBrokenPlaceholder()) {
-    toImageResource(resource)->reloadIfLoFiOrPlaceholder(this);
-  }
-}
-
-void ResourceFetcher::didReceiveResponse(
-    Resource* resource,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  if (response.wasFetchedViaServiceWorker()) {
-    if (resource->options().corsEnabled == IsCORSEnabled &&
-        response.wasFallbackRequiredByServiceWorker()) {
-      ResourceRequest request = resource->lastResourceRequest();
-      DCHECK_EQ(request.skipServiceWorker(),
-                WebURLRequest::SkipServiceWorker::None);
-      // This code handles the case when a regular controlling service worker
-      // doesn't handle a cross origin request. When this happens we still want
-      // to give foreign fetch a chance to handle the request, so only skip the
-      // controlling service worker for the fallback request. This is currently
-      // safe because of http://crbug.com/604084 the
-      // wasFallbackRequiredByServiceWorker flag is never set when foreign fetch
-      // handled a request.
-      if (!context().shouldLoadNewResource(resource->getType())) {
-        // Cancel the request if we should not trigger a reload now.
-        resource->loader()->didFail(
-            ResourceError::cancelledError(response.url()));
-        return;
-      }
-      request.setSkipServiceWorker(
-          WebURLRequest::SkipServiceWorker::Controlling);
-      resource->loader()->restart(request, context().loadingTaskRunner(),
-                                  context().defersLoading());
-      return;
-    }
-
-    // If the response is fetched via ServiceWorker, the original URL of the
-    // response could be different from the URL of the request. We check the URL
-    // not to load the resources which are forbidden by the page CSP.
-    // https://w3c.github.io/webappsec-csp/#should-block-response
-    const KURL& originalURL = response.originalURLViaServiceWorker();
-    if (!originalURL.isEmpty()) {
-      ResourceRequestBlockedReason blockedReason = context().allowResponse(
-          resource->getType(), resource->resourceRequest(), originalURL,
-          resource->options());
-      if (blockedReason != ResourceRequestBlockedReason::None) {
-        resource->loader()->didFail(
-            ResourceError::cancelledDueToAccessCheckError(originalURL,
-                                                          blockedReason));
-        return;
-      }
-    }
-  } else if (resource->options().corsEnabled == IsCORSEnabled) {
-    ResourceRequestBlockedReason blockedReason =
-        canAccessResponse(resource, response);
-    if (blockedReason != ResourceRequestBlockedReason::None) {
-      resource->loader()->didFail(ResourceError::cancelledDueToAccessCheckError(
-          response.url(), blockedReason));
-      return;
-    }
-  }
-
-  context().dispatchDidReceiveResponse(
-      resource->identifier(), response, resource->resourceRequest().frameType(),
-      resource->resourceRequest().requestContext(), resource);
-  resource->responseReceived(response, std::move(handle));
-  if (resource->loader() && response.httpStatusCode() >= 400 &&
-      !resource->shouldIgnoreHTTPStatusCodeErrors()) {
-    resource->loader()->didFail(ResourceError::cancelledError(response.url()));
-  }
-}
-
-void ResourceFetcher::didReceiveData(const Resource* resource,
-                                     const char* data,
-                                     int dataLength) {
-  context().dispatchDidReceiveData(resource->identifier(), data, dataLength);
-}
-
-void ResourceFetcher::didReceiveTransferSizeUpdate(const Resource* resource,
-                                                   int transferSizeDiff) {
-  context().dispatchDidReceiveEncodedData(resource->identifier(),
-                                          transferSizeDiff);
-}
-
-void ResourceFetcher::didDownloadData(const Resource* resource,
-                                      int dataLength,
-                                      int encodedDataLength) {
-  context().dispatchDidDownloadData(resource->identifier(), dataLength,
-                                    encodedDataLength);
+  handleLoadCompletion(resource);
 }
 
 void ResourceFetcher::moveResourceLoaderToNonBlocking(ResourceLoader* loader) {
@@ -1329,11 +1217,13 @@ bool ResourceFetcher::startLoad(Resource* resource) {
   }
 
   ResourceRequest request(resource->resourceRequest());
-  willSendRequest(resource->identifier(), request, ResourceResponse(),
-                  resource->options());
+  context().dispatchWillSendRequest(resource->identifier(), request,
+                                    ResourceResponse(),
+                                    resource->options().initiatorInfo);
 
   // TODO(shaochuan): Saving modified ResourceRequest back to |resource|, remove
-  // once willSendRequest() takes const ResourceRequest. crbug.com/632580
+  // once dispatchWillSendRequest() takes const ResourceRequest.
+  // crbug.com/632580
   resource->setResourceRequest(request);
 
   // Resource requests from suborigins should not be intercepted by the service
@@ -1354,8 +1244,7 @@ bool ResourceFetcher::startLoad(Resource* resource) {
   resource->setFetcherSecurityOrigin(sourceOrigin);
 
   loader->activateCacheAwareLoadingIfNeeded(request);
-  loader->start(request, context().loadingTaskRunner(),
-                context().defersLoading());
+  loader->start(request);
   return true;
 }
 
@@ -1391,78 +1280,6 @@ void ResourceFetcher::setDefersLoading(bool defers) {
     loader->setDefersLoading(defers);
   for (const auto& loader : m_loaders)
     loader->setDefersLoading(defers);
-}
-
-bool ResourceFetcher::defersLoading() const {
-  return context().defersLoading();
-}
-
-static bool isManualRedirectFetchRequest(const ResourceRequest& request) {
-  return request.fetchRedirectMode() ==
-             WebURLRequest::FetchRedirectModeManual &&
-         request.requestContext() == WebURLRequest::RequestContextFetch;
-}
-
-ResourceRequestBlockedReason ResourceFetcher::willFollowRedirect(
-    Resource* resource,
-    ResourceRequest& newRequest,
-    const ResourceResponse& redirectResponse) {
-  if (!isManualRedirectFetchRequest(resource->resourceRequest())) {
-    ResourceRequestBlockedReason blockedReason =
-        context().canRequest(resource->getType(), newRequest, newRequest.url(),
-                             resource->options(), resource->isUnusedPreload(),
-                             FetchRequest::UseDefaultOriginRestrictionForType);
-    if (blockedReason != ResourceRequestBlockedReason::None)
-      return blockedReason;
-    if (resource->options().corsEnabled == IsCORSEnabled) {
-      RefPtr<SecurityOrigin> sourceOrigin = resource->options().securityOrigin;
-      if (!sourceOrigin.get())
-        sourceOrigin = context().getSecurityOrigin();
-
-      String errorMessage;
-      StoredCredentials withCredentials =
-          resource->lastResourceRequest().allowStoredCredentials()
-              ? AllowStoredCredentials
-              : DoNotAllowStoredCredentials;
-      if (!CrossOriginAccessControl::handleRedirect(
-              sourceOrigin, newRequest, redirectResponse, withCredentials,
-              resource->mutableOptions(), errorMessage)) {
-        resource->setCORSFailed();
-        context().addConsoleMessage(errorMessage);
-        return ResourceRequestBlockedReason::Other;
-      }
-    }
-    if (resource->getType() == Resource::Image &&
-        shouldDeferImageLoad(newRequest.url())) {
-      return ResourceRequestBlockedReason::Other;
-    }
-  }
-
-  ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
-  if (it != m_resourceTimingInfoMap.end()) {
-    bool crossOrigin = IsCrossOrigin(redirectResponse.url(), newRequest.url());
-    it->value->addRedirect(redirectResponse, crossOrigin);
-  }
-
-  if (resource->getType() == Resource::MainResource) {
-    DCHECK(m_navigationTimingInfo);
-    bool crossOrigin = IsCrossOrigin(redirectResponse.url(), newRequest.url());
-    m_navigationTimingInfo->addRedirect(redirectResponse, crossOrigin);
-  }
-
-  newRequest.setAllowStoredCredentials(resource->options().allowCredentials ==
-                                       AllowStoredCredentials);
-  willSendRequest(resource->identifier(), newRequest, redirectResponse,
-                  resource->options());
-  return ResourceRequestBlockedReason::None;
-}
-
-void ResourceFetcher::willSendRequest(unsigned long identifier,
-                                      ResourceRequest& newRequest,
-                                      const ResourceResponse& redirectResponse,
-                                      const ResourceLoaderOptions& options) {
-  context().dispatchWillSendRequest(identifier, newRequest, redirectResponse,
-                                    options.initiatorInfo);
 }
 
 void ResourceFetcher::updateAllImageResourcePriorities() {

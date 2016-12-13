@@ -250,6 +250,8 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   bool isSameSchemeHostPort(const SecurityOrigin*) const;
   bool isSameSchemeHostPortAndSuborigin(const SecurityOrigin*) const;
 
+  static bool areSameSchemeHostPort(const KURL& a, const KURL& b);
+
   static const KURL& urlWithUniqueSecurityOrigin();
 
   // Transfer origin privileges from another security origin.

@@ -53,6 +53,13 @@ enum class WebCachePolicy;
 
 enum FetchResourceType { FetchMainResource, FetchSubresource };
 
+// The FetchContext is an interface for performing context specific processing
+// in response to events in the ResourceFetcher. The ResourceFetcher or its job
+// class, ResourceLoader, may call the methods on a FetchContext.
+//
+// Any processing that depends on core/ components outside core/fetch/ should
+// be implemented on a subclass of this interface, and then exposed to the
+// ResourceFetcher via this interface.
 class CORE_EXPORT FetchContext
     : public GarbageCollectedFinalized<FetchContext> {
   WTF_MAKE_NONCOPYABLE(FetchContext);

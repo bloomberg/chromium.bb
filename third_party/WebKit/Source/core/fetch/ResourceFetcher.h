@@ -115,24 +115,13 @@ class CORE_EXPORT ResourceFetcher
   void stopFetching();
   bool isFetching() const;
 
-  ResourceRequestBlockedReason willFollowRedirect(Resource*,
-                                                  ResourceRequest&,
-                                                  const ResourceResponse&);
-  enum DidFinishLoadingReason {
-    DidFinishLoading,
-    DidFinishFirstPartInMultipart
-  };
-  void didFinishLoading(Resource*,
-                        double finishTime,
-                        DidFinishLoadingReason);
-  void didFailLoading(Resource*, const ResourceError&);
-  void didReceiveResponse(Resource*,
-                          const ResourceResponse&,
-                          std::unique_ptr<WebDataConsumerHandle>);
-  void didReceiveData(const Resource*, const char* data, int dataLength);
-  void didReceiveTransferSizeUpdate(const Resource*, int transferSizeDiff);
-  void didDownloadData(const Resource*, int dataLength, int encodedDataLength);
-  bool defersLoading() const;
+  bool shouldDeferImageLoad(const KURL&) const;
+
+  void recordResourceTimingOnRedirect(Resource*, const ResourceResponse&, bool);
+
+  enum LoaderFinishType { DidFinishLoading, DidFinishFirstPartInMultipart };
+  void handleLoaderFinish(Resource*, double finishTime, LoaderFinishType);
+  void handleLoaderError(Resource*, const ResourceError&);
   bool isControlledByServiceWorker() const;
 
   enum ResourceLoadStartType {
@@ -196,17 +185,11 @@ class CORE_EXPORT ResourceFetcher
   void moveCachedNonBlockingResourceToBlocking(Resource*, const FetchRequest&);
   void moveResourceLoaderToNonBlocking(ResourceLoader*);
   void removeResourceLoader(ResourceLoader*);
+  void handleLoadCompletion(Resource*);
 
   void initializeResourceRequest(ResourceRequest&,
                                  Resource::Type,
                                  FetchRequest::DeferOption);
-  void willSendRequest(unsigned long identifier,
-                       ResourceRequest&,
-                       const ResourceResponse&,
-                       const ResourceLoaderOptions&);
-  ResourceRequestBlockedReason canAccessResponse(Resource*,
-                                                 const ResourceResponse&) const;
-
   void requestLoadStarted(unsigned long identifier,
                           Resource*,
                           const FetchRequest&,
@@ -214,7 +197,6 @@ class CORE_EXPORT ResourceFetcher
                           bool isStaticData = false);
 
   bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
-  bool shouldDeferImageLoad(const KURL&) const;
 
   void resourceTimingReportTimerFired(TimerBase*);
 

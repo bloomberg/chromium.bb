@@ -39,10 +39,15 @@
 
 namespace blink {
 
+class FetchContext;
 class Resource;
 class ResourceError;
 class ResourceFetcher;
 
+// A ResourceLoader is created for each Resource by the ResourceFetcher when it
+// needs to load the specified resource. A ResourceLoader creates a
+// WebURLLoader and loads the resource using it. Any per-load logic should be
+// implemented in this class basically.
 class CORE_EXPORT ResourceLoader final
     : public GarbageCollectedFinalized<ResourceLoader>,
       protected WebURLLoaderClient {
@@ -51,16 +56,7 @@ class CORE_EXPORT ResourceLoader final
   ~ResourceLoader() override;
   DECLARE_TRACE();
 
-  void start(const ResourceRequest&,
-             WebTaskRunner* loadingTaskRunner,
-             bool defersLoading);
-
-  // This method is currently only used for service worker fallback request and
-  // cache-aware loading, other users should be careful not to break
-  // ResourceLoader state.
-  void restart(const ResourceRequest&,
-               WebTaskRunner* loadingTaskRunner,
-               bool defersLoading);
+  void start(const ResourceRequest&);
 
   void cancel();
 
@@ -105,13 +101,22 @@ class CORE_EXPORT ResourceLoader final
   void didFail(const WebURLError&,
                int64_t encodedDataLength,
                int64_t encodedBodyLength) override;
+  void handleError(const ResourceError&);
 
   void didFinishLoadingFirstPartInMultipart();
-  void didFail(const ResourceError&);
 
  private:
   // Assumes ResourceFetcher and Resource are non-null.
   ResourceLoader(ResourceFetcher*, Resource*);
+
+  // This method is currently only used for service worker fallback request and
+  // cache-aware loading, other users should be careful not to break
+  // ResourceLoader state.
+  void restart(const ResourceRequest&);
+
+  FetchContext& context() const;
+  ResourceRequestBlockedReason canAccessResponse(Resource*,
+                                                 const ResourceResponse&) const;
 
   void cancelForRedirectAccessCheckError(const KURL&,
                                          ResourceRequestBlockedReason);

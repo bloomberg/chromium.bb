@@ -9697,14 +9697,14 @@ TEST_P(ParameterizedWebFrameTest, SuspendedPageLoadWithRemoteMainFrame) {
   FrameTestHelpers::loadFrame(webLocalChild, m_baseURL + "foo.html");
   LocalFrame* localChild = toWebLocalFrameImpl(webLocalChild)->frame();
   EXPECT_FALSE(page->suspended());
-  EXPECT_FALSE(localChild->document()->fetcher()->defersLoading());
+  EXPECT_FALSE(localChild->document()->fetcher()->context().defersLoading());
   {
     ScopedPageSuspender suspender;
     EXPECT_TRUE(page->suspended());
-    EXPECT_TRUE(localChild->document()->fetcher()->defersLoading());
+    EXPECT_TRUE(localChild->document()->fetcher()->context().defersLoading());
   }
   EXPECT_FALSE(page->suspended());
-  EXPECT_FALSE(localChild->document()->fetcher()->defersLoading());
+  EXPECT_FALSE(localChild->document()->fetcher()->context().defersLoading());
 
   view->close();
 }

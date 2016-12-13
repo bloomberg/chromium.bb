@@ -178,8 +178,7 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
   long long redirectEncodedDataLength = 123;
   redirectResponse.setEncodedDataLength(redirectEncodedDataLength);
   ResourceRequest redirectResourceRequest(url);
-  fetcher->willFollowRedirect(resource, redirectResourceRequest,
-                              redirectResponse);
+  fetcher->recordResourceTimingOnRedirect(resource, redirectResponse, false);
   EXPECT_EQ(navigationTimingInfo->transferSize(),
             encodedDataLength + redirectEncodedDataLength);
   Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);

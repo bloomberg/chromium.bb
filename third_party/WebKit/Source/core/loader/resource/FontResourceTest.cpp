@@ -112,7 +112,7 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   EXPECT_FALSE(client->fontLoadShortLimitExceededCalled());
 
   // Fail first request as disk cache miss.
-  resource->loader()->didFail(ResourceError::cacheMissError(url));
+  resource->loader()->handleError(ResourceError::cacheMissError(url));
 
   // Once cache miss error returns, previously blocked callbacks should be
   // called immediately.

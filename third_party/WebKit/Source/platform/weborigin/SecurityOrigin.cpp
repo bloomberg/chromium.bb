@@ -571,6 +571,12 @@ bool SecurityOrigin::isSameSchemeHostPortAndSuborigin(
   return isSameSchemeHostPort(other) && sameSuborigins;
 }
 
+bool SecurityOrigin::areSameSchemeHostPort(const KURL& a, const KURL& b) {
+  RefPtr<SecurityOrigin> originA = SecurityOrigin::create(a);
+  RefPtr<SecurityOrigin> originB = SecurityOrigin::create(b);
+  return originB->isSameSchemeHostPort(originA.get());
+}
+
 const KURL& SecurityOrigin::urlWithUniqueSecurityOrigin() {
   ASSERT(isMainThread());
   DEFINE_STATIC_LOCAL(const KURL, uniqueSecurityOriginURL,
