@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+async_test(t => {
+  var image = new Image();
+  // Notice that we don't set the image.crossOrigin property.
+  image.src = "http://localhost:8000/security/resources/abe-allow-star.php";
+  image.onload = function() {
+    var canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 10;
+    var offscreen = canvas.transferControlToOffscreen();
+    var ctx = offscreen.getContext('2d');
+    ctx.drawImage(image, 0, 0);
+    ctx.commit();
+    t.step(function() {
+      canvas.toDataURL(); // Succeeds by not throwing
+    });
+    setTimeout(function() { // sync barrier for commit() propagation
+      t.step(function() {
+        assert_throws("SecurityError", function() {
+          canvas.toDataURL();
+        }, "Check toDataURL blocked.");
+      });
+      ctx.commit(); // Second frame does not reset origin-clean flag.
+      setTimeout(function() { // sync barrier for commit() propagation
+        t.step(function() {
+          assert_throws("SecurityError", function() {
+            canvas.toDataURL();
+          });
+        });
+        t.done();
+      }, 0);
+    }, 0);
+  }
+}, "Verify that the placeholder <canvas> associated with an OffscreenCanvas tainted with cross-origin content cannot be read once commit has propagated.");
+</script>

@@ -164,7 +164,7 @@ namespace {
 void updatePlaceholderImage(WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
                             std::unique_ptr<WebTaskRunner> taskRunner,
                             int placeholderCanvasId,
-                            RefPtr<blink::Image> image,
+                            RefPtr<blink::StaticBitmapImage> image,
                             unsigned resourceId) {
   DCHECK(isMainThread());
   OffscreenCanvasPlaceholder* placeholderCanvas =

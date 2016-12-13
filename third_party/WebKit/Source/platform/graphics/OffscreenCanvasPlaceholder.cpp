@@ -6,8 +6,8 @@
 
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
-#include "platform/graphics/Image.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "wtf/HashMap.h"
 
 namespace {
@@ -62,7 +62,7 @@ void OffscreenCanvasPlaceholder::unregisterPlaceholder() {
 }
 
 void OffscreenCanvasPlaceholder::setPlaceholderFrame(
-    RefPtr<Image> newFrame,
+    RefPtr<StaticBitmapImage> newFrame,
     WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
     std::unique_ptr<WebTaskRunner> taskRunner,
     unsigned resourceId) {

@@ -12,15 +12,15 @@
 
 namespace blink {
 
-class Image;
 class OffscreenCanvasFrameDispatcher;
+class StaticBitmapImage;
 class WebTaskRunner;
 
 class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
  public:
   ~OffscreenCanvasPlaceholder();
 
-  void setPlaceholderFrame(RefPtr<Image>,
+  void setPlaceholderFrame(RefPtr<StaticBitmapImage>,
                            WeakPtr<OffscreenCanvasFrameDispatcher>,
                            std::unique_ptr<WebTaskRunner>,
                            unsigned resourceId);
@@ -30,14 +30,16 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
 
   void registerPlaceholder(unsigned placeholderId);
   void unregisterPlaceholder();
-  const RefPtr<Image>& placeholderFrame() const { return m_placeholderFrame; }
+  const RefPtr<StaticBitmapImage>& placeholderFrame() const {
+    return m_placeholderFrame;
+  }
 
  private:
   bool isPlaceholderRegistered() const {
     return m_placeholderId != kNoPlaceholderId;
   }
 
-  RefPtr<Image> m_placeholderFrame;
+  RefPtr<StaticBitmapImage> m_placeholderFrame;
   WeakPtr<OffscreenCanvasFrameDispatcher> m_frameDispatcher;
   std::unique_ptr<WebTaskRunner> m_frameDispatcherTaskRunner;
   unsigned m_placeholderFrameResourceId = 0;

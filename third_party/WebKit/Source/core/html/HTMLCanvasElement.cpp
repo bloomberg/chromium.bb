@@ -642,6 +642,7 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer,
   if (hasImageBuffer()) {
     snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
   } else if (placeholderFrame()) {
+    DCHECK(placeholderFrame()->originClean());
     // TODO(ccameron): Canvas should produce sRGB images.
     // https://crbug.com/672299
     snapshot = placeholderFrame()->imageForCurrentFrame(
@@ -783,6 +784,8 @@ bool HTMLCanvasElement::originClean() const {
   if (document().settings() &&
       document().settings()->disableReadingFromCanvas())
     return false;
+  if (placeholderFrame())
+    return placeholderFrame()->originClean();
   return m_originClean;
 }
 

@@ -60,7 +60,7 @@ void OffscreenCanvasRenderingContext2D::commit(ScriptState* scriptState,
     return;
   }
   double commitStartTime = WTF::monotonicallyIncreasingTime();
-  RefPtr<StaticBitmapImage> image = this->transferToStaticBitmapImage();
+  RefPtr<StaticBitmapImage> image = transferToStaticBitmapImage();
   getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame(
       std::move(image), commitStartTime);
 }
