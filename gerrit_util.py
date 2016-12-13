@@ -602,35 +602,46 @@ def DeletePendingChangeEdit(host, change):
 
 def SetCommitMessage(host, change, description, notify='ALL'):
   """Updates a commit message."""
-  assert notify in ('ALL', 'NONE')
-  # First, edit the commit message in a draft.
-  path = 'changes/%s/edit:message' % change
-  body = {'message': description}
-  conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
   try:
-    ReadHttpResponse(conn, ignore_404=False)
-  except GerritError as e:
-    # On success, gerrit returns status 204; anything else is an error.
-    if e.http_status != 204:
-      raise
-  else:
-    raise GerritError(
-        'Unexpectedly received a 200 http status while editing message in '
-        'change %s' % change)
+    assert notify in ('ALL', 'NONE')
+    # First, edit the commit message in a draft.
+    path = 'changes/%s/edit:message' % change
+    body = {'message': description}
+    conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
+    try:
+      ReadHttpResponse(conn, ignore_404=False)
+    except GerritError as e:
+      # On success, gerrit returns status 204; anything else is an error.
+      if e.http_status != 204:
+        raise
+    else:
+      raise GerritError(
+          'Unexpectedly received a 200 http status while editing message in '
+          'change %s' % change)
 
-  # And then publish it.
-  path = 'changes/%s/edit:publish' % change
-  conn = CreateHttpConn(host, path, reqtype='POST', body={'notify': notify})
-  try:
-    ReadHttpResponse(conn, ignore_404=False)
-  except GerritError as e:
-    # On success, gerrit returns status 204; anything else is an error.
-    if e.http_status != 204:
-      raise
-  else:
-    raise GerritError(
-        'Unexpectedly received a 200 http status while publishing message '
-        'change in %s' % change)
+    # And then publish it.
+    path = 'changes/%s/edit:publish' % change
+    conn = CreateHttpConn(host, path, reqtype='POST', body={'notify': notify})
+    try:
+      ReadHttpResponse(conn, ignore_404=False)
+    except GerritError as e:
+      # On success, gerrit returns status 204; anything else is an error.
+      if e.http_status != 204:
+        raise
+    else:
+      raise GerritError(
+          'Unexpectedly received a 200 http status while publishing message '
+          'change in %s' % change)
+  except (GerritError, KeyboardInterrupt) as e:
+    # Something went wrong with one of the two calls, so we want to clean up
+    # after ourselves before returning.
+    try:
+      DeletePendingChangeEdit(host, change)
+    except GerritError:
+      LOGGER.error('Encountered error while cleaning up after failed attempt '
+                   'to set the CL description. You may have to delete the '
+                   'pending change edit yourself in the web UI.')
+    raise e
 
 
 def GetReviewers(host, change):
