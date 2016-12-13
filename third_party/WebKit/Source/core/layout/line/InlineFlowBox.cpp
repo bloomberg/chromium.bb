@@ -588,6 +588,10 @@ void InlineFlowBox::computeLogicalBoxHeights(
   bool affectsDescent = false;
   bool checkChildren = !descendantsHaveSameLineHeightAndBaseline();
 
+  DCHECK(rootBox);
+  if (!rootBox)
+    return;
+
   if (isRootInlineBox()) {
     // Examine our root box.
     int ascent = 0;
