@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/translate/translate_message_infobar_controller.h"
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
@@ -21,9 +22,9 @@
 
 @implementation TranslateMessageInfoBarController
 
-- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
-    viewForDelegate:(infobars::InfoBarDelegate*)delegate
-              frame:(CGRect)frame {
+- (UIView<InfoBarViewProtocol>*)viewForDelegate:
+                                    (infobars::InfoBarDelegate*)delegate
+                                          frame:(CGRect)frame {
   base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
   translate::TranslateInfoBarDelegate* translateInfoBarDelegate =
       delegate->AsTranslateInfoBarDelegate();
@@ -49,7 +50,7 @@
                     target:self
                     action:@selector(infoBarButtonDidPress:)];
   }
-  return infoBarView;
+  return [[infoBarView retain] autorelease];
 }
 
 #pragma mark - Handling of User Events

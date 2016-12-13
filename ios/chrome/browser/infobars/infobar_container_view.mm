@@ -9,6 +9,10 @@
 #include "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"
 #include "ui/base/device_form_factor.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation InfoBarContainerView
 
 - (void)addInfoBar:(InfoBarIOS*)infoBarIOS position:(NSInteger)position {

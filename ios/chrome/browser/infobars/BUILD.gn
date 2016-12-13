@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("infobars") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "confirm_infobar_controller+protected.h",
     "confirm_infobar_controller.h",

@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
@@ -127,9 +128,9 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
 #pragma mark -
 #pragma mark InfoBarControllerProtocol
 
-- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
-    viewForDelegate:(infobars::InfoBarDelegate*)delegate
-              frame:(CGRect)frame {
+- (UIView<InfoBarViewProtocol>*)viewForDelegate:
+                                    (infobars::InfoBarDelegate*)delegate
+                                          frame:(CGRect)frame {
   base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
   _translateInfoBarDelegate = delegate->AsTranslateInfoBarDelegate();
   infoBarView.reset(
@@ -155,7 +156,7 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
                      tag2:TranslateInfoBarIOSTag::BEFORE_DENY
                    target:self
                    action:@selector(infoBarButtonDidPress:)];
-  return infoBarView;
+  return [[infoBarView retain] autorelease];
 }
 
 - (void)updateInfobarLabelOnView:(UIView<InfoBarViewProtocol>*)view {

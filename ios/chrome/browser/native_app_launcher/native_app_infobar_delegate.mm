@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/infobar_manager.h"

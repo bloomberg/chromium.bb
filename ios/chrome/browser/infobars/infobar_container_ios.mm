@@ -13,6 +13,10 @@
 #include "ios/chrome/browser/infobars/infobar_container_view.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 InfoBarContainerIOS::InfoBarContainerIOS(
     infobars::InfoBarContainer::Delegate* delegate)
     : InfoBarContainer(delegate), delegate_(delegate) {

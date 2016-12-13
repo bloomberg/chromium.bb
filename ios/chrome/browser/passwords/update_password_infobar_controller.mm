@@ -39,7 +39,7 @@ NSUInteger kAccountTag = 10;
   return self;
 }
 
-- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
+- (UIView<InfoBarViewProtocol>*)
 viewForDelegate:(IOSChromeUpdatePasswordInfoBarDelegate*)delegate
           frame:(CGRect)frame {
   _delegate = delegate;

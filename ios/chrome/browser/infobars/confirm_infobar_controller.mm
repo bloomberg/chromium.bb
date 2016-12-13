@@ -15,6 +15,10 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/image/image.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // UI Tags for the infobar elements.
@@ -53,13 +57,13 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
 #pragma mark -
 #pragma mark InfoBarController
 
-- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
-    viewForDelegate:(infobars::InfoBarDelegate*)delegate
-              frame:(CGRect)frame {
-  base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
+- (UIView<InfoBarViewProtocol>*)viewForDelegate:
+                                    (infobars::InfoBarDelegate*)delegate
+                                          frame:(CGRect)frame {
+  UIView<InfoBarViewProtocol>* infoBarView;
   _confirmInfobarDelegate = delegate->AsConfirmInfoBarDelegate();
-  infoBarView.reset(
-      ios::GetChromeBrowserProvider()->CreateInfoBarView(frame, self.delegate));
+  infoBarView =
+      ios::GetChromeBrowserProvider()->CreateInfoBarView(frame, self.delegate);
   // Model data.
   gfx::Image modelIcon = _confirmInfobarDelegate->GetIcon();
   int buttons = _confirmInfobarDelegate->GetButtons();

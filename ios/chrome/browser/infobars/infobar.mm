@@ -13,6 +13,10 @@
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using infobars::InfoBar;
 using infobars::InfoBarDelegate;
 
@@ -26,7 +30,7 @@ InfoBarIOS::~InfoBarIOS() {
 }
 
 void InfoBarIOS::SetController(InfoBarController* controller) {
-  controller_.reset([controller retain]);
+  controller_.reset(controller);
 }
 
 void InfoBarIOS::Layout(CGRect container_bounds) {

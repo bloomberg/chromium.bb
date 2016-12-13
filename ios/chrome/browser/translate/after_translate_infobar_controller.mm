@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/translate/after_translate_infobar_controller.h"
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
@@ -29,9 +30,9 @@
 #pragma mark -
 #pragma mark InfoBarControllerProtocol
 
-- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
-    viewForDelegate:(infobars::InfoBarDelegate*)delegate
-              frame:(CGRect)frame {
+- (UIView<InfoBarViewProtocol>*)viewForDelegate:
+                                    (infobars::InfoBarDelegate*)delegate
+                                          frame:(CGRect)frame {
   base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
   _translateInfoBarDelegate = delegate->AsTranslateInfoBarDelegate();
   DCHECK(_translateInfoBarDelegate);
@@ -89,7 +90,7 @@
                     target:self
                     action:@selector(infoBarSwitchDidPress:)];
   }
-  return infoBarView;
+  return [[infoBarView retain] autorelease];
 }
 
 #pragma mark - Handling of User Events

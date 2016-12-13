@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/native_app_launcher/native_app_infobar_controller.h"
 
 #include "base/logging.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/native_app_launcher/native_app_infobar_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -33,9 +34,9 @@
 
 #pragma mark - InfoBarController
 
-- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
-viewForDelegate:(infobars::InfoBarDelegate*)delegate
-          frame:(CGRect)frame {
+- (UIView<InfoBarViewProtocol>*)viewForDelegate:
+                                    (infobars::InfoBarDelegate*)delegate
+                                          frame:(CGRect)frame {
   base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
   nativeAppInfoBarDelegate_ = static_cast<NativeAppInfoBarDelegate*>(delegate);
   DCHECK(nativeAppInfoBarDelegate_);
@@ -96,7 +97,7 @@ viewForDelegate:(infobars::InfoBarDelegate*)delegate
       break;
     }
   }
-  return infoBarView;
+  return [[infoBarView retain] autorelease];
 }
 
 - (void)infoBarButtonDidPress:(UIButton*)button {

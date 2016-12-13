@@ -16,6 +16,10 @@
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 DEFINE_WEB_STATE_USER_DATA_KEY(InfoBarManagerImpl);
 
 namespace {

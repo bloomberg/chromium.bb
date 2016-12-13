@@ -6,7 +6,6 @@
 #define IOS_CHROME_BROWSER_INFOBARS_INFOBAR_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
-#include "base/mac/scoped_nsobject.h"
 
 @protocol InfoBarViewProtocol;
 class InfoBarViewDelegate;
@@ -26,9 +25,9 @@ class InfoBarDelegate;
 
 // Creates a view and lays out all the infobar elements in it. Will not add
 // it as a subview yet. This method must be overriden in subclasses.
-- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
-    viewForDelegate:(infobars::InfoBarDelegate*)delegate
-              frame:(CGRect)bounds;
+- (UIView<InfoBarViewProtocol>*)viewForDelegate:
+                                    (infobars::InfoBarDelegate*)delegate
+                                          frame:(CGRect)bounds;
 
 // Creates the view.
 - (void)layoutForDelegate:(infobars::InfoBarDelegate*)delegate
