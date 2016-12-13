@@ -1,9 +1,9 @@
 /*
- * parser classes for MySpell
+ * HTML parser class for MySpell
  *
  * implemented: text, HTML, TeX
  *
- * Copyright (C) 2002, Laszlo Nemeth
+ * Copyright (C) 2014, Laszlo Nemeth
  *
  */
 /* ***** BEGIN LICENSE BLOCK *****
@@ -46,31 +46,36 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef LATEXPARSER_HXX_
-#define LATEXPARSER_HXX_
+#ifndef XMLPARSER_HXX_
+#define XMLPARSER_HXX_
 
 #include "textparser.hxx"
 
 /*
- * HTML Parser
+ * XML Parser
  *
  */
 
-class LaTeXParser : public TextParser {
-  int pattern_num;  // number of comment
-  int depth;        // depth of blocks
-  int arg;          // arguments's number
-  int opt;          // optional argument attrib.
-
+class XMLParser : public TextParser {
  public:
-  explicit LaTeXParser(const char* wc);
-  LaTeXParser(const w_char* wordchars, int len);
-  virtual ~LaTeXParser();
-
+  explicit XMLParser(const char* wc);
+  XMLParser(const w_char* wordchars, int len);
+  bool next_token(const char* p[][2],
+                  unsigned int len,
+                  const char* p2[][2],
+                  unsigned int len2,
+                  std::string&);
   virtual bool next_token(std::string&);
+  int change_token(const char* word);
+  virtual ~XMLParser();
 
  private:
-  int look_pattern(int col);
+  int look_pattern(const char* p[][2], unsigned int len, int column);
+  int pattern_num;
+  int pattern2_num;
+  int prevstate;
+  int checkattr;
+  char quotmark;
 };
 
 #endif

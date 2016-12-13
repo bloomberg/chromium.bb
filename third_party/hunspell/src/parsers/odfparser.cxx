@@ -1,11 +1,3 @@
-/*
- * parser classes for MySpell
- *
- * implemented: text, HTML, TeX
- *
- * Copyright (C) 2002, Laszlo Nemeth
- *
- */
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -46,31 +38,42 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef LATEXPARSER_HXX_
-#define LATEXPARSER_HXX_
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+#include <ctype.h>
 
-#include "textparser.hxx"
+#include "../hunspell/csutil.hxx"
+#include "odfparser.hxx"
 
-/*
- * HTML Parser
- *
- */
-
-class LaTeXParser : public TextParser {
-  int pattern_num;  // number of comment
-  int depth;        // depth of blocks
-  int arg;          // arguments's number
-  int opt;          // optional argument attrib.
-
- public:
-  explicit LaTeXParser(const char* wc);
-  LaTeXParser(const w_char* wordchars, int len);
-  virtual ~LaTeXParser();
-
-  virtual bool next_token(std::string&);
-
- private:
-  int look_pattern(int col);
-};
-
+#ifndef W32
+using namespace std;
 #endif
+
+static const char* PATTERN[][2] = {
+    {"<office:meta>", "</office:meta>"},
+    {"<office:settings>", "</office:settings>"},
+    {"<office:binary-data>", "</office:binary-data>"},
+    {"<!--", "-->"},
+    {"<[cdata[", "]]>"},  // XML comment
+    {"<", ">"}};
+
+#define PATTERN_LEN (sizeof(PATTERN) / (sizeof(char*) * 2))
+
+static const char* (*PATTERN2)[2] = NULL;
+
+#define PATTERN_LEN2 0
+
+ODFParser::ODFParser(const char* wordchars)
+  : XMLParser(wordchars) {
+}
+
+ODFParser::ODFParser(const w_char* wordchars, int len)
+  : XMLParser(wordchars, len) {
+}
+
+bool ODFParser::next_token(std::string& t) {
+  return XMLParser::next_token(PATTERN, PATTERN_LEN, PATTERN2, PATTERN_LEN2, t);
+}
+
+ODFParser::~ODFParser() {}

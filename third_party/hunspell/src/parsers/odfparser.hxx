@@ -1,9 +1,7 @@
 /*
- * parser classes for MySpell
+ * ODF parser class for MySpell
  *
- * implemented: text, HTML, TeX
- *
- * Copyright (C) 2002, Laszlo Nemeth
+ * Copyright (C) 2014, Laszlo Nemeth
  *
  */
 /* ***** BEGIN LICENSE BLOCK *****
@@ -46,31 +44,22 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef LATEXPARSER_HXX_
-#define LATEXPARSER_HXX_
+#ifndef ODFPARSER_HXX_
+#define ODFPARSER_HXX_
 
-#include "textparser.hxx"
+#include "xmlparser.hxx"
 
 /*
  * HTML Parser
  *
  */
 
-class LaTeXParser : public TextParser {
-  int pattern_num;  // number of comment
-  int depth;        // depth of blocks
-  int arg;          // arguments's number
-  int opt;          // optional argument attrib.
-
+class ODFParser : public XMLParser {
  public:
-  explicit LaTeXParser(const char* wc);
-  LaTeXParser(const w_char* wordchars, int len);
-  virtual ~LaTeXParser();
-
+  explicit ODFParser(const char* wc);
+  ODFParser(const w_char* wordchars, int len);
   virtual bool next_token(std::string&);
-
- private:
-  int look_pattern(int col);
+  virtual ~ODFParser();
 };
 
 #endif

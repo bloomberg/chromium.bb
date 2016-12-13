@@ -56,6 +56,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef HUNSPELL_CHROME_CLIENT
-#include "config.h"
+#ifndef MOZILLA_CLIENT
+#    include "config.h"
 #endif

@@ -1333,7 +1333,8 @@ TEST_F(SpellCheckTest, NoSuggest) {
 
     EXPECT_EQ(kTestCases[i].should_pass, result) << kTestCases[i].suggestion <<
         " in " << kTestCases[i].locale;
-
+    // TODO(cb/673424): Bring this back when suggestions are sped up.
+#if 0
     // Now verify that this test case does not show up as a suggestion.
     std::vector<base::string16> suggestions;
     size_t input_length = 0;
@@ -1360,6 +1361,7 @@ TEST_F(SpellCheckTest, NoSuggest) {
             " in " << kTestCases[i].locale;
       }
     }
+#endif
   }
 }
 

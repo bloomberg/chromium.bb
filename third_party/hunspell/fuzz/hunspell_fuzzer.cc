@@ -26,11 +26,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::string16 utf16_string = base::UTF8ToUTF16(data_string);
   data_string = base::UTF16ToUTF8(utf16_string);
 
-  hunspell->spell(data_string.c_str());
+  hunspell->spell(data_string);
 
-  char** suggestions = nullptr;
-  int suggestion_length = hunspell->suggest(&suggestions, data_string.c_str());
-  hunspell->free_list(&suggestions, suggestion_length);
+  std::vector<std::string> suggestions =
+      hunspell->suggest(data_string);
 
   return 0;
 }
