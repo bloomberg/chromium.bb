@@ -618,11 +618,11 @@ void DesktopSessionWin::OnSessionAttached(uint32_t session_id) {
 
   ReportElapsedTime("attached");
 
-  // Launch elevated on Win8 to be able to inject Alt+Tab.
+  // Launch elevated on Win8+ to enable injection of Alt+Tab and Ctrl+Alt+Del.
   bool launch_elevated = base::win::GetVersion() >= base::win::VERSION_WIN8;
 
   // Get the name of the executable to run. |kDesktopBinaryName| specifies
-  // uiAccess="true" in it's manifest.
+  // uiAccess="true" in its manifest.
   base::FilePath desktop_binary;
   bool result;
   if (launch_elevated) {
