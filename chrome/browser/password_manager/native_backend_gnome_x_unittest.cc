@@ -541,7 +541,7 @@ class NativeBackendGnomeTest : public testing::Test {
       // signon_realm. Just use a default value for now.
       target_form.signon_realm.append("Realm");
     }
-    ScopedVector<autofill::PasswordForm> form_list;
+    std::vector<std::unique_ptr<PasswordForm>> form_list;
     BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::DB,
         FROM_HERE,
@@ -590,7 +590,7 @@ class NativeBackendGnomeTest : public testing::Test {
     const GURL kMobileURL("http://m.facebook.com/");
     PasswordStore::FormDigest m_facebook_lookup = {
         PasswordForm::SCHEME_HTML, kMobileURL.spec(), kMobileURL};
-    ScopedVector<autofill::PasswordForm> form_list;
+    std::vector<std::unique_ptr<PasswordForm>> form_list;
     BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::DB,
         FROM_HERE,
@@ -827,7 +827,7 @@ TEST_F(NativeBackendGnomeTest, BasicListLogins) {
       base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                  base::Unretained(&backend), form_google_));
 
-  ScopedVector<autofill::PasswordForm> form_list;
+  std::vector<std::unique_ptr<PasswordForm>> form_list;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&NativeBackendGnome::GetAutofillableLogins,
@@ -1020,7 +1020,7 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
                  base::Owned(new PasswordStoreChangeList), &changes));
 
   // Make sure we can still get the first form back.
-  ScopedVector<autofill::PasswordForm> form_list;
+  std::vector<std::unique_ptr<PasswordForm>> form_list;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&NativeBackendGnome::GetAutofillableLogins,
@@ -1157,7 +1157,7 @@ TEST_F(NativeBackendGnomeTest, AndroidCredentials) {
                  PasswordStoreChangeList(1, PasswordStoreChange(
                      PasswordStoreChange::ADD, saved_android_form))));
 
-  ScopedVector<autofill::PasswordForm> form_list;
+  std::vector<std::unique_ptr<PasswordForm>> form_list;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&NativeBackendGnome::GetLogins,
@@ -1263,7 +1263,7 @@ TEST_F(NativeBackendGnomeTest, ReadDuplicateForms) {
       unique_string_replacement);
 
   // Now test that GetAutofillableLogins returns only one form.
-  ScopedVector<autofill::PasswordForm> form_list;
+  std::vector<std::unique_ptr<PasswordForm>> form_list;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&NativeBackendGnome::GetAutofillableLogins,
@@ -1293,7 +1293,7 @@ TEST_F(NativeBackendGnomeTest, GetAllLogins) {
       base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                  base::Unretained(&backend), form_facebook_));
 
-  ScopedVector<autofill::PasswordForm> form_list;
+  std::vector<std::unique_ptr<PasswordForm>> form_list;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&NativeBackendGnome::GetAllLogins, base::Unretained(&backend),

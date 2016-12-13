@@ -26,8 +26,8 @@ password_manager::PasswordSyncState GetPasswordSyncState(
 }
 
 void FindDuplicates(
-    ScopedVector<autofill::PasswordForm>* forms,
-    ScopedVector<autofill::PasswordForm>* duplicates,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* duplicates,
     std::vector<std::vector<autofill::PasswordForm*>>* tag_groups) {
   if (forms->empty())
     return;
@@ -36,27 +36,25 @@ void FindDuplicates(
   // duplicates. Therefore, the caller should try to preserve it.
   std::stable_sort(forms->begin(), forms->end(), autofill::LessThanUniqueKey());
 
-  ScopedVector<autofill::PasswordForm> unique_forms;
-  unique_forms.push_back(forms->front());
-  forms->front() = nullptr;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> unique_forms;
+  unique_forms.push_back(std::move(forms->front()));
   if (tag_groups) {
     tag_groups->clear();
     tag_groups->push_back(std::vector<autofill::PasswordForm*>());
-    tag_groups->front().push_back(unique_forms.front());
+    tag_groups->front().push_back(unique_forms.front().get());
   }
   for (auto it = forms->begin() + 1; it != forms->end(); ++it) {
     if (ArePasswordFormUniqueKeyEqual(**it, *unique_forms.back())) {
-      duplicates->push_back(*it);
       if (tag_groups)
-        tag_groups->back().push_back(*it);
+        tag_groups->back().push_back(it->get());
+      duplicates->push_back(std::move(*it));
     } else {
-      unique_forms.push_back(*it);
       if (tag_groups)
-        tag_groups->push_back(std::vector<autofill::PasswordForm*>(1, *it));
+        tag_groups->push_back(
+            std::vector<autofill::PasswordForm*>(1, it->get()));
+      unique_forms.push_back(std::move(*it));
     }
-    *it = nullptr;
   }
-  forms->weak_clear();
   forms->swap(unique_forms);
 }
 

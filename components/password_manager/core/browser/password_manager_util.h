@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -35,8 +34,8 @@ password_manager::PasswordSyncState GetPasswordSyncState(
 // the sync tag. The first element in each group is one from |forms|. It's
 // followed by the duplicates.
 void FindDuplicates(
-    ScopedVector<autofill::PasswordForm>* forms,
-    ScopedVector<autofill::PasswordForm>* duplicates,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* duplicates,
     std::vector<std::vector<autofill::PasswordForm*>>* tag_groups);
 
 // Removes Android username-only credentials from |android_credentials|.

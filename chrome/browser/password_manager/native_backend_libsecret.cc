@@ -180,7 +180,7 @@ password_manager::PasswordStoreChangeList NativeBackendLibsecret::AddLogin(
   // on origin_url, username_element, username_value, password_element and
   // signon_realm first, remove that, and then add the new entry.
   password_manager::PasswordStoreChangeList changes;
-  ScopedVector<autofill::PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   if (!AddUpdateLoginSearch(form, &forms))
     return changes;
 
@@ -190,7 +190,7 @@ password_manager::PasswordStoreChangeList NativeBackendLibsecret::AddLogin(
       LOG(WARNING) << "Adding login when there are " << forms.size()
                    << " matching logins already!";
     }
-    for (const PasswordForm* old_form : forms) {
+    for (const auto& old_form : forms) {
       if (!RemoveLogin(*old_form, &temp_changes))
         return changes;
     }
@@ -214,7 +214,7 @@ bool NativeBackendLibsecret::UpdateLogin(
   // then add the new entry. We'd add the new one first, and then delete the
   // original, but then the delete might actually delete the newly-added entry!
   DCHECK(changes);
-  ScopedVector<autofill::PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   if (!AddUpdateLoginSearch(form, &forms))
     return false;
   if (forms.empty())
@@ -223,7 +223,7 @@ bool NativeBackendLibsecret::UpdateLogin(
     return true;
 
   password_manager::PasswordStoreChangeList temp_changes;
-  for (const PasswordForm* keychain_form : forms) {
+  for (const auto& keychain_form : forms) {
     // Remove all the obsolete forms. Note that RemoveLogin can remove any form
     // matching the unique key. Thus, it's important to call it the right number
     // of times.
@@ -241,7 +241,7 @@ bool NativeBackendLibsecret::UpdateLogin(
 }
 
 bool NativeBackendLibsecret::RemoveLogin(
-    const autofill::PasswordForm& form,
+    const PasswordForm& form,
     password_manager::PasswordStoreChangeList* changes) {
   DCHECK(changes);
   GError* error = nullptr;
@@ -283,11 +283,11 @@ bool NativeBackendLibsecret::RemoveLoginsSyncedBetween(
 bool NativeBackendLibsecret::DisableAutoSignInForOrigins(
     const base::Callback<bool(const GURL&)>& origin_filter,
     password_manager::PasswordStoreChangeList* changes) {
-  ScopedVector<autofill::PasswordForm> all_forms;
+  std::vector<std::unique_ptr<PasswordForm>> all_forms;
   if (!GetLoginsList(nullptr, ALL_LOGINS, &all_forms))
     return false;
 
-  for (auto* form : all_forms) {
+  for (const std::unique_ptr<PasswordForm>& form : all_forms) {
     if (origin_filter.Run(form->origin) && !form->skip_zero_click) {
       form->skip_zero_click = true;
       if (!UpdateLogin(*form, changes))
@@ -300,13 +300,13 @@ bool NativeBackendLibsecret::DisableAutoSignInForOrigins(
 
 bool NativeBackendLibsecret::GetLogins(
     const PasswordStore::FormDigest& form,
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   return GetLoginsList(&form, ALL_LOGINS, forms);
 }
 
 bool NativeBackendLibsecret::AddUpdateLoginSearch(
-    const autofill::PasswordForm& lookup_form,
-    ScopedVector<autofill::PasswordForm>* forms) {
+    const PasswordForm& lookup_form,
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   if (!ensured_keyring_unlocked_) {
     LibsecretLoader::EnsureKeyringUnlocked();
     ensured_keyring_unlocked_ = true;
@@ -395,24 +395,24 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
 }
 
 bool NativeBackendLibsecret::GetAutofillableLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   return GetLoginsList(nullptr, AUTOFILLABLE_LOGINS, forms);
 }
 
 bool NativeBackendLibsecret::GetBlacklistLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   return GetLoginsList(nullptr, BLACKLISTED_LOGINS, forms);
 }
 
 bool NativeBackendLibsecret::GetAllLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   return GetLoginsList(nullptr, ALL_LOGINS, forms);
 }
 
 bool NativeBackendLibsecret::GetLoginsList(
     const PasswordStore::FormDigest* lookup_form,
     GetLoginsListOptions options,
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   if (!ensured_keyring_unlocked_) {
     LibsecretLoader::EnsureKeyringUnlocked();
     ensured_keyring_unlocked_ = true;
@@ -449,8 +449,8 @@ bool NativeBackendLibsecret::GetLoginsList(
     return true;
 
   // Get rid of the forms with the same sync tags.
-  ScopedVector<autofill::PasswordForm> duplicates;
-  std::vector<std::vector<autofill::PasswordForm*>> tag_groups;
+  std::vector<std::unique_ptr<PasswordForm>> duplicates;
+  std::vector<std::vector<PasswordForm*>> tag_groups;
   password_manager_util::FindDuplicates(forms, &duplicates, &tag_groups);
   if (duplicates.empty())
     return true;
@@ -471,21 +471,19 @@ bool NativeBackendLibsecret::GetLoginsBetween(
     base::Time get_begin,
     base::Time get_end,
     TimestampToCompare date_to_compare,
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   forms->clear();
-  ScopedVector<autofill::PasswordForm> all_forms;
+  std::vector<std::unique_ptr<PasswordForm>> all_forms;
   if (!GetLoginsList(nullptr, ALL_LOGINS, &all_forms))
     return false;
 
-  base::Time autofill::PasswordForm::*date_member =
-      date_to_compare == CREATION_TIMESTAMP
-          ? &autofill::PasswordForm::date_created
-          : &autofill::PasswordForm::date_synced;
-  for (auto*& saved_form : all_forms) {
-    if (get_begin <= saved_form->*date_member &&
-        (get_end.is_null() || saved_form->*date_member < get_end)) {
-      forms->push_back(saved_form);
-      saved_form = nullptr;
+  base::Time PasswordForm::*date_member = date_to_compare == CREATION_TIMESTAMP
+                                              ? &PasswordForm::date_created
+                                              : &PasswordForm::date_synced;
+  for (std::unique_ptr<PasswordForm>& saved_form : all_forms) {
+    if (get_begin <= saved_form.get()->*date_member &&
+        (get_end.is_null() || saved_form.get()->*date_member < get_end)) {
+      forms->push_back(std::move(saved_form));
     }
   }
 
@@ -499,7 +497,7 @@ bool NativeBackendLibsecret::RemoveLoginsBetween(
     password_manager::PasswordStoreChangeList* changes) {
   DCHECK(changes);
   changes->clear();
-  ScopedVector<autofill::PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   if (!GetLoginsBetween(get_begin, get_end, date_to_compare, &forms))
     return false;
 
@@ -510,10 +508,11 @@ bool NativeBackendLibsecret::RemoveLoginsBetween(
   return true;
 }
 
-ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
+std::vector<std::unique_ptr<PasswordForm>>
+NativeBackendLibsecret::ConvertFormList(
     GList* found,
     const PasswordStore::FormDigest* lookup_form) {
-  ScopedVector<autofill::PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   password_manager::PSLDomainMatchMetric psl_domain_match_metric =
       password_manager::PSL_DOMAIN_MATCH_NONE;
   GError* error = nullptr;

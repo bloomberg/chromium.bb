@@ -115,10 +115,10 @@ std::unique_ptr<PasswordForm> FormFromAttributes(
 // kept. PSL matched results get their signon_realm, origin, and action
 // rewritten to those of |lookup_form_|, with the original signon_realm saved
 // into the result's original_signon_realm data member.
-ScopedVector<PasswordForm> ConvertFormList(
+std::vector<std::unique_ptr<PasswordForm>> ConvertFormList(
     GList* found,
     const PasswordStore::FormDigest* lookup_form) {
-  ScopedVector<PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   password_manager::PSLDomainMatchMetric psl_domain_match_metric =
       password_manager::PSL_DOMAIN_MATCH_NONE;
   const bool allow_psl_match =
@@ -233,7 +233,8 @@ class GKRMethod : public GnomeKeyringLoader {
 
   // Use after LoginSearch, GetLogins, GetLoginsList, GetAllLogins. Replaces the
   // content of |forms| with found logins.
-  GnomeKeyringResult WaitResult(ScopedVector<PasswordForm>* forms);
+  GnomeKeyringResult WaitResult(
+      std::vector<std::unique_ptr<PasswordForm>>* forms);
 
  private:
   struct GnomeKeyringAttributeListFreeDeleter {
@@ -269,7 +270,7 @@ class GKRMethod : public GnomeKeyringLoader {
 
   base::WaitableEvent event_;
   GnomeKeyringResult result_;
-  ScopedVector<PasswordForm> forms_;
+  std::vector<std::unique_ptr<PasswordForm>> forms_;
   // If the credential search is specified by a single form and needs to use
   // PSL matching, then the specifying form is stored in |lookup_form_|. If
   // PSL matching is used to find a result, then the results signon realm and
@@ -415,7 +416,8 @@ GnomeKeyringResult GKRMethod::WaitResult() {
   return result_;
 }
 
-GnomeKeyringResult GKRMethod::WaitResult(ScopedVector<PasswordForm>* forms) {
+GnomeKeyringResult GKRMethod::WaitResult(
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   event_.Wait();
   *forms = std::move(forms_);
@@ -514,7 +516,7 @@ password_manager::PasswordStoreChangeList NativeBackendGnome::AddLogin(
                           base::Bind(&GKRMethod::LoginSearch,
                                      base::Unretained(&method),
                                      form, app_string_.c_str()));
-  ScopedVector<PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   GnomeKeyringResult result = method.WaitResult(&forms);
   if (result != GNOME_KEYRING_RESULT_OK &&
       result != GNOME_KEYRING_RESULT_NO_MATCH) {
@@ -529,7 +531,7 @@ password_manager::PasswordStoreChangeList NativeBackendGnome::AddLogin(
       LOG(WARNING) << "Adding login when there are " << forms.size()
                    << " matching logins already!";
     }
-    for (const PasswordForm* old_form : forms) {
+    for (const auto& old_form : forms) {
       if (!RemoveLogin(*old_form, &temp_changes))
         return changes;
     }
@@ -559,7 +561,7 @@ bool NativeBackendGnome::UpdateLogin(
                           base::Bind(&GKRMethod::LoginSearch,
                                      base::Unretained(&method),
                                      form, app_string_.c_str()));
-  ScopedVector<PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   GnomeKeyringResult result = method.WaitResult(&forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
@@ -572,7 +574,7 @@ bool NativeBackendGnome::UpdateLogin(
     return true;
 
   password_manager::PasswordStoreChangeList temp_changes;
-  for (const PasswordForm* keychain_form : forms) {
+  for (const auto& keychain_form : forms) {
     // Remove all the obsolete forms. Note that RemoveLogin can remove any form
     // matching the unique key. Thus, it's important to call it the right number
     // of times.
@@ -631,11 +633,11 @@ bool NativeBackendGnome::RemoveLoginsSyncedBetween(
 bool NativeBackendGnome::DisableAutoSignInForOrigins(
     const base::Callback<bool(const GURL&)>& origin_filter,
     password_manager::PasswordStoreChangeList* changes) {
-  ScopedVector<PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   if (!GetAllLogins(&forms))
     return false;
 
-  for (auto* form : forms) {
+  for (const std::unique_ptr<PasswordForm>& form : forms) {
     if (origin_filter.Run(form->origin) && !form->skip_zero_click) {
       form->skip_zero_click = true;
       if (!UpdateLogin(*form, changes))
@@ -646,8 +648,9 @@ bool NativeBackendGnome::DisableAutoSignInForOrigins(
   return true;
 }
 
-bool NativeBackendGnome::GetLogins(const PasswordStore::FormDigest& form,
-                                   ScopedVector<PasswordForm>* forms) {
+bool NativeBackendGnome::GetLogins(
+    const PasswordStore::FormDigest& form,
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -666,16 +669,18 @@ bool NativeBackendGnome::GetLogins(const PasswordStore::FormDigest& form,
 }
 
 bool NativeBackendGnome::GetAutofillableLogins(
-    ScopedVector<PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   return GetLoginsList(true, forms);
 }
 
-bool NativeBackendGnome::GetBlacklistLogins(ScopedVector<PasswordForm>* forms) {
+bool NativeBackendGnome::GetBlacklistLogins(
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   return GetLoginsList(false, forms);
 }
 
-bool NativeBackendGnome::GetLoginsList(bool autofillable,
-                                       ScopedVector<PasswordForm>* forms) {
+bool NativeBackendGnome::GetLoginsList(
+    bool autofillable,
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
 
   uint32_t blacklisted_by_user = !autofillable;
@@ -695,7 +700,7 @@ bool NativeBackendGnome::GetLoginsList(bool autofillable,
   }
 
   // Get rid of the forms with the same sync tags.
-  ScopedVector<autofill::PasswordForm> duplicates;
+  std::vector<std::unique_ptr<PasswordForm>> duplicates;
   std::vector<std::vector<autofill::PasswordForm*>> tag_groups;
   password_manager_util::FindDuplicates(forms, &duplicates, &tag_groups);
   if (duplicates.empty())
@@ -713,7 +718,8 @@ bool NativeBackendGnome::GetLoginsList(bool autofillable,
   return true;
 }
 
-bool NativeBackendGnome::GetAllLogins(ScopedVector<PasswordForm>* forms) {
+bool NativeBackendGnome::GetAllLogins(
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&GKRMethod::GetAllLogins,
@@ -730,26 +736,26 @@ bool NativeBackendGnome::GetAllLogins(ScopedVector<PasswordForm>* forms) {
   return true;
 }
 
-bool NativeBackendGnome::GetLoginsBetween(base::Time get_begin,
-                                          base::Time get_end,
-                                          TimestampToCompare date_to_compare,
-                                          ScopedVector<PasswordForm>* forms) {
+bool NativeBackendGnome::GetLoginsBetween(
+    base::Time get_begin,
+    base::Time get_end,
+    TimestampToCompare date_to_compare,
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   forms->clear();
   // We could walk the list and add items as we find them, but it is much
   // easier to build the list and then filter the results.
-  ScopedVector<PasswordForm> all_forms;
+  std::vector<std::unique_ptr<PasswordForm>> all_forms;
   if (!GetAllLogins(&all_forms))
     return false;
 
   base::Time PasswordForm::*date_member = date_to_compare == CREATION_TIMESTAMP
                                               ? &PasswordForm::date_created
                                               : &PasswordForm::date_synced;
-  for (auto*& saved_form : all_forms) {
-    if (get_begin <= saved_form->*date_member &&
-        (get_end.is_null() || saved_form->*date_member < get_end)) {
-      forms->push_back(saved_form);
-      saved_form = nullptr;
+  for (std::unique_ptr<PasswordForm>& saved_form : all_forms) {
+    if (get_begin <= saved_form.get()->*date_member &&
+        (get_end.is_null() || saved_form.get()->*date_member < get_end)) {
+      forms->push_back(std::move(saved_form));
     }
   }
 
@@ -766,7 +772,7 @@ bool NativeBackendGnome::RemoveLoginsBetween(
   changes->clear();
   // We could walk the list and delete items as we find them, but it is much
   // easier to build the list and use RemoveLogin() to delete them.
-  ScopedVector<PasswordForm> forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
   if (!GetLoginsBetween(get_begin, get_end, date_to_compare, &forms))
     return false;
 

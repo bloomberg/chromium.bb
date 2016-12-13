@@ -293,7 +293,8 @@ bool ArePasswordFormUniqueKeyEqual(const PasswordForm& left,
 
 // A comparator for the unique key.
 struct LessThanUniqueKey {
-  bool operator()(const PasswordForm* left, const PasswordForm* right) const;
+  bool operator()(const std::unique_ptr<PasswordForm>& left,
+                  const std::unique_ptr<PasswordForm>& right) const;
 };
 
 // For testing.

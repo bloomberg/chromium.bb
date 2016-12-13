@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_LIBSECRET_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_LIBSECRET_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_x.h"
@@ -46,12 +47,15 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
   bool DisableAutoSignInForOrigins(
       const base::Callback<bool(const GURL&)>& origin_filter,
       password_manager::PasswordStoreChangeList* changes) override;
-  bool GetLogins(const password_manager::PasswordStore::FormDigest& form,
-                 ScopedVector<autofill::PasswordForm>* forms) override;
+  bool GetLogins(
+      const password_manager::PasswordStore::FormDigest& form,
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
   bool GetAutofillableLogins(
-      ScopedVector<autofill::PasswordForm>* forms) override;
-  bool GetBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms) override;
-  bool GetAllLogins(ScopedVector<autofill::PasswordForm>* forms) override;
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
+  bool GetBlacklistLogins(
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
+  bool GetAllLogins(
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
 
  private:
   enum TimestampToCompare {
@@ -62,7 +66,7 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
   // Returns credentials matching |lookup_form| via |forms|.
   bool AddUpdateLoginSearch(
       const autofill::PasswordForm& lookup_form,
-      ScopedVector<autofill::PasswordForm>* forms);
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms);
 
   // Adds a login form without checking for one to replace first.
   bool RawAddLogin(const autofill::PasswordForm& form);
@@ -79,15 +83,16 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
   bool GetLoginsList(
       const password_manager::PasswordStore::FormDigest* lookup_form,
       GetLoginsListOptions options,
-      ScopedVector<autofill::PasswordForm>* forms) WARN_UNUSED_RESULT;
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
+      WARN_UNUSED_RESULT;
 
   // Retrieves password created/synced in the time interval into |forms|,
   // overwriting the original contents of |forms|. Returns true on success.
   bool GetLoginsBetween(base::Time get_begin,
                         base::Time get_end,
                         TimestampToCompare date_to_compare,
-                        ScopedVector<autofill::PasswordForm>* forms)
-      WARN_UNUSED_RESULT;
+                        std::vector<std::unique_ptr<autofill::PasswordForm>>*
+                            forms) WARN_UNUSED_RESULT;
 
   // Removes password created/synced in the time interval. Returns |true| if the
   // operation succeeded. |changes| will contain the changes applied.
@@ -98,7 +103,7 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
 
   // Convert data get from Libsecret to Passwordform. Uses |lookup_form| for
   // additional (PSL) matching, if present.
-  ScopedVector<autofill::PasswordForm> ConvertFormList(
+  std::vector<std::unique_ptr<autofill::PasswordForm>> ConvertFormList(
       GList* found,
       const password_manager::PasswordStore::FormDigest* lookup_form);
 
