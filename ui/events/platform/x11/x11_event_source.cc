@@ -96,6 +96,7 @@ X11EventSource::X11EventSource(X11EventSourceDelegate* delegate,
                                XDisplay* display)
     : delegate_(delegate),
       display_(display),
+      dispatching_event_(nullptr),
       dummy_initialized_(false),
       continue_stream_(true) {
   DCHECK(!instance_);
@@ -183,9 +184,8 @@ Time X11EventSource::GetCurrentServerTime() {
 }
 
 Time X11EventSource::GetTimestamp() {
-  if (!dispatching_events_.empty()) {
-    DCHECK(dispatching_events_.top());
-    Time timestamp = ExtractTimeFromXEvent(*dispatching_events_.top());
+  if (dispatching_event_) {
+    Time timestamp = ExtractTimeFromXEvent(*dispatching_event_);
     if (timestamp != CurrentTime)
       return timestamp;
   }
@@ -195,10 +195,10 @@ Time X11EventSource::GetTimestamp() {
 
 base::Optional<gfx::Point>
 X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
-  if (dispatching_events_.empty())
+  if (!dispatching_event_)
     return base::nullopt;
 
-  XEvent* event = dispatching_events_.top();
+  XEvent* event = dispatching_event_;
   DCHECK(event);
 
   bool is_xi2_event = event->type == GenericEvent;
@@ -239,12 +239,12 @@ void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
     have_cookie = true;
   }
 
-  dispatching_events_.push(xevent);
+  dispatching_event_ = xevent;
 
   delegate_->ProcessXEvent(xevent);
   PostDispatchEvent(xevent);
 
-  dispatching_events_.pop();
+  dispatching_event_ = nullptr;
 
   if (have_cookie)
     XFreeEventData(xevent->xgeneric.display, &xevent->xcookie);

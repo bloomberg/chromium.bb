@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <stack>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -115,9 +114,8 @@ class EVENTS_EXPORT X11EventSource {
   // The connection to the X11 server used to receive the events.
   XDisplay* display_;
 
-  // Events currently being dispatched.  The topmost event in this stack
-  // corresponds to the deepest-nested message loop.
-  std::stack<XEvent*> dispatching_events_;
+  // Event currently being dispatched.
+  XEvent* dispatching_event_;
 
   // State necessary for UpdateLastSeenServerTime
   bool dummy_initialized_;
