@@ -874,12 +874,9 @@ bool parseMultipartHeadersFromBody(const char* bytes,
       new net::HttpResponseHeaders(
           net::HttpUtil::AssembleRawHeaders(headers.data(), headers.length()));
 
-  std::string mimeType;
-  responseHeaders->GetMimeType(&mimeType);
+  std::string mimeType, charset;
+  responseHeaders->GetMimeTypeAndCharset(&mimeType, &charset);
   response->setMimeType(WebString::fromUTF8(mimeType));
-
-  std::string charset;
-  responseHeaders->GetCharset(&charset);
   response->setTextEncodingName(WebString::fromUTF8(charset));
 
   // Copy headers listed in replaceHeaders to the response.
