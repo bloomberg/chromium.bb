@@ -105,16 +105,17 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
   content::RunAllPendingInMessageLoop();
 
   NSWindow* sheetWindow = [[selector overlayWindow] attachedSheet];
-  NSRect sheetFrame = [sheetWindow frame];
   EXPECT_EQ(1.0, [sheetWindow alphaValue]);
 
-  // Switch to another tab and verify that the sheet is hidden.
+  // Switch to another tab and verify that the sheet is hidden. Interaction with
+  // the tab underneath should not be blocked.
   AddBlankTabAndShow(browser());
   EXPECT_EQ(0.0, [sheetWindow alphaValue]);
-  EXPECT_NSEQ(ui::kWindowSizeDeterminedLater, [sheetWindow frame]);
+  EXPECT_TRUE([[selector overlayWindow] ignoresMouseEvents]);
 
-  // Switch back and verify that the sheet is shown.
+  // Switch back and verify that the sheet is shown. Interaction with the tab
+  // underneath should be blocked while the sheet is showing.
   chrome::SelectNumberedTab(browser(), 0);
   EXPECT_EQ(1.0, [sheetWindow alphaValue]);
-  EXPECT_NSEQ(sheetFrame, [sheetWindow frame]);
+  EXPECT_FALSE([[selector overlayWindow] ignoresMouseEvents]);
 }

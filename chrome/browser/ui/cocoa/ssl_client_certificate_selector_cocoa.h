@@ -36,15 +36,13 @@ class SSLClientAuthObserverCocoaBridge;
   // The list of identities offered to the user.
   base::ScopedCFTypeRef<CFMutableArrayRef> identities_;
   // The corresponding list of certificates.
-  std::vector<scoped_refptr<net::X509Certificate> > certificates_;
+  std::vector<scoped_refptr<net::X509Certificate>> certificates_;
   // A C++ object to bridge SSLClientAuthObserver notifications to us.
   std::unique_ptr<SSLClientAuthObserverCocoaBridge> observer_;
   base::scoped_nsobject<SFChooseIdentityPanel> panel_;
   std::unique_ptr<ConstrainedWindowMac> constrainedWindow_;
   base::scoped_nsobject<NSWindow> overlayWindow_;
   BOOL closePending_;
-  // A copy of the sheet's frame used to restore on show.
-  NSRect oldSheetFrame_;
   // A copy of the sheet's |autoresizesSubviews| flag to restore on show.
   BOOL oldResizesSubviews_;
   // True if the user dismissed the dialog directly, either via the OK (continue
