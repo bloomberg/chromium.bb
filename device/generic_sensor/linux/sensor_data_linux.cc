@@ -74,10 +74,10 @@ void InitAccelerometerSensorData(SensorPathsLinux* data) {
   data->sensor_frequency_file_name = "in_accel_base_sampling_frequency";
   data->apply_scaling_func = base::Bind(
       [](double scaling_value, double offset, SensorReading& reading) {
-        double scaling = (kMeanGravity / scaling_value) + offset;
-        reading.values[0] = scaling * reading.values[0];
-        reading.values[1] = scaling * reading.values[1];
-        reading.values[2] = scaling * reading.values[2];
+        double scaling = kMeanGravity / scaling_value;
+        reading.values[0] = scaling * (reading.values[0] + offset);
+        reading.values[1] = scaling * (reading.values[1] + offset);
+        reading.values[2] = scaling * (reading.values[2] + offset);
       });
 #else
   data->sensor_scale_name = "in_accel_scale";
@@ -85,11 +85,10 @@ void InitAccelerometerSensorData(SensorPathsLinux* data) {
   data->sensor_frequency_file_name = "in_accel_sampling_frequency";
   data->apply_scaling_func = base::Bind(
       [](double scaling_value, double offset, SensorReading& reading) {
-        double scaling = scaling_value + offset;
         // Adapt Linux reading values to generic sensor api specs.
-        reading.values[0] = -scaling * reading.values[0];
-        reading.values[1] = -scaling * reading.values[1];
-        reading.values[2] = -scaling * reading.values[2];
+        reading.values[0] = -scaling_value * (reading.values[0] + offset);
+        reading.values[1] = -scaling_value * (reading.values[1] + offset);
+        reading.values[2] = -scaling_value * (reading.values[2] + offset);
       });
 #endif
 
@@ -109,25 +108,23 @@ void InitGyroscopeSensorData(SensorPathsLinux* data) {
 #if defined(OS_CHROMEOS)
   data->sensor_scale_name = "in_anglvel_base_scale";
   data->sensor_frequency_file_name = "in_anglvel_base_frequency";
-  data->apply_scaling_func = base::Bind(
-      [](double scaling_value, double offset, SensorReading& reading) {
-        double scaling =
-            kMeanGravity * kRadiansInDegreesPerSecond / scaling_value + offset;
-        // Adapt CrOS reading values to generic sensor api specs.
-        reading.values[0] = -scaling * reading.values[0];
-        reading.values[1] = -scaling * reading.values[1];
-        reading.values[2] = -scaling * reading.values[2];
-      });
+  data->apply_scaling_func = base::Bind([](double scaling_value, double offset,
+                                           SensorReading& reading) {
+    double scaling = kMeanGravity * kRadiansInDegreesPerSecond / scaling_value;
+    // Adapt CrOS reading values to generic sensor api specs.
+    reading.values[0] = -scaling * (reading.values[0] + offset);
+    reading.values[1] = -scaling * (reading.values[1] + offset);
+    reading.values[2] = -scaling * (reading.values[2] + offset);
+  });
 #else
   data->sensor_scale_name = "in_anglvel_scale";
   data->sensor_offset_file_name = "in_anglvel_offset";
   data->sensor_frequency_file_name = "in_anglvel_sampling_frequency";
   data->apply_scaling_func = base::Bind(
       [](double scaling_value, double offset, SensorReading& reading) {
-        double scaling = scaling_value + offset;
-        reading.values[0] = scaling * reading.values[0];
-        reading.values[1] = scaling * reading.values[1];
-        reading.values[2] = scaling * reading.values[2];
+        reading.values[0] = scaling_value * (reading.values[0] + offset);
+        reading.values[1] = scaling_value * (reading.values[1] + offset);
+        reading.values[2] = scaling_value * (reading.values[2] + offset);
       });
 #endif
 
@@ -149,10 +146,10 @@ void InitMagnitometerSensorData(SensorPathsLinux* data) {
   data->sensor_frequency_file_name = "in_magn_sampling_frequency";
   data->apply_scaling_func = base::Bind(
       [](double scaling_value, double offset, SensorReading& reading) {
-        double scaling = scaling_value + offset;
-        reading.values[0] = scaling * kMicroteslaInGauss * reading.values[0];
-        reading.values[1] = scaling * kMicroteslaInGauss * reading.values[1];
-        reading.values[2] = scaling * kMicroteslaInGauss * reading.values[2];
+        double scaling = scaling_value * kMicroteslaInGauss;
+        reading.values[0] = scaling * (reading.values[0] + offset);
+        reading.values[1] = scaling * (reading.values[1] + offset);
+        reading.values[2] = scaling * (reading.values[2] + offset);
       });
 
   MaybeCheckKernelVersionAndAssignFileNames(file_names_x, file_names_y,
