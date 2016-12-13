@@ -1062,5 +1062,32 @@ TEST_F(PictureLayerTilingIteratorTest, TightCover2) {
   VerifyTilesExactlyCoverRect(dest_scale, gfx::Rect(10001, 2));
 }
 
+TEST_F(PictureLayerTilingIteratorTest, TilesStoreTilings) {
+  gfx::Size bounds(200, 200);
+  Initialize(gfx::Size(100, 100), 1.f, bounds);
+  SetLiveRectAndVerifyTiles(gfx::Rect(bounds));
+
+  // Get all tiles and ensure they are associated with |tiling_|.
+  std::vector<Tile*> tiles = tiling_->AllTilesForTesting();
+  EXPECT_TRUE(tiles.size());
+  for (const auto* tile : tiles) {
+    EXPECT_EQ(tile->tiling(), tiling_.get());
+  }
+
+  // Create an active tiling, transfer tiles to that tiling, and ensure that
+  // the tiles have their tiling updated.
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilled(bounds);
+  auto active_tiling = TestablePictureLayerTiling::Create(
+      ACTIVE_TREE, 1.f, raster_source, &client_, LayerTreeSettings());
+  active_tiling->set_resolution(HIGH_RESOLUTION);
+
+  active_tiling->TakeTilesAndPropertiesFrom(tiling_.get(),
+                                            Region(gfx::Rect(bounds)));
+  for (const auto* tile : tiles) {
+    EXPECT_EQ(tile->tiling(), active_tiling.get());
+  }
+}
+
 }  // namespace
 }  // namespace cc

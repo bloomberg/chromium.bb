@@ -156,17 +156,14 @@ void PictureLayerTiling::TakeTilesAndPropertiesFrom(
     SetLiveTilesRect(pending_twin->live_tiles_rect());
   }
 
-  if (tiles_.empty()) {
-    tiles_.swap(pending_twin->tiles_);
-    all_tiles_done_ = pending_twin->all_tiles_done_;
-  } else {
-    while (!pending_twin->tiles_.empty()) {
-      auto pending_iter = pending_twin->tiles_.begin();
-      tiles_[pending_iter->first] = std::move(pending_iter->second);
-      pending_twin->tiles_.erase(pending_iter);
-    }
-    all_tiles_done_ &= pending_twin->all_tiles_done_;
+  while (!pending_twin->tiles_.empty()) {
+    auto pending_iter = pending_twin->tiles_.begin();
+    pending_iter->second->set_tiling(this);
+    tiles_[pending_iter->first] = std::move(pending_iter->second);
+    pending_twin->tiles_.erase(pending_iter);
   }
+  all_tiles_done_ &= pending_twin->all_tiles_done_;
+
   DCHECK(pending_twin->tiles_.empty());
   pending_twin->all_tiles_done_ = true;
 
@@ -323,7 +320,7 @@ Tile::CreateInfo PictureLayerTiling::CreateInfoForTile(int i, int j) const {
   tile_rect.set_size(tiling_data_.max_texture_size());
   gfx::Rect enclosing_layer_rect = gfx::ScaleToEnclosingRect(
       tile_rect, 1.f / raster_scales_.width(), 1.f / raster_scales_.height());
-  return Tile::CreateInfo(i, j, enclosing_layer_rect, tile_rect,
+  return Tile::CreateInfo(this, i, j, enclosing_layer_rect, tile_rect,
                           raster_scales_);
 }
 
