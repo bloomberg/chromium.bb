@@ -419,10 +419,17 @@ static void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
 }
 
 static BLOCK_SIZE get_bsize(const AV1_COMMON *cm, int mb_row, int mb_col) {
-  if (2 * mb_col + 1 < cm->mi_cols) {
-    return 2 * mb_row + 1 < cm->mi_rows ? BLOCK_16X16 : BLOCK_16X8;
+  if (mi_size_wide[BLOCK_16X16] * mb_col + mi_size_wide[BLOCK_8X8] <
+      cm->mi_cols) {
+    return mi_size_wide[BLOCK_16X16] * mb_row + mi_size_wide[BLOCK_8X8] <
+                   cm->mi_rows
+               ? BLOCK_16X16
+               : BLOCK_16X8;
   } else {
-    return 2 * mb_row + 1 < cm->mi_rows ? BLOCK_8X16 : BLOCK_8X8;
+    return mi_size_wide[BLOCK_16X16] * mb_row + mi_size_wide[BLOCK_8X8] <
+                   cm->mi_rows
+               ? BLOCK_8X16
+               : BLOCK_8X8;
   }
 }
 
@@ -493,6 +500,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   double brightness_factor;
   BufferPool *const pool = cm->buffer_pool;
   const int qindex = find_fp_qindex(cm->bit_depth);
+  const int mb_scale = mi_size_wide[BLOCK_16X16];
 #if CONFIG_PVQ
   PVQ_QUEUE pvq_q;
 #endif
@@ -617,8 +625,9 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
       xd->left_available = (mb_col != 0);
       xd->mi[0]->mbmi.sb_type = bsize;
       xd->mi[0]->mbmi.ref_frame[0] = INTRA_FRAME;
-      set_mi_row_col(xd, &tile, mb_row << 1, mi_size_high[bsize], mb_col << 1,
-                     mi_size_wide[bsize], cm->mi_rows, cm->mi_cols);
+      set_mi_row_col(xd, &tile, mb_row * mb_scale, mi_size_high[bsize],
+                     mb_col * mb_scale, mi_size_wide[bsize], cm->mi_rows,
+                     cm->mi_cols);
       set_plane_n4(xd, mi_size_wide[bsize], mi_size_high[bsize]);
 
       // Do intra 16x16 prediction.
@@ -850,8 +859,8 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
           xd->mi[0]->mbmi.tx_size = TX_4X4;
           xd->mi[0]->mbmi.ref_frame[0] = LAST_FRAME;
           xd->mi[0]->mbmi.ref_frame[1] = NONE;
-          av1_build_inter_predictors_sby(xd, mb_row << 1, mb_col << 1, NULL,
-                                         bsize);
+          av1_build_inter_predictors_sby(xd, mb_row * mb_scale,
+                                         mb_col * mb_scale, NULL, bsize);
           av1_encode_sby_pass1(cm, x, bsize);
           sum_mvr += mv.row;
           sum_mvr_abs += abs(mv.row);
