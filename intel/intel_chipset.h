@@ -237,6 +237,12 @@
 #define PCI_CHIP_CANNONLAKE_U_GT2_1	0x5A5A
 #define PCI_CHIP_CANNONLAKE_U_GT2_2	0x5A42
 #define PCI_CHIP_CANNONLAKE_U_GT2_3	0x5A4A
+#define PCI_CHIP_CANNONLAKE_Y_GT2_0	0x5A51
+#define PCI_CHIP_CANNONLAKE_Y_GT2_1	0x5A59
+#define PCI_CHIP_CANNONLAKE_Y_GT2_2	0x5A41
+#define PCI_CHIP_CANNONLAKE_Y_GT2_3	0x5A49
+#define PCI_CHIP_CANNONLAKE_Y_GT2_4	0x5A71
+#define PCI_CHIP_CANNONLAKE_Y_GT2_5	0x5A79
 
 #define IS_MOBILE(devid)	((devid) == PCI_CHIP_I855_GM || \
 				 (devid) == PCI_CHIP_I915_GM || \
@@ -501,12 +507,20 @@
 				 IS_GEN8(dev) || \
 				 IS_GEN9(dev))
 
+#define IS_CNL_Y(devid)		((devid) == PCI_CHIP_CANNONLAKE_Y_GT2_0 || \
+				 (devid) == PCI_CHIP_CANNONLAKE_Y_GT2_1 || \
+				 (devid) == PCI_CHIP_CANNONLAKE_Y_GT2_2 || \
+				 (devid) == PCI_CHIP_CANNONLAKE_Y_GT2_3 || \
+				 (devid) == PCI_CHIP_CANNONLAKE_Y_GT2_4 || \
+				 (devid) == PCI_CHIP_CANNONLAKE_Y_GT2_5)
+
 #define IS_CNL_U(devid)		((devid) == PCI_CHIP_CANNONLAKE_U_GT2_0 || \
 				 (devid) == PCI_CHIP_CANNONLAKE_U_GT2_1 || \
 				 (devid) == PCI_CHIP_CANNONLAKE_U_GT2_2 || \
 				 (devid) == PCI_CHIP_CANNONLAKE_U_GT2_3)
 
-#define IS_CANNONLAKE(devid)	(IS_CNL_U(devid))
+#define IS_CANNONLAKE(devid)	(IS_CNL_U(devid) || \
+				 IS_CNL_Y(devid))
 
 #define IS_GEN10(devid)		(IS_CANNONLAKE(devid))
 
