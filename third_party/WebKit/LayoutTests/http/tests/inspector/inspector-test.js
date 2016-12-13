@@ -360,11 +360,15 @@ InspectorTest.dumpNavigatorView = function(navigatorView)
 
     function dumpNavigatorTreeElement(prefix, treeElement)
     {
-        var titleText;
-        if (treeElement.title instanceof Element)
-            titleText = treeElement.title.firstChild.textContent + " [mapped]";
-        else
-            titleText = treeElement.title;
+        var titleText = treeElement.title;
+        if (treeElement._trailingIconsElement) {
+            var iconTypes = [];
+            for (var icon = treeElement._trailingIconsElement.firstChild; icon; icon = icon.nextSibling) {
+                iconTypes.push(icon._iconType);
+            }
+            if (iconTypes.length)
+                titleText = titleText + " [" + iconTypes.join(", ") + "]";
+        }
         if (treeElement._nodeType === Sources.NavigatorView.Types.FileSystem || treeElement._nodeType === Sources.NavigatorView.Types.FileSystemFolder) {
             var hasMappedFiles = treeElement.listItemElement.classList.contains("has-mapped-files");
             if (!hasMappedFiles)

@@ -25,7 +25,7 @@ top
     inspector
       persistence
         resources
-          foo.js [mapped]
+          foo.js [smallicon-green-checkmark]
         persistence-navigator.html
         persistence-test.js
       debugger-test.js
@@ -33,7 +33,7 @@ top
       isolated-filesystem-test.js
 www
   inspector/persistence/resources
-    foo.js [mapped]
+    foo.js [smallicon-green-checkmark]
 
 Running: removeFileMapping
 top
