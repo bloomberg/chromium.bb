@@ -18,7 +18,7 @@
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/shader_disk_cache.h"
+#include "content/browser/gpu/shader_cache_factory.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -371,7 +371,7 @@ void BrowserGpuChannelHostFactory::AddFilterOnIO(
 void BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO(
     int gpu_client_id,
     const base::FilePath& cache_dir) {
-  ShaderCacheFactory::GetInstance()->SetCacheInfo(gpu_client_id, cache_dir);
+  GetShaderCacheFactorySingleton()->SetCacheInfo(gpu_client_id, cache_dir);
 }
 
 }  // namespace content

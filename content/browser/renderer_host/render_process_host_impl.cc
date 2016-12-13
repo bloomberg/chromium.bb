@@ -73,7 +73,7 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/shader_disk_cache.h"
+#include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/histogram_message_filter.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
@@ -261,13 +261,13 @@ const base::FilePath::CharType kAecDumpFileNameAddition[] =
 #endif
 
 void CacheShaderInfo(int32_t id, base::FilePath path) {
-  if (ShaderCacheFactory::GetInstance())
-    ShaderCacheFactory::GetInstance()->SetCacheInfo(id, path);
+  if (GetShaderCacheFactorySingleton())
+    GetShaderCacheFactorySingleton()->SetCacheInfo(id, path);
 }
 
 void RemoveShaderInfo(int32_t id) {
-  if (ShaderCacheFactory::GetInstance())
-    ShaderCacheFactory::GetInstance()->RemoveCacheInfo(id);
+  if (GetShaderCacheFactorySingleton())
+    GetShaderCacheFactorySingleton()->RemoveCacheInfo(id);
 }
 
 net::URLRequestContext* GetRequestContext(

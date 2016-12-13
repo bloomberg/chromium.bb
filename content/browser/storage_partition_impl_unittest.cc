@@ -13,7 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/gpu/shader_disk_cache.h"
+#include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/quota/mock_quota_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/local_storage_usage_info.h"
@@ -602,19 +602,19 @@ class StoragePartitionShaderClearTest : public testing::Test {
   StoragePartitionShaderClearTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()) {
-    ShaderCacheFactory::InitInstance(
+    InitShaderCacheFactorySingleton(
         base::ThreadTaskRunnerHandle::Get(),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
-    ShaderCacheFactory::GetInstance()->SetCacheInfo(
+    GetShaderCacheFactorySingleton()->SetCacheInfo(
         kDefaultClientId,
-        BrowserContext::GetDefaultStoragePartition(
-            browser_context())->GetPath());
-    cache_ = ShaderCacheFactory::GetInstance()->Get(kDefaultClientId);
+        BrowserContext::GetDefaultStoragePartition(browser_context())
+            ->GetPath());
+    cache_ = GetShaderCacheFactorySingleton()->Get(kDefaultClientId);
   }
 
   ~StoragePartitionShaderClearTest() override {
     cache_ = NULL;
-    ShaderCacheFactory::GetInstance()->RemoveCacheInfo(kDefaultClientId);
+    GetShaderCacheFactorySingleton()->RemoveCacheInfo(kDefaultClientId);
   }
 
   void InitCache() {

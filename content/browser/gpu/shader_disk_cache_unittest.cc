@@ -4,6 +4,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
@@ -25,8 +26,7 @@ class ShaderDiskCacheTest : public testing::Test {
  public:
   ShaderDiskCacheTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-    ShaderCacheFactory::InitInstance(
-        base::ThreadTaskRunnerHandle::Get(),
+    factory_ = base::MakeUnique<ShaderCacheFactory>(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
   }
 
@@ -36,15 +36,15 @@ class ShaderDiskCacheTest : public testing::Test {
 
   void InitCache() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ShaderCacheFactory::GetInstance()->SetCacheInfo(kDefaultClientId,
-                                                        cache_path());
+    factory_->SetCacheInfo(kDefaultClientId, cache_path());
   }
+
+  ShaderCacheFactory* factory() { return factory_.get(); }
 
  private:
-  void TearDown() override {
-    ShaderCacheFactory::GetInstance()->RemoveCacheInfo(kDefaultClientId);
-  }
+  void TearDown() override { factory_->RemoveCacheInfo(kDefaultClientId); }
 
+  std::unique_ptr<ShaderCacheFactory> factory_;
   base::ScopedTempDir temp_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -54,8 +54,7 @@ class ShaderDiskCacheTest : public testing::Test {
 TEST_F(ShaderDiskCacheTest, ClearsCache) {
   InitCache();
 
-  scoped_refptr<ShaderDiskCache> cache =
-      ShaderCacheFactory::GetInstance()->Get(kDefaultClientId);
+  scoped_refptr<ShaderDiskCache> cache = factory()->Get(kDefaultClientId);
   ASSERT_TRUE(cache.get() != NULL);
 
   net::TestCompletionCallback available_cb;

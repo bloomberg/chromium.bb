@@ -20,6 +20,7 @@
 
 namespace content {
 
+class ShaderCacheFactory;
 class ShaderDiskCacheEntry;
 class ShaderDiskReadHelper;
 class ShaderClearHelper;
@@ -71,7 +72,8 @@ class CONTENT_EXPORT ShaderDiskCache
   friend class ShaderDiskReadHelper;
   friend class ShaderCacheFactory;
 
-  explicit ShaderDiskCache(const base::FilePath& cache_path);
+  ShaderDiskCache(ShaderCacheFactory* factory,
+                  const base::FilePath& cache_path);
   ~ShaderDiskCache();
 
   void Init(scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner);
@@ -82,6 +84,7 @@ class CONTENT_EXPORT ShaderDiskCache
   void EntryComplete(ShaderDiskCacheEntry* entry);
   void ReadComplete();
 
+  ShaderCacheFactory* factory_;
   bool cache_available_;
   base::FilePath cache_path_;
   bool is_initialized_;
@@ -104,17 +107,9 @@ class CONTENT_EXPORT ShaderDiskCache
 class CONTENT_EXPORT ShaderCacheFactory
     : NON_EXPORTED_BASE(public base::ThreadChecker) {
  public:
-  // Initializes the ShaderCacheFactory singleton instance. The singleton
-  // instance is created and used in the thread associated with |task_runner|.
-  // |cache_task_runner| is associated with the thread responsible for managing
-  // the disk cache.
-  static void InitInstance(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+  explicit ShaderCacheFactory(
       scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner);
-
-  // Returns an instance previously created by InitInstance(). This can return
-  // nullptr if an instance has not yet been created.
-  static ShaderCacheFactory* GetInstance();
+  ~ShaderCacheFactory();
 
   // Clear the shader disk cache for the given |path|. This supports unbounded
   // deletes in either direction by using null Time values for either
@@ -143,13 +138,6 @@ class CONTENT_EXPORT ShaderCacheFactory
  private:
   friend class ShaderClearHelper;
 
-  explicit ShaderCacheFactory(
-      scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner);
-  ~ShaderCacheFactory();
-
-  static void CreateFactoryInstance(
-      scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner);
-
   scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner_;
 
   scoped_refptr<ShaderDiskCache> GetByPath(const base::FilePath& path);
@@ -171,4 +159,3 @@ class CONTENT_EXPORT ShaderCacheFactory
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_GPU_SHADER_DISK_CACHE_H_
-

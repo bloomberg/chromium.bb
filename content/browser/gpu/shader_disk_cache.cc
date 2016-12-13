@@ -20,8 +20,6 @@ namespace {
 static const base::FilePath::CharType kGpuCachePath[] =
     FILE_PATH_LITERAL("GPUCache");
 
-static ShaderCacheFactory* factory_instance = nullptr;
-
 }  // namespace
 
 // ShaderDiskCacheEntry handles the work of caching/updating the cached
@@ -100,7 +98,8 @@ class ShaderDiskReadHelper : public base::ThreadChecker {
 
 class ShaderClearHelper : public base::ThreadChecker {
  public:
-  ShaderClearHelper(scoped_refptr<ShaderDiskCache> cache,
+  ShaderClearHelper(ShaderCacheFactory* factory,
+                    scoped_refptr<ShaderDiskCache> cache,
                     const base::FilePath& path,
                     const base::Time& delete_begin,
                     const base::Time& delete_end,
@@ -118,6 +117,7 @@ class ShaderClearHelper : public base::ThreadChecker {
 
   void DoClearShaderCache(int rv);
 
+  ShaderCacheFactory* factory_;
   scoped_refptr<ShaderDiskCache> cache_;
   OpType op_type_;
   base::FilePath path_;
@@ -319,12 +319,14 @@ int ShaderDiskReadHelper::IterationComplete(int rv) {
 ////////////////////////////////////////////////////////////////////////////////
 // ShaderClearHelper
 
-ShaderClearHelper::ShaderClearHelper(scoped_refptr<ShaderDiskCache> cache,
+ShaderClearHelper::ShaderClearHelper(ShaderCacheFactory* factory,
+                                     scoped_refptr<ShaderDiskCache> cache,
                                      const base::FilePath& path,
                                      const base::Time& delete_begin,
                                      const base::Time& delete_end,
                                      const base::Closure& callback)
-    : cache_(std::move(cache)),
+    : factory_(factory),
+      cache_(std::move(cache)),
       op_type_(VERIFY_CACHE_SETUP),
       path_(path),
       delete_begin_(delete_begin),
@@ -360,7 +362,7 @@ void ShaderClearHelper::DoClearShaderCache(int rv) {
       case TERMINATE:
         callback_.Run();
         // Calling CacheCleared() destroys |this|.
-        ShaderCacheFactory::GetInstance()->CacheCleared(path_);
+        factory_->CacheCleared(path_);
         rv = net::ERR_IO_PENDING;  // Break the loop.
         break;
     }
@@ -370,37 +372,11 @@ void ShaderClearHelper::DoClearShaderCache(int rv) {
 ////////////////////////////////////////////////////////////////////////////////
 // ShaderCacheFactory
 
-// static
-void ShaderCacheFactory::InitInstance(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner) {
-  if (task_runner->BelongsToCurrentThread()) {
-    CreateFactoryInstance(std::move(cache_task_runner));
-  } else {
-    task_runner->PostTask(FROM_HERE,
-                          base::Bind(&ShaderCacheFactory::CreateFactoryInstance,
-                                     std::move(cache_task_runner)));
-  }
-}
-
-// static
-ShaderCacheFactory* ShaderCacheFactory::GetInstance() {
-  DCHECK(!factory_instance || factory_instance->CalledOnValidThread());
-  return factory_instance;
-}
-
 ShaderCacheFactory::ShaderCacheFactory(
     scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner)
     : cache_task_runner_(std::move(cache_task_runner)) {}
 
 ShaderCacheFactory::~ShaderCacheFactory() {
-}
-
-// static
-void ShaderCacheFactory::CreateFactoryInstance(
-    scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner) {
-  DCHECK(!factory_instance);
-  factory_instance = new ShaderCacheFactory(std::move(cache_task_runner));
 }
 
 void ShaderCacheFactory::SetCacheInfo(int32_t client_id,
@@ -429,7 +405,7 @@ scoped_refptr<ShaderDiskCache> ShaderCacheFactory::GetByPath(
   if (iter != shader_cache_map_.end())
     return iter->second;
 
-  ShaderDiskCache* cache = new ShaderDiskCache(path);
+  ShaderDiskCache* cache = new ShaderDiskCache(this, path);
   cache->Init(cache_task_runner_);
   return cache;
 }
@@ -453,7 +429,7 @@ void ShaderCacheFactory::ClearByPath(const base::FilePath& path,
   DCHECK(!callback.is_null());
 
   auto helper = base::MakeUnique<ShaderClearHelper>(
-      GetByPath(path), path, delete_begin, delete_end, callback);
+      this, GetByPath(path), path, delete_begin, delete_end, callback);
 
   // We could receive requests to clear the same path with different
   // begin/end times. So, we keep a list of requests. If we haven't seen this
@@ -499,15 +475,17 @@ void ShaderCacheFactory::CacheCleared(const base::FilePath& path) {
 ////////////////////////////////////////////////////////////////////////////////
 // ShaderDiskCache
 
-ShaderDiskCache::ShaderDiskCache(const base::FilePath& cache_path)
-    : cache_available_(false),
+ShaderDiskCache::ShaderDiskCache(ShaderCacheFactory* factory,
+                                 const base::FilePath& cache_path)
+    : factory_(factory),
+      cache_available_(false),
       cache_path_(cache_path),
       is_initialized_(false) {
-  ShaderCacheFactory::GetInstance()->AddToCache(cache_path_, this);
+  factory_->AddToCache(cache_path_, this);
 }
 
 ShaderDiskCache::~ShaderDiskCache() {
-  ShaderCacheFactory::GetInstance()->RemoveFromCache(cache_path_);
+  factory_->RemoveFromCache(cache_path_);
 }
 
 void ShaderDiskCache::Init(
@@ -604,4 +582,3 @@ int ShaderDiskCache::SetCacheCompleteCallback(
 }
 
 }  // namespace content
-
