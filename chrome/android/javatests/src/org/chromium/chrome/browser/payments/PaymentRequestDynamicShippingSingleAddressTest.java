@@ -68,7 +68,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
     }
 
     /** Attempt to add an invalid address and cancel the transaction. */
-    @FlakyTest(message = "crbug.com/673136")
+    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testAddInvalidAddressAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
@@ -76,7 +76,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -105,6 +105,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
 
     /** Quickly pressing "add address" and then [X] should not crash. */
     @MediumTest
+    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testQuickAddAddressAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
@@ -153,6 +154,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
 
     /** Quickly pressing "add address" and then "cancel" should not crash. */
     @MediumTest
+    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testQuickAddAddressAndCancelShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {

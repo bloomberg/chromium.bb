@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -52,6 +53,7 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
 
     /** Attempt to add an invalid email address and cancel the transaction. */
     @MediumTest
+    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testAddInvalidEmailAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
@@ -60,7 +62,7 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"jane.jones"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }

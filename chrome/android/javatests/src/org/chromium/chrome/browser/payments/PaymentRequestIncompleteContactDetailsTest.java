@@ -41,11 +41,8 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
     }
 
     /** Attempt to update the contact information with invalid data and cancel the transaction. */
-    /*
-     * @MediumTest
-     * Bug=crbug.com/673299
-     */
-    @FlakyTest
+    @MediumTest
+    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testEditIncompleteContactAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
@@ -54,7 +51,7 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
         clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"", "---", "jane.jones"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }

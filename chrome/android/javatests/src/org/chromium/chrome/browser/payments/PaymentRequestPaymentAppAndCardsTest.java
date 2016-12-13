@@ -96,7 +96,7 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
         clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
 
         // Cancel the editor.
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
 
         // Expect the existing row to still be selected in the Shipping Address section.
         expectPaymentMethodRowIsSelected(0);
@@ -113,7 +113,7 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
         clickInPaymentMethodAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
 
         // Cancel the editor.
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
 
         // Expect the row to still be selected in the Shipping Address section.
         expectPaymentMethodRowIsSelected(0);

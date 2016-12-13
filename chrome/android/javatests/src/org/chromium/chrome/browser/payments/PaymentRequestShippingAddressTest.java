@@ -125,7 +125,7 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
         clickInShippingAddressAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
 
         // Cancel the editor.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
 
         // Expect the row to still be selected in the Shipping Address section.
         expectShippingAddressRowIsSelected(0);
@@ -142,7 +142,7 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
 
         // Cancel the editor.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
 
         // Expect the existing row to still be selected in the Shipping Address section.
         expectShippingAddressRowIsSelected(0);

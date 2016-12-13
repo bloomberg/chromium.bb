@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -42,6 +43,7 @@ public class PaymentRequestIncompletePhoneTest extends PaymentRequestTestBase {
 
     /** Attempt to update the phone number with invalid data and cancel the transaction. */
     @MediumTest
+    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testEditIncompletePhoneAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
@@ -50,7 +52,7 @@ public class PaymentRequestIncompletePhoneTest extends PaymentRequestTestBase {
         clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"---"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
