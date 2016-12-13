@@ -13,7 +13,6 @@
 #include "components/ui_devtools/Forward.h"
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/devtools_client.h"
-#include "components/ui_devtools/devtools_export.h"
 #include "components/ui_devtools/string_util.h"
 #include "net/server/http_server.h"
 
@@ -26,12 +25,12 @@ class UiDevToolsServer : public net::HttpServer::Delegate {
 
   // Returns an empty unique_ptr if ui devtools flag isn't enabled or if a
   // server instance has already been created.
-  static UI_DEVTOOLS_EXPORT std::unique_ptr<UiDevToolsServer> Create(
+  static std::unique_ptr<UiDevToolsServer> Create(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
 
   // Returns a list of attached UiDevToolsClient name + URL
   using NameUrlPair = std::pair<std::string, std::string>;
-  static UI_DEVTOOLS_EXPORT std::vector<NameUrlPair> GetClientNamesAndUrls();
+  static std::vector<NameUrlPair> GetClientNamesAndUrls();
 
   void AttachClient(std::unique_ptr<UiDevToolsClient> client);
   void SendOverWebSocket(int connection_id, const String& message);
