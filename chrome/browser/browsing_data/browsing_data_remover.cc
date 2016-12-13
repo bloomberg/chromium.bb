@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -51,6 +52,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/browsing_data/content/storage_partition_http_cache_data_remover.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -62,6 +64,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
+#include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -528,12 +531,21 @@ void BrowsingDataRemover::RemoveImpl(
           &history_task_tracker_);
     }
 
+    // Currently, ContentSuggestionService instance exists only on Android.
     ntp_snippets::ContentSuggestionsService* content_suggestions_service =
         ContentSuggestionsServiceFactory::GetForProfileIfExists(profile_);
     if (content_suggestions_service) {
       content_suggestions_service->ClearHistory(delete_begin_, delete_end_,
                                                 filter);
     }
+
+    // Remove the last visit dates meta-data from the bookmark model.
+    // TODO(vitaliii): Do not remove all dates, but only the ones matched by the
+    // time range and the filter.
+    bookmarks::BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForBrowserContext(profile_);
+    if (bookmark_model)
+      ntp_snippets::RemoveAllLastVisitDates(bookmark_model);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // The extension activity log contains details of which websites extensions

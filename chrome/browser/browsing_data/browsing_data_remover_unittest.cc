@@ -64,6 +64,7 @@
 #include "components/domain_reliability/service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -131,10 +132,12 @@ using domain_reliability::DomainReliabilityServiceFactory;
 using testing::_;
 using testing::ByRef;
 using testing::Invoke;
+using testing::IsEmpty;
 using testing::Matcher;
 using testing::MakeMatcher;
 using testing::MatcherInterface;
 using testing::MatchResultListener;
+using testing::Not;
 using testing::Return;
 using testing::WithArgs;
 
@@ -3043,4 +3046,57 @@ TEST_F(BrowsingDataRemoverTest, MultipleTasksInQuickSuccession) {
       BrowsingDataHelper::UNPROTECTED_WEB);
 
   EXPECT_FALSE(remover->is_removing());
+}
+
+// Test that the remover clears bookmark meta data (normally added in a tab
+// helper).
+TEST_F(BrowsingDataRemoverTest, BookmarkLastVisitDatesGetCleared) {
+  TestingProfile profile;
+  profile.CreateBookmarkModel(true);
+
+  bookmarks::BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(&profile);
+  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
+
+  // Create a couple of bookmarks.
+  bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
+                         base::string16(),
+                         GURL("http://foo.org/desktop"));
+  bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
+                         base::string16(),
+                         GURL("http://foo.org/mobile"));
+
+  // Simulate their visits.
+  ntp_snippets::UpdateBookmarkOnURLVisitedInMainFrame(
+      bookmark_model, GURL("http://foo.org/desktop"),
+      /*is_mobile_platform=*/false);
+  ntp_snippets::UpdateBookmarkOnURLVisitedInMainFrame(
+      bookmark_model, GURL("http://foo.org/mobile"),
+      /*is_mobile_platform=*/true);
+
+  // There should be some recently visited bookmarks.
+  EXPECT_THAT(ntp_snippets::GetRecentlyVisitedBookmarks(
+                  bookmark_model, 2, base::Time::UnixEpoch(),
+                  /*consider_visits_from_desktop=*/false),
+              Not(IsEmpty()));
+
+  // Inject the bookmark model into the remover.
+  BrowsingDataRemover* remover =
+      BrowsingDataRemoverFactory::GetForBrowserContext(&profile);
+
+  BrowsingDataRemoverCompletionObserver completion_observer(remover);
+  remover->RemoveAndReply(BrowsingDataRemover::Unbounded(),
+                          BrowsingDataRemover::REMOVE_HISTORY,
+                          BrowsingDataHelper::ALL, &completion_observer);
+  completion_observer.BlockUntilCompletion();
+
+  // There should be no recently visited bookmarks.
+  EXPECT_THAT(ntp_snippets::GetRecentlyVisitedBookmarks(
+                  bookmark_model, 2, base::Time::UnixEpoch(),
+                  /*consider_visits_from_desktop=*/false),
+              IsEmpty());
+  EXPECT_THAT(ntp_snippets::GetRecentlyVisitedBookmarks(
+                  bookmark_model, 2, base::Time::UnixEpoch(),
+                  /*consider_visits_from_desktop=*/true),
+              IsEmpty());
 }
