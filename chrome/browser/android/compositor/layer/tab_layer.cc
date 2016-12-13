@@ -453,8 +453,7 @@ void TabLayer::SetProperties(int id,
 
     content_->SetProperties(id, can_use_live_layer, static_to_view_blend,
                             true, alpha, saturation,
-                            rounded_descaled_content_area,
-                            gfx::Size(content_width, content_height));
+                            true, rounded_descaled_content_area);
   } else if (back_logo_resource) {
     back_logo_->SetUIResourceId(back_logo_resource->ui_resource->id());
   }

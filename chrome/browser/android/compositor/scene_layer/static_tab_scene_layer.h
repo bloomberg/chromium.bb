@@ -40,10 +40,6 @@ class StaticTabSceneLayer : public SceneLayer {
   void UpdateTabLayer(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj,
-      jfloat content_viewport_x,
-      jfloat content_viewport_y,
-      jfloat content_viewport_width,
-      jfloat content_viewport_height,
       const base::android::JavaParamRef<jobject>& jtab_content_manager,
       jint id,
       jint toolbar_resource_id,
@@ -51,9 +47,6 @@ class StaticTabSceneLayer : public SceneLayer {
       jint default_background_color,
       jfloat x,
       jfloat y,
-      jfloat width,
-      jfloat height,
-      jfloat content_offset_y,
       jfloat static_to_view_blend,
       jfloat saturation,
       jfloat brightness);

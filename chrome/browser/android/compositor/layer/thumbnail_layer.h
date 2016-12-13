@@ -32,6 +32,7 @@ class ThumbnailLayer : public Layer {
   void SetThumbnail(Thumbnail* thumbnail);
   // Clip the thumbnail to the given |clipping|.
   void Clip(const gfx::Rect& clipping);
+  void ClearClip();
   // Add self to |parent| or replace self at |index| if there already is an
   // instance with the same ID at |index|.
   void AddSelfToParentOrReplaceAt(scoped_refptr<cc::Layer> parent,
@@ -51,6 +52,7 @@ class ThumbnailLayer : public Layer {
   scoped_refptr<cc::UIResourceLayer> layer_;
   gfx::SizeF content_size_;
   gfx::Rect last_clipping_;
+  bool clipped_ = false;
   gfx::SizeF resource_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailLayer);

@@ -23,6 +23,8 @@ void ThumbnailLayer::SetThumbnail(Thumbnail* thumbnail) {
 
 void ThumbnailLayer::Clip(const gfx::Rect& clipping) {
   last_clipping_ = clipping;
+  clipped_ = true;
+
   gfx::Size clipped_content = gfx::Size(content_size_.width() - clipping.x(),
                                         content_size_.height() - clipping.y());
   clipped_content.SetToMin(clipping.size());
@@ -34,6 +36,12 @@ void ThumbnailLayer::Clip(const gfx::Rect& clipping) {
       gfx::PointF(
           (clipping.x() + clipped_content.width()) / resource_size_.width(),
           (clipping.y() + clipped_content.height()) / resource_size_.height()));
+}
+
+void ThumbnailLayer::ClearClip() {
+  layer_->SetUV(gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f));
+  layer_->SetBounds(gfx::Size(content_size_.width(), content_size_.height()));
+  clipped_ = false;
 }
 
 void ThumbnailLayer::AddSelfToParentOrReplaceAt(scoped_refptr<cc::Layer> parent,
@@ -60,7 +68,10 @@ void ThumbnailLayer::UpdateSizes(const gfx::SizeF& content_size,
   if (content_size != content_size_ || resource_size != resource_size_) {
     content_size_ = content_size;
     resource_size_ = resource_size;
-    Clip(last_clipping_);
+    if (clipped_)
+      Clip(last_clipping_);
+    else
+      ClearClip();
   }
 }
 

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "cc/output/filter_operations.h"
 #include "chrome/browser/android/compositor/layer/layer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -36,10 +35,8 @@ class ContentLayer : public Layer {
                      bool should_override_content_alpha,
                      float content_alpha_override,
                      float saturation,
-                     const gfx::Rect& desired_bounds,
-                     const gfx::Size& content_size);
-  bool ShowingLiveLayer() { return !static_attached_ && content_attached_; }
-  gfx::Size GetContentSize();
+                     bool should_clip,
+                     const gfx::Rect& clip);
 
   scoped_refptr<cc::Layer> layer() override;
 
@@ -50,18 +47,11 @@ class ContentLayer : public Layer {
  private:
   void SetContentLayer(scoped_refptr<cc::Layer> layer);
   void SetStaticLayer(scoped_refptr<ThumbnailLayer> layer);
-  void ClipContentLayer(scoped_refptr<cc::Layer> content_layer,
-                        gfx::Rect clipping);
-  void ClipStaticLayer(scoped_refptr<ThumbnailLayer> static_layer,
-                       gfx::Rect clipping);
 
+  // This is an intermediate shim layer whose children are
+  // both the static and content layers (or either, or none, depending on which
+  // is available).
   scoped_refptr<cc::Layer> layer_;
-  scoped_refptr<ThumbnailLayer> static_layer_;
-  bool content_attached_;
-  bool static_attached_;
-
-  cc::FilterOperations static_filter_operations_;
-  cc::FilterOperations content_filter_operations_;
 
   TabContentManager* tab_content_manager_;
 
