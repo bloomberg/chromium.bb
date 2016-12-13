@@ -58,6 +58,9 @@ enum IDCollectionKey {
   // This collection is used by Google web properties, transmitted through the
   // X-Client-Data header.
   GOOGLE_WEB_PROPERTIES,
+  // This collection is used by Google web properties for signed in users only,
+  // transmitted through the X-Client-Data header.
+  GOOGLE_WEB_PROPERTIES_SIGNED_IN,
   // This collection is used by Google web properties for IDs that trigger
   // server side experimental behavior, transmitted through the
   // X-Client-Data header.

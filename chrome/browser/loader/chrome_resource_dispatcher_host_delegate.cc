@@ -485,8 +485,11 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     net::HttpRequestHeaders headers;
     headers.CopyFrom(request->extra_request_headers());
     bool is_off_the_record = io_data->IsOffTheRecord();
+    bool is_signed_in =
+        !is_off_the_record &&
+        !io_data->google_services_account_id()->GetValue().empty();
     variations::AppendVariationHeaders(
-        request->url(), is_off_the_record,
+        request->url(), is_off_the_record, is_signed_in,
         !is_off_the_record && io_data->GetMetricsEnabledStateOnIOThread(),
         &headers);
     request->SetExtraRequestHeaders(headers);

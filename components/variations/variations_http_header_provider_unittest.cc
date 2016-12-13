@@ -67,7 +67,7 @@ TEST_F(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Valid) {
   // Valid experiment ids.
   EXPECT_TRUE(provider.SetDefaultVariationIds({"12", "456", "t789"}));
   provider.InitVariationIDsCacheIfNeeded();
-  std::string variations = provider.GetClientDataHeader();
+  std::string variations = provider.GetClientDataHeader(false);
   EXPECT_FALSE(variations.empty());
   std::set<VariationID> variation_ids;
   std::set<VariationID> trigger_ids;
@@ -86,13 +86,13 @@ TEST_F(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Invalid) {
   EXPECT_FALSE(provider.SetDefaultVariationIds(
       std::vector<std::string>{"abcd12", "456"}));
   provider.InitVariationIDsCacheIfNeeded();
-  EXPECT_TRUE(provider.GetClientDataHeader().empty());
+  EXPECT_TRUE(provider.GetClientDataHeader(false).empty());
 
   // Invalid trigger experiment id
   EXPECT_FALSE(provider.SetDefaultVariationIds(
       std::vector<std::string>{"12", "tabc456"}));
   provider.InitVariationIDsCacheIfNeeded();
-  EXPECT_TRUE(provider.GetClientDataHeader().empty());
+  EXPECT_TRUE(provider.GetClientDataHeader(false).empty());
 }
 
 TEST_F(VariationsHttpHeaderProviderTest, OnFieldTrialGroupFinalized) {
@@ -104,25 +104,44 @@ TEST_F(VariationsHttpHeaderProviderTest, OnFieldTrialGroupFinalized) {
   const std::string default_name = "default";
   scoped_refptr<base::FieldTrial> trial_1(CreateTrialAndAssociateId(
       "t1", default_name, GOOGLE_WEB_PROPERTIES, 123));
-
   ASSERT_EQ(default_name, trial_1->group_name());
 
   scoped_refptr<base::FieldTrial> trial_2(CreateTrialAndAssociateId(
       "t2", default_name, GOOGLE_WEB_PROPERTIES_TRIGGER, 456));
-
   ASSERT_EQ(default_name, trial_2->group_name());
+
+  scoped_refptr<base::FieldTrial> trial_3(CreateTrialAndAssociateId(
+      "t3", default_name, GOOGLE_WEB_PROPERTIES_SIGNED_IN, 789));
+  ASSERT_EQ(default_name, trial_3->group_name());
 
   // Run the message loop to make sure OnFieldTrialGroupFinalized is called for
   // the two field trials.
   base::RunLoop().RunUntilIdle();
 
-  std::string variations = provider.GetClientDataHeader();
+  // Get non-signed in ids.
+  {
+    std::string variations = provider.GetClientDataHeader(false);
+    std::set<VariationID> variation_ids;
+    std::set<VariationID> trigger_ids;
+    ASSERT_TRUE(ExtractVariationIds(variations, &variation_ids, &trigger_ids));
+    EXPECT_EQ(1U, variation_ids.size());
+    EXPECT_TRUE(variation_ids.find(123) != variation_ids.end());
+    EXPECT_EQ(1U, trigger_ids.size());
+    EXPECT_TRUE(trigger_ids.find(456) != trigger_ids.end());
+  }
 
-  std::set<VariationID> variation_ids;
-  std::set<VariationID> trigger_ids;
-  ASSERT_TRUE(ExtractVariationIds(variations, &variation_ids, &trigger_ids));
-  EXPECT_TRUE(variation_ids.find(123) != variation_ids.end());
-  EXPECT_TRUE(trigger_ids.find(456) != trigger_ids.end());
+  // Now, get signed-in ids.
+  {
+    std::string variations = provider.GetClientDataHeader(true);
+    std::set<VariationID> variation_ids;
+    std::set<VariationID> trigger_ids;
+    ASSERT_TRUE(ExtractVariationIds(variations, &variation_ids, &trigger_ids));
+    EXPECT_EQ(2U, variation_ids.size());
+    EXPECT_TRUE(variation_ids.find(123) != variation_ids.end());
+    EXPECT_TRUE(variation_ids.find(789) != variation_ids.end());
+    EXPECT_EQ(1U, trigger_ids.size());
+    EXPECT_TRUE(trigger_ids.find(456) != trigger_ids.end());
+  }
 }
 
 TEST_F(VariationsHttpHeaderProviderTest, GetVariationsString) {
@@ -131,6 +150,8 @@ TEST_F(VariationsHttpHeaderProviderTest, GetVariationsString) {
 
   CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 123);
   CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 124);
+  // SIGNED_IN ids shouldn't be included.
+  CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_SIGNED_IN, 125);
 
   VariationsHttpHeaderProvider provider;
   std::vector<std::string> ids;
