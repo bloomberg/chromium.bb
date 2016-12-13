@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_error/global_error.h"
@@ -71,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorServiceBrowserTest, ShowBubbleView) {
 
   GlobalErrorService* service =
       GlobalErrorServiceFactory::GetForProfile(browser()->profile());
-  service->AddGlobalError(error);
+  service->AddGlobalError(base::WrapUnique(error));
 
   EXPECT_EQ(error, service->GetFirstGlobalErrorWithBubbleView());
   EXPECT_FALSE(error->HasShownBubbleView());
@@ -92,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorServiceBrowserTest, CloseBubbleView) {
 
   GlobalErrorService* service =
       GlobalErrorServiceFactory::GetForProfile(browser()->profile());
-  service->AddGlobalError(error);
+  service->AddGlobalError(base::WrapUnique(error));
 
   EXPECT_EQ(error, service->GetFirstGlobalErrorWithBubbleView());
   EXPECT_FALSE(error->HasShownBubbleView());
@@ -113,6 +114,10 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorServiceBrowserTest, CloseBubbleView) {
 
 // Test that bubble is silently dismissed if it is showing when the GlobalError
 // instance is removed from the profile.
+//
+// This uses the deprecated "unowned" API to the GlobalErrorService to maintain
+// coverage. When those calls are eventually removed (http://crbug.com/673578)
+// these uses should be switched to the non-deprecated API.
 #if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/396473
 #define MAYBE_BubbleViewDismissedOnRemove DISABLED_BubbleViewDismissedOnRemove
@@ -125,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorServiceBrowserTest,
 
   GlobalErrorService* service =
       GlobalErrorServiceFactory::GetForProfile(browser()->profile());
-  service->AddGlobalError(error.get());
+  service->AddUnownedGlobalError(error.get());
 
   EXPECT_EQ(error.get(), service->GetFirstGlobalErrorWithBubbleView());
   error->ShowBubbleView(browser());
@@ -135,8 +140,7 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorServiceBrowserTest,
 
   // Removing |error| from profile should dismiss the bubble view without
   // calling |error->BubbleViewDidClose|.
-  service->RemoveGlobalError(error.get());
+  service->RemoveUnownedGlobalError(error.get());
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, error->bubble_view_close_count());
-  // |error| is no longer owned by service and will be deleted.
 }

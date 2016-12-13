@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_error/global_error.h"
@@ -18,18 +17,32 @@
 GlobalErrorService::GlobalErrorService(Profile* profile) : profile_(profile) {
 }
 
-GlobalErrorService::~GlobalErrorService() {
-  base::STLDeleteElements(&errors_);
+GlobalErrorService::~GlobalErrorService() {}
+
+void GlobalErrorService::AddGlobalError(std::unique_ptr<GlobalError> error) {
+  DCHECK(error);
+  GlobalError* error_ptr = error.get();
+  owned_errors_[error_ptr] = std::move(error);
+  AddUnownedGlobalError(error_ptr);
 }
 
-void GlobalErrorService::AddGlobalError(GlobalError* error) {
+void GlobalErrorService::AddUnownedGlobalError(GlobalError* error) {
   DCHECK(error);
-  errors_.push_back(error);
+  all_errors_.push_back(error);
   NotifyErrorsChanged(error);
 }
 
-void GlobalErrorService::RemoveGlobalError(GlobalError* error) {
-  errors_.erase(std::find(errors_.begin(), errors_.end(), error));
+std::unique_ptr<GlobalError> GlobalErrorService::RemoveGlobalError(
+    GlobalError* error_ptr) {
+  std::unique_ptr<GlobalError> ptr = std::move(owned_errors_[error_ptr]);
+  owned_errors_.erase(error_ptr);
+  RemoveUnownedGlobalError(error_ptr);
+  return ptr;
+}
+
+void GlobalErrorService::RemoveUnownedGlobalError(GlobalError* error) {
+  DCHECK(owned_errors_.find(error) == owned_errors_.end());
+  all_errors_.erase(std::find(all_errors_.begin(), all_errors_.end(), error));
   GlobalErrorBubbleViewBase* bubble = error->GetBubbleView();
   if (bubble)
     bubble->CloseBubbleView();
@@ -38,23 +51,19 @@ void GlobalErrorService::RemoveGlobalError(GlobalError* error) {
 
 GlobalError* GlobalErrorService::GetGlobalErrorByMenuItemCommandID(
     int command_id) const {
-  for (GlobalErrorList::const_iterator
-       it = errors_.begin(); it != errors_.end(); ++it) {
-    GlobalError* error = *it;
+  for (const auto& error : all_errors_)
     if (error->HasMenuItem() && command_id == error->MenuItemCommandID())
       return error;
-  }
-  return NULL;
+
+  return nullptr;
 }
 
 GlobalError*
 GlobalErrorService::GetHighestSeverityGlobalErrorWithAppMenuItem() const {
   GlobalError::Severity highest_severity = GlobalError::SEVERITY_LOW;
-  GlobalError* highest_severity_error = NULL;
+  GlobalError* highest_severity_error = nullptr;
 
-  for (GlobalErrorList::const_iterator
-       it = errors_.begin(); it != errors_.end(); ++it) {
-    GlobalError* error = *it;
+  for (const auto& error : all_errors_) {
     if (error->HasMenuItem()) {
       if (!highest_severity_error || error->GetSeverity() > highest_severity) {
         highest_severity = error->GetSeverity();
@@ -67,13 +76,11 @@ GlobalErrorService::GetHighestSeverityGlobalErrorWithAppMenuItem() const {
 }
 
 GlobalError* GlobalErrorService::GetFirstGlobalErrorWithBubbleView() const {
-  for (GlobalErrorList::const_iterator
-       it = errors_.begin(); it != errors_.end(); ++it) {
-    GlobalError* error = *it;
+  for (const auto& error : all_errors_) {
     if (error->HasBubbleView() && !error->HasShownBubbleView())
       return error;
   }
-  return NULL;
+  return nullptr;
 }
 
 void GlobalErrorService::NotifyErrorsChanged(GlobalError* error) {
@@ -81,7 +88,7 @@ void GlobalErrorService::NotifyErrorsChanged(GlobalError* error) {
   // notifications to both it and its off-the-record profile to update
   // incognito windows as well.
   std::vector<Profile*> profiles_to_notify;
-  if (profile_ != NULL) {
+  if (profile_) {
     profiles_to_notify.push_back(profile_);
     if (profile_->IsOffTheRecord())
       profiles_to_notify.push_back(profile_->GetOriginalProfile());

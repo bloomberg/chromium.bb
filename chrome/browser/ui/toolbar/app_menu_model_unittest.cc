@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -179,13 +180,11 @@ TEST_F(AppMenuModelTest, GlobalError) {
       GlobalErrorServiceFactory::GetForProfile(browser()->profile());
   ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile());
   const int command1 = 1234567;
-  // AddGlobalError takes ownership of error1.
   MenuError* error1 = new MenuError(command1);
-  service->AddGlobalError(error1);
+  service->AddGlobalError(base::WrapUnique(error1));
   const int command2 = 1234568;
-  // AddGlobalError takes ownership of error2.
   MenuError* error2 = new MenuError(command2);
-  service->AddGlobalError(error2);
+  service->AddGlobalError(base::WrapUnique(error2));
 
   AppMenuModel model(this, browser());
   int index1 = model.GetIndexOfCommandId(command1);

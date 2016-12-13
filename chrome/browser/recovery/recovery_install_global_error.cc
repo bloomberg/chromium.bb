@@ -23,7 +23,8 @@ RecoveryInstallGlobalError::RecoveryInstallGlobalError(Profile* profile)
         : elevation_needed_(false),
           profile_(profile),
           has_shown_bubble_view_(false) {
-  GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(this);
+  GlobalErrorServiceFactory::GetForProfile(profile_)->AddUnownedGlobalError(
+      this);
 
   PrefService* pref = g_browser_process->local_state();
   if (pref->FindPreference(prefs::kRecoveryComponentNeedsElevation)) {
@@ -46,7 +47,8 @@ RecoveryInstallGlobalError::~RecoveryInstallGlobalError() {
 }
 
 void RecoveryInstallGlobalError::Shutdown() {
-  GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(this);
+  GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveUnownedGlobalError(
+      this);
 }
 
 GlobalError::Severity RecoveryInstallGlobalError::GetSeverity() {

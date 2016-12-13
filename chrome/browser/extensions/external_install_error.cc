@@ -313,7 +313,7 @@ ExternalInstallError::ExternalInstallError(
 
 ExternalInstallError::~ExternalInstallError() {
   if (global_error_.get())
-    error_service_->RemoveGlobalError(global_error_.get());
+    error_service_->RemoveUnownedGlobalError(global_error_.get());
 }
 
 void ExternalInstallError::OnInstallPromptDone(
@@ -439,7 +439,7 @@ void ExternalInstallError::OnDialogReady(
 
   if (alert_type_ == BUBBLE_ALERT) {
     global_error_.reset(new ExternalInstallBubbleAlert(this, prompt_.get()));
-    error_service_->AddGlobalError(global_error_.get());
+    error_service_->AddUnownedGlobalError(global_error_.get());
 
     if (!manager_->has_currently_visible_install_alert()) {
       // |browser| is nullptr during unit tests, so call
@@ -454,7 +454,7 @@ void ExternalInstallError::OnDialogReady(
   } else {
     DCHECK(alert_type_ == MENU_ALERT);
     global_error_.reset(new ExternalInstallMenuAlert(this));
-    error_service_->AddGlobalError(global_error_.get());
+    error_service_->AddUnownedGlobalError(global_error_.get());
   }
 }
 

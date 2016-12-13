@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_GLOBAL_ERROR_GLOBAL_ERROR_SERVICE_H_
 #define CHROME_BROWSER_UI_GLOBAL_ERROR_GLOBAL_ERROR_SERVICE_H_
 
+#include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -21,7 +23,7 @@ class Profile;
 class GlobalErrorService : public KeyedService {
  public:
   // Type used to represent the list of currently active errors.
-  typedef std::vector<GlobalError*> GlobalErrorList;
+  using GlobalErrorList = std::vector<GlobalError*>;
 
   // Constructs a GlobalErrorService object for the given profile. The profile
   // maybe NULL for tests.
@@ -29,14 +31,24 @@ class GlobalErrorService : public KeyedService {
   ~GlobalErrorService() override;
 
   // Adds the given error to the list of global errors and displays it on
-  // browswer windows. If no browser windows are open  then the error is
-  // displayed once a browser window is opened. This class takes ownership of
-  // the error.
-  void AddGlobalError(GlobalError* error);
+  // browser windows. If no browser windows are open then the error is
+  // displayed once a browser window is opened.
+  void AddGlobalError(std::unique_ptr<GlobalError> error);
 
-  // Hides the given error and removes it from the list of global errors. Caller
-  // then takes ownership of the error and is responsible for deleting it.
-  void RemoveGlobalError(GlobalError* error);
+  // Hides the given error and removes it from the list of global errors.
+  // Ownership is returned to the caller.
+  std::unique_ptr<GlobalError> RemoveGlobalError(GlobalError* error);
+
+  // DEPRECATED; DO NOT USE!
+  // http://crbug.com/673578
+  //
+  // These functions allow adding and removing of a GlobalError that is not
+  // owned by the GlobalErrorService. In this case, the error's lifetime must
+  // exceed that of the GlobalErrorService.
+  //
+  // Do not add more uses of these functions, and remove existing uses.
+  void AddUnownedGlobalError(GlobalError* error);
+  void RemoveUnownedGlobalError(GlobalError* error);
 
   // Gets the error with the given command ID or NULL if no such error exists.
   // This class maintains ownership of the returned error.
@@ -51,7 +63,7 @@ class GlobalErrorService : public KeyedService {
   GlobalError* GetFirstGlobalErrorWithBubbleView() const;
 
   // Gets all errors.
-  const GlobalErrorList& errors() { return errors_; }
+  const GlobalErrorList& errors() { return all_errors_; }
 
   // Post a notification that a global error has changed and that the error UI
   // should update it self. Pass NULL for the given error to mean all error UIs
@@ -59,7 +71,8 @@ class GlobalErrorService : public KeyedService {
   void NotifyErrorsChanged(GlobalError* error);
 
  private:
-  GlobalErrorList errors_;
+  GlobalErrorList all_errors_;
+  std::map<GlobalError*, std::unique_ptr<GlobalError>> owned_errors_;
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorService);

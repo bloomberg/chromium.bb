@@ -360,13 +360,14 @@ void ExtensionDisabledGlobalError::OnShutdown(
 }
 
 void ExtensionDisabledGlobalError::RemoveGlobalError() {
-  GlobalErrorServiceFactory::GetForProfile(service_->profile())
-      ->RemoveGlobalError(this);
+  std::unique_ptr<GlobalError> ptr =
+      GlobalErrorServiceFactory::GetForProfile(service_->profile())
+          ->RemoveGlobalError(this);
   registrar_.RemoveAll();
   registry_observer_.RemoveAll();
   // Delete this object after any running tasks, so that the extension dialog
   // still has it as a delegate to finish the current tasks.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, ptr.release());
 }
 
 // Globals --------------------------------------------------------------------
@@ -382,7 +383,7 @@ void AddExtensionDisabledErrorWithIcon(base::WeakPtr<ExtensionService> service,
   const Extension* extension = service->GetInstalledExtension(extension_id);
   if (extension) {
     GlobalErrorServiceFactory::GetForProfile(service->profile())
-        ->AddGlobalError(new ExtensionDisabledGlobalError(
+        ->AddGlobalError(base::MakeUnique<ExtensionDisabledGlobalError>(
             service.get(), extension, is_remote_install, icon));
   }
 }

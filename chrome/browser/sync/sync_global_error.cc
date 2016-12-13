@@ -30,7 +30,7 @@ SyncGlobalError::SyncGlobalError(
   DCHECK(sync_service_);
   error_controller_->AddObserver(this);
   if (!switches::IsMaterialDesignUserMenu())
-    global_error_service_->AddGlobalError(this);
+    global_error_service_->AddUnownedGlobalError(this);
 }
 
 SyncGlobalError::~SyncGlobalError() {
@@ -40,7 +40,7 @@ SyncGlobalError::~SyncGlobalError() {
 
 void SyncGlobalError::Shutdown() {
   if (!switches::IsMaterialDesignUserMenu())
-    global_error_service_->RemoveGlobalError(this);
+    global_error_service_->RemoveUnownedGlobalError(this);
   error_controller_->RemoveObserver(this);
   error_controller_ = nullptr;
 }

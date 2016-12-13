@@ -18,6 +18,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -544,7 +545,7 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
 
   // Ownership of |global_error| is passed to the service. The error removes
   // itself from the service and self-destructs when done.
-  global_error_service->AddGlobalError(global_error);
+  global_error_service->AddGlobalError(base::WrapUnique(global_error));
 
   bool show_bubble = true;
   PrefService* local_state = g_browser_process->local_state();

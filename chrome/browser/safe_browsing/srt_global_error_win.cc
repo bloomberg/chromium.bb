@@ -221,8 +221,8 @@ void SRTGlobalError::MaybeExecuteSRT() {
     return;
   }
   // At this point, this object owns itself, since ownership has been taken back
-  // from the global_error_service_ in the call to RemoveGlobalError. This means
-  // that it is safe to use base::Unretained here.
+  // from the global_error_service_ in the call to OnUserInteractionStarted.
+  // This means that it is safe to use base::Unretained here.
   BrowserThread::PostBlockingPoolTask(
       FROM_HERE,
       base::Bind(
@@ -262,7 +262,7 @@ void SRTGlobalError::OnUserinteractionStarted(
   RecordSRTPromptHistogram(histogram_value);
   interacted_ = true;
   if (global_error_service_) {
-    global_error_service_->RemoveGlobalError(this);
+    global_error_service_->RemoveGlobalError(this).release();
     global_error_service_ = nullptr;
   }
 }
