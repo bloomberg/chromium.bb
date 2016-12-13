@@ -13,7 +13,6 @@ InspectorTest.importScript("../../../../../Source/devtools/front_end/platform/ut
 InspectorTest.importScript("../../../../../Source/devtools/front_end/common/UIString.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/profiler/HeapSnapshotCommon.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/heap_snapshot_worker/HeapSnapshot.js");
-InspectorTest.importScript("../../../../../Source/devtools/front_end/heap_snapshot_worker/JSHeapSnapshot.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/common/TextUtils.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/heap_snapshot_worker/HeapSnapshotLoader.js");
 
