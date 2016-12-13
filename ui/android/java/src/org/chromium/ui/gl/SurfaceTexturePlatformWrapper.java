@@ -65,4 +65,9 @@ class SurfaceTexturePlatformWrapper {
     private static void release(SurfaceTexture surfaceTexture) {
         surfaceTexture.release();
     }
+
+    @CalledByNative
+    private static void setDefaultBufferSize(SurfaceTexture surfaceTexture, int width, int height) {
+        surfaceTexture.setDefaultBufferSize(width, height);
+    }
 }

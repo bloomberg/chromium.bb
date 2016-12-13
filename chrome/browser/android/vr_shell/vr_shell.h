@@ -8,22 +8,20 @@
 #include <jni.h>
 
 #include <memory>
-#include <queue>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/synchronization/lock.h"
-#include "chrome/browser/android/vr_shell/vr_math.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 
-using blink::WebInputEvent;
+namespace base {
+class Thread;
+}
 
 namespace content {
 class WebContents;
@@ -38,13 +36,10 @@ namespace vr_shell {
 class UiInterface;
 class UiScene;
 class VrCompositor;
-class VrController;
 class VrInputManager;
 class VrMetricsHelper;
 class VrShellDelegate;
-class VrShellRenderer;
 class VrWebContentsObserver;
-struct ContentRectangle;
 
 enum UiAction {
   HISTORY_BACK = 0,
@@ -55,14 +50,10 @@ enum UiAction {
   RELOAD_UI
 };
 
-enum InputTarget {
-  NONE = 0,
-  CONTENT,
-  UI
-};
-
 class VrMetricsHelper;
 
+// The native instance of the Java VrShell. This class is not threadsafe and
+// must only be used on the UI thread.
 class VrShell : public device::GvrDelegate, content::WebContentsObserver {
  public:
   VrShell(JNIEnv* env, jobject obj,
@@ -70,47 +61,38 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
           ui::WindowAndroid* content_window,
           content::WebContents* ui_contents,
           ui::WindowAndroid* ui_window,
-          bool for_web_vr);
+          bool for_web_vr,
+          VrShellDelegate* delegate,
+          gvr_context* gvr_api);
 
-  void UpdateCompositorLayersOnUI(
-      JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void DestroyOnUI(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj);
-  void SetDelegateOnUI(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj,
-                       const base::android::JavaParamRef<jobject>& delegate);
-  void GvrInitOnGL(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj,
-                   jlong native_gvr_api);
-  void InitializeGlOnGL(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj,
-                        jint content_texture_handle,
-                        jint ui_texture_handle);
-  void DrawFrameOnGL(JNIEnv* env,
+  void LoadUIContent(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
-  void OnTriggerEventOnUI(JNIEnv* env,
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void OnTriggerEvent(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
-  void OnPauseOnUI(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj);
-  void OnResumeOnUI(JNIEnv* env,
-                    const base::android::JavaParamRef<jobject>& obj);
-  void SetWebVrModeOnUI(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj,
-                        bool enabled);
+  void OnPause(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& obj);
+  void OnResume(JNIEnv* env,
+                const base::android::JavaParamRef<jobject>& obj);
+  void SetWebVrMode(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj,
+                    bool enabled);
 
-  void ContentWebContentsDestroyedOnUI();
+  void ContentWebContentsDestroyed();
   // Called when our WebContents have been hidden. Usually a sign that something
   // like another tab placed in front of it.
-  void ContentWasHiddenOnUI();
+  void ContentWasHidden();
 
   // html/js UI hooks.
-  static base::WeakPtr<VrShell> GetWeakPtrOnUI(
+  static base::WeakPtr<VrShell> GetWeakPtr(
       const content::WebContents* web_contents);
-  // TODO(mthiesse): Clean up threading around Scene.
-  UiScene* GetSceneOnGL();
+
+  // Returns a pointer to the scene owned by the GL thread. Do not dereference
+  // this pointer off of the GL thread.
+  UiScene* GetScene();
   // TODO(mthiesse): Clean up threading around UiInterface.
-  UiInterface* GetUiInterfaceOnGL();
-  void OnDomContentsLoadedOnUI();
+  UiInterface* GetUiInterface();
+  void OnDomContentsLoaded();
 
   // device::GvrDelegate implementation
   // TODO(mthiesse): Clean up threading around GVR API. These functions are
@@ -124,53 +106,36 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void SetWebVRRenderSurfaceSize(int width, int height) override;
   gvr::Sizei GetWebVRCompositorSurfaceSize() override;
 
-  void SurfacesChangedOnUI(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& object,
-      const base::android::JavaParamRef<jobject>& content_surface,
-      const base::android::JavaParamRef<jobject>& ui_surface);
+  void SurfacesChanged(jobject content_surface, jobject ui_surface);
+  void GvrDelegateReady();
 
-  void ContentBoundsChangedOnUI(
+  void ContentBoundsChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
       jint width, jint height, jfloat dpr);
 
-  void UIBoundsChangedOnUI(
+  void UIBoundsChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
       jint width, jint height, jfloat dpr);
 
   // Called from non-render thread to queue a callback onto the render thread.
   // The render thread checks for callbacks and processes them between frames.
-  void QueueTaskOnUI(base::Callback<void()>& callback);
+  void QueueTask(base::Callback<void()>& callback);
 
   // Perform a UI action triggered by the javascript API.
-  void DoUiActionOnUI(const UiAction action);
+  void DoUiAction(const UiAction action);
 
-  void SetContentCssSizeOnUI(float width, float height, float dpr);
-  void SetUiCssSizeOnUI(float width, float height, float dpr);
+  void SetContentCssSize(float width, float height, float dpr);
+  void SetUiCssSize(float width, float height, float dpr);
+
+  void ContentFrameWasResized(bool width_changed);
+
+  void ForceExitVR();
 
  private:
   ~VrShell() override;
-  void LoadUIContentOnUI();
-  void SetShowingOverscrollGlowOnUI(bool showing_glow);
-  void DrawVrShellOnGL(const gvr::Mat4f& head_pose, gvr::Frame &frame);
-  void DrawUiViewOnGL(const gvr::Mat4f* head_pose,
-                      const std::vector<const ContentRectangle*>& elements,
-                      const gvr::Sizei& render_size, int viewport_offset);
-  void DrawElementsOnGL(const gvr::Mat4f& render_matrix,
-                        const std::vector<const ContentRectangle*>& elements);
-  void DrawCursorOnGL(const gvr::Mat4f& render_matrix);
-  void DrawWebVrOnGL();
-  bool WebVrPoseByteIsValidOnGL(int pose_index_byte);
-
-  void UpdateControllerOnGL(const gvr::Vec3f& forward_vector);
-  void SendEventsToTargetOnGL(InputTarget input_target, int pixel_x,
-                              int pixel_y);
-  void SendGestureOnGL(InputTarget input_target,
-                       std::unique_ptr<blink::WebInputEvent> event);
-
-  void HandleQueuedTasksOnGL();
+  void SetShowingOverscrollGlow(bool showing_glow);
 
   // content::WebContentsObserver implementation. All called on UI thread.
   void RenderViewHostChanged(content::RenderViewHost* old_host,
@@ -178,36 +143,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void MainFrameWasResized(bool width_changed) override;
   void WebContentsDestroyed() override;
 
-  // samplerExternalOES texture data for UI content image.
-  jint ui_texture_id_ = 0;
-  // samplerExternalOES texture data for main content image.
-  jint content_texture_id_ = 0;
-
-  std::unique_ptr<UiScene> scene_;
   std::unique_ptr<UiInterface> html_interface_;
-
-  std::unique_ptr<gvr::GvrApi> gvr_api_;
-  std::unique_ptr<gvr::BufferViewportList> buffer_viewport_list_;
-  std::unique_ptr<gvr::BufferViewport> buffer_viewport_;
-  std::unique_ptr<gvr::BufferViewport> headlocked_left_viewport_;
-  std::unique_ptr<gvr::BufferViewport> headlocked_right_viewport_;
-  std::unique_ptr<gvr::BufferViewport> webvr_left_viewport_;
-  std::unique_ptr<gvr::BufferViewport> webvr_right_viewport_;
-  std::unique_ptr<gvr::SwapChain> swap_chain_;
-
-  // Current sizes for the render buffers.
-  gvr::Sizei render_size_primary_;
-  gvr::Sizei render_size_headlocked_;
-
-  // Intended size for the primary render buffer by UI mode.
-  // For WebVR, a size of 0x0 is used to indicate "not yet ready"
-  // to suppress rendering while still initializing.
-  gvr::Sizei render_size_primary_webvr_ = device::kInvalidRenderTargetSize;
-  gvr::Sizei render_size_primary_vrshell_;
-
-  std::queue<base::Callback<void()>> task_queue_;
-  base::Lock task_queue_lock_;
-  base::Lock gvr_init_lock_;
 
   std::unique_ptr<VrCompositor> content_compositor_;
   content::WebContents* main_contents_;
@@ -216,37 +152,15 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   std::unique_ptr<VrWebContentsObserver> vr_web_contents_observer_;
 
   VrShellDelegate* delegate_ = nullptr;
-  std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;
 
-  bool touch_pending_ = false;
-  gvr::Quatf controller_quat_;
-
-  gvr::Vec3f target_point_;
-  const ContentRectangle* target_element_ = nullptr;
-  InputTarget current_input_target_ = NONE;
-  int ui_tex_css_width_ = 0;
-  int ui_tex_css_height_ = 0;
-  int content_tex_css_width_ = 0;
-  int content_tex_css_height_ = 0;
-  gvr::Sizei content_tex_physical_size_ = {0, 0};
-
-  // The pose ring buffer size must be a power of two to avoid glitches when
-  // the pose index wraps around. It should be large enough to handle the
-  // current backlog of poses which is 2-3 frames.
-  static constexpr int kPoseRingBufferSize = 8;
-  std::vector<gvr::Mat4f> webvr_head_pose_;
-  std::vector<bool> webvr_head_pose_valid_;
-  jint webvr_texture_id_ = 0;
-
-  std::unique_ptr<VrController> controller_;
   std::unique_ptr<VrInputManager> content_input_manager_;
-  base::WeakPtr<VrInputManager> weak_content_input_manager_;
   std::unique_ptr<VrInputManager> ui_input_manager_;
-  base::WeakPtr<VrInputManager> weak_ui_input_manager_;
+
   scoped_refptr<VrMetricsHelper> metrics_helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  std::unique_ptr<base::Thread> gl_thread_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

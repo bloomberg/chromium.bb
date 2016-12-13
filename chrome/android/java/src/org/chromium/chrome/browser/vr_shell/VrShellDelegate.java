@@ -206,8 +206,8 @@ public class VrShellDelegate {
         mTab.addObserver(mTabObserver);
         addVrViews();
         setupVrModeWindowFlags();
-        mVrShell.initializeNativeOnUI(mTab, this, mRequestedWebVR);
-        mVrShell.setCloseButtonListenerOnUI(new Runnable() {
+        mVrShell.initializeNative(mTab, this, mRequestedWebVR);
+        mVrShell.setCloseButtonListener(new Runnable() {
             @Override
             public void run() {
                 exitVRIfNecessary(false);
@@ -215,7 +215,7 @@ public class VrShellDelegate {
         });
         // onResume needs to be called on GvrLayout after initialization to make sure DON flow work
         // properly.
-        mVrShell.resumeOnUI();
+        mVrShell.resume();
         mTab.updateFullscreenEnabledState();
         return true;
     }
@@ -254,7 +254,7 @@ public class VrShellDelegate {
         mRequestedWebVR = true;
         switch (enterVRIfNecessary()) {
             case ENTER_VR_NOT_NECESSARY:
-                mVrShell.setWebVrModeEnabledOnUI(true);
+                mVrShell.setWebVrModeEnabled(true);
                 nativeSetPresentResult(mNativeVrShellDelegate, true);
                 mRequestedWebVR = false;
                 break;
@@ -295,7 +295,7 @@ public class VrShellDelegate {
     @CalledByNative
     private boolean exitWebVR() {
         if (!mInVr) return false;
-        mVrShell.setWebVrModeEnabledOnUI(false);
+        mVrShell.setWebVrModeEnabled(false);
         if (mCardboardSupportOnly) {
             // Transition screen is not available for Cardboard only (non-Daydream) devices.
             // TODO(bshe): Fix this once b/33490788 is fixed.
@@ -348,7 +348,7 @@ public class VrShellDelegate {
             setupVrModeWindowFlags();
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             try {
-                mVrShell.resumeOnUI();
+                mVrShell.resume();
             } catch (IllegalArgumentException e) {
                 Log.e(TAG, "Unable to resume VrShell", e);
             } finally {
@@ -471,7 +471,7 @@ public class VrShellDelegate {
             mLastVRExit = SystemClock.uptimeMillis();
         }
         mActivity.setRequestedOrientation(mRestoreOrientation);
-        mVrShell.pauseOnUI();
+        mVrShell.pause();
         removeVrViews();
         clearVrModeWindowFlags();
         destroyVrShell();
@@ -508,14 +508,14 @@ public class VrShellDelegate {
         LayoutParams params = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
-        decor.addView(mVrShell.getContainerOnUI(), params);
+        decor.addView(mVrShell.getContainer(), params);
         mActivity.setUIVisibilityForVR(View.GONE);
     }
 
     private void removeVrViews() {
         mActivity.setUIVisibilityForVR(View.VISIBLE);
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
-        decor.removeView(mVrShell.getContainerOnUI());
+        decor.removeView(mVrShell.getContainer());
     }
 
     private void setupVrModeWindowFlags() {
@@ -544,7 +544,7 @@ public class VrShellDelegate {
      */
     public void destroyVrShell() {
         if (mVrShell != null) {
-            mVrShell.teardownOnUI();
+            mVrShell.teardown();
             mVrShell = null;
         }
     }

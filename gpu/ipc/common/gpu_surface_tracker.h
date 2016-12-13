@@ -39,8 +39,7 @@ class GPU_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
       gpu::SurfaceHandle surface_handle) override;
 
 #if defined(OS_ANDROID)
-  void RegisterViewSurface(int surface_id,
-                           const base::android::JavaRef<jobject>& j_surface);
+  void RegisterViewSurface(int surface_id, jobject j_surface);
   void UnregisterViewSurface(int surface_id);
   gl::ScopedJavaSurface AcquireJavaSurface(int surface_id) override;
 #endif

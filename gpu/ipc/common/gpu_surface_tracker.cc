@@ -64,12 +64,12 @@ gfx::AcceleratedWidget GpuSurfaceTracker::AcquireNativeWidget(
 
 #if defined(OS_ANDROID)
 void GpuSurfaceTracker::RegisterViewSurface(
-    int surface_id, const base::android::JavaRef<jobject>& j_surface) {
+    int surface_id, jobject j_surface) {
   base::AutoLock lock(surface_view_map_lock_);
   DCHECK(surface_view_map_.find(surface_id) == surface_view_map_.end());
 
   surface_view_map_[surface_id] =
-      gl::ScopedJavaSurface::AcquireExternalSurface(j_surface.obj());
+      gl::ScopedJavaSurface::AcquireExternalSurface(j_surface);
   CHECK(surface_view_map_[surface_id].IsValid());
 }
 

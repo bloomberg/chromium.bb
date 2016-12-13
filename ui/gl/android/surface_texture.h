@@ -62,6 +62,9 @@ class GL_EXPORT SurfaceTexture
   // the android API, because scoped_refptr<> calls that quite a bit.
   void ReleaseSurfaceTexture();
 
+  // Set the default buffer size for the surface texture.
+  void SetDefaultBufferSize(int width, int height);
+
   const base::android::JavaRef<jobject>& j_surface_texture() const {
     return j_surface_texture_;
   }

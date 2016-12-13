@@ -16,35 +16,35 @@ public interface VrShell {
     /**
      * Performs native VrShell initialization.
      */
-    void initializeNativeOnUI(Tab currentTab, VrShellDelegate delegate, boolean forWebVR);
+    void initializeNative(Tab currentTab, VrShellDelegate delegate, boolean forWebVR);
 
     /**
      * Pauses VrShell.
      */
-    void pauseOnUI();
+    void pause();
 
     /**
      * Resumes VrShell.
      */
-    void resumeOnUI();
+    void resume();
 
     /**
      * Destroys VrShell.
      */
-    void teardownOnUI();
+    void teardown();
 
     /**
      * Sets whether we're presenting WebVR content or not.
      */
-    void setWebVrModeEnabledOnUI(boolean enabled);
+    void setWebVrModeEnabled(boolean enabled);
 
     /**
      * Returns the GVRLayout as a FrameLayout.
      */
-    FrameLayout getContainerOnUI();
+    FrameLayout getContainer();
 
     /**
      * Sets a callback to be run when the close button is tapped.
      */
-    void setCloseButtonListenerOnUI(Runnable runner);
+    void setCloseButtonListener(Runnable runner);
 }

@@ -24,7 +24,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   static VrShellDelegate* GetNativeDelegate(JNIEnv* env, jobject jdelegate);
 
-  base::WeakPtr<device::GvrDeviceProvider> GetDeviceProvider();
+  void SetDelegate(const base::WeakPtr<device::GvrDelegate>& delegate);
+  void RemoveDelegate();
 
   void SetPresentResult(JNIEnv* env, jobject obj, jboolean result);
   void DisplayActivate(JNIEnv* env, jobject obj);
@@ -44,6 +45,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   std::unique_ptr<device::GvrDelegate> non_presenting_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
   base::WeakPtr<device::GvrDeviceProvider> device_provider_;
+  base::WeakPtr<device::GvrDelegate> delegate_;
   base::Callback<void(bool)> present_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VrShellDelegate);

@@ -10,8 +10,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/window_android.h"
 
-using base::android::JavaParamRef;
-
 namespace vr_shell {
 
 VrCompositor::VrCompositor(ui::WindowAndroid* window, bool transparent)
@@ -60,7 +58,7 @@ void VrCompositor::SetWindowBounds(int width, int height) {
   compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
-void VrCompositor::SurfaceChanged(const JavaParamRef<jobject>& surface) {
+void VrCompositor::SurfaceChanged(jobject surface) {
   DCHECK(surface);
   compositor_->SetSurface(surface);
 }

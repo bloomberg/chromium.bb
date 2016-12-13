@@ -51,7 +51,7 @@ void BrowserSurfaceViewManager::SetVideoSurface(gl::ScopedJavaSurface surface) {
     surface_id_ = gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
         gfx::kNullAcceleratedWidget);
     gpu::GpuSurfaceTracker::GetInstance()->RegisterViewSurface(
-        surface_id_, surface.j_surface());
+        surface_id_, surface.j_surface().obj());
     SendSurfaceID(surface_id_);
   }
 }

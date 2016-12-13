@@ -59,8 +59,21 @@ VrShellDelegate* VrShellDelegate::GetNativeDelegate(
   return reinterpret_cast<VrShellDelegate*>(native_delegate);
 }
 
-base::WeakPtr<device::GvrDeviceProvider> VrShellDelegate::GetDeviceProvider() {
-  return device_provider_;
+void VrShellDelegate::SetDelegate(
+    const base::WeakPtr<device::GvrDelegate>& delegate) {
+  // TODO(mthiesse): There's no reason for this delegate to be a WeakPtr
+  // anymore.
+  delegate_ = delegate;
+  if (device_provider_.get()) {
+    device_provider_->OnGvrDelegateReady(delegate_);
+  }
+}
+
+void VrShellDelegate::RemoveDelegate() {
+  delegate_.reset();
+  if (device_provider_.get()) {
+    device_provider_->OnGvrDelegateRemoved();
+  }
 }
 
 void VrShellDelegate::SetPresentResult(JNIEnv* env, jobject obj,
@@ -79,6 +92,9 @@ void VrShellDelegate::DisplayActivate(JNIEnv* env, jobject obj) {
 void VrShellDelegate::SetDeviceProvider(
     base::WeakPtr<device::GvrDeviceProvider> device_provider) {
   device_provider_ = device_provider;
+  if (delegate_.get()) {
+    device_provider_->OnGvrDelegateReady(delegate_);
+  }
 }
 
 void VrShellDelegate::RequestWebVRPresent(

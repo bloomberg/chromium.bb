@@ -454,8 +454,6 @@ void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
 
 void CompositorImpl::SetSurface(jobject surface) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> j_surface(env, surface);
-
   gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
 
   if (window_) {
@@ -483,7 +481,7 @@ void CompositorImpl::SetSurface(jobject surface) {
     ANativeWindow_acquire(window);
     surface_handle_ = tracker->AddSurfaceForNativeWidget(window);
     // Register first, SetVisible() might create a CompositorFrameSink.
-    tracker->RegisterViewSurface(surface_handle_, j_surface);
+    tracker->RegisterViewSurface(surface_handle_, surface);
     SetVisible(true);
     ANativeWindow_release(window);
   }

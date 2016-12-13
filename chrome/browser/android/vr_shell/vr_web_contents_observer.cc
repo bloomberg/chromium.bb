@@ -74,11 +74,15 @@ void VrWebContentsObserver::DidToggleFullscreenModeForTab(
 }
 
 void VrWebContentsObserver::WebContentsDestroyed() {
-  vr_shell_->ContentWebContentsDestroyedOnUI();
+  vr_shell_->ContentWebContentsDestroyed();
 }
 
 void VrWebContentsObserver::WasHidden() {
-  vr_shell_->ContentWasHiddenOnUI();
+  vr_shell_->ContentWasHidden();
+}
+
+void VrWebContentsObserver::MainFrameWasResized(bool width_changed) {
+  vr_shell_->ContentFrameWasResized(width_changed);
 }
 
 void VrWebContentsObserver::RenderViewHostChanged(

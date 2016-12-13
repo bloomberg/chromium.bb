@@ -19,12 +19,12 @@ VrShellUIMessageHandler::VrShellUIMessageHandler() = default;
 
 VrShellUIMessageHandler::~VrShellUIMessageHandler() {
   if (vr_shell_) {
-    vr_shell_->GetUiInterfaceOnGL()->SetUiCommandHandler(nullptr);
+    vr_shell_->GetUiInterface()->SetUiCommandHandler(nullptr);
   }
 }
 
 void VrShellUIMessageHandler::RegisterMessages() {
-  vr_shell_ = vr_shell::VrShell::GetWeakPtrOnUI(web_ui()->GetWebContents());
+  vr_shell_ = vr_shell::VrShell::GetWeakPtr(web_ui()->GetWebContents());
 
   web_ui()->RegisterMessageCallback(
       "domLoaded", base::Bind(&VrShellUIMessageHandler::HandleDomLoaded,
@@ -51,8 +51,8 @@ void VrShellUIMessageHandler::OnJavascriptAllowed() {
   // deleted.
   if (!vr_shell_)
     return;
-  vr_shell_->GetUiInterfaceOnGL()->SetUiCommandHandler(this);
-  vr_shell_->OnDomContentsLoadedOnUI();
+  vr_shell_->GetUiInterface()->SetUiCommandHandler(this);
+  vr_shell_->OnDomContentsLoaded();
 }
 
 void VrShellUIMessageHandler::HandleUpdateScene(const base::ListValue* args) {
@@ -60,19 +60,21 @@ void VrShellUIMessageHandler::HandleUpdateScene(const base::ListValue* args) {
     return;
 
   // Copy the update instructions and handle them on the render thread.
+  // TODO(mthiesse): Clean this up.
   auto cb = base::Bind(&vr_shell::UiScene::HandleCommands,
-                       // TODO(mthiesse): Clean up threading around scene class.
-                       base::Unretained(vr_shell_->GetSceneOnGL()),
+                       // Unretained is safe because this callback will only be
+                       // run on the GL thread, which owns the scene.
+                       base::Unretained(vr_shell_->GetScene()),
                        base::Owned(args->CreateDeepCopy().release()),
                        vr_shell::UiScene::TimeInMicroseconds());
-  vr_shell_->QueueTaskOnUI(cb);
+  vr_shell_->QueueTask(cb);
 }
 
 void VrShellUIMessageHandler::HandleDoAction(const base::ListValue* args) {
   int action;
   CHECK(args->GetInteger(0, &action));
   if (vr_shell_) {
-    vr_shell_->DoUiActionOnUI((vr_shell::UiAction) action);
+    vr_shell_->DoUiAction((vr_shell::UiAction) action);
   }
 }
 
@@ -83,7 +85,7 @@ void VrShellUIMessageHandler::HandleSetUiCssSize(const base::ListValue* args) {
   CHECK(args->GetDouble(1, &height));
   CHECK(args->GetDouble(2, &dpr));
   if (vr_shell_) {
-    vr_shell_->SetUiCssSizeOnUI(width, height, dpr);
+    vr_shell_->SetUiCssSize(width, height, dpr);
   }
 }
 

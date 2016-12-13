@@ -35,7 +35,7 @@ class VrCompositor : public content::CompositorClient {
 
   void SurfaceDestroyed();
   void SetWindowBounds(int width, int height);
-  void SurfaceChanged(const base::android::JavaParamRef<jobject>& surface);
+  void SurfaceChanged(jobject surface);
   void SetLayer(content::WebContents* web_contents);
 
   // CompositorClient implementation:

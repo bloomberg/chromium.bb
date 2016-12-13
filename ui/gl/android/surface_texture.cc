@@ -100,4 +100,10 @@ void SurfaceTexture::ReleaseSurfaceTexture() {
   Java_SurfaceTexturePlatformWrapper_release(env, j_surface_texture_);
 }
 
+void SurfaceTexture::SetDefaultBufferSize(int width, int height) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_SurfaceTexturePlatformWrapper_setDefaultBufferSize(
+      env, j_surface_texture_, width, height);
+}
+
 }  // namespace gl
