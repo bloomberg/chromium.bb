@@ -20,6 +20,7 @@ source_set("physical_web") {
     "//components/pref_registry",
     "//components/prefs",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/geolocation",
     "//ios/chrome/common/physical_web",
     "//url",

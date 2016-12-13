@@ -8,6 +8,7 @@
 
 #include "components/physical_web/data_source/physical_web_data_source.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_config.h"
 #include "ios/chrome/browser/physical_web/physical_web_constants.h"
@@ -57,4 +58,9 @@ void StartPhysicalWebDiscovery(PrefService* pref_service, bool is_incognito) {
   } else {
     GetApplicationContext()->GetPhysicalWebDataSource()->StopDiscovery();
   }
+}
+
+void StartPhysicalWebDiscovery(PrefService* pref_service,
+                               ios::ChromeBrowserState* browser_state) {
+  StartPhysicalWebDiscovery(pref_service, browser_state->IsOffTheRecord());
 }
