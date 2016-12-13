@@ -8,19 +8,22 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Native bridge for interacting with service worker based payment apps.
  */
 // TODO(tommyt): crbug.com/669876. Remove these suppressions when we actually
 // start using all of the functionality in this class.
-@SuppressFBWarnings(
-        {"UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"})
+@SuppressFBWarnings({"UWF_NULL_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
+        "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"})
 public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentAppFactoryAddition {
     /**
      * This class represents a payment app manifest as defined in the Payment
@@ -62,8 +65,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      */
     @VisibleForTesting
     protected List<Manifest> getAllAppManifests() {
-        // TODO(tommyt): crbug.com/669876. Implement this function.
-        return new ArrayList<Manifest>();
+        return nativeGetAllAppManifests();
     }
 
     @Override
@@ -75,4 +77,50 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         }
         callback.onAllPaymentAppsCreated();
     }
+
+    /**
+     * Invoke a payment app with a given option and matching method data.
+     */
+    public void invokePaymentapp(
+            String scopeUrl, String optionId, Map<String, PaymentMethodData> methodData) {
+        nativeInvokePaymentApp(scopeUrl, optionId, methodData);
+    }
+
+    @CalledByNative
+    private static List<Manifest> createManifestList() {
+        return new ArrayList<Manifest>();
+    }
+
+    @CalledByNative
+    private static Manifest createAndAddManifest(
+            List<Manifest> manifestList, String scopeUrl, String label, String icon) {
+        Manifest manifest = new Manifest();
+        manifest.scopeUrl = scopeUrl;
+        manifest.label = label;
+        // TODO(tommyt): crbug.com/669876. Handle icons.
+        manifest.icon = null;
+        manifestList.add(manifest);
+        return manifest;
+    }
+
+    @CalledByNative
+    private static Option createAndAddOption(
+            Manifest manifest, String id, String label, String icon) {
+        Option option = new Option();
+        option.id = id;
+        option.label = label;
+        // TODO(tommyt): crbug.com/669876. Handle icons.
+        option.icon = null;
+        manifest.options.add(option);
+        return option;
+    }
+
+    @CalledByNative
+    private static void addEnabledMethod(Option option, String enabledMethod) {
+        option.enabledMethods.add(enabledMethod);
+    }
+
+    private static native List<Manifest> nativeGetAllAppManifests();
+    private static native void nativeInvokePaymentApp(
+            String scopeUrl, String optionId, Object methodDataMap);
 }

@@ -76,6 +76,7 @@
 #include "chrome/browser/android/omnibox/autocomplete_controller_android.h"
 #include "chrome/browser/android/omnibox/omnibox_prerender.h"
 #include "chrome/browser/android/password_ui_view_android.h"
+#include "chrome/browser/android/payments/service_worker_payment_app_bridge.h"
 #include "chrome/browser/android/physical_web/physical_web_data_source_android.h"
 #include "chrome/browser/android/policy/policy_auditor.h"
 #include "chrome/browser/android/precache/precache_launcher.h"
@@ -370,6 +371,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"SceneLayer", RegisterSceneLayer},
     {"ScreenshotTask", chrome::android::RegisterScreenshotTask},
     {"ServiceTabLauncher", ServiceTabLauncher::Register},
+    {"ServiceWorkerPaymentAppBridge", RegisterServiceWorkerPaymentAppBridge},
     {"SessionTabHelper", RegisterSessionTabHelper},
     {"SigninInvestigator", SigninInvestigatorAndroid::Register},
     {"SigninManager", SigninManagerAndroid::Register},
