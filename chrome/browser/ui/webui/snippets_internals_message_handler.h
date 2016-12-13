@@ -22,12 +22,20 @@ namespace base {
 class ListValue;
 }  // namespace base
 
+namespace ntp_snippets {
+class ContentSuggestionsService;
+}  // namespace ntp_snippets
+
+class PrefService;
+
 // The implementation for the chrome://snippets-internals page.
 class SnippetsInternalsMessageHandler
     : public content::WebUIMessageHandler,
       public ntp_snippets::ContentSuggestionsService::Observer {
  public:
-  SnippetsInternalsMessageHandler();
+  SnippetsInternalsMessageHandler(
+      ntp_snippets::ContentSuggestionsService* content_suggestions_service,
+      PrefService* pref_service);
   ~SnippetsInternalsMessageHandler() override;
 
  private:
@@ -52,9 +60,11 @@ class SnippetsInternalsMessageHandler
   void HandleClearDismissedSuggestions(const base::ListValue* args);
   void HandleToggleDismissedSuggestions(const base::ListValue* args);
   void ClearClassification(const base::ListValue* args);
+  void FetchRemoteSuggestionsInTheBackground(const base::ListValue* args);
 
   void SendAllContent();
   void SendClassification();
+  void SendLastRemoteSuggestionsBackgroundFetchTime();
   void SendContentSuggestions();
   void SendBoolean(const std::string& name, bool value);
   void SendString(const std::string& name, const std::string& value);
@@ -70,8 +80,9 @@ class SnippetsInternalsMessageHandler
   // Tracks whether we can already send messages to the page.
   bool dom_loaded_;
 
-  ntp_snippets::RemoteSuggestionsProvider* ntp_snippets_service_;
   ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
+  ntp_snippets::RemoteSuggestionsProvider* remote_suggestions_provider_;
+  PrefService* pref_service_;
 
   std::map<ntp_snippets::Category,
            DismissedState,

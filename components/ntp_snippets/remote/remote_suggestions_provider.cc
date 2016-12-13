@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -251,7 +252,7 @@ RemoteSuggestionsProvider::RemoteSuggestionsProvider(
       thumbnail_requests_throttler_(
           pref_service,
           RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL),
-      tick_clock_(base::MakeUnique<base::DefaultTickClock>()) {
+      clock_(base::MakeUnique<base::DefaultClock>()) {
   pref_service_->ClearPref(kDeprecatedSnippetHostsPref);
 
   RestoreCategoriesFromPrefs();
@@ -719,7 +720,7 @@ void RemoteSuggestionsProvider::OnFetchFinished(
   if (!interactive_request &&
       fetch_result == NTPSnippetsFetcher::FetchResult::SUCCESS) {
     pref_service_->SetInt64(prefs::kLastSuccessfulBackgroundFetchTime,
-                            tick_clock_->NowTicks().ToInternalValue());
+                            clock_->Now().ToInternalValue());
   }
 
   // Mark all categories as not provided by the server in the latest fetch. The

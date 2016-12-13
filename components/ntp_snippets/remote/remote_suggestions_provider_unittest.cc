@@ -20,7 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/simple_test_tick_clock.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/image_fetcher/image_decoder.h"
@@ -1600,10 +1600,9 @@ TEST_F(RemoteSuggestionsProviderTest, StoreLastSuccessfullBackgroundFetchTime) {
   // initialized until the test clock is set.
   auto service = MakeSnippetsServiceWithoutInitialization();
 
-  auto simple_test_tick_clock = base::MakeUnique<base::SimpleTestTickClock>();
-  base::SimpleTestTickClock* simple_test_tick_clock_ptr =
-      simple_test_tick_clock.get();
-  service->SetTickClockForTesting(std::move(simple_test_tick_clock));
+  auto simple_test_clock = base::MakeUnique<base::SimpleTestClock>();
+  base::SimpleTestClock* simple_test_clock_ptr = simple_test_clock.get();
+  service->SetClockForTesting(std::move(simple_test_clock));
 
   // Test that the preference is correctly initialized with the default value 0.
   EXPECT_EQ(
@@ -1612,16 +1611,16 @@ TEST_F(RemoteSuggestionsProviderTest, StoreLastSuccessfullBackgroundFetchTime) {
   WaitForSnippetsServiceInitialization(service.get(),
                                        /*set_empty_response=*/true);
   EXPECT_EQ(
-      simple_test_tick_clock_ptr->NowTicks().ToInternalValue(),
+      simple_test_clock_ptr->Now().ToInternalValue(),
       pref_service()->GetInt64(prefs::kLastSuccessfulBackgroundFetchTime));
 
   // Advance the time and check whether the time was updated correctly after the
   // background fetch.
-  simple_test_tick_clock_ptr->Advance(TimeDelta::FromHours(1));
+  simple_test_clock_ptr->Advance(TimeDelta::FromHours(1));
   service->FetchSnippetsInTheBackground();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
-      simple_test_tick_clock_ptr->NowTicks().ToInternalValue(),
+      simple_test_clock_ptr->Now().ToInternalValue(),
       pref_service()->GetInt64(prefs::kLastSuccessfulBackgroundFetchTime));
   // TODO(markusheintz): Add a test that simulates a browser restart once the
   // scheduler refactoring is done (crbug.com/672434).

@@ -19,13 +19,17 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
+#include "components/ntp_snippets/pref_names.h"
+#include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/switches.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 
 using ntp_snippets::ContentSuggestion;
@@ -77,37 +81,28 @@ std::string GetCategoryStatusName(CategoryStatus status) {
 
 }  // namespace
 
-SnippetsInternalsMessageHandler::SnippetsInternalsMessageHandler()
+SnippetsInternalsMessageHandler::SnippetsInternalsMessageHandler(
+    ntp_snippets::ContentSuggestionsService* content_suggestions_service,
+    PrefService* pref_service)
     : content_suggestions_service_observer_(this),
       dom_loaded_(false),
-      ntp_snippets_service_(nullptr),
-      content_suggestions_service_(nullptr),
+      content_suggestions_service_(content_suggestions_service),
+      remote_suggestions_provider_(
+          content_suggestions_service_->ntp_snippets_service()),
+      pref_service_(pref_service),
       weak_ptr_factory_(this) {}
 
 SnippetsInternalsMessageHandler::~SnippetsInternalsMessageHandler() {}
 
 void SnippetsInternalsMessageHandler::RegisterMessages() {
-  // Additional initialization (web_ui() does not work from the constructor).
-  Profile* profile = Profile::FromWebUI(web_ui());
-
-  content_suggestions_service_ =
-      ContentSuggestionsServiceFactory::GetInstance()->GetForProfile(profile);
-  content_suggestions_service_observer_.Add(content_suggestions_service_);
-
-  ntp_snippets_service_ = content_suggestions_service_->ntp_snippets_service();
-
-  web_ui()->RegisterMessageCallback(
-      "refreshContent",
-      base::Bind(&SnippetsInternalsMessageHandler::HandleRefreshContent,
-                 base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback(
-      "download", base::Bind(&SnippetsInternalsMessageHandler::HandleDownload,
-                             base::Unretained(this)));
-
   web_ui()->RegisterMessageCallback(
       "clearCachedSuggestions",
       base::Bind(&SnippetsInternalsMessageHandler::HandleClearCachedSuggestions,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "clearClassification",
+      base::Bind(&SnippetsInternalsMessageHandler::ClearClassification,
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -117,16 +112,27 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
+      "download", base::Bind(&SnippetsInternalsMessageHandler::HandleDownload,
+                             base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "fetchRemoteSuggestionsInTheBackground",
+      base::Bind(&SnippetsInternalsMessageHandler::
+                     FetchRemoteSuggestionsInTheBackground,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "refreshContent",
+      base::Bind(&SnippetsInternalsMessageHandler::HandleRefreshContent,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       "toggleDismissedSuggestions",
       base::Bind(
           &SnippetsInternalsMessageHandler::HandleToggleDismissedSuggestions,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
-      "clearClassification",
-      base::Bind(
-          &SnippetsInternalsMessageHandler::ClearClassification,
-          base::Unretained(this)));
+  content_suggestions_service_observer_.Add(content_suggestions_service_);
 }
 
 void SnippetsInternalsMessageHandler::OnNewSuggestions(Category category) {
@@ -186,7 +192,7 @@ void SnippetsInternalsMessageHandler::HandleDownload(
 
   SendString("hosts-status", std::string());
 
-  if (!ntp_snippets_service_)
+  if (!remote_suggestions_provider_)
     return;
 
   std::string hosts_string;
@@ -197,8 +203,9 @@ void SnippetsInternalsMessageHandler::HandleDownload(
       hosts_string, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   std::set<std::string> hosts(hosts_vector.begin(), hosts_vector.end());
 
-  ntp_snippets_service_->FetchSnippetsFromHosts(hosts,
-                                                /*interactive_request=*/true);
+  remote_suggestions_provider_->FetchSnippetsFromHosts(
+      hosts,
+      /*interactive_request=*/true);
 }
 
 void SnippetsInternalsMessageHandler::HandleClearCachedSuggestions(
@@ -271,6 +278,12 @@ void SnippetsInternalsMessageHandler::ClearClassification(
   SendClassification();
 }
 
+void SnippetsInternalsMessageHandler::FetchRemoteSuggestionsInTheBackground(
+    const base::ListValue* args) {
+  DCHECK_EQ(0u, args->GetSize());
+  remote_suggestions_provider_->FetchSnippetsInTheBackground();
+}
+
 void SnippetsInternalsMessageHandler::SendAllContent() {
   SendBoolean("flag-snippets", base::FeatureList::IsEnabled(
                                    ntp_snippets::kContentSuggestionsFeature));
@@ -295,9 +308,11 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
                   ntp_snippets::kPhysicalWebPageSuggestionsFeature));
 
   SendClassification();
+  SendLastRemoteSuggestionsBackgroundFetchTime();
 
-  if (ntp_snippets_service_) {
-    switch (ntp_snippets_service_->snippets_fetcher()->personalization()) {
+  if (remote_suggestions_provider_) {
+    switch (
+        remote_suggestions_provider_->snippets_fetcher()->personalization()) {
       case ntp_snippets::NTPSnippetsFetcher::Personalization::kPersonal:
         SendString("switch-personalized", "Only personalized");
         break;
@@ -310,12 +325,13 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
         break;
     }
 
-    SendString("switch-fetch-url",
-               ntp_snippets_service_->snippets_fetcher()->fetch_url().spec());
+    SendString(
+        "switch-fetch-url",
+        remote_suggestions_provider_->snippets_fetcher()->fetch_url().spec());
     web_ui()->CallJavascriptFunctionUnsafe(
         "chrome.SnippetsInternals.receiveJson",
         base::StringValue(
-            ntp_snippets_service_->snippets_fetcher()->last_json()));
+            remote_suggestions_provider_->snippets_fetcher()->last_json()));
   }
 
   SendContentSuggestions();
@@ -335,6 +351,16 @@ void SnippetsInternalsMessageHandler::SendClassification() {
       base::FundamentalValue(
           content_suggestions_service_->user_classifier()->GetEstimatedAvgTime(
               UserClassifier::Metric::SUGGESTIONS_USED)));
+}
+
+void SnippetsInternalsMessageHandler::
+    SendLastRemoteSuggestionsBackgroundFetchTime() {
+  base::Time time = base::Time::FromInternalValue(pref_service_->GetInt64(
+      ntp_snippets::prefs::kLastSuccessfulBackgroundFetchTime));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "chrome.SnippetsInternals."
+      "receiveLastRemoteSuggestionsBackgroundFetchTime",
+      base::StringValue(base::TimeFormatShortDateAndTime(time)));
 }
 
 void SnippetsInternalsMessageHandler::SendContentSuggestions() {
@@ -374,9 +400,9 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
     categories_list->Append(std::move(category_entry));
   }
 
-  if (ntp_snippets_service_) {
+  if (remote_suggestions_provider_) {
     const std::string& status =
-        ntp_snippets_service_->snippets_fetcher()->last_status();
+        remote_suggestions_provider_->snippets_fetcher()->last_status();
     if (!status.empty())
       SendString("hosts-status", "Finished: " + status);
   }

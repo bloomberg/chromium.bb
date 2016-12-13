@@ -16,6 +16,7 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/ntp_snippets/category.h"
@@ -152,8 +153,8 @@ class RemoteSuggestionsProvider final
   }
 
   // Overrides internal clock for testing purposes.
-  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock) {
-    tick_clock_ = std::move(tick_clock);
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock) {
+    clock_ = std::move(clock);
   }
 
  private:
@@ -415,8 +416,8 @@ class RemoteSuggestionsProvider final
   // Request throttler for limiting requests to thumbnail images.
   RequestThrottler thumbnail_requests_throttler_;
 
-  // A clock for getting the time. This allows to inject a tick clock in tests.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  // A clock for getting the time. This allows to inject a clock in tests.
+  std::unique_ptr<base::Clock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsProvider);
 };
