@@ -4,6 +4,7 @@
 
 #include "ash/display/display_error_observer_chromeos.h"
 
+#include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -85,7 +86,8 @@ TEST_F(DisplayErrorObserverTest, CallWithDifferentState) {
   observer()->OnDisplayModeChangeFailed(
       ui::DisplayConfigurator::DisplayStateList(),
       ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING),
+  EXPECT_EQ(ash::SubstituteChromeOSDeviceType(
+                IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING),
             GetMessageContents());
 }
 

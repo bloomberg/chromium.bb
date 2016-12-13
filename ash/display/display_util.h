@@ -48,8 +48,10 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
                   bool update_last_location_now);
 
 #if defined(OS_CHROMEOS)
-// Shows the notification message for display related issues.
-void ShowDisplayErrorNotification(int message_id);
+// Shows the notification message for display related issues, and optionally
+// adds a button to send a feedback report.
+void ShowDisplayErrorNotification(const base::string16& message,
+                                  bool allow_feedback);
 #endif
 
 ASH_EXPORT base::string16 GetDisplayErrorNotificationMessageForTest();

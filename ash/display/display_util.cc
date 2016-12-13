@@ -16,11 +16,11 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
-#include "grit/ash_resources.h"
+#include "base/strings/utf_string_conversions.h"
+#include "grit/ash_strings.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -34,13 +34,23 @@
 #include "ui/wm/core/coordinate_conversion.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/sys_info.h"
+#include "ui/gfx/paint_vector_icon.h"
 #endif
 
 namespace ash {
 namespace {
 
 const char kDisplayErrorNotificationId[] = "chrome://settings/display/error";
+
+#if defined(OS_CHROMEOS)
+// TODO(glevin): These are for new MD vector icons, but are using pre-MD color
+// scheme. When we switch to all MD icons for notifications, these should be
+// updated to use MD color scheme.
+const SkColor kDisplayIconColor = SkColorSetRGB(0xBD, 0xBD, 0xBD);
+const SkColor kFeedbackIconColor = SkColorSetRGB(0x96, 0x96, 0x98);
+#endif
 
 // A notification delegate that will start the feedback app when the notication
 // is clicked.
@@ -50,9 +60,8 @@ class DisplayErrorNotificationDelegate
   DisplayErrorNotificationDelegate() = default;
 
   // message_center::NotificationDelegate:
-  bool HasClickedListener() override { return true; }
-
-  void Click() override {
+  void ButtonClick(int index) override {
+    DCHECK_EQ(0, index);
     WmShell::Get()->new_window_controller()->OpenFeedbackPage();
   }
 
@@ -163,25 +172,33 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
 
 
 #if defined(OS_CHROMEOS)
-void ShowDisplayErrorNotification(int message_id) {
+void ShowDisplayErrorNotification(const base::string16& message,
+                                  bool allow_feedback) {
   // Always remove the notification to make sure the notification appears
   // as a popup in any situation.
   message_center::MessageCenter::Get()->RemoveNotification(
       kDisplayErrorNotificationId, false /* by_user */);
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  message_center::RichNotificationData data;
+  if (allow_feedback) {
+    message_center::ButtonInfo send_button(
+        l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_FAILURE_SEND_FEEDBACK));
+    send_button.icon = gfx::Image(
+        CreateVectorIcon(kNotificationFeedbackButtonIcon, kFeedbackIconColor));
+    data.buttons.push_back(send_button);
+  }
+
   std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDisplayErrorNotificationId,
           base::string16(),  // title
-          l10n_util::GetStringUTF16(message_id),
-          bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
+          message, gfx::Image(CreateVectorIcon(kNotificationDisplayErrorIcon,
+                                               kDisplayIconColor)),
           base::string16(),  // display_source
           GURL(), message_center::NotifierId(
                       message_center::NotifierId::SYSTEM_COMPONENT,
                       system_notifier::kNotifierDisplayError),
-          message_center::RichNotificationData(),
-          new DisplayErrorNotificationDelegate));
+          data, new DisplayErrorNotificationDelegate));
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }

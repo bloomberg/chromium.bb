@@ -15,6 +15,7 @@
 #include "ash/display/display_animator_chromeos.h"
 #include "base/sys_info.h"
 #include "grit/ash_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #endif
 
 namespace {
@@ -84,8 +85,11 @@ void DisplayConfigurationController::SetMirrorMode(bool mirror,
                                                    bool user_action) {
   if (display_manager_->num_connected_displays() > 2) {
 #if defined(OS_CHROMEOS)
-    if (user_action)
-      ShowDisplayErrorNotification(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED);
+    if (user_action) {
+      ShowDisplayErrorNotification(
+          l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED),
+          false);
+    }
 #endif
     return;
   }
