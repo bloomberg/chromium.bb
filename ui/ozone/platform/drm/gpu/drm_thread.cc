@@ -40,8 +40,8 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
                                       uint32_t format,
                                       const gfx::Size& size) override {
     scoped_refptr<GbmDevice> gbm(static_cast<GbmDevice*>(drm.get()));
-    return GbmBuffer::CreateBuffer(gbm, format, size,
-                                   GBM_BO_USE_SCANOUT | GBM_BO_USE_LINEAR);
+    // TODO(dcastagna): Use GBM_BO_USE_MAP modifier once minigbm exposes it.
+    return GbmBuffer::CreateBuffer(gbm, format, size, GBM_BO_USE_SCANOUT);
   }
 
  protected:
