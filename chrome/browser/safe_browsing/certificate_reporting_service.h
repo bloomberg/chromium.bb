@@ -16,16 +16,31 @@
 #include "base/time/time.h"
 #include "components/certificate_reporting/error_reporter.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace base {
 class Clock;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 // This service initiates uploads of invalid certificate reports and retries any
-// failed uploads.
+// failed uploads. Each report is retried until it's older than a certain time
+// to live (TTL). Reports older than this TTL are dropped and no more retried,
+// so that the retry list doesn't grow indefinitely.
+//
+// Lifetime and dependencies:
+//
+// CertificateReportingService uses the url request context from SafeBrowsing
+// service. SafeBrowsing service is created before CertificateReportingService,
+// but is also shut down before any KeyedService is shut down. This means that
+// CertificateReportingService cannot depend on SafeBrowsing's url request being
+// available at all times, and it should know when SafeBrowsing shuts down.
 class CertificateReportingService : public KeyedService {
  public:
-  // Represent a report to be sent.
+  // Represents a report to be sent.
   struct Report {
     int report_id;
     base::Time creation_time;
@@ -64,6 +79,8 @@ class CertificateReportingService : public KeyedService {
 
     std::vector<Report> items_;
     base::ThreadChecker thread_checker_;
+
+    DISALLOW_COPY_AND_ASSIGN(BoundedReportList);
   };
 
   // Class that handles report uploads and implements the upload retry logic.
@@ -73,7 +90,8 @@ class CertificateReportingService : public KeyedService {
         std::unique_ptr<certificate_reporting::ErrorReporter> error_reporter_,
         std::unique_ptr<BoundedReportList> retry_list,
         base::Clock* clock,
-        base::TimeDelta report_ttl);
+        base::TimeDelta report_ttl,
+        bool retries_enabled);
     ~Reporter();
 
     // Sends a report. If the send fails, the report will be added to the retry
@@ -96,16 +114,105 @@ class CertificateReportingService : public KeyedService {
 
     std::unique_ptr<certificate_reporting::ErrorReporter> error_reporter_;
     std::unique_ptr<BoundedReportList> retry_list_;
-    base::Clock* test_clock_;
+    base::Clock* clock_;
+    // Maximum age of a queued report. Reports older than this are discarded in
+    // the next SendPending() call.
     const base::TimeDelta report_ttl_;
+    const bool retries_enabled_;
+    // Current report id, starting from zero and monotonically incrementing.
     int current_report_id_;
 
     std::map<int, Report> inflight_reports_;
 
     base::WeakPtrFactory<Reporter> weak_factory_;
 
-    DISALLOW_IMPLICIT_CONSTRUCTORS(Reporter);
+    DISALLOW_COPY_AND_ASSIGN(Reporter);
   };
+
+  CertificateReportingService(
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      uint8_t server_public_key[/* 32 */],
+      uint32_t server_public_key_version,
+      size_t max_queued_report_count,
+      base::TimeDelta max_report_age,
+      std::unique_ptr<base::Clock> clock);
+
+  ~CertificateReportingService() override;
+
+  // KeyedService implementation:
+  void Shutdown() override;
+
+  // Sends a serialized report. If the report upload fails, the upload is
+  // retried at a future time.
+  void Send(const std::string& serialized_report);
+
+  // Sends pending reports that are in the retry queue.
+  void SendPending();
+
+  // Enables or disables reporting. When disabled, pending report queue is
+  // cleared and incoming reports are ignored. Reporting is enabled by default
+  // once the service is initialized.
+  void SetEnabled(bool enabled);
+
+  // Getters and setters for testing.
+  Reporter* GetReporterForTesting() const;
+  void SetMaxQueuedReportCountForTesting(size_t max_report_count);
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetMaxReportAgeForTesting(base::TimeDelta max_report_age);
+
+  static GURL GetReportingURLForTesting();
+
+ private:
+  void Reset();
+
+  void InitializeOnIOThread(
+      bool enabled,
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      size_t max_queued_report_count,
+      base::TimeDelta max_report_age,
+      base::Clock* clock,
+      uint8_t* server_public_key,
+      uint32_t server_public_key_version);
+
+  // Resets the reporter on the IO thread. Changes in SafeBrowsing or extended
+  // reporting enabled states cause the reporter to be reset.
+  // If |enabled| is false or |url_request_context_getter| is null, report is
+  // set to null, effectively cancelling all in flight uploads and clearing the
+  // pending reports queue.
+  void ResetOnIOThread(bool enabled,
+                       net::URLRequestContext* url_request_context,
+                       size_t max_queued_report_count,
+                       base::TimeDelta max_report_age,
+                       base::Clock* clock,
+                       uint8_t* server_public_key,
+                       uint32_t server_public_key_version);
+
+  // If true, reporting is enabled. When SafeBrowsing preferences change, this
+  // might be set to false.
+  bool enabled_;
+
+  net::URLRequestContext* url_request_context_;
+  std::unique_ptr<Reporter> reporter_;
+
+  // Maximum number of reports to be queued for retry.
+  size_t max_queued_report_count_;
+
+  // Maximum age of the reports to be queued for retry, from the time the
+  // certificate error was first encountered by the user. Any report older than
+  // this age is ignored and is not re-uploaded.
+  base::TimeDelta max_report_age_;
+
+  std::unique_ptr<base::Clock> clock_;
+
+  // Whether a send has ever been made. Used to verify that test setters are
+  // only called after initialization.
+  bool made_send_attempt_;
+
+  // Encryption parameters.
+  uint8_t* server_public_key_;
+  uint32_t server_public_key_version_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertificateReportingService);
 };
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_CERTIFICATE_REPORTING_SERVICE_H_

@@ -29,7 +29,8 @@ CertificateReportingServiceFactory::~CertificateReportingServiceFactory() {}
 
 KeyedService* CertificateReportingServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new CertificateReportingService();
+  // TODO(crbug.com/554323): Create a real CertificateReportingService here.
+  return nullptr;
 }
 
 content::BrowserContext*
