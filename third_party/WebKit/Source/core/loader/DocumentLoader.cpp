@@ -38,6 +38,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -321,6 +322,19 @@ void DocumentLoader::finishedLoading(double finishTime) {
   if (m_state < MainResourceDone)
     m_state = MainResourceDone;
   clearMainResourceHandle();
+
+  // Shows the deprecation message and measures the impact of the new security
+  // restriction which disallows responding to navigation requests with
+  // redirected responses in the service worker.
+  // TODO(horo): Remove this when we actually introduce the restriction in
+  // RespondWithObserver.
+  if (m_response.wasFetchedViaServiceWorker() &&
+      m_response.urlListViaServiceWorker().size() > 1) {
+    Deprecation::countDeprecation(
+        m_frame,
+        UseCounter::
+            ServiceWorkerRespondToNavigationRequestWithRedirectedResponse);
+  }
 }
 
 bool DocumentLoader::redirectReceived(

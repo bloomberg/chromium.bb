@@ -15,13 +15,14 @@ ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::create(
     int eventID,
     const KURL& requestURL,
     WebURLRequest::FetchRequestMode requestMode,
+    WebURLRequest::FetchRedirectMode redirectMode,
     WebURLRequest::FrameType frameType,
     WebURLRequest::RequestContext requestContext,
     PassRefPtr<SecurityOrigin> requestOrigin,
     WaitUntilObserver* observer) {
   return new ForeignFetchRespondWithObserver(
-      context, eventID, requestURL, requestMode, frameType, requestContext,
-      std::move(requestOrigin), observer);
+      context, eventID, requestURL, requestMode, redirectMode, frameType,
+      requestContext, std::move(requestOrigin), observer);
 }
 
 void ForeignFetchRespondWithObserver::responseWasFulfilled(
@@ -95,6 +96,7 @@ ForeignFetchRespondWithObserver::ForeignFetchRespondWithObserver(
     int eventID,
     const KURL& requestURL,
     WebURLRequest::FetchRequestMode requestMode,
+    WebURLRequest::FetchRedirectMode redirectMode,
     WebURLRequest::FrameType frameType,
     WebURLRequest::RequestContext requestContext,
     PassRefPtr<SecurityOrigin> requestOrigin,
@@ -103,6 +105,7 @@ ForeignFetchRespondWithObserver::ForeignFetchRespondWithObserver(
                           eventID,
                           requestURL,
                           requestMode,
+                          redirectMode,
                           frameType,
                           requestContext,
                           observer),

@@ -24,8 +24,9 @@ enum WebServiceWorkerResponseError {
   WebServiceWorkerResponseErrorNoForeignFetchResponse,
   WebServiceWorkerResponseErrorForeignFetchHeadersWithoutOrigin,
   WebServiceWorkerResponseErrorForeignFetchMismatchedOrigin,
+  WebServiceWorkerResponseErrorRedirectedResponseForNotFollowRequest,
   WebServiceWorkerResponseErrorLast =
-      WebServiceWorkerResponseErrorForeignFetchMismatchedOrigin,
+      WebServiceWorkerResponseErrorRedirectedResponseForNotFollowRequest,
 };
 
 }  // namespace blink

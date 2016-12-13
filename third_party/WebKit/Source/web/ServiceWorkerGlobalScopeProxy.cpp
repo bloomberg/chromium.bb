@@ -167,7 +167,8 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(
       workerGlobalScope(), WaitUntilObserver::Fetch, fetchEventID);
   RespondWithObserver* respondWithObserver = RespondWithObserver::create(
       workerGlobalScope(), fetchEventID, webRequest.url(), webRequest.mode(),
-      webRequest.frameType(), webRequest.requestContext(), waitUntilObserver);
+      webRequest.redirectMode(), webRequest.frameType(),
+      webRequest.requestContext(), waitUntilObserver);
   Request* request = Request::create(
       workerGlobalScope()->scriptController()->getScriptState(), webRequest);
   request->getHeaders()->setGuard(Headers::ImmutableGuard);
@@ -244,7 +245,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(
   ForeignFetchRespondWithObserver* respondWithObserver =
       ForeignFetchRespondWithObserver::create(
           workerGlobalScope(), fetchEventID, webRequest.url(),
-          webRequest.mode(), webRequest.frameType(),
+          webRequest.mode(), webRequest.redirectMode(), webRequest.frameType(),
           webRequest.requestContext(), origin, waitUntilObserver);
   Request* request = Request::create(
       workerGlobalScope()->scriptController()->getScriptState(), webRequest);

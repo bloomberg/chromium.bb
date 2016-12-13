@@ -413,6 +413,12 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
     case UseCounter::HTMLObjectElementLegacyCall:
       return willBeRemoved("HTMLObjectElement legacy caller", M58,
                            "5715026367217664");
+    case UseCounter::
+        ServiceWorkerRespondToNavigationRequestWithRedirectedResponse:
+      return String::format(
+          "The service worker responded to the navigation request with a "
+          "redirected response. This will result in an error in %s.",
+          milestoneString(M59));
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

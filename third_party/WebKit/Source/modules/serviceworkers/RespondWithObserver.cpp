@@ -69,7 +69,7 @@ const String getMessageForResponseError(WebServiceWorkerResponseError error,
     case WebServiceWorkerResponseErrorResponseTypeOpaqueRedirect:
       errorMessage = errorMessage +
                      "an \"opaqueredirect\" type response was used for a "
-                     "request which is not a navigation request.";
+                     "request whose redirect mode is not \"manual\".";
       break;
     case WebServiceWorkerResponseErrorBodyLocked:
       errorMessage = errorMessage +
@@ -90,12 +90,33 @@ const String getMessageForResponseError(WebServiceWorkerResponseError error,
       errorMessage =
           errorMessage + "origin in response does not match origin of request.";
       break;
+    case WebServiceWorkerResponseErrorRedirectedResponseForNotFollowRequest:
+      errorMessage = errorMessage +
+                     "a redirected response was used for a request whose "
+                     "redirect mode is not \"follow\".";
+      break;
     case WebServiceWorkerResponseErrorUnknown:
     default:
       errorMessage = errorMessage + "an unexpected error occurred.";
       break;
   }
   return errorMessage;
+}
+
+const String getErrorMessageForRedirectedResponseForNavigationRequest(
+    const KURL& requestURL,
+    const Vector<KURL>& responseURLList) {
+  String errorMessage =
+      "In Chrome 59, the navigation to \"" + requestURL.getString() + "\" " +
+      "will result in a network error, because FetchEvent.respondWith() was " +
+      "called with a redirected response. See https://crbug.com/658249. The " +
+      "url list of the response was: [\"" + responseURLList[0].getString() +
+      "\"";
+  for (size_t i = 1; i < responseURLList.size(); ++i) {
+    errorMessage =
+        errorMessage + ", \"" + responseURLList[i].getString() + "\"";
+  }
+  return errorMessage + "]";
 }
 
 bool isNavigationRequest(WebURLRequest::FrameType frameType) {
@@ -177,11 +198,13 @@ RespondWithObserver* RespondWithObserver::create(
     int fetchEventID,
     const KURL& requestURL,
     WebURLRequest::FetchRequestMode requestMode,
+    WebURLRequest::FetchRedirectMode redirectMode,
     WebURLRequest::FrameType frameType,
     WebURLRequest::RequestContext requestContext,
     WaitUntilObserver* observer) {
   return new RespondWithObserver(context, fetchEventID, requestURL, requestMode,
-                                 frameType, requestContext, observer);
+                                 redirectMode, frameType, requestContext,
+                                 observer);
 }
 
 void RespondWithObserver::contextDestroyed() {
@@ -284,11 +307,26 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value) {
       return;
     }
   }
-  if (!isNavigationRequest(m_frameType) &&
+  if (m_redirectMode != WebURLRequest::FetchRedirectModeManual &&
       responseType == FetchResponseData::OpaqueRedirectType) {
     responseWasRejected(
         WebServiceWorkerResponseErrorResponseTypeOpaqueRedirect);
     return;
+  }
+  if (m_redirectMode != WebURLRequest::FetchRedirectModeFollow &&
+      response->redirected()) {
+    if (!isNavigationRequest(m_frameType)) {
+      responseWasRejected(
+          WebServiceWorkerResponseErrorRedirectedResponseForNotFollowRequest);
+      return;
+    }
+    // TODO(horo): We should just reject even if the request was a navigation.
+    // Currently we measure the impact of the restriction with the use counter
+    // in DocumentLoader.
+    getExecutionContext()->addConsoleMessage(ConsoleMessage::create(
+        JSMessageSource, ErrorMessageLevel,
+        getErrorMessageForRedirectedResponseForNavigationRequest(
+            m_requestURL, response->internalURLList())));
   }
   if (response->isBodyLocked()) {
     responseWasRejected(WebServiceWorkerResponseErrorBodyLocked);
@@ -326,6 +364,7 @@ RespondWithObserver::RespondWithObserver(
     int fetchEventID,
     const KURL& requestURL,
     WebURLRequest::FetchRequestMode requestMode,
+    WebURLRequest::FetchRedirectMode redirectMode,
     WebURLRequest::FrameType frameType,
     WebURLRequest::RequestContext requestContext,
     WaitUntilObserver* observer)
@@ -333,6 +372,7 @@ RespondWithObserver::RespondWithObserver(
       m_fetchEventID(fetchEventID),
       m_requestURL(requestURL),
       m_requestMode(requestMode),
+      m_redirectMode(redirectMode),
       m_frameType(frameType),
       m_requestContext(requestContext),
       m_state(Initial),

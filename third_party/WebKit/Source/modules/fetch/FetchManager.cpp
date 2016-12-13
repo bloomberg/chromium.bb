@@ -408,8 +408,8 @@ void FetchManager::Loader::didReceiveResponse(
         tainting = FetchRequestData::OpaqueTainting;
         break;
       case WebServiceWorkerResponseTypeOpaqueRedirect:
-      // ServiceWorker can't respond to the request from fetch() with an
-      // opaque redirect response.
+        DCHECK(NetworkUtils::isRedirectResponseCode(m_responseHttpStatusCode));
+        break;  // The code below creates an opaque-redirect filtered response.
       case WebServiceWorkerResponseTypeError:
         LOG(FATAL) << "When ServiceWorker respond to the request from fetch() "
                       "with an error response, FetchManager::Loader::didFail() "

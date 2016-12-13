@@ -7,11 +7,12 @@
 <script>
 
 function redirected_test(url,
+                         fetch_option,
                          fetch_method,
                          cache,
                          expected_redirected,
                          expected_url_list) {
-  return fetch_method(url).then(response => {
+  return fetch_method(url, fetch_option).then(response => {
         var cloned_response = response.clone();
         assert_equals(
             response.redirected, expected_redirected,
@@ -71,23 +72,87 @@ promise_test(t => {
       .then(f => {
           frame = f;
           return Promise.all([
-              redirected_test(TARGET_URL, self.fetch, cache,
+              // Tests without service workers.
+              redirected_test(TARGET_URL, {}, self.fetch, cache,
                               false /* expected_redirected */,
                               [TARGET_URL]),
-              redirected_test(REDIRECT_TO_TARGET_URL, self.fetch, cache,
+              redirected_test(REDIRECT_TO_TARGET_URL, {}, self.fetch, cache,
                               true /* expected_redirected */,
                               [REDIRECT_TO_TARGET_URL, TARGET_URL]),
+              redirected_test(REDIRECT_TO_TARGET_URL + '&manual',
+                              {redirect: 'manual'}, self.fetch, cache,
+                              false /* expected_redirected */,
+                              [REDIRECT_TO_TARGET_URL + '&manual']),
+              promise_rejects(
+                  t, new TypeError(),
+                  self.fetch(REDIRECT_TO_TARGET_URL + '&error',
+                             {redirect:'error'}),
+                  'The redirect response from the server should be treated as' +
+                  ' an error when the redirect flag of request was \'error\'.'),
+
+              // Tests without redirects with service worker.
               redirected_test('./?url=' + encodeURIComponent(TARGET_URL),
+                              {},
                               frame.contentWindow.fetch,
                               cache,
                               false /* expected_redirected */,
                               [TARGET_URL]),
+
+              // The service worker returns a redirected response.
               redirected_test(
-                  './?url=' + encodeURIComponent(REDIRECT_TO_TARGET_URL),
+                  './?url=' + encodeURIComponent(REDIRECT_TO_TARGET_URL) +
+                  '&original-redirect-mode=follow',
+                  {redirect: 'follow'},
                   frame.contentWindow.fetch,
                   cache,
                   true /* expected_redirected */,
                   [REDIRECT_TO_TARGET_URL, TARGET_URL]),
+              promise_rejects(
+                  t, new TypeError(),
+                  frame.contentWindow.fetch(
+                      './?url=' + encodeURIComponent(REDIRECT_TO_TARGET_URL) +
+                      '&original-redirect-mode=error',
+                      {redirect: 'error'}),
+                  'The redirected response from the service worker should be ' +
+                  'treated as an error when the redirect flag of request was ' +
+                  '\'error\'.'),
+              promise_rejects(
+                  t, new TypeError(),
+                  frame.contentWindow.fetch(
+                      './?url=' + encodeURIComponent(REDIRECT_TO_TARGET_URL) +
+                      '&original-redirect-mode=manual',
+                      {redirect: 'manual'}),
+                  'The redirected response from the service worker should be ' +
+                  'treated as an error when the redirect flag of request was ' +
+                  '\'manual\'.'),
+
+            // The service worker returns an opaqueredirect response.
+            promise_rejects(
+                t, new TypeError(),
+                frame.contentWindow.fetch(
+                    './?url=' + encodeURIComponent(REDIRECT_TO_TARGET_URL) +
+                    '&original-redirect-mode=follow&redirect-mode=manual',
+                    {redirect: 'follow'}),
+                'The opaqueredirect response from the service worker should ' +
+                'be treated as an error when the redirect flag of request was' +
+                ' \'follow\'.'),
+            promise_rejects(
+                t, new TypeError(),
+                frame.contentWindow.fetch(
+                    './?url=' + encodeURIComponent(REDIRECT_TO_TARGET_URL) +
+                    '&original-redirect-mode=error&redirect-mode=manual',
+                    {redirect: 'error'}),
+                'The opaqueredirect response from the service worker should ' +
+                'be treated as an error when the redirect flag of request was' +
+                ' \'error\'.'),
+            redirected_test(
+                './?url=' + encodeURIComponent(REDIRECT_TO_TARGET_URL) +
+                '&original-redirect-mode=manual&redirect-mode=manual',
+                {redirect: 'manual'},
+                frame.contentWindow.fetch,
+                cache,
+                false /* expected_redirected */,
+                [REDIRECT_TO_TARGET_URL]),
             ]);
         })
       .then(_ => self.caches.delete(CACHE_NAME))
