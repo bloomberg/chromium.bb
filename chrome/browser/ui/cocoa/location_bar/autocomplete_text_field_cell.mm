@@ -508,6 +508,8 @@ size_t CalculatePositionsInFrame(
       dragImageRect.origin =
           NSMakePoint(mousePoint.x - NSWidth(dragImageRect) / 2.0,
                       mousePoint.y - NSHeight(dragImageRect));
+      draggedDecoration_ = decoration;
+      draggedDecoration_->SetActive(true);
 
       // -[NSView dragImage:at:*] wants the images lower-left point,
       // regardless of -isFlipped.  Converting the rect to window base
@@ -529,6 +531,7 @@ size_t CalculatePositionsInFrame(
 
     // On mouse-up fall through to mouse-pressed case.
     DCHECK_EQ([event type], NSLeftMouseUp);
+    decoration->OnMouseUp();
   }
 
   const NSPoint mouseLocation = [theEvent locationInWindow];
@@ -651,6 +654,14 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
 
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
   return NSDragOperationCopy;
+}
+
+- (void)draggingSession:(NSDraggingSession*)session
+           endedAtPoint:(NSPoint)screenPoint
+              operation:(NSDragOperation)operation {
+  DCHECK(draggedDecoration_);
+  draggedDecoration_->SetActive(false);
+  draggedDecoration_ = nullptr;
 }
 
 - (void)updateMouseTrackingAndToolTipsInRect:(NSRect)cellFrame

@@ -24,6 +24,9 @@ class LocationBarDecoration;
   std::vector<LocationBarDecoration*> leftDecorations_;
   std::vector<LocationBarDecoration*> rightDecorations_;
 
+  // The decoration associated to the current dragging session.
+  LocationBarDecoration* draggedDecoration_;
+
   // Decorations with tracking areas attached to the AutocompleteTextField.
   std::vector<LocationBarDecoration*> mouseTrackingDecorations_;
 
