@@ -1,0 +1,61 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<dom-module name="dialog-drawer">
+  <template>
+    <style>
+      :host {
+        --drawer-width: 256px;
+        --transition-timing: 200ms ease;
+        background-color: #fff;
+        border: none;
+        bottom: 0;
+        left: calc(-1 * var(--drawer-width));
+        margin: 0;
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        top: 0;
+        transition: left var(--transition-timing);
+        width: var(--drawer-width);
+      }
+
+      :host,
+      #container {
+        height: 100%;
+      }
+
+      :host(.opening) {
+        left: 0;
+      }
+
+      :host([align=right]) {
+        left: auto;
+        right: calc(-1 * var(--drawer-width));
+        transition: right var(--transition-timing);
+      }
+
+      :host(.opening[align=right]) {
+        right: 0;
+      }
+
+      :host::backdrop {
+        background: rgba(0, 0, 0, 0.5);
+        bottom: 0;
+        left: 0;
+        opacity: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transition: opacity var(--transition-timing);
+      }
+
+      :host(.opening)::backdrop {
+        opacity: 1;
+      }
+    </style>
+    <div id="container" on-tap="onContainerTap_">
+      <content></content>
+    </div>
+  </template>
+</dom-module>
+<script src="dialog_drawer.js"></script>

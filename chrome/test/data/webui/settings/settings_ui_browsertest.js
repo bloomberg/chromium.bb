@@ -47,35 +47,35 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
 
     test('app drawer', function(done) {
       assertEquals(null, ui.$$('settings-menu'));
-      var drawer = assert(ui.$$('app-drawer'));
-      assertFalse(drawer.opened);
+      var drawer = ui.$.drawer;
+      assertFalse(!!drawer.open);
 
-      // Slide the drawer partway open. (These events are copied from Polymer's
-      // app-drawer tests.)
-      drawer.fire('track', {state: 'start'});
-      drawer.fire('track', {state: 'track', dx: 10, ddx: 10});
-      drawer.fire('track', {state: 'end', dx: 10, ddx: 0});
+      drawer.openDrawer();
 
-      // Menu is rendered asynchronously, but the drawer stays closed.
       Polymer.dom.flush();
-      assertFalse(drawer.opened);
+      // Validate that dialog is open and menu is shown so it will animate.
+      assertTrue(drawer.open);
       assertTrue(!!ui.$$('settings-menu'));
 
-      // Slide most of the way open.
-      drawer.fire('track', {state: 'start'});
-      drawer.fire('track', {state: 'track', dx: 200, ddx: 200});
-      drawer.fire('track', {state: 'end', dx: 200, ddx: 0});
+      // Close the dialog after it fully opens.
+      drawer.addEventListener('transitionend', function() {
+        if (drawer.classList.contains('opening')) {
+          // Click away from the drawer. MockInteractions don't expose a way to
+          // click at a specific location.
+          var midScreen = MockInteractions.middleOfNode(ui);
+          drawer.dispatchEvent(new MouseEvent('click', {
+            'bubbles': true,
+            'cancelable': true,
+            'clientX': midScreen.x,
+            'clientY': midScreen.y,
+          }));
+        }
+      });
 
-      // Drawer is shown.
-      Polymer.dom.flush();
-      assertTrue(drawer.opened);
-
-      // Click away from the drawer.
-      MockInteractions.tap(drawer.$.scrim);
-      Polymer.Base.async(function() {
+      drawer.addEventListener('close', function() {
         // Drawer is closed, but menu is still stamped so its contents remain
         // visible as the drawer slides out.
-        assertFalse(drawer.opened);
+        assertFalse(drawer.open);
         assertTrue(!!ui.$$('settings-menu'));
         done();
       });

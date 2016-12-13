@@ -79,13 +79,12 @@ Polymer({
    */
   ready: function() {
     // Lazy-create the drawer the first time it is opened or swiped into view.
-    var drawer = assert(this.$$('app-drawer'));
-    listenOnce(drawer, 'track opened-changed', function() {
+    listenOnce(this.$.drawer, 'open-changed', function() {
       this.$.drawerTemplate.if = true;
     }.bind(this));
 
     window.addEventListener('popstate', function(e) {
-      drawer.close();
+      this.$.drawer.closeDrawer();
     }.bind(this));
 
     if (loadTimeData.getBoolean('isGuest')) {
@@ -188,17 +187,17 @@ Polymer({
    */
   onIronActivate_: function(event) {
     if (event.detail.item.id != 'advancedPage')
-      this.$$('app-drawer').close();
+      this.$.drawer.closeDrawer();
   },
 
   /** @private */
   onMenuButtonTap_: function() {
-    this.$$('app-drawer').toggle();
+    this.$.drawer.toggle();
   },
 
   /** @private */
   directionDelegateChanged_: function() {
-    this.$$('app-drawer').align = this.directionDelegate.isRtl() ?
+    this.$.drawer.align = this.directionDelegate.isRtl() ?
         'right' : 'left';
   },
 });
