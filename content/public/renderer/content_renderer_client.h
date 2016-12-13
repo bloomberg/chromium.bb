@@ -12,9 +12,10 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
@@ -28,6 +29,7 @@ class SkBitmap;
 
 namespace base {
 class FilePath;
+class SchedulerWorkerPoolParams;
 class SingleThreadTaskRunner;
 }
 
@@ -371,6 +373,13 @@ class CONTENT_EXPORT ContentRendererClient {
   // Overwrites the given URL to use an HTML5 embed if possible.
   // An empty URL is returned if the URL is not overriden.
   virtual GURL OverrideFlashEmbedWithHTML(const GURL& url);
+
+  // Provides parameters for initializing the global task scheduler. If
+  // |params_vector| is left empty, default parameters are used.
+  virtual void GetTaskSchedulerInitializationParams(
+      std::vector<base::SchedulerWorkerPoolParams>* params_vector,
+      base::TaskScheduler::WorkerPoolIndexForTraitsCallback*
+          index_to_traits_callback) {}
 };
 
 }  // namespace content
