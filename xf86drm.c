@@ -2929,11 +2929,11 @@ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
     if (fd < 0)
         return -errno;
 
-    ret = read(fd, data, sizeof(data));
-    data[sizeof(data)-1] = '\0';
+    ret = read(fd, data, sizeof(data)-1);
     close(fd);
     if (ret < 0)
         return -errno;
+    data[ret] = '\0';
 
 #define TAG "PCI_SLOT_NAME="
     str = strstr(data, TAG);
