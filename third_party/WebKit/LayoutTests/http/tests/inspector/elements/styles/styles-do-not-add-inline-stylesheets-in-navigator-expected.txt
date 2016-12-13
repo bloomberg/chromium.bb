@@ -1,0 +1,10 @@
+Verify that inline stylesheets do not appear in navigator.
+
+top
+  127.0.0.1:8000
+    inspector
+      elements/styles
+        styles-do-not-add-inline-stylesheets-in-navigator.html
+      elements-test.js
+      inspector-test.js
+
