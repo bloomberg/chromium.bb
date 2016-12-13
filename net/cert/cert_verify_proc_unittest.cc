@@ -1806,7 +1806,8 @@ const WeakDigestTestData kVerifyEndEntityTestData[] = {
 // Disabled on NSS - NSS caches chains/signatures in such a way that cannot
 // be cleared until NSS is cleanly shutdown, which is not presently supported
 // in Chromium.
-#if defined(USE_NSS_CERTS) || defined(OS_IOS)
+// OSX 10.12+ stops building the chain at the first weak digest.
+#if defined(USE_NSS_CERTS) || defined(OS_IOS) || defined(OS_MACOSX)
 #define MAYBE_VerifyEndEntity DISABLED_VerifyEndEntity
 #else
 #define MAYBE_VerifyEndEntity VerifyEndEntity
@@ -1854,7 +1855,8 @@ const WeakDigestTestData kVerifyIncompleteEETestData[] = {
 };
 // Disabled on NSS - libpkix does not return constructed chains on error,
 // preventing us from detecting/inspecting the verified chain.
-#if defined(USE_NSS_CERTS) || defined(OS_IOS)
+// OSX 10.12+ stops building the chain at the first weak digest.
+#if defined(USE_NSS_CERTS) || defined(OS_IOS) || defined(OS_MACOSX)
 #define MAYBE_VerifyIncompleteEndEntity DISABLED_VerifyIncompleteEndEntity
 #else
 #define MAYBE_VerifyIncompleteEndEntity VerifyIncompleteEndEntity
@@ -1879,7 +1881,8 @@ const WeakDigestTestData kVerifyMixedTestData[] = {
 };
 // NSS does not support MD4 and does not enable MD2 by default, making all
 // permutations invalid.
-#if defined(USE_NSS_CERTS) || defined(OS_IOS)
+// OSX 10.12+ stops building the chain at the first weak digest.
+#if defined(USE_NSS_CERTS) || defined(OS_IOS) || defined(OS_MACOSX)
 #define MAYBE_VerifyMixed DISABLED_VerifyMixed
 #else
 #define MAYBE_VerifyMixed VerifyMixed
