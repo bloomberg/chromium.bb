@@ -44,14 +44,13 @@ void OfflineEventLogger::RecordActivity(const std::string& activity) {
       current_time.day_of_month, current_time.hour, current_time.minute,
       current_time.second);
 
-  std::string log_message = date_string + ": " + activity;
   if (client_)
-    client_->CustomLog(log_message);
+    client_->CustomLog(activity);
 
   if (activities_.size() == kMaxLogCount)
     activities_.pop_back();
 
-  activities_.push_front(log_message);
+  activities_.push_front(date_string + ": " + activity);
 }
 
 void OfflineEventLogger::SetClient(Client* client) {
