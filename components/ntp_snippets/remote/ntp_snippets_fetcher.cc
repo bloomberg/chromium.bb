@@ -145,6 +145,16 @@ int Get5xxRetryCount(bool interactive_request) {
                          kBackground5xxRetriesName, 0));
 }
 
+bool IsSendingTopLanguagesEnabled() {
+  return IsBooleanParameterEnabled(kSendTopLanguagesName,
+                                   /*default_value=*/false);
+}
+
+bool IsSendingUserClassEnabled() {
+  return IsBooleanParameterEnabled(kSendUserClassName,
+                                   /*default_value=*/false);
+}
+
 bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
   if (endpoint == kChromeReaderServer) {
     return false;
@@ -672,16 +682,6 @@ NTPSnippetsFetcher::RequestBuilder::SetUserClassifier(
     user_class_ = GetUserClassString(user_classifier.GetUserClass());
   }
   return *this;
-}
-
-bool NTPSnippetsFetcher::RequestBuilder::IsSendingTopLanguagesEnabled() const {
-  return IsBooleanParameterEnabled(kSendTopLanguagesName,
-                                   /*default_value=*/false);
-}
-
-bool NTPSnippetsFetcher::RequestBuilder::IsSendingUserClassEnabled() const {
-  return IsBooleanParameterEnabled(kSendUserClassName,
-                                   /*default_value=*/false);
 }
 
 std::string NTPSnippetsFetcher::RequestBuilder::BuildHeaders() const {

@@ -173,17 +173,21 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestAuthenticated);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestUnauthenticated);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestExcludedIds);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestNoUserClass);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
+                           BuildRequestAuthenticated);
+  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
+                           BuildRequestUnauthenticated);
+  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
+                           BuildRequestExcludedIds);
+  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
+                           BuildRequestNoUserClass);
+  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
                            BuildRequestWithTwoLanguages);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
                            BuildRequestWithUILanguageOnly);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
                            BuildRequestWithOtherLanguageOnly);
-  friend class NTPSnippetsFetcherTest;
+  friend class ChromeReaderSnippetsFetcherTest;
 
   enum FetchAPI {
     CHROME_READER_API,
@@ -234,12 +238,6 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
       user_class_ = user_class;
       return *this;
     }
-
-   protected:
-    // TODO(fhorschig): As soon as crbug.com/crbug.com/645447 is resolved,
-    // make these an implementation detail in the body and remove the mock.
-    virtual bool IsSendingTopLanguagesEnabled() const;
-    virtual bool IsSendingUserClassEnabled() const;
 
    private:
     std::string BuildHeaders() const;
