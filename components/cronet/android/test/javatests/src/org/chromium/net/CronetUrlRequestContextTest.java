@@ -342,9 +342,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // estimates are available.
         if (testFramework.mCronetEngine.getEffectiveConnectionType()
                 != ExperimentalCronetEngine.EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
-            assertTrue(testFramework.mCronetEngine.getHttpRttMs() > 0);
-            assertTrue(testFramework.mCronetEngine.getTransportRttMs() > 0);
-            assertTrue(testFramework.mCronetEngine.getDownstreamThroughputKbps() > 0);
+            assertTrue(testFramework.mCronetEngine.getHttpRttMs() >= 0);
+            assertTrue(testFramework.mCronetEngine.getTransportRttMs() >= 0);
+            assertTrue(testFramework.mCronetEngine.getDownstreamThroughputKbps() >= 0);
         } else {
             assertEquals(RttThroughputValues.INVALID_RTT_THROUGHPUT,
                     testFramework.mCronetEngine.getHttpRttMs());
