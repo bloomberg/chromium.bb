@@ -659,13 +659,6 @@ static aom_codec_err_t ctrl_set_arnr_strength(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
-static aom_codec_err_t ctrl_set_arnr_type(aom_codec_alg_priv_t *ctx,
-                                          va_list args) {
-  (void)ctx;
-  (void)args;
-  return AOM_CODEC_OK;
-}
-
 static aom_codec_err_t ctrl_set_tuning(aom_codec_alg_priv_t *ctx,
                                        va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -1338,7 +1331,6 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_TILE_ROWS, ctrl_set_tile_rows },
   { AOME_SET_ARNR_MAXFRAMES, ctrl_set_arnr_max_frames },
   { AOME_SET_ARNR_STRENGTH, ctrl_set_arnr_strength },
-  { AOME_SET_ARNR_TYPE, ctrl_set_arnr_type },
   { AOME_SET_TUNING, ctrl_set_tuning },
   { AOME_SET_CQ_LEVEL, ctrl_set_cq_level },
   { AOME_SET_MAX_INTRA_BITRATE_PCT, ctrl_set_rc_max_intra_bitrate_pct },

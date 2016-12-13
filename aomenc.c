@@ -358,7 +358,6 @@ static const arg_def_t arnr_maxframes =
     ARG_DEF(NULL, "arnr-maxframes", 1, "AltRef max frames (0..15)");
 static const arg_def_t arnr_strength =
     ARG_DEF(NULL, "arnr-strength", 1, "AltRef filter strength (0..6)");
-static const arg_def_t arnr_type = ARG_DEF(NULL, "arnr-type", 1, "AltRef type");
 static const struct arg_enum_list tuning_enum[] = {
   { "psnr", AOM_TUNE_PSNR }, { "ssim", AOM_TUNE_SSIM }, { NULL, 0 }
 };
@@ -471,7 +470,6 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &tile_rows,
                                        &arnr_maxframes,
                                        &arnr_strength,
-                                       &arnr_type,
                                        &tune_ssim,
                                        &cq_level,
                                        &max_intra_rate_pct,
@@ -511,7 +509,6 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_TILE_ROWS,
                                         AOME_SET_ARNR_MAXFRAMES,
                                         AOME_SET_ARNR_STRENGTH,
-                                        AOME_SET_ARNR_TYPE,
                                         AOME_SET_TUNING,
                                         AOME_SET_CQ_LEVEL,
                                         AOME_SET_MAX_INTRA_BITRATE_PCT,

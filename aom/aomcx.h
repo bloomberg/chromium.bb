@@ -181,12 +181,9 @@ enum aome_enc_control_id {
    */
   AOME_SET_ARNR_STRENGTH,
 
-  /*!\deprecated control function to set the filter type to use for the arf. */
-  AOME_SET_ARNR_TYPE,
-
   /*!\brief Codec control function to set visual tuning.
    */
-  AOME_SET_TUNING,
+  AOME_SET_TUNING = AOME_SET_ARNR_STRENGTH + 2,
 
   /*!\brief Codec control function to set constrained quality level.
    *
@@ -556,8 +553,6 @@ AOM_CTRL_USE_TYPE(AOME_SET_ARNR_MAXFRAMES, unsigned int)
 #define AOM_CTRL_AOME_SET_ARNR_MAXFRAMES
 AOM_CTRL_USE_TYPE(AOME_SET_ARNR_STRENGTH, unsigned int)
 #define AOM_CTRL_AOME_SET_ARNR_STRENGTH
-AOM_CTRL_USE_TYPE_DEPRECATED(AOME_SET_ARNR_TYPE, unsigned int)
-#define AOM_CTRL_AOME_SET_ARNR_TYPE
 AOM_CTRL_USE_TYPE(AOME_SET_TUNING, int) /* aom_tune_metric */
 #define AOM_CTRL_AOME_SET_TUNING
 AOM_CTRL_USE_TYPE(AOME_SET_CQ_LEVEL, unsigned int)

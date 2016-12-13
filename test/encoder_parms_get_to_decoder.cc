@@ -89,7 +89,6 @@ class AvxEncoderParmsGetToDecoder
       encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);
       encoder->Control(AOME_SET_ARNR_MAXFRAMES, 7);
       encoder->Control(AOME_SET_ARNR_STRENGTH, 5);
-      encoder->Control(AOME_SET_ARNR_TYPE, 3);
       if (encode_parms.render_size[0] > 0 && encode_parms.render_size[1] > 0)
         encoder->Control(AV1E_SET_RENDER_SIZE, encode_parms.render_size);
     }
