@@ -169,7 +169,9 @@ TEST_F(BrowserControlsTest, MAYBE(HideOnScrollDown)) {
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, -25.f));
   EXPECT_FLOAT_EQ(25.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 0), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 0),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Browser controls should consume 25px and become hidden. Excess scroll
   // should be
@@ -177,13 +179,17 @@ TEST_F(BrowserControlsTest, MAYBE(HideOnScrollDown)) {
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, -40.f));
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 15), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 15),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Only page should consume scroll
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, -20.f));
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 35), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 35),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 }
 
 // Scrolling up should show browser controls.
@@ -199,12 +205,16 @@ TEST_F(BrowserControlsTest, MAYBE(ShowOnScrollUp)) {
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, 10.f));
   EXPECT_FLOAT_EQ(10.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 0), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 0),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, 50.f));
   EXPECT_FLOAT_EQ(50.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 0), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 0),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 }
 
 // Scrolling up after previous scroll downs should cause browser controls to be
@@ -225,32 +235,42 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollDownThenUp)) {
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, -150.f));
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 200), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 200),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Scroll up and ensure the browser controls does not move until we recover
   // 100px previously scrolled.
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, 40.f));
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 160), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 160),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, 60.f));
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 100), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 100),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Now we have hit the threshold so further scroll up should be consumed by
   // browser controls.
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, 30.f));
   EXPECT_FLOAT_EQ(30.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 100), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 100),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Once top control is fully shown then page should consume any excess scroll.
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, 70.f));
   EXPECT_FLOAT_EQ(50.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 50), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 50),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 }
 
 // Scrolling down should always cause visible browser controls to start hiding
@@ -271,18 +291,24 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpThenDown)) {
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, 100.f));
   EXPECT_FLOAT_EQ(50.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 50), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 50),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Scroll down and ensure only browser controls is scrolled
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, -40.f));
   EXPECT_FLOAT_EQ(10.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 50), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 50),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, 0, -60.f));
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 100), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 100),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 }
 
 // Browser controls should not consume horizontal scroll.
@@ -299,12 +325,16 @@ TEST_F(BrowserControlsTest, MAYBE(HorizontalScroll)) {
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, -110.f, -100.f));
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(110, 50), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(110, 50),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   webView->handleInputEvent(
       generateEvent(WebInputEvent::GestureScrollUpdate, -40.f, 0));
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(150, 50), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(150, 50),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 }
 
 // Page scale should not impact browser controls scrolling
@@ -396,35 +426,47 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableSubregionScrollFirst)) {
   // main frame should not scroll.
   verticalScroll(-800.f);
   EXPECT_FLOAT_EQ(50.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 50), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 50),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Continued scroll down should start hiding browser controls but main frame
   // should not scroll.
   verticalScroll(-40.f);
   EXPECT_FLOAT_EQ(10.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 50), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 50),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Continued scroll down should scroll down the main frame
   verticalScroll(-40.f);
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 80), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 80),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Test scroll up
   // scroll up should scroll overflow div first
   verticalScroll(800.f);
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 80), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 80),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Continued scroll up should start showing browser controls but main frame
   // should not scroll.
   verticalScroll(40.f);
   EXPECT_FLOAT_EQ(40.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 80), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 80),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Continued scroll down up scroll up the main frame
   verticalScroll(40.f);
   EXPECT_FLOAT_EQ(50.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 50), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 50),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 }
 
 // Scrollable iframes should scroll before browser controls
@@ -440,35 +482,47 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableIframeScrollFirst)) {
   // frame should not scroll.
   verticalScroll(-800.f);
   EXPECT_FLOAT_EQ(50.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 50), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 50),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Continued scroll down should start hiding browser controls but main frame
   // should not scroll.
   verticalScroll(-40.f);
   EXPECT_FLOAT_EQ(10.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 50), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 50),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Continued scroll down should scroll down the main frame
   verticalScroll(-40.f);
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 80), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 80),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Test scroll up
   // scroll up should scroll iframe first
   verticalScroll(800.f);
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 80), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 80),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Continued scroll up should start showing browser controls but main frame
   // should not scroll.
   verticalScroll(40.f);
   EXPECT_FLOAT_EQ(40.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 80), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 80),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Continued scroll down up scroll up the main frame
   verticalScroll(40.f);
   EXPECT_FLOAT_EQ(50.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 50), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 50),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 }
 
 // Browser controls visibility should remain consistent when height is changed.
@@ -505,11 +559,15 @@ TEST_F(BrowserControlsTest, MAYBE(ZeroHeightMeansNoEffect)) {
 
   verticalScroll(20.f);
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 80), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 80),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   verticalScroll(-30.f);
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 110), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 110),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   webView->browserControls().setShownRatio(1);
   EXPECT_FLOAT_EQ(0.f, webView->browserControls().contentOffset());
@@ -564,7 +622,9 @@ TEST_F(BrowserControlsTest, MAYBE(StateConstraints)) {
   // Only shown state is permitted so controls cannot hide
   verticalScroll(-20.f);
   EXPECT_FLOAT_EQ(50, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 120), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 120),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Setting permitted state should change content offset to match the
   // constraint.
@@ -575,7 +635,9 @@ TEST_F(BrowserControlsTest, MAYBE(StateConstraints)) {
   // Only hidden state is permitted so controls cannot show
   verticalScroll(30.f);
   EXPECT_FLOAT_EQ(0, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 90), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 90),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Setting permitted state to "both" should not change content offset.
   webView->updateBrowserControlsState(WebBrowserControlsBoth,
@@ -585,11 +647,15 @@ TEST_F(BrowserControlsTest, MAYBE(StateConstraints)) {
   // Both states are permitted so controls can either show or hide
   verticalScroll(50.f);
   EXPECT_FLOAT_EQ(50, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 90), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 90),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   verticalScroll(-50.f);
   EXPECT_FLOAT_EQ(0, webView->browserControls().contentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 90), frame()->view()->getScrollOffset());
+  EXPECT_SIZE_EQ(
+      ScrollOffset(0, 90),
+      frame()->view()->layoutViewportScrollableArea()->getScrollOffset());
 
   // Setting permitted state to "both" should not change an in-flight offset.
   verticalScroll(20.f);
