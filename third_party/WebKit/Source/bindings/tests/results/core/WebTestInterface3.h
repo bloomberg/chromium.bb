@@ -7,4 +7,17 @@
 
 // clang-format off
 
-// TODO(dglazkov): Implement generating the header file.
+// TODO(dglazkov): Use chromium-style path.
+#ifndef TestInterface3_h
+#define TestInterface3_h
+
+namespace blink {
+namespace api {
+
+class TestInterface3 {
+};
+
+}  // namespace api
+}  // namespace blink
+
+#endif  // TestInterface3_h

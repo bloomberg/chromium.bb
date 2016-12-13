@@ -10,6 +10,8 @@
 #include "WebTestInterface3.h"
 
 // TODO(dglazkov): Implement generating includes.
+#include "Webvoid.h"
+#include "WebIterator.h"
 #include "WebDOMString.h"
 
 namespace blink {

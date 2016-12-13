@@ -2,6 +2,24 @@
 
 {% include 'copyright_block.txt' %}
 
-// TODO(dglazkov): Implement generating the header file.
+// TODO(dglazkov): Use chromium-style path.
+#ifndef {{class_name}}_h
+#define {{class_name}}_h
+
+{% for include_file in header_includes %}
+#include "{{include_file}}"
+{% endfor %}
+
+namespace blink {
+namespace api {
+
+class {{class_name}} {
+
+};
+
+}  // namespace api
+}  // namespace blink
+
+#endif  // {{class_name}}_h
 
 {% endfilter %}

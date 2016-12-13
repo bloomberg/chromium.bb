@@ -38,46 +38,62 @@ def includes_for_type(idl_type):
 
 
 def interface_context(idl_interface):
-    attributes = []
-    methods = []
-    includes = set()
+    builder = InterfaceContextBuilder(MODULE_PYNAME)
+    builder.set_class_name(idl_interface.name)
+
     for idl_attribute in idl_interface.attributes:
-        attributes.append(Attribute.create(idl_attribute))
-        includes.update(includes_for_type(idl_attribute.idl_type))
+        builder.add_attribute(idl_attribute)
+
     for idl_operation in idl_interface.operations:
+        builder.add_operation(idl_operation)
+
+    return builder.build()
+
+
+class InterfaceContextBuilder(object):
+    def __init__(self, code_generator):
+        self.result = {'code_generator': code_generator}
+
+    def set_class_name(self, class_name):
+        self.result['class_name'] = class_name
+
+    def _ensure_set(self, name):
+        return self.result.setdefault(name, set())
+
+    def _ensure_list(self, name):
+        return self.result.setdefault(name, [])
+
+    def add_attribute(self, idl_attribute):
+        self._ensure_list('attributes').append(
+            self.create_attribute(idl_attribute))
+        self._ensure_set('cpp_includes').update(
+            includes_for_type(idl_attribute.idl_type))
+
+    def add_operation(self, idl_operation):
         if idl_operation.name:
-            methods.append(Method.create(idl_operation))
-    return {
-        'code_generator': MODULE_PYNAME,
-        'class_name': idl_interface.name,
-        'cpp_includes': includes,
-        'attributes': attributes,
-        'methods': methods,
-    }
+            self._ensure_list('methods').append(
+                self.create_method(idl_operation))
+            self._ensure_set('cpp_includes').update(
+                includes_for_type(idl_operation.idl_type))
 
-
-class Attribute(object):
-    def __init__(self, name, return_type):
-        self.name = name
-        self.return_type = return_type
-
-    @staticmethod
-    def create(idl_attribute):
-        name = idl_attribute.name
-        return_type = idl_attribute.idl_type.preprocessed_type.base_type
-        return Attribute(name, return_type)
-
-
-class Method(object):
-    def __init__(self, name, return_type):
-        self.name = name
-        self.return_type = return_type
-
-    @staticmethod
-    def create(idl_operation):
+    def create_method(self, idl_operation):
         name = idl_operation.name
         return_type = idl_operation.idl_type.preprocessed_type.base_type
-        return Method(name, return_type)
+        return {
+            'name': name,
+            'return_type': return_type
+        }
+
+    def create_attribute(self, idl_attribute):
+        name = idl_attribute.name
+        return_type = idl_attribute.idl_type.preprocessed_type.base_type
+        return {
+            'name': name,
+            'return_type': return_type
+        }
+
+    def build(self):
+        return self.result
 
 
 class CodeGeneratorWebModule(CodeGeneratorBase):
@@ -102,7 +118,7 @@ class CodeGeneratorWebModule(CodeGeneratorBase):
         # TODO(dglazkov): Implement callback interfaces.
         # TODO(dglazkov): Make sure partial interfaces are handled.
         if interface.is_callback or interface.is_partial:
-            raise ValueError("Partial or callback interfaces are not supported")
+            raise ValueError('Partial or callback interfaces are not supported')
 
         template_context = interface_context(interface)
 

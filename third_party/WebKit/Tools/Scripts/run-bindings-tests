@@ -26,7 +26,10 @@
 import sys
 
 from webkitpy.bindings.bindings_tests import run_bindings_tests
+from webkitpy.common import webkit_finder
+webkit_finder.add_typ_dir_to_sys_path()
 
+import typ
 
 def main(argv):
     """Runs Blink bindings IDL compiler on test IDL files and compares the
@@ -36,15 +39,38 @@ def main(argv):
     (this is automatically done as a presubmit script),
     and submit changes to the test results in the same patch.
     This makes it easier to track and review changes in generated code.
-
-    Options:
-       --reset-results: Overwrites reference files with the generated results.
-       --verbose: Show output on success and logging messages (not just failure)
     """
-    reset_results = '--reset-results' in argv
-    verbose = '--verbose' in argv
+    argument_parser = typ.ArgumentParser()
+    argument_parser.add_argument('--reset-results',
+        default=False,
+        action='store_true',
+        help='Overwrites reference files with the generated results.')
+    argument_parser.add_argument('--skip-unit-tests',
+        default=False,
+        action='store_true',
+        help='Skip running unit tests (only run reference tests).')
+    argument_parser.add_argument('--skip-reference-tests',
+        default=False,
+        action='store_true',
+        help='Skip running reference tests (only run unit tests).')
 
-    return run_bindings_tests(reset_results, verbose)
+    # First, run bindings unit tests.
+    runner = typ.Runner()
+    runner.parse_args(argument_parser, argv[1:])
+    args = runner.args
+    if argument_parser.exit_status is not None:
+        return argument_parser.exit_status
+    runner.args.top_level_dir = webkit_finder.get_bindings_scripts_dir()
+    if not args.skip_unit_tests:
+        return_code, _, _ = runner.run()
+        if return_code != 0:
+            return return_code
+
+    if args.skip_reference_tests:
+        return 0
+
+    # Now run the bindings end-to-end tests.
+    return run_bindings_tests(args.reset_results, args.verbose)
 
 
 if __name__ == '__main__':
