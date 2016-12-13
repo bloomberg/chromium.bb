@@ -96,7 +96,7 @@ class AutofillClientIOS : public AutofillClient {
  private:
   ios::ChromeBrowserState* browser_state_;
   infobars::InfoBarManager* infobar_manager_;
-  __weak id<AutofillClientIOSBridge> bridge_;
+  id<AutofillClientIOSBridge> bridge_;  // Weak
   password_manager::PasswordGenerationManager* password_generation_manager_;
   std::unique_ptr<IdentityProvider> identity_provider_;
   CardUnmaskPromptControllerImpl unmask_controller_;

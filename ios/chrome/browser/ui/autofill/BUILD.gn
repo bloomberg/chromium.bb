@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 source_set("autofill") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "autofill_client_ios.h",
     "autofill_client_ios.mm",
