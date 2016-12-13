@@ -19,7 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// http://www.w3.org/TR/SVG2/struct.html#InterfaceSVGDocument
+// https://svgwg.org/svg2-draft/struct.html#InterfaceDocumentExtensions
 
 [
     ImplementedAs=SVGDocumentExtensions

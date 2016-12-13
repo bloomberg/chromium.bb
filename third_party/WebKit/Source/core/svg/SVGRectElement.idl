@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/shapes.html#InterfaceSVGRectElement
+// https://svgwg.org/svg2-draft/shapes.html#InterfaceSVGRectElement
 
 interface SVGRectElement : SVGGeometryElement {
     [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength x;

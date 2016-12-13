@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://www.w3.org/TR/SVG2/styling.html#InterfaceSVGStyleElement
+// https://svgwg.org/svg2-draft/styling.html#InterfaceSVGStyleElement
 
 interface SVGStyleElement : SVGElement {
     attribute DOMString type;

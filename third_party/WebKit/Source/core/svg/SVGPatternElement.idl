@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/pservers.html#InterfaceSVGPatternElement
+// https://svgwg.org/svg2-draft/pservers.html#InterfaceSVGPatternElement
 
 interface SVGPatternElement : SVGElement {
     [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedEnumeration patternUnits;

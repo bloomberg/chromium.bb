@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/pservers.html#InterfaceSVGStopElement
+// https://svgwg.org/svg2-draft/pservers.html#InterfaceSVGStopElement
 
 interface SVGStopElement : SVGElement {
     [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedNumber offset;

@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/types.html#InterfaceSVGAnimatedNumber
+// https://svgwg.org/svg2-draft/types.html#InterfaceSVGAnimatedNumber
 
 [
     SetWrapperReferenceTo(SVGElement contextElement),

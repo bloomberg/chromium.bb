@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/animate.html#InterfaceSVGAnimateTransformElement
+// https://svgwg.org/specs/animations/#InterfaceSVGAnimateTransformElement
 
 interface SVGAnimateTransformElement : SVGAnimationElement {
 };

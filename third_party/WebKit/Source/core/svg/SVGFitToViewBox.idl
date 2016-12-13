@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/types.html#InterfaceSVGFitToViewBox
+// https://svgwg.org/svg2-draft/types.html#InterfaceSVGFitToViewBox
 
 [
     NoInterfaceObject, // Always used on target of 'implements'

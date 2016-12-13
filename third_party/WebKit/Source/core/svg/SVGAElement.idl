@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/linking.html#InterfaceSVGAElement
+// https://svgwg.org/svg2-draft/linking.html#InterfaceSVGAElement
 
 interface SVGAElement : SVGGraphicsElement {
     [ImplementedAs=svgTarget, Measure] readonly attribute SVGAnimatedString target;

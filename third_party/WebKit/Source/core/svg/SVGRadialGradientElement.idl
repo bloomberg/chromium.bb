@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/pservers.html#InterfaceSVGRadialGradientElement
+// https://svgwg.org/svg2-draft/pservers.html#InterfaceSVGRadialGradientElement
 
 interface SVGRadialGradientElement : SVGGradientElement {
     [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedLength cx;

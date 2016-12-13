@@ -28,8 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// TODO(foolip): The SVGDiscardElement interface does not exist in the spec
-// yet: http://www.w3.org/Graphics/SVG/WG/track/actions/3727
+// https://svgwg.org/specs/animations/#InterfaceSVGDiscardElement
 
 [RuntimeEnabled=smil]
 interface SVGDiscardElement : SVGElement {

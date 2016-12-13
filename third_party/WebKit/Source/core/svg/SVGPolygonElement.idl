@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/shapes.html#InterfaceSVGPolygonElement
+// https://svgwg.org/svg2-draft/shapes.html#InterfaceSVGPolygonElement
 
 interface SVGPolygonElement : SVGGeometryElement {
     // TODO(foolip): points and animatedPoints be on the SVGAnimatedPoints
     // interface which SVGPolygonElement should implement:
-    // http://www.w3.org/TR/SVG2/shapes.html#InterfaceSVGAnimatedPoints
+    // https://svgwg.org/svg2-draft/shapes.html#InterfaceSVGAnimatedPoints
     [MeasureAs=SVG1DOMShape, ImplementedAs=pointsFromJavascript] readonly attribute SVGPointList points;
     [MeasureAs=SVG1DOMShape] readonly attribute SVGPointList animatedPoints;
 };

@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/shapes.html#InterfaceSVGEllipseElement
+// https://svgwg.org/svg2-draft/shapes.html#InterfaceSVGEllipseElement
 
 interface SVGEllipseElement : SVGGeometryElement {
     [MeasureAs=SVG1DOMShape] readonly attribute SVGAnimatedLength cx;

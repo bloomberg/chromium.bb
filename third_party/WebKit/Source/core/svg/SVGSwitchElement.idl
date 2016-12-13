@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/struct.html#InterfaceSVGSwitchElement
+// https://svgwg.org/svg2-draft/struct.html#InterfaceSVGSwitchElement
 
 interface SVGSwitchElement : SVGGraphicsElement {
 };

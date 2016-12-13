@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/text.html#InterfaceSVGTextPositioningElement
+// https://svgwg.org/svg2-draft/text.html#InterfaceSVGTextPositioningElement
 
 interface SVGTextPositioningElement : SVGTextContentElement {
     [MeasureAs=SVG1DOMText] readonly attribute SVGAnimatedLengthList x;

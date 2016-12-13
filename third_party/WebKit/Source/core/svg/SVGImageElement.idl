@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG2/embedded.html#InterfaceSVGImageElement
+// https://svgwg.org/svg2-draft/embedded.html#InterfaceSVGImageElement
 
 interface SVGImageElement : SVGGraphicsElement {
     [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedLength x;
