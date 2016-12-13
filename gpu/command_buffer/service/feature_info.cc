@@ -625,13 +625,26 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_parameter.AddValue(GL_TEXTURE_SRGB_DECODE_EXT);
   }
 
-  // On desktop, GL_EXT_texture_sRGB is required regardless of GL version,
-  // since the sRGB formats in OpenGL 3.0 Core do not support S3TC.
-  // TODO(kainino): Support GL_EXT_texture_compression_s3tc_srgb once ratified.
-  if ((gl_version_info_->is_es && extensions.Contains("GL_NV_sRGB_formats")) ||
-      (!gl_version_info_->is_es &&
-       extensions.Contains("GL_EXT_texture_sRGB") &&
-       extensions.Contains("GL_EXT_texture_compression_s3tc"))) {
+  bool have_s3tc_srgb = false;
+  if (gl_version_info_->is_es) {
+    // On mobile, the only extension that supports S3TC+sRGB is NV_sRGB_formats.
+    // The draft extension EXT_texture_compression_s3tc_srgb also supports it
+    // and is used if available (e.g. if ANGLE exposes it).
+    have_s3tc_srgb = extensions.Contains("GL_NV_sRGB_formats") ||
+        extensions.Contains("GL_EXT_texture_compression_s3tc_srgb");
+  } else {
+    // On desktop, strictly-speaking, S3TC+sRGB is only available if both
+    // EXT_texture_sRGB and EXT_texture_compression_s3tc_srgb are available.
+    //
+    // However, on macOS, S3TC+sRGB is supported on OpenGL 4.1 with only
+    // EXT_texture_compression_s3tc_srgb, so we allow that as well.
+    if (extensions.Contains("GL_EXT_texture_sRGB") ||
+        gl_version_info_->IsAtLeastGL(4, 1)) {
+      have_s3tc_srgb = extensions.Contains("GL_EXT_texture_compression_s3tc");
+    }
+  }
+
+  if (have_s3tc_srgb) {
     AddExtensionString("GL_EXT_texture_compression_s3tc_srgb");
 
     validators_.compressed_texture_format.AddValue(
