@@ -2164,6 +2164,9 @@ Press any key to continue exploring.
   <message name="IDS_KIOSK_APPS_BUTTON" desc="Text shown on a button that brings up the kiosk apps menu on login screen">
     Apps
   </message>
+  <message name="IDS_LOCK_SCREEN_TASK_MANAGER_NAME" desc="The name of the lock screen as it appears in the task manager. This will be prefixed with another string, such as 'Extension: ' (see IDS_TASK_MANAGER_EXTENSION_PREFIX)">
+    Lock Screen
+  </message>
   <message name="IDS_LOGIN_USER_ADDING_BANNER" desc="Text shown on a banner in user adding screen.">
     Add an account to multiple sign-in. All signed-in accounts can be accessed without a password, so this feature should only be used with trusted accounts.
   </message>

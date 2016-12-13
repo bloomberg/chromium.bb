@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/ui/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/ui/shared_web_view.h"
 #include "chrome/browser/chromeos/login/ui/shared_web_view_factory.h"
+#include "chrome/browser/chromeos/login/ui/web_contents_forced_title.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_set_background_color.h"
 #include "chrome/browser/chromeos/login/ui/web_view_handle.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
@@ -269,8 +270,12 @@ WebUILoginView::~WebUILoginView() {
 }
 
 // static
-void WebUILoginView::InitializeWebView(views::WebView* web_view) {
+void WebUILoginView::InitializeWebView(views::WebView* web_view,
+                                       const base::string16& title) {
   WebContents* web_contents = web_view->GetWebContents();
+
+  if (!title.empty())
+    WebContentsForcedTitle::CreateForWebContentsWithTitle(web_contents, title);
 
   WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
       web_contents, SK_ColorTRANSPARENT);
@@ -311,7 +316,7 @@ void WebUILoginView::Init() {
 
   WebContents* web_contents = web_view()->GetWebContents();
   if (!is_reusing_webview_)
-    InitializeWebView(web_view());
+    InitializeWebView(web_view(), settings_.web_view_title);
 
   web_view()->set_allow_accelerators(true);
   AddChildView(web_view());
