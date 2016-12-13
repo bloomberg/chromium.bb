@@ -57,7 +57,8 @@ AutomationPredicate.match = function(params) {
 };
 
 /** @type {AutomationPredicate.Unary} */
-AutomationPredicate.checkBox = AutomationPredicate.roles([Role.checkBox]);
+AutomationPredicate.checkBox =
+    AutomationPredicate.roles([Role.checkBox, Role.switch]);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.comboBox = AutomationPredicate.roles(
     [Role.comboBox, Role.popUpButton, Role.menuListPopup]);

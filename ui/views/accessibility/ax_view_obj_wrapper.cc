@@ -79,7 +79,7 @@ void AXViewObjWrapper::Focus() {
 }
 
 void AXViewObjWrapper::MakeVisible() {
-  // TODO(dtseng): Implement.
+  view_->ScrollRectToVisible(view_->GetLocalBounds());
 }
 
 void AXViewObjWrapper::SetSelection(int32_t start, int32_t end) {
