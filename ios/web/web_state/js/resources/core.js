@@ -425,7 +425,7 @@ goog.require('__crWeb.message');
     invokeOnHost_({'command': 'window.history.forward'});
   };
   window.history.go = function(delta) {
-    invokeOnHost_({'command': 'window.history.go', 'value': delta});
+    invokeOnHost_({'command': 'window.history.go', 'value': delta | 0});
   };
   window.history.pushState = function(stateObject, pageTitle, pageUrl) {
     __gCrWeb.message.invokeOnHost(
