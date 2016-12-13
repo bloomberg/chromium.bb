@@ -39,7 +39,6 @@ public class ClientOnPageFinishedTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
-    @FlakyTest(message = "crbug.com/672885")
     public void testPassesCorrectUrl() throws Throwable {
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 mContentsClient.getOnPageFinishedHelper();
