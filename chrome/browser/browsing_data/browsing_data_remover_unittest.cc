@@ -34,6 +34,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
@@ -1129,8 +1130,9 @@ class BrowsingDataRemoverTest : public testing::Test {
         BrowsingDataRemoverFactory::GetForBrowserContext(profile_.get());
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-    remover_->OverrideWebappRegistryForTesting(
-        std::unique_ptr<WebappRegistry>(new TestWebappRegistry()));
+    static_cast<ChromeBrowsingDataRemoverDelegate*>(
+        remover_->get_embedder_delegate())->OverrideWebappRegistryForTesting(
+            base::WrapUnique<WebappRegistry>(new TestWebappRegistry()));
 #endif
   }
 

@@ -4,9 +4,11 @@
 
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -92,5 +94,8 @@ content::BrowserContext* BrowsingDataRemoverFactory::GetBrowserContextToUse(
 
 KeyedService* BrowsingDataRemoverFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new BrowsingDataRemover(context);
+  BrowsingDataRemover* remover = new BrowsingDataRemover(context);
+  remover->set_embedder_delegate(
+      base::MakeUnique<ChromeBrowsingDataRemoverDelegate>(context));
+  return remover;
 }

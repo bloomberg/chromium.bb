@@ -13,44 +13,23 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/waitable_event_watcher.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
 #include "chrome/common/features.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/offline_pages/core/offline_page_model.h"
-#include "components/prefs/pref_member.h"
-#include "components/search_engines/template_url_service.h"
-#include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/pepper_flash_settings_manager.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_method_call_status.h"
-#endif
 
 class BrowsingDataFilterBuilder;
 class BrowsingDataFlashLSOHelper;
 class BrowsingDataRemoverFactory;
 class Profile;
-class WebappRegistry;
-
-namespace chrome_browser_net {
-class Predictor;
-}
 
 namespace content {
 class BrowserContext;
@@ -90,11 +69,7 @@ class StoragePartition;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class BrowsingDataRemover : public KeyedService
-#if BUILDFLAG(ENABLE_PLUGINS)
-                            , public PepperFlashSettingsManager::Client
-#endif
-{
+class BrowsingDataRemover : public KeyedService {
  public:
   // Mask used for Remove.
   enum RemoveDataMask {
@@ -223,6 +198,32 @@ class BrowsingDataRemover : public KeyedService
     virtual ~CompletionInhibitor() {}
   };
 
+  // Used to track the deletion of a single data storage backend.
+  class SubTask {
+   public:
+    // Creates a SubTask that calls |forward_callback| when completed.
+    // |forward_callback| is only kept as a reference and must outlive SubTask.
+    explicit SubTask(const base::Closure& forward_callback);
+    ~SubTask();
+
+    // Indicate that the task is in progress and we're waiting.
+    void Start();
+
+    // Returns a callback that should be called to indicate that the task
+    // has been finished.
+    base::Closure GetCompletionCallback();
+
+    // Whether the task is still in progress.
+    bool is_pending() const { return is_pending_; }
+
+   private:
+    void CompletionCallback();
+
+    bool is_pending_;
+    const base::Closure& forward_callback_;
+    base::WeakPtrFactory<SubTask> weak_ptr_factory_;
+  };
+
   static TimeRange Unbounded();
 
   static TimeRange Period(browsing_data::TimePeriod period);
@@ -237,6 +238,17 @@ class BrowsingDataRemover : public KeyedService
   static void set_completion_inhibitor_for_testing(
       CompletionInhibitor* inhibitor) {
     completion_inhibitor_ = inhibitor;
+  }
+
+  // Called by the embedder to provide the delegate that will take care of
+  // deleting embedder-specific data.
+  void set_embedder_delegate(
+      std::unique_ptr<BrowsingDataRemoverDelegate> embedder_delegate) {
+    embedder_delegate_ = std::move(embedder_delegate);
+  }
+
+  BrowsingDataRemoverDelegate* get_embedder_delegate() const {
+    return embedder_delegate_.get();
   }
 
   // Removes browsing data within the given |time_range|, with datatypes being
@@ -276,11 +288,6 @@ class BrowsingDataRemover : public KeyedService
   // Used for testing.
   void OverrideStoragePartitionForTesting(
       content::StoragePartition* storage_partition);
-
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  void OverrideWebappRegistryForTesting(
-      std::unique_ptr<WebappRegistry> webapp_registry);
-#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   void OverrideFlashLSOHelperForTesting(
@@ -347,10 +354,6 @@ class BrowsingDataRemover : public KeyedService
   // not already removing, and vice-versa.
   void SetRemoving(bool is_removing);
 
-  // Callback for when TemplateURLService has finished loading. Clears the data,
-  // clears the respective waiting flag, and invokes NotifyIfDone.
-  void OnKeywordsLoaded(base::Callback<bool(const GURL&)> url_filter);
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Called when plugin data has been cleared. Invokes NotifyIfDone.
   void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
@@ -362,15 +365,6 @@ class BrowsingDataRemover : public KeyedService
 
   // Indicates that LSO cookies for one website have been deleted.
   void OnFlashDataDeleted();
-
-  // PepperFlashSettingsManager::Client implementation.
-  void OnDeauthorizeFlashContentLicensesCompleted(uint32_t request_id,
-                                                  bool success) override;
-#endif
-
-#if defined (OS_CHROMEOS)
-  void OnClearPlatformKeys(chromeos::DBusMethodCallStatus call_status,
-                           bool result);
 #endif
 
   // Executes the next removal task. Called after the previous task was finished
@@ -396,88 +390,14 @@ class BrowsingDataRemover : public KeyedService
   // Checks if we are all done, and if so, calls Notify().
   void NotifyIfDone();
 
-  // Called when history deletion is done.
-  void OnHistoryDeletionDone();
-
-  // Callback for when the hostname resolution cache has been cleared.
-  // Clears the respective waiting flag and invokes NotifyIfDone.
-  void OnClearedHostnameResolutionCache();
-
-  // Callback for when HTTP auth cache has been cleared.
-  // Clears the respective waiting flag and invokes NotifyIfDone.
-  void OnClearedHttpAuthCache();
-
-  // Callback for when speculative data in the network Predictor has been
-  // cleared. Clears the respective waiting flag and invokes
-  // NotifyIfDone.
-  void OnClearedNetworkPredictor();
-
-  // Callback for when network related data in ProfileIOData has been cleared.
-  // Clears the respective waiting flag and invokes NotifyIfDone.
-  void OnClearedNetworkingHistory();
-
-  // Callback for when the cache has been deleted. Invokes
-  // NotifyIfDone.
-  void ClearedCache();
-#if !defined(DISABLE_NACL)
-  // Callback for when the NaCl cache has been deleted. Invokes
-  // NotifyIfDone.
-  void ClearedNaClCache();
-
-  // Callback for when the PNaCl translation cache has been deleted. Invokes
-  // NotifyIfDone.
-  void ClearedPnaclCache();
-
-#endif
-
-  // Callback for when passwords for the requested time range have been cleared.
-  void OnClearedPasswords();
-
-  // Callback for when passwords stats for the requested time range have been
-  // cleared.
-  void OnClearedPasswordsStats();
-
-  // Callback for when the autosignin state of passwords has been revoked.
-  void OnClearedAutoSignIn();
-
-  // Callback for when cookies have been deleted. Invokes NotifyIfDone.
-  void OnClearedCookies();
-
-  // Callback for when channel IDs have been deleted. Invokes
-  // NotifyIfDone.
-  void OnClearedChannelIDs();
-
-  // Callback from the above method.
-  void OnClearedFormData();
-
-  // Callback for when the Autofill profile and credit card origin URLs have
-  // been deleted.
-  void OnClearedAutofillOriginURLs();
-
-  // Callback on UI thread when the storage partition related data are cleared.
-  void OnClearedStoragePartitionData();
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-  // Callback on UI thread when the WebRTC logs have been deleted.
-  void OnClearedWebRtcLogs();
-#endif
-
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  // Callback on UI thread when the precache history has been cleared.
-  void OnClearedPrecacheHistory();
-
-  // Callback on UI thread when the offline page data has been cleared.
-  void OnClearedOfflinePageData(
-      offline_pages::OfflinePageModel::DeletePageResult result);
-#endif
-
-  void OnClearedDomainReliabilityMonitor();
-
   // Returns true if we're all done.
   bool AllDone();
 
   // Profile we're to remove from.
   Profile* profile_;
+
+  // A delegate to delete the embedder-specific data.
+  std::unique_ptr<BrowsingDataRemoverDelegate> embedder_delegate_;
 
   // Start time to delete from.
   base::Time delete_begin_;
@@ -509,63 +429,28 @@ class BrowsingDataRemover : public KeyedService
 
   // Used for per-site plugin data deletion.
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
-
-  // Used to deauthorize content licenses for Pepper Flash.
-  std::unique_ptr<PepperFlashSettingsManager> pepper_flash_settings_manager_;
 #endif
 
-  uint32_t deauthorize_flash_content_licenses_request_id_ = 0;
-  // True if we're waiting for various data to be deleted.
+  // A callback to NotifyIfDone() used by SubTasks instances.
+  const base::Closure sub_task_forward_callback_;
+
+  // Keeping track of various subtasks to be completed.
   // These may only be accessed from UI thread in order to avoid races!
-  bool waiting_for_synchronous_clear_operations_ = false;
-  bool waiting_for_clear_autofill_origin_urls_ = false;
-  bool waiting_for_clear_cache_ = false;
-  bool waiting_for_clear_channel_ids_ = false;
-  bool waiting_for_clear_flash_content_licenses_ = false;
-  // Non-zero if waiting for cookies to be cleared.
-  int waiting_for_clear_cookies_count_ = 0;
+  SubTask synchronous_clear_operations_;
+  SubTask clear_embedder_data_;
+  SubTask clear_cache_;
+  SubTask clear_channel_ids_;
+  SubTask clear_http_auth_cache_;
+  SubTask clear_storage_partition_data_;
   // Counts the number of plugin data tasks. Should be the number of LSO cookies
   // to be deleted, or 1 while we're fetching LSO cookies or deleting in bulk.
-  int waiting_for_clear_plugin_data_count_ = 0;
-  bool waiting_for_clear_domain_reliability_monitor_ = false;
-  bool waiting_for_clear_form_ = false;
-  bool waiting_for_clear_history_ = false;
-  bool waiting_for_clear_hostname_resolution_cache_ = false;
-  bool waiting_for_clear_http_auth_cache_ = false;
-  bool waiting_for_clear_keyword_data_ = false;
-  bool waiting_for_clear_nacl_cache_ = false;
-  bool waiting_for_clear_network_predictor_ = false;
-  bool waiting_for_clear_networking_history_ = false;
-  bool waiting_for_clear_passwords_ = false;
-  bool waiting_for_clear_passwords_stats_ = false;
-  bool waiting_for_clear_platform_keys_ = false;
-  bool waiting_for_clear_pnacl_cache_ = false;
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  bool waiting_for_clear_precache_history_ = false;
-  bool waiting_for_clear_offline_page_data_ = false;
-#endif
-  bool waiting_for_clear_storage_partition_data_ = false;
-#if BUILDFLAG(ENABLE_WEBRTC)
-  bool waiting_for_clear_webrtc_logs_ = false;
-#endif
-  bool waiting_for_clear_auto_sign_in_ = false;
+  int clear_plugin_data_count_ = 0;
 
   // Observers of the global state and individual tasks.
   base::ObserverList<Observer, true> observer_list_;
 
-  // Used if we need to clear history.
-  base::CancelableTaskTracker history_task_tracker_;
-
-  std::unique_ptr<TemplateURLService::Subscription> template_url_sub_;
-
   // We do not own this.
   content::StoragePartition* storage_partition_for_testing_ = nullptr;
-
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  // WebappRegistry makes calls across the JNI. In unit tests, the Java side is
-  // not initialised, so the registry must be mocked out.
-  std::unique_ptr<WebappRegistry> webapp_registry_;
-#endif
 
   base::WeakPtrFactory<BrowsingDataRemover> weak_ptr_factory_;
 
