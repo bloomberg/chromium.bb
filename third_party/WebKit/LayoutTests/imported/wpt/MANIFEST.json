@@ -71,6 +71,12 @@
             "url": "/fullscreen/api/element-ready-check-not-in-document-manual.html"
           }
         ],
+        "fullscreen/api/element-request-fullscreen-and-exit-iframe-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-and-exit-iframe-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-and-exit-iframe-manual.html"
+          }
+        ],
         "fullscreen/api/element-request-fullscreen-manual.html": [
           {
             "path": "fullscreen/api/element-request-fullscreen-manual.html",

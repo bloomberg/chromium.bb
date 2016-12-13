@@ -194,20 +194,38 @@ Event* createEvent(const AtomicString& type, EventTarget& target) {
   return event;
 }
 
+// Walks the frame tree and returns the first local ancestor frame, if any.
+LocalFrame* nextLocalAncestor(Frame& frame) {
+  Frame* parent = frame.tree().parent();
+  if (!parent)
+    return nullptr;
+  if (parent->isLocalFrame())
+    return toLocalFrame(parent);
+  return nextLocalAncestor(*parent);
+}
+
+// Walks the document's frame tree and returns the document of the first local
+// ancestor frame, if any.
+Document* nextLocalAncestor(Document& document) {
+  LocalFrame* frame = document.frame();
+  if (!frame)
+    return nullptr;
+  LocalFrame* next = nextLocalAncestor(*document.frame());
+  if (!next)
+    return nullptr;
+  DCHECK(next->document());
+  return next->document();
+}
+
 // Helper to walk the ancestor chain and return the Document of the topmost
 // local ancestor frame. Note that this is not the same as the topmost frame's
 // Document, which might be unavailable in OOPIF scenarios. For example, with
 // OOPIFs, when called on the bottom frame's Document in a A-B-C-B hierarchy in
 // process B, this will skip remote frame C and return this frame: A-[B]-C-B.
 Document& topmostLocalAncestor(Document& document) {
-  Document* topmost = &document;
-  Frame* frame = document.frame();
-  while (frame) {
-    frame = frame->tree().parent();
-    if (frame && frame->isLocalFrame())
-      topmost = toLocalFrame(frame)->document();
-  }
-  return *topmost;
+  if (Document* next = nextLocalAncestor(document))
+    return topmostLocalAncestor(*next);
+  return document;
 }
 
 // Helper to find the browsing context container in |doc| that embeds the
@@ -389,13 +407,8 @@ void Fullscreen::requestFullscreen(Element& element,
     // process, where the message should be queued up and processed after
     // the IPC that dispatches fullscreenchange.
     HeapDeque<Member<Document>> docs;
-
-    docs.prepend(&document);
-    for (Frame* frame = document.frame()->tree().parent(); frame;
-         frame = frame->tree().parent()) {
-      if (frame->isLocalFrame())
-        docs.prepend(toLocalFrame(frame)->document());
-    }
+    for (Document* doc = &document; doc; doc = nextLocalAncestor(*doc))
+      docs.prepend(doc);
 
     // 4. For each document in docs, run these substeps:
     HeapDeque<Member<Document>>::iterator current = docs.begin(),
@@ -548,13 +561,8 @@ void Fullscreen::exitFullscreen(Document& document) {
     // TODO(alexmos): Deal with nested fullscreen cases, see
     // https://crbug.com/617369.
     if (!newTop) {
-      Frame* frame = currentDoc->frame()->tree().parent();
-      while (frame && frame->isRemoteFrame())
-        frame = frame->tree().parent();
-      if (frame) {
-        currentDoc = toLocalFrame(frame)->document();
-        continue;
-      }
+      currentDoc = nextLocalAncestor(*currentDoc);
+      continue;
     }
 
     // 4. Otherwise, set doc to null.
