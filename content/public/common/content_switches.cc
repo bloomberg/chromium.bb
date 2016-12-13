@@ -351,6 +351,14 @@ const char kEnableBlinkFeatures[]           = "enable-blink-features";
 // PlzNavigate: Use the experimental browser-side navigation path.
 const char kEnableBrowserSideNavigation[]   = "enable-browser-side-navigation";
 
+// Changes the behavior of the "default" color space conversion mode in
+// createImageBitmap. When enabled without kEnableColorCorrectRendering or
+// kEnableTrueColorRendering flags, "default" means color correct the image
+// bitmap to the display color space.
+const char kEnableColorCorrectRenderingDefaultMode[] =
+    "enable-color-correct-rendering-default-mode";
+
+
 // Enables display list based 2d canvas implementation. Options:
 //  1. Enable: allow browser to use display list for 2d canvas (browser makes
 //     decision).

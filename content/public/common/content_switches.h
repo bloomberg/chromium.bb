@@ -111,6 +111,7 @@ CONTENT_EXPORT extern const char kEnableAggressiveDOMStorageFlushing[];
 CONTENT_EXPORT extern const char kEnablePreferCompositingToLCDText[];
 CONTENT_EXPORT extern const char kEnableBlinkFeatures[];
 CONTENT_EXPORT extern const char kEnableBrowserSideNavigation[];
+CONTENT_EXPORT extern const char kEnableColorCorrectRenderingDefaultMode[];
 CONTENT_EXPORT extern const char kEnableDisplayList2dCanvas[];
 CONTENT_EXPORT extern const char kEnableCanvas2dDynamicRenderingModeSwitching[];
 CONTENT_EXPORT extern const char kEnableDistanceFieldText[];

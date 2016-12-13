@@ -72,6 +72,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enableAudioOutputDevices(bool);
   BLINK_EXPORT static void enableCanvas2dImageChromium(bool);
   BLINK_EXPORT static void enableColorCorrectRendering(bool);
+  BLINK_EXPORT static void enableColorCorrectRenderingDefaultMode(bool);
   BLINK_EXPORT static void enableCredentialManagerAPI(bool);
   BLINK_EXPORT static void enableDatabase(bool);
   BLINK_EXPORT static void enableDecodeToYUV(bool);

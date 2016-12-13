@@ -940,6 +940,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::enableColorCorrectRendering(
       prefs.color_correct_rendering_enabled);
 
+  WebRuntimeFeatures::enableColorCorrectRenderingDefaultMode(
+      prefs.color_correct_rendering_default_mode_enabled);
+
   WebRuntimeFeatures::enableTrueColorRendering(
       prefs.true_color_rendering_enabled);
 

@@ -34,6 +34,10 @@ enum DataColorFormat {
   RGBAColorType,
   N32ColorType,
 };
+enum ColorSpaceInfoUpdate {
+  UpdateColorSpaceInformation,
+  DontUpdateColorSpaceInformation,
+};
 
 class CORE_EXPORT ImageBitmap final
     : public GarbageCollectedFinalized<ImageBitmap>,
@@ -74,7 +78,11 @@ class CORE_EXPORT ImageBitmap final
                              uint32_t height,
                              bool isImageBitmapPremultiplied,
                              bool isImageBitmapOriginClean);
-  static sk_sp<SkImage> getSkImageFromDecoder(std::unique_ptr<ImageDecoder>);
+  static sk_sp<SkImage> getSkImageFromDecoder(
+      std::unique_ptr<ImageDecoder>,
+      SkColorType* decodedColorType = nullptr,
+      sk_sp<SkColorSpace>* decodedColorSpace = nullptr,
+      ColorSpaceInfoUpdate = DontUpdateColorSpaceInformation);
   static bool isResizeOptionValid(const ImageBitmapOptions&, ExceptionState&);
   static bool isSourceSizeValid(int sourceWidth,
                                 int sourceHeight,

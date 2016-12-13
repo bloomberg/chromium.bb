@@ -45,6 +45,7 @@ ClientHints status=stable
 CompositeOpaqueFixedPosition status=stable, settable_from_internals=True
 CompositeOpaqueScrollers status=stable, settable_from_internals=True
 ColorCorrectRendering status=experimental
+ColorCorrectRenderingDefaultMode status=experimental
 CompositedSelectionUpdate
 CompositorWorker status=experimental
 ContextMenu status=test
