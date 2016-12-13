@@ -139,8 +139,7 @@ NavigationController* NavigatorImpl::GetController() {
 void NavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
-    const base::TimeTicks& navigation_start,
-    NavigationGesture gesture) {
+    const base::TimeTicks& navigation_start) {
   bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
   GURL validated_url(url);
@@ -204,7 +203,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
       validated_url, render_frame_host->frame_tree_node(),
       is_renderer_initiated,
       false,  // is_same_page
-      navigation_start, pending_nav_entry_id, gesture,
+      navigation_start, pending_nav_entry_id,
       started_from_context_menu));
 }
 
@@ -967,9 +966,8 @@ void NavigatorImpl::OnBeginNavigation(
   // request is not user-initiated.
   if (ongoing_navigation_request &&
       (ongoing_navigation_request->browser_initiated() ||
-       ongoing_navigation_request->common_params().gesture ==
-           NavigationGestureUser) &&
-      common_params.gesture != NavigationGestureUser) {
+       ongoing_navigation_request->begin_params().has_user_gesture) &&
+      !begin_params.has_user_gesture) {
     RenderFrameHost* current_frame_host =
         frame_tree_node->render_manager()->current_frame_host();
     current_frame_host->Send(

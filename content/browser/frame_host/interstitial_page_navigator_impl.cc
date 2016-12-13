@@ -30,8 +30,7 @@ NavigationController* InterstitialPageNavigatorImpl::GetController() {
 void InterstitialPageNavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
-    const base::TimeTicks& navigation_start,
-    NavigationGesture gesture) {
+    const base::TimeTicks& navigation_start) {
   // The interstitial page should only navigate once.
   DCHECK(!render_frame_host->navigation_handle());
   render_frame_host->SetNavigationHandle(
@@ -39,8 +38,7 @@ void InterstitialPageNavigatorImpl::DidStartProvisionalLoad(
                                    false,  // is_renderer_initiated
                                    false,  // is_synchronous
                                    navigation_start,
-                                   0,  // pending_nav_entry_id
-                                   gesture,
+                                   0,      // pending_nav_entry_id
                                    false)  // started_in_context_menu
       );
 }

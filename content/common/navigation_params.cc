@@ -31,7 +31,6 @@ bool ShouldMakeNetworkRequestForURL(const GURL& url) {
 CommonNavigationParams::CommonNavigationParams()
     : transition(ui::PAGE_TRANSITION_LINK),
       navigation_type(FrameMsg_Navigate_Type::NORMAL),
-      gesture(NavigationGestureUnknown),
       allow_download(true),
       should_replace_current_entry(false),
       report_type(FrameMsg_UILoadMetricsReportType::NO_REPORT),
@@ -44,7 +43,6 @@ CommonNavigationParams::CommonNavigationParams(
     const Referrer& referrer,
     ui::PageTransition transition,
     FrameMsg_Navigate_Type::Value navigation_type,
-    NavigationGesture gesture,
     bool allow_download,
     bool should_replace_current_entry,
     base::TimeTicks ui_timestamp,
@@ -59,7 +57,6 @@ CommonNavigationParams::CommonNavigationParams(
       referrer(referrer),
       transition(transition),
       navigation_type(navigation_type),
-      gesture(gesture),
       allow_download(allow_download),
       should_replace_current_entry(should_replace_current_entry),
       ui_timestamp(ui_timestamp),
@@ -85,16 +82,19 @@ CommonNavigationParams::~CommonNavigationParams() {
 
 BeginNavigationParams::BeginNavigationParams()
     : load_flags(0),
+      has_user_gesture(false),
       skip_service_worker(false),
       request_context_type(REQUEST_CONTEXT_TYPE_LOCATION) {}
 
 BeginNavigationParams::BeginNavigationParams(
     std::string headers,
     int load_flags,
+    bool has_user_gesture,
     bool skip_service_worker,
     RequestContextType request_context_type)
     : headers(headers),
       load_flags(load_flags),
+      has_user_gesture(has_user_gesture),
       skip_service_worker(skip_service_worker),
       request_context_type(request_context_type) {}
 
@@ -136,7 +136,9 @@ RequestNavigationParams::RequestNavigationParams()
       should_clear_history_list(false),
       should_create_service_worker(false),
       service_worker_provider_id(kInvalidServiceWorkerProviderId),
-      appcache_host_id(kAppCacheNoHostId) {}
+      appcache_host_id(kAppCacheNoHostId),
+      has_user_gesture(false) {
+}
 
 RequestNavigationParams::RequestNavigationParams(
     bool is_overriding_user_agent,
@@ -153,7 +155,8 @@ RequestNavigationParams::RequestNavigationParams(
     int current_history_list_offset,
     int current_history_list_length,
     bool is_view_source,
-    bool should_clear_history_list)
+    bool should_clear_history_list,
+    bool has_user_gesture)
     : is_overriding_user_agent(is_overriding_user_agent),
       redirects(redirects),
       can_load_local_resources(can_load_local_resources),
@@ -171,7 +174,9 @@ RequestNavigationParams::RequestNavigationParams(
       should_clear_history_list(should_clear_history_list),
       should_create_service_worker(false),
       service_worker_provider_id(kInvalidServiceWorkerProviderId),
-      appcache_host_id(kAppCacheNoHostId) {}
+      appcache_host_id(kAppCacheNoHostId),
+      has_user_gesture(has_user_gesture) {
+}
 
 RequestNavigationParams::RequestNavigationParams(
     const RequestNavigationParams& other) = default;

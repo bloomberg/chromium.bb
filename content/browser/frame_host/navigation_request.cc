@@ -205,6 +205,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
                            frame_entry, request_body, dest_url, dest_referrer,
                            navigation_type, lofi_state, navigation_start),
       BeginNavigationParams(entry.extra_headers(), net::LOAD_NORMAL,
+                            false,  // has_user_gestures
                             false,  // skip_service_worker
                             REQUEST_CONTEXT_TYPE_LOCATION),
       entry.ConstructRequestNavigationParams(
@@ -234,20 +235,21 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // renderer and sent to the browser instead of being measured here.
   // TODO(clamy): The pending history list offset should be properly set.
   RequestNavigationParams request_params(
-      false,                          // is_overriding_user_agent
-      std::vector<GURL>(),            // redirects
-      false,                          // can_load_local_resources
-      PageState(),                    // page_state
-      0,                              // nav_entry_id
-      false,                          // is_same_document_history_load
-      false,                          // is_history_navigation_in_new_child
-      std::map<std::string, bool>(),  // subframe_unique_names
+      false,                   // is_overriding_user_agent
+      std::vector<GURL>(),     // redirects
+      false,                   // can_load_local_resources
+      PageState(),             // page_state
+      0,                       // nav_entry_id
+      false,                   // is_same_document_history_load
+      false,                   // is_history_navigation_in_new_child
+      std::map<std::string, bool>(), // subframe_unique_names
       frame_tree_node->has_committed_real_load(),
-      false,  // intended_as_new_entry
-      -1,     // pending_history_list_offset
+      false,                   // intended_as_new_entry
+      -1,                      // pending_history_list_offset
       current_history_list_offset, current_history_list_length,
-      false,   // is_view_source
-      false);  // should_clear_history_list
+      false,                   // is_view_source
+      false,                   // should_clear_history_list
+      begin_params.has_user_gesture);
   std::unique_ptr<NavigationRequest> navigation_request(
       new NavigationRequest(frame_tree_node, common_params, begin_params,
                             request_params, false, nullptr, nullptr));
@@ -324,7 +326,8 @@ void NavigationRequest::BeginNavigation() {
         common_params_.method, common_params_.post_data,
         Referrer::SanitizeForRequest(common_params_.url,
                                      common_params_.referrer),
-        common_params_.transition, false, begin_params_.request_context_type,
+        begin_params_.has_user_gesture, common_params_.transition, false,
+        begin_params_.request_context_type,
         base::Bind(&NavigationRequest::OnStartChecksComplete,
                    base::Unretained(this)));
     return;
@@ -353,7 +356,6 @@ void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
       common_params_.url, frame_tree_node_, !browser_initiated_,
       false,  // is_same_page
       common_params_.navigation_start, pending_nav_entry_id,
-      common_params_.gesture,
       false);  // started_in_context_menu
 
   if (!begin_params_.searchable_form_url.is_empty()) {
@@ -653,6 +655,8 @@ void NavigationRequest::CommitNavigation() {
              frame_tree_node_->render_manager()->speculative_frame_host());
 
   TransferNavigationHandleOwnership(render_frame_host);
+
+  DCHECK_EQ(request_params_.has_user_gesture, begin_params_.has_user_gesture);
 
   render_frame_host->CommitNavigation(response_.get(), std::move(body_),
                                       common_params_, request_params_,

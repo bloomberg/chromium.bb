@@ -1083,15 +1083,14 @@ void RenderFrameHostImpl::OnDocumentOnLoadCompleted(
 
 void RenderFrameHostImpl::OnDidStartProvisionalLoad(
     const GURL& url,
-    const base::TimeTicks& navigation_start,
-    NavigationGesture gesture) {
+    const base::TimeTicks& navigation_start) {
   // TODO(clamy): Check if other navigation methods (OpenURL,
   // DidFailProvisionalLoad, ...) should also be ignored if the RFH is no longer
   // active.
   if (!is_active())
     return;
-  frame_tree_node_->navigator()->DidStartProvisionalLoad(
-      this, url, navigation_start, gesture);
+  frame_tree_node_->navigator()->DidStartProvisionalLoad(this, url,
+                                                         navigation_start);
 }
 
 void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
@@ -2405,9 +2404,9 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
   DCHECK(data_url.SchemeIs(url::kDataScheme));
   CommonNavigationParams common_params(
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
-      FrameMsg_Navigate_Type::NORMAL, NavigationGestureAuto, false, false,
-      base::TimeTicks::Now(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
-      GURL(), GURL(), LOFI_OFF, base::TimeTicks::Now(), "GET", nullptr);
+      FrameMsg_Navigate_Type::NORMAL, false, false, base::TimeTicks::Now(),
+      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(), LOFI_OFF,
+      base::TimeTicks::Now(), "GET", nullptr);
   if (IsBrowserSideNavigationEnabled()) {
     CommitNavigation(nullptr, nullptr, common_params, RequestNavigationParams(),
                      false);
@@ -3279,8 +3278,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
     return NavigationHandleImpl::Create(
         params.url, frame_tree_node_, is_renderer_initiated,
         params.was_within_same_page, base::TimeTicks::Now(),
-        pending_nav_entry_id, params.gesture,
-        false);  // started_from_context_menu
+        pending_nav_entry_id, false);  // started_from_context_menu
   }
 
   // Determine if the current NavigationHandle can be used.
@@ -3332,8 +3330,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
   return NavigationHandleImpl::Create(
       params.url, frame_tree_node_, is_renderer_initiated,
       params.was_within_same_page, base::TimeTicks::Now(),
-      entry_id_for_data_nav, params.gesture,
-      false);  // started_from_context_menu
+      entry_id_for_data_nav, false);  // started_from_context_menu
 }
 
 }  // namespace content

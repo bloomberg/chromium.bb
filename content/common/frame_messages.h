@@ -330,7 +330,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(referrer)
   IPC_STRUCT_TRAITS_MEMBER(transition)
   IPC_STRUCT_TRAITS_MEMBER(navigation_type)
-  IPC_STRUCT_TRAITS_MEMBER(gesture)
   IPC_STRUCT_TRAITS_MEMBER(allow_download)
   IPC_STRUCT_TRAITS_MEMBER(should_replace_current_entry)
   IPC_STRUCT_TRAITS_MEMBER(ui_timestamp)
@@ -346,6 +345,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(content::BeginNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(headers)
   IPC_STRUCT_TRAITS_MEMBER(load_flags)
+  IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
   IPC_STRUCT_TRAITS_MEMBER(skip_service_worker)
   IPC_STRUCT_TRAITS_MEMBER(request_context_type)
   IPC_STRUCT_TRAITS_MEMBER(searchable_form_url)
@@ -385,6 +385,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(navigation_timing)
   IPC_STRUCT_TRAITS_MEMBER(service_worker_provider_id)
   IPC_STRUCT_TRAITS_MEMBER(appcache_host_id)
+  IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(data_url_as_string)
 #endif
@@ -942,10 +943,9 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_RenderProcessGone,
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameFocused)
 
 // Sent when the renderer starts a provisional load for a frame.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_DidStartProvisionalLoad,
+IPC_MESSAGE_ROUTED2(FrameHostMsg_DidStartProvisionalLoad,
                     GURL /* url */,
-                    base::TimeTicks /* navigation_start */,
-                    content::NavigationGesture /* gesture */)
+                    base::TimeTicks /* navigation_start */)
 
 // Sent when the renderer fails a provisional load with an error.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFailProvisionalLoadWithError,

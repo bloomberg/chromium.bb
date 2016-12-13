@@ -57,11 +57,10 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     bool is_same_page,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
-    NavigationGesture gesture,
     bool started_from_context_menu) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
       url, frame_tree_node, is_renderer_initiated, is_same_page,
-      navigation_start, pending_nav_entry_id, gesture,
+      navigation_start, pending_nav_entry_id,
       started_from_context_menu));
 }
 
@@ -72,10 +71,9 @@ NavigationHandleImpl::NavigationHandleImpl(
     bool is_same_page,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
-    NavigationGesture gesture,
     bool started_from_context_menu)
     : url_(url),
-      gesture_(gesture),
+      has_user_gesture_(false),
       transition_(ui::PAGE_TRANSITION_LINK),
       is_external_protocol_(false),
       net_error_code_(net::OK),
@@ -202,7 +200,9 @@ const Referrer& NavigationHandleImpl::GetReferrer() {
 }
 
 bool NavigationHandleImpl::HasUserGesture() {
-  return gesture_ == NavigationGestureUser;
+  CHECK_NE(INITIAL, state_)
+      << "This accessor should not be called before the request is started.";
+  return has_user_gesture_;
 }
 
 ui::PageTransition NavigationHandleImpl::GetPageTransition() {
@@ -298,6 +298,7 @@ NavigationThrottle::ThrottleCheckResult
 NavigationHandleImpl::CallWillStartRequestForTesting(
     bool is_post,
     const Referrer& sanitized_referrer,
+    bool has_user_gesture,
     ui::PageTransition transition,
     bool is_external_protocol) {
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
@@ -313,7 +314,7 @@ NavigationHandleImpl::CallWillStartRequestForTesting(
   }
 
   WillStartRequest(method, resource_request_body, sanitized_referrer,
-                   transition, is_external_protocol,
+                   has_user_gesture, transition, is_external_protocol,
                    REQUEST_CONTEXT_TYPE_LOCATION,
                    base::Bind(&UpdateThrottleCheckResult, &result));
 
@@ -418,6 +419,7 @@ void NavigationHandleImpl::WillStartRequest(
     const std::string& method,
     scoped_refptr<content::ResourceRequestBodyImpl> resource_request_body,
     const Referrer& sanitized_referrer,
+    bool has_user_gesture,
     ui::PageTransition transition,
     bool is_external_protocol,
     RequestContextType request_context_type,
@@ -430,6 +432,7 @@ void NavigationHandleImpl::WillStartRequest(
   if (method_ == "POST")
     resource_request_body_ = resource_request_body;
   sanitized_referrer_ = sanitized_referrer;
+  has_user_gesture_ = has_user_gesture;
   transition_ = transition;
   is_external_protocol_ = is_external_protocol;
   request_context_type_ = request_context_type;
@@ -539,14 +542,8 @@ void NavigationHandleImpl::DidCommitNavigation(
   DCHECK_EQ(frame_tree_node_, render_frame_host->frame_tree_node());
   CHECK_EQ(url_, params.url);
 
-  // TODO(clamy): Once crbug.com/667572 is addressed, apply this DCHECK on all
-  // navigations, not just same-page navigations, and make gesture_ a const
-  // member, set only in the constructor.
-  if (same_page)
-    DCHECK_EQ(gesture_, params.gesture);
-  gesture_ = params.gesture;
-
   method_ = params.method;
+  has_user_gesture_ = (params.gesture == NavigationGestureUser);
   transition_ = params.transition;
   render_frame_host_ = render_frame_host;
 
