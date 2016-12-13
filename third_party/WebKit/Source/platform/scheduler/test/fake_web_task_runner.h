@@ -25,8 +25,6 @@ class FakeWebTaskRunner : public WebTaskRunner {
   void setTime(double new_time);
 
   // WebTaskRunner implementation:
-  void postTask(const WebTraceLocation&, Task*) override;
-  void postDelayedTask(const WebTraceLocation&, Task*, double) override;
   void postDelayedTask(const WebTraceLocation&,
                        const base::Closure&,
                        double) override;

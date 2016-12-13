@@ -108,9 +108,6 @@ class TestingPlatformMockScheduler : public WebScheduler {
   void resumeTimerQueue() override {}
   void addPendingNavigation(WebScheduler::NavigatingFrameType) override {}
   void removePendingNavigation(WebScheduler::NavigatingFrameType) override {}
-
- private:
-  WTF::Deque<std::unique_ptr<WebTaskRunner::Task>> m_tasks;
 };
 
 class TestingPlatformSupport : public Platform {

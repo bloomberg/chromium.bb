@@ -26,7 +26,7 @@ namespace {
 
 const int kWorkBatchSize = 2;
 
-class MockTask : public blink::WebTaskRunner::Task {
+class MockTask {
  public:
   MOCK_METHOD0(run, void());
 };
@@ -73,17 +73,17 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
 TEST_F(WebThreadImplForRendererSchedulerTest, TestTaskObserver) {
   MockTaskObserver observer;
   thread_->addTaskObserver(&observer);
-  std::unique_ptr<MockTask> task(new MockTask());
+  MockTask task;
 
   {
     testing::InSequence sequence;
     EXPECT_CALL(observer, willProcessTask());
-    EXPECT_CALL(*task, run());
+    EXPECT_CALL(task, run());
     EXPECT_CALL(observer, didProcessTask());
   }
 
-  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                        task.release());
+  thread_->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task)));
   base::RunLoop().RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
@@ -91,18 +91,18 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestTaskObserver) {
 TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithOneTask) {
   MockTaskObserver observer;
   thread_->addTaskObserver(&observer);
-  std::unique_ptr<MockTask> task(new MockTask());
+  MockTask task;
 
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
     testing::InSequence sequence;
     EXPECT_CALL(observer, willProcessTask());
-    EXPECT_CALL(*task, run());
+    EXPECT_CALL(task, run());
     EXPECT_CALL(observer, didProcessTask());
   }
 
-  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                        task.release());
+  thread_->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task)));
   base::RunLoop().RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
@@ -110,25 +110,25 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithOneTask) {
 TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithTwoTasks) {
   MockTaskObserver observer;
   thread_->addTaskObserver(&observer);
-  std::unique_ptr<MockTask> task1(new MockTask());
-  std::unique_ptr<MockTask> task2(new MockTask());
+  MockTask task1;
+  MockTask task2;
 
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
     testing::InSequence sequence;
     EXPECT_CALL(observer, willProcessTask());
-    EXPECT_CALL(*task1, run());
+    EXPECT_CALL(task1, run());
     EXPECT_CALL(observer, didProcessTask());
 
     EXPECT_CALL(observer, willProcessTask());
-    EXPECT_CALL(*task2, run());
+    EXPECT_CALL(task2, run());
     EXPECT_CALL(observer, didProcessTask());
   }
 
-  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                        task1.release());
-  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                        task2.release());
+  thread_->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task1)));
+  thread_->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task2)));
   base::RunLoop().RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
@@ -136,52 +136,43 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithTwoTasks) {
 TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithThreeTasks) {
   MockTaskObserver observer;
   thread_->addTaskObserver(&observer);
-  std::unique_ptr<MockTask> task1(new MockTask());
-  std::unique_ptr<MockTask> task2(new MockTask());
-  std::unique_ptr<MockTask> task3(new MockTask());
+  MockTask task1;
+  MockTask task2;
+  MockTask task3;
 
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
     testing::InSequence sequence;
     EXPECT_CALL(observer, willProcessTask());
-    EXPECT_CALL(*task1, run());
+    EXPECT_CALL(task1, run());
     EXPECT_CALL(observer, didProcessTask());
 
     EXPECT_CALL(observer, willProcessTask());
-    EXPECT_CALL(*task2, run());
+    EXPECT_CALL(task2, run());
     EXPECT_CALL(observer, didProcessTask());
 
     EXPECT_CALL(observer, willProcessTask());
-    EXPECT_CALL(*task3, run());
+    EXPECT_CALL(task3, run());
     EXPECT_CALL(observer, didProcessTask());
   }
 
-  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                        task1.release());
-  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                        task2.release());
-  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                        task3.release());
+  thread_->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task1)));
+  thread_->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task2)));
+  thread_->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task3)));
   base::RunLoop().RunUntilIdle();
   thread_->removeTaskObserver(&observer);
 }
-
-class ExitRunLoopTask : public blink::WebTaskRunner::Task {
- public:
-  ExitRunLoopTask(base::RunLoop* run_loop) : run_loop_(run_loop) {}
-
-  void run() override { run_loop_->Quit(); }
-
- private:
-  base::RunLoop* run_loop_;
-};
 
 void EnterRunLoop(base::MessageLoop* message_loop, blink::WebThread* thread) {
   // Note: WebThreads do not support nested run loops, which is why we use a
   // run loop directly.
   base::RunLoop run_loop;
-  thread->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                       new ExitRunLoopTask(&run_loop));
+  thread->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE,
+      WTF::bind(&base::RunLoop::Quit, WTF::unretained(&run_loop)));
   message_loop->SetNestableTasksAllowed(true);
   run_loop.Run();
 }

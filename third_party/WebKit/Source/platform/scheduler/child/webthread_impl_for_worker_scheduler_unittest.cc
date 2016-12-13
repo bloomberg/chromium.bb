@@ -22,17 +22,8 @@ namespace blink {
 namespace scheduler {
 namespace {
 
-class NopTask : public blink::WebTaskRunner::Task {
+class MockTask {
  public:
-  ~NopTask() override {}
-
-  void run() override {}
-};
-
-class MockTask : public blink::WebTaskRunner::Task {
- public:
-  ~MockTask() override {}
-
   MOCK_METHOD0(run, void());
 };
 
@@ -57,17 +48,9 @@ class TestObserver : public blink::WebThread::TaskObserver {
   std::string* calls_;  // NOT OWNED
 };
 
-class TestTask : public blink::WebTaskRunner::Task {
- public:
-  explicit TestTask(std::string* calls) : calls_(calls) {}
-
-  ~TestTask() override {}
-
-  void run() override { calls_->append(" run"); }
-
- private:
-  std::string* calls_;  // NOT OWNED
-};
+void runTestTask(std::string* calls) {
+  calls->append(" run");
+}
 
 void addTaskObserver(WebThreadImplForWorkerScheduler* thread,
                      TestObserver* observer) {
@@ -123,33 +106,35 @@ class WebThreadImplForWorkerSchedulerTest : public testing::Test {
 };
 
 TEST_F(WebThreadImplForWorkerSchedulerTest, TestDefaultTask) {
-  std::unique_ptr<MockTask> task(new MockTask());
+  MockTask task;
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  EXPECT_CALL(*task, run());
-  ON_CALL(*task, run())
-      .WillByDefault(Invoke([&completion]() { completion.Signal(); }));
+  EXPECT_CALL(task, run());
+  ON_CALL(task, run()).WillByDefault(Invoke([&completion]() {
+    completion.Signal();
+  }));
 
-  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                        task.release());
+  thread_->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task)));
   completion.Wait();
 }
 
 TEST_F(WebThreadImplForWorkerSchedulerTest,
        TestTaskExecutedBeforeThreadDeletion) {
-  std::unique_ptr<MockTask> task(new MockTask());
+  MockTask task;
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  EXPECT_CALL(*task, run());
-  ON_CALL(*task, run())
-      .WillByDefault(Invoke([&completion]() { completion.Signal(); }));
+  EXPECT_CALL(task, run());
+  ON_CALL(task, run()).WillByDefault(Invoke([&completion]() {
+    completion.Signal();
+  }));
 
-  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                        task.release());
+  thread_->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task)));
   thread_.reset();
 }
 
@@ -163,10 +148,10 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
   ON_CALL(*task, run(_))
       .WillByDefault(Invoke([&completion](double) { completion.Signal(); }));
 
-  thread_->postIdleTask(blink::WebTraceLocation(), task.release());
+  thread_->postIdleTask(BLINK_FROM_HERE, task.release());
   // We need to post a wakeup task or idle work will never happen.
-  thread_->getWebTaskRunner()->postDelayedTask(blink::WebTraceLocation(),
-                                               new NopTask(), 50ll);
+  thread_->getWebTaskRunner()->postDelayedTask(BLINK_FROM_HERE,
+                                               WTF::bind([] {}), 50ll);
 
   completion.Wait();
 }
@@ -177,8 +162,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
 
   RunOnWorkerThread(FROM_HERE,
                     base::Bind(&addTaskObserver, thread_.get(), &observer));
-  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                        new TestTask(&calls));
+  thread_->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&runTestTask, WTF::unretained(&calls)));
   RunOnWorkerThread(FROM_HERE,
                     base::Bind(&removeTaskObserver, thread_.get(), &observer));
 
@@ -191,17 +176,18 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
 }
 
 TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
-  std::unique_ptr<MockTask> task(new MockTask());
-  std::unique_ptr<MockTask> delayed_task(new MockTask());
+  MockTask task;
+  MockTask delayed_task;
 
-  EXPECT_CALL(*task, run()).Times(0);
-  EXPECT_CALL(*delayed_task, run()).Times(0);
+  EXPECT_CALL(task, run()).Times(0);
+  EXPECT_CALL(delayed_task, run()).Times(0);
 
   RunOnWorkerThread(FROM_HERE, base::Bind(&shutdownOnThread, thread_.get()));
-  thread_->getWebTaskRunner()->postTask(blink::WebTraceLocation(),
-                                        task.release());
-  thread_->getWebTaskRunner()->postDelayedTask(blink::WebTraceLocation(),
-                                               task.release(), 50ll);
+  thread_->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task)));
+  thread_->getWebTaskRunner()->postDelayedTask(
+      BLINK_FROM_HERE,
+      WTF::bind(&MockTask::run, WTF::unretained(&delayed_task)), 50ll);
   thread_.reset();
 }
 

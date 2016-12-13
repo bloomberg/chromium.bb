@@ -57,23 +57,21 @@ class WebFrameSchedulerImplTest : public testing::Test {
 };
 
 namespace {
-class RepeatingTask : public blink::WebTaskRunner::Task {
- public:
-  RepeatingTask(blink::WebTaskRunner* web_task_runner, int* run_count)
-      : web_task_runner_(web_task_runner), run_count_(run_count) {}
 
-  ~RepeatingTask() override {}
+void runRepeatingTask(WebTaskRunner* task_runner, int* run_count);
 
-  void run() override {
-    (*run_count_)++;
-    web_task_runner_->postDelayedTask(
-        BLINK_FROM_HERE, new RepeatingTask(web_task_runner_, run_count_), 1.0);
-  }
+std::unique_ptr<WTF::Closure> makeRepeatingTask(
+    blink::WebTaskRunner* task_runner,
+    int* run_count) {
+  return WTF::bind(&runRepeatingTask, WTF::unretained(task_runner),
+                   WTF::unretained(run_count));
+}
 
- private:
-  blink::WebTaskRunner* web_task_runner_;  // NOT OWNED
-  int* run_count_;                         // NOT OWNED
-};
+void runRepeatingTask(WebTaskRunner* task_runner, int* run_count) {
+  ++*run_count;
+  task_runner->postDelayedTask(BLINK_FROM_HERE,
+                               makeRepeatingTask(task_runner, run_count), 1.0);
+}
 
 void IncrementCounter(int* counter) {
   ++*counter;
@@ -87,7 +85,7 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInForeground) {
   int run_count = 0;
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new RepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
+      makeRepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
       1.0);
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
@@ -101,7 +99,7 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInBackground) {
   int run_count = 0;
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new RepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
+      makeRepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
       1.0);
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
@@ -115,7 +113,7 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameHidden_SameOrigin) {
   int run_count = 0;
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new RepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
+      makeRepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
       1.0);
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
@@ -130,7 +128,7 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameVisible_CrossOrigin) {
   int run_count = 0;
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new RepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
+      makeRepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
       1.0);
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
@@ -145,7 +143,7 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameHidden_CrossOrigin) {
   int run_count = 0;
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new RepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
+      makeRepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
       1.0);
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
@@ -159,7 +157,7 @@ TEST_F(WebFrameSchedulerImplTest, PageInBackground_ThrottlingDisabled) {
   int run_count = 0;
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new RepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
+      makeRepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
       1.0);
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
@@ -174,7 +172,7 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameHidden_CrossOrigin_Throttl
   int run_count = 0;
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new RepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
+      makeRepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
       1.0);
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));

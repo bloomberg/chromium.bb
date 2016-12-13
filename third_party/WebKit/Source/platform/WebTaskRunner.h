@@ -60,22 +60,6 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner {
  public:
   virtual ~WebTaskRunner() {}
 
-  class BLINK_PLATFORM_EXPORT Task {
-   public:
-    virtual ~Task() {}
-    virtual void run() = 0;
-  };
-
-  // Schedule a task to be run on the the associated WebThread.
-  // Takes ownership of |Task|. Can be called from any thread.
-  virtual void postTask(const WebTraceLocation&, Task*) = 0;
-
-  // Schedule a task to be run after |delayMs| on the the associated WebThread.
-  // Takes ownership of |Task|. Can be called from any thread.
-  virtual void postDelayedTask(const WebTraceLocation&,
-                               Task*,
-                               double delayMs) = 0;
-
   // Schedule a task to be run after |delayMs| on the the associated WebThread.
   // Can be called from any thread.
   virtual void postDelayedTask(const WebTraceLocation&,

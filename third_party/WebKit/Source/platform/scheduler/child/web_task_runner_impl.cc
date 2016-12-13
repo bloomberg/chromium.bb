@@ -19,24 +19,6 @@ WebTaskRunnerImpl::WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue)
 
 WebTaskRunnerImpl::~WebTaskRunnerImpl() {}
 
-void WebTaskRunnerImpl::postTask(const blink::WebTraceLocation& location,
-                                 blink::WebTaskRunner::Task* task) {
-  task_queue_->PostTask(location,
-                        base::Bind(&WebTaskRunnerImpl::runTask,
-                                   base::Passed(base::WrapUnique(task))));
-}
-
-void WebTaskRunnerImpl::postDelayedTask(const blink::WebTraceLocation& location,
-                                        blink::WebTaskRunner::Task* task,
-                                        double delayMs) {
-  DCHECK_GE(delayMs, 0.0) << location.function_name() << " "
-                          << location.file_name();
-  task_queue_->PostDelayedTask(location,
-                               base::Bind(&WebTaskRunnerImpl::runTask,
-                                          base::Passed(base::WrapUnique(task))),
-                               base::TimeDelta::FromMillisecondsD(delayMs));
-}
-
 void WebTaskRunnerImpl::postDelayedTask(const WebTraceLocation& location,
                                         const base::Closure& task,
                                         double delayMs) {
@@ -74,11 +56,6 @@ std::unique_ptr<blink::WebTaskRunner> WebTaskRunnerImpl::clone() {
 
 base::SingleThreadTaskRunner* WebTaskRunnerImpl::toSingleThreadTaskRunner() {
   return task_queue_.get();
-}
-
-void WebTaskRunnerImpl::runTask(
-    std::unique_ptr<blink::WebTaskRunner::Task> task) {
-  task->run();
 }
 
 }  // namespace scheduler

@@ -68,17 +68,6 @@ void FakeWebTaskRunner::setTime(double new_time) {
   data_->time_ = new_time;
 }
 
-void FakeWebTaskRunner::postTask(const WebTraceLocation&, Task*) {
-  NOTREACHED();
-}
-
-void FakeWebTaskRunner::postDelayedTask(const WebTraceLocation&,
-                                        Task* task,
-                                        double) {
-  data_->task_queue_.push_back(
-      base::Bind(&WebTaskRunner::Task::run, base::Owned(task)));
-}
-
 void FakeWebTaskRunner::postDelayedTask(const WebTraceLocation&,
                                         const base::Closure& closure,
                                         double) {
