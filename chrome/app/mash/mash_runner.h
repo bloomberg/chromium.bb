@@ -40,4 +40,8 @@ class MashRunner {
 
 int MashMain();
 
+// Called if the command line isn't mash to potentially wait for a debugger
+// to attach.
+void WaitForMashDebuggerIfNecessary();
+
 #endif  // CHROME_APP_MASH_MASH_RUNNER_H_

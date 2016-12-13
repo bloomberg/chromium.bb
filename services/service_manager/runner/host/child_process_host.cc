@@ -81,8 +81,9 @@ mojom::ServicePtr ChildProcessHost::Start(
 
   child_command_line->AppendArguments(parent_command_line, false);
 
+  child_command_line->AppendSwitchASCII(::switches::kProcessServiceName,
+                                        target.name());
 #ifndef NDEBUG
-  child_command_line->AppendSwitchASCII("n", target.name());
   child_command_line->AppendSwitchASCII("u", target.user_id());
 #endif
 

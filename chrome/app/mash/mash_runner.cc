@@ -6,6 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/base_paths.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -16,6 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -36,6 +38,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
+#include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/runner/init.h"
 #include "services/service_manager/standalone/context.h"
@@ -241,4 +244,24 @@ int MashMain() {
 
   MashRunner mash_runner;
   return mash_runner.Run();
+}
+
+void WaitForMashDebuggerIfNecessary() {
+  if (!service_manager::ServiceManagerIsRemote())
+    return;
+
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  const std::string service_name =
+      command_line->GetSwitchValueASCII(switches::kProcessServiceName);
+  if (service_name !=
+      command_line->GetSwitchValueASCII(switches::kWaitForDebugger)) {
+    return;
+  }
+
+  // Include the pid as logging may not have been initialized yet (the pid
+  // printed out by logging is wrong).
+  LOG(WARNING) << "waiting for debugger to attach for service " << service_name
+               << " pid=" << base::Process::Current().Pid();
+  base::debug::WaitForDebugger(120, true);
 }

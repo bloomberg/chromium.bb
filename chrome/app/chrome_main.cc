@@ -94,6 +94,7 @@ int ChromeMain(int argc, const char** argv) {
         *base::CommandLine::ForCurrentProcess();
     if (command_line.HasSwitch("mash"))
       return MashMain();
+    WaitForMashDebuggerIfNecessary();
   }
 #endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 
