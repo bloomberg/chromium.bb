@@ -92,7 +92,7 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   void SetRemoteDescriptionWorker(
       webrtc::SetSessionDescriptionObserver* observer,
       webrtc::SessionDescriptionInterface* desc);
-  bool UpdateIce(const IceServers& configuration) override;
+  bool SetConfiguration(const RTCConfiguration& configuration) override;
   bool AddIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
   void RegisterUMAObserver(webrtc::UMAObserver* observer) override;
 

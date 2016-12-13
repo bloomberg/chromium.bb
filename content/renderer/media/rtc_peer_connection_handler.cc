@@ -189,11 +189,15 @@ void GetSdpAndTypeFromSessionDescription(
 
 // Converter functions from Blink types to WebRTC types.
 
+// This function doesn't assume |webrtc_config| is empty. Any fields in
+// |blink_config| replace the corresponding fields in |webrtc_config|, but
+// fields that only exist in |webrtc_config| are left alone.
 void GetNativeRtcConfiguration(
     const blink::WebRTCConfiguration& blink_config,
     webrtc::PeerConnectionInterface::RTCConfiguration* webrtc_config) {
   DCHECK(webrtc_config);
 
+  webrtc_config->servers.clear();
   for (const blink::WebRTCIceServer& blink_server : blink_config.iceServers) {
     webrtc::PeerConnectionInterface::IceServer server;
     server.username =
@@ -248,6 +252,7 @@ void GetNativeRtcConfiguration(
       NOTREACHED();
   }
 
+  webrtc_config->certificates.clear();
   for (const std::unique_ptr<blink::WebRTCCertificate>& blink_certificate :
        blink_config.certificates) {
     webrtc_config->certificates.push_back(
@@ -1093,21 +1098,20 @@ bool RTCPeerConnectionHandler::initialize(
   peer_connection_tracker_ =
       RenderThreadImpl::current()->peer_connection_tracker()->AsWeakPtr();
 
-  webrtc::PeerConnectionInterface::RTCConfiguration config;
-  GetNativeRtcConfiguration(server_configuration, &config);
+  GetNativeRtcConfiguration(server_configuration, &configuration_);
 
   // Choose between RTC smoothness algorithm and prerenderer smoothing.
   // Prerenderer smoothing is turned on if RTC smoothness is turned off.
-  config.set_prerenderer_smoothing(
+  configuration_.set_prerenderer_smoothing(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRTCSmoothnessAlgorithm));
 
   // Copy all the relevant constraints into |config|.
-  CopyConstraintsIntoRtcConfiguration(options, &config);
+  CopyConstraintsIntoRtcConfiguration(options, &configuration_);
 
   peer_connection_observer_ = new Observer(weak_factory_.GetWeakPtr());
   native_peer_connection_ = dependency_factory_->CreatePeerConnection(
-      config, frame_, peer_connection_observer_.get());
+      configuration_, frame_, peer_connection_observer_.get());
 
   if (!native_peer_connection_.get()) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
@@ -1115,8 +1119,8 @@ bool RTCPeerConnectionHandler::initialize(
   }
 
   if (peer_connection_tracker_) {
-    peer_connection_tracker_->RegisterPeerConnection(this, config, options,
-                                                     frame_);
+    peer_connection_tracker_->RegisterPeerConnection(this, configuration_,
+                                                     options, frame_);
   }
 
   uma_observer_ = new rtc::RefCountedObject<PeerConnectionUMAObserver>();
@@ -1129,14 +1133,13 @@ bool RTCPeerConnectionHandler::InitializeForTest(
     const blink::WebMediaConstraints& options,
     const base::WeakPtr<PeerConnectionTracker>& peer_connection_tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  webrtc::PeerConnectionInterface::RTCConfiguration config;
-  GetNativeRtcConfiguration(server_configuration, &config);
+  GetNativeRtcConfiguration(server_configuration, &configuration_);
 
   peer_connection_observer_ = new Observer(weak_factory_.GetWeakPtr());
-  CopyConstraintsIntoRtcConfiguration(options, &config);
+  CopyConstraintsIntoRtcConfiguration(options, &configuration_);
 
   native_peer_connection_ = dependency_factory_->CreatePeerConnection(
-      config, nullptr, peer_connection_observer_.get());
+      configuration_, nullptr, peer_connection_observer_.get());
   if (!native_peer_connection_.get()) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;
@@ -1383,17 +1386,16 @@ RTCPeerConnectionHandler::remoteDescription() {
   return CreateWebKitSessionDescription(sdp, type);
 }
 
-bool RTCPeerConnectionHandler::updateICE(
-    const blink::WebRTCConfiguration& server_configuration) {
+bool RTCPeerConnectionHandler::setConfiguration(
+    const blink::WebRTCConfiguration& blink_config) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::updateICE");
-  webrtc::PeerConnectionInterface::RTCConfiguration config;
-  GetNativeRtcConfiguration(server_configuration, &config);
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setConfiguration");
+  GetNativeRtcConfiguration(blink_config, &configuration_);
 
   if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackUpdateIce(this, config);
+    peer_connection_tracker_->TrackSetConfiguration(this, configuration_);
 
-  return native_peer_connection_->UpdateIce(config.servers);
+  return native_peer_connection_->SetConfiguration(configuration_);
 }
 
 void RTCPeerConnectionHandler::logSelectedRtcpMuxPolicy(

@@ -81,7 +81,7 @@ class WebRTCPeerConnectionHandler {
                                     const WebRTCSessionDescription&) = 0;
   virtual WebRTCSessionDescription localDescription() = 0;
   virtual WebRTCSessionDescription remoteDescription() = 0;
-  virtual bool updateICE(const WebRTCConfiguration&) = 0;
+  virtual bool setConfiguration(const WebRTCConfiguration&) = 0;
   virtual void logSelectedRtcpMuxPolicy(RtcpMuxPolicy) = 0;
 
   // DEPRECATED

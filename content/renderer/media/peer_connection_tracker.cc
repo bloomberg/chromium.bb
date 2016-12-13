@@ -524,7 +524,7 @@ void PeerConnectionTracker::TrackSetSessionDescription(
       value);
 }
 
-void PeerConnectionTracker::TrackUpdateIce(
+void PeerConnectionTracker::TrackSetConfiguration(
     RTCPeerConnectionHandler* pc_handler,
     const webrtc::PeerConnectionInterface::RTCConfiguration& config) {
   DCHECK(main_thread_.CalledOnValidThread());
@@ -539,10 +539,7 @@ void PeerConnectionTracker::TrackUpdateIce(
          << "rtcpMuxPolicy: " << SerializeRtcpMuxPolicy(config.rtcp_mux_policy)
          << "}";
 
-  SendPeerConnectionUpdate(
-      id,
-      "updateIce",
-      result.str());
+  SendPeerConnectionUpdate(id, "setConfiguration", result.str());
 }
 
 void PeerConnectionTracker::TrackAddIceCandidate(

@@ -807,7 +807,7 @@ RTCSessionDescription* RTCPeerConnection::remoteDescription() {
 
 void RTCPeerConnection::updateIce(ExecutionContext* context,
                                   const RTCConfiguration& rtcConfiguration,
-                                  const Dictionary& mediaConstraints,
+                                  const Dictionary&,
                                   ExceptionState& exceptionState) {
   if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
     return;
@@ -825,12 +825,11 @@ void RTCPeerConnection::updateIce(ExecutionContext* context,
     return;
   }
 
-  // Constraints are ignored.
-  bool valid = m_peerHandler->updateICE(configuration);
-  if (!valid)
-    exceptionState.throwDOMException(
-        SyntaxError,
-        "Could not update the ICE Agent with the given configuration.");
+  // TODO(deadbeef): When this changes to setConfiguration, call
+  // m_peerHandler->setConfiguration.
+  exceptionState.throwDOMException(
+      SyntaxError,
+      "Could not update the ICE Agent with the given configuration.");
 }
 
 ScriptPromise RTCPeerConnection::generateCertificate(

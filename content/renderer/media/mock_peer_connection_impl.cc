@@ -266,7 +266,8 @@ void MockPeerConnectionImpl::SetRemoteDescriptionWorker(
   remote_desc_.reset(desc);
 }
 
-bool MockPeerConnectionImpl::UpdateIce(const IceServers& configuration) {
+bool MockPeerConnectionImpl::SetConfiguration(
+    const RTCConfiguration& configuration) {
   return true;
 }
 

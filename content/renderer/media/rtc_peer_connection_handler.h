@@ -132,8 +132,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   blink::WebRTCSessionDescription localDescription() override;
   blink::WebRTCSessionDescription remoteDescription() override;
 
-  bool updateICE(
-      const blink::WebRTCConfiguration& server_configuration) override;
+  bool setConfiguration(
+      const blink::WebRTCConfiguration& configuration) override;
   void logSelectedRtcpMuxPolicy(
       blink::RtcpMuxPolicy selectedRtcpMuxPolicy) override;
   bool addICECandidate(const blink::WebRTCICECandidate& candidate) override;
@@ -270,6 +270,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   // |native_peer_connection_| is the libjingle native PeerConnection object.
   scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
+
+  // The last applied configuration. Used so that the constraints
+  // used when constructing the PeerConnection carry over when
+  // SetConfiguration is called.
+  webrtc::PeerConnectionInterface::RTCConfiguration configuration_;
 
   // Record info about the first SessionDescription from the local and
   // remote side to record UMA stats once both are set.  We only check

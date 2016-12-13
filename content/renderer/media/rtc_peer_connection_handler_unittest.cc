@@ -150,7 +150,7 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                     const std::string& sdp, const std::string& type,
                     Source source));
   MOCK_METHOD2(
-      TrackUpdateIce,
+      TrackSetConfiguration,
       void(RTCPeerConnectionHandler* pc_handler,
            const webrtc::PeerConnectionInterface::RTCConfiguration& config));
   MOCK_METHOD4(TrackAddIceCandidate,
@@ -507,14 +507,15 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
   EXPECT_EQ(kDummySdp, sdp_string);
 }
 
-TEST_F(RTCPeerConnectionHandlerTest, updateICE) {
+TEST_F(RTCPeerConnectionHandlerTest, setConfiguration) {
   blink::WebRTCConfiguration config;
 
-  EXPECT_CALL(*mock_tracker_.get(), TrackUpdateIce(pc_handler_.get(), _));
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackSetConfiguration(pc_handler_.get(), _));
   // TODO(perkj): Test that the parameters in |config| can be translated when a
   // WebRTCConfiguration can be constructed. It's WebKit class and can't be
   // initialized from a test.
-  EXPECT_TRUE(pc_handler_->updateICE(config));
+  EXPECT_TRUE(pc_handler_->setConfiguration(config));
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {

@@ -454,7 +454,7 @@ WebRTCSessionDescription MockWebRTCPeerConnectionHandler::remoteDescription() {
   return remote_description_;
 }
 
-bool MockWebRTCPeerConnectionHandler::updateICE(
+bool MockWebRTCPeerConnectionHandler::setConfiguration(
     const WebRTCConfiguration& configuration) {
   return true;
 }

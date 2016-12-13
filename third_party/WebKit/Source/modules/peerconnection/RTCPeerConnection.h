@@ -110,7 +110,7 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
 
   void updateIce(ExecutionContext*,
                  const RTCConfiguration&,
-                 const Dictionary& mediaConstraints,
+                 const Dictionary&,
                  ExceptionState&);
 
   // Certificate management

@@ -102,8 +102,8 @@ class CONTENT_EXPORT PeerConnectionTracker
       RTCPeerConnectionHandler* pc_handler,
       const std::string& sdp, const std::string& type, Source source);
 
-  // Sends an update when Ice candidates are updated.
-  virtual void TrackUpdateIce(
+  // Sends an update when setConfiguration is called.
+  virtual void TrackSetConfiguration(
       RTCPeerConnectionHandler* pc_handler,
       const webrtc::PeerConnectionInterface::RTCConfiguration& config);
 
