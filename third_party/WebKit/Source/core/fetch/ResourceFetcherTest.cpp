@@ -36,7 +36,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/MockFetchContext.h"
-#include "core/fetch/MockResourceClients.h"
+#include "core/fetch/MockResourceClient.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceLoader.h"
 #include "platform/WebTaskRunner.h"

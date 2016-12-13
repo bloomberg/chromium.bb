@@ -8,6 +8,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/MockFetchContext.h"
+#include "core/fetch/MockResourceClient.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/loader/resource/MockFontResourceClient.h"

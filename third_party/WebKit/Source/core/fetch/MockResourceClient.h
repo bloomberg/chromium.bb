@@ -28,12 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MockResourceClients_h
-#define MockResourceClients_h
+#ifndef MockResourceClient_h
+#define MockResourceClient_h
 
-#include "core/fetch/ImageResource.h"
-#include "core/fetch/ImageResourceContent.h"
-#include "core/fetch/ImageResourceObserver.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
 #include "platform/heap/Handle.h"
@@ -68,39 +65,6 @@ class MockResourceClient : public GarbageCollectedFinalized<MockResourceClient>,
   size_t m_encodedSizeOnNotifyFinished;
 };
 
-class MockImageResourceClient final : public MockResourceClient,
-                                      public ImageResourceObserver {
- public:
-  explicit MockImageResourceClient(ImageResource*);
-  ~MockImageResourceClient() override;
-
-  void imageNotifyFinished(ImageResourceContent*) override;
-  void imageChanged(ImageResourceContent*, const IntRect*) override;
-
-  String debugName() const override { return "MockImageResourceClient"; }
-
-  bool notifyFinishedCalled() const override;
-
-  void removeAsClient() override;
-  void dispose() override;
-
-  int imageChangedCount() const { return m_imageChangedCount; }
-  int imageNotifyFinishedCount() const { return m_imageNotifyFinishedCount; }
-
-  size_t encodedSizeOnLastImageChanged() const {
-    return m_encodedSizeOnLastImageChanged;
-  }
-  size_t encodedSizeOnImageNotifyFinished() const {
-    return m_encodedSizeOnImageNotifyFinished;
-  }
-
- private:
-  int m_imageChangedCount;
-  size_t m_encodedSizeOnLastImageChanged;
-  int m_imageNotifyFinishedCount;
-  size_t m_encodedSizeOnImageNotifyFinished;
-};
-
 }  // namespace blink
 
-#endif  // MockResourceClients_h
+#endif  // MockResourceClient_h

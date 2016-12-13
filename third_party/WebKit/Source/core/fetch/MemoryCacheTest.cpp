@@ -30,7 +30,7 @@
 
 #include "core/fetch/MemoryCache.h"
 
-#include "core/fetch/MockResourceClients.h"
+#include "core/fetch/MockResourceClient.h"
 #include "core/fetch/RawResource.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/testing/UnitTestHelpers.h"
