@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -186,6 +187,7 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"WebApk"})
+    @DisabledTest(message = "crbug.com/673385")
     public void testCanonicalUrlsDifferentShouldUpgrade() throws Exception {
         // URL canonicalization should replace "%62" with 'b'.
         CreationData creationData = defaultCreationData(mTestServer);
