@@ -21,6 +21,7 @@ namespace wm {
 // Simple class that draws a drop shadow around content at given bounds.
 class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
  public:
+  // TODO(estade): remove this enum and instead set elevation directly.
   enum Style {
     // Active windows have more opaque shadows, shifted down to make the window
     // appear "higher".

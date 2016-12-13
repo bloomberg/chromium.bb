@@ -255,10 +255,12 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
   int h = anchor_rect.height();
   const gfx::Size size(GetSizeForContentsSize(contents_size));
   const int arrow_offset = GetArrowOffset(size);
+  const int stroke_width = shadow_ == NO_ASSETS ? 0 : kStroke;
   // |arrow_shift| is necessary to visually align the tip of the bubble arrow
   // with the anchor point. This shift is an inverse of the shadow thickness.
-  int arrow_shift = UseMd() ? 0 :
-      images_->arrow_interior_thickness + kStroke - images_->arrow_thickness;
+  int arrow_shift = UseMd() ? 0
+                            : images_->arrow_interior_thickness + stroke_width -
+                                  images_->arrow_thickness;
   // When arrow is painted transparently the visible border of the bubble needs
   // to be positioned at the same bounds as when the arrow is shown.
   if (arrow_paint_type_ == PAINT_TRANSPARENT)
@@ -268,12 +270,13 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
   // Calculate the bubble coordinates based on the border and arrow settings.
   if (is_arrow_on_horizontal(arrow_)) {
     if (is_arrow_on_left(arrow_)) {
-      x += mid_anchor ? w / 2 - arrow_offset : kStroke - GetBorderThickness();
+      x += mid_anchor ? w / 2 - arrow_offset
+                      : stroke_width - GetBorderThickness();
     } else if (is_arrow_at_center(arrow_)) {
       x += w / 2 - arrow_offset;
     } else {
-      x += mid_anchor ? w / 2 + arrow_offset - size.width() :
-                        w - size.width() + GetBorderThickness() - kStroke;
+      x += mid_anchor ? w / 2 + arrow_offset - size.width()
+                      : w - size.width() + GetBorderThickness() - stroke_width;
     }
     y += is_arrow_on_top(arrow_) ? h + arrow_shift
                                  : -arrow_shift - size.height();
@@ -281,12 +284,13 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
     x += is_arrow_on_left(arrow_) ? w + arrow_shift
                                   : -arrow_shift - size.width();
     if (is_arrow_on_top(arrow_)) {
-      y += mid_anchor ? h / 2 - arrow_offset : kStroke - GetBorderThickness();
+      y += mid_anchor ? h / 2 - arrow_offset
+                      : stroke_width - GetBorderThickness();
     } else if (is_arrow_at_center(arrow_)) {
       y += h / 2 - arrow_offset;
     } else {
-      y += mid_anchor ? h / 2 + arrow_offset - size.height() :
-                        h - size.height() + GetBorderThickness() - kStroke;
+      y += mid_anchor ? h / 2 + arrow_offset - size.height()
+                      : h - size.height() + GetBorderThickness() - stroke_width;
     }
   } else {
     x += (w - size.width()) / 2;

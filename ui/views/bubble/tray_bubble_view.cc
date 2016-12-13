@@ -196,7 +196,7 @@ TrayBubbleView::TrayBubbleView(View* anchor,
       delegate_(delegate),
       preferred_width_(init_params.min_width),
       bubble_border_(new BubbleBorder(arrow(),
-                                      BubbleBorder::BIG_SHADOW,
+                                      BubbleBorder::NO_ASSETS,
                                       init_params.bg_color)),
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
@@ -272,6 +272,8 @@ void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                               Widget* bubble_widget) const {
   if (delegate_)
     delegate_->OnBeforeBubbleWidgetInit(anchor_widget(), bubble_widget, params);
+  // Apply a WM-provided shadow (see ui/wm/core/).
+  params->shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
 }
 
 NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(Widget* widget) {

@@ -132,15 +132,6 @@ void Shadow::RecreateShadowLayer() {
 
   const ShadowDetails& details = GetDetailsForElevation(ElevationForStyle());
   shadow_layer_->UpdateNinePatchLayerImage(details.ninebox_image);
-  // The ninebox grid is defined in terms of the image size. The shadow blurs in
-  // both inward and outward directions from the edge of the contents, so the
-  // aperture goes further inside the image than the shadow margins (which
-  // represent exterior blur).
-  gfx::Rect aperture(details.ninebox_image.size());
-  gfx::Insets blur_region = gfx::ShadowValue::GetBlurRegion(details.values) +
-                            gfx::Insets(kRoundedCornerRadius);
-  aperture.Inset(blur_region);
-  shadow_layer_->UpdateNinePatchLayerAperture(aperture);
   UpdateLayerBounds();
 }
 
@@ -194,6 +185,21 @@ void Shadow::UpdateLayerBounds() {
   int border_y = border_h * blur_region.top() / blur_region.height();
   shadow_layer_->UpdateNinePatchLayerBorder(
       gfx::Rect(border_x, border_y, border_w, border_h));
+
+  // The ninebox grid is defined in terms of the image size. The shadow blurs in
+  // both inward and outward directions from the edge of the contents, so the
+  // aperture goes further inside the image than the shadow margins (which
+  // represent exterior blur).
+  gfx::Rect aperture(details.ninebox_image.size());
+  // The insets for the aperture are nominally |blur_region| but we need to
+  // resize them if the contents are too small.
+  // TODO(estade): by cutting out parts of ninebox, we lose the smooth
+  // horizontal or vertical transition. This isn't very noticeable, but we may
+  // need to address it by using a separate shadow layer for each ShadowValue,
+  // by adjusting the shadow for very small windows, or other means.
+  aperture.Inset(gfx::Insets(border_y, border_x, border_h - border_y,
+                             border_w - border_x));
+  shadow_layer_->UpdateNinePatchLayerAperture(aperture);
 }
 
 int Shadow::ElevationForStyle() {

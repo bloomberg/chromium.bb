@@ -100,6 +100,8 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     NO_SHADOW_OPAQUE_BORDER,
     BIG_SHADOW,
     SMALL_SHADOW,
+    // NO_ASSETS borders don't draw a stroke or a shadow. This is used for
+    // platforms that provide their own shadows.
     NO_ASSETS,
     SHADOW_COUNT,
   };

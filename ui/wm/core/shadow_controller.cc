@@ -45,20 +45,22 @@ ShadowType GetShadowTypeFromWindow(aura::Window* window) {
   return SHADOW_TYPE_NONE;
 }
 
-bool ShouldUseSmallShadowForWindow(aura::Window* window) {
+Shadow::Style GetShadowStyleForWindow(aura::Window* window) {
   switch (window->type()) {
     case ui::wm::WINDOW_TYPE_MENU:
     case ui::wm::WINDOW_TYPE_TOOLTIP:
-      return true;
-    default:
-      break;
-  }
-  return false;
-}
+      return Shadow::STYLE_SMALL;
 
-Shadow::Style GetShadowStyleForWindow(aura::Window* window) {
-  return ShouldUseSmallShadowForWindow(window) ? Shadow::STYLE_SMALL :
-      (IsActiveWindow(window) ? Shadow::STYLE_ACTIVE : Shadow::STYLE_INACTIVE);
+    // System tray bubbles render like active windows. TODO(estade): this
+    // mechanism will need to be revisited for applying WM shadows to other
+    // types of bubbles which don't want to render such large shadows.
+    case ui::wm::WINDOW_TYPE_POPUP:
+      return Shadow::STYLE_ACTIVE;
+
+    default:
+      return IsActiveWindow(window) ? Shadow::STYLE_ACTIVE
+                                    : Shadow::STYLE_INACTIVE;
+  }
 }
 
 // Returns the shadow style to be applied to |losing_active| when it is losing
@@ -193,12 +195,13 @@ void ShadowController::Impl::OnWindowActivated(ActivationReason reason,
                                                aura::Window* lost_active) {
   if (gained_active) {
     Shadow* shadow = GetShadowForWindow(gained_active);
-    if (shadow && !ShouldUseSmallShadowForWindow(gained_active))
-      shadow->SetStyle(Shadow::STYLE_ACTIVE);
+    if (shadow)
+      shadow->SetStyle(GetShadowStyleForWindow(gained_active));
   }
   if (lost_active) {
     Shadow* shadow = GetShadowForWindow(lost_active);
-    if (shadow && !ShouldUseSmallShadowForWindow(lost_active)) {
+    if (shadow &&
+        GetShadowStyleForWindow(lost_active) == Shadow::STYLE_INACTIVE) {
       shadow->SetStyle(GetShadowStyleForWindowLosingActive(lost_active,
                                                            gained_active));
     }

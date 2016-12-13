@@ -534,20 +534,12 @@ views::View* TrayBackgroundView::GetBubbleAnchor() const {
 gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
   gfx::Insets anchor_insets = GetBubbleAnchor()->GetInsets();
   gfx::Insets tray_bg_insets = GetInsets();
-  // TODO(estade): for reasons I don't understand, BubbleBorder distances the
-  // bubble by the arrow's "interior" thickness even when the paint type is
-  // PAINT_NONE.
-  const int kBigShadowArrowInteriorThickness = 9;
   if (GetAnchorAlignment() == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
-    return gfx::Insets(kBigShadowArrowInteriorThickness - tray_bg_insets.top(),
-                       anchor_insets.left(), -tray_bg_insets.bottom(),
-                       anchor_insets.right());
+    return gfx::Insets(-tray_bg_insets.top(), anchor_insets.left(),
+                       -tray_bg_insets.bottom(), anchor_insets.right());
   } else {
-    return gfx::Insets(
-        anchor_insets.top(),
-        kBigShadowArrowInteriorThickness - tray_bg_insets.left(),
-        anchor_insets.bottom(),
-        kBigShadowArrowInteriorThickness - tray_bg_insets.right());
+    return gfx::Insets(anchor_insets.top(), -tray_bg_insets.left(),
+                       anchor_insets.bottom(), -tray_bg_insets.right());
   }
 }
 
