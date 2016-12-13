@@ -367,46 +367,46 @@ TEST(KURLTest, Valid_HTTP_FTP_URLsHaveHosts) {
   url::AddStandardScheme("http-so", url::SCHEME_WITH_PORT);
   url::AddStandardScheme("https-so", url::SCHEME_WITH_PORT);
 
-  KURL kurl;
+  KURL kurl(ParsedURLString, "foo://www.google.com/");
   EXPECT_TRUE(kurl.setProtocol("http"));
   EXPECT_TRUE(kurl.protocolIs("http"));
-  EXPECT_FALSE(kurl.isValid());
+  EXPECT_TRUE(kurl.protocolIsInHTTPFamily());
+  EXPECT_TRUE(kurl.isValid());
 
   EXPECT_TRUE(kurl.setProtocol("http-so"));
   EXPECT_TRUE(kurl.protocolIs("http-so"));
-  EXPECT_FALSE(kurl.isValid());
+  EXPECT_TRUE(kurl.isValid());
 
   EXPECT_TRUE(kurl.setProtocol("https"));
   EXPECT_TRUE(kurl.protocolIs("https"));
-  EXPECT_FALSE(kurl.isValid());
+  EXPECT_TRUE(kurl.isValid());
 
   EXPECT_TRUE(kurl.setProtocol("https-so"));
   EXPECT_TRUE(kurl.protocolIs("https-so"));
-  EXPECT_FALSE(kurl.isValid());
+  EXPECT_TRUE(kurl.isValid());
 
   EXPECT_TRUE(kurl.setProtocol("ftp"));
   EXPECT_TRUE(kurl.protocolIs("ftp"));
-  EXPECT_FALSE(kurl.isValid());
+  EXPECT_TRUE(kurl.isValid());
 
   kurl = KURL(KURL(), "http://");
+  EXPECT_FALSE(kurl.protocolIs("http"));
+
+  kurl = KURL(KURL(), "http://wide#鸡");
   EXPECT_TRUE(kurl.protocolIs("http"));
-  EXPECT_FALSE(kurl.isValid());
+  EXPECT_EQ(kurl.protocol(), "http");
 
-  kurl = KURL(KURL(), "http-so://");
+  kurl = KURL(KURL(), "http-so://foo");
   EXPECT_TRUE(kurl.protocolIs("http-so"));
-  EXPECT_FALSE(kurl.isValid());
 
-  kurl = KURL(KURL(), "https://");
+  kurl = KURL(KURL(), "https://foo");
   EXPECT_TRUE(kurl.protocolIs("https"));
-  EXPECT_FALSE(kurl.isValid());
 
-  kurl = KURL(KURL(), "https-so://");
+  kurl = KURL(KURL(), "https-so://foo");
   EXPECT_TRUE(kurl.protocolIs("https-so"));
-  EXPECT_FALSE(kurl.isValid());
 
-  kurl = KURL(KURL(), "ftp://");
+  kurl = KURL(KURL(), "ftp://foo");
   EXPECT_TRUE(kurl.protocolIs("ftp"));
-  EXPECT_FALSE(kurl.isValid());
 
   kurl = KURL(KURL(), "http://host/");
   EXPECT_TRUE(kurl.isValid());
@@ -699,7 +699,6 @@ TEST(KURLTest, ProtocolIs) {
 
   KURL invalidUTF8(ParsedURLString, "http://a@9%aa%:");
   EXPECT_FALSE(invalidUTF8.protocolIs("http"));
-  EXPECT_TRUE(invalidUTF8.protocolIs(""));
 
   KURL capital(KURL(), "HTTP://www.example.text");
   EXPECT_TRUE(capital.protocolIs("http"));
