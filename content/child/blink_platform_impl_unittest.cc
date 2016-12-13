@@ -21,8 +21,10 @@ void CheckCastedOriginsAlreadyNormalized(
       url::Origin::UnsafelyCreateOriginWithoutNormalization(
           origin.protocol().utf8(), origin.host().utf8(),
           origin.effectivePort());
-  url::Origin non_checked_origin = url::Origin::CreateFromNormalizedTuple(
-      origin.protocol().utf8(), origin.host().utf8(), origin.effectivePort());
+  url::Origin non_checked_origin =
+      url::Origin::CreateFromNormalizedTupleWithSuborigin(
+          origin.protocol().utf8(), origin.host().utf8(),
+          origin.effectivePort(), origin.suborigin().utf8());
   EXPECT_EQ(checked_origin.scheme(), non_checked_origin.scheme());
   EXPECT_EQ(checked_origin.host(), non_checked_origin.host());
   EXPECT_EQ(checked_origin.port(), non_checked_origin.port());
@@ -144,7 +146,7 @@ TEST(BlinkPlatformTest, CastWebSecurityOrigin) {
 }
 
 // This test ensures that WebSecurityOrigins can safely use
-// url::Origin::CreateFromNormalizedTuple when doing conversions.
+// url::Origin::CreateFromNormalizedTupleWithSuborigin when doing conversions.
 TEST(BlinkPlatformTest, WebSecurityOriginNormalization) {
   struct TestCases {
     const char* url;
