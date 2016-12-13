@@ -416,11 +416,6 @@ void GCMStatsRecorderImpl::RecordDataMessageReceived(
     int message_byte_size,
     bool to_registered_app,
     ReceivedMessageType message_type) {
-  UMA_HISTOGRAM_BOOLEAN("GCM.DataMessageReceivedHasRegisteredApp",
-                        to_registered_app);
-  if (to_registered_app)
-    UMA_HISTOGRAM_COUNTS("GCM.DataMessageReceived", 1);
-
   base::TimeTicks new_timestamp = base::TimeTicks::Now();
   if (last_received_data_message_burst_start_time_.is_null()) {
     last_received_data_message_burst_start_time_ = new_timestamp;

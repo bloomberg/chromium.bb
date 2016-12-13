@@ -300,6 +300,13 @@ class GCMClientImpl
       const mcs_proto::DataMessageStanza& data_message_stanza,
       MessageData& message_data);
 
+  // Fires OnMessagesDeleted event on the delegate of this class, based on the
+  // details in |data_message_stanza| and |message_data|.
+  void HandleIncomingDeletedMessages(
+      const std::string& app_id,
+      const mcs_proto::DataMessageStanza& data_message_stanza,
+      MessageData& message_data);
+
   // Fires OnMessageSendError event on the delegate of this class, based on the
   // details in |data_message_stanza| and |message_data|.
   void HandleIncomingSendError(

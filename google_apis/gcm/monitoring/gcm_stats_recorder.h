@@ -110,9 +110,9 @@ class GCM_EXPORT GCMStatsRecorder {
                                                 int retries_left) = 0;
 
   // Records that a data message has been received. If this message is not
-  // sent to a registered app, to_registered_app shoudl be false. If it
-  // indicates that a message has been dropped on the server, is_message_dropped
-  // should be true.
+  // sent to a registered app, to_registered_app should be false. If it
+  // indicates that one or more messages were dropped on the server,
+  // message_type should be DELETED_MESSAGES.
   virtual void RecordDataMessageReceived(const std::string& app_id,
                                          const std::string& from,
                                          int message_byte_size,
