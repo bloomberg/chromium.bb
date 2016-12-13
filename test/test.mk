@@ -36,7 +36,6 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += borders_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += cpu_speed_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += frame_size_tests.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += lossless_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += ethread_test.cc
 
 LIBAOM_TEST_SRCS-yes                   += decode_test_driver.cc
 LIBAOM_TEST_SRCS-yes                   += decode_test_driver.h
@@ -101,6 +100,10 @@ LIBAOM_TEST_SRCS-yes                   += idct8x8_test.cc
 LIBAOM_TEST_SRCS-yes                   += partial_idct_test.cc
 LIBAOM_TEST_SRCS-yes                   += superframe_test.cc
 LIBAOM_TEST_SRCS-yes                   += tile_independence_test.cc
+LIBAOM_TEST_SRCS-yes                   += ethread_test.cc
+ifeq ($(CONFIG_EXT_TILE),yes)
+LIBAOM_TEST_SRCS-yes                   += av1_ext_tile_test.cc
+endif
 ifeq ($(CONFIG_ANS),yes)
 LIBAOM_TEST_SRCS-yes                   += ans_test.cc
 else
@@ -150,7 +153,6 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_fht16x32_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_fht32x16_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += fht32x32_test.cc
 endif
-LIBAOM_TEST_SRCS-$(CONFIG_EXT_TILE)     += av1_ext_tile_test.cc
 
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += sum_squares_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += subtract_test.cc

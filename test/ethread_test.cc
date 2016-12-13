@@ -176,14 +176,15 @@ TEST_P(AVxEncoderThreadTestLarge, EncoderResultTest) { DoTest(); }
 // TODO(thdavies): EC_ADAPT does not support tiles
 
 #else
+// For AV1, only test speed 0 to 3.
 AV1_INSTANTIATE_TEST_CASE(AVxEncoderThreadTest,
                           ::testing::Values(::libaom_test::kTwoPassGood,
                                             ::libaom_test::kOnePassGood),
-                          ::testing::Range(3, 9));
+                          ::testing::Range(2, 4));
 
 AV1_INSTANTIATE_TEST_CASE(AVxEncoderThreadTestLarge,
                           ::testing::Values(::libaom_test::kTwoPassGood,
                                             ::libaom_test::kOnePassGood),
-                          ::testing::Range(0, 3));
+                          ::testing::Range(0, 2));
 #endif
 }  // namespace
