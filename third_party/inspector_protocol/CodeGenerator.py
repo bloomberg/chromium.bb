@@ -440,6 +440,12 @@ class Protocol(object):
         return self.check_options(self.config.protocol.options, domain, event, "include_events", "exclude_events", True)
 
 
+    def generate_type(self, domain, typename):
+        if not self.config.protocol.options:
+            return domain in self.generate_domains
+        return self.check_options(self.config.protocol.options, domain, typename, "include_types", "exclude_types", True)
+
+
     def is_async_command(self, domain, command):
         if not self.config.protocol.options:
             return False
@@ -471,6 +477,10 @@ class Protocol(object):
             if command["name"] == "disable" and self.generate_command(domain["domain"], "disable"):
                 return False
         return True
+
+
+    def is_imported_dependency(self, domain):
+        return domain in self.generate_domains or domain in self.imported_domains
 
 
 def main():
