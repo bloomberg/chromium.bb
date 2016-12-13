@@ -2006,6 +2006,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisabledTest(message = "crbug.com/673684")
     @RetryOnFailure
     public void testPreventHandlingCurrentSelectionModification()
             throws InterruptedException, TimeoutException {
