@@ -11,17 +11,24 @@
 
 namespace blink {
 
-class ResourceFetcher;
-
 class CORE_EXPORT ClientHintsPreferences {
   DISALLOW_NEW();
 
  public:
+  class Context {
+   public:
+    virtual void countClientHintsDPR() = 0;
+    virtual void countClientHintsResourceWidth() = 0;
+    virtual void countClientHintsViewportWidth() = 0;
+
+   protected:
+    virtual ~Context() {}
+  };
+
   ClientHintsPreferences();
 
   void updateFrom(const ClientHintsPreferences&);
-  void updateFromAcceptClientHintsHeader(const String& headerValue,
-                                         ResourceFetcher*);
+  void updateFromAcceptClientHintsHeader(const String& headerValue, Context*);
 
   bool shouldSendDPR() const { return m_shouldSendDPR; }
   void setShouldSendDPR(bool should) { m_shouldSendDPR = should; }

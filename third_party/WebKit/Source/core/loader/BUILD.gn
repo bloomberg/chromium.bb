@@ -17,6 +17,8 @@ blink_core_sources("loader") {
     "EmptyClients.cpp",
     "EmptyClients.h",
     "FormSubmission.cpp",
+    "FrameClientHintsPreferencesContext.cpp",
+    "FrameClientHintsPreferencesContext.h",
     "FrameFetchContext.cpp",
     "FrameFetchContext.h",
     "FrameLoadRequest.cpp",

@@ -8,10 +8,12 @@
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/StyleEngine.h"
 #include "core/fetch/ClientHintsPreferences.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameClientHintsPreferencesContext.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "platform/HTTPNames.h"
 #include "platform/network/HTTPParsers.h"
@@ -87,8 +89,9 @@ void HttpEquiv::processHttpEquivAcceptCH(Document& document,
     return;
 
   UseCounter::count(document, UseCounter::ClientHintsMetaAcceptCH);
+  FrameClientHintsPreferencesContext hintsContext(document.frame());
   document.clientHintsPreferences().updateFromAcceptClientHintsHeader(
-      content, document.fetcher());
+      content, &hintsContext);
 }
 
 void HttpEquiv::processHttpEquivDefaultStyle(Document& document,

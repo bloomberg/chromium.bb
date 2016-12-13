@@ -152,10 +152,6 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
   ResourceLoadPriority modifyPriorityForExperiments(
       ResourceLoadPriority) override;
 
-  void countClientHintsDPR() override;
-  void countClientHintsResourceWidth() override;
-  void countClientHintsViewportWidth() override;
-
   WebTaskRunner* loadingTaskRunner() const override;
 
   DECLARE_VIRTUAL_TRACE();

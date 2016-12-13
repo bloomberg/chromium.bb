@@ -41,6 +41,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -49,6 +50,7 @@
 #include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameClientHintsPreferencesContext.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
@@ -952,18 +954,6 @@ MHTMLArchive* FrameFetchContext::archive() const {
       ->archive();
 }
 
-void FrameFetchContext::countClientHintsDPR() {
-  UseCounter::count(frame(), UseCounter::ClientHintsDPR);
-}
-
-void FrameFetchContext::countClientHintsResourceWidth() {
-  UseCounter::count(frame(), UseCounter::ClientHintsResourceWidth);
-}
-
-void FrameFetchContext::countClientHintsViewportWidth() {
-  UseCounter::count(frame(), UseCounter::ClientHintsViewportWidth);
-}
-
 ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(
     ResourceLoadPriority priority) {
   // If Settings is null, we can't verify any experiments are in force.
@@ -996,12 +986,10 @@ void FrameFetchContext::dispatchDidReceiveResponseInternal(
   if (m_documentLoader &&
       m_documentLoader ==
           m_documentLoader->frame()->loader().provisionalDocumentLoader()) {
-    ResourceFetcher* fetcher = nullptr;
-    if (frame()->document())
-      fetcher = frame()->document()->fetcher();
+    FrameClientHintsPreferencesContext hintsContext(frame());
     m_documentLoader->clientHintsPreferences()
         .updateFromAcceptClientHintsHeader(
-            response.httpHeaderField(HTTPNames::Accept_CH), fetcher);
+            response.httpHeaderField(HTTPNames::Accept_CH), &hintsContext);
     // When response is received with a provisional docloader, the resource
     // haven't committed yet, and we cannot load resources, only preconnect.
     resourceLoadingPolicy = LinkLoader::DoNotLoadResources;

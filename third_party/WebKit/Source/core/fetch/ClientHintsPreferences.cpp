@@ -4,7 +4,6 @@
 
 #include "core/fetch/ClientHintsPreferences.h"
 
-#include "core/fetch/ResourceFetcher.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/HTTPParsers.h"
 
@@ -24,27 +23,27 @@ void ClientHintsPreferences::updateFrom(
 
 void ClientHintsPreferences::updateFromAcceptClientHintsHeader(
     const String& headerValue,
-    ResourceFetcher* fetcher) {
+    Context* context) {
   if (!RuntimeEnabledFeatures::clientHintsEnabled() || headerValue.isEmpty())
     return;
 
   CommaDelimitedHeaderSet acceptClientHintsHeader;
   parseCommaDelimitedHeader(headerValue, acceptClientHintsHeader);
   if (acceptClientHintsHeader.contains("dpr")) {
-    if (fetcher)
-      fetcher->context().countClientHintsDPR();
+    if (context)
+      context->countClientHintsDPR();
     m_shouldSendDPR = true;
   }
 
   if (acceptClientHintsHeader.contains("width")) {
-    if (fetcher)
-      fetcher->context().countClientHintsResourceWidth();
+    if (context)
+      context->countClientHintsResourceWidth();
     m_shouldSendResourceWidth = true;
   }
 
   if (acceptClientHintsHeader.contains("viewport-width")) {
-    if (fetcher)
-      fetcher->context().countClientHintsViewportWidth();
+    if (context)
+      context->countClientHintsViewportWidth();
     m_shouldSendViewportWidth = true;
   }
 }
