@@ -40,6 +40,9 @@ static_library("browser") {
     "startup_task_runner_service.cc",
     "startup_task_runner_service.h",
     "titled_url_node.h",
+    "titled_url_node_sorter.h",
+    "typed_count_sorter.cc",
+    "typed_count_sorter.h",
   ]
 
   public_deps = [

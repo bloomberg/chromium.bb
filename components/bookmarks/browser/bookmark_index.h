@@ -18,8 +18,8 @@
 
 namespace bookmarks {
 
-class BookmarkClient;
 class TitledUrlNode;
+class TitledUrlNodeSorter;
 struct BookmarkMatch;
 
 // BookmarkIndex maintains an index of the titles and URLs of bookmarks for
@@ -31,7 +31,7 @@ struct BookmarkMatch;
 // TitledUrlNodes that contain that string in their title or URL.
 class BookmarkIndex {
  public:
-  BookmarkIndex(BookmarkClient* client);
+  BookmarkIndex(std::unique_ptr<TitledUrlNodeSorter> sorter);
   ~BookmarkIndex();
 
   // Invoked when a title/URL pair has been added to the model.
@@ -84,7 +84,7 @@ class BookmarkIndex {
 
   Index index_;
 
-  BookmarkClient* const client_;
+  std::unique_ptr<TitledUrlNodeSorter> sorter_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkIndex);
 };

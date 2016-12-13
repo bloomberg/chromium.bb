@@ -25,6 +25,7 @@
 #include "components/bookmarks/browser/bookmark_storage.h"
 #include "components/bookmarks/browser/bookmark_undo_delegate.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/typed_count_sorter.h"
 #include "components/favicon_base/favicon_types.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1111,9 +1112,11 @@ std::unique_ptr<BookmarkLoadDetails> BookmarkModel::CreateLoadDetails() {
       CreatePermanentNode(BookmarkNode::OTHER_NODE);
   BookmarkPermanentNode* mobile_node =
       CreatePermanentNode(BookmarkNode::MOBILE);
+  std::unique_ptr<TitledUrlNodeSorter> node_sorter =
+      base::MakeUnique<TypedCountSorter>(client_.get());
   return std::unique_ptr<BookmarkLoadDetails>(new BookmarkLoadDetails(
       bb_node, other_node, mobile_node, client_->GetLoadExtraNodesCallback(),
-      new BookmarkIndex(client_.get()), next_node_id_));
+      new BookmarkIndex(std::move(node_sorter)), next_node_id_));
 }
 
 void BookmarkModel::SetUndoDelegate(BookmarkUndoDelegate* undo_delegate) {

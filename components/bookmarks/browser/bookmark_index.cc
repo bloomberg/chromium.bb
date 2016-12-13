@@ -11,23 +11,17 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "build/build_config.h"
-#include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/titled_url_node.h"
+#include "components/bookmarks/browser/titled_url_node_sorter.h"
 #include "components/query_parser/snippet.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 
 namespace bookmarks {
 
-using UrlTypedCountMap = BookmarkClient::UrlTypedCountMap;
-
 namespace {
-
-using UrlNodeMap = std::unordered_map<const GURL*, const TitledUrlNode*>;
-using UrlTypedCountPair = std::pair<const GURL*, int>;
-using UrlTypedCountPairs = std::vector<UrlTypedCountPair>;
 
 // Returns a normalized version of the UTF16 string |text|.  If it fails to
 // normalize the string, returns |text| itself as a best-effort.
@@ -52,36 +46,10 @@ base::string16 Normalize(const base::string16& text) {
                         unicode_normalized_text.length());
 }
 
-// Sort functor for UrlTypedCountPairs. We sort in decreasing order of typed
-// count so that the best matches will always be added to the results.
-struct UrlTypedCountPairSortFunctor {
-  bool operator()(const UrlTypedCountPair& a,
-                  const UrlTypedCountPair& b) const {
-    return a.second > b.second;
-  }
-};
-
-// Extract the GURL stored in an UrlTypedCountPair and use it to look up the
-// corresponding TitledUrlNode.
-class UrlTypedCountPairNodeLookupFunctor {
- public:
-  explicit UrlTypedCountPairNodeLookupFunctor(UrlNodeMap& url_node_map)
-      : url_node_map_(url_node_map) {
-  }
-
-  const TitledUrlNode* operator()(const UrlTypedCountPair& pair) const {
-    return url_node_map_[pair.first];
-  }
-
- private:
-  UrlNodeMap& url_node_map_;
-};
-
 }  // namespace
 
-BookmarkIndex::BookmarkIndex(BookmarkClient* client)
-    : client_(client) {
-  DCHECK(client_);
+BookmarkIndex::BookmarkIndex(std::unique_ptr<TitledUrlNodeSorter> sorter)
+    : sorter_(std::move(sorter)) {
 }
 
 BookmarkIndex::~BookmarkIndex() {
@@ -150,29 +118,8 @@ void BookmarkIndex::GetResultsMatching(
 
 void BookmarkIndex::SortMatches(const TitledUrlNodeSet& matches,
                                 TitledUrlNodes* sorted_nodes) const {
-  sorted_nodes->reserve(matches.size());
-  if (client_->SupportsTypedCountForUrls()) {
-    UrlNodeMap url_node_map;
-    UrlTypedCountMap url_typed_count_map;
-    for (auto node : matches) {
-      const GURL& url = node->GetTitledUrlNodeUrl();
-      url_node_map.insert(std::make_pair(&url, node));
-      url_typed_count_map.insert(std::make_pair(&url, 0));
-    }
-
-    client_->GetTypedCountForUrls(&url_typed_count_map);
-
-    UrlTypedCountPairs url_typed_counts;
-    std::copy(url_typed_count_map.begin(),
-              url_typed_count_map.end(),
-              std::back_inserter(url_typed_counts));
-    std::sort(url_typed_counts.begin(),
-              url_typed_counts.end(),
-              UrlTypedCountPairSortFunctor());
-    std::transform(url_typed_counts.begin(),
-                   url_typed_counts.end(),
-                   std::back_inserter(*sorted_nodes),
-                   UrlTypedCountPairNodeLookupFunctor(url_node_map));
+  if (sorter_) {
+    sorter_->SortMatches(matches, sorted_nodes);
   } else {
     sorted_nodes->insert(sorted_nodes->end(), matches.begin(), matches.end());
   }
