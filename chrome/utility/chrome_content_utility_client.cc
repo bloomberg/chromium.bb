@@ -204,7 +204,7 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
   registry->AddInterface<net::interfaces::ProxyResolverFactory>(
       base::Bind(CreateProxyResolverFactory));
   registry->AddInterface(base::Bind(CreateResourceUsageReporter));
-  registry->AddInterface(base::Bind(ProfileImportHandler::Create));
+  registry->AddInterface(base::Bind(&ProfileImportHandler::Create));
 #endif
   registry->AddInterface(
       base::Bind(&safe_json::SafeJsonParserMojoImpl::Create));
