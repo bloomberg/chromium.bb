@@ -396,8 +396,6 @@ source_set("common") {
     "browser/net/aw_url_request_context_getter.h",
     "browser/net/aw_url_request_job_factory.cc",
     "browser/net/aw_url_request_job_factory.h",
-    "browser/net/aw_web_resource_request.cc",
-    "browser/net/aw_web_resource_request.h",
     "browser/net/aw_web_resource_response.h",
     "browser/net/init_native_callback.h",
     "browser/net/input_stream_reader.cc",
