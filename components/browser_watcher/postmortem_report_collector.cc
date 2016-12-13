@@ -100,7 +100,8 @@ PostmortemReportCollector::CollectAndSubmit(
   // Note: the code below involves two notions of report: chrome internal state
   // reports and the crashpad reports they get wrapped into.
 
-  // Collect the data from the debug file to a proto.
+  // Collect the data from the debug file to a proto. Note: a non-empty report
+  // is interpreted here as an unclean exit.
   std::unique_ptr<StabilityReport> report_proto;
   CollectionStatus status = Collect(file, &report_proto);
   if (status != SUCCESS) {
@@ -167,17 +168,23 @@ PostmortemReportCollector::CollectionStatus PostmortemReportCollector::Collect(
     return ANALYZER_CREATION_FAILED;
 
   // Early exit if there is no data.
+  std::vector<std::string> log_messages = global_analyzer->GetLogMessages();
   ThreadActivityAnalyzer* thread_analyzer = global_analyzer->GetFirstAnalyzer();
-  if (!thread_analyzer) {
-    // No data. This case happens in the case of a clean exit.
+  if (log_messages.empty() && !thread_analyzer) {
     return DEBUG_FILE_NO_DATA;
   }
 
-  // Iterate through the thread analyzers, fleshing out the report.
+  // Create the report, then flesh it out.
   report->reset(new StabilityReport());
+
+  // Collect log messages.
+  for (const std::string& message : log_messages) {
+    (*report)->add_log_messages(message);
+  }
+
+  // Collect thread activity data.
   // Note: a single process is instrumented.
   ProcessState* process_state = (*report)->add_process_states();
-
   for (; thread_analyzer != nullptr;
        thread_analyzer = global_analyzer->GetNextAnalyzer()) {
     // Only valid analyzers are expected per contract of GetFirstAnalyzer /

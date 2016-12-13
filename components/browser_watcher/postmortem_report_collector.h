@@ -72,6 +72,9 @@ class PostmortemReportCollector {
   FRIEND_TEST_ALL_PREFIXES(PostmortemReportCollectorTest, CollectRandomFile);
   FRIEND_TEST_ALL_PREFIXES(PostmortemReportCollectorCollectionTest,
                            CollectSuccess);
+  FRIEND_TEST_ALL_PREFIXES(
+      PostmortemReportCollectorCollectionFromGlobalTrackerTest,
+      LogCollection);
 
   // Virtual for unittesting.
   virtual std::vector<base::FilePath> GetDebugStateFilePaths(

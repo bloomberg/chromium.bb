@@ -10,10 +10,12 @@ package browser_watcher;
 
 // The state of the system on which Chrome is running (shutting down, battery
 // level, load, etc.).
+// Next id: 1
 message SystemState {
   // TODO(manzagop): flesh out.
 }
 
+// Next id: 8
 message CodeModule {
   // The base address of this code module as it was loaded by the process.
   optional int64 base_address = 1;
@@ -53,7 +55,7 @@ message CodeModule {
 // Next id: 9
 message Activity {
   enum Type {
-    NONE = 0;
+    UNKNOWN = 0;
     ACT_TASK_RUN = 1;
     ACT_LOCK_ACQUIRE = 2;
     ACT_EVENT_WAIT = 3;
@@ -120,6 +122,7 @@ message ProcessState {
 // A stability report contains information pertaining to the execution of a
 // single logical instance of a "chrome browser". It is comprised of information
 // about the system state and about the chrome browser's processes.
+// Next id: 4
 message StabilityReport {
   optional SystemState system_state = 1;
   // TODO(manzagop): revisit whether a single repeated field should contain all
@@ -128,4 +131,7 @@ message StabilityReport {
   //     times (e.g. start time), hierarchical relationships (e.g. parent pid),
   //     command line, etc.
   repeated ProcessState process_states = 2;
+  // TODO(manzagop): if/when reports contain multiple processes, attribute and
+  //     relocate these to their process (and perhaps thread).
+  repeated string log_messages = 3;
 }

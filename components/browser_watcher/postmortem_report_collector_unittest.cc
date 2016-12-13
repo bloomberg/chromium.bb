@@ -340,6 +340,9 @@ const int kAnotherThreadId = 45;
 
 }  // namespace
 
+// Sets up a file backed thread tracker for direct access. A
+// GlobalActivityTracker is not created, meaning there is no risk of
+// the instrumentation interfering with the file's content.
 class PostmortemReportCollectorCollectionTest : public testing::Test {
  public:
   // Create a proper debug file.
@@ -482,6 +485,57 @@ TEST_F(PostmortemReportCollectorCollectionTest, CollectSuccess) {
     EXPECT_EQ(Activity::ACT_PROCESS_WAIT, activity.type());
     EXPECT_EQ(kProcessId, activity.process_id());
   }
+}
+
+class PostmortemReportCollectorCollectionFromGlobalTrackerTest
+    : public testing::Test {
+ public:
+  const int kMemorySize = 1 << 20;  // 1MiB
+
+  PostmortemReportCollectorCollectionFromGlobalTrackerTest() {}
+  ~PostmortemReportCollectorCollectionFromGlobalTrackerTest() override {
+    GlobalActivityTracker* global_tracker = GlobalActivityTracker::Get();
+    if (global_tracker) {
+      global_tracker->ReleaseTrackerForCurrentThreadForTesting();
+      delete global_tracker;
+    }
+  }
+
+  void SetUp() override {
+    testing::Test::SetUp();
+
+    // Set up a debug file path.
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    debug_file_path_ = temp_dir_.GetPath().AppendASCII("debug.pma");
+  }
+
+  const base::FilePath& debug_file_path() { return debug_file_path_; }
+
+ protected:
+  base::ScopedTempDir temp_dir_;
+  base::FilePath debug_file_path_;
+};
+
+TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
+       LogCollection) {
+  // Record some log messages.
+  GlobalActivityTracker::CreateWithFile(debug_file_path(), kMemorySize, 0ULL,
+                                        "", 3);
+  GlobalActivityTracker::Get()->RecordLogMessage("hello world");
+  GlobalActivityTracker::Get()->RecordLogMessage("foo bar");
+
+  // Collect the stability report.
+  PostmortemReportCollector collector(kProductName, kVersionNumber,
+                                      kChannelName);
+  std::unique_ptr<StabilityReport> report;
+  ASSERT_EQ(PostmortemReportCollector::SUCCESS,
+            collector.Collect(debug_file_path(), &report));
+  ASSERT_NE(nullptr, report);
+
+  // Validate the report's log content.
+  ASSERT_EQ(2, report->log_messages_size());
+  ASSERT_EQ("hello world", report->log_messages(0));
+  ASSERT_EQ("foo bar", report->log_messages(1));
 }
 
 }  // namespace browser_watcher

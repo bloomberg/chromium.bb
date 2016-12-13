@@ -50,7 +50,7 @@ void PrintActivity(FILE* out,
   Indent(out, indent_level + 1);
   fprintf(out, "time: %lld\n", activity.time());
   switch (activity.type()) {
-    case browser_watcher::Activity::NONE:
+    case browser_watcher::Activity::UNKNOWN:
       break;
     case browser_watcher::Activity::ACT_TASK_RUN:
       Indent(out, indent_level + 1);
