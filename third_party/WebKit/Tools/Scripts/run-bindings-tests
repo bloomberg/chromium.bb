@@ -31,15 +31,7 @@ webkit_finder.add_typ_dir_to_sys_path()
 
 import typ
 
-def main(argv):
-    """Runs Blink bindings IDL compiler on test IDL files and compares the
-    results with reference files.
-
-    Please execute the script whenever changes are made to the compiler
-    (this is automatically done as a presubmit script),
-    and submit changes to the test results in the same patch.
-    This makes it easier to track and review changes in generated code.
-    """
+def create_argument_parser():
     argument_parser = typ.ArgumentParser()
     argument_parser.add_argument('--reset-results',
         default=False,
@@ -53,23 +45,38 @@ def main(argv):
         default=False,
         action='store_true',
         help='Skip running reference tests (only run unit tests).')
+    return argument_parser
+
+
+def main(argv):
+    """Runs Blink bindings IDL compiler on test IDL files and compares the
+    results with reference files.
+
+    Please execute the script whenever changes are made to the compiler
+    (this is automatically done as a presubmit script),
+    and submit changes to the test results in the same patch.
+    This makes it easier to track and review changes in generated code.
+    """
+
+    argument_parser = create_argument_parser()
 
     # First, run bindings unit tests.
     runner = typ.Runner()
     runner.parse_args(argument_parser, argv[1:])
-    args = runner.args
     if argument_parser.exit_status is not None:
         return argument_parser.exit_status
-    runner.args.top_level_dir = webkit_finder.get_bindings_scripts_dir()
+
+    args = runner.args
+    args.top_level_dir = webkit_finder.get_bindings_scripts_dir()
     if not args.skip_unit_tests:
         return_code, _, _ = runner.run()
         if return_code != 0:
             return return_code
 
+    # Now run the bindings end-to-end tests.
     if args.skip_reference_tests:
         return 0
 
-    # Now run the bindings end-to-end tests.
     return run_bindings_tests(args.reset_results, args.verbose)
 
 
