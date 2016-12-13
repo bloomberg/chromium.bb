@@ -303,19 +303,6 @@ cvox.TtsBackground.prototype.speakUsingQueue_ = function(utterance, queueMode) {
   // Next, add the new utterance to the queue.
   this.utteranceQueue_.push(utterance);
 
-  // Update the caption panel.
-  if (utterance.properties &&
-      utterance.properties['pitch'] &&
-      utterance.properties['pitch'] < this.ttsProperties['pitch']) {
-    (new PanelCommand(
-        PanelCommandType.ADD_ANNOTATION_SPEECH,
-        utterance.textString)).send();
-  } else {
-    (new PanelCommand(
-        PanelCommandType.ADD_NORMAL_SPEECH,
-        utterance.textString)).send();
-  }
-
   // Now start speaking the next item in the queue.
   this.startSpeakingNextItemInQueue_();
 };
@@ -342,9 +329,10 @@ cvox.TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
   }
 
   this.currentUtterance_ = this.utteranceQueue_.shift();
-  var utteranceId = this.currentUtterance_.id;
+  var utterance = this.currentUtterance_;
+  var utteranceId = utterance.id;
 
-  this.currentUtterance_.properties['onEvent'] = goog.bind(function(event) {
+  utterance.properties['onEvent'] = goog.bind(function(event) {
             this.onTtsEvent_(event, utteranceId);
           },
   this);
@@ -352,13 +340,25 @@ cvox.TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
   var validatedProperties = {};
   for (var i = 0; i < cvox.TtsBackground.ALLOWED_PROPERTIES_.length; i++) {
     var p = cvox.TtsBackground.ALLOWED_PROPERTIES_[i];
-    if (this.currentUtterance_.properties[p]) {
-      validatedProperties[p] = this.currentUtterance_.properties[p];
+    if (utterance.properties[p]) {
+      validatedProperties[p] = utterance.properties[p];
     }
   }
 
-  chrome.tts.speak(this.currentUtterance_.textString,
-                   validatedProperties);
+  // Update the caption panel.
+  if (utterance.properties &&
+      utterance.properties['pitch'] &&
+      utterance.properties['pitch'] < this.ttsProperties['pitch']) {
+    (new PanelCommand(
+        PanelCommandType.ADD_ANNOTATION_SPEECH,
+        utterance.textString)).send();
+  } else {
+    (new PanelCommand(
+        PanelCommandType.ADD_NORMAL_SPEECH,
+        utterance.textString)).send();
+  }
+
+  chrome.tts.speak(utterance.textString, validatedProperties);
 };
 
 /**
