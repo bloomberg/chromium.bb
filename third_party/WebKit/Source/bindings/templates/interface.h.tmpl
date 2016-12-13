@@ -13,7 +13,7 @@ namespace blink {
 {% if has_event_constructor %}
 class Dictionary;
 {% endif %}
-{% if attributes|origin_trial_enabled_attributes %}
+{% if origin_trial_attributes %}
 class ScriptState;
 {% endif %}
 {% if named_constructor %}

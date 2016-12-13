@@ -312,7 +312,7 @@ void crossOriginIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8:
 {##############################################################################}
 {% block install_attributes %}
 {% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
-{% if attributes | has_attribute_configuration %}
+{% if data_attributes %}
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
@@ -320,8 +320,8 @@ void crossOriginIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8:
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
-    {% for attribute in attributes | has_attribute_configuration %}
-    {{attribute_configuration(attribute)}},
+    {% for data_attribute in data_attributes %}
+    {{attribute_configuration(data_attribute)}},
     {% endfor %}
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
@@ -333,7 +333,7 @@ const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
 {##############################################################################}
 {% block install_lazy_data_attributes %}
 {% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
-{% if attributes | has_lazy_data_attribute_configuration %}
+{% if lazy_data_attributes %}
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
@@ -341,8 +341,8 @@ const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 const V8DOMConfiguration::AttributeConfiguration {{v8_class}}LazyDataAttributes[] = {
-    {% for attribute in attributes | has_lazy_data_attribute_configuration %}
-    {{attribute_configuration(attribute)}},
+    {% for data_attribute in lazy_data_attributes %}
+    {{attribute_configuration(data_attribute)}},
     {% endfor %}
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
@@ -354,10 +354,10 @@ const V8DOMConfiguration::AttributeConfiguration {{v8_class}}LazyDataAttributes[
 {##############################################################################}
 {% block install_accessors %}
 {% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
-{% if attributes | has_accessor_configuration %}
+{% if accessors %}
 const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
-    {% for attribute in attributes | has_accessor_configuration %}
-    {{attribute_configuration(attribute)}},
+    {% for accessor in accessors %}
+    {{attribute_configuration(accessor)}},
     {% endfor %}
 };
 
@@ -433,13 +433,13 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% if constants %}
   {{install_constants() | indent(2)}}
   {% endif %}
-  {% if attributes | has_attribute_configuration %}
+  {% if data_attributes %}
   V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, {{'%sAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class}});
   {% endif %}
-  {% if attributes | has_lazy_data_attribute_configuration %}
+  {% if lazy_data_attributes %}
   V8DOMConfiguration::installLazyDataAttributes(isolate, world, instanceTemplate, prototypeTemplate, {{'%sLazyDataAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sLazyDataAttributes)' % v8_class}});
   {% endif %}
-  {% if attributes | has_accessor_configuration %}
+  {% if accessors %}
   V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sAccessors' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class}});
   {% endif %}
   {% if methods | has_method_configuration(is_partial) %}
@@ -456,7 +456,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   instanceTemplate->SetAccessCheckCallbackAndHandler({{cpp_class}}V8Internal::securityCheck, v8::NamedPropertyHandlerConfiguration({{cross_origin_named_getter}}, {{cross_origin_named_setter}}, nullptr, nullptr, {{cross_origin_named_enumerator}}), v8::IndexedPropertyHandlerConfiguration({{cross_origin_indexed_getter}}), v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
   {% endif %}
 
-  {% for group in attributes | purely_runtime_enabled_attributes | groupby('runtime_feature_name') %}
+  {% for group in runtime_enabled_attributes | groupby('runtime_feature_name') %}
   if ({{group.list[0].runtime_enabled_function}}()) {
     {% for attribute in group.list | unique_by('name') | sort %}
     {% if attribute.is_data_type_property %}
