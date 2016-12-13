@@ -4,6 +4,7 @@
 
 #include "modules/installedapp/InstalledAppController.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -32,7 +33,7 @@ InstalledAppController* InstalledAppController::from(LocalFrame& frame) {
 
 InstalledAppController::InstalledAppController(LocalFrame& frame,
                                                WebInstalledAppClient* client)
-    : DOMWindowProperty(&frame), m_client(client) {}
+    : ContextLifecycleObserver(frame.document()), m_client(client) {}
 
 const char* InstalledAppController::supplementName() {
   return "InstalledAppController";
@@ -51,14 +52,13 @@ void InstalledAppController::getInstalledApps(
   m_client->getInstalledRelatedApps(url, std::move(callback));
 }
 
-void InstalledAppController::frameDestroyed() {
+void InstalledAppController::contextDestroyed() {
   m_client = nullptr;
-  DOMWindowProperty::frameDestroyed();
 }
 
 DEFINE_TRACE(InstalledAppController) {
   Supplement<LocalFrame>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

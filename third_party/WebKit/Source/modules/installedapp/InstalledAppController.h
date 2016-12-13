@@ -5,7 +5,7 @@
 #ifndef InstalledAppController_h
 #define InstalledAppController_h
 
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
@@ -18,7 +18,7 @@ class WebSecurityOrigin;
 class MODULES_EXPORT InstalledAppController final
     : public GarbageCollectedFinalized<InstalledAppController>,
       public Supplement<LocalFrame>,
-      public DOMWindowProperty {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(InstalledAppController);
   WTF_MAKE_NONCOPYABLE(InstalledAppController);
 
@@ -37,8 +37,8 @@ class MODULES_EXPORT InstalledAppController final
  private:
   InstalledAppController(LocalFrame&, WebInstalledAppClient*);
 
-  // Inherited from DOMWindowProperty.
-  void frameDestroyed() override;
+  // Inherited from ContextLifecycleObserver.
+  void contextDestroyed() override;
 
   WebInstalledAppClient* m_client;
 };
