@@ -430,7 +430,7 @@ typedef enum {
 #if CONFIG_EXT_PARTITION
 #define REF_CAT_LEVEL 640
 #else
-#define REF_CAT_LEVEL 160
+#define REF_CAT_LEVEL 255
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_REF_MV
 
