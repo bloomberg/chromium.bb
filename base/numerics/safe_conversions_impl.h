@@ -54,7 +54,7 @@ constexpr T BinaryComplement(T x) {
 template <typename T>
 constexpr T SafeUnsignedAbsImpl(T value, T sign_mask) {
   static_assert(!std::is_signed<T>::value, "Types must be unsigned.");
-  return (value + sign_mask) ^ sign_mask;
+  return (value ^ sign_mask) - sign_mask;
 }
 
 template <typename T,
