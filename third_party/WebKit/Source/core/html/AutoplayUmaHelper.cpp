@@ -97,6 +97,11 @@ void AutoplayUmaHelper::onAutoplayInitiated(AutoplaySource source) {
 
 void AutoplayUmaHelper::recordCrossOriginAutoplayResult(
     CrossOriginAutoplayResult result) {
+  DEFINE_STATIC_LOCAL(
+      EnumerationHistogram, autoplayResultHistogram,
+      ("Media.Autoplay.CrossOrigin.Result",
+       static_cast<int>(CrossOriginAutoplayResult::NumberOfResults)));
+
   if (!m_element->isHTMLVideoElement())
     return;
   if (!m_element->isInCrossOriginFrame())
@@ -117,6 +122,7 @@ void AutoplayUmaHelper::recordCrossOriginAutoplayResult(
       Platform::current()->recordRapporURL(
           "Media.Autoplay.CrossOrigin.Allowed.TopLevelFrame",
           m_element->document().topDocument().url());
+      autoplayResultHistogram.count(static_cast<int>(result));
       m_recordedCrossOriginAutoplayResults.insert(result);
       break;
     case CrossOriginAutoplayResult::AutoplayBlocked:
@@ -126,6 +132,7 @@ void AutoplayUmaHelper::recordCrossOriginAutoplayResult(
       Platform::current()->recordRapporURL(
           "Media.Autoplay.CrossOrigin.Blocked.TopLevelFrame",
           m_element->document().topDocument().url());
+      autoplayResultHistogram.count(static_cast<int>(result));
       m_recordedCrossOriginAutoplayResults.insert(result);
       break;
     case CrossOriginAutoplayResult::PlayedWithGesture:
@@ -143,6 +150,22 @@ void AutoplayUmaHelper::recordCrossOriginAutoplayResult(
           "Media.Autoplay.CrossOrigin.PlayedWithGestureAfterBlock."
           "TopLevelFrame",
           m_element->document().topDocument().url());
+      autoplayResultHistogram.count(static_cast<int>(result));
+      m_recordedCrossOriginAutoplayResults.insert(result);
+      break;
+    case CrossOriginAutoplayResult::UserPaused:
+      if (!shouldRecordUserPausedAutoplayingCrossOriginVideo())
+        return;
+      if (m_element->ended() || m_element->seeking())
+        return;
+      Platform::current()->recordRapporURL(
+          "Media.Autoplay.CrossOrigin.UserPausedAutoplayingVideo.ChildFrame",
+          m_element->document().url());
+      Platform::current()->recordRapporURL(
+          "Media.Autoplay.CrossOrigin.UserPausedAutoplayingVideo."
+          "TopLevelFrame",
+          m_element->document().topDocument().url());
+      autoplayResultHistogram.count(static_cast<int>(result));
       m_recordedCrossOriginAutoplayResults.insert(result);
       break;
     default:
@@ -305,21 +328,7 @@ void AutoplayUmaHelper::maybeStopRecordingMutedVideoOffscreenDuration() {
 }
 
 void AutoplayUmaHelper::maybeRecordUserPausedAutoplayingCrossOriginVideo() {
-  if (!shouldRecordUserPausedAutoplayingCrossOriginVideo())
-    return;
-
-  if (m_element->ended() || m_element->seeking())
-    return;
-
-  Platform::current()->recordRapporURL(
-      "Media.Autoplay.CrossOrigin.UserPausedAutoplayingVideo.ChildFrame",
-      m_element->document().url());
-  Platform::current()->recordRapporURL(
-      "Media.Autoplay.CrossOrigin.UserPausedAutoplayingVideo."
-      "TopLevelFrame",
-      m_element->document().topDocument().url());
-
-  m_hasRecordedUserPausedAutoplayingCrossOriginVideo = true;
+  recordCrossOriginAutoplayResult(CrossOriginAutoplayResult::UserPaused);
   maybeUnregisterMediaElementPauseListener();
 }
 
@@ -346,7 +355,8 @@ bool AutoplayUmaHelper::shouldRecordUserPausedAutoplayingCrossOriginVideo()
     const {
   return m_element->isInCrossOriginFrame() && m_element->isHTMLVideoElement() &&
          m_source != AutoplaySource::NumberOfSources &&
-         !m_hasRecordedUserPausedAutoplayingCrossOriginVideo;
+         !m_recordedCrossOriginAutoplayResults.count(
+             CrossOriginAutoplayResult::UserPaused);
 }
 
 DEFINE_TRACE(AutoplayUmaHelper) {

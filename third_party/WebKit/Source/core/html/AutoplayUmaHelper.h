@@ -41,9 +41,12 @@ enum AutoplayBlockedReason {
 };
 
 enum class CrossOriginAutoplayResult {
-  AutoplayAllowed,
-  AutoplayBlocked,
-  PlayedWithGesture,
+  AutoplayAllowed = 0,
+  AutoplayBlocked = 1,
+  PlayedWithGesture = 2,
+  UserPaused = 3,
+  // Keep at the end.
+  NumberOfResults = 4,
 };
 
 class Document;
@@ -129,9 +132,6 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   bool m_isVisible;
 
   std::set<CrossOriginAutoplayResult> m_recordedCrossOriginAutoplayResults;
-
-  // Whether the UMA helper has recorded user pausing a cross-origin video.
-  bool m_hasRecordedUserPausedAutoplayingCrossOriginVideo;
 
   // The observer is used to observer an autoplaying muted video changing it's
   // visibility, which is used for offscreen duration UMA.  The UMA is pending
