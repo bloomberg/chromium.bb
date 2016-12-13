@@ -4279,15 +4279,6 @@ interface SVGComponentTransferFunctionElement : SVGElement
     getter tableValues
     getter type
     method constructor
-interface SVGCursorElement : SVGElement
-    attribute @@toStringTag
-    getter href
-    getter requiredExtensions
-    getter requiredFeatures
-    getter systemLanguage
-    getter x
-    getter y
-    method constructor
 interface SVGDefsElement : SVGGraphicsElement
     attribute @@toStringTag
     method constructor

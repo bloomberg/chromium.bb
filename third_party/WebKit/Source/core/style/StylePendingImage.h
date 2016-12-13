@@ -26,7 +26,6 @@
 #ifndef StylePendingImage_h
 #define StylePendingImage_h
 
-#include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
@@ -66,10 +65,6 @@ class StylePendingImage final : public StyleImage {
     return m_value->isImageGeneratorValue()
                ? toCSSImageGeneratorValue(m_value.get())
                : 0;
-  }
-  CSSCursorImageValue* cssCursorImageValue() const {
-    return m_value->isCursorImageValue() ? toCSSCursorImageValue(m_value.get())
-                                         : 0;
   }
   CSSImageSetValue* cssImageSetValue() const {
     return m_value->isImageSetValue() ? toCSSImageSetValue(m_value.get()) : 0;

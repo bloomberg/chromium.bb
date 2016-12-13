@@ -34,7 +34,6 @@
 
 namespace blink {
 
-class CSSCursorImageValue;
 class CSSImageGeneratorValue;
 class CSSImageSetValue;
 class CSSImageValue;
@@ -63,8 +62,6 @@ class ElementStyleResources {
   void loadPendingResources(ComputedStyle*);
 
  private:
-  StyleImage* cursorOrPendingFromValue(CSSPropertyID,
-                                       const CSSCursorImageValue&);
   StyleImage* generatedOrPendingFromValue(CSSPropertyID,
                                           const CSSImageGeneratorValue&);
 

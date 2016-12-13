@@ -28,7 +28,7 @@ PASS SVGCircleElement inherits SVGGeometryElement
 FAIL SVGClipPathElement should inherit SVGElement but got SVGGraphicsElement instead
 FAIL SVGColorProfileElement is not defined
 FAIL SVGColorProfileRule is not defined
-PASS SVGCursorElement inherits SVGElement
+FAIL SVGCursorElement is not defined
 PASS SVGDefsElement inherits SVGGraphicsElement
 PASS SVGDescElement inherits SVGElement
 PASS SVGElement inherits Element

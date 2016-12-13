@@ -3332,19 +3332,19 @@ FAIL SVGHatchpathElement interface object length assert_own_property: self does 
 FAIL SVGHatchpathElement interface object name assert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
 FAIL SVGHatchpathElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
 FAIL SVGHatchpathElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
-PASS SVGCursorElement interface: existence and properties of interface object 
-PASS SVGCursorElement interface object length 
-PASS SVGCursorElement interface object name 
-FAIL SVGCursorElement interface: existence and properties of interface prototype object assert_equals: class string of SVGCursorElement.prototype expected "[object SVGCursorElementPrototype]" but got "[object SVGCursorElement]"
-PASS SVGCursorElement interface: existence and properties of interface prototype object's "constructor" property 
-PASS SVGCursorElement interface: attribute x 
-PASS SVGCursorElement interface: attribute y 
-PASS SVGCursorElement interface: attribute href 
-PASS SVGCursorElement must be primary interface of cursor 
-PASS Stringification of cursor 
-PASS SVGCursorElement interface: cursor must inherit property "x" with the proper type (0) 
-PASS SVGCursorElement interface: cursor must inherit property "y" with the proper type (1) 
-PASS SVGCursorElement interface: cursor must inherit property "href" with the proper type (2) 
+FAIL SVGCursorElement interface: existence and properties of interface object assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface object length assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface object name assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface: attribute x assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface: attribute y assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface: attribute href assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement must be primary interface of cursor assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL Stringification of cursor assert_equals: class string of cursor expected "[object SVGCursorElement]" but got "[object SVGElement]"
+FAIL SVGCursorElement interface: cursor must inherit property "x" with the proper type (0) assert_inherits: property "x" not found in prototype chain
+FAIL SVGCursorElement interface: cursor must inherit property "y" with the proper type (1) assert_inherits: property "y" not found in prototype chain
+FAIL SVGCursorElement interface: cursor must inherit property "href" with the proper type (2) assert_inherits: property "href" not found in prototype chain
 PASS SVGElement interface: cursor must inherit property "className" with the proper type (0) 
 PASS SVGElement interface: cursor must inherit property "dataset" with the proper type (1) 
 PASS SVGElement interface: cursor must inherit property "ownerSVGElement" with the proper type (2) 

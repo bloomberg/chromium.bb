@@ -96,7 +96,7 @@ PASS SVGFEOffsetElement.toString() is 'function SVGFEOffsetElement() { [native c
 PASS SVGFESpecularLightingElement.toString() is 'function SVGFESpecularLightingElement() { [native code] }'
 PASS SVGFETileElement.toString() is 'function SVGFETileElement() { [native code] }'
 PASS SVGFETurbulenceElement.toString() is 'function SVGFETurbulenceElement() { [native code] }'
-PASS SVGCursorElement.toString() is 'function SVGCursorElement() { [native code] }'
+FAIL SVGCursorElement.toString() should be function SVGCursorElement() { [native code] }. Threw exception ReferenceError: SVGCursorElement is not defined
 PASS SVGAElement.toString() is 'function SVGAElement() { [native code] }'
 PASS SVGViewElement.toString() is 'function SVGViewElement() { [native code] }'
 PASS SVGScriptElement.toString() is 'function SVGScriptElement() { [native code] }'

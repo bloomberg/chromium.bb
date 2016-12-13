@@ -34,7 +34,6 @@
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/SVGInterpolationTypesMap.h"
-#include "core/css/CSSCursorImageValue.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
@@ -44,7 +43,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
-#include "core/svg/SVGCursorElement.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElementRareData.h"
 #include "core/svg/SVGGraphicsElement.h"
@@ -638,21 +636,6 @@ const HeapHashSet<WeakMember<SVGElement>>& SVGElement::instancesForElement()
   if (!hasSVGRareData())
     return emptyInstances();
   return svgRareData()->elementInstances();
-}
-
-void SVGElement::setCursorElement(SVGCursorElement* cursorElement) {
-  SVGElementRareData* rareData = ensureSVGRareData();
-  if (SVGCursorElement* oldCursorElement = rareData->cursorElement()) {
-    if (cursorElement == oldCursorElement)
-      return;
-    oldCursorElement->removeReferencedElement(this);
-  }
-  rareData->setCursorElement(cursorElement);
-}
-
-void SVGElement::setCursorImageValue(
-    const CSSCursorImageValue* cursorImageValue) {
-  ensureSVGRareData()->setCursorImageValue(cursorImageValue);
 }
 
 SVGElement* SVGElement::correspondingElement() const {

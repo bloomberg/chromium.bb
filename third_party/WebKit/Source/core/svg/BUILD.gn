@@ -55,8 +55,6 @@ blink_core_sources("svg") {
     "SVGClipPathElement.h",
     "SVGComponentTransferFunctionElement.cpp",
     "SVGComponentTransferFunctionElement.h",
-    "SVGCursorElement.cpp",
-    "SVGCursorElement.h",
     "SVGDefsElement.cpp",
     "SVGDefsElement.h",
     "SVGDescElement.cpp",

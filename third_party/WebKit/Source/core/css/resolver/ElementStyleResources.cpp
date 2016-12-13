@@ -24,7 +24,6 @@
 #include "core/css/resolver/ElementStyleResources.h"
 
 #include "core/CSSPropertyNames.h"
-#include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSURIValue.h"
@@ -61,9 +60,6 @@ StyleImage* ElementStyleResources::styleImage(CSSPropertyID property,
   if (value.isImageSetValue())
     return setOrPendingFromValue(property, toCSSImageSetValue(value));
 
-  if (value.isCursorImageValue())
-    return cursorOrPendingFromValue(property, toCSSCursorImageValue(value));
-
   return nullptr;
 }
 
@@ -96,16 +92,6 @@ StyleImage* ElementStyleResources::cachedOrPendingFromValue(
   }
   value.restoreCachedResourceIfNeeded(*m_document);
   return value.cachedImage();
-}
-
-StyleImage* ElementStyleResources::cursorOrPendingFromValue(
-    CSSPropertyID property,
-    const CSSCursorImageValue& value) {
-  if (value.isCachePending(m_deviceScaleFactor)) {
-    m_pendingImageProperties.add(property);
-    return StylePendingImage::create(value);
-  }
-  return value.cachedImage(m_deviceScaleFactor);
 }
 
 SVGElementProxy& ElementStyleResources::cachedOrPendingFromValue(
@@ -146,10 +132,6 @@ StyleImage* ElementStyleResources::loadPendingImage(
     imageGeneratorValue->loadSubimages(*m_document);
     return StyleGeneratedImage::create(*imageGeneratorValue);
   }
-
-  if (CSSCursorImageValue* cursorImageValue =
-          pendingImage->cssCursorImageValue())
-    return cursorImageValue->cacheImage(*m_document, m_deviceScaleFactor);
 
   if (CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue())
     return imageSetValue->cacheImage(*m_document, m_deviceScaleFactor,

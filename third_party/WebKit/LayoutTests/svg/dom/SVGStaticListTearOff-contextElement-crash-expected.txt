@@ -1,4 +1,4 @@
-PASS cursorObservation.wasCollected is false
+PASS maskObservation.wasCollected is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

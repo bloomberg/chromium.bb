@@ -21,18 +21,14 @@
 #ifndef CSSCursorImageValue_h
 #define CSSCursorImageValue_h
 
-#include "core/css/CSSImageValue.h"
-#include "core/svg/SVGCursorElement.h"
+#include "core/css/CSSValue.h"
 #include "platform/geometry/IntPoint.h"
-#include "wtf/HashSet.h"
 
 namespace blink {
 
-class Element;
-
 class CSSCursorImageValue : public CSSValue {
  public:
-  static const CSSCursorImageValue* create(CSSValue* imageValue,
+  static const CSSCursorImageValue* create(const CSSValue& imageValue,
                                            bool hotSpotSpecified,
                                            const IntPoint& hotSpot) {
     return new CSSCursorImageValue(imageValue, hotSpotSpecified, hotSpot);
@@ -41,36 +37,23 @@ class CSSCursorImageValue : public CSSValue {
   ~CSSCursorImageValue();
 
   bool hotSpotSpecified() const { return m_hotSpotSpecified; }
-
-  IntPoint hotSpot() const { return m_hotSpot; }
+  const IntPoint& hotSpot() const { return m_hotSpot; }
+  const CSSValue& imageValue() const { return *m_imageValue; }
 
   String customCSSText() const;
-
-  SVGCursorElement* getSVGCursorElement(Element*) const;
-
-  void clearImageResource() const;
-  bool isCachePending(float deviceScaleFactor) const;
-  String cachedImageURL() const;
-  StyleImage* cachedImage(float deviceScaleFactor) const;
-  StyleImage* cacheImage(const Document&, float deviceScaleFactor);
 
   bool equals(const CSSCursorImageValue&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  CSSCursorImageValue(CSSValue* imageValue,
+  CSSCursorImageValue(const CSSValue& imageValue,
                       bool hotSpotSpecified,
                       const IntPoint& hotSpot);
 
-  bool hasFragmentInURL() const;
-
-  Member<CSSValue> m_imageValue;
-
-  bool m_hotSpotSpecified;
+  Member<const CSSValue> m_imageValue;
   IntPoint m_hotSpot;
-  mutable bool m_isCachePending;
-  mutable Member<StyleImage> m_cachedImage;
+  bool m_hotSpotSpecified;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCursorImageValue, isCursorImageValue());

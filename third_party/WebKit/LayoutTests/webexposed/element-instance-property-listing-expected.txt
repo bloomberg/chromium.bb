@@ -1393,7 +1393,6 @@ svg element animateMotion
 svg element animateTransform
 svg element circle
 svg element clipPath
-svg element cursor
 svg element defs
 svg element desc
 svg element discard

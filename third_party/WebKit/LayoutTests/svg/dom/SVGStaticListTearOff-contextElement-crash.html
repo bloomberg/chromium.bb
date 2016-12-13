@@ -5,16 +5,16 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
-var cursor = document.createElementNS("http://www.w3.org/2000/svg", "cursor");
-var cursorObservation = internals.observeGC(cursor);
-var staticList = cursor.requiredExtensions;
-cursor = null;
+var mask = document.createElementNS("http://www.w3.org/2000/svg", "mask");
+var maskObservation = internals.observeGC(mask);
+var staticList = mask.requiredExtensions;
+mask = null;
 gc();
 
 staticList.clear(); // This should not cause crash in ASAN.
 
-// cursor should be kept alive from "staticList"
-shouldBeFalse('cursorObservation.wasCollected');
+// mask should be kept alive from "staticList"
+shouldBeFalse('maskObservation.wasCollected');
 </script>
 This test passes if it doesn't crash in ASAN.
 </body>

@@ -313,7 +313,6 @@ core_idl_files = get_path_info([
                                  "svg/SVGCircleElement.idl",
                                  "svg/SVGClipPathElement.idl",
                                  "svg/SVGComponentTransferFunctionElement.idl",
-                                 "svg/SVGCursorElement.idl",
                                  "svg/SVGDefsElement.idl",
                                  "svg/SVGDescElement.idl",
                                  "svg/SVGDiscardElement.idl",

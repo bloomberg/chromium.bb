@@ -2274,11 +2274,12 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       CursorList* cursors = style.cursors();
       if (cursors && cursors->size() > 0) {
         list = CSSValueList::createCommaSeparated();
-        for (unsigned i = 0; i < cursors->size(); ++i) {
-          if (StyleImage* image = cursors->at(i).image())
+        for (const CursorData& cursor : *cursors) {
+          if (StyleImage* image = cursor.image()) {
             list->append(*CSSCursorImageValue::create(
-                image->computedCSSValue(), cursors->at(i).hotSpotSpecified(),
-                cursors->at(i).hotSpot()));
+                *image->computedCSSValue(), cursor.hotSpotSpecified(),
+                cursor.hotSpot()));
+          }
         }
       }
       CSSValue* value = CSSIdentifierValue::create(style.cursor());

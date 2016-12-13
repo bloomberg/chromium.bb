@@ -12,7 +12,6 @@ animateTransform runtimeEnabled=smil
 set runtimeEnabled=smil
 circle
 clipPath
-cursor
 defs
 desc
 discard runtimeEnabled=smil

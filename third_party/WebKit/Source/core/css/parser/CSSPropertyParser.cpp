@@ -2119,7 +2119,7 @@ static CSSValue* consumeCursor(CSSParserTokenRange& range,
       list = CSSValueList::createCommaSeparated();
 
     list->append(
-        *CSSCursorImageValue::create(image, hotSpotSpecified, hotSpot));
+        *CSSCursorImageValue::create(*image, hotSpotSpecified, hotSpot));
     if (!consumeCommaIncludingWhitespace(range))
       return nullptr;
   }

@@ -34,12 +34,10 @@
 namespace blink {
 
 class AffineTransform;
-class CSSCursorImageValue;
 class Document;
 class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGAnimatedString;
-class SVGCursorElement;
 class SVGElement;
 class SVGElementProxySet;
 class SVGElementRareData;
@@ -138,9 +136,6 @@ class CORE_EXPORT SVGElement : public Element {
   const HeapHashSet<WeakMember<SVGElement>>& instancesForElement() const;
   void mapInstanceToElement(SVGElement*);
   void removeInstanceMapping(SVGElement*);
-
-  void setCursorElement(SVGCursorElement*);
-  void setCursorImageValue(const CSSCursorImageValue*);
 
   SVGElement* correspondingElement() const;
   void setCorrespondingElement(SVGElement*);
