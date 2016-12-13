@@ -59,9 +59,19 @@ const base::Feature kMetricsReportingFeature{"MetricsReporting",
 // Posts |GoogleUpdateSettings::StoreMetricsClientInfo| on blocking pool thread
 // because it needs access to IO and cannot work from UI thread.
 void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
-  content::BrowserThread::GetBlockingPool()->PostTask(
-      FROM_HERE,
-      base::Bind(&GoogleUpdateSettings::StoreMetricsClientInfo, client_info));
+  // The message loop processes messages after the blocking pool is initialized.
+  // Posting a task to the message loop to post a task to the blocking pool
+  // ensures that the blocking pool is ready to accept tasks at that time.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          [](const metrics::ClientInfo& client_info) {
+            content::BrowserThread::PostBlockingPoolTask(
+                FROM_HERE,
+                base::Bind(&GoogleUpdateSettings::StoreMetricsClientInfo,
+                           client_info));
+          },
+          client_info));
 }
 
 // Appends a group to the sampling controlling |trial|. The group will be
