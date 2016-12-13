@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+
+<!-- Measures the delay between two successive zero-delay timeouts. -->
+<script>
+addEventListener('message', (e) => {
+  setTimeout(() => {
+    let start = performance.now();
+    setTimeout(() => {
+      let end = performance.now();
+      e.source.postMessage(end - start, e.origin);
+    }, 0);
+  }, 0);
+});
+</script>

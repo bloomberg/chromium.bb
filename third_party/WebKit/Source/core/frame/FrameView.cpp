@@ -4581,6 +4581,11 @@ void FrameView::updateRenderThrottlingStatus(bool hidden,
       hasHandlers)
     scrollingCoordinator->touchEventTargetRectsDidChange();
 
+  if (m_frame->frameScheduler()) {
+    m_frame->frameScheduler()->setFrameVisible(!m_hiddenForThrottling);
+    m_frame->frameScheduler()->setCrossOrigin(m_frame->isCrossOriginSubframe());
+  }
+
 #if DCHECK_IS_ON()
   // Make sure we never have an unthrottled frame inside a throttled one.
   FrameView* parent = parentFrameView();

@@ -51,6 +51,9 @@ function with_iframe(url, options) {
   return new Promise(function(resolve) {
       var frame = document.createElement('iframe');
       frame.src = url;
+      // Make sure the iframe stays in the viewport even if the test creates
+      // many of them. Otherwise some iframes may end up being throttled.
+      frame.style.position = 'absolute';
       frame.onload = function() { resolve(frame); };
       document.body.appendChild(frame);
       if (typeof options === 'undefined')
