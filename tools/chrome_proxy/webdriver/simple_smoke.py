@@ -16,11 +16,9 @@ class SimpleSmoke(unittest.TestCase):
   def testCheckPageWithProxy(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
-      t.SetURL('http://check.googlezip.net/test.html')
-      t.LoadPage()
+      t.LoadURL('http://check.googlezip.net/test.html')
       print 'Document Title: ', t.ExecuteJavascriptStatement('document.title',
         timeout=1)
-      time.sleep(5)
       responses = t.GetHTTPResponses()
       for response in responses:
         print "URL: %s, ViaHeader: %s, XHR: %s" % (response.url,
@@ -30,10 +28,17 @@ class SimpleSmoke(unittest.TestCase):
   def testPingbackHistogram(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
-      t.SetURL('http://check.googlezip.net/test.html')
-      t.LoadPage()
-      t.LoadPage()
+      t.LoadURL('http://check.googlezip.net/test.html')
+      t.LoadURL('http://check.googlezip.net/test.html')
       print t.GetHistogram('DataReductionProxy.Pingback.Attempted')
+
+  # Show how to use WaitForJavascriptExpression
+  def testHTML5(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.LoadURL('http://html5test.com/')
+      t.WaitForJavascriptExpression(
+        'document.getElementsByClassName("pointsPanel")', 15)
 
 if __name__ == '__main__':
   # The unittest library uses sys.argv itself and is easily confused by our

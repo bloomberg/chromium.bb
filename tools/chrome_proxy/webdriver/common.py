@@ -199,21 +199,15 @@ class TestDriver:
       'chrome.benchmarking.clearPredictorCache();chrome.benchmarking.'
       'clearHostResolverCache();}')
 
-  def SetURL(self, url):
-    """Sets the URL that the browser will navigate to during the test.
-
-    Args:
-      url: The string URL to navigate to
-    """
-    self._url = url
-
-  def LoadPage(self, timeout=30):
+  def LoadURL(self, url, timeout=30):
     """Starts Chromium with any arguments previously given and navigates to the
     given URL.
 
     Args:
-      timeout: Page load timeout in seconds.
+      url: The URL to navigate to.
+      timeout: The time in seconds to load the page before timing out.
     """
+    self._url = url
     if not self._driver:
       self._StartDriver()
     self._driver.set_page_load_timeout(timeout)
@@ -259,6 +253,29 @@ class TestDriver:
     js_query = 'statsCollectionController.getBrowserHistogram("%s")' % histogram
     string_response = self.ExecuteJavascriptStatement(js_query)
     return json.loads(string_response)
+
+  def WaitForJavascriptExpression(self, expression, timeout, min_poll=0.1,
+      max_poll=1):
+    """Waits for the given Javascript expression to evaluate to True within the
+    given timeout. This method polls the Javascript expression within the range
+    of |min_poll| and |max_poll|.
+
+    Args:
+      expression: The Javascript expression to poll, as a string.
+      min_poll: The most frequently to poll as a float.
+      max_poll: The least frequently to poll as a float.
+    Returns: The result of the expression.
+    """
+    poll_interval = max(min(max_poll, float(timeout) / 10.0), min_poll)
+    result = self.ExecuteJavascriptStatement(expression)
+    total_waited_time = 0
+    while not result and total_waited_time < timeout:
+      time.sleep(poll_interval)
+      total_waited_time += poll_interval
+      result = self.ExecuteJavascriptStatement(expression)
+    if not result:
+      raise Exception('%s not true after %f seconds' % (expression, timeout))
+    return result
 
   def GetPerformanceLogs(self, method_filter=r'Network\.responseReceived'):
     """Returns all logged Performance events from Chrome.
