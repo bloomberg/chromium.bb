@@ -213,8 +213,14 @@ void RecordContentSuggestionsUsage() {
 
   base::Time::Exploded now_exploded;
   base::Time::Now().LocalExplode(&now_exploded);
-  size_t bucket =
-      (now_exploded.hour * 60 + now_exploded.minute) / kBucketSizeMins;
+  int bucket = (now_exploded.hour * 60 + now_exploded.minute) / kBucketSizeMins;
+
+  const char* kWeekdayNames[] = {"Sunday",   "Monday", "Tuesday", "Wednesday",
+                                 "Thursday", "Friday", "Saturday"};
+  std::string histogram_name(
+      base::StringPrintf("%s.%s", kHistogramArticlesUsageTimeLocal,
+                         kWeekdayNames[now_exploded.day_of_week]));
+  UmaHistogramEnumeration(histogram_name, bucket, kNumBuckets);
 
   UMA_HISTOGRAM_ENUMERATION(kHistogramArticlesUsageTimeLocal, bucket,
                             kNumBuckets);
