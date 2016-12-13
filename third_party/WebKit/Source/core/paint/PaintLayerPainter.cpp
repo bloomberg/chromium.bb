@@ -390,14 +390,9 @@ PaintResult PaintLayerPainter::paintLayerContents(
   }
 
   Optional<CompositingRecorder> compositingRecorder;
-  // Blending operations must be performed only with the nearest ancestor
-  // stacking context.  Note that there is no need to composite if we're
-  // painting the root.
   // FIXME: this should be unified further into
   // PaintLayer::paintsWithTransparency().
   bool shouldCompositeForBlendMode =
-      (!m_paintLayer.layoutObject()->isDocumentElement() ||
-       m_paintLayer.layoutObject()->isSVGRoot()) &&
       m_paintLayer.stackingNode()->isStackingContext() &&
       m_paintLayer.hasNonIsolatedDescendantWithBlendMode();
   if (shouldCompositeForBlendMode ||
