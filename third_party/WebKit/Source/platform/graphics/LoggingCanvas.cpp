@@ -495,17 +495,17 @@ std::unique_ptr<JSONArray> arrayForSkScalars(size_t n,
 
 String clipOpName(SkClipOp op) {
   switch (op) {
-    case kDifference_SkClipOp:
+    case SkClipOp::kDifference:
       return "kDifference_Op";
-    case kIntersect_SkClipOp:
+    case SkClipOp::kIntersect:
       return "kIntersect_Op";
-    case kUnion_SkClipOp:
+    case SkClipOp::kUnion:
       return "kUnion_Op";
-    case kXOR_SkClipOp:
+    case SkClipOp::kXOR:
       return "kXOR_Op";
-    case kReverseDifference_SkClipOp:
+    case SkClipOp::kReverseDifference:
       return "kReverseDifference_Op";
-    case kReplace_SkClipOp:
+    case SkClipOp::kReplace:
       return "kReplace_Op";
     default:
       return "Unknown type";

@@ -209,7 +209,7 @@ void ColorPicker::UpdateCursor() {
   SkPath clip_path;
   clip_path.addOval(SkRect::MakeXYWH(padding, padding, kDiameter, kDiameter));
   clip_path.close();
-  canvas.clipPath(clip_path, kIntersect_SkClipOp, true);
+  canvas.clipPath(clip_path, SkClipOp::kIntersect, true);
 
   // Project pixels.
   int pixel_count = kDiameter / kPixelSize;

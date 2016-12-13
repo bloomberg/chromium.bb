@@ -418,7 +418,7 @@ class ShadowNineboxSource : public CanvasImageSource {
                                          corner_radius_, corner_radius_);
 
     // Clip out the center so it's not painted with the shadow.
-    canvas->sk_canvas()->clipRRect(r_rect, kDifference_SkClipOp, true);
+    canvas->sk_canvas()->clipRRect(r_rect, SkClipOp::kDifference, true);
     // Clipping alone is not enough --- due to anti aliasing there will still be
     // some of the fill color in the rounded corners. We must make the fill
     // color transparent.

@@ -196,7 +196,7 @@ void Canvas::ClipRect(const RectF& rect, SkClipOp op) {
 }
 
 void Canvas::ClipPath(const SkPath& path, bool do_anti_alias) {
-  canvas_->clipPath(path, kIntersect_SkClipOp, do_anti_alias);
+  canvas_->clipPath(path, SkClipOp::kIntersect, do_anti_alias);
 }
 
 bool Canvas::IsClipEmpty() const {

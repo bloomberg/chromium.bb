@@ -346,7 +346,7 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
     SkAutoCanvasRestore auto_restore(canvas, true);
     SkRect image_data_rect =
         gfx::RectToSkRect(gfx::Rect(plugin_rect.origin(), image_size));
-    canvas->clipRect(image_data_rect, kDifference_SkClipOp);
+    canvas->clipRect(image_data_rect, SkClipOp::kDifference);
 
     SkPaint paint;
     paint.setBlendMode(SkBlendMode::kSrc);

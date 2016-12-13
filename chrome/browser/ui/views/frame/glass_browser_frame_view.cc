@@ -653,7 +653,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
   gfx::Rect tabstrip_bounds(GetBoundsForTabStrip(browser_view()->tabstrip()));
   tabstrip_bounds.set_x(GetMirroredXForRect(tabstrip_bounds));
   canvas->sk_canvas()->clipRect(gfx::RectToSkRect(tabstrip_bounds),
-                                kDifference_SkClipOp);
+                                SkClipOp::kDifference);
   separator_rect.set_y(tabstrip_bounds.bottom());
   BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
                                       separator_rect, true);

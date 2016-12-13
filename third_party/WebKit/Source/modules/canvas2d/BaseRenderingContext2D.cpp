@@ -739,7 +739,7 @@ void BaseRenderingContext2D::clipInternal(const Path& path,
   SkPath skPath = path.getSkPath();
   skPath.setFillType(parseWinding(windingRuleString));
   modifiableState().clipPath(skPath, m_clipAntialiasing);
-  c->clipPath(skPath, kIntersect_SkClipOp, m_clipAntialiasing == AntiAliased);
+  c->clipPath(skPath, SkClipOp::kIntersect, m_clipAntialiasing == AntiAliased);
   if (ExpensiveCanvasHeuristicParameters::ComplexClipsAreExpensive &&
       !skPath.isRect(0) && hasImageBuffer()) {
     imageBuffer()->setHasExpensiveOp();

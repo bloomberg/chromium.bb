@@ -1169,7 +1169,7 @@ void GraphicsContext::clipOutRoundedRect(const FloatRoundedRect& rect) {
   if (contextDisabled())
     return;
 
-  clipRoundedRect(rect, kDifference_SkClipOp);
+  clipRoundedRect(rect, SkClipOp::kDifference);
 }
 
 void GraphicsContext::clipRect(const SkRect& rect,

@@ -224,22 +224,22 @@ class PLATFORM_EXPORT GraphicsContext {
   void clip(const IntRect& rect) { clipRect(rect); }
   void clip(const FloatRect& rect) { clipRect(rect); }
   void clipRoundedRect(const FloatRoundedRect&,
-                       SkClipOp = kIntersect_SkClipOp,
+                       SkClipOp = SkClipOp::kIntersect,
                        AntiAliasingMode = AntiAliased);
   void clipOut(const IntRect& rect) {
-    clipRect(rect, NotAntiAliased, kDifference_SkClipOp);
+    clipRect(rect, NotAntiAliased, SkClipOp::kDifference);
   }
   void clipOut(const FloatRect& rect) {
-    clipRect(rect, NotAntiAliased, kDifference_SkClipOp);
+    clipRect(rect, NotAntiAliased, SkClipOp::kDifference);
   }
   void clipOut(const Path&);
   void clipOutRoundedRect(const FloatRoundedRect&);
   void clipPath(const SkPath&,
                 AntiAliasingMode = NotAntiAliased,
-                SkClipOp = kIntersect_SkClipOp);
+                SkClipOp = SkClipOp::kIntersect);
   void clipRect(const SkRect&,
                 AntiAliasingMode = NotAntiAliased,
-                SkClipOp = kIntersect_SkClipOp);
+                SkClipOp = SkClipOp::kIntersect);
 
   void drawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
   void drawText(const Font&,
@@ -401,7 +401,7 @@ class PLATFORM_EXPORT GraphicsContext {
   // SkCanvas wrappers.
   void clipRRect(const SkRRect&,
                  AntiAliasingMode = NotAntiAliased,
-                 SkClipOp = kIntersect_SkClipOp);
+                 SkClipOp = SkClipOp::kIntersect);
   void concat(const SkMatrix&);
 
   // Apply deferred paint state saves

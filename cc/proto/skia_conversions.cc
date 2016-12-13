@@ -29,34 +29,34 @@ SkPoint ProtoToSkPoint(const proto::PointF& proto) {
 SkClipOp SkClipOpFromProto(proto::SkClipOp::Op op) {
   switch (op) {
     case proto::SkClipOp::DIFFERENCE_:
-      return kDifference_SkClipOp;
+      return SkClipOp::kDifference;
     case proto::SkClipOp::INTERSECT:
-      return kIntersect_SkClipOp;
+      return SkClipOp::kIntersect;
     case proto::SkClipOp::UNION:
-      return kUnion_SkClipOp;
+      return SkClipOp::kUnion;
     case proto::SkClipOp::XOR:
-      return kXOR_SkClipOp;
+      return SkClipOp::kXOR;
     case proto::SkClipOp::REVERSE_DIFFERENCE:
-      return kReverseDifference_SkClipOp;
+      return SkClipOp::kReverseDifference;
     case proto::SkClipOp::REPLACE:
-      return kReplace_SkClipOp;
+      return SkClipOp::kReplace;
   }
-  return kDifference_SkClipOp;
+  return SkClipOp::kDifference;
 }
 
 proto::SkClipOp::Op SkClipOpToProto(SkClipOp op) {
   switch (op) {
-    case kDifference_SkClipOp:
+    case SkClipOp::kDifference:
       return proto::SkClipOp::DIFFERENCE_;
-    case kIntersect_SkClipOp:
+    case SkClipOp::kIntersect:
       return proto::SkClipOp::INTERSECT;
-    case kUnion_SkClipOp:
+    case SkClipOp::kUnion:
       return proto::SkClipOp::UNION;
-    case kXOR_SkClipOp:
+    case SkClipOp::kXOR:
       return proto::SkClipOp::XOR;
-    case kReverseDifference_SkClipOp:
+    case SkClipOp::kReverseDifference:
       return proto::SkClipOp::REVERSE_DIFFERENCE;
-    case kReplace_SkClipOp:
+    case SkClipOp::kReplace:
       return proto::SkClipOp::REPLACE;
   }
   return proto::SkClipOp::DIFFERENCE_;

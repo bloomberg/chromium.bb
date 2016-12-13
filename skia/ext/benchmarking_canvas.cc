@@ -272,8 +272,10 @@ std::unique_ptr<base::Value> AsValue(SkClipOp op) {
                                       "ReverseDifference",
                                       "Replace"
                                     };
-  DCHECK_LT(static_cast<size_t>(op), SK_ARRAY_COUNT(gOpStrings));
-  std::unique_ptr<base::StringValue> val(new base::StringValue(gOpStrings[op]));
+  size_t index = static_cast<size_t>(op);
+  DCHECK_LT(index, SK_ARRAY_COUNT(gOpStrings));
+  std::unique_ptr<base::StringValue> val(
+      new base::StringValue(gOpStrings[index]));
   return std::move(val);
 }
 

@@ -22,8 +22,8 @@ TEST(SkiaProtoConversionsTest, SerializeDeserializeSkClipOp) {
   // as skia constricts the valid ops for clipping
   // https://bugs.chromium.org/p/skia/issues/detail?id=3191
   const SkClipOp ops[] = {
-      kDifference_SkClipOp, kIntersect_SkClipOp,         kUnion_SkClipOp,
-      kXOR_SkClipOp,        kReverseDifference_SkClipOp, kReplace_SkClipOp,
+      SkClipOp::kDifference, SkClipOp::kIntersect,         SkClipOp::kUnion,
+      SkClipOp::kXOR,        SkClipOp::kReverseDifference, SkClipOp::kReplace,
   };
   for (SkClipOp op : ops) {
     EXPECT_EQ(op, SkClipOpFromProto(SkClipOpToProto(op)));

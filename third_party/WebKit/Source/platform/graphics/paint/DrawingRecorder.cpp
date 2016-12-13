@@ -61,7 +61,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
     // expand by one pixel in device (pixel) space, but to do that we would need
     // to add the verification mode to Skia.
     cullRect.inflate(1);
-    context.clipRect(cullRect, NotAntiAliased, kIntersect_SkClipOp);
+    context.clipRect(cullRect, NotAntiAliased, SkClipOp::kIntersect);
   }
 #endif
 }
