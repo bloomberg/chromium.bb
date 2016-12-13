@@ -1579,6 +1579,11 @@ bool RenderWidgetHostViewMac::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
     RenderWidgetHostViewBase* target_view,
     gfx::Point* transformed_point) {
+  if (target_view == this) {
+    *transformed_point = point;
+    return true;
+  }
+
   return browser_compositor_->GetDelegatedFrameHost()
       ->TransformPointToCoordSpaceForView(point, target_view,
                                           transformed_point);

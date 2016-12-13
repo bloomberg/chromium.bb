@@ -589,6 +589,26 @@ class SitePerProcessHighDPIBrowserTest : public SitePerProcessBrowserTest {
   }
 };
 
+//
+// SitePerProcessNonIntegerScaleFactorBrowserTest
+//
+
+class SitePerProcessNonIntegerScaleFactorBrowserTest
+    : public SitePerProcessBrowserTest {
+ public:
+  const double kDeviceScaleFactor = 1.5;
+
+  SitePerProcessNonIntegerScaleFactorBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor,
+        base::StringPrintf("%f", kDeviceScaleFactor));
+  }
+};
+
 // SitePerProcessIgnoreCertErrorsBrowserTest
 
 class SitePerProcessIgnoreCertErrorsBrowserTest
@@ -8831,6 +8851,61 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             child->current_frame_host()->GetSiteInstance());
   EXPECT_EQ(root->current_frame_host()->GetProcess(),
             child->current_frame_host()->GetProcess());
+}
+
+// Test that MouseDown and MouseUp to the same coordinates do not result in
+// different coordinates after routing. See bug https://crbug.com/670253.
+#if defined(OS_ANDROID)
+// Browser process hit testing is not implemented on Android.
+// https://crbug.com/491334
+#define MAYBE_MouseClickWithNonIntegerScaleFactor \
+  DISABLED_MouseClickWithNonIntegerScaleFactor
+#else
+#define MAYBE_MouseClickWithNonIntegerScaleFactor \
+  MouseClickWithNonIntegerScaleFactor
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessNonIntegerScaleFactorBrowserTest,
+                       MAYBE_MouseClickWithNonIntegerScaleFactor) {
+  GURL initial_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  RenderWidgetHostViewBase* rwhv = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  RenderWidgetHostInputEventRouter* router =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetInputEventRouter();
+
+  // Create listener for input events.
+  RenderWidgetHostMouseEventMonitor event_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebPointerProperties::Button::Left;
+  mouse_event.x = 75;
+  mouse_event.y = 75;
+  mouse_event.clickCount = 1;
+  event_monitor.ResetEventReceived();
+  router->RouteMouseEvent(rwhv, &mouse_event, ui::LatencyInfo());
+
+  EXPECT_TRUE(event_monitor.EventWasReceived());
+  gfx::Point mouse_down_coords =
+      gfx::Point(event_monitor.event().x, event_monitor.event().y);
+  event_monitor.ResetEventReceived();
+
+  mouse_event.type = blink::WebInputEvent::MouseUp;
+  mouse_event.x = 75;
+  mouse_event.y = 75;
+  router->RouteMouseEvent(rwhv, &mouse_event, ui::LatencyInfo());
+
+  EXPECT_TRUE(event_monitor.EventWasReceived());
+  EXPECT_EQ(mouse_down_coords,
+            gfx::Point(event_monitor.event().x, event_monitor.event().y));
 }
 
 }  // namespace content

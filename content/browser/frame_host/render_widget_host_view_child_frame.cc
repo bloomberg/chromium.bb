@@ -543,8 +543,13 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
     RenderWidgetHostViewBase* target_view,
     gfx::Point* transformed_point) {
-  if (!frame_connector_ || !local_frame_id_.is_valid() || target_view == this)
+  if (!frame_connector_ || !local_frame_id_.is_valid())
     return false;
+
+  if (target_view == this) {
+    *transformed_point = point;
+    return true;
+  }
 
   return frame_connector_->TransformPointToCoordSpaceForView(
       point, target_view, cc::SurfaceId(frame_sink_id_, local_frame_id_),
