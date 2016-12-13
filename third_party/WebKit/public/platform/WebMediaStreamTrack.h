@@ -60,6 +60,14 @@ class WebMediaStreamTrack {
     virtual void getSettings(Settings&) = 0;
   };
 
+  enum class ContentHintType {
+    None,
+    AudioSpeech,
+    AudioMusic,
+    VideoFluid,
+    VideoDetailed
+  };
+
   WebMediaStreamTrack() {}
   WebMediaStreamTrack(const WebMediaStreamTrack& other) { assign(other); }
   ~WebMediaStreamTrack() { reset(); }
@@ -82,6 +90,7 @@ class WebMediaStreamTrack {
   BLINK_PLATFORM_EXPORT WebMediaStreamSource source() const;
   BLINK_PLATFORM_EXPORT bool isEnabled() const;
   BLINK_PLATFORM_EXPORT bool isMuted() const;
+  BLINK_PLATFORM_EXPORT ContentHintType contentHint() const;
 
   // Extra data associated with this WebMediaStream.
   // If non-null, the extra data pointer will be deleted when the object is

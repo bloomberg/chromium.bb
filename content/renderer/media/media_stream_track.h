@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_TRACK_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_TRACK_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -26,6 +28,9 @@ class CONTENT_EXPORT MediaStreamTrack
   static MediaStreamTrack* GetTrack(const blink::WebMediaStreamTrack& track);
 
   virtual void SetEnabled(bool enabled) = 0;
+
+  virtual void SetContentHint(
+      blink::WebMediaStreamTrack::ContentHintType content_hint) = 0;
 
   virtual void Stop() = 0;
 

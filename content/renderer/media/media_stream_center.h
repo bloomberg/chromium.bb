@@ -36,6 +36,8 @@ class CONTENT_EXPORT MediaStreamCenter
   void didCreateMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
+  void didSetContentHint(const blink::WebMediaStreamTrack& track) override;
+
   void didEnableMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 

@@ -43,6 +43,14 @@
 
 namespace blink {
 
+namespace {
+static const char kContentHintStringNone[] = "";
+static const char kContentHintStringAudioSpeech[] = "speech";
+static const char kContentHintStringAudioMusic[] = "music";
+static const char kContentHintStringVideoFluid[] = "fluid";
+static const char kContentHintStringVideoDetailed[] = "detailed";
+}  // namespace
+
 MediaStreamTrack* MediaStreamTrack::create(ExecutionContext* context,
                                            MediaStreamComponent* component) {
   MediaStreamTrack* track = new MediaStreamTrack(context, component);
@@ -105,6 +113,61 @@ void MediaStreamTrack::setEnabled(bool enabled) {
 
 bool MediaStreamTrack::muted() const {
   return m_component->muted();
+}
+
+String MediaStreamTrack::contentHint() const {
+  WebMediaStreamTrack::ContentHintType hint = m_component->contentHint();
+  switch (hint) {
+    case WebMediaStreamTrack::ContentHintType::None:
+      return kContentHintStringNone;
+    case WebMediaStreamTrack::ContentHintType::AudioSpeech:
+      return kContentHintStringAudioSpeech;
+    case WebMediaStreamTrack::ContentHintType::AudioMusic:
+      return kContentHintStringAudioMusic;
+    case WebMediaStreamTrack::ContentHintType::VideoFluid:
+      return kContentHintStringVideoFluid;
+    case WebMediaStreamTrack::ContentHintType::VideoDetailed:
+      return kContentHintStringVideoDetailed;
+  }
+
+  NOTREACHED();
+  return String();
+}
+
+void MediaStreamTrack::setContentHint(const String& hint) {
+  WebMediaStreamTrack::ContentHintType translatedHint =
+      WebMediaStreamTrack::ContentHintType::None;
+  switch (m_component->source()->type()) {
+    case MediaStreamSource::TypeAudio:
+      if (hint == kContentHintStringNone) {
+        translatedHint = WebMediaStreamTrack::ContentHintType::None;
+      } else if (hint == kContentHintStringAudioSpeech) {
+        translatedHint = WebMediaStreamTrack::ContentHintType::AudioSpeech;
+      } else if (hint == kContentHintStringAudioMusic) {
+        translatedHint = WebMediaStreamTrack::ContentHintType::AudioMusic;
+      } else {
+        // TODO(pbos): Log warning?
+        // Invalid values for audio are to be ignored (similar to invalid enum
+        // values).
+        return;
+      }
+      break;
+    case MediaStreamSource::TypeVideo:
+      if (hint == kContentHintStringNone) {
+        translatedHint = WebMediaStreamTrack::ContentHintType::None;
+      } else if (hint == kContentHintStringVideoFluid) {
+        translatedHint = WebMediaStreamTrack::ContentHintType::VideoFluid;
+      } else if (hint == kContentHintStringVideoDetailed) {
+        translatedHint = WebMediaStreamTrack::ContentHintType::VideoDetailed;
+      } else {
+        // TODO(pbos): Log warning?
+        // Invalid values for video are to be ignored (similar to invalid enum
+        // values).
+        return;
+      }
+  }
+
+  m_component->setContentHint(translatedHint);
 }
 
 bool MediaStreamTrack::remote() const {

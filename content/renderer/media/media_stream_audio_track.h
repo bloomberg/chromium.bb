@@ -65,6 +65,8 @@ class CONTENT_EXPORT MediaStreamAudioTrack : public MediaStreamTrack {
 
   // MediaStreamTrack override.
   void SetEnabled(bool enabled) override;
+  void SetContentHint(
+      blink::WebMediaStreamTrack::ContentHintType content_hint) override;
 
   // Returns a unique class identifier. Some subclasses override and use this
   // method to provide safe down-casting to their type.

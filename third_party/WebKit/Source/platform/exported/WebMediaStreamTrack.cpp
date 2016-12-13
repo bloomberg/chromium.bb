@@ -91,6 +91,11 @@ bool WebMediaStreamTrack::isMuted() const {
   return m_private->muted();
 }
 
+WebMediaStreamTrack::ContentHintType WebMediaStreamTrack::contentHint() const {
+  DCHECK(!m_private.isNull());
+  return m_private->contentHint();
+}
+
 WebString WebMediaStreamTrack::id() const {
   ASSERT(!m_private.isNull());
   return m_private->id();

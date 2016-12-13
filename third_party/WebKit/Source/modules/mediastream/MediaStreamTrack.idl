@@ -42,6 +42,7 @@ enum MediaStreamTrackState {
     readonly attribute DOMString label;
     attribute boolean enabled;
     readonly attribute boolean muted;
+    [RuntimeEnabled=MediaStreamTrackContentHint] attribute DOMString contentHint;
     attribute EventHandler onmute;
     attribute EventHandler onunmute;
     readonly attribute MediaStreamTrackState readyState;
@@ -51,6 +52,7 @@ enum MediaStreamTrackState {
     [ImplementedAs=stopTrack, RaisesException] void stop();
     [RuntimeEnabled=MediaConstraints] MediaTrackConstraints getConstraints();
     [RuntimeEnabled=MediaGetSettings] MediaTrackSettings getSettings();
+
 
     // Non-standard APIs
     [MeasureAs=MediaStreamTrackRemote] readonly attribute boolean remote;

@@ -33,6 +33,7 @@
 
 #include "platform/UUID.h"
 #include "platform/audio/AudioBus.h"
+#include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebMediaStreamTrack.h"
@@ -50,19 +51,29 @@ MediaStreamComponent* MediaStreamComponent::create(const String& id,
 
 MediaStreamComponent::MediaStreamComponent(const String& id,
                                            MediaStreamSource* source)
-    : MediaStreamComponent(id, source, true, false) {}
+    : MediaStreamComponent(id,
+                           source,
+                           true,
+                           false,
+                           WebMediaStreamTrack::ContentHintType::None) {}
 
-MediaStreamComponent::MediaStreamComponent(const String& id,
-                                           MediaStreamSource* source,
-                                           bool enabled,
-                                           bool muted)
-    : m_source(source), m_id(id), m_enabled(enabled), m_muted(muted) {
+MediaStreamComponent::MediaStreamComponent(
+    const String& id,
+    MediaStreamSource* source,
+    bool enabled,
+    bool muted,
+    WebMediaStreamTrack::ContentHintType contentHint)
+    : m_source(source),
+      m_id(id),
+      m_enabled(enabled),
+      m_muted(muted),
+      m_contentHint(contentHint) {
   DCHECK(m_id.length());
 }
 
 MediaStreamComponent* MediaStreamComponent::clone() const {
   MediaStreamComponent* clonedComponent = new MediaStreamComponent(
-      createCanonicalUUIDString(), source(), m_enabled, m_muted);
+      createCanonicalUUIDString(), source(), m_enabled, m_muted, m_contentHint);
   // TODO(pbos): Clone |m_trackData| as well.
   // TODO(pbos): Move properties from MediaStreamTrack here so that they are
   // also cloned. Part of crbug:669212 since stopped is currently not carried
@@ -84,6 +95,27 @@ void MediaStreamComponent::getSettings(
     WebMediaStreamTrack::Settings& settings) {
   DCHECK(m_trackData);
   m_trackData->getSettings(settings);
+}
+
+void MediaStreamComponent::setContentHint(
+    WebMediaStreamTrack::ContentHintType hint) {
+  switch (hint) {
+    case WebMediaStreamTrack::ContentHintType::None:
+      break;
+    case WebMediaStreamTrack::ContentHintType::AudioSpeech:
+    case WebMediaStreamTrack::ContentHintType::AudioMusic:
+      DCHECK_EQ(MediaStreamSource::TypeAudio, source()->type());
+      break;
+    case WebMediaStreamTrack::ContentHintType::VideoFluid:
+    case WebMediaStreamTrack::ContentHintType::VideoDetailed:
+      DCHECK_EQ(MediaStreamSource::TypeVideo, source()->type());
+      break;
+  }
+  if (hint == m_contentHint)
+    return;
+  m_contentHint = hint;
+
+  MediaStreamCenter::instance().didSetContentHint(this);
 }
 
 void MediaStreamComponent::AudioSourceProviderImpl::provideInput(

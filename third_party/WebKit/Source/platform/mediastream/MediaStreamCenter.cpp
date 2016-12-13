@@ -116,6 +116,11 @@ void MediaStreamCenter::didCreateMediaStreamTrack(MediaStreamComponent* track) {
     m_private->didCreateMediaStreamTrack(track);
 }
 
+void MediaStreamCenter::didSetContentHint(MediaStreamComponent* track) {
+  if (m_private)
+    m_private->didSetContentHint(track);
+}
+
 std::unique_ptr<AudioSourceProvider>
 MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
     MediaStreamComponent* track) {

@@ -4018,6 +4018,7 @@ interface MediaStreamEvent : Event
     method constructor
 interface MediaStreamTrack : EventTarget
     attribute @@toStringTag
+    getter contentHint
     getter enabled
     getter id
     getter kind
@@ -4033,6 +4034,7 @@ interface MediaStreamTrack : EventTarget
     method getConstraints
     method getSettings
     method stop
+    setter contentHint
     setter enabled
     setter onended
     setter onmute

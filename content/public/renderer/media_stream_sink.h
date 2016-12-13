@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace content {
 
@@ -20,6 +21,8 @@ class CONTENT_EXPORT MediaStreamSink {
   virtual void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) {}
   virtual void OnEnabledChanged(bool enabled) {}
+  virtual void OnContentHintChanged(
+      blink::WebMediaStreamTrack::ContentHintType content_hint) {}
 
  protected:
   virtual ~MediaStreamSink() {}

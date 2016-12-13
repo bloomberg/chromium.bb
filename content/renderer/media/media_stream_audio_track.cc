@@ -78,6 +78,16 @@ void MediaStreamAudioTrack::SetEnabled(bool enabled) {
     sink->OnEnabledChanged(enabled);
 }
 
+void MediaStreamAudioTrack::SetContentHint(
+    blink::WebMediaStreamTrack::ContentHintType content_hint) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  std::vector<MediaStreamAudioSink*> sinks_to_notify;
+  deliverer_.GetConsumerList(&sinks_to_notify);
+  for (MediaStreamAudioSink* sink : sinks_to_notify)
+    sink->OnContentHintChanged(content_hint);
+}
+
 void* MediaStreamAudioTrack::GetClassIdentifier() const {
   return nullptr;
 }

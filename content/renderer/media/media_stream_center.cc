@@ -107,6 +107,13 @@ void MediaStreamCenter::didCreateMediaStreamTrack(
   }
 }
 
+void MediaStreamCenter::didSetContentHint(
+    const blink::WebMediaStreamTrack& track) {
+  MediaStreamTrack* native_track = MediaStreamTrack::GetTrack(track);
+  if (native_track)
+    native_track->SetContentHint(track.contentHint());
+}
+
 void MediaStreamCenter::didEnableMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   MediaStreamTrack* native_track =

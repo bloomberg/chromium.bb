@@ -283,6 +283,13 @@ void MediaStreamVideoTrack::SetEnabled(bool enabled) {
     sink->OnEnabledChanged(enabled);
 }
 
+void MediaStreamVideoTrack::SetContentHint(
+    blink::WebMediaStreamTrack::ContentHintType content_hint) {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  for (auto* sink : sinks_)
+    sink->OnContentHintChanged(content_hint);
+}
+
 void MediaStreamVideoTrack::Stop() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (source_) {

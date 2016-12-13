@@ -65,6 +65,9 @@ class MODULES_EXPORT MediaStreamTrack : public EventTargetWithInlineData,
 
   bool muted() const;
 
+  String contentHint() const;
+  void setContentHint(const String&);
+
   String readyState() const;
 
   void stopTrack(ExceptionState&);

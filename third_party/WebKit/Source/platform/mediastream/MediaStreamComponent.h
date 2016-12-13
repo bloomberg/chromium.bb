@@ -80,6 +80,8 @@ class PLATFORM_EXPORT MediaStreamComponent final
   void setEnabled(bool enabled) { m_enabled = enabled; }
   bool muted() const { return m_muted; }
   void setMuted(bool muted) { m_muted = muted; }
+  WebMediaStreamTrack::ContentHintType contentHint() { return m_contentHint; }
+  void setContentHint(WebMediaStreamTrack::ContentHintType);
   AudioSourceProvider* getAudioSourceProvider() { return &m_sourceProvider; }
   void setSourceProvider(WebAudioSourceProvider* provider) {
     m_sourceProvider.wrap(provider);
@@ -98,7 +100,8 @@ class PLATFORM_EXPORT MediaStreamComponent final
   MediaStreamComponent(const String& id,
                        MediaStreamSource*,
                        bool enabled,
-                       bool muted);
+                       bool muted,
+                       WebMediaStreamTrack::ContentHintType);
 
   // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
   // calls into chromium to get a rendered audio stream.
@@ -127,6 +130,7 @@ class PLATFORM_EXPORT MediaStreamComponent final
   String m_id;
   bool m_enabled;
   bool m_muted;
+  WebMediaStreamTrack::ContentHintType m_contentHint;
   std::unique_ptr<TrackData> m_trackData;
 };
 
