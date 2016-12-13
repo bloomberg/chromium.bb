@@ -74,6 +74,7 @@ class RemoteDemuxerStreamAdapter {
 
   // RPC message tasks.
   void Initialize(int remote_callback_handle);
+  void EnableBitstreamConverter();
   void ReadUntil(std::unique_ptr<remoting::pb::RpcMessage> message);
   void RequestBuffer(int callback_handle);
   void SendReadAck(int callback_handle);

@@ -116,6 +116,9 @@ void RemoteDemuxerStreamAdapter::OnReceivedRpc(
     case remoting::pb::RpcMessage::RPC_DS_INITIALIZE:
       Initialize(message->integer_value());
       break;
+    case remoting::pb::RpcMessage::RPC_DS_ENABLEBITSTREAMCONVERTER:
+      EnableBitstreamConverter();
+      break;
     case remoting::pb::RpcMessage::RPC_DS_READUNTIL:
       ReadUntil(std::move(message));
       break;
@@ -173,6 +176,11 @@ void RemoteDemuxerStreamAdapter::Initialize(int remote_callback_handle) {
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&remoting::RpcBroker::SendMessageToRemote,
                             rpc_broker_, base::Passed(&rpc)));
+}
+
+void RemoteDemuxerStreamAdapter::EnableBitstreamConverter() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  demuxer_stream_->EnableBitstreamConverter();
 }
 
 void RemoteDemuxerStreamAdapter::ReadUntil(
