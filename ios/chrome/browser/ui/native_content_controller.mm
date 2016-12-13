@@ -8,11 +8,13 @@
 
 #include "base/mac/bundle_locations.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/objc_property_releaser.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @implementation NativeContentController {
   GURL _url;
-  base::mac::ObjCPropertyReleaser _propertyReleaser_NativeContentController;
 }
 
 @synthesize view = _view;
@@ -22,8 +24,6 @@
 - (instancetype)initWithNibName:(NSString*)nibName url:(const GURL&)url {
   self = [super init];
   if (self) {
-    _propertyReleaser_NativeContentController.Init(
-        self, [NativeContentController class]);
     if (nibName.length) {
       [base::mac::FrameworkBundle() loadNibNamed:nibName
                                            owner:self
@@ -34,18 +34,12 @@
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithURL:(const GURL&)url {
   return [self initWithNibName:nil url:url];
 }
 
 - (void)dealloc {
   [_view removeFromSuperview];
-  [super dealloc];
 }
 
 #pragma mark CRWNativeContent

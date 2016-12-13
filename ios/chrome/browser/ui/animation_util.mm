@@ -9,6 +9,10 @@
 
 #include "ios/chrome/browser/ui/reversed_animation.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 CAAnimation* FrameAnimationMake(CALayer* layer,
                                 CGRect beginFrame,
                                 CGRect endFrame) {
@@ -59,7 +63,7 @@ CAAnimation* AnimationGroupMake(NSArray* animations) {
 
 CAAnimation* DelayedAnimationMake(CAAnimation* animation,
                                   CFTimeInterval delay) {
-  CAAnimation* delayedAnimation = [[animation copy] autorelease];
+  CAAnimation* delayedAnimation = [animation copy];
   if (delayedAnimation) {
     delayedAnimation.beginTime = delay;
     delayedAnimation = AnimationGroupMake(@[ delayedAnimation ]);

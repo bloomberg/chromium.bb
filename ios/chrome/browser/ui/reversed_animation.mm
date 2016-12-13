@@ -9,7 +9,10 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @protocol ReversedAnimationProtocol;
 typedef CAAnimation<ReversedAnimationProtocol> ReversedAnimation;
@@ -60,10 +63,7 @@ void UpdateReversedAnimation(ReversedAnimation* reversedAnimation,
 
 #pragma mark - ReversedBasicAnimation
 
-@interface ReversedBasicAnimation
-    : CABasicAnimation<ReversedAnimationProtocol> {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_ReversedBasicAnimation;
-}
+@interface ReversedBasicAnimation : CABasicAnimation<ReversedAnimationProtocol>
 
 // Returns an animation that performs |animation| in reverse when added to
 // |layer|.  |parentBeginTime| should be set to the beginTime in absolute time
@@ -80,15 +80,6 @@ void UpdateReversedAnimation(ReversedAnimation* reversedAnimation,
 @synthesize originalAnimation = _originalAnimation;
 @synthesize animationDirection = _animationDirection;
 @synthesize animationTimeOffset = _animationTimeOffset;
-
-- (instancetype)init {
-  self = [super init];
-  if (self) {
-    _propertyReleaser_ReversedBasicAnimation.Init(
-        self, [ReversedBasicAnimation class]);
-  }
-  return self;
-}
 
 - (instancetype)copyWithZone:(NSZone*)zone {
   ReversedBasicAnimation* copy = [super copyWithZone:zone];
@@ -136,10 +127,7 @@ void UpdateReversedAnimation(ReversedAnimation* reversedAnimation,
 
 #pragma mark - ReversedAnimationGroup
 
-@interface ReversedAnimationGroup
-    : CAAnimationGroup<ReversedAnimationProtocol> {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_ReversedAnimationGroup;
-}
+@interface ReversedAnimationGroup : CAAnimationGroup<ReversedAnimationProtocol>
 
 // Returns an animation that performs |animation| in reverse when added to
 // |layer|.  |parentBeginTime| should be set to the beginTime in absolute time
@@ -156,15 +144,6 @@ void UpdateReversedAnimation(ReversedAnimation* reversedAnimation,
 @synthesize originalAnimation = _originalAnimation;
 @synthesize animationDirection = _animationDirection;
 @synthesize animationTimeOffset = _animationTimeOffset;
-
-- (instancetype)init {
-  self = [super init];
-  if (self) {
-    _propertyReleaser_ReversedAnimationGroup.Init(
-        self, [ReversedAnimationGroup class]);
-  }
-  return self;
-}
 
 - (instancetype)copyWithZone:(NSZone*)zone {
   ReversedAnimationGroup* copy = [super copyWithZone:zone];

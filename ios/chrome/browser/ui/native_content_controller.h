@@ -20,7 +20,7 @@ class GURL;
 @interface NativeContentController : NSObject<CRWNativeContent>
 
 // Top-level view.
-@property(nonatomic, retain) IBOutlet UIView* view;
+@property(nonatomic, strong) IBOutlet UIView* view;
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic, readonly, assign) const GURL& url;
 
