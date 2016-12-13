@@ -237,6 +237,9 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_ABOUT_PAGE_UNSTABLE_WARNING_MESSAGE},
     {"aboutUnstableWarningTitle",
      IDS_SETTINGS_ABOUT_PAGE_UNSTABLE_WARNING_TITLE},
+    {"aboutChannelDialogBeta", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_BETA},
+    {"aboutChannelDialogDev", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_DEV},
+    {"aboutChannelDialogStable", IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_STABLE},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

@@ -86,6 +86,15 @@
     <message name="IDS_SETTINGS_ABOUT_PAGE_UNSTABLE_WARNING_TITLE" desc="The title of the warning about switching to developer (unstable) channel.">
       Warning: you are switching to developer channel
     </message>
+    <message name="IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_STABLE" desc="The stable option in the channel select.">
+      Stable
+    </message>
+    <message name="IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_BETA" desc="The beta option in the channel select.">
+      Beta
+    </message>
+    <message name="IDS_SETTINGS_ABOUT_PAGE_DIALOG_CHANNEL_DEV" desc="The development option in the channel select.">
+      Developer - unstable
+    </message>
   </if>
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_ABOUT_PAGE_RELAUNCH" desc="The label for the relaunch button that relaunches the browser once update is complete">
