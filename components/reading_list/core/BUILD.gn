@@ -2,12 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
+import("//components/reading_list/core/reading_list.gni")
+
 source_set("core") {
   sources = [
     "reading_list_switches.cc",
     "reading_list_switches.h",
   ]
   deps = [
+    ":reading_list_enable_flags",
     "//base",
   ]
+}
+
+buildflag_header("reading_list_enable_flags") {
+  header = "reading_list_enable_flags.h"
+  _enabled = is_ios && enable_reading_list
+  flags = [ "ENABLE_READING_LIST=$_enabled" ]
 }

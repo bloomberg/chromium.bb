@@ -7,9 +7,6 @@
 
 namespace reading_list {
 namespace switches {
-extern const char kEnableReadingList[];
-extern const char kDisableReadingList[];
-
 // Whether Reading List is enabled on this device.
 bool IsReadingListEnabled();
 }  // namespace switches

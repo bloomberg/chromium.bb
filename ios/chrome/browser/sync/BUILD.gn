@@ -112,6 +112,7 @@ source_set("unit_tests") {
     ":sync",
     "//base",
     "//components/browser_sync",
+    "//components/reading_list/core",
     "//components/sync",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/web:test_support",
