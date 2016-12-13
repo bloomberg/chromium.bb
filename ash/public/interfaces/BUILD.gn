@@ -10,6 +10,7 @@ mojom("interfaces") {
     "ash_window_type.mojom",
     "cast_config.mojom",
     "locale.mojom",
+    "media.mojom",
     "new_window.mojom",
     "session_controller.mojom",
     "shelf.mojom",

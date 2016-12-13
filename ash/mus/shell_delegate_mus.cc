@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/common/gpu_support_stub.h"
-#include "ash/common/media_delegate.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_shell.h"
@@ -86,24 +85,6 @@ class SessionStateDelegateStub : public SessionStateDelegate {
   std::unique_ptr<user_manager::UserInfo> user_info_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateStub);
-};
-
-class MediaDelegateStub : public MediaDelegate {
- public:
-  MediaDelegateStub() {}
-  ~MediaDelegateStub() override {}
-
-  // MediaDelegate:
-  void HandleMediaNextTrack() override { NOTIMPLEMENTED(); }
-  void HandleMediaPlayPause() override { NOTIMPLEMENTED(); }
-  void HandleMediaPrevTrack() override { NOTIMPLEMENTED(); }
-  MediaCaptureState GetMediaCaptureState(UserIndex index) override {
-    NOTIMPLEMENTED();
-    return MEDIA_CAPTURE_NONE;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaDelegateStub);
 };
 
 }  // namespace
@@ -195,12 +176,6 @@ SessionStateDelegate* ShellDelegateMus::CreateSessionStateDelegate() {
 
 AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
   return new AccessibilityDelegateMus(connector_);
-}
-
-MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
-  // TODO: http://crbug.com/647409.
-  NOTIMPLEMENTED() << " Using a stub MediaDelegate implementation";
-  return new MediaDelegateStub;
 }
 
 std::unique_ptr<PaletteDelegate> ShellDelegateMus::CreatePaletteDelegate() {

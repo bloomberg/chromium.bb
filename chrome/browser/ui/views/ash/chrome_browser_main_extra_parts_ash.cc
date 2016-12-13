@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/ash/cast_config_client_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
+#include "chrome/browser/ui/ash/media_client.h"
 #include "chrome/browser/ui/views/ash/tab_scrubber.h"
 #include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 #include "chrome/browser/ui/views/frame/immersive_handler_factory_mus.h"
@@ -78,6 +79,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 
   cast_config_client_media_router_ =
       base::MakeUnique<CastConfigClientMediaRouter>();
+  media_client_ = base::MakeUnique<MediaClient>();
 
   if (!ash::Shell::HasInstance())
     return;
@@ -96,6 +98,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   volume_controller_.reset();
   new_window_client_.reset();
   system_tray_client_.reset();
+  media_client_.reset();
   cast_config_client_media_router_.reset();
   session_controller_client_.reset();
 #endif

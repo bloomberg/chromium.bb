@@ -8,7 +8,6 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/gpu_support_stub.h"
-#include "ash/common/media_delegate.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
@@ -35,23 +34,6 @@
 namespace ash {
 namespace shell {
 namespace {
-
-class MediaDelegateImpl : public MediaDelegate {
- public:
-  MediaDelegateImpl() {}
-  ~MediaDelegateImpl() override {}
-
-  // MediaDelegate:
-  void HandleMediaNextTrack() override {}
-  void HandleMediaPlayPause() override {}
-  void HandleMediaPrevTrack() override {}
-  MediaCaptureState GetMediaCaptureState(UserIndex index) override {
-    return MEDIA_CAPTURE_VIDEO;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaDelegateImpl);
-};
 
 class PaletteDelegateImpl : public PaletteDelegate {
  public:
@@ -237,10 +219,6 @@ SessionStateDelegate* ShellDelegateImpl::CreateSessionStateDelegate() {
 
 AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
-}
-
-MediaDelegate* ShellDelegateImpl::CreateMediaDelegate() {
-  return new MediaDelegateImpl;
 }
 
 std::unique_ptr<PaletteDelegate> ShellDelegateImpl::CreatePaletteDelegate() {

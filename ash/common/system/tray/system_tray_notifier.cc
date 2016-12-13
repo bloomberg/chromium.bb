@@ -13,7 +13,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/bluetooth/bluetooth_observer.h"
 #include "ash/common/system/chromeos/enterprise/enterprise_domain_observer.h"
-#include "ash/common/system/chromeos/media_security/media_capture_observer.h"
 #include "ash/common/system/chromeos/network/network_observer.h"
 #include "ash/common/system/chromeos/network/network_portal_detector_observer.h"
 #include "ash/common/system/chromeos/screen_security/screen_capture_observer.h"
@@ -195,21 +194,6 @@ void SystemTrayNotifier::NotifyLogoutDialogDurationChanged(
     base::TimeDelta duration) {
   for (auto& observer : logout_button_observers_)
     observer.OnLogoutDialogDurationChanged(duration);
-}
-
-void SystemTrayNotifier::AddMediaCaptureObserver(
-    MediaCaptureObserver* observer) {
-  media_capture_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveMediaCaptureObserver(
-    MediaCaptureObserver* observer) {
-  media_capture_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyMediaCaptureChanged() {
-  for (auto& observer : media_capture_observers_)
-    observer.OnMediaCaptureChanged();
 }
 
 void SystemTrayNotifier::AddNetworkObserver(NetworkObserver* observer) {

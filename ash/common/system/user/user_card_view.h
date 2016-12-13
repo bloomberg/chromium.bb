@@ -5,7 +5,7 @@
 #ifndef ASH_COMMON_SYSTEM_USER_USER_CARD_VIEW_H_
 #define ASH_COMMON_SYSTEM_USER_USER_CARD_VIEW_H_
 
-#include "ash/common/system/chromeos/media_security/media_capture_observer.h"
+#include "ash/common/media_controller.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -34,7 +34,8 @@ class UserCardView : public views::View, public MediaCaptureObserver {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // MediaCaptureObserver:
-  void OnMediaCaptureChanged() override;
+  void OnMediaCaptureChanged(
+      const std::vector<mojom::MediaCaptureState>& capture_states) override;
 
  private:
   // Creates the content for the public mode.

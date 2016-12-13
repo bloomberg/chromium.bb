@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/media_controller.h"
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
@@ -445,7 +445,7 @@ void MultiUserWindowManagerChromeOS::ActiveUserChanged(
       this, account_id, GetAdjustedAnimationTimeInMS(kUserFadeTimeMS)));
   // Call notifier here instead of observing ActiveUserChanged because
   // this must happen after MultiUserWindowManagerChromeOS is notified.
-  ash::WmShell::Get()->system_tray_notifier()->NotifyMediaCaptureChanged();
+  ash::WmShell::Get()->media_controller()->RequestCaptureState();
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {

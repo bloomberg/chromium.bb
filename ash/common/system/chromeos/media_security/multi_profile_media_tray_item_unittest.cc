@@ -5,11 +5,14 @@
 #include "ash/common/system/chromeos/media_security/multi_profile_media_tray_item.h"
 
 #include "ash/common/ash_view_ids.h"
+#include "ash/common/media_controller.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/test/test_session_state_delegate.h"
+#include "ash/common/wm_shell.h"
+#include "ash/public/interfaces/media.mojom.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/status_area_widget_test_helper.h"
@@ -18,12 +21,28 @@
 
 namespace ash {
 
-using MultiProfileMediaTrayItemTest = test::AshTestBase;
+class MultiProfileMediaTrayItemTest : public test::AshTestBase {
+ public:
+  MultiProfileMediaTrayItemTest() {}
+  ~MultiProfileMediaTrayItemTest() override {}
 
+  void SetMediaCaptureState(mojom::MediaCaptureState state) {
+    // Create the fake update.
+    test::TestSessionStateDelegate* session_state_delegate =
+        test::AshTestHelper::GetTestSessionStateDelegate();
+    std::vector<mojom::MediaCaptureState> v;
+    for (int i = 0; i < session_state_delegate->NumberOfLoggedInUsers(); ++i)
+      v.push_back(state);
+    WmShell::Get()->media_controller()->NotifyCaptureState(v);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MultiProfileMediaTrayItemTest);
+};
+
+// ash_unittests. still failing.
 TEST_F(MultiProfileMediaTrayItemTest, NotifyMediaCaptureChange) {
   TrayItemView::DisableAnimationsForTest();
-  test::TestShellDelegate* shell_delegate =
-      ash_test_helper()->test_shell_delegate();
   test::TestSessionStateDelegate* session_state_delegate =
       test::AshTestHelper::GetTestSessionStateDelegate();
   session_state_delegate->set_logged_in_users(2);
@@ -39,18 +58,19 @@ TEST_F(MultiProfileMediaTrayItemTest, NotifyMediaCaptureChange) {
   views::View* tray_view =
       widget->GetRootView()->GetViewByID(VIEW_ID_MEDIA_TRAY_VIEW);
 
+  SetMediaCaptureState(mojom::MediaCaptureState::NONE);
   EXPECT_FALSE(tray_view->visible());
   EXPECT_FALSE(in_user_view->visible());
 
-  shell_delegate->SetMediaCaptureState(MEDIA_CAPTURE_AUDIO);
+  SetMediaCaptureState(mojom::MediaCaptureState::AUDIO);
   EXPECT_TRUE(tray_view->visible());
   EXPECT_TRUE(in_user_view->visible());
 
-  shell_delegate->SetMediaCaptureState(MEDIA_CAPTURE_AUDIO_VIDEO);
+  SetMediaCaptureState(mojom::MediaCaptureState::AUDIO_VIDEO);
   EXPECT_TRUE(tray_view->visible());
   EXPECT_TRUE(in_user_view->visible());
 
-  shell_delegate->SetMediaCaptureState(MEDIA_CAPTURE_NONE);
+  SetMediaCaptureState(mojom::MediaCaptureState::NONE);
   EXPECT_FALSE(tray_view->visible());
   EXPECT_FALSE(in_user_view->visible());
 }

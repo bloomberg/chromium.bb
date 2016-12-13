@@ -7,12 +7,13 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/common/ash_view_ids.h"
 #include "ash/common/login_status.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/media_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_utils.h"
@@ -47,11 +48,6 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/common/ash_view_ids.h"
-#include "ash/common/media_delegate.h"
-#endif
 
 namespace ash {
 namespace tray {
@@ -93,7 +89,6 @@ views::View* CreateUserAvatarView(LoginStatus login_status, int user_index) {
   return image_view;
 }
 
-#if defined(OS_CHROMEOS)
 class MediaIndicator : public views::View, public MediaCaptureObserver {
  public:
   explicit MediaIndicator(UserIndex index)
@@ -108,31 +103,37 @@ class MediaIndicator : public views::View, public MediaCaptureObserver {
     label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
         ui::ResourceBundle::SmallFont));
-    OnMediaCaptureChanged();
-    WmShell::Get()->system_tray_notifier()->AddMediaCaptureObserver(this);
+    WmShell::Get()->media_controller()->AddObserver(this);
+    SetVisible(false);
+    WmShell::Get()->media_controller()->RequestCaptureState();
     set_id(VIEW_ID_USER_VIEW_MEDIA_INDICATOR);
   }
 
   ~MediaIndicator() override {
-    WmShell::Get()->system_tray_notifier()->RemoveMediaCaptureObserver(this);
+    WmShell::Get()->media_controller()->RemoveObserver(this);
   }
 
   // MediaCaptureObserver:
-  void OnMediaCaptureChanged() override {
-    MediaCaptureState state =
-        WmShell::Get()->media_delegate()->GetMediaCaptureState(index_);
+  void OnMediaCaptureChanged(
+      const std::vector<mojom::MediaCaptureState>& capture_states) override {
+    if (static_cast<size_t>(index_) >= capture_states.size()) {
+      NOTREACHED();
+      return;
+    }
+
+    mojom::MediaCaptureState state = capture_states[index_];
     int res_id = 0;
     switch (state) {
-      case MEDIA_CAPTURE_AUDIO_VIDEO:
+      case mojom::MediaCaptureState::AUDIO_VIDEO:
         res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO_VIDEO;
         break;
-      case MEDIA_CAPTURE_AUDIO:
+      case mojom::MediaCaptureState::AUDIO:
         res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO;
         break;
-      case MEDIA_CAPTURE_VIDEO:
+      case mojom::MediaCaptureState::VIDEO:
         res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_VIDEO;
         break;
-      case MEDIA_CAPTURE_NONE:
+      case mojom::MediaCaptureState::NONE:
         break;
     }
     SetMessage(res_id ? l10n_util::GetStringUTF16(res_id) : base::string16());
@@ -152,7 +153,6 @@ class MediaIndicator : public views::View, public MediaCaptureObserver {
 
   DISALLOW_COPY_AND_ASSIGN(MediaIndicator);
 };
-#endif
 
 // The user details shown in public account mode. This is essentially a label
 // but with custom painting code as the text is styled with multiple colors and
@@ -389,9 +389,7 @@ UserCardView::UserCardView(LoginStatus login_status,
           views::CreateEmptyBorder(0, kMenuExtraMarginFromLeftEdge, 0, 0));
     }
 
-#if defined(OS_CHROMEOS)
-    WmShell::Get()->system_tray_notifier()->AddMediaCaptureObserver(this);
-#endif
+    WmShell::Get()->media_controller()->AddObserver(this);
   }
 
   if (login_status == LoginStatus::PUBLIC)
@@ -403,10 +401,8 @@ UserCardView::UserCardView(LoginStatus login_status,
 }
 
 UserCardView::~UserCardView() {
-#if defined(OS_CHROMEOS)
   if (UseMd())
-    WmShell::Get()->system_tray_notifier()->RemoveMediaCaptureObserver(this);
-#endif
+    WmShell::Get()->media_controller()->RemoveObserver(this);
 }
 
 void UserCardView::PaintChildren(const ui::PaintContext& context) {
@@ -426,25 +422,24 @@ void UserCardView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(base::JoinString(labels, base::ASCIIToUTF16(" ")));
 }
 
-void UserCardView::OnMediaCaptureChanged() {
-#if defined(OS_CHROMEOS)
+void UserCardView::OnMediaCaptureChanged(
+    const std::vector<mojom::MediaCaptureState>& capture_states) {
   if (is_active_user())
     return;
 
-  MediaCaptureState state =
-      WmShell::Get()->media_delegate()->GetMediaCaptureState(user_index_);
+  mojom::MediaCaptureState state = capture_states[user_index_];
   int res_id = 0;
   switch (state) {
-    case MEDIA_CAPTURE_AUDIO_VIDEO:
+    case mojom::MediaCaptureState::AUDIO_VIDEO:
       res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO_VIDEO;
       break;
-    case MEDIA_CAPTURE_AUDIO:
+    case mojom::MediaCaptureState::AUDIO:
       res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO;
       break;
-    case MEDIA_CAPTURE_VIDEO:
+    case mojom::MediaCaptureState::VIDEO:
       res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_VIDEO;
       break;
-    case MEDIA_CAPTURE_NONE:
+    case mojom::MediaCaptureState::NONE:
       break;
   }
   if (res_id)
@@ -453,7 +448,6 @@ void UserCardView::OnMediaCaptureChanged() {
   media_capture_icon_->SetVisible(!!res_id);
   user_name_->SetVisible(!res_id);
   Layout();
-#endif
 }
 
 void UserCardView::AddPublicModeUserContent(int max_width) {
@@ -520,7 +514,6 @@ void UserCardView::AddUserContent(LoginStatus login_status) {
     if (user_name)
       AddChildView(user_name);
     if (user_email) {
-#if defined(OS_CHROMEOS)
       // Only non active user can have a media indicator.
       MediaIndicator* media_indicator = new MediaIndicator(user_index_);
       views::View* email_indicator_view = new views::View;
@@ -535,9 +528,6 @@ void UserCardView::AddUserContent(LoginStatus login_status) {
       details->AddChildView(email_indicator_view);
       details->AddChildView(media_indicator->GetMessageView());
       AddChildView(details);
-#else
-      AddChildView(user_email);
-#endif
     }
   }
 }
@@ -609,12 +599,11 @@ void UserCardView::AddUserContentMd(views::BoxLayout* layout,
         gfx::Insets(0, (media_capture_width -
                         media_capture_icon_->GetPreferredSize().width()) /
                            2)));
-#if defined(OS_CHROMEOS)
+
     media_capture_icon_->set_id(VIEW_ID_USER_VIEW_MEDIA_INDICATOR);
-#endif
     AddChildView(media_capture_icon_);
 
-    OnMediaCaptureChanged();
+    WmShell::Get()->media_controller()->RequestCaptureState();
   }
 }
 

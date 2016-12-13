@@ -38,7 +38,6 @@ namespace ash {
 
 class AccessibilityDelegate;
 class GPUSupport;
-class MediaDelegate;
 class PaletteDelegate;
 class SessionStateDelegate;
 class ShelfDelegate;
@@ -112,9 +111,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a accessibility delegate. Shell takes ownership of the delegate.
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() = 0;
-
-  // Creates a media delegate. Shell takes ownership of the delegate.
-  virtual MediaDelegate* CreateMediaDelegate() = 0;
 
   virtual std::unique_ptr<PaletteDelegate> CreatePaletteDelegate() = 0;
 

@@ -10,7 +10,6 @@
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
 #include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/gpu_support_stub.h"
-#include "ash/common/media_delegate.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/test/test_session_state_delegate.h"
@@ -37,27 +36,6 @@
 namespace ash {
 namespace test {
 namespace {
-
-class MediaDelegateImpl : public MediaDelegate {
- public:
-  MediaDelegateImpl() : state_(MEDIA_CAPTURE_NONE) {}
-  ~MediaDelegateImpl() override {}
-
-  void set_media_capture_state(MediaCaptureState state) { state_ = state; }
-
- private:
-  // MediaDelegate:
-  void HandleMediaNextTrack() override {}
-  void HandleMediaPlayPause() override {}
-  void HandleMediaPrevTrack() override {}
-  MediaCaptureState GetMediaCaptureState(UserIndex index) override {
-    return state_;
-  }
-
-  MediaCaptureState state_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaDelegateImpl);
-};
 
 class AppListViewDelegateFactoryImpl
     : public app_list::AppListViewDelegateFactory {
@@ -159,10 +137,6 @@ AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate();
 }
 
-MediaDelegate* TestShellDelegate::CreateMediaDelegate() {
-  return new MediaDelegateImpl;
-}
-
 std::unique_ptr<PaletteDelegate> TestShellDelegate::CreatePaletteDelegate() {
   return nullptr;
 }
@@ -197,14 +171,6 @@ void TestShellDelegate::SetTouchscreenEnabledInPrefs(bool enabled,
 }
 
 void TestShellDelegate::UpdateTouchscreenStatusFromPrefs() {}
-
-void TestShellDelegate::SetMediaCaptureState(MediaCaptureState state) {
-#if defined(OS_CHROMEOS)
-  static_cast<MediaDelegateImpl*>(WmShell::Get()->media_delegate())
-      ->set_media_capture_state(state);
-  WmShell::Get()->system_tray_notifier()->NotifyMediaCaptureChanged();
-#endif
-}
 
 }  // namespace test
 }  // namespace ash

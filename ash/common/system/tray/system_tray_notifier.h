@@ -31,7 +31,6 @@ class BluetoothObserver;
 class EnterpriseDomainObserver;
 class LastWindowClosedObserver;
 class LogoutButtonObserver;
-class MediaCaptureObserver;
 class NetworkObserver;
 class NetworkPortalDetectorObserver;
 class ScreenCaptureObserver;
@@ -101,11 +100,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyShowLoginButtonChanged(bool show_login_button);
   void NotifyLogoutDialogDurationChanged(base::TimeDelta duration);
 
-  // Media capture.
-  void AddMediaCaptureObserver(MediaCaptureObserver* observer);
-  void RemoveMediaCaptureObserver(MediaCaptureObserver* observer);
-  void NotifyMediaCaptureChanged();
-
   // Network.
   void AddNetworkObserver(NetworkObserver* observer);
   void RemoveNetworkObserver(NetworkObserver* observer);
@@ -161,7 +155,6 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
   base::ObserverList<LastWindowClosedObserver> last_window_closed_observers_;
   base::ObserverList<LogoutButtonObserver> logout_button_observers_;
-  base::ObserverList<MediaCaptureObserver> media_capture_observers_;
   base::ObserverList<NetworkObserver> network_observers_;
   base::ObserverList<NetworkPortalDetectorObserver>
       network_portal_detector_observers_;

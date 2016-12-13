@@ -14,6 +14,7 @@
 #include "ash/common/devtools/ash_devtools_dom_agent.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
+#include "ash/common/media_controller.h"
 #include "ash/common/new_window_controller.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_controller.h"
@@ -80,7 +81,6 @@ void WmShell::Initialize(const scoped_refptr<base::SequencedWorkerPool>& pool) {
   // Some delegates access WmShell during their construction. Create them here
   // instead of the WmShell constructor.
   accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
-  media_delegate_.reset(delegate_->CreateMediaDelegate());
   palette_delegate_ = delegate_->CreatePaletteDelegate();
   toast_manager_.reset(new ToastManager);
 
@@ -256,6 +256,7 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
       immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
       locale_notification_controller_(
           base::MakeUnique<LocaleNotificationController>()),
+      media_controller_(base::MakeUnique<MediaController>()),
       new_window_controller_(base::MakeUnique<NewWindowController>()),
       session_controller_(base::MakeUnique<SessionController>()),
       shelf_controller_(base::MakeUnique<ShelfController>()),

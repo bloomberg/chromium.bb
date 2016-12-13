@@ -49,7 +49,6 @@
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
-#include "chrome/browser/ui/ash/media_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
@@ -531,10 +530,6 @@ ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
   return new AccessibilityDelegateImpl;
-}
-
-ash::MediaDelegate* ChromeShellDelegate::CreateMediaDelegate() {
-  return new MediaDelegateChromeOS;
 }
 
 std::unique_ptr<ash::PaletteDelegate>

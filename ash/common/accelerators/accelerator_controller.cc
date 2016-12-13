@@ -13,7 +13,7 @@
 #include "ash/common/accessibility_types.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/ime_control_delegate.h"
-#include "ash/common/media_delegate.h"
+#include "ash/common/media_controller.h"
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/new_window_controller.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -133,15 +133,15 @@ void HandleLaunchLastApp() {
 }
 
 void HandleMediaNextTrack() {
-  WmShell::Get()->media_delegate()->HandleMediaNextTrack();
+  WmShell::Get()->media_controller()->HandleMediaNextTrack();
 }
 
 void HandleMediaPlayPause() {
-  WmShell::Get()->media_delegate()->HandleMediaPlayPause();
+  WmShell::Get()->media_controller()->HandleMediaPlayPause();
 }
 
 void HandleMediaPrevTrack() {
-  WmShell::Get()->media_delegate()->HandleMediaPrevTrack();
+  WmShell::Get()->media_controller()->HandleMediaPrevTrack();
 }
 
 bool CanHandleNewIncognitoWindow() {

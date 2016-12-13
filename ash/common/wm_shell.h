@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/media_delegate.h"
 #include "ash/common/metrics/gesture_action_type.h"
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/wm/lock_state_observer.h"
@@ -57,6 +56,7 @@ class KeyboardBrightnessControlDelegate;
 class KeyboardUI;
 class LocaleNotificationController;
 class MaximizeModeController;
+class MediaController;
 class MruWindowTracker;
 class NewWindowController;
 class PaletteDelegate;
@@ -147,7 +147,7 @@ class ASH_EXPORT WmShell {
 
   MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
 
-  MediaDelegate* media_delegate() { return media_delegate_.get(); }
+  MediaController* media_controller() { return media_controller_.get(); }
 
   NewWindowController* new_window_controller() {
     return new_window_controller_.get();
@@ -497,7 +497,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<KeyboardUI> keyboard_ui_;
   std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
   std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
-  std::unique_ptr<MediaDelegate> media_delegate_;
+  std::unique_ptr<MediaController> media_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<NewWindowController> new_window_controller_;
   std::unique_ptr<PaletteDelegate> palette_delegate_;

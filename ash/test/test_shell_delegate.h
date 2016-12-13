@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/media_delegate.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/test/test_session_state_delegate.h"
 #include "base/macros.h"
@@ -52,7 +51,6 @@ class TestShellDelegate : public ShellDelegate {
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
   TestSessionStateDelegate* CreateSessionStateDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
-  MediaDelegate* CreateMediaDelegate() override;
   std::unique_ptr<PaletteDelegate> CreatePaletteDelegate() override;
   ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,
                                    const ShelfItem* item) override;
@@ -71,7 +69,6 @@ class TestShellDelegate : public ShellDelegate {
     return app_list_presenter_.get();
   }
 
-  void SetMediaCaptureState(MediaCaptureState state);
   void SetForceMaximizeOnFirstRun(bool maximize) {
     force_maximize_on_first_run_ = maximize;
   }
