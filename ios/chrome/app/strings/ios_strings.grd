@@ -1038,6 +1038,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_QR_SCANNER_VIEWPORT_CAPTION" desc="Message displayed below the QR scanner viewport instructing the user to position the scanned QR or bar code inside the viewport. [Length: unlimited] [iOS only]">
         QR Code or barcode
       </message>
+      <message name="IDS_IOS_READING_LIST_SNACKBAR_MESSAGE" desc="Message briefly displayed at the bottom of the screen to the user to inform that the selected page has been added to the reading list. [Length: 35em]" meaning="The selected page has been added to your reading list. [Length: 35em]">
+        Added to Reading List
+      </message>
       <message name="IDS_IOS_READING_LIST_CANCEL_BUTTON" desc="Label of the button to stop editing the reading list entries (delete, mark as read/unread) [Length: 15em]" meaning="Stop editing. [Length: 15em]">
         Cancel
       </message>
