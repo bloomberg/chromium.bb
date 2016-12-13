@@ -1063,6 +1063,30 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric
+    name="Media.Autoplay.CrossOrigin.UserPausedAutoplayingVideo.ChildFrame"
+    type="ETLD_PLUS_ONE">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a cross-origin iframe URL containing an autoplaying video but
+    the user actively paused it.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="Media.Autoplay.CrossOrigin.UserPausedAutoplayingVideo.TopLevelFrame"
+    type="ETLD_PLUS_ONE">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>
+    The eTLD+1 of the top-level frame URL that has a cross-origin iframe
+    containing an autoplaying video but the user actively paused it.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Media.OriginUrl.EME" type="ETLD_PLUS_ONE">
   <owner>xhwang@chromium.org</owner>
   <summary>

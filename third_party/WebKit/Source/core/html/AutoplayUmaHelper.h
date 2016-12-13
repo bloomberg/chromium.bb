@@ -86,6 +86,7 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   virtual void handleContextDestroyed();  // Make virtual for testing.
 
   void maybeUnregisterContextDestroyedObserver();
+  void maybeUnregisterMediaElementPauseListener();
 
   void maybeStartRecordingMutedVideoPlayMethodBecomeVisible();
   void maybeStopRecordingMutedVideoPlayMethodBecomeVisible(bool isVisible);
@@ -93,10 +94,13 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   void maybeStartRecordingMutedVideoOffscreenDuration();
   void maybeStopRecordingMutedVideoOffscreenDuration();
 
+  void maybeRecordUserPausedAutoplayingCrossOriginVideo();
+
   void onVisibilityChangedForMutedVideoOffscreenDuration(bool isVisibile);
   void onVisibilityChangedForMutedVideoPlayMethodBecomeVisible(bool isVisible);
 
   bool shouldListenToContextDestroyed() const;
+  bool shouldRecordUserPausedAutoplayingCrossOriginVideo() const;
 
   // The autoplay source. Use AutoplaySource::NumberOfSources for invalid
   // source.
@@ -125,6 +129,9 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   bool m_isVisible;
 
   std::set<CrossOriginAutoplayResult> m_recordedCrossOriginAutoplayResults;
+
+  // Whether the UMA helper has recorded user pausing a cross-origin video.
+  bool m_hasRecordedUserPausedAutoplayingCrossOriginVideo;
 
   // The observer is used to observer an autoplaying muted video changing it's
   // visibility, which is used for offscreen duration UMA.  The UMA is pending

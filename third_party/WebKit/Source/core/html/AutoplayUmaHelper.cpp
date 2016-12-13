@@ -210,6 +210,7 @@ void AutoplayUmaHelper::handlePlayingEvent() {
 
 void AutoplayUmaHelper::handlePauseEvent() {
   maybeStopRecordingMutedVideoOffscreenDuration();
+  maybeRecordUserPausedAutoplayingCrossOriginVideo();
 }
 
 void AutoplayUmaHelper::contextDestroyed() {
@@ -299,8 +300,27 @@ void AutoplayUmaHelper::maybeStopRecordingMutedVideoOffscreenDuration() {
   m_mutedVideoOffscreenDurationVisibilityObserver->stop();
   m_mutedVideoOffscreenDurationVisibilityObserver = nullptr;
   m_mutedVideoAutoplayOffscreenDurationMS = 0;
-  m_element->removeEventListener(EventTypeNames::pause, this, false);
+  maybeUnregisterMediaElementPauseListener();
   maybeUnregisterContextDestroyedObserver();
+}
+
+void AutoplayUmaHelper::maybeRecordUserPausedAutoplayingCrossOriginVideo() {
+  if (!shouldRecordUserPausedAutoplayingCrossOriginVideo())
+    return;
+
+  if (m_element->ended() || m_element->seeking())
+    return;
+
+  Platform::current()->recordRapporURL(
+      "Media.Autoplay.CrossOrigin.UserPausedAutoplayingVideo.ChildFrame",
+      m_element->document().url());
+  Platform::current()->recordRapporURL(
+      "Media.Autoplay.CrossOrigin.UserPausedAutoplayingVideo."
+      "TopLevelFrame",
+      m_element->document().topDocument().url());
+
+  m_hasRecordedUserPausedAutoplayingCrossOriginVideo = true;
+  maybeUnregisterMediaElementPauseListener();
 }
 
 void AutoplayUmaHelper::maybeUnregisterContextDestroyedObserver() {
@@ -309,9 +329,24 @@ void AutoplayUmaHelper::maybeUnregisterContextDestroyedObserver() {
   }
 }
 
+void AutoplayUmaHelper::maybeUnregisterMediaElementPauseListener() {
+  if (m_mutedVideoOffscreenDurationVisibilityObserver)
+    return;
+  if (shouldRecordUserPausedAutoplayingCrossOriginVideo())
+    return;
+  m_element->removeEventListener(EventTypeNames::pause, this, false);
+}
+
 bool AutoplayUmaHelper::shouldListenToContextDestroyed() const {
   return m_mutedVideoPlayMethodVisibilityObserver ||
          m_mutedVideoOffscreenDurationVisibilityObserver;
+}
+
+bool AutoplayUmaHelper::shouldRecordUserPausedAutoplayingCrossOriginVideo()
+    const {
+  return m_element->isInCrossOriginFrame() && m_element->isHTMLVideoElement() &&
+         m_source != AutoplaySource::NumberOfSources &&
+         !m_hasRecordedUserPausedAutoplayingCrossOriginVideo;
 }
 
 DEFINE_TRACE(AutoplayUmaHelper) {
