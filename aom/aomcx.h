@@ -729,7 +729,7 @@ AOM_CTRL_USE_TYPE(AV1E_SET_TARGET_LEVEL, unsigned int)
 AOM_CTRL_USE_TYPE(AV1E_GET_LEVEL, int *)
 #define AOM_CTRL_AV1E_GET_LEVEL
 /*!\endcond */
-/*! @} - end defgroup vp8_encoder */
+/*! @} - end defgroup aom_encoder */
 #ifdef __cplusplus
 }  // extern "C"
 #endif
