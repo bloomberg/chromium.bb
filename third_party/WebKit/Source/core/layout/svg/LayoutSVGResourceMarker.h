@@ -42,11 +42,19 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
   // Calculates marker boundaries, mapped to the target element's coordinate
   // space.
   FloatRect markerBoundaries(const AffineTransform& markerTransformation) const;
-
-  AffineTransform localToSVGParentTransform() const override;
   AffineTransform markerTransformation(const FloatPoint& origin,
                                        float angle,
                                        float strokeWidth) const;
+
+  AffineTransform localToSVGParentTransform() const final {
+    return m_localToParentTransform;
+  }
+  void setNeedsTransformUpdate() final;
+
+  // The viewport origin is (0,0) and not the reference point because each
+  // marker instance includes the reference in markerTransformation().
+  FloatRect viewport() const { return FloatRect(FloatPoint(), m_viewportSize); }
+
   bool shouldPaint() const;
 
   FloatPoint referencePoint() const;
@@ -54,21 +62,16 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
   SVGMarkerUnitsType markerUnits() const;
   SVGMarkerOrientType orientType() const;
 
-  // The viewport origin is (0,0) and not the reference point because each
-  // marker instance includes the reference in markerTransformation().
-  FloatRect viewport() const { return FloatRect(FloatPoint(), m_viewportSize); }
-
   static const LayoutSVGResourceType s_resourceType = MarkerResourceType;
   LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
  private:
   void layout() override;
-  void calcViewport() override;
-  SVGTransformChange calculateLocalTransform() override;
+  SVGTransformChange calculateLocalTransform() final;
 
-  AffineTransform viewportTransform() const;
-
+  AffineTransform m_localToParentTransform;
   FloatSize m_viewportSize;
+  bool m_needsTransformUpdate;
 };
 
 DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceMarker,

@@ -99,22 +99,26 @@ AffineTransform SVGMarkerElement::viewBoxToViewTransform(
 }
 
 void SVGMarkerElement::svgAttributeChanged(const QualifiedName& attrName) {
-  bool isLengthAttr = attrName == SVGNames::refXAttr ||
-                      attrName == SVGNames::refYAttr ||
-                      attrName == SVGNames::markerWidthAttr ||
-                      attrName == SVGNames::markerHeightAttr;
-
-  if (isLengthAttr)
+  bool viewboxAttributeChanged = SVGFitToViewBox::isKnownAttribute(attrName);
+  bool lengthAttributeChanged = attrName == SVGNames::refXAttr ||
+                                attrName == SVGNames::refYAttr ||
+                                attrName == SVGNames::markerWidthAttr ||
+                                attrName == SVGNames::markerHeightAttr;
+  if (lengthAttributeChanged)
     updateRelativeLengthsInformation();
 
-  if (isLengthAttr || attrName == SVGNames::markerUnitsAttr ||
-      attrName == SVGNames::orientAttr ||
-      SVGFitToViewBox::isKnownAttribute(attrName)) {
+  if (viewboxAttributeChanged || lengthAttributeChanged ||
+      attrName == SVGNames::markerUnitsAttr ||
+      attrName == SVGNames::orientAttr) {
     SVGElement::InvalidationGuard invalidationGuard(this);
-    LayoutSVGResourceContainer* layoutObject =
-        toLayoutSVGResourceContainer(this->layoutObject());
-    if (layoutObject)
-      layoutObject->invalidateCacheAndMarkForLayout();
+    auto* resourceContainer = toLayoutSVGResourceContainer(layoutObject());
+    if (resourceContainer) {
+      // The marker transform depends on both viewbox attributes, and the marker
+      // size attributes (width, height).
+      if (viewboxAttributeChanged || lengthAttributeChanged)
+        resourceContainer->setNeedsTransformUpdate();
+      resourceContainer->invalidateCacheAndMarkForLayout();
+    }
 
     return;
   }

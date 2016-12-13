@@ -27,7 +27,7 @@
 namespace blink {
 
 LayoutSVGResourceMarker::LayoutSVGResourceMarker(SVGMarkerElement* node)
-    : LayoutSVGResourceContainer(node) {}
+    : LayoutSVGResourceContainer(node), m_needsTransformUpdate(true) {}
 
 LayoutSVGResourceMarker::~LayoutSVGResourceMarker() {}
 
@@ -70,10 +70,6 @@ FloatRect LayoutSVGResourceMarker::markerBoundaries(
   coordinates = localToSVGParentTransform().mapRect(coordinates);
 
   return markerTransformation.mapRect(coordinates);
-}
-
-AffineTransform LayoutSVGResourceMarker::localToSVGParentTransform() const {
-  return viewportTransform();
 }
 
 FloatPoint LayoutSVGResourceMarker::referencePoint() const {
@@ -119,7 +115,7 @@ AffineTransform LayoutSVGResourceMarker::markerTransformation(
   // The reference point (refX, refY) is in the coordinate space of the marker's
   // contents so we include the value in each marker's transform.
   FloatPoint mappedReferencePoint =
-      viewportTransform().mapPoint(referencePoint());
+      localToSVGParentTransform().mapPoint(referencePoint());
   transform.translate(-mappedReferencePoint.x(), -mappedReferencePoint.y());
   return transform;
 }
@@ -133,17 +129,19 @@ bool LayoutSVGResourceMarker::shouldPaint() const {
          !marker->viewBox()->currentValue()->value().isEmpty();
 }
 
-AffineTransform LayoutSVGResourceMarker::viewportTransform() const {
-  SVGMarkerElement* marker = toSVGMarkerElement(element());
-  ASSERT(marker);
-
-  return marker->viewBoxToViewTransform(m_viewportSize.width(),
-                                        m_viewportSize.height());
+void LayoutSVGResourceMarker::setNeedsTransformUpdate() {
+  setMayNeedPaintInvalidationSubtree();
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    // The transform paint property relies on the SVG transform being up-to-date
+    // (see: PaintPropertyTreeBuilder::updateTransformForNonRootSVG).
+    setNeedsPaintPropertyUpdate();
+  }
+  m_needsTransformUpdate = true;
 }
 
-void LayoutSVGResourceMarker::calcViewport() {
-  if (!selfNeedsLayout())
-    return;
+SVGTransformChange LayoutSVGResourceMarker::calculateLocalTransform() {
+  if (!m_needsTransformUpdate)
+    return SVGTransformChange::None;
 
   SVGMarkerElement* marker = toSVGMarkerElement(element());
   ASSERT(marker);
@@ -152,14 +150,13 @@ void LayoutSVGResourceMarker::calcViewport() {
   float width = marker->markerWidth()->currentValue()->value(lengthContext);
   float height = marker->markerHeight()->currentValue()->value(lengthContext);
   m_viewportSize = FloatSize(width, height);
-}
 
-SVGTransformChange LayoutSVGResourceMarker::calculateLocalTransform() {
-  // TODO(fs): Temporarily, needing a layout implies that the local transform
-  // has changed. This should be updated to be more precise and factor in the
-  // actual (relevant) changes to the computed user-space transform.
-  return selfNeedsLayout() ? SVGTransformChange::Full
-                           : SVGTransformChange::None;
+  SVGTransformChangeDetector changeDetector(m_localToParentTransform);
+  m_localToParentTransform = marker->viewBoxToViewTransform(
+      m_viewportSize.width(), m_viewportSize.height());
+
+  m_needsTransformUpdate = false;
+  return changeDetector.computeChange(m_localToParentTransform);
 }
 
 }  // namespace blink
