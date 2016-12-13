@@ -1576,6 +1576,9 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(
           .setNodeValue(nodeValue)
           .build();
 
+  if (node->isSVGElement())
+    value->setIsSVG(true);
+
   bool forcePushChildren = false;
   if (node->isElementNode()) {
     Element* element = toElement(node);
