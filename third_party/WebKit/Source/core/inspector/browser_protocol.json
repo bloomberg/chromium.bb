@@ -1227,9 +1227,14 @@
             },
             {
                 "name": "getCookies",
-                "parameters": [
-                    { "name": "global", "type": "boolean", "optional": true, "description": "If true, returns all cookies, otherwise only the cookies for the current URL." }
+                "returns": [
+                    { "name": "cookies", "type": "array", "items": { "$ref": "Cookie" }, "description": "Array of cookie objects." }
                 ],
+                "description": "Returns all browser cookies for the current URL. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.",
+                "experimental": true
+            },
+            {
+                "name": "getAllCookies",
                 "returns": [
                     { "name": "cookies", "type": "array", "items": { "$ref": "Cookie" }, "description": "Array of cookie objects." }
                 ],

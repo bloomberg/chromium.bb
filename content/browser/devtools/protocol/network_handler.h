@@ -30,8 +30,8 @@ class NetworkHandler : public Network::Backend {
   Response ClearBrowserCache() override;
   Response ClearBrowserCookies() override;
 
-  void GetCookies(Maybe<bool> global,
-                  std::unique_ptr<GetCookiesCallback> callback) override;
+  void GetCookies(std::unique_ptr<GetCookiesCallback> callback) override;
+  void GetAllCookies(std::unique_ptr<GetAllCookiesCallback> callback) override;
   void DeleteCookie(const std::string& cookie_name,
                     const std::string& url,
                     std::unique_ptr<DeleteCookieCallback> callback) override;

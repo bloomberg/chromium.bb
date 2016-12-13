@@ -32,10 +32,10 @@
             },
             {
                 "domain": "Network",
-                "include": ["enable", "disable", "clearBrowserCache", "clearBrowserCookies", "getCookies", "deleteCookie", "setCookie", "canEmulateNetworkConditions"],
+                "include": ["enable", "disable", "clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookie", "setCookie", "canEmulateNetworkConditions"],
                 "include_types": ["CookieSameSite", "Cookie"],
                 "include_events": [],
-                "async": ["getCookies", "deleteCookie", "setCookie"]
+                "async": ["getCookies", "getAllCookies", "deleteCookie", "setCookie"]
             },
             {
                 "domain": "Page",

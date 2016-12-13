@@ -1487,9 +1487,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {
   EXPECT_EQ("mendacious", value);
 
   // Then get all the cookies in the cookie jar.
-  command_params.reset(new base::DictionaryValue());
-  command_params->SetBoolean("global", true);
-  SendCommand("Network.getCookies", std::move(command_params), true);
+  SendCommand("Network.getAllCookies", nullptr, true);
 
   EXPECT_TRUE(result_->HasKey("cookies"));
   EXPECT_TRUE(result_->GetList("cookies", &cookies));
