@@ -1902,6 +1902,7 @@
                         'tommycli@chromium.org'],
     'media_mojo': ['alokp+watch@chromium.org'],
     'media_remoting': ['apacible+watch@chromium.org',
+                       'erickung+watch@chromium.org',
                        'miu+watch@chromium.org',
                        'xjz+watch@chromium.org'],
     'media_router': ['media-router+watch@chromium.org'],
