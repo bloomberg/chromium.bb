@@ -99,7 +99,6 @@ Animation::Animation(ExecutionContext* executionContext,
       m_compositorState(nullptr),
       m_compositorPending(false),
       m_compositorGroup(0),
-      m_preFinalizerRegistered(false),
       m_currentTimePending(false),
       m_stateIsBeingUpdated(false),
       m_effectSuppressed(false) {
@@ -115,7 +114,8 @@ Animation::Animation(ExecutionContext* executionContext,
 }
 
 Animation::~Animation() {
-  destroyCompositorPlayer();
+  // Verify that m_compositorPlayer has been disposed of.
+  DCHECK(!m_compositorPlayer);
 }
 
 void Animation::dispose() {
@@ -910,17 +910,9 @@ void Animation::endUpdatingState() {
 void Animation::createCompositorPlayer() {
   if (Platform::current()->isThreadedAnimationEnabled() &&
       !m_compositorPlayer) {
-    // We only need to pre-finalize if we are running animations on the
-    // compositor.
-    if (!m_preFinalizerRegistered) {
-      ThreadState::current()->registerPreFinalizer(this);
-      m_preFinalizerRegistered = true;
-    }
-
     DCHECK(Platform::current()->compositorSupport());
-    m_compositorPlayer = CompositorAnimationPlayer::create();
+    m_compositorPlayer = CompositorAnimationPlayerHolder::create(this);
     DCHECK(m_compositorPlayer);
-    m_compositorPlayer->setAnimationDelegate(this);
     attachCompositorTimeline();
   }
 
@@ -932,8 +924,8 @@ void Animation::destroyCompositorPlayer() {
 
   if (m_compositorPlayer) {
     detachCompositorTimeline();
-    m_compositorPlayer->setAnimationDelegate(nullptr);
-    m_compositorPlayer.reset();
+    m_compositorPlayer->detach();
+    m_compositorPlayer = nullptr;
   }
 }
 
@@ -966,8 +958,8 @@ void Animation::attachCompositedLayers() {
 }
 
 void Animation::detachCompositedLayers() {
-  if (m_compositorPlayer && m_compositorPlayer->isElementAttached())
-    m_compositorPlayer->detachElement();
+  if (m_compositorPlayer && m_compositorPlayer->player()->isElementAttached())
+    m_compositorPlayer->player()->detachElement();
 }
 
 void Animation::notifyAnimationStarted(double monotonicTime, int group) {
@@ -1126,8 +1118,36 @@ DEFINE_TRACE(Animation) {
   visitor->trace(m_pendingCancelledEvent);
   visitor->trace(m_finishedPromise);
   visitor->trace(m_readyPromise);
+  visitor->trace(m_compositorPlayer);
   EventTargetWithInlineData::trace(visitor);
   SuspendableObject::trace(visitor);
 }
 
+Animation::CompositorAnimationPlayerHolder*
+Animation::CompositorAnimationPlayerHolder::create(Animation* animation) {
+  return new CompositorAnimationPlayerHolder(animation);
+}
+
+Animation::CompositorAnimationPlayerHolder::CompositorAnimationPlayerHolder(
+    Animation* animation)
+    : m_animation(animation) {
+  ThreadState::current()->registerPreFinalizer(this);
+  m_compositorPlayer = CompositorAnimationPlayer::create();
+  m_compositorPlayer->setAnimationDelegate(m_animation);
+}
+
+void Animation::CompositorAnimationPlayerHolder::dispose() {
+  if (!m_animation)
+    return;
+  m_animation->dispose();
+  DCHECK(!m_animation);
+  DCHECK(!m_compositorPlayer);
+}
+
+void Animation::CompositorAnimationPlayerHolder::detach() {
+  DCHECK(m_compositorPlayer);
+  m_compositorPlayer->setAnimationDelegate(nullptr);
+  m_animation = nullptr;
+  m_compositorPlayer.reset();
+}
 }  // namespace blink

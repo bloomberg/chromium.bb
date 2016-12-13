@@ -62,7 +62,6 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                                     public CompositorAnimationPlayerClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Animation);
-  USING_PRE_FINALIZER(Animation, dispose);
 
  public:
   enum AnimationPlayState { Unset, Idle, Pending, Running, Paused, Finished };
@@ -162,7 +161,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void notifyStartTime(double timelineTime);
   // CompositorAnimationPlayerClient implementation.
   CompositorAnimationPlayer* compositorPlayer() const override {
-    return m_compositorPlayer.get();
+    return m_compositorPlayer ? m_compositorPlayer->player() : nullptr;
   }
 
   bool affects(const Element&, CSSPropertyID) const;
@@ -300,6 +299,33 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
     CompositorPendingChange m_compositorPendingChange;
   };
 
+  // CompositorAnimationPlayer objects need to eagerly sever
+  // their connection to their Animation delegate; use a separate
+  // 'holder' on-heap object to accomplish that.
+  class CompositorAnimationPlayerHolder
+      : public GarbageCollectedFinalized<CompositorAnimationPlayerHolder> {
+    USING_PRE_FINALIZER(CompositorAnimationPlayerHolder, dispose);
+
+   public:
+    static CompositorAnimationPlayerHolder* create(Animation*);
+
+    void detach();
+
+    DEFINE_INLINE_TRACE() { visitor->trace(m_animation); }
+
+    CompositorAnimationPlayer* player() const {
+      return m_compositorPlayer.get();
+    }
+
+   private:
+    explicit CompositorAnimationPlayerHolder(Animation*);
+
+    void dispose();
+
+    std::unique_ptr<CompositorAnimationPlayer> m_compositorPlayer;
+    Member<Animation> m_animation;
+  };
+
   // This mirrors the known compositor state. It is created when a compositor
   // animation is started. Updated once the start time is known and each time
   // modifications are pushed to the compositor.
@@ -307,8 +333,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   bool m_compositorPending;
   int m_compositorGroup;
 
-  std::unique_ptr<CompositorAnimationPlayer> m_compositorPlayer;
-  bool m_preFinalizerRegistered;
+  Member<CompositorAnimationPlayerHolder> m_compositorPlayer;
 
   bool m_currentTimePending;
   bool m_stateIsBeingUpdated;
