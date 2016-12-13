@@ -33,7 +33,16 @@ chrome.runtime.onMessageExternal.addListener(
 
       try {
         var requestInfo = {};
-        if (sender.tab) {
+
+        // Set the tab ID. If it's passed in the message, use that.
+        // Otherwise use the sender information.
+        if (message['tabId']) {
+          requestInfo['tabId'] = +message['tabId'];
+          if (isNaN(requestInfo['tabId'])) {
+            throw new Error('Cannot convert tab ID string to integer: ' +
+                            message['tabId']);
+          }
+        } else if (sender.tab) {
           requestInfo['tabId'] = sender.tab.id;
         }
 
@@ -42,7 +51,16 @@ chrome.runtime.onMessageExternal.addListener(
         }
 
         var method = message['method'];
-        var origin = getHost(sender.url);
+
+        // Set the origin. If a URL is passed in the message, use that.
+        // Otherwise use the sender information.
+        var origin;
+        if (message['winUrl']) {
+          origin = getHost(message['winUrl']);
+        } else {
+          origin = getHost(sender.url);
+        }
+
         if (method == 'cpu.getInfo') {
           chrome.system.cpu.getInfo(doSendResponse);
           return true;
