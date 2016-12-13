@@ -79,14 +79,9 @@ WebSecurityOrigin WebDocument::getSecurityOrigin() const {
   return WebSecurityOrigin(constUnwrap<Document>()->getSecurityOrigin());
 }
 
-bool WebDocument::isSecureContext(WebString& errorMessage) const {
+bool WebDocument::isSecureContext() const {
   const Document* document = constUnwrap<Document>();
-  if (!document)
-    return false;
-  String message;
-  bool result = document->isSecureContext(message);
-  errorMessage = message;
-  return result;
+  return document && document->isSecureContext();
 }
 
 WebString WebDocument::encoding() const {

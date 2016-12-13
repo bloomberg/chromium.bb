@@ -4255,9 +4255,8 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
   extra_data->set_download_to_network_cache_only(
       is_prefetch &&
       WebURLRequestToResourceType(request) != RESOURCE_TYPE_MAIN_FRAME);
-  WebString error;
   extra_data->set_initiated_in_secure_context(
-      frame->document().isSecureContext(error));
+      frame->document().isSecureContext());
 
   // Renderer process transfers apply only to navigational requests.
   bool is_navigational_request =

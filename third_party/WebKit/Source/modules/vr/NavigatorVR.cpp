@@ -61,8 +61,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState) {
 
   UseCounter::count(*document, UseCounter::VRGetDisplays);
   ExecutionContext* executionContext = scriptState->getExecutionContext();
-  String errorMessage;
-  if (!executionContext->isSecureContext(errorMessage))
+  if (!executionContext->isSecureContext())
     UseCounter::count(*document, UseCounter::VRGetDisplaysInsecureOrigin);
 
   Platform::current()->recordRapporURL("VR.WebVR.GetDisplays", document->url());

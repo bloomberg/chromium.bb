@@ -6375,21 +6375,11 @@ void Document::platformColorsChanged() {
 bool Document::isSecureContext(
     String& errorMessage,
     const SecureContextCheck privilegeContextCheck) const {
-  bool isSecure = isSecureContextImpl(privilegeContextCheck);
-  if (getSandboxFlags() != SandboxNone) {
-    UseCounter::count(
-        *this, isSecure
-                   ? UseCounter::SecureContextCheckForSandboxedOriginPassed
-                   : UseCounter::SecureContextCheckForSandboxedOriginFailed);
+  if (!isSecureContext(privilegeContextCheck)) {
+    errorMessage = SecurityOrigin::isPotentiallyTrustworthyErrorMessage();
+    return false;
   }
-  UseCounter::count(*this, isSecure ? UseCounter::SecureContextCheckPassed
-                                    : UseCounter::SecureContextCheckFailed);
-
-  if (isSecure)
-    return true;
-
-  errorMessage = SecurityOrigin::isPotentiallyTrustworthyErrorMessage();
-  return false;
+  return true;
 }
 
 bool Document::isSecureContext(

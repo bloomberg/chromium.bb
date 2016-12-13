@@ -52,8 +52,7 @@ void DeviceOrientationController::didAddEventListener(
     return;
 
   if (document().frame()) {
-    String errorMessage;
-    if (document().isSecureContext(errorMessage)) {
+    if (document().isSecureContext()) {
       UseCounter::count(document().frame(),
                         UseCounter::DeviceOrientationSecureOrigin);
     } else {

@@ -355,8 +355,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   // sites, we simply keep track of sites that aren't secure and output a
   // deprecation message.
   ExecutionContext* executionContext = scriptState->getExecutionContext();
-  String errorMessage;
-  if (executionContext->isSecureContext(errorMessage)) {
+  if (executionContext->isSecureContext()) {
     UseCounter::count(executionContext, UseCounter::EncryptedMediaSecureOrigin);
   } else {
     Deprecation::countDeprecation(executionContext,

@@ -83,11 +83,8 @@ void HostDispatcherWrapper::AddInstance(PP_Instance instance) {
   if (host) {
     RenderFrame* render_frame = host->GetRenderFrameForInstance(instance);
     PepperPluginInstance* plugin_instance = host->GetPluginInstance(instance);
-    blink::WebString unused;
     bool is_privileged_context =
-        plugin_instance->GetContainer()
-            ->document()
-            .isSecureContext(unused) &&
+        plugin_instance->GetContainer()->document().isSecureContext() &&
         content::IsOriginSecure(plugin_instance->GetPluginURL());
     render_frame->Send(new FrameHostMsg_DidCreateOutOfProcessPepperInstance(
         plugin_child_id_, instance,

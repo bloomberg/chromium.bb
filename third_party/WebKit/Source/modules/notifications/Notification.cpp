@@ -91,8 +91,7 @@ Notification* Notification::create(ExecutionContext* context,
     return nullptr;
   }
 
-  String insecureOriginMessage;
-  if (context->isSecureContext(insecureOriginMessage)) {
+  if (context->isSecureContext()) {
     UseCounter::count(context, UseCounter::NotificationSecureOrigin);
     if (context->isDocument())
       UseCounter::countCrossOriginIframe(

@@ -283,8 +283,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
                                         const HeapVector<VRLayer>& layers) {
   ExecutionContext* executionContext = scriptState->getExecutionContext();
   UseCounter::count(executionContext, UseCounter::VRRequestPresent);
-  String errorMessage;
-  if (!executionContext->isSecureContext(errorMessage)) {
+  if (!executionContext->isSecureContext()) {
     UseCounter::count(executionContext,
                       UseCounter::VRRequestPresentInsecureOrigin);
   }

@@ -72,7 +72,7 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebURL url() const;
   // Note: Security checks should use the getSecurityOrigin(), not url().
   BLINK_EXPORT WebSecurityOrigin getSecurityOrigin() const;
-  BLINK_EXPORT bool isSecureContext(WebString& errorMessage) const;
+  BLINK_EXPORT bool isSecureContext() const;
 
   BLINK_EXPORT WebString encoding() const;
   BLINK_EXPORT WebString contentLanguage() const;
