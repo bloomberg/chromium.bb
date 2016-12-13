@@ -26,17 +26,16 @@ namespace content {
 AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 namespace {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // Due to driver deadlock issues on Windows (http://crbug/422522) there is a
 // chance device authorization response is never received from the browser side.
 // In this case we will time out, to avoid renderer hang forever waiting for
 // device authorization (http://crbug/615589). This will result in "no audio".
-const int64_t kMaxAuthorizationTimeoutMs = 1000;
-#elif defined(OS_MACOSX)
-const int64_t kMaxAuthorizationTimeoutMs = 2000;
+// There are also cases when authorization takes too long on Mac.
+const int64_t kMaxAuthorizationTimeoutMs = 4000;
 #else
 const int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
-#endif  // defined(OS_WIN)
+#endif
 
 scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
     int render_frame_id,
