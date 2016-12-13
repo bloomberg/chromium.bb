@@ -64,7 +64,7 @@ class TracingBrowserTest : public InProcessBrowserTest {
     // Close the current tab.
     browser()->tab_strip_model()->CloseSelectedTabs();
 
-    GURL url3("chrome://settings");
+    GURL url3("chrome://chrome-urls");
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url3, WindowOpenDisposition::CURRENT_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
