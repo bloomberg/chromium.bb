@@ -8,6 +8,8 @@ blink_core_sources("xml") {
   sources = [
     "DOMParser.cpp",
     "DOMParser.h",
+    "DocumentXMLTreeViewer.cpp",
+    "DocumentXMLTreeViewer.h",
     "DocumentXPathEvaluator.cpp",
     "DocumentXPathEvaluator.h",
     "DocumentXSLT.cpp",

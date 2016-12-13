@@ -486,7 +486,6 @@ core_dependency_idl_files =
                     "timing/WindowPerformance.idl",
                     "timing/WorkerGlobalScopePerformance.idl",
                     "workers/AbstractWorker.idl",
-                    "xml/DocumentXMLTreeViewer.idl",
                     "xml/DocumentXPathEvaluator.idl",
                   ],
                   "abspath")

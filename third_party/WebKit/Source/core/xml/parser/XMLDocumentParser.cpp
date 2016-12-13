@@ -30,7 +30,6 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8Document.h"
 #include "core/HTMLNames.h"
 #include "core/XMLNSNames.h"
 #include "core/dom/CDATASection.h"
@@ -56,6 +55,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ImageLoader.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "core/xml/DocumentXMLTreeViewer.h"
 #include "core/xml/DocumentXSLT.h"
 #include "core/xml/parser/SharedBufferReader.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
@@ -1540,12 +1540,8 @@ void XMLDocumentParser::doEnd() {
   bool xmlViewerMode = !m_sawError && !m_sawCSS && !m_sawXSLTransform &&
                        hasNoStyleInformation(document());
   if (xmlViewerMode) {
-    const char noStyleMessage[] =
-        "This XML file does not appear to have any style information "
-        "associated with it. The document tree is shown below.";
     document()->setIsViewSource(true);
-    V8Document::PrivateScript::transformDocumentToTreeViewMethod(
-        document()->frame(), document(), noStyleMessage);
+    transformDocumentToXMLTreeView(*document());
   } else if (m_sawXSLTransform) {
     xmlDocPtr doc =
         xmlDocPtrForString(document(), m_originalSourceForTransform.toString(),

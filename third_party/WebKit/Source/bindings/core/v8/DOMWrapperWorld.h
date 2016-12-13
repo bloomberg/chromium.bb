@@ -49,6 +49,7 @@ enum WorldIdConstants {
   // Embedder isolated worlds can use IDs in [1, 1<<29).
   EmbedderWorldIdLimit = (1 << 29),
   PrivateScriptIsolatedWorldId,
+  DocumentXMLTreeViewerWorldId,
   IsolatedWorldIdLimit,
   WorkerWorldId,
   TestingWorldId,
