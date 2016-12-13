@@ -236,8 +236,11 @@ void MimeHandlerStreamManager::EmbedderObserver::RenderFrameHostChanged(
     return;
 
   // If this is an unrelated host, ignore.
-  if ((old_host->GetRoutingID() != render_frame_id_) ||
-      (old_host->GetProcess()->GetID() != render_process_id_)) {
+  if ((frame_tree_node_id_ != -1 &&
+       old_host->GetFrameTreeNodeId() != frame_tree_node_id_) ||
+      (render_frame_id_ != -1 &&
+       (old_host->GetRoutingID() != render_frame_id_ ||
+        (old_host->GetProcess()->GetID() != render_process_id_)))) {
     return;
   }
 
@@ -249,6 +252,9 @@ void MimeHandlerStreamManager::EmbedderObserver::RenderFrameHostChanged(
          (frame_tree_node_id_ == new_host_->GetFrameTreeNodeId()));
   render_frame_id_ = new_host_->GetRoutingID();
   render_process_id_ = new_host_->GetProcess()->GetID();
+  // No need to keep this around anymore since we have valid render frame IDs
+  // now.
+  frame_tree_node_id_ = -1;
 }
 
 void MimeHandlerStreamManager::EmbedderObserver::WebContentsDestroyed() {
