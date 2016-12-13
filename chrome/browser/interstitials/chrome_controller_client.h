@@ -31,10 +31,11 @@ class ChromeControllerClient : public security_interstitials::ControllerClient {
   void Reload() override;
   void OpenUrlInCurrentTab(const GURL& url) override;
 
+  PrefService* GetPrefService() override;
+
  protected:
   // security_interstitials::ControllerClient overrides
   const std::string& GetApplicationLocale() override;
-  PrefService* GetPrefService() override;
   const std::string GetExtendedReportingPrefName() override;
 
  private:

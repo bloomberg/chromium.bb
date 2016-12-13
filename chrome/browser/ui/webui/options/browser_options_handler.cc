@@ -2282,8 +2282,9 @@ void BrowserOptionsHandler::HandleSafeBrowsingExtendedReporting(
     const base::ListValue* args) {
   bool checked;
   if (args->GetBoolean(0, &checked)) {
-    safe_browsing::SetExtendedReportingPref(
-        Profile::FromWebUI(web_ui())->GetPrefs(), checked);
+    safe_browsing::SetExtendedReportingPrefAndMetric(
+        Profile::FromWebUI(web_ui())->GetPrefs(), checked,
+        safe_browsing::SBER_OPTIN_SITE_CHROME_SETTINGS);
   }
 }
 

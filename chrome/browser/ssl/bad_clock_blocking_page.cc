@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/security_interstitials/core/bad_clock_ui.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/interstitial_page.h"
@@ -134,6 +135,23 @@ void BadClockBlockingPage::CommandReceived(const std::string& command) {
 
   bad_clock_ui_->HandleCommand(
       static_cast<security_interstitials::SecurityInterstitialCommands>(cmd));
+
+  // Special handling for the reporting preference being changed.
+  switch (cmd) {
+    case security_interstitials::CMD_DO_REPORT:
+      safe_browsing::SetExtendedReportingPrefAndMetric(
+          controller()->GetPrefService(), true,
+          safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL);
+      break;
+    case security_interstitials::CMD_DONT_REPORT:
+      safe_browsing::SetExtendedReportingPrefAndMetric(
+          controller()->GetPrefService(), false,
+          safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL);
+      break;
+    default:
+      // Other commands can be ignored.
+      break;
+  }
 }
 
 void BadClockBlockingPage::OverrideRendererPrefs(

@@ -330,7 +330,9 @@ static void SetSafeBrowsingExtendedReportingEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean enabled) {
-  safe_browsing::SetExtendedReportingPref(GetPrefService(), enabled);
+  safe_browsing::SetExtendedReportingPrefAndMetric(
+      GetPrefService(), enabled,
+      safe_browsing::SBER_OPTIN_SITE_ANDROID_SETTINGS);
 }
 
 static jboolean GetSafeBrowsingExtendedReportingManaged(

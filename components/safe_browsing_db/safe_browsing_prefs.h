@@ -55,6 +55,23 @@ enum ExtendedReportingLevel {
   SBER_LEVEL_SCOUT = 2,
 };
 
+// Enumerates all the places where the Safe Browsing Extended Reporting
+// preference can be changed.
+// These values are written to logs.  New enum values can be added, but
+// existing enums must never be renumbered or deleted and reused.
+enum ExtendedReportingOptInLocation {
+  // The chrome://settings UI (also shared with chrome://md-settings).
+  SBER_OPTIN_SITE_CHROME_SETTINGS = 0,
+  // The Android settings UI.
+  SBER_OPTIN_SITE_ANDROID_SETTINGS = 1,
+  // The Download Feedback popup.
+  SBER_OPTIN_SITE_DOWNLOAD_FEEDBACK_POPUP = 2,
+  // Any security interstitial (malware, SSL, etc).
+  SBER_OPTIN_SITE_SECURITY_INTERSTITIAL = 3,
+  // New sites must be added before SBER_OPTIN_SITE_MAX.
+  SBER_OPTIN_SITE_MAX
+};
+
 // Determines which opt-in text should be used based on the currently active
 // preference. Will return either |extended_reporting_pref| if the legacy
 // Extended Reporting pref is active, or |scout_pref| if the Scout pref is
@@ -100,7 +117,12 @@ bool IsScout(const PrefService& prefs);
 void RecordExtendedReportingMetrics(const PrefService& prefs);
 
 // Sets the currently active Safe Browsing Extended Reporting preference to the
-// specified value.
+// specified value. The |location| indicates the UI where the change was
+// made.
+void SetExtendedReportingPrefAndMetric(PrefService* prefs,
+                                       bool value,
+                                       ExtendedReportingOptInLocation location);
+// This variant is used to simplify test code by omitting the location.
 void SetExtendedReportingPref(PrefService* prefs, bool value);
 
 // Called to indicate that a security interstitial is about to be shown to the

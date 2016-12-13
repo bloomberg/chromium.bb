@@ -56,7 +56,8 @@ void SafeBrowsingHandler::HandleSetSafeBrowsingExtendedReportingEnabled(
     const base::ListValue* args) {
   bool enabled;
   CHECK(args->GetBoolean(0, &enabled));
-  safe_browsing::SetExtendedReportingPref(prefs_, enabled);
+  safe_browsing::SetExtendedReportingPrefAndMetric(
+      prefs_, enabled, safe_browsing::SBER_OPTIN_SITE_CHROME_SETTINGS);
 }
 
 void SafeBrowsingHandler::OnPrefChanged(const std::string& pref_name) {

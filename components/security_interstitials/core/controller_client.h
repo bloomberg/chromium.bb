@@ -81,9 +81,10 @@ class ControllerClient {
 
   virtual void OpenUrlInCurrentTab(const GURL& url) = 0;
 
+  virtual PrefService* GetPrefService() = 0;
+
  protected:
   virtual const std::string& GetApplicationLocale() = 0;
-  virtual PrefService* GetPrefService() = 0;
   virtual const std::string GetExtendedReportingPrefName() = 0;
 
  private:

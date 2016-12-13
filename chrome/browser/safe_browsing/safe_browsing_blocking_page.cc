@@ -205,11 +205,17 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
     case security_interstitials::CMD_DO_REPORT: {
       // User enabled SB Extended Reporting via the checkbox.
       controller()->SetReportingPreference(true);
+      safe_browsing::SetExtendedReportingPrefAndMetric(
+          controller()->GetPrefService(), true,
+          safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL);
       break;
     }
     case security_interstitials::CMD_DONT_REPORT: {
       // User disabled SB Extended Reporting via the checkbox.
       controller()->SetReportingPreference(false);
+      safe_browsing::SetExtendedReportingPrefAndMetric(
+          controller()->GetPrefService(), false,
+          safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL);
       break;
     }
     case security_interstitials::CMD_OPEN_HELP_CENTER: {

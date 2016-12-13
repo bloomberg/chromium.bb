@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
@@ -45,6 +46,66 @@ enum ScoutTransitionReason {
   // New reasons must be added BEFORE MAX_REASONS
   MAX_REASONS
 };
+
+// Update the correct UMA metric based on which pref was changed and which UI
+// the change was made on.
+void RecordExtendedReportingPrefChanged(
+    const PrefService& prefs,
+    safe_browsing::ExtendedReportingOptInLocation location) {
+  bool pref_value = safe_browsing::IsExtendedReportingEnabled(prefs);
+
+  if (safe_browsing::IsScout(prefs)) {
+    switch (location) {
+      case safe_browsing::SBER_OPTIN_SITE_CHROME_SETTINGS:
+        UMA_HISTOGRAM_BOOLEAN(
+            "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.ChromeSettings",
+            pref_value);
+        break;
+      case safe_browsing::SBER_OPTIN_SITE_ANDROID_SETTINGS:
+        UMA_HISTOGRAM_BOOLEAN(
+            "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.AndroidSettings",
+            pref_value);
+        break;
+      case safe_browsing::SBER_OPTIN_SITE_DOWNLOAD_FEEDBACK_POPUP:
+        UMA_HISTOGRAM_BOOLEAN(
+            "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.DownloadPopup",
+            pref_value);
+        break;
+      case safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL:
+        UMA_HISTOGRAM_BOOLEAN(
+            "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.SecurityInterstitial",
+            pref_value);
+        break;
+      default:
+        NOTREACHED();
+    }
+  } else {
+    switch (location) {
+      case safe_browsing::SBER_OPTIN_SITE_CHROME_SETTINGS:
+        UMA_HISTOGRAM_BOOLEAN(
+            "SafeBrowsing.Pref.Scout.SetPref.SBER1Pref.ChromeSettings",
+            pref_value);
+        break;
+      case safe_browsing::SBER_OPTIN_SITE_ANDROID_SETTINGS:
+        UMA_HISTOGRAM_BOOLEAN(
+            "SafeBrowsing.Pref.Scout.SetPref.SBER1Pref.AndroidSettings",
+            pref_value);
+        break;
+      case safe_browsing::SBER_OPTIN_SITE_DOWNLOAD_FEEDBACK_POPUP:
+        UMA_HISTOGRAM_BOOLEAN(
+            "SafeBrowsing.Pref.Scout.SetPref.SBER1Pref.DownloadPopup",
+            pref_value);
+        break;
+      case safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL:
+        UMA_HISTOGRAM_BOOLEAN(
+            "SafeBrowsing.Pref.Scout.SetPref.SBER1Pref.SecurityInterstitial",
+            pref_value);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+}
 }  // namespace
 
 namespace prefs {
@@ -226,6 +287,14 @@ void RecordExtendedReportingMetrics(const PrefService& prefs) {
         "SafeBrowsing.Pref.Scout.NoScoutGroup.SBER2Pref",
         prefs.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled));
   }
+}
+
+void SetExtendedReportingPrefAndMetric(
+    PrefService* prefs,
+    bool value,
+    ExtendedReportingOptInLocation location) {
+  prefs->SetBoolean(GetExtendedReportingPrefName(*prefs), value);
+  RecordExtendedReportingPrefChanged(*prefs, location);
 }
 
 void SetExtendedReportingPref(PrefService* prefs, bool value) {

@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
@@ -245,6 +246,23 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
   DCHECK(retval);
   ssl_error_ui_->HandleCommand(
       static_cast<security_interstitials::SecurityInterstitialCommands>(cmd));
+
+  // Special handling for the reporting preference being changed.
+  switch (cmd) {
+    case security_interstitials::CMD_DO_REPORT:
+      safe_browsing::SetExtendedReportingPrefAndMetric(
+          controller()->GetPrefService(), true,
+          safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL);
+      break;
+    case security_interstitials::CMD_DONT_REPORT:
+      safe_browsing::SetExtendedReportingPrefAndMetric(
+          controller()->GetPrefService(), false,
+          safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL);
+      break;
+    default:
+      // Other commands can be ignored.
+      break;
+  }
 }
 
 void SSLBlockingPage::OverrideRendererPrefs(

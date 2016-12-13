@@ -107,7 +107,9 @@ base::string16 DownloadFeedbackDialogView::GetDialogButtonLabel(
 }
 
 bool DownloadFeedbackDialogView::OnButtonClicked(bool accepted) {
-  safe_browsing::SetExtendedReportingPref(profile_->GetPrefs(), accepted);
+  safe_browsing::SetExtendedReportingPrefAndMetric(
+      profile_->GetPrefs(), accepted,
+      safe_browsing::SBER_OPTIN_SITE_DOWNLOAD_FEEDBACK_POPUP);
   DialogStatusData* data =
      static_cast<DialogStatusData*>(profile_->GetUserData(kDialogStatusKey));
   DCHECK(data);
