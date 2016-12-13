@@ -2238,12 +2238,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       true,   // enable_load_timing
       false,  // enable_upload_progress
       false,  // do_not_prompt_for_login
-      info.common_params.referrer.policy,
-      // TODO(davidben): This is only used for prerenders. Replace
-      // is_showing with something for that. Or maybe it just comes from the
-      // same mechanism as the cookie one.
-      blink::WebPageVisibilityStateVisible, resource_context,
-      info.report_raw_headers,
+      info.common_params.referrer.policy, info.page_visibility_state,
+      resource_context, info.report_raw_headers,
       true,  // is_async
       IsUsingLoFi(info.common_params.lofi_state, delegate_, *new_request,
                   resource_context, info.is_main_frame),

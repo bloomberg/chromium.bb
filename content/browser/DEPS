@@ -68,6 +68,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebInputEvent.h",
   "+third_party/WebKit/public/platform/WebInsecureRequestPolicy.h",
   "+third_party/WebKit/public/platform/WebNavigationHintType.h",
+  "+third_party/WebKit/public/platform/WebPageVisibilityState.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebScreenInfo.h",
   "+third_party/WebKit/public/platform/WebSecurityStyle.h",

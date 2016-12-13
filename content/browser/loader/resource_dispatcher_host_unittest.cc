@@ -1087,9 +1087,9 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
       CommonNavigationParams common_params;
       common_params.url = url;
       std::unique_ptr<NavigationRequestInfo> request_info(
-          new NavigationRequestInfo(common_params, begin_params, url,
-                                    url::Origin(url), true, false, false, -1,
-                                    false, false));
+          new NavigationRequestInfo(
+              common_params, begin_params, url, url::Origin(url), true, false,
+              false, -1, false, false, blink::WebPageVisibilityStateVisible));
       std::unique_ptr<NavigationURLLoader> test_loader =
           NavigationURLLoader::Create(browser_context_.get(),
                                       std::move(request_info), nullptr, nullptr,
@@ -2646,7 +2646,8 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(common_params, begin_params, download_url,
                                   url::Origin(download_url), true, false, false,
-                                  -1, false, false));
+                                  -1, false, false,
+                                  blink::WebPageVisibilityStateVisible));
     std::unique_ptr<NavigationURLLoader> loader = NavigationURLLoader::Create(
         browser_context_.get(), std::move(request_info), nullptr, nullptr,
         nullptr, &delegate);

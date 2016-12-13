@@ -12,6 +12,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/common/referrer.h"
+#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -30,7 +31,8 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                         bool are_ancestors_secure,
                         int frame_tree_node_id,
                         bool is_for_guests_only,
-                        bool report_raw_headers);
+                        bool report_raw_headers,
+                        blink::WebPageVisibilityState page_visibility_state);
   ~NavigationRequestInfo();
 
   const CommonNavigationParams common_params;
@@ -55,6 +57,8 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   const bool is_for_guests_only;
 
   const bool report_raw_headers;
+
+  blink::WebPageVisibilityState page_visibility_state;
 };
 
 }  // namespace content
