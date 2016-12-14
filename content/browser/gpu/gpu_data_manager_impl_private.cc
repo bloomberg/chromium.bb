@@ -337,6 +337,9 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(
     return false;
   }
 
+  if (in_process_gpu_)
+    return true;
+
   if (card_blacklisted_) {
     if (reason) {
       *reason = "GPU access is disabled ";
@@ -600,8 +603,7 @@ void GpuDataManagerImplPrivate::Initialize() {
                  gpu_driver_bug_list_string,
                  gpu_info);
 
-  if (command_line->HasSwitch(switches::kSingleProcess) ||
-      command_line->HasSwitch(switches::kInProcessGPU)) {
+  if (in_process_gpu_) {
     command_line->AppendSwitch(switches::kDisableGpuWatchdog);
     AppendGpuCommandLine(command_line, nullptr);
   }
@@ -1105,15 +1107,20 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
       owner_(owner),
       gpu_process_accessible_(true),
       is_initialized_(false),
-      finalized_(false) {
+      finalized_(false),
+      in_process_gpu_(false) {
   DCHECK(owner_);
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  swiftshader_path_ =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          switches::kSwiftShaderPath);
+  swiftshader_path_ = command_line->GetSwitchValuePath(
+      switches::kSwiftShaderPath);
   if (ShouldDisableHardwareAcceleration())
     DisableHardwareAcceleration();
+
+  if (command_line->HasSwitch(switches::kSingleProcess) ||
+      command_line->HasSwitch(switches::kInProcessGPU)) {
+    in_process_gpu_ = true;
+  }
 
 #if defined(OS_MACOSX)
   CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, owner_);

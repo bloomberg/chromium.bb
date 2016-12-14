@@ -269,6 +269,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // True if all future Initialize calls should be ignored.
   bool finalized_;
 
+  // True if --single-process or --in-process-gpu is passed in.
+  bool in_process_gpu_;
+
   std::string disabled_extensions_;
 
   // If one tries to call a member before initialization then it is defered
