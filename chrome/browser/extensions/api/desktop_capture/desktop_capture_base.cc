@@ -240,7 +240,10 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
                                       extension()->name());
   }
 
-  SetResult(base::MakeUnique<base::StringValue>(result));
+  api::desktop_capture::ChooseDesktopMedia::Results::Options options;
+  options.can_request_audio_track = source.audio_share;
+  results_ = api::desktop_capture::ChooseDesktopMedia::Results::Create(result,
+                                                                       options);
   SendResponse(true);
 }
 

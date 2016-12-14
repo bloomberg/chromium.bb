@@ -13,11 +13,11 @@ binding.registerCustomHook(function(bindingsAPI) {
 
   var pendingRequests = {};
 
-  function onRequestResult(id, result) {
+  function onRequestResult(id, result, options) {
     if (id in pendingRequests) {
       var callback = pendingRequests[id];
       delete pendingRequests[id];
-      callback(result);
+      callback(result, options);
     }
   }
 

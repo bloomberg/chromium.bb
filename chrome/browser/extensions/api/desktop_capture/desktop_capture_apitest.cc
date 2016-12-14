@@ -188,8 +188,14 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
       {false, true, false, false, content::DesktopMediaID()},
       // tabOnly()
       {false, false, true, false, content::DesktopMediaID()},
-      // audioShare()
-      {true, true, true, true, content::DesktopMediaID()},
+      // audioShareNoApproval()
+      {true, true, true, true,
+       content::DesktopMediaID(content::DesktopMediaID::TYPE_WEB_CONTENTS, 123,
+                               false)},
+      // audioShareApproval()
+      {true, true, true, true,
+       content::DesktopMediaID(content::DesktopMediaID::TYPE_WEB_CONTENTS, 123,
+                               true)},
       // chooseMediaAndGetStream()
       {true, true, false, false,
        content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,

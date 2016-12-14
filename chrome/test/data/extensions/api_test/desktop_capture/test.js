@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function onPickerResult(request_audio, audio_track_num, id) {
+function onPickerResult(audio_track_num, id, options) {
   chrome.test.assertEq("string", typeof id);
   chrome.test.assertTrue(id != "");
   var video_constraint = { mandatory: { chromeMediaSource: "desktop",
                                         chromeMediaSourceId: id } };
-  var audio_constraint = request_audio ? video_constraint : false;
-  navigator.webkitGetUserMedia({
+  var audio_constraint =
+    options.canRequestAudioTrack ? video_constraint : false;
+
+  navigator.mediaDevices.getUserMedia({
     audio: audio_constraint,
     video: video_constraint
-  },
+  }).then(
     function(stream) {
       if (audio_track_num != null)
         chrome.test.assertEq(audio_track_num, stream.getAudioTracks().length);
       chrome.test.succeed();
-  }, chrome.test.fail);
+  }).catch(chrome.test.fail);
 }
 
 // We can support audio for screen share on Windows. For ChromeOS, it depends
@@ -72,20 +74,30 @@ chrome.test.runTests([
   function tabOnly() {
     chrome.desktopCapture.chooseDesktopMedia(
         ["tab"],
-        chrome.test.succeed);
+        chrome.test.callbackPass(function(id) {}));
   },
 
-  function audioShare() {
+  function audioShareNoApproval() {
     chrome.desktopCapture.chooseDesktopMedia(
         ["screen", "window", "tab", "audio"],
-        chrome.test.succeed);
+        chrome.test.callbackPass(function(id, options) {
+          chrome.test.assertEq(false, options.canRequestAudioTrack);
+        }));
+  },
+
+  function audioShareApproval() {
+    chrome.desktopCapture.chooseDesktopMedia(
+        ["screen", "window", "tab", "audio"],
+        chrome.test.callbackPass(function(id, options) {
+          chrome.test.assertEq(true, options.canRequestAudioTrack);
+        }));
   },
 
   // Show window picker and then get the selected stream using
   // getUserMedia().
   function chooseMediaAndGetStream() {
     chrome.desktopCapture.chooseDesktopMedia(
-        ["screen", "window"], onPickerResult.bind(undefined, false, 0));
+        ["screen", "window"], onPickerResult.bind(undefined, 0));
   },
 
   // Same as above but attempts to specify invalid source id.
@@ -124,33 +136,33 @@ chrome.test.runTests([
   //     constraint.
   function tabShareWithAudioPermissionGetStream() {
     chrome.desktopCapture.chooseDesktopMedia(
-        ["tab", "audio"], onPickerResult.bind(undefined, true, 1));
+        ["tab", "audio"], onPickerResult.bind(undefined, 1));
   },
 
   function windowShareWithAudioPermissionGetStream() {
     chrome.desktopCapture.chooseDesktopMedia(
-        ["window", "audio"], onPickerResult.bind(undefined, true, 0));
+        ["window", "audio"], onPickerResult.bind(undefined, 0));
   },
 
   function screenShareWithAudioPermissionGetStream() {
     chrome.desktopCapture.chooseDesktopMedia(
         ["screen", "audio"],
-        onPickerResult.bind(undefined, true,
+        onPickerResult.bind(undefined,
                             expected_audio_tracks_for_screen_share));
   },
 
   function tabShareWithoutAudioPermissionGetStream() {
     chrome.desktopCapture.chooseDesktopMedia(
-        ["tab", "audio"], onPickerResult.bind(undefined, true, 0));
+        ["tab", "audio"], onPickerResult.bind(undefined, 0));
   },
 
   function windowShareWithoutAudioPermissionGetStream() {
     chrome.desktopCapture.chooseDesktopMedia(
-        ["window", "audio"], onPickerResult.bind(undefined, true, 0));
+        ["window", "audio"], onPickerResult.bind(undefined, 0));
   },
 
   function screenShareWithoutAudioPermissionGetStream() {
     chrome.desktopCapture.chooseDesktopMedia(
-        ["screen", "audio"], onPickerResult.bind(undefined, true, 0));
+        ["screen", "audio"], onPickerResult.bind(undefined, 0));
   }
 ]);
