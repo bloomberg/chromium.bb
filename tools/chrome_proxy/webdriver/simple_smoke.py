@@ -4,13 +4,13 @@
 
 import sys
 import time
-import unittest
 
 import common
 from common import TestDriver
+from common import IntegrationTest
 
 
-class SimpleSmoke(unittest.TestCase):
+class SimpleSmoke(IntegrationTest):
 
   # Simple example integration test.
   def testCheckPageWithProxy(self):
@@ -23,6 +23,20 @@ class SimpleSmoke(unittest.TestCase):
       for response in responses:
         print "URL: %s, ViaHeader: %s, XHR: %s" % (response.url,
           response.ResponseHasViaHeader(), response.WasXHR())
+        self.assertHasChromeProxyViaHeader(response)
+
+  # Simple example integration test.
+  def testCheckPageWithoutProxy(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.LoadURL('https://check.googlezip.net/test.html')
+      print 'Document Title: ', t.ExecuteJavascriptStatement('document.title',
+        timeout=1)
+      responses = t.GetHTTPResponses()
+      for response in responses:
+        print "URL: %s, ViaHeader: %s, XHR: %s" % (response.url,
+          response.ResponseHasViaHeader(), response.WasXHR())
+        self.assertNotHasChromeProxyViaHeader(response)
 
   # Show how to get a histogram.
   def testPingbackHistogram(self):
@@ -41,9 +55,4 @@ class SimpleSmoke(unittest.TestCase):
         'document.getElementsByClassName("pointsPanel")', 15)
 
 if __name__ == '__main__':
-  # The unittest library uses sys.argv itself and is easily confused by our
-  # command line options. Pass it a simpler argv instead, while working in the
-  # unittest command line args functionality.
-  flags = common.ParseFlags()
-  unittest.main(argv=[sys.argv[0]], verbosity=2, failfast=flags.failfast,
-    catchbreak=flags.catch, buffer=(not flags.disable_buffer))
+  IntegrationTest.RunAllTests()

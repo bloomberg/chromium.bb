@@ -11,6 +11,7 @@ import shlex
 import sys
 import time
 import traceback
+import unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
   os.pardir, 'third_party', 'webdriver', 'pylib'))
@@ -28,18 +29,18 @@ def ParseFlags():
     See pydoc for argparse.
   """
   parser = argparse.ArgumentParser()
-  parser.add_argument('--browser_args', nargs=1, type=str, help='Override '
-    'browser flags in code with these flags')
-  parser.add_argument('--via_header_value', metavar='via_header', nargs=1,
+  parser.add_argument('--browser_args', type=str, help='Override browser flags '
+    'in code with these flags')
+  parser.add_argument('--via_header_value',
     default='1.1 Chrome-Compression-Proxy', help='What the via should match to '
     'be considered valid')
   parser.add_argument('--android', help='If given, attempts to run the test on '
     'Android via adb. Ignores usage of --chrome_exec', action='store_true')
-  parser.add_argument('--android_package', nargs=1,
+  parser.add_argument('--android_package',
     default='com.android.chrome', help='Set the android package for Chrome')
-  parser.add_argument('--chrome_exec', nargs=1, type=str, help='The path to '
+  parser.add_argument('--chrome_exec', type=str, help='The path to '
     'the Chrome or Chromium executable')
-  parser.add_argument('chrome_driver', nargs=1, type=str, help='The path to '
+  parser.add_argument('chrome_driver', type=str, help='The path to '
     'the ChromeDriver executable. If not given, the default system chrome '
     'will be used.')
   parser.add_argument('--disable_buffer', help='Causes stdout and stderr from '
@@ -56,23 +57,6 @@ def ParseFlags():
   # TODO(robertogden): Log sys.argv here.
   return parser.parse_args(sys.argv[1:])
 
-def HandleException(test_name=None):
-  """Writes the exception being handled and a stack trace to stderr.
-
-  Args:
-    test_name: The string name of the test that led to this exception.
-  """
-  sys.stderr.write("**************************************\n")
-  sys.stderr.write("**************************************\n")
-  sys.stderr.write("**                                  **\n")
-  sys.stderr.write("**       UNCAUGHT EXCEPTION         **\n")
-  sys.stderr.write("**                                  **\n")
-  sys.stderr.write("**************************************\n")
-  sys.stderr.write("**************************************\n")
-  if test_name:
-    sys.stderr.write("Failed test: %s" % test_name)
-  traceback.print_exception(*sys.exc_info())
-  sys.exit(1)
 
 class TestDriver:
   """The main driver for an integration test.
@@ -118,7 +102,7 @@ class TestDriver:
       for arg in self._chrome_args:
           original_args[GetDictKey(arg)] = arg
       # Override flags given in code with any command line arguments.
-      for override_arg in shlex.split(self._flags.browser_args[0]):
+      for override_arg in shlex.split(self._flags.browser_args):
         arg_key = GetDictKey(override_arg)
         if arg_key in original_args:
           self._chrome_args.remove(original_args[arg_key])
@@ -144,7 +128,7 @@ class TestDriver:
       })
     elif self._flags.chrome_exec:
       capabilities['chrome.binary'] = self._flags.chrome_exec
-    driver = webdriver.Chrome(executable_path=self._flags.chrome_driver[0],
+    driver = webdriver.Chrome(executable_path=self._flags.chrome_driver,
       desired_capabilities=capabilities)
     driver.command_executor._commands.update({
       'getAvailableLogTypes': ('GET', '/session/$sessionId/log/types'),
@@ -363,14 +347,19 @@ class HTTPResponse:
 
   def __init__(self, response_headers, request_headers, url, protocol, port,
       status, request_type):
-    self._response_headers = response_headers
-    self._request_headers = request_headers
+    self._response_headers = {}
+    self._request_headers = {}
     self._url = url
     self._protocol = protocol
     self._port = port
     self._status = status
     self._request_type = request_type
     self._flags = ParseFlags()
+    # Make all header names lower case.
+    for name in response_headers:
+      self._response_headers[name.lower()] = response_headers[name]
+    for name in request_headers:
+      self._request_headers[name.lower()] = request_headers[name]
 
   def __str__(self):
     self_dict = {
@@ -424,3 +413,43 @@ class HTTPResponse:
 
   def UsedHTTP2(self):
     return self._protocol == 'h2'
+
+class IntegrationTest(unittest.TestCase):
+  """This class adds ChromeProxy-specific assertions to the generic
+  unittest.TestCase class.
+  """
+
+  def assertHasChromeProxyViaHeader(self, http_response):
+    """Asserts that the Via header in the given HTTPResponse matches the
+    expected value as given on the command line.
+
+    Args:
+      http_response: The HTTPResponse object to check.
+    """
+    expected_via_header = ParseFlags().via_header_value
+    self.assertIn('via', http_response.response_headers)
+    self.assertEqual(expected_via_header, http_response.response_headers['via'])
+
+  def assertNotHasChromeProxyViaHeader(self, http_response):
+    """Asserts that the Via header in the given HTTPResponse does not match the
+    expected value as given on the command line.
+
+    Args:
+      http_response: The HTTPResponse object to check.
+    """
+    expected_via_header = ParseFlags().via_header_value
+    self.assertNotIn('via', http_response.response_headers)
+    if 'via' in http_response.response_headers:
+      self.assertNotIn(expected_via_header,
+        http_response.response_headers['via'])
+
+  @staticmethod
+  def RunAllTests():
+    """A simple helper method to run all tests using unittest.main().
+    """
+    # The unittest library uses sys.argv itself and is easily confused by our
+    # command line options. Pass it a simpler argv instead, while working in the
+    # unittest command line args functionality.
+    flags = ParseFlags()
+    unittest.main(argv=[sys.argv[0]], verbosity=2, failfast=flags.failfast,
+      catchbreak=flags.catch, buffer=(not flags.disable_buffer))
