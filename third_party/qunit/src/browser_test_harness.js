@@ -33,24 +33,19 @@ TestReporter.prototype.init = function(qunit) {
 /**
  * @param {{ module:string, name: string }} details
  */
-TestReporter.prototype.onTestStart_ = function(details) {
-  console.log('[===============]');
-  console.log('[------RUN------] ' + details.module + '.' + details.name);
-};
+TestReporter.prototype.onTestStart_ = function(details) {};
 
 /**
  * @param {{ module:string, name: string }} details
  */
 TestReporter.prototype.onTestDone_ = function(details) {
-  console.log('[---COMPLETED---] ' + details.module + '.' + details.name);
-  console.log('[===============]');
   if (this.failedAssertions_.length > 0) {
     this.errorMessage_ += '  ' + details.module + '.' + details.name + '\n';
     this.errorMessage_ += this.failedAssertions_.map(
         function(assertion, index){
           return '    ' + (index + 1) + '. ' + assertion.message + '\n' +
                  '    ' + assertion.source;
-        }).join('\n');
+        }).join('\n') + '\n';
     this.failedAssertions_ = [];
     this.failedTestsCount_++;
   }
