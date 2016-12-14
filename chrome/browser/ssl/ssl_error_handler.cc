@@ -431,13 +431,14 @@ void SSLErrorHandler::DeleteSSLErrorHandler() {
 }
 
 void SSLErrorHandler::HandleCertDateInvalidError() {
+  const base::TimeTicks now = base::TimeTicks::Now();
   network_time::NetworkTimeTracker* tracker =
       g_network_time_tracker ? g_network_time_tracker
                              : g_browser_process->network_time_tracker();
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
                               g_interstitial_delay_in_milliseconds),
                base::Bind(&SSLErrorHandler::HandleCertDateInvalidErrorImpl,
-                          base::Unretained(this)));
+                          base::Unretained(this), now));
   // Try kicking off a time fetch to get an up-to-date estimate of the
   // true time. This will only have an effect if network time is
   // unavailable or if there is not already a query in progress.
@@ -447,8 +448,8 @@ void SSLErrorHandler::HandleCertDateInvalidError() {
   // will be deleted.
   if (!tracker->StartTimeFetch(
           base::Bind(&SSLErrorHandler::HandleCertDateInvalidErrorImpl,
-                     weak_ptr_factory_.GetWeakPtr()))) {
-    HandleCertDateInvalidErrorImpl();
+                     weak_ptr_factory_.GetWeakPtr(), now))) {
+    HandleCertDateInvalidErrorImpl(now);
     return;
   }
 
@@ -456,7 +457,14 @@ void SSLErrorHandler::HandleCertDateInvalidError() {
     g_timer_started_callback->Run(web_contents_);
 }
 
-void SSLErrorHandler::HandleCertDateInvalidErrorImpl() {
+void SSLErrorHandler::HandleCertDateInvalidErrorImpl(
+    base::TimeTicks started_handling_error) {
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "interstitial.ssl_error_handler.cert_date_error_delay",
+      base::TimeTicks::Now() - started_handling_error,
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(4),
+      50);
+
   network_time::NetworkTimeTracker* tracker =
       g_network_time_tracker ? g_network_time_tracker
                              : g_browser_process->network_time_tracker();

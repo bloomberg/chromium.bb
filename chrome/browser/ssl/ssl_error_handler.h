@@ -137,7 +137,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   void DeleteSSLErrorHandler();
 
   void HandleCertDateInvalidError();
-  void HandleCertDateInvalidErrorImpl();
+  void HandleCertDateInvalidErrorImpl(base::TimeTicks started_handling_error);
 
   content::WebContents* web_contents_;
   const int cert_error_;

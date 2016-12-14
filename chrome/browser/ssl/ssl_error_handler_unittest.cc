@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
@@ -35,6 +36,13 @@
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+const char kCertDateErrorHistogram[] =
+    "interstitial.ssl_error_handler.cert_date_error_delay";
+
+}  // namespace
 
 class SSLErrorHandlerForTest : public SSLErrorHandler {
  public:
@@ -444,8 +452,10 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
 }
 
 TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryStarted) {
+  base::HistogramTester histograms;
   base::Time network_time;
   base::TimeDelta uncertainty;
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
   EXPECT_EQ(network_time::NetworkTimeTracker::NETWORK_TIME_NO_SYNC_ATTEMPT,
             tracker()->GetNetworkTime(&network_time, &uncertainty));
 
@@ -465,11 +475,14 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryStarted) {
 
   EXPECT_TRUE(error_handler()->bad_clock_interstitial_shown());
   EXPECT_FALSE(error_handler()->IsTimerRunning());
+  // Check that the histogram for the delay was recorded.
+  histograms.ExpectTotalCount(kCertDateErrorHistogram, 1);
 }
 
 // Tests that an SSL interstitial is shown if the accuracy of the system
 // clock can't be determined because network time is unavailable.
 TEST_F(SSLErrorHandlerDateInvalidTest, NoTimeQueries) {
+  base::HistogramTester histograms;
   base::Time network_time;
   base::TimeDelta uncertainty;
   EXPECT_EQ(network_time::NetworkTimeTracker::NETWORK_TIME_NO_SYNC_ATTEMPT,
@@ -482,6 +495,8 @@ TEST_F(SSLErrorHandlerDateInvalidTest, NoTimeQueries) {
   EXPECT_FALSE(error_handler()->IsTimerRunning());
   EXPECT_FALSE(error_handler()->bad_clock_interstitial_shown());
   EXPECT_TRUE(error_handler()->ssl_interstitial_shown());
+  // Check that the histogram for the delay was recorded.
+  histograms.ExpectTotalCount(kCertDateErrorHistogram, 1);
 }
 
 // Runs |quit_closure| on the UI thread once a URL request has been
@@ -497,6 +512,7 @@ std::unique_ptr<net::test_server::HttpResponse> WaitForRequest(
 // Tests that an SSL interstitial is shown if determing the accuracy of
 // the system clock times out (e.g. because a network time query hangs).
 TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryHangs) {
+  base::HistogramTester histograms;
   base::Time network_time;
   base::TimeDelta uncertainty;
   EXPECT_EQ(network_time::NetworkTimeTracker::NETWORK_TIME_NO_SYNC_ATTEMPT,
@@ -520,6 +536,9 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryHangs) {
   EXPECT_FALSE(error_handler()->bad_clock_interstitial_shown());
   EXPECT_TRUE(error_handler()->ssl_interstitial_shown());
   EXPECT_FALSE(error_handler()->IsTimerRunning());
+
+  // Check that the histogram for the delay was recorded.
+  histograms.ExpectTotalCount(kCertDateErrorHistogram, 1);
 
   // Clear the error handler to test that, when the request completes,
   // it doesn't try to call a callback on a deleted SSLErrorHandler.
