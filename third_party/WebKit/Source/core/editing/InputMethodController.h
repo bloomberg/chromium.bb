@@ -112,7 +112,6 @@ class CORE_EXPORT InputMethodController final
 
   Member<LocalFrame> m_frame;
   Member<Range> m_compositionRange;
-  bool m_isDirty;
   bool m_hasComposition;
 
   explicit InputMethodController(LocalFrame&);
@@ -145,10 +144,6 @@ class CORE_EXPORT InputMethodController final
   PlainTextRange createSelectionRangeForSetComposition(int selectionStart,
                                                        int selectionEnd,
                                                        size_t textLength) const;
-  void setCompositionWithIncrementalText(const String&,
-                                         const Vector<CompositionUnderline>&,
-                                         int selectionStart,
-                                         int selectionEnd);
   int textInputFlags() const;
   WebTextInputMode inputModeOfFocusedElement() const;
 

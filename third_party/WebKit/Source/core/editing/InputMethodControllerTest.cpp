@@ -185,7 +185,7 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
 TEST_F(InputMethodControllerTest, SetCompositionKeepingStyle) {
   Element* div = insertHTMLElement(
       "<div id='sample' "
-      "contenteditable>abc1<b>2</b>34567<b>8</b>9</div>",
+      "contenteditable>abc1<b>2</b>34567<b>8</b>9d<b>e</b>f</div>",
       "sample");
 
   Vector<CompositionUnderline> underlines;
@@ -194,15 +194,22 @@ TEST_F(InputMethodControllerTest, SetCompositionKeepingStyle) {
 
   // Subtract a character.
   controller().setComposition(String("12345789"), underlines, 8, 8);
-  EXPECT_STREQ("abc1<b>2</b>3457<b>8</b>9", div->innerHTML().utf8().data());
+  EXPECT_STREQ("abc1<b>2</b>3457<b>8</b>9d<b>e</b>f",
+               div->innerHTML().utf8().data());
+  EXPECT_EQ(11u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(11u, controller().getSelectionOffsets().end());
 
   // Append a character.
   controller().setComposition(String("123456789"), underlines, 9, 9);
-  EXPECT_STREQ("abc1<b>2</b>34567<b>8</b>9", div->innerHTML().utf8().data());
+  EXPECT_STREQ("abc1<b>2</b>34567<b>8</b>9d<b>e</b>f",
+               div->innerHTML().utf8().data());
+  EXPECT_EQ(12u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(12u, controller().getSelectionOffsets().end());
 
   // Subtract and append characters.
   controller().setComposition(String("123hello789"), underlines, 11, 11);
-  EXPECT_STREQ("abc1<b>2</b>3hello7<b>8</b>9", div->innerHTML().utf8().data());
+  EXPECT_STREQ("abc1<b>2</b>3hello7<b>8</b>9d<b>e</b>f",
+               div->innerHTML().utf8().data());
 }
 
 TEST_F(InputMethodControllerTest, SetCompositionWithEmojiKeepingStyle) {
@@ -248,6 +255,37 @@ TEST_F(InputMethodControllerTest,
   controller().setComposition(String::fromUTF8("\xE0\xB0\x83"), underlines, 1,
                               1);
   EXPECT_STREQ("<b>\xE0\xB0\x83</b>", div->innerHTML().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, FinishComposingTextKeepingStyle) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' "
+      "contenteditable>abc1<b>2</b>34567<b>8</b>9</div>",
+      "sample");
+
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(3, 12, Color(255, 0, 0), false, 0));
+  controller().setCompositionFromExistingText(underlines, 3, 12);
+
+  controller().setComposition(String("123hello789"), underlines, 11, 11);
+  EXPECT_STREQ("abc1<b>2</b>3hello7<b>8</b>9", div->innerHTML().utf8().data());
+
+  controller().finishComposingText(InputMethodController::KeepSelection);
+  EXPECT_STREQ("abc1<b>2</b>3hello7<b>8</b>9", div->innerHTML().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, CommitTextKeepingStyle) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' "
+      "contenteditable>abc1<b>2</b>34567<b>8</b>9</div>",
+      "sample");
+
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(3, 12, Color(255, 0, 0), false, 0));
+  controller().setCompositionFromExistingText(underlines, 3, 12);
+
+  controller().commitText(String("123789"), 0);
+  EXPECT_STREQ("abc1<b>2</b>37<b>8</b>9", div->innerHTML().utf8().data());
 }
 
 TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
@@ -911,10 +949,9 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForReplace) {
                document().title().utf8().data());
 
   // Replace the existing composition.
-  // TODO(yabinh): should be "beforeinput.data:hello;input.data:hello;".
   document().setTitle(emptyString());
   controller().setComposition("hello", underlines, 0, 0);
-  EXPECT_STREQ("beforeinput.data:o;input.data:o;",
+  EXPECT_STREQ("beforeinput.data:hello;input.data:hello;",
                document().title().utf8().data());
 }
 
@@ -983,6 +1020,32 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsert) {
   EXPECT_STREQ(
       "beforeinput.data:hello;input.data:hello;compositionend.data:hello;",
       document().title().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
+  createHTMLWithCompositionInputEventListeners();
+
+  // Simulate composition in the |contentEditable|.
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+
+  // Insert empty text without previous composition.
+  document().setTitle(emptyString());
+  document().updateStyleAndLayout();
+  controller().commitText("", 0);
+  EXPECT_STREQ("", document().title().utf8().data());
+
+  document().setTitle(emptyString());
+  controller().setComposition("n", underlines, 1, 1);
+  EXPECT_STREQ("beforeinput.data:n;input.data:n;",
+               document().title().utf8().data());
+
+  // Insert empty text with previous composition.
+  document().setTitle(emptyString());
+  document().updateStyleAndLayout();
+  controller().commitText("", 1);
+  EXPECT_STREQ("beforeinput.data:;compositionend.data:;",
+               document().title().utf8().data());
 }
 
 TEST_F(InputMethodControllerTest, CompositionEndEventForConfirm) {

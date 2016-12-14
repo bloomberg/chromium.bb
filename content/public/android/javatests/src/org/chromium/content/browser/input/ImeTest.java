@@ -1262,37 +1262,41 @@ public class ImeTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"TextInput"})
     @RetryOnFailure
-    public void testContentEditableEvents_SetComposingText() throws Throwable {
+    public void testContentEditableEvents_ComposingText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
         waitForEventLogs("selectionchange,selectionchange");
         clearEventLogs();
 
-        beginBatchEdit();
         setComposingText("a", 1);
-        finishComposingText();
-        endBatchEdit();
-        waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
-
-        // TODO(changwan): reduce the number of selection changes
+        waitAndVerifyUpdateSelection(0, 1, 1, 0, 1);
+        // TODO(changwan): reduce the number of selection changes.
         waitForEventLogs("keydown(229),compositionstart(),compositionupdate(a),input,keyup(229),"
-                + "compositionupdate(a),input,compositionend(a),selectionchange,selectionchange,"
-                + "selectionchange,selectionchange,selectionchange");
+                + "selectionchange,selectionchange");
+        clearEventLogs();
+
+        finishComposingText();
+        waitAndVerifyUpdateSelection(1, 1, 1, -1, -1);
+        // TODO(changwan): reduce the number of selection changes.
+        waitForEventLogs(
+                "compositionupdate(a),input,compositionend(a),selectionchange,selectionchange");
     }
 
     @MediumTest
     @Feature({"TextInput"})
     @RetryOnFailure
-    public void testInputTextEvents_SetComposingText() throws Throwable {
-        beginBatchEdit();
+    public void testInputTextEvents_ComposingText() throws Throwable {
         setComposingText("a", 1);
-        finishComposingText();
-        endBatchEdit();
-        waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
-
-        // TODO(changwan): reduce the number of selection changes
+        waitAndVerifyUpdateSelection(0, 1, 1, 0, 1);
+        // TODO(changwan): reduce the number of selection changes.
         waitForEventLogs("keydown(229),compositionstart(),compositionupdate(a),"
-                + "input,keyup(229),compositionupdate(a),input,compositionend(a),selectionchange,"
-                + "selectionchange,selectionchange,selectionchange,selectionchange");
+                + "input,keyup(229),selectionchange,selectionchange");
+        clearEventLogs();
+
+        finishComposingText();
+        waitAndVerifyUpdateSelection(1, 1, 1, -1, -1);
+        // TODO(changwan): reduce the number of selection changes.
+        waitForEventLogs("compositionupdate(a),input,compositionend(a),selectionchange,"
+                + "selectionchange,selectionchange");
     }
 
     @MediumTest

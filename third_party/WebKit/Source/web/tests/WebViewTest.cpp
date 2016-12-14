@@ -1282,7 +1282,7 @@ TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
   Vector<CompositionUnderline> emptyUnderlines;
   WebLocalFrameImpl* frame = webView->mainFrameImpl();
   frame->frame()->inputMethodController().setCompositionFromExistingText(
-      emptyUnderlines, 3, 3);
+      emptyUnderlines, 0, 3);
 
   // Scroll the input field out of the viewport.
   Element* element = static_cast<Element*>(

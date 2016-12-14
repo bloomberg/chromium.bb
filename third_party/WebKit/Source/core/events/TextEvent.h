@@ -69,6 +69,9 @@ class TextEvent final : public UIEvent {
   }
   bool isPaste() const { return m_inputType == TextEventInputPaste; }
   bool isDrop() const { return m_inputType == TextEventInputDrop; }
+  bool isIncrementalInsertion() const {
+    return m_inputType == TextEventInputIncrementalInsertion;
+  }
 
   bool shouldSmartReplace() const { return m_shouldSmartReplace; }
   bool shouldMatchStyle() const { return m_shouldMatchStyle; }

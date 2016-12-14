@@ -68,6 +68,19 @@ void dispatchCompositionEndEvent(LocalFrame& frame, const String& text) {
   target->dispatchEvent(event);
 }
 
+bool needsIncrementalInsertion(const LocalFrame& frame, const String& newText) {
+  // No need to apply incremental insertion if it doesn't support formated text.
+  if (!frame.editor().canEditRichly())
+    return false;
+
+  // No need to apply incremental insertion if the old text (text to be
+  // replaced) or the new text (text to be inserted) is empty.
+  if (frame.selectedText().isEmpty() || newText.isEmpty())
+    return false;
+
+  return true;
+}
+
 // Used to insert/replace text during composition update and confirm
 // composition.
 // Procedure:
@@ -122,12 +135,18 @@ void insertTextDuringCompositionWithEvents(
   if (!frame.document())
     return;
 
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited. see http://crbug.com/590369 for more details.
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+  const bool isIncrementalInsertion = needsIncrementalInsertion(frame, text);
+
   switch (compositionType) {
     case TypingCommand::TextCompositionType::TextCompositionUpdate:
-      TypingCommand::insertText(*frame.document(), text, options,
-                                compositionType);
-      break;
     case TypingCommand::TextCompositionType::TextCompositionConfirm:
+      TypingCommand::insertText(*frame.document(), text, options,
+                                compositionType, isIncrementalInsertion);
+      break;
     case TypingCommand::TextCompositionType::TextCompositionCancel:
       // TODO(chongz): Use TypingCommand::insertText after TextEvent was
       // removed. (Removed from spec since 2012)
@@ -171,7 +190,7 @@ InputMethodController* InputMethodController::create(LocalFrame& frame) {
 }
 
 InputMethodController::InputMethodController(LocalFrame& frame)
-    : m_frame(&frame), m_isDirty(false), m_hasComposition(false) {}
+    : m_frame(&frame), m_hasComposition(false) {}
 
 InputMethodController::~InputMethodController() = default;
 
@@ -200,7 +219,6 @@ void InputMethodController::clear() {
     m_compositionRange->collapse(true);
   }
   document().markers().removeMarkers(DocumentMarker::Composition);
-  m_isDirty = false;
 }
 
 void InputMethodController::contextDestroyed() {
@@ -268,14 +286,6 @@ bool InputMethodController::commitText(const String& text,
 bool InputMethodController::replaceComposition(const String& text) {
   if (!hasComposition())
     return false;
-
-  // If the composition was set from existing text and didn't change, then
-  // there's nothing to do here (and we should avoid doing anything as that
-  // may clobber multi-node styled text).
-  if (!m_isDirty && composingText() == text) {
-    clear();
-    return true;
-  }
 
   // Select the text that will be deleted or replaced.
   selectComposition();
@@ -411,28 +421,6 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid() {
   frame().chromeClient().didCancelCompositionOnSelectionChange();
 }
 
-static size_t computeCommonPrefixLength(const String& str1,
-                                        const String& str2) {
-  const size_t maxCommonPrefixLength = std::min(str1.length(), str2.length());
-  for (size_t index = 0; index < maxCommonPrefixLength; ++index) {
-    if (str1[index] != str2[index])
-      return index;
-  }
-  return maxCommonPrefixLength;
-}
-
-static size_t computeCommonSuffixLength(const String& str1,
-                                        const String& str2) {
-  const size_t length1 = str1.length();
-  const size_t length2 = str2.length();
-  const size_t maxCommonSuffixLength = std::min(length1, length2);
-  for (size_t index = 0; index < maxCommonSuffixLength; ++index) {
-    if (str1[length1 - index - 1] != str2[length2 - index - 1])
-      return index;
-  }
-  return maxCommonSuffixLength;
-}
-
 // If current position is at grapheme boundary, return 0; otherwise, return the
 // distance to its nearest left grapheme boundary.
 static size_t computeDistanceToLeftGraphemeBoundary(const Position& position) {
@@ -444,23 +432,6 @@ static size_t computeDistanceToLeftGraphemeBoundary(const Position& position) {
             adjustedPosition.computeOffsetInContainerNode());
   return static_cast<size_t>(position.computeOffsetInContainerNode() -
                              adjustedPosition.computeOffsetInContainerNode());
-}
-
-static size_t computeCommonGraphemeClusterPrefixLengthForSetComposition(
-    const String& oldText,
-    const String& newText,
-    const Element* rootEditableElement) {
-  const size_t commonPrefixLength = computeCommonPrefixLength(oldText, newText);
-
-  // For grapheme cluster, we should adjust it for grapheme boundary.
-  const EphemeralRange& range =
-      PlainTextRange(0, commonPrefixLength).createRange(*rootEditableElement);
-  if (range.isNull())
-    return 0;
-  const Position& position = range.endPosition();
-  const size_t diff = computeDistanceToLeftGraphemeBoundary(position);
-  DCHECK_GE(commonPrefixLength, diff);
-  return commonPrefixLength - diff;
 }
 
 // If current position is at grapheme boundary, return 0; otherwise, return the
@@ -476,107 +447,6 @@ static size_t computeDistanceToRightGraphemeBoundary(const Position& position) {
                              position.computeOffsetInContainerNode());
 }
 
-static size_t computeCommonGraphemeClusterSuffixLengthForSetComposition(
-    const String& oldText,
-    const String& newText,
-    const Element* rootEditableElement) {
-  const size_t commonSuffixLength = computeCommonSuffixLength(oldText, newText);
-
-  // For grapheme cluster, we should adjust it for grapheme boundary.
-  const EphemeralRange& range =
-      PlainTextRange(0, oldText.length() - commonSuffixLength)
-          .createRange(*rootEditableElement);
-  if (range.isNull())
-    return 0;
-  const Position& position = range.endPosition();
-  const size_t diff = computeDistanceToRightGraphemeBoundary(position);
-  DCHECK_GE(commonSuffixLength, diff);
-  return commonSuffixLength - diff;
-}
-
-void InputMethodController::setCompositionWithIncrementalText(
-    const String& text,
-    const Vector<CompositionUnderline>& underlines,
-    int selectionStart,
-    int selectionEnd) {
-  Element* editable = frame().selection().rootEditableElement();
-  if (!editable)
-    return;
-
-  DCHECK_LE(selectionStart, selectionEnd);
-  String composing = composingText();
-  const size_t commonPrefixLength =
-      computeCommonGraphemeClusterPrefixLengthForSetComposition(composing, text,
-                                                                editable);
-
-  // We should ignore common prefix when finding common suffix.
-  const size_t commonSuffixLength =
-      computeCommonGraphemeClusterSuffixLengthForSetComposition(
-          composing.right(composing.length() - commonPrefixLength),
-          text.right(text.length() - commonPrefixLength), editable);
-
-  const bool inserting =
-      text.length() > commonPrefixLength + commonSuffixLength;
-  const bool deleting =
-      composing.length() > commonPrefixLength + commonSuffixLength;
-
-  if (inserting || deleting) {
-    // Select the text to be deleted.
-    const size_t compositionStart =
-        PlainTextRange::create(*editable, compositionEphemeralRange()).start();
-    const size_t deletionStart = compositionStart + commonPrefixLength;
-    const size_t deletionEnd =
-        compositionStart + composing.length() - commonSuffixLength;
-    const EphemeralRange& deletionRange =
-        PlainTextRange(deletionStart, deletionEnd).createRange(*editable);
-    Document& currentDocument = document();
-    frame().selection().setSelection(
-        SelectionInDOMTree::Builder().setBaseAndExtent(deletionRange).build(),
-        0);
-    clear();
-
-    // FrameSeleciton::setSelection() can change document associate to |frame|.
-    if (!isAvailable() || currentDocument != document())
-      return;
-    if (!currentDocument.focusedElement())
-      return;
-
-    // Insert the incremental text.
-    const size_t insertionLength =
-        text.length() - commonPrefixLength - commonSuffixLength;
-    const String& insertingText =
-        text.substring(commonPrefixLength, insertionLength);
-    insertTextDuringCompositionWithEvents(frame(), insertingText,
-                                          TypingCommand::PreventSpellChecking,
-                                          TypingCommand::TextCompositionUpdate);
-
-    // Event handlers might destroy document.
-    if (!isAvailable() || currentDocument != document())
-      return;
-
-    // TODO(yosin): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited. see http://crbug.com/590369 for more details.
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-
-    // Now recreate the composition starting at its original start, and
-    // apply the specified final selection offsets.
-    setCompositionFromExistingText(underlines, compositionStart,
-                                   compositionStart + text.length());
-  }
-
-  selectComposition();
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited. see http://crbug.com/590369 for more details.
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-
-  const PlainTextRange& selectedRange = createSelectionRangeForSetComposition(
-      selectionStart, selectionEnd, text.length());
-  // We shouldn't close typing in the middle of setComposition.
-  setEditableSelectionOffsets(selectedRange, NotUserTriggered);
-  m_isDirty = true;
-}
-
 void InputMethodController::setComposition(
     const String& text,
     const Vector<CompositionUnderline>& underlines,
@@ -588,14 +458,6 @@ void InputMethodController::setComposition(
   // inserting the previous composition text into text nodes oddly.
   // See https://bugs.webkit.org/show_bug.cgi?id=46868
   document().updateStyleAndLayoutTree();
-
-  // When the IME only wants to change a few characters at the end of the
-  // composition, only touch those characters in order to preserve rich text
-  // substructure.
-  if (hasComposition() && text.length()) {
-    return setCompositionWithIncrementalText(text, underlines, selectionStart,
-                                             selectionEnd);
-  }
 
   selectComposition();
 
@@ -685,20 +547,15 @@ void InputMethodController::setComposition(
 
   Position extent = frame().selection().extent();
   Node* extentNode = extent.anchorNode();
-  if (baseNode != extentNode)
-    return;
 
   unsigned extentOffset = extent.computeOffsetInContainerNode();
   unsigned baseOffset = base.computeOffsetInContainerNode();
-  if (baseOffset + text.length() != extentOffset)
-    return;
 
-  m_isDirty = true;
   m_hasComposition = true;
   if (!m_compositionRange)
     m_compositionRange = Range::create(document());
   m_compositionRange->setStart(baseNode, baseOffset);
-  m_compositionRange->setEnd(baseNode, extentOffset);
+  m_compositionRange->setEnd(extentNode, extentOffset);
 
   if (baseNode->layoutObject())
     baseNode->layoutObject()->setShouldDoFullPaintInvalidation();

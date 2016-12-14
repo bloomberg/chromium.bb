@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class InsertTextCommand final : public CompositeEditCommand {
+class InsertTextCommand : public CompositeEditCommand {
  public:
   enum RebalanceType {
     RebalanceLeadingAndTrailingWhitespaces,
@@ -48,7 +48,7 @@ class InsertTextCommand final : public CompositeEditCommand {
 
   String textDataForInputEvent() const final;
 
- private:
+ protected:
   InsertTextCommand(Document&,
                     const String& text,
                     bool selectInsertedText,

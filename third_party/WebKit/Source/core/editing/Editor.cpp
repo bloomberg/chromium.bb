@@ -207,6 +207,11 @@ bool Editor::handleTextEvent(TextEvent* event) {
   if (event->isDrop())
     return false;
 
+  // Default event handling for IncrementalInsertion will be handled by
+  // TypingCommand::insertText(), so we leave the event for it.
+  if (event->isIncrementalInsertion())
+    return false;
+
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();

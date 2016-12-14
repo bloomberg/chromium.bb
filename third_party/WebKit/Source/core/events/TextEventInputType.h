@@ -39,6 +39,7 @@ enum TextEventInputType {
   TextEventInputPaste,
   TextEventInputDrop,
   TextEventInputDictation,
+  TextEventInputIncrementalInsertion,
   TextEventInputOther,
 };
 
