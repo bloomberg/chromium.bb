@@ -34,7 +34,9 @@ class FreezerCgroupProcessManager::FileWorker {
   explicit FileWorker(scoped_refptr<base::SequencedTaskRunner> file_thread)
       : ui_thread_(content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI)),
-        file_thread_(file_thread) {
+        file_thread_(file_thread),
+        enabled_(false),
+        froze_successfully_(false) {
     DCHECK(ui_thread_->RunsTasksOnCurrentThread());
   }
 
@@ -78,7 +80,8 @@ class FreezerCgroupProcessManager::FileWorker {
       return;
     }
 
-    WriteCommandToFile(kFreezeCommand, to_be_frozen_state_path_);
+    froze_successfully_ =
+        WriteCommandToFile(kFreezeCommand, to_be_frozen_state_path_);
   }
 
   void ThawRenderers(ResultCallback callback) {
@@ -91,6 +94,13 @@ class FreezerCgroupProcessManager::FileWorker {
     }
 
     bool result = WriteCommandToFile(kThawCommand, to_be_frozen_state_path_);
+
+    // TODO(derat): For now, lie and report success if thawing failed but
+    // freezing also failed previously. Remove after weird EBADF and ENOENT
+    // problems tracked at http://crbug.com/661310 are fixed.
+    if (!result && !froze_successfully_)
+      result = true;
+
     ui_thread_->PostTask(FROM_HERE, base::Bind(callback, result));
   }
 
@@ -127,6 +137,10 @@ class FreezerCgroupProcessManager::FileWorker {
   base::FilePath to_be_frozen_state_path_;
 
   bool enabled_;
+
+  // True iff FreezeRenderers() wrote its command successfully the last time it
+  // was called.
+  bool froze_successfully_;
 
   DISALLOW_COPY_AND_ASSIGN(FileWorker);
 };
