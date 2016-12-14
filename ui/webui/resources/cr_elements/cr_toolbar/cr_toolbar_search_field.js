@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(tsergeant): Add tests for cr-toolbar-search-field.
 Polymer({
   is: 'cr-toolbar-search-field',
 
@@ -12,6 +11,14 @@ Polymer({
     narrow: {
       type: Boolean,
       reflectToAttribute: true,
+    },
+
+    showingSearch: {
+      type: Boolean,
+      value: false,
+      notify: true,
+      observer: 'showingSearchChanged_',
+      reflectToAttribute: true
     },
 
     // Prompt text to display in the search field.
@@ -72,6 +79,16 @@ Polymer({
     return this.searchFocused_;
   },
 
+  showAndFocus: function() {
+    this.showingSearch = true;
+    this.focus_();
+  },
+
+  /** @private */
+  focus_: function() {
+    this.getSearchInput().focus();
+  },
+
   /**
    * @param {boolean} narrow
    * @return {number}
@@ -114,6 +131,12 @@ Polymer({
       this.showingSearch = true;
   },
 
+  /** @private */
+  onSearchTermKeydown_: function(e) {
+    if (e.key == 'Escape')
+      this.showingSearch = false;
+  },
+
   /**
    * @param {Event} e
    * @private
@@ -129,6 +152,25 @@ Polymer({
    */
   clearSearch_: function(e) {
     this.setValue('');
-    this.getSearchInput().focus();
-  }
+    this.focus_();
+  },
+
+  /**
+   * @param {boolean} current
+   * @param {boolean|undefined} previous
+   * @private
+   */
+  showingSearchChanged_: function(current, previous) {
+    // Prevent unnecessary 'search-changed' event from firing on startup.
+    if (previous == undefined)
+      return;
+
+    if (this.showingSearch) {
+      this.focus_();
+      return;
+    }
+
+    this.setValue('');
+    this.getSearchInput().blur();
+  },
 });

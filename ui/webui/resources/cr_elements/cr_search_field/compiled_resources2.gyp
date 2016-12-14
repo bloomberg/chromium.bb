@@ -10,12 +10,5 @@
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
-    {
-      'target_name': 'cr_search_field',
-      'dependencies': [
-        'cr_search_field_behavior'
-      ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
   ],
 }
