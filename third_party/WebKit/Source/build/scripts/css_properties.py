@@ -31,6 +31,7 @@ class CSSProperties(in_generator.Writer):
         'custom_value': False,
         'builder_skip': False,
         'direction_aware': False,
+        'api_class': None,
         # Typed OM annotations.
         'typedom_types': [],
         'keywords': [],

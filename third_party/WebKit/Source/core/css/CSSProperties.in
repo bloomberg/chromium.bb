@@ -23,6 +23,18 @@
 // The property is a shorthand for several other properties.
 
 
+// - api_class[=classname]
+// Specifies the existance (and optionally name) of a CSSPropertyAPI
+// implementation for the property to be used by make_css_property_descriptor.py.
+// See core/css/properties/CSSPropertyAPI.h for API details.
+// * Add this flag if the API has been implemented for this property.
+// * If the classname for this is different to the name of the property, specify a
+//   value for this flag. e.g. api_class=CSSPropertyAPIWebkitPadding
+// TODO(aazzam): When most properties have been implemented, modify this so that
+// properties with default classnames do not get this flag, and introduce a
+// 'not_implemented' flag instead.
+
+
 // - keyword_only
 // These properties only store keyword values. This is used when
 // generating the ComputedStyle storage for the property. The initial
@@ -470,10 +482,10 @@ z-index interpolable, type_name=int, custom_all
 -webkit-margin-start direction_aware
 -webkit-margin-before direction_aware
 -webkit-margin-after direction_aware
--webkit-padding-end direction_aware
--webkit-padding-start direction_aware
--webkit-padding-before direction_aware
--webkit-padding-after direction_aware
+-webkit-padding-end direction_aware, api_class=CSSPropertyAPIWebkitPadding
+-webkit-padding-start direction_aware, api_class=CSSPropertyAPIWebkitPadding
+-webkit-padding-before direction_aware, api_class=CSSPropertyAPIWebkitPadding
+-webkit-padding-after direction_aware, api_class=CSSPropertyAPIWebkitPadding
 -webkit-logical-width direction_aware
 -webkit-logical-height direction_aware
 -webkit-min-logical-width direction_aware

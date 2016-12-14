@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSPropertyAPIPadding_h
-#define CSSPropertyAPIPadding_h
+#ifndef CSSPropertyAPIWebkitPadding_h
+#define CSSPropertyAPIWebkitPadding_h
 
 #include "core/CSSPropertyNames.h"
 #include "core/css/properties/CSSPropertyAPI.h"
@@ -23,4 +23,4 @@ class CSSPropertyAPIWebkitPadding : public CSSPropertyAPI {
 
 }  // namespace blink
 
-#endif  // CSSPropertyAPIPadding_h
+#endif  // CSSPropertyAPIWebkitPadding_h

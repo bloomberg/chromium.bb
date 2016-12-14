@@ -426,6 +426,14 @@ css_properties("make_core_generated_computed_style_base") {
   ]
 }
 
+css_properties("make_core_generated_css_property_descriptor") {
+  script = "../build/scripts/make_css_property_descriptor.py"
+  other_inputs = [ "../build/scripts/templates/CSSPropertyDescriptor.cpp.tmpl" ]
+  outputs = [
+    "$blink_core_output_dir/css/properties/CSSPropertyDescriptor.cpp",
+  ]
+}
+
 css_properties("make_core_generated_css_property_names") {
   script = "../build/scripts/make_css_property_names.py"
   outputs = [
@@ -908,6 +916,7 @@ targets_generating_sources = [
   ":make_core_generated_css_primitive_value_unit_trie",
   ":make_core_generated_css_property_metadata",
   ":make_core_generated_computed_style_base",
+  ":make_core_generated_css_property_descriptor",
   ":make_core_generated_css_property_names",
   ":make_core_generated_cssom_types",
   ":make_core_generated_event_factory",
